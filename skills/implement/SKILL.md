@@ -1,8 +1,8 @@
 ---
-description: Réaliser une tâche d'un plan et l'expliquer ; sans tâche, boucler sur tout le plan (réaliser, relire, corriger, commiter, tâche suivante)
-argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan, une tâche après l'autre)"
+description: Réaliser une tâche d'un plan et l'expliquer, directement ou via le sous-agent implementer, au besoin dans un worktree ; sans tâche, boucler sur tout le plan (réaliser, relire, corriger, commiter, tâche suivante)
+argument-hint: "[-sdw] <US-XXX> [T3] (regroupables, ex. -sw : -s sous-agent ou -d direct, -w worktree ; sans tâche : tout le plan)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:implement – Réaliser une tâche
@@ -13,7 +13,16 @@ allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git dif
 
 Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
 
-Arguments reçus : `$ARGUMENTS` (l'US dont on réalise le plan, puis la tâche, facultative)
+Arguments reçus : `$ARGUMENTS` (les options, l'US dont on réalise le plan, puis la tâche, facultative)
+
+Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions`).
+
+## Options
+
+Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` équivaut à `-s -w` (l'ordre des lettres ne compte pas : `-ws` aussi). Une lettre inconnue : la signaler et demander ce que la personne voulait, sans l'ignorer en silence. `-s` et `-d` ensemble se contredisent : demander lequel garder.
+- `-s` **via sous-agent** : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
+- `-d` **directe** : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
+- `-w` **worktree** : travailler dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
 
 ## Objectif
 
@@ -28,6 +37,14 @@ Arguments reçus : `$ARGUMENTS` (l'US dont on réalise le plan, puis la tâche, 
 - Mode « tout le plan » : le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.
 
 ## Déroulé
+
+### 0. Choisir la façon de travailler
+
+- **Mode** : sans `-s` ni `-d`, demander (AskUserQuestion, question « Comment réaliser la tâche ? ») : « 1. Implémentation via sous-agent (Recommandé) » (un assistant spécialisé code dans son propre contexte, la conversation reste légère) / « 2. Implémentation directe » (je code ici, vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
+- **Worktree** : sans `-w`, appliquer « 1. Faut-il un worktree ? » de la référence worktree ; si la question se pose, la poser **dans le même appel** AskUserQuestion que le mode.
+- **Avec un worktree** : le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans le worktree.
+
+Annoncer le choix en une ligne (« Mode : sous-agent · dans le worktree `us-003-<nom>` »).
 
 ### 1. Choisir la ou les tâches
 
@@ -45,6 +62,15 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 
 ### 3. Réaliser
 
+**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (qualité avec `pulse-aidd qualite`, documentation officielle, ne rien supposer du code, sécurité, contrôles automatiques). Le sous-agent n'a pas accès aux fichiers du plugin : tout recopier. À son retour :
+- **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse ;
+- **Bloqué** sur une action manuelle (schéma à appliquer dans une console, compte à créer, variable à saisir chez l'hébergeur, clé secrète à écrire dans le fichier local) : guider la personne pas à pas, puis relancer ;
+- **Terminé** : lire son rapport et les changements (`git diff`, `git status`), puis passer à l'étape 4. Les points « À signaler » sur `docs/` sont traités ici (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
+
+**Mode direct** : réaliser soi-même, en suivant les consignes ci-dessous.
+
+Consignes de réalisation (pour les deux modes) :
+
 - Relire la tâche, les critères de l'US qu'elle couvre (fichier `US-XXX-<nom>.md`), et les parties utiles de la spec du plan.
 - **Ne rien supposer du code** : créer ou modifier les fichiers listés par la tâche, à l'emplacement prévu par l'organisation de `docs/technical.md` ; avant d'importer un module, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer dans cette tâche et le signaler. Dans un projet existant, réutiliser ce qui existe au lieu de le dupliquer.
 - Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la spec cite une maquette, l'ouvrir et la **traduire** dans la pile retenue : ne pas copier son HTML tel quel.
@@ -60,7 +86,7 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 
 ### 4. Vérifier vous-même
 
-Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise. Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, sans en inventer). Corriger avant de rendre la main (s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère ne peut être vérifié qu'en cliquant, l'inclure dans le test manuel.
+Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, sans se fier à son seul rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, sans en inventer). Corriger avant de rendre la main (s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère ne peut être vérifié qu'en cliquant, l'inclure dans le test manuel.
 
 ### 5. Expliquer
 
@@ -72,7 +98,7 @@ Présenter, sans jargon inexpliqué :
 
 La tâche **reste `[~]`** : elle ne sera terminée qu'après relecture et commit.
 
-Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pour une relecture indépendante, puis `/pulse:commit`.
+Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pour une relecture indépendante, puis `/pulse:commit`. Dans un worktree, la session y reste : la relecture et le commit s'y font aussi ; une fois le plan terminé, `/pulse:commit` propose de rassembler le travail.
 
 ### 6. Boucle sur tout le plan (sans tâche)
 
@@ -80,7 +106,7 @@ Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
 2. **Relire** : lancer `pulse-aidd etape review` et appliquer sa section « Déroulé » à l'identique pour cette tâche, **sans** son bloc de fin de commande : relecture indépendante par le sous-agent `pulse:reviewer`, rapport `docs/revues/<Tâche>-<AAAA-MM-JJ>.md`, présentation du verdict, **test manuel par la personne**.
-3. **Corriger** : appliquer l'étape « Corriger » de la relecture (⛔, ⚠️, test non concluant), avec la relecture de contrôle. **Deux cycles au maximum** : si un point bloquant persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et conseiller de demander de l'aide à une personne qui sait programmer.
+3. **Corriger** : appliquer l'étape « Corriger » de la relecture (⛔, ⚠️, test non concluant), avec la relecture de contrôle. En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un point bloquant persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et conseiller de demander de l'aide à une personne qui sait programmer.
 4. **Commiter** : lancer `pulse-aidd etape commit` et appliquer sa section « Déroulé » à l'identique, **sans** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : ne pas redemander de relecture.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 
@@ -94,4 +120,6 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 | T3 – … | ✅ Validé | ✅ | abc1234 |
 ```
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version n'est pas en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre.
+**Dans un worktree** : quand le plan est terminé, ou si la personne s'arrête, appliquer « 3. Terminer : rassembler le travail » de la référence worktree.
+
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version n'est pas en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (avec `-w` pour revenir dans le worktree gardé).

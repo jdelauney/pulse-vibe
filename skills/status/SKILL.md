@@ -1,7 +1,7 @@
 ---
-description: Où en suis-je ? Étapes faire, kanban des tâches, état Git et prochaine étape conseillée
+description: Où en suis-je ? Étapes faites, kanban des tâches, état Git, worktrees en cours et prochaine étape conseillée ; propose de supprimer les worktrees déjà fusionnés
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote *) Bash(git rev-parse *) Bash(git branch *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote *) Bash(git rev-parse *) Bash(git branch *) Bash(git worktree *) Bash(git -C *)
 ---
 
 # /pulse:status – Où en suis-je ?
@@ -12,16 +12,17 @@ allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log
 
 Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
 
-Cette commande **ne modifie rien**. Elle lit et résume.
+Cette commande **ne modifie rien**, sauf une chose, et seulement avec l'accord de la personne : supprimer les worktrees dont le travail est déjà fusionné (§ Worktrees). Elle lit et résume.
 
 ## Déroulé
 
 1. **Étapes de la méthode** : vérifier l'existence de `CLAUDE.md`, `docs/brief.md`, `docs/prd.md`, `docs/technical.md`, `docs/user-stories.md` (le référentiel), des fichiers d'US, d'au moins une spec et d'au moins un plan dans `aidd_docs/tasks/<epic>/`. Vérifier aussi `docs/design.md` (facultatif) et, pour chaque spec, `docs/design/maquettes/US-XXX-<nom>/retenue/` (facultatif). Relever, epic par epic, les specs sans plan et les US Indispensables ou Essentielles sans spec.
 2. **Tâches** : pour chaque plan (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`), compter et lister les tâches `[ ]`, `[~]`, `[x]` ; faire le total des US Indispensables (le MVP).
-3. **Git** : `git status --short` (nombre de fichiers modifiés non enregistrés), `git log --oneline -3`, `git remote -v`.
-4. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée.
-5. **Dernière relecture** : le rapport le plus récent dans `docs/revues/` (rapports de tâche ; les audits d'interface `ui-*` sont à part) et son verdict ; le dernier audit `docs/securite.md` s'il existe.
-6. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
+3. **Git** : `git status --short` (nombre de fichiers modifiés non enregistrés), `git log --oneline -3`, `git remote -v`, `pulse-aidd sessions` (autres sessions ouvertes sur ce dossier).
+4. **Worktrees** : `git worktree list`. Pour chaque worktree de `.claude/worktrees/`, sa branche, son nombre de commits d'avance sur la branche du dossier principal, celle qui reçoit les fusions (`git branch --show-current` ; `git log --oneline <cette branche>..<branche du worktree>`), ses modifications non enregistrées (`git -C <dossier> status --short`), et s'il est **fusionné** (sa branche apparaît dans `git branch --merged <cette branche>`).
+5. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée.
+6. **Dernière relecture** : le rapport le plus récent dans `docs/revues/` (rapports de tâche ; les audits d'interface `ui-*` sont à part) et son verdict ; le dernier audit `docs/securite.md` s'il existe.
+7. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
 
 ## Format de réponse
 
@@ -38,6 +39,8 @@ Kanban – US-XXX <titre>
   MVP (US Indispensables) : 2/6 tâches terminées
 
 Git      : 3 fichiers modifiés non enregistrés · dernier commit « feat(T2): … »
+Worktrees: us-003-filtre 🔄 en cours (2 commits, à fusionner) · us-001-creer ✅ fusionné, peut être supprimé (ou « aucun »)
+Sessions : 1 autre session ouverte sur ce dossier (ou « aucune autre »)
 En ligne : https://… (ou « pas encore »)
 Revue    : T2 – ✅ Validé (date)
 Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non branchée »)
@@ -55,5 +58,13 @@ Règles pour la prochaine étape conseillée, dans l'ordre :
 7. Spec sans plan → `/pulse:plan <US-XXX>`.
 8. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
 9. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec.
+
+## Worktrees
+
+Après l'affichage, seulement si un worktree est dans ce cas :
+
+- **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les worktrees déjà fusionnés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et ne rien forcer). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
+- **Non fusionné** : ne rien proposer de supprimer. Le signaler avec la façon de reprendre : « travail en cours dans le worktree `us-xxx-<nom>` : `/pulse:implement -w US-XXX` ou `/pulse:spirc -w US-XXX` pour continuer et le rassembler ».
+- **Fusionné mais avec des modifications non enregistrées** : ne rien supprimer ; le signaler (« des changements y restent, non enregistrés »).
 
 Pour cette commande, ne pas ajouter le bloc de fin de commande habituel : le format ci-dessus le remplace.

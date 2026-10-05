@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Réaliser une tâche du plan déjà validée, strictement dans son périmètre, en respectant la pile retenue dans docs/technical.md et les règles de sécurité Pulse. Ne planifie pas et ne juge pas son propre travail. Utilisé par /pulse:spirc (phase Exécuter).
+description: Réaliser une tâche du plan déjà validée, strictement dans son périmètre, en respectant la pile retenue dans docs/technical.md et les règles de sécurité Pulse. Ne planifie pas et ne juge pas son propre travail. Utilisé par /pulse:spirc (phase Exécuter) et /pulse:implement (mode sous-agent).
 tools: Read, Write, Edit, Bash, Grep, Glob
 model: sonnet
 ---

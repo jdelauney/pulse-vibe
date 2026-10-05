@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git push *) Bash(git symbolic-ref *)
+allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git push *) Bash(git symbolic-ref *) Bash(git worktree *) Bash(git merge *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -14,6 +14,8 @@ allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Bash(git a
 Appliquer les « Règles communes Pulse » et les « Conventions Git » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
 
 Arguments : `$ARGUMENTS` — le mot `push` (n'importe où) demande d'envoyer la branche après le commit ; le reste, s'il y en a, est le message proposé par la personne.
+
+Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions` si l'on sort d'un worktree).
 
 ## Objectif
 
@@ -81,6 +83,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 - Si le plan est terminé et qu'on est sur une **branche de travail** (pas la branche principale) : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et qu'il reste des US sans spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
+- Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree.md`).
 - Si le site est déjà en ligne et que rien n'a été envoyé : rappeler que `/pulse:commit push` (ou `git push`) mettra cette version en ligne.
 
 Terminer avec le bloc de fin de commande.

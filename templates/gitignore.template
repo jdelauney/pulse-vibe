@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# --- Worktrees : copies de travail créées par /pulse:implement -w ou /pulse:spirc -w ---
+.claude/worktrees/
+
 # --- Fichiers système ---
 .DS_Store
 Thumbs.db

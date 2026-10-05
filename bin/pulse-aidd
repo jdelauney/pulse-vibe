@@ -13,6 +13,8 @@
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
 #   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
 #   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
+#   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
+#   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd verifier              contrôle l'absence de secrets et de fichiers d'environnement suivis par Git
 #   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
 #
@@ -71,6 +73,7 @@ contexte() {
       afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
     spirc)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Travailler dans un worktree" "$REF/worktree.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
     prd) afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
@@ -82,7 +85,10 @@ contexte() {
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$TPL/spec.md" ;;
     plan) afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
-    implement|fix) qualite ;;
+    implement)
+      qualite
+      afficher "Travailler dans un worktree" "$REF/worktree.md" ;;
+    fix) qualite ;;
     review)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
@@ -140,6 +146,8 @@ case "$1" in
     exec node "$RACINE/scripts/comparer.js" "$2" ;;
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
+  sessions)
+    shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   verifier)
     exec node "$TPL/verifier.js" ;;
   installer-ci)
@@ -148,5 +156,5 @@ case "$1" in
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac

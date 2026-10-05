@@ -17,12 +17,12 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:plan <US-003>` | Petites tâches ordonnées (kanban) pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
 | `/pulse:refine [<US-003>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
 | `/pulse:guide` | Le carnet de route : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier, les actions manuelles. Mis à jour automatiquement à chaque modification du plan | `docs/guide/` |
-| `/pulse:implement <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
+| `/pulse:implement [-sdw] <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, via le sous-agent implementer (`-s`) ou directement (`-d`) ; sans option, la question est posée ; options regroupables (`-sw`). `-w` : dans un worktree (proposé d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
 | `/pulse:review` | Relecture indépendante, test manuel, corrections | `docs/revues/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
 | `/pulse:deploy` | Mise en ligne, déploiement continu, puis mode production (CI) | site en ligne |
-| `/pulse:spirc <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Options `-a` (autonome) et `-x` (examen renforcé) | tout ce qui précède |
+| `/pulse:spirc [-axw] <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Options `-a` (autonome), `-x` (examen renforcé) et `-w` (worktree), regroupables (`-axw`) | tout ce qui précède |
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
 | `/pulse:learn [<notion>]` | Un professeur de programmation, limité au développement logiciel : leçon, `feynman <notion>` (vous expliquez, il vous aide à combler les trous), `exercice <notion>`, `parcours "<objectif>"` ; adapté à votre niveau, illustré avec votre projet. Sans argument : révision des notions à revoir | `docs/apprentissage.md` (carnet, facultatif) |
@@ -45,7 +45,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 
 - **Des agents spécialisés**, chacun dans son rôle :
   - `pulse:explorer` rassemble les faits utiles à une demande (lecture seule) ;
-  - `pulse:implementer` réalise une tâche validée, sans toucher aux documents ni commiter ;
+  - `pulse:implementer` réalise une tâche validée, sans toucher aux documents ni commiter (utilisé par `/pulse:spirc` et par `/pulse:implement` en mode sous-agent) ;
   - `pulse:reviewer` relit une tâche : critères, sécurité et adéquation au besoin (lecture seule) ;
   - `pulse:verifier` prouve que la tâche fonctionne, critère par critère, et prépare le test manuel (lecture seule) ;
   - `pulse:security-auditor` réalise l'audit de sécurité (lecture seule) ;
@@ -55,6 +55,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.
 - **Des références de qualité du code**, agnostiques, chargées à chaque implémentation et relecture (`pulse-aidd qualite`) : clean code, composants d'interface, sécurité du code, et `code-concepts` (odeurs de code, SOLID, refactorings).
 - **Une mémoire projet** (`aidd_docs/memory/`) : vision, choix techniques, pièges, glossaire du métier et décisions. Un hook l'injecte dans `CLAUDE.md` à l'ouverture de chaque session : l'IA la relit automatiquement, sans tout redécouvrir.
+- **Le travail en parallèle** : un hook tient le registre des sessions Claude Code ouvertes sur le projet. Quand une autre session travaille déjà sur le même dossier, `/pulse:implement` et `/pulse:spirc` proposent un **worktree** (option `-w`) : une copie de travail sur sa propre branche, créée à partir du dernier commit local, puis fusionnée et supprimée à la fin.
 - **Un garde-fou anti-secrets** (hook) qui bloque, avant qu'elles n'arrivent :
   - l'écriture d'une clé secrète dans un fichier de code ;
   - l'ajout d'un fichier `.env` à Git ;
@@ -99,13 +100,13 @@ Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin up
 .claude-plugin/plugin.json        manifeste du plugin
 skills/<commande>/SKILL.md        les 23 commandes
 agents/                           explorer, implementer, reviewer, verifier, security-auditor, designer, ui-critic, fixer
-hooks/hooks.json                  garde-fou anti-secrets, synchronisation de la mémoire, régénération du guide
-scripts/                          garde-secrets.js, motifs.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js
+hooks/hooks.json                  garde-fou anti-secrets, synchronisation de la mémoire, registre des sessions, régénération du guide
+scripts/                          garde-secrets.js, motifs.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
 bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI)
 references/                       règles communes, aide au choix technique, checklist sécurité, mémoire,
                                   qualite/ (références de qualité du code), securite/ (actions de /pulse:security),
                                   design/ (références d'interface de /pulse:ui), pedagogie.md (/pulse:learn),
-                                  git.md (conventions de commit, de branche et de PR)
+                                  git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle)
 templates/                        modèles de documents et de fichiers projet
 tests/                            tests (node --test tests/*.test.js)
 docs/                             documentation

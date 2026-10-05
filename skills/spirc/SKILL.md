@@ -1,8 +1,8 @@
 ---
 description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
-argument-hint: "[-a] [-x] <US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
+argument-hint: "[-axw] <US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:spirc – Spécifier, Planifier, Implémenter, Relire, Commiter
@@ -15,11 +15,14 @@ Appliquer les « Règles communes Pulse » et les « Règles de la mémoire proj
 
 Arguments reçus : `$ARGUMENTS`
 
+Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions`).
+
 ## Lire les arguments
 
-**Options** (cumulables, ex. `-ax`) :
+**Options**, placées avant l'US. **Regroupables** : chaque lettre est une option, et `-axw` équivaut à `-a -x -w` (l'ordre des lettres ne compte pas). Une lettre inconnue : la signaler et demander ce que la personne voulait, sans l'ignorer en silence.
 - `-a` **autonome** : enchaîner sans les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
 - `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
+- `-w` **worktree** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, le worktree est proposé (même avec `-a` : c'est une décision de la personne).
 
 **US** (premier argument après les options) : l'US dont on réalise le plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), désignée selon les règles « User stories, specs et plans » ci-dessus. Une US qui a une spec sans plan, ou ni spec ni plan : commencer à § S ou § P. Absent ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel, avec en dernière réponse « Spécifier et planifier une autre US » (§ S).
 
@@ -83,6 +86,10 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 - Sans US désignée : la demander (les US sans spec, dans l'ordre du parcours, ou une demande décrite), puis appliquer l'étape **spec** avec cette **seule** US. Si sa spec existe déjà sans plan, passer à § P.
 
 ✋ **Point de validation 1** (sauf `-a`) : résumé en 5 lignes (US, écrans, données, points de sécurité). « On passe au plan ? » → « Oui » / « Je veux modifier quelque chose ».
+
+## Worktree
+
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`) : sinon le worktree ne les aurait pas. Toute la suite (réalisation, relecture, commits) se fait dans le worktree.
 
 ## [P] Planifier
 
@@ -148,5 +155,7 @@ Présenter un récapitulatif :
 ```
 
 Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi.
+
+**Dans un worktree** : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (fusion, demande de fusion ou worktree gardé).
 
 Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le MVP (toutes les US Indispensables) est terminé et pas encore en ligne (ne jamais pousser ni déployer sans accord), sinon `/pulse:spirc <US-XXX>` pour continuer, ou `/pulse:spirc <US-XXX suivante du parcours>` si ce plan est terminé (elle passera par la spec et le plan), ou `/pulse:security` pour un audit complet.
