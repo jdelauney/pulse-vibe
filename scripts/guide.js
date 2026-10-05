@@ -143,6 +143,7 @@ function etapesAvantLePlan(plans) {
     ["Raconter l'idée", "/pulse:brainstorm", "docs/brief.md"],
     ["Décider du MVP", "/pulse:prd", "docs/prd.md"],
     ["Choisir les outils", "/pulse:tech", "docs/technical.md"],
+    ["⚪ Définir l'identité visuelle (facultatif, avant les user stories)", "/pulse:ui identite", "docs/design.md"],
     ["Écrire les user stories, par epic", "/pulse:us", "docs/user-stories.md"],
   ];
   const lignes = etapes.map(([quoi, commande, fichier]) => `- ${coche(fs.existsSync(fichier))} ${quoi} : \`${commande}\` → \`${fichier}\``);

@@ -56,4 +56,4 @@ Rédiger, en vous appuyant sur le brief, et sans demander ce qui peut se déduir
 
 Écrire `docs/prd.md` à partir du modèle `docs/prd.md`. Montrer le tableau MoSCoW et la définition du MVP, demander validation.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` pour écrire les user stories, ou `/pulse:spirc` pour enchaîner user stories, spec, plan et réalisation avec des points de validation.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour choisir les outils adaptés au besoin (puis, facultatif, `/pulse:ui identite`, et `/pulse:us`), ou `/pulse:spirc` pour enchaîner choix techniques, user stories, spec, plan et réalisation avec des points de validation.

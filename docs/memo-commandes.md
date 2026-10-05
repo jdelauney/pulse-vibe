@@ -14,8 +14,8 @@
 |---|---|---|
 | `/pulse:brainstorm` | Vous pose des questions par petites séries, avec une réponse conseillée, puis raconte votre outil comme une histoire | `docs/brief.md` et le glossaire |
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **MVP** |
-| `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez | `docs/design.md` |
 | `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options | `docs/technical.md` |
+| `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
 | `/pulse:us` | Découpe le besoin en epics et écrit les user stories : « En tant que… je souhaite… afin de… » | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
 ## 3. Préparer la construction

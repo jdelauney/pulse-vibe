@@ -85,7 +85,7 @@ Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire av
 ## 5. Le cycle Pulse en un coup d'œil
 
 ```
-/pulse:init → /pulse:brainstorm → /pulse:prd → (/pulse:ui identite) → /pulse:tech → /pulse:us
+/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us
           → /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
           → /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
           → /pulse:deploy

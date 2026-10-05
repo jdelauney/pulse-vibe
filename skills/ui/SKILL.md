@@ -76,7 +76,7 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
    - Montrer un résumé en 5 lignes et demander « Valider » / « Modifier quelque chose ».
    - Proposer `/pulse:memory retenir` pour le registre et la stratégie de couleur.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XXX>`, ou `/pulse:ui maquettes <US-XXX>` si une spec avec des écrans existe déjà.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `docs/user-stories.md` n'existe pas encore (cas habituel : l'identité se définit juste après `/pulse:tech`) ; sinon `/pulse:spec <US-XXX>`, ou `/pulse:ui maquettes <US-XXX>` si une spec avec des écrans existe déjà.
 
 ## maquettes
 

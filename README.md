@@ -35,7 +35,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:memory` | Créer, actualiser ou enrichir la mémoire du projet (`creer`, `actualiser`, `retenir "…"`) | `aidd_docs/memory/` |
 
 ```
-/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → /pulse:us (epics et US)
+/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite, facultatif) → /pulse:us (epics et US)
    → pour chaque US : /pulse:spec <US-XXX> → /pulse:plan <US-XXX>
    → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou : /pulse:spirc <US-XXX>)
    → /pulse:deploy

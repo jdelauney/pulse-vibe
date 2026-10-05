@@ -106,6 +106,7 @@ test("produit l'index et une page par plan, rangée dans le dossier de son epic,
   assert.match(index, /```\n\/pulse:review T2\n```/, "T2 en cours : la prochaine étape est la relecture");
   assert.match(index, /\| gerer-taches \| US-001 – Créer une tâche \| Indispensable \| 2 \| 1\/2 \|/);
   assert.match(index, /MVP \(US Indispensables planifiées\) : 1\/2/);
+  assert.match(index, /Choisir les outils[^\n]*\n- \[ \] ⚪ Définir l'identité visuelle \(facultatif, avant les user stories\) : `\/pulse:ui identite`[^\n]*\n- \[ \] Écrire les user stories/, "l'identité visuelle, facultative, entre la pile et les user stories");
   assert.doesNotMatch(index + lire(d, US1), /T99/, "le Journal est ignoré");
 });
 

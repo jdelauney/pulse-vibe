@@ -52,7 +52,7 @@ Règles de la boucle :
 
 1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent** → prévenir sans bloquer (il fait tourner le garde-fou anti-secrets de Pulse) : https://nodejs.org (LTS).
 2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Tant qu'une fondation manque, ne pas proposer les étapes de la méthode. Exception : dans un **projet neuf**, la pile technique non encore choisie ne bloque pas ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`).
-3. **La première étape de la méthode non faite** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` (facultatif : `/pulse:ui identite` avant, si `docs/design.md` n'existe pas) ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
+3. **La première étape de la méthode non faite** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` ; identité visuelle, **facultative** → si `docs/design.md` et `docs/user-stories.md` n'existent pas encore, proposer `/pulse:ui identite` en précisant qu'elle est facultative (les user stories, specs et plans s'y conformeront), avec « Passer directement aux user stories » en alternative ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
 4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <US-XXX>` (ou `/pulse:implement <US-XXX>`), les US Indispensables d'abord ; plan terminé et US Indispensables restantes → `/pulse:spec <US-XXX suivante du parcours>` ; MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
 5. **Un signal de santé.**
 6. **Rien à faire** : proposer `/pulse:spec <US-XXX suivante>` (US Essentielles pas encore spécifiées), `/pulse:spirc <US-XXX> "une demande"`, `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
@@ -70,7 +70,7 @@ Votre projet :
   Pile         ✅ choisie · docs/technical.md (ou ⚠️ à choisir avec /pulse:tech · ❌)
   Git          ✅ 12 versions enregistrées    (ou ⚠️ <cause> · ❌)
 
-  Méthode : ✅ brief · ✅ PRD · [choix techniques] · ⬜ US · ⬜ spec · ⬜ plan · ⬜ réalisation · ⬜ en ligne
+  Méthode : ✅ brief · ✅ PRD · [choix techniques] · ⬜ design (facultatif) · ⬜ US · ⬜ spec · ⬜ plan · ⬜ réalisation · ⬜ en ligne
 
 ➡️ Prochaine étape : <action> — <pourquoi, en une phrase>
 ```
@@ -132,7 +132,7 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 En 8 lignes maximum, le chemin complet, l'étape en cours entre crochets :
 
 ```
-/pulse:init → /pulse:brainstorm → /pulse:prd → (/pulse:ui identite) → /pulse:tech → /pulse:us (epics et US)
+/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us (epics et US)
    → pour chaque US : /pulse:spec <US-XXX> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
    → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <US-XXX>)
    → /pulse:deploy   (les étapes entre parenthèses sont facultatives)

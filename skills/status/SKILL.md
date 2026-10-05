@@ -28,7 +28,7 @@ Cette commande **ne modifie rien**. Elle lit et résume.
 ```
 📍 Projet : <nom> (pile : <résumé de « Pile retenue » de docs/technical.md, ou « non choisie »>)
 
-Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ design (facultatif) · ⬜ technique · ⬜ user stories · ⬜ spec · ⬜ plan
+Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facultatif) · ⬜ user stories · ⬜ spec · ⬜ plan
 Epics    : <epic 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <epic 2> : US-004 (spec ⬜)
 
 Kanban – US-XXX <titre>
