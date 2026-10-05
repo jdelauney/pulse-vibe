@@ -18,7 +18,7 @@ Ce projet suit la **méthode Pulse** (plugin `pulse`). Les documents de référe
 | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | La spec de cette US (une US = une spec) : écrans, données, règles, sécurité |
 | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | Le plan de cette spec (une spec = un plan) : les tâches et leur statut (kanban) |
 
-`/pulse:init` (ou `/pulse:status`) indique à tout moment où en est le projet et la prochaine étape.
+`/pulse:status` indique à tout moment où en est le projet et la prochaine étape ; `/pulse:init` prépare le projet et le met à niveau après une mise à jour de Pulse.
 
 ## Comportement
 
