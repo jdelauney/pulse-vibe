@@ -36,7 +36,7 @@ Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient 
 
 ### 2. Vérifier que la tâche a été relue
 
-Repérer les tâches `[~]` dans les plans de `docs/plans/`. Pour chacune, s'il n'existe aucun rapport `docs/revues/<Tâche>-*.md`, demander (AskUserQuestion) : « Cette tâche n'a pas encore été relue. » → « Lancer la relecture d'abord (recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review`.
+Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`). Pour chacune, s'il n'existe aucun rapport `docs/revues/<Tâche>-*.md`, demander (AskUserQuestion) : « Cette tâche n'a pas encore été relue. » → « Lancer la relecture d'abord (recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review`.
 
 ### 3. Trier les modifications par sujet
 
@@ -56,7 +56,7 @@ Sans tâche en cours, omettre la parenthèse ou mettre une zone courte. Si la pe
 
 ### 5. Mettre à jour le plan
 
-Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`docs/plans/<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque éventuelle). Le plan fait partie des fichiers de ce commit.
+Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque éventuelle). Le plan fait partie des fichiers de ce commit.
 
 ### 6. Enregistrer
 
@@ -77,10 +77,10 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 
 ## Suite
 
-- S'il reste des tâches du jalon en cours : prochaine étape `/pulse:implement <plan> <tâche suivante>`.
+- S'il reste des tâches dans le plan : prochaine étape `/pulse:implement <US-XXX> <tâche suivante>`.
 - Si le plan est terminé et qu'on est sur une **branche de travail** (pas la branche principale) : prochaine étape `/pulse:pr`, pour proposer la fusion.
-- Si le plan est terminé et qu'il reste des US sans spec : prochaine étape `/pulse:spec <US suivante>`.
-- Si le jalon 1 (MVP) est terminé, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
+- Si le plan est terminé et qu'il reste des US sans spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
+- Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
 - Si le site est déjà en ligne et que rien n'a été envoyé : rappeler que `/pulse:commit push` (ou `git push`) mettra cette version en ligne.
 
 Terminer avec le bloc de fin de commande.

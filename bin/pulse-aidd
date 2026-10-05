@@ -11,7 +11,7 @@
 #   pulse-aidd qualite               affiche les règles de qualité du code
 #   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md)
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
-#   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de docs/plans/
+#   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
 #   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
 #   pulse-aidd verifier              contrôle l'absence de secrets et de fichiers d'environnement suivis par Git
 #   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
@@ -74,11 +74,14 @@ contexte() {
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
     prd) afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
-    us) afficher "Modèle : docs/user-stories.md" "$TPL/user-stories.md" ;;
+    us)
+      afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md" ;;
     spec)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
-      afficher "Modèle : docs/specs/<nom>.md" "$TPL/spec.md" ;;
-    plan) afficher "Modèle : docs/plans/<nom>.md" "$TPL/plan.md" ;;
+      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$TPL/spec.md" ;;
+    plan) afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement|fix) qualite ;;
     review)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
@@ -96,7 +99,7 @@ contexte() {
       afficher "Modèle : mention de confidentialité" "$TPL/confidentialite.md" ;;
     refine)
       afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
-      afficher "Modèle : docs/plans/<nom>.md" "$TPL/plan.md" ;;
+      afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     ui)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Registres d'interface" "$REF/design/registres.md"

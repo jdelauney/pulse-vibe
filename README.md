@@ -12,31 +12,32 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:brainstorm` | Entretien approfondi par rondes (arbre de décisions), puis l'idée racontée (domain storytelling) | `docs/brief.md`, glossaire |
 | `/pulse:prd` | Besoin produit et périmètre MVP (MoSCoW) | `docs/prd.md` |
 | `/pulse:tech` | Choix techniques : besoins, 2-3 options comparées et vérifiées sur leur documentation officielle ; **c'est la personne qui choisit sa technologie** (ou la pile existante est documentée) | `docs/technical.md`, bloc « Pile technique » de `CLAUDE.md` |
-| `/pulse:spec <US-03 \| "demande">` | Spécification d'une ou plusieurs user stories, ou d'une demande décrite, avec section sécurité obligatoire | `docs/specs/<nom>.md` |
-| `/pulse:us` | User stories et critères d'acceptation | `docs/user-stories.md` |
-| `/pulse:plan <spec>` | Petites tâches ordonnées (kanban) pour une spec ; numéros de tâche uniques dans tout le projet | `docs/plans/<nom>.md` |
-| `/pulse:refine [<plan>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
+| `/pulse:spec <US-003 \| "demande">` | Spécification d'une user story (une US = une spec), ou d'une demande décrite, avec section sécurité obligatoire | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
+| `/pulse:us` | Epics, user stories et critères d'acceptation : un référentiel, puis un fichier par US rangé dans le dossier de son epic | `docs/user-stories.md`, `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
+| `/pulse:plan <US-003>` | Petites tâches ordonnées (kanban) pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
+| `/pulse:refine [<US-003>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
 | `/pulse:guide` | Le carnet de route : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier, les actions manuelles. Mis à jour automatiquement à chaque modification du plan | `docs/guide/` |
-| `/pulse:implement <plan> [T3]` | Réaliser une tâche du plan et l'expliquer ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
+| `/pulse:implement <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
 | `/pulse:review` | Relecture indépendante, test manuel, corrections | `docs/revues/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
-| `/pulse:pr [branche [<plan>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
+| `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
 | `/pulse:deploy` | Mise en ligne, déploiement continu, puis mode production (CI) | site en ligne |
-| `/pulse:spirc <plan> [T3 \| "demande"]` | Orchestre pour un plan **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Options `-a` (autonome) et `-x` (examen renforcé) | tout ce qui précède |
+| `/pulse:spirc <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Options `-a` (autonome) et `-x` (examen renforcé) | tout ce qui précède |
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
 | `/pulse:learn [<notion>]` | Un professeur de programmation, limité au développement logiciel : leçon, `feynman <notion>` (vous expliquez, il vous aide à combler les trous), `exercice <notion>`, `parcours "<objectif>"` ; adapté à votre niveau, illustré avec votre projet. Sans argument : révision des notions à revoir | `docs/apprentissage.md` (carnet, facultatif) |
 | `/pulse:security` | Audit S1 à S11 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez | `docs/design.md` |
-| `/pulse:ui maquettes <spec>` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/<spec>/` |
+| `/pulse:ui maquettes <US-003>` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » | `docs/revues/ui-<date>.md` |
 | `/pulse:auto-fix` | Fait passer au vert les contrôles automatiques du projet (lint, types, formatage…), via des agents en parallèle | code corrigé |
 | `/pulse:fix` | Corriger une erreur précise (message, console, « le bouton ne marche pas ») : cause d'abord, correction minimale, preuve, explication | code corrigé |
 | `/pulse:memory` | Créer, actualiser ou enrichir la mémoire du projet (`creer`, `actualiser`, `retenir "…"`) | `aidd_docs/memory/` |
 
 ```
-/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → /pulse:us → /pulse:spec <US> → /pulse:plan <spec>
-   → pour chaque tâche : /pulse:implement <plan> <tâche> → /pulse:review → /pulse:commit   (ou : /pulse:spirc <plan>)
+/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → /pulse:us (epics et US)
+   → pour chaque US : /pulse:spec <US-XXX> → /pulse:plan <US-XXX>
+   → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou : /pulse:spirc <US-XXX>)
    → /pulse:deploy
 ```
 

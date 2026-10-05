@@ -24,7 +24,7 @@ Le message de délégation indique :
 - le **dossier de sortie** ;
 - les **écrans à couvrir** (maquette seulement) ;
 - le chemin de `docs/design.md`, ou les éléments d'une direction provisoire s'il n'existe pas encore ;
-- les chemins de `docs/prd.md` et `docs/brief.md` (s'ils existent), du glossaire (`aidd_docs/memory/glossary.md`), et, pour les maquettes, de la spec et des user stories (`docs/user-stories.md`), s'ils existent ;
+- les chemins de `docs/prd.md` et `docs/brief.md` (s'ils existent), du glossaire (`aidd_docs/memory/glossary.md`), et, pour les maquettes, de la spec et de l'user story (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` et `US-XXX-<nom>.md`), s'ils existent ;
 - pour un **hybride** : les dossiers des propositions sources. Les combiner exactement comme demandé, dans le dossier de sortie reçu.
 
 Si le type, la thèse ou le dossier de sortie manque, s'arrêter et le dire.

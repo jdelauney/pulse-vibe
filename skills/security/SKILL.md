@@ -19,7 +19,7 @@ Action demandée : `$ARGUMENTS` (vide = `audit`)
 
 | Action | Quand | Comment |
 |---|---|---|
-| `audit` (par défaut) | Avant une mise en ligne, à la fin d'un jalon | Section « Audit complet » ci-dessous |
+| `audit` (par défaut) | Avant une mise en ligne, à la fin du MVP ou d'une epic | Section « Audit complet » ci-dessous |
 | `rapide` | En 2 minutes, à tout moment : « suis-je dans les clous ? » | Lancer `pulse-aidd reference securite/rapide.md` et l'appliquer à l'identique (lecture seule) |
 | `entetes` | Configurer les en-têtes de sécurité (CSP, HSTS…) | Lancer `pulse-aidd reference securite/entetes.md` et l'appliquer ; montrer la configuration avant de l'écrire |
 | `preparer` | Préparer un audit outillé (développeur, outils d'analyse) | Lancer `pulse-aidd reference securite/preparer.md` et l'appliquer |
@@ -35,7 +35,7 @@ Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à
 ### Prérequis
 
 - Le projet doit contenir du code (constater avec `git ls-files` et « Organisation des fichiers » de `docs/technical.md`). Sinon, dites qu'il n'y a encore rien à auditer.
-- Les specs de `docs/specs/` sont conseillées (elles décrivent qui a le droit de voir quoi). S'il n'y en a aucune, l'audit se fait quand même, en le signalant.
+- Les specs (`aidd_docs/tasks/*/SPEC-US-*.md`) sont conseillées (elles décrivent qui a le droit de voir quoi). S'il n'y en a aucune, l'audit se fait quand même, en le signalant.
 
 ### Déroulé
 
@@ -43,7 +43,7 @@ Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à
 
 Expliquer en une phrase que l'audit est effectué en lecture seule, sans modification de fichiers.
 
-Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs de `docs/specs/` et `docs/user-stories.md`, et la **checklist sécurité complète**, recopiée dans le message (le sous-agent n'a pas accès aux fichiers du plugin).
+Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/user-stories.md` et les fichiers d'US, et la **checklist sécurité complète**, recopiée dans le message (le sous-agent n'a pas accès aux fichiers du plugin).
 
 Si le sous-agent n'est pas disponible, faire l'audit en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent security-auditor`, sans modifier de fichier pendant l'audit.
 

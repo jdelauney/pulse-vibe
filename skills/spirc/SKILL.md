@@ -1,6 +1,6 @@
 ---
-description: Orchestrer pour un plan Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
-argument-hint: "[-a] [-x] <plan> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan)"
+description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
+argument-hint: "[-a] [-x] <US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *)
 ---
@@ -21,7 +21,7 @@ Arguments reçus : `$ARGUMENTS`
 - `-a` **autonome** : enchaîner sans les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
 - `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
 
-**Plan** (premier argument après les options) : un plan de `docs/plans/`, désigné selon les règles « Specs et plans » ci-dessus. Absent ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel, avec en dernière réponse « Créer une nouvelle spec et son plan » (§ S).
+**US** (premier argument après les options) : l'US dont on réalise le plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), désignée selon les règles « User stories, specs et plans » ci-dessus. Une US qui a une spec sans plan, ou ni spec ni plan : commencer à § S ou § P. Absent ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel, avec en dernière réponse « Spécifier et planifier une autre US » (§ S).
 
 **Portée** (le reste des arguments) :
 - **vide** : toutes les tâches `[~]` et `[ ]` du plan, dans l'ordre ;
@@ -34,7 +34,7 @@ Arguments reçus : `$ARGUMENTS`
 
 ```
 plan existant ─────────────────────────────┬─ pour chaque tâche : [I] Implémenter → [R] Relire et vérifier → test par vous → [C] Commiter → mémoire
-pas de plan ── [S] Spécifier ─ [P] Planifier ┤
+pas de plan ── [S] Spécifier ─ [P] Planifier ┤   (une US = une spec = un plan)
 demande libre ─ [A] Analyser (ajout au plan) ┘
 ```
 
@@ -68,24 +68,25 @@ Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <com
 
 1. **Explorer** : déléguer à `pulse:explorer` la demande, avec la consigne de rassembler les faits utiles (mémoire, US et critères liés, fichiers concernés, risques). Ne jamais demander à la personne un fait qu'il peut trouver.
 2. **Situer la demande** :
-   - **correction** d'un comportement prévu par une US : pas de nouvelle US ;
-   - **nouveau comportement** prévu au PRD : ajouter l'US et ses critères dans `docs/user-stories.md` (format du fichier existant) ;
+   - **correction** d'un comportement prévu par une US : pas de nouvelle US ; la tâche ira dans le plan de **cette** US (si ce n'est pas l'US désignée, le dire et continuer avec son plan) ;
+   - **précision** d'une US déjà planifiée (un critère qui manque) : ajouter le critère dans le fichier de l'US, puis la tâche dans son plan ;
+   - **nouveau comportement** prévu au PRD : créer une **nouvelle US** (numéro suivant, modèle d'US) dans l'epic qui convient (la demander : AskUserQuestion, l'epic la plus proche avec « (Recommandé) », « Nouvelle epic »), écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au référentiel `docs/user-stories.md`. Elle aura sa propre spec et son propre plan : passer à § S avec cette US ;
    - **nouveau comportement hors PRD** : c'est une décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
 3. **Clarifier ce qui change ce qui sera construit**, et seulement cela : poser les questions de la frontière en une ronde (AskUserQuestion, 4 questions au plus, réponse recommandée en premier, « (Recommandé) »), deux rondes au maximum. Employer et respecter les mots du glossaire ; signaler un mot employé dans un autre sens.
-4. **Écrire le contrat** comme une nouvelle tâche à la fin du jalon en cours du plan choisi (ou, pour une correction, dans le jalon de la tâche concernée), numérotée après le plus grand `Tn` de `docs/plans/`, au format du plan : objectif vu par l'utilisateur, fichiers, critères d'acceptation **vérifiables**, et une ligne « Hors périmètre » si utile. Si elle touche plus de 3 fichiers ou couvre plus de 3 critères, la découper en plusieurs tâches.
+4. **Écrire le contrat** (correction ou précision) comme une nouvelle tâche à la fin de la section `## Tâches` du plan de l'US concernée (avant une éventuelle tâche « Mettre en ligne le MVP »), numérotée après le plus grand `Tn` de tous les plans de `aidd_docs/tasks/`, au format du plan : objectif vu par l'utilisateur, fichiers, critères d'acceptation **vérifiables**, et une ligne « Hors périmètre » si utile. Si elle touche plus de 3 fichiers ou couvre plus de 3 critères, la découper en plusieurs tâches.
 5. La portée devient cette (ou ces) tâche(s). Passer à ✋ 2.
 
 ## [S] Spécifier – seulement s'il n'y a pas encore de plan
 
-Quand la personne choisit « Créer une nouvelle spec et son plan » (ou qu'aucun plan n'existe) :
+Quand la personne choisit « Spécifier et planifier une autre US », que l'US désignée n'a pas encore de spec, ou qu'une demande a créé une nouvelle US :
 - Si `docs/user-stories.md` manque : appliquer l'étape **us**.
-- Demander le sujet (les US à couvrir, ou une demande décrite), puis appliquer l'étape **spec** avec ce sujet. Si une spec existe déjà sans plan, proposer de la reprendre.
+- Sans US désignée : la demander (les US sans spec, dans l'ordre du parcours, ou une demande décrite), puis appliquer l'étape **spec** avec cette **seule** US. Si sa spec existe déjà sans plan, passer à § P.
 
-✋ **Point de validation 1** (sauf `-a`) : résumé en 5 lignes (US couvertes, écrans, données, points de sécurité). « On passe au plan ? » → « Oui » / « Je veux modifier quelque chose ».
+✋ **Point de validation 1** (sauf `-a`) : résumé en 5 lignes (US, écrans, données, points de sécurité). « On passe au plan ? » → « Oui » / « Je veux modifier quelque chose ».
 
 ## [P] Planifier
 
-- Plan à créer : appliquer l'étape **plan** avec la spec de § S. Plan existant : montrer son kanban résumé.
+- Plan à créer : appliquer l'étape **plan** avec l'US de § S. Plan existant : montrer son kanban résumé.
 
 ✋ **Point de validation 2** (sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques, puis reposer la question.
 
@@ -107,12 +108,12 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
 ### [R] Relire et vérifier (eXaminer)
 
 1. Lancer **en parallèle** :
-   - **`pulse:reviewer`** : la tâche, les documents à lire (le plan et la spec du même nom dans `docs/plans/` et `docs/specs/`, `docs/user-stories.md`, `docs/brief.md`, `aidd_docs/memory/glossary.md`), la **checklist sécurité complète** recopiée, les sections « Pile retenue », « Organisation des fichiers » et « Données et contrôle d'accès » de `docs/technical.md`, la consigne de juger la qualité avec `pulse-aidd qualite` ;
+   - **`pulse:reviewer`** : la tâche, les documents à lire (le plan, la spec et l'US du même dossier `aidd_docs/tasks/<epic>/` — `PLAN-SPEC-US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md` —, `docs/user-stories.md`, `docs/brief.md`, `aidd_docs/memory/glossary.md`), la **checklist sécurité complète** recopiée, les sections « Pile retenue », « Organisation des fichiers » et « Données et contrôle d'accès » de `docs/technical.md`, la consigne de juger la qualité avec `pulse-aidd qualite` ;
    - **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne ou l'objectif de la tâche), les critères d'acceptation, les fichiers modifiés, la section « Commandes du projet » de `docs/technical.md` (contrôles automatiques, tests, lancer en local) ;
    - avec `-x`, **`pulse:security-auditor`** : la checklist sécurité complète et la consigne de se limiter aux fichiers modifiés par la tâche.
 2. **Écrire le rapport** dans `docs/revues/<Tâche>-<AAAA-MM-JJ>.md` (modèle de rapport de revue ; suffixe `-2`, `-3` si besoin) : le rapport du reviewer, puis une section `## Vérification` (verdict et tableau du verifier), puis, avec `-x`, `## Audit de sécurité`.
 3. **Trier les constats** :
-   - **écart de besoin** (la demande elle-même est à revoir) : le présenter simplement et demander à la personne ; si elle change le contrat, mettre à jour la tâche dans le plan (et l'US), puis reprendre à [I] ;
+   - **écart de besoin** (la demande elle-même est à revoir) : le présenter simplement et demander à la personne ; si elle change le contrat, mettre à jour la tâche dans le plan (et le fichier de l'US), puis reprendre à [I] ;
    - **défauts de réalisation** (⛔, ⚠️, critère ❌) : sans `-a`, demander « Tout corriger (recommandé) » / « Seulement les points bloquants » / « Je regarde d'abord » ; avec `-a`, tout corriger. Relancer `pulse:implementer` **avec la liste des constats**, puis un examen court (reviewer et verifier, en parallèle) ajouté au rapport dans `## Relecture de contrôle` ;
    - les 💡 suggestions ne s'appliquent que si la personne le demande.
    - **Deux cycles de correction au maximum.** Si un point bloquant persiste : arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et conseiller de demander de l'aide à une personne qui sait programmer.
@@ -129,12 +130,12 @@ Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré,
 
 ### Entre deux tâches
 
-Annoncer l'avancement en une ligne : `T3 ✅ terminée · plan <nom> : 3/6`.
+Annoncer l'avancement en une ligne : `T3 ✅ terminée · US-XXX : 3/6`.
 
 ✋ **Après chaque tâche** (sauf `-a`) : « Continuer avec T4 – <titre> ? » → « Continuer » / « Faire une pause ».
 
 **Garde-fou anti-secrets déclenché** : expliquer, corriger, puis reprendre l'étape en cours.
-**Conversation longue** : après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:spirc <plan>` : la commande reprend automatiquement grâce aux statuts du plan, aux rapports de revue et à la mémoire.
+**Conversation longue** : après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:spirc <US-XXX>` : la commande reprend automatiquement grâce aux statuts du plan, aux rapports de revue et à la mémoire.
 
 ## Fin
 
@@ -148,4 +149,4 @@ Présenter un récapitulatif :
 
 Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi.
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le MVP est terminé et pas encore en ligne (ne jamais pousser ni déployer sans accord), sinon `/pulse:spirc <plan>` pour continuer (ou `/pulse:spec` pour une nouvelle US), ou `/pulse:security` pour un audit complet.
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le MVP (toutes les US Indispensables) est terminé et pas encore en ligne (ne jamais pousser ni déployer sans accord), sinon `/pulse:spirc <US-XXX>` pour continuer, ou `/pulse:spirc <US-XXX suivante du parcours>` si ce plan est terminé (elle passera par la spec et le plan), ou `/pulse:security` pour un audit complet.

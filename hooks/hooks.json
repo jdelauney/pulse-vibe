@@ -1,5 +1,5 @@
 {
-  "description": "Pulse – garde-fou anti-secrets (bloque l'écriture d'une clé secrète dans le code et l'envoi de fichiers .env ou de clés dans Git), synchronisation de la mémoire projet à l'ouverture de chaque session, et régénération du guide de réalisation à chaque modification d'un plan de docs/plans/.",
+  "description": "Pulse – garde-fou anti-secrets (bloque l'écriture d'une clé secrète dans le code et l'envoi de fichiers .env ou de clés dans Git), synchronisation de la mémoire projet à l'ouverture de chaque session, et régénération du guide de réalisation à chaque modification d'un plan de aidd_docs/tasks/.",
   "hooks": {
     "SessionStart": [
       {

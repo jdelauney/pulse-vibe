@@ -23,7 +23,7 @@ Réf. : <US-03, ticket…>   (facultatif)
 - **Description** : en français, à l'impératif (« ajoute », « corrige »), en minuscules, sans point final, **72 caractères au plus** pour toute la première ligne. Elle dit ce que la personne de l'appli y gagne, pas le détail technique.
 - **`(<Tâche>)`** : le numéro de tâche du plan (`T3`). Sans tâche, omettre la parenthèse, ou mettre une zone courte du projet (`docs`, `memoire`).
 - **Corps** : seulement s'il apporte le **pourquoi** (une contrainte, un choix, un piège évité). Une ligne vide le sépare de la description.
-- **Réf.** : les US concernées (identifiants tels qu'écrits dans `docs/user-stories.md`), ou un ticket.
+- **Réf.** : les US concernées (identifiants `US-XXX` du référentiel `docs/user-stories.md`), ou un ticket.
 
 Types :
 
@@ -66,7 +66,7 @@ Nom : `<type>/<sujet-court>`, en minuscules, sans accent, mots séparés par des
 
 | Préfixe | Quand |
 |---|---|
-| `feat/` | Nouvelle fonctionnalité (souvent le nom du plan : `feat/<plan>`) |
+| `feat/` | Nouvelle fonctionnalité (souvent l'US du plan : `feat/us-003-<nom>`) |
 | `fix/` | Correction |
 | `docs/` | Documentation |
 | `refactor/` | Réorganisation |

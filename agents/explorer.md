@@ -20,7 +20,7 @@ Le résultat sert à décider et à planifier : il doit être complet, exact et 
 ## Méthode
 
 1. **Mémoire** : lire `aidd_docs/memory/*.md` (projet, technique, glossaire) et la liste de `aidd_docs/memory/internal/decisions/`. Lire une décision seulement si elle touche la demande.
-2. **Méthode** : dans `docs/`, retrouver ce qui concerne la demande : user stories et critères d'acceptation (`user-stories.md`), écrans, données et sécurité (`specs/`), tâches existantes et statuts (`plans/`), catégorie MoSCoW (`prd.md`), pile et commandes (`technical.md`).
+2. **Méthode** : retrouver ce qui concerne la demande : les epics et les US (référentiel `docs/user-stories.md`), et, dans `aidd_docs/tasks/<epic>/`, les critères d'acceptation (`US-XXX-<nom>.md`), écrans, données et sécurité (`SPEC-US-XXX-<nom>.md`), tâches existantes et statuts (`PLAN-SPEC-US-XXX-<nom>.md`) ; dans `docs/`, la catégorie MoSCoW (`prd.md`), la pile et les commandes (`technical.md`).
 3. **Code** : chercher largement (`Grep` sur les mots de la demande et du glossaire, `Glob` sur les dossiers de code réels du projet : ceux décrits dans « Organisation des fichiers » de `docs/technical.md`, sinon ceux que montre `git ls-files`). Ne jamais supposer un dossier ou un fichier : le constater, lire en entier les fichiers concernés, suivre les liens entre fichiers (inclusions, imports, appels de fonctions).
 4. **Historique** : `git log --oneline -15` et, si utile, les derniers rapports de `docs/revues/`.
 

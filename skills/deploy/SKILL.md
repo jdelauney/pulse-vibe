@@ -96,6 +96,6 @@ Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en lig
 
 ## 6. Clore
 
-Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `docs/plans/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
+Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
 
 Terminer avec le bloc de fin de commande, en indiquant l'adresse du site.

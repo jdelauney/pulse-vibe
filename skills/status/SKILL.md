@@ -16,8 +16,8 @@ Cette commande **ne modifie rien**. Elle lit et résume.
 
 ## Déroulé
 
-1. **Étapes de la méthode** : vérifier l'existence de `CLAUDE.md`, `docs/brief.md`, `docs/prd.md`, `docs/technical.md`, `docs/user-stories.md`, d'au moins une spec dans `docs/specs/` et d'au moins un plan dans `docs/plans/`. Vérifier aussi `docs/design.md` (facultatif) et, pour chaque spec, `docs/design/maquettes/<spec>/retenue/` (facultatif). Relever les specs sans plan et les US Indispensables ou Essentielles couvertes par aucune spec.
-2. **Tâches** : pour chaque plan de `docs/plans/`, compter et lister les tâches `[ ]`, `[~]`, `[x]`, par jalon.
+1. **Étapes de la méthode** : vérifier l'existence de `CLAUDE.md`, `docs/brief.md`, `docs/prd.md`, `docs/technical.md`, `docs/user-stories.md` (le référentiel), des fichiers d'US, d'au moins une spec et d'au moins un plan dans `aidd_docs/tasks/<epic>/`. Vérifier aussi `docs/design.md` (facultatif) et, pour chaque spec, `docs/design/maquettes/US-XXX-<nom>/retenue/` (facultatif). Relever, epic par epic, les specs sans plan et les US Indispensables ou Essentielles sans spec.
+2. **Tâches** : pour chaque plan (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`), compter et lister les tâches `[ ]`, `[~]`, `[x]` ; faire le total des US Indispensables (le MVP).
 3. **Git** : `git status --short` (nombre de fichiers modifiés non enregistrés), `git log --oneline -3`, `git remote -v`.
 4. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée.
 5. **Dernière relecture** : le rapport le plus récent dans `docs/revues/` (rapports de tâche ; les audits d'interface `ui-*` sont à part) et son verdict ; le dernier audit `docs/securite.md` s'il existe.
@@ -29,13 +29,13 @@ Cette commande **ne modifie rien**. Elle lit et résume.
 📍 Projet : <nom> (pile : <résumé de « Pile retenue » de docs/technical.md, ou « non choisie »>)
 
 Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ design (facultatif) · ⬜ technique · ⬜ user stories · ⬜ spec · ⬜ plan
-Specs    : <spec 1> (plan ✅) · <spec 2> (plan ⬜) · US sans spec : <identifiants>
+Epics    : <epic 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <epic 2> : US-004 (spec ⬜)
 
-Kanban – <plan>
+Kanban – US-XXX <titre>
   À faire  : T4 …, T5 … (n)
   En cours : T3 … 
   Terminé  : T1 …, T2 … (n)
-  Jalon MVP : 2/6 tâches terminées
+  MVP (US Indispensables) : 2/6 tâches terminées
 
 Git      : 3 fichiers modifiés non enregistrés · dernier commit « feat(T2): … »
 En ligne : https://… (ou « pas encore »)
@@ -49,11 +49,11 @@ Règles pour la prochaine étape conseillée, dans l'ordre :
 1. Document de méthode manquant → la commande qui le produit. Mémoire absente ou non branchée → `/pulse:memory creer`.
 2. Modifications non enregistrées d'une tâche `[~]` sans revue → `/pulse:review`.
 3. Tâche `[~]` relue → `/pulse:commit`.
-4. Jalon MVP terminé et site pas en ligne → `/pulse:deploy`.
+4. US Indispensables (MVP) terminées et site pas en ligne → `/pulse:deploy`.
 5. Commits non envoyés sur GitHub (si un dépôt distant existe et que `git status` indique « ahead ») → `/pulse:deploy`.
-6. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <spec>` (facultatif) puis `/pulse:plan <spec>`.
-7. Spec sans plan → `/pulse:plan <spec>`.
-8. Tâches restantes → `/pulse:implement <plan> <tâche suivante>` (ou `/pulse:spirc <plan>`).
-9. Sinon → `/pulse:spec <US suivante>` s'il reste des US sans spec.
+6. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <US-XXX>` (facultatif) puis `/pulse:plan <US-XXX>`.
+7. Spec sans plan → `/pulse:plan <US-XXX>`.
+8. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
+9. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec.
 
 Pour cette commande, ne pas ajouter le bloc de fin de commande habituel : le format ci-dessus le remplace.

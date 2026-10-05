@@ -13,9 +13,10 @@ Ce projet suit la **méthode Pulse** (plugin `pulse`). Les documents de référe
 | `docs/brief.md` | L'idée, racontée simplement |
 | `docs/prd.md` | Le besoin et le périmètre MVP |
 | `docs/technical.md` | La pile retenue, l'organisation des fichiers, les commandes du projet, les secrets, l'hébergement |
-| `docs/user-stories.md` | Le comportement attendu et les critères d'acceptation |
-| `docs/specs/` | Une spec par US ou par demande : écrans, données, règles, sécurité |
-| `docs/plans/` | Un plan par spec (même nom) : les tâches et leur statut (kanban) |
+| `docs/user-stories.md` | Le référentiel des user stories, découpées par epic, et le parcours utilisateur |
+| `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | Une user story : le comportement attendu et ses critères d'acceptation |
+| `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | La spec de cette US (une US = une spec) : écrans, données, règles, sécurité |
+| `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | Le plan de cette spec (une spec = un plan) : les tâches et leur statut (kanban) |
 
 `/pulse:init` (ou `/pulse:status`) indique à tout moment où en est le projet et la prochaine étape.
 
@@ -34,7 +35,7 @@ Ce projet suit la **méthode Pulse** (plugin `pulse`). Les documents de référe
 
 ## Action
 
-- **Une tâche du plan à la fois.** Ne codez rien qui ne soit pas dans un plan de `docs/plans/`. Une idée nouvelle va dans `docs/prd.md`, catégorie « En attente ».
+- **Une tâche du plan à la fois.** Ne codez rien qui ne soit pas dans un plan de `aidd_docs/tasks/`. Une idée nouvelle va dans `docs/prd.md`, catégorie « En attente ».
 - **Changements chirurgicaux** : le minimum qui répond à la tâche, en laissant le code plus propre qu'avant. Un problème sans rapport se signale en une ligne, il ne se corrige pas en passant.
 - **Ne devinez pas** une API, une option ou un comportement : lisez la documentation ou le code. Vos connaissances peuvent être dépassées.
 - **Pas de bibliothèque sans accord**, et seulement si elle existe sous ce nom exact (version fixée).

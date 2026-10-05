@@ -17,9 +17,8 @@ Voir « Hébergement et mise en ligne » dans `docs/technical.md`.
 | `docs/brief.md` | L'idée, racontée simplement |
 | `docs/prd.md` | Le besoin et le périmètre du MVP |
 | `docs/technical.md` | Les choix techniques et leurs raisons |
-| `docs/user-stories.md` | Les user stories et critères d'acceptation |
-| `docs/specs/` | Les spécifications (une par US ou par demande) |
-| `docs/plans/` | Les plans : les tâches et leur avancement |
+| `docs/user-stories.md` | Le référentiel des user stories, par epic |
+| `aidd_docs/tasks/<epic>/` | Pour chaque user story : son fichier (`US-XXX-…`), sa spécification (`SPEC-US-XXX-…`) et son plan, avec les tâches et leur avancement (`PLAN-SPEC-US-XXX-…`) |
 | `aidd_docs/memory/project.md` | La mémoire fonctionnelle durable du projet |
 | `aidd_docs/memory/technical.md` | Les choix techniques, contraintes et pièges à conserver |
 | `aidd_docs/memory/glossary.md` | Les mots du métier et leur définition commune |

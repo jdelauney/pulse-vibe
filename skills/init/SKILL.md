@@ -2,7 +2,7 @@
 description: Démarrer ou reprendre un projet Pulse - prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle
 argument-hint: "[nom du projet]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git commit *) Bash(git rev-parse *) Bash(git log *) Bash(git remote *) Bash(git branch *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git rm *) Bash(git commit *) Bash(git rev-parse *) Bash(git log *) Bash(git remote *) Bash(git branch *)
 ---
 
 # /pulse:init – Démarrer et se repérer
@@ -44,18 +44,18 @@ Règles de la boucle :
 
 **Projet existant** : du code est présent (fichiers source, manifeste de dépendances, configuration d'outils, dans n'importe quel langage) sans `CLAUDE.md` Pulse. La pile ne se demande pas : elle s'observe dans le code, avec `/pulse:tech`.
 
-**Avancement de la méthode** (cumulatif : un document plus avancé implique les précédents) : `docs/brief.md` → `docs/prd.md` → `docs/technical.md` → `docs/user-stories.md` → `docs/specs/` (au moins une spec) → `docs/plans/` (au moins un plan ; tâches `[ ]`, `[~]`, `[x]` par plan et par jalon ; une spec sans plan est une étape non faite) → `docs/revues/` (rapports de tâche ; les audits d'interface `ui-*` sont à part) → en ligne (section « Adresses » de `CLAUDE.md`, `git remote -v`, `git status` « ahead »).
+**Avancement de la méthode** (cumulatif : un document plus avancé implique les précédents) : `docs/brief.md` → `docs/prd.md` → `docs/technical.md` → `docs/user-stories.md` (le référentiel par epic) et les fichiers d'US de `aidd_docs/tasks/<epic>/` → au moins une spec (`SPEC-US-XXX-<nom>.md`) → au moins un plan (`PLAN-SPEC-US-XXX-<nom>.md` ; tâches `[ ]`, `[~]`, `[x]` par plan, et pour l'ensemble des US Indispensables, le MVP ; une spec sans plan est une étape non faite) → `docs/revues/` (rapports de tâche ; les audits d'interface `ui-*` sont à part) → en ligne (section « Adresses » de `CLAUDE.md`, `git remote -v`, `git status` « ahead »).
 
-**Santé** (seulement si le signal existe) : `docs/securite.md` absent alors qu'un jalon est terminé → `/pulse:security` ; erreurs signalées par les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) lors de la dernière session → `/pulse:auto-fix`.
+**Santé** (seulement si le signal existe) : `docs/securite.md` absent alors que le MVP (toutes les US Indispensables) est terminé → `/pulse:security` ; erreurs signalées par les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) lors de la dernière session → `/pulse:auto-fix`.
 
 ## 2. Décider (la première règle qui s'applique)
 
 1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent** → prévenir sans bloquer (il fait tourner le garde-fou anti-secrets de Pulse) : https://nodejs.org (LTS).
 2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Tant qu'une fondation manque, ne pas proposer les étapes de la méthode. Exception : dans un **projet neuf**, la pile technique non encore choisie ne bloque pas ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`).
-3. **La première étape de la méthode non faite** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` (facultatif : `/pulse:ui identite` avant, si `docs/design.md` n'existe pas) ; user stories → `/pulse:us` ; spec → `/pulse:spec <US>` (les US Indispensables pour le premier MVP) ; spec sans plan → `/pulse:plan <spec>`.
-4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <plan>` (ou `/pulse:implement <plan>`) ; jalon MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
+3. **La première étape de la méthode non faite** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` (facultatif : `/pulse:ui identite` avant, si `docs/design.md` n'existe pas) ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
+4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <US-XXX>` (ou `/pulse:implement <US-XXX>`), les US Indispensables d'abord ; plan terminé et US Indispensables restantes → `/pulse:spec <US-XXX suivante du parcours>` ; MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
 5. **Un signal de santé.**
-6. **Rien à faire** : proposer `/pulse:spec <US suivante>` (US Essentielles pas encore spécifiées), `/pulse:spirc <plan> "une demande"`, `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
+6. **Rien à faire** : proposer `/pulse:spec <US-XXX suivante>` (US Essentielles pas encore spécifiées), `/pulse:spirc <US-XXX> "une demande"`, `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
 
 ## 3. Montrer l'écran
 
@@ -92,8 +92,9 @@ Puis demander (AskUserQuestion) : l'action recommandée en premier avec « (Reco
 
 ```
 CLAUDE.md        → les règles du projet, lues par l'IA à chaque session
-docs/            → les documents de la méthode (brief, PRD, choix techniques, user stories, spec, plan)
-aidd_docs/       → la mémoire du projet (choix, glossaire, décisions), relue par l'IA à chaque session
+docs/            → les documents de la méthode (brief, PRD, choix techniques, référentiel des user stories)
+aidd_docs/       → la mémoire du projet (choix, glossaire, décisions), relue par l'IA à chaque session,
+                   et tasks/ : un dossier par epic, avec chaque user story, sa spec et son plan
 README.md        → la présentation du projet
 .gitignore       → la liste de ce que Git ne doit jamais enregistrer (dont vos secrets)
 .env.example     → le modèle des clés secrètes (sans les valeurs)
@@ -112,7 +113,13 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 - Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
 - Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
-- `docs/spec.md` ou `docs/plan.md` présents (projet créé avant Pulse 0.6) → avec l'accord de la personne, les déplacer en `docs/specs/mvp.md` et `docs/plans/mvp.md` (`git mv` si le dossier est suivi par Git), corriger le chemin de la spec dans l'en-tête du plan, puis lancer `pulse-aidd guide`. Les numéros de tâche et les rapports de `docs/revues/` restent valables.
+- **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **sans rien perdre** :
+  1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.
+  2. Garder les identifiants d'US s'ils suivent déjà le format `US-001` ; sinon, proposer une correspondance (ancien → `US-XXX`) et la faire valider. La noter dans le journal de chaque plan concerné.
+  3. Écrire un fichier `US-XXX-<nom>.md` par US détaillée (contenu repris tel quel, au format du modèle d'US), puis réécrire `docs/user-stories.md` en référentiel (modèle du référentiel).
+  4. Découper chaque spec et chaque plan par US : `SPEC-US-XXX-<nom>.md` reprend les parties de la spec qui concernent l'US (une partie commune à plusieurs US va dans la spec de la première, et les autres y renvoient) ; `PLAN-SPEC-US-XXX-<nom>.md` reprend ses tâches **avec leurs numéros, leurs statuts et leur journal**, sous `## Tâches`, avec la priorité de l'US dans la vue d'ensemble. Une tâche sans US (mise en place, mise en ligne) va dans le plan de la première, ou de la dernière, US Indispensable du parcours.
+  5. Supprimer les anciens fichiers (`git rm`, ou `git mv` quand un fichier passe entier), déplacer `docs/design/maquettes/<ancien nom>/` vers `docs/design/maquettes/US-XXX-<nom>/` si la maquette ne concerne qu'une US, lancer `pulse-aidd guide`, et montrer le résultat. Les numéros de tâche et les rapports de `docs/revues/` restent valables.
+  Faire un commit `docs: réorganisation des user stories, specs et plans par epic` une fois la personne d'accord.
 
 ### Lancer une étape de la méthode
 
@@ -125,8 +132,9 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 En 8 lignes maximum, le chemin complet, l'étape en cours entre crochets :
 
 ```
-/pulse:init → /pulse:brainstorm → /pulse:prd → (/pulse:ui identite) → /pulse:tech → /pulse:us → /pulse:spec <US> → (/pulse:ui maquettes <spec>) → /pulse:plan <spec>
-   → pour chaque tâche : /pulse:implement <plan> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <plan>)
+/pulse:init → /pulse:brainstorm → /pulse:prd → (/pulse:ui identite) → /pulse:tech → /pulse:us (epics et US)
+   → pour chaque US : /pulse:spec <US-XXX> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
+   → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <US-XXX>)
    → /pulse:deploy   (les étapes entre parenthèses sont facultatives)
 À tout moment : /pulse:init (où j'en suis), /pulse:guide (carnet de route), /pulse:fix (une erreur), /pulse:refine (changer le plan),
                /pulse:security, /pulse:memory, /pulse:auto-fix, /pulse:explain, /pulse:learn, /pulse:pr, /pulse:ui (audit, polish)

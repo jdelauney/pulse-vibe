@@ -22,7 +22,7 @@ Titre de la demande (hors de ce texte) : court et parlant, même règles que la 
 
 ## Tâches et user stories
 
-<!-- Les tâches du plan concernées (Tn – titre, plan docs/plans/<nom>.md) et les US (identifiants de docs/user-stories.md). « Aucune » sinon. -->
+<!-- Les tâches du plan concernées (Tn – titre, plan aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md) et les US (identifiants US-XXX). « Aucune » sinon. -->
 
 ## Étapes pour tester
 

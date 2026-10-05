@@ -16,7 +16,7 @@
 
 - Une tâche du plan à la fois.
 - Toute nouvelle idée passe d'abord par `docs/prd.md`.
-- Le comportement attendu est défini par `docs/user-stories.md`.
+- Le comportement attendu est défini par les user stories : le référentiel `docs/user-stories.md` et un fichier par US dans `aidd_docs/tasks/<epic>/`.
 - Les mots du métier sont définis dans `glossary.md`.
 
 ## Décisions importantes

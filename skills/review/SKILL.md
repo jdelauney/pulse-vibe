@@ -1,6 +1,6 @@
 ---
 description: Relecture indépendante d'une tâche (critères d'acceptation et sécurité), test manuel, puis corrections
-argument-hint: "[T3 | <plan> | tout]"
+argument-hint: "[T3 | <US-XXX> | tout]"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Bash(git log *)
 ---
@@ -21,27 +21,27 @@ Lancer une relecture indépendante du code, faire tester la personne elle-même,
 
 ## Prérequis
 
-- Au moins un plan dans `docs/plans/` et `docs/user-stories.md` sont nécessaires.
-- Vérifier qu'il y a quelque chose à relire : des modifications (`git status`, `git diff`) ou une tâche `[~]`. Sinon, l'indiquer et proposer `/pulse:implement <plan>`.
+- Au moins un plan dans `aidd_docs/tasks/` et `docs/user-stories.md` sont nécessaires.
+- Vérifier qu'il y a quelque chose à relire : des modifications (`git status`, `git diff`) ou une tâche `[~]`. Sinon, l'indiquer et proposer `/pulse:implement <US-XXX>`.
 
 ## Déroulé
 
 ### 1. Identifier la tâche
 
-- `T3` : cette tâche, cherchée dans tous les plans de `docs/plans/` (les numéros sont uniques).
-- **un plan** : toutes ses tâches `[~]`, relues une par une (une délégation et un rapport par tâche, délégations lancées en parallèle), puis un test manuel par tâche.
+- `T3` : cette tâche, cherchée dans tous les plans de `aidd_docs/tasks/` (les numéros sont uniques).
+- **une US** (`US-003`, son plan) : toutes ses tâches `[~]`, relues une par une (une délégation et un rapport par tâche, délégations lancées en parallèle), puis un test manuel par tâche.
 - `tout` : la relecture porte sur l'ensemble du projet par rapport à toutes les US terminées.
 - vide : la tâche `[~]` ; s'il y en a plusieurs, ou aucune, demander.
 
-Le plan qui contient la tâche et la spec du même nom (`docs/specs/<nom>.md`) sont les documents de référence de la relecture.
+Le plan qui contient la tâche, la spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) sont les documents de référence de la relecture.
 
 ### 2. Lancer la relecture indépendante
 
 Utiliser l'outil Agent avec le sous-agent **`pulse:reviewer`**. Dans le message de délégation, indiquer :
 - la tâche (identifiant et titre) et la racine du projet ;
-- les documents à lire : le plan et la spec de la tâche (`docs/plans/<nom>.md`, `docs/specs/<nom>.md`), `docs/user-stories.md` ;
+- les documents à lire : le plan, la spec et l'US de la tâche (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`), `docs/user-stories.md` ;
 - la **checklist sécurité complète**, recopiée dans le message (le sous-agent n'a pas accès aux fichiers du plugin) ;
-- si elles existent, le chemin de `docs/design.md` et celui de la maquette citée par la spec ou la tâche (`docs/design/maquettes/<nom>/retenue/`) ;
+- si elles existent, le chemin de `docs/design.md` et celui de la maquette citée par la spec ou la tâche (`docs/design/maquettes/US-XXX-<nom>/retenue/`) ;
 - le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »), et la consigne de charger les références de qualité avec `pulse-aidd qualite`.
 
 Si le sous-agent n'est pas disponible, faire la relecture en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent reviewer`, sans modifier de fichier pendant la relecture.

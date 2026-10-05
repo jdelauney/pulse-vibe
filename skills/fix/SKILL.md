@@ -19,7 +19,7 @@ Problème signalé : `$ARGUMENTS`
 
 Trouver la **vraie cause** d'un problème précis, la corriger avec le plus petit changement possible, le **prouver**, puis expliquer à la personne ce qui s'est passé et comment l'éviter. Phrase à dire : « Une erreur est une étape normale. On va d'abord comprendre pourquoi, avant de toucher au code. »
 
-Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-fix`. Pour un comportement **nouveau** (ce n'est pas une erreur, c'est une demande) : le noter dans `docs/prd.md` (« En attente ») ou proposer `/pulse:spirc <plan> "<demande>"`.
+Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-fix`. Pour un comportement **nouveau** (ce n'est pas une erreur, c'est une demande) : le noter dans `docs/prd.md` (« En attente ») ou proposer `/pulse:spirc <US-XXX> "<demande>"`.
 
 ## 1. Comprendre le problème
 

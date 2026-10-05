@@ -64,14 +64,14 @@ Liste **fermée extensible** : on n'invente pas un suffixe au fil de l'eau. Un p
 | `.component` | Composant d'interface, si le projet préfère l'indiquer | `ui/` | `item-card.component.tsx` |
 | `.test` | Test du fichier de même nom | à côté du fichier testé | `item.rules.test.ts` |
 
-`.component` est facultatif : un projet choisit `item-card.tsx` **ou** `item-card.component.tsx`, et s'y tient partout. `.spec` n'est pas utilisé pour les tests, pour ne pas le confondre avec les specs de `docs/specs/`.
+`.component` est facultatif : un projet choisit `item-card.tsx` **ou** `item-card.component.tsx`, et s'y tient partout. `.spec` n'est pas utilisé pour les tests, pour ne pas le confondre avec les specs de la méthode (`SPEC-US-XXX-<nom>.md`).
 
 ## 4. La racine du dépôt
 
 ```
 .
-├── docs/            documents du projet (brief, PRD, specs, plans) — privé, jamais publié
-├── aidd_docs/       mémoire du projet — privé, jamais publié
+├── docs/            documents du projet (brief, PRD, référentiel des user stories) — privé, jamais publié
+├── aidd_docs/       mémoire du projet, et tasks/<epic>/ : US, specs et plans — privé, jamais publié
 ├── src/             tout le code de l'application (voir §5)
 ├── tests/
 │   └── e2e/         tests de bout en bout (parcours complets)

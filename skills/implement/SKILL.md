@@ -1,6 +1,6 @@
 ---
 description: Réaliser une tâche d'un plan et l'expliquer ; sans tâche, boucler sur tout le plan (réaliser, relire, corriger, commiter, tâche suivante)
-argument-hint: "<plan> [T3] (sans tâche : tout le plan, une tâche après l'autre)"
+argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan, une tâche après l'autre)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *)
 ---
@@ -13,17 +13,17 @@ allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git dif
 
 Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
 
-Arguments reçus : `$ARGUMENTS` (le plan, puis la tâche, facultative)
+Arguments reçus : `$ARGUMENTS` (l'US dont on réalise le plan, puis la tâche, facultative)
 
 ## Objectif
 
-- **Avec une tâche** : réaliser **cette tâche** d'un plan de `docs/plans/`, expliquer ce qui a été fait et comment le tester. La relecture et le commit se font ensuite avec `/pulse:review` et `/pulse:commit`.
+- **Avec une tâche** : réaliser **cette tâche** d'un plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), expliquer ce qui a été fait et comment le tester. La relecture et le commit se font ensuite avec `/pulse:review` et `/pulse:commit`.
 - **Sans tâche** : réaliser **tout le plan**, en bouclant sur chaque tâche restante, dans l'ordre : réaliser → relire → corriger → commiter → tâche suivante (§ 6). Chaque tâche a son propre commit.
 
 ## Prérequis
 
-- **Le plan** : celui désigné en premier argument, dans `docs/plans/` (règles « Specs et plans » ci-dessus). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
-- La spec du même nom (`docs/specs/<nom>.md`), `docs/user-stories.md` et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : ne rien installer ni coder, proposer `/pulse:tech`.
+- **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
+- La spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : ne rien installer ni coder, proposer `/pulse:tech`.
 - Si des modifications non enregistrées concernent **une autre tâche** (`git status`), proposer d'abord `/pulse:review` puis `/pulse:commit` pour celle-ci. Ne pas mélanger deux tâches dans un même commit.
 - Mode « tout le plan » : le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.
 
@@ -45,7 +45,7 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 
 ### 3. Réaliser
 
-- Relire la tâche, les user stories et critères qu'elle couvre, et les parties utiles de la spec du plan.
+- Relire la tâche, les critères de l'US qu'elle couvre (fichier `US-XXX-<nom>.md`), et les parties utiles de la spec du plan.
 - **Ne rien supposer du code** : créer ou modifier les fichiers listés par la tâche, à l'emplacement prévu par l'organisation de `docs/technical.md` ; avant d'importer un module, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer dans cette tâche et le signaler. Dans un projet existant, réutiliser ce qui existe au lieu de le dupliquer.
 - Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la spec cite une maquette, l'ouvrir et la **traduire** dans la pile retenue : ne pas copier son HTML tel quel.
 - Coder **uniquement** ce que demande la tâche. Une idée en plus se note dans `docs/prd.md` (« En attente »), elle ne se code pas.
@@ -82,9 +82,9 @@ Pour chaque tâche, dans l'ordre du plan :
 2. **Relire** : lancer `pulse-aidd etape review` et appliquer sa section « Déroulé » à l'identique pour cette tâche, **sans** son bloc de fin de commande : relecture indépendante par le sous-agent `pulse:reviewer`, rapport `docs/revues/<Tâche>-<AAAA-MM-JJ>.md`, présentation du verdict, **test manuel par la personne**.
 3. **Corriger** : appliquer l'étape « Corriger » de la relecture (⛔, ⚠️, test non concluant), avec la relecture de contrôle. **Deux cycles au maximum** : si un point bloquant persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et conseiller de demander de l'aide à une personne qui sait programmer.
 4. **Commiter** : lancer `pulse-aidd etape commit` et appliquer sa section « Déroulé » à l'identique, **sans** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : ne pas redemander de relecture.
-5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · plan <nom> : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <plan>` reprendra à la tâche suivante.
+5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 
-S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <plan>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` qui a déjà un rapport reprend à la correction ou au commit).
+S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` qui a déjà un rapport reprend à la correction ou au commit).
 
 À la fin, présenter un récapitulatif :
 
@@ -94,4 +94,4 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 | T3 – … | ✅ Validé | ✅ | abc1234 |
 ```
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version n'est pas en ligne, sinon `/pulse:implement <plan>` pour reprendre.
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version n'est pas en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre.

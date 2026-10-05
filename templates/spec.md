@@ -1,15 +1,15 @@
-# Spécification – {{NOM_DU_PROJET}} – {{titre : US couvertes ou demande}}
+# Spécification – {{NOM_DU_PROJET}} – US-{{XXX}} {{Titre court}}
 
-> Produit par `/pulse:spec` le {{DATE}} à partir de `docs/prd.md` et `docs/user-stories.md` ({{ID des US}} ou « demande : … »).
-> Plan associé : `docs/plans/{{NOM}}.md`.
+> Produit par `/pulse:spec` le {{DATE}} à partir de `US-{{XXX}}-{{nom}}.md` (même dossier) et de `docs/prd.md`.
+> Une spec par user story. Epic : {{Titre de l'epic}} (`aidd_docs/tasks/{{epic}}/`) · Plan associé : `PLAN-SPEC-US-{{XXX}}-{{nom}}.md` (même dossier).
 > La spec décrit **comment** l'outil sera construit. Elle reste lisible par une personne non technique.
 
 ## 1. Résumé
 
 - **Ce que fait l'outil** : {{une phrase}}
-- **User stories couvertes** : {{ID des US, ou la demande d'origine en une phrase}}
+- **User story** : US-{{XXX}} – {{titre}} (et, si elle vient d'une demande, la demande d'origine en une phrase)
 - **Pile** : voir « Pile retenue » dans `docs/technical.md`
-- **S'appuie sur** : {{specs déjà écrites dont on réutilise écrans, données ou règles (`docs/specs/<nom>.md`), ou « aucune »}}
+- **S'appuie sur** : {{specs déjà écrites dont on réutilise écrans, données ou règles (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`), ou « aucune »}}
 
 ## 2. Périmètre
 
@@ -44,7 +44,7 @@ flowchart LR
     B -->|{{action}}| C[{{Résultat visible}}]
 ```
 
-Maquette : {{docs/design/maquettes/<nom>/retenue/ | aucune}} · Design : {{docs/design.md | aucun}}
+Maquette : {{docs/design/maquettes/US-XXX-<nom>/retenue/ | aucune}} · Design : {{docs/design.md | aucun}}
 
 ## 5. Données
 
@@ -101,7 +101,7 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 
 | Ce qu'on vérifie | Comment | US / critère |
 |---|---|---|
-| {{chaque critère d'acceptation des US couvertes}} | à la main | {{ID}} #1 |
+| {{chaque critère d'acceptation de l'US}} | à la main | US-{{XXX}} #1 |
 | Un utilisateur non autorisé ne voit pas les données d'un autre | à la main, avec deux comptes (sans objet si une seule personne) | |
 | Un formulaire mal rempli affiche un message clair | à la main | |
 | L'écran reste utilisable sur téléphone | à la main | |

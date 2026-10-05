@@ -23,25 +23,28 @@ Dans le projet de la personne :
 | `docs/prd.md` | `/pulse:prd` | Le besoin produit, le périmètre MVP (MoSCoW) |
 | `docs/technical.md` | `/pulse:tech` | La pile retenue et ses raisons, l'organisation des fichiers, les commandes du projet, les données et le contrôle d'accès, les secrets, l'hébergement. Source unique pour tout ce qui dépend de la technologie |
 | `docs/design.md` | `/pulse:ui identite` | L'identité visuelle : registre, scène d'usage, personnalité, couleurs, typographie, composants et leurs états. Facultatif ; s'il existe, les specs, le plan et le code s'y conforment |
-| `docs/design/` | `/pulse:ui` | Les planches d'identité et les maquettes d'écrans (`maquettes/<spec>/retenue/` = la maquette choisie). Référence visuelle, à traduire dans la pile retenue |
-| `docs/user-stories.md` | `/pulse:us` | Les user stories et leurs critères d'acceptation |
-| `docs/specs/<nom>.md` | `/pulse:spec` | Une spécification par user story (ou groupe d'US) ou par demande : écrans, données, choix techniques, sécurité |
-| `docs/plans/<nom>.md` | `/pulse:plan` | Le plan d'une spec (même `<nom>`) : les tâches ordonnées, avec leur statut (kanban) |
+| `docs/design/` | `/pulse:ui` | Les planches d'identité et les maquettes d'écrans (`maquettes/US-XXX-<nom>/retenue/` = la maquette choisie pour une US). Référence visuelle, à traduire dans la pile retenue |
+| `docs/user-stories.md` | `/pulse:us` | Le référentiel des user stories : les epics, la vue d'ensemble (priorité, taille, dépendances) et le parcours utilisateur |
+| `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | `/pulse:us` | Une user story : règles métier, exemple, critères d'acceptation |
+| `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | `/pulse:spec` | La spécification d'une user story (une US = une spec) : écrans, données, choix techniques, sécurité |
+| `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | `/pulse:plan` | Le plan d'une spec (une spec = un plan) : les tâches ordonnées, avec leur statut (kanban) |
 | `docs/revues/` | `/pulse:review` | Un rapport de relecture par tâche ; les audits d'interface `ui-<date>.md` (`/pulse:ui audit`) |
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
 | `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
-| `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par plan. Ne pas le modifier à la main |
+| `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Ne pas le modifier à la main |
 | `aidd_docs/memory/project.md`, `technical.md` | `/pulse:init`, `/pulse:memory` | La mémoire durable : vision, choix, conventions, pièges |
 | `aidd_docs/memory/glossary.md` | `/pulse:brainstorm`, `/pulse:memory` | Les mots du métier et leur définition commune |
 | `aidd_docs/memory/internal/decisions/` | `/pulse:brainstorm`, `/pulse:tech`, `/pulse:memory` | Les décisions difficiles à défaire (lues à la demande) |
 
-**Specs et plans** :
-- **Nom** : `/pulse:spec` le construit à partir du sujet réel du projet (les identifiants des US **tels qu'ils sont écrits** dans `docs/user-stories.md`, quel que soit leur format, suivis d'un titre court ; ou le résumé de la demande), en minuscules, sans accent, mots séparés par des tirets, 40 caractères au plus, puis le **fait valider** par la personne. Une spec et son plan portent **le même nom**. Aucun nom n'est jamais supposé : il se lit dans `docs/specs/` et `docs/plans/`.
-- **Désigner un plan ou une spec** en argument : par son nom, son chemin (`docs/plans/<nom>.md`) ou un début de nom sans ambiguïté.
-- **Identifiants d'US** : ceux de `docs/user-stories.md`, dans le format de ce fichier. Une référence donnée par la personne se compare sans tenir compte de la casse ni des zéros de tête ; en cas de doute, lister les US proches et demander.
+**User stories, specs et plans** :
+- **Rangement** : une US, sa spec et son plan vivent ensemble dans le dossier de leur epic, `aidd_docs/tasks/<epic>/` : `US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `PLAN-SPEC-US-XXX-<nom>.md`. **Une US = une spec = un plan**, et les trois fichiers portent le même `US-XXX-<nom>`. `docs/user-stories.md` est le référentiel qui les recense, epic par epic.
+- **Identifiant d'US** : `US-` suivi de 3 chiffres (`US-001`), unique dans tout le projet, jamais réutilisé ; une nouvelle US prend le plus grand numéro existant plus un. Une référence donnée par la personne se compare sans tenir compte de la casse ni des zéros de tête (`us-1` = `US-001`) ; en cas de doute, lister les US proches et demander.
+- **`<epic>`** et **`<nom>`** : minuscules, sans accent, mots séparés par des tirets ; `<epic>` (30 caractères au plus) vient du titre de l'epic, `<nom>` (40 caractères au plus) du titre de l'US. `/pulse:us` les propose et les **fait valider** par la personne. Aucun nom n'est jamais supposé : il se lit dans `docs/user-stories.md` et dans `aidd_docs/tasks/`.
+- **Désigner une US, une spec ou un plan** en argument : par l'identifiant de l'US (`US-003`), par le nom du fichier ou son chemin, ou par un début de nom sans ambiguïté. Les fichiers se retrouvent avec le motif `aidd_docs/tasks/*/PLAN-SPEC-US-003-*.md` (idem `SPEC-US-…`, `US-…`).
 - **Argument absent ou introuvable** : lister les fichiers existants et demander lequel traiter (AskUserQuestion, le plus récent ou celui qui a une tâche `[~]` en premier, avec « (Recommandé) »). Ne jamais choisir à la place de la personne, même s'il n'y en a qu'un.
-- **Numéros de tâche uniques dans tout le projet** : un nouveau plan reprend la numérotation après le plus grand `Tn` de `docs/plans/` (T1 pour le premier plan ; Tn+1 si le plus grand numéro existant est Tn). Ainsi un numéro de tâche désigne une seule tâche, dans les commits (`feat(Tn): …`) comme dans `docs/revues/`.
-- **Ancien projet** (`docs/spec.md` ou `docs/plan.md` à la racine de `docs/`) : proposer `/pulse:init`, qui les déplace en `docs/specs/mvp.md` et `docs/plans/mvp.md`.
+- **Numéros de tâche uniques dans tout le projet** : un nouveau plan reprend la numérotation après le plus grand `Tn` de tous les plans de `aidd_docs/tasks/` (T1 pour le premier plan ; Tn+1 si le plus grand numéro existant est Tn). Ainsi un numéro de tâche désigne une seule tâche, dans les commits (`feat(Tn): …`) comme dans `docs/revues/`.
+- **Le MVP** : ce sont les US **Indispensables**. Il est terminé quand les plans de toutes ces US sont terminés ; la tâche « Mettre en ligne le MVP » se trouve dans le plan de la dernière US Indispensable du parcours (`docs/user-stories.md`).
+- **Ancien projet** (`docs/specs/`, `docs/plans/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
 
 Les modèles de ces fichiers sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
 La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite` (elles sont aussi incluses dans `pulse-aidd contexte implement`).
@@ -51,7 +54,7 @@ La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `p
 
 ## 3. Garde-fous de la méthode
 
-1. **Vérifiez les prérequis avant d'agir.** Chaque commande indique les fichiers dont elle a besoin. S'il en manque un, dites-le simplement et proposez la commande qui le produit (« Je n'ai pas trouvé de spec. Voulez-vous lancer `/pulse:spec` d'abord ? »). Ne devinez pas à la place de la personne.
+1. **Vérifiez les prérequis avant d'agir.** Chaque commande indique les fichiers dont elle a besoin. S'il en manque un, dites-le simplement et proposez la commande qui le produit (« Je n'ai pas trouvé de spec pour US-003. Voulez-vous lancer `/pulse:spec US-003` d'abord ? »). Ne devinez pas à la place de la personne.
 2. **Lisez l'existant avant d'écrire.** Si le fichier de sortie existe déjà, ne l'écrasez pas : proposez de le compléter ou de le remplacer, et demandez.
 3. **Une étape à la fois.** Ne faites pas le travail de l'étape suivante « pendant que vous y êtes ».
 4. **La personne décide.** Pour toute question de besoin, de priorité ou de périmètre, posez la question au lieu de choisir. Pour les questions purement techniques, choisissez l'option déjà en place dans le projet, sinon la plus simple compatible avec « Pile retenue » de `docs/technical.md`, et expliquez-la en une phrase.
@@ -83,12 +86,12 @@ Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire av
 
 ```
 /pulse:init → /pulse:brainstorm → /pulse:prd → (/pulse:ui identite) → /pulse:tech → /pulse:us
-          → /pulse:spec <US ou demande> → (/pulse:ui maquettes <spec>) → /pulse:plan <spec>
-          → /pulse:implement <plan> [tâche] → /pulse:review → (correction) → /pulse:commit
+          → /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
+          → /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
           → /pulse:deploy
 ```
 
-Les étapes entre parenthèses sont facultatives. Pour travailler sur une branche : `/pulse:pr branche <plan>` avant `/pulse:implement`, puis `/pulse:pr` pour ouvrir la demande de fusion.
+Les étapes entre parenthèses sont facultatives. Pour travailler sur une branche : `/pulse:pr branche <US-XXX>` avant `/pulse:implement`, puis `/pulse:pr` pour ouvrir la demande de fusion.
 
-`/pulse:spirc <plan> [tâche | "demande"]` orchestre Implémentation, Revue et Commit d'un plan avec des agents indépendants (et crée la spec et le plan s'ils manquent) ; il accepte aussi une demande libre (« ajouter un filtre… »), ajoutée au plan.
+`/pulse:spirc <US-XXX> [tâche | "demande"]` orchestre Implémentation, Revue et Commit du plan d'une US avec des agents indépendants (et crée la spec et le plan s'ils manquent) ; il accepte aussi une demande libre (« ajouter un filtre… »), ajoutée au plan.
 `/pulse:init` (où en suis-je ?), `/pulse:guide`, `/pulse:fix`, `/pulse:refine`, `/pulse:status`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:memory`, `/pulse:auto-fix` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.

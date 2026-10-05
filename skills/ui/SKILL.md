@@ -1,6 +1,6 @@
 ---
-description: Définir et soigner l'interface - identité visuelle (docs/design.md), maquettes d'écrans à comparer pour une spec, audit et finitions d'une interface existante
-argument-hint: "[identite | maquettes <spec> | audit [cible] | polish [cible]]"
+description: Définir et soigner l'interface - identité visuelle (docs/design.md), maquettes d'écrans à comparer pour la spec d'une US, audit et finitions d'une interface existante
+argument-hint: "[identite | maquettes <US-XXX> | audit [cible] | polish [cible]]"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *) Bash(start *) Bash(open *) Bash(xdg-open *) Read Glob Grep
 ---
@@ -26,14 +26,14 @@ Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses
 | Action | Quand | Section |
 |---|---|---|
 | `identite` | Pas encore d'identité visuelle, ou la revoir | « identite » |
-| `maquettes <spec>` | Une spec décrit des écrans : en voir plusieurs versions et choisir | « maquettes » |
+| `maquettes <US-XXX>` | La spec d'une US décrit des écrans : en voir plusieurs versions et choisir | « maquettes » |
 | `audit [cible]` | Une interface existe : relever ce qui cloche, sans rien modifier | « audit » |
 | `polish [cible]` | Appliquer les corrections visuelles et de texte d'un audit | « polish » |
 | (vide) | Ne pas savoir par où commencer | « Sans argument » |
 
 Les maquettes HTML sont une **référence visuelle**, indépendante de la pile : le code les traduit ensuite dans la technologie de `docs/technical.md`. `/pulse:ui` ne modifie jamais le code, sauf l'action `polish`.
 
-**Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom de la spec tel qu'il existe dans `docs/specs/`, jamais supposé. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
+**Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe dans `aidd_docs/tasks/<epic>/`, jamais supposé. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
 
 **Lancer les agents de génération** (`identite` et `maquettes`) : lancer **en parallèle** un sous-agent `pulse:designer` par variante (plusieurs appels Agent dans le même message). Message de délégation : type, thèse, axes de différence, dossier de sortie, écrans à couvrir, chemins de `docs/design.md` (ou direction provisoire), de `docs/prd.md` et `docs/brief.md` (s'ils existent), de la spec et de `docs/user-stories.md` (maquettes ; s'ils existent) et de `aidd_docs/memory/glossary.md`. Si les sous-agents ne sont pas disponibles, lancer `pulse-aidd agent designer`, lire ses consignes et produire les variantes soi-même, une par une. Chaque agent rend 3 lignes (Thèse / Ce qui la distingue / Fichiers) : les garder pour la comparaison.
 
@@ -41,10 +41,10 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
 
 ## Sans argument
 
-1. Lire `docs/`, `docs/design.md`, `docs/specs/`, `docs/design/maquettes/`. Chercher du code d'interface à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon dans le code existant (Glob, Grep).
+1. Lire `docs/`, `docs/design.md`, les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/design/maquettes/`. Chercher du code d'interface à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon dans le code existant (Glob, Grep).
 2. Recommander une action (AskUserQuestion, la recommandée en premier) :
    - pas de `docs/design.md` → `identite` ;
-   - une spec avec des écrans et sans dossier `docs/design/maquettes/<spec>/` → `maquettes <cette spec>` ;
+   - une spec avec des écrans et sans dossier `docs/design/maquettes/<spec>/` → `maquettes <US-XXX de cette spec>` ;
    - du code d'interface → `audit`.
 3. Ne rien lancer sans la réponse. Puis suivre la section de l'action choisie.
 
@@ -76,19 +76,19 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
    - Montrer un résumé en 5 lignes et demander « Valider » / « Modifier quelque chose ».
    - Proposer `/pulse:memory retenir` pour le registre et la stratégie de couleur.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec`, ou `/pulse:ui maquettes <spec>` si une spec avec des écrans existe déjà.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XXX>`, ou `/pulse:ui maquettes <US-XXX>` si une spec avec des écrans existe déjà.
 
 ## maquettes
 
 ### Prérequis
 
-- La spec désignée existe dans `docs/specs/`. Argument absent ou introuvable : lister les specs et demander (règle commune).
+- La spec de l'US désignée existe (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`). Argument absent ou introuvable : lister les specs et demander (règle commune).
 - `docs/design.md` est fortement conseillé. S'il manque, demander : « Définir l'identité d'abord (Recommandé) » / « Continuer avec une direction provisoire ». Avec une direction provisoire, la décrire dans le message de délégation et le signaler dans chaque `note.md`.
 
 ### Déroulé
 
 1. **Écrans.** Lire la section « Écrans » de la spec. Faire choisir les écrans à maquetter (AskUserQuestion multiSelect, le parcours principal recommandé), **3 écrans au plus** par passage. Si `docs/design/maquettes/<spec>/` existe déjà : « Compléter avec d'autres écrans » / « Refaire » / « Garder ».
-   - « Garder » termine la commande : bloc de fin, prochaine étape `/pulse:plan <spec>`.
+   - « Garder » termine la commande : bloc de fin, prochaine étape `/pulse:plan <US-XXX>`.
    - « Refaire » : déplacer d'abord `retenue/` dans `alternatives/retenue-<AAAA-MM-JJ>/`.
    - « Compléter » : ajouter les nouveaux écrans dans `retenue/` sous les noms `desktop-<k>.html` et `mobile-<k>.html` (k = 2, 3…) ; le `note.md` de `retenue/` indique quels écrans chaque fichier couvre.
 2. **Plan des variantes.** N variantes : 3 par défaut, 2 à 4 si la personne le demande. Chacune a une thèse et une différence d'organisation ou d'interaction (navigation, ordre des informations, mode de saisie, densité). Montrer le plan en 3 lignes avant de générer.
@@ -102,7 +102,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec`, ou `
    - Avec l'accord de la personne, ajouter à la section « Écrans » de la spec : « Maquette : `docs/design/maquettes/<spec>/retenue/` ».
    - Ne pas faire de commit.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <spec>`.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XXX>`.
 
 ## audit
 
