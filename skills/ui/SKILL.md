@@ -110,14 +110,14 @@ Cible : un écran, un fichier, un dossier, ou toute l'interface (vide = toute l'
 
 1. **Lancer l'audit.** Expliquer en une phrase qu'il se fait en lecture seule. Lancer le sous-agent `pulse:ui-critic` ; s'il n'est pas disponible, lancer `pulse-aidd agent ui-critic` et appliquer ses consignes soi-même, sans modifier de fichier. Lui indiquer : la cible, le chemin de `docs/design.md` (ou « absent »), la ou les maquettes retenues des specs dont relève la cible (`docs/design/maquettes/<spec>/retenue/`), l'emplacement du code d'interface d'après « Organisation des fichiers », et les trois références.
 2. **Contenu attendu.** Pour 5 rubriques (fidélité à `docs/design.md` et à la maquette ; anti-patterns ; états manquants ; accessibilité : contraste, focus visible, libellés, taille des cibles ; textes d'interface) : des constats classés 🔴 bloquant, 🟠 important, 🟢 finition, chacun avec le fichier, ce qui se voit, pourquoi c'est gênant et la correction proposée ; plus 3 points « ce qui va bien ». La réponse commence par une ligne `Verdict : …`, suivie du rapport complet.
-3. **Enregistrer.** Écrire sa réponse, sans sa première ligne `Verdict : …` (réservée au résumé dans le chat ; le modèle a sa propre ligne **Verdict**), dans `docs/revues/ui-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe déjà), selon le modèle `revue-ui.md`.
+3. **Enregistrer.** Écrire sa réponse, sans sa première ligne `Verdict : …` (réservée au résumé dans le chat ; le modèle a sa propre ligne **Verdict**), dans `docs/design/audits/ui-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe déjà), selon le modèle `revue-ui.md`.
 4. **Présenter** l'essentiel en 5 lignes : le verdict, les 🔴, ce qui va bien.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` ; `/pulse:refine` pour un constat qui change le besoin ou le parcours ; `/pulse:fix` pour un comportement cassé.
 
 ## polish
 
-1. **Partir du rapport** `docs/revues/ui-*.md` le plus récent qui couvre la cible. S'il n'y en a pas, faire d'abord l'audit (section « audit »).
+1. **Partir du rapport** `docs/design/audits/ui-*.md` le plus récent qui couvre la cible. S'il n'y en a pas, faire d'abord l'audit (section « audit »).
 2. **Trier.** Retenir les constats **purement visuels ou de texte** : aucune logique métier, aucune donnée, aucun contrôle d'accès. Renvoyer les autres vers `/pulse:refine` (besoin ou parcours) ou `/pulse:fix` (comportement cassé), en le disant.
 3. **Faire choisir.** Montrer la liste ; la personne coche ceux à appliquer (AskUserQuestion multiSelect, les 🔴 cochés par défaut dans la recommandation).
 4. **Appliquer** par petits lots. Avant d'écrire du code, lancer `pulse-aidd qualite` et appliquer ces règles. Respecter la pile retenue (`docs/technical.md`), `docs/design.md` et la maquette retenue. Lancer ensuite les contrôles automatiques de « Commandes du projet » (sauter ceux qui valent « aucune »).

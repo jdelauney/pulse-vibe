@@ -18,7 +18,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:refine [<US-003>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
 | `/pulse:guide` | Le carnet de route : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier, les actions manuelles. Mis à jour automatiquement à chaque modification du plan | `docs/guide/` |
 | `/pulse:implement [-sdw] <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, via le sous-agent implementer (`-s`) ou directement (`-d`) ; sans option, la question est posée ; options regroupables (`-sw`). `-w` : dans un worktree (proposé d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
-| `/pulse:review` | Relecture indépendante, test manuel, corrections | `docs/revues/Tn-date.md` |
+| `/pulse:review` | Relecture indépendante, test manuel, corrections | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
 | `/pulse:deploy` | Mise en ligne, déploiement continu, puis mode production (CI) | site en ligne |
@@ -29,7 +29,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:security` | Audit S1 à S11 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez | `docs/design.md` |
 | `/pulse:ui maquettes <US-003>` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
-| `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » | `docs/revues/ui-<date>.md` |
+| `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » | `docs/design/audits/ui-<date>.md` |
 | `/pulse:auto-fix` | Fait passer au vert les contrôles automatiques du projet (lint, types, formatage…), via des agents en parallèle | code corrigé |
 | `/pulse:fix` | Corriger une erreur précise (message, console, « le bouton ne marche pas ») : cause d'abord, correction minimale, preuve, explication | code corrigé |
 | `/pulse:memory` | Créer, actualiser ou enrichir la mémoire du projet (`creer`, `actualiser`, `retenir "…"`) | `aidd_docs/memory/` |

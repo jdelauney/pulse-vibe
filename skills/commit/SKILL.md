@@ -38,7 +38,7 @@ Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient 
 
 ### 2. Vérifier que la tâche a été relue
 
-Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`). Pour chacune, s'il n'existe aucun rapport `docs/revues/<Tâche>-*.md`, demander (AskUserQuestion) : « Cette tâche n'a pas encore été relue. » → « Lancer la relecture d'abord (recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review`.
+Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`). Pour chacune, s'il n'existe aucun rapport `<Tâche>-*.md` dans le dossier de relecture de son plan (`aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/`), demander (AskUserQuestion) : « Cette tâche n'a pas encore été relue. » → « Lancer la relecture d'abord (recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review`.
 
 ### 3. Trier les modifications par sujet
 

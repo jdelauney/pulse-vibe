@@ -48,7 +48,7 @@ Si le sous-agent n'est pas disponible, faire la relecture en suivant **stricteme
 
 ### 3. Enregistrer le rapport
 
-Écrire le rapport dans `docs/revues/<Tâche>-<AAAA-MM-JJ>.md` (structure : le modèle de rapport de revue). Si un rapport du même jour existe, ajouter un suffixe `-2`, `-3`.
+Écrire le rapport à côté du plan de la tâche, dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md` (structure : le modèle de rapport de revue ; créer le dossier s'il n'existe pas). Si un rapport du même jour existe, ajouter un suffixe `-2`, `-3`. Avec `tout` : `docs/revue-projet-<AAAA-MM-JJ>.md`.
 
 ### 4. Présenter
 

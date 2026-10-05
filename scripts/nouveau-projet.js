@@ -129,7 +129,7 @@ function ecrireFichiers(dest, opts) {
   e.fusionnerGitignore(lireModele("gitignore.template"));
   e.ecrire(".env.example", lireModele("env.example.template"));
   e.ecrire("README.md", remplir(lireModele("README-projet.md")).replace("{{TESTER_EN_LOCAL}}", TESTER_EN_LOCAL));
-  for (const vide of ["docs/revues/.gitkeep", "aidd_docs/tasks/.gitkeep", "aidd_docs/memory/internal/.gitkeep", "aidd_docs/memory/external/.gitkeep"]) {
+  for (const vide of ["aidd_docs/tasks/.gitkeep", "aidd_docs/memory/internal/.gitkeep", "aidd_docs/memory/external/.gitkeep"]) {
     e.ecrire(vide, "");
   }
   e.ecrire("aidd_docs/memory/README.md", lireModele("aidd-memory-readme.md"));

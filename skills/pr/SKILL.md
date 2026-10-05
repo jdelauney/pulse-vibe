@@ -58,7 +58,7 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 - **Base** : l'argument s'il y en a un, sinon Conventions Git § 6. La dire en une phrase avec sa raison (« vers `main`, la branche principale du dépôt »).
 - **Outil** : déduit de l'adresse du dépôt distant (Conventions Git § 6) ; vérifier la connexion (`gh auth status` ou `glab auth status`).
-- **Changement** : `git log --oneline <base>..HEAD` et `git diff --stat <base>...HEAD`. Relever les tâches citées dans les commits (`(Tn)`), leur plan dans `aidd_docs/tasks/<epic>/`, l'US liée, la section « Vérification » du plan et les rapports `docs/revues/Tn-*.md`.
+- **Changement** : `git log --oneline <base>..HEAD` et `git diff --stat <base>...HEAD`. Relever les tâches citées dans les commits (`(Tn)`), leur plan dans `aidd_docs/tasks/<epic>/`, l'US liée, la section « Vérification » du plan et les rapports de relecture `Tn-*.md` du dossier `revues/` de ce plan.
 - Une demande existe déjà pour cette branche (`gh pr view` ou `glab mr view`) : donner son adresse et proposer de simplement envoyer les nouveaux commits (`git push`) ; ne pas en créer une deuxième.
 
 ### 3. Rédiger

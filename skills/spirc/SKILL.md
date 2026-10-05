@@ -99,7 +99,7 @@ Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : a
 
 ## Boucle par tâche
 
-Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (une revue existe déjà dans `docs/revues/` : reprendre à l'examen).
+Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (un rapport existe déjà dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` : reprendre à l'examen).
 
 **Tâche « Mettre en ligne… »** : ne pas la lancer d'office, même avec `-a`. Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy`).
 
@@ -118,7 +118,7 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
    - **`pulse:reviewer`** : la tâche, les documents à lire (le plan, la spec et l'US du même dossier `aidd_docs/tasks/<epic>/` — `PLAN-SPEC-US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md` —, `docs/user-stories.md`, `docs/brief.md`, `aidd_docs/memory/glossary.md`), la **checklist sécurité complète** recopiée, les sections « Pile retenue », « Organisation des fichiers » et « Données et contrôle d'accès » de `docs/technical.md`, la consigne de juger la qualité avec `pulse-aidd qualite` ;
    - **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne ou l'objectif de la tâche), les critères d'acceptation, les fichiers modifiés, la section « Commandes du projet » de `docs/technical.md` (contrôles automatiques, tests, lancer en local) ;
    - avec `-x`, **`pulse:security-auditor`** : la checklist sécurité complète et la consigne de se limiter aux fichiers modifiés par la tâche.
-2. **Écrire le rapport** dans `docs/revues/<Tâche>-<AAAA-MM-JJ>.md` (modèle de rapport de revue ; suffixe `-2`, `-3` si besoin) : le rapport du reviewer, puis une section `## Vérification` (verdict et tableau du verifier), puis, avec `-x`, `## Audit de sécurité`.
+2. **Écrire le rapport** dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md` (modèle de rapport de revue ; suffixe `-2`, `-3` si besoin) : le rapport du reviewer, puis une section `## Vérification` (verdict et tableau du verifier), puis, avec `-x`, `## Audit de sécurité`.
 3. **Trier les constats** :
    - **écart de besoin** (la demande elle-même est à revoir) : le présenter simplement et demander à la personne ; si elle change le contrat, mettre à jour la tâche dans le plan (et le fichier de l'US), puis reprendre à [I] ;
    - **défauts de réalisation** (⛔, ⚠️, critère ❌) : sans `-a`, demander « Tout corriger (recommandé) » / « Seulement les points bloquants » / « Je regarde d'abord » ; avec `-a`, tout corriger. Relancer `pulse:implementer` **avec la liste des constats**, puis un examen court (reviewer et verifier, en parallèle) ajouté au rapport dans `## Relecture de contrôle` ;

@@ -43,7 +43,7 @@ Si la cible n'existe pas (Glob, `ls`), s'arrêter et le dire.
 
 ## Format de votre réponse
 
-Une première ligne, puis le contenu complet du rapport selon le modèle `revue-ui.md` (l'appelant l'écrit dans `docs/revues/`) :
+Une première ligne, puis le contenu complet du rapport selon le modèle `revue-ui.md` (l'appelant l'écrit dans `docs/design/audits/`) :
 
 ```
 Verdict : 🔴 n · 🟠 n · 🟢 n

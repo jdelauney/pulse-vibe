@@ -97,6 +97,7 @@ const troisPlans = () =>
 
 test("produit l'index et une page par plan, rangée dans le dossier de son epic, avec la prochaine commande", () => {
   const d = projet();
+  ecrire(d, "gerer-taches/revues/PLAN-SPEC-US-001-creer-tache/T1-2026-10-05", "# Revue – T1\n\n## Tâches\n\n- [ ] **T98 – piège dans un rapport**\n");
   const r = lancer(d);
   assert.strictEqual(r.status, 0, r.stdout);
   assert.deepStrictEqual(fs.readdirSync(path.join(d, "docs", "guide")).sort(), ["gerer-taches", "index.md"]);
@@ -108,6 +109,7 @@ test("produit l'index et une page par plan, rangée dans le dossier de son epic,
   assert.match(index, /MVP \(US Indispensables planifiées\) : 1\/2/);
   assert.match(index, /Choisir les outils[^\n]*\n- \[ \] ⚪ Définir l'identité visuelle \(facultatif, avant les user stories\) : `\/pulse:ui identite`[^\n]*\n- \[ \] Écrire les user stories/, "l'identité visuelle, facultative, entre la pile et les user stories");
   assert.doesNotMatch(index + lire(d, US1), /T99/, "le Journal est ignoré");
+  assert.doesNotMatch(index, /T98|\| revues \|/, "les rapports de relecture ne sont ni un plan ni une epic");
 });
 
 test("chaque tâche a ses commandes, avec l'identifiant de l'US, ses prérequis et ses actions manuelles", () => {

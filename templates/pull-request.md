@@ -32,4 +32,4 @@ Titre de la demande (hors de ce texte) : court et parlant, même règles que la 
 
 ## Relecture et sécurité
 
-<!-- Rapports de relecture (docs/revues/…) pour chaque tâche, ou « non relue » ; contrôle des secrets effectué ; points d'attention ou limites connues. -->
+<!-- Rapports de relecture (aidd_docs/tasks/<epic>/revues/…) pour chaque tâche, ou « non relue » ; contrôle des secrets effectué ; points d'attention ou limites connues. -->

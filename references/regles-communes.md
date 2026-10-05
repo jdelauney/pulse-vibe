@@ -28,7 +28,9 @@ Dans le projet de la personne :
 | `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | `/pulse:us` | Une user story : règles métier, exemple, critères d'acceptation |
 | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | `/pulse:spec` | La spécification d'une user story (une US = une spec) : écrans, données, choix techniques, sécurité |
 | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | `/pulse:plan` | Le plan d'une spec (une spec = un plan) : les tâches ordonnées, avec leur statut (kanban) |
-| `docs/revues/` | `/pulse:review` | Un rapport de relecture par tâche ; les audits d'interface `ui-<date>.md` (`/pulse:ui audit`) |
+| `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` | `/pulse:review`, `/pulse:spirc` | Les rapports de relecture des tâches de ce plan, un par tâche : `<Tâche>-<AAAA-MM-JJ>.md` |
+| `docs/revue-projet-<AAAA-MM-JJ>.md` | `/pulse:review tout` | La relecture de l'ensemble du projet |
+| `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
 | `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
 | `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Ne pas le modifier à la main |
@@ -37,14 +39,14 @@ Dans le projet de la personne :
 | `aidd_docs/memory/internal/decisions/` | `/pulse:brainstorm`, `/pulse:tech`, `/pulse:memory` | Les décisions difficiles à défaire (lues à la demande) |
 
 **User stories, specs et plans** :
-- **Rangement** : une US, sa spec et son plan vivent ensemble dans le dossier de leur epic, `aidd_docs/tasks/<epic>/` : `US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `PLAN-SPEC-US-XXX-<nom>.md`. **Une US = une spec = un plan**, et les trois fichiers portent le même `US-XXX-<nom>`. `docs/user-stories.md` est le référentiel qui les recense, epic par epic.
+- **Rangement** : une US, sa spec, son plan et les rapports de relecture de ses tâches vivent ensemble dans le dossier de leur epic, `aidd_docs/tasks/<epic>/` : `US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `PLAN-SPEC-US-XXX-<nom>.md`, et `revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md`. **Une US = une spec = un plan**, et les trois fichiers portent le même `US-XXX-<nom>`. `docs/user-stories.md` est le référentiel qui les recense, epic par epic.
 - **Identifiant d'US** : `US-` suivi de 3 chiffres (`US-001`), unique dans tout le projet, jamais réutilisé ; une nouvelle US prend le plus grand numéro existant plus un. Une référence donnée par la personne se compare sans tenir compte de la casse ni des zéros de tête (`us-1` = `US-001`) ; en cas de doute, lister les US proches et demander.
 - **`<epic>`** et **`<nom>`** : minuscules, sans accent, mots séparés par des tirets ; `<epic>` (30 caractères au plus) vient du titre de l'epic, `<nom>` (40 caractères au plus) du titre de l'US. `/pulse:us` les propose et les **fait valider** par la personne. Aucun nom n'est jamais supposé : il se lit dans `docs/user-stories.md` et dans `aidd_docs/tasks/`.
 - **Désigner une US, une spec ou un plan** en argument : par l'identifiant de l'US (`US-003`), par le nom du fichier ou son chemin, ou par un début de nom sans ambiguïté. Les fichiers se retrouvent avec le motif `aidd_docs/tasks/*/PLAN-SPEC-US-003-*.md` (idem `SPEC-US-…`, `US-…`).
 - **Argument absent ou introuvable** : lister les fichiers existants et demander lequel traiter (AskUserQuestion, le plus récent ou celui qui a une tâche `[~]` en premier, avec « (Recommandé) »). Ne jamais choisir à la place de la personne, même s'il n'y en a qu'un.
-- **Numéros de tâche uniques dans tout le projet** : un nouveau plan reprend la numérotation après le plus grand `Tn` de tous les plans de `aidd_docs/tasks/` (T1 pour le premier plan ; Tn+1 si le plus grand numéro existant est Tn). Ainsi un numéro de tâche désigne une seule tâche, dans les commits (`feat(Tn): …`) comme dans `docs/revues/`.
+- **Numéros de tâche uniques dans tout le projet** : un nouveau plan reprend la numérotation après le plus grand `Tn` de tous les plans de `aidd_docs/tasks/` (T1 pour le premier plan ; Tn+1 si le plus grand numéro existant est Tn). Ainsi un numéro de tâche désigne une seule tâche, dans les commits (`feat(Tn): …`) comme dans les rapports de relecture.
 - **Le MVP** : ce sont les US **Indispensables**. Il est terminé quand les plans de toutes ces US sont terminés ; la tâche « Mettre en ligne le MVP » se trouve dans le plan de la dernière US Indispensable du parcours (`docs/user-stories.md`).
-- **Ancien projet** (`docs/specs/`, `docs/plans/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
+- **Ancien projet** (`docs/specs/`, `docs/plans/`, `docs/revues/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
 
 Les modèles de ces fichiers sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
 La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite` (elles sont aussi incluses dans `pulse-aidd contexte implement`).

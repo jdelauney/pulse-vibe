@@ -23,7 +23,7 @@ test("crée la structure Pulse, sans aucune technologie, avec la mémoire branch
   const r = lancer(NOUVEAU, ["Mon Été", "--description", "Une todolist.", "--oui", "--sans-git"], parent);
   assert.strictEqual(r.status, 0, r.stderr);
   const d = path.join(parent, "mon-ete");
-  for (const f of ["CLAUDE.md", ".gitignore", ".env.example", "README.md", "aidd_docs/memory/glossary.md", "docs/revues/.gitkeep"]) {
+  for (const f of ["CLAUDE.md", ".gitignore", ".env.example", "README.md", "aidd_docs/memory/glossary.md", "aidd_docs/tasks/.gitkeep"]) {
     assert.ok(existe(d, f), f);
   }
   for (const f of ["netlify.toml", "public", "supabase", "src", "package.json"]) {

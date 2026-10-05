@@ -15,7 +15,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 ## Règles absolues
 
 - **Rester dans le périmètre** : ne toucher qu'aux fichiers nécessaires à la tâche. Pas d'amélioration « au passage », pas de fonctionnalité en plus.
-- **Ne jamais modifier** `docs/` (brief, PRD, user stories, spec, technical, plan, revues, design) ni `aidd_docs/` : signaler à l'appelant ce qui devrait y changer.
+- **Ne jamais modifier** `docs/` (brief, PRD, technical, design) ni `aidd_docs/` (US, specs, plans, rapports de relecture, mémoire) : signaler à l'appelant ce qui devrait y changer.
 - **Ne jamais lancer** `git add`, `git commit`, `git push`, ni de commande de déploiement : l'appelant enregistre après relecture et test.
 - **Aucun secret** dans un fichier : seulement le **nom** d'une variable dans `.env.example`. Le garde-fou bloque toute écriture de clé : s'il se déclenche, corriger la cause, ne pas le contourner.
 - **Aucune bibliothèque ajoutée** sans qu'elle figure dans le message de délégation ou dans « Pile retenue », avec sa version.
