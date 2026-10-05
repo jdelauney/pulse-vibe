@@ -1,0 +1,139 @@
+---
+description: Démarrer ou reprendre un projet Pulse - prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle
+argument-hint: "[nom du projet]"
+disable-model-invocation: true
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git commit *) Bash(git rev-parse *) Bash(git log *) Bash(git remote *) Bash(git branch *)
+---
+
+# /pulse:init – Démarrer et se repérer
+
+## Contexte Pulse (chargé automatiquement)
+
+!`pulse-aidd contexte init`
+
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.
+
+Argument reçu (nom du projet, facultatif) : `$ARGUMENTS`
+
+## Principe
+
+Cette commande est le **point d'entrée** de la méthode, qu'on la lance dans un dossier vide, dans un projet existant ou au milieu du travail. Elle tourne en boucle :
+
+```
+lire l'état → décider la prochaine étape → montrer l'écran → agir sur la réponse → relire l'état …
+```
+
+Règles de la boucle :
+- **Guider, pas faire un cours.** Un écran court, une seule action recommandée.
+- **Ne citer que de vraies commandes** `/pulse:*`, jamais une commande inventée.
+- **Ne rien lancer sans réponse explicite** de la personne.
+- **Ne pas se fier à un état ancien** : relire l'état après chaque action.
+
+## 1. Lire l'état (sans rien afficher)
+
+**Environnement** : `git --version`, `node --version`, `git config user.name`, `git config user.email`.
+
+**Fondations** (dans cet ordre) :
+
+| Fondation | Satisfaite quand | À reprendre quand |
+|---|---|---|
+| Dossier du projet | `CLAUDE.md` mentionne la méthode Pulse | `CLAUDE.md` existe sans Pulse (projet existant) |
+| Mémoire branchée | `aidd_docs/memory/` contient `project.md`, `technical.md`, `glossary.md`, et `CLAUDE.md` contient `<!-- pulse_memoire:debut -->` | dossier présent mais fichier manquant, ou bloc absent |
+| Pile technique | `docs/technical.md` existe **et** le bloc `<!-- pulse_pile:debut -->` de `CLAUDE.md` n'indique plus « Pile non choisie » | marqueurs absents (projet créé avant Pulse 0.3), ou `docs/technical.md` présent alors que le bloc indique encore « Pile non choisie » |
+| Historique Git | `git rev-parse --show-toplevel` est le dossier du projet, avec au moins un commit | dossier inclus dans un autre dépôt Git, ou aucun commit |
+
+**Projet existant** : du code est présent (fichiers source, manifeste de dépendances, configuration d'outils, dans n'importe quel langage) sans `CLAUDE.md` Pulse. La pile ne se demande pas : elle s'observe dans le code, avec `/pulse:tech`.
+
+**Avancement de la méthode** (cumulatif : un document plus avancé implique les précédents) : `docs/brief.md` → `docs/prd.md` → `docs/technical.md` → `docs/user-stories.md` → `docs/specs/` (au moins une spec) → `docs/plans/` (au moins un plan ; tâches `[ ]`, `[~]`, `[x]` par plan et par jalon ; une spec sans plan est une étape non faite) → `docs/revues/` (rapports de tâche ; les audits d'interface `ui-*` sont à part) → en ligne (section « Adresses » de `CLAUDE.md`, `git remote -v`, `git status` « ahead »).
+
+**Santé** (seulement si le signal existe) : `docs/securite.md` absent alors qu'un jalon est terminé → `/pulse:security` ; erreurs signalées par les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) lors de la dernière session → `/pulse:auto-fix`.
+
+## 2. Décider (la première règle qui s'applique)
+
+1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent** → prévenir sans bloquer (il fait tourner le garde-fou anti-secrets de Pulse) : https://nodejs.org (LTS).
+2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Tant qu'une fondation manque, ne pas proposer les étapes de la méthode. Exception : dans un **projet neuf**, la pile technique non encore choisie ne bloque pas ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`).
+3. **La première étape de la méthode non faite** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` (facultatif : `/pulse:ui identite` avant, si `docs/design.md` n'existe pas) ; user stories → `/pulse:us` ; spec → `/pulse:spec <US>` (les US Indispensables pour le premier MVP) ; spec sans plan → `/pulse:plan <spec>`.
+4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <plan>` (ou `/pulse:implement <plan>`) ; jalon MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
+5. **Un signal de santé.**
+6. **Rien à faire** : proposer `/pulse:spec <US suivante>` (US Essentielles pas encore spécifiées), `/pulse:spirc <plan> "une demande"`, `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
+
+## 3. Montrer l'écran
+
+Afficher la **bannière** (modèle « Bannière ») au premier écran de la session seulement, puis :
+
+```
+👋 <« Bienvenue ! » pour un nouveau projet, « Bon retour sur <nom>. » sinon>
+
+Votre projet :
+  Dossier      ✅ CLAUDE.md Pulse            (ou ❌ à préparer · ⚠️ CLAUDE.md sans Pulse)
+  Mémoire      ✅ branchée · 3 fichiers       (ou ⚠️ <cause> · ❌ pas encore)
+  Pile         ✅ choisie · docs/technical.md (ou ⚠️ à choisir avec /pulse:tech · ❌)
+  Git          ✅ 12 versions enregistrées    (ou ⚠️ <cause> · ❌)
+
+  Méthode : ✅ brief · ✅ PRD · [choix techniques] · ⬜ US · ⬜ spec · ⬜ plan · ⬜ réalisation · ⬜ en ligne
+
+➡️ Prochaine étape : <action> — <pourquoi, en une phrase>
+```
+
+- `✅` fait · `⚠️` présent mais à reprendre (toujours avec sa cause) · `❌` manquant · l'étape en cours entre crochets.
+- Lignes courtes. Rien après la ligne « Prochaine étape ».
+
+Puis demander (AskUserQuestion) : l'action recommandée en premier avec « (Recommandé) », 1 ou 2 alternatives utiles, et « M'expliquer la méthode ». La personne peut aussi répondre librement.
+
+## 4. Agir sur la réponse
+
+### Préparer un nouveau projet (dossier vide ou presque)
+
+1. **Git sans nom ou email** : les demander (nom affiché dans l'historique, email, qui peut être celui du compte GitHub), puis `git config --global user.name "…"` et `git config --global user.email "…"`. Expliquer : chaque version enregistrée porte le nom de son auteur.
+2. **Questions** (une ronde AskUserQuestion) : le **nom** (si l'argument est vide) ; une **description** en une phrase (facultative). Ne poser aucune question technique : la pile se choisit plus tard, avec `/pulse:tech`, une fois le besoin compris.
+3. **Créer** : lancer `pulse-aidd nouveau "<nom>" --ici --description "<description>" --oui`. Le script crée **uniquement les fichiers absents** (CLAUDE.md complet, avec un bloc Pile technique qui indique « Pile non choisie », `.gitignore`, `.env.example`, README, dossiers `docs/` et `aidd_docs/`, mémoire branchée) et fait le premier enregistrement Git. Il n'installe aucune technologie.
+4. **Lire sa sortie** et la traduire simplement. Si elle indique que le dossier fait partie d'un autre dépôt Git : expliquer le risque (les fichiers du projet finiraient dans ce dépôt) et proposer « Créer un historique propre à ce projet (Recommandé) » → `git init -b main`, puis `git add -A -- .` et `git commit -m "chore: initialisation du projet avec Pulse"`.
+5. Présenter l'arborescence avec une ligne d'explication par élément :
+
+```
+CLAUDE.md        → les règles du projet, lues par l'IA à chaque session
+docs/            → les documents de la méthode (brief, PRD, choix techniques, user stories, spec, plan)
+aidd_docs/       → la mémoire du projet (choix, glossaire, décisions), relue par l'IA à chaque session
+README.md        → la présentation du projet
+.gitignore       → la liste de ce que Git ne doit jamais enregistrer (dont vos secrets)
+.env.example     → le modèle des clés secrètes (sans les valeurs)
+```
+
+Ajouter : « Le code et ses dossiers viendront après le choix de la pile technique (`/pulse:tech`). »
+
+### Reprendre un projet existant (du code sans Pulse)
+
+1. Expliquer : « Votre projet a déjà du code. Je vais lui ajouter les règles et la mémoire de Pulse, sans rien remplacer. »
+2. Si `CLAUDE.md` existe **sans** Pulse : ne pas le remplacer. Montrer les sections à ajouter (Le projet, Comportement, Communication, Action, Pile technique avec ses marqueurs, Qualité du code, Sécurité, Mémoire avec ses marqueurs, Adresses, d'après le « Modèle : CLAUDE.md ») et demander l'accord avant de les ajouter. Garder les règles existantes ; signaler une contradiction au lieu de la trancher seul.
+3. Lancer `pulse-aidd nouveau "<nom>" --ici --oui --sans-git` pour créer les autres éléments manquants (il ne remplace aucun fichier existant).
+4. Prochaine étape recommandée : `/pulse:memory creer` (remplir la mémoire à partir du code), puis `/pulse:tech` (documenter la pile observée dans le code).
+
+### Mettre à niveau un projet Pulse plus ancien
+
+- Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
+- Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
+- `docs/spec.md` ou `docs/plan.md` présents (projet créé avant Pulse 0.6) → avec l'accord de la personne, les déplacer en `docs/specs/mvp.md` et `docs/plans/mvp.md` (`git mv` si le dossier est suivi par Git), corriger le chemin de la spec dans l'en-tête du plan, puis lancer `pulse-aidd guide`. Les numéros de tâche et les rapports de `docs/revues/` restent valables.
+
+### Lancer une étape de la méthode
+
+Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande>` (ex. `pulse-aidd etape brainstorm`), puis appliquer sa section « Déroulé » à l'identique, **sans** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
+
+Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/clear` puis lancez `<commande>` : vous repartirez avec une conversation légère. »
+
+### « M'expliquer la méthode »
+
+En 8 lignes maximum, le chemin complet, l'étape en cours entre crochets :
+
+```
+/pulse:init → /pulse:brainstorm → /pulse:prd → (/pulse:ui identite) → /pulse:tech → /pulse:us → /pulse:spec <US> → (/pulse:ui maquettes <spec>) → /pulse:plan <spec>
+   → pour chaque tâche : /pulse:implement <plan> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <plan>)
+   → /pulse:deploy   (les étapes entre parenthèses sont facultatives)
+À tout moment : /pulse:init (où j'en suis), /pulse:guide (carnet de route), /pulse:fix (une erreur), /pulse:refine (changer le plan),
+               /pulse:security, /pulse:memory, /pulse:auto-fix, /pulse:explain, /pulse:learn, /pulse:pr, /pulse:ui (audit, polish)
+```
+
+Puis remontrer l'écran.
+
+## Fin
+
+Quand la personne arrête la boucle (ou après une étape lancée), terminer avec le bloc de fin de commande ; la prochaine étape est celle de l'écran.

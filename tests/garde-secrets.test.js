@@ -1,0 +1,181 @@
+// Tests du garde-fou anti-secrets et du script de vérification.
+// Lancer : node --test plugins/pulse/tests/
+// Les fausses clés sont construites à l'exécution pour ne jamais figurer telles quelles dans le dépôt.
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { execFileSync, spawnSync } = require("child_process");
+
+const RACINE = path.join(__dirname, "..");
+const HOOK = path.join(RACINE, "scripts", "garde-secrets.js");
+const VERIFIER = path.join(RACINE, "templates", "verifier.js");
+
+const b64url = (o) => Buffer.from(JSON.stringify(o)).toString("base64").replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+const jwt = (role) => `${b64url({ alg: "HS256", typ: "JWT" })}.${b64url({ iss: "supabase", role, iat: 1700000000 })}.${"s".repeat(43)}`;
+
+const FAUX = {
+  stripe: ["sk", "test", "4eC39HqLyjWDarjtT1zdp7dc"].join("_"),
+  resend: ["re", "Ab12Cd34", "Ef56Gh78Ij90KlMnOp"].join("_"),
+  anon: jwt("anon"),
+  serviceRole: jwt("service_role"),
+};
+
+function lancerHook(entree, env = {}) {
+  const r = spawnSync("node", [HOOK], {
+    input: typeof entree === "string" ? entree : JSON.stringify(entree),
+    encoding: "utf8",
+    env: { ...process.env, PULSE_GARDE_OFF: "", ...env },
+  });
+  assert.strictEqual(r.status, 0, "le hook doit toujours sortir avec le code 0");
+  return r.stdout ? JSON.parse(r.stdout).hookSpecificOutput : null;
+}
+
+const refuse = (sortie) => sortie && sortie.permissionDecision === "deny";
+
+function depotTemporaire() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-test-"));
+  const git = (...a) => execFileSync("git", a, { cwd: dir, stdio: "ignore" });
+  git("init", "-q", "-b", "main");
+  git("config", "user.email", "test@example.com");
+  git("config", "user.name", "Test");
+  fs.mkdirSync(path.join(dir, "public"));
+  fs.writeFileSync(path.join(dir, "public", "index.html"), "<h1>Test</h1>\n");
+  git("add", "-A");
+  git("commit", "-q", "-m", "init");
+  return { dir, git, ecrire: (f, c) => fs.writeFileSync(path.join(dir, f), c) };
+}
+
+const bash = (commande, cwd) => ({ tool_name: "Bash", tool_input: { command: commande }, cwd });
+
+// ------------------------------------------------------------ Écritures
+
+test("bloque une clé Stripe écrite dans un fichier de code", () => {
+  const s = lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/public/app.js", content: `const k = "${FAUX.stripe}";` } });
+  assert.ok(refuse(s));
+  assert.match(s.permissionDecisionReason, /Stripe/);
+});
+
+test("autorise une clé dans .env", () => {
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/.env", content: `STRIPE_SECRET_KEY=${FAUX.stripe}` } }), null);
+});
+
+test("bloque une vraie valeur dans .env.example", () => {
+  assert.ok(refuse(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/.env.example", content: `STRIPE_SECRET_KEY=${FAUX.stripe}` } })));
+});
+
+test("autorise la clé publique Supabase (anon), bloque la clé service_role", () => {
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/public/config.js", content: `export const KEY = "${FAUX.anon}";` } }), null);
+  const s = lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/public/config.js", content: `export const KEY = "${FAUX.serviceRole}";` } });
+  assert.ok(refuse(s));
+  assert.match(s.permissionDecisionReason, /service_role/);
+});
+
+test("bloque une clé Resend dans un Edit, ignore old_string", () => {
+  assert.ok(refuse(lancerHook({ tool_name: "Edit", tool_input: { file_path: "/p/f.js", old_string: "x", new_string: `key = "${FAUX.resend}"` } })));
+  assert.strictEqual(lancerHook({ tool_name: "Edit", tool_input: { file_path: "/p/f.js", old_string: `key = "${FAUX.resend}"`, new_string: "key = process.env.RESEND_API_KEY" } }), null);
+});
+
+test("n'est pas déclenché par du code ordinaire", () => {
+  const code = 're_render_component_now(); const sk = "sk-court"; const password = input.value;';
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/app.js", content: code } }), null);
+});
+
+// ------------------------------------------------------------ Git
+
+test("git add explicite d'un .env : bloqué", () => {
+  const d = depotTemporaire();
+  d.ecrire(".env", "A=1\n");
+  assert.ok(refuse(lancerHook(bash("git add .env", d.dir))));
+});
+
+test("git add . avec un .env non ignoré : bloqué ; ignoré : autorisé", () => {
+  const d = depotTemporaire();
+  d.ecrire(".env", "A=1\n");
+  d.ecrire("app.js", "console.log('ok');\n");
+  assert.ok(refuse(lancerHook(bash("git add .", d.dir))));
+  d.ecrire(".gitignore", ".env\n");
+  assert.strictEqual(lancerHook(bash("git add . && git commit -m 'x'", d.dir)), null);
+});
+
+test("git add d'un fichier précis sain : autorisé même si un autre fichier pose problème", () => {
+  const d = depotTemporaire();
+  d.ecrire("app.js", "console.log('ok');\n");
+  d.ecrire("brouillon.js", `const k = "${FAUX.stripe}";\n`);
+  assert.strictEqual(lancerHook(bash("git add app.js", d.dir)), null);
+  assert.ok(refuse(lancerHook(bash("git add brouillon.js", d.dir))));
+});
+
+test("git commit avec un secret dans l'index : bloqué et le fichier est nommé", () => {
+  const d = depotTemporaire();
+  d.ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  d.git("add", "app.js");
+  const s = lancerHook(bash('git commit -m "feat: test"', d.dir));
+  assert.ok(refuse(s));
+  assert.match(s.permissionDecisionReason, /app\.js/);
+});
+
+test("git commit -am inclut les fichiers suivis modifiés", () => {
+  const d = depotTemporaire();
+  d.ecrire("public/index.html", `<script>const k="${FAUX.stripe}"</script>\n`);
+  assert.strictEqual(lancerHook(bash('git commit -m "x"', d.dir)), null);
+  assert.ok(refuse(lancerHook(bash('git commit -am "x"', d.dir))));
+});
+
+test("git commit sain : autorisé", () => {
+  const d = depotTemporaire();
+  d.ecrire("app.js", "const k = process.env.KEY;\n");
+  d.git("add", "app.js");
+  assert.strictEqual(lancerHook(bash('git commit -m "feat: ok"', d.dir)), null);
+});
+
+test("git push avec un .env suivi par Git : bloqué", () => {
+  const d = depotTemporaire();
+  d.ecrire(".env", "A=1\n");
+  d.git("add", "-f", ".env");
+  d.git("commit", "-q", "-m", "oups");
+  const s = lancerHook(bash("git push", d.dir));
+  assert.ok(refuse(s));
+  assert.match(s.permissionDecisionReason, /git rm --cached/);
+});
+
+test("hors dépôt Git, commande sans git, entrée invalide, désactivation : laisse passer", () => {
+  const vide = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-vide-"));
+  assert.strictEqual(lancerHook(bash("git commit -m x", vide)), null);
+  assert.strictEqual(lancerHook(bash("ls -la", vide)), null);
+  assert.strictEqual(lancerHook("ceci n'est pas du JSON"), null);
+  assert.strictEqual(
+    lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/a.js", content: FAUX.stripe } }, { PULSE_GARDE_OFF: "1" }),
+    null
+  );
+});
+
+// ------------------------------------------------------------ verifier.js
+
+test("verifier.js contient exactement les mêmes motifs que motifs.js", () => {
+  const extraire = (f) => {
+    const s = fs.readFileSync(f, "utf8");
+    return s.slice(s.indexOf("// DEBUT-MOTIFS"), s.indexOf("// FIN-MOTIFS"));
+  };
+  assert.strictEqual(extraire(VERIFIER), extraire(path.join(RACINE, "scripts", "motifs.js")));
+});
+
+test("verifier.js : réussit sur un projet sain, échoue avec un secret ou un .env suivi", () => {
+  const d = depotTemporaire();
+  const lancer = () => spawnSync("node", [VERIFIER], { cwd: d.dir, encoding: "utf8" });
+  assert.strictEqual(lancer().status, 0);
+
+  d.ecrire("public/app.js", `const k = "${FAUX.stripe}";\n`);
+  d.git("add", "-A");
+  const r = lancer();
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /public\/app\.js/);
+
+  d.ecrire("public/app.js", "const ok = true;\n");
+  d.ecrire(".env", "A=1\n");
+  d.git("add", "-A", "-f");
+  assert.strictEqual(lancer().status, 1);
+});

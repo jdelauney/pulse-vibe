@@ -1,0 +1,24 @@
+# Mémoire projet
+
+## Vision
+
+- Nom du projet : {{NOM_DU_PROJET}}
+- Résumé : {{Description en une phrase, complétée après /pulse:brainstorm.}}
+- Public cible :
+- Problème principal résolu :
+
+## Périmètre MVP actuel
+
+- Inclus :
+- Exclu :
+
+## Règles produit stables
+
+- Une tâche du plan à la fois.
+- Toute nouvelle idée passe d'abord par `docs/prd.md`.
+- Le comportement attendu est défini par `docs/user-stories.md`.
+- Les mots du métier sont définis dans `glossary.md`.
+
+## Décisions importantes
+
+<!-- Une ligne datée par décision ; renvoyer vers internal/decisions/NNNN-….md quand elle existe. Supprimer ce commentaire à la première entrée. -->

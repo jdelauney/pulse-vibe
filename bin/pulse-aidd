@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# pulse-aidd – outil interne du plugin Pulse.
+# Claude Code place le dossier bin/ du plugin dans le PATH : les commandes /pulse:*
+# l'utilisent pour charger leurs règles et modèles sans demander d'autorisation de lecture.
+#
+#   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
+#   pulse-aidd etape <commande>      idem, précédé des instructions de la commande (pour /pulse:spirc)
+#   pulse-aidd modele <fichier>      affiche un modèle de templates/
+#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, designer, ui-critic)
+#   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
+#   pulse-aidd qualite               affiche les règles de qualité du code
+#   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md)
+#   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
+#   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de docs/plans/
+#   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
+#   pulse-aidd verifier              contrôle l'absence de secrets et de fichiers d'environnement suivis par Git
+#   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
+#
+# Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
+
+RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REF="$RACINE/references"
+TPL="$RACINE/templates"
+
+afficher() { # afficher <titre> <chemin>
+  if [ -f "$2" ]; then
+    printf '\n===== %s =====\n\n' "$1"
+    cat "$2"
+    printf '\n'
+  fi
+}
+
+qualite() {
+  afficher "Règles de qualité du code" "$REF/qualite/README.md"
+  afficher "Clean code" "$REF/qualite/clean-code.md"
+  afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
+  afficher "Composants d'interface" "$REF/qualite/composants.md"
+  afficher "Sécurité du code" "$REF/qualite/securite-code.md"
+}
+
+lister_references() {
+  (cd "$REF" && find . -type f | sed 's|^\./||' | sort)
+}
+
+contexte() {
+  afficher "Règles communes Pulse" "$REF/regles-communes.md"
+  case "$1" in
+    init)
+      afficher "Bannière" "$TPL/banniere.txt"
+      afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
+    brainstorm)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Modèle : docs/brief.md" "$TPL/brief.md"
+      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
+      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
+    tech)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Aider à choisir la technologie" "$REF/choix-techniques.md"
+      afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
+      afficher "Modèle : docs/technical.md" "$TPL/technical.md"
+      afficher "Modèle : .gitignore" "$TPL/gitignore.template"
+      afficher "Modèle : .env.example" "$TPL/env.example.template"
+      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
+    memory)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Modèle : aidd_docs/memory/README.md" "$TPL/aidd-memory-readme.md"
+      afficher "Modèle : aidd_docs/memory/project.md" "$TPL/aidd-memory-project.md"
+      afficher "Modèle : aidd_docs/memory/technical.md" "$TPL/aidd-memory-technical.md"
+      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
+      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md"
+      afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
+    spirc)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
+    prd) afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
+    us) afficher "Modèle : docs/user-stories.md" "$TPL/user-stories.md" ;;
+    spec)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : docs/specs/<nom>.md" "$TPL/spec.md" ;;
+    plan) afficher "Modèle : docs/plans/<nom>.md" "$TPL/plan.md" ;;
+    implement|fix) qualite ;;
+    review)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
+    commit)
+      afficher "Conventions Git" "$REF/git.md"
+      afficher "Modèle : .gitignore" "$TPL/gitignore.template" ;;
+    pr)
+      afficher "Conventions Git" "$REF/git.md"
+      afficher "Modèle : description de demande de fusion" "$TPL/pull-request.md" ;;
+    deploy) afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
+    security)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : docs/securite.md" "$TPL/securite.md"
+      afficher "Modèle : mention de confidentialité" "$TPL/confidentialite.md" ;;
+    refine)
+      afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
+      afficher "Modèle : docs/plans/<nom>.md" "$TPL/plan.md" ;;
+    ui)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Registres d'interface" "$REF/design/registres.md"
+      afficher "Règles d'interface" "$REF/design/regles-ui.md"
+      afficher "Anti-patterns d'interface" "$REF/design/anti-patterns.md"
+      afficher "Modèle : docs/design.md" "$TPL/design.md"
+      afficher "Modèle : note de variante" "$TPL/maquette-note.md"
+      afficher "Modèle : rapport d'audit d'interface" "$TPL/revue-ui.md" ;;
+    learn)
+      afficher "Pédagogie du professeur" "$REF/pedagogie.md"
+      afficher "Modèle : docs/apprentissage.md" "$TPL/apprentissage.md" ;;
+    auto-fix|status|explain|guide) ;;
+    *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
+  esac
+}
+
+case "$1" in
+  contexte) contexte "$2"; exit 0 ;;
+  etape)
+    afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
+    contexte "$2"; exit 0 ;;
+  modele)
+    if [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
+  agent)
+    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, designer, ui-critic)"; exit 1; fi ;;
+  qualite) qualite; exit 0 ;;
+  reference)
+    case "$2" in
+      ""|*..*) echo "Indiquez un chemin dans references/, par exemple qualite/code-concepts.md. Disponibles :"; lister_references; exit 1 ;;
+    esac
+    if [ -f "$REF/$2" ]; then cat "$REF/$2"; else echo "Référence introuvable : $2. Disponibles :"; lister_references; exit 1; fi ;;
+  nouveau)
+    shift; exec node "$RACINE/scripts/nouveau-projet.js" "$@" ;;
+  guide)
+    exec node "$RACINE/scripts/guide.js" ;;
+  comparer)
+    if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes>"; exit 1; fi
+    exec node "$RACINE/scripts/comparer.js" "$2" ;;
+  memoire)
+    exec node "$RACINE/scripts/memoire.js" --rapport ;;
+  verifier)
+    exec node "$TPL/verifier.js" ;;
+  installer-ci)
+    mkdir -p scripts
+    cp "$TPL/verifier.js" scripts/verifier.js
+    cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
+    echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
+  *)
+    sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+esac

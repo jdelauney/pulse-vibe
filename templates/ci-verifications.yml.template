@@ -1,0 +1,18 @@
+# Exemple de contrôle automatique (CI) à adapter à l'outil de CI retenu
+# (« Hébergement et mise en ligne » de docs/technical.md) et à ses conventions.
+# Principe : à chaque envoi, récupérer le code, contrôler les secrets, puis lancer
+# les commandes de « Commandes du projet » (installer, contrôles automatiques,
+# tests, construire). Si une étape échoue, la version n'est pas publiée.
+
+etapes:
+  - nom: Récupérer le code
+  - nom: Contrôler l'absence de secrets
+    commande: node scripts/verifier.js   # nécessite Node.js sur la machine de CI
+  - nom: Installer les dépendances
+    commande: "{{Installer les dépendances}}"
+  - nom: Contrôles automatiques
+    commande: "{{Contrôles automatiques}}"
+  - nom: Tests
+    commande: "{{Tester}}"
+  - nom: Construire
+    commande: "{{Construire}}"

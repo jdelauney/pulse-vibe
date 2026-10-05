@@ -1,0 +1,12 @@
+# --- Secrets : ne jamais les envoyer vers le dépôt distant ---
+.env
+.env.*
+!.env.example
+
+# --- Fichiers système ---
+.DS_Store
+Thumbs.db
+*.log
+
+# Les fichiers générés propres à la pile retenue (dépendances installées, constructions…)
+# sont ajoutés par /pulse:tech lors de la mise en place.

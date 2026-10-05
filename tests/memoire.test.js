@@ -1,0 +1,114 @@
+// Tests de la synchronisation de la mémoire projet.
+// Lancer : node --test plugins/pulse/tests/*.test.js
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const SCRIPT = path.join(__dirname, "..", "scripts", "memoire.js");
+const DEBUT = "<!-- pulse_memoire:debut -->";
+const FIN = "<!-- pulse_memoire:fin -->";
+
+function projet(fichiers) {
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-memoire-"));
+  for (const [chemin, contenu] of Object.entries(fichiers)) {
+    const complet = path.join(dossier, chemin);
+    fs.mkdirSync(path.dirname(complet), { recursive: true });
+    fs.writeFileSync(complet, contenu, "utf8");
+  }
+  return dossier;
+}
+
+function lancer(dossier, ...args) {
+  return spawnSync("node", [SCRIPT, ...args], {
+    encoding: "utf8",
+    env: { ...process.env, CLAUDE_PROJECT_DIR: dossier },
+  });
+}
+
+const lire = (dossier, chemin) => fs.readFileSync(path.join(dossier, chemin), "utf8");
+
+const BANQUE = {
+  "aidd_docs/memory/README.md": "# Mémoire\n\n<!-- fichiers:debut -->\n<!-- fichiers:fin -->\n",
+  "aidd_docs/memory/project.md": "# Projet\n",
+  "aidd_docs/memory/technical.md": "# Technique\n",
+  "aidd_docs/memory/internal/.gitkeep": "",
+  "aidd_docs/memory/internal/decisions/0001-stockage-local.md": "# Stockage\n",
+  "aidd_docs/memory/external/.gitkeep": "",
+};
+
+test("remplit le bloc avec les imports et la liste à la demande", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `# Projet\n\n## Mémoire\n\n${DEBUT}\n${FIN}\n\n## Suite\n` });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  const claude = lire(d, "CLAUDE.md");
+  assert.match(claude, /@aidd_docs\/memory\/project\.md\n@aidd_docs\/memory\/technical\.md/);
+  assert.match(claude, /- aidd_docs\/memory\/internal\/decisions\/0001-stockage-local\.md/);
+  assert.doesNotMatch(claude, /@aidd_docs\/memory\/README\.md/);
+  assert.doesNotMatch(claude, /\.gitkeep/);
+  assert.match(claude, /## Suite\n$/, "le reste du fichier est conservé");
+});
+
+test("met à jour la liste du README de la mémoire", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  lancer(d);
+  const lisezMoi = lire(d, "aidd_docs/memory/README.md");
+  assert.match(lisezMoi, /- \[project\.md\]\(project\.md\)/);
+  assert.match(lisezMoi, /- \[internal\/decisions\/0001-stockage-local\.md\]/);
+});
+
+test("est idempotent : un second passage ne change rien", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  lancer(d);
+  const premier = lire(d, "CLAUDE.md");
+  const r = lancer(d, "--rapport");
+  assert.strictEqual(lire(d, "CLAUDE.md"), premier);
+  assert.match(r.stdout, /Déjà à jour/);
+});
+
+test("ignore un marqueur cité dans un bloc de code", () => {
+  const exemple = "```\n" + DEBUT + "\n" + FIN + "\n```\n";
+  const d = projet({ ...BANQUE, "CLAUDE.md": exemple });
+  const r = lancer(d, "--rapport");
+  assert.strictEqual(r.status, 1);
+  assert.strictEqual(lire(d, "CLAUDE.md"), exemple);
+});
+
+test("préserve les fins de ligne Windows", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `# P\r\n${DEBUT}\r\n${FIN}\r\n` });
+  lancer(d);
+  const claude = lire(d, "CLAUDE.md");
+  assert.match(claude, /@aidd_docs\/memory\/project\.md\r\n/);
+  assert.doesNotMatch(claude, /[^\r]\n/);
+});
+
+test("en mode hook, reste silencieux et ne bloque jamais", () => {
+  const d = projet({ "CLAUDE.md": "# Sans bloc\n" });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.strictEqual(r.stdout, "");
+});
+
+test("en mode rapport, signale un bloc absent ou cassé", () => {
+  const sansBloc = projet({ ...BANQUE, "CLAUDE.md": "# Sans bloc\n" });
+  const r1 = lancer(sansBloc, "--rapport");
+  assert.strictEqual(r1.status, 1);
+  assert.match(r1.stdout, /ne contient pas le bloc mémoire/);
+
+  const casse = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\nsans fin\n` });
+  const r2 = lancer(casse, "--rapport");
+  assert.strictEqual(r2.status, 1);
+  assert.match(r2.stdout, /un seul des deux marqueurs/);
+});
+
+test("sans mémoire, ne crée rien", () => {
+  const d = projet({ "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  const r = lancer(d, "--rapport");
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /Pas de mémoire projet/);
+  assert.strictEqual(lire(d, "CLAUDE.md"), `${DEBUT}\n${FIN}\n`);
+});
