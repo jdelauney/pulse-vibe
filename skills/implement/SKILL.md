@@ -2,7 +2,7 @@
 description: Réaliser une tâche d'un plan et l'expliquer, directement ou via le sous-agent implementer, au besoin dans un worktree ; sans tâche, boucler sur tout le plan (réaliser, relire, corriger, commiter, tâche suivante)
 argument-hint: "[-sdw] <US-XXX> [T3] (regroupables, ex. -sw : -s sous-agent ou -d direct, -w worktree ; sans tâche : tout le plan)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:implement – Réaliser une tâche
@@ -42,6 +42,7 @@ Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` �
 
 - **Mode** : sans `-s` ni `-d`, demander (AskUserQuestion, question « Comment réaliser la tâche ? ») : « 1. Implémentation via sous-agent (Recommandé) » (un assistant spécialisé code dans son propre contexte, la conversation reste légère) / « 2. Implémentation directe » (je code ici, vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
 - **Worktree** : sans `-w`, appliquer « 1. Faut-il un worktree ? » de la référence worktree ; si la question se pose, la poser **dans le même appel** AskUserQuestion que le mode.
+- **Envoi** : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (question posée dans le même appel AskUserQuestion que le mode et le worktree, seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir »), puis préparer la branche si le mode est PR.
 - **Avec un worktree** : le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans le worktree.
 
 Annoncer le choix en une ligne (« Mode : sous-agent · dans le worktree `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.

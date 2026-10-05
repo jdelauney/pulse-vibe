@@ -47,8 +47,9 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 | Commande | Ce qu'elle fait |
 |---|---|
+| `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque demande de fusion : une croix rouge vous prévient avant que l'erreur n'arrive sur le site |
 | `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul |
-| `/pulse:deploy production` | Ajoute le contrôle automatique avant chaque mise en ligne |
+| `/pulse:deploy production` | Prépare le site « pour de vrai » : variables, services connectés, retour arrière (et la CI avec `/pulse:cicd` si elle manque) |
 
 ## À tout moment
 

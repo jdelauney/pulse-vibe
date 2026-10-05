@@ -45,6 +45,7 @@ Dans le projet de la personne :
 - **Désigner une US, une spec ou un plan** en argument : par l'identifiant de l'US (`US-003`), par le nom du fichier ou son chemin, ou par un début de nom sans ambiguïté. Les fichiers se retrouvent avec le motif `aidd_docs/tasks/*/PLAN-SPEC-US-003-*.md` (idem `SPEC-US-…`, `US-…`).
 - **Argument absent ou introuvable** : lister les fichiers existants et demander lequel traiter (AskUserQuestion, le plus récent ou celui qui a une tâche `[~]` en premier, avec « (Recommandé) »). Ne jamais choisir à la place de la personne, même s'il n'y en a qu'un.
 - **Numéros de tâche uniques dans tout le projet** : un nouveau plan reprend la numérotation après le plus grand `Tn` de tous les plans de `aidd_docs/tasks/` (T1 pour le premier plan ; Tn+1 si le plus grand numéro existant est Tn). Ainsi un numéro de tâche désigne une seule tâche, dans les commits (`feat(Tn): …`) comme dans les rapports de relecture.
+- **Envoi du travail** : si un dépôt distant est relié (proposé par `/pulse:init`), chaque plan choisit une fois, au démarrage de sa réalisation, comment envoyer ses tâches : une branche pour l'US et une demande de fusion en brouillon (recommandé), directement sur la branche principale, ou rien. Le choix est noté dans la ligne « Envoi » du plan ; `/pulse:commit` l'applique après chaque tâche. La fusion d'une demande se fait toujours par la personne, sur le site du dépôt.
 - **Travail en parallèle** : deux US **indépendantes** (aucune dépendance entre elles, aucun fichier ni type d'information en commun) peuvent avancer en même temps, chacune dans sa session et son worktree. `/pulse:plan` les note dans la ligne « En parallèle avec » ; `/pulse:implement`, `/pulse:spirc`, `/pulse:status` et le guide le proposent. Les tâches d'un même plan s'enchaînent, jamais en parallèle.
 - **Le MVP** : ce sont les US **Indispensables**. Il est terminé quand les plans de toutes ces US sont terminés ; la tâche « Mettre en ligne le MVP » se trouve dans le plan de la dernière US Indispensable du parcours (`docs/user-stories.md`).
 - **Ancien projet** (`docs/specs/`, `docs/plans/`, `docs/revues/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
@@ -91,7 +92,7 @@ Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire av
 /pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us
           → /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
           → /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
-          → /pulse:deploy
+          → (/pulse:cicd) → /pulse:deploy
 ```
 
 Les étapes entre parenthèses sont facultatives. Pour travailler sur une branche : `/pulse:pr branche <US-XXX>` avant `/pulse:implement`, puis `/pulse:pr` pour ouvrir la demande de fusion.

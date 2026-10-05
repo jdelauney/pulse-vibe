@@ -48,6 +48,7 @@ contexte() {
   afficher "Règles communes Pulse" "$REF/regles-communes.md"
   case "$1" in
     init)
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Bannière" "$TPL/banniere.txt"
       afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
     brainstorm)
@@ -74,6 +75,7 @@ contexte() {
     spirc)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Travailler dans un worktree" "$REF/worktree.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
     prd) afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
@@ -87,18 +89,26 @@ contexte() {
     plan) afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
       qualite
-      afficher "Travailler dans un worktree" "$REF/worktree.md" ;;
+      afficher "Travailler dans un worktree" "$REF/worktree.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
     fix) qualite ;;
     review)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
     commit)
       afficher "Conventions Git" "$REF/git.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Modèle : .gitignore" "$TPL/gitignore.template" ;;
     pr)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Modèle : description de demande de fusion" "$TPL/pull-request.md" ;;
-    deploy) afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
+    cicd)
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template"
+      afficher "Conventions Git" "$REF/git.md" ;;
+    deploy)
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
     security)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : docs/securite.md" "$TPL/securite.md"

@@ -84,7 +84,7 @@ flowchart LR
 
 - Dépôt distant : {{…}}
 - Hébergeur : {{…}} ; mise en ligne : {{automatique à chaque envoi / manuelle}}
-- Contrôle automatique avant mise en ligne (CI) : {{outil, ou « à mettre en place avec /pulse:deploy production »}}
+- Contrôle automatique avant mise en ligne (CI) : {{outil, ou « à mettre en place avec /pulse:cicd »}}
 
 ## Mise en place
 

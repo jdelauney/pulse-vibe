@@ -1,8 +1,8 @@
 ---
-description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production avec contrôle automatique (CI)
+description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production (variables, services, retour arrière ; la CI se met en place avec /pulse:cicd)
 argument-hint: "[premiere | production] (détecté automatiquement si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git remote *) Bash(git push *) Bash(git log *) Bash(git branch *) Bash(git rev-parse *) Bash(node *verifier.js)
+allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git remote *) Bash(git push *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch *) Bash(git rev-parse *) Bash(node *verifier.js)
 ---
 
 # /pulse:deploy – Mettre en ligne
@@ -45,17 +45,9 @@ Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hé
 
 ## 3. Première mise en ligne
 
-### 3a. Créer le dépôt distant
+### 3a. Le dépôt distant
 
-Le dépôt distant est celui de « Hébergement et mise en ligne » (par exemple GitHub, GitLab…). Il est **privé** par défaut.
-
-- Si l'outil en ligne de commande du fournisseur est installé **et** connecté (vérifier son état de connexion avec la commande prévue par sa documentation) : proposer la commande qui crée un dépôt **privé**, le relie à ce dossier sous le nom `origin` et fait le premier envoi. Montrer la commande et expliquer chaque partie avant de la lancer, avec accord.
-- Sinon, guider pas à pas, d'après la documentation officielle du fournisseur :
-  1. Sur le site du fournisseur, créer un nouveau dépôt.
-  2. Nom du projet, visibilité **privée**, **sans** README ni fichier d'exclusion (le projet en a déjà).
-  3. Copier l'adresse du dépôt et me la coller ici.
-  4. Vous lancer ensuite `git remote add origin <adresse>` puis `git push -u origin main`.
-  Si une fenêtre de connexion au fournisseur s'ouvre au premier envoi, c'est normal : il faut l'accepter.
+Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/pulse:init`) : l'envoyer à jour (`git push`) et passer à 3b. Sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; le fournisseur est celui de « Hébergement et mise en ligne ». Si la personne répond « Non, plus tard », expliquer qu'une mise en ligne passe par un dépôt distant, et s'arrêter.
 
 ### 3b. Relier le dépôt à l'hébergeur (à faire par la personne, guidé)
 
@@ -84,8 +76,7 @@ Proposer une petite modification visible (par exemple le texte du titre), puis :
 Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en ligne, un contrôle qualité automatique vérifie le projet. Si le contrôle échoue, la nouvelle version défectueuse n'est pas publiée, et l'ancienne reste en ligne. »
 
 1. **Installer le contrôle** :
-   - lancer `pulse-aidd installer-ci` : il copie `scripts/verifier.js` (contrôle des secrets) et un exemple de CI dans le projet ;
-   - **adapter** cet exemple à la CI retenue dans « Hébergement et mise en ligne », d'après sa documentation officielle : emplacement et format du fichier, déclenchement à chaque envoi, puis les étapes « installer », `node scripts/verifier.js`, les contrôles automatiques et « construire » de « Commandes du projet ». Montrer le fichier avant de l'écrire. Si aucune CI n'est retenue, le dire et proposer `/pulse:tech` pour en choisir une, ou s'appuyer seulement sur l'hébergeur (point suivant) ;
+   - si aucune CI n'existe encore : appliquer l'étape **cicd** (`pulse-aidd etape cicd`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
    - si l'hébergeur le permet, le configurer pour exécuter ce contrôle **avant chaque mise en ligne** (commande de construction qui enchaîne `node scripts/verifier.js`, les contrôles du projet, puis la construction), d'après sa documentation ;
    - lancer `node scripts/verifier.js` pour vérifier qu'il passe.
 2. **Variables d'environnement** : lister les noms présents dans `.env.example` et dans « Secrets et variables d'environnement ». Guider la personne pour les saisir **elle-même** à l'endroit indiqué pour la production (réglages de l'hébergeur). Les valeurs ne doivent **jamais** être collées dans cette conversation. Après un ajout de variable, relancer un déploiement si l'hébergeur ne le fait pas seul.

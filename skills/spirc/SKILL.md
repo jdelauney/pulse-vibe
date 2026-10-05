@@ -2,7 +2,7 @@
 description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
 argument-hint: "[-axw] <US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:spirc – Spécifier, Planifier, Implémenter, Relire, Commiter
@@ -89,7 +89,7 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 
 ## Worktree
 
-Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`) : sinon le worktree ne les aurait pas. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même avec `-a` : c'est une décision de la personne ; dans la même ronde de questions que le worktree), puis « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`) : sinon le worktree ne les aurait pas. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Sans worktree, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ## [P] Planifier
 

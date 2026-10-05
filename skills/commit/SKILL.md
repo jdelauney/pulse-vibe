@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git push *) Bash(git symbolic-ref *) Bash(git worktree *) Bash(git merge *) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git branch *) Bash(git push *) Bash(git symbolic-ref *) Bash(git pull *) Bash(git switch *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) Bash(git worktree *) Bash(git merge *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -67,9 +67,11 @@ Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dan
 - **Commit refusé par un contrôle** : appliquer « Quand un contrôle refuse le commit » des Conventions Git (correction mécanique dans les fichiers de ce commit, 3 essais au plus, sinon s'arrêter et expliquer ; jamais `--no-verify`).
 - Afficher `git log --oneline -3` et expliquer la première ligne (identifiant court + message).
 
-### 7. Envoyer (seulement avec `push`)
+### 7. Envoyer
 
-- Branche courante : `git branch --show-current`. Pas de dépôt distant (`git remote`) : ne pas envoyer, proposer `/pulse:deploy`.
+- **Commit d'une tâche** : appliquer « 3. Envoyer après chaque tâche enregistrée » de la référence « Le dépôt distant et l'envoi du travail », selon la ligne « Envoi » de son plan. Si un dépôt distant existe et que cette ligne vaut encore « à choisir » : appliquer d'abord son § 2 (le choix est écrit dans le plan et enregistré au commit suivant ; en mode PR, sur la branche principale, les commits non envoyés se déplacent sur la branche de l'US comme le prévoit l'étape **pr**, section B.1).
+- **Autre commit** (documents, mémoire…) : envoyer seulement avec `push`.
+- Branche courante : `git branch --show-current`. Pas de dépôt distant (`git remote`) : ne pas envoyer ; avec `push`, proposer `/pulse:init` pour en relier un (ou `/pulse:deploy`).
 - `git push` (première fois pour cette branche : `git push -u origin <branche>`). **Jamais `--force`.** Envoi refusé parce que le dépôt distant a des changements plus récents : ne pas forcer ; expliquer et proposer `git pull` puis un nouvel envoi.
 - Sur la branche principale, rappeler que l'envoi met le site à jour si le déploiement automatique est en place.
 
@@ -80,7 +82,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 ## Suite
 
 - S'il reste des tâches dans le plan : prochaine étape `/pulse:implement <US-XXX> <tâche suivante>`.
-- Si le plan est terminé et qu'on est sur une **branche de travail** (pas la branche principale) : prochaine étape `/pulse:pr`, pour proposer la fusion.
+- Si le plan est terminé et que son « Envoi » est **PR** : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une autre **branche de travail** (pas la branche principale) : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et qu'il reste des US sans spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
 - Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree.md`).

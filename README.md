@@ -21,7 +21,8 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:review` | Relecture indépendante, test manuel, corrections | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
-| `/pulse:deploy` | Mise en ligne, déploiement continu, puis mode production (CI) | site en ligne |
+| `/pulse:cicd [proteger]` | Contrôles automatiques (CI) à chaque envoi et sur chaque demande de fusion : secrets, lint, tests, construction, adaptés au fournisseur du dépôt (GitHub Actions, GitLab CI…) ; `proteger` : n'accepter une fusion que si la CI est verte | fichier de CI, `scripts/verifier.js` |
+| `/pulse:deploy` | Mise en ligne et déploiement continu (CD), puis mode production (variables, services, retour arrière) | site en ligne |
 | `/pulse:spirc [-axw] <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Options `-a` (autonome), `-x` (examen renforcé) et `-w` (worktree), regroupables (`-axw`) | tout ce qui précède |
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
@@ -55,6 +56,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.
 - **Des références de qualité du code**, agnostiques, chargées à chaque implémentation et relecture (`pulse-aidd qualite`) : clean code, composants d'interface, sécurité du code, et `code-concepts` (odeurs de code, SOLID, refactorings).
 - **Une mémoire projet** (`aidd_docs/memory/`) : vision, choix techniques, pièges, glossaire du métier et décisions. Un hook l'injecte dans `CLAUDE.md` à l'ouverture de chaque session : l'IA la relit automatiquement, sans tout redécouvrir.
+- **Le dépôt distant et l'envoi** : `/pulse:init` propose de relier le projet à un dépôt distant (en créer un privé, ou relier un existant). Chaque plan choisit ensuite comment envoyer ses tâches : une branche par US avec une demande de fusion en brouillon mise à jour à chaque tâche (recommandé), directement sur la branche principale, ou rien.
 - **Le travail en parallèle** : un hook tient le registre des sessions Claude Code ouvertes sur le projet. Quand une autre session travaille déjà sur le même dossier, `/pulse:implement` et `/pulse:spirc` proposent un **worktree** (option `-w`) : une copie de travail sur sa propre branche, créée à partir du dernier commit local, puis fusionnée et supprimée à la fin. `/pulse:plan` repère les US **indépendantes** (aucune dépendance, aucun fichier ni donnée en commun) ; `/pulse:implement`, `/pulse:spirc`, `/pulse:status` et le guide proposent alors d'en mener une en parallèle, dans une deuxième session.
 - **Un garde-fou anti-secrets** (hook) qui bloque, avant qu'elles n'arrivent :
   - l'écriture d'une clé secrète dans un fichier de code ;
@@ -98,7 +100,7 @@ Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin up
 ```
 .claude-plugin/marketplace.json   catalogue (marketplace « pulseia »)
 .claude-plugin/plugin.json        manifeste du plugin
-skills/<commande>/SKILL.md        les 23 commandes
+skills/<commande>/SKILL.md        les 24 commandes
 agents/                           explorer, implementer, reviewer, verifier, security-auditor, designer, ui-critic, fixer
 hooks/hooks.json                  garde-fou anti-secrets, synchronisation de la mémoire, registre des sessions, régénération du guide
 scripts/                          garde-secrets.js, motifs.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
