@@ -11,6 +11,7 @@
 - **US** : US-{{XXX}} – {{titre}} · **Epic** : {{Titre de l'epic}} · **Priorité** : {{Indispensable | Essentiel | Optionnel}}
 - **Tâches** : {{nombre}} ({{Tn}} à {{Tm}})
 - **S'appuie sur** : {{plans d'autres US dont des tâches doivent être terminées avant (US-XXX), ou « aucun »}}
+- **En parallèle avec** : {{US-YYY, US-ZZZ (US non terminées qui peuvent avancer en même temps, dans une autre session et un worktree), ou « aucune »}}
 
 ## Ordre des tâches
 

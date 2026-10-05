@@ -1,4 +1,4 @@
-# Travailler dans un worktree
+# Travailler dans un worktree, et en parallèle
 
 Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-w`, ou sur proposition quand une autre session est ouverte). `<session>` est l'identifiant de la session, donné par la commande (« Identifiant de cette session »).
 
@@ -52,3 +52,15 @@ Quand le plan de l'US est terminé, ou quand la personne s'arrête, demander (As
 **Demande de fusion** : depuis le worktree, appliquer l'étape **pr** (`pulse-aidd etape pr`, section B) avec la branche `feat/us-xxx-<nom>`. Garder le worktree jusqu'à la fusion sur le site ; ensuite, `/pulse:status` propose de le supprimer.
 
 **Garder** : `ExitWorktree`, puis `pulse-aidd sessions --ici <session>`. Pour reprendre : `/pulse:implement -w US-XXX` ou `/pulse:spirc -w US-XXX` revient dans le même worktree.
+
+## 4. Suggérer une US à mener en parallèle
+
+Une seule fois par commande, au démarrage (après le choix du mode et du worktree), sans poser de question :
+
+1. Lire la ligne « En parallèle avec » du plan de l'US en cours.
+2. Garder les US citées dont le plan a encore des tâches `[ ]`, aucune tâche `[~]`, et pas de worktree en cours (`git worktree list` : pas de `.claude/worktrees/us-xxx-…` pour elles) : personne n'y travaille déjà.
+3. S'il en reste, l'indiquer en deux lignes, la première dans l'ordre du parcours :
+   « 💡 US-004 – <titre> peut avancer en même temps que celle-ci, sans toucher aux mêmes fichiers. Si vous le souhaitez, ouvrez une deuxième session Claude Code dans ce projet et lancez-y `/pulse:spirc -w US-004` : elle travaillera dans son propre worktree. »
+4. Sinon, ne rien dire. Ne jamais lancer la deuxième session ni un sous-agent à la place de la personne : c'est elle qui décide de travailler à deux sessions.
+
+Les tâches d'**un même plan** ne se mènent pas en parallèle : elles s'enchaînent, touchent souvent les mêmes fichiers, et chacune est testée à la main avant la suivante.

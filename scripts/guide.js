@@ -64,6 +64,13 @@ function lirePriorite(texte) {
   return { rang: rang === -1 ? PRIORITES.length : rang, libelle: m ? m[1] : "—" };
 }
 
+/** Les US indépendantes de celle du plan (ligne « **En parallèle avec** : US-004, US-006 (…) » ou « aucune »). */
+function lireParallele(texte) {
+  const m = /\*\*En parall[èe]le avec\*\*\s*:\s*([^\n]*)/i.exec(texte);
+  if (!m || /^\s*(aucune|\{\{)/i.test(m[1])) return [];
+  return (m[1].split("(")[0].match(/US-\d+/gi) || []).map((id) => id.toUpperCase());
+}
+
 function lireTitre(texte, id) {
   const h1 = /^#\s+(.+)$/m.exec(texte);
   const m = h1 && new RegExp(`${id}\\s*[–—-]?\\s*(.+)$`, "i").exec(h1[1]);
@@ -91,7 +98,7 @@ function lirePlans() {
         continue;
       }
       const cle = `${id}-${nom}`;
-      plans.push({ epic, id, cle, source, titre: lireTitre(texte, id), priorite: lirePriorite(texte), taches, guide: `${epic}/${cle}.md` });
+      plans.push({ epic, id, cle, source, titre: lireTitre(texte, id), priorite: lirePriorite(texte), parallele: lireParallele(texte), taches, guide: `${epic}/${cle}.md` });
     }
   }
   plans.sort((a, b) => a.priorite.rang - b.priorite.rang || premierNumero(a) - premierNumero(b) || a.cle.localeCompare(b.cle));
@@ -165,6 +172,23 @@ function commandeSuivante(plan, tache) {
   return tache.statut === "en-cours" ? `/pulse:review ${tache.id}` : `/pulse:implement ${plan.id} ${tache.id}`;
 }
 
+/** Un worktree est-il déjà ouvert pour cette US (dossier .claude/worktrees/us-xxx-…) ? */
+function aUnWorktree(id) {
+  const dossier = path.join(".claude", "worktrees");
+  return fs.existsSync(dossier) && fs.readdirSync(dossier).some((f) => f.toLowerCase().startsWith(`${id.toLowerCase()}-`));
+}
+
+/** La première US indépendante de celle du plan, encore à faire et à laquelle personne ne travaille. */
+function usEnParallele(plans, plan) {
+  return plans.find(
+    (p) =>
+      plan.parallele.includes(p.id) &&
+      p.taches.some((t) => t.statut === "a-faire") &&
+      !p.taches.some((t) => t.statut === "en-cours") &&
+      !aUnWorktree(p.id),
+  );
+}
+
 function ecrireIndex(plans, nom) {
   const suite = prochaineTache(plans);
   const lignes = [
@@ -183,6 +207,10 @@ function ecrireIndex(plans, nom) {
   if (suite) {
     lignes.push(`Prochaine étape : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}) :`, "");
     lignes.push("```", commandeSuivante(suite.plan, suite.tache), "```", "");
+    const autre = usEnParallele(plans, suite.plan);
+    if (autre) {
+      lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc -w ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; elle avancera dans son propre worktree).`, "");
+    }
   } else {
     lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
   }
@@ -260,7 +288,7 @@ function ecrirePlan(plan, nom) {
     `# ${nomPlan(plan)} – ${nom}`,
     "",
     `> Généré automatiquement à partir de \`${plan.source}\`. Retour au sommaire : [index.md](../index.md).`,
-    `> Epic : ${plan.epic} · Priorité : ${plan.priorite.libelle}`,
+    `> Epic : ${plan.epic} · Priorité : ${plan.priorite.libelle}${plan.parallele.length ? ` · Peut avancer en parallèle de : ${plan.parallele.join(", ")}` : ""}`,
     "",
   ];
   let avant = null;

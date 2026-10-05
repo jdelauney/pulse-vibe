@@ -89,7 +89,7 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 
 ## Worktree
 
-Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`) : sinon le worktree ne les aurait pas. Toute la suite (réalisation, relecture, commits) se fait dans le worktree.
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`) : sinon le worktree ne les aurait pas. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ## [P] Planifier
 

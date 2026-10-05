@@ -44,7 +44,7 @@ Les **faits** se cherchent dans les documents et le code ; seules les **décisio
 
 Pour chaque remarque : la réponse directe, la raison (règle de découpage, priorité MoSCoW, dépendance, sécurité), et, si utile, une alternative. Pour expliquer un choix de code ou de structure, s'appuyer sur les règles de qualité (`pulse-aidd qualite`).
 
-Appliquer les **règles du plan** (rappelées dans le modèle « plan » ci-dessus et dans `/pulse:plan`) à toute tâche nouvelle ou modifiée : découpage vertical (visible et testable en moins de 2 minutes), 3 fichiers et 3 critères au plus, première tâche = squelette (s'il n'est pas en place), et « Mettre en ligne le MVP » seulement dans le plan de la dernière US Indispensable du parcours. Un plan ne couvre qu'une US : une tâche qui relève d'une autre US va dans le plan de celle-ci.
+Appliquer les **règles du plan** (rappelées dans le modèle « plan » ci-dessus et dans `/pulse:plan`) à toute tâche nouvelle ou modifiée : découpage vertical (visible et testable en moins de 2 minutes), 3 fichiers et 3 critères au plus, première tâche = squelette (s'il n'est pas en place), et « Mettre en ligne le MVP » seulement dans le plan de la dernière US Indispensable du parcours. Un plan ne couvre qu'une US : une tâche qui relève d'une autre US va dans le plan de celle-ci. Si les fichiers ou les dépendances des tâches changent, revérifier la ligne « En parallèle avec » (règle 9 de `/pulse:plan`) de ce plan et des plans qu'elle cite.
 
 **Ce qu'on ne touche pas** :
 - une tâche `[x]` (terminée et enregistrée) : on ne la modifie pas ; un changement devient une **nouvelle tâche** ;

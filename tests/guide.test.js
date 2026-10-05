@@ -161,6 +161,29 @@ test("plusieurs plans : MVP d'abord, la mise en ligne après toutes ses tâches,
   assert.match(lire(d, "index.md"), /```\n\/pulse:review T5\n```/, "une tâche en cours passe avant les autres");
 });
 
+test("US indépendante : proposée dans une deuxième session, sauf si on y travaille déjà ou si elle est terminée", () => {
+  const parallele = (texte) => PLAN_US1.replace("**Priorité** : Indispensable", `**Priorité** : Indispensable\n- **En parallèle avec** : ${texte}`);
+  const d = projet({ [`${TACHES.epic}/${TACHES.us1}`]: parallele("US-006 (aucun fichier ni donnée en commun avec US-002)"), "partager/PLAN-SPEC-US-006-exporter-liste": PLAN_US6 });
+  lancer(d);
+  assert.match(lire(d, "index.md"), /```\n\/pulse:review T2\n```\n\n💡 En même temps, dans une deuxième session Claude Code : `\/pulse:spirc -w US-006` \(US-006 – Exporter la liste/);
+  assert.doesNotMatch(lire(d, "index.md"), /spirc -w US-002/, "une US citée dans la parenthèse n'est pas retenue");
+  assert.match(lire(d, US1), /Peut avancer en parallèle de : US-006/);
+
+  fs.mkdirSync(path.join(d, ".claude", "worktrees", "us-006-exporter-liste"), { recursive: true });
+  lancer(d);
+  assert.doesNotMatch(lire(d, "index.md"), /spirc -w/, "un worktree est déjà ouvert pour US-006");
+
+  fs.rmSync(path.join(d, ".claude"), { recursive: true });
+  ecrire(d, "partager/PLAN-SPEC-US-006-exporter-liste", PLAN_US6.replace("- [ ] **T5", "- [x] **T5"));
+  lancer(d);
+  assert.doesNotMatch(lire(d, "index.md"), /spirc -w/, "US-006 terminée");
+
+  ecrire(d, `${TACHES.epic}/${TACHES.us1}`, parallele("aucune"));
+  ecrire(d, "partager/PLAN-SPEC-US-006-exporter-liste", PLAN_US6);
+  lancer(d);
+  assert.doesNotMatch(lire(d, "index.md") + lire(d, US1), /spirc -w|parallèle de/);
+});
+
 test("mode hook : régénère seulement quand un plan de aidd_docs/tasks/ est modifié, sans rien afficher", () => {
   const d = projet();
   lancer(d);

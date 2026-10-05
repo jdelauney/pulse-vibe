@@ -44,7 +44,7 @@ Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` �
 - **Worktree** : sans `-w`, appliquer « 1. Faut-il un worktree ? » de la référence worktree ; si la question se pose, la poser **dans le même appel** AskUserQuestion que le mode.
 - **Avec un worktree** : le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans le worktree.
 
-Annoncer le choix en une ligne (« Mode : sous-agent · dans le worktree `us-003-<nom>` »).
+Annoncer le choix en une ligne (« Mode : sous-agent · dans le worktree `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ### 1. Choisir la ou les tâches
 
