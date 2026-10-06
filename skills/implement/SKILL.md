@@ -124,3 +124,7 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 **Dans un worktree** : quand le plan est terminé, ou si la personne s'arrête, appliquer « 3. Terminer : rassembler le travail » de la référence worktree.
 
 Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (avec `-w` pour revenir dans le worktree gardé).
+
+## Contraintes d'implémentation
+- Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite`.
+- Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
