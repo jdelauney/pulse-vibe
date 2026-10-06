@@ -27,7 +27,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
 | `/pulse:learn [<notion>]` | Un professeur de programmation, limité au développement logiciel : leçon, `feynman <notion>` (vous expliquez, il vous aide à combler les trous), `exercice <notion>`, `parcours "<objectif>"` ; adapté à votre niveau, illustré avec votre projet. Sans argument : révision des notions à revoir | `docs/apprentissage.md` (carnet, facultatif) |
-| `/pulse:security` | Audit S1 à S11 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
+| `/pulse:security` | Audit S1 à S12 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez | `docs/design.md` |
 | `/pulse:ui maquettes <US-003>` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » | `docs/design/audits/ui-<date>.md` |
@@ -64,8 +64,8 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
   - un commit contenant une clé ou un `.env` ;
   - un push alors qu'un `.env` est suivi par Git.
   Il reconnaît les clés Stripe, Supabase (`service_role`, `sb_secret_`), Resend, OpenAI, Anthropic, GitHub, AWS, SendGrid, Slack, les clés privées et les mots de passe dans les adresses de base de données. La clé **publique** Supabase est autorisée.
-- **Des modèles** pour tous les documents, le `CLAUDE.md` du projet, `.gitignore`, `.env.example`, un exemple de CI à adapter, la mention de confidentialité et la CI GitHub.
-- **Un contrôle automatique des secrets avant mise en ligne** (`scripts/verifier.js`), installé dans le projet en mode production et branché sur la CI ou l'hébergeur retenus.
+- **Des modèles** pour tous les documents, le `CLAUDE.md` du projet, `.gitignore`, `.env.example`, un exemple de CI à adapter et la mention de confidentialité.
+- **Un contrôle automatique des secrets avant mise en ligne** (`scripts/verifier.js`), installé dans le projet par `/pulse:cicd` et branché sur la CI ou l'hébergeur retenus.
 
 ## Installation
 

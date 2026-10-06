@@ -73,7 +73,7 @@ Pré-remplir les 4 réponses à partir de l'US (et des specs déjà écrites qui
 
 Les deux autres (secrets utilisés, contrôle des formulaires) sont des choix techniques : appliquer « Secrets et variables d'environnement » et « Données et contrôle d'accès » de `docs/technical.md` ainsi que la checklist, puis les expliquer.
 
-Lister enfin les points de la checklist sécurité (S1 à S11) qui s'appliquent au projet.
+Lister enfin les points de la checklist sécurité (S1 à S12) qui s'appliquent au projet.
 
 ### 3. Écrire et valider
 

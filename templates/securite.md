@@ -1,6 +1,6 @@
 # Audit de sécurité – {{NOM_DU_PROJET}} – {{DATE}}
 
-> Produit par `/pulse:security`. Référence : checklist sécurité Pulse (S1 à S11).
+> Produit par `/pulse:security`. Référence : checklist sécurité Pulse (S1 à S12).
 
 ## Résumé
 

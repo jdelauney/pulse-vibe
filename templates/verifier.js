@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Contrôle automatique du projet, à lancer avant chaque mise en ligne et dans la CI
-// (installé par /pulse:deploy en mode production).
+// (installé par /pulse:cicd, via pulse-aidd installer-ci).
 //
 // Vérifie que :
 //  1. aucun fichier d'environnement (.env, .env.*) n'est enregistré dans Git ;
