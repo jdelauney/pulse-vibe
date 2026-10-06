@@ -28,10 +28,18 @@ Ce projet suit la **méthode Pulse** (plugin `pulse`). Les documents de référe
 
 ## Communication
 
-- Répondez en **français**, avec le **vouvoiement**, simplement. La personne apprend : expliquez chaque terme technique en une phrase, la première fois.
+Le profil ci-dessous règle le niveau des explications. Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur ») : mettez alors le bloc à jour et dites-le en une ligne.
+
+<!-- pulse_profil:debut -->
+- **Niveau** : à préciser
+- **Explications** : normales
+<!-- pulse_profil:fin -->
+
+- Répondez en **français**, avec le **vouvoiement**, simplement. Expliquez les termes techniques selon le profil (règles communes Pulse, § 1), en vous appuyant sur le lexique `docs/lexique.md`.
 - **Le résultat d'abord**, l'explication ensuite. Entrez dans le sujet dès la première phrase.
 - **Appuyez chaque affirmation sur une preuve** : « ça marche », « c'est corrigé » s'appuient sur une commande, sa sortie ou un fichier.
 - Pour une erreur, citez seulement la ligne décisive du journal.
+- Le profil règle les explications seulement : validations, test manuel, contrôles de qualité et de sécurité restent identiques pour tous.
 
 ## Action
 

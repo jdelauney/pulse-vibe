@@ -84,3 +84,11 @@ test("verifier.js : générique, réussit sans page d'accueil imposée, échoue 
   fs.writeFileSync(path.join(d, "config.txt"), `cle=${cle}\n`);
   assert.strictEqual(lancer(VERIFIER, [], d).status, 1, "secret détecté");
 });
+
+test("CLAUDE.md créé contient le bloc profil, à compléter par /pulse:init", () => {
+  const parent = tmp();
+  const r = lancer(NOUVEAU, ["Profil", "--oui", "--sans-git"], parent);
+  assert.strictEqual(r.status, 0, r.stderr);
+  const claude = lire(path.join(parent, "profil"), "CLAUDE.md");
+  assert.match(claude, /<!-- pulse_profil:debut -->\r?\n- \*\*Niveau\*\* : à préciser\r?\n- \*\*Explications\*\* : normales\r?\n<!-- pulse_profil:fin -->/);
+});
