@@ -32,7 +32,7 @@ Phrase d'accueil (première séance) : « Je suis votre professeur de programmat
 
 ## Avant de commencer
 
-1. **Lire le carnet** `docs/apprentissage.md` s'il existe : niveau, objectif, parcours en cours, notions et rappels dus (date du rappel ≤ date du jour).
+1. **Lire le carnet** `docs/apprentissage.md` s'il existe : niveau, objectif, parcours en cours, notions et rappels dus (date du rappel ≤ date du jour). Lire aussi `docs/lexique.md` : les termes « vu » non encore travaillés sont de bonnes notions à proposer, et une notion travaillée avec succès passe à « maîtrisé » dans le lexique.
 2. **Lire le contexte du projet** s'il existe : `docs/technical.md` (« Pile retenue »), `aidd_docs/memory/glossary.md`, et les fichiers de code utiles à la notion (Glob, Grep, Read). Sans projet, enseigner avec des exemples neutres (Pédagogie § 7).
 3. **Carnet absent** : expliquer en une phrase à quoi il sert, demander l'accord pour le créer (AskUserQuestion : « Oui, créer mon carnet (Recommandé) » / « Non, pas de suivi »), puis évaluer le niveau en 2 ou 3 questions (Pédagogie § 4). En cas de refus, enseigner quand même, en lecture seule.
 

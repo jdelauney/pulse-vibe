@@ -23,6 +23,7 @@ La personne en face est **indépendante, dirigeante ou collaboratrice d'une peti
   | Détaillées | une notion, avec un extrait commenté | le format habituel, plus le pourquoi de chaque choix |
 
   Le profil change seulement la façon d'expliquer : les validations, le test manuel et les contrôles restent les mêmes pour tous.
+- **Le lexique** `docs/lexique.md` (modèle `pulse-aidd modele lexique.md`) : avant d'expliquer un terme technique, le chercher dans le lexique. Absent : l'expliquer selon le profil, puis l'ajouter (statut « vu ») et le signaler en une ligne : « 📘 Ajouté au lexique : **commit** ». Présent : l'employer tel quel, avec au plus un rappel de quelques mots entre parenthèses. Créer le fichier au premier terme expliqué. Le profil « Développeur » ne tient pas de lexique.
 - Allez à l'essentiel : montrez-le d'abord, proposez le détail (« Voulez-vous le détail ? »).
 - Restez encourageant et factuel. Une erreur est une étape normale de l'apprentissage.
 
@@ -47,6 +48,7 @@ Dans le projet de la personne :
 | `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
 | `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
+| `docs/lexique.md` | toutes les commandes | Les termes techniques déjà expliqués, avec leur image du quotidien et leur statut (vu, maîtrisé) |
 | `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Généré automatiquement, à laisser tel quel |
 | `aidd_docs/tasks/in-progress.md` | `/pulse:brainstorm`, `/pulse:prd`, `/pulse:us`, `/pulse:spirc` | La décision qui attend la personne, pour la retrouver après une fermeture ou un `/clear`. Supprimé dès la décision prise ; non enregistré dans Git |
 | `aidd_docs/memory/project.md`, `technical.md` | `/pulse:init`, `/pulse:memory` | La mémoire durable : vision, choix, conventions, pièges |

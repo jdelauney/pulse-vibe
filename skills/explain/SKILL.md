@@ -15,7 +15,7 @@ Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. 
 
 Ce qu'il faut expliquer : `$ARGUMENTS`
 
-Cette commande **travaille en lecture seule**. Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
+Cette commande **travaille en lecture seule** sur le code ; elle écrit seulement dans le lexique `docs/lexique.md`. Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
 
 ## Choisir la cible
 
@@ -40,5 +40,7 @@ Cette commande **travaille en lecture seule**. Son but : apprendre à **lire** l
 ## Pour finir
 
 Poser **une question de vérification** à choix multiples (AskUserQuestion, 3 réponses possibles) sur ce qui vient d'être expliqué, par exemple « Que se passe-t-il si le champ titre est vide ? ». Après la réponse, confirmer ou corriger avec bienveillance, puis proposer d'expliquer autre chose.
+
+Bonne réponse sur un terme du lexique : passer son statut à « maîtrisé ». Terme nouveau rencontré dans l'explication : l'ajouter au lexique (règle commune § 1).
 
 Pour cette commande, le bloc de fin de commande est facultatif.

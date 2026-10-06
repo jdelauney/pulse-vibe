@@ -126,7 +126,7 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
    - les 💡 suggestions s'appliquent à la demande de la personne.
    - **Deux cycles de correction au maximum.** Si un point bloquant persiste : arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
 4. **Le test par la personne** (toujours, même avec `-a`) : présenter en quelques lignes le verdict et les 3 points les plus importants **en langage simple**, puis les étapes du test manuel (en commençant par les critères ❓ du verifier) et comment ouvrir l'appli (la commande « lancer en local » de « Commandes du projet » de `docs/technical.md`). Demander « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, quelque chose ne va pas ». Si non : recueillir ce qui ne va pas, et le traiter comme un constat (étape 3).
-5. **💡 La notion du jour** : choisir **une** notion de programmation présente dans le code de la tâche, montrer un extrait de 3 à 8 lignes et l'expliquer simplement.
+5. **💡 La notion du jour** : choisir **une** notion de programmation présente dans le code de la tâche, montrer un extrait de 3 à 8 lignes et l'expliquer simplement. Choisir de préférence une notion absente du lexique, puis l'y ajouter (règle commune § 1, « Le lexique »).
 
 ### [C] Commiter
 

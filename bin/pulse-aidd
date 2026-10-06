@@ -40,6 +40,8 @@ qualite() {
   afficher "Sécurité du code" "$REF/qualite/securite-code.md"
 }
 
+lexique() { afficher "Modèle : docs/lexique.md" "$TPL/lexique.md"; }
+
 lister_references() {
   (cd "$REF" && find . -type f | sed 's|^\./||' | sort)
 }
@@ -77,7 +79,8 @@ contexte() {
       afficher "Travailler dans un worktree" "$REF/worktree.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
-      afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
+      afficher "Modèle : rapport de revue" "$TPL/revue.md"
+      lexique ;;
     prd) afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
     us)
       afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
@@ -90,8 +93,9 @@ contexte() {
     implement)
       qualite
       afficher "Travailler dans un worktree" "$REF/worktree.md"
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
-    fix) qualite ;;
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      lexique ;;
+    fix) qualite; lexique ;;
     review)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
@@ -130,8 +134,10 @@ contexte() {
       afficher "Modèle : rapport d'audit d'interface" "$TPL/revue-ui.md" ;;
     learn)
       afficher "Pédagogie du professeur" "$REF/pedagogie.md"
-      afficher "Modèle : docs/apprentissage.md" "$TPL/apprentissage.md" ;;
-    auto-fix|status|explain|guide) ;;
+      afficher "Modèle : docs/apprentissage.md" "$TPL/apprentissage.md"
+      lexique ;;
+    explain) lexique ;;
+    auto-fix|status|guide) ;;
     *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
   esac
 }

@@ -96,3 +96,11 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.ok(r.stdout.includes("===== Modèle : demande d'aide ====="));
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
+
+test("contexte implement, spirc, fix, learn et explain : modèle du lexique", () => {
+  for (const commande of ["implement", "spirc", "fix", "learn", "explain"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Modèle : docs/lexique.md ====="), commande);
+  }
+});

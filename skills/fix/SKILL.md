@@ -86,7 +86,7 @@ Preuve   : <commande ou test refait par la personne>
 Pour l'éviter : <réflexe à retenir>
 ```
 
-- **💡 La notion du jour** : la notion de programmation au cœur de l'erreur (ordre de chargement, portée d'une variable, asynchrone, contrôle d'accès…), en 3 à 6 lignes.
+- **💡 La notion du jour** : la notion de programmation au cœur de l'erreur (ordre de chargement, portée d'une variable, asynchrone, contrôle d'accès…), en 3 à 6 lignes. Choisir de préférence une notion absente du lexique, puis l'y ajouter (règle commune § 1, « Le lexique »).
 - Si la cause est un **piège qui peut revenir** : proposer de l'ajouter à la mémoire (section « Pièges et leçons » de `aidd_docs/memory/technical.md`) en montrant la ligne exacte.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si la correction touche une tâche en cours ou plusieurs fichiers, sinon `/pulse:commit` (message `fix(<Tâche>): …`, ou `fix: …` hors tâche).
