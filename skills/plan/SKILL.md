@@ -51,7 +51,7 @@ Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spe
 
 1. Construire le plan selon ces règles, avec le modèle de plan. Numéroter à la suite des autres plans (T1, T2… pour le premier ; Tn+1, Tn+2… si le plus grand numéro existant est Tn).
 2. Compter les tâches : viser **1 à 4** pour une US (hors mise en place et mise en ligne). Au-delà, le signaler et proposer de découper l'US en deux (`/pulse:us`, puis une spec et un plan pour chacune).
-3. Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`.
+3. Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`. **Ajouts proposés par Pulse** : une tâche qui introduit un élément absent de la spec (bibliothèque, écran, règle, réglage) le signale dans la section « Ajouts proposés par Pulse » du plan, validée avec le plan. Sinon, supprimer cette section.
 4. Présenter le plan sous forme de kanban résumé (titres seulement), avec la ligne « En parallèle avec » et, si d'autres plans sont mis à jour en conséquence, lesquels ; demander validation. Si la personne veut des changements : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques.
 5. Lancer `pulse-aidd guide` : il produit le guide de réalisation `docs/guide/` (les commandes à copier, tâche par tâche). Le présenter en une phrase : « Votre carnet de route est dans `docs/guide/index.md` ; il se met à jour tout seul. »
 

@@ -43,6 +43,13 @@ flowchart LR
   - Dépend de : toutes les tâches des US Indispensables
   - Vérification : l'adresse s'ouvre sur un téléphone et le parcours principal fonctionne
 
+## Ajouts proposés par Pulse
+
+<!-- Seulement si une tâche introduit un élément absent de la spec ; sinon supprimer cette section, avec ce commentaire. -->
+
+| Détail | Proposition | Pourquoi ça compte | Tâche | Décision |
+|---|---|---|---|---|
+
 ## Points d'attention
 
 | Risque | Tâche | Ce qu'on prévoit |

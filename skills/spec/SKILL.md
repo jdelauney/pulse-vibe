@@ -77,6 +77,8 @@ Lister enfin les points de la checklist sécurité (S1 à S12) qui s'appliquent 
 
 ### 3. Écrire et valider
 
+**Ajouts proposés par Pulse** : relever tout ce que la spec ajoute au-delà de l'US et du PRD (sécurité, confort, bibliothèque, écran ou message supplémentaire) et le présenter dans la section « Ajouts proposés par Pulse », une ligne par ajout, avec « Pourquoi ça compte » en langage courant. Faire trancher chaque ligne (AskUserQuestion, choix multiple « Lesquels gardez-vous ? ») ; les lignes imposées par la checklist sécurité portent « exigé par la sécurité » et s'expliquent sans se négocier. Un ajout refusé sort de la spec ; s'il reste une bonne idée, il va dans `docs/prd.md` (« En attente »).
+
 Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Présenter un résumé en 5 lignes maximum (US, écrans, données, services, points de sécurité) et demander validation. Plusieurs US demandées : passer à la suivante seulement après cette validation.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan US-XXX` (ou `/pulse:ui maquettes US-XXX` d'abord, si la spec a des écrans et que la personne veut les voir avant de construire).

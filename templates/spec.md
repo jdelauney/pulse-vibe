@@ -89,7 +89,15 @@ erDiagram
 
 Points de la checklist sécurité qui s'appliquent : {{identifiants de la checklist}}
 
-## 9. Fichiers
+## 9. Ajouts proposés par Pulse
+
+Ce que cette spec ajoute au-delà de l'US et du PRD. Chaque ligne est validée par la personne ; une ligne « exigé par la sécurité » est expliquée et reste en place.
+
+| Détail | Proposition | Pourquoi ça compte | Décision |
+|---|---|---|---|
+| {{ex. mots de passe}} | {{ex. les enregistrer sous une forme illisible (hachage)}} | {{ex. une fuite de la base ne révélerait aucun mot de passe}} | {{accepté · refusé · exigé par la sécurité}} |
+
+## 10. Fichiers
 
 Organisation générale : voir « Organisation des fichiers » dans `docs/technical.md`.
 
@@ -97,7 +105,7 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 |---|---|---|---|
 | | | | |
 
-## 10. Vérifications
+## 11. Vérifications
 
 | Ce qu'on vérifie | Comment | US / critère |
 |---|---|---|
@@ -107,17 +115,17 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 | L'écran reste utilisable sur téléphone | à la main | |
 | {{règle métier délicate}} | {{test automatique, si la pile en prévoit}} | |
 
-## 11. Points d'attention
+## 12. Points d'attention
 
 | Risque | Conséquence | Ce qu'on prévoit |
 |---|---|---|
 | {{ou « aucun identifié »}} | | |
 
-## 12. Questions ouvertes
+## 13. Questions ouvertes
 
 - {{questions à trancher par la personne avant le plan, ou « aucune »}}
 
-## 13. Définition de « terminé »
+## 14. Définition de « terminé »
 
 Une tâche est terminée quand :
 - ses critères d'acceptation sont vérifiés à la main par la personne ;

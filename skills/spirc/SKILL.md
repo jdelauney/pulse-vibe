@@ -111,6 +111,7 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
 3. À son retour :
    - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse.
    - **Bloqué** sur une action manuelle (appliquer un schéma dans la console du fournisseur, créer un compte, saisir une variable chez l'hébergeur) : guider la personne pas à pas, puis relancer.
+   - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
    - **Terminé** : passer à l'examen. Les points « À signaler » sur `docs/` sont traités par vous (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
 
 ### [R] Relire et vérifier (eXaminer)

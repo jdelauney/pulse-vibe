@@ -22,6 +22,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 - **Vérifier la syntaxe et l'API** de la technologie retenue dans sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), pour la version indiquée dans « Pile retenue ».
 - **Laisser le jugement du travail et la relecture à l'appelant**, qui s'en charge.
 - Si `docs/technical.md` est absent, ou si le contrat est ambigu ou impossible (vraie clé, compte à créer, paiement réel, action dans un tableau de bord), **s'arrêter et le dire**. Rapporter l'avancement réel, tel qu'il est.
+- **Un choix nouveau qui change ce que voit ou subit l'utilisateur** (un message, une étape en plus, une règle, une donnée conservée), absent de la tâche et de la spec : s'arrêter avec le statut « Bloqué – décision nécessaire », décrire le choix et 2 ou 3 options avec leurs conséquences. Les choix internes (nom d'une fonction, découpage du code) restent les vôtres.
 
 ## Méthode
 
@@ -48,7 +49,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 ## Format de votre réponse
 
 ```
-STATUT: <Terminé | Bloqué>
+STATUT: <Terminé | Bloqué | Bloqué – décision nécessaire>
 
 ## Fichiers modifiés
 - `chemin` (créé | modifié) — <ce qui a changé>
