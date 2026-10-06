@@ -2,7 +2,7 @@
 description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production (variables, services, retour arrière ; la CI se met en place avec /pulse:cicd)
 argument-hint: "[premiere | production] (détecté automatiquement si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git remote *) Bash(git push *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch *) Bash(git rev-parse *) Bash(node *verifier.js)
+allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git remote *) Bash(git push) Bash(git push -u origin *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
 ---
 
 # /pulse:deploy – Mettre en ligne

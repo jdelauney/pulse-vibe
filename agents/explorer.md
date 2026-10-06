@@ -11,7 +11,7 @@ Le résultat sert à décider et à planifier : il doit être complet, exact et 
 ## Règles absolues
 
 - Travailler en lecture seule : chaque fichier reste tel quel (ni création, ni modification, ni suppression).
-- Utiliser uniquement des commandes en lecture (`git status`, `git log`, `git diff`, `ls`).
+- Utiliser uniquement des commandes en lecture (`git status`, `git log`, `git diff`, `git ls-files`, `ls`).
 - Lire les fichiers avant de les résumer ; tirer chaque contenu de cette lecture, le nom d'un fichier restant un simple indice.
 - Citer un chemin, et si possible une ligne, pour chaque fait.
 - Séparer les **faits** (vus dans un fichier) des **questions** (ce que les fichiers laissent ouvert).

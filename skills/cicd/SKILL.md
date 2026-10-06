@@ -2,7 +2,7 @@
 description: Mettre en place l'intégration continue (CI) - contrôles automatiques (secrets, lint, tests, construction) à chaque envoi et sur chaque demande de fusion, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale
 argument-hint: "[proteger] (vide : installer ou mettre à jour la CI)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git remote *) Bash(git branch *) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit *) Bash(git push *) Bash(node *verifier.js) Bash(gh auth status*) Bash(gh run *) Bash(glab auth status*) Bash(glab ci *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git remote *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit *) Bash(git push) Bash(git push -u origin *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*)
 ---
 
 # /pulse:cicd – Les contrôles automatiques (CI)

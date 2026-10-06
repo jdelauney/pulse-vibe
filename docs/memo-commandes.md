@@ -66,6 +66,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:get-help` | « Je suis bloqué » : une demande d'aide prête à envoyer, sans vos secrets |
 | `/pulse:guide` | « Quelle commande je tape maintenant ? » (ouvrez aussi `docs/guide/index.md`) |
 | `/pulse:memory retenir "…"` | « Je veux que l'IA s'en souvienne la prochaine fois » |
+| `/pulse:memory compacter` | « Pulse me dit que la mémoire est presque pleine » |
 
 ## Les 4 réflexes
 

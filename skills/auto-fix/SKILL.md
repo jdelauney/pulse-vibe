@@ -2,7 +2,7 @@
 description: Faire passer au vert tous les contrôles automatiques du code (syntaxe, lint, types, formatage), en confiant les corrections à des agents en parallèle
 argument-hint: "[--detail]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Read Glob Grep
+allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git diff *) Read Glob Grep Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:auto-fix – Corriger les erreurs automatiquement détectables
@@ -78,6 +78,8 @@ Relancer les contrôles de l'étape 1.
 Erreurs corrigées : <n> · restantes : <m> · cycles : <k>/3
 Fichiers modifiés : <liste>   (git diff --stat)
 ```
+
+Si des fichiers corrigés appartiennent à une tâche d'un plan (fichiers listés par la tâche) : ajouter une ligne au journal de ce plan (date, tâche, commit à venir, « correction automatique : <n> erreurs <outil> »), enregistrée avec les corrections.
 
 Erreurs restantes : pour chacune, l'expliquer en langage simple et proposer l'action (ex. « une fonction attend un nombre et reçoit un texte : à décider avec vous, car corriger change le comportement »). Avec `--detail` : la liste de toutes les corrections.
 

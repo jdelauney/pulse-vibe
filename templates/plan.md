@@ -58,5 +58,7 @@ flowchart LR
 
 ## Journal
 
+> Une ligne par événement (règles communes § 7) : tâche enregistrée, plan validé ou modifié, correction, annulation, test groupé. La remarque est obligatoire pour un mode autonome, un test reporté ou non concluant, une relecture absente ou un constat laissé sans correction.
+
 | Date | Tâche | Commit | Remarque (écart, limite connue, idée pour plus tard) |
 |---|---|---|---|

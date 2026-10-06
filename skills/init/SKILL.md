@@ -2,7 +2,7 @@
 description: Démarrer ou reprendre un projet Pulse - prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle
 argument-hint: "[nom du projet]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git rm *) Bash(git commit *) Bash(git rev-parse *) Bash(git log *) Bash(git remote *) Bash(git branch *) Bash(git push *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config user.name) Bash(git config user.email) Bash(git config --global user.name *) Bash(git config --global user.email *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git rm docs/*) Bash(git commit *) Bash(git rev-parse *) Bash(git log *) Bash(git remote *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -M main) Bash(git push) Bash(git push -u origin *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *)
 ---
 
 # /pulse:init – Démarrer et se repérer

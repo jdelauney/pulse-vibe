@@ -6,6 +6,8 @@
 //    chargé automatiquement à chaque session ;
 //  - les fichiers de internal/ et external/ sont listés, à lire seulement si la tâche le demande.
 // Met aussi à jour la liste des fichiers de aidd_docs/memory/README.md, entre ses marqueurs.
+// Signale une mémoire chargée à chaque session qui atteint SEUIL_COMPACTAGE de LIMITE_MEMOIRE lignes :
+// elle occupe le contexte de chaque conversation, et /pulse:memory compacter la resserre.
 // En mode hook, rappelle aussi le travail en cours (aidd_docs/tasks/in-progress.md) : une décision
 // laissée en attente avant la fermeture de la session, un /clear ou un compactage.
 //
@@ -33,6 +35,8 @@ const LISTE_DEBUT = "<!-- fichiers:debut -->";
 const LISTE_FIN = "<!-- fichiers:fin -->";
 const EN_COURS = path.join("aidd_docs", "tasks", "in-progress.md");
 const LIMITE_EN_COURS = 2000;
+const LIMITE_MEMOIRE = 200;
+const SEUIL_COMPACTAGE = 0.95;
 const DOSSIER_WORKTREES = path.join(".claude", "worktrees");
 const NOTE_A_LA_DEMANDE = "<!-- à lire seulement si la tâche le demande, non chargé automatiquement -->";
 
@@ -64,6 +68,16 @@ function fichiersRacine() {
     .filter((e) => e.isFile() && e.name.endsWith(".md") && !EXCLUS.has(e.name))
     .map((e) => versPosix(path.join(DOSSIER_MEMOIRE, e.name)))
     .sort();
+}
+
+function lignesChargees(racine) {
+  return racine.reduce((total, f) => total + (lireOuNull(f) ?? "").split(/\r?\n/).length, 0);
+}
+
+function alerteTaille(lignes) {
+  if (lignes < Math.ceil(LIMITE_MEMOIRE * SEUIL_COMPACTAGE)) return null;
+  const part = Math.round((lignes / LIMITE_MEMOIRE) * 100);
+  return `Pulse – la mémoire chargée à chaque session compte ${lignes} lignes, soit ${part} % de sa limite (${LIMITE_MEMOIRE}). Proposez à la personne de lancer /pulse:memory compacter : un agent la resserre et la remet à jour.`;
 }
 
 function fichiersALaDemande() {
@@ -140,7 +154,7 @@ function synchroniser() {
   }
   const racine = fichiersRacine();
   const aLaDemande = fichiersALaDemande();
-  const resultat = { statut: "ok", racine, aLaDemande, modifies: [] };
+  const resultat = { statut: "ok", racine, aLaDemande, modifies: [], lignes: lignesChargees(racine) };
 
   const claude = lireOuNull(CIBLE);
   if (claude === null) {
@@ -181,6 +195,8 @@ function afficherRapport(r) {
   console.log(`Mémoire synchronisée : ${r.racine.length} fichier(s) chargé(s) à chaque session, ${r.aLaDemande.length} à la demande.`);
   for (const f of r.racine) console.log(`  @${f}`);
   for (const f of r.aLaDemande) console.log(`  (à la demande) ${f}`);
+  const alerte = alerteTaille(r.lignes);
+  if (alerte !== null) console.log(alerte);
   console.log(r.modifies.length > 0 ? `Fichiers mis à jour : ${r.modifies.join(", ")}` : "Déjà à jour, rien à modifier.");
 }
 
@@ -227,8 +243,10 @@ function rappelTravailEnCours() {
 const projet = process.env.CLAUDE_PROJECT_DIR;
 if (projet && fs.existsSync(projet)) process.chdir(projet);
 
+let alerteHook = null;
 try {
   const r = synchroniser();
+  alerteHook = alerteTaille(r.lignes ?? 0);
   if (rapport) {
     afficherRapport(r);
     if (r.statut === "sans-bloc" || r.statut === "bloc-casse" || r.statut === "sans-claude") process.exitCode = 1;
@@ -245,6 +263,7 @@ if (!rapport) {
   try {
     const rappel = rappelTravailEnCours();
     if (rappel !== null) process.stdout.write(`${rappel}\n`);
+    if (alerteHook !== null) process.stdout.write(`${alerteHook}\n`);
   } catch {
     // Même règle que la synchronisation : rien ne doit empêcher la session de démarrer.
   }

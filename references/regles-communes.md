@@ -92,6 +92,7 @@ La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `p
 14. **La pile d'abord, le code ensuite.** Tant que `docs/technical.md` manque, proposez `/pulse:tech` ; installation et code viennent après.
 15. **Documentation officielle, à chaque fois.** Pour l'écriture du code ou les API de la technologie retenue, consultez la documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), systématiquement. Les commandes à lancer (installer, lancer en local, tester, construire, déployer) sont celles de « Commandes du projet ».
 16. **Une décision en attente survit à la session.** Dans `/pulse:brainstorm`, `/pulse:prd`, `/pulse:us` et `/pulse:spirc`, avant de rendre la main sur une décision structurante (ronde ou question clé, validation, point ✋, test manuel), écrivez `aidd_docs/tasks/in-progress.md` (modèle « travail en cours », `pulse-aidd modele in-progress.md`) : la commande, l'étape, ce qui est déjà décidé, la question exacte. Effacez-le dès la décision prise ou la commande terminée, avec `pulse-aidd travail-fini`. Dans un worktree, il s'écrit dans le worktree : le hook de démarrage le retrouve et indique où reprendre. Au lancement d'une commande, si ce fichier la concerne, proposez de reprendre là où elle s'était arrêtée. Redémarrer ou effacer la conversation ne vaut jamais accord.
+17. **Les opérations qui suppriment ou réécrivent passent par l'autorisation de Claude Code.** Supprimer une branche ou un worktree, fusionner une demande de fusion, changer la configuration Git au-delà du nom et de l'email : Claude Code demande l'accord de la personne à chaque fois. Avant, dire en une phrase ce qu'elle va autoriser et pourquoi. Un envoi forcé (`--force`) et le contournement d'un contrôle (`--no-verify`) restent hors de la méthode.
 
 ## 4. Format de fin de commande
 
@@ -129,3 +130,32 @@ Les étapes entre parenthèses sont facultatives. Pour travailler sur une branch
 
 `/pulse:spirc <US-XXX> [tâche | "demande"]` orchestre Implémentation, Revue et Commit du plan d'une US avec des agents indépendants (et crée la spec et le plan s'ils manquent) ; il accepte aussi une demande libre (« ajouter un filtre… »), ajoutée au plan.
 `/pulse:init` (préparer et mettre à niveau), `/pulse:status` (où en suis-je ?), `/pulse:guide` (les prochaines commandes), `/pulse:fix`, `/pulse:annuler` (revenir en arrière sans rien perdre), `/pulse:get-help` (préparer une demande d'aide), `/pulse:refine`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:memory`, `/pulse:auto-fix` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.
+
+## 6. Les constats de relecture
+
+Chaque constat d'une relecture (`pulse:reviewer`, `pulse:verifier`, `pulse:security-auditor`) a une gravité : 🔴 **Critique**, 🟠 **Haute**, 🟡 **Moyenne** ou 🔵 **Basse**. Un critère ❌ du verifier, un test manuel non concluant ou un ⛔ de l'audit de sécurité comptent comme Critique ; un ⚠️ de l'audit de sécurité compte comme Moyenne.
+
+| Gravité | Traitement |
+|---|---|
+| Critique, Haute, Moyenne | corriger, puis relecture de contrôle |
+| Basse | **confronter au code** : relire le passage cité, puis corriger si le problème existe bien dans le code actuel, que la correction reste dans le périmètre de la tâche et qu'elle est petite et sans risque ; sinon l'écarter, avec la raison tirée du code (une idée de fonctionnalité va dans « En attente » de `docs/prd.md`) |
+
+- La confrontation des constats Basse se fait par la commande qui orchestre, en lisant le code ; l'agent qui a écrit le code applique ensuite les corrections retenues.
+- Hors mode autonome, proposer d'abord (AskUserQuestion) : « Corriger Critique, Haute, Moyenne et les Basses retenues (Recommandé) » / « Seulement les Critiques » / « Je regarde d'abord ». En mode autonome, appliquer ce traitement directement.
+- Un **écart de besoin** (la demande elle-même est à revoir) se tranche toujours avec la personne, quel que soit le mode.
+- Chaque décision (corrigé, écarté et pourquoi, reporté, laissé à la demande de la personne) s'écrit dans la section « Suite donnée aux constats » du rapport.
+- Deux cycles de correction au plus ; un constat Critique qui persiste arrête la tâche (statut `[~]`) et se présente simplement, avec `/pulse:get-help`.
+
+## 7. Garder la trace
+
+Ce qui s'est passé doit se retrouver dans les fichiers du projet, sans dépendre de la conversation :
+
+- **Rapport de relecture** (`aidd_docs/tasks/<epic>/revues/…`) : le verdict, le mode (`Mode`), la suite donnée à chaque constat, et le **résultat du test par la personne** (date, résultat, remarque).
+- **Journal du plan** : une ligne par événement, avec la date. La colonne « Remarque » est **obligatoire** quand :
+  - le plan est validé (✋ 2) ou modifié (`/pulse:refine`) : tâche « — », remarque « plan validé » ou « plan modifié : … » ;
+  - une tâche est enregistrée sans rapport de relecture (« enregistrée sans relecture, à la demande de la personne ») ;
+  - la tâche a été faite en mode autonome ou avec l'examen renforcé ;
+  - le test par la personne est reporté (mode autonome), non concluant mais accepté, ou si un constat Critique, Haute ou Moyenne reste sans correction avec l'accord de la personne ;
+  - une correction (`/pulse:fix`, `/pulse:auto-fix`) touche une tâche du plan : tâche concernée, « correction : <problème en quelques mots> » ;
+  - une tâche est annulée (`/pulse:annuler`).
+- **Commit** : le numéro de tâche dans le message (`feat(T3): …`, `fix(T3): …`) relie l'historique Git au plan.

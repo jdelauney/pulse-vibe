@@ -188,3 +188,21 @@ test("hook : fichier avec BOM ou encodé en Latin-1, rappel affiché sans erreur
   assert.strictEqual(r.status, 0);
   assert.match(r.stdout, /Pulse – travail en cours/);
 });
+
+test("signale une mémoire chargée à 95 % de sa limite, au démarrage comme en rapport", () => {
+  const longue = Array.from({ length: 190 }, (_, i) => `- point ${i}`).join("\n");
+  const d = projet({ ...BANQUE, "aidd_docs/memory/technical.md": longue, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  assert.match(lancer(d).stdout, /mémoire chargée à chaque session compte \d+ lignes/);
+  assert.match(lancer(d, "--rapport").stdout, /\/pulse:memory compacter/);
+});
+
+test("reste silencieux sur la taille d'une mémoire courte", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  assert.doesNotMatch(lancer(d).stdout, /de sa limite/);
+});
+
+test("reste silencieux juste sous le seuil de 95 %", () => {
+  const presque = Array.from({ length: 180 }, (_, i) => `- point ${i}`).join("\n");
+  const d = projet({ ...BANQUE, "aidd_docs/memory/technical.md": presque, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  assert.doesNotMatch(lancer(d).stdout, /de sa limite/);
+});

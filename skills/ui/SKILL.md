@@ -2,7 +2,7 @@
 description: Définir et soigner l'interface - identité visuelle (docs/design.md), maquettes d'écrans à comparer pour la spec d'une US, audit et finitions d'une interface existante
 argument-hint: "[identite | maquettes <US-XXX> | audit [cible] | polish [cible]]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(start *) Bash(open *) Bash(xdg-open *) Read Glob Grep
+allowed-tools: Bash(pulse-aidd *) Bash(start "" *.html") Bash(open *.html") Bash(xdg-open *.html") Read Glob Grep
 ---
 
 # /pulse:ui – L'interface

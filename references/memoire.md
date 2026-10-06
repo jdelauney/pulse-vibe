@@ -21,6 +21,7 @@ Le bloc mémoire de `CLAUDE.md` se trouve entre `<!-- pulse_memoire:debut -->` e
 | Les mots du métier et leur définition commune | `aidd_docs/memory/glossary.md` | à chaque session |
 | Une décision difficile à défaire (voir les 3 critères ci-dessous) | `aidd_docs/memory/internal/decisions/NNNN-titre.md` | à la demande |
 | Un document externe utile (doc d'un service, retour client anonymisé) | `aidd_docs/memory/external/<nom>.md` | à la demande |
+| Un détail utile mais rarement nécessaire (procédure longue, historique d'un choix), avec une ligne de renvoi dans le fichier chargé | `aidd_docs/memory/internal/<sujet>.md` | à la demande |
 | Le détail du besoin, des écrans, des tâches | **hors mémoire** : `docs/` (brief, PRD, US, spec, plan) | — |
 
 Une petite décision tient en **une ligne**, avec sa date, dans « Décisions importantes » de `project.md` ou « Décisions techniques » de `technical.md`. Si elle a aussi un fichier de décision, la ligne renvoie vers lui.
@@ -29,7 +30,7 @@ Une petite décision tient en **une ligne**, avec sa date, dans « Décisions im
 
 - **Ce que le code ne montre pas** : une intention, un choix et son *pourquoi*, une convention, un piège. Pointer vers le fichier plutôt que copier le code, un schéma ou l'arborescence.
 - **Un fait, un seul endroit.** S'il existe déjà ailleurs (mémoire ou `docs/`), y renvoyer au lieu de le recopier.
-- **Court** : des puces brèves, les noms de fichiers et de code entre backticks.
+- **Court** : des puces brèves, les noms de fichiers et de code entre backticks. Les fichiers chargés à chaque session restent sous **200 lignes au total** : à 95 % (190 lignes), le démarrage et `pulse-aidd memoire` le signalent ; proposer alors `/pulse:memory compacter`, dont l'agent resserre la mémoire et déplace le détail vers `internal/` ou `docs/`.
 - **L'état actuel seulement** : des sections remplies, chaque `{{…}}` remplacé, des faits acquis plutôt que des souhaits. Une information devenue fausse est corrigée ou supprimée.
 - **Secrets et données personnelles réelles restent hors de la mémoire** : clé, mot de passe, nom ou email de client.
 - **En français**, en expliquant chaque terme technique : la personne doit pouvoir relire sa mémoire.

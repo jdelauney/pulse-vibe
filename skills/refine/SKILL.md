@@ -50,7 +50,7 @@ Appliquer les **règles du plan** (rappelées dans le modèle « plan » ci-dess
 - une tâche `[x]` (terminée et enregistrée) : elle reste telle quelle ; un changement devient une **nouvelle tâche** ;
 - une tâche `[~]` : la modifier seulement avec l'accord explicite de la personne, en signalant le code déjà écrit ;
 - les numéros des tâches existantes : une nouvelle tâche prend le numéro qui suit le plus grand `Tn` de **tous** les plans, même si elle s'insère plus tôt dans l'ordre ;
-- le « Journal ».
+- le « Journal », complété d'une ligne (date, tâche « — », « plan modifié : <résumé> ») une fois les changements validés.
 
 Un plan qui dépasse 4 tâches (hors mise en place et mise en ligne) : le signaler et proposer de découper l'US en deux (`/pulse:us`).
 

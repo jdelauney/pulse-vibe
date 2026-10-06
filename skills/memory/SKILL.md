@@ -1,8 +1,8 @@
 ---
-description: Créer, actualiser ou enrichir la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session
-argument-hint: "[creer | actualiser | retenir \"leçon ou décision\"]"
+description: Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session
+argument-hint: "[creer | actualiser | compacter | retenir \"leçon ou décision\"]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git restore -- aidd_docs/memory/*) Bash(wc -l aidd_docs/memory/*)
 ---
 
 # /pulse:memory – La mémoire du projet
@@ -24,7 +24,8 @@ Action demandée : `$ARGUMENTS`
 - `creer` : la mémoire est absente ou incomplète.
 - `actualiser` : vérifier que la mémoire correspond encore au projet, puis corriger.
 - `retenir "…"` : noter une leçon, une convention, un mot du métier ou une décision.
-- Argument vide : si `aidd_docs/memory/` est absent, faire `creer`. Sinon, demander (AskUserQuestion) : « Noter quelque chose (retenir) » / « Vérifier qu'elle est à jour (actualiser) » / « Compléter ce qui manque (creer) ».
+- `compacter` : la mémoire chargée à chaque session approche de sa limite de taille (le démarrage ou `pulse-aidd memoire` le signale à 95 %) ; un agent la resserre et la remet à jour.
+- Argument vide : si `aidd_docs/memory/` est absent, faire `creer`. Sinon, demander (AskUserQuestion) : « Noter quelque chose (retenir) » / « Vérifier qu'elle est à jour (actualiser) » / « Compléter ce qui manque (creer) » ; si la limite de taille est signalée, mettre « La resserrer (compacter) (Recommandé) » en premier.
 
 Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s'arrêter.
 
@@ -70,12 +71,24 @@ Modifier seulement après l'accord de la personne.
 5. **Montrer** la ligne exacte (ou le fichier de décision) et sa destination. Demander : « Ajouter (recommandé) » / « Modifier » / « Abandonner ».
 6. Écrire, puis « Brancher et synchroniser ».
 
+## Action `compacter`
+
+La mémoire chargée à chaque session occupe le contexte de chaque conversation : limite de **200 lignes** au total pour `aidd_docs/memory/*.md`, compactage proposé à **95 %** (190 lignes), cible **140 lignes** pour garder de la place.
+
+1. **Mettre la version actuelle à l'abri** : `git status --short -- aidd_docs/memory/` doit être vide, pour pouvoir revenir en arrière. Sinon, dire en une phrase que des changements de la mémoire ne sont pas encore enregistrés, proposer `/pulse:commit` d'abord, et s'arrêter.
+2. **Mesurer** : `wc -l aidd_docs/memory/*.md` (hors `README.md`).
+3. **Déléguer** au sous-agent **`pulse:memory-compactor`** : la limite (200), la cible (140), le nombre de lignes de chaque fichier. S'il est indisponible, faire le travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent memory-compactor`), et le signaler.
+4. **Présenter** en langage simple : lignes avant → après, puis les changements regroupés (resserré, déplacé, corrigé, retiré), en commençant par les retraits et les corrections ; montrer `git diff --stat -- aidd_docs/memory/` et les fichiers créés. Signaler en premier un secret retiré ou une contradiction à trancher.
+5. **Faire valider** (AskUserQuestion) : « Garder la mémoire compactée (Recommandé) » / « Voir le détail d'abord » / « Revenir à la version d'avant ». Pour revenir : `git restore -- aidd_docs/memory/`, puis supprimer les fichiers créés par l'agent (listés dans sa réponse) en le disant.
+6. « Brancher et synchroniser », puis prochaine étape : `/pulse:commit` (message `docs: mémoire compactée`).
+
 ## Brancher et synchroniser (fin de chaque action)
 
 1. Lancer `pulse-aidd memoire`.
 2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon ajouter en fin de fichier, avec le « Modèle : bloc mémoire de CLAUDE.md ». Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
 3. Si la sortie indique **un seul marqueur** : remettre la paire de marqueurs telle que dans le modèle, puis relancer.
 4. Vérifier que la liste affichée correspond aux fichiers de `aidd_docs/memory/`.
+5. Si la sortie signale la limite de taille (95 %) et que l'action n'était pas `compacter` : proposer `/pulse:memory compacter`.
 
 Expliquer en une phrase : « À la prochaine session, l'IA chargera automatiquement ces fichiers. »
 

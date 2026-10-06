@@ -2,7 +2,7 @@
 description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
 argument-hint: "<US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --no-ff *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -f * origin/*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git pull *) Bash(git push) Bash(git push -u origin *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree
 ---
 
 # /pulse:spirc – Spécifier, Planifier, Implémenter, Relire, Commiter
@@ -20,7 +20,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 ## Lire les arguments
 
 **Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme et l'examen se choisissent par une question avant la réalisation (section « Worktree ») ; **avec au moins une option**, les choix non précisés prennent leur valeur par défaut (avec points de validation, examen standard), sans question.
-- `-a` **autonome** : enchaîner en sautant les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
+- `-a` **autonome** : enchaîner les tâches sans s'arrêter : points de validation ✋1, ✋2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles communes § 6). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). S'arrêtent toujours en cours de route : les questions de besoin, de priorité ou de périmètre (dont « Bloqué – décision nécessaire » et les écarts de besoin) et les actions manuelles.
 - `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
 - `-w` **worktree** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, le worktree est proposé (même avec `-a` : c'est une décision de la personne).
 
@@ -33,12 +33,13 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Principe (à présenter en 3 lignes)
 
-« Je fais travailler des assistants spécialisés, chacun dans son rôle : l'un **explore**, l'un **réalise**, d'autres **relisent** et **vérifient** sans avoir écrit le code. Je m'arrête pour votre accord sur le plan, et c'est **vous** qui testez chaque tâche avant qu'elle soit enregistrée. »
+« Je fais travailler des assistants spécialisés, chacun dans son rôle : l'un **explore**, l'un **réalise**, d'autres **relisent** et **vérifient** sans avoir écrit le code. Je m'arrête pour votre accord sur le plan, et c'est **vous** qui testez chaque tâche avant qu'elle soit envoyée (en mode autonome : toutes les tâches ensemble, à la fin). »
 
 ```
-plan existant ─────────────────────────────┬─ pour chaque tâche : [I] Implémenter → [R] Relire et vérifier → test par vous → [C] Commiter → mémoire
+plan existant ─────────────────────────────┬─ pour chaque tâche : [I] Implémenter → [R] Relire et vérifier → test par vous* → [C] Commiter → mémoire*
 pas de plan ── [S] Spécifier ─ [P] Planifier ┤   (une US = une spec = un plan)
 demande libre ─ [A] Analyser (ajout au plan) ┘
+* en mode autonome : regroupés à la fin (test groupé, puis envoi et mémoire)
 ```
 
 ## Les rôles (à respecter strictement)
@@ -55,7 +56,7 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 - Les sous-agents **travaillent sans les fichiers du plugin** : recopier dans chaque message de délégation les extraits utiles du contexte ci-dessus (sections utiles de `docs/technical.md`, checklist sécurité, conventions de la mémoire).
 - Lancer **en parallèle** (plusieurs appels Agent dans le même message) les sous-agents indépendants.
 - Si un sous-agent n'est pas disponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), et le signaler. Pour la relecture, la faire de préférence dans un contexte distinct de celui qui a écrit le code ; sinon, le dire à la personne.
-- **Travail en cours** : à chaque arrêt pour la personne (✋ 1, ✋ 2, test manuel, choix de correction, « Continuer avec T4 ? »), écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; l'effacer (`pulse-aidd travail-fini`) quand la personne a répondu. Le relancement de `/pulse:spirc <US-XXX>` lit ce fichier et reprend à cette étape.
+- **Travail en cours** : à chaque arrêt pour la personne (✋ 1, ✋ 2, test manuel, test groupé, choix de correction, « Continuer avec T4 ? »), écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; l'effacer (`pulse-aidd travail-fini`) quand la personne a répondu. Le relancement de `/pulse:spirc <US-XXX>` lit ce fichier et reprend à cette étape.
 
 ## Prérequis
 
@@ -91,7 +92,7 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 ## Worktree
 
 Avant la boucle par tâche (une fois la spec et le plan écrits et validés), poser **une seule ronde** (AskUserQuestion) qui regroupe, selon le cas :
-- **Rythme** (seulement si aucune option n'a été passée) : « Avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les étapes) / « Autonome » (j'enchaîne ; vous testez toujours chaque tâche) ;
+- **Rythme** (seulement si aucune option n'a été passée) : « Avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les étapes) / « Autonome » (j'enchaîne et je corrige seul ; vous testez tout à la fin) ;
 - **Examen** (seulement si aucune option n'a été passée) : « Standard (Recommandé) » (relecture et vérification) / « Renforcé » (plus un audit de sécurité à chaque tâche) ;
 - **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même en autonome : c'est une décision de la personne) ;
 - **Worktree** : « 1. Faut-il un worktree ? » de la référence worktree.
@@ -104,13 +105,13 @@ Puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La sp
 
 - Plan à créer : appliquer l'étape **plan** avec l'US de § S. Plan existant : montrer son kanban résumé.
 
-✋ **Point de validation 2** (sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques, puis reposer la question.
+✋ **Point de validation 2** (sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques, puis reposer la question. Une fois le plan accepté, ajouter au journal du plan la ligne « plan validé » (règles communes § 7 ; en mode autonome : « plan accepté sans validation, mode autonome »).
 
 ## Boucle par tâche
 
 Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (un rapport existe déjà dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` : reprendre à l'examen).
 
-**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a`. Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy`).
+**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a` (en mode autonome, elle passe après le test groupé). Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy`).
 
 ### [I] Implémenter
 
@@ -119,7 +120,7 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
 3. À son retour :
    - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse.
    - **Bloqué** sur une action manuelle (appliquer un schéma dans la console du fournisseur, créer un compte, saisir une variable chez l'hébergeur) : guider la personne pas à pas, puis relancer.
-   - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
+   - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. C'est une décision de la personne : elle interrompt aussi le mode autonome. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
    - **Terminé** : passer à l'examen. Les points « À signaler » sur `docs/` sont traités par vous (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
 
 ### [R] Relire et vérifier (eXaminer)
@@ -128,22 +129,23 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
    - **`pulse:reviewer`** : la tâche, les documents à lire (le plan, la spec et l'US du même dossier `aidd_docs/tasks/<epic>/` — `PLAN-SPEC-US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md` —, `docs/user-stories.md`, `docs/brief.md`, `aidd_docs/memory/glossary.md`), la **checklist sécurité complète** recopiée, les sections « Pile retenue », « Organisation des fichiers » et « Données et contrôle d'accès » de `docs/technical.md`, la consigne de juger la qualité avec `pulse-aidd qualite` ;
    - **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne ou l'objectif de la tâche), les critères d'acceptation, les fichiers modifiés, la section « Commandes du projet » de `docs/technical.md` (contrôles automatiques, tests, lancer en local) ;
    - avec `-x`, **`pulse:security-auditor`** : la checklist sécurité complète et la consigne de se limiter aux fichiers modifiés par la tâche.
-2. **Écrire le rapport** dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md` (modèle de rapport de revue ; suffixe `-2`, `-3` si besoin) : le rapport du reviewer, puis une section `## Vérification` (verdict et tableau du verifier), puis, avec `-x`, `## Audit de sécurité`.
+2. **Écrire le rapport** dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md` (modèle de rapport de revue ; suffixe `-2`, `-3` si besoin) : la ligne `Mode`, le rapport du reviewer, puis une section `## Vérification` (verdict et tableau du verifier), puis, avec `-x`, `## Audit de sécurité`.
 3. **Trier les constats** :
    - **écart de besoin** (la demande elle-même est à revoir) : le présenter simplement et demander à la personne ; si elle change le contrat, mettre à jour la tâche dans le plan (et le fichier de l'US), puis reprendre à [I] ;
-   - **défauts de réalisation** (⛔, ⚠️, critère ❌) : sans `-a`, demander « Tout corriger (recommandé) » / « Seulement les points bloquants » / « Je regarde d'abord » ; avec `-a`, tout corriger. Relancer `pulse:implementer` **avec la liste des constats**, puis un examen court (reviewer et verifier, en parallèle) ajouté au rapport dans `## Relecture de contrôle` ;
-   - les 💡 suggestions s'appliquent à la demande de la personne.
-   - **Deux cycles de correction au maximum.** Si un point bloquant persiste : arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
-4. **Le test par la personne** (toujours, même avec `-a`) : présenter le **rapport de réalisation** (règles communes § 4, construit à partir du tableau du verifier) et les 3 points les plus importants de la relecture **en langage simple**, puis les étapes du test manuel (en commençant par les critères ❓ du verifier) et comment ouvrir l'appli (la commande « lancer en local » de « Commandes du projet » de `docs/technical.md`). Demander « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, quelque chose ne va pas ». Si non : recueillir ce qui ne va pas, et le traiter comme un constat (étape 3).
+   - **défauts de réalisation** (constats du reviewer, critères ❌ du verifier, constats de l'audit avec `-x`) : appliquer « Les constats de relecture » des règles communes (§ 6). Avec `-a`, sans question : corriger tous les constats Critique, Haute et Moyenne ; pour chaque constat Basse, lire le passage cité dans le code et décider vous-même (corriger ou écarter, avec la raison). Noter chaque décision dans « Suite donnée aux constats ». Relancer `pulse:implementer` **avec la liste des constats à corriger**, puis un examen court (reviewer et verifier, en parallèle) ajouté au rapport dans `## Relecture de contrôle` ;
+   - **Deux cycles de correction au maximum.** Si un constat Critique persiste : arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help` (en mode autonome : passer d'abord au test groupé des tâches déjà enregistrées).
+4. **Le test par la personne** (toujours ; en mode autonome, il est **reporté au test groupé** : noter « ⏳ reporté au test groupé » dans « Test par la personne » du rapport, garder ses étapes, et passer au commit sans s'arrêter). Hors mode autonome : présenter le **rapport de réalisation** (règles communes § 4, construit à partir du tableau du verifier) et les 3 points les plus importants de la relecture **en langage simple**, puis les étapes du test manuel (en commençant par les critères ❓ du verifier) et comment ouvrir l'appli (la commande « lancer en local » de « Commandes du projet » de `docs/technical.md`). Demander « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, quelque chose ne va pas ». Noter la réponse dans « Test par la personne » du rapport. Si non : recueillir ce qui ne va pas, et le traiter comme un constat Critique (étape 3).
 5. **💡 La notion du jour** : choisir **une** notion de programmation présente dans le code de la tâche, montrer un extrait de 3 à 8 lignes et l'expliquer simplement. Choisir de préférence une notion absente du lexique, puis l'y ajouter (règle commune § 1, « Le lexique »).
 
 ### [C] Commiter
 
-Appliquer l'étape **commit** (contrôles de sécurité, message `<type>(<Tâche>): …`, plan mis à jour en `[x]` avec sa ligne de journal). Le rapport de revue existe : la relecture est faite, passer directement au commit.
+Appliquer l'étape **commit** (contrôles de sécurité, message `<type>(<Tâche>): …`, plan mis à jour en `[x]` avec sa ligne de journal, remarque selon les règles communes § 7). Le rapport de revue existe : la relecture est faite, passer directement au commit.
+
+En mode autonome : enregistrer en local, et **attendre la fin du test groupé pour l'envoi** (§ 3 de la référence « Le dépôt distant et l'envoi du travail ») ; la remarque du journal vaut « mode autonome · test reporté ».
 
 ### Mémoire
 
-Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré, une convention apparue, un mot du métier précisé, une décision (avec les 3 conditions pour un fichier de décision). S'il y a quelque chose, le proposer **en une seule question** (lignes exactes et destinations) : « Ajouter à la mémoire (recommandé) » / « Garder la mémoire telle quelle ». Si accepté : écrire, lancer `pulse-aidd memoire`, et inclure ces fichiers au **commit suivant** (ou dans un commit `docs: mémoire …` si c'était la dernière tâche). Réserver la proposition à ce qui est durable.
+Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré, une convention apparue, un mot du métier précisé, une décision (avec les 3 conditions pour un fichier de décision). S'il y a quelque chose, le proposer **en une seule question** (en mode autonome : le garder pour la fin du test groupé) (lignes exactes et destinations) : « Ajouter à la mémoire (recommandé) » / « Garder la mémoire telle quelle ». Si accepté : écrire, lancer `pulse-aidd memoire`, et inclure ces fichiers au **commit suivant** (ou dans un commit `docs: mémoire …` si c'était la dernière tâche). Réserver la proposition à ce qui est durable.
 
 ### Entre deux tâches
 
@@ -154,14 +156,26 @@ Annoncer l'avancement en une ligne : `T3 ✅ terminée · US-XXX : 3/6`.
 **Garde-fou anti-secrets déclenché** : expliquer, corriger, puis reprendre l'étape en cours.
 **Conversation longue** : après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:spirc <US-XXX>` : la commande reprend automatiquement grâce aux statuts du plan, aux rapports de revue et à la mémoire.
 
+## Test groupé (mode autonome)
+
+Quand toutes les tâches de la portée sont passées (ou que la boucle s'est arrêtée sur un blocage), avant la tâche « Mettre en ligne… » :
+
+1. Présenter, tâche par tâche, le **rapport de réalisation** (règles communes § 4) et, en langage simple, les constats corrigés et ceux écartés.
+2. Donner **un seul parcours de test** qui enchaîne les étapes de test manuel de toutes les tâches, dans l'ordre du plan, en commençant pour chacune par ses critères ❓, avec la commande « lancer en local ».
+3. Demander (AskUserQuestion) : « Les tests sont-ils concluants ? » → « Oui, tout fonctionne » / « Non, sur certaines tâches » (puis lesquelles et ce qui ne va pas).
+4. Pour chaque tâche en échec : constat Critique, corrigé comme à l'étape 3 de [R] (implementer, examen court), puis commit `fix(<Tâche>): …` ; refaire tester seulement ces tâches. Deux cycles au plus.
+5. Mettre à jour « Test par la personne » de chaque rapport et ajouter une ligne au journal du plan (« test groupé concluant » ou « test groupé : <problème> corrigé »), enregistrées avec un commit `docs: résultat du test groupé de US-XXX`.
+6. Envoyer le travail selon la ligne « Envoi » du plan (§ 3 de la référence « Le dépôt distant et l'envoi du travail »).
+7. Proposer en **une seule question** les ajouts à la mémoire repérés pendant les tâches (lignes exactes et destinations).
+
 ## Fin
 
 Présenter un récapitulatif :
 
 ```
-| Tâche | Examen | Test | Commit |
-|---|---|---|---|
-| T1 – … | ✅ Validé · ✅ Prouvé | ✅ | abc1234 |
+| Tâche | Examen | Constats (corrigés / écartés) | Test | Commit |
+|---|---|---|---|---|
+| T1 – … | ✅ Validé · ✅ Prouvé | 3 / 1 | ✅ | abc1234 |
 ```
 
 Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi.

@@ -35,7 +35,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:fix` | Corriger une erreur précise (message, console, « le bouton ne marche pas ») : cause d'abord, correction minimale, preuve, explication | code corrigé |
 | `/pulse:annuler [T3 \| US-003]` | Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération | un commit d'annulation, ou une mise de côté |
 | `/pulse:get-help ["…"]` | Quand Pulse bloque : prépare une demande d'aide claire et sans secret (message court et fiche complète) et indique où la poser | `docs/aide/demande-<date>-<sujet>.md` |
-| `/pulse:memory` | Créer, actualiser ou enrichir la mémoire du projet (`creer`, `actualiser`, `retenir "…"`) | `aidd_docs/memory/` |
+| `/pulse:memory` | Créer, actualiser, enrichir ou compacter la mémoire du projet (`creer`, `actualiser`, `retenir "…"`, `compacter`) | `aidd_docs/memory/` |
 
 ```
 /pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite, facultatif) → /pulse:us (epics et US)
@@ -52,7 +52,7 @@ Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se reg
 |---|---|---|
 | `/pulse:implement` | `-s` / `-d` | réalisation par le sous-agent / directement dans la conversation |
 | `/pulse:implement`, `/pulse:spirc` | `-w` | dans un worktree |
-| `/pulse:spirc` | `-a` | autonome : sans les points de validation (le test manuel reste) |
+| `/pulse:spirc` | `-a` | autonome : sans les points de validation, constats corrigés seuls (Critique à Moyenne ; Basse confrontés au code), test manuel regroupé à la fin du plan |
 | `/pulse:spirc` | `-x` | examen renforcé : audit de sécurité à chaque tâche |
 
 Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus les questions de rythme et d'examen.
@@ -70,6 +70,7 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
   - `pulse:security-auditor` réalise l'audit de sécurité (lecture seule) ;
   - `pulse:designer` génère une proposition visuelle (identité, maquettes, variantes) ;
   - `pulse:ui-critic` relit l'interface (contraste, cohérence, accessibilité) pour `/pulse:ui audit` (lecture seule) ;
+  - `pulse:memory-compactor` resserre et remet à jour la mémoire quand elle atteint 95 % de sa limite, pour `/pulse:memory compacter` (écrit seulement dans `aidd_docs/memory/`) ;
   - `pulse:fixer` corrige une liste précise d'erreurs dans 5 fichiers au plus (utilisé par `/pulse:auto-fix`).
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.
 - **Des références de qualité du code**, agnostiques, chargées à chaque implémentation et relecture (`pulse-aidd qualite`) : clean code, organisation des fichiers, composants d'interface, sécurité du code. `code-concepts` (odeurs de code, SOLID, refactorings) se consulte à la demande, pendant une relecture ou un refactoring.
@@ -119,7 +120,7 @@ Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin up
 .claude-plugin/marketplace.json   catalogue (marketplace « pulseia »)
 .claude-plugin/plugin.json        manifeste du plugin
 skills/<commande>/SKILL.md        les 24 commandes
-agents/                           explorer, implementer, reviewer, verifier, security-auditor, designer, ui-critic, fixer
+agents/                           explorer, implementer, reviewer, verifier, security-auditor, designer, ui-critic, fixer, memory-compactor
 hooks/hooks.json                  garde-fou anti-secrets, synchronisation de la mémoire, registre des sessions, régénération du guide
 scripts/                          garde-secrets.js, motifs.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
 bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI)

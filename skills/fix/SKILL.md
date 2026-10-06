@@ -2,7 +2,7 @@
 description: Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter
 argument-hint: "<message d'erreur ou description du problème> [fichier]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *)
+allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:fix – Corriger une erreur
@@ -87,6 +87,7 @@ Pour l'éviter : <réflexe à retenir>
 ```
 
 - **💡 La notion du jour** : la notion de programmation au cœur de l'erreur (ordre de chargement, portée d'une variable, asynchrone, contrôle d'accès…), en 3 à 6 lignes. Choisir de préférence une notion absente du lexique, puis l'y ajouter (règle commune § 1, « Le lexique »).
+- Si la correction touche une **tâche d'un plan** (fichier listé par la tâche, ou comportement décrit par son US) : ajouter une ligne au journal de ce plan (date, tâche, commit à venir, « correction : <problème en quelques mots> »), enregistrée avec la correction.
 - Si la cause est un **piège qui peut revenir** : proposer de l'ajouter à la mémoire (section « Pièges et leçons » de `aidd_docs/memory/technical.md`) en montrant la ligne exacte.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si la correction touche une tâche en cours ou plusieurs fichiers, sinon `/pulse:commit` (message `fix(<Tâche>): …`, ou `fix: …` hors tâche).

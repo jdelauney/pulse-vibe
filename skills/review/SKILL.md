@@ -52,22 +52,22 @@ Si le sous-agent est indisponible, faire la relecture en suivant **strictement**
 
 ### 4. Présenter
 
-Présenter en quelques lignes : le verdict, le nombre de points ⛔ et ⚠️, et les 3 plus importants **traduits en langage simple** (ce que ça change pour l'utilisateur).
+Présenter en quelques lignes : le verdict, le nombre de constats par gravité (Critique, Haute, Moyenne, Basse), et les 3 plus importants **traduits en langage simple** (ce que ça change pour l'utilisateur).
 
 ### 5. Le test manuel par la personne
 
 Donner les étapes du test manuel du rapport, puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
 
+Noter la réponse dans la section « Test par la personne » du rapport (date, résultat, remarque).
+
 ### 6. Corriger
 
-S'il y a des ⛔, des ⚠️ ou un test manuel en échec, proposer (AskUserQuestion) : « Tout corriger (recommandé) » / « Seulement les points bloquants » / « Je regarde d'abord ».
+Traiter les constats selon « Les constats de relecture » des règles communes (§ 6) : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
 
 Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite relancer **une** relecture courte (même sous-agent) pour confirmer, et ajouter son résultat à la fin du même rapport, dans une section `## Relecture de contrôle` (date, verdict, points restants). Mettre à jour la ligne **Verdict** en tête du rapport. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement et proposer `/pulse:get-help`.
 
-Appliquer les 💡 suggestions à la demande de la personne.
-
 ### 7. Conclure
 
-Quand le verdict est ✅ (ou ⚠️ accepté par la personne) **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
+Quand le verdict est ✅ (ou ⚠️ accepté par la personne, noté dans « Suite donnée aux constats ») **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
