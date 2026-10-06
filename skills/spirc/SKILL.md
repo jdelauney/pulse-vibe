@@ -55,6 +55,7 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 - Les sous-agents **travaillent sans les fichiers du plugin** : recopier dans chaque message de délégation les extraits utiles du contexte ci-dessus (sections utiles de `docs/technical.md`, checklist sécurité, conventions de la mémoire).
 - Lancer **en parallèle** (plusieurs appels Agent dans le même message) les sous-agents indépendants.
 - Si un sous-agent n'est pas disponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), et le signaler. Pour la relecture, la faire de préférence dans un contexte distinct de celui qui a écrit le code ; sinon, le dire à la personne.
+- **Travail en cours** : à chaque arrêt pour la personne (✋ 1, ✋ 2, test manuel, choix de correction, « Continuer avec T4 ? »), écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; le supprimer quand la personne a répondu. Le relancement de `/pulse:spirc <US-XXX>` lit ce fichier et reprend à cette étape.
 
 ## Prérequis
 

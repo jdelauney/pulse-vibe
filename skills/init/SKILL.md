@@ -116,6 +116,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 ### Mettre à niveau un projet Pulse plus ancien
 
 - Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
+- `.gitignore` sans la ligne `aidd_docs/tasks/in-progress.md` → l'ajouter (avec les deux lignes du modèle `.gitignore`), en expliquant en une phrase : ce fichier note une décision en attente, propre à cette machine.
 - Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
 - **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
   1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.

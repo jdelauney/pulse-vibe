@@ -34,6 +34,7 @@ Dans le projet de la personne :
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
 | `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
 | `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Généré automatiquement, à laisser tel quel |
+| `aidd_docs/tasks/in-progress.md` | `/pulse:brainstorm`, `/pulse:prd`, `/pulse:us`, `/pulse:spirc` | La décision qui attend la personne, pour la retrouver après une fermeture ou un `/clear`. Supprimé dès la décision prise ; non enregistré dans Git |
 | `aidd_docs/memory/project.md`, `technical.md` | `/pulse:init`, `/pulse:memory` | La mémoire durable : vision, choix, conventions, pièges |
 | `aidd_docs/memory/glossary.md` | `/pulse:brainstorm`, `/pulse:memory` | Les mots du métier et leur définition commune |
 | `aidd_docs/memory/internal/decisions/` | `/pulse:brainstorm`, `/pulse:tech`, `/pulse:memory` | Les décisions difficiles à défaire (lues à la demande) |
@@ -73,6 +74,7 @@ La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `p
 13. **Appuyez-vous sur le code réel.** Un fichier, un module, une fonction, une table ou une bibliothèque existe seulement si vous l'avez vu dans le projet. Les noms des exemples Pulse sont des exemples. L'emplacement des fichiers vient du code existant et de `aidd_docs/memory/technical.md`, sinon de « Organisation des fichiers » dans `docs/technical.md`, puis des fichiers listés par la tâche. Dans un projet existant, ses conventions priment sur les propositions de Pulse.
 14. **La pile d'abord, le code ensuite.** Tant que `docs/technical.md` manque, proposez `/pulse:tech` ; installation et code viennent après.
 15. **Documentation officielle, à chaque fois.** Pour l'écriture du code ou les API de la technologie retenue, consultez la documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), systématiquement. Les commandes à lancer (installer, lancer en local, tester, construire, déployer) sont celles de « Commandes du projet ».
+16. **Une décision en attente survit à la session.** Avant de rendre la main sur une décision structurante (ronde ou question clé, validation, point ✋, test manuel), écrivez `aidd_docs/tasks/in-progress.md` (modèle « travail en cours », `pulse-aidd modele in-progress.md`) : la commande, l'étape, ce qui est déjà décidé, la question exacte. Supprimez-le dès la décision prise ou la commande terminée. Au lancement d'une commande, si ce fichier la concerne, proposez de reprendre là où elle s'était arrêtée. Redémarrer ou effacer la conversation ne vaut jamais accord.
 
 ## 4. Format de fin de commande
 

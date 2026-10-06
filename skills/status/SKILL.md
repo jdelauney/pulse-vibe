@@ -24,11 +24,13 @@ Cette commande **lit et résume**. Sa seule modification, et seulement avec l'ac
 6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée.
 7. **Dernière relecture** : le rapport de tâche le plus récent dans `aidd_docs/tasks/*/revues/*/` et son verdict ; le dernier audit `docs/securite.md` s'il existe.
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
+9. **Travail en cours** : `aidd_docs/tasks/in-progress.md`, s'il existe (commande, étape, décision en attente).
 
 ## Format de réponse
 
 ```
 📍 Projet : <nom> (pile : <résumé de « Pile retenue » de docs/technical.md, ou « non choisie »>)
+⏸️ En attente : <décision en attente> — reprendre avec <commande>   (ligne absente s'il n'y a pas de travail en cours)
 
 Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facultatif) · ⬜ user stories · ⬜ spec · ⬜ plan
 Epics    : <epic 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <epic 2> : US-004 (spec ⬜)
@@ -52,16 +54,17 @@ Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non b
 ```
 
 Règles pour la prochaine étape conseillée, dans l'ordre :
-1. Document de méthode manquant → la commande qui le produit. Mémoire absente ou non branchée → `/pulse:memory creer`.
-2. Modifications non enregistrées d'une tâche `[~]` sans revue → `/pulse:review`.
-3. Tâche `[~]` relue → `/pulse:commit`.
-4. US Indispensables (MVP) terminées et site encore hors ligne → `/pulse:deploy`.
-5. Commits non envoyés sur GitHub (si un dépôt distant existe et que `git status` indique « ahead ») → `/pulse:deploy`.
-6. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <US-XXX>` (facultatif) puis `/pulse:plan <US-XXX>`.
-7. Spec sans plan → `/pulse:plan <US-XXX>`.
-8. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
-9. Dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec.
-10. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec ; dépôt distant relié, squelette en place et CI absente → mentionner aussi `/pulse:cicd` (facultatif).
+1. Travail en cours (`aidd_docs/tasks/in-progress.md`) → la commande « Pour reprendre ».
+2. Document de méthode manquant → la commande qui le produit. Mémoire absente ou non branchée → `/pulse:memory creer`.
+3. Modifications non enregistrées d'une tâche `[~]` sans revue → `/pulse:review`.
+4. Tâche `[~]` relue → `/pulse:commit`.
+5. US Indispensables (MVP) terminées et site encore hors ligne → `/pulse:deploy`.
+6. Commits non envoyés sur GitHub (si un dépôt distant existe et que `git status` indique « ahead ») → `/pulse:deploy`.
+7. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <US-XXX>` (facultatif) puis `/pulse:plan <US-XXX>`.
+8. Spec sans plan → `/pulse:plan <US-XXX>`.
+9. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
+10. Dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec.
+11. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec ; dépôt distant relié, squelette en place et CI absente → mentionner aussi `/pulse:cicd` (facultatif).
 
 ## Worktrees
 

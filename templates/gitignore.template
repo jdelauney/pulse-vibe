@@ -6,6 +6,9 @@
 # --- Worktrees : copies de travail créées par /pulse:implement -w ou /pulse:spirc -w ---
 .claude/worktrees/
 
+# --- Travail en cours : décision en attente, propre à cette machine ---
+aidd_docs/tasks/in-progress.md
+
 # --- Fichiers système ---
 .DS_Store
 Thumbs.db

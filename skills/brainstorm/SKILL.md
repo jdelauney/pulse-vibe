@@ -50,6 +50,8 @@ Branches de départ habituelles (à adapter aux réponses) :
 | 2 | **la validation de l'histoire** (premier jet, voir § 3) · les contraintes connues (données personnelles, budget mensuel, délai) |
 | 3 et + | les zones d'ombre révélées par l'histoire : règles métier, cas limites, mots ambigus |
 
+**Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. Le supprimer après l'écriture du brief.
+
 ### 2. Les faits, c'est vous ; les décisions, c'est la personne
 
 - **Chercher d'abord dans les fichiers ; demander à la personne le reste.** Avant chaque ronde, consulter ce qui existe : `docs/`, `aidd_docs/memory/` (surtout `glossary.md` et `project.md`), et le code s'il y en a. Dans un projet qui contient déjà du code, confier la recherche au sous-agent **`pulse:explorer`** et continuer pendant sa recherche : seules les questions qui dépendent de sa réponse sont reportées.

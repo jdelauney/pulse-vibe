@@ -112,3 +112,49 @@ test("sans mémoire, ne crée rien", () => {
   assert.match(r.stdout, /Pas de mémoire projet/);
   assert.strictEqual(lire(d, "CLAUDE.md"), `${DEBUT}\n${FIN}\n`);
 });
+
+const EN_COURS = "aidd_docs/tasks/in-progress.md";
+const TRAVAIL = "# Travail en cours\n\n- **Commande** : /pulse:prd\n- **Décision en attente** : Quelles 3 choses livrer dans quinze jours ?\n- **Pour reprendre** : /pulse:prd\n";
+
+test("hook : sans travail en cours, aucune sortie", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.strictEqual(r.stdout, "");
+});
+
+test("hook : un travail en cours est rappelé, avec la règle « redémarrer n'est pas valider »", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n`, [EN_COURS]: TRAVAIL });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /^Pulse – travail en cours/);
+  assert.match(r.stdout, /Quelles 3 choses livrer dans quinze jours \?/);
+  assert.match(r.stdout, /ne vaut pas accord/);
+});
+
+test("hook : le travail en cours est rappelé même sans mémoire projet", () => {
+  const d = projet({ [EN_COURS]: TRAVAIL });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /Pulse – travail en cours/);
+});
+
+test("hook : un travail en cours très long est tronqué", () => {
+  const d = projet({ [EN_COURS]: TRAVAIL + "x".repeat(5000) });
+  const r = lancer(d);
+  assert.ok(r.stdout.length < 3000, `sortie de ${r.stdout.length} caractères`);
+  assert.match(r.stdout, /\(suite tronquée/);
+});
+
+test("hook : in-progress.md illisible (dossier), aucune erreur ni sortie", () => {
+  const d = projet({ "aidd_docs/tasks/in-progress.md/.gitkeep": "" });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.strictEqual(r.stdout, "");
+});
+
+test("--rapport : le travail en cours n'est pas affiché", () => {
+  const d = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n`, [EN_COURS]: TRAVAIL });
+  const r = lancer(d, "--rapport");
+  assert.doesNotMatch(r.stdout, /travail en cours/);
+});

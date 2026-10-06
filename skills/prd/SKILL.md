@@ -41,6 +41,8 @@ Proposer un classement, puis le faire valider par la personne (AskUserQuestion, 
 
 **Garde-fou de taille** : si plus de 5 ou 6 fonctionnalités sont « Indispensables » pour un MVP à réaliser en une journée, dites-le franchement et proposer lesquelles passer en « Essentiel ». Poser la question test : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? »
 
+**Travail en cours** : tant que la coupe du MVP ou la définition « Le MVP est atteint quand… » attend la personne, tenir `aidd_docs/tasks/in-progress.md` à jour (règle commune 16). Le supprimer après l'écriture de `docs/prd.md`.
+
 ### 3. Compléter le reste du PRD
 
 Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'être (demander seulement le reste) :

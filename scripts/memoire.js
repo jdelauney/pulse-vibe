@@ -6,6 +6,8 @@
 //    chargé automatiquement à chaque session ;
 //  - les fichiers de internal/ et external/ sont listés, à lire seulement si la tâche le demande.
 // Met aussi à jour la liste des fichiers de aidd_docs/memory/README.md, entre ses marqueurs.
+// En mode hook, rappelle aussi le travail en cours (aidd_docs/tasks/in-progress.md) : une décision
+// laissée en attente avant la fermeture de la session, un /clear ou un compactage.
 //
 // Ne remplit qu'un bloc déjà présent : le reste de CLAUDE.md n'est jamais touché.
 //
@@ -29,6 +31,8 @@ const BLOC_DEBUT = "<!-- pulse_memoire:debut -->";
 const BLOC_FIN = "<!-- pulse_memoire:fin -->";
 const LISTE_DEBUT = "<!-- fichiers:debut -->";
 const LISTE_FIN = "<!-- fichiers:fin -->";
+const EN_COURS = path.join("aidd_docs", "tasks", "in-progress.md");
+const LIMITE_EN_COURS = 2000;
 const NOTE_A_LA_DEMANDE = "<!-- à lire seulement si la tâche le demande, non chargé automatiquement -->";
 
 const rapport = process.argv.includes("--rapport");
@@ -179,6 +183,28 @@ function afficherRapport(r) {
   console.log(r.modifies.length > 0 ? `Fichiers mis à jour : ${r.modifies.join(", ")}` : "Déjà à jour, rien à modifier.");
 }
 
+// Texte ajouté au contexte de la session (sortie standard du hook SessionStart), ou null.
+function rappelTravailEnCours() {
+  let contenu;
+  try {
+    contenu = fs.readFileSync(EN_COURS, "utf8").trim();
+  } catch {
+    return null; // absent ou illisible : rien à rappeler
+  }
+  if (contenu === "") return null;
+  if (contenu.length > LIMITE_EN_COURS) {
+    contenu = `${contenu.slice(0, LIMITE_EN_COURS)}\n(suite tronquée : lire ${versPosix(EN_COURS)})`;
+  }
+  return [
+    `Pulse – travail en cours (${versPosix(EN_COURS)}) :`,
+    "",
+    contenu,
+    "",
+    "Rappelez-le à la personne dès votre première réponse et proposez la commande indiquée pour reprendre.",
+    "Redémarrer, effacer ou compacter la conversation ne vaut pas accord : la décision en attente reste à prendre.",
+  ].join("\n");
+}
+
 // Les chemins sont relatifs au projet : sans ce point d'ancrage, un lancement depuis un autre
 // dossier ne trouverait aucune mémoire et passerait pour un succès.
 const projet = process.env.CLAUDE_PROJECT_DIR;
@@ -196,4 +222,9 @@ try {
     console.error(`Synchronisation de la mémoire impossible : ${e.message}`);
     process.exitCode = 1;
   }
+}
+
+if (!rapport) {
+  const rappel = rappelTravailEnCours();
+  if (rappel !== null) process.stdout.write(`${rappel}\n`);
 }
