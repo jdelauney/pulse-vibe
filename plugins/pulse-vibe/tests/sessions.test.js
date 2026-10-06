@@ -1,5 +1,5 @@
 // Tests du registre des sessions Claude Code ouvertes (scripts/sessions.js).
-// Lancer : node --test plugins/pulse/tests/*.test.js
+// Lancer : node --test plugins/pulse-vibe/tests/*.test.js
 "use strict";
 
 const test = require("node:test");

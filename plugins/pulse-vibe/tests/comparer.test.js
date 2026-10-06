@@ -1,5 +1,5 @@
 // Tests de la page de comparaison des variantes (pulse-aidd comparer, /pulse:ui).
-// Lancer : node --test plugins/pulse/tests/comparer.test.js
+// Lancer : node --test plugins/pulse-vibe/tests/comparer.test.js
 "use strict";
 
 const test = require("node:test");

@@ -1,5 +1,5 @@
 // Tests du guide de réalisation (docs/guide/ produit à partir des plans de aidd_docs/tasks/<epic>/).
-// Lancer : node --test plugins/pulse/tests/*.test.js
+// Lancer : node --test plugins/pulse-vibe/tests/*.test.js
 "use strict";
 
 const test = require("node:test");

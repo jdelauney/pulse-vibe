@@ -1,5 +1,5 @@
 // Tests du garde-fou anti-secrets et du script de vérification.
-// Lancer : node --test plugins/pulse/tests/
+// Lancer : node --test plugins/pulse-vibe/tests/
 // Les fausses clés sont construites à l'exécution pour ne jamais figurer telles quelles dans le dépôt.
 "use strict";
 

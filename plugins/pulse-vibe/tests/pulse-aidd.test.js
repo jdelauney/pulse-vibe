@@ -1,5 +1,5 @@
 // Tests de l'outil interne pulse-aidd pour /pulse:ui, /pulse:learn, /pulse:commit et /pulse:pr.
-// Lancer : node --test plugins/pulse/tests/pulse-aidd.test.js (nécessite bash dans le PATH)
+// Lancer : node --test plugins/pulse-vibe/tests/pulse-aidd.test.js (nécessite bash dans le PATH)
 "use strict";
 
 const test = require("node:test");

@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "pulse-vibe",
-      "source": "./",
+      "source": "./plugins/pulse-vibe",
       "description": "Méthode Pulse : du brief à la mise en ligne avec l'IA, étape par étape, avec garde-fous de sécurité. En français."
     }
   ]

@@ -1,5 +1,5 @@
 // Tests de la synchronisation de la mémoire projet.
-// Lancer : node --test plugins/pulse/tests/*.test.js
+// Lancer : node --test plugins/pulse-vibe/tests/*.test.js
 "use strict";
 
 const test = require("node:test");
