@@ -63,7 +63,7 @@ Pour chaque epic, repérer le ou les **cas limites** dont le comportement change
 
 ### 5. Écrire et valider
 
-**Travail en cours** : avant de présenter la validation, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; le supprimer une fois les US validées.
+**Travail en cours** : avant de présenter la validation, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; l'effacer (`pulse-aidd travail-fini`) une fois les US validées.
 
 1. Remplir le référentiel `docs/user-stories.md` (modèle du référentiel) : le tableau des epics, le **parcours utilisateur** (les US Indispensables dans l'ordre où l'utilisateur les vit ; la dernière clôt le MVP), puis, pour chaque epic, son tableau d'US avec le lien vers chaque fichier. Vérifier que les dépendances s'enchaînent dans un seul sens, sans boucle.
 2. Écrire les fichiers `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`.

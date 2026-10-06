@@ -24,7 +24,7 @@ Cette commande **lit et résume**. Sa seule modification, et seulement avec l'ac
 6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée.
 7. **Dernière relecture** : le rapport de tâche le plus récent dans `aidd_docs/tasks/*/revues/*/` et son verdict ; le dernier audit `docs/securite.md` s'il existe.
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
-9. **Travail en cours** : `aidd_docs/tasks/in-progress.md`, s'il existe (commande, étape, décision en attente).
+9. **Travail en cours** : `aidd_docs/tasks/in-progress.md` du dossier principal et de chaque worktree (`.claude/worktrees/*/aidd_docs/tasks/in-progress.md`), s'il existe (commande, étape, décision en attente, date « Mis à jour le »).
 
 ## Format de réponse
 
@@ -54,7 +54,7 @@ Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non b
 ```
 
 Règles pour la prochaine étape conseillée, dans l'ordre :
-1. Travail en cours (`aidd_docs/tasks/in-progress.md`) → la commande « Pour reprendre ».
+1. Travail en cours (`aidd_docs/tasks/in-progress.md`, ou celui d'un worktree) → la commande « Pour reprendre » (dans ce worktree, s'il y a lieu). S'il date de plus de 7 jours, demander d'abord s'il est toujours d'actualité ; sinon, l'effacer (`pulse-aidd travail-fini`, dans son dossier).
 2. Document de méthode manquant → la commande qui le produit. Mémoire absente ou non branchée → `/pulse:memory creer`.
 3. Modifications non enregistrées d'une tâche `[~]` sans revue → `/pulse:review`.
 4. Tâche `[~]` relue → `/pulse:commit`.

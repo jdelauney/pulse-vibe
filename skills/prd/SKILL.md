@@ -48,7 +48,7 @@ Construire ensuite le classement complet à partir de sa coupe, le montrer avec 
 
 **Garde-fou de taille** : si plus de 5 ou 6 fonctionnalités sont « Indispensables » pour un MVP à réaliser en une journée, dites-le franchement et proposer lesquelles passer en « Essentiel ». Poser la question test : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? »
 
-**Travail en cours** : tant que la coupe du MVP ou la définition « Le MVP est atteint quand… » attend la personne, tenir `aidd_docs/tasks/in-progress.md` à jour (règle commune 16). Le supprimer après l'écriture de `docs/prd.md`.
+**Travail en cours** : tant que la coupe du MVP ou la définition « Le MVP est atteint quand… » attend la personne, tenir `aidd_docs/tasks/in-progress.md` à jour (règle commune 16). L'effacer (`pulse-aidd travail-fini`) après l'écriture de `docs/prd.md`.
 
 ### 3. Compléter le reste du PRD
 

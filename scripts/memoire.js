@@ -33,6 +33,7 @@ const LISTE_DEBUT = "<!-- fichiers:debut -->";
 const LISTE_FIN = "<!-- fichiers:fin -->";
 const EN_COURS = path.join("aidd_docs", "tasks", "in-progress.md");
 const LIMITE_EN_COURS = 2000;
+const DOSSIER_WORKTREES = path.join(".claude", "worktrees");
 const NOTE_A_LA_DEMANDE = "<!-- à lire seulement si la tâche le demande, non chargé automatiquement -->";
 
 const rapport = process.argv.includes("--rapport");
@@ -183,24 +184,37 @@ function afficherRapport(r) {
   console.log(r.modifies.length > 0 ? `Fichiers mis à jour : ${r.modifies.join(", ")}` : "Déjà à jour, rien à modifier.");
 }
 
-// Texte ajouté au contexte de la session (sortie standard du hook SessionStart), ou null.
-function rappelTravailEnCours() {
+// Le travail en cours du dossier principal, puis celui de chaque worktree : une session qui
+// travaillait dans un worktree y a laissé son fichier, et la suivante démarre souvent ailleurs.
+function fichiersTravailEnCours() {
+  const worktrees = lireDossier(DOSSIER_WORKTREES)
+    .filter((e) => e.isDirectory())
+    .map((e) => path.join(DOSSIER_WORKTREES, e.name, EN_COURS))
+    .sort();
+  return [EN_COURS, ...worktrees];
+}
+
+function blocTravailEnCours(fichier) {
   let contenu;
   try {
-    contenu = fs.readFileSync(EN_COURS, "utf8").trim();
+    contenu = fs.readFileSync(fichier, "utf8").trim();
   } catch {
     return null; // absent ou illisible : rien à rappeler
   }
   if (contenu === "") return null;
   if (contenu.length > LIMITE_EN_COURS) {
-    contenu = `${contenu.slice(0, LIMITE_EN_COURS)}\n(suite tronquée : lire ${versPosix(EN_COURS)})`;
+    contenu = `${contenu.slice(0, LIMITE_EN_COURS)}\n(suite tronquée : lire ${versPosix(fichier)})`;
   }
+  return `Pulse – travail en cours (${versPosix(fichier)}) :\n\n${contenu}`;
+}
+
+// Texte ajouté au contexte de la session (sortie standard du hook SessionStart), ou null.
+function rappelTravailEnCours() {
+  const blocs = fichiersTravailEnCours().map(blocTravailEnCours).filter((b) => b !== null);
+  if (blocs.length === 0) return null;
   return [
-    `Pulse – travail en cours (${versPosix(EN_COURS)}) :`,
-    "",
-    contenu,
-    "",
-    "Rappelez-le à la personne dès votre première réponse et proposez la commande indiquée pour reprendre.",
+    ...blocs.flatMap((b) => [b, ""]),
+    "Rappelez-le à la personne dès votre première réponse et proposez la commande indiquée pour reprendre (dans le worktree indiqué, s'il y en a un).",
     "Redémarrer, effacer ou compacter la conversation ne vaut pas accord : la décision en attente reste à prendre.",
   ].join("\n");
 }
@@ -225,6 +239,10 @@ try {
 }
 
 if (!rapport) {
-  const rappel = rappelTravailEnCours();
-  if (rappel !== null) process.stdout.write(`${rappel}\n`);
+  try {
+    const rappel = rappelTravailEnCours();
+    if (rappel !== null) process.stdout.write(`${rappel}\n`);
+  } catch {
+    // Même règle que la synchronisation : rien ne doit empêcher la session de démarrer.
+  }
 }

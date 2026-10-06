@@ -112,3 +112,18 @@ test("contexte brainstorm, prd et us : la référence « Penser avant d'écrire 
     assert.ok(r.stdout.includes("===== Penser avant d'écrire ====="), commande);
   }
 });
+
+test("travail-fini : efface le travail en cours du dossier courant, sans erreur s'il est absent", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-fini-"));
+  const fichier = path.join(d, "aidd_docs", "tasks", "in-progress.md");
+  fs.mkdirSync(path.dirname(fichier), { recursive: true });
+  fs.writeFileSync(fichier, "# Travail en cours\n");
+  const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
+  let r = spawnSync("bash", [outil, "travail-fini"], { cwd: d, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!fs.existsSync(fichier), "le fichier est effacé");
+  r = spawnSync("bash", [outil, "travail-fini"], { cwd: d, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+});

@@ -158,3 +158,11 @@ test("--rapport : le travail en cours n'est pas affiché", () => {
   const r = lancer(d, "--rapport");
   assert.doesNotMatch(r.stdout, /travail en cours/);
 });
+
+test("hook : un travail en cours laissé dans un worktree est aussi rappelé, avec son emplacement", () => {
+  const d = projet({ ".claude/worktrees/us-003-filtre/aidd_docs/tasks/in-progress.md": TRAVAIL });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /Pulse – travail en cours \(\.claude\/worktrees\/us-003-filtre\/aidd_docs\/tasks\/in-progress\.md\)/);
+  assert.match(r.stdout, /Quelles 3 choses livrer/);
+});

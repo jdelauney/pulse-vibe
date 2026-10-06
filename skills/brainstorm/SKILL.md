@@ -52,7 +52,7 @@ Branches de départ habituelles (à adapter aux réponses) :
 | 2 | **la validation de l'histoire** (premier jet, voir § 3) · les contraintes connues (données personnelles, budget mensuel, délai) |
 | 3 et + | les zones d'ombre révélées par l'histoire : **clé** la règle métier centrale, puis règles secondaires, cas limites, mots ambigus |
 
-**Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. Le supprimer après l'écriture du brief.
+**Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. L'effacer (`pulse-aidd travail-fini`) après l'écriture du brief.
 
 ### 2. Les faits, c'est vous ; les décisions, c'est la personne
 

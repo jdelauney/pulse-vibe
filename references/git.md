@@ -92,10 +92,11 @@ Annuler, c'est ajouter une nouvelle version qui défait une ancienne : l'histori
 | Cas | Opération | Filet de sécurité |
 |---|---|---|
 | Changements non enregistrés | `git stash push -u -m "pulse-annuler <date> <résumé>"` (ou `… -- <fichiers>`) | Mis de côté, récupérable avec `git stash apply` |
-| Une tâche enregistrée | `git revert --no-commit <commits de la tâche, du plus récent au plus ancien>`, puis `git commit` (`revert(<Tâche>): annule <description>`) | Historique conservé ; fonctionne même si les commits sont déjà envoyés |
-| Revenir à une version | `git branch sauvegarde/<AAAA-MM-JJ-HHMM>`, puis `git revert --no-commit <version>..HEAD` et un seul commit (`revert: revient à la version du <date>`) | Branche de sauvegarde sur l'état d'avant |
-| Récupérer | `git stash apply <entrée>` (puis `git stash drop <entrée>` avec accord), ou `git revert <commit d'annulation>` | — |
+| Une tâche (ou toute une US) enregistrée | `git revert --no-commit <commit>` pour chaque commit, du plus récent au plus ancien (`-m 1` pour un commit de fusion), puis `git commit` (`revert(<Tâche ou US>): annule <description>`) | Historique conservé ; fonctionne même si les commits sont déjà envoyés |
+| Revenir à une version | `git branch sauvegarde/<AAAA-MM-JJ-HHMM>`, puis défaire de même chaque commit de `git rev-list --first-parent <version>..HEAD`, et un seul commit (`revert: revient à la version du <date>`) | Branche de sauvegarde sur l'état d'avant |
+| Récupérer | `git stash apply <entrée>` (puis `git stash drop <entrée>` avec accord), ou défaire le commit d'annulation de la même façon, puis commit `revert: rétablit <description>` | — |
 
 - Toujours passer par ces opérations réversibles. **Jamais** `git reset --hard`, `git checkout -- .`, `git restore` sans mise de côté préalable, `git clean`, ni `--force`.
 - Les fichiers ignorés (`.env`, fichiers d'environnement locaux) restent en place : `git stash -u` ne les prend pas.
-- Conflit pendant un revert : `git revert --abort` remet tout en l'état ; expliquer simplement et proposer `/pulse:get-help`.
+- Conflit sur un plan seulement (le Journal, mis à jour par une tâche plus récente) : garder la version actuelle du plan (`git checkout --ours -- <plan>`, puis `git add <plan>`) et le mettre à jour à la main. C'est la seule reprise de fichier permise, et elle porte sur ce plan uniquement.
+- Tout autre conflit, ou toute autre erreur pendant un revert : `git revert --abort` remet tout en l'état ; expliquer simplement et proposer `/pulse:get-help`.

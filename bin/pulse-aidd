@@ -16,6 +16,7 @@
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd verifier              contrôle l'absence de secrets et de fichiers d'environnement suivis par Git
+#   pulse-aidd travail-fini          efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier courant
 #   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
@@ -174,11 +175,14 @@ case "$1" in
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   verifier)
     exec node "$TPL/verifier.js" ;;
+  travail-fini)
+    rm -f aidd_docs/tasks/in-progress.md
+    echo "Travail en cours effacé : aucune décision en attente." ;;
   installer-ci)
     mkdir -p scripts
     cp "$TPL/verifier.js" scripts/verifier.js
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac
