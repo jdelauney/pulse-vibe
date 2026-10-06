@@ -1,6 +1,6 @@
 ---
 description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
-argument-hint: "[-axw] <US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
+argument-hint: "<US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
 ---
@@ -19,7 +19,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Lire les arguments
 
-**Options**, placées avant l'US. **Regroupables** : chaque lettre est une option, et `-axw` équivaut à `-a -x -w` (l'ordre des lettres ne compte pas). Une lettre inconnue : toujours la signaler et demander ce que la personne voulait.
+**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme et l'examen se choisissent par une question au démarrage (section « Worktree ») ; **avec au moins une option**, les choix non précisés prennent leur valeur par défaut (avec points de validation, examen standard), sans question.
 - `-a` **autonome** : enchaîner en sautant les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
 - `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
 - `-w` **worktree** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, le worktree est proposé (même avec `-a` : c'est une décision de la personne).
@@ -90,7 +90,15 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 
 ## Worktree
 
-Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même avec `-a` : c'est une décision de la personne ; dans la même ronde de questions que le worktree), puis « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que le worktree les contienne. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Sans worktree, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés), poser **une seule ronde** (AskUserQuestion) qui regroupe, selon le cas :
+- **Rythme** (seulement si aucune option n'a été passée) : « Avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les étapes) / « Autonome » (j'enchaîne ; vous testez toujours chaque tâche) ;
+- **Examen** (seulement si aucune option n'a été passée) : « Standard (Recommandé) » (relecture et vérification) / « Renforcé » (plus un audit de sécurité à chaque tâche) ;
+- **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même en autonome : c'est une décision de la personne) ;
+- **Worktree** : « 1. Faut-il un worktree ? » de la référence worktree.
+
+« Autonome » vaut `-a`, « Renforcé » vaut `-x`. Les points ✋ 1 et ✋ 2 déjà passés ne se rejouent pas.
+
+Puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que le worktree les contienne. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Sans worktree, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ## [P] Planifier
 

@@ -1,6 +1,6 @@
 ---
 description: Réaliser une tâche d'un plan et l'expliquer, directement ou via le sous-agent implementer, au besoin dans un worktree ; sans tâche, boucler sur tout le plan (réaliser, relire, corriger, commiter, tâche suivante)
-argument-hint: "[-sdw] <US-XXX> [T3] (regroupables, ex. -sw : -s sous-agent ou -d direct, -w worktree ; sans tâche : tout le plan)"
+argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
 ---
@@ -17,9 +17,9 @@ Arguments reçus : `$ARGUMENTS` (les options, l'US dont on réalise le plan, pui
 
 Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions`).
 
-## Options
+## Raccourcis (facultatifs)
 
-Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` équivaut à `-s -w` (l'ordre des lettres ne compte pas : `-ws` aussi). Une lettre inconnue : toujours la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
+Les choix de la façon de travailler se font par une question au démarrage (§ 0). Les habitués peuvent les donner d'avance, avant l'US, regroupables (`-sw` = `-s -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
 - `-s` **via sous-agent** : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
 - `-d` **directe** : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
 - `-w` **worktree** : travailler dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
@@ -125,7 +125,7 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 
 **Dans un worktree** : quand le plan est terminé, ou si la personne s'arrête, appliquer « 3. Terminer : rassembler le travail » de la référence worktree.
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (avec `-w` pour revenir dans le worktree gardé).
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (Pulse propose de revenir dans le worktree gardé).
 
 ## Contraintes d'implémentation
 - Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite`.

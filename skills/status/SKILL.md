@@ -71,11 +71,11 @@ Règles pour la prochaine étape conseillée, dans l'ordre :
 Après l'affichage, seulement si un worktree est dans ce cas :
 
 - **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les worktrees déjà fusionnés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et en rester là). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
-- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le worktree `us-xxx-<nom>` : `/pulse:implement -w US-XXX` ou `/pulse:spirc -w US-XXX` pour continuer et le rassembler ».
+- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le worktree `us-xxx-<nom>` : `/pulse:implement US-XXX` ou `/pulse:spirc US-XXX` (Pulse propose d'y revenir) pour continuer et le rassembler ».
 - **Fusionné mais avec des modifications non enregistrées** : le garder ; le signaler (« des changements y restent, non enregistrés »).
 
 De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans la branche du dossier principal (`git branch --merged`, après `git pull` si la demande de fusion a été acceptée sur le site) et inutilisée en ce moment : proposer de la supprimer (`git branch -d`, jamais `-D`). Une demande de fusion encore ouverte pour un plan terminé (`gh pr view`, `glab mr view`) : rappeler qu'elle attend d'être fusionnée sur le site du dépôt.
 
-**Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc -w US-004` ». Une proposition seulement : la personne la lance elle-même.
+**Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc US-004` (Pulse proposera un worktree) ». Une proposition seulement : la personne la lance elle-même.
 
 Pour cette commande, le format ci-dessus remplace le bloc de fin de commande habituel.

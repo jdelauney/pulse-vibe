@@ -31,7 +31,7 @@
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, via un assistant spécialisé (`-s`) ou directement devant vous (`-d`) ; sans option, on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
+| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, via un assistant spécialisé ou directement devant vous : on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
 | `/pulse:review` | Un relecteur indépendant vérifie ; **vous testez** ; on corrige |
 | `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne |
 
@@ -41,7 +41,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 🌿 En équipe ou pour tester avant de publier : `/pulse:pr branche US-001` avant de construire (une copie de travail), puis `/pulse:pr` pour proposer la fusion (une demande relisible, souvent avec une adresse de prévisualisation).
 
-🪟 Deux sessions Claude Code en même temps sur le même projet : `/pulse:implement -w US-002` ou `/pulse:spirc -w US-002` travaille dans un **worktree**, une deuxième copie du projet sur sa propre branche. Pulse vous le propose de lui-même s'il voit une autre session ouverte, puis rassemble le travail à la fin.
+🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose un **worktree**, une deuxième copie du projet sur sa propre branche, puis rassemble le travail à la fin.
 
 ## 5. Mettre en ligne
 

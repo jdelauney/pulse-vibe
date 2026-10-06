@@ -17,13 +17,13 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:plan <US-003>` | Petites tâches ordonnées (kanban) pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
 | `/pulse:refine [<US-003>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
 | `/pulse:guide` | Le carnet de route : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier, les actions manuelles. Mis à jour automatiquement à chaque modification du plan | `docs/guide/` |
-| `/pulse:implement [-sdw] <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, via le sous-agent implementer (`-s`) ou directement (`-d`) ; sans option, la question est posée ; options regroupables (`-sw`). `-w` : dans un worktree (proposé d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
+| `/pulse:implement <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, via le sous-agent implementer ou directement (question posée au démarrage), au besoin dans un worktree (proposé d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
 | `/pulse:review` | Relecture indépendante, test manuel, corrections | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
 | `/pulse:cicd [proteger]` | Contrôles automatiques (CI) à chaque envoi et sur chaque demande de fusion : secrets, lint, tests, construction, adaptés au fournisseur du dépôt (GitHub Actions, GitLab CI…) ; `proteger` : n'accepter une fusion que si la CI est verte | fichier de CI, `scripts/verifier.js` |
 | `/pulse:deploy` | Mise en ligne et déploiement continu (CD), puis mode production (variables, services, retour arrière) | site en ligne |
-| `/pulse:spirc [-axw] <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Options `-a` (autonome), `-x` (examen renforcé) et `-w` (worktree), regroupables (`-axw`) | tout ce qui précède |
+| `/pulse:spirc <US-003> [T3 | "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Rythme (avec validations ou autonome) et examen (standard ou renforcé) choisis au démarrage | tout ce qui précède |
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
 | `/pulse:learn [<notion>]` | Un professeur de programmation, limité au développement logiciel : leçon, `feynman <notion>` (vous expliquez, il vous aide à combler les trous), `exercice <notion>`, `parcours "<objectif>"` ; adapté à votre niveau, illustré avec votre projet. Sans argument : révision des notions à revoir | `docs/apprentissage.md` (carnet, facultatif) |
@@ -41,6 +41,19 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
    → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou : /pulse:spirc <US-XXX>)
    → /pulse:deploy
 ```
+
+### Raccourcis pour habitués
+
+Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se regrouper :
+
+| Commande | Raccourci | Effet |
+|---|---|---|
+| `/pulse:implement` | `-s` / `-d` | réalisation par le sous-agent / directement dans la conversation |
+| `/pulse:implement`, `/pulse:spirc` | `-w` | dans un worktree |
+| `/pulse:spirc` | `-a` | autonome : sans les points de validation (le test manuel reste) |
+| `/pulse:spirc` | `-x` | examen renforcé : audit de sécurité à chaque tâche |
+
+Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus les questions de rythme et d'examen.
 
 ## Ce que le plugin contient en plus des commandes
 
