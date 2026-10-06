@@ -54,6 +54,7 @@ contexte() {
       afficher "Bannière" "$TPL/banniere.txt"
       afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
     brainstorm)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Modèle : docs/brief.md" "$TPL/brief.md"
       afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
@@ -81,8 +82,11 @@ contexte() {
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md"
       lexique ;;
-    prd) afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
+    prd)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
     us)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
       afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md" ;;
     spec)

@@ -34,7 +34,19 @@ Les mots du métier et leur définition commune sont dans le glossaire : `aidd_d
 
 ## Décisions prises
 
-- ✔ {{décision}} – {{pourquoi, en une phrase}}
+**Décidé par vous**
+
+- ✔ {{décision}} – {{pourquoi, avec vos mots}}
+
+**Proposé par Pulse, accepté**
+
+- ✔ {{proposition}} – {{pourquoi}}
+
+## Hypothèses à vérifier
+
+Ce que nous croyons vrai sans l'avoir encore vérifié auprès de vrais utilisateurs.
+
+- [ ] {{hypothèse}} – {{comment la vérifier simplement}}
 
 ## Questions ouvertes
 

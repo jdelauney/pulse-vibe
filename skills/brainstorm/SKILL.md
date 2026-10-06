@@ -32,12 +32,14 @@ On parle du **métier** : la technique (base de données, framework, écrans dé
 
 ## Les principes de l'entretien
 
+Appliquer « Penser avant d'écrire » ci-dessus : les branches marquées **clé** ci-dessous se posent en question clé (réponse libre, exemples, reformuler et confronter) ; les autres en rondes à choix.
+
 ### 1. Un arbre de décisions, parcouru par rondes
 
 Chaque sujet à trancher est une **branche** ; certaines dépendent d'autres (les règles d'annulation se discutent une fois qu'on sait qui réserve). À chaque instant, la **frontière** regroupe les questions dont tous les prérequis sont déjà tranchés : on peut les poser maintenant en s'appuyant uniquement sur des réponses déjà entendues.
 
-- **Une ronde = la frontière**, posée en **un seul appel AskUserQuestion** (4 questions au maximum ; s'il y en a plus, garder les plus structurantes et reporter les autres à la ronde suivante).
-- Chaque question propose **2 à 4 réponses concrètes et réalistes** (un « oui / non » seulement pour une question fermée). **La réponse recommandée est la première**, avec « (Recommandé) » dans son libellé et une description qui dit pourquoi. La personne peut toujours écrire sa propre réponse.
+- **Une ronde = la frontière.** Ses questions clés se posent d'abord, une par message, en réponse libre. Ses questions secondaires se posent ensuite en **un seul appel AskUserQuestion** (4 questions au maximum ; s'il y en a plus, garder les plus structurantes et reporter les autres à la ronde suivante).
+- Chaque question secondaire propose **2 à 4 réponses concrètes et réalistes** (un « oui / non » seulement pour une question fermée). **La réponse recommandée est la première**, avec « (Recommandé) » dans son libellé et une description qui dit pourquoi. La personne peut toujours écrire sa propre réponse.
 - Une question qui dépend d'une autre question **de la même ronde** attend la ronde suivante.
 - Après chaque ronde : **reformuler en 1 ou 2 lignes** ce qui est décidé (« ✔ Décidé : … »), recalculer la frontière, puis poser la ronde suivante.
 - Afficher la progression en une ligne : « Ronde 3 · encore environ 2 sujets à éclaircir ».
@@ -46,9 +48,9 @@ Branches de départ habituelles (à adapter aux réponses) :
 
 | Ronde typique | Branches |
 |---|---|
-| 1 | l'idée en une phrase (si l'argument est vide) · les acteurs · comment ça se passe aujourd'hui et ce qui coince · ce qui ferait dire « ça m'aide vraiment » dans un mois |
+| 1 | **clé** l'idée en une phrase (si l'argument est vide) · **clé** les acteurs · **clé** comment ça se passe aujourd'hui et ce qui coince · **clé** ce qui ferait dire « ça m'aide vraiment » dans un mois |
 | 2 | **la validation de l'histoire** (premier jet, voir § 3) · les contraintes connues (données personnelles, budget mensuel, délai) |
-| 3 et + | les zones d'ombre révélées par l'histoire : règles métier, cas limites, mots ambigus |
+| 3 et + | les zones d'ombre révélées par l'histoire : **clé** la règle métier centrale, puis règles secondaires, cas limites, mots ambigus |
 
 **Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. Le supprimer après l'écriture du brief.
 
@@ -86,11 +88,11 @@ Quand une réponse tranche une question structurante, la noter dans la liste des
 L'entretien est terminé quand **la frontière est vide** : toutes les branches visitées, tout dit explicitement (ou quand la personne choisit de s'arrêter).
 
 1. Présenter un **récapitulatif** court : la phrase de synthèse, l'histoire, les décisions prises (« ✔ … »), les mots ajoutés au glossaire, les questions restées ouvertes.
-2. **Rédiger après l'accord** : demander (AskUserQuestion) « Avons-nous la même compréhension ? » → « Oui, rédiger le brief (Recommandé) » / « Je veux corriger quelque chose ».
+2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief. Si elle s'écarte de l'histoire validée (un acteur ou un besoin absent, un autre centre de gravité), le dire et en parler avant de rédiger. Puis demander (AskUserQuestion) : « Rédiger le brief (Recommandé) » / « Je veux corriger quelque chose ».
 
 ## Rédiger
 
-1. Remplir le modèle `docs/brief.md` et écrire `docs/brief.md` : la phrase de synthèse, le problème, les acteurs, l'histoire validée, les décisions, les questions encore ouvertes (cases à cocher), la réussite. Pour le vocabulaire, le brief **renvoie au glossaire**.
+1. Remplir le modèle `docs/brief.md` et écrire `docs/brief.md` : la phrase de synthèse, le problème, les acteurs, l'histoire validée, les décisions (« Décidé par vous » / « Proposé par Pulse, accepté »), les hypothèses à vérifier, les questions encore ouvertes (cases à cocher), la réussite. Pour le vocabulaire, le brief **renvoie au glossaire**.
 2. Vérifier que `aidd_docs/memory/glossary.md` contient tous les mots tranchés.
 3. Mémoire : compléter la section « Vision » de `aidd_docs/memory/project.md` (résumé, public cible, problème principal) et ajouter une ligne datée par décision structurante dans « Décisions importantes ». Montrer ces lignes avant de les écrire.
 4. Mettre à jour la ligne de description en haut de `CLAUDE.md` si elle contient encore `{{…}}`.

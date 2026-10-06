@@ -24,12 +24,12 @@
 
 ## 5. Périmètre (MoSCoW)
 
-| Priorité | Signification | Fonctionnalités |
-|---|---|---|
-| **Indispensable** (Must) | Sans ça, l'outil ne sert à rien. Constitue le **MVP**. | |
-| **Essentiel** (Should) | Vraie valeur ajoutée, juste après le MVP. | |
-| **Optionnel** (Could) | La cerise sur le gâteau, si le temps le permet. | |
-| **En attente** (Won't, cette fois) | Bonne idée, mais pas maintenant. | |
+| Priorité | Signification | Fonctionnalités | Origine |
+|---|---|---|---|
+| **Indispensable** (Must) | Sans ça, l'outil ne sert à rien. Constitue le **MVP**. | | {{vous · Pulse, accepté}} |
+| **Essentiel** (Should) | Vraie valeur ajoutée, juste après le MVP. | | |
+| **Optionnel** (Could) | La cerise sur le gâteau, si le temps le permet. | | |
+| **En attente** (Won't, cette fois) | Bonne idée, mais pas maintenant. | | |
 
 ### Définition du MVP
 
@@ -51,7 +51,13 @@ Ce que l'outil **ne fera pas**, pour que chacun en ait la même idée.
 
 - …
 
-## 8. Risques et questions ouvertes
+## 8. Hypothèses à vérifier
+
+Ce que nous croyons vrai sans l'avoir encore vérifié auprès de vrais utilisateurs.
+
+- [ ] {{hypothèse}} – {{comment la vérifier simplement}}
+
+## 9. Risques et questions ouvertes
 
 | Risque ou question | Impact | Piste |
 |---|---|---|

@@ -12,7 +12,7 @@
 
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
-| `/pulse:brainstorm` | Vous pose des questions par petites séries, avec une réponse conseillée, puis raconte votre outil comme une histoire | `docs/brief.md` et le glossaire |
+| `/pulse:brainstorm` | Vous fait réfléchir à votre idée : quelques questions essentielles, auxquelles vous répondez avec vos mots (avec des exemples), puis des questions rapides à choix ; raconte enfin votre outil comme une histoire | `docs/brief.md` et le glossaire |
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **MVP** |
 | `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |

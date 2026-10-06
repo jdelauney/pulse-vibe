@@ -20,10 +20,12 @@ Rappeler en une phrase : « Le MVP est la plus petite version réellement utilis
 
 ## Prérequis
 
-- `docs/brief.md` est nécessaire. S'il manque, proposer `/pulse:brainstorm`. Si la personne veut aller vite, proposer un **mode express** : 3 questions (l'idée et les utilisateurs ; le problème actuel ; les 5 choses que l'outil doit permettre), puis continuer.
+- `docs/brief.md` est nécessaire. S'il manque, proposer `/pulse:brainstorm`. Si la personne veut aller vite, proposer un **mode express** : 3 questions clés (l'idée et les utilisateurs ; le problème actuel ; les 5 choses que l'outil doit permettre), posées une à une avec des exemples, puis continuer.
 - Si `docs/prd.md` existe : demander s'il faut le compléter ou le refaire.
 
 ## Déroulé
+
+Appliquer « Penser avant d'écrire » ci-dessus : la coupe du MVP et la définition « Le MVP est atteint quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
 
 ### 1. Lister les fonctionnalités
 
@@ -37,7 +39,12 @@ Expliquer les 4 catégories en une ligne chacune :
 - **Optionnel** (Could) : la cerise sur le gâteau.
 - **En attente** (Won't, cette fois) : bonne idée, pour plus tard.
 
-Proposer un classement, puis le faire valider par la personne (AskUserQuestion, par exemple une question à choix multiples « Lesquelles sont vraiment indispensables ? »). C'est **sa** décision.
+**La personne fait la première coupe** (question clé) : « Si vous ne pouviez livrer que 3 choses dans quinze jours, lesquelles ? », avec des exemples d'autres métiers. Puis **confronter** sa coupe à la liste et au brief :
+- un **oubli bloquant** : une fonctionnalité sans laquelle sa coupe ne fonctionne pas (« sans "se connecter", "voir mes réservations" ne marche pas ») ;
+- un **Indispensable** qui ne l'est peut-être pas (question test ci-dessous) ;
+- une fonctionnalité du brief absente de la liste.
+
+Construire ensuite le classement complet à partir de sa coupe, le montrer avec la colonne « Origine » (vous / Pulse), et le faire valider (AskUserQuestion). C'est **sa** décision.
 
 **Garde-fou de taille** : si plus de 5 ou 6 fonctionnalités sont « Indispensables » pour un MVP à réaliser en une journée, dites-le franchement et proposer lesquelles passer en « Essentiel ». Poser la question test : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? »
 
@@ -49,10 +56,11 @@ Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'êt
 - la vision (2-3 phrases) et le problème principal ;
 - le tableau des utilisateurs ;
 - 1 à 3 **objectifs mesurables** (les proposer, faire valider) ;
-- la phrase « Le MVP est atteint quand… », vérifiable ;
+- la phrase « Le MVP est atteint quand… » : **question clé**, formulée d'abord par la personne, puis rendue vérifiable avec elle (un constat observable, daté si possible) ;
 - les contraintes (données personnelles, budget, délai, appareils) ;
 - le hors périmètre (ce qui reste en dehors de l'outil) ;
-- les risques et questions ouvertes.
+- les risques et questions ouvertes ;
+- les **hypothèses à vérifier**, reprises du brief et complétées.
 
 ### 4. Écrire et valider
 

@@ -25,6 +25,8 @@ Produire le **référentiel** `docs/user-stories.md` (les epics, la vue d'ensemb
 
 ## Déroulé
 
+Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. Les **cas limites importants** sont les questions clés de cette commande : 1 ou 2 par epic au plus. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
+
 ### 1. Découper en epics
 
 Regrouper les fonctionnalités **Indispensables**, **Essentielles** et **Optionnelles** du PRD en **epics** : une epic = un grand besoin de l'utilisateur (« Gérer les demandes », « Suivre les paiements »), qui contient plusieurs US. Viser 2 à 6 epics pour un MVP ; une epic d'une seule US est possible. Les **En attente** restent hors des epics.
@@ -57,7 +59,7 @@ Chaque US suit le modèle de fichier d'US :
 
 ### 4. Trancher les questions ouvertes
 
-Si un critère dépend de questions encore ouvertes, poser à la personne les plus importantes (3 au maximum), une par une. Les autres restent notées dans l'US.
+Pour chaque epic, repérer le ou les **cas limites** dont le comportement change ce que vit l'utilisateur et qu'aucun document ne tranche (une annulation tardive, un doublon, un accès refusé). Les poser en **question clé** sous forme de scénario concret (« Un client annule une heure avant le rendez-vous : que se passe-t-il ? »), avec des exemples de réponses tirés d'autres métiers. La réponse donne le « alors… » du critère de cas d'erreur ou limite. 1 ou 2 par epic au plus ; les autres restent dans les « Questions ouvertes » de l'US.
 
 ### 5. Écrire et valider
 
@@ -65,6 +67,6 @@ Si un critère dépend de questions encore ouvertes, poser à la personne les pl
 
 1. Remplir le référentiel `docs/user-stories.md` (modèle du référentiel) : le tableau des epics, le **parcours utilisateur** (les US Indispensables dans l'ordre où l'utilisateur les vit ; la dernière clôt le MVP), puis, pour chaque epic, son tableau d'US avec le lien vers chaque fichier. Vérifier que les dépendances s'enchaînent dans un seul sens, sans boucle.
 2. Écrire les fichiers `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`.
-3. Montrer le tableau des epics, le parcours et **une** US complète en exemple, puis demander validation (« Valider » / « Modifier une US »).
+3. Montrer le tableau des epics, le parcours, puis **le tableau des règles métier** de toutes les US : `| Règle | US | Origine |`, l'origine valant « Décidé par vous » (brief, PRD, réponse à une question clé) ou « Proposé par Pulse ». Demander validation (AskUserQuestion) : « Valider » / « Contester une règle proposée par Pulse » / « Modifier une US ». Une règle contestée se tranche par une question clé, puis l'US est corrigée.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XXX>` (la première US du parcours).

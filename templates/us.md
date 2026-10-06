@@ -9,7 +9,7 @@
 
 ## Règle(s) métier
 
-- {{La règle que l'exemple illustre, en une phrase.}}
+- {{La règle que l'exemple illustre, en une phrase.}} — *{{décidé par vous | proposé par Pulse}}*
 
 ## Exemple concret
 

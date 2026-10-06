@@ -104,3 +104,11 @@ test("contexte implement, spirc, fix, learn et explain : modèle du lexique", ()
     assert.ok(r.stdout.includes("===== Modèle : docs/lexique.md ====="), commande);
   }
 });
+
+test("contexte brainstorm, prd et us : la référence « Penser avant d'écrire »", () => {
+  for (const commande of ["brainstorm", "prd", "us"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Penser avant d'écrire ====="), commande);
+  }
+});
