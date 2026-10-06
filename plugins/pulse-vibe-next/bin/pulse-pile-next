@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# pulse-pile-next – outil du pack de pile Next.js de Pulse (plugin pulse-vibe-next).
+# Claude Code place le dossier bin/ du plugin dans le PATH. Le cœur Pulse l'appelle :
+#   - par pulse-aidd contexte <commande>, quand docs/technical.md déclare « **Pack de pile Pulse** : next » ;
+#   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
+#
+#   pulse-pile-next info                  id, nom, resume, version
+#   pulse-pile-next contexte <commande>   consignes du pack pour /pulse:<commande>
+#   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
+#   pulse-pile-next recettes              liste les recettes
+#   pulse-pile-next recette <nom>         affiche une recette (ex. connexion)
+#   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
+#
+# Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
+
+RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REF="$RACINE/references"
+
+afficher() { # afficher <titre> <chemin>
+  if [ -f "$2" ]; then
+    printf '\n----- %s -----\n\n' "$1"
+    cat "$2"
+    printf '\n'
+  fi
+}
+
+version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin/plugin.json" | head -n 1; }
+
+recettes() {
+  local f nom titre
+  for f in "$REF"/recettes/*.md; do
+    [ -f "$f" ] || continue
+    nom="$(basename "$f" .md)"
+    titre="$(sed -n 's/^> Quand l.utiliser : //p' "$f" | head -n 1)"
+    printf -- '- %s : %s\n' "$nom" "$titre"
+  done
+}
+
+fiche() { afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"; }
+
+liste_recettes() {
+  printf '\n----- Recettes disponibles (pulse-aidd pile recette <nom>) -----\n\n'
+  recettes
+}
+
+contexte() {
+  case "$1" in
+    tech)
+      afficher "Pour /pulse:tech" "$REF/contexte/tech.md"
+      afficher "Valeurs de docs/technical.md" "$REF/technical.md"
+      fiche
+      afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;
+    ui)
+      afficher "Pour /pulse:ui" "$REF/contexte/ui.md"
+      afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;
+    express)
+      afficher "Pour /pulse:express" "$REF/contexte/express.md" ;;
+    spec)
+      afficher "Pour /pulse:spec" "$REF/contexte/spec.md"
+      fiche
+      liste_recettes ;;
+    plan|refine)
+      afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
+      liste_recettes ;;
+    implement|fix|spirc|auto-fix)
+      afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"
+      fiche
+      liste_recettes ;;
+    review|security)
+      afficher "Pour relire" "$REF/contexte/review.md"
+      fiche ;;
+    test)
+      afficher "Pour les tests" "$REF/contexte/test.md" ;;
+    deploy|cicd)
+      afficher "Pour mettre en ligne" "$REF/contexte/deploy.md" ;;
+    *) ;;
+  esac
+}
+
+case "$1" in
+  info)
+    printf 'id: next\nnom: Pulse Next.js\nresume: Next.js 16, Drizzle + Neon, better-auth, next-safe-action, shadcn/ui, Vercel : code de départ vérifié et recettes prêtes.\nversion: %s\n' "$(version)"
+    exit 0 ;;
+  contexte)
+    contexte "$2"; exit 0 ;;
+  reference)
+    case "$2" in
+      ""|*..*) echo "Indiquez un chemin dans references/ du pack, par exemple fiche.md. Disponibles :"; (cd "$REF" && find . -type f | sed 's|^\./||' | sort); exit 1 ;;
+    esac
+    if [ -f "$REF/$2" ]; then cat "$REF/$2"; else echo "Référence introuvable : $2. Disponibles :"; (cd "$REF" && find . -type f | sed 's|^\./||' | sort); exit 1; fi ;;
+  recettes)
+    recettes; exit 0 ;;
+  recette)
+    case "$2" in
+      ""|*/*|*..*) echo "Indiquez le nom d'une recette. Disponibles :"; recettes; exit 1 ;;
+    esac
+    if [ -f "$REF/recettes/$2.md" ]; then cat "$REF/recettes/$2.md"; else echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi ;;
+  squelette)
+    shift; exec node "$RACINE/scripts/squelette.js" "$@" ;;
+  *)
+    sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+esac

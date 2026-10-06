@@ -27,6 +27,10 @@ Le message de délégation indique le **mode** et contient : la tâche (identifi
 - **Vérifier l'API de l'outil de test** dans sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), pour la version indiquée dans « Pile retenue ».
 - Un scénario impossible à traduire tel quel (valeur imprécise, résultat non observable) : le signaler dans « Scénarios à préciser » plutôt que d'inventer une valeur.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. **Charger la méthode** avec `pulse-aidd tests` (stratégie, écriture, niveaux, TDD, Gherkin) et l'appliquer. En cas de conflit, les conventions de test déjà présentes dans le projet priment.

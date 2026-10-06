@@ -21,6 +21,10 @@ Rédiger pour une personne non développeuse, avec des phrases courtes.
 
 Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés. Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. **Définir les critères observables** : pour chaque critère d'acceptation, ce qu'on doit voir ou obtenir.

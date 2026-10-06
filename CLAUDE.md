@@ -8,6 +8,8 @@ Ce dépôt est le catalogue Claude Code `pulseia` (méthode Pulse, en français)
 |---|---|
 | `.claude-plugin/marketplace.json` | Le catalogue : un plugin par entrée, `source` = son dossier dans `plugins/` |
 | `plugins/pulse-vibe/` | Le cœur : la méthode Pulse, agnostique de la technologie (préfixe `/pulse:*`) |
+| `plugins/pulse-vibe-next/` | Le pack de pile Next.js : outil `bin/pulse-pile-next` (contrat des packs : `info`, `contexte <commande>`), fiche, recettes, squelette ; dépend de `pulse-vibe` |
+| `.github/workflows/` | Tests des plugins à chaque envoi ; squelette Next.js vérifié chaque semaine aux dernières versions |
 | `docs/` | Mémo des commandes, conceptions et plans de travail |
 
 Dans un plugin (chemins relatifs à son dossier) :
@@ -35,4 +37,5 @@ Dans un plugin (chemins relatifs à son dossier) :
 
 - `node --test plugins/*/tests/*.test.js` passe (depuis la racine du dépôt).
 - Avant chaque `git push` : monter `version` dans le `.claude-plugin/plugin.json` de **chaque plugin modifié** (correctif → patch, fonctionnalité ou structure → mineure), sinon `claude plugin update` ne voit pas la mise à jour. Après l'envoi, étiqueter chaque version publiée `<plugin>--v<version>` (`claude plugin tag --push` depuis le dossier du plugin) : les dépendances entre plugins se résolvent sur ces étiquettes.
+- Squelette de `pulse-vibe-next` modifié : `node plugins/pulse-vibe-next/scripts/verifier-squelette.js --e2e` passe. Les dépendances du squelette sont toujours aux dernières versions publiées (`--dernieres --ecrire` les met à jour quand tout passe).
 - Essayer les plugins ensemble, sans les installer : `claude --plugin-dir ./plugins`.
