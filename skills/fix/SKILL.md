@@ -2,7 +2,7 @@
 description: Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter
 argument-hint: "<message d'erreur ou description du problème> [fichier]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *)
+allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *)
 ---
 
 # /pulse:fix – Corriger une erreur

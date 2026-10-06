@@ -3,7 +3,7 @@
 .env.*
 !.env.example
 
-# --- Worktrees : copies de travail créées par /pulse:implement -w ou /pulse:spirc -w ---
+# --- Worktrees : copies de travail créées par /pulse:implement ou /pulse:spirc ---
 .claude/worktrees/
 
 # --- Travail en cours : décision en attente, propre à cette machine ---

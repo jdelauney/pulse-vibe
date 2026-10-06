@@ -2,7 +2,7 @@
 description: Revenir en arrière sans rien perdre - abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération
 argument-hint: "[T3 | US-003] (facultatif : la tâche ou l'US à annuler)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git show *) Bash(git rev-parse *) Bash(git branch *) Bash(git stash *) Bash(git revert *) Bash(git rev-list *) Bash(git checkout --ours *) Bash(git add *) Bash(git commit *) Bash(git push *) Bash(git remote *) Bash(git symbolic-ref *)
+allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git show *) Bash(git rev-parse *) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch sauvegarde/*) Bash(git stash push *) Bash(git stash list*) Bash(git stash show *) Bash(git stash apply *) Bash(git revert *) Bash(git merge --abort) Bash(git rev-list *) Bash(git checkout --ours *) Bash(git add *) Bash(git commit *) Bash(git push) Bash(git push -u origin *) Bash(git remote *) Bash(git symbolic-ref *)
 ---
 
 # /pulse:annuler – Revenir en arrière
@@ -24,7 +24,7 @@ Revenir en arrière **sans rien perdre** : chaque annulation est elle-même rév
 ## Prérequis
 
 - Le dossier doit être un dépôt Git avec au moins un commit (`git rev-parse --is-inside-work-tree`, `git log --oneline -1`). Sinon, proposer `/pulse:init`.
-- Une opération Git est en cours (fusion, revert interrompu : `git status` l'indique) : l'expliquer et proposer de l'interrompre proprement (`git revert --abort` ou `git merge --abort`) avant toute chose.
+- Une opération Git est en cours (fusion, revert interrompu : `git status` l'indique) : l'expliquer et proposer de l'interrompre proprement (`git revert --abort` ou `git merge --abort`) avant toute chose. Si une autre session travaille sur ce dossier (`pulse-aidd sessions <session>`, `autres` > 0), cette opération est peut-être la sienne : le dire et laisser la personne la terminer dans cette session.
 
 ## Déroulé
 

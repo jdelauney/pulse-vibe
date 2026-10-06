@@ -2,7 +2,7 @@
 
 Le vrai risque d'un projet n'est pas la lenteur : c'est de construire vite une solution mal comprise. Ces commandes aident la personne à **raisonner sur son produit** et à trancher elle-même ce qui le structure, en respectant son temps : peu de questions ouvertes, bien choisies ; tout le reste en questions à choix.
 
-On raisonne sur le **métier**, jamais sur la programmation : pas de notion du jour, pas de quiz.
+On raisonne sur le **métier** : l'apprentissage de la programmation (notion du jour, quiz) attend la réalisation.
 
 ## 1. Deux sortes de questions
 
@@ -20,7 +20,7 @@ Chaque question clé est suivie de 2 ou 3 exemples de réponses, annoncés ainsi
 
 - Ils ont des **formes différentes** : une réponse courte, une détaillée, une qui part dans une autre direction.
 - Ils viennent de préférence d'**autres métiers** que celui de la personne (une boulangerie, un cabinet de kiné, une association sportive), pour qu'elle réponde pour son cas au lieu de recopier.
-- Aucun n'est mis en avant : pas de « (Recommandé) », pas d'ordre de préférence.
+- Ils sont présentés à égalité, dans un ordre quelconque, sans « (Recommandé) ».
 
 ## 3. Reformuler et confronter
 
@@ -29,7 +29,7 @@ Après chaque réponse clé, en 3 lignes au plus :
 2. **Nommer l'hypothèse** que la réponse suppose : « Vous supposez que vos clients accepteront de créer un compte. »
 3. **Dire la conséquence en termes de projet** (US en plus, données personnelles à protéger, coût mensuel, délai), sans vocabulaire technique, et demander si c'est voulu.
 
-Une réponse qui contredit une réponse antérieure ou un document se signale aussitôt, factuellement : « Tout à l'heure, vous disiez X ; maintenant, Y. Lequel compte ? » Ni compliment ni jugement : la réponse est prise au sérieux et vérifiée.
+Une réponse qui contredit une réponse antérieure ou un document se signale aussitôt, factuellement : « Tout à l'heure, vous disiez X ; maintenant, Y. Lequel compte ? » Restez factuel : la réponse est prise au sérieux et vérifiée.
 
 ## 4. Ne jamais bloquer
 

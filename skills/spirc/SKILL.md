@@ -2,7 +2,7 @@
 description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, implementer, reviewer, verifier), des points de validation et la mise à jour de la mémoire
 argument-hint: "<US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree *) Bash(git merge *) Bash(git branch *) Bash(git switch *) Bash(git pull *) Bash(git push *) Bash(git remote *) Bash(gh auth status*) Bash(gh pr *) Bash(glab auth status*) Bash(glab mr *) EnterWorktree ExitWorktree
 ---
 
 # /pulse:spirc – Spécifier, Planifier, Implémenter, Relire, Commiter
@@ -19,7 +19,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Lire les arguments
 
-**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme et l'examen se choisissent par une question au démarrage (section « Worktree ») ; **avec au moins une option**, les choix non précisés prennent leur valeur par défaut (avec points de validation, examen standard), sans question.
+**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme et l'examen se choisissent par une question avant la réalisation (section « Worktree ») ; **avec au moins une option**, les choix non précisés prennent leur valeur par défaut (avec points de validation, examen standard), sans question.
 - `-a` **autonome** : enchaîner en sautant les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
 - `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
 - `-w` **worktree** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, le worktree est proposé (même avec `-a` : c'est une décision de la personne).

@@ -166,3 +166,25 @@ test("hook : un travail en cours laissé dans un worktree est aussi rappelé, av
   assert.match(r.stdout, /Pulse – travail en cours \(\.claude\/worktrees\/us-003-filtre\/aidd_docs\/tasks\/in-progress\.md\)/);
   assert.match(r.stdout, /Quelles 3 choses livrer/);
 });
+
+test("hook : la coupe à 2 000 caractères ne casse pas un caractère (emoji, accent)", () => {
+  const debut = "# Travail en cours\n";
+  const d = projet({ [EN_COURS]: debut + "é".repeat(2000 - debut.length - 1) + "📌" + "x".repeat(100) });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.ok(!r.stdout.includes("�"), "aucune moitié d'emoji orpheline (remplacée par U+FFFD à l'écriture)");
+  assert.match(r.stdout, /\(suite tronquée/);
+});
+
+test("hook : fichier avec BOM ou encodé en Latin-1, rappel affiché sans erreur", () => {
+  const d = projet({});
+  fs.mkdirSync(path.join(d, "aidd_docs", "tasks"), { recursive: true });
+  fs.writeFileSync(path.join(d, EN_COURS), "﻿# Travail en cours\n- **Décision en attente** : choisir\n", "utf8");
+  let r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /^Pulse – travail en cours/);
+  fs.writeFileSync(path.join(d, EN_COURS), Buffer.from("# Travail en cours\n- Décision : réponse\n", "latin1"));
+  r = lancer(d);
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /Pulse – travail en cours/);
+});

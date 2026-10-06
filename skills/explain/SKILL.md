@@ -2,7 +2,7 @@
 description: Expliquer simplement un fichier, une fonction ou une ligne de code, avec une question pour vérifier
 argument-hint: "[fichier | fichier:ligne | nom de fonction | question]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *)
+allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *)
 ---
 
 # /pulse:explain – Comprendre le code
@@ -15,7 +15,7 @@ Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. 
 
 Ce qu'il faut expliquer : `$ARGUMENTS`
 
-Cette commande **travaille en lecture seule** sur le code ; elle écrit seulement dans le lexique `docs/lexique.md`. Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
+Cette commande **travaille en lecture seule** sur le code ; elle écrit seulement dans le lexique `docs/lexique.md`, sans demander d'autorisation, et signale chaque ajout en une ligne (« 📘 Ajouté au lexique : **…** »). Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
 
 ## Choisir la cible
 

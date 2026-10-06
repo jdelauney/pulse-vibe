@@ -203,7 +203,10 @@ function blocTravailEnCours(fichier) {
   }
   if (contenu === "") return null;
   if (contenu.length > LIMITE_EN_COURS) {
-    contenu = `${contenu.slice(0, LIMITE_EN_COURS)}\n(suite tronquée : lire ${versPosix(fichier)})`;
+    let coupe = contenu.slice(0, LIMITE_EN_COURS);
+    // Une coupe au milieu d'un emoji (deux unités UTF-16) laisserait un caractère invalide.
+    if (/[\uD800-\uDBFF]$/.test(coupe)) coupe = coupe.slice(0, -1);
+    contenu = `${coupe}\n(suite tronquée : lire ${versPosix(fichier)})`;
   }
   return `Pulse – travail en cours (${versPosix(fichier)}) :\n\n${contenu}`;
 }
