@@ -479,12 +479,20 @@ export function EnvoiFichier() {
         return;
       }
       // 2. Le navigateur envoie le fichier directement à R2.
-      const reponse = await fetch(preparation.data.adresse, {
-        method: "PUT",
-        headers: { "Content-Type": choisi.type },
-        body: choisi,
-      });
-      if (!reponse.ok) {
+      // Une coupure réseau fait échouer fetch par une exception : l'attraper ici,
+      // sinon toute la page bascule sur l'écran d'erreur.
+      let envoye = false;
+      try {
+        const reponse = await fetch(preparation.data.adresse, {
+          method: "PUT",
+          headers: { "Content-Type": choisi.type },
+          body: choisi,
+        });
+        envoye = reponse.ok;
+      } catch {
+        envoye = false;
+      }
+      if (!envoye) {
         setErreur(ECHEC);
         return;
       }
@@ -660,6 +668,14 @@ Fonctionnalité: Fichiers
       Étant donné Camille est connectée
       Quand Camille envoie « photo-chantier.png »
       Alors « photo-chantier.png » apparaît dans « Mes fichiers »
+
+    @US-XXX-5 @bout-en-bout
+    Exemple: L'envoi échoue en route : un message clair, la page reste en place
+      Étant donné Camille est connectée
+      Et le stockage des fichiers ne répond pas
+      Quand Camille envoie « photo-chantier.png »
+      Alors le message « L'envoi n'a pas abouti. Réessayez. » s'affiche
+      Et la page « Mes fichiers » reste affichée
 ```
 
 ## Tâches de plan prêtes
@@ -859,7 +875,7 @@ describe("Fichiers", () => {
 
 ### Bout en bout (Playwright)
 
-Le test envoie un vrai fichier vers R2 : en local et en CI, utiliser un bucket de test, distinct de celui de production.
+Le premier test envoie un vrai fichier vers R2 : en local et en CI, utiliser un bucket de test, distinct de celui de production. Le second coupe l'envoi vers R2 (`page.route`) : il tourne sans compte R2.
 
 ```ts
 // e2e/fichiers.spec.ts
@@ -888,6 +904,32 @@ test.describe("Fichiers", () => {
     await expect(page.getByText("Fichier enregistré.")).toBeVisible();
     await expect(
       page.getByRole("link", { name: "photo-chantier.png" }),
+    ).toBeVisible();
+  });
+
+  test("US-XXX-5 – L'envoi échoue en route : un message clair, la page reste en place", async ({
+    page,
+  }) => {
+    await connecterNouvelUtilisateur(page);
+    await page.goto("/fichiers");
+    // Le stockage ne répond pas : l'envoi direct vers R2 est coupé.
+    await page.route("**/*.r2.cloudflarestorage.com/**", (route) =>
+      route.abort(),
+    );
+
+    await page.getByLabel(/Ajouter un fichier/).setInputFiles({
+      name: "photo-chantier.png",
+      mimeType: "image/png",
+      buffer: PNG_1PX,
+    });
+
+    await expect(
+      page
+        .getByRole("alert")
+        .filter({ hasText: "L'envoi n'a pas abouti. Réessayez." }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Mes fichiers" }),
     ).toBeVisible();
   });
 });
@@ -927,3 +969,4 @@ test.describe("Fichiers", () => {
 - Le nom d'erreur `NotFound` renvoyé par `HeadObjectCommand` avec R2.
 - `refresh()` dans une action appelée depuis `startTransition` (hors `<form action>`) : la liste doit se mettre à jour ; sinon, appeler `router.refresh()` après `confirmerEnvoi`.
 - L'obligation d'enregistrer un moyen de paiement pour activer R2, même avec l'offre gratuite : non précisée par les pages consultées.
+- Essai réel du 2026-10-06 (application construite, base PGlite, R2 factice) : le test « L'envoi échoue en route » passe 3 fois sur 3, sur ordinateur et sur téléphone ; il a révélé qu'une coupure réseau faisait basculer la page sur l'écran d'erreur (corrigé : `try/catch` autour du `fetch`).

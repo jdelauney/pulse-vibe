@@ -76,7 +76,9 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 37. **Pages gardées cachées dans le document** : Next.js garde les pages déjà visitées, masquées. Deux formulaires avec `id="email"` créent des doublons : préfixer les `id` avec `useId()`. Dans Playwright, viser les champs visibles (`getByLabel("E-mail", { exact: true })` filtré avec `{ visible: true }`, ou l'aide `champ()` de la recette `connexion`).
 38. **better-auth ne limite pas les appels serveur** (`auth.api.*`) : avant d'ouvrir le site au public, ajouter la recette `limite` sur la connexion et l'inscription.
 39. **Après une action qui change la session** (changement de mot de passe), lire la session depuis `cookies()` (aide `enTetesDeSession()` de la recette `connexion`) : `headers()` porte encore l'ancien cookie.
-40. **Tests** : `server-only` est neutralisé par l'alias de `vitest.config.ts` ; une base PGlite neuve par test (`creerBaseDeTest()` de `tests/helpers/base-de-test.ts`), migrations de `drizzle/` appliquées.
+40. **Un `fetch` dans un composant client** (envoi direct vers un service, lecture d'une route) : l'entourer de `try/catch` et afficher un message ; une coupure réseau lance une exception qui, sans cela, fait basculer toute la page sur l'écran d'erreur. Le tester en coupant la requête dans Playwright (`page.route(…, (route) => route.abort())`).
+41. **Playwright après un clic de navigation** : attendre un élément propre à la nouvelle page (son titre) avant de remplir un champ ; deux pages peuvent avoir un champ de même libellé.
+42. **Tests** : `server-only` est neutralisé par l'alias de `vitest.config.ts` ; une base PGlite neuve par test (`creerBaseDeTest()` de `tests/helpers/base-de-test.ts`), migrations de `drizzle/` appliquées.
 
 ## 9. Avant de rendre la main
 

@@ -1286,6 +1286,10 @@ test.describe("E-mails de compte", () => {
     await expect(page).toHaveURL(/\/connexion$/);
 
     await page.getByRole("link", { name: "Mot de passe oublié ?" }).click();
+    // Attendre la nouvelle page : la page de connexion a aussi un champ « Adresse e-mail ».
+    await expect(
+      page.getByRole("heading", { name: "Mot de passe oublié" }),
+    ).toBeVisible();
     await champ(page, "Adresse e-mail").fill(email);
     await page.getByRole("button", { name: "Recevoir un lien" }).click();
     await expect(page.getByText(/Si un compte existe/)).toBeVisible();
@@ -1344,3 +1348,4 @@ test.describe("E-mails de compte", () => {
 - L'envoi par `after()` sur Vercel : l'e-mail doit partir après la réponse. À constater à la tâche Tn+4 (réception, et journaux Vercel sans « Failed to run background task »).
 - La limite de 500 destinataires par jour : chiffre de l'aide Google pour un compte Gmail, susceptible de changer.
 - L'affichage de `result.data.message` dans le formulaire d'inscription, avec les composants `Field` réels du squelette.
+- Essai réel du 2026-10-06 (application construite, base PGlite, Mailpit 1.31) : les deux tests de bout en bout passent 3 fois sur 3, sur ordinateur et sur téléphone ; l'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer.

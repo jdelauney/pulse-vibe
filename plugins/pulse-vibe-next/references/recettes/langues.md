@@ -551,3 +551,4 @@ test.describe("Langues", () => {
 - Les tests de bout en bout (`e2e/langues.spec.ts`) : écrits et compilés, pas exécutés (pas de navigateur Playwright installé lors de la rédaction).
 - Une redirection `redirect("/compte")` d'une action pour une personne qui a choisi l'anglais : next-intl devrait la renvoyer vers `/en/compte` grâce au cookie `NEXT_LOCALE` ; à constater.
 - `NextIntlClientProvider` sans `messages` transmet tous les messages de la langue aux composants clients ; pour un gros fichier de messages, ne transmettre que les espaces de noms utiles.
+- Essai réel du 2026-10-06 (application construite, base PGlite) : les trois tests de bout en bout passent 3 fois sur 3, sur ordinateur et sur téléphone.
