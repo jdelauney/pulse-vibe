@@ -25,6 +25,10 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 - Si `docs/technical.md` est absent, ou si le contrat est ambigu ou impossible (vraie clé, compte à créer, paiement réel, action dans un tableau de bord), **s'arrêter et le dire**. Rapporter l'avancement réel, tel qu'il est.
 - **Un choix nouveau qui change ce que voit ou subit l'utilisateur** (un message, une étape en plus, une règle, une donnée conservée), absent de la tâche et de la spec : s'arrêter avec le statut « Bloqué – décision nécessaire », décrire le choix et 2 ou 3 options avec leurs conséquences. Les choix internes (nom d'une fonction, découpage du code) restent les vôtres.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte implement` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. Lire les critères d'acceptation, puis chaque fichier concerné **avant** de le modifier. Repérer le style du code existant et le suivre.

@@ -27,6 +27,10 @@ Le message de délégation indique :
 
 Si la cible est introuvable (Glob, `ls`), s'arrêter et le dire.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte ui` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. Charger `pulse-aidd reference design/registres.md`, `design/regles-ui.md`, `design/anti-patterns.md` et `pulse-aidd modele revue-ui.md`.

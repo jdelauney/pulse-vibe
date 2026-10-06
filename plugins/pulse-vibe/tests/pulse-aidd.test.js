@@ -190,6 +190,8 @@ function projetAvecPack({ declare, installe }) {
         'case "$1" in\n' +
         `  info) printf 'id: ${installe}\nnom: Pile ${installe}\nresume: Une pile de test.\nversion: 0.1.0\n' ;;\n` +
         '  contexte) echo "Consignes du pack pour $2" ;;\n' +
+        '  echo) shift; printf "[%s]" "$@" ;;\n' +
+        "  echec) exit 3 ;;\n" +
         "esac\n"
     );
     fsP.chmodSync(script, 0o755);
@@ -234,4 +236,21 @@ test("contexte : pack déclaré mais absent, un avertissement et aucune erreur",
 test("contexte : sans pack déclaré, aucune section de pack", () => {
   const r = projetAvecPack({ installe: "essai" }).lancerIci("contexte", "implement");
   assert.doesNotMatch(r.stdout, /===== Pack de pile/);
+});
+
+test("pile <sous-commande> : relaie vers le pack déclaré, arguments et code de sortie compris", () => {
+  const p = projetAvecPack({ declare: "essai", installe: "essai" });
+  const r = p.lancerIci("pile", "echo", "recette", "deux mots");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(r.stdout, "[recette][deux mots]");
+  assert.strictEqual(p.lancerIci("pile", "echec").status, 3);
+});
+
+test("pile <sous-commande> : sans pack déclaré ou pack absent, message et code 1", () => {
+  const sans = projetAvecPack({ installe: "essai" }).lancerIci("pile", "recette", "connexion");
+  assert.strictEqual(sans.status, 1);
+  assert.match(sans.stdout + sans.stderr, /Aucun pack de pile déclaré/);
+  const absent = projetAvecPack({ declare: "essai" }).lancerIci("pile", "recette", "connexion");
+  assert.strictEqual(absent.status, 1);
+  assert.match(absent.stdout + absent.stderr, /pulse-vibe-essai/);
 });

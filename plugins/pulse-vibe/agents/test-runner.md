@@ -26,6 +26,10 @@ Le message de délégation indique la **phase** et contient : la tâche et ses c
 - Rapporter les résultats **réels** : commande lancée et sortie copiée. Un test non lancé n'a pas de résultat.
 - Arrêter tout serveur ou processus lancé avant de rendre la main.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. **Lancer** la commande « tester » sur les fichiers de test reçus, puis sur toute la suite (phase « vert attendu » et « suite complète ») pour repérer une régression ailleurs. Si une commande de couverture existe dans « Commandes du projet », la lancer en phase « suite complète ».

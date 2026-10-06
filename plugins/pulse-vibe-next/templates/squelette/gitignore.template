@@ -1,0 +1,21 @@
+# dépendances
+/node_modules
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# tests
+/coverage
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# secrets : seul le modèle .env.example est enregistré
+.env*
+!.env.example
+
+# Vercel
+.vercel

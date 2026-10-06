@@ -17,6 +17,10 @@ Le résultat sert à décider et à planifier : il doit être complet, exact et 
 - Séparer les **faits** (vus dans un fichier) des **questions** (ce que les fichiers laissent ouvert).
 - S'en tenir aux faits et aux questions : solutions et plan reviennent à l'appelant.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte spec` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. **Mémoire** : lire `aidd_docs/memory/*.md` (projet, technique, glossaire) et la liste de `aidd_docs/memory/internal/decisions/`. Lire une décision seulement si elle touche la demande.

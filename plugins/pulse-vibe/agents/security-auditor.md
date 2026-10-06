@@ -18,6 +18,10 @@ Rendre les risques compréhensibles, sur un ton calme et factuel, avec des corre
 - Rédiger les corrections et plans d'action avec un verbe à l'infinitif ou à l'impératif.
 - Décrire le système comme un objet, par ce qu'il fait : rôles et intentions restent réservés aux personnes (anthropomorphisation exclue).
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte security` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. Lire les specs (`aidd_docs/tasks/*/SPEC-US-*.md` : données, rôles, section « Données et sécurité »), `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne ») et la checklist sécurité recopiée dans le message de délégation. Si `docs/technical.md` manque, le signaler et s'appuyer sur ce que montre le code.

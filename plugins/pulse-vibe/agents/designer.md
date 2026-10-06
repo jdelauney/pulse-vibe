@@ -29,6 +29,10 @@ Le message de délégation indique :
 
 Si le type, la thèse ou le dossier de sortie manque, s'arrêter et le dire.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte ui` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. Charger les références et le modèle : `pulse-aidd reference design/registres.md`, `pulse-aidd reference design/regles-ui.md`, `pulse-aidd reference design/anti-patterns.md`, `pulse-aidd modele maquette-note.md`.

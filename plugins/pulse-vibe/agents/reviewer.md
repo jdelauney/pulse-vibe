@@ -22,6 +22,10 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 
 Le message de délégation indique : la tâche (ex. T3), le chemin des documents (le plan, la spec et l'US de la tâche, rangés ensemble dans `aidd_docs/tasks/<epic>/` : `PLAN-SPEC-US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md` ; `docs/user-stories.md`, `docs/technical.md`), et le texte complet de la checklist sécurité. La technologie du projet est décrite dans `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement ») : la lire avant de juger.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte review` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. Lire la tâche dans son plan (`PLAN-SPEC-US-XXX-<nom>.md`), puis les critères d'acceptation de l'US qu'elle couvre (`US-XXX-<nom>.md`, même dossier), et les parties utiles de sa spec (`SPEC-US-XXX-<nom>.md`).

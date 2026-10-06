@@ -21,6 +21,10 @@ Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, 
 - Faire tout le travail soi-même : lancer un agent reste le rôle de l'appelant.
 - Pour le sens d'un message d'erreur ou la syntaxe de la technologie retenue : consulter sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), à chaque fois.
 
+## Pack de pile
+
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte fix` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+
 ## Méthode
 
 1. Lire chaque fichier en entier avant de le modifier.
