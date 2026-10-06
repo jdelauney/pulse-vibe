@@ -22,6 +22,7 @@
 #   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
 #   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
+#   pulse-aidd pile <sous-commande>  relaie vers l'outil du pack déclaré (ex. pulse-aidd pile recette connexion)
 #   pulse-aidd sonder <adresse> [--texte "…"]  vérifie qu'un site en ligne répond (code 200, texte attendu)
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
@@ -101,6 +102,19 @@ pile() {
   elif command -v "pulse-pile-$id" >/dev/null 2>&1; then echo "Pack de pile déclaré : $id – installé ($(pack_info "$id" nom), version $(pack_info "$id" version))."
   else echo "Pack de pile déclaré : $id – non installé (plugin pulse-vibe-$id)."
   fi
+}
+
+relais_pack() { # relais_pack <sous-commande> [arguments] : exécute pulse-pile-<id déclaré> avec les mêmes arguments
+  local id; id="$(pack_declare)"
+  if [ -z "$id" ]; then
+    echo "Aucun pack de pile déclaré dans docs/technical.md (ligne « **Pack de pile Pulse** : <id> ») : choisir la pile avec /pulse:tech."
+    exit 1
+  fi
+  if ! command -v "pulse-pile-$id" >/dev/null 2>&1; then
+    echo "Le pack de pile « $id » est déclaré mais pas installé : /plugin install pulse-vibe-$id@pulseia, puis redémarrer Claude Code."
+    exit 1
+  fi
+  exec "pulse-pile-$id" "$@"
 }
 
 contexte_pack() { # contexte_pack <commande>
@@ -277,7 +291,10 @@ case "$1" in
   scenarios)
     exec node "$TPL/verifier.js" --scenarios ;;
   piles) piles; exit 0 ;;
-  pile) pile; exit 0 ;;
+  pile)
+    shift
+    [ $# -eq 0 ] && { pile; exit 0; }
+    relais_pack "$@" ;;
   sonder)
     shift; exec node "$RACINE/scripts/sonder.js" "$@" ;;
   travail-fini)
@@ -289,5 +306,5 @@ case "$1" in
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,27p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,28p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac

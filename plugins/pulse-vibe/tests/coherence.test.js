@@ -13,6 +13,7 @@ const lire = (...p) => fs.readFileSync(path.join(...p), "utf8");
 const lister = (dossier) => (fs.existsSync(dossier) ? fs.readdirSync(dossier) : []);
 
 function fichiers(dossier, extension) {
+  if (!fs.existsSync(dossier)) return [];
   const resultat = [];
   for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
     const chemin = path.join(dossier, e.name);
@@ -22,17 +23,26 @@ function fichiers(dossier, extension) {
   return resultat;
 }
 
-// Tous les textes de consignes du plugin, et le mémo des commandes du dépôt.
+// Tous les plugins du dépôt (le cœur seul s'il est installé hors du dépôt).
+const DOSSIER_PLUGINS = path.join(DEPOT, "plugins");
+const PLUGINS = fs.existsSync(DOSSIER_PLUGINS)
+  ? lister(DOSSIER_PLUGINS).map((p) => path.join(DOSSIER_PLUGINS, p)).filter((p) => fs.existsSync(path.join(p, ".claude-plugin", "plugin.json")))
+  : [RACINE];
+
+// Tous les textes de consignes des plugins, et le mémo des commandes du dépôt.
 const TEXTES = [
-  ...["skills", "agents", "references", "templates"].flatMap((d) => fichiers(path.join(RACINE, d), ".md")),
-  path.join(RACINE, "README.md"),
+  ...PLUGINS.flatMap((p) => [...["skills", "agents", "references", "templates"].flatMap((d) => fichiers(path.join(p, d), ".md")), path.join(p, "README.md")]),
   path.join(DEPOT, "docs", "memo-commandes.md"),
 ]
   .filter((f) => fs.existsSync(f))
   .map((f) => ({ fichier: path.relative(DEPOT, f), texte: lire(f) }));
 
+// Les commandes /pulse:* et les agents pulse:* sont ceux du cœur.
 const SKILLS = new Set(lister(path.join(RACINE, "skills")));
 const AGENTS = new Set(lister(path.join(RACINE, "agents")).map((f) => f.replace(/\.md$/, "")));
+// Agents et skills de chaque plugin, pour les règles qui valent partout.
+const AGENTS_PAR_PLUGIN = PLUGINS.flatMap((p) => lister(path.join(p, "agents")).filter((f) => f.endsWith(".md")).map((f) => path.join(p, "agents", f)));
+const SKILLS_PAR_PLUGIN = PLUGINS.flatMap((p) => lister(path.join(p, "skills")).map((s) => path.join(p, "skills", s, "SKILL.md"))).filter((f) => fs.existsSync(f));
 const OUTIL = lire(RACINE, "bin", "pulse-aidd");
 
 // Sous-commandes de pulse-aidd : les étiquettes du dernier « case "$1" in ».
@@ -82,11 +92,12 @@ test("chaque agent pulse:<nom> cité existe", () => {
 
 test("un outil cité dans les consignes d'un agent lui est disponible", () => {
   const OUTILS = ["Read", "Write", "Edit", "MultiEdit", "NotebookEdit", "Bash", "Glob", "Grep", "Agent", "WebFetch", "WebSearch", "AskUserQuestion", "ToolSearch"];
+  assert.ok(AGENTS_PAR_PLUGIN.length >= AGENTS.size && AGENTS.size > 0, "lecture des agents");
   const problemes = [];
-  for (const nom of AGENTS) {
-    const texte = lire(RACINE, "agents", `${nom}.md`);
-    const [, entete, corps] = texte.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
-    assert.ok(entete, `agents/${nom}.md : en-tête absent`);
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const nom = path.relative(DEPOT, fichier);
+    const [, entete, corps] = lire(fichier).match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
+    assert.ok(entete, `${nom} : en-tête absent`);
     const liste = (cle) => ((entete.match(new RegExp(`^${cle}:\\s*(.*)$`, "m")) || [])[1] || "").split(",").map((t) => t.trim()).filter(Boolean);
     const permis = liste("tools");
     const interdits = liste("disallowedTools");
@@ -98,9 +109,11 @@ test("un outil cité dans les consignes d'un agent lui est disponible", () => {
 
 test("allowed-tools des skills : motifs précis, sans suppression, fusion de demande, envoi forcé ni configuration", () => {
   // Permis : les fusions locales de worktree (git merge --no-ff, --abort) et la remise d'une branche locale sur l'origine.
+  assert.ok(SKILLS_PAR_PLUGIN.length >= SKILLS.size && SKILLS.size > 0, "lecture des skills");
   const problemes = [];
-  for (const skill of SKILLS) {
-    const entete = (lire(RACINE, "skills", skill, "SKILL.md").match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const skill = path.relative(DEPOT, path.dirname(fichier));
+    const entete = (lire(fichier).match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
     const ligne = (entete.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
     for (const [, motif] of ligne.matchAll(/Bash\(([^)]*)\)/g)) {
       const refus =
@@ -124,7 +137,14 @@ test("catalogue : chaque plugin listé a son manifeste, avec une version x.y.z",
   }
 });
 
-test("fins de ligne LF dans bin/, scripts/ et hooks/", () => {
-  const crlf = ["bin", "scripts", "hooks"].flatMap((d) => lister(path.join(RACINE, d)).map((f) => path.join(d, f))).filter((f) => lire(RACINE, f).includes("\r\n"));
+test("chaque plugin du dépôt figure au catalogue", { skip: !fs.existsSync(path.join(DEPOT, ".claude-plugin", "marketplace.json")) }, () => {
+  const sources = JSON.parse(lire(DEPOT, ".claude-plugin", "marketplace.json")).plugins.map((p) => path.resolve(DEPOT, p.source));
+  assert.deepStrictEqual(PLUGINS.filter((p) => !sources.includes(path.resolve(p))).map((p) => path.relative(DEPOT, p)), []);
+});
+
+test("fins de ligne LF dans bin/, scripts/ et hooks/ de chaque plugin", () => {
+  const crlf = PLUGINS.flatMap((p) => ["bin", "scripts", "hooks"].flatMap((d) => fichiers(path.join(p, d), "")))
+    .filter((f) => lire(f).includes("\r\n"))
+    .map((f) => path.relative(DEPOT, f));
   assert.deepStrictEqual(crlf, []);
 });
