@@ -5,7 +5,7 @@ Ces conventions s'appliquent **par défaut** ; celles que fixe le projet passent
 ## 1. Un commit = un sujet
 
 - Un commit regroupe **une seule raison de changer** : une tâche du plan, une mise à jour de la mémoire, une correction isolée. Deux sujets mélangés font deux commits.
-- On ajoute **seulement** les fichiers du sujet (`git add <fichiers>`), jamais `git add -A` à l'aveugle. Un fichier déjà préparé par la personne (`git diff --cached`) est respecté ; un fichier hors du sujet, qu'elle n'a pas cité, s'ajoute seulement avec son accord.
+- On ajoute **seulement** les fichiers du sujet (`git add <fichiers>`), jamais `git add -A` à l'aveugle (le garde-fou des commandes refuse l'indexation globale dès que le dépôt a un premier commit). Un fichier déjà préparé par la personne (`git diff --cached`) est respecté ; un fichier hors du sujet, qu'elle n'a pas cité, s'ajoute seulement avec son accord.
 - Pourquoi : un commit propre se relit, s'annule et s'explique facilement (« revenir sur la tâche T4 » sans perdre le reste).
 
 ## 2. Le message

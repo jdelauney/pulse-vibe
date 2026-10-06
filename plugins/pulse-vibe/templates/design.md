@@ -87,7 +87,13 @@ Police de secours : {{police système}} · Longueur de ligne : 65 à 75 caractè
 - ❌ {{…}}
 - Voir aussi la liste des anti-patterns de Pulse (`pulse-aidd reference design/anti-patterns.md`). Une exception volontaire est écrite ici avec sa raison.
 
-## 12. Sources
+## 12. Dans le code
+
+- **Fichier du thème** : {{chemin du fichier où vivent les valeurs (couleurs par rôle, polices, rayons, espacements, ombres), d'après « Organisation des fichiers » de `docs/technical.md` ou le pack de pile ; ou « à créer à la mise en place »}}
+- **Règle** : les composants emploient ces valeurs par leur nom de rôle (fond, texte, accent…), plutôt qu'une valeur écrite en dur. Un changement d'identité se fait dans ce seul fichier.
+- **Correspondance** : {{rôle de la section 6 → nom de la valeur dans le code, ex. Accent → --primary}}
+
+## 13. Sources
 
 - Planche retenue : `docs/design/identite/retenue/` ({{direction d'origine ou hybride}})
 - Décisions notées dans la mémoire : {{…}}

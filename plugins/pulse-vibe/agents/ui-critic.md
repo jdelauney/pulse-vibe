@@ -33,7 +33,7 @@ Si la cible est introuvable (Glob, `ls`), s'arrêter et le dire.
 2. Lire `docs/design.md` et la maquette retenue, s'ils existent.
 3. Lire chaque fichier de la cible.
 4. Passer les 5 rubriques, dans cet ordre :
-   - **Fidélité au design** : fidélité à `docs/design.md` et à la maquette (couleurs, polices, espacements, composants, registre).
+   - **Fidélité au design** : fidélité à `docs/design.md` et à la maquette (couleurs, polices, espacements, composants, registre) ; une valeur de couleur, de police ou d'espacement écrite en dur dans un composant, au lieu de la valeur du fichier du thème (section « Dans le code » de `docs/design.md`), est un constat 🟠.
    - **Anti-pattern** : parcourir chaque entrée de la liste de `design/anti-patterns.md`.
    - **État manquant** : comparer avec le tableau « Composants et états obligatoires » de `design/regles-ui.md`.
    - **Accessibilité** : contraste (le calculer quand les couleurs sont lisibles dans le code), focus visible, étiquettes des champs, noms accessibles des boutons et icônes, cibles tactiles.

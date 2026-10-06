@@ -17,7 +17,7 @@ Argument : `$ARGUMENTS`
 
 ## Objectif
 
-Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle qualité automatique : à chaque envoi et sur chaque demande de fusion, le fournisseur du dépôt vérifie que les secrets restent hors du code, que le code respecte les règles et que l'appli se construit. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. »
+Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle qualité automatique : à chaque envoi et sur chaque demande de fusion, le fournisseur du dépôt vérifie que les secrets restent hors du code, que chaque scénario prévu en test automatique a bien son test, que le code respecte les règles et que l'appli se construit. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. »
 
 Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, se met en place avec `/pulse:deploy` : cette commande se limite à la CI.
 
@@ -42,7 +42,7 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 
 ## 2. Préparer
 
-Lancer `pulse-aidd installer-ci` : il copie `scripts/verifier.js` (le contrôle des secrets, sans dépendance) et `scripts/ci-verifications.exemple.yml` (la liste des étapes, à traduire pour l'outil retenu).
+Lancer `pulse-aidd installer-ci` : il copie `scripts/verifier.js` (le contrôle des secrets et, dans un projet Pulse, des scénarios sans test des US terminées ; sans dépendance) et `scripts/ci-verifications.exemple.yml` (la liste des étapes, à traduire pour l'outil retenu).
 
 ## 3. Écrire le fichier de CI
 
@@ -53,7 +53,7 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
   1. récupérer le code ;
   2. installer l'environnement d'exécution de la pile retenue, à la version de « Pile retenue » ;
   3. installer les dépendances (« installer ») ;
-  4. contrôler les secrets : `node scripts/verifier.js` (Node.js doit être disponible : l'installer dans une étape si la pile utilise un autre langage que JavaScript) ;
+  4. contrôler les secrets et les scénarios : `node scripts/verifier.js` (Node.js doit être disponible : l'installer dans une étape si la pile utilise un autre langage que JavaScript) ;
   5. les contrôles automatiques (lint, format, types) ;
   6. les tests (« tester ») ;
   7. la construction (« construire »).

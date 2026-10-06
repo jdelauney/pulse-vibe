@@ -41,6 +41,9 @@
 | Services externes | | | |
 | Tests automatiques | {{outil unitaire et intégration ; bout en bout : outil ou « aucun »}} | | |
 
+<!-- Seulement si la pile retenue est celle d'un pack de pile Pulse (pulse-aidd piles) ; sinon supprimer la ligne suivante, avec ce commentaire. -->
+**Pack de pile Pulse** : {{id du pack, ex. next}}
+
 ## Comment les pièces s'assemblent
 
 ```mermaid
@@ -85,6 +88,7 @@ flowchart LR
 
 - Dépôt distant : {{…}}
 - Hébergeur : {{…}} ; mise en ligne : {{automatique à chaque envoi / manuelle}}
+- Site en ligne : {{adresse, vérifiée avec `pulse-aidd sonder`, ou « pas encore en ligne »}}
 - Contrôle automatique avant mise en ligne (CI) : {{outil, ou « à mettre en place avec /pulse:cicd »}}
 
 ## Mise en place

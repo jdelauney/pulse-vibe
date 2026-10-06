@@ -26,7 +26,7 @@ Le message de délégation indique : la tâche (ex. T3), le chemin des documents
 
 1. Lire la tâche dans son plan (`PLAN-SPEC-US-XXX-<nom>.md`), puis les critères d'acceptation de l'US qu'elle couvre (`US-XXX-<nom>.md`, même dossier), et les parties utiles de sa spec (`SPEC-US-XXX-<nom>.md`).
 2. Identifier ce qui a changé : `git status --short`, `git diff`, `git diff --cached`, et lire les nouveaux fichiers non suivis.
-3. Pour **chaque critère d'acceptation** : le code le réalise-t-il ? ✅ oui · ❌ non (expliquer) · ❓ à tester à la main.
+3. Pour **chaque critère d'acceptation** : le code le réalise-t-il ? ✅ oui · ❌ non (expliquer) · ❓ à tester à la main. Si le projet a des tests automatiques (« Tester » de `docs/technical.md`), lancer `pulse-aidd scenarios` : un scénario automatisé des critères de la tâche sans test qui le cite est un constat Moyenne (il bloquera la mise en ligne une fois l'US terminée).
 4. Passer la **checklist sécurité** : retenir uniquement les points concernés par ce changement (S1, S5, S6, S8 presque toujours ; S2, S3, S4, S7, S10 dès que le projet a un serveur, une base, des comptes ou des fichiers envoyés, d'après « Données et contrôle d'accès »). Chercher en particulier, avec des recherches adaptées au langage et au framework retenus (pour leurs fonctions exactes : documentation officielle) :
    - un secret ou une clé dans le code, ou une clé secrète dans le code envoyé au navigateur ou dans une variable exposée au client (S1, S2) ;
    - une injection de HTML construit avec une saisie : toute fonction ou propriété qui insère du HTML brut, ou qui désactive l'échappement automatique du moteur d'affichage, alimentée par une donnée saisie (S6) ;

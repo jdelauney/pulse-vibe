@@ -100,5 +100,8 @@ Fonctionnalité: Relance des factures en retard
 | Ligne de `Exemples:` | Un test par ligne |
 | `@unitaire` / `@integration` / `@bout-en-bout` | Fichier de test du niveau correspondant (`qualite/organisation.md` §7) |
 | `@manuel` | Une étape de la fiche de test manuel (`tests/test-manuel.md`) |
+| `@US-003-1` | Début du titre du test : `US-003-1 – <titre de l'exemple>` |
+
+**Traçabilité** : quand toutes les tâches d'un plan sont terminées, chaque exemple automatisé (`@unitaire`, `@integration`, `@bout-en-bout`) de sa spec doit être cité par le titre d'au moins un test, sinon le contrôle avant mise en ligne (`pulse-aidd verifier`, et la CI) échoue. `pulse-aidd scenarios` montre à tout moment quels exemples sont testés, sans test ou manuels.
 
 Si un scénario ne peut pas devenir un test tel quel (valeur imprécise, résultat non observable), c'est le scénario qui se précise, dans la spec, avec la personne si cela touche au besoin.

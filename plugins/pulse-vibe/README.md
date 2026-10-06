@@ -9,9 +9,10 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | Commande | Étape | Produit |
 |---|---|---|
 | `/pulse:init` | Point d'entrée : prépare le projet (nouveau ou existant), montre où il en est et guide vers la prochaine étape, en boucle | `CLAUDE.md`, dossiers, `.gitignore`, mémoire `aidd_docs/`, Git |
+| `/pulse:express [idée]` | Démarrer vite : en une conversation, l'idée, les écrans, l'apparence et les contraintes ; un seul écran de validation ; puis les choix techniques et 2 identités visuelles à comparer, jusqu'à la première US prête à réaliser | brief, PRD, user stories, `docs/technical.md`, `docs/design.md` |
 | `/pulse:brainstorm` | Entretien approfondi par rondes (arbre de décisions), puis l'idée racontée (domain storytelling) | `docs/brief.md`, glossaire |
 | `/pulse:prd` | Besoin produit et périmètre MVP (MoSCoW) | `docs/prd.md` |
-| `/pulse:tech` | Choix techniques : besoins, 2-3 options comparées et vérifiées sur leur documentation officielle ; **c'est la personne qui choisit sa technologie** (ou la pile existante est documentée) | `docs/technical.md`, bloc « Pile technique » de `CLAUDE.md` |
+| `/pulse:tech` | Choix techniques : besoins, 2-3 options comparées et vérifiées sur leur documentation officielle ; **c'est la personne qui choisit sa technologie** (ou la pile existante est documentée) ; un pack de pile installé est proposé comme option ; mise en ligne d'une page de départ dès le premier jour | `docs/technical.md`, bloc « Pile technique » de `CLAUDE.md` |
 | `/pulse:spec <US-003 \| "demande">` | Spécification d'une user story (une US = une spec), ou d'une demande décrite, avec section sécurité obligatoire | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
 | `/pulse:us` | Epics, user stories et critères d'acceptation : un référentiel, puis un fichier par US rangé dans le dossier de son epic | `docs/user-stories.md`, `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 | `/pulse:plan <US-003>` | Petites tâches ordonnées (kanban) pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
@@ -22,7 +23,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
 | `/pulse:cicd [proteger]` | Contrôles automatiques (CI) à chaque envoi et sur chaque demande de fusion : secrets, lint, tests, construction, adaptés au fournisseur du dépôt (GitHub Actions, GitLab CI…) ; `proteger` : n'accepter une fusion que si la CI est verte | fichier de CI, `scripts/verifier.js` |
-| `/pulse:deploy` | Mise en ligne et déploiement continu (CD), puis mode production (variables, services, retour arrière) | site en ligne |
+| `/pulse:deploy` | Mise en ligne et déploiement continu (CD), puis mode production (variables, services, retour arrière) ; chaque mise en ligne est prouvée par `pulse-aidd sonder` | site en ligne |
 | `/pulse:spirc <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Rythme (avec validations ou autonome) et examen (standard ou renforcé) choisis au démarrage | tout ce qui précède |
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
@@ -40,6 +41,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 
 ```
 /pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite, facultatif) → /pulse:us (epics et US)
+   (pour démarrer vite : /pulse:init → /pulse:express, qui fait tout cela en une conversation)
    → pour chaque US : /pulse:spec <US-XXX> → /pulse:plan <US-XXX>
    → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou : /pulse:spirc <US-XXX>)
    → /pulse:deploy
@@ -77,11 +79,14 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
   - `pulse:memory-compactor` resserre et remet à jour la mémoire quand elle atteint 95 % de sa limite, pour `/pulse:memory compacter` (écrit seulement dans `aidd_docs/memory/`) ;
   - `pulse:fixer` corrige une liste précise d'erreurs dans 5 fichiers au plus (utilisé par `/pulse:auto-fix`).
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.
+- **Des packs de pile, en option** : un pack est un plugin qui apporte le savoir-faire d'une pile précise (code de départ, conventions, pièges connus, recettes). `/pulse:tech` le propose quand il couvre le besoin ; une fois choisi (ligne « **Pack de pile Pulse** : <id> » de `docs/technical.md`), ses consignes s'ajoutent au contexte de chaque commande. Contrat : le pack fournit dans son `bin/` un outil `pulse-pile-<id>` qui répond à `info` et `contexte <commande>` ; `pulse-aidd piles` liste les packs installés.
+- **Le design jusque dans le code** : l'identité choisie avec `/pulse:ui identite` devient les valeurs du thème de la pile (section « Dans le code » de `docs/design.md`) ; le verifier compare l'écran réel à la maquette retenue, et ui-critic signale toute valeur écrite en dur.
 - **Des tests automatiques, si vous le souhaitez** : chaque spec décrit le comportement attendu en scénarios lisibles (format Gherkin) ; avec l'option `-t`, un agent écrit les tests avant le code, un autre les lance et dit qui doit corriger quoi. La méthode, agnostique, se lit avec `pulse-aidd tests`.
 - **Des références de qualité du code**, agnostiques, chargées à chaque implémentation et relecture (`pulse-aidd qualite`) : clean code, organisation des fichiers, composants d'interface, sécurité du code. `code-concepts` (odeurs de code, SOLID, refactorings) se consulte à la demande, pendant une relecture ou un refactoring.
 - **Une mémoire projet** (`aidd_docs/memory/`) : vision, choix techniques, pièges, glossaire du métier et décisions. Un hook l'injecte dans `CLAUDE.md` à l'ouverture de chaque session : l'IA la relit automatiquement, sans tout redécouvrir.
 - **Le dépôt distant et l'envoi** : `/pulse:init` propose de relier le projet à un dépôt distant (en créer un privé, ou relier un existant). Chaque plan choisit ensuite comment envoyer ses tâches : une branche par US avec une demande de fusion en brouillon mise à jour à chaque tâche (recommandé), directement sur la branche principale, ou rien.
 - **Le travail en parallèle** : un hook tient le registre des sessions Claude Code ouvertes sur le projet. Quand une autre session travaille déjà sur le même dossier, `/pulse:implement` et `/pulse:spirc` proposent un **worktree** (option `-w`) : une copie de travail sur sa propre branche, créée à partir du dernier commit local, puis fusionnée et supprimée à la fin. `/pulse:plan` repère les US **indépendantes** (aucune dépendance, aucun fichier ni donnée en commun) ; `/pulse:implement`, `/pulse:spirc`, `/pulse:status` et le guide proposent alors d'en mener une en parallèle, dans une deuxième session.
+- **Un garde-fou des commandes** (hook), actif même quand les autorisations de Claude Code sont désactivées. Il refuse, avec l'alternative : l'envoi forcé, le contournement d'un contrôle (`--no-verify`), l'indexation globale (`git add -A`, `git add .`, `git commit -a`) dans un dépôt qui a déjà un commit. Il demande confirmation avant : ce qui jette du travail (`git reset --hard`, `git checkout -- …`, `git clean -f`…), `git branch -D`, une configuration Git autre que le nom et l'e-mail, une suppression récursive hors dossiers reconstruits, une commande qui écrase une base (`drizzle-kit push`, `db:push`, `prisma db push`, `DROP`…), une mise en production directe (`vercel --prod`, `wrangler deploy`…) ou une fusion (`gh pr merge`). Il lit la commande comme le shell la lit (`sudo`, `env`, `npx`, `bash -c`, heredoc, `$(…)`), sans se déclencher sur un texte cité. Désactivation : `PULSE_GARDE_COMMANDES_OFF=1` avant de lancer Claude Code.
 - **Un garde-fou anti-secrets** (hook) qui bloque, avant qu'elles n'arrivent :
   - l'écriture d'une clé secrète dans un fichier de code ;
   - l'ajout d'un fichier `.env` à Git ;
@@ -89,7 +94,7 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
   - un push alors qu'un `.env` est suivi par Git.
   Il reconnaît les clés Stripe, Supabase (`service_role`, `sb_secret_`), Resend, OpenAI, Anthropic, GitHub, AWS, SendGrid, Slack, les clés privées et les mots de passe dans les adresses de base de données. La clé **publique** Supabase est autorisée.
 - **Des modèles** pour tous les documents, le `CLAUDE.md` du projet, `.gitignore`, `.env.example`, un exemple de CI à adapter et la mention de confidentialité.
-- **Un contrôle automatique des secrets avant mise en ligne** (`scripts/verifier.js`), installé dans le projet par `/pulse:cicd` et branché sur la CI ou l'hébergeur retenus.
+- **Un contrôle automatique avant mise en ligne** (`scripts/verifier.js`), installé dans le projet par `/pulse:cicd` et branché sur la CI ou l'hébergeur retenus : secrets, fichiers d'environnement, et **traçabilité des scénarios** (chaque scénario prévu en test automatique d'une US terminée doit être cité par le titre d'un test, `US-003-1 – …`). `pulse-aidd scenarios` montre l'état à tout moment.
 
 ## Installation
 
@@ -127,8 +132,8 @@ Le plugin vit dans `plugins/pulse-vibe/` du dépôt ; le catalogue `.claude-plug
 .claude-plugin/plugin.json        manifeste du plugin
 skills/<commande>/SKILL.md        les commandes
 agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, fixer, memory-compactor
-hooks/hooks.json                  garde-fou anti-secrets, synchronisation de la mémoire, registre des sessions, régénération du guide
-scripts/                          garde-secrets.js, motifs.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
+hooks/hooks.json                  garde-fou anti-secrets, garde-fou des commandes, synchronisation de la mémoire, registre des sessions, régénération du guide
+scripts/                          garde-secrets.js, garde-commandes.js, motifs.js, sonder.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
 bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI)
 references/                       règles communes, aide au choix technique, checklist sécurité, mémoire,
                                   qualite/ (références de qualité du code), securite/ (actions de /pulse:security),

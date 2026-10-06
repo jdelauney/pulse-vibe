@@ -59,7 +59,7 @@ Suivre la documentation officielle de l'hébergeur retenu, et la traduire en ét
 5. Lancer le premier déploiement, attendre la fin, puis renommer le site si souhaité.
 6. Me coller l'adresse du site.
 
-Ensuite : inscrire l'adresse du dépôt et celle du site dans la section « Adresses » de `CLAUDE.md` et dans `README.md`. Si un outil de lecture web est disponible, vérifier que la page répond.
+Ensuite : inscrire l'adresse du dépôt et celle du site dans la section « Adresses » de `CLAUDE.md`, dans `README.md` et dans la ligne « Site en ligne » de « Hébergement et mise en ligne » (`docs/technical.md`). Puis **prouver** que le site répond : `pulse-aidd sonder <adresse du site> --texte "<un texte visible de la page, ex. le nom du projet>"`. En cas d'échec, lire la cause qu'il donne, l'expliquer simplement, corriger avec la personne (réglages de construction, variable manquante), puis relancer la sonde.
 
 ### 3c. Voir le déploiement automatique en action
 
@@ -69,7 +69,7 @@ Proposer une petite modification visible (par exemple le texte du titre), puis :
 
 1. `git push` (après les contrôles de la section 1).
 2. Expliquer que l'hébergeur publie la nouvelle version automatiquement, et où suivre l'avancement (liste des déploiements de l'hébergeur).
-3. Donner l'adresse du site (section « Adresses » de `CLAUDE.md`) pour vérifier.
+3. Une fois la publication terminée chez l'hébergeur, lancer `pulse-aidd sonder <adresse du site>` (section « Adresses » de `CLAUDE.md`), avec `--texte` suivi d'un texte que la nouvelle version affiche. Donner l'adresse à la personne pour qu'elle regarde la nouveauté.
 
 ## 5. Mode production (« pour de vrai »)
 
@@ -89,4 +89,4 @@ Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en lig
 
 Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
 
-Terminer avec le bloc de fin de commande, en indiquant l'adresse du site.
+Terminer avec le bloc de fin de commande, en indiquant l'adresse du site et le résultat de `pulse-aidd sonder` (la ligne ✅ ou ❌ qu'il affiche) comme preuve de la mise en ligne.

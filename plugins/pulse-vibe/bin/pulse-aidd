@@ -16,9 +16,13 @@
 #   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
-#   pulse-aidd verifier              contrôle l'absence de secrets et de fichiers d'environnement suivis par Git
+#   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
+#   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd travail-fini          efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier courant
 #   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
+#   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
+#   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
+#   pulse-aidd sonder <adresse> [--texte "…"]  vérifie qu'un site en ligne répond (code 200, texte attendu)
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
 
@@ -59,6 +63,69 @@ lister_references() {
   (cd "$REF" && find . -type f | sed 's|^\./||' | sort)
 }
 
+# ---------------------------------------------------------------- Packs de pile
+# Un pack de pile est un plugin qui fournit, dans son bin/, un outil pulse-pile-<id> :
+#   pulse-pile-<id> info                 id, nom, resume, version (une ligne « clé: valeur » chacun)
+#   pulse-pile-<id> contexte <commande>  consignes ajoutées au contexte de /pulse:<commande>
+# Le projet le déclare dans docs/technical.md : « **Pack de pile Pulse** : <id> ».
+
+pack_declare() {
+  [ -f docs/technical.md ] || return 0
+  sed -n 's/^\*\*Pack de pile Pulse\*\* *: *\([a-z0-9-]*\).*$/\1/p' docs/technical.md | head -n 1
+}
+
+pack_info() { # pack_info <id> <clé>
+  "pulse-pile-$1" info 2>/dev/null | sed -n "s/^$2: *//p" | head -n 1
+}
+
+piles() {
+  local vus=" " dossier outil id
+  local IFS=:
+  for dossier in $PATH; do
+    for outil in "$dossier"/pulse-pile-*; do
+      [ -f "$outil" ] && [ -x "$outil" ] || continue
+      id="${outil##*/pulse-pile-}"
+      case "$vus" in *" $id "*) continue ;; esac
+      vus="$vus$id "
+      printf -- '- %s : %s – %s (version %s)
+' "$id" "$(pack_info "$id" nom)" "$(pack_info "$id" resume)" "$(pack_info "$id" version)"
+    done
+  done
+  [ "$vus" = " " ] && echo "Aucun pack de pile installé."
+  return 0
+}
+
+pile() {
+  local id; id="$(pack_declare)"
+  if [ -z "$id" ]; then echo "Aucun pack de pile déclaré dans docs/technical.md."
+  elif command -v "pulse-pile-$id" >/dev/null 2>&1; then echo "Pack de pile déclaré : $id – installé ($(pack_info "$id" nom), version $(pack_info "$id" version))."
+  else echo "Pack de pile déclaré : $id – non installé (plugin pulse-vibe-$id)."
+  fi
+}
+
+contexte_pack() { # contexte_pack <commande>
+  local id; id="$(pack_declare)"
+  [ -n "$id" ] || return 0
+  if command -v "pulse-pile-$id" >/dev/null 2>&1; then
+    printf '
+===== Pack de pile : %s =====
+
+' "$(pack_info "$id" nom)"
+    "pulse-pile-$id" contexte "$1" 2>/dev/null
+    printf '
+'
+  else
+    printf '
+===== Pack de pile : %s (non installé) =====
+
+' "$id"
+    printf 'Le projet déclare le pack de pile « %s » (docs/technical.md), mais il manque sur cette machine. ' "$id"
+    printf "Proposer à la personne d'installer son plugin : /plugin install pulse-vibe-%s@pulseia, puis de redémarrer Claude Code. " "$id"
+    printf 'En attendant, suivre docs/technical.md et la documentation officielle de la pile retenue.
+'
+  fi
+}
+
 contexte() {
   afficher "Règles communes Pulse" "$REF/regles-communes.md"
   case "$1" in
@@ -96,6 +163,15 @@ contexte() {
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md"
       lexique ;;
+    express)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Modèle : docs/brief.md" "$TPL/brief.md"
+      afficher "Modèle : docs/prd.md" "$TPL/prd.md"
+      afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md"
+      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
+      afficher "Modèle : travail en cours" "$TPL/in-progress.md" ;;
     prd)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
       afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
@@ -166,6 +242,7 @@ contexte() {
     auto-fix|status|guide) ;;
     *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
   esac
+  contexte_pack "$1"
 }
 
 case "$1" in
@@ -197,6 +274,12 @@ case "$1" in
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   verifier)
     exec node "$TPL/verifier.js" ;;
+  scenarios)
+    exec node "$TPL/verifier.js" --scenarios ;;
+  piles) piles; exit 0 ;;
+  pile) pile; exit 0 ;;
+  sonder)
+    shift; exec node "$RACINE/scripts/sonder.js" "$@" ;;
   travail-fini)
     rm -f aidd_docs/tasks/in-progress.md
     echo "Travail en cours effacé : aucune décision en attente." ;;
@@ -206,5 +289,5 @@ case "$1" in
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,23p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,27p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac

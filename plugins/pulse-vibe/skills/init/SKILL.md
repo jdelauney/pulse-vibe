@@ -54,7 +54,7 @@ Règles de la boucle :
 
 1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent** → prévenir et continuer (il fait tourner le garde-fou anti-secrets de Pulse) : https://nodejs.org (LTS).
 2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Proposer les étapes de la méthode une fois toutes les fondations en place. Exception : dans un **projet neuf**, la pile technique peut attendre ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`). Le **dépôt distant** est facultatif : la question se pose une seule fois (à la création du projet, ou à la première séance d'un projet Pulse qui n'en a pas), puis la méthode continue quelle que soit la réponse.
-3. **La première étape de la méthode restant à faire** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` ; identité visuelle, **facultative** → si `docs/design.md` et `docs/user-stories.md` n'existent pas encore, proposer `/pulse:ui identite` en précisant qu'elle est facultative (les user stories, specs et plans s'y conformeront), avec « Passer directement aux user stories » en alternative ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
+3. **La première étape de la méthode restant à faire** : brief → `/pulse:brainstorm`, avec `/pulse:express` en alternative pour démarrer vite (brief, PRD et US en une conversation) ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` ; identité visuelle, **facultative** → si `docs/design.md` et `docs/user-stories.md` n'existent pas encore, proposer `/pulse:ui identite` en précisant qu'elle est facultative (les user stories, specs et plans s'y conformeront), avec « Passer directement aux user stories » en alternative ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
 4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <US-XXX>` (ou `/pulse:implement <US-XXX>`), les US Indispensables d'abord ; plan terminé et US Indispensables restantes → `/pulse:spec <US-XXX suivante du parcours>` ; MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
 5. **Un signal de santé.**
 6. **Tout est à jour** : proposer `/pulse:spec <US-XXX suivante>` (US Essentielles à spécifier), `/pulse:spirc <US-XXX> "une demande"`, `/pulse:cicd` (si un dépôt distant est relié et qu'aucune CI n'existe), `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
@@ -106,6 +106,8 @@ README.md        → la présentation du projet
 
 Ajouter : « Le code et ses dossiers viendront après le choix de la pile technique (`/pulse:tech`). »
 
+7. **Choisir le parcours** (AskUserQuestion) : « Parcours express (Recommandé pour démarrer vite) » : une seule conversation pour l'idée, les écrans, l'apparence et les contraintes, puis les outils et l'identité visuelle, jusqu'à la première US prête à réaliser ; ou « Parcours complet, étape par étape » : brief, PRD, choix techniques, identité, user stories, chacun avec son entretien approfondi. Express : lancer `pulse-aidd etape express`, puis appliquer à l'identique ses sections « 1. Annoncer le parcours » à « 7. L'identité visuelle », et sa « Fin » hors bloc de fin de commande. Complet : reprendre la boucle (prochaine étape : `/pulse:brainstorm`).
+
 ### Reprendre un projet existant (du code sans Pulse)
 
 1. Expliquer : « Votre projet a déjà du code. Je vais lui ajouter les règles et la mémoire de Pulse, en gardant tout ce qui existe. »
@@ -119,6 +121,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 - Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
 - Bloc `pulse_profil` absent de `CLAUDE.md`, ou « Niveau : à préciser » → poser les deux questions du profil (niveau, quantité d'explications) en une ronde, puis ajouter ou remplir le bloc dans la section « Communication » (modèle `CLAUDE.md`).
 - `.gitignore` sans la ligne `aidd_docs/tasks/in-progress.md` → l'ajouter (avec les deux lignes du modèle `.gitignore`), en expliquant en une phrase : ce fichier note une décision en attente, propre à cette machine.
+- `scripts/verifier.js` présent sans le contrôle des scénarios (le mot « Scénarios » n'y figure pas) → le mettre à jour avec `pulse-aidd installer-ci` (puis supprimer `scripts/ci-verifications.exemple.yml`, inutile), en expliquant en une phrase : le contrôle avant mise en ligne vérifie maintenant que chaque scénario prévu en test automatique a son test.
 - Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
 - **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
   1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.
@@ -136,10 +139,11 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 
 ### « M'expliquer la méthode »
 
-En 8 lignes maximum, le chemin complet, l'étape en cours entre crochets :
+En 9 lignes maximum, le chemin complet, l'étape en cours entre crochets :
 
 ```
 /pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us (epics et US)
+   (ou, pour démarrer vite : /pulse:express, qui fait tout cela en une conversation)
    → pour chaque US : /pulse:spec <US-XXX> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
    → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <US-XXX>)
    → /pulse:deploy   (les étapes entre parenthèses sont facultatives)

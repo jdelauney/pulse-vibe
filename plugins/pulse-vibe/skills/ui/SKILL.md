@@ -74,6 +74,7 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
    - Copier la planche choisie (ou l'hybride) et son `note.md` dans `docs/design/identite/retenue/`.
    - Écrire `docs/design.md` à partir du modèle `design.md` : **toutes** les sections remplies ; écrire « sans objet » quand une section ne s'applique pas.
    - Montrer un résumé en 5 lignes et demander « Valider » / « Modifier quelque chose ».
+   - **Traduire dans le code** : si le squelette de la pile est en place (« Mise en place » de `docs/technical.md` faite), proposer « Appliquer cette identité au code maintenant (Recommandé) » / « Plus tard ». Maintenant : lancer `pulse-aidd qualite`, écrire les valeurs de `docs/design.md` dans le fichier du thème de la pile retenue (consignes du pack de pile s'il y en a un, sinon documentation officielle de la technologie), remplir la section « Dans le code » de `docs/design.md`, lancer les contrôles automatiques de « Commandes du projet », puis demander à la personne de regarder la page de départ dans son navigateur. Sans squelette : écrire « à créer à la mise en place » dans « Dans le code » ; `/pulse:tech` appliquera le thème après le squelette.
    - Proposer `/pulse:memory retenir` pour le registre et la stratégie de couleur.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `docs/user-stories.md` n'existe pas encore (cas habituel : l'identité se définit juste après `/pulse:tech`) ; sinon `/pulse:spec <US-XXX>`, ou `/pulse:ui maquettes <US-XXX>` si une spec avec des écrans existe déjà.

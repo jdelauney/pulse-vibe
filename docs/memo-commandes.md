@@ -7,6 +7,7 @@
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
 | `/pulse:init` | Prépare le dossier du projet, puis vous dit où vous en êtes et quoi faire ensuite | Les fichiers de base, la mémoire et l'historique Git |
+| `/pulse:express` | ⚡ Pour démarrer vite : en une conversation, votre idée, vos écrans, l'apparence et vos contraintes ; puis les outils et 2 apparences à comparer. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
 
 ## 2. Décrire (sans technique)
 
@@ -14,7 +15,7 @@
 |---|---|---|
 | `/pulse:brainstorm` | Vous fait réfléchir à votre idée : quelques questions essentielles, auxquelles vous répondez avec vos mots (avec des exemples), puis des questions rapides à choix ; raconte enfin votre outil comme une histoire | `docs/brief.md` et le glossaire |
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **MVP** |
-| `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options | `docs/technical.md` |
+| `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options (dont une pile Pulse prête à l'emploi si elle est installée), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
 | `/pulse:us` | Découpe le besoin en epics et écrit les user stories : « En tant que… je souhaite… afin de… » | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
@@ -48,7 +49,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | Commande | Ce qu'elle fait |
 |---|---|
 | `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque demande de fusion : une croix rouge vous prévient avant que l'erreur n'arrive sur le site |
-| `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul |
+| `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul. Chaque fois, Pulse vérifie que le site répond vraiment |
 | `/pulse:deploy production` | Prépare le site « pour de vrai » : variables, services connectés, retour arrière (et la CI avec `/pulse:cicd` si elle manque) |
 
 ## À tout moment
@@ -75,3 +76,5 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 2. **C'est vous qui testez.** L'IA propose, vous validez.
 3. **Jamais de vraie donnée ni de vraie clé** dans la conversation ou dans le code.
 4. **« Si ce n'est pas interdit côté serveur, c'est autorisé. »**
+
+🔒 Si Pulse refuse une commande ou vous demande votre accord (« Pulse demande votre accord… »), c'est son garde-fou : il protège votre travail, vos données et votre site. Lisez la raison, puis acceptez seulement si vous comprenez ce qui va se passer.
