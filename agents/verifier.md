@@ -15,6 +15,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes.
 - Toujours utiliser uniquement des clés de test et des données fictives.
 - Marquer un critère **✅ Prouvé** seulement avec une preuve **actuelle** : commande lancée et sa sortie, réponse HTTP, capture. Un comportement se prouve en l'observant ; la lecture du code seule reste insuffisante.
 - Arrêter tout serveur lancé avant de rendre la main.
+- Un test automatique compte comme preuve seulement s'il a été lancé pendant cette vérification et qu'il réussit ; noter sa commande et sa sortie.
 
 ## Informations reçues
 

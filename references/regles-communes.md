@@ -104,6 +104,17 @@ Terminez **toujours** par ce bloc, court :
 
 Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire avant de continuer : …`.
 
+Après une réalisation ou une correction de code, placez avant ce bloc le **rapport de réalisation** :
+
+```
+✅ Prouvé : <critère> – <preuve : commande et résultat, page vue>
+🧪 À vérifier par vous : <critère> – <comment>
+⚪ Non vérifié : <ce qui n'a pas pu l'être> – <pourquoi>
+Contrôles : lint <✅|❌|aucun> · types <✅|❌|aucun> · tests : <n écrits, n lancés, résultat> (ou « aucun test automatique dans ce projet »)
+```
+
+Une ligne par critère ; une rubrique vide s'écrit « aucun ». Un test écrit mais non lancé, ou un code seulement relu, ne compte jamais comme preuve : il va dans « Non vérifié ».
+
 ## 5. Le cycle Pulse en un coup d'œil
 
 ```

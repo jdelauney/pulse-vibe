@@ -96,6 +96,7 @@ Présenter, en expliquant chaque terme technique :
 1. **Ce qui a changé** : un fichier par ligne, avec son rôle.
 2. **💡 La notion du jour** : choisir **une** notion de programmation présente dans le code écrit (variable, constante, condition, boucle, fonction, événement, tableau, objet, stockage, requête, attente d'une réponse…). Montrer un extrait de 3 à 8 lignes et l'expliquer simplement, ligne par ligne si besoin. Choisir de préférence une notion absente du lexique, puis l'y ajouter (règle commune § 1, « Le lexique »).
 3. **🧪 À vous de tester** : les étapes du test manuel, issues des critères d'acceptation, avec des données réalistes. Indiquer comment ouvrir l'appli : la commande « lancer en local » de « Commandes du projet » (`docs/technical.md`), et l'adresse ou l'écran qu'elle affiche.
+4. **Le rapport de réalisation** (règles communes § 4) : chaque critère de la tâche classé en ✅ Prouvé (avec sa preuve), 🧪 À vérifier par vous ou ⚪ Non vérifié, puis la ligne « Contrôles ». En mode sous-agent, le construire à partir des rubriques « Vérifications lancées » et « Tests » de son rapport, sans les réinterpréter.
 
 La tâche **reste `[~]`** : elle sera terminée après relecture et commit.
 

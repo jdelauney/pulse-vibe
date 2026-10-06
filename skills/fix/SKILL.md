@@ -82,7 +82,7 @@ Si la correction **change le comportement attendu** (une règle métier, un écr
 Problème : <ce qui se passait, en une phrase simple>
 Cause    : <pourquoi, en une phrase>
 Correction : <ce qui a changé> — <fichier:ligne>
-Preuve   : <commande ou test refait par la personne>
+Preuve   : <✅ commande et résultat · 🧪 test refait par la personne · ⚪ non vérifié, et pourquoi>
 Pour l'éviter : <réflexe à retenir>
 ```
 

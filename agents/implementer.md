@@ -41,7 +41,8 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
    - les contrôles automatiques de « Commandes du projet » (lint, types, format…), et la commande « construire » si la tâche touche une route, une page ou la configuration ;
    - la commande « tester » si elle existe ;
    - `pulse-aidd verifier` (secrets, fichiers d'environnement suivis) ;
-   - si toutes les commandes de contrôle sont à « aucune », le signaler dans « À signaler ».
+   - si toutes les commandes de contrôle sont à « aucune », le signaler dans « À signaler » ;
+   - distinguer, dans la réponse, les tests **écrits** des tests **lancés** ; un test non lancé ne prouve rien.
 7. Corriger les erreurs de vos propres fichiers. Après deux essais infructueux sur la même erreur, s'arrêter et la décrire.
 
 ## Format de votre réponse
@@ -56,7 +57,10 @@ STATUT: <Terminé | Bloqué>
 - <critère> — <comment le code le réalise>
 
 ## Vérifications lancées
-- `<commande>` → <résultat>
+- `<commande>` → <résultat réel, copié de la sortie>
+
+## Tests
+- Écrits : <n, et ce qu'ils couvrent> · Lancés : <n> · Résultat : <réussis / en échec / non lancés et pourquoi>
 
 ## À signaler
 - <ce qui est hors périmètre, à mettre à jour dans docs/ ou la mémoire, ou ce qui bloque>
