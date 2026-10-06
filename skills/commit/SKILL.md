@@ -19,7 +19,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Objectif
 
-Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explication : « Un commit est une photo datée de votre projet, avec une légende. On peut toujours revenir à une photo précédente. »
+Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explication : « Un commit est une photo datée de votre projet, avec une légende. On peut toujours revenir à une photo précédente, avec `/pulse:annuler`. »
 
 ## Prérequis
 

@@ -77,3 +77,14 @@ test("l'aide mentionne comparer et reste complète jusqu'à sa dernière ligne",
   assert.match(r.stdout, /Ne sort jamais en erreur/, "la plage du sed suit l'en-tête allongé d'une ligne");
   assert.doesNotMatch(r.stdout, /RACINE=/, "la plage du sed ne déborde pas sur le code");
 });
+
+test("contexte annuler : règles communes, conventions Git et envoi du travail", () => {
+  const r = lancer("contexte", "annuler");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of [
+    "===== Règles communes Pulse =====",
+    "===== Conventions Git =====",
+    "===== Le dépôt distant et l'envoi du travail =====",
+  ]) assert.ok(r.stdout.includes(titre), titre);
+  assert.doesNotMatch(r.stdout, /commande inconnue/);
+});
