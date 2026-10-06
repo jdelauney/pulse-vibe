@@ -62,7 +62,7 @@ Donner les étapes du test manuel du rapport, puis demander (AskUserQuestion) : 
 
 S'il y a des ⛔, des ⚠️ ou un test manuel en échec, proposer (AskUserQuestion) : « Tout corriger (recommandé) » / « Seulement les points bloquants » / « Je regarde d'abord ».
 
-Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite relancer **une** relecture courte (même sous-agent) pour confirmer, et ajouter son résultat à la fin du même rapport, dans une section `## Relecture de contrôle` (date, verdict, points restants). Mettre à jour la ligne **Verdict** en tête du rapport. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement et conseiller de demander de l'aide à une personne qui sait programmer.
+Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite relancer **une** relecture courte (même sous-agent) pour confirmer, et ajouter son résultat à la fin du même rapport, dans une section `## Relecture de contrôle` (date, verdict, points restants). Mettre à jour la ligne **Verdict** en tête du rapport. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement et proposer `/pulse:get-help`.
 
 Appliquer les 💡 suggestions à la demande de la personne.
 

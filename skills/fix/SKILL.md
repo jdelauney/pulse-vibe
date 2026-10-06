@@ -73,7 +73,7 @@ Si la correction **change le comportement attendu** (une règle métier, un écr
 
 - Relancer les diagnostics de l'étape 2 sur les fichiers touchés : zéro erreur, ancienne ou nouvelle.
 - **La personne refait l'action** qui échouait (même parcours, mêmes données fictives) : « Est-ce que ça fonctionne maintenant ? » → « Oui » / « Toujours le même problème » / « Un autre problème est apparu ».
-- Échec : revenir à l'étape 2 avec ce nouvel élément. **Deux tentatives au maximum** ; ensuite, arrêter, expliquer simplement où l'on en est, et conseiller de demander de l'aide à une personne qui sait programmer.
+- Échec : revenir à l'étape 2 avec ce nouvel élément. **Deux tentatives au maximum** ; ensuite, arrêter, expliquer simplement où l'on en est, et proposer `/pulse:get-help`, qui prépare une demande d'aide à transmettre.
 
 ## 6. Expliquer et retenir
 

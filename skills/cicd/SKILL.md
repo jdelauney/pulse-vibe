@@ -75,7 +75,7 @@ Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js
 
 - Montrer où suivre le résultat : l'onglet de la CI sur le site du dépôt, ou en ligne de commande si l'outil est connecté (GitHub : `gh run list --limit 1`, puis `gh run watch` ; GitLab : `glab ci status`).
 - **Coche verte** : expliquer qu'elle apparaîtra désormais à chaque envoi et sur chaque demande de fusion.
-- **Croix rouge** : lire le journal de l'étape en échec (GitHub : `gh run view --log-failed`), l'expliquer simplement, corriger (ou `/pulse:fix`), enregistrer et renvoyer. Deux essais au plus, puis s'arrêter et conseiller l'aide d'une personne qui sait programmer.
+- **Croix rouge** : lire le journal de l'étape en échec (GitHub : `gh run view --log-failed`), l'expliquer simplement, corriger (ou `/pulse:fix`), enregistrer et renvoyer. Deux essais au plus, puis s'arrêter et proposer `/pulse:get-help`.
 
 ## 7. Protéger la branche principale (facultatif)
 

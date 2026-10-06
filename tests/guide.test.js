@@ -237,3 +237,12 @@ test("aucun plan, ancien emplacement ou plan sans tâche reconnue : message clai
   assert.match(vide.stdout, /aucune tâche reconnue/i);
   assert.match(vide.stdout, /## Tâches/);
 });
+
+test("index : « Si vous êtes bloqué » propose /pulse:annuler et /pulse:get-help", () => {
+  const d = projet();
+  assert.strictEqual(lancer(d).status, 0);
+  const index = lire(d, "index.md");
+  assert.match(index, /\/pulse:annuler/);
+  assert.match(index, /\/pulse:get-help/);
+  assert.doesNotMatch(index, /personne qui sait programmer/);
+});

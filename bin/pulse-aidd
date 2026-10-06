@@ -105,6 +105,7 @@ contexte() {
     annuler)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
+    get-help) afficher "Modèle : demande d'aide" "$TPL/demande-aide.md" ;;
     cicd)
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template"

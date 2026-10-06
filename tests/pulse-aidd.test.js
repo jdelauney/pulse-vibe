@@ -88,3 +88,11 @@ test("contexte annuler : règles communes, conventions Git et envoi du travail",
   ]) assert.ok(r.stdout.includes(titre), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
+
+test("contexte get-help : règles communes et modèle de demande d'aide", () => {
+  const r = lancer("contexte", "get-help");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
+  assert.ok(r.stdout.includes("===== Modèle : demande d'aide ====="));
+  assert.doesNotMatch(r.stdout, /commande inconnue/);
+});

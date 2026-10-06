@@ -45,7 +45,7 @@ Quand le plan de l'US est terminé, ou quand la personne s'arrête, demander (As
 2. Sortir : outil `ExitWorktree`, puis `pulse-aidd sessions --ici <session>`.
 3. Dans le dossier principal, vérifier qu'on est sur la branche de départ et que la voie est libre pour la fusion (`git status`) : laisser intactes les modifications d'une autre session ; si elles portent sur les mêmes fichiers, proposer d'attendre que l'autre session enregistre son travail.
 4. `git merge --no-ff feat/us-xxx-<nom> -m "merge: US-XXX <titre>"`.
-   - **Conflit** : `git merge --abort`, expliquer simplement (« les deux sessions ont modifié les mêmes lignes ») et proposer `/pulse:pr`, qui laisse la fusion se faire sur le site du dépôt, ou l'aide d'une personne qui sait programmer. Préserver le travail de l'autre session : ne jamais résoudre un conflit en l'écrasant.
+   - **Conflit** : `git merge --abort`, expliquer simplement (« les deux sessions ont modifié les mêmes lignes ») et proposer `/pulse:pr`, qui laisse la fusion se faire sur le site du dépôt, ou `/pulse:get-help`. Préserver le travail de l'autre session : ne jamais résoudre un conflit en l'écrasant.
 5. Nettoyer : `git worktree remove .claude/worktrees/us-xxx-<nom>` puis `git branch -d feat/us-xxx-<nom>` (jamais `-D`, ni `--force` : si Git refuse, il reste du travail à fusionner ; le dire et s'arrêter).
 6. Lancer `pulse-aidd guide`. Rappeler que le travail reste local pour l'instant : `/pulse:deploy` ou `/pulse:commit push`.
 
