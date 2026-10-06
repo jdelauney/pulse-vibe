@@ -1,0 +1,92 @@
+---
+description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production (variables, services, retour arrière ; la CI se met en place avec /pulse:cicd)
+argument-hint: "[premiere | production] (détecté automatiquement si vide)"
+disable-model-invocation: true
+allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git remote *) Bash(git push) Bash(git push -u origin *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
+---
+
+# /pulse:deploy – Mettre en ligne
+
+## Contexte Pulse (chargé automatiquement)
+
+!`pulse-aidd contexte deploy`
+
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie.
+
+Mode demandé (facultatif) : `$ARGUMENTS`
+
+## Objectif
+
+Mettre l'appli en ligne, et faire comprendre la chaîne :
+**commit → envoi (push) vers le dépôt distant → l'hébergeur détecte la nouvelle version → il la met en ligne tout seul.**
+
+Analogie à donner : « C'est comme un document partagé qui se met à jour tout seul : chaque fois que vous envoyez une nouvelle version sur le dépôt distant, le site se met à jour en quelques minutes. C'est le déploiement continu (CD). »
+
+## 0. Prérequis : la mise en ligne est choisie
+
+Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hébergeur, dépôt distant, CI éventuelle. Lire aussi « Commandes du projet » (en particulier « construire » et « déployer ») et « Secrets et variables d'environnement ».
+
+- `docs/technical.md` absent, ou hébergeur / dépôt distant encore à choisir (vides ou « aucune ») : expliquer qu'il faut d'abord choisir où mettre l'appli en ligne, et proposer `/pulse:tech`. S'arrêter là, avant toute installation ou configuration.
+- Pour chaque étape propre à l'hébergeur, au dépôt distant ou à la CI retenus : suivre **leur documentation officielle** (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Tirer de cette documentation chaque libellé, menu ou nom de fichier de configuration ; si la documentation est inaccessible, le dire et guider à partir de ce que la personne voit à l'écran.
+
+## 1. Contrôles avant envoi (toujours)
+
+1. Dépôt Git présent, sinon proposer `/pulse:init`.
+2. Branche : `git branch --show-current`. Si c'est `master`, proposer `git branch -M main` et expliquer que `main` est la branche publiée.
+3. Tout est enregistré : si `git status --short` liste des fichiers, proposer `/pulse:commit` d'abord.
+4. Secrets : lancer `pulse-aidd verifier` depuis la racine du projet. Il vérifie que les fichiers d'environnement restent hors de Git et que le projet est exempt de clés secrètes. S'il échoue, expliquer chaque problème simplement et corriger avant d'aller plus loin.
+5. Contrôles du projet : lancer les contrôles automatiques et la commande « construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur bloque l'envoi : proposer `/pulse:fix` ou `/pulse:auto-fix`. Si aucune commande de contrôle n'existe, le signaler et proposer d'en ajouter avec `/pulse:tech`.
+
+## 2. Choisir le mode
+
+- `premiere`, ou **aucun dépôt distant** (`git remote -v` vide) → **Première mise en ligne** (section 3).
+- `production`, ou projet qui stocke des données ou utilise des secrets (« Données et contrôle d'accès », « Secrets et variables d'environnement ») sans `scripts/verifier.js` → **Mode production** (section 5), après la section 4 si besoin.
+- Sinon → **Mise à jour** (section 4).
+
+## 3. Première mise en ligne
+
+### 3a. Le dépôt distant
+
+Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/pulse:init`) : l'envoyer à jour (`git push`) et passer à 3b. Sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; le fournisseur est celui de « Hébergement et mise en ligne ». Si la personne répond « Non, plus tard », expliquer qu'une mise en ligne passe par un dépôt distant, et s'arrêter.
+
+### 3b. Relier le dépôt à l'hébergeur (à faire par la personne, guidé)
+
+Suivre la documentation officielle de l'hébergeur retenu, et la traduire en étapes simples, une à la fois :
+1. Se connecter à l'hébergeur (avec le compte du dépôt distant si c'est proposé : c'est souvent le plus simple).
+2. Créer un nouveau site ou projet à partir d'un dépôt existant, autoriser l'accès au dépôt, choisir le dépôt.
+3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer avec `/pulse:commit`.
+4. Si l'appli a besoin de variables d'environnement (« Secrets et variables d'environnement », `.env.example`) : les faire saisir **avant** le premier déploiement (section 5, point 2), sinon la construction ou l'appli échoue.
+5. Lancer le premier déploiement, attendre la fin, puis renommer le site si souhaité.
+6. Me coller l'adresse du site.
+
+Ensuite : inscrire l'adresse du dépôt et celle du site dans la section « Adresses » de `CLAUDE.md`, dans `README.md` et dans la ligne « Site en ligne » de « Hébergement et mise en ligne » (`docs/technical.md`). Puis **prouver** que le site répond : `pulse-aidd sonder <adresse du site> --texte "<un texte visible de la page, ex. le nom du projet>"`. En cas d'échec, lire la cause qu'il donne, l'expliquer simplement, corriger avec la personne (réglages de construction, variable manquante), puis relancer la sonde.
+
+### 3c. Voir le déploiement automatique en action
+
+Proposer une petite modification visible (par exemple le texte du titre), puis : `/pulse:commit`, `git push`, et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
+
+## 4. Mise à jour
+
+1. `git push` (après les contrôles de la section 1).
+2. Expliquer que l'hébergeur publie la nouvelle version automatiquement, et où suivre l'avancement (liste des déploiements de l'hébergeur).
+3. Une fois la publication terminée chez l'hébergeur, lancer `pulse-aidd sonder <adresse du site>` (section « Adresses » de `CLAUDE.md`), avec `--texte` suivi d'un texte que la nouvelle version affiche. Donner l'adresse à la personne pour qu'elle regarde la nouveauté.
+
+## 5. Mode production (« pour de vrai »)
+
+Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en ligne, un contrôle qualité automatique vérifie le projet. Si le contrôle échoue, l'ancienne version reste en ligne à la place de la nouvelle, défectueuse. »
+
+1. **Installer le contrôle** :
+   - si la CI reste à installer : appliquer l'étape **cicd** (`pulse-aidd etape cicd`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
+   - si l'hébergeur le permet, le configurer pour exécuter ce contrôle **avant chaque mise en ligne** (commande de construction qui enchaîne `node scripts/verifier.js`, les contrôles du projet, puis la construction), d'après sa documentation ;
+   - lancer `node scripts/verifier.js` pour vérifier qu'il passe.
+2. **Variables d'environnement** : lister les noms présents dans `.env.example` et dans « Secrets et variables d'environnement ». Guider la personne pour les saisir **elle-même** à l'endroit indiqué pour la production (réglages de l'hébergeur). Les valeurs vont uniquement dans ces réglages, **jamais** dans cette conversation. Après un ajout de variable, relancer un déploiement (sauf si l'hébergeur le fait seul).
+3. **Services connectés** : si un service de « Pile retenue » (connexion, données, emails…) doit connaître l'adresse du site (liens de connexion, redirections, origines autorisées), guider la personne pour la renseigner, d'après la documentation officielle du service.
+4. **Environnements** : si l'hébergeur le propose, expliquer la différence entre une adresse de **prévisualisation** (pour une branche ou une demande de fusion, pour tester sans toucher au site) et la **production** publiée depuis `main` (le site des clients).
+5. **Retour arrière** : montrer, d'après la documentation de l'hébergeur, comment republier une version précédente. Rassurer : tout reste réparable.
+6. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push`. Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
+
+## 6. Clore
+
+Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
+
+Terminer avec le bloc de fin de commande, en indiquant l'adresse du site et le résultat de `pulse-aidd sonder` (la ligne ✅ ou ❌ qu'il affiche) comme preuve de la mise en ligne.

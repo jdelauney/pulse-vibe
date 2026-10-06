@@ -1,0 +1,293 @@
+#!/usr/bin/env bash
+# pulse-aidd – outil interne du plugin Pulse.
+# Claude Code place le dossier bin/ du plugin dans le PATH : les commandes /pulse:*
+# l'utilisent pour charger leurs règles et modèles sans demander d'autorisation de lecture.
+#
+#   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
+#   pulse-aidd etape <commande>      idem, précédé des instructions de la commande (pour /pulse:spirc)
+#   pulse-aidd modele <fichier>      affiche un modèle de templates/
+#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, memory-compactor)
+#   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
+#   pulse-aidd qualite               affiche les règles de qualité du code
+#   pulse-aidd tests                 affiche la méthode de tests (stratégie, écriture, niveaux, TDD, Gherkin)
+#   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md)
+#   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
+#   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
+#   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
+#   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
+#   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
+#   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
+#   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
+#   pulse-aidd travail-fini          efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier courant
+#   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
+#   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
+#   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
+#   pulse-aidd sonder <adresse> [--texte "…"]  vérifie qu'un site en ligne répond (code 200, texte attendu)
+#
+# Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
+
+RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REF="$RACINE/references"
+TPL="$RACINE/templates"
+
+afficher() { # afficher <titre> <chemin>
+  if [ -f "$2" ]; then
+    printf '\n===== %s =====\n\n' "$1"
+    cat "$2"
+    printf '\n'
+  fi
+}
+
+qualite() {
+  afficher "Règles de qualité du code" "$REF/qualite/README.md"
+  afficher "Clean code" "$REF/qualite/clean-code.md"
+  afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
+  afficher "Composants d'interface" "$REF/qualite/composants.md"
+  afficher "Sécurité du code" "$REF/qualite/securite-code.md"
+}
+
+tests() {
+  afficher "Stratégie de tests : sommaire" "$REF/tests/README.md"
+  afficher "Stratégie de tests" "$REF/tests/strategie.md"
+  afficher "Écrire un test" "$REF/tests/ecrire-un-test.md"
+  afficher "Tests unitaires" "$REF/tests/unitaires.md"
+  afficher "Tests d'intégration" "$REF/tests/integration.md"
+  afficher "Tests de bout en bout" "$REF/tests/bout-en-bout.md"
+  afficher "Développement piloté par les tests (TDD)" "$REF/tests/tdd.md"
+  afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
+}
+
+lexique() { afficher "Modèle : docs/lexique.md" "$TPL/lexique.md"; }
+
+lister_references() {
+  (cd "$REF" && find . -type f | sed 's|^\./||' | sort)
+}
+
+# ---------------------------------------------------------------- Packs de pile
+# Un pack de pile est un plugin qui fournit, dans son bin/, un outil pulse-pile-<id> :
+#   pulse-pile-<id> info                 id, nom, resume, version (une ligne « clé: valeur » chacun)
+#   pulse-pile-<id> contexte <commande>  consignes ajoutées au contexte de /pulse:<commande>
+# Le projet le déclare dans docs/technical.md : « **Pack de pile Pulse** : <id> ».
+
+pack_declare() {
+  [ -f docs/technical.md ] || return 0
+  sed -n 's/^\*\*Pack de pile Pulse\*\* *: *\([a-z0-9-]*\).*$/\1/p' docs/technical.md | head -n 1
+}
+
+pack_info() { # pack_info <id> <clé>
+  "pulse-pile-$1" info 2>/dev/null | sed -n "s/^$2: *//p" | head -n 1
+}
+
+piles() {
+  local vus=" " dossier outil id
+  local IFS=:
+  for dossier in $PATH; do
+    for outil in "$dossier"/pulse-pile-*; do
+      [ -f "$outil" ] && [ -x "$outil" ] || continue
+      id="${outil##*/pulse-pile-}"
+      case "$vus" in *" $id "*) continue ;; esac
+      vus="$vus$id "
+      printf -- '- %s : %s – %s (version %s)
+' "$id" "$(pack_info "$id" nom)" "$(pack_info "$id" resume)" "$(pack_info "$id" version)"
+    done
+  done
+  [ "$vus" = " " ] && echo "Aucun pack de pile installé."
+  return 0
+}
+
+pile() {
+  local id; id="$(pack_declare)"
+  if [ -z "$id" ]; then echo "Aucun pack de pile déclaré dans docs/technical.md."
+  elif command -v "pulse-pile-$id" >/dev/null 2>&1; then echo "Pack de pile déclaré : $id – installé ($(pack_info "$id" nom), version $(pack_info "$id" version))."
+  else echo "Pack de pile déclaré : $id – non installé (plugin pulse-vibe-$id)."
+  fi
+}
+
+contexte_pack() { # contexte_pack <commande>
+  local id; id="$(pack_declare)"
+  [ -n "$id" ] || return 0
+  if command -v "pulse-pile-$id" >/dev/null 2>&1; then
+    printf '
+===== Pack de pile : %s =====
+
+' "$(pack_info "$id" nom)"
+    "pulse-pile-$id" contexte "$1" 2>/dev/null
+    printf '
+'
+  else
+    printf '
+===== Pack de pile : %s (non installé) =====
+
+' "$id"
+    printf 'Le projet déclare le pack de pile « %s » (docs/technical.md), mais il manque sur cette machine. ' "$id"
+    printf "Proposer à la personne d'installer son plugin : /plugin install pulse-vibe-%s@pulseia, puis de redémarrer Claude Code. " "$id"
+    printf 'En attendant, suivre docs/technical.md et la documentation officielle de la pile retenue.
+'
+  fi
+}
+
+contexte() {
+  afficher "Règles communes Pulse" "$REF/regles-communes.md"
+  case "$1" in
+    init)
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Bannière" "$TPL/banniere.txt"
+      afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
+    brainstorm)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Modèle : docs/brief.md" "$TPL/brief.md"
+      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
+      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
+    tech)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Aider à choisir la technologie" "$REF/choix-techniques.md"
+      afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
+      afficher "Modèle : docs/technical.md" "$TPL/technical.md"
+      afficher "Modèle : .gitignore" "$TPL/gitignore.template"
+      afficher "Modèle : .env.example" "$TPL/env.example.template"
+      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
+    memory)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Modèle : aidd_docs/memory/README.md" "$TPL/aidd-memory-readme.md"
+      afficher "Modèle : aidd_docs/memory/project.md" "$TPL/aidd-memory-project.md"
+      afficher "Modèle : aidd_docs/memory/technical.md" "$TPL/aidd-memory-technical.md"
+      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
+      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md"
+      afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
+    spirc)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Travailler dans un worktree" "$REF/worktree.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Modèle : rapport de revue" "$TPL/revue.md"
+      lexique ;;
+    express)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Modèle : docs/brief.md" "$TPL/brief.md"
+      afficher "Modèle : docs/prd.md" "$TPL/prd.md"
+      afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md"
+      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
+      afficher "Modèle : travail en cours" "$TPL/in-progress.md" ;;
+    prd)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
+    us)
+      afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md" ;;
+    spec)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
+      afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$TPL/spec.md" ;;
+    plan)
+      afficher "Stratégie de tests" "$REF/tests/strategie.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
+    implement)
+      qualite
+      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Travailler dans un worktree" "$REF/worktree.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      lexique ;;
+    fix) qualite; lexique ;;
+    review)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
+    commit)
+      afficher "Conventions Git" "$REF/git.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Modèle : .gitignore" "$TPL/gitignore.template" ;;
+    pr)
+      afficher "Conventions Git" "$REF/git.md"
+      afficher "Modèle : description de demande de fusion" "$TPL/pull-request.md" ;;
+    annuler)
+      afficher "Conventions Git" "$REF/git.md"
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
+    get-help) afficher "Modèle : demande d'aide" "$TPL/demande-aide.md" ;;
+    cicd)
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template"
+      afficher "Conventions Git" "$REF/git.md" ;;
+    deploy)
+      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
+    security)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Modèle : docs/securite.md" "$TPL/securite.md"
+      afficher "Modèle : mention de confidentialité" "$TPL/confidentialite.md" ;;
+    refine)
+      afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
+    ui)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md"
+      afficher "Registres d'interface" "$REF/design/registres.md"
+      afficher "Règles d'interface" "$REF/design/regles-ui.md"
+      afficher "Anti-patterns d'interface" "$REF/design/anti-patterns.md"
+      afficher "Modèle : docs/design.md" "$TPL/design.md"
+      afficher "Modèle : note de variante" "$TPL/maquette-note.md"
+      afficher "Modèle : rapport d'audit d'interface" "$TPL/revue-ui.md" ;;
+    learn)
+      afficher "Pédagogie du professeur" "$REF/pedagogie.md"
+      afficher "Modèle : docs/apprentissage.md" "$TPL/apprentissage.md"
+      lexique ;;
+    explain) lexique ;;
+    test)
+      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
+      lexique ;;
+    auto-fix|status|guide) ;;
+    *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
+  esac
+  contexte_pack "$1"
+}
+
+case "$1" in
+  contexte) contexte "$2"; exit 0 ;;
+  etape)
+    afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
+    contexte "$2"; exit 0 ;;
+  modele)
+    if [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
+  agent)
+    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, memory-compactor)"; exit 1; fi ;;
+  qualite) qualite; exit 0 ;;
+  tests) tests; exit 0 ;;
+  reference)
+    case "$2" in
+      ""|*..*) echo "Indiquez un chemin dans references/, par exemple qualite/code-concepts.md. Disponibles :"; lister_references; exit 1 ;;
+    esac
+    if [ -f "$REF/$2" ]; then cat "$REF/$2"; else echo "Référence introuvable : $2. Disponibles :"; lister_references; exit 1; fi ;;
+  nouveau)
+    shift; exec node "$RACINE/scripts/nouveau-projet.js" "$@" ;;
+  guide)
+    exec node "$RACINE/scripts/guide.js" ;;
+  comparer)
+    if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes>"; exit 1; fi
+    exec node "$RACINE/scripts/comparer.js" "$2" ;;
+  memoire)
+    exec node "$RACINE/scripts/memoire.js" --rapport ;;
+  sessions)
+    shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
+  verifier)
+    exec node "$TPL/verifier.js" ;;
+  scenarios)
+    exec node "$TPL/verifier.js" --scenarios ;;
+  piles) piles; exit 0 ;;
+  pile) pile; exit 0 ;;
+  sonder)
+    shift; exec node "$RACINE/scripts/sonder.js" "$@" ;;
+  travail-fini)
+    rm -f aidd_docs/tasks/in-progress.md
+    echo "Travail en cours effacé : aucune décision en attente." ;;
+  installer-ci)
+    mkdir -p scripts
+    cp "$TPL/verifier.js" scripts/verifier.js
+    cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
+    echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
+  *)
+    sed -n '2,27p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+esac
