@@ -1346,7 +1346,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - next-safe-action : https://next-safe-action.dev/docs/define-actions/middleware ; https://next-safe-action.dev/docs/concepts/error-handling (`returnServerError`) ; https://next-safe-action.dev/docs/execute-actions/hooks/useaction
 - shadcn + TanStack Form : https://ui.shadcn.com/docs/forms/tanstack-form
 - Next.js 16.4 (doc embarquée `node_modules/next/dist/docs/`) : `01-app/02-guides/authentication-with-cache-components.md` (session sous `<Suspense>`, revérifier dans chaque action) ; `01-app/01-getting-started/16-proxy.md` et `01-app/03-api-reference/03-file-conventions/proxy.md` (`proxy`, `matcher`, runtime Node.js) ; `01-app/03-api-reference/04-functions/cookies.md` (réaffichage dans la même réponse après un cookie modifié)
-- Codes d'erreur, cookies, `disabledPaths`, réaffichage après changement de mot de passe : vérifiés par essai réel (better-auth 1.7.7, Next.js 16.4.0, PGlite 0.5.8, Playwright 1.63.0), voir `docs/superpowers/notes/2026-10-06-base-et-connexion.md`.
+- Codes d'erreur, cookies, `disabledPaths`, réaffichage après changement de mot de passe : vérifiés par essai réel (better-auth 1.7.7, Next.js 16.4.0, PGlite 0.5.8, Playwright 1.63.0).
 - Rejoué le 2026-10-06 sur le squelette du pack (shadcn 4.21.3 « base-nova », Biome 2.5.15) : `npm run check`, `npm run typecheck`, `npm test`, `npm run build` sans variables, puis Playwright sur ordinateur et téléphone, avec `next start` et `next dev` branchés sur PGlite. Le scénario « Une action réservée envoyée sans session est refusée » a été joué par Playwright (cookies effacés avant l'envoi).
 
 ## Points à vérifier

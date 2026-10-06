@@ -27,7 +27,7 @@ Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin up
 ```
 .claude-plugin/marketplace.json   le catalogue « pulseia » : la liste des plugins
 plugins/<plugin>/                 un dossier par plugin
-docs/                             mémo des commandes, conceptions et plans de travail
+docs/                             mémo des commandes
 .github/workflows/                tests des plugins ; vérification hebdomadaire du squelette Next.js
 ```
 
