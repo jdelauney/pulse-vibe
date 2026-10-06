@@ -47,6 +47,7 @@ Dans le projet de la personne :
 | `docs/revue-projet-<AAAA-MM-JJ>.md` | `/pulse:review tout` | La relecture de l'ensemble du projet |
 | `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
+| `docs/aide/demande-<AAAA-MM-JJ>-<sujet>.md` | `/pulse:get-help` | Une demande d'aide prête à transmettre, sans secret |
 | `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
 | `docs/lexique.md` | toutes les commandes | Les termes techniques déjà expliqués, avec leur image du quotidien et leur statut (vu, maîtrisé) |
 | `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Généré automatiquement, à laisser tel quel |
@@ -127,4 +128,4 @@ Une ligne par critère ; une rubrique vide s'écrit « aucun ». Un test écrit 
 Les étapes entre parenthèses sont facultatives. Pour travailler sur une branche : `/pulse:pr branche <US-XXX>` avant `/pulse:implement`, puis `/pulse:pr` pour ouvrir la demande de fusion.
 
 `/pulse:spirc <US-XXX> [tâche | "demande"]` orchestre Implémentation, Revue et Commit du plan d'une US avec des agents indépendants (et crée la spec et le plan s'ils manquent) ; il accepte aussi une demande libre (« ajouter un filtre… »), ajoutée au plan.
-`/pulse:init` (où en suis-je ?), `/pulse:guide`, `/pulse:fix`, `/pulse:refine`, `/pulse:status`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:memory`, `/pulse:auto-fix` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.
+`/pulse:init` (préparer et mettre à niveau), `/pulse:status` (où en suis-je ?), `/pulse:guide` (les prochaines commandes), `/pulse:fix`, `/pulse:annuler` (revenir en arrière sans rien perdre), `/pulse:get-help` (préparer une demande d'aide), `/pulse:refine`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:memory`, `/pulse:auto-fix` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.

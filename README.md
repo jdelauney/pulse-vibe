@@ -33,6 +33,8 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » | `docs/design/audits/ui-<date>.md` |
 | `/pulse:auto-fix` | Fait passer au vert les contrôles automatiques du projet (lint, types, formatage…), via des agents en parallèle | code corrigé |
 | `/pulse:fix` | Corriger une erreur précise (message, console, « le bouton ne marche pas ») : cause d'abord, correction minimale, preuve, explication | code corrigé |
+| `/pulse:annuler [T3 | US-003]` | Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération | un commit d'annulation, ou une mise de côté |
+| `/pulse:get-help ["…"]` | Quand Pulse bloque : prépare une demande d'aide claire et sans secret (message court et fiche complète) et indique où la poser | `docs/aide/demande-<date>-<sujet>.md` |
 | `/pulse:memory` | Créer, actualiser ou enrichir la mémoire du projet (`creer`, `actualiser`, `retenir "…"`) | `aidd_docs/memory/` |
 
 ```
@@ -57,6 +59,9 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
 
 ## Ce que le plugin contient en plus des commandes
 
+- **Penser avant d'écrire** : brainstorm, PRD et user stories posent quelques questions essentielles en réponse libre (avec des exemples, jamais de réponse imposée), reformulent, nomment les hypothèses et montrent les conséquences ; les documents distinguent ce que vous avez décidé, ce que Pulse a proposé et les hypothèses à vérifier.
+- **Un profil** (niveau, quantité d'explications) dans `CLAUDE.md`, et **un lexique** `docs/lexique.md` des termes techniques déjà expliqués.
+- **La reprise du travail en cours** : une décision en attente est notée dans `aidd_docs/tasks/in-progress.md` et rappelée à l'ouverture de la session suivante, même après `/clear`.
 - **Des agents spécialisés**, chacun dans son rôle :
   - `pulse:explorer` rassemble les faits utiles à une demande (lecture seule) ;
   - `pulse:implementer` réalise une tâche validée, sans toucher aux documents ni commiter (utilisé par `/pulse:spirc` et par `/pulse:implement` en mode sous-agent) ;

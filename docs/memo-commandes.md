@@ -62,6 +62,8 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » |
 | `/pulse:auto-fix` | « Il y a des erreurs rouges dans le code » |
 | `/pulse:fix "…"` | « J'ai une erreur » ou « ce bouton ne marche pas » |
+| `/pulse:annuler` | « Je veux revenir en arrière » : rien n'est perdu, tout se récupère |
+| `/pulse:get-help` | « Je suis bloqué » : une demande d'aide prête à envoyer, sans vos secrets |
 | `/pulse:guide` | « Quelle commande je tape maintenant ? » (ouvrez aussi `docs/guide/index.md`) |
 | `/pulse:memory retenir "…"` | « Je veux que l'IA s'en souvienne la prochaine fois » |
 
