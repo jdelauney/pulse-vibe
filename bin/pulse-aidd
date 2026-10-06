@@ -6,9 +6,10 @@
 #   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
 #   pulse-aidd etape <commande>      idem, précédé des instructions de la commande (pour /pulse:spirc)
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/
-#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, designer, ui-critic, memory-compactor)
+#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, memory-compactor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
 #   pulse-aidd qualite               affiche les règles de qualité du code
+#   pulse-aidd tests                 affiche la méthode de tests (stratégie, écriture, niveaux, TDD, Gherkin)
 #   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md)
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
 #   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
@@ -39,6 +40,17 @@ qualite() {
   afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
   afficher "Composants d'interface" "$REF/qualite/composants.md"
   afficher "Sécurité du code" "$REF/qualite/securite-code.md"
+}
+
+tests() {
+  afficher "Stratégie de tests : sommaire" "$REF/tests/README.md"
+  afficher "Stratégie de tests" "$REF/tests/strategie.md"
+  afficher "Écrire un test" "$REF/tests/ecrire-un-test.md"
+  afficher "Tests unitaires" "$REF/tests/unitaires.md"
+  afficher "Tests d'intégration" "$REF/tests/integration.md"
+  afficher "Tests de bout en bout" "$REF/tests/bout-en-bout.md"
+  afficher "Développement piloté par les tests (TDD)" "$REF/tests/tdd.md"
+  afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
 }
 
 lexique() { afficher "Modèle : docs/lexique.md" "$TPL/lexique.md"; }
@@ -81,6 +93,7 @@ contexte() {
       afficher "Travailler dans un worktree" "$REF/worktree.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md"
       lexique ;;
     prd)
@@ -93,10 +106,14 @@ contexte() {
     spec)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
+      afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$TPL/spec.md" ;;
-    plan) afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
+    plan)
+      afficher "Stratégie de tests" "$REF/tests/strategie.md"
+      afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
       qualite
+      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Travailler dans un worktree" "$REF/worktree.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       lexique ;;
@@ -142,6 +159,10 @@ contexte() {
       afficher "Modèle : docs/apprentissage.md" "$TPL/apprentissage.md"
       lexique ;;
     explain) lexique ;;
+    test)
+      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
+      lexique ;;
     auto-fix|status|guide) ;;
     *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
   esac
@@ -155,8 +176,9 @@ case "$1" in
   modele)
     if [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
   agent)
-    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, designer, ui-critic, memory-compactor)"; exit 1; fi ;;
+    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, memory-compactor)"; exit 1; fi ;;
   qualite) qualite; exit 0 ;;
+  tests) tests; exit 0 ;;
   reference)
     case "$2" in
       ""|*..*) echo "Indiquez un chemin dans references/, par exemple qualite/code-concepts.md. Disponibles :"; lister_references; exit 1 ;;
@@ -184,5 +206,5 @@ case "$1" in
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,23p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac

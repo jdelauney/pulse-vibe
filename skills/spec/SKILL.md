@@ -57,13 +57,14 @@ Suivre le modèle de spec ; relire les autres specs (`aidd_docs/tasks/*/SPEC-US-
    - **où ce contrôle d'accès est vérifié** (côté serveur ou dans la base, comme le décrit « Données et contrôle d'accès » ; « sans objet » si les données restent sur l'appareil d'une seule personne) ;
    - s'il y a plusieurs types d'information, leurs **liens** (schéma `erDiagram` du modèle ; sinon le retirer).
 6. **Règles métier** : reprises de l'US, avec l'endroit où chacune est vérifiée. Toute règle de sécurité ou d'intégrité doit être vérifiée **dans la base ou côté serveur** ; une vérification dans le navigateur vient seulement en plus.
-7. **Services externes** : reprendre ceux de « Pile retenue » de `docs/technical.md` (1 ou 2 au maximum pour le MVP) et préciser ce que chacun fait dans ce projet. Si le PRD en demande un autre : le signaler et proposer `/pulse:tech`. Un service de paiement s'intègre d'abord en **mode test** ; le passage en mode réel est une décision de la personne, prise au moment de la mise en ligne.
-8. **Données et sécurité** : voir l'étape 2 ci-dessous.
-9. **Fichiers** : renvoyer à « Organisation des fichiers » de `docs/technical.md` (la reprendre telle quelle) et lister seulement les fichiers propres à cette spec, chacun marqué « à créer » ou « à modifier » après vérification dans le projet. Présenter comme existant seulement un fichier vu dans le projet.
-10. **Vérifications** : une ligne par critère d'acceptation de l'US, plus les vérifications transverses du modèle qui s'appliquent (accès non autorisé, formulaire mal rempli, téléphone). Proposer un test automatique seulement si la pile retenue en prévoit.
-11. **Points d'attention** : les risques réels de cette spec (donnée partagée, règle délicate, service externe, action manuelle) et ce qu'on prévoit ; sinon « aucun identifié ».
-12. **Questions ouvertes** : ce qui reste à trancher avant le plan. Poser les plus importantes (3 au maximum), une par une ; les autres restent notées.
-13. **Définition de « terminé »** : reprendre celle du modèle.
+7. **Scénarios** : selon la référence « Scénarios Gherkin » ci-dessus, une `Règle` par règle métier de l'US, et pour chacune 2 à 5 exemples concrets (cas nominal, limites, cas refusés), écrits en langage métier avec des données fictives et les mots du glossaire. Chaque exemple porte l'étiquette du critère qu'il illustre (`@US-XXX-1`) et son niveau de test prévu (`@unitaire`, `@integration`, `@bout-en-bout`, ou `@manuel`, selon `tests/strategie.md` §2, affichable avec `pulse-aidd reference tests/strategie.md`) ; chaque critère d'acceptation est couvert par au moins un exemple. Sans outil de test dans « Commandes du projet », garder les étiquettes de niveau : elles serviront le jour où des tests seront ajoutés.
+8. **Services externes** : reprendre ceux de « Pile retenue » de `docs/technical.md` (1 ou 2 au maximum pour le MVP) et préciser ce que chacun fait dans ce projet. Si le PRD en demande un autre : le signaler et proposer `/pulse:tech`. Un service de paiement s'intègre d'abord en **mode test** ; le passage en mode réel est une décision de la personne, prise au moment de la mise en ligne.
+9. **Données et sécurité** : voir l'étape 2 ci-dessous.
+10. **Fichiers** : renvoyer à « Organisation des fichiers » de `docs/technical.md` (la reprendre telle quelle) et lister seulement les fichiers propres à cette spec, chacun marqué « à créer » ou « à modifier » après vérification dans le projet. Présenter comme existant seulement un fichier vu dans le projet.
+11. **Vérifications** : une ligne par critère d'acceptation de l'US, qui renvoie à ses scénarios, plus les vérifications transverses du modèle qui s'appliquent (accès non autorisé, formulaire mal rempli, téléphone). Proposer un test automatique seulement si la pile retenue en prévoit.
+12. **Points d'attention** : les risques réels de cette spec (donnée partagée, règle délicate, service externe, action manuelle) et ce qu'on prévoit ; sinon « aucun identifié ».
+13. **Questions ouvertes** : ce qui reste à trancher avant le plan. Poser les plus importantes (3 au maximum), une par une ; les autres restent notées.
+14. **Définition de « terminé »** : reprendre celle du modèle.
 
 ### 2. La section « Données et sécurité » (obligatoire)
 
@@ -79,6 +80,6 @@ Lister enfin les points de la checklist sécurité (S1 à S12) qui s'appliquent 
 
 **Ajouts proposés par Pulse** : relever tout ce que la spec ajoute au-delà de l'US et du PRD (sécurité, confort, bibliothèque, écran ou message supplémentaire) et le présenter dans la section « Ajouts proposés par Pulse », une ligne par ajout, avec « Pourquoi ça compte » en langage courant. Faire trancher chaque ligne (AskUserQuestion, choix multiple « Lesquels gardez-vous ? ») ; les lignes imposées par la checklist sécurité portent « exigé par la sécurité » et s'expliquent sans se négocier. Un ajout refusé sort de la spec ; s'il reste une bonne idée, il va dans `docs/prd.md` (« En attente »).
 
-Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Présenter un résumé en 5 lignes maximum (US, écrans, données, services, points de sécurité) et demander validation. Plusieurs US demandées : passer à la suivante seulement après cette validation.
+Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Présenter un résumé en 5 lignes maximum (US, écrans, données, services, points de sécurité), puis les **titres des scénarios**, groupés par règle (« Voici ce que l'outil devra faire, exemple par exemple »), et demander validation : un scénario faux ou manquant se corrige avant le plan. Plusieurs US demandées : passer à la suivante seulement après cette validation.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan US-XXX` (ou `/pulse:ui maquettes US-XXX` d'abord, si la spec a des écrans et que la personne veut les voir avant de construire).

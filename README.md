@@ -32,6 +32,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:ui maquettes <US-003>` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » | `docs/design/audits/ui-<date>.md` |
 | `/pulse:auto-fix` | Fait passer au vert les contrôles automatiques du projet (lint, types, formatage…), via des agents en parallèle | code corrigé |
+| `/pulse:test [lancer | ecrire <US-003>]` | Lance les tests automatiques et explique chaque échec, ou écrit les tests d'un code déjà fait à partir des scénarios de la spec | tests, échecs expliqués |
 | `/pulse:fix` | Corriger une erreur précise (message, console, « le bouton ne marche pas ») : cause d'abord, correction minimale, preuve, explication | code corrigé |
 | `/pulse:annuler [T3 \| US-003]` | Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération | un commit d'annulation, ou une mise de côté |
 | `/pulse:get-help ["…"]` | Quand Pulse bloque : prépare une demande d'aide claire et sans secret (message court et fiche complète) et indique où la poser | `docs/aide/demande-<date>-<sujet>.md` |
@@ -54,8 +55,9 @@ Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se reg
 | `/pulse:implement`, `/pulse:spirc` | `-w` | dans un worktree |
 | `/pulse:spirc` | `-a` | autonome : sans les points de validation, constats corrigés seuls (Critique à Moyenne ; Basse confrontés au code), test manuel regroupé à la fin du plan |
 | `/pulse:spirc` | `-x` | examen renforcé : audit de sécurité à chaque tâche |
+| `/pulse:implement`, `/pulse:spirc` | `-t` | tests d'abord : les tests de chaque tâche sont écrits avant le code (agent test-writer), puis lancés et triés (agent test-runner) |
 
-Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus les questions de rythme et d'examen.
+Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus les questions de rythme et d'examen ; la question des tests se pose tant que `-t` est absent.
 
 ## Ce que le plugin contient en plus des commandes
 
@@ -64,6 +66,8 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
 - **La reprise du travail en cours** : une décision en attente est notée dans `aidd_docs/tasks/in-progress.md` et rappelée à l'ouverture de la session suivante, même après `/clear`.
 - **Des agents spécialisés**, chacun dans son rôle :
   - `pulse:explorer` rassemble les faits utiles à une demande (lecture seule) ;
+  - `pulse:test-writer` écrit les tests d'une tâche à partir des scénarios de la spec, avant le code (option `-t`) ou sur du code existant (`/pulse:test ecrire`), sans toucher au code ;
+  - `pulse:test-runner` lance les tests, trie chaque échec (code, test, environnement, instabilité) et juge la qualité des tests (lecture seule) ;
   - `pulse:implementer` réalise une tâche validée, sans toucher aux documents ni commiter (utilisé par `/pulse:spirc` et par `/pulse:implement` en mode sous-agent) ;
   - `pulse:reviewer` relit une tâche : critères, sécurité et adéquation au besoin (lecture seule) ;
   - `pulse:verifier` prouve que la tâche fonctionne, critère par critère, et prépare le test manuel (lecture seule) ;
@@ -73,6 +77,7 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
   - `pulse:memory-compactor` resserre et remet à jour la mémoire quand elle atteint 95 % de sa limite, pour `/pulse:memory compacter` (écrit seulement dans `aidd_docs/memory/`) ;
   - `pulse:fixer` corrige une liste précise d'erreurs dans 5 fichiers au plus (utilisé par `/pulse:auto-fix`).
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.
+- **Des tests automatiques, si vous le souhaitez** : chaque spec décrit le comportement attendu en scénarios lisibles (format Gherkin) ; avec l'option `-t`, un agent écrit les tests avant le code, un autre les lance et dit qui doit corriger quoi. La méthode, agnostique, se lit avec `pulse-aidd tests`.
 - **Des références de qualité du code**, agnostiques, chargées à chaque implémentation et relecture (`pulse-aidd qualite`) : clean code, organisation des fichiers, composants d'interface, sécurité du code. `code-concepts` (odeurs de code, SOLID, refactorings) se consulte à la demande, pendant une relecture ou un refactoring.
 - **Une mémoire projet** (`aidd_docs/memory/`) : vision, choix techniques, pièges, glossaire du métier et décisions. Un hook l'injecte dans `CLAUDE.md` à l'ouverture de chaque session : l'IA la relit automatiquement, sans tout redécouvrir.
 - **Le dépôt distant et l'envoi** : `/pulse:init` propose de relier le projet à un dépôt distant (en créer un privé, ou relier un existant). Chaque plan choisit ensuite comment envoyer ses tâches : une branche par US avec une demande de fusion en brouillon mise à jour à chaque tâche (recommandé), directement sur la branche principale, ou rien.
@@ -119,15 +124,16 @@ Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin up
 ```
 .claude-plugin/marketplace.json   catalogue (marketplace « pulseia »)
 .claude-plugin/plugin.json        manifeste du plugin
-skills/<commande>/SKILL.md        les 24 commandes
-agents/                           explorer, implementer, reviewer, verifier, security-auditor, designer, ui-critic, fixer, memory-compactor
+skills/<commande>/SKILL.md        les 27 commandes
+agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, fixer, memory-compactor
 hooks/hooks.json                  garde-fou anti-secrets, synchronisation de la mémoire, registre des sessions, régénération du guide
 scripts/                          garde-secrets.js, motifs.js, memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
 bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI)
 references/                       règles communes, aide au choix technique, checklist sécurité, mémoire,
                                   qualite/ (références de qualité du code), securite/ (actions de /pulse:security),
                                   design/ (références d'interface de /pulse:ui), pedagogie.md (/pulse:learn),
-                                  git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle)
+                                  git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle),
+                                  tests/ (stratégie de tests, Gherkin, TDD), tests-automatiques.md (option -t)
 templates/                        modèles de documents et de fichiers projet
 tests/                            tests (node --test tests/*.test.js)
 docs/                             documentation

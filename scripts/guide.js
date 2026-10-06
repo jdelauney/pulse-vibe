@@ -306,6 +306,7 @@ function ecrirePlan(plan, nom) {
     ...(dejaEnLigne ? [] : ["- 🔵 Mettre la nouvelle version en ligne (une fois le MVP en ligne) : `/pulse:deploy`"]),
     "- ⚪ Contrôle de sécurité rapide : `/pulse:security rapide` (ou l'audit complet : `/pulse:security`)",
     "- ⚪ Erreurs rouges dans le code : `/pulse:auto-fix`",
+    "- ⚪ Lancer les tests automatiques (s'il y en a) : `/pulse:test`",
     "- ⚪ Vérifier que la mémoire du projet est à jour : `/pulse:memory actualiser`",
     "",
   );

@@ -9,6 +9,17 @@
 |---|---|---|
 | | ✅ / ❌ / ❓ à tester à la main | |
 
+## Tests automatiques
+
+<!-- Seulement avec les tests d'abord (option -t) ; sinon supprimer cette section, avec ce commentaire. Verdicts et tableaux du test-runner. -->
+
+- **Rouge** : {{🔴 Rouge confirmé · n tests}}
+- **Vert** : {{✅ Vert · n réussis · tests figés intacts}}
+
+| Critère | Tests | Résultat |
+|---|---|---|
+| | | ✅ / ❌ / non couvert |
+
 ## Sécurité
 
 | Point | Résultat | Détail |

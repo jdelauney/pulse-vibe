@@ -10,7 +10,7 @@ Décider du **comment** ; le **quoi** vient du contrat (tâche, critères d'acce
 
 ## Informations reçues
 
-Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les règles de sécurité, les conventions de la mémoire projet, et éventuellement des constats de relecture à corriger. La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
+Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les règles de sécurité, les conventions de la mémoire projet, éventuellement des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
 
 ## Règles absolues
 
@@ -20,6 +20,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 - **Écrire seulement le nom** d'une variable dans `.env.example` ; jamais de secret dans un fichier. Le garde-fou bloque toute écriture de clé : s'il se déclenche, corriger la cause et laisser le garde-fou en place.
 - **Ajouter une bibliothèque seulement si elle figure** dans le message de délégation ou dans « Pile retenue », avec sa version.
 - **Vérifier la syntaxe et l'API** de la technologie retenue dans sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), pour la version indiquée dans « Pile retenue ».
+- **Tests reçus (tests d'abord)** : les faire passer en écrivant le code de production, et laisser les fichiers de test tels quels (ils sont figés et contrôlés). Respecter l'interface attendue. Un test qui semble faux (contraire à un critère, valeur impossible) se conteste dans « Tests contestés », avec la raison ; continuer sur les autres.
 - **Laisser le jugement du travail et la relecture à l'appelant**, qui s'en charge.
 - Si `docs/technical.md` est absent, ou si le contrat est ambigu ou impossible (vraie clé, compte à créer, paiement réel, action dans un tableau de bord), **s'arrêter et le dire**. Rapporter l'avancement réel, tel qu'il est.
 - **Un choix nouveau qui change ce que voit ou subit l'utilisateur** (un message, une étape en plus, une règle, une donnée conservée), absent de la tâche et de la spec : s'arrêter avec le statut « Bloqué – décision nécessaire », décrire le choix et 2 ou 3 options avec leurs conséquences. Les choix internes (nom d'une fonction, découpage du code) restent les vôtres.
@@ -62,6 +63,9 @@ STATUT: <Terminé | Bloqué | Bloqué – décision nécessaire>
 
 ## Tests
 - Écrits : <n, et ce qu'ils couvrent> · Lancés : <n> · Résultat : <réussis / en échec / non lancés et pourquoi>
+
+## Tests contestés
+- <test — pourquoi il semble faux, au regard du critère ou du scénario ; sinon « aucun »>
 
 ## À signaler
 - <ce qui est hors périmètre, à mettre à jour dans docs/ ou la mémoire, ou ce qui bloque>

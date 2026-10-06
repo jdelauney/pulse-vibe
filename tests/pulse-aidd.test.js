@@ -127,3 +127,42 @@ test("travail-fini : efface le travail en cours du dossier courant, sans erreur 
   r = spawnSync("bash", [outil, "travail-fini"], { cwd: d, encoding: "utf8" });
   assert.strictEqual(r.status, 0, r.stderr);
 });
+
+test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
+  const r = lancer("tests");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of [
+    "===== Stratégie de tests =====",
+    "===== Écrire un test =====",
+    "===== Tests unitaires =====",
+    "===== Tests d'intégration =====",
+    "===== Tests de bout en bout =====",
+    "===== Développement piloté par les tests (TDD) =====",
+    "===== Scénarios Gherkin =====",
+  ]) assert.ok(r.stdout.includes(titre), titre);
+});
+
+test("contexte implement, spirc et test : la procédure des tests automatiques", () => {
+  for (const commande of ["implement", "spirc", "test"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Tests automatiques : tests d'abord ====="), commande);
+    assert.doesNotMatch(r.stdout, /commande inconnue/);
+  }
+});
+
+test("contexte spec : Gherkin ; contexte plan : stratégie de tests", () => {
+  assert.ok(lancer("contexte", "spec").stdout.includes("===== Scénarios Gherkin ====="));
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Stratégie de tests ====="));
+});
+
+test("agents test-writer et test-runner disponibles, et cités dans le message d'erreur", () => {
+  for (const nom of ["test-writer", "test-runner"]) {
+    const r = lancer("agent", nom);
+    assert.strictEqual(r.status, 0, nom);
+    assert.match(r.stdout, new RegExp(`name: ${nom}`));
+  }
+  const inconnu = lancer("agent", "inexistant");
+  assert.match(inconnu.stdout, /test-writer/);
+  assert.match(inconnu.stdout, /test-runner/);
+});

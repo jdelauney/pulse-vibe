@@ -34,6 +34,7 @@ flowchart LR
   - Dépend de : {{Tn, ou « — »}}
   - Fichiers : {{à créer : … · à modifier : …}}
   - Vérification : US-{{XXX}} critère {{n}} – {{ce qu'on fait et ce qu'on doit voir}}
+  - Tests : {{scénarios de la spec réalisés par la tâche et leur niveau, ex. « Facture échue hier et non payée : elle est en retard » (unitaire) ; ou « aucun »}}
   - Attention : {{point délicat de la tâche (cas limite, donnée partagée, règle d'accès) ; sinon supprimer cette ligne}}
   - Action manuelle : {{seulement si la personne doit agir elle-même, ex. appliquer un schéma dans la console du fournisseur, saisir une variable chez l'hébergeur ; sinon supprimer cette ligne}}
 

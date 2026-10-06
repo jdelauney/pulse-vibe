@@ -23,6 +23,7 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 - `-s` **via sous-agent** : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
 - `-d` **directe** : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
 - `-w` **worktree** : travailler dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
+- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord » ci-dessus).
 
 ## Objectif
 
@@ -41,11 +42,12 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 ### 0. Choisir la façon de travailler
 
 - **Mode** : sans `-s` ni `-d`, demander (AskUserQuestion, question « Comment réaliser la tâche ? ») : « 1. Implémentation via sous-agent (Recommandé) » (un assistant spécialisé code dans son propre contexte, la conversation reste légère) / « 2. Implémentation directe » (je code ici, vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
+- **Tests** : sans `-t`, appliquer « 2. Choisir au démarrage » de la référence « Tests automatiques » ; la question se pose **dans le même appel** AskUserQuestion que le mode.
 - **Worktree** : sans `-w`, appliquer « 1. Faut-il un worktree ? » de la référence worktree ; si la question se pose, la poser **dans le même appel** AskUserQuestion que le mode.
 - **Envoi** : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (question posée dans le même appel AskUserQuestion que le mode et le worktree, seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir »), puis préparer la branche si le mode est PR.
 - **Avec un worktree** : le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans le worktree.
 
-Annoncer le choix en une ligne (« Mode : sous-agent · dans le worktree `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+Annoncer le choix en une ligne (« Mode : sous-agent · tests d'abord · dans le worktree `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ### 1. Choisir la ou les tâches
 
@@ -62,6 +64,8 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 « **T3 – Titre**. Je vais : … (2 à 4 puces). Fichiers concernés : … »
 
 ### 3. Réaliser
+
+**Tests d'abord** : appliquer d'abord « Rouge : écrire les tests » (§ 4 de la référence « Tests automatiques »), dans les deux modes ; puis réaliser comme ci-dessous, en ajoutant à la délégation (ou à vos propres consignes en mode direct) ce que prévoit son étape 4 : fichiers de test, interface attendue, tests figés.
 
 **Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (qualité avec `pulse-aidd qualite`, documentation officielle, s'appuyer sur le code réel, sécurité, contrôles automatiques). Le sous-agent travaille sans les fichiers du plugin : tout recopier. À son retour :
 - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse ;
@@ -88,6 +92,8 @@ Consignes de réalisation (pour les deux modes) :
 
 ### 4. Vérifier vous-même
 
+**Tests d'abord** : appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques », jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles.
+
 Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
 
 ### 5. Expliquer
@@ -109,7 +115,7 @@ Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
 2. **Relire** : lancer `pulse-aidd etape review` et appliquer sa section « Déroulé » à l'identique pour cette tâche, **hors** son bloc de fin de commande : relecture indépendante par le sous-agent `pulse:reviewer`, rapport `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md`, présentation du verdict, **test manuel par la personne**.
-3. **Corriger** : appliquer l'étape « Corriger » de la relecture (constats Critique, Haute et Moyenne, constats Basse confrontés au code, test non concluant : règles communes § 6), avec la relecture de contrôle. En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un constat Critique persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
+3. **Corriger** : appliquer l'étape « Corriger » de la relecture (constats Critique, Haute et Moyenne, constats Basse confrontés au code, test non concluant : règles communes § 6), avec la relecture de contrôle. En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. Avec les tests d'abord, la relecture de contrôle inclut le test-runner en phase « vert attendu ». **Deux cycles au maximum** : si un constat Critique persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
 4. **Commiter** : lancer `pulse-aidd etape commit` et appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : la relecture est faite, passer directement au commit.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 

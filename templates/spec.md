@@ -74,13 +74,30 @@ erDiagram
 |---|---|---|
 | | | |
 
-## 7. Services externes
+## 7. Scénarios
+
+> Le comportement attendu, en exemples concrets, au format Gherkin (référence « Scénarios Gherkin »). Chaque critère d'acceptation de l'US est illustré par au moins un exemple. Ils servent au test manuel et, si le projet a des tests automatiques, à l'écriture des tests.
+
+```gherkin
+# language: fr
+Fonctionnalité: {{titre de l'US}}
+
+  Règle: {{règle métier de l'US, en une phrase vraie}}
+
+    @US-{{XXX}}-1 @{{unitaire | integration | bout-en-bout | manuel}}
+    Exemple: {{situation : résultat attendu}}
+      Étant donné {{situation de départ, avec des données fictives du domaine}}
+      Quand {{action, une seule}}
+      Alors {{résultat visible}}
+```
+
+## 8. Services externes
 
 | Service | Usage | Clé nécessaire ? | Où est la clé |
 |---|---|---|---|
 | | | | |
 
-## 8. Données et sécurité (obligatoire)
+## 9. Données et sécurité (obligatoire)
 
 1. **Quelles données personnelles je stocke ?** {{liste, ou « aucune »}} — Sont-elles toutes nécessaires ?
 2. **Qui a le droit de voir quoi ?** {{par rôle d'utilisateur}}
@@ -89,7 +106,7 @@ erDiagram
 
 Points de la checklist sécurité qui s'appliquent : {{identifiants de la checklist}}
 
-## 9. Ajouts proposés par Pulse
+## 10. Ajouts proposés par Pulse
 
 Ce que cette spec ajoute au-delà de l'US et du PRD. Chaque ligne est validée par la personne ; une ligne « exigé par la sécurité » est expliquée et reste en place.
 
@@ -97,7 +114,7 @@ Ce que cette spec ajoute au-delà de l'US et du PRD. Chaque ligne est validée p
 |---|---|---|---|
 | {{ex. mots de passe}} | {{ex. les enregistrer sous une forme illisible (hachage)}} | {{ex. une fuite de la base ne révélerait aucun mot de passe}} | {{accepté · refusé · exigé par la sécurité}} |
 
-## 10. Fichiers
+## 11. Fichiers
 
 Organisation générale : voir « Organisation des fichiers » dans `docs/technical.md`.
 
@@ -105,27 +122,27 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 |---|---|---|---|
 | | | | |
 
-## 11. Vérifications
+## 12. Vérifications
 
 | Ce qu'on vérifie | Comment | US / critère |
 |---|---|---|
-| {{chaque critère d'acceptation de l'US}} | à la main | US-{{XXX}} #1 |
+| {{chaque critère d'acceptation de l'US}} | scénarios `@US-{{XXX}}-1` : test automatique si « Tester » existe dans `docs/technical.md`, sinon à la main | US-{{XXX}} #1 |
 | Un utilisateur non autorisé ne voit pas les données d'un autre | à la main, avec deux comptes (sans objet si une seule personne) | |
 | Un formulaire mal rempli affiche un message clair | à la main | |
 | L'écran reste utilisable sur téléphone | à la main | |
-| {{règle métier délicate}} | {{test automatique, si la pile en prévoit}} | |
+| {{règle métier délicate}} | scénarios de la règle, en test automatique si « Tester » existe | |
 
-## 12. Points d'attention
+## 13. Points d'attention
 
 | Risque | Conséquence | Ce qu'on prévoit |
 |---|---|---|
 | {{ou « aucun identifié »}} | | |
 
-## 13. Questions ouvertes
+## 14. Questions ouvertes
 
 - {{questions à trancher par la personne avant le plan, ou « aucune »}}
 
-## 14. Définition de « terminé »
+## 15. Définition de « terminé »
 
 Une tâche est terminée quand :
 - ses critères d'acceptation sont vérifiés à la main par la personne ;

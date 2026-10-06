@@ -39,6 +39,7 @@
 | Code serveur (ou aucun) | | | |
 | Hébergement | | | |
 | Services externes | | | |
+| Tests automatiques | {{outil unitaire et intégration ; bout en bout : outil ou « aucun »}} | | |
 
 ## Comment les pièces s'assemblent
 

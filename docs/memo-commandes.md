@@ -61,6 +61,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:security` | « Mon appli est-elle bien protégée ? » (`rapide` pour un contrôle en 2 minutes) |
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » |
 | `/pulse:auto-fix` | « Il y a des erreurs rouges dans le code » |
+| `/pulse:test` | « Mes tests automatiques passent-ils ? » (`ecrire US-003` : ajouter les tests d'un code déjà fait) |
 | `/pulse:fix "…"` | « J'ai une erreur » ou « ce bouton ne marche pas » |
 | `/pulse:annuler` | « Je veux revenir en arrière » : rien n'est perdu, tout se récupère |
 | `/pulse:get-help` | « Je suis bloqué » : une demande d'aide prête à envoyer, sans vos secrets |

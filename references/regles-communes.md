@@ -70,6 +70,7 @@ Dans le projet de la personne :
 
 Les modèles de ces fichiers sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
 La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite` (elles sont aussi incluses dans `pulse-aidd contexte implement`).
+La méthode de tests (stratégie, écriture, niveaux, TDD, scénarios Gherkin) s'affiche avec `pulse-aidd tests` ; la procédure des tests d'abord (option `-t`) avec `pulse-aidd reference tests-automatiques.md`.
 Les conventions Git (commits, branches, demandes de fusion) s'affichent avec `pulse-aidd reference git.md`.
 La checklist sécurité s'affiche avec `pulse-aidd reference checklist-securite.md`.
 La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `pulse-aidd reference choix-techniques.md`.
@@ -129,11 +130,11 @@ Une ligne par critère ; une rubrique vide s'écrit « aucun ». Un test écrit 
 Les étapes entre parenthèses sont facultatives. Pour travailler sur une branche : `/pulse:pr branche <US-XXX>` avant `/pulse:implement`, puis `/pulse:pr` pour ouvrir la demande de fusion.
 
 `/pulse:spirc <US-XXX> [tâche | "demande"]` orchestre Implémentation, Revue et Commit du plan d'une US avec des agents indépendants (et crée la spec et le plan s'ils manquent) ; il accepte aussi une demande libre (« ajouter un filtre… »), ajoutée au plan.
-`/pulse:init` (préparer et mettre à niveau), `/pulse:status` (où en suis-je ?), `/pulse:guide` (les prochaines commandes), `/pulse:fix`, `/pulse:annuler` (revenir en arrière sans rien perdre), `/pulse:get-help` (préparer une demande d'aide), `/pulse:refine`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:memory`, `/pulse:auto-fix` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.
+`/pulse:init` (préparer et mettre à niveau), `/pulse:status` (où en suis-je ?), `/pulse:guide` (les prochaines commandes), `/pulse:fix`, `/pulse:annuler` (revenir en arrière sans rien perdre), `/pulse:get-help` (préparer une demande d'aide), `/pulse:refine`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:memory`, `/pulse:auto-fix`, `/pulse:test` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.
 
 ## 6. Les constats de relecture
 
-Chaque constat d'une relecture (`pulse:reviewer`, `pulse:verifier`, `pulse:security-auditor`) a une gravité : 🔴 **Critique**, 🟠 **Haute**, 🟡 **Moyenne** ou 🔵 **Basse**. Un critère ❌ du verifier, un test manuel non concluant ou un ⛔ de l'audit de sécurité comptent comme Critique ; un ⚠️ de l'audit de sécurité compte comme Moyenne.
+Chaque constat d'une relecture (`pulse:reviewer`, `pulse:verifier`, `pulse:security-auditor`, `pulse:test-runner`) a une gravité : 🔴 **Critique**, 🟠 **Haute**, 🟡 **Moyenne** ou 🔵 **Basse**. Un critère ❌ du verifier, un échec ❌ du test-runner, un test manuel non concluant ou un ⛔ de l'audit de sécurité comptent comme Critique ; un ⚠️ de l'audit de sécurité compte comme Moyenne.
 
 | Gravité | Traitement |
 |---|---|
