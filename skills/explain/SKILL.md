@@ -15,7 +15,7 @@ Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. 
 
 Ce qu'il faut expliquer : `$ARGUMENTS`
 
-Cette commande **ne modifie aucun fichier**. Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
+Cette commande **travaille en lecture seule**. Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
 
 ## Choisir la cible
 
@@ -35,7 +35,7 @@ Cette commande **ne modifie aucun fichier**. Son but : apprendre à **lire** le 
    - tableau, objet (une liste, une fiche avec des champs) ;
    - stockage des données (un carnet où l'appli range ce qu'elle doit retenir) ;
    - requête et attente de la réponse (demander quelque chose à un serveur et attendre qu'il réponde).
-4. Si un problème de sécurité ou un bug est repéré au passage, le signaler en une ligne, sans corriger, et proposer `/pulse:review`.
+4. Si un problème de sécurité ou un bug est repéré au passage, le signaler en une ligne, laisser le code tel quel et proposer `/pulse:review`.
 
 ## Pour finir
 

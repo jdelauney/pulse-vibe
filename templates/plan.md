@@ -2,7 +2,7 @@
 
 > Produit par `/pulse:plan` le {{DATE}} à partir de `SPEC-US-{{XXX}}-{{nom}}.md` (même dossier).
 > Un plan par spec, donc par user story. Numéros de tâche uniques dans tout le projet : ce plan reprend après le plus grand `Tn` des autres plans de `aidd_docs/tasks/`.
-> La tâche « Mettre en ligne le MVP » n'existe que dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
+> La tâche « Mettre en ligne le MVP » figure uniquement dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
 > Statuts : `[ ]` à faire · `[~]` en cours · `[x]` terminé. C'est notre tableau **kanban**.
 > Chaque tâche est petite (une seule chose visible à tester) et livre de la valeur (découpage vertical).
 

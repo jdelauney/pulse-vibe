@@ -19,7 +19,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Options
 
-Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` équivaut à `-s -w` (l'ordre des lettres ne compte pas : `-ws` aussi). Une lettre inconnue : la signaler et demander ce que la personne voulait, sans l'ignorer en silence. `-s` et `-d` ensemble se contredisent : demander lequel garder.
+Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` équivaut à `-s -w` (l'ordre des lettres ne compte pas : `-ws` aussi). Une lettre inconnue : toujours la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
 - `-s` **via sous-agent** : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
 - `-d` **directe** : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
 - `-w` **worktree** : travailler dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
@@ -32,8 +32,8 @@ Placées avant l'US. **Regroupables** : chaque lettre est une option, et `-sw` �
 ## Prérequis
 
 - **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
-- La spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : ne rien installer ni coder, proposer `/pulse:tech`.
-- Si des modifications non enregistrées concernent **une autre tâche** (`git status`), proposer d'abord `/pulse:review` puis `/pulse:commit` pour celle-ci. Ne pas mélanger deux tâches dans un même commit.
+- La spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : proposer `/pulse:tech`, et attendre le choix de la pile pour installer ou coder.
+- Si des modifications non enregistrées concernent **une autre tâche** (`git status`), proposer d'abord `/pulse:review` puis `/pulse:commit` pour celle-ci. Un commit = une seule tâche.
 - Mode « tout le plan » : le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.
 
 ## Déroulé
@@ -53,8 +53,8 @@ Annoncer le choix en une ligne (« Mode : sous-agent · dans le worktree `us-003
 - **Sans tâche** : toutes les tâches `[~]` puis `[ ]` du plan, dans l'ordre du plan. Annoncer la liste en une ligne (« Je vais réaliser T3, T4 et T5, l'une après l'autre : chacune sera relue, corrigée et enregistrée avant de passer à la suivante. »), puis appliquer la boucle du § 6.
 
 Si toutes les tâches du plan sont `[x]` : féliciter la personne et proposer `/pulse:deploy`.
-Une tâche « Mettre en ligne… » ne se réalise pas ici : s'arrêter avant elle et indiquer qu'elle se fait avec `/pulse:deploy`.
-Si une tâche bloque (question de besoin, action manuelle non faite, contrôle automatique qui reste en échec) : s'arrêter là, sans passer à la suivante, et l'expliquer.
+Une tâche « Mettre en ligne… » se réalise avec `/pulse:deploy` : s'arrêter avant elle et l'indiquer.
+Si une tâche bloque (question de besoin, action manuelle en attente, contrôle automatique qui reste en échec) : s'arrêter sur cette tâche et l'expliquer.
 
 ### 2. Annoncer
 
@@ -63,7 +63,7 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 
 ### 3. Réaliser
 
-**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (qualité avec `pulse-aidd qualite`, documentation officielle, ne rien supposer du code, sécurité, contrôles automatiques). Le sous-agent n'a pas accès aux fichiers du plugin : tout recopier. À son retour :
+**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (qualité avec `pulse-aidd qualite`, documentation officielle, s'appuyer sur le code réel, sécurité, contrôles automatiques). Le sous-agent travaille sans les fichiers du plugin : tout recopier. À son retour :
 - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse ;
 - **Bloqué** sur une action manuelle (schéma à appliquer dans une console, compte à créer, variable à saisir chez l'hébergeur, clé secrète à écrire dans le fichier local) : guider la personne pas à pas, puis relancer ;
 - **Terminé** : lire son rapport et les changements (`git diff`, `git status`), puis passer à l'étape 4. Les points « À signaler » sur `docs/` sont traités ici (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
@@ -73,31 +73,31 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 Consignes de réalisation (pour les deux modes) :
 
 - Relire la tâche, les critères de l'US qu'elle couvre (fichier `US-XXX-<nom>.md`), et les parties utiles de la spec du plan.
-- **Ne rien supposer du code** : créer ou modifier les fichiers listés par la tâche, à l'emplacement prévu par l'organisation de `docs/technical.md` ; avant d'importer un module, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer dans cette tâche et le signaler. Dans un projet existant, réutiliser ce qui existe au lieu de le dupliquer.
-- Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la spec cite une maquette, l'ouvrir et la **traduire** dans la pile retenue : ne pas copier son HTML tel quel.
-- Coder **uniquement** ce que demande la tâche. Une idée en plus se note dans `docs/prd.md` (« En attente »), elle ne se code pas.
+- **S'appuyer sur le code réel** : créer ou modifier les fichiers listés par la tâche, à l'emplacement prévu par l'organisation de `docs/technical.md` ; avant d'importer un module, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer dans cette tâche et le signaler. Dans un projet existant, réutiliser ce qui existe au lieu de le dupliquer.
+- Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la spec cite une maquette, l'ouvrir et la **traduire** dans la pile retenue : son HTML sert de modèle, à réécrire.
+- Coder **uniquement** ce que demande la tâche. Une idée en plus se note dans `docs/prd.md` (« En attente »), pour plus tard.
 - Respecter « Pile retenue » de `docs/technical.md` (résumée dans le bloc « Pile technique » de `CLAUDE.md`) et **les références de qualité** (`pulse-aidd qualite` : clean code, composants, sécurité du code, concepts) : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
-- **Documentation officielle** : pour toute API, forme du code ou configuration de la technologie retenue, consulter sa documentation officielle, à la version indiquée dans « Pile retenue » (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Ne jamais deviner une API.
-- Sécurité, toujours : les données saisies sont affichées comme du texte, jamais interprétées comme du code ; aucun secret dans le code ; validation des champs côté serveur quand il y en a un ; messages d'erreur compréhensibles.
+- **Documentation officielle** : pour toute API, forme du code ou configuration de la technologie retenue, consulter sa documentation officielle, à la version indiquée dans « Pile retenue » (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Vérifier chaque API, plutôt que la deviner.
+- Sécurité, toujours : les données saisies sont affichées comme du texte, jamais interprétées comme du code ; les secrets restent hors du code ; validation des champs côté serveur quand il y en a un ; messages d'erreur compréhensibles.
 - Données et contrôle d'accès, selon « Données et contrôle d'accès » de `docs/technical.md` :
   - le schéma et les règles d'accès vont à l'emplacement prévu par « Organisation des fichiers » ; si leur application demande une action dans la console du fournisseur, guider la personne pas à pas ;
   - le contrôle d'accès est vérifié là où le prévoit cette section (côté serveur ou dans la base), jamais seulement dans l'interface ;
-  - une valeur publique par conception peut être donnée par la personne ; une **clé secrète** ne doit jamais être transmise : la personne l'écrit elle-même dans le fichier local prévu par « Secrets et variables d'environnement », puis ajouter seulement le **nom** de la variable dans `.env.example`.
+  - une valeur publique par conception peut être donnée par la personne ; une **clé secrète** reste chez la personne, jamais transmise : elle l'écrit elle-même dans le fichier local prévu par « Secrets et variables d'environnement », puis ajouter seulement le **nom** de la variable dans `.env.example`.
 - Ajouter une bibliothèque uniquement après accord, avec une version fixée.
 
 ### 4. Vérifier vous-même
 
-Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, sans se fier à son seul rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, sans en inventer). Corriger avant de rendre la main (s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère ne peut être vérifié qu'en cliquant, l'inclure dans le test manuel.
+Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
 
 ### 5. Expliquer
 
-Présenter, sans jargon inexpliqué :
+Présenter, en expliquant chaque terme technique :
 
 1. **Ce qui a changé** : un fichier par ligne, avec son rôle.
 2. **💡 La notion du jour** : choisir **une** notion de programmation présente dans le code écrit (variable, constante, condition, boucle, fonction, événement, tableau, objet, stockage, requête, attente d'une réponse…). Montrer un extrait de 3 à 8 lignes et l'expliquer simplement, ligne par ligne si besoin.
 3. **🧪 À vous de tester** : les étapes du test manuel, issues des critères d'acceptation, avec des données réalistes. Indiquer comment ouvrir l'appli : la commande « lancer en local » de « Commandes du projet » (`docs/technical.md`), et l'adresse ou l'écran qu'elle affiche.
 
-La tâche **reste `[~]`** : elle ne sera terminée qu'après relecture et commit.
+La tâche **reste `[~]`** : elle sera terminée après relecture et commit.
 
 Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pour une relecture indépendante, puis `/pulse:commit`. Dans un worktree, la session y reste : la relecture et le commit s'y font aussi ; une fois le plan terminé, `/pulse:commit` propose de rassembler le travail.
 
@@ -106,9 +106,9 @@ Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `
 Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
-2. **Relire** : lancer `pulse-aidd etape review` et appliquer sa section « Déroulé » à l'identique pour cette tâche, **sans** son bloc de fin de commande : relecture indépendante par le sous-agent `pulse:reviewer`, rapport `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md`, présentation du verdict, **test manuel par la personne**.
+2. **Relire** : lancer `pulse-aidd etape review` et appliquer sa section « Déroulé » à l'identique pour cette tâche, **hors** son bloc de fin de commande : relecture indépendante par le sous-agent `pulse:reviewer`, rapport `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md`, présentation du verdict, **test manuel par la personne**.
 3. **Corriger** : appliquer l'étape « Corriger » de la relecture (⛔, ⚠️, test non concluant), avec la relecture de contrôle. En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un point bloquant persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et conseiller de demander de l'aide à une personne qui sait programmer.
-4. **Commiter** : lancer `pulse-aidd etape commit` et appliquer sa section « Déroulé » à l'identique, **sans** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : ne pas redemander de relecture.
+4. **Commiter** : lancer `pulse-aidd etape commit` et appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : la relecture est faite, passer directement au commit.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 
 S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` qui a déjà un rapport reprend à la correction ou au commit).
@@ -123,4 +123,4 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 
 **Dans un worktree** : quand le plan est terminé, ou si la personne s'arrête, appliquer « 3. Terminer : rassembler le travail » de la référence worktree.
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version n'est pas en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (avec `-w` pour revenir dans le worktree gardé).
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (avec `-w` pour revenir dans le worktree gardé).

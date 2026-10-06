@@ -1,6 +1,6 @@
 ## Mémoire du projet
 
-Les fichiers ci-dessous sont chargés à chaque session. Ce bloc est rempli automatiquement : ne pas le modifier à la main.
+Les fichiers ci-dessous sont chargés à chaque session. Ce bloc est rempli automatiquement à partir de `aidd_docs/memory/` : pour le changer, passez par la mémoire (`/pulse:memory`).
 
 <!-- pulse_memoire:debut -->
 <!-- pulse_memoire:fin -->

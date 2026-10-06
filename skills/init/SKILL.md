@@ -24,10 +24,10 @@ lire l'état → décider la prochaine étape → montrer l'écran → agir sur 
 ```
 
 Règles de la boucle :
-- **Guider, pas faire un cours.** Un écran court, une seule action recommandée.
-- **Ne citer que de vraies commandes** `/pulse:*`, jamais une commande inventée.
-- **Ne rien lancer sans réponse explicite** de la personne.
-- **Ne pas se fier à un état ancien** : relire l'état après chaque action.
+- **Guider, en restant bref.** Un écran court, une seule action recommandée.
+- **Citer uniquement de vraies commandes** `/pulse:*`, celles qui existent.
+- **Attendre une réponse explicite** de la personne avant de lancer quoi que ce soit.
+- **Travailler sur un état frais** : relire l'état après chaque action.
 
 ## 1. Lire l'état (sans rien afficher)
 
@@ -41,22 +41,22 @@ Règles de la boucle :
 | Mémoire branchée | `aidd_docs/memory/` contient `project.md`, `technical.md`, `glossary.md`, et `CLAUDE.md` contient `<!-- pulse_memoire:debut -->` | dossier présent mais fichier manquant, ou bloc absent |
 | Pile technique | `docs/technical.md` existe **et** le bloc `<!-- pulse_pile:debut -->` de `CLAUDE.md` n'indique plus « Pile non choisie » | marqueurs absents (projet créé avant Pulse 0.3), ou `docs/technical.md` présent alors que le bloc indique encore « Pile non choisie » |
 | Historique Git | `git rev-parse --show-toplevel` est le dossier du projet, avec au moins un commit | dossier inclus dans un autre dépôt Git, ou aucun commit |
-| Dépôt distant (facultatif) | `git remote -v` n'est pas vide, ou « Adresses » de `CLAUDE.md` indique « Dépôt distant : aucun pour l'instant » | ni l'un ni l'autre : poser la question une fois (« Le dépôt distant et l'envoi du travail », § 1) ; elle ne bloque jamais la suite |
+| Dépôt distant (facultatif) | `git remote -v` n'est pas vide, ou « Adresses » de `CLAUDE.md` indique « Dépôt distant : aucun pour l'instant » | ni l'un ni l'autre : poser la question une fois (« Le dépôt distant et l'envoi du travail », § 1) ; la suite continue quelle que soit la réponse |
 
-**Projet existant** : du code est présent (fichiers source, manifeste de dépendances, configuration d'outils, dans n'importe quel langage) sans `CLAUDE.md` Pulse. La pile ne se demande pas : elle s'observe dans le code, avec `/pulse:tech`.
+**Projet existant** : du code est présent (fichiers source, manifeste de dépendances, configuration d'outils, dans n'importe quel langage) sans `CLAUDE.md` Pulse. La pile s'observe dans le code, avec `/pulse:tech`, plutôt que de la demander.
 
-**Avancement de la méthode** (cumulatif : un document plus avancé implique les précédents) : `docs/brief.md` → `docs/prd.md` → `docs/technical.md` → `docs/user-stories.md` (le référentiel par epic) et les fichiers d'US de `aidd_docs/tasks/<epic>/` → au moins une spec (`SPEC-US-XXX-<nom>.md`) → au moins un plan (`PLAN-SPEC-US-XXX-<nom>.md` ; tâches `[ ]`, `[~]`, `[x]` par plan, et pour l'ensemble des US Indispensables, le MVP ; une spec sans plan est une étape non faite) → rapports de relecture (`aidd_docs/tasks/<epic>/revues/`) → en ligne (section « Adresses » de `CLAUDE.md`, `git remote -v`, `git status` « ahead »).
+**Avancement de la méthode** (cumulatif : un document plus avancé implique les précédents) : `docs/brief.md` → `docs/prd.md` → `docs/technical.md` → `docs/user-stories.md` (le référentiel par epic) et les fichiers d'US de `aidd_docs/tasks/<epic>/` → au moins une spec (`SPEC-US-XXX-<nom>.md`) → au moins un plan (`PLAN-SPEC-US-XXX-<nom>.md` ; tâches `[ ]`, `[~]`, `[x]` par plan, et pour l'ensemble des US Indispensables, le MVP ; une spec sans plan compte comme une étape à faire) → rapports de relecture (`aidd_docs/tasks/<epic>/revues/`) → en ligne (section « Adresses » de `CLAUDE.md`, `git remote -v`, `git status` « ahead »).
 
 **Santé** (seulement si le signal existe) : `docs/securite.md` absent alors que le MVP (toutes les US Indispensables) est terminé → `/pulse:security` ; erreurs signalées par les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) lors de la dernière session → `/pulse:auto-fix`.
 
 ## 2. Décider (la première règle qui s'applique)
 
-1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent** → prévenir sans bloquer (il fait tourner le garde-fou anti-secrets de Pulse) : https://nodejs.org (LTS).
-2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Tant qu'une fondation manque, ne pas proposer les étapes de la méthode. Exception : dans un **projet neuf**, la pile technique non encore choisie ne bloque pas ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`). Le **dépôt distant** est facultatif : la question se pose une seule fois (à la création du projet, ou à la première séance d'un projet Pulse qui n'en a pas), puis la méthode continue quelle que soit la réponse.
-3. **La première étape de la méthode non faite** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` ; identité visuelle, **facultative** → si `docs/design.md` et `docs/user-stories.md` n'existent pas encore, proposer `/pulse:ui identite` en précisant qu'elle est facultative (les user stories, specs et plans s'y conformeront), avec « Passer directement aux user stories » en alternative ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
+1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent** → prévenir et continuer (il fait tourner le garde-fou anti-secrets de Pulse) : https://nodejs.org (LTS).
+2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Proposer les étapes de la méthode une fois toutes les fondations en place. Exception : dans un **projet neuf**, la pile technique peut attendre ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`). Le **dépôt distant** est facultatif : la question se pose une seule fois (à la création du projet, ou à la première séance d'un projet Pulse qui n'en a pas), puis la méthode continue quelle que soit la réponse.
+3. **La première étape de la méthode restant à faire** : brief → `/pulse:brainstorm` ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` ; identité visuelle, **facultative** → si `docs/design.md` et `docs/user-stories.md` n'existent pas encore, proposer `/pulse:ui identite` en précisant qu'elle est facultative (les user stories, specs et plans s'y conformeront), avec « Passer directement aux user stories » en alternative ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
 4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <US-XXX>` (ou `/pulse:implement <US-XXX>`), les US Indispensables d'abord ; plan terminé et US Indispensables restantes → `/pulse:spec <US-XXX suivante du parcours>` ; MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
 5. **Un signal de santé.**
-6. **Rien à faire** : proposer `/pulse:spec <US-XXX suivante>` (US Essentielles pas encore spécifiées), `/pulse:spirc <US-XXX> "une demande"`, `/pulse:cicd` (si un dépôt distant est relié et qu'aucune CI n'existe), `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
+6. **Tout est à jour** : proposer `/pulse:spec <US-XXX suivante>` (US Essentielles à spécifier), `/pulse:spirc <US-XXX> "une demande"`, `/pulse:cicd` (si un dépôt distant est relié et qu'aucune CI n'existe), `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
 
 ## 3. Montrer l'écran
 
@@ -78,7 +78,7 @@ Votre projet :
 ```
 
 - `✅` fait · `⚠️` présent mais à reprendre (toujours avec sa cause) · `❌` manquant · l'étape en cours entre crochets.
-- Lignes courtes. Rien après la ligne « Prochaine étape ».
+- Lignes courtes. La ligne « Prochaine étape » termine l'écran.
 
 Puis demander (AskUserQuestion) : l'action recommandée en premier avec « (Recommandé) », 1 ou 2 alternatives utiles, et « M'expliquer la méthode ». La personne peut aussi répondre librement.
 
@@ -87,7 +87,7 @@ Puis demander (AskUserQuestion) : l'action recommandée en premier avec « (Reco
 ### Préparer un nouveau projet (dossier vide ou presque)
 
 1. **Git sans nom ou email** : les demander (nom affiché dans l'historique, email, qui peut être celui du compte GitHub), puis `git config --global user.name "…"` et `git config --global user.email "…"`. Expliquer : chaque version enregistrée porte le nom de son auteur.
-2. **Questions** (une ronde AskUserQuestion) : le **nom** (si l'argument est vide) ; une **description** en une phrase (facultative). Ne poser aucune question technique : la pile se choisit plus tard, avec `/pulse:tech`, une fois le besoin compris.
+2. **Questions** (une ronde AskUserQuestion) : le **nom** (si l'argument est vide) ; une **description** en une phrase (facultative). Réserver les questions techniques à plus tard : la pile se choisit avec `/pulse:tech`, une fois le besoin compris.
 3. **Créer** : lancer `pulse-aidd nouveau "<nom>" --ici --description "<description>" --oui`. Le script crée **uniquement les fichiers absents** (CLAUDE.md complet, avec un bloc Pile technique qui indique « Pile non choisie », `.gitignore`, `.env.example`, README, dossiers `docs/` et `aidd_docs/`, mémoire branchée) et fait le premier enregistrement Git. Il n'installe aucune technologie.
 4. **Lire sa sortie** et la traduire simplement. Si elle indique que le dossier fait partie d'un autre dépôt Git : expliquer le risque (les fichiers du projet finiraient dans ce dépôt) et proposer « Créer un historique propre à ce projet (Recommandé) » → `git init -b main`, puis `git add -A -- .` et `git commit -m "chore: initialisation du projet avec Pulse"`.
 5. **Dépôt distant** : appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail ».
@@ -99,7 +99,7 @@ docs/            → les documents de la méthode (brief, PRD, choix techniques,
 aidd_docs/       → la mémoire du projet (choix, glossaire, décisions), relue par l'IA à chaque session,
                    et tasks/ : un dossier par epic, avec chaque user story, sa spec et son plan
 README.md        → la présentation du projet
-.gitignore       → la liste de ce que Git ne doit jamais enregistrer (dont vos secrets)
+.gitignore       → la liste de ce que Git doit ignorer (dont vos secrets)
 .env.example     → le modèle des clés secrètes (sans les valeurs)
 ```
 
@@ -107,9 +107,9 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 ### Reprendre un projet existant (du code sans Pulse)
 
-1. Expliquer : « Votre projet a déjà du code. Je vais lui ajouter les règles et la mémoire de Pulse, sans rien remplacer. »
-2. Si `CLAUDE.md` existe **sans** Pulse : ne pas le remplacer. Montrer les sections à ajouter (Le projet, Comportement, Communication, Action, Pile technique avec ses marqueurs, Qualité du code, Sécurité, Mémoire avec ses marqueurs, Adresses, d'après le « Modèle : CLAUDE.md ») et demander l'accord avant de les ajouter. Garder les règles existantes ; signaler une contradiction au lieu de la trancher seul.
-3. Lancer `pulse-aidd nouveau "<nom>" --ici --oui --sans-git` pour créer les autres éléments manquants (il ne remplace aucun fichier existant).
+1. Expliquer : « Votre projet a déjà du code. Je vais lui ajouter les règles et la mémoire de Pulse, en gardant tout ce qui existe. »
+2. Si `CLAUDE.md` existe **sans** Pulse : le garder et le compléter. Montrer les sections à ajouter (Le projet, Comportement, Communication, Action, Pile technique avec ses marqueurs, Qualité du code, Sécurité, Mémoire avec ses marqueurs, Adresses, d'après le « Modèle : CLAUDE.md ») et demander l'accord avant de les ajouter. Garder les règles existantes ; signaler une contradiction et laisser la personne trancher.
+3. Lancer `pulse-aidd nouveau "<nom>" --ici --oui --sans-git` pour créer les autres éléments manquants (il garde tous les fichiers existants).
 4. Pas de dépôt distant : appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail ».
 5. Prochaine étape recommandée : `/pulse:memory creer` (remplir la mémoire à partir du code), puis `/pulse:tech` (documenter la pile observée dans le code).
 
@@ -117,7 +117,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 - Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
 - Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
-- **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **sans rien perdre** :
+- **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
   1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.
   2. Garder les identifiants d'US s'ils suivent déjà le format `US-001` ; sinon, proposer une correspondance (ancien → `US-XXX`) et la faire valider. La noter dans le journal de chaque plan concerné.
   3. Écrire un fichier `US-XXX-<nom>.md` par US détaillée (contenu repris tel quel, au format du modèle d'US), puis réécrire `docs/user-stories.md` en référentiel (modèle du référentiel).
@@ -127,7 +127,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 ### Lancer une étape de la méthode
 
-Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande>` (ex. `pulse-aidd etape brainstorm`), puis appliquer sa section « Déroulé » à l'identique, **sans** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
+Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande>` (ex. `pulse-aidd etape brainstorm`), puis appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
 
 Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/clear` puis lancez `<commande>` : vous repartirez avec une conversation légère. »
 

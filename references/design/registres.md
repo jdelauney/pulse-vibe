@@ -15,7 +15,7 @@ Un « registre » est la famille à laquelle appartient un écran. Chaque famill
 | Typographie | Lisibilité d'abord ; une seule famille suffit souvent | Titres avec du caractère |
 | Densité | Élevée : beaucoup d'information utile visible d'un coup | Aérée : une idée par écran défilé |
 | Mouvement | 150 à 250 ms ; le mouvement signale un changement d'état | Une seule séquence d'ouverture soignée |
-| Images | Rares et utiles | Au moins une image forte ; zéro image est un défaut, pas un choix |
+| Images | Rares et utiles | Au moins une image forte, obligatoire |
 
 ## 2. Reconnaître le registre
 
@@ -27,7 +27,7 @@ Cherchez les indices dans trois endroits.
 
 **Si l'outil a les deux**, choisissez un registre par partie (par exemple, vitrine pour la page publique, outil pour l'espace connecté) et notez-le.
 
-**Sinon, affirmez une hypothèse puis faites-la confirmer.** Ne demandez pas « quel registre voulez-vous ? » : la personne ne connaît pas le mot. Dites par exemple :
+**Sinon, affirmez une hypothèse puis faites-la confirmer.** Proposez le registre avec des mots courants plutôt que de demander « quel registre voulez-vous ? » : le mot est inconnu de la personne. Dites par exemple :
 
 > « Votre outil sert à *utiliser*, pas à *convaincre* : je pars sur le registre outil, d'accord ? »
 
@@ -48,4 +48,4 @@ Cette phrase décide ensuite :
 | Taille des cibles tactiles | Usage debout, d'une main, en mouvement : cibles grandes (au moins 44 × 44 px). |
 | Contraste | Écran regardé en plein jour ou sur un petit appareil : contraste renforcé, au-dessus du minimum de 4,5:1. |
 
-Si la phrase ne se laisse pas écrire, c'est qu'une information manque : posez la question à la personne, une à la fois.
+S'il manque une information pour écrire la phrase, posez la question à la personne, une à la fois.

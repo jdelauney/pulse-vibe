@@ -8,6 +8,6 @@ Les mots du métier de ce projet, avec une définition commune. L'IA et vous les
 
 **Mot** :
 Définition en une ou deux phrases (ce que c'est, pas ce que ça fait).
-_À éviter_ : synonymes à ne pas employer
+_À éviter_ : synonymes écartés, remplacés par ce mot
 
 Supprimer ce commentaire dès la première entrée. -->

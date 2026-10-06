@@ -1,12 +1,12 @@
 # En-têtes de sécurité (`/pulse:security entetes`)
 
-Les en-têtes de sécurité sont des consignes envoyées au navigateur avec chaque page : « n'affiche pas ce site dans un cadre », « ne charge des scripts que depuis ces adresses »… Ils limitent les dégâts d'une faille d'affichage (XSS) ou d'un site piégé.
+Les en-têtes de sécurité sont des consignes envoyées au navigateur avec chaque page : « n'affiche pas ce site dans un cadre », « charge les scripts seulement depuis ces adresses »… Ils limitent les dégâts d'une faille d'affichage (XSS) ou d'un site piégé.
 
 Concerné seulement si l'application est servie par le web. Lire d'abord « Pile retenue » et « Hébergement et mise en ligne » de `docs/technical.md`.
 
 ## 1. Repérer les sources externes (pour la CSP)
 
-La **Content-Security-Policy** (CSP) liste les adresses autorisées. Tout ce qui n'y figure pas est bloqué : il faut donc d'abord repérer ce que l'appli charge.
+La **Content-Security-Policy** (CSP) liste les adresses autorisées. Tout le reste est bloqué : il faut donc d'abord repérer ce que l'appli charge.
 
 ```bash
 git grep -n -E "https?://|wss?://" -- . ":!docs" ":!aidd_docs" ":!*.md"
@@ -23,13 +23,13 @@ Puis lire chaque résultat du code client et le classer, en ajoutant les service
 | Appels à une API, connexions en temps réel (`https://`, `wss://`) | `connect-src` |
 | Contenus intégrés dans un cadre (paiement, vidéo) | `frame-src` |
 
-Pour chaque service, vérifier dans sa documentation officielle les adresses exactes à autoriser (ne pas les deviner).
+Pour chaque service, vérifier dans sa documentation officielle les adresses exactes à autoriser, et s'en tenir à celles-ci.
 
 Présenter la liste à la personne : « Voici les services que votre appli utilise. Ils seront autorisés, tout le reste sera bloqué. »
 
 ## 2. Où configurer les en-têtes
 
-Selon la pile retenue : configuration du serveur, de l'hébergeur ou du framework. Consulter la documentation officielle de l'élément retenu (outil de documentation comme context7 s'il est disponible, sinon WebFetch) pour savoir quel fichier ou quel réglage utiliser et son écriture exacte. Un seul endroit : ne pas déclarer les mêmes en-têtes à deux endroits. Si un fichier de configuration existe déjà, le compléter sans toucher au reste.
+Selon la pile retenue : configuration du serveur, de l'hébergeur ou du framework. Consulter la documentation officielle de l'élément retenu (outil de documentation comme context7 s'il est disponible, sinon WebFetch) pour savoir quel fichier ou quel réglage utiliser et son écriture exacte. Un seul endroit : chaque en-tête est déclaré une seule fois. Si un fichier de configuration existe déjà, le compléter en laissant le reste intact.
 
 Écrire un commentaire en français au-dessus de chaque en-tête pour expliquer son rôle.
 
@@ -40,8 +40,8 @@ Selon la pile retenue : configuration du serveur, de l'hébergeur ou du framewor
 | `Content-Security-Policy` | voir ci-dessous | Seules les sources listées peuvent charger du code, des styles, des images… |
 | `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | Toujours en HTTPS (2 ans) |
 | `X-Frame-Options` | `DENY` | Interdit d'afficher le site dans un cadre (anti-clickjacking) |
-| `X-Content-Type-Options` | `nosniff` | Le navigateur ne devine pas le type des fichiers |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | N'envoie que l'origine du site aux autres sites |
+| `X-Content-Type-Options` | `nosniff` | Le navigateur respecte le type annoncé des fichiers |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Envoie seulement l'origine du site aux autres sites |
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Coupe les fonctions sensibles non utilisées |
 
 CSP de départ, directive par directive, à compléter avec les sources repérées à l'étape 1 :
@@ -61,17 +61,17 @@ CSP de départ, directive par directive, à compléter avec les sources repéré
 
 Les directives sont séparées par `; ` dans la valeur de l'en-tête.
 
-- Pas de `'unsafe-inline'` dans `script-src` si possible : le code doit être dans des fichiers séparés, pas dans des attributs d'événement ni des scripts en ligne. Si la technologie retenue injecte des scripts en ligne, chercher dans sa documentation la méthode recommandée (nonce ou empreinte) ; à défaut, accepter `'unsafe-inline'` en l'expliquant à la personne.
+- Viser un `script-src` sans `'unsafe-inline'` : le code va dans des fichiers séparés, plutôt que dans des attributs d'événement ou des scripts en ligne. Si la technologie retenue injecte des scripts en ligne, chercher dans sa documentation la méthode recommandée (nonce ou empreinte) ; à défaut, accepter `'unsafe-inline'` en l'expliquant à la personne.
 - `'unsafe-eval'` seulement si la documentation l'exige, et uniquement en développement.
 - Si l'appli utilise la géolocalisation, la caméra ou le micro, retirer la valeur correspondante de `Permissions-Policy`.
 - En développement, la commande « lancer en local » peut nécessiter une connexion locale supplémentaire (rechargement automatique) : l'autoriser seulement en développement.
-- `X-XSS-Protection` est **obsolète** (ignoré par les navigateurs récents) : ne pas l'ajouter ; la CSP le remplace.
+- `X-XSS-Protection` est **obsolète** (ignoré par les navigateurs récents) : la CSP le remplace, s'en tenir à elle.
 
 ## 4. Vérifier
 
-1. Lancer l'appli avec la commande « lancer en local » de « Commandes du projet ». Si les en-têtes sont configurés chez l'hébergeur et que l'outil local ne les applique pas, vérifier après la mise en ligne.
+1. Lancer l'appli avec la commande « lancer en local » de « Commandes du projet ». Si les en-têtes sont configurés chez l'hébergeur et que l'outil local les ignore, vérifier après la mise en ligne.
 2. `curl -sI <adresse>` : les en-têtes apparaissent dans la réponse.
-3. Ouvrir l'appli, parcourir les écrans principaux avec la console du navigateur ouverte (F12) : aucune erreur « Content Security Policy » ne doit apparaître. Sinon, ajouter la source légitime bloquée, jamais `*`.
+3. Ouvrir l'appli, parcourir les écrans principaux avec la console du navigateur ouverte (F12) : la console doit rester exempte d'erreur « Content Security Policy ». Sinon, ajouter précisément la source légitime bloquée, jamais `*`.
 4. Après la mise en ligne : https://securityheaders.com et https://csp-evaluator.withgoogle.com.
 
 ## 5. Rapport

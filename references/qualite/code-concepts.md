@@ -17,7 +17,7 @@ version: 1.2
   <principles>
 
     <principle id="KISS" name="Keep It Simple, Stupid">
-      <description>Simplicity should be a key goal in design. Avoid unnecessary complexity.</description>
+      <description>Simplicity should be a key goal in design. Keep complexity to what the problem requires.</description>
       <indicators>
         <smell>Overly clever one-liners that sacrifice readability</smell>
         <smell>Deep nesting (> 3 levels)</smell>
@@ -47,11 +47,11 @@ version: 1.2
         <action>Define constants for repeated values</action>
         <action>Use parameterization to unify similar code paths</action>
       </refactoring>
-      <caution>Don't confuse accidental duplication with true duplication - similar-looking code serving different purposes may diverge later</caution>
+      <caution>Distinguish accidental duplication from true duplication - similar-looking code serving different purposes may diverge later</caution>
     </principle>
 
     <principle id="YAGNI" name="You Ain't Gonna Need It">
-      <description>Don't add functionality until it's actually needed.</description>
+      <description>Add functionality only when it's actually needed.</description>
       <indicators>
         <smell>Unused parameters or methods</smell>
         <smell>Speculative generality (interfaces with one implementation)</smell>
@@ -61,7 +61,7 @@ version: 1.2
       <refactoring>
         <action>Remove unused code ruthlessly</action>
         <action>Eliminate unnecessary abstractions</action>
-        <action>Resist adding "nice to have" improvements</action>
+        <action>Limit changes to what is needed now, leaving "nice to have" improvements aside</action>
         <action>Keep refactoring scope strictly defined</action>
       </refactoring>
     </principle>
@@ -113,7 +113,7 @@ version: 1.2
       </principle>
 
       <principle id="ISP" name="Interface Segregation Principle">
-        <description>Clients should not depend on interfaces they don't use.</description>
+        <description>Clients should depend only on the interfaces they use.</description>
         <indicators>
           <smell>Fat interfaces with many methods</smell>
           <smell>Classes implementing interfaces with empty/stub methods</smell>
@@ -530,7 +530,7 @@ function printDetails(customer, outstanding)
         <intent>Replace a method call with the method's body</intent>
         <when>Method body is as clear as the name, or excessive indirection</when>
         <mechanics>
-          <step>1. Check method is not polymorphic</step>
+          <step>1. Check method is monomorphic (no overrides)</step>
           <step>2. Find all calls to the method</step>
           <step>3. Replace each call with method body</step>
           <step>4. Remove the method definition</step>
@@ -762,7 +762,7 @@ function getPayAmount()
       <pattern id="rename_method">
         <name>Rename Method</name>
         <intent>Change the name to better reveal its purpose</intent>
-        <guidance>Name should describe WHAT it does, not HOW</guidance>
+        <guidance>Name should describe WHAT it does, leaving HOW to the body</guidance>
       </pattern>
 
       <pattern id="introduce_parameter_object">
@@ -798,7 +798,7 @@ function amountOverdue(range)
       <pattern id="separate_query_from_modifier">
         <name>Separate Query from Modifier</name>
         <intent>Split method into query (returns value) and modifier (changes state)</intent>
-        <rule>A method should either return a value or have side effects, not both</rule>
+        <rule>A method should do exactly one of the two: return a value, or have side effects</rule>
       </pattern>
 
     </category>

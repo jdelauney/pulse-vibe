@@ -33,7 +33,7 @@
 
 ### Définition du MVP
 
-Le MVP est la plus petite version **réellement utilisable** par de vrais utilisateurs. Il contient toutes les fonctionnalités **Indispensables**, et rien d'autre.
+Le MVP est la plus petite version **réellement utilisable** par de vrais utilisateurs. Il contient toutes les fonctionnalités **Indispensables**, et elles seules.
 
 > Le MVP est atteint quand : {{phrase vérifiable}}
 
@@ -47,7 +47,7 @@ Le MVP est la plus petite version **réellement utilisable** par de vrais utilis
 
 ## 7. Hors périmètre
 
-Ce que l'outil **ne fera pas**, pour éviter les malentendus.
+Ce que l'outil **ne fera pas**, pour que chacun en ait la même idée.
 
 - …
 

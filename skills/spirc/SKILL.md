@@ -19,8 +19,8 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Lire les arguments
 
-**Options**, placées avant l'US. **Regroupables** : chaque lettre est une option, et `-axw` équivaut à `-a -x -w` (l'ordre des lettres ne compte pas). Une lettre inconnue : la signaler et demander ce que la personne voulait, sans l'ignorer en silence.
-- `-a` **autonome** : enchaîner sans les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
+**Options**, placées avant l'US. **Regroupables** : chaque lettre est une option, et `-axw` équivaut à `-a -x -w` (l'ordre des lettres ne compte pas). Une lettre inconnue : toujours la signaler et demander ce que la personne voulait.
+- `-a` **autonome** : enchaîner en sautant les points de validation ✋1 et ✋2, et corriger automatiquement tous les constats de relecture. Restent toujours : les questions de besoin, de priorité ou de périmètre, **le test manuel par la personne** et l'accord sur la mémoire.
 - `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
 - `-w` **worktree** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, le worktree est proposé (même avec `-a` : c'est une décision de la personne).
 
@@ -52,26 +52,26 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 | Prouver que ça marche | sous-agent `pulse:verifier` | modifier un fichier |
 | Audit sécurité (`-x`) | sous-agent `pulse:security-auditor` | modifier un fichier |
 
-- Les sous-agents **n'ont pas accès aux fichiers du plugin** : recopier dans chaque message de délégation les extraits utiles du contexte ci-dessus (sections utiles de `docs/technical.md`, checklist sécurité, conventions de la mémoire).
+- Les sous-agents **travaillent sans les fichiers du plugin** : recopier dans chaque message de délégation les extraits utiles du contexte ci-dessus (sections utiles de `docs/technical.md`, checklist sécurité, conventions de la mémoire).
 - Lancer **en parallèle** (plusieurs appels Agent dans le même message) les sous-agents indépendants.
-- Si un sous-agent n'est pas disponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), et le signaler. Pour la relecture, le faire dans un contexte qui n'a pas servi à écrire le code est préférable : sinon, le dire à la personne.
+- Si un sous-agent n'est pas disponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), et le signaler. Pour la relecture, la faire de préférence dans un contexte distinct de celui qui a écrit le code ; sinon, le dire à la personne.
 
 ## Prérequis
 
 - `CLAUDE.md` et un dépôt Git sont nécessaires. Sinon, proposer `/pulse:init`.
 - `docs/prd.md` est nécessaire (le périmètre MVP en dépend). S'il manque : si `docs/brief.md` existe, proposer `/pulse:prd`, sinon `/pulse:brainstorm`. S'arrêter là.
-- `docs/technical.md` est nécessaire : sinon, appliquer d'abord l'étape **tech** (même avec `-a` : le choix de la pile appartient à la personne). Avant le choix de la pile, ne rien installer ni coder.
-- Des modifications non enregistrées qui ne concernent pas la tâche à reprendre : proposer d'abord `/pulse:review` puis `/pulse:commit`. Ne jamais mélanger deux tâches dans un commit.
+- `docs/technical.md` est nécessaire : sinon, appliquer d'abord l'étape **tech** (même avec `-a` : le choix de la pile appartient à la personne). Installer et coder une fois la pile choisie.
+- Des modifications non enregistrées qui ne concernent pas la tâche à reprendre : proposer d'abord `/pulse:review` puis `/pulse:commit`. Un commit = une seule tâche.
 
 ## Comment appliquer une étape de la méthode
 
-Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <commande>`**, puis appliquer sa section « Déroulé » à l'identique (prérequis, questions, fichiers produits, garde-fous), **sans** son bloc de fin de commande.
+Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <commande>`**, puis appliquer sa section « Déroulé » à l'identique (prérequis, questions, fichiers produits, garde-fous), **hors** son bloc de fin de commande.
 
 ## [A] Analyser – seulement pour une demande libre
 
-1. **Explorer** : déléguer à `pulse:explorer` la demande, avec la consigne de rassembler les faits utiles (mémoire, US et critères liés, fichiers concernés, risques). Ne jamais demander à la personne un fait qu'il peut trouver.
+1. **Explorer** : déléguer à `pulse:explorer` la demande, avec la consigne de rassembler les faits utiles (mémoire, US et critères liés, fichiers concernés, risques). Laisser l'explorateur trouver les faits : réserver à la personne les questions qu'il ne peut pas résoudre.
 2. **Situer la demande** :
-   - **correction** d'un comportement prévu par une US : pas de nouvelle US ; la tâche ira dans le plan de **cette** US (si ce n'est pas l'US désignée, le dire et continuer avec son plan) ;
+   - **correction** d'un comportement prévu par une US : garder cette US ; la tâche ira dans le plan de **cette** US (si ce n'est pas l'US désignée, le dire et continuer avec son plan) ;
    - **précision** d'une US déjà planifiée (un critère qui manque) : ajouter le critère dans le fichier de l'US, puis la tâche dans son plan ;
    - **nouveau comportement** prévu au PRD : créer une **nouvelle US** (numéro suivant, modèle d'US) dans l'epic qui convient (la demander : AskUserQuestion, l'epic la plus proche avec « (Recommandé) », « Nouvelle epic »), écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au référentiel `docs/user-stories.md`. Elle aura sa propre spec et son propre plan : passer à § S avec cette US ;
    - **nouveau comportement hors PRD** : c'est une décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
@@ -89,7 +89,7 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 
 ## Worktree
 
-Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même avec `-a` : c'est une décision de la personne ; dans la même ronde de questions que le worktree), puis « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`) : sinon le worktree ne les aurait pas. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Sans worktree, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même avec `-a` : c'est une décision de la personne ; dans la même ronde de questions que le worktree), puis « 1. Faut-il un worktree ? » de la référence worktree, puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que le worktree les contienne. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Sans worktree, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ## [P] Planifier
 
@@ -101,12 +101,12 @@ Avant la boucle par tâche (une fois la spec et le plan écrits et validés) : a
 
 Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (un rapport existe déjà dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` : reprendre à l'examen).
 
-**Tâche « Mettre en ligne… »** : ne pas la lancer d'office, même avec `-a`. Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy`).
+**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a`. Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy`).
 
 ### [I] Implémenter
 
 1. Marquer la tâche `[~]` dans le plan. Annoncer en 3 lignes : « **T3 – Titre**. Ce qui va être fait : … »
-2. Déléguer à **`pulse:implementer`** : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les règles de sécurité (extraits du contexte), la consigne de charger **les règles de qualité** avec `pulse-aidd qualite`, de consulter la **documentation officielle** de la technologie retenue pour toute API (jamais deviner), de **ne rien supposer du code** (vérifier qu'un fichier ou module existe avant de s'en servir) et de lancer les contrôles automatiques de « Commandes du projet », les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles.
+2. Déléguer à **`pulse:implementer`** : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les règles de sécurité (extraits du contexte), la consigne de charger **les règles de qualité** avec `pulse-aidd qualite`, de consulter la **documentation officielle** de la technologie retenue pour toute API (vérifier plutôt que deviner), de **s'appuyer sur le code réel** (vérifier qu'un fichier ou module existe avant de s'en servir) et de lancer les contrôles automatiques de « Commandes du projet », les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles.
 3. À son retour :
    - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse.
    - **Bloqué** sur une action manuelle (appliquer un schéma dans la console du fournisseur, créer un compte, saisir une variable chez l'hébergeur) : guider la personne pas à pas, puis relancer.
@@ -122,18 +122,18 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
 3. **Trier les constats** :
    - **écart de besoin** (la demande elle-même est à revoir) : le présenter simplement et demander à la personne ; si elle change le contrat, mettre à jour la tâche dans le plan (et le fichier de l'US), puis reprendre à [I] ;
    - **défauts de réalisation** (⛔, ⚠️, critère ❌) : sans `-a`, demander « Tout corriger (recommandé) » / « Seulement les points bloquants » / « Je regarde d'abord » ; avec `-a`, tout corriger. Relancer `pulse:implementer` **avec la liste des constats**, puis un examen court (reviewer et verifier, en parallèle) ajouté au rapport dans `## Relecture de contrôle` ;
-   - les 💡 suggestions ne s'appliquent que si la personne le demande.
+   - les 💡 suggestions s'appliquent à la demande de la personne.
    - **Deux cycles de correction au maximum.** Si un point bloquant persiste : arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et conseiller de demander de l'aide à une personne qui sait programmer.
 4. **Le test par la personne** (toujours, même avec `-a`) : présenter en quelques lignes le verdict et les 3 points les plus importants **en langage simple**, puis les étapes du test manuel (en commençant par les critères ❓ du verifier) et comment ouvrir l'appli (la commande « lancer en local » de « Commandes du projet » de `docs/technical.md`). Demander « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, quelque chose ne va pas ». Si non : recueillir ce qui ne va pas, et le traiter comme un constat (étape 3).
 5. **💡 La notion du jour** : choisir **une** notion de programmation présente dans le code de la tâche, montrer un extrait de 3 à 8 lignes et l'expliquer simplement.
 
 ### [C] Commiter
 
-Appliquer l'étape **commit** (contrôles de sécurité, message `<type>(<Tâche>): …`, plan mis à jour en `[x]` avec sa ligne de journal). Le rapport de revue existe : ne pas redemander de relecture.
+Appliquer l'étape **commit** (contrôles de sécurité, message `<type>(<Tâche>): …`, plan mis à jour en `[x]` avec sa ligne de journal). Le rapport de revue existe : la relecture est faite, passer directement au commit.
 
 ### Mémoire
 
-Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré, une convention apparue, un mot du métier précisé, une décision (avec les 3 conditions pour un fichier de décision). S'il y a quelque chose, le proposer **en une seule question** (lignes exactes et destinations) : « Ajouter à la mémoire (recommandé) » / « Ne rien retenir ». Si accepté : écrire, lancer `pulse-aidd memoire`, et inclure ces fichiers au **commit suivant** (ou dans un commit `docs: mémoire …` si c'était la dernière tâche). Ne rien proposer s'il n'y a rien de durable.
+Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré, une convention apparue, un mot du métier précisé, une décision (avec les 3 conditions pour un fichier de décision). S'il y a quelque chose, le proposer **en une seule question** (lignes exactes et destinations) : « Ajouter à la mémoire (recommandé) » / « Garder la mémoire telle quelle ». Si accepté : écrire, lancer `pulse-aidd memoire`, et inclure ces fichiers au **commit suivant** (ou dans un commit `docs: mémoire …` si c'était la dernière tâche). Réserver la proposition à ce qui est durable.
 
 ### Entre deux tâches
 
@@ -158,4 +158,4 @@ Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En a
 
 **Dans un worktree** : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (fusion, demande de fusion ou worktree gardé).
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le MVP (toutes les US Indispensables) est terminé et pas encore en ligne (ne jamais pousser ni déployer sans accord), sinon `/pulse:spirc <US-XXX>` pour continuer, ou `/pulse:spirc <US-XXX suivante du parcours>` si ce plan est terminé (elle passera par la spec et le plan), ou `/pulse:security` pour un audit complet.
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le MVP (toutes les US Indispensables) est terminé et pas encore en ligne (pousser et déployer seulement avec l'accord de la personne), sinon `/pulse:spirc <US-XXX>` pour continuer, ou `/pulse:spirc <US-XXX suivante du parcours>` si ce plan est terminé (elle passera par la spec et le plan), ou `/pulse:security` pour un audit complet.

@@ -24,28 +24,28 @@ Action demandée : `$ARGUMENTS` (vide = `audit`)
 | `entetes` | Configurer les en-têtes de sécurité (CSP, HSTS…) | Lancer `pulse-aidd reference securite/entetes.md` et l'appliquer ; montrer la configuration avant de l'écrire |
 | `preparer` | Préparer un audit outillé (développeur, outils d'analyse) | Lancer `pulse-aidd reference securite/preparer.md` et l'appliquer |
 
-La technologie du projet est décrite dans `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne ») ; chaque action s'appuie sur ces sections. Si `docs/technical.md` est absent, le signaler et proposer `/pulse:tech`. Pour la syntaxe ou la configuration propre à la technologie retenue : consulter sa documentation officielle, ne jamais deviner. Pour `rapide`, `entetes` et `preparer`, terminer avec le bloc de fin de commande.
+La technologie du projet est décrite dans `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne ») ; chaque action s'appuie sur ces sections. Si `docs/technical.md` est absent, le signaler et proposer `/pulse:tech`. Pour la syntaxe ou la configuration propre à la technologie retenue : consulter sa documentation officielle et s'appuyer uniquement sur elle. Pour `rapide`, `entetes` et `preparer`, terminer avec le bloc de fin de commande.
 
 ## Audit complet
 
 ### Objectif
 
-Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à la personne une **fiche de tests manuels** (« le test du cambrioleur ») adaptée à son appli. Phrase à rappeler : **« Si ce n'est pas interdit côté serveur, c'est autorisé. »**
+Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à la personne une **fiche de tests manuels** (« le test du cambrioleur ») adaptée à son appli. Phrase à rappeler : **« Seul ce que le serveur bloque est vraiment interdit. »**
 
 ### Prérequis
 
-- Le projet doit contenir du code (constater avec `git ls-files` et « Organisation des fichiers » de `docs/technical.md`). Sinon, dites qu'il n'y a encore rien à auditer.
-- Les specs (`aidd_docs/tasks/*/SPEC-US-*.md`) sont conseillées (elles décrivent qui a le droit de voir quoi). S'il n'y en a aucune, l'audit se fait quand même, en le signalant.
+- Le projet doit contenir du code (constater avec `git ls-files` et « Organisation des fichiers » de `docs/technical.md`). Sinon, dites que l'audit attendra les premiers fichiers de code.
+- Les specs (`aidd_docs/tasks/*/SPEC-US-*.md`) sont conseillées (elles décrivent qui a le droit de voir quoi). En leur absence, l'audit se fait quand même, en le signalant.
 
 ### Déroulé
 
 #### 1. Lancer l'audit de sécurité
 
-Expliquer en une phrase que l'audit est effectué en lecture seule, sans modification de fichiers.
+Expliquer en une phrase que l'audit est effectué en lecture seule : les fichiers restent intacts.
 
-Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/user-stories.md` et les fichiers d'US, et la **checklist sécurité complète**, recopiée dans le message (le sous-agent n'a pas accès aux fichiers du plugin).
+Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/user-stories.md` et les fichiers d'US, et la **checklist sécurité complète**, recopiée dans le message (le sous-agent voit seulement les fichiers du projet).
 
-Si le sous-agent n'est pas disponible, faire l'audit en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent security-auditor`, sans modifier de fichier pendant l'audit.
+Si le sous-agent est indisponible, faire l'audit en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent security-auditor`, en lecture seule pendant l'audit.
 
 #### 2. Enregistrer
 
@@ -61,7 +61,7 @@ Rester factuel et rassurant : trouver des failles maintenant, c'est exactement l
 
 #### 4. Le test du cambrioleur
 
-Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la dérouler ensemble, **un test à la fois** : décrire le test, la personne le fait, puis indique le résultat (AskUserQuestion : « Protégé ✅ » / « Faille ❌ » / « Je n'arrive pas à faire le test »). Reporter les résultats dans `docs/securite.md`.
+Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la dérouler ensemble, **un test à la fois** : décrire le test, la personne le fait, puis indique le résultat (AskUserQuestion : « Protégé ✅ » / « Faille ❌ » / « J'ai besoin d'aide pour ce test »). Reporter les résultats dans `docs/securite.md`.
 
 #### 5. Corriger
 

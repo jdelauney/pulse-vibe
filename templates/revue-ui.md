@@ -22,4 +22,4 @@
 
 ## À vérifier à la main
 
-- {{ce qui ne se voit qu'en utilisant l'écran}}
+- {{ce qui se voit seulement en utilisant l'écran}}

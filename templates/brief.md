@@ -1,6 +1,6 @@
 # Brief – {{NOM_DU_PROJET}}
 
-> Produit par `/pulse:brainstorm` le {{DATE}}. Ce document raconte l'idée **sans jargon technique**.
+> Produit par `/pulse:brainstorm` le {{DATE}}. Ce document raconte l'idée **avec des mots simples, accessibles à tous**.
 
 ## En une phrase
 
@@ -38,7 +38,7 @@ Les mots du métier et leur définition commune sont dans le glossaire : `aidd_d
 
 ## Questions ouvertes
 
-Ce qu'on ne sait pas encore et qu'il faudra trancher.
+Ce qui reste à découvrir et qu'il faudra trancher.
 
 - [ ] …
 

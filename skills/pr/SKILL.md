@@ -25,13 +25,13 @@ Phrase à dire la première fois : « Une branche, c'est une copie de travail de
 | vide | **B. Ouvrir la demande de fusion** pour la branche en cours |
 | un nom de branche | **B**, avec cette branche comme base |
 
-Cette commande **ne fusionne jamais**, ne force jamais un envoi (`--force` interdit) et ne modifie ni le code ni les documents du projet.
+Cette commande **laisse toujours la fusion à la personne**, envoie les commits normalement (`--force` interdit) et laisse le code et les documents du projet tels quels.
 
 ## Prérequis communs
 
 - Dépôt Git (`git rev-parse --is-inside-work-tree`), sinon proposer `/pulse:init`.
 - Dépôt distant (`git remote get-url origin`), sinon expliquer qu'une demande de fusion se fait sur un dépôt en ligne et proposer `/pulse:deploy` (première mise en ligne).
-- **Branche principale** : la lire (Conventions Git § 5), après `git fetch origin`. Ne jamais la supposer.
+- **Branche principale** : la lire (Conventions Git § 5), après `git fetch origin`, à chaque fois plutôt que la supposer.
 
 ## A. Créer la branche de travail (`branche [<US-XXX>]`)
 
@@ -40,7 +40,7 @@ Cette commande **ne fusionne jamais**, ne force jamais un envoi (`--force` inter
 1. Modifications non enregistrées (`git status --short`) : proposer d'abord `/pulse:commit`, sauf si la personne veut les emporter sur la nouvelle branche (elles suivent automatiquement).
 2. **Nom** : à partir du plan désigné (ou de la spec, ou de la demande de la personne ; argument absent : lister les plans de `aidd_docs/tasks/` et demander, règle commune « Argument absent »), selon Conventions Git § 5 : `feat/us-xxx-<nom>` par défaut (l'identifiant de l'US et son nom, en minuscules), `fix/…` pour une correction. Le faire valider (AskUserQuestion, le nom proposé avec « (Recommandé) », « Autre nom »).
 3. Partir de la branche principale à jour : `git switch <principale>`, `git pull`, puis `git switch -c <nom>`. Si la branche existe déjà : proposer d'y revenir (`git switch <nom>`) plutôt que d'en créer une autre.
-4. Expliquer : « Vous êtes maintenant sur `<nom>`. Vos commits y seront rangés ; le site en ligne ne change pas tant que la demande de fusion n'est pas acceptée. »
+4. Expliquer : « Vous êtes maintenant sur `<nom>`. Vos commits y seront rangés ; le site en ligne change seulement quand la demande de fusion est acceptée. »
 
 Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travail est prêt.
 
@@ -50,16 +50,16 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 - Modifications non enregistrées : proposer `/pulse:commit` d'abord et s'arrêter.
 - **Sur la branche principale** :
-  - Des commits n'ont pas encore été envoyés (`git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Rien n'est perdu. » Après accord explicite (AskUserQuestion) : `git switch -c <nom>` puis `git branch -f <principale> origin/<principale>`, et vérifier avec `git log --oneline -5` que les commits sont bien sur `<nom>`.
-  - Rien à déplacer : il n'y a rien à proposer ; expliquer et proposer `/pulse:pr branche` pour la prochaine fois.
-- Aucun commit depuis la base : rien à proposer, le dire.
+  - Des commits n'ont pas encore été envoyés (`git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Tout est conservé. » Après accord explicite (AskUserQuestion) : `git switch -c <nom>` puis `git branch -f <principale> origin/<principale>`, et vérifier avec `git log --oneline -5` que les commits sont bien sur `<nom>`.
+  - Tous les commits déjà envoyés : la demande se fait depuis une branche de travail ; l'expliquer et proposer `/pulse:pr branche` pour la prochaine fois.
+- Branche identique à la base : le dire et s'arrêter, la demande attend de nouveaux commits.
 
 ### 2. Rassembler
 
 - **Base** : l'argument s'il y en a un, sinon Conventions Git § 6. La dire en une phrase avec sa raison (« vers `main`, la branche principale du dépôt »).
 - **Outil** : déduit de l'adresse du dépôt distant (Conventions Git § 6) ; vérifier la connexion (`gh auth status` ou `glab auth status`).
 - **Changement** : `git log --oneline <base>..HEAD` et `git diff --stat <base>...HEAD`. Relever les tâches citées dans les commits (`(Tn)`), leur plan dans `aidd_docs/tasks/<epic>/`, l'US liée, la section « Vérification » du plan et les rapports de relecture `Tn-*.md` du dossier `revues/` de ce plan.
-- Une demande existe déjà pour cette branche (`gh pr view` ou `glab mr view`) : donner son adresse et proposer de simplement envoyer les nouveaux commits (`git push`) ; ne pas en créer une deuxième.
+- Une demande existe déjà pour cette branche (`gh pr view` ou `glab mr view`) : donner son adresse et proposer de simplement envoyer les nouveaux commits (`git push`) ; garder cette demande unique.
 
 ### 3. Rédiger
 
@@ -70,12 +70,12 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 ### 4. Envoyer et créer
 
-1. Contrôle des secrets, comme à l'étape 1 de `/pulse:commit` (aucun fichier d'environnement suivi, aucune clé dans `git diff <base>...HEAD`).
+1. Contrôle des secrets, comme à l'étape 1 de `/pulse:commit` (fichiers d'environnement hors du suivi Git, `git diff <base>...HEAD` exempt de clé).
 2. `git push -u origin <branche>` (jamais `--force` ; envoi refusé : expliquer, proposer `git pull` puis réessayer).
 3. Créer la demande **en brouillon** :
    - GitHub : `gh pr create --draft --base <base> --head <branche> --title "<titre>" --body "<description>"` ;
    - GitLab : `glab mr create --draft --target-branch <base> --source-branch <branche> --title "<titre>" --description "<description>"`.
-4. **Outil absent ou non connecté** : ne rien installer. Donner le lien à ouvrir (GitHub : `https://github.com/<compte>/<dépôt>/compare/<base>...<branche>?expand=1` ; GitLab : `<adresse du dépôt>/-/merge_requests/new?merge_request[source_branch]=<branche>`), puis le titre et la description à coller, et expliquer comment cocher « brouillon » (Draft).
+4. **Outil absent ou non connecté** : passer par le site du dépôt et laisser l'installation à la personne. Donner le lien à ouvrir (GitHub : `https://github.com/<compte>/<dépôt>/compare/<base>...<branche>?expand=1` ; GitLab : `<adresse du dépôt>/-/merge_requests/new?merge_request[source_branch]=<branche>`), puis le titre et la description à coller, et expliquer comment cocher « brouillon » (Draft).
 
 ### 5. Expliquer la suite
 

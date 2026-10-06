@@ -32,10 +32,10 @@ Rappeler en une phrase : « Le MVP est la plus petite version réellement utilis
 ### 2. Prioriser avec MoSCoW (le cœur de l'étape)
 
 Expliquer les 4 catégories en une ligne chacune :
-- **Indispensable** (Must) : sans ça, l'outil ne sert à rien → c'est le MVP.
+- **Indispensable** (Must) : l'outil en a besoin pour être utile → c'est le MVP.
 - **Essentiel** (Should) : vraie valeur ajoutée, juste après le MVP.
 - **Optionnel** (Could) : la cerise sur le gâteau.
-- **En attente** (Won't, cette fois) : bonne idée, mais pas maintenant.
+- **En attente** (Won't, cette fois) : bonne idée, pour plus tard.
 
 Proposer un classement, puis le faire valider par la personne (AskUserQuestion, par exemple une question à choix multiples « Lesquelles sont vraiment indispensables ? »). C'est **sa** décision.
 
@@ -43,13 +43,13 @@ Proposer un classement, puis le faire valider par la personne (AskUserQuestion, 
 
 ### 3. Compléter le reste du PRD
 
-Rédiger, en vous appuyant sur le brief, et sans demander ce qui peut se déduire :
+Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'être (demander seulement le reste) :
 - la vision (2-3 phrases) et le problème principal ;
 - le tableau des utilisateurs ;
 - 1 à 3 **objectifs mesurables** (les proposer, faire valider) ;
 - la phrase « Le MVP est atteint quand… », vérifiable ;
 - les contraintes (données personnelles, budget, délai, appareils) ;
-- le hors périmètre (ce que l'outil ne fera pas) ;
+- le hors périmètre (ce qui reste en dehors de l'outil) ;
 - les risques et questions ouvertes.
 
 ### 4. Écrire et valider

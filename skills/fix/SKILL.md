@@ -19,7 +19,7 @@ Problème signalé : `$ARGUMENTS`
 
 Trouver la **vraie cause** d'un problème précis, la corriger avec le plus petit changement possible, le **prouver**, puis expliquer à la personne ce qui s'est passé et comment l'éviter. Phrase à dire : « Une erreur est une étape normale. On va d'abord comprendre pourquoi, avant de toucher au code. »
 
-Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-fix`. Pour un comportement **nouveau** (ce n'est pas une erreur, c'est une demande) : le noter dans `docs/prd.md` (« En attente ») ou proposer `/pulse:spirc <US-XXX> "<demande>"`.
+Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-fix`. Pour un comportement **nouveau** (c'est une demande, plutôt qu'une erreur) : le noter dans `docs/prd.md` (« En attente ») ou proposer `/pulse:spirc <US-XXX> "<demande>"`.
 
 ## 1. Comprendre le problème
 
@@ -30,14 +30,14 @@ Si l'argument est vide ou flou, poser **une seule ronde** de questions (AskUserQ
 - « Qu'attendiez-vous, et que s'est-il passé à la place ? » ;
 - « Y a-t-il un message en rouge ? » : guider pour l'obtenir : touche F12 → onglet « Console », copier la ligne rouge ; pour du code serveur : le journal du serveur (en local : le terminal de la commande « lancer en local » ; en ligne : les journaux de l'hébergeur) ; pour la base : le message renvoyé.
 
-**Ne jamais demander** ce que les fichiers permettent de savoir. **Ne jamais demander** de vraie donnée ni de vraie clé : si la personne en colle une, le signaler et la faire remplacer.
+**Lire dans les fichiers** ce qu'ils permettent de savoir, plutôt que le demander. **Travailler avec des données fictives** ; ne jamais demander de vraie donnée ni de vraie clé : si la personne en colle une, le signaler et la faire remplacer.
 
 ## 2. Trouver la cause (avant toute correction)
 
 1. **Reproduire ou localiser** : relier le message au fichier et à la ligne ; sinon, suivre le parcours de l'action (bouton → gestion de l'événement → fonction → stockage ou appel serveur → contrôle d'accès).
-2. **Diagnostics** : les contrôles automatiques de « Commandes du projet » de `docs/technical.md` (lint, types…), filtrés sur le fichier concerné, et `pulse-aidd verifier` ; la commande « construire » si l'erreur n'apparaît qu'en ligne ; pour un accès refusé ou des données invisibles, les règles décrites dans « Données et contrôle d'accès » (et le fichier où elles sont écrites). Si aucune commande de contrôle n'existe (toutes à « aucune »), le dire et proposer d'en ajouter avec `/pulse:tech`. Pour le sens exact d'un message ou d'un code d'erreur propre à la technologie retenue : consulter sa documentation officielle, ne jamais deviner.
+2. **Diagnostics** : les contrôles automatiques de « Commandes du projet » de `docs/technical.md` (lint, types…), filtrés sur le fichier concerné, et `pulse-aidd verifier` ; la commande « construire » si l'erreur apparaît seulement en ligne ; pour un accès refusé ou des données invisibles, les règles décrites dans « Données et contrôle d'accès » (et le fichier où elles sont écrites). Si aucune commande de contrôle n'existe (toutes à « aucune »), le dire et proposer d'en ajouter avec `/pulse:tech`. Pour le sens exact d'un message ou d'un code d'erreur propre à la technologie retenue : consulter sa documentation officielle et s'appuyer sur elle.
 3. **Chercher les erreurs de même cause** (un même oubli répété ailleurs).
-4. **Distinguer symptôme et cause** : énoncer la cause en une phrase (« le script est chargé avant que le bouton existe dans la page »). Si deux hypothèses restent possibles, les vérifier une par une, sans corriger au hasard.
+4. **Distinguer symptôme et cause** : énoncer la cause en une phrase (« le script est chargé avant que le bouton existe dans la page »). Si deux hypothèses restent possibles, les vérifier une par une, avant toute correction.
 
 Repères fréquents :
 
@@ -59,20 +59,20 @@ Repères fréquents :
 
 ## 3. Choisir la correction
 
-Évaluer 1 à 3 solutions selon : **corrige la cause** (pas le symptôme), **n'introduit rien de cassant**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
+Évaluer 1 à 3 solutions selon : **corrige la cause** (plutôt que le symptôme), **préserve ce qui fonctionne**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
 
-Si la correction **change le comportement attendu** (une règle métier, un écran) : ce n'est plus une correction, c'est une décision. La poser à la personne (AskUserQuestion), et proposer de mettre à jour la user story.
+Si la correction **change le comportement attendu** (une règle métier, un écran) : cela devient une décision, au-delà d'une correction. La poser à la personne (AskUserQuestion), et proposer de mettre à jour la user story.
 
 ## 4. Corriger
 
-- **Simple** (5 fichiers au plus, cause claire) : déléguer à l'agent **`pulse:fixer`** avec, par fichier : l'erreur, la ligne, la cause et la solution retenue. S'il n'est pas disponible, corriger soi-même en suivant ses consignes.
+- **Simple** (5 fichiers au plus, cause claire) : déléguer à l'agent **`pulse:fixer`** avec, par fichier : l'erreur, la ligne, la cause et la solution retenue. S'il est indisponible, corriger soi-même en suivant ses consignes.
 - **Complexe** (plusieurs couches, contexte nécessaire) : corriger soi-même, avec des changements minimes, dans le style du code existant.
 - Une action manuelle est nécessaire (appliquer une règle d'accès dans la console de la base ou du fournisseur, saisir une variable chez l'hébergeur) : guider la personne pas à pas.
 
 ## 5. Prouver
 
-- Relancer les diagnostics de l'étape 2 sur les fichiers touchés : plus d'erreur, et aucune nouvelle.
-- **La personne refait l'action** qui échouait (même parcours, mêmes données fictives) : « Est-ce que ça fonctionne maintenant ? » → « Oui » / « Non, toujours pas » / « Autre chose ne va plus ».
+- Relancer les diagnostics de l'étape 2 sur les fichiers touchés : zéro erreur, ancienne ou nouvelle.
+- **La personne refait l'action** qui échouait (même parcours, mêmes données fictives) : « Est-ce que ça fonctionne maintenant ? » → « Oui » / « Toujours le même problème » / « Un autre problème est apparu ».
 - Échec : revenir à l'étape 2 avec ce nouvel élément. **Deux tentatives au maximum** ; ensuite, arrêter, expliquer simplement où l'on en est, et conseiller de demander de l'aide à une personne qui sait programmer.
 
 ## 6. Expliquer et retenir

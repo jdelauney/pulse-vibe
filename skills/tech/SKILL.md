@@ -17,14 +17,14 @@ Contrainte ou préférence exprimée (facultative) : `$ARGUMENTS`
 
 ## Objectif
 
-Jouer le rôle d'architecte technique, en langage simple. Aucune technologie n'est proposée par défaut : la pile se construit **à partir du besoin** (brief, PRD), ou s'**observe** dans le code d'un projet existant. La décision appartient à la personne. Puis écrire :
+Jouer le rôle d'architecte technique, en langage simple. Chaque technologie proposée découle du besoin : la pile se construit **à partir du besoin** (brief, PRD), ou s'**observe** dans le code d'un projet existant. La décision appartient à la personne. Puis écrire :
 
 - `docs/technical.md`, **toutes** ses sections : « Les besoins qui guident le choix », « Les options comparées », « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne », « Mise en place », « Ce qu'on a écarté » ;
 - le bloc **Pile technique** de `CLAUDE.md` (entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->`) ;
 - `aidd_docs/memory/technical.md` et les décisions difficiles à défaire ;
 - la **mise en place** du squelette, avec l'accord de la personne.
 
-Phrase à dire : « On choisit les outils **après** avoir compris le besoin, jamais avant. Le plus simple qui répond au besoin est le meilleur choix. »
+Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **après**. Le plus simple qui répond au besoin est le meilleur choix. »
 
 ## Prérequis
 
@@ -37,27 +37,27 @@ Phrase à dire : « On choisit les outils **après** avoir compris le besoin, ja
 
 ### 1. Ce que l'on sait déjà
 
-Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/` et le code s'il y en a. Remplir **soi-même** toutes les lignes du tableau « Les besoins qui guident le choix » que ces documents permettent de remplir. Ne jamais demander ce qui y figure.
+Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/` et le code s'il y en a. Remplir **soi-même** toutes les lignes du tableau « Les besoins qui guident le choix » que ces documents permettent de remplir. Réserver les questions aux lignes restantes.
 
 ### A. Projet existant : documenter la pile observée
 
-1. **Observer** (Glob, Grep, Read) : langages, manifestes de dépendances et leurs versions, frameworks, stockage des données et schéma éventuel, mécanisme de connexion, code serveur, configuration d'hébergement et de CI, scripts déclarés, fichiers d'environnement d'exemple, organisation des dossiers et conventions de nommage. Ne rien supposer : chaque élément de la pile s'appuie sur un fichier réel, cité.
-2. **Commandes du projet** : relever celles que le projet déclare (installer, lancer en local, tester, contrôles automatiques : lint / format / types, construire, déployer). Une commande absente s'écrit « aucune ». Ne jamais en inventer.
+1. **Observer** (Glob, Grep, Read) : langages, manifestes de dépendances et leurs versions, frameworks, stockage des données et schéma éventuel, mécanisme de connexion, code serveur, configuration d'hébergement et de CI, scripts déclarés, fichiers d'environnement d'exemple, organisation des dossiers et conventions de nommage. Chaque élément de la pile s'appuie sur un fichier réel, cité.
+2. **Commandes du projet** : relever celles que le projet déclare (installer, lancer en local, tester, contrôles automatiques : lint / format / types, construire, déployer). Une commande absente s'écrit « aucune » ; noter uniquement les commandes déclarées.
 3. **Vérifier les points incertains** sur la documentation officielle des technologies observées (outil de documentation comme context7 s'il est disponible, sinon WebFetch) : version maintenue ou non, mécanisme de contrôle d'accès, gestion des secrets.
-4. **Présenter** la pile observée en 5 à 8 lignes, avec les manques constatés (pas de contrôle automatique, contrôle d'accès seulement dans le navigateur, secret dans le code…). Ne proposer un changement de technologie que si le besoin l'exige, en expliquant le coût (réécriture). Demander « C'est bien ça » / « Corriger quelque chose ».
+4. **Présenter** la pile observée en 5 à 8 lignes, avec les manques constatés (pas de contrôle automatique, contrôle d'accès seulement dans le navigateur, secret dans le code…). Proposer un changement de technologie seulement si le besoin l'exige, en expliquant le coût (réécriture). Demander « C'est bien ça » / « Corriger quelque chose ».
 5. Passer à l'étape 6 (« Écrire ») : les tableaux « Les options comparées » et « Ce qu'on a écarté » indiquent « Projet existant : pile observée, pas de comparaison » sauf si un changement a été décidé.
 
 ### B. Projet neuf : construire et comparer les options
 
 #### 2. Les questions qui restent (par rondes)
 
-Poser seulement les lignes manquantes du tableau des besoins, en rondes de 4 questions au plus (AskUserQuestion), chacune avec 2 à 4 réponses concrètes, **la réponse recommandée en premier** avec « (Recommandé) ». Les questions portent sur le **besoin** (qui, combien, données partagées ou non, comptes, données personnelles, plateformes, hors ligne, budget, expérience, contraintes imposées), jamais sur un outil. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »). Demander aussi si la personne ou son organisation **impose ou exclut** une technologie, et si elle en connaît déjà une.
+Poser seulement les lignes manquantes du tableau des besoins, en rondes de 4 questions au plus (AskUserQuestion), chacune avec 2 à 4 réponses concrètes, **la réponse recommandée en premier** avec « (Recommandé) ». Les questions portent sur le **besoin** (qui, combien, données partagées ou non, comptes, données personnelles, plateformes, hors ligne, budget, expérience, contraintes imposées) ; les outils viendront à l'étape 3. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »). Demander aussi si la personne ou son organisation **impose ou exclut** une technologie, et si elle en connaît déjà une.
 
 Après la dernière ronde, **signaler les contradictions** et faire trancher : par exemple « paiement en ligne » avec « budget 0 € et aucun compte », ou « données de santé » avec « hébergement sans garantie de localisation ».
 
 #### 3. Construire 2 ou 3 options
 
-Suivre `references/choix-techniques.md` pour construire **2 ou 3 options réellement différentes** (approche, nature du stockage, hébergement : pas trois variantes du même outil), chacune déduite des besoins, jamais d'une habitude ou d'une technologie par défaut. Inclure systématiquement l'option **la plus simple** qui répond au besoin. Pour chaque option : pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), coût mensuel estimé (ordre de grandeur, incertitude signalée), localisation des données si elle compte, points forts, **1 à 3 risques honnêtes** (aucune option sans risque).
+Suivre `references/choix-techniques.md` pour construire **2 ou 3 options réellement différentes** (approche, nature du stockage, hébergement : trois approches distinctes plutôt que trois variantes du même outil), chacune déduite des besoins seulement, plutôt que d'une habitude ou d'une technologie par défaut. Inclure systématiquement l'option **la plus simple** qui répond au besoin. Pour chaque option : pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), coût mensuel estimé (ordre de grandeur, incertitude signalée), localisation des données si elle compte, points forts, **1 à 3 risques honnêtes** (chaque option en a).
 
 - **Services externes** : 1 ou 2 au maximum pour le MVP ; paiement d'abord en **mode test** ; le mode réel est une décision de la personne, au moment de la mise en ligne.
 - **Données personnelles** : minimiser ; pour des données sensibles, choisir la région d'hébergement exigée par la loi de protection des données qui s'applique au projet, à vérifier dans l'offre du service.
@@ -75,7 +75,7 @@ Présenter le tableau et **recommander** une option en une phrase. Demander (Ask
 
 ### 6. Écrire (projet existant ou neuf)
 
-1. **`docs/technical.md`** à partir du modèle, toutes sections remplies (aucune laissée vide ; « aucune » ou « sans objet » si c'est le cas) :
+1. **`docs/technical.md`** à partir du modèle, toutes sections remplies (« aucune » ou « sans objet » si c'est le cas) :
    - « Pile retenue » : langage, framework éventuel, données, connexion, code serveur, hébergement, services, **versions** ; une phrase de « pourquoi » par élément ;
    - « Organisation des fichiers » : **la référence unique** que suivront la spec, le plan et le code. Projet existant : l'organisation **observée** (dossiers réels, conventions de nommage, où vivent l'interface, l'accès aux données, le code serveur, le schéma). Projet neuf : l'organisation **décidée** selon la référence `qualite/organisation.md` ci-dessus, adaptée aux conventions de la documentation officielle de la technologie retenue (qui priment) : **palier** retenu et sa raison, arborescence, convention de nommage et exceptions imposées par le langage, **suffixes** utilisés, emplacement des tests ; en indiquant que les dossiers seront créés au fil des tâches ;
    - « Commandes du projet » : installer, lancer en local, tester, contrôles automatiques (lint / format / types), construire, déployer ; une commande absente s'écrit « aucune ». Projet neuf : les commandes que fournira le squelette selon la documentation officielle, ou « aucune » ;
@@ -84,8 +84,8 @@ Présenter le tableau et **recommander** une option en une phrase. Demander (Ask
    - « Hébergement et mise en ligne » : hébergeur, dépôt distant, CI éventuelle ;
    - « Mise en place » : les étapes pas à pas avant la première tâche (comptes à créer, initialisation du squelette selon la documentation officielle, compléments à `.gitignore` et `.env.example`) ;
    - un schéma Mermaid simple de l'assemblage des pièces.
-2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ». Si les marqueurs sont absents (projet créé avant Pulse 0.3), remplacer la section « Pile technique » existante par une section avec les marqueurs, sans rien changer d'autre.
-3. **`aidd_docs/memory/technical.md`** : mettre à jour le résumé de la pile retenue (une ou deux lignes, renvoi à `docs/technical.md`, sans le recopier) et ajouter une ligne datée par décision dans « Décisions techniques ».
+2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ». Si les marqueurs sont absents (projet créé avant Pulse 0.3), remplacer la section « Pile technique » existante par une section avec les marqueurs, en gardant le reste intact.
+3. **`aidd_docs/memory/technical.md`** : mettre à jour le résumé de la pile retenue (une ou deux lignes et un renvoi à `docs/technical.md`, qui reste la source) et ajouter une ligne datée par décision dans « Décisions techniques ».
 4. **Décisions difficiles à défaire** (langage ou framework, stockage des données, mécanisme de connexion, hébergement de données personnelles) : proposer un fichier de décision seulement si les 3 conditions des règles de la mémoire sont réunies. Montrer avant d'écrire.
 5. Lancer `pulse-aidd memoire`.
 
@@ -96,11 +96,11 @@ Projet existant : seulement compléter `.gitignore` et `.env.example` si des man
 Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander (AskUserQuestion) : « Mettre en place le squelette maintenant (Recommandé) » / « En faire la tâche T1 du plan ».
 
 - **Maintenant** :
-  1. Initialiser le squelette de la technologie retenue **selon sa documentation officielle** (commande ou procédure d'initialisation, versions fixées). Si l'outil d'initialisation refuse un dossier non vide, ou risque d'écraser un fichier : initialiser dans un **dossier temporaire**, puis rapatrier les fichiers. Ne **jamais** écraser `CLAUDE.md`, `README.md` ni `.gitignore` : fusionner ce qu'ils apportent d'utile, puis supprimer le dossier temporaire.
+  1. Initialiser le squelette de la technologie retenue **selon sa documentation officielle** (commande ou procédure d'initialisation, versions fixées). Si l'outil d'initialisation refuse un dossier non vide, ou risque d'écraser un fichier : initialiser dans un **dossier temporaire**, puis rapatrier les fichiers. Conserver `CLAUDE.md`, `README.md` et `.gitignore` (ne **jamais** les écraser) : fusionner ce qu'ils apportent d'utile, puis supprimer le dossier temporaire.
   2. Compléter `.gitignore` selon la pile (dépendances installées, fichiers construits, caches, fichiers d'environnement locaux) et `.env.example` avec les **noms** des variables de « Secrets et variables d'environnement », sans valeurs.
   3. Vérifier que la commande « lancer en local » de « Commandes du projet » fonctionne ; corriger « Commandes du projet » et le bloc `pulse_pile` si le squelette en fournit d'autres.
-  4. Expliquer en quelques lignes ce qui a été ajouté. Les actions qui relèvent de la personne (créer un compte, saisir une clé secrète dans le fichier local) sont guidées pas à pas ; une clé secrète n'est **jamais** collée dans la conversation.
-- **Tâche T1** : l'indiquer dans « Mise en place » (« À réaliser en tâche T1 du plan »), sans rien installer maintenant.
+  4. Expliquer en quelques lignes ce qui a été ajouté. Les actions qui relèvent de la personne (créer un compte, saisir une clé secrète dans le fichier local) sont guidées pas à pas ; la personne écrit une clé secrète directement dans le fichier local, **jamais** dans la conversation.
+- **Tâche T1** : l'indiquer dans « Mise en place » (« À réaliser en tâche T1 du plan ») : l'installation se fera avec cette tâche.
 
 ### 8. Valider
 

@@ -17,7 +17,7 @@ Action demandée : `$ARGUMENTS`
 
 ## Objectif
 
-Aider la personne à **voir** et choisir l'apparence de son outil, puis à la soigner. Phrase à dire : « On choisit une apparence en la regardant, pas en lisant des codes couleur. »
+Aider la personne à **voir** et choisir l'apparence de son outil, puis à la soigner. Phrase à dire : « On choisit une apparence en la regardant, plutôt qu'en lisant des codes couleur. »
 
 Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les trois références de design ont pour titres « Registres d'interface », « Règles d'interface » et « Anti-patterns d'interface » (la « liste noire ») ; on peut les réafficher avec `pulse-aidd reference design/<fichier>`.
 
@@ -25,15 +25,15 @@ Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses
 
 | Action | Quand | Section |
 |---|---|---|
-| `identite` | Pas encore d'identité visuelle, ou la revoir | « identite » |
+| `identite` | Créer l'identité visuelle, ou la revoir | « identite » |
 | `maquettes <US-XXX>` | La spec d'une US décrit des écrans : en voir plusieurs versions et choisir | « maquettes » |
-| `audit [cible]` | Une interface existe : relever ce qui cloche, sans rien modifier | « audit » |
+| `audit [cible]` | Une interface existe : relever ce qui cloche, en lecture seule | « audit » |
 | `polish [cible]` | Appliquer les corrections visuelles et de texte d'un audit | « polish » |
-| (vide) | Ne pas savoir par où commencer | « Sans argument » |
+| (vide) | Hésiter sur le point de départ | « Sans argument » |
 
-Les maquettes HTML sont une **référence visuelle**, indépendante de la pile : le code les traduit ensuite dans la technologie de `docs/technical.md`. `/pulse:ui` ne modifie jamais le code, sauf l'action `polish`.
+Les maquettes HTML sont une **référence visuelle**, indépendante de la pile : le code les traduit ensuite dans la technologie de `docs/technical.md`. `/pulse:ui` laisse le code intact ; seule l'action `polish` le modifie.
 
-**Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe dans `aidd_docs/tasks/<epic>/`, jamais supposé. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
+**Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe réellement dans `aidd_docs/tasks/<epic>/`. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
 
 **Lancer les agents de génération** (`identite` et `maquettes`) : lancer **en parallèle** un sous-agent `pulse:designer` par variante (plusieurs appels Agent dans le même message). Message de délégation : type, thèse, axes de différence, dossier de sortie, écrans à couvrir, chemins de `docs/design.md` (ou direction provisoire), de `docs/prd.md` et `docs/brief.md` (s'ils existent), de la spec et de `docs/user-stories.md` (maquettes ; s'ils existent) et de `aidd_docs/memory/glossary.md`. Si les sous-agents ne sont pas disponibles, lancer `pulse-aidd agent designer`, lire ses consignes et produire les variantes soi-même, une par une. Chaque agent rend 3 lignes (Thèse / Ce qui la distingue / Fichiers) : les garder pour la comparaison.
 
@@ -46,7 +46,7 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
    - pas de `docs/design.md` → `identite` ;
    - une spec avec des écrans et sans dossier `docs/design/maquettes/<spec>/` → `maquettes <US-XXX de cette spec>` ;
    - du code d'interface → `audit`.
-3. Ne rien lancer sans la réponse. Puis suivre la section de l'action choisie.
+3. Attendre la réponse avant de lancer quoi que ce soit. Puis suivre la section de l'action choisie.
 
 ## identite
 
@@ -59,20 +59,20 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
 ### Déroulé
 
 1. **Ce que l'on sait déjà.** Déduire des documents le public, les écrans probables et l'hypothèse de registre. Affirmer puis faire confirmer, par exemple : « Votre outil sert à *utiliser*, pas à *convaincre* : je pars sur le registre outil, d'accord ? ». Si le projet contient déjà une interface : relever ses couleurs, polices et composants (fichiers réels, cités) et demander s'il faut les **garder comme base** ou **repartir de zéro**.
-2. **Entretien**, par rondes de 4 questions au plus, en langage courant. Ne jamais demander ce que les documents disent. Sujets :
+2. **Entretien**, par rondes de 4 questions au plus, en langage courant. Demander uniquement ce que les documents laissent ouvert. Sujets :
    - la scène d'usage (qui, où, quand, sur quel écran) ;
    - la personnalité en 3 mots (réponses proposées concrètes, réponse libre possible) ;
-   - 2 ou 3 outils ou sites dont la personne aime l'allure, 1 ou 2 à ne pas imiter ;
+   - 2 ou 3 outils ou sites dont la personne aime l'allure, 1 ou 2 dont elle veut se démarquer ;
    - l'intensité de couleur (les 4 stratégies de « Règles d'interface », traduites en langage courant) ;
    - un logo, des couleurs ou une police imposés.
 
-   Ne jamais demander de code couleur ni de nom de police. Après chaque ronde, reformuler en 1 ou 2 lignes (« ✔ Décidé : … »).
+   Laisser de côté codes couleur et noms de police : la personne décrit, vous traduisez. Après chaque ronde, reformuler en 1 ou 2 lignes (« ✔ Décidé : … »).
 3. **Directions.** Construire 2 ou 3 directions réellement différentes : au moins 2 axes parmi stratégie de couleur, typographie, densité, forme, ambiance claire / sombre. Donner à chacune une thèse en une phrase. Montrer le plan en 3 lignes, puis lancer les agents de génération (type `planche`), un par direction, dossier `docs/design/identite/d<n>-<slug>/`. Chaque agent écrit `planche.html` et `note.md` : palette par rôle avec contrastes, titres et texte, boutons et champs dans leurs états, une liste, un message d'erreur, un état vide, avec des contenus fictifs tirés du projet (glossaire, US).
 4. **Comparer.** Lancer `pulse-aidd comparer docs/design/identite`, ouvrir `comparer.html` (section « Ouvrir une page »), expliquer chaque thèse en une ligne.
 5. **Choisir dans le chat** : une direction ; un hybride (un agent `pulse:designer` assemble la planche hybride, dossier `d<n+1>-hybride-<slug>`) ; ou « aucune, … » (retour à l'étape 3 avec la nouvelle consigne). Vérifier les contrastes du choix (calculer) : si un texte est sous 4,5:1, le corriger et le dire.
 6. **Écrire.**
    - Copier la planche choisie (ou l'hybride) et son `note.md` dans `docs/design/identite/retenue/`.
-   - Écrire `docs/design.md` à partir du modèle `design.md` : **toutes** les sections remplies, aucune laissée vide ; écrire « sans objet » quand une section ne s'applique pas.
+   - Écrire `docs/design.md` à partir du modèle `design.md` : **toutes** les sections remplies ; écrire « sans objet » quand une section ne s'applique pas.
    - Montrer un résumé en 5 lignes et demander « Valider » / « Modifier quelque chose ».
    - Proposer `/pulse:memory retenir` pour le registre et la stratégie de couleur.
 
@@ -93,24 +93,24 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `doc
    - « Compléter » : ajouter les nouveaux écrans dans `retenue/` sous les noms `desktop-<k>.html` et `mobile-<k>.html` (k = 2, 3…) ; le `note.md` de `retenue/` indique quels écrans chaque fichier couvre.
 2. **Plan des variantes.** N variantes : 3 par défaut, 2 à 4 si la personne le demande. Chacune a une thèse et une différence d'organisation ou d'interaction (navigation, ordre des informations, mode de saisie, densité). Montrer le plan en 3 lignes avant de générer.
 3. **Générer** : lancer les agents de génération (type `maquette`), un par variante, dossier `docs/design/maquettes/<spec>/v<n>-<slug>/`. Chacun écrit `desktop.html`, `mobile.html` et `note.md`, en respectant `docs/design.md` et la liste noire, avec des données fictives réalistes (glossaire, US) et les états clés de chaque écran montrés (vide, chargement, erreur).
-4. **Contrôler la différence.** Si deux variantes ne diffèrent que par le style, le dire et proposer : « Régénérer celle-ci avec une autre thèse (Recommandé) » / « Garder ainsi ».
+4. **Contrôler la différence.** Si deux variantes diffèrent seulement par le style, le dire et proposer : « Régénérer celle-ci avec une autre thèse (Recommandé) » / « Garder ainsi ».
 5. **Comparer.** Lancer `pulse-aidd comparer docs/design/maquettes/<spec>`, ouvrir la page, expliquer chaque thèse en une ligne.
 6. **Choisir dans le chat** : une variante pour les deux formats ; « desktop = a, mobile = b » ; un hybride (un agent `pulse:designer` assemble, dossier `v<n+1>-hybride-<slug>`) ; ou « aucune, … » (retour à l'étape 2).
 7. **Enregistrer.**
    - Copier le choix dans `docs/design/maquettes/<spec>/retenue/`, avec un `note.md` qui dit d'où vient chaque partie.
-   - Déplacer les autres variantes dans `docs/design/maquettes/<spec>/alternatives/`, puis supprimer `comparer.html` devenu périmé (`pulse-aidd comparer` ne peut pas le régénérer sans variante).
+   - Déplacer les autres variantes dans `docs/design/maquettes/<spec>/alternatives/`, puis supprimer `comparer.html` devenu périmé (`pulse-aidd comparer` a besoin de variantes pour le régénérer).
    - Avec l'accord de la personne, ajouter à la section « Écrans » de la spec : « Maquette : `docs/design/maquettes/<spec>/retenue/` ».
-   - Ne pas faire de commit.
+   - Laisser le commit à une étape ultérieure.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XXX>`.
 
 ## audit
 
-Cible : un écran, un fichier, un dossier, ou toute l'interface (vide = toute l'interface, à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon le code existant). Un fichier ou un écran ne s'audite que s'il existe (Glob, Grep) ; sinon, lister ce qui existe et demander.
+Cible : un écran, un fichier, un dossier, ou toute l'interface (vide = toute l'interface, à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon le code existant). Vérifier d'abord que le fichier ou l'écran existe (Glob, Grep) ; sinon, lister ce qui existe et demander.
 
-1. **Lancer l'audit.** Expliquer en une phrase qu'il se fait en lecture seule. Lancer le sous-agent `pulse:ui-critic` ; s'il n'est pas disponible, lancer `pulse-aidd agent ui-critic` et appliquer ses consignes soi-même, sans modifier de fichier. Lui indiquer : la cible, le chemin de `docs/design.md` (ou « absent »), la ou les maquettes retenues des specs dont relève la cible (`docs/design/maquettes/<spec>/retenue/`), l'emplacement du code d'interface d'après « Organisation des fichiers », et les trois références.
+1. **Lancer l'audit.** Expliquer en une phrase qu'il se fait en lecture seule. Lancer le sous-agent `pulse:ui-critic` ; s'il n'est pas disponible, lancer `pulse-aidd agent ui-critic` et appliquer ses consignes soi-même, en lecture seule. Lui indiquer : la cible, le chemin de `docs/design.md` (ou « absent »), la ou les maquettes retenues des specs dont relève la cible (`docs/design/maquettes/<spec>/retenue/`), l'emplacement du code d'interface d'après « Organisation des fichiers », et les trois références.
 2. **Contenu attendu.** Pour 5 rubriques (fidélité à `docs/design.md` et à la maquette ; anti-patterns ; états manquants ; accessibilité : contraste, focus visible, libellés, taille des cibles ; textes d'interface) : des constats classés 🔴 bloquant, 🟠 important, 🟢 finition, chacun avec le fichier, ce qui se voit, pourquoi c'est gênant et la correction proposée ; plus 3 points « ce qui va bien ». La réponse commence par une ligne `Verdict : …`, suivie du rapport complet.
-3. **Enregistrer.** Écrire sa réponse, sans sa première ligne `Verdict : …` (réservée au résumé dans le chat ; le modèle a sa propre ligne **Verdict**), dans `docs/design/audits/ui-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe déjà), selon le modèle `revue-ui.md`.
+3. **Enregistrer.** Écrire sa réponse à partir de sa deuxième ligne (la première, `Verdict : …`, est réservée au résumé dans le chat ; le modèle a sa propre ligne **Verdict**), dans `docs/design/audits/ui-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe déjà), selon le modèle `revue-ui.md`.
 4. **Présenter** l'essentiel en 5 lignes : le verdict, les 🔴, ce qui va bien.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` ; `/pulse:refine` pour un constat qui change le besoin ou le parcours ; `/pulse:fix` pour un comportement cassé.
@@ -118,7 +118,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` 
 ## polish
 
 1. **Partir du rapport** `docs/design/audits/ui-*.md` le plus récent qui couvre la cible. S'il n'y en a pas, faire d'abord l'audit (section « audit »).
-2. **Trier.** Retenir les constats **purement visuels ou de texte** : aucune logique métier, aucune donnée, aucun contrôle d'accès. Renvoyer les autres vers `/pulse:refine` (besoin ou parcours) ou `/pulse:fix` (comportement cassé), en le disant.
+2. **Trier.** Retenir les constats **purement visuels ou de texte** : apparence et libellés seulement, hors logique métier, données et contrôle d'accès. Renvoyer les autres vers `/pulse:refine` (besoin ou parcours) ou `/pulse:fix` (comportement cassé), en le disant.
 3. **Faire choisir.** Montrer la liste ; la personne coche ceux à appliquer (AskUserQuestion multiSelect, les 🔴 cochés par défaut dans la recommandation).
 4. **Appliquer** par petits lots. Avant d'écrire du code, lancer `pulse-aidd qualite` et appliquer ces règles. Respecter la pile retenue (`docs/technical.md`), `docs/design.md` et la maquette retenue. Lancer ensuite les contrôles automatiques de « Commandes du projet » (sauter ceux qui valent « aucune »).
 5. **Vérifier.** Demander à la personne de vérifier dans son navigateur. Marquer les constats corrigés (✅) dans le rapport.

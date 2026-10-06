@@ -6,12 +6,12 @@ En cas de doute : **un fichier se trouve là où l'on s'attend à le trouver, et
 
 Ordre de priorité, du plus fort au plus faible :
 
-1. **Le code existant** : dans un projet qui a déjà son organisation, on la suit. Ce guide ne justifie jamais de déplacer ou renommer des fichiers existants ; une réorganisation est une tâche à part, décidée par la personne.
+1. **Le code existant** : dans un projet qui a déjà son organisation, on la suit. Avec ce guide, les fichiers existants gardent leur nom et leur place ; une réorganisation est une tâche à part, décidée par la personne.
 2. **Les conventions imposées par le framework** retenu (dossier de routes, fichiers au nom fixé, emplacement de la configuration), d'après sa documentation officielle.
 3. **« Organisation des fichiers » de `docs/technical.md`** : la référence unique du projet.
-4. **Ce guide** : il sert à **décider** « Organisation des fichiers » d'un projet neuf (`/pulse:tech`) et à combler ce que les trois sources précédentes ne disent pas.
+4. **Ce guide** : il sert à **décider** « Organisation des fichiers » d'un projet neuf (`/pulse:tech`) et à compléter les trois sources précédentes là où elles se taisent.
 
-Un dossier ou un fichier décrit ici n'existe pas tant qu'on ne l'a pas créé : on le crée au moment d'y écrire du code utile, jamais en squelette d'avance.
+Un dossier ou un fichier décrit ici existe une fois créé : on le crée au moment d'y écrire du code utile, avec son premier contenu.
 
 ## 2. Nommage des fichiers et des dossiers
 
@@ -26,17 +26,17 @@ item.rules.test.ts        le test reprend le nom du fichier testé, .test en der
 
 - **Le nom** désigne le sujet, au singulier (`item`, `<sujet>`), ou l'action pour un cas d'usage (`create-item`). Mêmes mots que le glossaire du projet (`aidd_docs/memory/glossary.md`), traduits en anglais simple comme les identifiants.
 - **Le suffixe** dit le rôle du fichier ; il est facultatif quand le dossier suffit à le dire. **Un seul suffixe de rôle** par fichier ; seul `.test` peut s'y ajouter, toujours en dernier.
-- **Pas d'espace, d'accent, de majuscule ni de tiret bas** dans les noms soumis à cette règle ; pas de numéro de version (`item-v2.ts`) ni de date.
+- **Minuscules non accentuées et tirets** dans les noms soumis à cette règle (espace, accent, majuscule et tiret bas exclus) ; numéro de version (`item-v2.ts`) et date restent hors du nom.
 - **Dossiers** en kebab-case aussi ; au pluriel quand ils regroupent une collection (`features/`, `adapters/`), au singulier quand ils nomment un sujet (`features/item/`) ou une couche (`domain/`).
 - Le nom du fichier et le nom de ce qu'il exporte principalement se correspondent : `item-card.tsx` exporte `ItemCard`, `create-item.use-case.ts` exporte `createItem`.
 
 ### Exceptions : quand le langage ou l'outil impose autre chose
 
-Une exception ne vaut que si elle est **imposée** (le code ne fonctionne pas autrement, ou l'outil l'exige). Une habitude ne suffit pas.
+Une exception vaut seulement si elle est **imposée** (le code fonctionne uniquement ainsi, ou l'outil l'exige). Une simple habitude suit la règle générale.
 
 | Cas | Convention à suivre | Exemple |
 |---|---|---|
-| Modules Python importables | snake_case, pas de point dans le nom | `item_rules.py`, `test_item_rules.py` |
+| Modules Python importables | snake_case, tiret bas à la place du point | `item_rules.py`, `test_item_rules.py` |
 | Java, Kotlin, C# | nom du fichier = nom de la classe, en PascalCase | `ItemRepository.java` |
 | Go | minuscules, tiret bas si besoin, `_test` pour les tests | `item_repository.go`, `item_repository_test.go` |
 | Fichiers au nom fixé par le framework | le nom exact demandé par la documentation | `page.tsx`, `layout.tsx`, `+page.svelte`, `manage.py` |
@@ -48,23 +48,23 @@ Dans ces langages, le **suffixe** se reporte dans le nom selon la convention du 
 
 ## 3. Catalogue des suffixes
 
-Liste **fermée extensible** : on n'invente pas un suffixe au fil de l'eau. Un projet qui en a besoin d'un nouveau l'ajoute à « Organisation des fichiers » de `docs/technical.md`, avec son rôle et sa couche, avant de l'utiliser.
+Liste **fermée extensible** : on choisit son suffixe dans ce catalogue. Un projet qui en a besoin d'un nouveau l'ajoute à « Organisation des fichiers » de `docs/technical.md`, avec son rôle et sa couche, avant de l'utiliser.
 
 | Suffixe | Rôle | Couche (voir §5) | Exemple |
 |---|---|---|---|
-| `.entity` | Objet métier et ses invariants, sans accès extérieur | `domain/` | `item.entity.ts` |
+| `.entity` | Objet métier et ses invariants, indépendant de l'extérieur | `domain/` | `item.entity.ts` |
 | `.rules` | Règles et calculs métier purs | `domain/` | `item.rules.ts` |
 | `.use-case` | Un cas d'usage : orchestre le domaine et les ports | `application/` | `create-item.use-case.ts` |
 | `.port` | Interface que l'application attend de l'extérieur | `application/ports/` | `item-repository.port.ts` |
 | `.repository` | Lecture et écriture des données (implémente un port) | `infrastructure/` | `item.repository.ts` |
 | `.adapter` | Connexion à un service externe (paiement, e-mail, API) | `infrastructure/adapters/` | `email.adapter.ts` |
 | `.schema` | Validation des données entrantes ou schéma de la base | selon l'usage | `item.schema.ts` |
-| `.types` | Types partagés, sans code exécutable | la couche qui les définit | `item.types.ts` |
+| `.types` | Types partagés, déclarations seulement | la couche qui les définit | `item.types.ts` |
 | `.config` | Configuration lue au démarrage | `config/` ou racine | `app.config.ts` |
 | `.component` | Composant d'interface, si le projet préfère l'indiquer | `ui/` | `item-card.component.tsx` |
 | `.test` | Test du fichier de même nom | à côté du fichier testé | `item.rules.test.ts` |
 
-`.component` est facultatif : un projet choisit `item-card.tsx` **ou** `item-card.component.tsx`, et s'y tient partout. `.spec` n'est pas utilisé pour les tests, pour ne pas le confondre avec les specs de la méthode (`SPEC-US-XXX-<nom>.md`).
+`.component` est facultatif : un projet choisit `item-card.tsx` **ou** `item-card.component.tsx`, et s'y tient partout. Les tests utilisent `.test` plutôt que `.spec`, pour les distinguer des specs de la méthode (`SPEC-US-XXX-<nom>.md`).
 
 ## 4. La racine du dépôt
 
@@ -83,13 +83,13 @@ Liste **fermée extensible** : on n'invente pas un suffixe au fil de l'eau. Un p
 └── README.md
 ```
 
-- **Publié ou privé** : seuls le résultat de la construction et `public/` sont publiés. `docs/`, `aidd_docs/`, `scripts/`, `tests/` et les fichiers `.env*` ne le sont jamais.
+- **Publié ou privé** : seuls le résultat de la construction et `public/` sont publiés. `docs/`, `aidd_docs/`, `scripts/`, `tests/` et les fichiers `.env*` restent toujours privés.
 - Les fichiers de configuration des outils (framework, tests, formatage) restent à la racine quand l'outil les y attend.
 - Si le framework impose un autre emplacement pour le code (routes à la racine, dossier `app/` hors de `src/`), on suit le framework et on le note dans « Organisation des fichiers ».
 
 ## 5. Le code : des paliers progressifs, découpés par fonctionnalité
 
-Le code est **d'abord découpé par fonctionnalité** (`features/<nom>/`) : tout ce qui sert à une même fonction est au même endroit. À l'intérieur d'une feature, les **couches** n'apparaissent que lorsque le projet en a besoin. Trois paliers :
+Le code est **d'abord découpé par fonctionnalité** (`features/<nom>/`) : tout ce qui sert à une même fonction est au même endroit. À l'intérieur d'une feature, les **couches** apparaissent au moment où le projet en a besoin. Trois paliers :
 
 ### Palier 1 — simple
 
@@ -161,13 +161,13 @@ src/
 | Plusieurs services externes, ou un service qu'on prévoit de remplacer | 3 |
 
 - `/pulse:tech` choisit le palier d'après les besoins et l'écrit dans « Organisation des fichiers », avec les suffixes retenus.
-- **On monte d'un palier quand le besoin est constaté**, jamais par principe ni « pour plus tard » (YAGNI). Monter de palier est une tâche du plan, pas une initiative pendant l'implémentation.
+- **On monte d'un palier quand le besoin est constaté**, plutôt que par principe ou « pour plus tard » (YAGNI). Monter de palier est une tâche du plan, décidée avant l'implémentation.
 - Les features d'un même projet suivent le même palier ; une feature triviale peut rester à plat si « Organisation des fichiers » le prévoit.
-- `shared/` ne reçoit que ce qui sert **réellement** à au moins deux features. Un code qui ne sert qu'à une feature reste dans la feature.
+- `shared/` reçoit seulement ce qui sert **réellement** à au moins deux features. Un code propre à une seule feature reste dans la feature.
 
 ## 6. Règles de dépendance
 
-Une couche n'importe que ce qui est **en dessous** d'elle. Le domaine est au centre et ne dépend de rien.
+Une couche importe seulement ce qui est **en dessous** d'elle. Le domaine est au centre, indépendant de tout le reste.
 
 | Dossier | Peut importer | Ne doit jamais importer |
 |---|---|---|
@@ -178,18 +178,18 @@ Une couche n'importe que ce qui est **en dessous** d'elle. Le domaine est au cen
 | `app/` | tout : c'est là qu'on assemble | — |
 | `shared/` | `shared/` et les bibliothèques, en respectant les mêmes règles entre ses couches | une feature, `app/` |
 
-Au palier 1, sans couches, la même idée s'applique au niveau des fichiers : les règles (`.rules`) n'importent ni l'interface ni l'accès aux données.
+Au palier 1, sans couches, la même idée s'applique au niveau des fichiers : les règles (`.rules`) restent indépendantes de l'interface et de l'accès aux données.
 
 ### L'index public d'une feature
 
-- Chaque feature expose ce qu'elle partage par **un seul fichier `index`** à sa racine, qui liste explicitement ce qui est exporté (pas d'export global de tout le dossier).
-- Une feature n'importe une autre feature **que par son `index`**, jamais un fichier interne (`features/item/domain/item.rules.ts` est interdit depuis `features/project/`).
-- À l'intérieur d'une feature, on importe directement le fichier qui définit ce qu'on utilise, jamais son propre `index`.
-- Pas d'import circulaire entre features : si deux features ont besoin l'une de l'autre, la partie commune va dans `shared/`.
+- Chaque feature expose ce qu'elle partage par **un seul fichier `index`** à sa racine, qui liste explicitement, élément par élément, ce qui est exporté (plutôt qu'un export global de tout le dossier).
+- Une feature importe une autre feature **seulement par son `index`** et laisse ses fichiers internes de côté (`features/item/domain/item.rules.ts` reste hors de portée depuis `features/project/`).
+- À l'intérieur d'une feature, on importe directement le fichier qui définit ce qu'on utilise, plutôt que son propre `index`.
+- Imports à sens unique entre features : si deux features ont besoin l'une de l'autre, la partie commune va dans `shared/`.
 
 ## 7. Tests
 
-- **Tests unitaires et d'intégration à côté du fichier testé**, même nom avec `.test` : `item.rules.ts` → `item.rules.test.ts`. On voit d'un coup d'œil ce qui est testé et ce qui ne l'est pas.
+- **Tests unitaires et d'intégration à côté du fichier testé**, même nom avec `.test` : `item.rules.ts` → `item.rules.test.ts`. On voit d'un coup d'œil ce qui est testé et ce qui reste à tester.
 - **Tests de bout en bout** (parcours complet dans l'application) dans `tests/e2e/`, nommés par parcours : `create-item.e2e.test.ts`.
 - Données et doublures de test partagées : `tests/fixtures/` ; une doublure propre à une feature reste à côté de ses tests.
 - Si l'outil de test du langage impose un autre emplacement (`tests/` obligatoire, préfixe `test_` en Python), on suit l'outil et on le note dans « Organisation des fichiers ».

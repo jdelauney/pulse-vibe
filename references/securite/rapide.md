@@ -1,15 +1,15 @@
 # Contrôle rapide de sécurité (`/pulse:security rapide`)
 
-Lecture seule : aucun fichier modifié. Durée visée : 2 minutes. Ne remplace pas l'audit complet (`/pulse:security`).
+Lecture seule : les fichiers restent intacts. Durée visée : 2 minutes. C'est un aperçu : l'audit complet (`/pulse:security`) reste la référence.
 
-Avant de commencer, lire « Pile retenue », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md`. S'il n'existe pas, observer le projet (fichiers de configuration, dépendances déclarées) sans rien supposer. Chaque contrôle se décrit par son intention ; il se réalise avec les outils de la pile retenue, selon leur documentation officielle (ne jamais deviner une commande).
+Avant de commencer, lire « Pile retenue », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md`. S'il n'existe pas, observer le projet (fichiers de configuration, dépendances déclarées) et s'en tenir à ce qu'on y voit. Chaque contrôle se décrit par son intention ; il se réalise avec les outils de la pile retenue, selon leur documentation officielle (chaque commande vérifiée dans cette documentation).
 
 Chaque contrôle donne un statut : ✅ bon · ⚠️ à améliorer · ⛔ à corriger tout de suite · — non concerné (par exemple pas de serveur, pas de base, pas de comptes).
 
 ## 1. Dépendances
 
-- Intention : aucune bibliothèque avec une faille connue grave, aucune version non fixée.
-- Si la pile a un outil d'audit des vulnérabilités (voir sa documentation), le lancer en excluant si possible les dépendances de développement → nombre de vulnérabilités par gravité. ⛔ si critique ou élevée. Correction proposée : la mise à jour ciblée recommandée par l'outil, jamais une correction forcée qui change de version majeure sans accord (elle peut casser l'appli).
+- Intention : des bibliothèques exemptes de faille connue grave, chacune avec une version fixée.
+- Si la pile a un outil d'audit des vulnérabilités (voir sa documentation), le lancer en excluant si possible les dépendances de développement → nombre de vulnérabilités par gravité. ⛔ si critique ou élevée. Correction proposée : la mise à jour ciblée recommandée par l'outil ; une correction forcée qui change de version majeure seulement avec l'accord de la personne (elle peut casser l'appli).
 - Le fichier de verrouillage des versions, si l'outil en produit un, est versionné. ⚠️ sinon.
 - Bibliothèques chargées depuis une adresse externe : chaque adresse fixe une version. ⚠️ si « dernière version » ou sans version.
 
@@ -40,7 +40,7 @@ Chaque contrôle donne un statut : ✅ bon · ⚠️ à améliorer · ⛔ à cor
 ## 6. Connexion et droits
 
 - Sans comptes ni données partagées : —.
-- Sinon : le contrôle d'accès décrit dans « Données et contrôle d'accès » est vérifié côté serveur ou par des règles au niveau de la base, pour chaque table ou collection ; aucune règle « tout le monde peut tout faire » sur des données privées ; pages et actions d'administration protégées côté serveur, pas seulement en masquant un bouton. ⛔ sinon.
+- Sinon : le contrôle d'accès décrit dans « Données et contrôle d'accès » est vérifié côté serveur ou par des règles au niveau de la base, pour chaque table ou collection ; des règles restreintes sur les données privées, jamais « tout le monde peut tout faire » ; pages et actions d'administration protégées côté serveur, masquer un bouton venant seulement en complément. ⛔ sinon.
 
 ## 7. Limitation des appels (rate limiting)
 

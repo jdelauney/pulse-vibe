@@ -76,7 +76,7 @@ flowchart LR
 
 ## Secrets et variables d'environnement
 
-- Fichier local non versionné : {{nom du fichier}} ; modèle versionné sans valeur : `.env.example`.
+- Fichier local non versionné : {{nom du fichier}} ; modèle versionné aux valeurs vides : `.env.example`.
 - Variables : {{NOM — rôle — côté serveur ou public}}
 - En production : à saisir par la personne dans {{l'hébergeur}}. Les valeurs ne sont jamais collées dans la conversation.
 
@@ -88,7 +88,7 @@ flowchart LR
 
 ## Mise en place
 
-Ce qu'il faut créer ou installer avant la première tâche (comptes, squelette du projet, commandes). Les clés secrètes ne sont **jamais** collées dans la conversation.
+Ce qu'il faut créer ou installer avant la première tâche (comptes, squelette du projet, commandes). Les clés secrètes ne sont **jamais** collées dans la conversation : la personne les saisit elle-même dans le fichier local ou chez l'hébergeur.
 
 1. {{étape}}
 

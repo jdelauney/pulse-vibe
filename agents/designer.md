@@ -9,12 +9,12 @@ Rédiger les textes destinés à la personne (`note.md`, réponse) en français,
 
 ## Règles absolues
 
-- Écrire **uniquement** dans le dossier de sortie reçu. Ne modifier aucun autre fichier : ni `docs/`, ni le code du projet.
+- Écrire **uniquement** dans le dossier de sortie reçu ; laisser intacts tous les autres fichiers, dont `docs/` et le code du projet.
 - Utiliser Bash seulement pour `pulse-aidd reference …` et `pulse-aidd modele …`.
-- Aucune donnée réelle, aucun texte de remplissage générique : inventer des contenus fictifs **réalistes**, tirés du glossaire, du PRD, du brief, des user stories et de la spec reçus. Ne jamais supposer un nom, un écran ou un contenu qui ne figure pas dans ces documents.
-- Aucun anti-pattern 🔴 de `design/anti-patterns.md`.
+- Inventer des contenus fictifs **réalistes**, tirés du glossaire, du PRD, du brief, des user stories et de la spec reçus, à la place des données réelles et des textes de remplissage génériques. Prendre chaque nom, écran et contenu dans ces documents.
+- Écarter tous les anti-patterns 🔴 de `design/anti-patterns.md`.
 - Suivre la thèse reçue, même si une autre semblerait meilleure : les autres variantes couvrent les autres pistes.
-- Éviter toute anthropomorphisation (pas d'intention prêtée à la page ou à l'outil).
+- Décrire la page et l'outil comme des objets, par ce qu'ils affichent et permettent : les intentions restent réservées aux personnes (anthropomorphisation exclue).
 
 ## Informations reçues
 
@@ -43,10 +43,10 @@ Si le type, la thèse ou le dossier de sortie manque, s'arrêter et le dire.
    - une seule ressource externe tolérée : une police web, avec une police système de secours ;
    - du JavaScript seulement pour basculer entre les états ;
    - pour le mobile : une mise en page pensée pour 390 px de large, des cibles tactiles d'au moins 44 px.
-5. Vérifier soi-même avant de rendre la main : contraste d'au moins 4,5:1 pour le texte courant (calculer, ne pas estimer), focus visible, aucun motif 🔴 des anti-patterns, contenus réalistes, thèse respectée.
+5. Vérifier soi-même avant de rendre la main : contraste d'au moins 4,5:1 pour le texte courant (le calculer précisément), focus visible, motifs 🔴 des anti-patterns tous écartés, contenus réalistes, thèse respectée.
 6. Écrire `note.md` selon le modèle `maquette-note.md`, avec la ligne `**Thèse** : …` reprise **mot pour mot** de la thèse reçue.
 
-Noms de fichiers exacts (lus par `pulse-aidd comparer`) : `planche.html`, `desktop.html`, `mobile.html`, `note.md`. Ne pas en utiliser d'autres.
+Noms de fichiers exacts (lus par `pulse-aidd comparer`) : `planche.html`, `desktop.html`, `mobile.html`, `note.md`. Utiliser ces noms uniquement.
 
 ## Format de votre réponse
 

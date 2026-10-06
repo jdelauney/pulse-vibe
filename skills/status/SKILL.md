@@ -12,7 +12,7 @@ allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log
 
 Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
 
-Cette commande **ne modifie rien**, sauf une chose, et seulement avec l'accord de la personne : supprimer les worktrees dont le travail est déjà fusionné (§ Worktrees). Elle lit et résume.
+Cette commande **lit et résume**. Sa seule modification, et seulement avec l'accord de la personne : supprimer les worktrees dont le travail est déjà fusionné (§ Worktrees).
 
 ## Déroulé
 
@@ -55,24 +55,24 @@ Règles pour la prochaine étape conseillée, dans l'ordre :
 1. Document de méthode manquant → la commande qui le produit. Mémoire absente ou non branchée → `/pulse:memory creer`.
 2. Modifications non enregistrées d'une tâche `[~]` sans revue → `/pulse:review`.
 3. Tâche `[~]` relue → `/pulse:commit`.
-4. US Indispensables (MVP) terminées et site pas en ligne → `/pulse:deploy`.
+4. US Indispensables (MVP) terminées et site encore hors ligne → `/pulse:deploy`.
 5. Commits non envoyés sur GitHub (si un dépôt distant existe et que `git status` indique « ahead ») → `/pulse:deploy`.
 6. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <US-XXX>` (facultatif) puis `/pulse:plan <US-XXX>`.
 7. Spec sans plan → `/pulse:plan <US-XXX>`.
 8. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
 9. Dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec.
-10. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec ; dépôt distant relié, squelette en place et pas de CI → mentionner aussi `/pulse:cicd` (facultatif).
+10. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec ; dépôt distant relié, squelette en place et CI absente → mentionner aussi `/pulse:cicd` (facultatif).
 
 ## Worktrees
 
 Après l'affichage, seulement si un worktree est dans ce cas :
 
-- **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les worktrees déjà fusionnés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et ne rien forcer). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
-- **Non fusionné** : ne rien proposer de supprimer. Le signaler avec la façon de reprendre : « travail en cours dans le worktree `us-xxx-<nom>` : `/pulse:implement -w US-XXX` ou `/pulse:spirc -w US-XXX` pour continuer et le rassembler ».
-- **Fusionné mais avec des modifications non enregistrées** : ne rien supprimer ; le signaler (« des changements y restent, non enregistrés »).
+- **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les worktrees déjà fusionnés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et en rester là). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
+- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le worktree `us-xxx-<nom>` : `/pulse:implement -w US-XXX` ou `/pulse:spirc -w US-XXX` pour continuer et le rassembler ».
+- **Fusionné mais avec des modifications non enregistrées** : le garder ; le signaler (« des changements y restent, non enregistrés »).
 
-De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans la branche du dossier principal (`git branch --merged`, après `git pull` si la demande de fusion a été acceptée sur le site) et dont on n'est pas en train de se servir : proposer de la supprimer (`git branch -d`, jamais `-D`). Une demande de fusion encore ouverte pour un plan terminé (`gh pr view`, `glab mr view`) : rappeler qu'elle attend d'être fusionnée sur le site du dépôt.
+De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans la branche du dossier principal (`git branch --merged`, après `git pull` si la demande de fusion a été acceptée sur le site) et inutilisée en ce moment : proposer de la supprimer (`git branch -d`, jamais `-D`). Une demande de fusion encore ouverte pour un plan terminé (`gh pr view`, `glab mr view`) : rappeler qu'elle attend d'être fusionnée sur le site du dépôt.
 
-**Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc -w US-004` ». Une proposition seulement : ne rien lancer.
+**Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc -w US-004` ». Une proposition seulement : la personne la lance elle-même.
 
-Pour cette commande, ne pas ajouter le bloc de fin de commande habituel : le format ci-dessus le remplace.
+Pour cette commande, le format ci-dessus remplace le bloc de fin de commande habituel.

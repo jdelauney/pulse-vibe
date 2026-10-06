@@ -26,16 +26,16 @@ Analogie à donner : « C'est comme un document partagé qui se met à jour tout
 
 Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hébergeur, dépôt distant, CI éventuelle. Lire aussi « Commandes du projet » (en particulier « construire » et « déployer ») et « Secrets et variables d'environnement ».
 
-- `docs/technical.md` absent, ou hébergeur / dépôt distant non choisis (vides ou « aucune ») : expliquer qu'il faut d'abord choisir où mettre l'appli en ligne, et proposer `/pulse:tech`. Ne rien installer, ne rien configurer, s'arrêter là.
-- Pour chaque étape propre à l'hébergeur, au dépôt distant ou à la CI retenus : suivre **leur documentation officielle** (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Ne jamais deviner un libellé, un menu ou un nom de fichier de configuration ; si la documentation est inaccessible, le dire et guider à partir de ce que la personne voit à l'écran.
+- `docs/technical.md` absent, ou hébergeur / dépôt distant encore à choisir (vides ou « aucune ») : expliquer qu'il faut d'abord choisir où mettre l'appli en ligne, et proposer `/pulse:tech`. S'arrêter là, avant toute installation ou configuration.
+- Pour chaque étape propre à l'hébergeur, au dépôt distant ou à la CI retenus : suivre **leur documentation officielle** (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Tirer de cette documentation chaque libellé, menu ou nom de fichier de configuration ; si la documentation est inaccessible, le dire et guider à partir de ce que la personne voit à l'écran.
 
 ## 1. Contrôles avant envoi (toujours)
 
 1. Dépôt Git présent, sinon proposer `/pulse:init`.
 2. Branche : `git branch --show-current`. Si c'est `master`, proposer `git branch -M main` et expliquer que `main` est la branche publiée.
-3. Rien en attente : si `git status --short` n'est pas vide, proposer `/pulse:commit` d'abord.
-4. Secrets : lancer `pulse-aidd verifier` depuis la racine du projet. Il vérifie l'absence de fichiers d'environnement suivis par Git et de clés secrètes dans le projet. S'il échoue, expliquer chaque problème simplement et corriger avant d'aller plus loin.
-5. Contrôles du projet : lancer les contrôles automatiques et la commande « construire » de « Commandes du projet » (celles qui ne valent pas « aucune »). Une erreur bloque l'envoi : proposer `/pulse:fix` ou `/pulse:auto-fix`. Si aucune commande de contrôle n'existe, le signaler et proposer d'en ajouter avec `/pulse:tech`.
+3. Tout est enregistré : si `git status --short` liste des fichiers, proposer `/pulse:commit` d'abord.
+4. Secrets : lancer `pulse-aidd verifier` depuis la racine du projet. Il vérifie que les fichiers d'environnement restent hors de Git et que le projet est exempt de clés secrètes. S'il échoue, expliquer chaque problème simplement et corriger avant d'aller plus loin.
+5. Contrôles du projet : lancer les contrôles automatiques et la commande « construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur bloque l'envoi : proposer `/pulse:fix` ou `/pulse:auto-fix`. Si aucune commande de contrôle n'existe, le signaler et proposer d'en ajouter avec `/pulse:tech`.
 
 ## 2. Choisir le mode
 
@@ -73,16 +73,16 @@ Proposer une petite modification visible (par exemple le texte du titre), puis :
 
 ## 5. Mode production (« pour de vrai »)
 
-Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en ligne, un contrôle qualité automatique vérifie le projet. Si le contrôle échoue, la nouvelle version défectueuse n'est pas publiée, et l'ancienne reste en ligne. »
+Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en ligne, un contrôle qualité automatique vérifie le projet. Si le contrôle échoue, l'ancienne version reste en ligne à la place de la nouvelle, défectueuse. »
 
 1. **Installer le contrôle** :
-   - si aucune CI n'existe encore : appliquer l'étape **cicd** (`pulse-aidd etape cicd`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
+   - si la CI reste à installer : appliquer l'étape **cicd** (`pulse-aidd etape cicd`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
    - si l'hébergeur le permet, le configurer pour exécuter ce contrôle **avant chaque mise en ligne** (commande de construction qui enchaîne `node scripts/verifier.js`, les contrôles du projet, puis la construction), d'après sa documentation ;
    - lancer `node scripts/verifier.js` pour vérifier qu'il passe.
-2. **Variables d'environnement** : lister les noms présents dans `.env.example` et dans « Secrets et variables d'environnement ». Guider la personne pour les saisir **elle-même** à l'endroit indiqué pour la production (réglages de l'hébergeur). Les valeurs ne doivent **jamais** être collées dans cette conversation. Après un ajout de variable, relancer un déploiement si l'hébergeur ne le fait pas seul.
+2. **Variables d'environnement** : lister les noms présents dans `.env.example` et dans « Secrets et variables d'environnement ». Guider la personne pour les saisir **elle-même** à l'endroit indiqué pour la production (réglages de l'hébergeur). Les valeurs vont uniquement dans ces réglages, **jamais** dans cette conversation. Après un ajout de variable, relancer un déploiement (sauf si l'hébergeur le fait seul).
 3. **Services connectés** : si un service de « Pile retenue » (connexion, données, emails…) doit connaître l'adresse du site (liens de connexion, redirections, origines autorisées), guider la personne pour la renseigner, d'après la documentation officielle du service.
 4. **Environnements** : si l'hébergeur le propose, expliquer la différence entre une adresse de **prévisualisation** (pour une branche ou une demande de fusion, pour tester sans toucher au site) et la **production** publiée depuis `main` (le site des clients).
-5. **Retour arrière** : montrer, d'après la documentation de l'hébergeur, comment republier une version précédente. Rassurer : on ne casse rien de façon définitive.
+5. **Retour arrière** : montrer, d'après la documentation de l'hébergeur, comment republier une version précédente. Rassurer : tout reste réparable.
 6. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push`. Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
 
 ## 6. Clore

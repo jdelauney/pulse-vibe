@@ -1,6 +1,6 @@
 # Sécurité du code
 
-Points S1 à S12 : `references/checklist-securite.md`. Où se trouvent les données, qui peut lire et écrire quoi, et où c'est vérifié : « Données et contrôle d'accès » de `docs/technical.md`. Pour l'API exacte de la technologie retenue (validation, session, réglages de l'authentification) : documentation officielle, jamais de mémoire.
+Points S1 à S12 : `references/checklist-securite.md`. Où se trouvent les données, qui peut lire et écrire quoi, et où c'est vérifié : « Données et contrôle d'accès » de `docs/technical.md`. Pour l'API exacte de la technologie retenue (validation, session, réglages de l'authentification) : documentation officielle, consultée à chaque fois.
 
 ## Principe directeur
 
@@ -25,7 +25,7 @@ Points S1 à S12 : `references/checklist-securite.md`. Où se trouvent les donn�
 
 Refuser ce qui est vide, trop long, du mauvais type ou mal formé, **avant** tout enregistrement ou envoi. Toujours côté serveur ; côté client en plus, pour le confort.
 
-- **Liste blanche des champs** : on ne lit que les champs attendus, un par un. Un champ inattendu (`role`, `isAdmin`, `userId`, `price`) est ignoré, jamais copié tel quel dans l'enregistrement.
+- **Liste blanche des champs** : on lit seulement les champs attendus, un par un. Un champ inattendu (`role`, `isAdmin`, `userId`, `price`) est ignoré, jamais copié tel quel dans l'enregistrement.
 - **Type** : une chaîne attendue est bien une chaîne, un nombre est un nombre fini dans un intervalle.
 - **Longueur** minimale et maximale, après suppression des espaces en début et en fin.
 - **Format** : email, téléphone, date, identifiant, valeur parmi une liste fermée.
@@ -60,8 +60,8 @@ Des saisies comme `<script>` ou `' OR 1=1 --` sont acceptées et enregistrées *
 - **L'identité vient du serveur** : de la session ou du jeton vérifié, jamais d'un identifiant, d'un rôle ou d'un champ envoyé par le client (paramètre, champ caché, corps de requête).
 - **Chaque** lecture et **chaque** écriture vérifie que la personne a le droit d'agir sur **cette** donnée : appartenance (« cette ligne est-elle à elle ? ») et rôle (« peut-elle faire cette action ? »).
 - Le rôle se lit **en base** à partir de l'identité vérifiée.
-- Une protection de page (redirection des visiteurs non connectés) ne protège **pas** les actions : chaque point d'entrée vérifie lui-même.
-- Réponses : non connecté → 401 ; connecté sans droit → 403 (ou 404 pour ne pas révéler l'existence d'une ressource).
+- Une protection de page (redirection des visiteurs non connectés) protège **seulement la page** : chaque point d'entrée vérifie lui-même ses actions.
+- Réponses : non connecté → 401 ; connecté sans droit → 403 (ou 404 pour taire l'existence d'une ressource).
 
 ```
 fonction updateProfile(request) :
@@ -75,21 +75,21 @@ fonction updateProfile(request) :
 
 ## 3. Règles d'accès au niveau des données
 
-Si la base retenue le permet (règles par ligne, politiques d'accès, vues filtrées), **les activer sur chaque table** exposée et écrire des règles explicites : qui peut lire, créer, modifier, supprimer. Une personne ne voit et ne modifie que ses lignes, sauf rôle autorisé. Ces règles sont la dernière barrière si un contrôle applicatif est oublié. Une table qui n'a aucune règle doit être inaccessible avec la clé publique. Test du cambrioleur : connecté en « Client B », changer un identifiant dans l'adresse ou la requête pour viser une donnée du « Client A ».
+Si la base retenue le permet (règles par ligne, politiques d'accès, vues filtrées), **les activer sur chaque table** exposée et écrire des règles explicites : qui peut lire, créer, modifier, supprimer. Une personne voit et modifie seulement ses lignes, sauf rôle autorisé. Ces règles sont la dernière barrière si un contrôle applicatif est oublié. Une table sans règle reste fermée à la clé publique. Test du cambrioleur : connecté en « Client B », changer un identifiant dans l'adresse ou la requête pour viser une donnée du « Client A ».
 
 ## 4. Champ piège et délai minimal (S10)
 
-**Champ piège (honeypot)** : un champ au nom crédible (par exemple « site web »), invisible pour les humains et les technologies d'assistance, exclu de la tabulation et du remplissage automatique. Éviter de le masquer d'une façon que certains robots repèrent (champ de type caché, affichage supprimé) : le placer hors de l'écran.
+**Champ piège (honeypot)** : un champ au nom crédible (par exemple « site web »), invisible pour les humains et les technologies d'assistance, exclu de la tabulation et du remplissage automatique. Le placer hors de l'écran, plutôt que de le masquer d'une façon que certains robots repèrent (champ de type caché, affichage supprimé).
 
 **Délai minimal** : la durée de remplissage est mesurée **côté client** (les horloges diffèrent) et envoyée avec le formulaire ; côté serveur, moins de 2 à 3 secondes ou une valeur illisible = robot probable.
 
-Dans les deux cas : **ne rien faire et répondre comme un succès**, pour que le robot n'apprenne pas qu'il a été repéré. Ne jamais enregistrer la valeur du champ piège. Ces deux mesures n'arrêtent que les robots naïfs (valeurs falsifiables) : les combiner avec la limite de fréquence.
+Dans les deux cas : **abandonner la requête en silence et répondre comme un succès**, pour que le robot ignore qu'il a été repéré. La valeur du champ piège est jetée, jamais enregistrée. Ces deux mesures arrêtent seulement les robots naïfs (valeurs falsifiables) : les combiner avec la limite de fréquence.
 
 ## 5. Limitation de fréquence (S10)
 
 Empêcher qu'un inconnu déclenche mille emails ou appels payants. Clé de comptage : `action + adresse IP` pour un visiteur, `action + identifiant` pour une personne connectée.
 
-- **Honnêteté** : un compteur en mémoire n'est **pas partagé** entre plusieurs instances du serveur et repart à zéro à chaque redémarrage. C'est un **frein**, suffisant pour un formulaire public modeste, pas une garantie.
+- **Honnêteté** : un compteur en mémoire est **propre à chaque instance** du serveur et repart à zéro à chaque redémarrage. C'est un **frein**, suffisant pour un formulaire public modeste ; la garantie vient de la version fiable.
 - **Version fiable**, obligatoire pour un point d'entrée qui coûte : un **stockage partagé** (table de la base, cache partagé), avec une mise à jour **atomique** du compteur, accessible uniquement par le code serveur. En cas de panne du stockage : **refuser** par prudence.
 - La plateforme d'hébergement ou le fournisseur d'authentification proposent parfois leurs propres limites : vérifier leur documentation avant de les promettre.
 - Seuils raisonnables (par exemple 5 envois par 10 minutes pour un formulaire de contact) : plusieurs personnes peuvent partager une IP.
@@ -103,26 +103,26 @@ fonction hitRateLimit(key, max, windowSeconds) :           // stockage partagé,
 
 ## 6. Origine des requêtes et CSRF (S4, S10)
 
-Une requête qui **modifie** quelque chose (création, modification, suppression, envoi) utilise une méthode d'écriture, jamais une simple lecture d'adresse.
+Une requête qui **modifie** quelque chose (création, modification, suppression, envoi) utilise une méthode d'écriture ; les simples lectures d'adresse restent réservées à la consultation.
 
-- **Authentification par cookie** (envoyé automatiquement par le navigateur) : risque CSRF réel. Vérifier l'origine de la requête (en-tête d'origine comparé à la liste des adresses autorisées) **et**, si la technologie retenue le prévoit, utiliser sa protection CSRF intégrée sans la contourner ; sinon, un jeton anti-CSRF.
+- **Authentification par cookie** (envoyé automatiquement par le navigateur) : risque CSRF réel. Vérifier l'origine de la requête (en-tête d'origine comparé à la liste des adresses autorisées) **et**, si la technologie retenue le prévoit, utiliser telle quelle sa protection CSRF intégrée ; sinon, un jeton anti-CSRF.
 - **Authentification par jeton envoyé explicitement** dans un en-tête par le code client : un site tiers ne peut pas l'ajouter, le risque CSRF classique est faible ; vérifier l'origine reste utile pour les formulaires publics et les points d'entrée qui coûtent.
 - Liste des adresses autorisées dans une variable d'environnement (production, local, prévisualisations).
 - Un appel de service à service (notification d'un prestataire) n'a pas d'origine : il se vérifie par la **signature** du prestataire, selon sa documentation.
-- Ne jamais autoriser toutes les origines dans les en-têtes de partage entre origines.
-- Limite : un outil en ligne de commande forge l'origine ; ce contrôle bloque les sites tiers, pas les robots.
+- En-têtes de partage entre origines : la liste précise des origines autorisées, jamais « toutes les origines ».
+- Limite : un outil en ligne de commande forge l'origine ; ce contrôle bloque seulement les sites tiers, et les robots le franchissent.
 
 ## 7. Mots de passe et authentification (S1, S5, S11)
 
-- **Déléguer** à un fournisseur d'authentification éprouvé ou à une bibliothèque reconnue (retenus dans « Pile retenue ») : création de compte, connexion, réinitialisation, sessions. Si aucun n'est retenu, ne pas coder de connexion : revenir à `/pulse:tech`.
-- **Jamais de stockage en clair**, jamais de hachage maison, jamais de mot de passe dans un journal ni dans une réponse.
-- **Longueur plutôt que complexité** : au moins 12 caractères, maximum borné ; pas de règles « 3 majuscules, 2 chiffres » qui poussent à des mots de passe prévisibles. Même valeur dans les réglages du fournisseur et dans le formulaire.
-- **Messages génériques** : « Email ou mot de passe incorrect. » ; pour la réinitialisation, dans tous les cas : « Si un compte existe pour cette adresse, un email vient d'être envoyé. » Ne jamais révéler qu'un compte existe.
+- **Déléguer** à un fournisseur d'authentification éprouvé ou à une bibliothèque reconnue (retenus dans « Pile retenue ») : création de compte, connexion, réinitialisation, sessions. Si aucun n'est retenu, revenir à `/pulse:tech` avant de coder la connexion.
+- Stockage et hachage relèvent du fournisseur ou de la bibliothèque : **jamais de stockage en clair**, jamais de hachage maison, jamais de mot de passe dans un journal ni dans une réponse.
+- **Longueur plutôt que complexité** : au moins 12 caractères, maximum borné, plutôt que des règles « 3 majuscules, 2 chiffres » qui poussent à des mots de passe prévisibles. Même valeur dans les réglages du fournisseur et dans le formulaire.
+- **Messages génériques** : « Email ou mot de passe incorrect. » ; pour la réinitialisation, dans tous les cas : « Si un compte existe pour cette adresse, un email vient d'être envoyé. » Même message, qu'un compte existe ou non.
 - Les adresses de redirection après connexion ou réinitialisation sont déclarées dans les réglages du fournisseur, jamais prises telles quelles dans la requête.
 
 ## 8. Anti-robot (S10)
 
-Ne pas coder de calcul imposé au navigateur ni de défi maison : long à rendre correct, facile à rater. Ordre recommandé :
+S'appuyer sur les mesures ci-dessous plutôt que sur un calcul imposé au navigateur ou un défi maison : long à rendre correct, facile à rater. Ordre recommandé :
 
 1. Champ piège + délai minimal + limite de fréquence : suffisent dans la plupart des cas.
 2. Si le spam persiste, après accord de la personne : un **service de challenge** reconnu, dont la réponse est **vérifiée côté serveur** avec la clé secrète, selon sa documentation.
@@ -136,7 +136,7 @@ Un service tiers reçoit des données techniques du visiteur : le citer dans la 
 - Chaque variable est déclarée **sans valeur** dans le fichier d'exemple du projet ; noms et lieu de saisie en production : « Secrets et variables d'environnement » de `docs/technical.md`.
 - Seules les valeurs **publiques par nature** (adresse d'un service, clé explicitement publique) peuvent atteindre le client ; un mécanisme qui expose une variable au client ne reçoit jamais un secret.
 - Le code serveur vérifie au démarrage de chaque point d'entrée que la configuration nécessaire est présente ; sinon : journal sans détail, réponse 500.
-- Ne jamais renvoyer un secret, ni l'erreur brute d'un service, dans une réponse.
+- Une réponse contient seulement le message prévu : jamais un secret, ni l'erreur brute d'un service.
 
 ## 10. Réponses, codes HTTP et journal (S11, S9)
 
@@ -157,14 +157,14 @@ Un service tiers reçoit des données techniques du visiteur : le citer dans la 
 
 - Toute donnée saisie ou venant de la base s'affiche **comme du texte**, par le mécanisme d'échappement normal de la technologie retenue.
 - **Jamais** de balisage construit en assemblant une saisie dans une chaîne, ni d'insertion de balisage brut qui contourne l'échappement. Si un contenu riche est indispensable, le nettoyer avec une bibliothèque reconnue, après accord.
-- Une adresse fournie par une personne n'est utilisée comme lien qu'après vérification de son schéma (`https:`).
-- Pas d'exécution de code construit à partir d'une chaîne.
-- Un sujet ou un en-tête d'email n'est jamais construit avec une saisie (risque d'injection d'en-tête).
+- Une adresse fournie par une personne est utilisée comme lien seulement après vérification de son schéma (`https:`).
+- Le code exécuté est celui des sources, jamais du code construit à partir d'une chaîne.
+- Sujet et en-têtes d'email sont des valeurs fixes du code, jamais construites avec une saisie (risque d'injection d'en-tête).
 - Test : un titre `<img src=x onerror=alert(1)>` s'affiche comme du texte.
 
 ## 12. Envoi de fichiers (S7)
 
-- Contrôler **côté serveur** le type réel (pas seulement l'extension ni le type déclaré par le client) et la **taille maximale**.
+- Contrôler **côté serveur** le type réel (d'après le contenu, au-delà de l'extension et du type déclaré par le client) et la **taille maximale**.
 - Renommer le fichier stocké (identifiant généré) ; ne jamais réutiliser le nom fourni comme chemin.
 - **Stockage privé** pour tout document personnel ; téléchargement par **liens temporaires** générés après contrôle d'accès.
 - Test : copier un lien de téléchargement, se déconnecter, l'ouvrir en navigation privée.

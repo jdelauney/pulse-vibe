@@ -17,9 +17,9 @@ Option : `$ARGUMENTS` (`--detail` : afficher chaque erreur dans le rapport final
 
 ## Objectif
 
-Éliminer **toutes** les erreurs que les contrôles automatiques du projet détectent seuls (syntaxe, lint, types, formatage), sans changer le comportement de l'appli. Phrase à dire : « Ces outils relisent le code comme un correcteur d'orthographe. Je fais corriger chaque erreur par un assistant, puis je revérifie. »
+Éliminer **toutes** les erreurs que les contrôles automatiques du projet détectent seuls (syntaxe, lint, types, formatage), en gardant intact le comportement de l'appli. Phrase à dire : « Ces outils relisent le code comme un correcteur d'orthographe. Je fais corriger chaque erreur par un assistant, puis je revérifie. »
 
-Ne remplace ni la relecture (`/pulse:review`) ni le test par la personne.
+Vient en complément de la relecture (`/pulse:review`) et du test par la personne, qui restent nécessaires.
 
 ## Prérequis
 
@@ -33,9 +33,9 @@ Lancer les contrôles et collecter **toutes** les erreurs (fichier, ligne, code,
 1. les **contrôles automatiques** de « Commandes du projet » de `docs/technical.md` (format, lint, types…), dans cet ordre : d'abord le formatage s'il existe (il corrige seul la mise en forme), puis les autres ; lancer chaque commande telle qu'elle est écrite, depuis la racine du projet ;
 2. `pulse-aidd verifier` (secrets et fichiers d'environnement suivis par Git).
 
-- Aucune commande de contrôle dans « Commandes du projet » (toutes à « aucune ») : le dire clairement (seul `pulse-aidd verifier` a pu être lancé) et proposer d'en ajouter avec `/pulse:tech`. Ne pas inventer de commande.
+- Aucune commande de contrôle dans « Commandes du projet » (toutes à « aucune ») : le dire clairement (seul `pulse-aidd verifier` a pu être lancé) et proposer d'en ajouter avec `/pulse:tech`. S'en tenir aux commandes écrites dans « Commandes du projet ».
 - Une commande qui échoue parce que l'outil manque (non installé) : le signaler, proposer la commande « installer » de « Commandes du projet », avec accord.
-- Une **erreur de secret** (`pulse-aidd verifier`) n'est jamais confiée à un agent : l'expliquer et la traiter avec la personne (la clé va dans le fichier d'environnement local décrit par « Secrets et variables d'environnement », puis la révoquer chez le fournisseur si elle a été envoyée sur le dépôt distant).
+- Une **erreur de secret** (`pulse-aidd verifier`) se traite avec la personne, jamais par un agent : l'expliquer et la résoudre ensemble (la clé va dans le fichier d'environnement local décrit par « Secrets et variables d'environnement », puis la révoquer chez le fournisseur si elle a été envoyée sur le dépôt distant).
 - Aucune erreur : le dire, et terminer.
 
 ## 2. Répartir
@@ -43,7 +43,7 @@ Lancer les contrôles et collecter **toutes** les erreurs (fichier, ligne, code,
 Grouper les erreurs par fichier, puis les fichiers par dossier ou fonctionnalité :
 
 - **5 fichiers au plus** par agent ;
-- **aucun fichier partagé** entre deux agents ;
+- **chaque fichier confié à un seul agent** ;
 - lancer **tous** les agents **`pulse:fixer`** en parallèle (plusieurs appels Agent dans le même message).
 
 Message de délégation (un par agent) :
@@ -60,9 +60,9 @@ Revérification : <commande de « Commandes du projet », limitée à ces fichie
 - [<outil>/<code>] <message exact> (ligne 2)
 ```
 
-Rappeler dans chaque message l'interdiction des « corrections » qui affaiblissent la sécurité ou les contrôles : désactiver une règle du lint ou un contrôle, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, supprimer le code qui pose problème.
+Rappeler dans chaque message que chaque correction préserve la sécurité et les contrôles ; restent interdites les « corrections » qui les affaiblissent : désactiver une règle du lint ou un contrôle, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, supprimer le code qui pose problème.
 
-**Ne corriger aucun fichier soi-même** : tout passe par les agents. Si l'agent `pulse:fixer` n'est pas disponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler.
+**Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler.
 
 ## 3. Revérifier
 

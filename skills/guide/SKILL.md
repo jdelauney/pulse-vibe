@@ -26,10 +26,10 @@ Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une co
 
 ## Principes
 
-- **Le plan est la seule source** : le guide est produit par un script à partir des plans de `aidd_docs/tasks/<epic>/`, entièrement, à chaque fois. Il n'ajoute ni ne retire aucune tâche, et ses statuts sont ceux du plan.
-- **Mise à jour automatique** : un hook du plugin régénère le guide dès qu'un plan de `aidd_docs/tasks/` est modifié (par `/pulse:plan`, `/pulse:commit`, `/pulse:refine`…), sans rien afficher.
+- **Le plan est la seule source** : le guide est produit par un script à partir des plans de `aidd_docs/tasks/<epic>/`, entièrement, à chaque fois. Il reprend exactement les tâches et les statuts du plan.
+- **Mise à jour automatique** : un hook du plugin régénère le guide dès qu'un plan de `aidd_docs/tasks/` est modifié (par `/pulse:plan`, `/pulse:commit`, `/pulse:refine`…), en silence.
 - **Lecture seule** sur le plan, les documents et le code ; écriture uniquement dans `docs/guide/`.
-- **Rien n'est exécuté à la place de la personne** : le guide se copie-colle, il ne se lance pas tout seul.
+- **La personne lance elle-même chaque commande** : le guide se copie-colle.
 
 ## Prérequis
 
@@ -38,9 +38,9 @@ Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une co
 ## Déroulé
 
 1. Lancer `pulse-aidd guide`.
-   - **Plan absent ou non reconnu** : la sortie l'explique. Vérifier dans le plan signalé que les tâches suivent le format du modèle (`- [ ] **Tn – Titre** · US-XXX` sous `## Tâches`, et la ligne « **Priorité** : … » dans la vue d'ensemble) ; si ce n'est pas le cas, proposer de remettre le plan au format (avec accord, sans changer le contenu des tâches), puis relancer.
+   - **Plan absent ou non reconnu** : la sortie l'explique. Vérifier dans le plan signalé que les tâches suivent le format du modèle (`- [ ] **Tn – Titre** · US-XXX` sous `## Tâches`, et la ligne « **Priorité** : … » dans la vue d'ensemble) ; sinon, proposer de remettre le plan au format (avec accord, en gardant intact le contenu des tâches), puis relancer.
 2. Lire `docs/guide/index.md` et la page du plan en cours.
-3. **Contrôler la cohérence** avec le projet, sans rien modifier :
+3. **Contrôler la cohérence** avec le projet, en lecture seule :
    - une tâche `[~]` sans modification en cours (`git status`) ou une tâche `[ ]` déjà réalisée dans le code : le signaler, et proposer `/pulse:refine` pour corriger le plan ;
    - une action manuelle qui manque probablement dans le plan (ex. appliquer un schéma dans la console du fournisseur de données, saisir une variable d'environnement chez l'hébergeur, selon `docs/technical.md`) : la signaler de la même façon.
 4. **Présenter** en quelques lignes : la progression (MVP, US en cours, tâches terminées), la **prochaine commande à copier**, et les éventuelles actions manuelles à prévoir.

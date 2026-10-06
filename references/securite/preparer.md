@@ -17,7 +17,7 @@ Lire d'abord « Pile retenue », « Commandes du projet » et « Données et con
 
 ## 2. Écrire `endpoints.txt` (racine du projet)
 
-Format ci-dessous ; n'y lister que les points d'entrée **réellement trouvés** dans le projet. Les chemins entre `< >` sont à remplacer par les vrais.
+Format ci-dessous ; y lister seulement les points d'entrée **réellement trouvés** dans le projet. Les chemins entre `< >` sont à remplacer par les vrais.
 
 ```
 # ============================================================
@@ -50,7 +50,7 @@ Règles : tous les points d'entrée trouvés ; méthode indiquée pour POST/PUT/
 
 ## 3. Configurer la recherche de secrets dans l'historique
 
-Le garde-fou Pulse bloque les nouveaux secrets ; un outil de recherche de secrets parcourt **tout l'historique Git**. Si gitleaks est disponible (ou un outil équivalent), écrire sa configuration à la racine du projet (pour gitleaks : `.gitleaks.toml`), qui évite les fausses alertes sans masquer les vraies :
+Le garde-fou Pulse bloque les nouveaux secrets ; un outil de recherche de secrets parcourt **tout l'historique Git**. Si gitleaks est disponible (ou un outil équivalent), écrire sa configuration à la racine du projet (pour gitleaks : `.gitleaks.toml`), qui écarte les fausses alertes et garde les vraies :
 
 ```toml
 title = "<Projet> – configuration gitleaks"
@@ -70,11 +70,11 @@ regexes = [
 ]
 ```
 
-- N'exclure que des dossiers générés (dépendances installées, résultats de construction) et des valeurs factices.
+- Exclure seulement des dossiers générés (dépendances installées, résultats de construction) et des valeurs factices.
 - Seules des clés **publiques** (prévues par le service pour être visibles côté client, selon sa documentation) peuvent être exclues, **par motif précis**, jamais par fichier entier.
 - **Ne jamais exclure** une clé secrète, même de test, une clé privée, une clé d'accès complet à une base, ni le dossier `docs/`, ni `.env.example`, ni le fichier d'environnement (une clé y est vite collée par erreur).
 
-Lancer ensuite, si l'outil est installé (pour gitleaks : `gitleaks detect --config .gitleaks.toml --redact`). Sinon : `pulse-aidd verifier` couvre les fichiers actuels (pas l'historique).
+Lancer ensuite, si l'outil est installé (pour gitleaks : `gitleaks detect --config .gitleaks.toml --redact`). Sinon : `pulse-aidd verifier` couvre seulement les fichiers actuels, hors historique.
 
 ## 4. Rapport
 
@@ -86,4 +86,4 @@ Lancer ensuite, si l'outil est installé (pour gitleaks : `gitleaks detect --con
 Prochaines étapes : relire endpoints.txt ; lancer l'outil de recherche de secrets si disponible ; dérouler le test du cambrioleur avec /pulse:security.
 ```
 
-`endpoints.txt` et la configuration de recherche de secrets ne contiennent aucun secret : ils peuvent être enregistrés dans Git.
+`endpoints.txt` et la configuration de recherche de secrets sont exempts de secret : ils peuvent être enregistrés dans Git.

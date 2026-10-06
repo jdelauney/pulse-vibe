@@ -1,6 +1,6 @@
 # aidd_docs/memory – La mémoire du projet
 
-Ce que l'IA doit savoir à chaque session pour ne pas tout redécouvrir : les choix faits, les mots du métier, les pièges déjà rencontrés.
+Ce que l'IA doit savoir à chaque session pour reprendre le travail là où il en est : les choix faits, les mots du métier, les pièges déjà rencontrés.
 
 ## Comment elle se charge
 
@@ -9,7 +9,7 @@ Ce que l'IA doit savoir à chaque session pour ne pas tout redécouvrir : les ch
 
 ## Fichiers
 
-Liste mise à jour automatiquement. Ne pas la modifier à la main.
+Liste mise à jour automatiquement à partir des fichiers de ce dossier : modifiez les fichiers, la liste suit.
 
 <!-- fichiers:debut -->
 <!-- fichiers:fin -->

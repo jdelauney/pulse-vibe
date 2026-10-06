@@ -4,7 +4,7 @@
 > Ce fichier est le **référentiel** des user stories : leur découpage par epic, leur priorité et l'ordre du parcours.
 > Le détail de chaque US (règles métier, exemple, critères d'acceptation) est dans son propre fichier : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`. Sa spec (`SPEC-US-XXX-<nom>.md`) et son plan (`PLAN-SPEC-US-XXX-<nom>.md`) sont rangés à côté.
 > Une **epic** regroupe les US d'un même grand besoin (ex. « Gérer les demandes »). Son dossier porte son nom court : minuscules, sans accent, mots séparés par des tirets.
-> Identifiants : `US-001`, `US-002`… uniques dans tout le projet, jamais réutilisés.
+> Identifiants : `US-001`, `US-002`… uniques dans tout le projet, attribués une seule fois.
 > Priorités : **Indispensable** (le MVP) · **Essentiel** · **Optionnel** · **En attente** (hors périmètre pour l'instant).
 > Taille : **S** (une tâche) · **M** (2 ou 3 tâches) · **L** (à découper avant la spec).
 
