@@ -1,5 +1,5 @@
-import { ImageResponse } from "next/og";
 import { projet } from "@src/config/projet";
+import { ImageResponse } from "next/og";
 
 // L'image affichée quand un lien du site est partagé (LinkedIn, WhatsApp, X…), 1200 × 630 pixels.
 // Couleurs à accorder à docs/design.md (une image se dessine avec des valeurs, pas avec les rôles du thème).

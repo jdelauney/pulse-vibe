@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { projet } from "@src/config/projet";
+import type { Metadata } from "next";
 
 /** Champs de partage communs à toutes les pages. */
 export const partageCommun = {

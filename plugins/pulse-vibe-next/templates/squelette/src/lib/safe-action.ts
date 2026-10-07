@@ -1,6 +1,6 @@
 import "server-only";
-import { createSafeActionClient } from "next-safe-action";
 import { logger } from "@src/lib/logger";
+import { createSafeActionClient } from "next-safe-action";
 
 // Client des actions ouvertes à tous. La recette connexion ajoute actionConnectee.
 // Une erreur attendue se renvoie avec returnServerError("message") ; une erreur imprévue

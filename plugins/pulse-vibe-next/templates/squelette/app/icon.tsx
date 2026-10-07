@@ -1,5 +1,5 @@
-import { ImageResponse } from "next/og";
 import { projet } from "@src/config/projet";
+import { ImageResponse } from "next/og";
 
 // Icône du site (onglet du navigateur, résultats de Google : plus de 48 × 48 pixels recommandé).
 // Une image fournie, app/icon.png (carrée), la remplace.

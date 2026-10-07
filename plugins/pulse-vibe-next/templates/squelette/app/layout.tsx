@@ -1,10 +1,10 @@
+import { Toaster } from "@src/components/ui/sonner";
+import { projet } from "@src/config/projet";
+import { adresseDuSite } from "@src/config/site";
+import { partageCommun } from "@src/lib/seo/seo";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { Toaster } from "@src/components/ui/sonner";
-import { projet } from "@src/config/projet";
-import { partageCommun } from "@src/lib/seo/seo";
-import { adresseDuSite } from "@src/config/site";
 import "./globals.css";
 
 // La variable porte le nom attendu par globals.css (--font-sans) : sans elle, le navigateur

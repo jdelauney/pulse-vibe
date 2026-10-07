@@ -1,5 +1,5 @@
-import { ImageResponse } from "next/og";
 import { projet } from "@src/config/projet";
+import { ImageResponse } from "next/og";
 
 // Icône de l'écran d'accueil des téléphones Apple. Une image fournie, app/apple-icon.png, la remplace.
 export const size = { width: 180, height: 180 };
