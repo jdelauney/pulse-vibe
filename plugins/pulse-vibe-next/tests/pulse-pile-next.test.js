@@ -110,6 +110,25 @@ test("chaque recette ou référence citée existe", () => {
   assert.deepStrictEqual(manquantes, []);
 });
 
+test("le pack reste générique : aucune mention d'une formation, d'un formateur ou de stagiaires", () => {
+  const trouves = [];
+  (function parcourir(dossier) {
+    for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = path.join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (!/\.(ico|png)$/.test(e.name) && e.name !== path.basename(__filename)) {
+        const lignes = fs.readFileSync(chemin, "utf8").split("\n");
+        lignes.forEach((ligne, i) => {
+          // Mots entiers ; « atelier » en minuscules seulement (une séance), pas un nom propre (« Atelier Dupont »).
+          if (/\b[Ff]ormat(eur|rice)s?\b|\b[Ss]tagiaires?\b|\b[Ee]n formation\b|\bsalle de formation\b|(?<![-\w])ateliers?(?![-\w])/.test(ligne))
+            trouves.push(`${path.relative(RACINE, chemin)}:${i + 1}`);
+        });
+      }
+    }
+  })(RACINE);
+  assert.deepStrictEqual(trouves, []);
+});
+
 test("aucune clé ressemblant à une vraie dans les références et le squelette", () => {
   const { trouverSecrets } = require(path.join(RACINE, "..", "pulse-vibe", "scripts", "motifs.js"));
   const trouves = [];

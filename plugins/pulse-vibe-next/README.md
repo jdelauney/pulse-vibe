@@ -49,4 +49,4 @@ L'installation ajoute aussi `pulse-vibe` (dépendance). Redémarrer Claude Code 
 ## Maintenance
 
 - `node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres] [--ecrire] [--e2e]` : crée un projet avec le squelette (dernières versions avec `--dernieres`), puis installe, contrôle, teste et construit. La CI du dépôt le lance chaque semaine et propose une demande de fusion quand des versions plus récentes passent.
-- Un piège découvert en formation devient une ligne de `references/fiche.md`, avec sa raison.
+- Un piège découvert à l'usage devient une ligne de `references/fiche.md`, avec sa raison.

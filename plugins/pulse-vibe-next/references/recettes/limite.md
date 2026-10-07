@@ -372,7 +372,7 @@ describe("Limite de requêtes", () => {
 
 - **Toutes les requêtes locales comptent pour une seule IP** : en local, `x-forwarded-for` est absent et l'identifiant vaut `inconnue`. C'est normal.
 - **IP falsifiable hors de Vercel** : Vercel réécrit `x-forwarded-for`. Chez un autre hébergeur, vérifier qui écrit cet en-tête avant de s'y fier.
-- **Plusieurs personnes derrière la même IP** (salle de formation, entreprise) : elles partagent la limite. Pendant un atelier, relever les nombres de `REGLES` si besoin.
+- **Plusieurs personnes derrière la même IP** (entreprise, école, événement, réseau Wi-Fi partagé) : elles partagent la limite. Si un groupe utilise le site en même temps depuis un même lieu, relever les nombres de `REGLES` le temps nécessaire.
 - **`exigerLimite` placé après un `try`** : le placer en première ligne de l'action, hors de tout `try … catch` ; il arrête l'action avec `returnServerError`.
 - **Limiteur recréé à chaque appel** : `obtenirLimiteur` garde les limiteurs d'une requête à l'autre ; en créer un par appel désactive leur cache local.
 - **Offre gratuite dépassée** : chaque vérification consomme des commandes Redis ; surveiller le compteur dans la console Upstash.

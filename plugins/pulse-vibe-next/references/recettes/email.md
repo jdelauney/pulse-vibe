@@ -12,18 +12,18 @@
   - Linux (et macOS) : `sudo sh < <(curl -sL https://raw.githubusercontent.com/axllent/mailpit/develop/install.sh)`.
   - Lancement : `mailpit` dans un terminal. Il reçoit les e-mails sur le port SMTP **1025** et les affiche sur **http://localhost:8025**.
 - Pour le site en ligne, un compte SMTP :
-  - **En formation** : le compte Gmail du formateur, créé pour ses formations, avec la validation en deux étapes. Le formateur crée **un mot de passe d'application par stagiaire** sur https://myaccount.google.com/apppasswords et le lui transmet hors de Claude. Le stagiaire le colle lui-même dans `.env`, puis dans Vercel. En fin de session, le formateur révoque ces mots de passe un par un.
+  - **Pour essayer en ligne** : un compte Gmail que la personne crée pour le projet (jamais son compte personnel), avec la validation en deux étapes, puis un **mot de passe d'application** créé sur https://myaccount.google.com/apppasswords. La personne le colle elle-même dans `.env`, puis dans Vercel ; il ne passe jamais par la conversation. Elle le révoque sur la même page quand il ne sert plus.
   - **Pour un vrai lancement** : le SMTP d'un fournisseur, avec le nom de domaine du projet. Infomaniak (suisse) : `mail.infomaniak.com`, port 587, identifiant = l'adresse e-mail complète. Brevo (français) : `smtp-relay.brevo.com`, port 587, identifiant = l'adresse du compte Brevo, mot de passe = une clé SMTP créée dans « SMTP & API ».
 
 ## Variables d'environnement
 
-| Nom | Rôle | En local (Mailpit) | En formation (Gmail) |
+| Nom | Rôle | En local (Mailpit) | Pour essayer en ligne (Gmail) |
 |---|---|---|---|
 | `SMTP_HOST` | Serveur SMTP | `localhost` | `smtp.gmail.com` |
 | `SMTP_PORT` | Port | `1025` | `587` |
-| `SMTP_USER` | Identifiant | vide | l'adresse Gmail du formateur |
-| `SMTP_PASSWORD` | Mot de passe | vide | le mot de passe d'application du stagiaire (`VOTRE_MOT_DE_PASSE_ICI`) |
-| `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <adresse.du.formateur@gmail.com>` |
+| `SMTP_USER` | Identifiant | vide | l'adresse Gmail du projet |
+| `SMTP_PASSWORD` | Mot de passe | vide | le mot de passe d'application (`VOTRE_MOT_DE_PASSE_ICI`) |
+| `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <adresse.du.projet@gmail.com>` |
 
 Ajouter ces lignes au schéma de `src/lib/env.ts` :
 
@@ -844,7 +844,7 @@ vi.mock("@/lib/email", () => ({ envoyerEmail: vi.fn(async () => {}) }));
 
 ### 12. Mettre en ligne
 
-Saisir les cinq variables dans Vercel (valeurs Gmail en formation, ou celles du fournisseur), puis redéployer. S'inscrire sur le site en ligne avec sa propre adresse : l'e-mail arrive.
+Saisir les cinq variables dans Vercel (celles du compte Gmail du projet, ou celles du fournisseur), puis redéployer. S'inscrire sur le site en ligne avec sa propre adresse : l'e-mail arrive.
 
 ## Scénarios Gherkin à ajouter à la spec
 
@@ -1310,12 +1310,12 @@ test.describe("E-mails de compte", () => {
 
 ## Points de sécurité
 
-- **S1 – Secrets hors du code** : `SMTP_PASSWORD` vit dans `.env` et dans Vercel ; le mot de passe d'application passe du formateur au stagiaire hors de Claude.
+- **S1 – Secrets hors du code** : `SMTP_PASSWORD` vit dans `.env` et dans Vercel ; la personne saisit le mot de passe d'application elle-même, hors de la conversation.
 - **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/lib/email.ts` commence par `import "server-only"`.
 - **S5 – Validation des entrées** : chaque formulaire passe par un schéma Zod dans son action ; `disabledPaths` ferme les adresses HTTP de demande de lien et de choix du mot de passe.
 - **S6 – Affichage sans injection** : chaque valeur insérée dans le HTML d'un e-mail passe par `echapperHtml`.
 - **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton).
-- **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu. Appliquer la recette `limite` avant l'ouverture au public. En formation, les 500 destinataires par jour de Gmail sont partagés par tout le groupe : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
+- **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu. Appliquer la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
 - **S11 – Messages d'erreur** : inscription et « mot de passe oublié » répondent la même chose qu'un compte existe ou non ; l'envoi part après la réponse (`after()`).
 - Liens à usage unique et courts : 24 heures pour la confirmation, 1 heure pour le mot de passe ; un nouveau mot de passe ferme les autres sessions.
 
@@ -1323,7 +1323,7 @@ test.describe("E-mails de compte", () => {
 
 - **Port 25 bloqué par Vercel** : utiliser 587 (STARTTLS) ou 465 (chiffré dès la connexion). `src/lib/email.ts` règle `secure` d'après le port.
 - **Mailpit éteint** : l'envoi échoue en silence côté écran (better-auth journalise « Failed to run background task »). Lancer `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
-- **Gmail** : le mot de passe d'application exige la validation en deux étapes. Changer le mot de passe du compte Google révoque d'un coup tous les mots de passe d'application. L'expéditeur reste l'adresse Gmail. Un mot de passe d'application ouvre aussi la lecture de la boîte : elle doit contenir seulement des e-mails de formation. Google peut bloquer des connexions venues de nombreux endroits à la fois, et déconseille les mots de passe d'application pour un service en production.
+- **Gmail** : le mot de passe d'application exige la validation en deux étapes. Changer le mot de passe du compte Google révoque d'un coup tous les mots de passe d'application. L'expéditeur reste l'adresse Gmail. Un mot de passe d'application ouvre aussi la lecture de la boîte : réserver ce compte Gmail au projet. Google peut bloquer des connexions venues de nombreux endroits à la fois, et déconseille les mots de passe d'application pour un service en production.
 - **Comptes créés avant la recette** : leur adresse n'est pas confirmée ; ils ne peuvent plus se connecter. En développement, les supprimer. En ligne, la connexion leur envoie un e-mail de confirmation (`sendOnSignIn`).
 - **`authClient.forgetPassword` ou `requestPasswordReset` répond 404** : ces adresses sont fermées par `disabledPaths`. Passer par les actions `demanderNouveauMotDePasse` et `choisirNouveauMotDePasse`.
 - **`after()` hors d'une requête** : `tacheDeFond` reste absent dans `creerAuth` pour les tests ; seul `getAuth()` le fournit.
