@@ -164,3 +164,11 @@ test("aucune clé ressemblant à une vraie dans les références et le squelette
   })(RACINE);
   assert.deepStrictEqual(trouves, []);
 });
+
+test("la fiche s'accompagne de l'architecture, pour tech, plan, implement et review", () => {
+  for (const commande of ["tech", "plan", "implement", "review"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0);
+    assert.match(r.stdout, /----- Architecture du code/, commande);
+  }
+});

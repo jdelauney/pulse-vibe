@@ -39,7 +39,10 @@ recettes() {
   done
 }
 
-fiche() { afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"; }
+fiche() {
+  afficher "Architecture du code : où va chaque fichier, sens des imports, modèles" "$REF/architecture.md"
+  afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"
+}
 
 liste_recettes() {
   printf '\n----- Recettes disponibles (pulse-aidd pile recette <nom>) -----\n\n'
