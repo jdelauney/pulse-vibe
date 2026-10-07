@@ -73,7 +73,7 @@ Le niveau d'un composant se décide par **ce qu'il importe**.
 
 | Niveau | Rôle | Importe | Laisse de côté |
 |---|---|---|---|
-| `containers/` (`<nom>.container.tsx`) | lit les données (query, session, store), branche les actions, transmet des props | `queries/`, `actions/`, `hooks/`, `stores/`, `sections/` et en dessous | `db/`, `adapters/`, `drizzle-orm` |
+| `containers/` (`<nom>.container.tsx`) | lit les données (query, session, store), branche les actions, transmet des props | `queries/`, `actions/`, `hooks/`, `stores/`, `sections/` et en dessous, d'autres containers de la feature | `db/`, `adapters/`, `drizzle-orm` |
 | `sections/` | un bloc d'écran (liste, formulaire, en-tête) à partir de props | `composites/`, `elements/`, `components/ui`, `components/shared`, `lib/` | `actions/`, `queries/`, `hooks/`, `stores/`, `containers/`, `db/`, `adapters/` |
 | `composites/` | quelques éléments combinés (carte, ligne de tableau) | `elements/`, `components/ui`, `components/shared/elements`, `lib/` | idem + `sections/` |
 | `elements/` | une seule chose (badge de statut, montant formaté) | `components/ui`, `lib/` | tout autre composant de feature |
