@@ -135,6 +135,20 @@ function obtenirTransporteur(): Transporter {
   return transporteur;
 }
 
+/**
+ * Codes techniques de l'erreur SMTP, sans son texte : le texte d'un refus peut citer l'adresse du destinataire.
+ */
+function causeTechnique(erreur: unknown) {
+  const brute = (erreur ?? {}) as Record<string, unknown>;
+  const texte = (v: unknown) => (typeof v === "string" ? v : undefined);
+  return {
+    code: texte(brute.code),
+    command: texte(brute.command),
+    responseCode:
+      typeof brute.responseCode === "number" ? brute.responseCode : undefined,
+  };
+}
+
 /** La seule porte de sortie des e-mails de l'application. Lève ErreurService("email", …) si l'envoi échoue. */
 export const envoyerEmail: EnvoyeurEmail = async ({
   a,
@@ -152,13 +166,15 @@ export const envoyerEmail: EnvoyeurEmail = async ({
     });
     // Journal sans l'adresse du destinataire (donnée personnelle).
     logger.info({ messageId: info.messageId, sujet }, "E-mail envoyé");
-  } catch (cause) {
-    throw new ErreurService("email", "Envoi de l'e-mail impossible", { cause });
+  } catch (erreur) {
+    throw new ErreurService("email", "Envoi de l'e-mail impossible", {
+      cause: causeTechnique(erreur),
+    });
   }
 };
 ```
 
-`secure: true` seulement pour le port 465 ; sur 587, Nodemailer passe en chiffré par STARTTLS, et `requireTLS` refuse d'envoyer en clair. Avec Mailpit (port 1025), ni chiffrement ni identifiant. Une panne du serveur d'e-mail devient une `ErreurService("email", …)` : son message ne contient ni adresse ni secret, et la cause d'origine reste dans `cause` pour le journal (architecture.md §8).
+`secure: true` seulement pour le port 465 ; sur 587, Nodemailer passe en chiffré par STARTTLS, et `requireTLS` refuse d'envoyer en clair. Avec Mailpit (port 1025), ni chiffrement ni identifiant. Une panne du serveur d'e-mail devient une `ErreurService("email", …)` : son message ne contient ni adresse ni secret. Sa `cause` garde seulement trois champs techniques de l'erreur d'origine (`code`, `command`, `responseCode`), lus un par un ; le texte de l'erreur n'y entre pas, car un refus du serveur peut citer l'adresse du destinataire (architecture.md §8).
 
 ### 3. Les contenus des e-mails
 
@@ -559,12 +575,25 @@ export const choisirNouveauMotDePasse = actionPublique
 
 ### 7. Les formulaires existants
 
-Dans `src/features/compte/components/sections/formulaire-inscription.tsx`, ajoutez la prop `message` (réponse de l'action) au type `Props` et aux paramètres, puis affichez-la juste avant `{erreurServeur && (` :
+Dans `src/features/compte/components/sections/formulaire-inscription.tsx`, ajoutez la prop `message` (réponse de l'action) au type `Props` :
 
 ```tsx
   /** Réponse de l'action : demande d'ouvrir l'e-mail de confirmation. */
   message?: string;
 ```
+
+puis aux paramètres de la fonction :
+
+```tsx
+export function FormulaireInscription({
+  envoyer,
+  erreurServeur,
+  message,
+  enCours,
+}: Props) {
+```
+
+et affichez-la juste avant `{erreurServeur && (` :
 
 ```tsx
         {message && (
@@ -572,7 +601,6 @@ Dans `src/features/compte/components/sections/formulaire-inscription.tsx`, ajout
             {message}
           </p>
         )}
-
 ```
 
 Le container `inscription.container.tsx` la transmet :
@@ -1066,11 +1094,11 @@ Fonctionnalité: E-mails du compte
   Règle: Une panne du serveur d'e-mail est signalée comme une panne de service
 
     @US-XXX-5 @integration
-    Exemple: L'échec de l'envoi lève une erreur de service « email »
-      Étant donné le serveur d'e-mail est éteint
+    Exemple: L'échec de l'envoi lève une erreur de service « email » sans l'adresse
+      Étant donné le serveur d'e-mail refuse l'adresse de Camille
       Quand l'application envoie un e-mail à Camille
       Alors une erreur de service « email » est levée
-      Et son message ne contient pas l'adresse de Camille
+      Et ni son message ni sa cause ne contiennent l'adresse de Camille
 ```
 
 ## Tâches de plan prêtes
@@ -1080,7 +1108,7 @@ Fonctionnalité: E-mails du compte
   - Dépend de : —
   - Fichiers : à créer : `src/core/compte/email.port.ts`, `src/core/compte/emails-compte.rules.ts`, `src/adapters/email/email.adapter.ts`, `src/core/compte/__tests__/emails-compte.rules.test.ts`, `src/adapters/email/__tests__/email.adapter.test.ts` · à modifier : `src/config/env.ts`, `.env.example`
   - Vérification : US-XXX critères 1, 4 et 5 – `npm test` passe
-  - Tests : « L'e-mail de Camille contient son lien de confirmation » (unitaire) ; « Un nom contenant du HTML est neutralisé » (unitaire) ; « L'échec de l'envoi lève une erreur de service « email » » (intégration)
+  - Tests : « L'e-mail de Camille contient son lien de confirmation » (unitaire) ; « Un nom contenant du HTML est neutralisé » (unitaire) ; « L'échec de l'envoi lève une erreur de service « email » sans l'adresse » (adapter)
   - Action manuelle : installer et lancer Mailpit ; remplir les variables SMTP dans `.env`
 - [ ] **Tn+1 – Confirmer l'adresse à l'inscription** · US-XXX
   - Objectif : une personne confirme son adresse par e-mail avant sa première connexion
@@ -1151,9 +1179,9 @@ describe("E-mails de compte", () => {
 });
 ```
 
-### Intégration (Vitest + PGlite)
+### Adapter `email` (Vitest, Nodemailer doublé)
 
-L'échec d'envoi : Nodemailer est doublé et refuse l'envoi, comme un serveur éteint.
+Nodemailer est doublé et refuse l'envoi, comme un serveur qui rejette le destinataire. L'erreur levée garde ses codes techniques, sans le texte du refus ni l'adresse.
 
 ```ts
 // src/adapters/email/__tests__/email.adapter.test.ts
@@ -1164,7 +1192,13 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("nodemailer", () => ({
   default: {
     createTransport: () => ({
-      sendMail: vi.fn().mockRejectedValue(new Error("connect ECONNREFUSED")),
+      sendMail: vi.fn().mockRejectedValue(
+        Object.assign(new Error("550 5.1.1 <camille@exemple.fr> inconnue"), {
+          code: "EENVELOPE",
+          command: "RCPT TO",
+          responseCode: 550,
+        }),
+      ),
     }),
   },
 }));
@@ -1178,7 +1212,7 @@ vi.mock("@src/config/env", () => ({
 
 describe("Envoi d'e-mails", () => {
   describe("Un serveur d'e-mail en panne est signalé comme une panne de service", () => {
-    it("US-XXX-5 – L'échec de l'envoi lève une erreur de service « email »", async () => {
+    it("US-XXX-5 – L'échec de l'envoi lève une erreur de service « email » sans l'adresse", async () => {
       const { envoyerEmail } = await import("../email.adapter");
 
       const erreur = await envoyerEmail({
@@ -1189,13 +1223,21 @@ describe("Envoi d'e-mails", () => {
 
       expect(erreur).toBeInstanceOf(ErreurService);
       expect((erreur as ErreurService).service).toBe("email");
-      expect((erreur as ErreurService).message).not.toContain(
-        "camille@exemple.fr",
-      );
+      const service = erreur as ErreurService;
+      expect(service.message).not.toContain("camille@exemple.fr");
+      // La cause garde les codes techniques, sans le texte du refus ni l'adresse.
+      expect(service.cause).toEqual({
+        code: "EENVELOPE",
+        command: "RCPT TO",
+        responseCode: 550,
+      });
+      expect(JSON.stringify(service.cause)).not.toContain("camille@exemple.fr");
     });
   });
 });
 ```
+
+### Intégration (Vitest + PGlite)
 
 better-auth tourne sur une base PGlite neuve ; `creerAuth` reçoit une doublure de l'envoi qui garde les messages au lieu de les envoyer. Les liens et jetons viennent des e-mails gardés, comme pour une vraie personne.
 
@@ -1509,7 +1551,7 @@ test.describe("E-mails de compte", () => {
 - **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/adapters/email/email.adapter.ts` commence par `import "server-only"`.
 - **S5 – Validation des entrées** : chaque formulaire passe par un schéma Zod dans son action ; `disabledPaths` ferme les adresses HTTP de demande de lien et de choix du mot de passe.
 - **S6 – Affichage sans injection** : chaque valeur insérée dans le HTML d'un e-mail passe par `echapperHtml`.
-- **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton) ; l'`ErreurService` ne contient pas l'adresse du destinataire.
+- **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton) ; l'`ErreurService` ne garde, de l'erreur du serveur SMTP, que `code`, `command` et `responseCode` : ni son texte, ni l'adresse du destinataire, ni le lien.
 - **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu. Appliquez la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
 - **S11 – Messages d'erreur** : inscription et « mot de passe oublié » répondent la même chose qu'un compte existe ou non ; l'envoi part après la réponse (`after()`).
 - Liens à usage unique et courts : 24 heures pour la confirmation, 1 heure pour le mot de passe ; un nouveau mot de passe ferme les autres sessions.
