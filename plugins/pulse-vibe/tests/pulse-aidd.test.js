@@ -78,6 +78,38 @@ test("l'aide mentionne comparer et reste complète jusqu'à sa dernière ligne",
   assert.doesNotMatch(r.stdout, /RACINE=/, "la plage du sed ne déborde pas sur le code");
 });
 
+test("l'aide cite secrets, seo, perf et search-console", () => {
+  const r = lancer();
+  for (const sc of ["pulse-aidd secrets", "pulse-aidd seo", "pulse-aidd perf", "pulse-aidd search-console"])
+    assert.ok(r.stdout.includes(sc), sc);
+});
+
+test("contexte secrets : règles communes, saisie hors conversation, fuite, modèles des secrets et de l'incident", () => {
+  const r = lancer("contexte", "secrets");
+  assert.strictEqual(r.status, 0);
+  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Réagir à une fuite de clé", "Modèle : docs/secrets.md", "Modèle : journal d'incident"])
+    assert.ok(r.stdout.includes(`===== ${titre}`), titre);
+});
+
+test("contexte deploy et security : saisie des secrets hors conversation", () => {
+  for (const commande of ["deploy", "security"])
+    assert.ok(lancer("contexte", commande).stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), commande);
+});
+
+test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique", () => {
+  const attendus = {
+    seo: ["Référencement : les règles", "Référencement : assistants IA", "Modèle : docs/seo.md", "Modèle : rapport d'audit de référencement"],
+    perf: ["La vitesse vécue par les visiteurs", "Modèle : docs/performance.md"],
+    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md", "Modèle : travail en cours"],
+  };
+  for (const [commande, titres] of Object.entries(attendus)) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, commande);
+    assert.doesNotMatch(r.stdout, /commande inconnue/, commande);
+    for (const titre of [...titres, "Modèle : docs/lexique.md"]) assert.ok(r.stdout.includes(`===== ${titre} =====`), `${commande} : ${titre}`);
+  }
+});
+
 test("contexte annuler : règles communes, conventions Git et envoi du travail", () => {
   const r = lancer("contexte", "annuler");
   assert.strictEqual(r.status, 0, r.stderr);

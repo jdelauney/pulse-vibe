@@ -225,3 +225,30 @@ test("entrée invalide, autre outil ou garde-fou désactivé : rien n'est bloqu�
 test("un préfixe dans la commande ne désactive pas le garde-fou", () => {
   refus("PULSE_GARDE_COMMANDES_OFF=1 git push --force");
 });
+
+// ------------------------------------------------------------ Lecture de .env
+
+test("lire un fichier .env dans le shell : refusé, avec l'alternative ; .env.example permis", () => {
+  for (const c of ["cat .env", "cat ./.env.local", "type .env", "Get-Content .env.production", "head -5 .env", "grep DATABASE .env", "less config/.env", "more .env"]) {
+    const d = refus(c);
+    assert.match(d.raison, /pulse-aidd secrets inventaire/);
+  }
+  passe("cat .env.example");
+  passe("grep DATABASE .env.example");
+  passe("cat README.md");
+  passe('git commit -m "docs: ne pas faire cat .env"');
+});
+
+test("l'outil PowerShell est lu par le même garde-fou", () => {
+  const lancerPs = (commande) => {
+    const r = spawnSync("node", [HOOK], {
+      input: JSON.stringify({ tool_name: "PowerShell", tool_input: { command: commande }, cwd: os.tmpdir() }),
+      encoding: "utf8",
+      env: { ...process.env, PULSE_GARDE_COMMANDES_OFF: "" },
+    });
+    return r.stdout ? JSON.parse(r.stdout).hookSpecificOutput.permissionDecision : null;
+  };
+  assert.strictEqual(lancerPs("git push --force origin main"), "deny");
+  assert.strictEqual(lancerPs("Get-Content .env"), "deny");
+  assert.strictEqual(lancerPs("Get-ChildItem src"), null);
+});

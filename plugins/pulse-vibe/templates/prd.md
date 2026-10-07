@@ -43,6 +43,7 @@ Le MVP est la plus petite version **réellement utilisable** par de vrais utilis
 - **Budget mensuel acceptable pour les services** : {{montant et devise, ou 0}}
 - **Délai** : {{ex. MVP en fin de journée}}
 - **Appareils** : {{ordinateur, téléphone…}}
+- **Être trouvé** : {{sur Google et par les assistants IA : par qui, avec quels mots (ceux des clients), quelles pages publiques ; ou « non : outil interne, rien dans Google »}}
 - **Autres** :
 
 ## 7. Hors périmètre

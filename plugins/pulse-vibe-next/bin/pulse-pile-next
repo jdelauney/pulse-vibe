@@ -10,6 +10,9 @@
 #   pulse-pile-next recettes              liste les recettes
 #   pulse-pile-next recette <nom>         affiche une recette (ex. connexion)
 #   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
+#   pulse-pile-next seo-code [--pages] [--json] [--dossier <projet>]   contrôles du code pour le référencement
+#   pulse-pile-next secrets regles|tester <NOM>|fiche <NOM>   règles, test réel (valeurs en JSON sur l'entrée standard) et fiche d'une variable (pour pulse-aidd secrets)
+#   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur Vercel de pulse-aidd secrets (valeur sur l'entrée standard)
 #
 # Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
 
@@ -73,6 +76,17 @@ contexte() {
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
     deploy|cicd)
       afficher "Pour mettre en ligne" "$REF/contexte/deploy.md" ;;
+    secrets)
+      afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md" ;;
+    seo)
+      afficher "Pour /pulse:seo" "$REF/contexte/seo.md"
+      fiche
+      liste_recettes ;;
+    perf)
+      afficher "Pour /pulse:perf" "$REF/contexte/perf.md"
+      fiche ;;
+    search-console)
+      afficher "Pour Search Console" "$REF/contexte/search-console.md" ;;
     *) ;;
   esac
 }
@@ -97,6 +111,12 @@ case "$1" in
     if [ -f "$REF/recettes/$2.md" ]; then cat "$REF/recettes/$2.md"; else echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi ;;
   squelette)
     shift; exec node "$RACINE/scripts/squelette.js" "$@" ;;
+  seo-code)
+    shift; exec node "$RACINE/scripts/seo-code.js" "$@" ;;
+  secrets)
+    shift; exec node "$RACINE/scripts/sondes-secrets.js" "$@" ;;
+  hebergeur)
+    shift; exec node "$RACINE/scripts/secrets-vercel.js" "$@" ;;
   *)
-    sed -n '2,15p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac

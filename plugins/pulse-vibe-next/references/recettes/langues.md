@@ -26,7 +26,9 @@ Aucune.
 | `src/app/layout.tsx` → `src/app/[locale]/layout.tsx` | Layout racine, avec la langue |
 | `src/app/page.tsx`, `error.tsx`, `not-found.tsx`, `(public)/`, `(connecte)/` → sous `src/app/[locale]/` | Pages déplacées |
 | `src/app/[locale]/[...reste]/page.tsx` | Adresse inconnue : page « introuvable » du site |
-| `src/app/api/`, `global-error.tsx`, `globals.css`, `favicon.ico` | Restent dans `src/app/` |
+| `src/app/api/`, `global-error.tsx`, `globals.css`, `favicon.ico`, `robots.ts`, `sitemap.ts`, `opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx` | Restent dans `src/app/` |
+| `src/i18n/referencement.ts` | Adresse officielle et versions de langue d'une page (`alternates`) |
+| `src/app/sitemap.ts` (modifié) | Une entrée par page, avec ses versions de langue |
 | `src/components/choix-langue.tsx` | Sélecteur de langue |
 | `src/proxy.ts` (réécrit) | Renvoi vers la connexion + langues |
 | `playwright.config.ts` (modifié) | Navigateur de test en français |
@@ -130,7 +132,30 @@ const withNextIntl = createNextIntlPlugin();
 export default withNextIntl(nextConfig);
 ```
 
-### 5. Les messages
+### 5. Les versions de langue pour Google
+
+Chaque page déclare sa propre adresse et celles de ses traductions, elle-même comprise, plus `x-default` (la version française) : Google ignore des liens qui ne sont pas réciproques.
+
+```ts
+// src/i18n/referencement.ts
+import type { Metadata } from "next";
+import { cheminDansLaLangue } from "./chemins";
+import { type Langue, routing } from "./routing";
+
+export function versionsDeLangue(
+  langue: Langue,
+  chemin: string,
+): Metadata["alternates"] {
+  const languages: Record<string, string> = {};
+  for (const l of routing.locales) languages[l] = cheminDansLaLangue(l, chemin);
+  languages["x-default"] = cheminDansLaLangue(routing.defaultLocale, chemin);
+  return { canonical: cheminDansLaLangue(langue, chemin), languages };
+}
+```
+
+Dans une page : `alternates: versionsDeLangue(locale, "/tarifs")` (avec `metadonneesDePage()`, remplacer son `alternates`). Dans `src/app/sitemap.ts`, chaque entrée porte `alternates: { languages: { fr: …, en: … } }` (adresses complètes, construites avec `adresseDuSite()`).
+
+### 6. Les messages
 
 Fichiers à la racine du projet ; les mêmes clés dans les deux langues ; un espace de noms par écran ou par composant.
 
@@ -162,15 +187,15 @@ Fichiers à la racine du projet ; les mêmes clés dans les deux langues ; un es
 }
 ```
 
-### 6. Déplacer les pages
+### 7. Déplacer les pages
 
 1. Créer le dossier `src/app/[locale]/`.
 2. Y déplacer `page.tsx`, `error.tsx`, `not-found.tsx`, `(public)/` et `(connecte)/`.
-3. Laisser dans `src/app/` : `api/`, `global-error.tsx`, `globals.css`, `favicon.ico`.
+3. Laisser dans `src/app/` : `api/`, `global-error.tsx`, `globals.css`, `favicon.ico`, et les fichiers du référencement (`robots.ts`, `sitemap.ts`, `opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx`).
 4. Supprimer `src/app/layout.tsx` : il est remplacé à l'étape suivante.
 5. Dans les pages déplacées, ajouter `[locale]` aux clés de `PageProps` et `LayoutProps` : `PageProps<"/nouveau-mot-de-passe">` devient `PageProps<"/[locale]/nouveau-mot-de-passe">`, `PageProps<"/paiement/merci">` devient `PageProps<"/[locale]/paiement/merci">`. `npm run typecheck` signale chaque clé à corriger.
 
-### 7. Le layout racine
+### 8. Le layout racine
 
 Version du squelette, complétée : langue validée, `generateStaticParams`, `lang` de la page, fournisseur des messages pour les composants clients, sélecteur de langue.
 
@@ -185,6 +210,8 @@ import { ChoixLangue } from "@/components/choix-langue";
 import { Toaster } from "@/components/ui/sonner";
 import { routing } from "@/i18n/routing";
 import { projet } from "@/lib/projet";
+import { partageCommun } from "@/lib/seo";
+import { adresseDuSite } from "@/lib/site";
 import "../globals.css";
 
 // La variable porte le nom attendu par globals.css (--font-sans) : sans elle, le navigateur
@@ -195,9 +222,17 @@ const policeCode = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Métadonnées communes du squelette, inchangées (adresse du site, modèle de titre, carte de partage).
 export const metadata: Metadata = {
-  title: projet.nom,
+  metadataBase: new URL(adresseDuSite()),
+  title: { default: projet.nom, template: `%s | ${projet.nom}` },
   description: projet.description,
+  openGraph: {
+    ...partageCommun,
+    title: projet.nom,
+    description: projet.description,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 // Avec Cache Components, chaque langue est déclarée ici : sans elle, la construction échoue.
@@ -264,7 +299,7 @@ export function ChoixLangue() {
 }
 ```
 
-### 8. Les adresses inconnues
+### 9. Les adresses inconnues
 
 Une adresse qui ne correspond à aucune page affiche ainsi `src/app/[locale]/not-found.tsx`, dans le layout du site :
 
@@ -278,7 +313,7 @@ export default function AdresseInconnue() {
 }
 ```
 
-### 9. Le proxy : connexion et langues
+### 10. Le proxy : connexion et langues
 
 Remplacer `src/proxy.ts`. Le `matcher` couvre désormais toutes les pages (next-intl en a besoin) ; la liste `PAGES_CONNECTEES` reprend les lignes de l'ancien `matcher`, sans `/:path*`. La redirection vers la connexion passe en premier, dans la langue de l'adresse ; next-intl gère ensuite le préfixe, la détection de la langue et la réécriture vers `/[locale]/…`.
 
@@ -318,14 +353,14 @@ export const config = {
 };
 ```
 
-### 10. Traduire les écrans
+### 11. Traduire les écrans
 
 - Composant serveur non `async`, ou composant client : `const t = useTranslations("Compte");` puis `t("titre")`.
 - Composant serveur `async` : `const t = await getTranslations("Compte");` (de `next-intl/server`) puis `t("connecteEnTantQue", { nom: utilisateur.nom })`.
 - Liens internes : `Link` de `@/i18n/navigation` à la place de `next/link`.
 - Les lectures de session et de données restent sous `<Suspense>`, comme avant.
 
-### 11. Traduire les messages d'une action
+### 12. Traduire les messages d'une action
 
 `next/root-params` ne fonctionne pas dans une Server Action. Le formulaire envoie la langue (`useLocale()` de `next-intl`), et l'action la passe à `getTranslations`. Exemple, avec les clés `Contact.merci` et `Contact.liensRefuses` ajoutées aux deux fichiers de messages :
 
@@ -357,7 +392,7 @@ export const envoyerMessage = actionPublique
   });
 ```
 
-### 12. Playwright en français
+### 13. Playwright en français
 
 Dans `playwright.config.ts`, bloc `use` :
 
@@ -366,7 +401,7 @@ Dans `playwright.config.ts`, bloc `use` :
     locale: "fr-FR",
 ```
 
-### 13. Vérifier
+### 14. Vérifier
 
 `npm run build` liste `/fr/…` et `/en/…` pour chaque page. Puis ouvrir `/`, `/en`, et `/en/compte` sans être connecté : direction `/en/connexion`.
 
@@ -439,10 +474,10 @@ Fonctionnalité: Langues
   - Vérification : US-XXX critère 2 – sur l'accueil, cliquer sur « English » : l'adresse devient `/en`
   - Tests : « Une visiteuse francophone voit le site en français », « Camille passe en anglais depuis le sélecteur de langue », « Sans session, la page compte anglaise mène à la connexion anglaise » (bout en bout)
 - [ ] **Tn+2 – Traduire les écrans** · US-XXX
-  - Objectif : chaque texte affiché vient de `messages/fr.json` et `messages/en.json`
+  - Objectif : chaque texte affiché vient de `messages/fr.json` et `messages/en.json` ; chaque page publique déclare ses versions de langue
   - Dépend de : Tn+1
-  - Fichiers : à modifier : pages, composants et actions qui affichent du texte
-  - Vérification : US-XXX critère 2 – parcourir le site en anglais : aucun texte français ne reste
+  - Fichiers : à créer : `src/i18n/referencement.ts` · à modifier : pages, composants et actions qui affichent du texte, `src/app/sitemap.ts`
+  - Vérification : US-XXX critère 2 – parcourir le site en anglais : aucun texte français ne reste ; `pulse-aidd seo http://localhost:3000` : contrôle L23 sans constat
   - Tests : aucun nouveau (les tests existants vérifient les textes français)
 
 ## Tests
@@ -530,11 +565,12 @@ test.describe("Langues", () => {
 
 - **Construction en échec sur `generateStaticParams`** : avec Cache Components, `src/app/[locale]/layout.tsx` déclare chaque langue dans `generateStaticParams`.
 - **`PageProps<"/…">` refusé par `npm run typecheck`** : la clé prend `[locale]` (`PageProps<"/[locale]/…">`).
-- **Page oubliée dans `src/app/`** : elle n'a plus de layout racine. Tout déplacer, sauf `api/`, `global-error.tsx`, `globals.css` et `favicon.ico`.
+- **Page oubliée dans `src/app/`** : elle n'a plus de layout racine. Tout déplacer, sauf `api/`, `global-error.tsx`, `globals.css`, `favicon.ico` et les fichiers du référencement (`robots.ts`, `sitemap.ts`, `opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx`).
 - **`next/root-params` dans une action ou un Route Handler** : indisponible. Passer la langue en paramètre (`getTranslations({ locale, namespace })`).
 - **Tests Playwright redirigés vers `/en`** : le navigateur de test annonce l'anglais par défaut ; régler `locale: "fr-FR"`.
 - **Détection automatique** : un navigateur réglé en anglais qui ouvre `/` part sur `/en` ; le choix fait avec le sélecteur est gardé dans le cookie `NEXT_LOCALE`.
 - **Adresses avec un point** (`/profil/jean.dupont`) : exclues par le `matcher` ; ajouter une entrée de `matcher` dédiée.
+- **Versions de langue non réciproques** : chaque version cite toutes les autres et elle-même ; sinon Google ignore ces liens (`pulse-aidd seo`, contrôle L23).
 - **Liens qui perdent `/en`** : `next/link` et `redirect` de `next/navigation` ignorent la langue ; utiliser ceux de `@/i18n/navigation`.
 - **Liens des e-mails, retour de Stripe, redirections des actions de la recette `connexion`** : ils visent les adresses françaises (sans préfixe), qui restent valides.
 

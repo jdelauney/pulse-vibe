@@ -49,8 +49,10 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | Commande | Ce qu'elle fait |
 |---|---|
 | `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque demande de fusion : une croix rouge vous prévient avant que l'erreur n'arrive sur le site |
-| `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul. Chaque fois, Pulse vérifie que le site répond vraiment |
+| `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul. Chaque fois, Pulse vérifie que le site répond vraiment et reste visible pour Google |
 | `/pulse:deploy production` | Prépare le site « pour de vrai » : variables, services connectés, retour arrière (et la CI avec `/pulse:cicd` si elle manque) |
+| `/pulse:search-console relier` | Une fois le site en ligne : prouver à Google (et à Bing) que le site est à vous, déclarer son plan (sitemap). Une seule fois |
+| `/pulse:search-console` | Tous les 28 jours : ce que Google voit de votre site (combien de fois il le montre, les mots tapés, les pages oubliées) et 3 actions. Sans secret : vous exportez un fichier, Pulse le lit |
 
 ## À tout moment
 
@@ -60,6 +62,9 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:explain app.js` | « Je ne comprends pas ce code » |
 | `/pulse:learn les fonctions` | « Je veux apprendre une notion de programmation » (aussi : `feynman <notion>`, `exercice <notion>`, `parcours "<objectif>"` ; sans argument : réviser) |
 | `/pulse:security` | « Mon appli est-elle bien protégée ? » (`rapide` pour un contrôle en 2 minutes) |
+| `/pulse:secrets` | « Où sont mes clés ? » ; `renouveler <NOM>` pour changer une clé sans couper le site ; `fuite` dès qu'une clé a été vue (dépôt, conversation, écran) : on la révoque d'abord |
+| `/pulse:seo` | « Mon site est-il trouvable sur Google et par les assistants IA ? » (`bases`, `textes`, `ia`, `lancer`) |
+| `/pulse:perf` | « Mon site est-il rapide pour mes visiteurs ? » (`corriger` : améliorer, avec un avant/après chiffré ; `suivre` : vrais visiteurs et vérification chaque semaine) |
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » |
 | `/pulse:auto-fix` | « Il y a des erreurs rouges dans le code » |
 | `/pulse:test` | « Mes tests automatiques passent-ils ? » (`ecrire US-003` : ajouter les tests d'un code déjà fait) |

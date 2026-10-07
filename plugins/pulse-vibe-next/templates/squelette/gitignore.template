@@ -17,5 +17,9 @@ next-env.d.ts
 .env*
 !.env.example
 
+# identifiants personnels téléchargés (Google Cloud…)
+client_secret*.json
+*service-account*.json
+
 # Vercel
 .vercel

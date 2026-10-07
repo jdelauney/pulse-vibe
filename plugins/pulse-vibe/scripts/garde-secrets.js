@@ -84,10 +84,25 @@ function verifierEcriture(ti) {
   refuser(
     `🔒 Pulse a bloqué l'écriture de « ${path.basename(fichier)} » : le contenu ressemble à une ${secrets.join(", ")}.\n` +
       `Une clé secrète ne doit jamais être écrite dans le code (elle finirait sur GitHub et sur Internet).\n` +
-      `À faire : placez la valeur dans le fichier .env (ex. NOM_DE_LA_CLE=…), ajoutez le nom seul dans .env.example, ` +
-      `et lisez-la côté serveur avec process.env.NOM_DE_LA_CLE (fonction Netlify). ` +
-      `S'il s'agit d'un exemple, remplacez la valeur par un texte comme VOTRE_CLE_ICI.\n` +
+      `À faire : la personne place elle-même la valeur dans le fichier .env (ex. NOM_DE_LA_CLE=…) ; ajoutez le nom seul dans .env.example, ` +
+      `et lisez la valeur côté serveur, comme l'indique « Secrets et variables d'environnement » de docs/technical.md. ` +
+      `S'il s'agit d'un exemple, remplacez la valeur par un texte comme VOTRE_CLE_ICI. ` +
+      `Si cette clé a déjà été montrée ou envoyée ailleurs (dépôt distant, conversation), proposez /pulse:secrets fuite.\n` +
       `Expliquez cela simplement à la personne, puis corrigez.`
+  );
+}
+
+// ---------------------------------------------------------------- Read / Grep
+
+// Les valeurs de .env restent hors de la conversation : seuls les scripts de Pulse les lisent.
+function verifierLecture(outil, ti) {
+  const cibles = [ti.file_path, ti.path, ti.glob].filter((c) => typeof c === "string");
+  const visee = cibles.find((c) => estFichierEnv(c) || /(^|[\\/])\.env\*?$/.test(c) || /(^|[\\/])\.env\.\*$/.test(c));
+  if (!visee) return;
+  refuser(
+    `🔒 Pulse garde le contenu de « ${path.basename(visee)} » hors de la conversation : ce fichier contient les secrets du projet.\n` +
+      `À la place : \`pulse-aidd secrets inventaire\` liste les variables (noms, présence, sans aucune valeur) ; ` +
+      `.env.example donne les noms attendus. La personne modifie elle-même .env dans son éditeur.`
   );
 }
 
@@ -232,6 +247,8 @@ function principal() {
   const outil = entree.tool_name;
   if (["Write", "Edit", "MultiEdit", "NotebookEdit"].includes(outil)) {
     verifierEcriture(entree.tool_input);
+  } else if (outil === "Read" || outil === "Grep") {
+    verifierLecture(outil, entree.tool_input);
   } else if (outil === "Bash" && typeof entree.tool_input.command === "string") {
     verifierGit(entree.tool_input.command, entree.cwd || process.cwd());
   }

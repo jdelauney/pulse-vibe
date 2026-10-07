@@ -7,7 +7,7 @@ Contrôles propres à la pile, en plus de la checklist Pulse :
 - `import "server-only"` présent dans `src/db/index.ts`, `queries.ts`, `session.ts`, `auth.ts`, `env.ts`, `logger.ts`.
 - Aucune variable secrète préfixée `NEXT_PUBLIC_` ; secrets lus par `envServeur()`.
 - `dangerouslySetInnerHTML` seulement après `isomorphic-dompurify`.
-- `src/proxy.ts` : `matcher` présent, aucune lecture en base, aucune décision d'accès qui ne soit pas répétée côté serveur.
+- `src/proxy.ts` : `matcher` présent, aucune décision d'accès qui ne soit pas répétée côté serveur ; une seule lecture en base permise : l'existence d'un contenu publié pour un vrai 404 (requête légère, recette `seo`, étape 6).
 - Lectures dynamiques sous `Suspense` ; pas d'`export const dynamic`, `revalidate` ni `runtime` ; `error.tsx` avec `retry`.
 - Journaux sans mot de passe, jeton ni donnée personnelle.
 - Couleurs par rôle du thème, aucune couleur Tailwind brute dans les composants (hors `src/components/ui/`).

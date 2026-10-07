@@ -58,12 +58,13 @@ Suffixes : `.test.ts` (unitaire, intégration), `.spec.ts` (bout en bout). Tests
 
 - Fichier local non versionné : `.env` (ou `.env.local`) à la racine ; modèle versionné : `.env.example`.
 - Variables : `DATABASE_URL` (adresse « pooled » de Neon, serveur), `DATABASE_URL_DIRECT` (adresse directe, migrations), puis celles des recettes (ex. `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` pour la connexion). Toutes côté serveur ; aucune ne commence par `NEXT_PUBLIC_` sauf une clé prévue pour être publique.
-- En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview.
+- `SITE_URL` (non secrète, Production) : l'adresse officielle du site, une fois le domaine définitif.
+- En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview, ou `pulse-aidd secrets envoyer` (Vercel CLI relié). L'inventaire et le journal des rotations : `docs/secrets.md` (`/pulse:secrets`).
 
 ## Hébergement et mise en ligne
 
 - Dépôt distant : {{GitHub, d'après /pulse:init}}.
-- Hébergeur : Vercel (offre Hobby pour démarrer), fonctions en `fra1` (fichier `vercel.json`) ; mise en ligne automatique à chaque envoi sur `main`, adresse de prévisualisation pour chaque demande de fusion.
+- Hébergeur : Vercel (offre Hobby, gratuite, réservée à un usage non commercial ; offre Pro pour une activité commerciale), fonctions en `fra1` (fichier `vercel.json`) ; mise en ligne automatique à chaque envoi sur `main`, adresse de prévisualisation pour chaque demande de fusion.
 - Contrôle automatique avant mise en ligne (CI) : à mettre en place avec `/pulse:cicd` (GitHub Actions).
 
 ## Mise en place

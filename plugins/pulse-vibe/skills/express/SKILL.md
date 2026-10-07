@@ -35,7 +35,7 @@ Afficher la liste, puis la mettre à jour (⬜ → ✅) à la fin de chaque bloc
 ⬜ L'idée          pour qui, quel problème, comment on fait aujourd'hui
 ⬜ Les écrans      ce qu'on voit et ce qu'on fait sur chaque écran
 ⬜ L'apparence     l'impression que l'outil doit donner
-⬜ Les contraintes données personnelles, budget, technologie imposée, échéance
+⬜ Les contraintes données personnelles, budget, technologie imposée, échéance, être trouvé
 ⬜ Validation      un seul écran récapitulatif
 ⬜ Outils          les choix techniques
 ⬜ Identité        2 apparences à comparer, vous choisissez
@@ -48,7 +48,7 @@ Pour chaque bloc : poser ses questions, puis reformuler en 2 lignes (« ✔ Comp
 1. **L'idée** (questions clés) : pour qui est l'outil ; quel problème il règle et comment la personne s'y prend aujourd'hui ; ce qui lui ferait dire « ça m'aide vraiment ».
 2. **Les écrans** : proposer une liste d'écrans déduite de l'idée ; la personne ajoute, retire, renomme. Pour chaque écran principal : ce qu'on y voit, ce qu'on y fait. **Noter chaque action** (réserver, payer, envoyer, se connecter, déposer un fichier…) : c'est la source des déductions de l'étape 3. Demander s'il existe un espace réservé (administration, compte client).
 3. **L'apparence** : la personnalité de l'outil en 3 mots (réponses proposées concrètes, réponse libre possible) ; 1 à 3 outils ou sites dont la personne aime l'allure. Codes couleur et polices viendront à l'étape 7.
-4. **Les contraintes** : données personnelles ou sensibles ; budget mensuel accepté ; technologie imposée ou refusée ; échéance.
+4. **Les contraintes** : données personnelles ou sensibles ; budget mensuel accepté ; technologie imposée ou refusée ; échéance ; **être trouvé** (sur Google ou par les assistants IA : par qui, avec quels mots ; ou outil interne).
 
 Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16).
 

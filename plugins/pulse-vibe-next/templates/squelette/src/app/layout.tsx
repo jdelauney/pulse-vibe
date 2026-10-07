@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
 import { projet } from "@/lib/projet";
+import { partageCommun } from "@/lib/seo";
+import { adresseDuSite } from "@/lib/site";
 import "./globals.css";
 
 // La variable porte le nom attendu par globals.css (--font-sans) : sans elle, le navigateur
@@ -13,9 +15,18 @@ const policeCode = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Métadonnées communes. metadataBase complète les adresses relatives (adresse officielle, image de
+// partage) ; chaque page publique ajoute les siennes avec metadonneesDePage() de src/lib/seo.ts.
 export const metadata: Metadata = {
-  title: projet.nom,
+  metadataBase: new URL(adresseDuSite()),
+  title: { default: projet.nom, template: `%s | ${projet.nom}` },
   description: projet.description,
+  openGraph: {
+    ...partageCommun,
+    title: projet.nom,
+    description: projet.description,
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

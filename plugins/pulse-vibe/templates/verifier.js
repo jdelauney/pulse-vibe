@@ -29,7 +29,15 @@ const MOTIFS = [
   { nom: "clé SendGrid", re: /\bSG\.[0-9a-zA-Z_-]{16,}\.[0-9a-zA-Z_-]{16,}/ },
   { nom: "jeton Slack", re: /\bxox[abprs]-[0-9a-zA-Z-]{10,}/ },
   { nom: "clé privée", re: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
-  { nom: "mot de passe dans une adresse de base de données", re: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?):\/\/[^:\s/@]+:[^@\s]{3,}@/ },
+  { nom: "mot de passe dans une adresse de base de données", re: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?):\/\/[^:\s/@]+:[^@\s]{3,}@/ },
+  { nom: "secret client Google OAuth", re: /\bGOCSPX-[0-9A-Za-z_-]{28}(?![0-9A-Za-z_-])/ },
+  { nom: "jeton d'accès Google", re: /\bya29\.[0-9A-Za-z_-]{20,}/ },
+  { nom: "jeton de rafraîchissement Google", re: /\b1\/\/0[0-9A-Za-z_-]{30,}/ },
+  { nom: "clé d'API Google", re: /\bAIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_-])/ },
+  { nom: "clé d'API Brevo", re: /\bxkeysib-[a-f0-9]{64}-[0-9A-Za-z]{16}\b/ },
+  { nom: "clé d'API Neon", re: /\bnapi_[0-9a-z]{40,}/ },
+  { nom: "jeton Vercel", re: /\bvc[pkiar]_[0-9A-Za-z]{24,}/ },
+  { nom: "jeton d'API Cloudflare", re: /\bcf(?:k|ut|at)_[0-9A-Za-z]{40,}/ },
 ];
 
 // Clé Resend : "re_" suivi d'un mélange de chiffres et de majuscules.
@@ -242,7 +250,7 @@ function principal() {
   if (erreurs.length) {
     console.error("❌ Vérification échouée, la mise en ligne est annulée :\n");
     for (const e of erreurs) console.error("  - " + e);
-    console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle.");
+    console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");
     process.exit(1);
   }
   console.log(`✅ Vérification réussie (${fichiers.length} fichiers contrôlés).`);

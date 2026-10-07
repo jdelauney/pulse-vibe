@@ -7,7 +7,9 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 ## S1 – Secrets hors du code
 - Les clés, mots de passe et chaînes de connexion restent hors du code et de l'historique Git.
 - Le fichier d'environnement local est listé dans `.gitignore`. `.env.example` existe et contient seulement des noms de variables (valeurs vides ou factices).
+- Chez l'hébergeur, chaque variable secrète est enregistrée en type **Secret** (non relisible), avec des valeurs différentes en production et en prévisualisation pour les secrets générés.
 - Test : `git ls-files` montre au plus `.env.example` comme fichier d'environnement ; `pulse-aidd verifier` reste muet.
+- Test : `pulse-aidd secrets historique` reste muet ; `pulse-aidd secrets inventaire` ne signale aucun ⛔.
 
 ## S2 – Clés côté client (si l'application appelle un service avec une clé)
 - Seules les clés **publiques** (prévues par le service pour être visibles) apparaissent dans le code envoyé au client (navigateur, application installée).
@@ -22,6 +24,7 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 
 ## S4 – Pages et actions réservées (si l'application a des comptes ou des rôles)
 - Les pages et actions d'administration sont protégées **côté serveur ou dans la base** (rôle vérifié à chaque requête) ; cacher un bouton vient seulement en complément.
+- `robots.txt` est public et sert seulement aux moteurs de recherche : une page réservée est protégée par la connexion.
 - Test : ouvrir directement l'adresse de la page admin avec un compte non admin.
 
 ## S5 – Validation des entrées
