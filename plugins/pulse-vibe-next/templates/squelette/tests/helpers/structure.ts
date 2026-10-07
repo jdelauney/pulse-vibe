@@ -11,11 +11,18 @@ function tousLesDossiers(racine: string): string[] {
   return [racine, ...sousDossiers];
 }
 
-const fichiersDe = (dossier: string) => readdirSync(dossier, { withFileTypes: true }).filter((e) => e.isFile());
-const relatif = (base: string, chemin: string) => relative(base, chemin).split(sep).join("/");
+const fichiersDe = (dossier: string) =>
+  readdirSync(dossier, { withFileTypes: true }).filter((e) => e.isFile());
+const relatif = (base: string, chemin: string) =>
+  relative(base, chemin).split(sep).join("/");
 
 /** Dossiers qui contiennent plus de `limite` fichiers (sous-dossiers non comptés), hors `exemptes`. */
-export function dossiersTropPleins(racines: string[], limite: number, exemptes: string[], base = process.cwd()): string[] {
+export function dossiersTropPleins(
+  racines: string[],
+  limite: number,
+  exemptes: string[],
+  base = process.cwd(),
+): string[] {
   return racines
     .flatMap(tousLesDossiers)
     .filter((d) => !exemptes.includes(relatif(base, d)))
@@ -25,9 +32,16 @@ export function dossiersTropPleins(racines: string[], limite: number, exemptes: 
 }
 
 /** Fichiers .test.ts / .test.tsx rangés ailleurs que dans un dossier __tests__/. */
-export function testsMalRanges(racines: string[], base = process.cwd()): string[] {
+export function testsMalRanges(
+  racines: string[],
+  base = process.cwd(),
+): string[] {
   return racines
     .flatMap(tousLesDossiers)
     .filter((d) => !d.split(sep).includes("__tests__"))
-    .flatMap((d) => fichiersDe(d).filter((e) => /\.test\.tsx?$/.test(e.name)).map((e) => relatif(base, join(d, e.name))));
+    .flatMap((d) =>
+      fichiersDe(d)
+        .filter((e) => /\.test\.tsx?$/.test(e.name))
+        .map((e) => relatif(base, join(d, e.name))),
+    );
 }

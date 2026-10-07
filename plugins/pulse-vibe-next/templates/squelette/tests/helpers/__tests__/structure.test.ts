@@ -13,17 +13,25 @@ function projet(fichiers: string[]): string {
   return racine;
 }
 
-const n = (combien: number, dossier: string) => Array.from({ length: combien }, (_, i) => `${dossier}/f${i}.ts`);
+const n = (combien: number, dossier: string) =>
+  Array.from({ length: combien }, (_, i) => `${dossier}/f${i}.ts`);
 
 describe("dossiersTropPleins", () => {
   it("signale un dossier de plus de 20 fichiers, avec son nombre", () => {
-    const r = projet([...n(21, "src/features/factures/actions"), ...n(20, "src/core/factures")]);
-    expect(dossiersTropPleins([join(r, "app"), join(r, "src")], 20, [], r)).toEqual(["src/features/factures/actions (21 fichiers)"]);
+    const r = projet([
+      ...n(21, "src/features/factures/actions"),
+      ...n(20, "src/core/factures"),
+    ]);
+    expect(
+      dossiersTropPleins([join(r, "app"), join(r, "src")], 20, [], r),
+    ).toEqual(["src/features/factures/actions (21 fichiers)"]);
   });
 
   it("laisse passer src/components/ui, généré par shadcn", () => {
     const r = projet(n(30, "src/components/ui"));
-    expect(dossiersTropPleins([join(r, "src")], 20, ["src/components/ui"], r)).toEqual([]);
+    expect(
+      dossiersTropPleins([join(r, "src")], 20, ["src/components/ui"], r),
+    ).toEqual([]);
   });
 
   it("ne compte pas les sous-dossiers comme des fichiers", () => {
@@ -34,8 +42,15 @@ describe("dossiersTropPleins", () => {
 
 describe("testsMalRanges", () => {
   it("signale un test hors de __tests__, dans app/ comme dans src/", () => {
-    const r = projet(["app/factures/page.test.tsx", "src/core/factures/facture.rules.test.ts", "src/core/factures/__tests__/ok.test.ts"]);
-    expect(testsMalRanges([join(r, "app"), join(r, "src")], r).sort()).toEqual(["app/factures/page.test.tsx", "src/core/factures/facture.rules.test.ts"]);
+    const r = projet([
+      "app/factures/page.test.tsx",
+      "src/core/factures/facture.rules.test.ts",
+      "src/core/factures/__tests__/ok.test.ts",
+    ]);
+    expect(testsMalRanges([join(r, "app"), join(r, "src")], r).sort()).toEqual([
+      "app/factures/page.test.tsx",
+      "src/core/factures/facture.rules.test.ts",
+    ]);
   });
 
   it("une racine absente est ignorée", () => {

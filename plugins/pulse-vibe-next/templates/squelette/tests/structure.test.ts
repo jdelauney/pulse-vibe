@@ -15,6 +15,9 @@ describe("Structure du projet", () => {
   });
 
   it("chaque test unitaire ou d'intégration est dans un dossier __tests__/", () => {
-    expect(testsMalRanges(RACINES), "Déplacez ces tests dans le dossier __tests__/ voisin.").toEqual([]);
+    expect(
+      testsMalRanges(RACINES),
+      "Déplacez ces tests dans le dossier __tests__/ voisin.",
+    ).toEqual([]);
   });
 });
