@@ -63,6 +63,8 @@ drizzle/                          migrations
 | `src/features/` | `core/`, `db/`, `adapters/`, `components/`, `lib/`, `config/`, `hooks/`, `stores/` | `app/` |
 | `app/` | tout : c'est l'assemblage | — |
 
+- Exception : `src/adapters/auth/` importe aussi `src/db/` (tables de Better Auth), déclarée dans `biome.json`.
+
 `import "server-only"` en tête de chaque fichier de `src/db/`, `src/adapters/`, `queries/`, et de `src/config/env.ts`, `src/lib/logger.ts`. Les fichiers d'`actions/` commencent par `"use server"`.
 
 ## 4. Composants : containers et composants d'affichage

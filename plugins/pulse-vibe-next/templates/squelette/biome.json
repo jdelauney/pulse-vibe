@@ -146,6 +146,26 @@
       }
     },
     {
+      "includes": ["src/adapters/auth/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/**", "@src/features/**", "**/features/**"],
+                    "message": "L'adapter d'authentification lit ses propres tables (Better Auth gère sa base) ; il ignore les features. Voir architecture.md §3."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/features/*/components/containers/**"],
       "linter": {
         "rules": {

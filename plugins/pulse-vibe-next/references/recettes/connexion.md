@@ -201,13 +201,12 @@ npm run db:migrate
 
 ### 3. better-auth côté serveur
 
-better-auth enregistre ses comptes et ses sessions dans la base du projet : son adapter est le seul à importer `src/db/`. Les commentaires `biome-ignore-start` et `biome-ignore-end` autour de ces imports le disent à Biome, qui ferme `src/db/` aux autres adapters. L'objet `schema` de l'adaptateur Drizzle se construit ici, à partir des quatre tables.
+better-auth enregistre ses comptes et ses sessions dans la base du projet : son adapter est le seul à importer `src/db/`. Cette exception est déclarée dans `biome.json` (override `src/adapters/auth/**`, architecture.md §3) ; les autres adapters laissent la base aux repositories. L'objet `schema` de l'adaptateur Drizzle se construit ici, à partir des quatre tables.
 
 ```ts
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
 import { envServeur } from "@src/config/env";
-// biome-ignore-start lint/style/noRestrictedImports: better-auth enregistre ses comptes dans la base du projet.
 import { type Db, getDb } from "@src/db";
 import {
   account,
@@ -215,7 +214,6 @@ import {
   user,
   verification,
 } from "@src/db/compte/auth.table";
-// biome-ignore-end lint/style/noRestrictedImports: fin des imports de la base.
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -1243,7 +1241,6 @@ better-auth tourne sur une base PGlite neuve, avec les migrations du projet. `cr
 
 ```ts
 // src/adapters/auth/__tests__/auth.adapter.test.ts
-// biome-ignore lint/style/noRestrictedImports: le test relit la table des comptes de better-auth.
 import { account } from "@src/db/compte/auth.table";
 import { APIError } from "better-auth/api";
 import { eq } from "drizzle-orm";
@@ -1543,7 +1540,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - **Renvoyé vers `/connexion` juste après « Mot de passe modifié »** : la page est réaffichée dans la réponse de l'action avec l'ancien cookie si la session est lue avec `headers()` seul. Lisez-la avec `enTetesDeSession()`, qui prend les cookies à jour.
 - **Libellé qui remplit le mauvais champ, ou champ introuvable dans Playwright** : Next.js garde les pages visitées, cachées, dans le document. Préfixez les `id` avec `useId()` ; dans Playwright, utilisez `champ(page, "…")` (libellé exact + `visible: true`).
 - **`npx auth generate` refuse de démarrer** (« Please remove import 'server-only' ») : utilisez le fichier `src/db/compte/auth.table.ts` de la recette. Pour un plugin better-auth qui ajoute des tables, lancez la CLI sur un fichier temporaire sans `server-only`, copiez les nouvelles tables dans `src/db/compte/auth.table.ts`, ajoutez-les à l'objet `schema` de `auth.adapter.ts`, puis supprimez le fichier temporaire.
-- **`npm run check` signale `noRestrictedImports` dans `src/adapters/auth/`** : gardez les commentaires `biome-ignore-start` et `biome-ignore-end` de la recette autour des imports de `@src/db` et `@src/db/compte/auth.table` (un simple `biome-ignore` ne couvre pas un import écrit sur plusieurs lignes). Seul l'adapter de better-auth y a droit ; les autres adapters laissent la base aux repositories.
+- **`npm run check` signale `noRestrictedImports` dans `src/adapters/auth/`** : le `biome.json` du projet date d'avant l'exception de l'adapter d'authentification. Copiez dans `overrides`, juste après celui de `src/adapters/**`, l'override `src/adapters/auth/**` du squelette du pack (il ferme seulement `app/` et les features). Seul l'adapter de better-auth a cette exception.
 - **`authClient.signIn.email` répond 404** : ces adresses sont fermées par `disabledPaths`. Appelez l'action `connecter`. Une recette qui ajoute un parcours HTTP de better-auth retire son chemin de `disabledPaths`.
 - **Page connectée qui ne se construit pas** (`next build` signale `cookies()` ou `headers()` « accessed outside of `<Suspense>` ») : la lecture de session va dans un container sous `<Suspense>`, jamais au premier niveau d'une page ou d'un layout.
 - **Nouvelle page connectée accessible sans renvoi** : ajoutez son adresse au `matcher` de `proxy.ts` (`"/factures/:path*"`). La page reste protégée par `utilisateurConnecte()` même si vous l'oubliez.
@@ -1566,7 +1563,6 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - `baseURL`, `trustedOrigins` : https://www.better-auth.com/docs/reference/options ; `disabledPaths` : type `BetterAuthOptions` du paquet `@better-auth/core@1.7.7` (testé : HTTP 404, `auth.api` intact)
 - next-safe-action : https://next-safe-action.dev/docs/define-actions/middleware ; https://next-safe-action.dev/docs/concepts/error-handling (`returnServerError`) ; https://next-safe-action.dev/docs/execute-actions/hooks/useaction
 - shadcn + TanStack Form : https://ui.shadcn.com/docs/forms/tanstack-form
-- Biome, commentaires de suppression (`biome-ignore`) : https://biomejs.dev/analyzer/suppressions/
 - Next.js 16.4 (doc embarquée `node_modules/next/dist/docs/`) : `01-app/02-guides/authentication-with-cache-components.md` (session sous `<Suspense>`, revérifier dans chaque action) ; `01-app/01-getting-started/16-proxy.md` et `01-app/03-api-reference/03-file-conventions/proxy.md` (`proxy`, `matcher`, runtime Node.js) ; `01-app/03-api-reference/04-functions/cookies.md` (réaffichage dans la même réponse après un cookie modifié)
 - Codes d'erreur, cookies, `disabledPaths`, réaffichage après changement de mot de passe : vérifiés par essai réel (better-auth 1.7.7, Next.js 16.4.0, PGlite 0.5.8, Playwright 1.63.0).
 - Rejoué le 2026-10-06 sur le squelette du pack (shadcn 4.21.3 « base-nova », Biome 2.5.15) : `npm run check`, `npm run typecheck`, `npm test`, `npm run build` sans variables, puis Playwright sur ordinateur et téléphone, avec `next start` et `next dev` branchés sur PGlite. Le scénario « Une action réservée envoyée sans session est refusée » a été joué par Playwright (cookies effacés avant l'envoi).
