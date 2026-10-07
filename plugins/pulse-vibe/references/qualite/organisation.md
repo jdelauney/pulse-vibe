@@ -89,9 +89,11 @@ Liste **fermée extensible** : on choisit son suffixe dans ce catalogue. Un proj
 
 ## 5. Le code : des paliers progressifs, découpés par fonctionnalité
 
-Le code est **d'abord découpé par fonctionnalité** (`features/<nom>/`) : tout ce qui sert à une même fonction est au même endroit. À l'intérieur d'une feature, les **couches** apparaissent au moment où le projet en a besoin. Trois paliers :
+Le code est **d'abord découpé par fonctionnalité** (`features/<nom>/`) : tout ce qui sert à une même fonction est au même endroit. À l'intérieur d'une feature, les **couches** apparaissent au moment où le projet en a besoin.
 
 Les arborescences ci-dessous montrent l'`index` public de chaque feature ; il disparaît quand le framework déconseille les fichiers de réexportation (§6).
+
+Trois paliers :
 
 ### Palier 1 — simple
 
@@ -187,6 +189,7 @@ Au palier 1, sans couches, la même idée s'applique au niveau des fichiers : le
 - Chaque feature expose ce qu'elle partage par **un seul fichier `index`** à sa racine, qui liste explicitement, élément par élément, ce qui est exporté (plutôt qu'un export global de tout le dossier).
 - Une feature importe une autre feature **seulement par son `index`** et laisse ses fichiers internes de côté (`features/item/domain/item.rules.ts` reste hors de portée depuis `features/project/`).
 - À l'intérieur d'une feature, on importe directement le fichier qui définit ce qu'on utilise, plutôt que son propre `index`.
+- Imports à sens unique entre features : si deux features ont besoin l'une de l'autre, la partie commune va dans `shared/`.
 - **Quand le framework déconseille les fichiers de réexportation** (ex. Next.js : ils dégradent le tree shaking), la feature n'a pas d'`index` : on importe directement le fichier visé, et « Organisation des fichiers » de `docs/technical.md` liste les dossiers qu'une autre feature peut importer.
 
 ## 7. Tests
