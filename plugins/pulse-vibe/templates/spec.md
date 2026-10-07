@@ -2,39 +2,33 @@
 
 > Produit par `/pulse:spec` le {{DATE}} à partir de `US-{{XXX}}-{{nom}}.md` (même dossier) et de `docs/prd.md`.
 > Une spec par user story. Epic : {{Titre de l'epic}} (`aidd_docs/tasks/{{epic}}/`) · Plan associé : `PLAN-SPEC-US-{{XXX}}-{{nom}}.md` (même dossier).
-> La spec décrit **comment** l'outil sera construit. Elle reste lisible par une personne non technique.
+> La spec décrit **ce que** l'outil doit permettre, du point de vue de l'utilisateur. Le **comment** (pile, stockage, fichiers) est décidé dans le plan.
+> Une question sans réponse s'écrit `TBD: <question précise>` à l'endroit concerné. Une spec verrouillée se lit sans se réécrire : un changement passe par une nouvelle US et sa spec.
 
-## 1. Résumé
+**Statut** : {{brouillon | verrouillée le AAAA-MM-JJ | remplacée par US-YYY le AAAA-MM-JJ}}
 
-- **Ce que fait l'outil** : {{une phrase}}
+## 1. Intention
+
+- **Ce que l'utilisateur pourra faire** : {{une phrase}}
 - **User story** : US-{{XXX}} – {{titre}} (et, si elle vient d'une demande, la demande d'origine en une phrase)
-- **Pile** : voir « Pile retenue » dans `docs/technical.md`
-- **S'appuie sur** : {{specs déjà écrites dont on réutilise écrans, données ou règles (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`), ou « aucune »}}
+- **S'appuie sur** : {{specs déjà écrites dont on réutilise écrans, informations ou règles (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`), ou « aucune »}}
+- **Remplace ou complète** : {{spec verrouillée que celle-ci fait évoluer (`SPEC-US-XXX-<nom>.md`), ou « aucune »}}
 
 ## 2. Périmètre
 
 **Inclus**
-- {{ce que cette spec construit}}
+- {{ce que l'utilisateur pourra faire grâce à cette spec}}
 
-**Exclu** (volontairement, pour l'instant)
-- {{ce qui est reporté, et où c'est noté : autre US, « En attente » dans le PRD}}
+**Hors objectifs** (volontairement exclus)
+- {{ce qui est exclu, et où c'est noté : autre US, « En attente » dans le PRD}}
 
-## 3. Pile technique
+## 3. Ce que l'utilisateur voit et fait
 
-| Élément | Choix | Pourquoi (en une phrase) |
-|---|---|---|
-| Pile | {{reprise de « Pile retenue » dans docs/technical.md}} | |
-| Données | {{stockage retenu}} | |
-| Hébergement | {{hébergeur retenu}} | |
-| Services externes | {{aucun, ou ceux de « Pile retenue »}} | |
+| Écran | Qui y accède | Ce qu'on y voit | Ce qu'on y fait |
+|---|---|---|---|
+| | | | |
 
-## 4. Écrans
-
-| Écran | Qui y accède | Ce qu'on y voit | Ce qu'on y fait | US |
-|---|---|---|---|---|
-| | | | | |
-
-**États de chaque écran** : chargement {{…}} · liste vide {{…}} · erreur {{…}} · sur téléphone {{…}}
+**Situations à prévoir** : en attente {{…}} · rien à afficher {{…}} · échec {{…}} · sur téléphone {{…}}
 
 **Parcours principal**
 
@@ -44,39 +38,23 @@ flowchart LR
     B -->|{{action}}| C[{{Résultat visible}}]
 ```
 
-Maquette : {{docs/design/maquettes/US-XXX-<nom>/retenue/ | aucune}} · Design : {{docs/design.md | aucun}}
+## 4. Informations manipulées
 
-**Référencement** (écrans publics) : {{pour chaque écran public : adresse lisible, titre et description (docs/seo.md, ou « à valider avec /pulse:seo textes »), indexé oui / non, image de partage, données structurées ; « sans objet » si tous les écrans sont réservés}}
-
-## 5. Données
-
-Pour chaque type d'information stockée :
+Pour chaque type d'information, en mots du métier :
 
 ### {{Nom du type d'information}}
 
-**Stockée** : {{sur l'appareil / dans une base / dans des fichiers, selon « Données et contrôle d'accès » de docs/technical.md}}
+| Information | Obligatoire | Règle | Exemple |
+|---|---|---|---|
+| | | | |
 
-| Champ | Type | Obligatoire | Règle | Exemple |
-|---|---|---|---|---|
-| | | | | |
+**Qui peut** : consulter {{…}} · ajouter {{…}} · modifier {{…}} · supprimer {{…}}
 
-**Qui peut** : lire {{…}} · créer {{…}} · modifier {{…}} · supprimer {{…}}
-**Contrôle d'accès vérifié** : {{côté serveur / dans la base / sans objet}}
+## 5. Règles métier
 
-**Liens entre les informations** (si plusieurs types) :
+- {{Règle reprise de l'US, en une phrase vraie}} — US-{{XXX}}
 
-```mermaid
-erDiagram
-    {{TYPE_A}} ||--o{ {{TYPE_B}} : "{{verbe, ex. possède}}"
-```
-
-## 6. Règles métier
-
-| Règle | US | Où elle est vérifiée (navigateur / base / serveur) |
-|---|---|---|
-| | | |
-
-## 7. Scénarios
+## 6. Scénarios
 
 > Le comportement attendu, en exemples concrets, au format Gherkin (référence « Scénarios Gherkin »). Chaque critère d'acceptation de l'US est illustré par au moins un exemple. Ils servent au test manuel et, si le projet a des tests automatiques, à l'écriture des tests.
 
@@ -93,61 +71,25 @@ Fonctionnalité: {{titre de l'US}}
       Alors {{résultat visible}}
 ```
 
-## 8. Services externes
+## 7. Données personnelles et accès (obligatoire)
 
-| Service | Usage | Clé nécessaire ? | Où est la clé |
-|---|---|---|---|
-| | | | |
-
-## 9. Données et sécurité (obligatoire)
-
-1. **Quelles données personnelles je stocke ?** {{liste, ou « aucune »}} — Sont-elles toutes nécessaires ?
+1. **Quelles données personnelles sont nécessaires ?** {{liste, ou « aucune »}} — chacune justifiée par un besoin de l'US.
 2. **Qui a le droit de voir quoi ?** {{par rôle d'utilisateur}}
-3. **Quelles clés ou quels secrets mon appli utilise-t-elle ?** {{nom de la variable, côté serveur ou public}}
-4. **Que se passe-t-il si quelqu'un remplit mal un formulaire ?** {{contrôles prévus}}
+3. **Que vit l'utilisateur qui remplit mal un formulaire ?** {{résultat attendu, ex. un message clair, rien n'est enregistré}}
 
-Points de la checklist sécurité qui s'appliquent : {{identifiants de la checklist}}
+## 8. Ajouts proposés par Pulse
 
-## 10. Ajouts proposés par Pulse
-
-Ce que cette spec ajoute au-delà de l'US et du PRD. Chaque ligne est validée par la personne ; une ligne « exigé par la sécurité » est expliquée et reste en place.
+Ce que cette spec ajoute au-delà de l'US et du PRD, au niveau du besoin. Chaque ligne est validée par la personne.
 
 | Détail | Proposition | Pourquoi ça compte | Décision |
 |---|---|---|---|
-| {{ex. mots de passe}} | {{ex. les enregistrer sous une forme illisible (hachage)}} | {{ex. une fuite de la base ne révélerait aucun mot de passe}} | {{accepté · refusé · exigé par la sécurité}} |
+| {{ex. suppression}} | {{ex. demander une confirmation avant de supprimer}} | {{ex. une suppression par erreur ne se rattrape pas}} | {{accepté · refusé}} |
 
-## 11. Fichiers
+## 9. Terminé quand
 
-Organisation générale : voir « Organisation des fichiers » dans `docs/technical.md`.
+- {{résultat observable par l'utilisateur, ex. « une cliente retrouve ses rendez-vous à venir, du plus proche au plus lointain »}}
+- {{2 à 4 résultats au plus}}
 
-| Fichier | À créer / à modifier | Rôle | US |
-|---|---|---|---|
-| | | | |
+## 10. Questions en suspens
 
-## 12. Vérifications
-
-| Ce qu'on vérifie | Comment | US / critère |
-|---|---|---|
-| {{chaque critère d'acceptation de l'US}} | scénarios `@US-{{XXX}}-1` : test automatique si « Tester » existe dans `docs/technical.md`, sinon à la main | US-{{XXX}} #1 |
-| Un utilisateur non autorisé ne voit pas les données d'un autre | à la main, avec deux comptes (sans objet si une seule personne) | |
-| Un formulaire mal rempli affiche un message clair | à la main | |
-| L'écran reste utilisable sur téléphone | à la main | |
-| Chaque écran public a son titre, sa description et son adresse officielle dans le HTML servi | `pulse-aidd seo <adresse locale> --chemins <adresse de l'écran>` | |
-| {{règle métier délicate}} | scénarios de la règle, en test automatique si « Tester » existe | |
-
-## 13. Points d'attention
-
-| Risque | Conséquence | Ce qu'on prévoit |
-|---|---|---|
-| {{ou « aucun identifié »}} | | |
-
-## 14. Questions ouvertes
-
-- {{questions à trancher par la personne avant le plan, ou « aucune »}}
-
-## 15. Définition de « terminé »
-
-Une tâche est terminée quand :
-- ses critères d'acceptation sont vérifiés à la main par la personne ;
-- la relecture (`/pulse:review`) ne signale aucun point bloquant ;
-- elle est enregistrée dans Git (`/pulse:commit`).
+- {{chaque `TBD:` de la spec, repris ici ; « aucune » pour une spec verrouillée}}

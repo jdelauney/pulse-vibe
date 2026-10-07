@@ -60,10 +60,10 @@ contexte() {
       afficher "Pour /pulse:express" "$REF/contexte/express.md" ;;
     spec)
       afficher "Pour /pulse:spec" "$REF/contexte/spec.md"
-      fiche
       liste_recettes ;;
     plan|refine)
       afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
+      fiche
       liste_recettes ;;
     implement|fix|spirc|auto-fix)
       afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"

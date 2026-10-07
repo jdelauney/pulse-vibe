@@ -17,15 +17,15 @@
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **MVP** |
 | `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options (dont une pile Pulse prête à l'emploi si elle est installée), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
-| `/pulse:us` | Découpe le besoin en epics et écrit les user stories : « En tant que… je souhaite… afin de… » | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
+| `/pulse:us` | Découpe le besoin en epics et écrit les user stories : « En tant que… je souhaite… afin de… », 3 questions au plus par ronde ; chaque US vérifiée (INVEST, prête à spécifier), triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
 ## 3. Préparer la construction
 
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
-| `/pulse:spec US-001` ou `/pulse:spec "…"` | Décrit écrans, données, sécurité pour cette user story (une spec par US) ou pour votre demande | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
+| `/pulse:spec US-001` ou `/pulse:spec "…"` | Décrit ce que l'utilisateur obtient pour cette user story (une spec par US) ou pour votre demande : écrans, informations, règles, hors objectifs ; chaque inconnue notée `TBD:` ; verrouillée une fois validée | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
 | `/pulse:ui maquettes US-001` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
-| `/pulse:plan US-001` | Découpe la spec de l'US en petites tâches T1, T2… (un plan par spec) | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (votre kanban) et `docs/guide/` (votre carnet de route) |
+| `/pulse:plan US-001` | Décide comment construire la spec (pile, données, sécurité, fichiers), puis la découpe en petites tâches T1, T2… (un plan par spec) | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (votre kanban) et `docs/guide/` (votre carnet de route) |
 | `/pulse:refine US-001 "…"` | Change le plan selon vos remarques, après vous avoir montré ce qui change | le plan mis à jour |
 
 ## 4. Construire, tâche par tâche

@@ -198,11 +198,11 @@ contexte() {
       afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md" ;;
     spec)
-      afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$TPL/spec.md" ;;
     plan)
+      afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Stratégie de tests" "$REF/tests/strategie.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)

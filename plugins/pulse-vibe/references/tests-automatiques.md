@@ -39,7 +39,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 
 ### Rouge : écrire les tests
 
-1. Déléguer à **`pulse:test-writer`**, mode « avant le code » : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, sa ligne `Tests`, les **scénarios Gherkin** de la spec qu'elle couvre (recopiés), les règles métier de l'US, la section « Données » utile de la spec, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md` (recopiées), les mots du glossaire utiles, et la consigne de charger `pulse-aidd tests`.
+1. Déléguer à **`pulse:test-writer`**, mode « avant le code » : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, sa ligne `Tests`, les **scénarios Gherkin** de la spec qu'elle couvre (recopiés), les règles métier de l'US, les « Informations manipulées » utiles de la spec et les « Données » de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md` (recopiées), les mots du glossaire utiles, et la consigne de charger `pulse-aidd tests`.
 2. Déléguer à **`pulse:test-runner`**, phase « rouge attendu » : les fichiers de test écrits, la commande « tester », les critères de la tâche.
    - **🔴 Rouge confirmé** (chaque test échoue parce que le comportement manque) : continuer.
    - **⚠️ Rouge pour une mauvaise raison** (erreur dans le test lui-même) ou test qui passe déjà : renvoyer au test-writer la liste du test-runner, puis relancer le test-runner. Deux cycles au plus.

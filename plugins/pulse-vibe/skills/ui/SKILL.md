@@ -88,7 +88,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `doc
 
 ### Déroulé
 
-1. **Écrans.** Lire la section « Écrans » de la spec. Faire choisir les écrans à maquetter (AskUserQuestion multiSelect, le parcours principal recommandé), **3 écrans au plus** par passage. Si `docs/design/maquettes/<spec>/` existe déjà : « Compléter avec d'autres écrans » / « Refaire » / « Garder ».
+1. **Écrans.** Lire la section « Ce que l'utilisateur voit et fait » de la spec (« Écrans » dans une spec plus ancienne). Faire choisir les écrans à maquetter (AskUserQuestion multiSelect, le parcours principal recommandé), **3 écrans au plus** par passage. Si `docs/design/maquettes/<spec>/` existe déjà : « Compléter avec d'autres écrans » / « Refaire » / « Garder ».
    - « Garder » termine la commande : bloc de fin, prochaine étape `/pulse:plan <US-XXX>`.
    - « Refaire » : déplacer d'abord `retenue/` dans `alternatives/retenue-<AAAA-MM-JJ>/`.
    - « Compléter » : ajouter les nouveaux écrans dans `retenue/` sous les noms `desktop-<k>.html` et `mobile-<k>.html` (k = 2, 3…) ; le `note.md` de `retenue/` indique quels écrans chaque fichier couvre.
@@ -100,7 +100,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `doc
 7. **Enregistrer.**
    - Copier le choix dans `docs/design/maquettes/<spec>/retenue/`, avec un `note.md` qui dit d'où vient chaque partie.
    - Déplacer les autres variantes dans `docs/design/maquettes/<spec>/alternatives/`, puis supprimer `comparer.html` devenu périmé (`pulse-aidd comparer` a besoin de variantes pour le régénérer).
-   - Avec l'accord de la personne, ajouter à la section « Écrans » de la spec : « Maquette : `docs/design/maquettes/<spec>/retenue/` ».
+   - La spec reste telle quelle : le plan retrouve la maquette retenue à cet emplacement et la cite dans sa conception technique (si le plan existe déjà, y ajouter la ligne « Maquette », avec l'accord de la personne).
    - Laisser le commit à une étape ultérieure.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XXX>`.

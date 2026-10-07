@@ -2,6 +2,7 @@
 
 > Produit par `/pulse:us` le {{DATE}} · Epic : {{Titre de l'epic}} (`{{epic}}`) · Référentiel : `docs/user-stories.md`.
 > Spec : `SPEC-US-{{XXX}}-{{nom}}.md` · Plan : `PLAN-SPEC-US-{{XXX}}-{{nom}}.md` (dans ce même dossier, une fois écrits).
+> Ticket : {{lien ou numéro dans l'outil de ticketing de la mémoire projet, ou « — » (fichiers seuls)}}
 
 **En tant que** {{acteur}}, **je souhaite** {{action + objet}} **afin de** {{objectif / valeur}}.
 
@@ -29,4 +30,11 @@
 
 ## Questions ouvertes
 
-- {{ou « aucune »}}
+- {{questions non bloquantes, à trancher lors de la spec ; ou « aucune »}}
+
+## Prête (INVEST et Definition of Ready)
+
+- [x] **INVEST** : indépendante, négociable, utile à l'utilisateur, estimable, petite (S ou M), testable
+- [x] Critères d'acceptation complets, dont au moins un cas d'erreur ou limite
+- [x] Dépendances notées (« Dépend de »)
+- [x] Aucune question bloquante

@@ -1,5 +1,12 @@
 # Pack Pulse Next.js – pour /pulse:plan
 
+Conception technique (section du plan) :
+
+- **Écrans** : la route de chaque écran (`/factures`, `/factures/[id]`), publique ou dans `src/app/(connecte)/`. Écran public : métadonnées par `metadonneesDePage()` (`src/lib/seo.ts`), entrée dans `src/app/sitemap.ts` ; une page de détail publique suit l'étape 5 de la recette `seo`.
+- **Données** : pour chaque table, ses colonnes (montants en centimes, dates avec fuseau), son propriétaire (`utilisateurId`) et la condition de propriété vérifiée dans chaque action d'écriture.
+- **Fichiers** : d'après l'organisation de la fiche : `src/features/<domaine>/` (`actions.ts`, `queries.ts`, `schemas.ts`, `regles.ts`, `components/`), `src/db/schema/<domaine>.ts`, la page dans `src/app/`.
+- **Recettes** : citer chaque recette utilisée (« Recette : connexion ») dans la conception et dans les tâches concernées.
+
 Découpage type d'une US, chaque tâche livrant quelque chose de visible et de testé :
 
 1. **Table et migration** : `src/db/schema/<domaine>.ts`, `npm run db:generate`, migration relue ; la personne applique `npm run db:migrate` sur sa base (ligne « Action manuelle »).

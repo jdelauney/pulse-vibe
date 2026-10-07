@@ -1,5 +1,5 @@
 ---
-description: Écrire les user stories, découpées par epic (un fichier par US dans aidd_docs/tasks/<epic>/, référentiel dans docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors)
+description: Écrire les user stories, découpées par epic (un fichier par US dans aidd_docs/tasks/<epic>/, référentiel dans docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), validées INVEST, prêtes (Definition of Ready), triées par ordre de réalisation, sauvegardées après validation
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd *)
 ---
@@ -25,7 +25,9 @@ Produire le **référentiel** `docs/user-stories.md` (les epics, la vue d'ensemb
 
 ## Déroulé
 
-Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. Les **cas limites importants** sont les questions clés de cette commande : 1 ou 2 par epic au plus. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
+Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
+
+**Clarifier le périmètre par rondes** : **3 questions au plus par ronde** (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
 
 ### 1. Découper en epics
 
@@ -39,7 +41,7 @@ Pour chaque fonctionnalité **Indispensable** et **Essentielle** du PRD, écrire
 
 Chaque US suit le modèle de fichier d'US :
 
-- **Identifiant** : `US-001`, `US-002`… dans l'ordre du parcours puis des epics. En complément d'un référentiel existant, reprendre après le plus grand numéro existant.
+- **Identifiant** : `US-001`, `US-002`… dans l'ordre de réalisation (étape 4). En complément d'un référentiel existant, reprendre après le plus grand numéro existant.
 - **Fichier** : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`, `<nom>` tiré du titre court.
 - **Phrase** : « En tant que {{acteur}}, je souhaite {{action + objet}} afin de {{objectif}} ».
 - **Taille** (S, M ; une US de taille L se découpe) et **Dépend de** (l'US qui doit exister avant, ou « — »).
@@ -48,25 +50,44 @@ Chaque US suit le modèle de fichier d'US :
 - **Critères d'acceptation** : 2 à 4, chacun nommé (cas nominal, cas d'erreur ou limite, cas alternatif, accès), au format « **Étant donné** contexte, **lorsque** action, **alors** résultat attendu ». **Au moins un** couvre un cas d'erreur ou un cas limite (champ vide, texte trop long, élément introuvable, accès non autorisé).
 - **Hors périmètre de cette US** : ce qu'elle laisse volontairement de côté, pour que l'IA s'en tienne à son périmètre.
 
-### 3. Vérifier la qualité de chaque US
+### 3. Valider chaque US contre INVEST
 
-- **Un seul acteur, une seule action.** Si la phrase contient « et » ou « ou », découper en deux US.
-- **Petite** : si une US a plus de 4 critères ou plusieurs règles métier, la découper.
-- **Testable** : chaque critère décrit un résultat **visible** par l'utilisateur.
-- **En langage courant** : les mots de l'utilisateur, à la place de « base de données », « API », « composant ».
-- **Bien rangée** : l'US sert l'objectif de son epic ; sinon, la déplacer ou proposer une autre epic.
+| Critère | Ce qu'on vérifie | Sinon |
+|---|---|---|
+| **Indépendante** | Elle se réalise et se teste seule, une fois ses « Dépend de » terminées ; les dépendances vont dans un seul sens. | Regrouper ou redécouper pour casser la dépendance croisée. |
+| **Négociable** | Elle décrit le besoin et laisse la solution ouverte : les mots de l'utilisateur, à la place de « base de données », « API », « composant ». | Réécrire du point de vue de l'utilisateur. |
+| **Valuable** (utile) | Son « afin de » apporte une valeur que l'utilisateur reconnaît. | La fusionner avec l'US qu'elle sert. |
+| **Estimable** | Sa taille (S ou M) se donne sans inconnue majeure. | L'inconnue devient une question de la ronde suivante. |
+| **Small** (petite) | Un seul acteur, une seule action (une phrase sans « et » ni « ou »), 4 critères et une règle métier au plus. | La découper. |
+| **Testable** | Chaque critère décrit un résultat **visible** par l'utilisateur. | Reformuler le critère en résultat observable. |
+
+Vérifier aussi qu'elle est **bien rangée** : l'US sert l'objectif de son epic ; sinon, la déplacer ou proposer une autre epic.
 - Si des données sont partagées entre plusieurs personnes, intégrer des US d'accès : qui voit quoi (ex. « En tant que <acteur>, je vois seulement mes propres <éléments> »). Ce sont elles qui porteront la sécurité.
 
-### 4. Trancher les questions ouvertes
+### 4. Trancher les questions et trier
 
-Pour chaque epic, repérer le ou les **cas limites** dont le comportement change ce que vit l'utilisateur et qu'aucun document ne tranche (une annulation tardive, un doublon, un accès refusé). Les poser en **question clé** sous forme de scénario concret (« Un client annule une heure avant le rendez-vous : que se passe-t-il ? »), avec des exemples de réponses tirés d'autres métiers. La réponse donne le « alors… » du critère de cas d'erreur ou limite. 1 ou 2 par epic au plus ; les autres restent dans les « Questions ouvertes » de l'US.
+1. **Questions clés** : repérer les **cas limites** dont le comportement change ce que vit l'utilisateur et qu'aucun document ne tranche (une annulation tardive, un doublon, un accès refusé). Les poser par rondes de 3 au plus, sous forme de scénario concret (« Un client annule une heure avant le rendez-vous : que se passe-t-il ? »), avec des exemples de réponses tirés d'autres métiers. La réponse donne le « alors… » du critère de cas d'erreur ou limite. Une question **bloquante** (sans sa réponse, un critère d'acceptation reste à écrire ou la taille reste inconnue) se pose dans une ronde ; une question **non bloquante** (un détail que la spec tranchera) reste dans les « Questions ouvertes » de l'US.
+2. **Ordre de réalisation** : trier les US par priorité d'implémentation : d'abord celles dont d'autres dépendent, puis par priorité (Indispensable, Essentiel, Optionnel), puis dans l'ordre du parcours. Vérifier que les dépendances s'enchaînent dans un seul sens, sans boucle.
 
-### 5. Écrire et valider
+### 5. Definition of Ready
 
-**Travail en cours** : avant de présenter la validation, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; l'effacer (`pulse-aidd travail-fini`) une fois les US validées.
+Une US est **prête** quand ces conditions sont réunies ; elle se sauvegarde seulement prête :
+- elle passe INVEST (étape 3) ;
+- ses critères d'acceptation sont écrits, dont au moins un cas d'erreur ou limite ;
+- ses dépendances sont notées (« Dépend de », ou « — ») ;
+- **aucune question bloquante** ne reste : sinon, poser une nouvelle ronde (3 questions au plus).
 
-1. Remplir le référentiel `docs/user-stories.md` (modèle du référentiel) : le tableau des epics, le **parcours utilisateur** (les US Indispensables dans l'ordre où l'utilisateur les vit ; la dernière clôt le MVP), puis, pour chaque epic, son tableau d'US avec le lien vers chaque fichier. Vérifier que les dépendances s'enchaînent dans un seul sens, sans boucle.
-2. Écrire les fichiers `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`.
-3. Montrer le tableau des epics, le parcours, puis **le tableau des règles métier** de toutes les US : `| Règle | US | Origine |`, l'origine valant « Décidé par vous » (brief, PRD, réponse à une question clé) ou « Proposé par Pulse ». Demander validation (AskUserQuestion) : « Valider » / « Contester une règle proposée par Pulse » / « Modifier une US ». Une règle contestée se tranche par une question clé, puis l'US est corrigée.
+Cocher la section « Prête » du modèle d'US une fois ces conditions vérifiées.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XXX>` (la première US du parcours).
+### 6. Valider, puis sauvegarder
+
+**Travail en cours** : avant de présenter la validation, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les epics, les décisions prises et la question en attente ; l'effacer (`pulse-aidd travail-fini`) une fois les US sauvegardées.
+
+1. **Présenter**, dans la conversation : le tableau des epics, le parcours, l'**ordre de réalisation**, chaque US en résumé (phrase, taille, dépendances, critères), puis **le tableau des règles métier** de toutes les US : `| Règle | US | Origine |`, l'origine valant « Décidé par vous » (brief, PRD, réponse à une question clé) ou « Proposé par Pulse ».
+2. **Attendre la validation explicite** (AskUserQuestion) : « Valider et sauvegarder » / « Contester une règle proposée par Pulse » / « Modifier une US ». Une règle contestée se tranche par une question clé, puis l'US est corrigée et présentée à nouveau. Seule la réponse « Valider et sauvegarder » déclenche l'écriture.
+3. **Sauvegarder** vers l'outil de ticketing de la mémoire projet (ligne « Outil de ticketing » de `aidd_docs/memory/project.md`) :
+   - **toujours** les fichiers : le référentiel `docs/user-stories.md` (modèle du référentiel : epics, parcours, ordre de réalisation, puis pour chaque epic son tableau d'US, rangé dans l'ordre de réalisation, avec le lien vers chaque fichier) et les fichiers `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` ;
+   - **si un outil est indiqué** (GitHub Issues, Jira, Linear…) : créer aussi un ticket par US détaillée, dans l'ordre de réalisation, avec la phrase, les critères et le lien vers le fichier. GitHub Issues passe par `gh issue create` ; un autre outil, par son connecteur (MCP) s'il est disponible ; sinon, le signaler et garder les fichiers seuls. Reporter le lien de chaque ticket dans la ligne « Ticket » de son US ;
+   - **ligne absente** : garder les fichiers, et proposer d'ajouter la ligne « Outil de ticketing » à la mémoire projet (`/pulse:memory`).
+
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XXX>` (la première US de l'ordre de réalisation).
