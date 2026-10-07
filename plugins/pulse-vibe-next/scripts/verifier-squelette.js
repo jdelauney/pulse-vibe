@@ -136,6 +136,10 @@ async function principal() {
   lancer("npm run typecheck", dossier);
   lancer("npm test", dossier);
   // drizzle-kit (et son esbuild) doit fonctionner après une installation neuve ; generate ne se connecte pas.
+  // Le squelette n'a pas encore de table : une table d'essai, dans le dossier temporaire seulement,
+  // vérifie que drizzle-kit trouve les tables par motif et génère une migration.
+  fs.mkdirSync(path.join(dossier, "src", "db", "verification"), { recursive: true });
+  fs.writeFileSync(path.join(dossier, "src", "db", "verification", "essai.table.ts"), 'import { pgTable, text } from "drizzle-orm/pg-core";\n\nexport const essais = pgTable("essais", { id: text("id").primaryKey() });\n');
   lancer("npm run db:generate", dossier, { DATABASE_URL_DIRECT: "postgresql://verification@localhost:5432/verification" });
   lancer("npm run build", dossier);
   controlerCodeSeo(dossier);

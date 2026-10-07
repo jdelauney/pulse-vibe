@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import type { Db } from "@src/db";
-import * as schema from "@src/db/schema";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 
@@ -13,7 +12,7 @@ export async function creerBaseDeTest(): Promise<{
   fermer: () => Promise<void>;
 }> {
   const client = new PGlite();
-  const db = drizzle({ client, schema });
+  const db = drizzle({ client });
   if (existsSync(`${DOSSIER_MIGRATIONS}/meta/_journal.json`)) {
     await migrate(db, { migrationsFolder: DOSSIER_MIGRATIONS });
   }

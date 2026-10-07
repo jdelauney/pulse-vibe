@@ -4,13 +4,13 @@ import { envServeur } from "@src/config/env";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import ws from "ws";
-import * as schema from "./schema";
 
 // WebSocket pour Node.js 21 et moins (facultatif à partir de Node.js 22).
 neonConfig.webSocketConstructor = ws;
 
-// Type commun à Neon (application) et PGlite (tests) : les fonctions reçoivent la base en paramètre.
-export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
+// Type commun à Neon (application) et PGlite (tests) : les repositories reçoivent la base en paramètre.
+// Les tables s'importent directement depuis src/db/<domaine>/<sujet>.table.ts (pas d'objet schéma global).
+export type Db = PgDatabase<PgQueryResultHKT>;
 
 let db: Db | undefined;
 
@@ -18,7 +18,7 @@ let db: Db | undefined;
 export function getDb(): Db {
   if (!db) {
     const pool = new Pool({ connectionString: envServeur().DATABASE_URL });
-    db = drizzle({ client: pool, schema });
+    db = drizzle({ client: pool });
   }
   return db;
 }
