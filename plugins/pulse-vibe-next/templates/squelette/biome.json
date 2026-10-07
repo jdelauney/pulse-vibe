@@ -30,7 +30,11 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "performance": {
+        "noBarrelFile": "error",
+        "noReExportAll": "error"
+      }
     },
     "domains": {
       "next": "recommended",
@@ -43,5 +47,248 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/core/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "next",
+                      "next/**",
+                      "react",
+                      "react/**",
+                      "react-dom",
+                      "react-dom/**",
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "server-only",
+                      "@app/**",
+                      "@src/db",
+                      "@src/db/**",
+                      "@src/adapters/**",
+                      "@src/features/**",
+                      "@src/components/**",
+                      "@src/config/**",
+                      "@src/lib/**",
+                      "**/db/**",
+                      "**/adapters/**",
+                      "**/features/**"
+                    ],
+                    "message": "src/core reste pur : il importe seulement src/core (son domaine et core/shared). Voir architecture.md §3."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/db/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "next",
+                      "next/**",
+                      "@app/**",
+                      "@src/features/**",
+                      "@src/adapters/**",
+                      "**/features/**",
+                      "**/adapters/**"
+                    ],
+                    "message": "src/db implémente les ports de src/core avec Drizzle ; il ignore Next, les features et les adapters. Voir architecture.md §3."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/adapters/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@app/**",
+                      "@src/features/**",
+                      "@src/db",
+                      "@src/db/**",
+                      "**/features/**",
+                      "**/db/**"
+                    ],
+                    "message": "Un adapter implémente un port de src/core pour un service externe ; il ignore les features et la base. Voir architecture.md §3."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/features/*/components/containers/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "@src/db",
+                      "@src/db/**",
+                      "@src/adapters/**",
+                      "**/db/**",
+                      "**/adapters/**"
+                    ],
+                    "message": "Un container lit par une query et écrit par une action ; il n'appelle ni la base ni un adapter. Voir architecture.md §4."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/features/*/components/sections/**",
+        "src/components/shared/sections/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "@src/db",
+                      "@src/db/**",
+                      "@src/adapters/**",
+                      "@src/stores/**",
+                      "@src/hooks/**",
+                      "**/db/**",
+                      "**/adapters/**",
+                      "**/actions/**",
+                      "**/queries/**",
+                      "**/hooks/**",
+                      "**/stores/**",
+                      "**/containers/**"
+                    ],
+                    "message": "Une section affiche ce qu'elle reçoit en props ; les données et les actions passent par son container. Voir architecture.md §4."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/features/*/components/composites/**",
+        "src/components/shared/composites/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "@src/db",
+                      "@src/db/**",
+                      "@src/adapters/**",
+                      "@src/stores/**",
+                      "@src/hooks/**",
+                      "**/db/**",
+                      "**/adapters/**",
+                      "**/actions/**",
+                      "**/queries/**",
+                      "**/hooks/**",
+                      "**/stores/**",
+                      "**/containers/**",
+                      "**/sections/**"
+                    ],
+                    "message": "Un composite combine des elements et des primitives ui, à partir de props. Voir architecture.md §4."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/features/*/components/elements/**",
+        "src/components/shared/elements/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "drizzle-orm",
+                      "drizzle-orm/**",
+                      "@src/db",
+                      "@src/db/**",
+                      "@src/adapters/**",
+                      "@src/stores/**",
+                      "@src/hooks/**",
+                      "**/db/**",
+                      "**/adapters/**",
+                      "**/actions/**",
+                      "**/queries/**",
+                      "**/hooks/**",
+                      "**/stores/**",
+                      "**/containers/**",
+                      "**/sections/**",
+                      "**/composites/**"
+                    ],
+                    "message": "Un element affiche une seule chose avec les primitives ui et lib. Voir architecture.md §4."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
