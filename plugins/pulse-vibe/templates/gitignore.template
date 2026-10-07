@@ -2,6 +2,9 @@
 .env
 .env.*
 !.env.example
+# identifiants personnels téléchargés (Google Cloud…) : jamais dans le dépôt
+client_secret*.json
+*service-account*.json
 
 # --- Worktrees : copies de travail créées par /pulse:implement ou /pulse:spirc ---
 .claude/worktrees/

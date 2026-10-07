@@ -233,6 +233,16 @@ const MESSAGES = {
     "Pulse demande votre accord : cette commande publie ou modifie directement le site en ligne. " +
     "D'habitude, la mise en ligne passe par `git push` (le déploiement continu publie la nouvelle version).",
   fusion: "Pulse demande votre accord : cette commande fusionne une demande de fusion. D'habitude, la fusion se fait par vous, sur le site du dépôt.",
+  lectureEnv:
+    "Pulse garde le contenu des fichiers .env hors de la conversation : ils contiennent les secrets du projet. " +
+    "À la place : `pulse-aidd secrets inventaire` liste les variables (noms, présence, sans aucune valeur) ; `.env.example` donne les noms attendus.",
+};
+
+// Commandes qui affichent le contenu d'un fichier (shell et PowerShell).
+const LECTEURS = new Set(["cat", "type", "more", "less", "head", "tail", "grep", "egrep", "rg", "nl", "bat", "get-content", "gc", "select-string", "sls", "awk", "sed", "strings", "xxd", "od"]);
+const estFichierEnv = (mot) => {
+  const nom = String(mot).split(/[\\/]/).pop();
+  return /^\.env(\..+)?$/.test(nom) && !/^\.env\.(example|sample|template)$/.test(nom);
 };
 
 // ---------------------------------------------------------------- Règles par commande
@@ -449,6 +459,8 @@ function analyserSegment(motsInitiaux, entrees, cwd, constats, profondeur) {
   }
   if (cmd === "eval") return analyserScript(args.join(" "), cwd, constats, profondeur + 1);
 
+  if (LECTEURS.has(cmd) && args.some((a) => !estOption(a) && estFichierEnv(a))) constats.push([REFUS, MESSAGES.lectureEnv]);
+
   switch (cmd) {
     case "git":
       reglesGit(args, cwd, constats);
@@ -523,7 +535,7 @@ function principal() {
   } catch (e) {
     return;
   }
-  if (!entree || entree.tool_name !== "Bash" || !entree.tool_input || typeof entree.tool_input.command !== "string") return;
+  if (!entree || !["Bash", "PowerShell"].includes(entree.tool_name) || !entree.tool_input || typeof entree.tool_input.command !== "string") return;
   const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
 
   const constats = [];

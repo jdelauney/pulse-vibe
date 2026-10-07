@@ -64,7 +64,7 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 29. **Chaque liste prévoit trois états** : vide (message et action utile), chargement (`fallback` ou `loading.tsx`, avec `Skeleton`), erreur.
 30. **État dans l'adresse avec nuqs** (filtres, tri, page, onglet) ; le composant client qui l'utilise est sous `<Suspense>`. **Zustand** seulement pour un état d'interface partagé entre composants clients sans lien direct. **TanStack Query** seulement pour un écran très interactif (rafraîchissement automatique, défilement infini), sous `<Suspense>`.
 31. **React Compiler actif** : écrire des composants simples, sans `useMemo`, `useCallback` ni `React.memo` ajoutés par précaution.
-32. **Images** avec `next/image` (texte alternatif obligatoire ; `preload` au lieu de `priority`) ; polices avec `next/font` dans `layout.tsx` ; titre de page avec `metadata`. Textes affichés en français.
+32. **Images** avec `next/image` (texte alternatif obligatoire) ; l'image principale de la page (celle qui mesure l'affichage, LCP) reçoit `fetchPriority="high"` (ou `loading="eager"`) ; `preload` seulement si c'est la même image principale sur tous les écrans ; `priority` est déprécié ; polices avec `next/font` dans `layout.tsx` ; titre de page avec `metadata`. Textes affichés en français.
 
 ## 7. Bibliothèques
 

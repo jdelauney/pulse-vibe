@@ -179,3 +179,39 @@ test("verifier.js : réussit sur un projet sain, échoue avec un secret ou un .e
   d.git("add", "-A", "-f");
   assert.strictEqual(lancer().status, 1);
 });
+
+// ------------------------------------------------------------ Nouveaux motifs et lecture de .env
+
+test("reconnaît les secrets Google et Brevo, construits à l'exécution", () => {
+  const { trouverSecrets } = require(path.join(RACINE, "scripts", "motifs.js"));
+  const cas = {
+    "secret client Google OAuth": ["GOCSPX", "-", "a".repeat(10), "B".repeat(10), "c_d-e", "fgh"].join(""),
+    "jeton d'accès Google": ["ya29", ".", "A0".repeat(30)].join(""),
+    "jeton de rafraîchissement Google": ["1//0", "g".repeat(40)].join(""),
+    "clé d'API Google": ["AIza", "S".repeat(20), "y_".repeat(7), "Z"].join(""),
+    "clé d'API Brevo": ["xkeysib", "-", "a1".repeat(32), "-", "Ab12".repeat(4)].join(""),
+  };
+  for (const [nom, valeur] of Object.entries(cas)) assert.deepStrictEqual(trouverSecrets(`X=${valeur}`), [nom], nom);
+  assert.deepStrictEqual(trouverSecrets("const AIzaBon = 1; // ya29 court"), []);
+});
+
+test("refuse la lecture d'un fichier .env par les outils de lecture, permet .env.example", () => {
+  for (const [outil, entree] of [
+    ["Read", { file_path: "/p/.env" }],
+    ["Read", { file_path: "C:\\p\\.env.local" }],
+    ["Grep", { pattern: "KEY", path: "/p/.env.production" }],
+    ["Grep", { pattern: "KEY", glob: ".env*" }],
+  ]) {
+    const s = lancerHook({ tool_name: outil, tool_input: entree });
+    assert.ok(refuse(s), `${outil} ${JSON.stringify(entree)}`);
+    assert.match(s.permissionDecisionReason, /pulse-aidd secrets inventaire/);
+  }
+  assert.strictEqual(lancerHook({ tool_name: "Read", tool_input: { file_path: "/p/.env.example" } }), null);
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", path: "/p/src" } }), null);
+});
+
+test("le message de refus d'écriture est agnostique et renvoie vers /pulse:secrets", () => {
+  const s = lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/app.js", content: `const k = "${FAUX.stripe}";` } });
+  assert.doesNotMatch(s.permissionDecisionReason, /Netlify/);
+  assert.match(s.permissionDecisionReason, /\/pulse:secrets fuite/);
+});

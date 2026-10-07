@@ -63,7 +63,7 @@ Suffixes : `.test.ts` (unitaire, intégration), `.spec.ts` (bout en bout). Tests
 ## Hébergement et mise en ligne
 
 - Dépôt distant : {{GitHub, d'après /pulse:init}}.
-- Hébergeur : Vercel (offre Hobby pour démarrer), fonctions en `fra1` (fichier `vercel.json`) ; mise en ligne automatique à chaque envoi sur `main`, adresse de prévisualisation pour chaque demande de fusion.
+- Hébergeur : Vercel (offre Hobby, gratuite, réservée à un usage non commercial ; offre Pro pour une activité commerciale), fonctions en `fra1` (fichier `vercel.json`) ; mise en ligne automatique à chaque envoi sur `main`, adresse de prévisualisation pour chaque demande de fusion.
 - Contrôle automatique avant mise en ligne (CI) : à mettre en place avec `/pulse:cicd` (GitHub Actions).
 
 ## Mise en place
