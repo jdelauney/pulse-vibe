@@ -46,6 +46,8 @@ flowchart LR
 
 Maquette : {{docs/design/maquettes/US-XXX-<nom>/retenue/ | aucune}} · Design : {{docs/design.md | aucun}}
 
+**Référencement** (écrans publics) : {{pour chaque écran public : adresse lisible, titre et description (docs/seo.md, ou « à valider avec /pulse:seo textes »), indexé oui / non, image de partage, données structurées ; « sans objet » si tous les écrans sont réservés}}
+
 ## 5. Données
 
 Pour chaque type d'information stockée :
@@ -130,6 +132,7 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 | Un utilisateur non autorisé ne voit pas les données d'un autre | à la main, avec deux comptes (sans objet si une seule personne) | |
 | Un formulaire mal rempli affiche un message clair | à la main | |
 | L'écran reste utilisable sur téléphone | à la main | |
+| Chaque écran public a son titre, sa description et son adresse officielle dans le HTML servi | `pulse-aidd seo <adresse locale> --chemins <adresse de l'écran>` | |
 | {{règle métier délicate}} | scénarios de la règle, en test automatique si « Tester » existe | |
 
 ## 13. Points d'attention

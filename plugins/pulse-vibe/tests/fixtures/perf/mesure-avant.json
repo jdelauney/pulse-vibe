@@ -1,0 +1,448 @@
+{
+  "format": "pulse-perf-mesure/1",
+  "date": "2026-10-07T06:26:32.966Z",
+  "source": "local",
+  "appareil": "mobile",
+  "passages": 3,
+  "lighthouse": "13.5.0",
+  "pages": [
+    {
+      "url": "http://localhost:3456/",
+      "appareil": "mobile",
+      "version": "13.5.0",
+      "passages": 3,
+      "mediane": {
+        "score": 97,
+        "lcp": 2631.3907,
+        "cls": 0,
+        "tbt": 25.90232500000002,
+        "fcp": 754.7394999999999,
+        "si": 754.7394999999999,
+        "ttfb": 452,
+        "poids": 256587,
+        "requetes": 15
+      },
+      "min": {
+        "score": 96,
+        "lcp": 2629.2422,
+        "cls": 0,
+        "tbt": 12,
+        "fcp": 754.3906999999999,
+        "si": 754.3906999999999,
+        "ttfb": 452,
+        "poids": 256587,
+        "requetes": 15
+      },
+      "max": {
+        "score": 97,
+        "lcp": 2784.10925,
+        "cls": 0,
+        "tbt": 27,
+        "fcp": 755.2421999999999,
+        "si": 755.2421999999999,
+        "ttfb": 453,
+        "poids": 256587,
+        "requetes": 15
+      },
+      "scores": {
+        "performance": 97,
+        "accessibilite": 100,
+        "bonnesPratiques": 100,
+        "seo": 90
+      },
+      "instable": [],
+      "elementLcp": {
+        "selecteur": "body.flex > main.mx-auto > h1.font-heading",
+        "libelle": "Essai",
+        "extrait": "<h1 class=\"font-heading text-4xl font-semibold tracking-tight\">"
+      },
+      "diagnostics": [
+        {
+          "id": "unused-javascript",
+          "titre": "Réduisez les ressources JavaScript inutilisées",
+          "valeur": "Économies estimées : 52 Kio",
+          "gains": {
+            "lcp": 300,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": 53550,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+            "http://localhost:3456/_next/static/chunks/29yxdy1vkfqcb.js"
+          ]
+        },
+        {
+          "id": "legacy-javascript-insight",
+          "titre": "Ancien JavaScript",
+          "valeur": "Économies estimées : 13 Kio",
+          "gains": {
+            "lcp": 150,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": 13817,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js"
+          ]
+        },
+        {
+          "id": "render-blocking-insight",
+          "titre": "Requêtes de blocage du rendu",
+          "valeur": "Économies estimées : 140 ms",
+          "gains": {
+            "lcp": 150,
+            "fcp": 150,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/_next/static/chunks/0vqpe5qwsmo0t.css"
+          ]
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "titre": "Arborescence du réseau",
+          "valeur": null,
+          "gains": {
+            "lcp": 0,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [],
+          "ressources": []
+        }
+      ],
+      "detail": [
+        {
+          "score": 97,
+          "metriques": {
+            "fcp": 755.2421999999999,
+            "lcp": 2629.2422,
+            "tbt": 12,
+            "cls": 0,
+            "si": 755.2421999999999,
+            "ttfb": 453
+          },
+          "poids": 256587,
+          "requetes": 15
+        },
+        {
+          "score": 97,
+          "metriques": {
+            "fcp": 754.3906999999999,
+            "lcp": 2631.3907,
+            "tbt": 25.90232500000002,
+            "cls": 0,
+            "si": 754.3906999999999,
+            "ttfb": 452
+          },
+          "poids": 256587,
+          "requetes": 15
+        },
+        {
+          "score": 96,
+          "metriques": {
+            "fcp": 754.7394999999999,
+            "lcp": 2784.10925,
+            "tbt": 27,
+            "cls": 0,
+            "si": 754.7394999999999,
+            "ttfb": 452
+          },
+          "poids": 256587,
+          "requetes": 15
+        }
+      ]
+    },
+    {
+      "url": "http://localhost:3456/lourde",
+      "appareil": "mobile",
+      "version": "13.5.0",
+      "passages": 3,
+      "mediane": {
+        "score": 67,
+        "lcp": 30904.1304,
+        "cls": 0.1745222779476444,
+        "tbt": 28,
+        "fcp": 754.5298,
+        "si": 754.5298,
+        "ttfb": 452,
+        "poids": 6020183,
+        "requetes": 16
+      },
+      "min": {
+        "score": 67,
+        "lcp": 2768.7947,
+        "cls": 0.1745222779476444,
+        "tbt": 12,
+        "fcp": 754.1304,
+        "si": 754.1304,
+        "ttfb": 452,
+        "poids": 6020183,
+        "requetes": 16
+      },
+      "max": {
+        "score": 88,
+        "lcp": 30904.647899999996,
+        "cls": 0.1745222779476444,
+        "tbt": 29,
+        "fcp": 754.6478999999999,
+        "si": 754.6478999999999,
+        "ttfb": 452,
+        "poids": 6020183,
+        "requetes": 16
+      },
+      "scores": {
+        "performance": 67,
+        "accessibilite": 100,
+        "bonnesPratiques": 100,
+        "seo": 91
+      },
+      "instable": [
+        "lcp",
+        "score"
+      ],
+      "elementLcp": {
+        "selecteur": "body.flex > main.mx-auto > img",
+        "libelle": "Bruit",
+        "extrait": "<img src=\"/photo.png\" alt=\"Bruit\" loading=\"lazy\">"
+      },
+      "diagnostics": [
+        {
+          "id": "image-delivery-insight",
+          "titre": "Améliorer l'affichage des images",
+          "valeur": "Économies estimées : 5 578 Kio",
+          "gains": {
+            "lcp": 27950,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": 5712302,
+          "elements": [
+            {
+              "selecteur": "body.flex > main.mx-auto > img",
+              "libelle": "Bruit",
+              "extrait": "<img src=\"/photo.png\" alt=\"Bruit\" loading=\"lazy\">"
+            }
+          ],
+          "ressources": [
+            "http://localhost:3456/photo.png"
+          ]
+        },
+        {
+          "id": "unused-javascript",
+          "titre": "Réduisez les ressources JavaScript inutilisées",
+          "valeur": "Économies estimées : 52 Kio",
+          "gains": {
+            "lcp": 300,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": 53503,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+            "http://localhost:3456/_next/static/chunks/29yxdy1vkfqcb.js"
+          ]
+        },
+        {
+          "id": "legacy-javascript-insight",
+          "titre": "Ancien JavaScript",
+          "valeur": "Économies estimées : 13 Kio",
+          "gains": {
+            "lcp": 150,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": 13817,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js"
+          ]
+        },
+        {
+          "id": "render-blocking-insight",
+          "titre": "Requêtes de blocage du rendu",
+          "valeur": "Économies estimées : 140 ms",
+          "gains": {
+            "lcp": 0,
+            "fcp": 150,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/_next/static/chunks/0vqpe5qwsmo0t.css"
+          ]
+        },
+        {
+          "id": "cls-culprits-insight",
+          "titre": "Causes des décalages de mise en page",
+          "valeur": null,
+          "gains": {
+            "lcp": 0,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [
+            {
+              "selecteur": "body.flex > main.mx-auto",
+              "libelle": "Texte au-dessus de l'image.\n\nPage lourde",
+              "extrait": "<main class=\"mx-auto max-w-3xl px-6 py-12\">"
+            },
+            {
+              "selecteur": "body.flex > main.mx-auto > img",
+              "libelle": "Bruit",
+              "extrait": "<img src=\"/photo.png\" alt=\"Bruit\" loading=\"lazy\">"
+            }
+          ],
+          "ressources": []
+        },
+        {
+          "id": "lcp-discovery-insight",
+          "titre": "Détection de la requête LCP",
+          "valeur": null,
+          "gains": {
+            "lcp": 0,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [
+            {
+              "selecteur": "body.flex > main.mx-auto > img",
+              "libelle": "Bruit",
+              "extrait": "<img src=\"/photo.png\" alt=\"Bruit\" loading=\"lazy\">"
+            }
+          ],
+          "ressources": []
+        },
+        {
+          "id": "network-dependency-tree-insight",
+          "titre": "Arborescence du réseau",
+          "valeur": null,
+          "gains": {
+            "lcp": 0,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [],
+          "ressources": []
+        },
+        {
+          "id": "total-byte-weight",
+          "titre": "Évitez d'énormes charges utiles de réseau",
+          "valeur": "La taille totale était de 5 879 Kio",
+          "gains": {
+            "lcp": 0,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [],
+          "ressources": [
+            "http://localhost:3456/photo.png",
+            "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+            "http://localhost:3456/_next/static/chunks/29yxdy1vkfqcb.js"
+          ]
+        },
+        {
+          "id": "unsized-images",
+          "titre": "Les éléments d'image ne possèdent pas de `width` ni de `height` explicites",
+          "valeur": null,
+          "gains": {
+            "lcp": 0,
+            "fcp": 0,
+            "tbt": 0,
+            "cls": 0,
+            "inp": 0
+          },
+          "octets": null,
+          "elements": [
+            {
+              "selecteur": "body.flex > main.mx-auto > img",
+              "libelle": "Bruit",
+              "extrait": "<img src=\"/photo.png\" alt=\"Bruit\" loading=\"lazy\">"
+            }
+          ],
+          "ressources": [
+            "http://localhost:3456/photo.png"
+          ]
+        }
+      ],
+      "detail": [
+        {
+          "score": 67,
+          "metriques": {
+            "fcp": 754.1304,
+            "lcp": 30904.1304,
+            "tbt": 29,
+            "cls": 0.1745222779476444,
+            "si": 754.1304,
+            "ttfb": 452
+          },
+          "poids": 6020183,
+          "requetes": 16
+        },
+        {
+          "score": 67,
+          "metriques": {
+            "fcp": 754.6478999999999,
+            "lcp": 30904.647899999996,
+            "tbt": 28,
+            "cls": 0.1745222779476444,
+            "si": 754.6478999999999,
+            "ttfb": 452
+          },
+          "poids": 6020183,
+          "requetes": 16
+        },
+        {
+          "score": 88,
+          "metriques": {
+            "fcp": 754.5298,
+            "lcp": 2768.7947,
+            "tbt": 12,
+            "cls": 0.1745222779476444,
+            "si": 754.5298,
+            "ttfb": 452
+          },
+          "poids": 6020183,
+          "requetes": 16
+        }
+      ]
+    }
+  ],
+  "echecs": []
+}

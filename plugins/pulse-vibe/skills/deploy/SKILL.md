@@ -2,7 +2,7 @@
 description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production (variables, services, retour arrière ; la CI se met en place avec /pulse:cicd)
 argument-hint: "[premiere | production] (détecté automatiquement si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Bash(git status *) Bash(git remote *) Bash(git push) Bash(git push -u origin *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git remote *) Bash(git push) Bash(git push -u origin *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
 ---
 
 # /pulse:deploy – Mettre en ligne
@@ -61,6 +61,10 @@ Suivre la documentation officielle de l'hébergeur retenu, et la traduire en ét
 
 Ensuite : inscrire l'adresse du dépôt et celle du site dans la section « Adresses » de `CLAUDE.md`, dans `README.md` et dans la ligne « Site en ligne » de « Hébergement et mise en ligne » (`docs/technical.md`). Puis **prouver** que le site répond : `pulse-aidd sonder <adresse du site> --texte "<un texte visible de la page, ex. le nom du projet>"`. En cas d'échec, lire la cause qu'il donne, l'expliquer simplement, corriger avec la personne (réglages de construction, variable manquante), puis relancer la sonde.
 
+Ensuite, **garde-fou de référencement** : `pulse-aidd seo <adresse du site> --essentiel` (ajouter `--previsualisation` pour une adresse de prévisualisation). Il lit `docs/seo.md` (site privé, pages privées). S'il affiche ❌ (constat Critique : `noindex` sur une page publique, `Disallow: /`, adresse officielle vers localhost ou un autre domaine, boucle de redirections, page privée servie à un inconnu), la mise en ligne n'est pas déclarée réussie : expliquer le constat et sa conséquence, corriger, remettre en ligne, relancer.
+
+Le site répond et le garde-fou passe : proposer une **première mesure de vitesse** (AskUserQuestion) : « Mesurer la vitesse de la page d'accueil maintenant (2 minutes, point de départ) (Recommandé) » / « Plus tard ». Maintenant : appliquer « mesurer » de `/pulse:perf` (`pulse-aidd etape perf`) sur l'accueil seul, 3 passages, puis revenir à 3c.
+
 ### 3c. Voir le déploiement automatique en action
 
 Proposer une petite modification visible (par exemple le texte du titre), puis : `/pulse:commit`, `git push`, et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
@@ -69,7 +73,8 @@ Proposer une petite modification visible (par exemple le texte du titre), puis :
 
 1. `git push` (après les contrôles de la section 1).
 2. Expliquer que l'hébergeur publie la nouvelle version automatiquement, et où suivre l'avancement (liste des déploiements de l'hébergeur).
-3. Une fois la publication terminée chez l'hébergeur, lancer `pulse-aidd sonder <adresse du site>` (section « Adresses » de `CLAUDE.md`), avec `--texte` suivi d'un texte que la nouvelle version affiche. Donner l'adresse à la personne pour qu'elle regarde la nouveauté.
+3. Une fois la publication terminée chez l'hébergeur, lancer `pulse-aidd sonder <adresse du site>` (section « Adresses » de `CLAUDE.md`), avec `--texte` suivi d'un texte que la nouvelle version affiche, puis `pulse-aidd seo <adresse du site> --essentiel` (même règle qu'en 3b : ❌ = mise en ligne à corriger). Donner l'adresse à la personne pour qu'elle regarde la nouveauté.
+4. Si cette version change une page de « Pages suivies » dans `docs/performance.md`, proposer `/pulse:perf mesurer` en une ligne (la mesure reste au choix de la personne : elle prend quelques minutes).
 
 ## 5. Mode production (« pour de vrai »)
 
@@ -79,14 +84,20 @@ Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en lig
    - si la CI reste à installer : appliquer l'étape **cicd** (`pulse-aidd etape cicd`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
    - si l'hébergeur le permet, le configurer pour exécuter ce contrôle **avant chaque mise en ligne** (commande de construction qui enchaîne `node scripts/verifier.js`, les contrôles du projet, puis la construction), d'après sa documentation ;
    - lancer `node scripts/verifier.js` pour vérifier qu'il passe.
-2. **Variables d'environnement** : lister les noms présents dans `.env.example` et dans « Secrets et variables d'environnement ». Guider la personne pour les saisir **elle-même** à l'endroit indiqué pour la production (réglages de l'hébergeur). Les valeurs vont uniquement dans ces réglages, **jamais** dans cette conversation. Après un ajout de variable, relancer un déploiement (sauf si l'hébergeur le fait seul).
+2. **Variables d'environnement** : lancer `pulse-aidd secrets inventaire` (noms, présence dans `.env` et chez l'hébergeur, type Secret ou Config, sans aucune valeur). Pour chaque variable absente de la production :
+   - le pack de pile sait envoyer à l'hébergeur : `pulse-aidd secrets envoyer <NOM> --env production,preview` (valeur lue dans `.env`, passée par l'entrée standard) ; une valeur propre à la production (clé « live », base de production) passe par `pulse-aidd secrets preparer <NOM> --fichier .env.envoi`, la saisie par la personne, puis `pulse-aidd secrets envoyer <NOM> --env production --depuis .env.envoi --vider` ; un secret généré reçoit une valeur par environnement : `pulse-aidd secrets generer <NOM> --envoyer production,preview`. Ces envois changent la production : Claude Code demande l'accord de la personne à chaque fois ;
+   - sinon : guider la personne pour les saisir **elle-même** dans les réglages de l'hébergeur, en type Secret pour les secrets.
+   Les valeurs passent uniquement par l'éditeur de la personne, `.env` et l'hébergeur, **jamais** par cette conversation. Une variable modifiée sert au déploiement suivant : `pulse-aidd secrets redeployer --env production` (ou le bouton de l'hébergeur). Proposer ensuite `/pulse:secrets` pour tenir `docs/secrets.md` à jour.
 3. **Services connectés** : si un service de « Pile retenue » (connexion, données, emails…) doit connaître l'adresse du site (liens de connexion, redirections, origines autorisées), guider la personne pour la renseigner, d'après la documentation officielle du service.
 4. **Environnements** : si l'hébergeur le propose, expliquer la différence entre une adresse de **prévisualisation** (pour une branche ou une demande de fusion, pour tester sans toucher au site) et la **production** publiée depuis `main` (le site des clients).
-5. **Retour arrière** : montrer, d'après la documentation de l'hébergeur, comment republier une version précédente. Rassurer : tout reste réparable.
-6. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push`. Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
+5. **Être trouvé** (si « Être trouvé » de `docs/prd.md` répond oui) : une seule adresse officielle pour le site (domaine définitif, autres variantes redirigées). Le référencement et Search Console suivent en clôture (section 6).
+6. **Retour arrière** : montrer, d'après la documentation de l'hébergeur, comment republier une version précédente. Rassurer : tout reste réparable.
+7. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push`. Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
 
 ## 6. Clore
 
 Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
 
-Terminer avec le bloc de fin de commande, en indiquant l'adresse du site et le résultat de `pulse-aidd sonder` (la ligne ✅ ou ❌ qu'il affiche) comme preuve de la mise en ligne.
+Site sur son adresse définitive, « Être trouvé » de `docs/prd.md` à oui (ou absent), et section « Référencement » de `docs/technical.md` absente : la prochaine étape proposée est `/pulse:seo lancer` (vérification minimale : Search Console, Bing, carte de partage), puis `/pulse:search-console relier` (données et suivi). Si le pack de pile prévoit un envoi IndexNow, il se fait ici, après les preuves ci-dessous.
+
+Terminer avec le bloc de fin de commande, en indiquant l'adresse du site, le résultat de `pulse-aidd sonder` et celui de `pulse-aidd seo --essentiel` (les lignes ✅ ou ❌ qu'ils affichent) comme preuves de la mise en ligne.

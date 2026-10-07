@@ -43,7 +43,7 @@ Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à
 
 Expliquer en une phrase que l'audit est effectué en lecture seule : les fichiers restent intacts.
 
-Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/user-stories.md` et les fichiers d'US, et la **checklist sécurité complète**, recopiée dans le message (le sous-agent voit seulement les fichiers du projet).
+Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/user-stories.md` et les fichiers d'US, et la **checklist sécurité complète**, recopiée dans le message (le sous-agent voit seulement les fichiers du projet). Avant de lancer le sous-agent, lancer `pulse-aidd secrets historique` et `pulse-aidd secrets inventaire --sans-hebergeur`, et lui transmettre leurs sorties (noms et types seulement, aucune valeur) pour le point S1.
 
 Si le sous-agent est indisponible, faire l'audit en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent security-auditor`, en lecture seule pendant l'audit.
 
@@ -56,6 +56,7 @@ Si le sous-agent est indisponible, faire l'audit en suivant **strictement** la m
 - Le niveau global (🟢 / 🟠 / 🔴) et le nombre de points bloquants.
 - Pour chaque ⛔ : ce qu'un inconnu pourrait faire concrètement, en une phrase, puis la correction proposée.
 - Les ⚠️ en liste courte.
+- Un ⛔ en S1 (clé dans le code ou dans l'historique, fichier d'environnement suivi par Git) : proposer `/pulse:secrets fuite` en premier, avant toute autre correction.
 
 Rester factuel et rassurant : trouver des failles maintenant, c'est exactement le but.
 
@@ -65,6 +66,6 @@ Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la
 
 #### 5. Corriger
 
-Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée se révoque chez le fournisseur, puis la nouvelle valeur se saisit à l'endroit indiqué par « Secrets et variables d'environnement ». Après correction, refaire le test manuel concerné.
+Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée se traite avec `/pulse:secrets fuite` : révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation. Après correction, refaire le test manuel concerné.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` puis `/pulse:commit` si des corrections ont été faites.

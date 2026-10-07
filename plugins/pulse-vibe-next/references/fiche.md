@@ -16,6 +16,7 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 | Composants shadcn | `src/components/ui/` (générés par la commande shadcn, puis adaptés au thème) |
 | Thème | `src/app/globals.css` (variables de couleur, rayon, polices) |
 | Redirection vers la connexion | `src/proxy.ts` |
+| Référencement (adresse du site, métadonnées, robots, sitemap, données structurées) | `src/lib/site.ts`, `seo.ts`, `politique-robots.ts`, `donnees-structurees.ts` ; `src/components/json-ld.tsx` ; `src/app/robots.ts`, `sitemap.ts`, `opengraph-image.tsx` |
 | Tests | à côté du code (`*.test.ts`), `tests/` (aides, base de test), `e2e/` (Playwright) |
 | Migrations | `drizzle/` (générées, relues, enregistrées) |
 
@@ -45,7 +46,7 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 
 17. **`import "server-only"`** en tête de tout module qui touche la base, la session ou un secret (`src/db/index.ts`, `queries.ts`, `session.ts`, `auth.ts`, `env.ts`, `logger.ts`) : un import par erreur depuis un composant client casse la construction au lieu de fuir.
 18. **Secrets** : lus par `envServeur()` de `src/lib/env.ts` (validé par Zod à la première utilisation) ; jamais de préfixe `NEXT_PUBLIC_` (ces valeurs sont copiées dans le code du navigateur) ; `.env*` à la racine du projet, jamais dans `src/`.
-19. **`src/proxy.ts` sert au confort** : il lit la **présence** du cookie de session et redirige vers `/connexion`, avec un `matcher` qui exclut `api`, `_next/static`, `_next/image` et les fichiers publics. La protection réelle est dans `utilisateurConnecte()` et dans chaque action.
+19. **`src/proxy.ts` sert au confort** : il lit la **présence** du cookie de session et redirige vers `/connexion`, avec un `matcher` qui exclut `api`, `_next/static`, `_next/image` et les fichiers publics. La protection réelle est dans `utilisateurConnecte()` et dans chaque action. Seule lecture en base permise dans le proxy : l'existence d'un contenu publié, pour un vrai 404 (recette `seo`).
 20. **HTML saisi par une personne** : l'afficher en texte simple ; si du HTML doit vraiment s'afficher, le nettoyer avec `isomorphic-dompurify` avant `dangerouslySetInnerHTML`.
 21. **Journaux** (`logger` de `src/lib/logger.ts`) : côté serveur, dans les actions et les Route Handlers ; jamais de mot de passe, de jeton, ni de donnée personnelle dans un message.
 22. **En-têtes de sécurité** : déjà envoyés par `next.config.ts` ; les compléter là si un service l'exige.
@@ -64,7 +65,7 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 29. **Chaque liste prévoit trois états** : vide (message et action utile), chargement (`fallback` ou `loading.tsx`, avec `Skeleton`), erreur.
 30. **État dans l'adresse avec nuqs** (filtres, tri, page, onglet) ; le composant client qui l'utilise est sous `<Suspense>`. **Zustand** seulement pour un état d'interface partagé entre composants clients sans lien direct. **TanStack Query** seulement pour un écran très interactif (rafraîchissement automatique, défilement infini), sous `<Suspense>`.
 31. **React Compiler actif** : écrire des composants simples, sans `useMemo`, `useCallback` ni `React.memo` ajoutés par précaution.
-32. **Images** avec `next/image` (texte alternatif obligatoire) ; l'image principale de la page (celle qui mesure l'affichage, LCP) reçoit `fetchPriority="high"` (ou `loading="eager"`) ; `preload` seulement si c'est la même image principale sur tous les écrans ; `priority` est déprécié ; polices avec `next/font` dans `layout.tsx` ; titre de page avec `metadata`. Textes affichés en français.
+32. **Images** avec `next/image` (texte alternatif obligatoire) ; l'image principale de la page (celle qui mesure l'affichage, LCP) reçoit `loading="eager"` **et** `fetchPriority="high"` (`fetchPriority` seul la laisse en `loading="lazy"` ; avec les deux, React ajoute aussi son préchargement dans `<head>`) ; `preload` seulement si c'est la même image principale sur tous les écrans ; `priority` est déprécié ; polices avec `next/font` dans `layout.tsx` ; titre de page avec `metadata`. Textes affichés en français.
 
 ## 7. Bibliothèques
 
@@ -79,6 +80,12 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 40. **Un `fetch` dans un composant client** (envoi direct vers un service, lecture d'une route) : l'entourer de `try/catch` et afficher un message ; une coupure réseau lance une exception qui, sans cela, fait basculer toute la page sur l'écran d'erreur. Le tester en coupant la requête dans Playwright (`page.route(…, (route) => route.abort())`).
 41. **Playwright après un clic de navigation** : attendre un élément propre à la nouvelle page (son titre) avant de remplir un champ ; deux pages peuvent avoir un champ de même libellé.
 42. **Tests** : `server-only` est neutralisé par l'alias de `vitest.config.ts` ; une base PGlite neuve par test (`creerBaseDeTest()` de `tests/helpers/base-de-test.ts`), migrations de `drizzle/` appliquées.
+43. **Métadonnées d'une page publique** : `metadonneesDePage({ titre, description, chemin })` de `src/lib/seo.ts`. Un `openGraph` défini par une page remplace tout celui du layout, image du layout (`opengraph-image`) comprise : la fonction reconstruit la carte complète. L'adresse officielle se déclare page par page (`chemin`) ; `metadataBase` vient d'`adresseDuSite()` (dans une fonction `"use cache"`, le renvoyer en chaîne).
+44. **Vrai 404** : `notFound()` au premier niveau de la page, avant tout `<Suspense>`, sans `loading.tsx` dans un segment public. Une adresse inconnue d'un segment `[slug]` répond quand même 200 avec `noindex` à Googlebot (coquille prérendue envoyée d'abord) : pour un vrai 404, vérifier l'existence dans `src/proxy.ts` (recette `seo`).
+45. **Métadonnées publiques prérendables** : `generateMetadata` d'une page publique lit ses données en `"use cache"`, sans `cookies()` ni `headers()` ; Googlebot et les robots IA (absents de `htmlLimitedBots`) reçoivent alors titre et adresse officielle dans `<head>`. Définir `htmlLimitedBots` remplace toute la liste par défaut.
+46. **Sitemap et robots** : `lastModified` = vraie date de mise à jour du contenu, jamais `new Date()` ; ni `priority` ni `changeFrequency` ; un seul robots.txt (`src/app/robots.ts`, pas de `public/robots.txt`).
+47. **Données structurées** : `<JsonLd>` (`src/components/json-ld.tsx`) avec les fonctions de `src/lib/donnees-structurees.ts`, jamais `JSON.stringify` nu dans `dangerouslySetInnerHTML`.
+48. **Images sur l'offre Hobby de Vercel** : 5 000 transformations d'images par mois ; au-delà, les nouvelles images répondent 402 et `next/image` affiche seulement le texte alternatif. Images du site en import statique ; pour un site très illustré, prévoir l'offre Pro (`pulse-aidd pile reference contexte/perf.md`).
 
 ## 9. Avant de rendre la main
 

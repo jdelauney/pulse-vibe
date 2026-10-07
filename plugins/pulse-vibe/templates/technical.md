@@ -91,6 +91,16 @@ flowchart LR
 - Site en ligne : {{adresse, vérifiée avec `pulse-aidd sonder`, ou « pas encore en ligne »}}
 - Contrôle automatique avant mise en ligne (CI) : {{outil, ou « à mettre en place avec /pulse:cicd »}}
 
+## Référencement
+
+<!-- Rempli par /pulse:search-console relier (et /pulse:seo lancer pour la vérification minimale). Les textes et la politique des robots IA sont dans docs/seo.md. -->
+- Search Console : {{propriété (`sc-domain:exemple.fr` ou `https://adresse/`) – méthode (balise meta ou DNS) – vérifiée le AAAA-MM-JJ, ou « à relier avec /pulse:search-console relier »}}
+- Balise de vérification : {{fichier où elle se trouve, à garder en place, ou « aucune (DNS) »}}
+- Sitemap : {{adresse – déclaré le AAAA-MM-JJ}}
+- Bing Webmaster Tools : {{importé le AAAA-MM-JJ, ou « pas encore »}}
+- Accès aux données pour Pulse : {{export CSV · connexion Google en lecture seule (accès rangé hors du projet) · compte de service en CI}}
+- Rapports : `docs/referencement/` ; prochain conseillé : {{date}}
+
 ## Mise en place
 
 Ce qu'il faut créer ou installer avant la première tâche (comptes, squelette du projet, commandes). Les clés secrètes ne sont **jamais** collées dans la conversation : la personne les saisit elle-même dans le fichier local ou chez l'hébergeur.

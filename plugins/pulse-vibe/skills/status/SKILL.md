@@ -21,7 +21,7 @@ Cette commande **lit et résume**. Sa seule modification, et seulement avec l'ac
 3. **Git** : `git status --short` (nombre de fichiers modifiés non enregistrés), `git log --oneline -3`, `git remote -v`, `pulse-aidd sessions` (autres sessions ouvertes sur ce dossier).
 4. **Worktrees** : `git worktree list`. Pour chaque worktree de `.claude/worktrees/`, sa branche, son nombre de commits d'avance sur la branche du dossier principal, celle qui reçoit les fusions (`git branch --show-current` ; `git log --oneline <cette branche>..<branche du worktree>`), ses modifications non enregistrées (`git -C <dossier> status --short`), et s'il est **fusionné** (sa branche apparaît dans `git branch --merged <cette branche>`).
 5. **CI** : un fichier de CI existe-t-il (`.github/workflows/`, `.gitlab-ci.yml`, ou l'emplacement noté dans « Hébergement et mise en ligne » de `docs/technical.md`) ; si l'outil est connecté, le résultat du dernier passage (`gh run list --limit 1`, `glab ci status`).
-6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée.
+6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée. **Référencement** : la section « Référencement » de `docs/technical.md` (propriété reliée et date) et le rapport le plus récent de `docs/referencement/` (sa date, et la date du prochain rapport conseillé écrite à sa fin).
 7. **Dernière relecture** : le rapport de tâche le plus récent dans `aidd_docs/tasks/*/revues/*/` et son verdict ; le dernier audit `docs/securite.md` s'il existe.
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
 9. **Travail en cours** : `aidd_docs/tasks/in-progress.md` du dossier principal et de chaque worktree (`.claude/worktrees/*/aidd_docs/tasks/in-progress.md`), s'il existe (commande, étape, décision en attente, date « Mis à jour le »).
@@ -46,6 +46,7 @@ Worktrees: us-003-filtre 🔄 en cours (2 commits, à fusionner) · us-001-creer
 Sessions : 1 autre session ouverte sur ce dossier (ou « aucune autre »)
 Parallèle: US-004 peut avancer en même temps que US-003 (ou ligne absente)
 En ligne : https://… (ou « pas encore »)
+Référencement : relié le … · dernier rapport le … · prochain conseillé le … (ou « à relier : /pulse:search-console relier », ligne absente si le site n'est pas en ligne)
 CI       : ✅ GitHub Actions · dernier passage ✅ (ou ⬜ pas encore · ❌ dernier passage en échec)
 Revue    : T2 – ✅ Validé (date)
 Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non branchée »)
@@ -60,11 +61,13 @@ Règles pour la prochaine étape conseillée, dans l'ordre :
 4. Tâche `[~]` relue → `/pulse:commit`.
 5. US Indispensables (MVP) terminées et site encore hors ligne → `/pulse:deploy`.
 6. Commits non envoyés sur GitHub (si un dépôt distant existe et que `git status` indique « ahead ») → `/pulse:deploy`.
-7. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <US-XXX>` (facultatif) puis `/pulse:plan <US-XXX>`.
-8. Spec sans plan → `/pulse:plan <US-XXX>`.
-9. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
-10. Dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec.
-11. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec ; dépôt distant relié, squelette en place et CI absente → mentionner aussi `/pulse:cicd` (facultatif).
+7. Site en ligne sur son domaine définitif et « Être trouvé » de `docs/prd.md` à oui : section « Suivi » de `docs/seo.md` absente ou vide → `/pulse:seo lancer` ; sinon, section « Référencement » de `docs/technical.md` absente → `/pulse:search-console relier`.
+8. Spec avec écrans, sans maquette ni plan → proposer `/pulse:ui maquettes <US-XXX>` (facultatif) puis `/pulse:plan <US-XXX>`.
+9. Spec sans plan → `/pulse:plan <US-XXX>`.
+10. Tâches restantes → `/pulse:implement <US-XXX> <tâche suivante>` (ou `/pulse:spirc <US-XXX>`), les US Indispensables d'abord.
+11. Dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec.
+12. Rendez-vous dépassé : date de « Suivi » de `docs/seo.md` → `/pulse:seo audit` ; prochain rapport Search Console conseillé → `/pulse:search-console suivre`.
+13. Sinon → `/pulse:spec <US-XXX suivante du parcours>` s'il reste des US sans spec ; dépôt distant relié, squelette en place et CI absente → mentionner aussi `/pulse:cicd` (facultatif).
 
 ## Worktrees
 

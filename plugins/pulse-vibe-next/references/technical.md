@@ -58,7 +58,8 @@ Suffixes : `.test.ts` (unitaire, intégration), `.spec.ts` (bout en bout). Tests
 
 - Fichier local non versionné : `.env` (ou `.env.local`) à la racine ; modèle versionné : `.env.example`.
 - Variables : `DATABASE_URL` (adresse « pooled » de Neon, serveur), `DATABASE_URL_DIRECT` (adresse directe, migrations), puis celles des recettes (ex. `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` pour la connexion). Toutes côté serveur ; aucune ne commence par `NEXT_PUBLIC_` sauf une clé prévue pour être publique.
-- En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview.
+- `SITE_URL` (non secrète, Production) : l'adresse officielle du site, une fois le domaine définitif.
+- En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview, ou `pulse-aidd secrets envoyer` (Vercel CLI relié). L'inventaire et le journal des rotations : `docs/secrets.md` (`/pulse:secrets`).
 
 ## Hébergement et mise en ligne
 

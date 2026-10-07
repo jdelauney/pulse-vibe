@@ -212,7 +212,7 @@ function ecrireIndex(plans, nom) {
       lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera une copie de travail séparée, un worktree).`, "");
     }
   } else {
-    lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
+    lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
   }
   lignes.push("## Avant de construire", "", ...etapesAvantLePlan(plans), "");
   lignes.push("## Les plans", "", "| Epic | US | Priorité | Tâches | Terminées | Guide |", "|---|---|---|---|---|---|");

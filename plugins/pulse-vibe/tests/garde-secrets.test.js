@@ -215,3 +215,13 @@ test("le message de refus d'écriture est agnostique et renvoie vers /pulse:secr
   assert.doesNotMatch(s.permissionDecisionReason, /Netlify/);
   assert.match(s.permissionDecisionReason, /\/pulse:secrets fuite/);
 });
+
+test("reconnaît les jetons Neon, Vercel, Cloudflare et les adresses Redis, construits à l'exécution", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  const h = (n) => require("crypto").randomBytes(n).toString("hex");
+  assert.deepStrictEqual(trouverSecrets("napi" + "_" + h(26)), ["clé d'API Neon"]);
+  assert.deepStrictEqual(trouverSecrets("vcp" + "_" + h(16)), ["jeton Vercel"]);
+  assert.deepStrictEqual(trouverSecrets("cfat" + "_" + h(22)), ["jeton d'API Cloudflare"]);
+  assert.deepStrictEqual(trouverSecrets("redis" + "s://default:" + h(8) + "@exemple.upstash.io:6379"), ["mot de passe dans une adresse de base de données"]);
+  assert.deepStrictEqual(trouverSecrets("napi_ vcp_ cfat_"), []);
+});

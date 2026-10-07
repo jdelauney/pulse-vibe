@@ -63,6 +63,7 @@ Pour chaque option, évaluer :
 - **Contrôle d'accès** : toujours vérifié côté serveur ou par des règles au niveau de la base ; masquer un bouton relève seulement de l'affichage. Phrase à retenir : **« Si ce n'est pas interdit côté serveur, c'est autorisé. »**
 - **Paiements en mode test** d'abord : cartes de test, transactions fictives uniquement ; le passage en mode réel est une décision de la personne, au moment de la mise en ligne.
 - **Services payants** (email, IA, SMS) : vérifier les tarifs, fixer une limite de dépense si le service le permet, empêcher le déclenchement en boucle.
+- **Visibilité sur les moteurs de recherche importante** : les pages publiques sont servies en HTML complet par le serveur (rendu serveur ou pages statiques) ; une page construite seulement dans le navigateur reste vide pour la plupart des robots (assistants IA, robots de partage). Critère de choix, à vérifier dans la documentation de chaque option.
 - **1 à 2 services externes au plus** pour un MVP. Les autres attendent une version suivante.
 - **Confidentialité** : noter où sont hébergées les données personnelles ; ce sera repris dans la mention de confidentialité (`pulse-aidd modele confidentialite.md`). Un outil de statistiques de visite respectueux de la vie privée, sans cookies, est préférable.
 

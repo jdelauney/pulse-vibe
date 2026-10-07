@@ -15,7 +15,8 @@
 
 | Nom | Où | Valeur |
 |---|---|---|
-| `BETTER_AUTH_SECRET` | `.env`, Vercel (Production et Preview) | 32 caractères au moins, tirés au hasard : `npx auth@latest secret` l'affiche. Une valeur différente par environnement. |
+| `BETTER_AUTH_SECRET` | `.env`, Vercel (Production et Preview) | 32 caractères au moins, tirés au hasard, une valeur différente par environnement : `pulse-aidd secrets generer BETTER_AUTH_SECRET` (`.env`), puis `pulse-aidd secrets generer BETTER_AUTH_SECRET --envoyer production,preview --sans-local` (Vercel). Rien n'est affiché. |
+| `BETTER_AUTH_SECRETS` | facultative, ajoutée lors d'une rotation | Forme versionnée `2:<nouvelle>,1:<ancienne>` (better-auth 1.5 et plus), lue directement par better-auth : voir `/pulse:secrets renouveler BETTER_AUTH_SECRET`. Absente au départ. |
 | `BETTER_AUTH_URL` | `.env`, Vercel | Adresse du site : `http://localhost:3000` en local, `https://<projet>.vercel.app` (ou le domaine) en production |
 | `DATABASE_URL` | déjà là | Adresse « pooled » de Neon (application) |
 | `DATABASE_URL_DIRECT` | déjà là | Adresse directe de Neon (drizzle-kit) |
@@ -27,13 +28,13 @@ BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=
 ```
 
-La personne colle elle-même le secret dans `.env` puis dans Vercel ; il ne passe pas par la conversation.
+Le secret est généré par `pulse-aidd secrets generer`, qui l'écrit dans `.env` (et l'envoie à Vercel avec `--envoyer`) sans jamais l'afficher : il ne passe pas par la conversation. Les générateurs qui affichent leur résultat (`npx auth secret`, `openssl rand`) restent à l'écart : leur sortie arriverait dans la conversation.
 
 ## Fichiers créés ou modifiés
 
 | Fichier | Rôle |
 |---|---|
-| `src/lib/env.ts` (modifié) | Ajoute `BETTER_AUTH_SECRET` et `BETTER_AUTH_URL` |
+| `src/lib/env.ts` (modifié) | Ajoute `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` et, facultative, `BETTER_AUTH_SECRETS` |
 | `src/db/schema/auth.ts` | Tables `user`, `session`, `account`, `verification` (sortie de la CLI better-auth) |
 | `src/db/schema/index.ts` (modifié) | `export * from "./auth";` |
 | `drizzle/<numéro>_<nom>.sql` | Migration générée |
@@ -46,6 +47,7 @@ La personne colle elle-même le secret dans `.env` puis dans Vercel ; il ne pass
 | `src/features/compte/actions.ts` | `inscrire`, `connecter`, `changerMotDePasse`, `deconnecter` |
 | `src/features/compte/components/*.tsx` | Trois formulaires et le bouton de déconnexion |
 | `src/app/(public)/inscription/page.tsx`, `connexion/page.tsx` | Pages publiques |
+| `src/app/(connecte)/layout.tsx` | Pages connectées hors de Google (`noindex`) |
 | `src/app/(connecte)/compte/page.tsx` | Page « Mon compte » |
 | `src/proxy.ts` | Renvoi rapide vers `/connexion` sans cookie de session |
 | `src/lib/auth.test.ts` | Tests d'intégration better-auth + PGlite |
@@ -63,6 +65,12 @@ import { z } from "zod";
 const schemaEnvServeur = z.object({
   DATABASE_URL: z.url(),
   BETTER_AUTH_SECRET: z.string().min(32),
+  // Rotation douce (better-auth 1.5 et plus), lue directement par better-auth : « 2:nouvelle,1:ancienne ».
+  // La première version doit faire 32 caractères au moins. BETTER_AUTH_SECRET reste pour relire l'existant.
+  BETTER_AUTH_SECRETS: z
+    .string()
+    .regex(/^\d+:[^,]{32,}(,\d+:[^,]+)*$/)
+    .optional(),
   BETTER_AUTH_URL: z.url(),
 });
 
@@ -867,6 +875,20 @@ export default function PageConnexion() {
 ```
 
 ```tsx
+// src/app/(connecte)/layout.tsx
+import type { Metadata } from "next";
+
+// Pages réservées aux personnes connectées : hors de Google.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
+export default function LayoutConnecte({ children }: LayoutProps<"/">) {
+  return children;
+}
+```
+
+```tsx
 // src/app/(connecte)/compte/page.tsx
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -1036,7 +1058,7 @@ Fonctionnalité: Compte personnel
   - Fichiers : à créer : `src/db/schema/auth.ts`, `src/lib/auth.ts`, `src/lib/auth-client.ts`, `src/app/api/auth/[...all]/route.ts`, `src/lib/auth.test.ts`, migration dans `drizzle/` · à modifier : `src/lib/env.ts`, `src/db/schema/index.ts`, `.env.example`
   - Vérification : US-XXX critères 1 à 4 – `npm test` passe ; `npm run db:migrate` crée les 4 tables
   - Tests : « Le mot de passe n'est jamais enregistré en clair » (intégration) ; « Une adresse déjà utilisée est refusée » (intégration) ; « Mauvais mot de passe : la connexion est refusée » (intégration) ; « Mot de passe actuel faux » (intégration) ; « Après le changement, l'ancien mot de passe ne marche plus » (intégration)
-  - Attention : la personne colle `BETTER_AUTH_SECRET` elle-même dans `.env` (S1)
+  - Attention : `BETTER_AUTH_SECRET` se génère avec `pulse-aidd secrets generer BETTER_AUTH_SECRET`, jamais affiché (S1)
 - [ ] **T2 – Actions et client « connecté »** · US-XXX
   - Objectif : chaque écriture du compte passe par une action validée, et les pages savent qui est connecté
   - Dépend de : T1
@@ -1047,7 +1069,7 @@ Fonctionnalité: Compte personnel
 - [ ] **T3 – Pages, formulaires et renvoi vers la connexion** · US-XXX
   - Objectif : la personne s'inscrit, se connecte, change son mot de passe et se déconnecte depuis l'écran
   - Dépend de : T2
-  - Fichiers : à créer : `src/features/compte/components/formulaire-inscription.tsx`, `formulaire-connexion.tsx`, `formulaire-mot-de-passe.tsx`, `bouton-deconnexion.tsx`, `src/app/(public)/inscription/page.tsx`, `src/app/(public)/connexion/page.tsx`, `src/app/(connecte)/compte/page.tsx`, `src/proxy.ts`
+  - Fichiers : à créer : `src/features/compte/components/formulaire-inscription.tsx`, `formulaire-connexion.tsx`, `formulaire-mot-de-passe.tsx`, `bouton-deconnexion.tsx`, `src/app/(public)/inscription/page.tsx`, `src/app/(public)/connexion/page.tsx`, `src/app/(connecte)/layout.tsx`, `src/app/(connecte)/compte/page.tsx`, `src/proxy.ts`
   - Vérification : US-XXX critères 1 à 5 – `npm run build` passe ; parcours complet à la main en local
   - Tests : « Une action réservée envoyée sans session est refusée » (manuel)
   - Attention : lecture de session sous `<Suspense>` ; `id` des champs préfixés par `useId()`
@@ -1309,7 +1331,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 
 ## Points de sécurité
 
-- **S1 – Secrets hors du code** : `BETTER_AUTH_SECRET` et les adresses de base vivent dans `.env` (ignoré par Git) et dans Vercel ; `.env.example` garde seulement les noms. `env.ts` refuse de démarrer si une variable manque, et son message nomme la variable sans afficher de valeur.
+- **S1 – Secrets hors du code** : `BETTER_AUTH_SECRET` et les adresses de base vivent dans `.env` (ignoré par Git) et dans Vercel ; `.env.example` garde seulement les noms. Le secret est généré par `pulse-aidd secrets generer`, sans affichage, avec une valeur différente par environnement. `env.ts` refuse de démarrer si une variable manque, et son message nomme la variable sans afficher de valeur.
 - **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `auth-client.ts` n'a besoin d'aucune clé (même domaine).
 - **S3 – Contrôle d'accès aux données** : l'identifiant de la personne vient toujours de la session (`ctx.utilisateur.id`, `utilisateurConnecte().id`), jamais d'un champ du formulaire.
 - **S4 – Pages et actions réservées** : `actionConnectee` relit la session à chaque appel (une Server Action est une adresse publique) ; la page « Mon compte » relit la session avec `utilisateurConnecte()`. `proxy.ts` ne fait qu'un renvoi rapide : il voit la présence d'un cookie, pas sa validité.
@@ -1331,12 +1353,14 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - **Formulaire muet sur une page connectée quand la session a expiré** : `proxy.ts` redirige aussi le POST de la Server Action (réponse 307), et l'action ne répond rien. Gardez le test `request.method === "GET"` du proxy : l'action arrive alors à `actionConnectee`, qui répond « Connexion requise ».
 - **Redirection vers `/connexion` en réponse 200** : quand la session manque dans un composant sous `<Suspense>`, Next.js a déjà commencé à envoyer la page ; la redirection se fait dans le navigateur. C'est normal ; `proxy.ts` répond 307 avant, dès que le cookie manque.
 - **Test d'intégration qui plante sur `server-only`** : ajoutez l'alias `server-only` dans `vitest.config.ts` (voir « Prérequis »).
+- **Tout le monde est déconnecté après un changement de `BETTER_AUTH_SECRET`** : la signature du cookie de session utilise seulement le secret courant (code de better-auth 1.7.7), même avec `BETTER_AUTH_SECRETS`. C'est normal : chacun se reconnecte. `BETTER_AUTH_SECRETS` garde lisibles les données chiffrées par better-auth (plugins de double authentification, connexion par un service tiers, cookie de session mis en cache). Procédure : `/pulse:secrets renouveler BETTER_AUTH_SECRET`.
 - **Pas de lien « Mot de passe oublié »** : il arrive avec la recette `email`. En attendant, la personne qui oublie son mot de passe contacte l'administrateur.
 - **Inscription bloquée avec « Un compte existe déjà »** : quelqu'un a pu utiliser l'adresse d'une autre personne, faute de vérification par e-mail. La recette `email` règle ce cas avec `requireEmailVerification: true`.
 
 ## Sources
 
 - Installation, variables `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL`, route `toNextJsHandler` : https://www.better-auth.com/docs/installation
+- Rotation des secrets (`secrets`, `BETTER_AUTH_SECRETS=2:…,1:…`, première version pour les nouveaux chiffrements, suivantes pour relire) : https://www.better-auth.com/docs/reference/options ; lecture de `BETTER_AUTH_SECRETS` et signature des cookies par le seul secret courant : code de `better-auth@1.7.7` (`dist/context/create-context.mjs`, `dist/context/secret-utils.mjs`, `dist/api/routes/session.mjs`), lu le 2026-10-07
 - Next.js, `nextCookies()` (en dernier plugin), `auth.api.getSession({ headers })`, `proxy.ts` et `getSessionCookie` (« only checks for the existence of a session cookie ; it does not validate it ») : https://www.better-auth.com/docs/integrations/next
 - Adaptateur Drizzle, CLI `npx auth@latest generate` : https://www.better-auth.com/docs/adapters/drizzle
 - E-mail et mot de passe (`requireEmailVerification`, longueurs 8–128, `autoSignIn`, `changePassword` et `revokeOtherSessions`, hachage scrypt) : https://www.better-auth.com/docs/authentication/email-password

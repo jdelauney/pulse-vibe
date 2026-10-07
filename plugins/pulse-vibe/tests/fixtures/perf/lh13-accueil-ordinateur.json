@@ -1,0 +1,1777 @@
+{
+ "lighthouseVersion": "13.5.0",
+ "requestedUrl": "http://localhost:3456/",
+ "mainDocumentUrl": "http://localhost:3456/",
+ "finalDisplayedUrl": "http://localhost:3456/",
+ "finalUrl": "http://localhost:3456/",
+ "fetchTime": "2026-10-07T06:19:35.611Z",
+ "gatherMode": "navigation",
+ "runWarnings": [],
+ "environment": {
+  "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+  "benchmarkIndex": 5007.5,
+  "credits": {
+   "axe-core": "4.14.0"
+  }
+ },
+ "configSettings": {
+  "formFactor": "desktop",
+  "throttlingMethod": "simulate",
+  "throttling": {
+   "rttMs": 40,
+   "throughputKbps": 10240,
+   "requestLatencyMs": 0,
+   "downloadThroughputKbps": 0,
+   "uploadThroughputKbps": 0,
+   "cpuSlowdownMultiplier": 1
+  },
+  "screenEmulation": {
+   "mobile": false,
+   "width": 1350,
+   "height": 940,
+   "deviceScaleFactor": 1,
+   "disabled": false
+  },
+  "locale": "fr",
+  "onlyCategories": [
+   "performance",
+   "accessibility",
+   "best-practices",
+   "seo"
+  ]
+ },
+ "categories": {
+  "performance": {
+   "title": "Performances",
+   "supportedModes": [
+    "navigation",
+    "timespan",
+    "snapshot"
+   ],
+   "auditRefs": [
+    {
+     "id": "first-contentful-paint",
+     "weight": 10,
+     "group": "metrics",
+     "acronym": "FCP"
+    },
+    {
+     "id": "largest-contentful-paint",
+     "weight": 25,
+     "group": "metrics",
+     "acronym": "LCP"
+    },
+    {
+     "id": "total-blocking-time",
+     "weight": 30,
+     "group": "metrics",
+     "acronym": "TBT"
+    },
+    {
+     "id": "cumulative-layout-shift",
+     "weight": 25,
+     "group": "metrics",
+     "acronym": "CLS"
+    },
+    {
+     "id": "speed-index",
+     "weight": 10,
+     "group": "metrics",
+     "acronym": "SI"
+    },
+    {
+     "id": "cache-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "cls-culprits-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "document-latency-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "dom-size-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "duplicated-javascript-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "font-display-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "forced-reflow-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "image-delivery-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "inp-breakdown-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "lcp-breakdown-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "lcp-discovery-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "legacy-javascript-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "modern-http-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "network-dependency-tree-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "render-blocking-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "third-parties-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "viewport-insight",
+     "weight": 0,
+     "group": "insights"
+    },
+    {
+     "id": "interactive",
+     "weight": 0,
+     "group": "hidden",
+     "acronym": "TTI"
+    },
+    {
+     "id": "max-potential-fid",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "unminified-css",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "unminified-javascript",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "unused-css-rules",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "unused-javascript",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "total-byte-weight",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "user-timings",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "bootup-time",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "mainthread-work-breakdown",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "long-tasks",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "non-composited-animations",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "unsized-images",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "bf-cache",
+     "weight": 0,
+     "group": "diagnostics"
+    },
+    {
+     "id": "network-requests",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "network-rtt",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "network-server-latency",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "main-thread-tasks",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "diagnostics",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "metrics",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "screenshot-thumbnails",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "final-screenshot",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "script-treemap-data",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "resource-summary",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "redirects",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "server-response-time",
+     "weight": 0,
+     "group": "hidden"
+    },
+    {
+     "id": "layout-shifts",
+     "weight": 0,
+     "group": "hidden"
+    }
+   ],
+   "id": "performance",
+   "score": 1
+  },
+  "accessibility": {
+   "id": "accessibility",
+   "title": "Accessibilité",
+   "score": 1
+  },
+  "best-practices": {
+   "id": "best-practices",
+   "title": "Bonnes pratiques",
+   "score": 1
+  },
+  "seo": {
+   "id": "seo",
+   "title": "SEO",
+   "score": 0.9
+  }
+ },
+ "audits": {
+  "first-contentful-paint": {
+   "id": "first-contentful-paint",
+   "title": "First Contentful Paint",
+   "description": "La métrique \"First Contentful Paint\" indique le moment où le premier texte ou la première image sont affichés. [En savoir plus sur cette métrique](https://developer.chrome.com/docs/lighthouse/performance/first-contentful-paint/)",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "numericValue": 205.003,
+   "numericUnit": "millisecond",
+   "displayValue": "0,2 s",
+   "scoringOptions": {
+    "p10": 934,
+    "median": 1600
+   }
+  },
+  "largest-contentful-paint": {
+   "id": "largest-contentful-paint",
+   "title": "Largest Contentful Paint",
+   "description": "La métrique \"Largest Contentful Paint\" indique le moment où le texte le plus long ou l'image la plus grande sont affichés. [En savoir plus sur cette métrique](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-largest-contentful-paint/)",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "numericValue": 540.003,
+   "numericUnit": "millisecond",
+   "displayValue": "0,5 s",
+   "scoringOptions": {
+    "p10": 1200,
+    "median": 2400
+   }
+  },
+  "speed-index": {
+   "id": "speed-index",
+   "title": "Speed Index",
+   "description": "La métrique \"Speed Index\" indique la rapidité avec laquelle le contenu d'une page est disponible. [En savoir plus sur cette métrique](https://developer.chrome.com/docs/lighthouse/performance/speed-index/)",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "numericValue": 205.003,
+   "numericUnit": "millisecond",
+   "displayValue": "0,2 s",
+   "scoringOptions": {
+    "p10": 1311,
+    "median": 2300
+   }
+  },
+  "total-blocking-time": {
+   "id": "total-blocking-time",
+   "title": "Total Blocking Time",
+   "description": "Somme en millisecondes de toutes les périodes entre le FCP et le délai avant interactivité, lorsque la durée de la tâche a dépassé 50 ms. [En savoir plus sur la métrique \"Total Blocking Time\"](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-total-blocking-time/)",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "numericValue": 0,
+   "numericUnit": "millisecond",
+   "displayValue": "0 ms",
+   "scoringOptions": {
+    "p10": 150,
+    "median": 350
+   }
+  },
+  "cumulative-layout-shift": {
+   "id": "cumulative-layout-shift",
+   "title": "Cumulative Layout Shift",
+   "description": "Cumulative Layout Shift mesure le mouvement des éléments visibles dans la fenêtre d'affichage. [En savoir plus sur cette métrique](https://web.dev/articles/cls)",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "numericValue": 0,
+   "numericUnit": "unitless",
+   "displayValue": "0",
+   "scoringOptions": {
+    "p10": 0.1,
+    "median": 0.25
+   },
+   "details": {
+    "type": "debugdata",
+    "items": [
+     {
+      "cumulativeLayoutShiftMainFrame": 0,
+      "newEngineResult": {
+       "cumulativeLayoutShift": 0,
+       "cumulativeLayoutShiftMainFrame": 0
+      },
+      "newEngineResultDiffered": false
+     }
+    ]
+   }
+  },
+  "user-timings": {
+   "id": "user-timings",
+   "title": "Marques et mesures du temps utilisateur",
+   "description": "Envisagez de doter votre appli de l'API User Timing pour mesurer ses performances réelles lors d'expériences utilisateur clés. [En savoir plus sur les marques User Timing](https://developer.chrome.com/docs/lighthouse/performance/user-timings/)",
+   "score": null,
+   "scoreDisplayMode": "notApplicable",
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "name",
+      "valueType": "text",
+      "label": "Nom"
+     },
+     {
+      "key": "timingType",
+      "valueType": "text",
+      "label": "Type"
+     },
+     {
+      "key": "startTime",
+      "valueType": "ms",
+      "granularity": 0.01,
+      "label": "Heure de début"
+     },
+     {
+      "key": "duration",
+      "valueType": "ms",
+      "granularity": 0.01,
+      "label": "Durée"
+     }
+    ],
+    "items": []
+   },
+   "guidanceLevel": 2
+  },
+  "mainthread-work-breakdown": {
+   "id": "mainthread-work-breakdown",
+   "title": "Réduire le travail du thread principal",
+   "description": "Envisagez de réduire le temps consacré à l'analyse, la compilation et l'exécution de JavaScript. La livraison de charges utiles JavaScript plus petites peut vous aider. [Découvrez comment réduire le travail du thread principal.](https://developer.chrome.com/docs/lighthouse/performance/mainthread-work-breakdown/)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "numericValue": 51.571000000000176,
+   "numericUnit": "millisecond",
+   "displayValue": "0,1 s",
+   "metricSavings": {
+    "TBT": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "groupLabel",
+      "valueType": "text",
+      "label": "Catégorie"
+     },
+     {
+      "key": "duration",
+      "valueType": "ms",
+      "granularity": 1,
+      "label": "Temps passé"
+     }
+    ],
+    "items": [
+     {
+      "group": "scriptEvaluation",
+      "groupLabel": "Script Evaluation",
+      "duration": 29.87700000000016
+     },
+     {
+      "group": "other",
+      "groupLabel": "Other",
+      "duration": 11.377000000000015
+     },
+     {
+      "group": "scriptParseCompile",
+      "groupLabel": "Script Parsing & Compilation",
+      "duration": 5.586000000000001
+     },
+     {
+      "group": "styleLayout",
+      "groupLabel": "Style & Layout",
+      "duration": 3.4640000000000004
+     },
+     {
+      "group": "parseHTML",
+      "groupLabel": "Parse HTML & CSS",
+      "duration": 1.027
+     },
+     {
+      "group": "paintCompositeRender",
+      "groupLabel": "Rendering",
+      "duration": 0.24000000000000005
+     }
+    ],
+    "sortedBy": [
+     "duration"
+    ]
+   },
+   "guidanceLevel": 1
+  },
+  "bootup-time": {
+   "id": "bootup-time",
+   "title": "Délai d'exécution de JavaScript",
+   "description": "Envisagez de réduire le temps consacré à l'analyse, la compilation et l'exécution de JavaScript. La livraison de charges utiles JavaScript plus petites peut vous aider. [Découvrez comment réduire le temps d'exécution de JavaScript.](https://developer.chrome.com/docs/lighthouse/performance/bootup-time/)",
+   "score": null,
+   "scoreDisplayMode": "notApplicable",
+   "numericValue": 0,
+   "numericUnit": "millisecond",
+   "displayValue": "",
+   "metricSavings": {
+    "TBT": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     },
+     {
+      "key": "total",
+      "granularity": 1,
+      "valueType": "ms",
+      "label": "Temps CPU total"
+     },
+     {
+      "key": "scripting",
+      "granularity": 1,
+      "valueType": "ms",
+      "label": "Évaluation des scripts"
+     },
+     {
+      "key": "scriptParseCompile",
+      "granularity": 1,
+      "valueType": "ms",
+      "label": "Analyse des scripts"
+     }
+    ],
+    "items": []
+   },
+   "guidanceLevel": 1
+  },
+  "metrics": {
+   "id": "metrics",
+   "title": "Metrics",
+   "description": "Collects all available metrics.",
+   "score": 1,
+   "scoreDisplayMode": "informative",
+   "numericValue": 540,
+   "numericUnit": "millisecond",
+   "details": {
+    "type": "debugdata",
+    "items": [
+     {
+      "firstContentfulPaint": 205,
+      "largestContentfulPaint": 540,
+      "interactive": 540,
+      "speedIndex": 205,
+      "totalBlockingTime": 0,
+      "maxPotentialFID": 16,
+      "cumulativeLayoutShift": 0,
+      "cumulativeLayoutShiftMainFrame": 0,
+      "timeToFirstByte": 123,
+      "observedTimeOrigin": 0,
+      "observedTimeOriginTs": 317064935622,
+      "observedNavigationStart": 0,
+      "observedNavigationStartTs": 317064935622,
+      "observedFirstPaint": 42,
+      "observedFirstPaintTs": 317064977958,
+      "observedFirstContentfulPaint": 42,
+      "observedFirstContentfulPaintTs": 317064977958,
+      "observedFirstContentfulPaintAllFrames": 42,
+      "observedFirstContentfulPaintAllFramesTs": 317064977958,
+      "observedLargestContentfulPaint": 42,
+      "observedLargestContentfulPaintTs": 317064977958,
+      "observedLargestContentfulPaintAllFrames": 42,
+      "observedLargestContentfulPaintAllFramesTs": 317064977958,
+      "observedTraceEnd": 2381,
+      "observedTraceEndTs": 317067317068,
+      "observedLoad": 50,
+      "observedLoadTs": 317064985541,
+      "observedDomContentLoaded": 16,
+      "observedDomContentLoadedTs": 317064951343,
+      "observedCumulativeLayoutShift": 0,
+      "observedCumulativeLayoutShiftMainFrame": 0,
+      "observedFirstVisualChange": 31,
+      "observedFirstVisualChangeTs": 317064966622,
+      "observedLastVisualChange": 31,
+      "observedLastVisualChangeTs": 317064966622,
+      "observedSpeedIndex": 32,
+      "observedSpeedIndexTs": 317064967556
+     },
+     {
+      "lcpInvalidated": false
+     }
+    ]
+   }
+  },
+  "resource-summary": {
+   "id": "resource-summary",
+   "title": "Resources Summary",
+   "description": "Aggregates all network requests and groups them by type",
+   "score": 1,
+   "scoreDisplayMode": "informative",
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "label",
+      "valueType": "text",
+      "label": "Type de ressource"
+     },
+     {
+      "key": "requestCount",
+      "valueType": "numeric",
+      "label": "Requêtes"
+     },
+     {
+      "key": "transferSize",
+      "valueType": "bytes",
+      "label": "Taille de transfert"
+     }
+    ],
+    "items": [
+     {
+      "resourceType": "total",
+      "label": "Total",
+      "requestCount": 15,
+      "transferSize": 256587
+     },
+     {
+      "resourceType": "script",
+      "label": "Script",
+      "requestCount": 10,
+      "transferSize": 176084
+     },
+     {
+      "resourceType": "font",
+      "label": "Police de caractères",
+      "requestCount": 2,
+      "transferSize": 53332
+     },
+     {
+      "resourceType": "other",
+      "label": "Autre",
+      "requestCount": 1,
+      "transferSize": 15585
+     },
+     {
+      "resourceType": "stylesheet",
+      "label": "Feuille de style",
+      "requestCount": 1,
+      "transferSize": 8494
+     },
+     {
+      "resourceType": "document",
+      "label": "Document",
+      "requestCount": 1,
+      "transferSize": 3092
+     },
+     {
+      "resourceType": "image",
+      "label": "Image",
+      "requestCount": 0,
+      "transferSize": 0
+     },
+     {
+      "resourceType": "media",
+      "label": "Contenu multimédia",
+      "requestCount": 0,
+      "transferSize": 0
+     },
+     {
+      "resourceType": "third-party",
+      "label": "Tiers",
+      "requestCount": 0,
+      "transferSize": 0
+     }
+    ]
+   }
+  },
+  "long-tasks": {
+   "id": "long-tasks",
+   "title": "Évitez les tâches longues dans le thread principal",
+   "description": "Indique les tâches les plus longues du thread principal, ce qui est utile pour identifier celles qui entraînent le plus de retard. [Découvrez comment éviter les longues tâches du thread principal.](https://web.dev/articles/optimize-long-tasks)",
+   "score": null,
+   "scoreDisplayMode": "notApplicable",
+   "metricSavings": {
+    "TBT": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     },
+     {
+      "key": "startTime",
+      "valueType": "ms",
+      "granularity": 1,
+      "label": "Heure de début"
+     },
+     {
+      "key": "duration",
+      "valueType": "ms",
+      "granularity": 1,
+      "label": "Durée"
+     }
+    ],
+    "items": [],
+    "debugData": {
+     "type": "debugdata",
+     "urls": [],
+     "tasks": []
+    }
+   },
+   "guidanceLevel": 1
+  },
+  "non-composited-animations": {
+   "id": "non-composited-animations",
+   "title": "Éviter les animations non composées",
+   "description": "Les animations non composées peuvent être lentes et augmenter le CLS. [Découvrez comment éviter les animations non composées.](https://developer.chrome.com/docs/lighthouse/performance/non-composited-animations/)",
+   "score": null,
+   "scoreDisplayMode": "notApplicable",
+   "metricSavings": {
+    "CLS": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "node",
+      "valueType": "node",
+      "subItemsHeading": {
+       "key": "failureReason",
+       "valueType": "text"
+      },
+      "label": "Élément"
+     }
+    ],
+    "items": []
+   },
+   "guidanceLevel": 2
+  },
+  "unsized-images": {
+   "id": "unsized-images",
+   "title": "Les éléments d'image possèdent une `width` et une `height` explicites",
+   "description": "Indiquez une largeur et une hauteur explicites sur les éléments d'image afin de réduire les décalages de mise en page et d'améliorer le CLS. [Découvrez comment définir les dimensions de l'image.](https://web.dev/articles/optimize-cls#images_without_dimensions)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "CLS": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "node",
+      "valueType": "node",
+      "label": ""
+     },
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     }
+    ],
+    "items": []
+   },
+   "guidanceLevel": 4
+  },
+  "total-byte-weight": {
+   "id": "total-byte-weight",
+   "title": "Éviter d'énormes charges utiles de réseau",
+   "description": "Les charges utiles des grands réseaux coûtent de l'argent réel aux utilisateurs et sont fortement corrélées aux délais de chargement interminables. [Découvrez comment réduire la taille des charges utiles.](https://developer.chrome.com/docs/lighthouse/performance/total-byte-weight/)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "numericValue": 256587,
+   "numericUnit": "byte",
+   "displayValue": "La taille totale était de 251 Kio",
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     },
+     {
+      "key": "totalBytes",
+      "valueType": "bytes",
+      "label": "Taille de transfert"
+     }
+    ],
+    "items": [
+     {
+      "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+      "totalBytes": 74179
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/29yxdy1vkfqcb.js",
+      "totalBytes": 44935
+     },
+     {
+      "url": "http://localhost:3456/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2",
+      "totalBytes": 29756
+     },
+     {
+      "url": "http://localhost:3456/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2",
+      "totalBytes": 23576
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/27pyejxwf8iw_.js",
+      "totalBytes": 15804
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/3qm0a4jgbi3ak.js",
+      "totalBytes": 15684
+     },
+     {
+      "url": "http://localhost:3456/favicon.ico?favicon.117ezoe8m31dk.ico",
+      "totalBytes": 15585
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/18mt2xqy435yt.js",
+      "totalBytes": 8786
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/0vqpe5qwsmo0t.css",
+      "totalBytes": 8494
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/turbopack-3-ry682tkyiqk.js",
+      "totalBytes": 4504
+     }
+    ],
+    "sortedBy": [
+     "totalBytes"
+    ]
+   },
+   "guidanceLevel": 1
+  },
+  "unminified-css": {
+   "id": "unminified-css",
+   "title": "Réduisez la taille des ressources CSS",
+   "description": "La minimisation des fichiers CSS peut réduire la taille des charges utiles de réseau. [Découvrez comment minimiser des fichiers CSS.](https://developer.chrome.com/docs/lighthouse/performance/unminified-css/)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "numericValue": 0,
+   "numericUnit": "millisecond",
+   "displayValue": "",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "opportunity",
+    "headings": [],
+    "items": [],
+    "overallSavingsMs": 0,
+    "overallSavingsBytes": 0,
+    "sortedBy": [
+     "wastedBytes"
+    ],
+    "debugData": {
+     "type": "debugdata",
+     "metricSavings": {
+      "FCP": 0,
+      "LCP": 0
+     }
+    }
+   },
+   "guidanceLevel": 3
+  },
+  "unminified-javascript": {
+   "id": "unminified-javascript",
+   "title": "Réduisez la taille des ressources JavaScript",
+   "description": "La minimisation des fichiers JavaScript peut réduire la taille des charges utiles et la durée d'analyse des scripts. [Découvrez comment les minimiser.](https://developer.chrome.com/docs/lighthouse/performance/unminified-javascript/)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "numericValue": 0,
+   "numericUnit": "millisecond",
+   "displayValue": "",
+   "warnings": [],
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "opportunity",
+    "headings": [],
+    "items": [],
+    "overallSavingsMs": 0,
+    "overallSavingsBytes": 0,
+    "sortedBy": [
+     "wastedBytes"
+    ],
+    "debugData": {
+     "type": "debugdata",
+     "metricSavings": {
+      "FCP": 0,
+      "LCP": 0
+     }
+    }
+   },
+   "guidanceLevel": 3
+  },
+  "unused-css-rules": {
+   "id": "unused-css-rules",
+   "title": "Réduisez les ressources CSS inutilisées",
+   "description": "Réduisez les règles inutilisées des feuilles de style et différez les ressources CSS non utilisées pour le contenu au-dessus de la ligne de flottaison afin de réduire la quantité d'octets consommés par l'activité réseau. [Découvrez comment réduire les ressources CSS non utilisées.](https://developer.chrome.com/docs/lighthouse/performance/unused-css-rules/)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "numericValue": 0,
+   "numericUnit": "millisecond",
+   "displayValue": "",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "opportunity",
+    "headings": [],
+    "items": [],
+    "overallSavingsMs": 0,
+    "overallSavingsBytes": 0,
+    "sortedBy": [
+     "wastedBytes"
+    ],
+    "debugData": {
+     "type": "debugdata",
+     "metricSavings": {
+      "FCP": 0,
+      "LCP": 0
+     }
+    }
+   },
+   "guidanceLevel": 1
+  },
+  "unused-javascript": {
+   "id": "unused-javascript",
+   "title": "Réduisez les ressources JavaScript inutilisées",
+   "description": "Réduisez les ressources JavaScript inutilisées et différez le chargement des scripts tant qu'ils ne sont pas requis afin de réduire la quantité d'octets consommés par l'activité réseau. [Découvrez comment réduire les ressources JavaScript inutilisées.](https://developer.chrome.com/docs/lighthouse/performance/unused-javascript/)",
+   "score": 0,
+   "scoreDisplayMode": "metricSavings",
+   "numericValue": 40,
+   "numericUnit": "millisecond",
+   "displayValue": "Économies estimées : 52 Kio",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 50
+   },
+   "details": {
+    "type": "opportunity",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "subItemsHeading": {
+       "key": "source",
+       "valueType": "code"
+      },
+      "label": "URL"
+     },
+     {
+      "key": "totalBytes",
+      "valueType": "bytes",
+      "subItemsHeading": {
+       "key": "sourceBytes"
+      },
+      "label": "Taille de transfert"
+     },
+     {
+      "key": "wastedBytes",
+      "valueType": "bytes",
+      "subItemsHeading": {
+       "key": "sourceWastedBytes"
+      },
+      "label": "Économies estimées"
+     }
+    ],
+    "items": [
+     {
+      "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+      "totalBytes": 73630,
+      "wastedBytes": 30282,
+      "wastedPercent": 41.12697386332698
+     },
+     {
+      "url": "http://localhost:3456/_next/static/chunks/29yxdy1vkfqcb.js",
+      "totalBytes": 44387,
+      "wastedBytes": 23268,
+      "wastedPercent": 52.42135761589404
+     }
+    ],
+    "overallSavingsMs": 40,
+    "overallSavingsBytes": 53550,
+    "sortedBy": [
+     "wastedBytes"
+    ],
+    "debugData": {
+     "type": "debugdata",
+     "metricSavings": {
+      "FCP": 0,
+      "LCP": 40
+     }
+    }
+   },
+   "guidanceLevel": 1
+  },
+  "bf-cache": {
+   "id": "bf-cache",
+   "title": "La page n'a pas empêché la restauration du cache back/forward",
+   "description": "La navigation consiste souvent à revenir à la page précédente ou aller à la page suivante. Le cache back/forward (bfcache) peut accélérer ce type de navigation. [En savoir plus sur le bfcache](https://developer.chrome.com/docs/lighthouse/performance/bf-cache/)",
+   "score": 1,
+   "scoreDisplayMode": "binary",
+   "guidanceLevel": 4
+  },
+  "cache-insight": {
+   "id": "cache-insight",
+   "title": "Utiliser des durées de mise en cache efficaces",
+   "description": "Une longue durée de vie du cache peut accélérer les visites répétées sur votre page. [En savoir plus sur la mise en cache](https://developer.chrome.com/docs/performance/insights/cache)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "Requête"
+     },
+     {
+      "key": "cacheLifetimeMs",
+      "valueType": "ms",
+      "label": "Cache de la valeur TTL",
+      "displayUnit": "duration"
+     },
+     {
+      "key": "totalBytes",
+      "valueType": "bytes",
+      "label": "Taille de transfert",
+      "displayUnit": "kb",
+      "granularity": 1
+     }
+    ],
+    "items": [],
+    "debugData": {
+     "type": "debugdata",
+     "wastedBytes": 0
+    }
+   },
+   "guidanceLevel": 3
+  },
+  "cls-culprits-insight": {
+   "id": "cls-culprits-insight",
+   "title": "Causes des décalages de mise en page",
+   "description": "Les décalages de mise en page se produisent lorsque des éléments se déplacent sans aucune interaction de l'utilisateur. [Étudiez les causes des décalages de mise en page](https://developer.chrome.com/docs/performance/insights/cls-culprit), comme l'ajout ou la suppression d'éléments, ou le changement de polices lors du chargement de la page.",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "metricSavings": {
+    "CLS": 0
+   },
+   "details": {
+    "type": "list",
+    "items": []
+   },
+   "guidanceLevel": 3
+  },
+  "document-latency-insight": {
+   "id": "document-latency-insight",
+   "title": "Latence de la demande de document",
+   "description": "Votre première requête réseau est la plus importante. [Réduisez sa latence](https://developer.chrome.com/docs/performance/insights/document-latency) en évitant les redirections, en assurant une réponse rapide du serveur et en activant la compression de texte.",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "checklist",
+    "items": {
+     "noRedirects": {
+      "label": "Pas de redirections",
+      "value": true
+     },
+     "serverResponseIsFast": {
+      "label": "Le serveur répond rapidement (1 ms observées)",
+      "value": true
+     },
+     "usesCompression": {
+      "label": "Applique la compression de texte",
+      "value": true
+     }
+    },
+    "debugData": {
+     "type": "debugdata",
+     "redirectDuration": 0,
+     "serverResponseTime": 1,
+     "uncompressedResponseBytes": 0,
+     "wastedBytes": 0
+    }
+   },
+   "guidanceLevel": 3
+  },
+  "dom-size-insight": {
+   "id": "dom-size-insight",
+   "title": "Optimiser la taille du DOM",
+   "description": "Un grand DOM peut allonger la durée des calculs de style et des ajustements de la mise en page, ce qui impacte la réactivité de la page. Un grand DOM sollicite davantage la mémoire. [Découvrez comment éviter une taille de DOM excessive.](https://developer.chrome.com/docs/performance/insights/dom-size)",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "numericValue": 18,
+   "numericUnit": "element",
+   "metricSavings": {
+    "INP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "statistic",
+      "valueType": "text",
+      "label": "Statistique"
+     },
+     {
+      "key": "node",
+      "valueType": "node",
+      "label": "Élément"
+     },
+     {
+      "key": "value",
+      "valueType": "numeric",
+      "label": "Valeur"
+     }
+    ],
+    "items": [
+     {
+      "statistic": "Nombre total d'éléments",
+      "value": {
+       "type": "numeric",
+       "granularity": 1,
+       "value": 18
+      }
+     },
+     {
+      "statistic": "Profondeur DOM",
+      "node": {
+       "type": "node",
+       "lhId": "page-0-H1",
+       "path": "1,HTML,1,BODY,4,MAIN,0,H1",
+       "selector": "body.flex > main.mx-auto > h1.font-heading",
+       "boundingRect": {
+        "top": 442,
+        "bottom": 482,
+        "left": 315,
+        "right": 1035,
+        "width": 720,
+        "height": 40
+       },
+       "snippet": "<h1 class=\"font-heading text-4xl font-semibold tracking-tight\">",
+       "nodeLabel": "Essai"
+      },
+      "value": {
+       "type": "numeric",
+       "granularity": 1,
+       "value": 3
+      }
+     },
+     {
+      "statistic": "La plupart des enfants",
+      "node": {
+       "type": "node",
+       "lhId": "page-2-BODY",
+       "path": "1,HTML,1,BODY",
+       "selector": "body.flex",
+       "boundingRect": {
+        "top": 0,
+        "bottom": 940,
+        "left": 0,
+        "right": 1350,
+        "width": 1350,
+        "height": 940
+       },
+       "snippet": "<body class=\"flex min-h-full flex-col\">",
+       "nodeLabel": "body.flex"
+      },
+      "value": {
+       "type": "numeric",
+       "granularity": 1,
+       "value": 13
+      }
+     }
+    ],
+    "debugData": {
+     "type": "debugdata",
+     "totalElements": 18,
+     "maxChildren": 13,
+     "maxDepth": 3
+    }
+   },
+   "guidanceLevel": 3
+  },
+  "duplicated-javascript-insight": {
+   "id": "duplicated-javascript-insight",
+   "title": "JavaScript en double",
+   "description": "Supprimez les [modules JavaScript volumineux et en double](https://developer.chrome.com/docs/performance/insights/duplicated-javascript) de vos bundles pour réduire les débits d'octets superflus sur le réseau.",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "source",
+      "valueType": "code",
+      "subItemsHeading": {
+       "key": "url",
+       "valueType": "url"
+      },
+      "label": "Source"
+     },
+     {
+      "key": "wastedBytes",
+      "valueType": "bytes",
+      "subItemsHeading": {
+       "key": "sourceTransferBytes"
+      },
+      "granularity": 10,
+      "label": "Octets en double"
+     }
+    ],
+    "items": [],
+    "debugData": {
+     "type": "debugdata",
+     "wastedBytes": 0
+    }
+   },
+   "guidanceLevel": 2
+  },
+  "font-display-insight": {
+   "id": "font-display-insight",
+   "title": "Affichage de la police",
+   "description": "Envisagez de définir [font-display](https://developer.chrome.com/docs/performance/insights/font-display) sur swap ou optional pour vous assurer que le texte est toujours visible. swap peut être encore optimisé pour atténuer les décalages de mise en page avec des [remplacements de métriques de police](https://developer.chrome.com/blog/font-fallbacks).",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "INP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     },
+     {
+      "key": "wastedMs",
+      "valueType": "ms",
+      "label": "Économies estimées"
+     }
+    ],
+    "items": [],
+    "skipSumming": [
+     "wastedMs"
+    ]
+   },
+   "guidanceLevel": 3
+  },
+  "forced-reflow-insight": {
+   "id": "forced-reflow-insight",
+   "title": "Ajustement forcé de la mise en page",
+   "description": "Un ajustement de la mise en page forcé se produit lorsque JavaScript interroge des propriétés géométriques (comme offsetWidth) après que les styles ont été invalidés par une modification de l'état du DOM. Cela peut entraîner de mauvaises performances. En savoir plus sur les [ajustements de la mise en page forcés](https://developer.chrome.com/docs/performance/insights/forced-reflow) et les stratégies d'atténuation possibles",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "details": {
+    "type": "list",
+    "items": [
+     {
+      "type": "table",
+      "headings": [
+       {
+        "key": "source",
+        "valueType": "source-location",
+        "label": "Source"
+       },
+       {
+        "key": "reflowTime",
+        "valueType": "ms",
+        "granularity": 1,
+        "label": "Temps total d'ajustement de la mise en page"
+       }
+      ],
+      "items": []
+     }
+    ]
+   },
+   "guidanceLevel": 3
+  },
+  "image-delivery-insight": {
+   "id": "image-delivery-insight",
+   "title": "Améliorer l'affichage des images",
+   "description": "Réduire le temps de téléchargement des images peut améliorer le temps de chargement perçu de la page et le LCP. [En savoir plus sur l'optimisation de la taille des images](https://developer.chrome.com/docs/performance/insights/image-delivery)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "node",
+      "valueType": "node",
+      "label": ""
+     },
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL",
+      "subItemsHeading": {
+       "key": "reason",
+       "valueType": "text"
+      }
+     },
+     {
+      "key": "totalBytes",
+      "valueType": "bytes",
+      "label": "Taille de la ressource"
+     },
+     {
+      "key": "wastedBytes",
+      "valueType": "bytes",
+      "label": "Économies estimées",
+      "subItemsHeading": {
+       "key": "wastedBytes",
+       "valueType": "bytes"
+      }
+     }
+    ],
+    "items": [],
+    "debugData": {
+     "type": "debugdata",
+     "wastedBytes": 0
+    }
+   },
+   "guidanceLevel": 3
+  },
+  "inp-breakdown-insight": {
+   "id": "inp-breakdown-insight",
+   "title": "Répartition INP",
+   "description": "Commencez par étudier la sous-partie la plus longue pour déterminer [comment améliorer l'INP](https://developer.chrome.com/docs/performance/insights/inp-breakdown).",
+   "score": null,
+   "scoreDisplayMode": "notApplicable",
+   "guidanceLevel": 3
+  },
+  "lcp-breakdown-insight": {
+   "id": "lcp-breakdown-insight",
+   "title": "Répartition du LCP",
+   "description": "Chaque [sous-partie comporte des stratégies d'amélioration spécifiques](https://developer.chrome.com/docs/performance/insights/lcp-breakdown). Idéalement, la plupart du temps LCP devrait être consacré au chargement des ressources et non aux délais.",
+   "score": 1,
+   "scoreDisplayMode": "informative",
+   "metricSavings": {
+    "LCP": 0
+   },
+   "details": {
+    "type": "list",
+    "items": [
+     {
+      "type": "table",
+      "headings": [
+       {
+        "key": "label",
+        "valueType": "text",
+        "label": "Sous-partie"
+       },
+       {
+        "key": "duration",
+        "valueType": "ms",
+        "label": "Durée"
+       }
+      ],
+      "items": [
+       {
+        "subpart": "timeToFirstByte",
+        "label": "Time to First Byte",
+        "duration": 2.625
+       },
+       {
+        "subpart": "elementRenderDelay",
+        "label": "Délai d'affichage de l'élément",
+        "duration": 39.711
+       }
+      ]
+     },
+     {
+      "type": "node",
+      "lhId": "page-0-H1",
+      "path": "1,HTML,1,BODY,4,MAIN,0,H1",
+      "selector": "body.flex > main.mx-auto > h1.font-heading",
+      "boundingRect": {
+       "top": 442,
+       "bottom": 482,
+       "left": 315,
+       "right": 1035,
+       "width": 720,
+       "height": 40
+      },
+      "snippet": "<h1 class=\"font-heading text-4xl font-semibold tracking-tight\">",
+      "nodeLabel": "Essai"
+     }
+    ]
+   },
+   "guidanceLevel": 3
+  },
+  "lcp-discovery-insight": {
+   "id": "lcp-discovery-insight",
+   "title": "Détection de la requête LCP",
+   "description": "[Optimisez le LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) en rendant l'image LCP visible immédiatement à partir du code HTML et en évitant le chargement différé",
+   "score": null,
+   "scoreDisplayMode": "notApplicable",
+   "guidanceLevel": 3
+  },
+  "legacy-javascript-insight": {
+   "id": "legacy-javascript-insight",
+   "title": "Ancien JavaScript",
+   "description": "Les polyfills et les transformations permettent aux navigateurs plus anciens d'utiliser les nouvelles fonctionnalités JavaScript. Dans la majorité des cas cependant, ils ne sont pas nécessaires aux navigateurs récents. Envisagez de modifier votre processus de compilation JavaScript pour ne pas transpiler les fonctionnalités [Baseline](https://web.dev/articles/baseline-and-polyfills), sauf si vous savez que vous devez prendre en charge les navigateurs plus anciens. [Découvrez pourquoi la plupart des sites peuvent déployer du code ES6+ sans transpiler.](https://developer.chrome.com/docs/performance/insights/legacy-javascript)",
+   "score": 0.5,
+   "scoreDisplayMode": "metricSavings",
+   "displayValue": "Économies estimées : 13 Kio",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "subItemsHeading": {
+       "key": "location",
+       "valueType": "source-location"
+      },
+      "label": "URL"
+     },
+     {
+      "key": null,
+      "valueType": "code",
+      "subItemsHeading": {
+       "key": "signal"
+      },
+      "label": ""
+     },
+     {
+      "key": "wastedBytes",
+      "valueType": "bytes",
+      "label": "Octets perdus"
+     }
+    ],
+    "items": [
+     {
+      "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+      "wastedBytes": 13817,
+      "subItems": {
+       "type": "subitems",
+       "items": [
+        {
+         "signal": "Array.prototype.at",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 218912
+         }
+        },
+        {
+         "signal": "Array.prototype.flat",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 218300
+         }
+        },
+        {
+         "signal": "Array.prototype.flatMap",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 218413
+         }
+        },
+        {
+         "signal": "Object.fromEntries",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 218789
+         }
+        },
+        {
+         "signal": "Object.hasOwn",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 219047
+         }
+        },
+        {
+         "signal": "String.prototype.trimEnd",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 218042
+         }
+        },
+        {
+         "signal": "String.prototype.trimStart",
+         "location": {
+          "type": "source-location",
+          "url": "http://localhost:3456/_next/static/chunks/3w4nny6xd5j2m.js",
+          "urlProvider": "network",
+          "line": 30,
+          "column": 217957
+         }
+        }
+       ]
+      }
+     }
+    ],
+    "debugData": {
+     "type": "debugdata",
+     "wastedBytes": 13817
+    }
+   },
+   "guidanceLevel": 2
+  },
+  "modern-http-insight": {
+   "id": "modern-http-insight",
+   "title": "HTTP récent",
+   "description": "HTTP/2 et HTTP/3 offrent de nombreux avantages par rapport à HTTP/1.1, comme le multiplexage. [En savoir plus sur l'utilisation de protocole HTTP récent](https://developer.chrome.com/docs/performance/insights/modern-http)",
+   "score": 1,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     },
+     {
+      "key": "protocol",
+      "valueType": "text",
+      "label": "Protocole"
+     }
+    ],
+    "items": []
+   },
+   "guidanceLevel": 3
+  },
+  "network-dependency-tree-insight": {
+   "id": "network-dependency-tree-insight",
+   "title": "Arborescence du réseau",
+   "description": "[Évitez les chaînes de requêtes critiques](https://developer.chrome.com/docs/performance/insights/network-dependency-tree) en réduisant la longueur des chaînes ou la taille de téléchargement des ressources, ou en reportant le téléchargement de ressources inutiles, afin d'améliorer le chargement des pages.",
+   "score": 0,
+   "scoreDisplayMode": "numeric",
+   "metricSavings": {
+    "LCP": 0
+   },
+   "details": {
+    "type": "list",
+    "items": [
+     {
+      "type": "list-section",
+      "value": {
+       "type": "network-tree",
+       "chains": {
+        "36A3E79E86F88511ECFC95C9A9E9682C": {
+         "url": "http://localhost:3456/",
+         "navStartToEndTime": 8,
+         "transferSize": 3092,
+         "isLongest": true,
+         "children": {
+          "13236.4": {
+           "url": "http://localhost:3456/_next/static/chunks/0vqpe5qwsmo0t.css",
+           "navStartToEndTime": 14,
+           "transferSize": 8494,
+           "isLongest": true,
+           "children": {}
+          }
+         }
+        }
+       },
+       "longestChain": {
+        "duration": 14
+       }
+      }
+     },
+     {
+      "type": "list-section",
+      "title": "Origines préconnectées",
+      "description": "Les hints de [préconnexion](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) aident le navigateur à établir une connexion plus tôt dans le chargement de page, ce qui permet de gagner du temps lors de la première requête pour cette origine. Voici les origines auxquelles la page s'est préconnectée.",
+      "value": {
+       "type": "text",
+       "value": "aucune origine n'a été préconnectée"
+      }
+     },
+     {
+      "type": "list-section",
+      "title": "Candidats pour la préconnexion",
+      "description": "Ajoutez des hints de [préconnexion](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) à vos origines les plus importantes, mais essayez de ne pas en utiliser plus de quatre.",
+      "value": {
+       "type": "text",
+       "value": "Aucune autre origine n'est un bon candidat pour la préconnexion"
+      }
+     }
+    ]
+   },
+   "guidanceLevel": 1
+  },
+  "render-blocking-insight": {
+   "id": "render-blocking-insight",
+   "title": "Requêtes de blocage du rendu",
+   "description": "Les requêtes bloquent le rendu initial de la page, ce qui peut causer un retard LCP. [Le report ou l'intégration](https://developer.chrome.com/docs/performance/insights/render-blocking) de ces requêtes réseau peut les écarter du chemin critique.",
+   "score": 0.5,
+   "scoreDisplayMode": "metricSavings",
+   "metricSavings": {
+    "FCP": 0,
+    "LCP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "url",
+      "valueType": "url",
+      "label": "URL"
+     },
+     {
+      "key": "totalBytes",
+      "valueType": "bytes",
+      "label": "Taille de transfert"
+     },
+     {
+      "key": "wastedMs",
+      "valueType": "timespanMs",
+      "label": "Durée"
+     }
+    ],
+    "items": [
+     {
+      "url": "http://localhost:3456/_next/static/chunks/0vqpe5qwsmo0t.css",
+      "totalBytes": 8494
+     }
+    ]
+   },
+   "guidanceLevel": 3
+  },
+  "third-parties-insight": {
+   "id": "third-parties-insight",
+   "title": "Tiers",
+   "description": "Le code tiers peut affecter considérablement les performances de chargement des pages. [Réduisez et différez le chargement du code tiers](https://developer.chrome.com/docs/performance/insights/third-parties) pour donner la priorité au contenu de votre page.",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "entity",
+      "valueType": "text",
+      "label": "Tiers",
+      "subItemsHeading": {
+       "key": "url",
+       "valueType": "url"
+      }
+     },
+     {
+      "key": "transferSize",
+      "granularity": 1,
+      "valueType": "bytes",
+      "label": "Taille de transfert",
+      "subItemsHeading": {
+       "key": "transferSize"
+      }
+     },
+     {
+      "key": "mainThreadTime",
+      "granularity": 1,
+      "valueType": "ms",
+      "label": "Temps d'exécution sur le thread principal",
+      "subItemsHeading": {
+       "key": "mainThreadTime"
+      }
+     }
+    ],
+    "items": []
+   },
+   "guidanceLevel": 3
+  },
+  "viewport-insight": {
+   "id": "viewport-insight",
+   "title": "Optimiser la fenêtre d'affichage pour les mobiles",
+   "description": "Les interactions tactiles peuvent être [retardées jusqu'à 300 ms](https://developer.chrome.com/docs/performance/insights/viewport) si la fenêtre d'affichage n'est pas optimisée pour les mobiles.",
+   "score": 1,
+   "scoreDisplayMode": "numeric",
+   "metricSavings": {
+    "INP": 0
+   },
+   "details": {
+    "type": "table",
+    "headings": [
+     {
+      "key": "node",
+      "valueType": "node",
+      "label": ""
+     }
+    ],
+    "items": [
+     {
+      "node": {
+       "type": "node",
+       "lhId": "page-1-META",
+       "path": "1,HTML,0,HEAD,1,META",
+       "selector": "head > meta",
+       "boundingRect": {
+        "top": 0,
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "height": 0
+       },
+       "snippet": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
+       "nodeLabel": "head > meta"
+      }
+     }
+    ]
+   },
+   "guidanceLevel": 3
+  }
+ }
+}

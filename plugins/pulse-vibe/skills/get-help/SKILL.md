@@ -39,7 +39,7 @@ S'il y a du code, confier la recherche au sous-agent **`pulse:explorer`** (sinon
 
 ### 3. Nettoyer
 
-Remplacer toute clé, tout mot de passe, toute adresse de base de données et toute donnée réelle par une valeur fictive (`sk_test_XXXX`, `client@example.com`), et le dire en une ligne. Le garde-fou anti-secrets de Pulse vérifie aussi la fiche à l'écriture.
+Remplacer toute clé, tout mot de passe, toute adresse de base de données et toute donnée réelle par une valeur fictive (`sk_test_XXXX`, `client@example.com`), et le dire en une ligne. Le garde-fou anti-secrets de Pulse vérifie aussi la fiche à l'écriture. Si la personne a collé une vraie clé ou un vrai mot de passe pendant l'échange, ou si le garde-fou bloque l'écriture de la fiche : la valeur est exposée ; proposer `/pulse:secrets fuite` avant d'envoyer la demande.
 
 ### 4. Écrire
 

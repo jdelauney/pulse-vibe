@@ -1,0 +1,135 @@
+// Tests des contrôles du code pour le référencement (scripts/seo-code.js), de la recette seo
+// et de la cohérence du squelette avec la liste des robots IA du cœur.
+// Lancer : node --test plugins/pulse-vibe-next/tests/seo-code.test.js
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const RACINE = path.join(__dirname, "..");
+const SCRIPT = path.join(RACINE, "scripts", "seo-code.js");
+const { controler, pagesPubliques } = require(SCRIPT);
+const { creerSquelette } = require(path.join(RACINE, "scripts", "squelette.js"));
+
+const lancer = (...args) => spawnSync("node", [SCRIPT, ...args], { encoding: "utf8" });
+const codes = (r) => r.constats.map((c) => `${c.code}:${c.gravite}`).sort();
+
+/** Un petit projet Next.js : { "chemin/relatif": "contenu" }. */
+function projet(contenus) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-seo-code-"));
+  for (const [rel, texte] of Object.entries(contenus)) {
+    fs.mkdirSync(path.dirname(path.join(d, rel)), { recursive: true });
+    fs.writeFileSync(path.join(d, rel), texte);
+  }
+  return d;
+}
+
+const BASE = {
+  "src/app/layout.tsx": 'export const metadata = { metadataBase: new URL(adresseDuSite()), title: { default: "A", template: "%s | A" } };',
+  "src/app/page.tsx": 'export const metadata = metadonneesDePage({ titre: "A", description: "d", chemin: "/", accueil: true });',
+  "src/app/robots.ts": "export default function robots() { return { rules: reglesRobots(politiqueRobotsIa) }; }",
+  "src/app/sitemap.ts": "export default function sitemap() { return []; }",
+  "src/app/opengraph-image.tsx": "export default function Image() {}",
+};
+
+test("le squelette du pack passe tous les contrôles du code", () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-seo-squelette-"));
+  creerSquelette({ nom: "Menuiserie Dupont", description: "Meubles sur mesure.", dossier: d });
+  const r = controler(d);
+  assert.deepStrictEqual(r.constats, []);
+  assert.deepStrictEqual(r.pages, ["/"]);
+});
+
+test("un projet minimal correct : aucun constat", () => {
+  assert.deepStrictEqual(controler(projet(BASE)).constats, []);
+});
+
+test("metadataBase absent ou sur localhost : Critique, code de sortie 1", () => {
+  const sans = projet({ ...BASE, "src/app/layout.tsx": 'export const metadata = { title: { default: "A", template: "%s | A" } };' });
+  assert.deepStrictEqual(codes(controler(sans)), ["C1:critique"]);
+  assert.strictEqual(lancer("--dossier", sans).status, 1);
+  const local = projet({ ...BASE, "src/app/layout.tsx": 'export const metadata = { metadataBase: new URL("http://localhost:3000"), title: { template: "%s" } };' });
+  assert.deepStrictEqual(codes(controler(local)), ["C1:critique"]);
+});
+
+test("pages publiques : sans métadonnées, sans canonique, openGraph à la main ; pages connectées sans noindex", () => {
+  const d = projet({
+    ...BASE,
+    "src/app/tarifs/page.tsx": "export default function P() {}",
+    "src/app/contact/page.tsx": 'export const metadata = { title: "Contact", description: "d" };',
+    "src/app/equipe/page.tsx": 'export const metadata = { title: "Équipe", alternates: { canonical: "/equipe" }, openGraph: { title: "Équipe" } };',
+    "src/app/(connecte)/compte/page.tsx": "export default function P() {}",
+  });
+  assert.deepStrictEqual(codes(controler(d)), ["C3:haute", "C3:moyenne", "C4:moyenne", "C5:moyenne"]);
+  assert.deepStrictEqual(pagesPubliques(d), ["/", "/contact", "/equipe", "/tarifs"], "le groupe (connecte) n'est pas public");
+});
+
+test("robots et sitemap : absents, en double dans public/, dates de génération, champs ignorés", () => {
+  const { "src/app/robots.ts": _r, "src/app/sitemap.ts": _s, ...sans } = BASE;
+  assert.deepStrictEqual(codes(controler(projet(sans))), ["C6:haute", "C6:haute"]);
+  const d = projet({ ...BASE, "public/robots.txt": "User-agent: *", "src/app/sitemap.ts": "export default () => [{ url: 'x', lastModified: new Date(), priority: 1 }];" });
+  assert.deepStrictEqual(codes(controler(d)), ["C6:basse", "C6:moyenne", "NC2:haute"]);
+});
+
+test("JSON-LD sans échappement (C8), image sans alt et <img> (C11), robots.ts sans politique (NC1)", () => {
+  const d = projet({
+    ...BASE,
+    "src/app/page.tsx": `${BASE["src/app/page.tsx"]}\nexport default function P() { return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(x) }} /><Image src="/a.png" width={10} height={10} /><img src="/b.png" alt="b" /></>; }`,
+    "src/app/robots.ts": 'export default function robots() { return { rules: { userAgent: "*", allow: "/" } }; }',
+  });
+  assert.deepStrictEqual(codes(controler(d)), ["C11:basse", "C11:moyenne", "C8:haute", "NC1:basse"]);
+});
+
+test("page de détail : loading.tsx = soft 404 (Haute) ; sans notFound() ; sans vérification dans le proxy (Basse)", () => {
+  const detail = 'export async function generateMetadata() { return metadonneesDePage({}); }\nexport default async function P() { if (!x) notFound(); }';
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE, "src/app/blog/[slug]/page.tsx": detail, "src/app/blog/[slug]/loading.tsx": "x" }))), ["C9:haute"]);
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE, "src/app/blog/[slug]/page.tsx": "export const metadata = metadonneesDePage({}); export default function P() {}" }))), ["C9:moyenne"]);
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE, "src/app/blog/[slug]/page.tsx": detail }))), ["C9:basse"]);
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE, "src/app/blog/[slug]/page.tsx": detail, "src/proxy.ts": 'export const config = { matcher: "/blog/:slug" };' }))), []);
+});
+
+test("generateMetadata qui lit cookies() (C10) ; redirection temporaire (C12) ; htmlLimitedBots qui remplace la liste (NC3)", () => {
+  const d = projet({
+    ...BASE,
+    "src/app/offre/page.tsx": "export async function generateMetadata() { const c = await cookies(); return metadonneesDePage({}); }",
+    "next.config.ts": "export default { async redirects() { return [{ source: '/a', destination: '/b', permanent: false }]; }, htmlLimitedBots: /GPTBot|ClaudeBot/ };",
+  });
+  assert.deepStrictEqual(codes(controler(d)), ["C10:moyenne", "C12:basse", "NC3:moyenne"]);
+});
+
+test("site en plusieurs langues : versions non déclarées (C13)", () => {
+  const { "src/app/layout.tsx": layout, "src/app/page.tsx": page, ...reste } = BASE;
+  const d = projet({ ...reste, "src/app/[locale]/layout.tsx": layout, "src/app/[locale]/page.tsx": page });
+  assert.deepStrictEqual(codes(controler(d)), ["C13:haute", "C13:moyenne"]);
+});
+
+test("--pages : liste des pages publiques fixes, séparées par des virgules ; option inconnue : code 2", () => {
+  const d = projet({ ...BASE, "src/app/(public)/a-propos/page.tsx": "x", "src/app/api/x/page.ts": "x", "src/app/blog/[slug]/page.tsx": "x" });
+  const r = lancer("--pages", "--dossier", d);
+  assert.strictEqual(r.status, 0);
+  assert.strictEqual(r.stdout.trim(), "/,/a-propos");
+  assert.strictEqual(lancer("--inconnue").status, 2);
+});
+
+test("la politique des robots du squelette reprend les rôles de robots-ia.json (cœur)", () => {
+  const liste = JSON.parse(fs.readFileSync(path.join(RACINE, "..", "pulse-vibe", "references", "seo", "robots-ia.json"), "utf8")).robots;
+  const texte = fs.readFileSync(path.join(RACINE, "templates", "squelette", "src", "lib", "politique-robots.ts"), "utf8");
+  const tableau = (nom) => [...texte.match(new RegExp(`export const ${nom} = \\[([\\s\\S]*?)\\];`))[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort();
+  const parRoles = (...roles) => liste.filter((r) => roles.includes(r.role)).map((r) => r.jeton).sort();
+  assert.deepStrictEqual(tableau("ROBOTS_ENTRAINEMENT"), parRoles("entrainement", "jeton-entrainement"));
+  assert.deepStrictEqual(tableau("ROBOTS_REPONSES_IA"), parRoles("recherche", "demande", "mixte"));
+});
+
+test("la recette seo suit le format commun des recettes", () => {
+  const texte = fs.readFileSync(path.join(RACINE, "references", "recettes", "seo.md"), "utf8");
+  assert.match(texte, /^# Recette : seo$/m);
+  assert.match(texte, /^> Quand l'utiliser : .+$/m);
+  for (const section of ["## Prérequis", "## Variables d'environnement", "## Fichiers créés ou modifiés", "## Étapes", "## Scénarios Gherkin à ajouter à la spec", "## Tâches de plan prêtes", "## Tests", "## Points de sécurité", "## Pièges connus"])
+    assert.ok(texte.includes(`\n${section}\n`), section);
+  assert.match(texte, /# language: fr/);
+  assert.ok(fs.existsSync(path.join(RACINE, "references", "contexte", "seo.md")));
+});

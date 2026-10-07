@@ -10,7 +10,8 @@ Rendre les risques compréhensibles, sur un ton calme et factuel, avec des corre
 ## Règles absolues
 
 - Travailler en lecture seule : chaque fichier reste tel quel ; les corrections reviennent à l'appelant.
-- Utiliser uniquement des commandes en lecture (`git ls-files`, `git log`, `git grep`, `ls`).
+- Utiliser uniquement des commandes en lecture (`git ls-files`, `git log`, `git grep`, `ls`, `pulse-aidd verifier`, `pulse-aidd secrets historique`).
+- Désigner un secret par son type, son fichier et sa ligne (ou son commit), sans jamais recopier sa valeur.
 - Rester en lecture sur l'application en ligne : jamais de test destructif (envoi massif, suppression).
 - Citer un fichier et, si possible, une ligne pour chaque constat.
 - Classer en ⚠️ en cas de doute et proposer un test manuel.
@@ -27,7 +28,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 1. Lire les specs (`aidd_docs/tasks/*/SPEC-US-*.md` : données, rôles, section « Données et sécurité »), `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne ») et la checklist sécurité recopiée dans le message de délégation. Si `docs/technical.md` manque, le signaler et s'appuyer sur ce que montre le code.
 2. Inventaire : `git ls-files` et « Organisation des fichiers » pour repérer le code envoyé au navigateur, le code serveur, les règles de contrôle d'accès et le schéma de la base, la configuration (hébergeur, variables exposées au client), les dépendances et leur fichier de verrouillage (constater chaque élément). Repérer aussi les points d'entrée côté serveur (routes, actions, fonctions) : c'est là que la validation et le contrôle d'accès doivent avoir lieu, en plus de l'interface.
 3. Passer **chaque point S1 à S12**. Les recherches se décrivent par intention ; les écrire avec les motifs du langage et du framework retenus (`git grep -n -I -E "<motifs>"`) :
-   - **S1** : fichiers d'environnement suivis par Git ; motifs de clés et de secrets (préfixes de clés connus des fournisseurs de la pile, `-----BEGIN`, chaînes de connexion avec mot de passe) ; rechercher aussi dans l'historique avec `git log -p --all -S "<motif>" --oneline | head -50`.
+   - **S1** : fichiers d'environnement suivis par Git ; clés dans la version actuelle : `pulse-aidd verifier` (type et fichier, sans valeur), complété pour les préfixes propres à la pile par `git grep -l -I -E "<motifs>"` (noms de fichiers seulement) ; l'historique : utiliser la sortie de `pulse-aidd secrets historique` transmise dans le message (ou la lancer) ; elle nomme le commit, le fichier et le type de clé sans afficher la valeur. Vérifier aussi, si l'inventaire est transmis, que les secrets de l'hébergeur sont en type Secret.
    - **S2** : code envoyé au navigateur et variables exposées au client : seules des clés explicitement publiques (prévues pour le navigateur par la documentation du fournisseur) sont acceptables ; les appels qui exigent une clé secrète passent par du code serveur.
    - **S3** : pour chaque ensemble de données (table, collection, fichier), le contrôle d'accès décrit dans « Données et contrôle d'accès » existe-t-il bien, côté serveur ou dans la base ? Une règle qui ouvre l'accès à tous sur des données privées est une faille. Vérifier que l'identité de l'utilisateur connecté est comparée au propriétaire de la donnée.
    - **S4** : les pages et actions d'administration vérifient-elles le rôle côté serveur ou dans la base, et pas seulement en masquant un bouton ou en redirigeant dans le navigateur ?

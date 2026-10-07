@@ -25,7 +25,7 @@ const SECTIONS_RECETTE = [
   "## Points de sécurité",
   "## Pièges connus",
 ];
-const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite"];
+const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "seo", "mesure-reelle"];
 
 test("info : les quatre lignes du contrat, avec la version du manifeste", () => {
   const r = lancer("info");
@@ -52,6 +52,10 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     test: ["Pour les tests"],
     deploy: ["Pour mettre en ligne"],
     cicd: ["Pour mettre en ligne"],
+    secrets: ["Pour /pulse:secrets"],
+    seo: ["Pour /pulse:seo", "Fiche de la pile", "Recettes disponibles"],
+    perf: ["Pour /pulse:perf", "Fiche de la pile"],
+    "search-console": ["Pour Search Console"],
   };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
@@ -63,6 +67,22 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     assert.strictEqual(r.status, 0);
     assert.strictEqual(r.stdout.trim(), "", commande);
   }
+});
+
+test("secrets et hebergeur : relais vers les scripts du pack", () => {
+  const fiche = lancer("secrets", "fiche", "STRIPE_SECRET_KEY");
+  assert.strictEqual(fiche.status, 0);
+  assert.match(fiche.stdout, /^### `STRIPE_SECRET_KEY`/);
+  const regles = lancer("secrets", "regles");
+  assert.ok(JSON.parse(regles.stdout).variables.DATABASE_URL);
+  assert.strictEqual(lancer("hebergeur").status, 1);
+});
+
+test("l'aide reste complète jusqu'à sa dernière ligne", () => {
+  const r = lancer();
+  assert.match(r.stdout, /seo-code/);
+  assert.match(r.stdout, /hebergeur ls/);
+  assert.match(r.stdout, /Ne sort jamais en erreur/);
 });
 
 test("recettes et recette : liste, lecture, nom inconnu ou chemin refusé", () => {
