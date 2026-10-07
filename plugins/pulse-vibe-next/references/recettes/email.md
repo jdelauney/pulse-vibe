@@ -4,8 +4,8 @@
 
 ## Prérequis
 
-- Recette `connexion` appliquée (`creerAuth`, `getAuth`, actions `inscrire` et `connecter`, aides Playwright `e2e/aides/connexion.ts`).
-- Paquet à installer : `npm install nodemailer` (dernière version ; recette vérifiée avec 10.0.15). Nodemailer 10 fournit ses propres types : si `@types/nodemailer` est présent, le désinstaller (`npm uninstall @types/nodemailer`).
+- Recette `connexion` appliquée (`creerAuth`, `getAuth`, actions `inscrire` et `connecter`, aides Playwright `e2e/aides/connexion.ts`). Les composants `Field`, `Input`, `Button` et le client d'action du squelette sont ceux de `connexion`.
+- Paquet à installer : `npm install nodemailer` (dernière version ; recette vérifiée avec 10.0.16). Nodemailer 10 fournit ses propres types : si `@types/nodemailer` est présent, le désinstaller (`npm uninstall @types/nodemailer`).
 - **Mailpit** sur le poste. Il capture tous les e-mails envoyés en local : rien ne part vers de vraies adresses.
   - Windows : `winget install --id axllent.mailpit --exact` (ou l'archive `mailpit-windows-amd64.zip` de https://github.com/axllent/mailpit/releases, à décompresser dans un dossier du PATH).
   - macOS : `brew install mailpit`, puis `brew services start mailpit` pour le lancer en tâche de fond.
@@ -25,7 +25,7 @@
 | `SMTP_PASSWORD` | Mot de passe | vide | le mot de passe d'application (`VOTRE_MOT_DE_PASSE_ICI`) |
 | `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <adresse.du.projet@gmail.com>` |
 
-Ajouter ces lignes au schéma de `src/lib/env.ts` :
+Ajoutez ces lignes au schéma de `src/config/env.ts`, après `BETTER_AUTH_URL` :
 
 ```ts
   SMTP_HOST: z.string().min(1),
@@ -35,7 +35,7 @@ Ajouter ces lignes au schéma de `src/lib/env.ts` :
   MAIL_FROM: z.string().min(1),
 ```
 
-Ajouter les cinq noms, **sans valeur**, à `.env.example` :
+Ajoutez les cinq noms, **sans valeur**, à `.env.example` :
 
 ```
 SMTP_HOST=
@@ -45,23 +45,33 @@ SMTP_PASSWORD=
 MAIL_FROM=
 ```
 
-Dans Vercel, les saisir pour Production et Preview.
+Dans Vercel, saisissez-les pour Production et Preview.
 
 ## Fichiers créés ou modifiés
 
 | Fichier | Rôle |
 |---|---|
-| `src/lib/env.ts`, `.env.example` (modifiés) | Les cinq variables SMTP |
-| `src/lib/email.ts` | `envoyerEmail({ a, sujet, texte, html })` : la seule porte de sortie des e-mails |
-| `src/features/compte/emails.ts` | Contenus des e-mails du compte (fonctions pures) |
-| `src/lib/auth.ts` (modifié) | Vérification d'adresse, mot de passe oublié, e-mail « compte existant » |
-| `src/features/compte/schemas.ts` (modifié) | `schemaMotDePasseOublie`, `schemaNouveauMotDePasse`, `schemaChoixMotDePasse` |
-| `src/features/compte/actions.ts` (modifié) | `inscrire` et `connecter` adaptés ; `demanderNouveauMotDePasse`, `choisirNouveauMotDePasse` |
-| `src/features/compte/components/formulaire-inscription.tsx`, `formulaire-connexion.tsx` (modifiés) | Message « Ouvrez l'e-mail », lien « Mot de passe oublié ? » |
-| `src/features/compte/components/formulaire-mot-de-passe-oublie.tsx`, `formulaire-nouveau-mot-de-passe.tsx` | Les deux nouveaux formulaires |
-| `src/app/(public)/mot-de-passe-oublie/page.tsx`, `src/app/(public)/nouveau-mot-de-passe/page.tsx` | Les deux nouvelles pages |
-| `src/features/compte/emails.test.ts`, `src/lib/auth-email.test.ts` | Tests unitaires et d'intégration |
-| `src/lib/auth.test.ts` (modifié) | Tests de la recette `connexion` adaptés à la vérification d'adresse |
+| `src/config/env.ts`, `.env.example` (modifiés) | Les cinq variables SMTP |
+| `src/core/compte/email.port.ts` | Port d'envoi : types `MessageEmail` et `EnvoyeurEmail` |
+| `src/core/compte/emails-compte.rules.ts` | Contenus des e-mails du compte (fonctions pures) |
+| `src/adapters/email/email.adapter.ts` | `envoyerEmail({ a, sujet, texte, html })` : la seule porte de sortie des e-mails ; lève `ErreurService("email", …)` si l'envoi échoue |
+| `src/adapters/auth/auth.adapter.ts` (modifié) | Vérification d'adresse, mot de passe oublié, e-mail « compte existant » ; reçoit l'envoi par ses options |
+| `src/features/compte/schemas/compte.schema.ts` (modifié) | `schemaMotDePasseOublie`, `schemaNouveauMotDePasse`, `schemaChoixMotDePasse` |
+| `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `inscrire` renvoie un message ; `connecter` traduit `EMAIL_NOT_VERIFIED` |
+| `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` | Action `demanderNouveauMotDePasse` |
+| `src/features/compte/actions/choisir-nouveau-mot-de-passe.action.ts` | Action `choisirNouveauMotDePasse` |
+| `src/features/compte/components/sections/formulaire-inscription.tsx`, `formulaire-connexion.tsx` (modifiés) | Message « Ouvrez l'e-mail », lien « Mot de passe oublié ? » |
+| `src/features/compte/components/containers/inscription.container.tsx` (modifié) | Passe le message de l'action à la section |
+| `src/features/compte/components/sections/formulaire-mot-de-passe-oublie.tsx` | Champs et validation de la demande de lien |
+| `src/features/compte/components/sections/formulaire-nouveau-mot-de-passe.tsx` | Champs et validation du nouveau mot de passe |
+| `src/features/compte/components/containers/mot-de-passe-oublie.container.tsx` | Branche `demanderNouveauMotDePasse` sur son formulaire |
+| `src/features/compte/components/containers/nouveau-mot-de-passe.container.tsx` | Branche `choisirNouveauMotDePasse` sur son formulaire, avec le jeton |
+| `src/features/compte/components/containers/lien-mot-de-passe.container.tsx` | Lit l'adresse de la page : formulaire si le lien est valable, sinon message |
+| `app/(public)/mot-de-passe-oublie/page.tsx`, `app/(public)/nouveau-mot-de-passe/page.tsx` | Les deux nouvelles pages |
+| `src/core/compte/__tests__/emails-compte.rules.test.ts` | Tests unitaires des contenus |
+| `src/adapters/email/__tests__/email.adapter.test.ts` | Test de l'échec d'envoi |
+| `src/adapters/auth/__tests__/auth-email.test.ts` | Tests d'intégration des e-mails du compte |
+| `src/adapters/auth/__tests__/auth.adapter.test.ts` (modifié) | Tests de la recette `connexion` adaptés à la vérification d'adresse |
 | `e2e/aides/mailpit.ts`, `e2e/aides/connexion.ts` (modifié), `e2e/email.spec.ts` | Lecture de Mailpit dans Playwright |
 
 ## Étapes
@@ -75,23 +85,33 @@ Le parcours une fois la recette en place :
 
 ### 1. Mailpit et les variables
 
-Lancer `mailpit`, ouvrir http://localhost:8025 (la boîte est vide). Remplir `.env` avec les valeurs « En local », compléter `src/lib/env.ts` et `.env.example`.
+Lancez `mailpit`, ouvrez http://localhost:8025 (la boîte est vide). Remplissez `.env` avec les valeurs « En local », complétez `src/config/env.ts` et `.env.example`.
 
-### 2. L'envoi
+### 2. Le port et l'envoi
+
+Le port décrit ce que le métier attend d'un envoi ; l'adapter `email` l'implémente avec Nodemailer. Un test passe à la place une doublure qui garde les messages.
 
 ```ts
-// src/lib/email.ts
-import "server-only";
-import nodemailer, { type Transporter } from "nodemailer";
-import { envServeur } from "@/lib/env";
-import { logger } from "@/lib/logger";
-
+// src/core/compte/email.port.ts
 export type MessageEmail = {
   a: string;
   sujet: string;
   texte: string;
   html?: string;
 };
+
+/** Envoie un e-mail. L'adapter `email` l'implémente ; un test passe une doublure. */
+export type EnvoyeurEmail = (message: MessageEmail) => Promise<void>;
+```
+
+```ts
+// src/adapters/email/email.adapter.ts
+import "server-only";
+import { envServeur } from "@src/config/env";
+import type { EnvoyeurEmail, MessageEmail } from "@src/core/compte/email.port";
+import { ErreurService } from "@src/lib/errors/erreur-service";
+import { logger } from "@src/lib/logger";
+import nodemailer, { type Transporter } from "nodemailer";
 
 let transporteur: Transporter | undefined;
 
@@ -115,32 +135,37 @@ function obtenirTransporteur(): Transporter {
   return transporteur;
 }
 
-/** La seule porte de sortie des e-mails de l'application. */
-export async function envoyerEmail({
+/** La seule porte de sortie des e-mails de l'application. Lève ErreurService("email", …) si l'envoi échoue. */
+export const envoyerEmail: EnvoyeurEmail = async ({
   a,
   sujet,
   texte,
   html,
-}: MessageEmail): Promise<void> {
-  const env = envServeur();
-  const info = await obtenirTransporteur().sendMail({
-    from: env.MAIL_FROM,
-    to: a,
-    subject: sujet,
-    text: texte,
-    html,
-  });
-  // Journal sans l'adresse du destinataire (donnée personnelle).
-  logger.info({ messageId: info.messageId, sujet }, "E-mail envoyé");
-}
+}: MessageEmail) => {
+  try {
+    const info = await obtenirTransporteur().sendMail({
+      from: envServeur().MAIL_FROM,
+      to: a,
+      subject: sujet,
+      text: texte,
+      html,
+    });
+    // Journal sans l'adresse du destinataire (donnée personnelle).
+    logger.info({ messageId: info.messageId, sujet }, "E-mail envoyé");
+  } catch (cause) {
+    throw new ErreurService("email", "Envoi de l'e-mail impossible", { cause });
+  }
+};
 ```
 
-`secure: true` seulement pour le port 465 ; sur 587, Nodemailer passe en chiffré par STARTTLS, et `requireTLS` refuse d'envoyer en clair. Avec Mailpit (port 1025), ni chiffrement ni identifiant.
+`secure: true` seulement pour le port 465 ; sur 587, Nodemailer passe en chiffré par STARTTLS, et `requireTLS` refuse d'envoyer en clair. Avec Mailpit (port 1025), ni chiffrement ni identifiant. Une panne du serveur d'e-mail devient une `ErreurService("email", …)` : son message ne contient ni adresse ni secret, et la cause d'origine reste dans `cause` pour le journal (architecture.md §8).
 
 ### 3. Les contenus des e-mails
 
+Des fonctions pures dans `src/core/compte/` : elles ne dépendent ni de Next ni de Nodemailer.
+
 ```ts
-// src/features/compte/emails.ts
+// src/core/compte/emails-compte.rules.ts
 // Contenus des e-mails du compte : fonctions pures, testées en unitaire.
 
 export type ContenuEmail = { sujet: string; texte: string; html: string };
@@ -220,29 +245,37 @@ export function emailCompteExistant({ nom }: { nom: string }): ContenuEmail {
 
 ### 4. better-auth
 
-Remplacer `src/lib/auth.ts` par :
+Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerAuth` reçoit maintenant l'envoi dans ses options (`envoyerEmail`) : l'adapter d'authentification ne connaît pas Nodemailer, et `getAuth()` lui passe l'adapter `email`.
 
 ```ts
-// src/lib/auth.ts
+// src/adapters/auth/auth.adapter.ts
 import "server-only";
+import { envoyerEmail } from "@src/adapters/email/email.adapter";
+import { envServeur } from "@src/config/env";
+import type { EnvoyeurEmail } from "@src/core/compte/email.port";
+import {
+  emailCompteExistant,
+  emailMotDePasseOublie,
+  emailVerificationAdresse,
+} from "@src/core/compte/emails-compte.rules";
+import { type Db, getDb } from "@src/db";
+import {
+  account,
+  session,
+  user,
+  verification,
+} from "@src/db/compte/auth.table";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { cookies, headers } from "next/headers";
 import { after } from "next/server";
-import { type Db, getDb } from "@/db";
-import * as schema from "@/db/schema";
-import {
-  emailCompteExistant,
-  emailMotDePasseOublie,
-  emailVerificationAdresse,
-} from "@/features/compte/emails";
-import { envoyerEmail } from "@/lib/email";
-import { envServeur } from "@/lib/env";
 
 type OptionsAuth = {
   secret: string;
   baseURL: string;
+  /** Application : l'adapter `email`. Tests : une doublure qui garde les messages. */
+  envoyerEmail: EnvoyeurEmail;
   /** Application : l'e-mail part après la réponse. Tests : absent, l'envoi est attendu. */
   tacheDeFond?: (promesse: Promise<unknown>) => void;
 };
@@ -252,7 +285,10 @@ export function creerAuth(db: Db, options: OptionsAuth) {
   return betterAuth({
     secret: options.secret,
     baseURL: options.baseURL,
-    database: drizzleAdapter(db, { provider: "pg", schema }),
+    database: drizzleAdapter(db, {
+      provider: "pg",
+      schema: { user, session, account, verification },
+    }),
     emailAndPassword: {
       enabled: true,
       // Pas de session tant que l'adresse n'est pas confirmée (erreur EMAIL_NOT_VERIFIED).
@@ -263,14 +299,14 @@ export function creerAuth(db: Db, options: OptionsAuth) {
       resetPasswordTokenExpiresIn: 60 * 60,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ user, url }) => {
-        await envoyerEmail({
+        await options.envoyerEmail({
           a: user.email,
           ...emailMotDePasseOublie({ nom: user.name, url }),
         });
       },
       // Inscription avec une adresse déjà prise : même réponse à l'écran, e-mail à sa propriétaire.
       onExistingUserSignUp: async ({ user }) => {
-        await envoyerEmail({
+        await options.envoyerEmail({
           a: user.email,
           ...emailCompteExistant({ nom: user.name }),
         });
@@ -282,13 +318,13 @@ export function creerAuth(db: Db, options: OptionsAuth) {
       autoSignInAfterVerification: true,
       expiresIn: 60 * 60 * 24,
       sendVerificationEmail: async ({ user, url }) => {
-        await envoyerEmail({
+        await options.envoyerEmail({
           a: user.email,
           ...emailVerificationAdresse({ nom: user.name, url }),
         });
       },
     },
-    // Ces écritures passent seulement par les actions validées de src/features/compte/actions.ts.
+    // Ces écritures passent seulement par les actions validées de src/features/compte/actions/.
     // Restent ouverts : /verify-email et /reset-password/<jeton>, les liens reçus par e-mail.
     disabledPaths: [
       "/sign-up/email",
@@ -318,6 +354,7 @@ export function getAuth(): Auth {
     instance = creerAuth(getDb(), {
       secret: env.BETTER_AUTH_SECRET,
       baseURL: env.BETTER_AUTH_URL,
+      envoyerEmail,
       // L'e-mail part après la réponse : la durée de réponse ne révèle pas si un compte existe.
       tacheDeFond: (promesse) => after(promesse),
     });
@@ -349,9 +386,10 @@ Ce que changent ces options (noms vérifiés dans better-auth 1.7.7) :
 
 ### 5. Les schémas
 
-Ajouter à la fin de `src/features/compte/schemas.ts` (la constante `motDePasse` y existe déjà) :
+Ajoutez à la fin de `src/features/compte/schemas/compte.schema.ts` (la constante `motDePasse` y existe déjà) :
 
 ```ts
+// src/features/compte/schemas/compte.schema.ts (à la fin du fichier)
 // Ajouts de la recette email.
 export const schemaMotDePasseOublie = z.object({
   email: z.email("Adresse e-mail invalide.").max(254),
@@ -381,29 +419,23 @@ export const schemaNouveauMotDePasse = champsNouveauMotDePasse.refine(
 export const schemaChoixMotDePasse = champsNouveauMotDePasse
   .extend({ token: z.string().min(1).max(200) })
   .refine(memesMotsDePasse.verifier, memesMotsDePasse.erreur);
+
+export type MotDePasseOublie = z.infer<typeof schemaMotDePasseOublie>;
+export type NouveauMotDePasse = z.infer<typeof schemaNouveauMotDePasse>;
 ```
 
 ### 6. Les actions
 
-Remplacer `src/features/compte/actions.ts` par la version ci-dessous. Changements : `inscrire` renvoie un message au lieu de rediriger, et passe `callbackURL` ; `connecter` traduit `EMAIL_NOT_VERIFIED` ; deux actions nouvelles. Si la recette `limite` est déjà appliquée, garder ses lignes `await exigerLimite(…)` en tête de `inscrire`, `connecter`, et ajouter `await exigerLimite("motDePasseOublie");` en tête de `demanderNouveauMotDePasse`.
+Une action par fichier. `inscrire` renvoie un message au lieu de rediriger, et passe `callbackURL` ; `connecter` traduit `EMAIL_NOT_VERIFIED` ; deux actions nouvelles. Si la recette `limite` est déjà appliquée, gardez ses lignes `await exigerLimite(…)` en tête de `inscrire` et `connecter`, et ajoutez `await exigerLimite("motDePasseOublie");` en tête de `demanderNouveauMotDePasse`.
 
 ```ts
-// src/features/compte/actions.ts
+// src/features/compte/actions/inscrire.action.ts
 "use server";
 
-import { APIError } from "better-auth/api";
+import { getAuth } from "@src/adapters/auth/auth.adapter";
+import { actionPublique } from "@src/lib/safe-action";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { returnServerError } from "next-safe-action";
-import { getAuth } from "@/lib/auth";
-import { actionConnectee, actionPublique } from "@/lib/safe-action";
-import {
-  schemaChangementMotDePasse,
-  schemaChoixMotDePasse,
-  schemaConnexion,
-  schemaInscription,
-  schemaMotDePasseOublie,
-} from "./schemas";
+import { schemaInscription } from "../schemas/compte.schema";
 
 // Même réponse que l'adresse soit libre ou déjà prise : personne ne peut tester les comptes.
 export const inscrire = actionPublique
@@ -423,6 +455,19 @@ export const inscrire = actionPublique
         "Compte créé. Ouvrez l'e-mail que nous venons d'envoyer pour confirmer votre adresse.",
     };
   });
+```
+
+```ts
+// src/features/compte/actions/connecter.action.ts
+"use server";
+
+import { getAuth } from "@src/adapters/auth/auth.adapter";
+import { actionPublique } from "@src/lib/safe-action";
+import { APIError } from "better-auth/api";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { returnServerError } from "next-safe-action";
+import { schemaConnexion } from "../schemas/compte.schema";
 
 export const connecter = actionPublique
   .inputSchema(schemaConnexion)
@@ -452,35 +497,16 @@ export const connecter = actionPublique
     }
     redirect("/compte");
   });
+```
 
-export const changerMotDePasse = actionConnectee
-  .inputSchema(schemaChangementMotDePasse)
-  .action(async ({ parsedInput }) => {
-    try {
-      await getAuth().api.changePassword({
-        body: {
-          currentPassword: parsedInput.motDePasseActuel,
-          newPassword: parsedInput.nouveauMotDePasse,
-          revokeOtherSessions: true,
-        },
-        headers: await headers(),
-      });
-    } catch (erreur) {
-      if (
-        erreur instanceof APIError &&
-        erreur.body?.code === "INVALID_PASSWORD"
-      ) {
-        returnServerError("Mot de passe actuel incorrect.");
-      }
-      throw erreur;
-    }
-    return { message: "Mot de passe modifié." };
-  });
+```ts
+// src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts
+"use server";
 
-export const deconnecter = actionConnectee.action(async () => {
-  await getAuth().api.signOut({ headers: await headers() });
-  redirect("/connexion");
-});
+import { getAuth } from "@src/adapters/auth/auth.adapter";
+import { actionPublique } from "@src/lib/safe-action";
+import { headers } from "next/headers";
+import { schemaMotDePasseOublie } from "../schemas/compte.schema";
 
 // Même réponse que l'adresse existe ou non : personne ne peut tester les comptes.
 export const demanderNouveauMotDePasse = actionPublique
@@ -495,6 +521,18 @@ export const demanderNouveauMotDePasse = actionPublique
         "Si un compte existe pour cette adresse, un e-mail vient de partir. Pensez à regarder vos indésirables.",
     };
   });
+```
+
+```ts
+// src/features/compte/actions/choisir-nouveau-mot-de-passe.action.ts
+"use server";
+
+import { getAuth } from "@src/adapters/auth/auth.adapter";
+import { actionPublique } from "@src/lib/safe-action";
+import { APIError } from "better-auth/api";
+import { headers } from "next/headers";
+import { returnServerError } from "next-safe-action";
+import { schemaChoixMotDePasse } from "../schemas/compte.schema";
 
 export const choisirNouveauMotDePasse = actionPublique
   .inputSchema(schemaChoixMotDePasse)
@@ -521,54 +559,81 @@ export const choisirNouveauMotDePasse = actionPublique
 
 ### 7. Les formulaires existants
 
-Dans `src/features/compte/components/formulaire-inscription.tsx`, juste avant `{result.serverError && (`, afficher le message de l'action :
+Dans `src/features/compte/components/sections/formulaire-inscription.tsx`, ajoutez la prop `message` (réponse de l'action) au type `Props` et aux paramètres, puis affichez-la juste avant `{erreurServeur && (` :
 
 ```tsx
-        {result.data && (
-          <p role="status" className="text-sm">
-            {result.data.message}
-          </p>
-        )}
+  /** Réponse de l'action : demande d'ouvrir l'e-mail de confirmation. */
+  message?: string;
 ```
 
-Dans `src/features/compte/components/formulaire-connexion.tsx`, après le lien « Créer un compte » :
+```tsx
+        {message && (
+          <p role="status" className="text-sm">
+            {message}
+          </p>
+        )}
+
+```
+
+Le container `inscription.container.tsx` la transmet :
+
+```tsx
+      message={result.data?.message}
+```
+
+(à placer après `erreurServeur={result.serverError}`).
+
+Dans `src/features/compte/components/sections/formulaire-connexion.tsx`, après le lien « Créer un compte » :
 
 ```tsx
           {" · "}
           <Link href="/mot-de-passe-oublie">Mot de passe oublié ?</Link>
 ```
 
-### 8. Les deux nouveaux formulaires
+### 8. Les deux nouveaux formulaires : sections et containers
+
+Chaque section reçoit `envoyer`, `erreurServeur`, `message` et `enCours` par props ; son container appelle `useAction`. Le jeton du lien arrive au container (`token`), jamais à la section : il n'est pas un champ.
 
 ```tsx
-// src/features/compte/components/formulaire-mot-de-passe-oublie.tsx
+// src/features/compte/components/sections/formulaire-mot-de-passe-oublie.tsx
 "use client";
 
-import { useForm } from "@tanstack/react-form";
-import { useAction } from "next-safe-action/hooks";
-import { useId } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@src/components/ui/button";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { demanderNouveauMotDePasse } from "../actions";
-import { schemaMotDePasseOublie } from "../schemas";
+} from "@src/components/ui/field";
+import { Input } from "@src/components/ui/input";
+import { useForm } from "@tanstack/react-form";
+import { useId } from "react";
+import {
+  type MotDePasseOublie,
+  schemaMotDePasseOublie,
+} from "../../schemas/compte.schema";
 
-export function FormulaireMotDePasseOublie() {
+type Props = {
+  envoyer: (valeurs: MotDePasseOublie) => Promise<void>;
+  erreurServeur?: string;
+  /** Réponse de l'action : la même que l'adresse ait un compte ou non. */
+  message?: string;
+  enCours: boolean;
+};
+
+export function FormulaireMotDePasseOublie({
+  envoyer,
+  erreurServeur,
+  message,
+  enCours,
+}: Props) {
   const prefixe = useId();
-  const { executeAsync, result, isPending } = useAction(
-    demanderNouveauMotDePasse,
-  );
 
   const form = useForm({
     defaultValues: { email: "" },
     validators: { onSubmit: schemaMotDePasseOublie },
     onSubmit: async ({ value }) => {
-      await executeAsync(value);
+      await envoyer(value);
     },
   });
 
@@ -606,19 +671,19 @@ export function FormulaireMotDePasseOublie() {
           }}
         </form.Field>
 
-        {result.serverError && (
+        {erreurServeur && (
           <p role="alert" className="text-sm text-destructive">
-            {result.serverError}
+            {erreurServeur}
           </p>
         )}
-        {result.data && (
+        {message && (
           <p role="status" className="text-sm text-muted-foreground">
-            {result.data.message}
+            {message}
           </p>
         )}
 
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Envoi…" : "Recevoir un lien"}
+        <Button type="submit" disabled={enCours}>
+          {enCours ? "Envoi…" : "Recevoir un lien"}
         </Button>
       </FieldGroup>
     </form>
@@ -627,47 +692,58 @@ export function FormulaireMotDePasseOublie() {
 ```
 
 ```tsx
-// src/features/compte/components/formulaire-nouveau-mot-de-passe.tsx
+// src/features/compte/components/sections/formulaire-nouveau-mot-de-passe.tsx
 "use client";
 
-import { useForm } from "@tanstack/react-form";
-import Link from "next/link";
-import { useAction } from "next-safe-action/hooks";
-import { useId } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@src/components/ui/button";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { choisirNouveauMotDePasse } from "../actions";
-import { schemaNouveauMotDePasse } from "../schemas";
+} from "@src/components/ui/field";
+import { Input } from "@src/components/ui/input";
+import { useForm } from "@tanstack/react-form";
+import Link from "next/link";
+import { useId } from "react";
+import {
+  type NouveauMotDePasse,
+  schemaNouveauMotDePasse,
+} from "../../schemas/compte.schema";
 
 const champs = [
   { name: "nouveauMotDePasse", label: "Nouveau mot de passe" },
   { name: "confirmation", label: "Confirmez le nouveau mot de passe" },
 ] as const;
 
-export function FormulaireNouveauMotDePasse({ token }: { token: string }) {
+type Props = {
+  envoyer: (valeurs: NouveauMotDePasse) => Promise<void>;
+  erreurServeur?: string;
+  /** Réponse de l'action une fois le mot de passe changé : elle remplace le formulaire. */
+  message?: string;
+  enCours: boolean;
+};
+
+export function FormulaireNouveauMotDePasse({
+  envoyer,
+  erreurServeur,
+  message,
+  enCours,
+}: Props) {
   const prefixe = useId();
-  const { executeAsync, result, isPending } = useAction(
-    choisirNouveauMotDePasse,
-  );
 
   const form = useForm({
     defaultValues: { nouveauMotDePasse: "", confirmation: "" },
     validators: { onSubmit: schemaNouveauMotDePasse },
     onSubmit: async ({ value }) => {
-      await executeAsync({ ...value, token });
+      await envoyer(value);
     },
   });
 
-  if (result.data) {
+  if (message) {
     return (
       <p role="status">
-        {result.data.message}{" "}
+        {message}{" "}
         <Link href="/connexion" className="underline">
           Se connecter
         </Link>
@@ -711,14 +787,14 @@ export function FormulaireNouveauMotDePasse({ token }: { token: string }) {
           </form.Field>
         ))}
 
-        {result.serverError && (
+        {erreurServeur && (
           <p role="alert" className="text-sm text-destructive">
-            {result.serverError}
+            {erreurServeur}
           </p>
         )}
 
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Enregistrement…" : "Enregistrer"}
+        <Button type="submit" disabled={enCours}>
+          {enCours ? "Enregistrement…" : "Enregistrer"}
         </Button>
       </FieldGroup>
     </form>
@@ -726,56 +802,69 @@ export function FormulaireNouveauMotDePasse({ token }: { token: string }) {
 }
 ```
 
-### 9. Les deux nouvelles pages
-
 ```tsx
-// src/app/(public)/mot-de-passe-oublie/page.tsx
-import type { Metadata } from "next";
-import { FormulaireMotDePasseOublie } from "@/features/compte/components/formulaire-mot-de-passe-oublie";
+// src/features/compte/components/containers/mot-de-passe-oublie.container.tsx
+"use client";
 
-export const metadata: Metadata = { title: "Mot de passe oublié" };
+import { useAction } from "next-safe-action/hooks";
+import { demanderNouveauMotDePasse } from "../../actions/demander-nouveau-mot-de-passe.action";
+import { FormulaireMotDePasseOublie } from "../sections/formulaire-mot-de-passe-oublie";
 
-export default function PageMotDePasseOublie() {
+export function MotDePasseOublieContainer() {
+  const { executeAsync, result, isPending } = useAction(
+    demanderNouveauMotDePasse,
+  );
   return (
-    <main className="mx-auto max-w-sm p-6">
-      <h1 className="mb-2 text-2xl font-semibold">Mot de passe oublié</h1>
-      <p className="mb-6 text-muted-foreground">
-        Indiquez votre adresse : vous recevrez un lien pour choisir un nouveau
-        mot de passe.
-      </p>
-      <FormulaireMotDePasseOublie />
-    </main>
+    <FormulaireMotDePasseOublie
+      envoyer={async (valeurs) => {
+        await executeAsync(valeurs);
+      }}
+      erreurServeur={result.serverError}
+      message={result.data?.message}
+      enCours={isPending}
+    />
   );
 }
 ```
 
 ```tsx
-// src/app/(public)/nouveau-mot-de-passe/page.tsx
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Suspense } from "react";
-import { FormulaireNouveauMotDePasse } from "@/features/compte/components/formulaire-nouveau-mot-de-passe";
+// src/features/compte/components/containers/nouveau-mot-de-passe.container.tsx
+"use client";
 
-export const metadata: Metadata = { title: "Nouveau mot de passe" };
+import { useAction } from "next-safe-action/hooks";
+import { choisirNouveauMotDePasse } from "../../actions/choisir-nouveau-mot-de-passe.action";
+import { FormulaireNouveauMotDePasse } from "../sections/formulaire-nouveau-mot-de-passe";
 
-// better-auth renvoie ici avec ?token=… (lien valable) ou ?error=INVALID_TOKEN (lien expiré).
-// Le titre fait partie de la coquille statique ; la lecture de l'adresse vit sous Suspense.
-export default function PageNouveauMotDePasse({
-  searchParams,
-}: PageProps<"/nouveau-mot-de-passe">) {
+export function NouveauMotDePasseContainer({ token }: { token: string }) {
+  const { executeAsync, result, isPending } = useAction(
+    choisirNouveauMotDePasse,
+  );
   return (
-    <main className="mx-auto max-w-sm p-6">
-      <h1 className="mb-6 text-2xl font-semibold">Nouveau mot de passe</h1>
-      <Suspense fallback={<p className="text-muted-foreground">Chargement…</p>}>
-        <Contenu searchParams={searchParams} />
-      </Suspense>
-    </main>
+    <FormulaireNouveauMotDePasse
+      envoyer={async (valeurs) => {
+        await executeAsync({ ...valeurs, token });
+      }}
+      erreurServeur={result.serverError}
+      message={result.data?.message}
+      enCours={isPending}
+    />
   );
 }
+```
 
-async function Contenu({
-  searchParams,
-}: Pick<PageProps<"/nouveau-mot-de-passe">, "searchParams">) {
+La page « Nouveau mot de passe » lit l'adresse (`?token=…` ou `?error=…`) : c'est une lecture de la requête, faite par un container serveur sous `<Suspense>`. Il compose le container du formulaire de sa feature.
+
+```tsx
+// src/features/compte/components/containers/lien-mot-de-passe.container.tsx
+import Link from "next/link";
+import { NouveauMotDePasseContainer } from "./nouveau-mot-de-passe.container";
+
+type Props = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+// better-auth renvoie vers la page avec ?token=… (lien valable) ou ?error=INVALID_TOKEN (lien expiré).
+export async function LienMotDePasseContainer({ searchParams }: Props) {
   const { token, error } = await searchParams;
   if (error || typeof token !== "string") {
     return (
@@ -787,22 +876,74 @@ async function Contenu({
       </p>
     );
   }
-  return <FormulaireNouveauMotDePasse token={token} />;
+  return <NouveauMotDePasseContainer token={token} />;
+}
+```
+
+### 9. Les deux nouvelles pages
+
+```tsx
+// app/(public)/mot-de-passe-oublie/page.tsx
+import { MotDePasseOublieContainer } from "@src/features/compte/components/containers/mot-de-passe-oublie.container";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Mot de passe oublié" };
+
+export default function PageMotDePasseOublie() {
+  return (
+    <main className="mx-auto max-w-sm p-6">
+      <h1 className="mb-2 text-2xl font-semibold">Mot de passe oublié</h1>
+      <p className="mb-6 text-muted-foreground">
+        Indiquez votre adresse : vous recevrez un lien pour choisir un nouveau
+        mot de passe.
+      </p>
+      <MotDePasseOublieContainer />
+    </main>
+  );
+}
+```
+
+```tsx
+// app/(public)/nouveau-mot-de-passe/page.tsx
+import { LienMotDePasseContainer } from "@src/features/compte/components/containers/lien-mot-de-passe.container";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+
+export const metadata: Metadata = { title: "Nouveau mot de passe" };
+
+// Le titre fait partie de la coquille statique ; la lecture de l'adresse vit sous Suspense.
+export default function PageNouveauMotDePasse({
+  searchParams,
+}: PageProps<"/nouveau-mot-de-passe">) {
+  return (
+    <main className="mx-auto max-w-sm p-6">
+      <h1 className="mb-6 text-2xl font-semibold">Nouveau mot de passe</h1>
+      <Suspense fallback={<p className="text-muted-foreground">Chargement…</p>}>
+        <LienMotDePasseContainer searchParams={searchParams} />
+      </Suspense>
+    </main>
+  );
 }
 ```
 
 ### 10. Les tests de la recette `connexion`
 
-Avec la vérification d'adresse, deux tests de `src/lib/auth.test.ts` changent :
+Avec la vérification d'adresse, `src/adapters/auth/__tests__/auth.adapter.test.ts` change à quatre endroits :
 
-1. Après les imports, ajouter `vi` à l'import de `vitest`, `user` à l'import de `@/db/schema`, puis doubler l'envoi :
+1. Importez `user` en plus de `account` : `import { account, user } from "@src/db/compte/auth.table";`.
+
+2. `creerAuth` reçoit maintenant `envoyerEmail` : doublez l'envoi dans `optionsDeTest`, aucun e-mail ne part pendant les tests.
 
 ```ts
-// Recette email : aucun e-mail ne part pendant les tests.
-vi.mock("@/lib/email", () => ({ envoyerEmail: vi.fn(async () => {}) }));
+const optionsDeTest = {
+  secret: "secret-de-test-secret-de-test-secret-de-test",
+  baseURL: "http://localhost:3000",
+  // Recette email : aucun e-mail ne part pendant les tests.
+  envoyerEmail: async () => {},
+};
 ```
 
-2. Dans `inscrireCamille`, confirmer l'adresse après l'inscription :
+3. Dans `inscrireCamille`, confirmez l'adresse après l'inscription :
 
 ```ts
   async function inscrireCamille() {
@@ -814,7 +955,7 @@ vi.mock("@/lib/email", () => ({ envoyerEmail: vi.fn(async () => {}) }));
       },
     });
     // Recette email : Camille a cliqué sur le lien de confirmation.
-    await db
+    await base.db
       .update(user)
       .set({ emailVerified: true })
       .where(eq(user.email, "camille@exemple.fr"));
@@ -822,13 +963,13 @@ vi.mock("@/lib/email", () => ({ envoyerEmail: vi.fn(async () => {}) }));
   }
 ```
 
-3. Remplacer le test « une deuxième inscription avec la même adresse est refusée » (elle reçoit désormais la même réponse) par :
+4. Remplacez le test « une deuxième inscription avec la même adresse est refusée » (elle reçoit désormais la même réponse) par :
 
 ```ts
   it("US-XXX-2 – une deuxième inscription avec la même adresse ne crée pas de second compte", async () => {
     await inscrireCamille();
     await inscrireCamille();
-    const comptes = await db
+    const comptes = await base.db
       .select()
       .from(user)
       .where(eq(user.email, "camille@exemple.fr"));
@@ -836,15 +977,15 @@ vi.mock("@/lib/email", () => ({ envoyerEmail: vi.fn(async () => {}) }));
   });
 ```
 
-   Dans la spec, l'exemple « Une adresse déjà utilisée est refusée » de la recette `connexion` devient : « Une adresse déjà utilisée reçoit la même réponse, sans second compte ».
+Dans la spec, l'exemple « Une adresse déjà utilisée est refusée » de la recette `connexion` devient : « Une adresse déjà utilisée reçoit la même réponse, sans second compte ».
 
 ### 11. Essayer en local
 
-`npm run dev`, s'inscrire, ouvrir http://localhost:8025, cliquer sur le lien : « Mon compte » s'affiche. Puis se déconnecter et tester « Mot de passe oublié ? ».
+`npm run dev`, inscrivez-vous, ouvrez http://localhost:8025, cliquez sur le lien : « Mon compte » s'affiche. Puis déconnectez-vous et testez « Mot de passe oublié ? ».
 
 ### 12. Mettre en ligne
 
-Saisir les cinq variables dans Vercel (celles du compte Gmail du projet, ou celles du fournisseur), puis redéployer. S'inscrire sur le site en ligne avec sa propre adresse : l'e-mail arrive.
+Saisissez les cinq variables dans Vercel (celles du compte Gmail du projet, ou celles du fournisseur), puis redéployez. Inscrivez-vous sur le site en ligne avec votre propre adresse : l'e-mail arrive.
 
 ## Scénarios Gherkin à ajouter à la spec
 
@@ -921,6 +1062,15 @@ Fonctionnalité: E-mails du compte
       Étant donné une personne nommée « <img src=x onerror=alert(1)> »
       Quand l'e-mail de mot de passe oublié est préparé
       Alors le HTML de l'e-mail affiche ce nom comme du texte
+
+  Règle: Une panne du serveur d'e-mail est signalée comme une panne de service
+
+    @US-XXX-5 @integration
+    Exemple: L'échec de l'envoi lève une erreur de service « email »
+      Étant donné le serveur d'e-mail est éteint
+      Quand l'application envoie un e-mail à Camille
+      Alors une erreur de service « email » est levée
+      Et son message ne contient pas l'adresse de Camille
 ```
 
 ## Tâches de plan prêtes
@@ -928,23 +1078,24 @@ Fonctionnalité: E-mails du compte
 - [ ] **Tn – Envoyer des e-mails** · US-XXX
   - Objectif : l'application sait envoyer un e-mail, visible dans Mailpit
   - Dépend de : —
-  - Fichiers : à créer : `src/lib/email.ts`, `src/features/compte/emails.ts`, `src/features/compte/emails.test.ts` · à modifier : `src/lib/env.ts`, `.env.example`
-  - Vérification : US-XXX critères 1 et 4 – `npm test` passe
-  - Tests : « L'e-mail de Camille contient son lien de confirmation » (unitaire) ; « Un nom contenant du HTML est neutralisé » (unitaire)
+  - Fichiers : à créer : `src/core/compte/email.port.ts`, `src/core/compte/emails-compte.rules.ts`, `src/adapters/email/email.adapter.ts`, `src/core/compte/__tests__/emails-compte.rules.test.ts`, `src/adapters/email/__tests__/email.adapter.test.ts` · à modifier : `src/config/env.ts`, `.env.example`
+  - Vérification : US-XXX critères 1, 4 et 5 – `npm test` passe
+  - Tests : « L'e-mail de Camille contient son lien de confirmation » (unitaire) ; « Un nom contenant du HTML est neutralisé » (unitaire) ; « L'échec de l'envoi lève une erreur de service « email » » (intégration)
   - Action manuelle : installer et lancer Mailpit ; remplir les variables SMTP dans `.env`
 - [ ] **Tn+1 – Confirmer l'adresse à l'inscription** · US-XXX
   - Objectif : une personne confirme son adresse par e-mail avant sa première connexion
   - Dépend de : Tn
-  - Fichiers : à modifier : `src/lib/auth.ts`, `src/features/compte/actions.ts`, `formulaire-inscription.tsx`, `src/lib/auth.test.ts` · à créer : `src/lib/auth-email.test.ts`
+  - Fichiers : à modifier : `src/adapters/auth/auth.adapter.ts`, `src/features/compte/actions/inscrire.action.ts`, `src/features/compte/actions/connecter.action.ts`, `src/features/compte/components/sections/formulaire-inscription.tsx`, `src/features/compte/components/containers/inscription.container.tsx`, `src/adapters/auth/__tests__/auth.adapter.test.ts` · à créer : `src/adapters/auth/__tests__/auth-email.test.ts`
   - Vérification : US-XXX critères 1 et 2 – s'inscrire, ouvrir l'e-mail dans Mailpit, cliquer : « Mon compte » s'affiche
   - Tests : « Adresse non confirmée : la connexion est refusée… », « Adresse confirmée par le lien… », « La propriétaire de l'adresse est prévenue par e-mail » (intégration)
   - Attention : les comptes créés avant cette tâche n'ont pas d'adresse confirmée ; les supprimer de la base de développement
 - [ ] **Tn+2 – Remplacer un mot de passe oublié** · US-XXX
   - Objectif : une personne qui a oublié son mot de passe en choisit un nouveau
   - Dépend de : Tn+1
-  - Fichiers : à modifier : `src/features/compte/schemas.ts`, `formulaire-connexion.tsx` · à créer : `formulaire-mot-de-passe-oublie.tsx`, `formulaire-nouveau-mot-de-passe.tsx`, les pages `/mot-de-passe-oublie` et `/nouveau-mot-de-passe`
+  - Fichiers : à modifier : `src/features/compte/schemas/compte.schema.ts`, `src/features/compte/components/sections/formulaire-connexion.tsx` · à créer : `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts`, `src/features/compte/actions/choisir-nouveau-mot-de-passe.action.ts`, `src/features/compte/components/sections/formulaire-mot-de-passe-oublie.tsx`, `src/features/compte/components/sections/formulaire-nouveau-mot-de-passe.tsx`, `src/features/compte/components/containers/mot-de-passe-oublie.container.tsx`, `src/features/compte/components/containers/nouveau-mot-de-passe.container.tsx`, `src/features/compte/components/containers/lien-mot-de-passe.container.tsx`, `app/(public)/mot-de-passe-oublie/page.tsx`, `app/(public)/nouveau-mot-de-passe/page.tsx`
   - Vérification : US-XXX critère 3 – demander un lien, l'ouvrir depuis Mailpit, choisir un mot de passe, se connecter avec
   - Tests : « Camille choisit un nouveau mot de passe et se connecte avec », « Un lien déjà utilisé ne sert plus », « Une adresse inconnue reçoit la même réponse, sans e-mail » (intégration)
+  - Attention : les sections reçoivent tout par props, les containers appellent `useAction` ; le jeton va au container, pas au formulaire
 - [ ] **Tn+3 – Parcours de bout en bout avec Mailpit** · US-XXX
   - Objectif : les parcours avec e-mail sont vérifiés automatiquement
   - Dépend de : Tn+2
@@ -962,10 +1113,15 @@ Fonctionnalité: E-mails du compte
 
 ### Unitaires
 
+Les contenus d'e-mails sont des fonctions pures : aucun double nécessaire.
+
 ```ts
-// src/features/compte/emails.test.ts
+// src/core/compte/__tests__/emails-compte.rules.test.ts
 import { describe, expect, it } from "vitest";
-import { emailMotDePasseOublie, emailVerificationAdresse } from "./emails";
+import {
+  emailMotDePasseOublie,
+  emailVerificationAdresse,
+} from "../emails-compte.rules";
 
 describe("E-mails de compte", () => {
   describe("Une adresse est confirmée par un lien reçu par e-mail avant la première connexion", () => {
@@ -997,30 +1153,70 @@ describe("E-mails de compte", () => {
 
 ### Intégration (Vitest + PGlite)
 
-better-auth tourne sur une base PGlite neuve ; `@/lib/email` est doublé et garde les messages au lieu de les envoyer. Les liens et jetons viennent des e-mails gardés, comme pour une vraie personne.
+L'échec d'envoi : Nodemailer est doublé et refuse l'envoi, comme un serveur éteint.
 
 ```ts
-// src/lib/auth-email.test.ts
-import { APIError } from "better-auth/api";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { MessageEmail } from "@/lib/email";
-import { creerBaseDeTest } from "../../tests/helpers/base-de-test";
-import { creerAuth } from "./auth";
+// src/adapters/email/__tests__/email.adapter.test.ts
+import { ErreurService } from "@src/lib/errors/erreur-service";
+import { describe, expect, it, vi } from "vitest";
 
-// Doublure du service d'e-mail : les messages sont gardés au lieu de partir.
-const envoyes = vi.hoisted(() => [] as MessageEmail[]);
-vi.mock("@/lib/email", () => ({
-  envoyerEmail: vi.fn(async (message: MessageEmail) => {
-    envoyes.push(message);
+// Serveur SMTP doublé : l'envoi échoue, comme avec un serveur éteint.
+vi.mock("nodemailer", () => ({
+  default: {
+    createTransport: () => ({
+      sendMail: vi.fn().mockRejectedValue(new Error("connect ECONNREFUSED")),
+    }),
+  },
+}));
+vi.mock("@src/config/env", () => ({
+  envServeur: () => ({
+    SMTP_HOST: "localhost",
+    SMTP_PORT: 1025,
+    MAIL_FROM: "Mon projet <ne-pas-repondre@exemple.fr>",
   }),
 }));
 
-const optionsDeTest = {
-  secret: "secret-de-test-secret-de-test-secret-de-test",
-  baseURL: "http://localhost:3000",
-};
+describe("Envoi d'e-mails", () => {
+  describe("Un serveur d'e-mail en panne est signalé comme une panne de service", () => {
+    it("US-XXX-5 – L'échec de l'envoi lève une erreur de service « email »", async () => {
+      const { envoyerEmail } = await import("../email.adapter");
+
+      const erreur = await envoyerEmail({
+        a: "camille@exemple.fr",
+        sujet: "Bonjour",
+        texte: "Bonjour",
+      }).catch((e: unknown) => e);
+
+      expect(erreur).toBeInstanceOf(ErreurService);
+      expect((erreur as ErreurService).service).toBe("email");
+      expect((erreur as ErreurService).message).not.toContain(
+        "camille@exemple.fr",
+      );
+    });
+  });
+});
+```
+
+better-auth tourne sur une base PGlite neuve ; `creerAuth` reçoit une doublure de l'envoi qui garde les messages au lieu de les envoyer. Les liens et jetons viennent des e-mails gardés, comme pour une vraie personne.
+
+```ts
+// src/adapters/auth/__tests__/auth-email.test.ts
+import type { MessageEmail } from "@src/core/compte/email.port";
+import { APIError } from "better-auth/api";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
+import { creerAuth } from "../auth.adapter";
 
 function createSut() {
+  // Doublure du service d'e-mail : les messages sont gardés au lieu de partir.
+  const envoyes: MessageEmail[] = [];
+  const optionsDeTest = {
+    secret: "secret-de-test-secret-de-test-secret-de-test",
+    baseURL: "http://localhost:3000",
+    envoyerEmail: async (message: MessageEmail) => {
+      envoyes.push(message);
+    },
+  };
   let auth: ReturnType<typeof creerAuth>;
   let fermer: () => Promise<void>;
   let erreur: unknown;
@@ -1041,7 +1237,6 @@ function createSut() {
 
   return {
     async demarrer() {
-      envoyes.length = 0;
       const base = await creerBaseDeTest();
       fermer = base.fermer;
       auth = creerAuth(base.db, optionsDeTest);
@@ -1170,7 +1365,7 @@ describe("E-mails de compte", () => {
 
 ### Bout en bout (Playwright + Mailpit)
 
-Mailpit doit tourner, et le serveur lancé par Playwright doit utiliser `SMTP_HOST=localhost` et `SMTP_PORT=1025` (valeurs de `.env` en local). En CI, ajouter le conteneur `axllent/mailpit` comme service, ports 1025 et 8025. Chaque test utilise une adresse unique : les tests restent indépendants sans vider Mailpit.
+Mailpit doit tourner, et le serveur lancé par Playwright doit utiliser `SMTP_HOST=localhost` et `SMTP_PORT=1025` (valeurs de `.env` en local). En CI, ajoutez le conteneur `axllent/mailpit` comme service, ports 1025 et 8025. Chaque test utilise une adresse unique : les tests restent indépendants sans vider Mailpit.
 
 L'aide lit l'API REST de Mailpit (`GET /api/v1/search?query=to:"…"`, résultats du plus récent au plus ancien ; `GET /api/v1/message/{ID}`, champs `Subject`, `Text`, `HTML`) :
 
@@ -1311,41 +1506,43 @@ test.describe("E-mails de compte", () => {
 ## Points de sécurité
 
 - **S1 – Secrets hors du code** : `SMTP_PASSWORD` vit dans `.env` et dans Vercel ; la personne saisit le mot de passe d'application elle-même, hors de la conversation.
-- **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/lib/email.ts` commence par `import "server-only"`.
+- **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/adapters/email/email.adapter.ts` commence par `import "server-only"`.
 - **S5 – Validation des entrées** : chaque formulaire passe par un schéma Zod dans son action ; `disabledPaths` ferme les adresses HTTP de demande de lien et de choix du mot de passe.
 - **S6 – Affichage sans injection** : chaque valeur insérée dans le HTML d'un e-mail passe par `echapperHtml`.
-- **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton).
-- **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu. Appliquer la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
+- **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton) ; l'`ErreurService` ne contient pas l'adresse du destinataire.
+- **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu. Appliquez la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
 - **S11 – Messages d'erreur** : inscription et « mot de passe oublié » répondent la même chose qu'un compte existe ou non ; l'envoi part après la réponse (`after()`).
 - Liens à usage unique et courts : 24 heures pour la confirmation, 1 heure pour le mot de passe ; un nouveau mot de passe ferme les autres sessions.
 
 ## Pièges connus
 
-- **Port 25 bloqué par Vercel** : utiliser 587 (STARTTLS) ou 465 (chiffré dès la connexion). `src/lib/email.ts` règle `secure` d'après le port.
-- **Mailpit éteint** : l'envoi échoue en silence côté écran (better-auth journalise « Failed to run background task »). Lancer `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
-- **Gmail** : le mot de passe d'application exige la validation en deux étapes. Changer le mot de passe du compte Google révoque d'un coup tous les mots de passe d'application. L'expéditeur reste l'adresse Gmail. Un mot de passe d'application ouvre aussi la lecture de la boîte : réserver ce compte Gmail au projet. Google peut bloquer des connexions venues de nombreux endroits à la fois, et déconseille les mots de passe d'application pour un service en production.
-- **Comptes créés avant la recette** : leur adresse n'est pas confirmée ; ils ne peuvent plus se connecter. En développement, les supprimer. En ligne, la connexion leur envoie un e-mail de confirmation (`sendOnSignIn`).
-- **`authClient.forgetPassword` ou `requestPasswordReset` répond 404** : ces adresses sont fermées par `disabledPaths`. Passer par les actions `demanderNouveauMotDePasse` et `choisirNouveauMotDePasse`.
+- **Port 25 bloqué par Vercel** : utilisez 587 (STARTTLS) ou 465 (chiffré dès la connexion). `src/adapters/email/email.adapter.ts` règle `secure` d'après le port.
+- **Mailpit éteint** : l'envoi échoue en silence côté écran (better-auth journalise « Failed to run background task », avec l'`ErreurService` de l'adapter). Lancez `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
+- **Gmail** : le mot de passe d'application exige la validation en deux étapes. Changer le mot de passe du compte Google révoque d'un coup tous les mots de passe d'application. L'expéditeur reste l'adresse Gmail. Un mot de passe d'application ouvre aussi la lecture de la boîte : réservez ce compte Gmail au projet. Google peut bloquer des connexions venues de nombreux endroits à la fois, et déconseille les mots de passe d'application pour un service en production.
+- **Comptes créés avant la recette** : leur adresse n'est pas confirmée ; ils ne peuvent plus se connecter. En développement, supprimez-les. En ligne, la connexion leur envoie un e-mail de confirmation (`sendOnSignIn`).
+- **`authClient.forgetPassword` ou `requestPasswordReset` répond 404** : ces adresses sont fermées par `disabledPaths`. Passez par les actions `demanderNouveauMotDePasse` et `choisirNouveauMotDePasse`.
 - **`after()` hors d'une requête** : `tacheDeFond` reste absent dans `creerAuth` pour les tests ; seul `getAuth()` le fournit.
-- **E-mails rangés dans les indésirables** : avec un domaine à soi, configurer SPF, DKIM et DMARC chez le fournisseur.
-- **`@types/nodemailer`** : il entre en conflit avec les types fournis par Nodemailer 10 ; le désinstaller.
-- **Langues** : avec la recette `langues`, les deux nouvelles pages vont sous `src/app/[locale]/(public)/`, et leur `PageProps` prend la clé `"/[locale]/nouveau-mot-de-passe"`.
+- **`creerAuth` sans `envoyerEmail`** : l'option est obligatoire. Un test qui appelle `creerAuth` passe une doublure (`envoyerEmail: async () => {}`).
+- **`npm run check` signale `noRestrictedImports` dans `src/core/compte/`** : les contenus d'e-mails n'importent rien hors de `src/core/`. Gardez-les sans Next, sans Nodemailer, sans `@src/lib`.
+- **E-mails rangés dans les indésirables** : avec un domaine à soi, configurez SPF, DKIM et DMARC chez le fournisseur.
+- **`@types/nodemailer`** : il entre en conflit avec les types fournis par Nodemailer 10 ; désinstallez-le.
+- **Langues** : avec la recette `langues`, les deux nouvelles pages vont sous `app/[locale]/(public)/`, et leur `PageProps` prend la clé `"/[locale]/nouveau-mot-de-passe"`.
 
 ## Sources
 
 - better-auth 1.7.7, types et code du paquet installé : `@better-auth/core/dist/types/init-options.d.mts` (`emailVerification`, `emailAndPassword`, `onExistingUserSignUp`, `advanced.backgroundTasks`) ; `better-auth/dist/api/routes/password.mjs` (`/request-password-reset`, `/reset-password/:token` qui renvoie vers `?token=` ou `?error=INVALID_TOKEN`) ; `sign-up.mjs` (réponse identique pour une adresse déjà prise quand `requireEmailVerification` est actif) ; `api/index.mjs` (`disabledPaths` : chemin exact)
-- Nodemailer 10.0.15 : `README.md` et `CHANGELOG.md` du paquet (types fournis, Node.js 20, `secure` seulement pour 465) ; https://nodemailer.com/
+- Nodemailer 10.0.16 : `README.md` et `CHANGELOG.md` du paquet (types fournis, Node.js 20, `secure` seulement pour 465) ; https://nodemailer.com/
 - Next.js 16.4, documentation embarquée : `01-app/03-api-reference/04-functions/after.md` ; `01-app/01-getting-started/08-caching.md` (lecture de `searchParams` sous `<Suspense>`)
 - Mailpit : https://mailpit.axllent.org/docs/install/ (ports 1025 et 8025) ; https://mailpit.axllent.org/docs/usage/search-filters/ ; API : `server/ui/api/v1/swagger.json` du dépôt axllent/mailpit ; paquet winget `axllent.mailpit`
 - Vercel, ports SMTP : https://vercel.com/kb/guide/serverless-functions-and-smtp
 - Google : https://support.google.com/accounts/answer/185833 (mots de passe d'application) ; https://support.google.com/mail/answer/22839 (limite de 500)
 - Infomaniak : https://www.infomaniak.com/fr/support/faq/468/ ; Brevo : https://help.brevo.com/hc/en-us/articles/10905415650322
-- Vérifications locales (squelette du pack + recette `connexion`) : `npm run typecheck`, `biome check`, `next build` et Vitest (tests d'intégration ci-dessus) passent ; envoi réel de `envoyerEmail` vers Mailpit 1.31 et lecture par `to:"…"` réussis ; page `/nouveau-mot-de-passe` servie par `next start` avec `?token=` et `?error=INVALID_TOKEN`
+- Rejoué le 2026-10-08 dans l'architecture du pack (squelette + recettes `connexion` et `liste`, `app/` à la racine, alias `@src/`, règles de couches de Biome) : `npm run check`, `npm run typecheck`, `npm test` (21 fichiers, 76 tests) et `npm run build` sans variables puis avec des valeurs factices passent ; pages `/mot-de-passe-oublie` et `/nouveau-mot-de-passe` construites.
+- Essai réel du 2026-10-06 (ancienne organisation, Mailpit 1.31) : envoi réel de `envoyerEmail` vers Mailpit et lecture par `to:"…"` réussis ; page `/nouveau-mot-de-passe` servie par `next start` avec `?token=` et `?error=INVALID_TOKEN` ; les deux tests de bout en bout passent 3 fois sur 3, sur ordinateur et sur téléphone.
 
 ## Points à vérifier
 
-- Les tests de bout en bout (`e2e/email.spec.ts`) : écrits et compilés, pas exécutés (pas de base Neon lors de la rédaction).
+- Les tests de bout en bout (`e2e/email.spec.ts`) sur l'organisation actuelle : écrits, compilés et vérifiés par Biome et TypeScript, pas rejoués (pas de Mailpit ni de base Neon lors de la réécriture). Le dernier essai complet date de l'ancienne organisation.
 - L'envoi par `after()` sur Vercel : l'e-mail doit partir après la réponse. À constater à la tâche Tn+4 (réception, et journaux Vercel sans « Failed to run background task »).
 - La limite de 500 destinataires par jour : chiffre de l'aide Google pour un compte Gmail, susceptible de changer.
-- L'affichage de `result.data.message` dans le formulaire d'inscription, avec les composants `Field` réels du squelette.
-- Essai réel du 2026-10-06 (application construite, base PGlite, Mailpit 1.31) : les deux tests de bout en bout passent 3 fois sur 3, sur ordinateur et sur téléphone ; l'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer.
+- L'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer.
