@@ -39,6 +39,8 @@ drizzle/                          migrations
 - Un dossier se crée au moment d'y écrire son premier fichier utile.
 - **20 fichiers au plus par dossier** (hors `src/components/ui/`). Au-delà, découper par sujet : `sections/liste/`, `sections/formulaire/`, `use-cases/paiement/`.
 - Alias : `@app/…` pour `app/`, `@src/…` pour `src/`. Dans un même dossier, import relatif (`./facture.rules`).
+- `src/lib/auth-client.ts` (client Better Auth, exécuté dans le navigateur) reste dans `lib/` ; `src/adapters/auth/` porte la configuration serveur de Better Auth (`server-only`).
+- Créés au besoin : `app/@modal/`, `app/[...catchAll]/`, `src/db/seed/`, `tests/fixtures/`.
 - Les tables se placent un niveau sous `src/db/` : `src/db/<domaine>/<sujet>.table.ts` (motif lu par `drizzle.config.ts`).
 - `npm run db:generate` demande au moins une table : la première US qui stocke des données la crée.
 
@@ -55,7 +57,7 @@ drizzle/                          migrations
 
 | Dossier | Importe | Laisse de côté |
 |---|---|---|
-| `src/core/` | `src/core/` seulement | Next, React, Drizzle, `server-only`, `db/`, `adapters/`, `features/`, `lib/`, `config/` |
+| `src/core/` | `src/core/` seulement | Next, React, Drizzle, `server-only`, `db/`, `adapters/`, `features/`, `lib/`, `config/`, `app/` |
 | `src/db/` | `src/core/` (ports, types), `drizzle-orm`, `src/config/`, `src/lib/` | Next, `features/`, `adapters/`, `app/` |
 | `src/adapters/` | `src/core/` (ports, types), `src/config/`, `src/lib/`, SDK du service | `features/`, `db/`, `app/` |
 | `src/features/` | `core/`, `db/`, `adapters/`, `components/`, `lib/`, `config/`, `hooks/`, `stores/` | `app/` |
@@ -70,12 +72,13 @@ Le niveau d'un composant se décide par **ce qu'il importe**.
 | Niveau | Rôle | Importe | Laisse de côté |
 |---|---|---|---|
 | `containers/` (`<nom>.container.tsx`) | lit les données (query, session, store), branche les actions, transmet des props | `queries/`, `actions/`, `hooks/`, `stores/`, `sections/` et en dessous | `db/`, `adapters/`, `drizzle-orm` |
-| `sections/` | un bloc d'écran (liste, formulaire, en-tête) à partir de props | `composites/`, `elements/`, `components/ui`, `components/shared`, `lib/` | `actions/`, `queries/`, `hooks/`, `stores/`, `containers/` |
-| `composites/` | quelques elements combinés (carte, ligne de tableau) | `elements/`, `components/ui`, `components/shared/elements`, `lib/` | idem + `sections/` |
+| `sections/` | un bloc d'écran (liste, formulaire, en-tête) à partir de props | `composites/`, `elements/`, `components/ui`, `components/shared`, `lib/` | `actions/`, `queries/`, `hooks/`, `stores/`, `containers/`, `db/`, `adapters/` |
+| `composites/` | quelques éléments combinés (carte, ligne de tableau) | `elements/`, `components/ui`, `components/shared/elements`, `lib/` | idem + `sections/` |
 | `elements/` | une seule chose (badge de statut, montant formaté) | `components/ui`, `lib/` | tout autre composant de feature |
 
 - Une page de `app/` rend des containers (ou des sections sans données), chacun sous `<Suspense>` s'il lit des données.
 - Les composants d'affichage reçoivent tout par props, typées ; l'état visuel (`useState` pour ouvert/fermé) leur reste permis.
+- Les `hooks/` d'une feature servent ses containers ; les composants d'affichage reçoivent le résultat en props.
 - **Formulaire** : la section porte les champs (TanStack Form + `Field`) et la validation Zod dans le navigateur ; elle reçoit `envoyer(valeurs)` et `erreurServeur` en props. Le container (client) appelle `useAction(action)` et les lui passe.
 
 ## 5. Écrire
@@ -136,6 +139,7 @@ Kebab-case, `[nom].[suffixe].[extension]`, un fichier par action et par query.
 | repositories | intégration sur PGlite (`creerBaseDeTest()`), dont la condition `utilisateurId` | `src/db/<d>/__tests__/` |
 | `lib/`, `config/` | unitaires | `__tests__/` du dossier |
 | actions, queries, containers | parcours de bout en bout | `e2e/` |
+| composants d'affichage | pas de test dédié par défaut ; leurs props typées et les parcours `e2e/` les couvrent | — |
 
 ## 11. Modèles de code (domaine `factures`)
 

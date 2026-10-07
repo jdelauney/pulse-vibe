@@ -20,22 +20,27 @@
 
 ## Organisation des fichiers
 
-Palier : organisation par fonctionnalité (`src/features/<domaine>/`), noms de dossiers tirés du glossaire, identifiants de code en anglais simple ou en français selon le métier, textes affichés en français.
+Palier : hexagonal simplifié du pack Next.js (référence « Architecture du code » du pack). Noms de dossiers de domaine tirés du glossaire, identiques dans `src/core/`, `src/db/` et `src/features/` ; identifiants de code en anglais simple ou en français selon le métier ; textes affichés en français.
 
 ```
+app/                      routes ; (connecte)/ pour les pages réservées ; api/ pour les Route Handlers
+proxy.ts                  redirection vers la connexion
 src/
-  app/                    pages et mises en page ; (connecte)/ pour les pages réservées
-  features/<domaine>/     actions.ts, queries.ts, schemas.ts, regles.ts, components/, *.test.ts
-  components/ui/          composants shadcn
-  db/                     index.ts (connexion), schema/ (tables)
-  lib/                    auth, safe-action, env, logger, utils
-  proxy.ts                redirection vers la connexion
-tests/                    aides de test, base de test
+  core/<domaine>/         règles métier pures : entity, rules, errors, ports, use-cases/
+  db/<domaine>/           tables (.table.ts) et repositories (.repository.ts) ; db/index.ts : getDb()
+  features/<domaine>/     actions/, queries/, schemas/, components/{containers,sections,composites,elements}/, hooks/
+  adapters/<service>/     services externes (auth, e-mail, fichiers, paiement)
+  components/             ui/ (shadcn), shared/
+  lib/                    safe-action, logger, errors/, seo/, helpers/
+  config/                 env, site, projet
+tests/helpers/            aides de test, base de test
 e2e/                      tests de bout en bout (Playwright)
 drizzle/                  migrations
 ```
 
-Suffixes : `.test.ts` (unitaire, intégration), `.spec.ts` (bout en bout). Tests unitaires et d'intégration à côté du code.
+- Sans fichier de réexportation (`index.ts`) : on importe directement le fichier visé ; une feature importe d'une autre seulement `actions/`, `queries/` et `components/`.
+- 20 fichiers au plus par dossier (hors `src/components/ui/`) ; tests unitaires et d'intégration dans `__tests__/`. Vérifié par `npm test` (`tests/structure.test.ts`) et `npm run check` (Biome).
+- Suffixes : `.entity`, `.rules`, `.errors`, `.port`, `.use-case`, `.table`, `.repository`, `.adapter`, `.action`, `.query`, `.schema`, `.webhook`, `.container`, `.test` (Vitest), `.spec` (Playwright).
 
 ## Commandes du projet
 
@@ -52,7 +57,7 @@ Suffixes : `.test.ts` (unitaire, intégration), `.spec.ts` (bout en bout). Tests
 
 - Où sont les données : base Neon (Postgres), région Francfort (`aws-eu-central-1`).
 - Qui peut lire, créer, modifier, supprimer quoi : {{par table : la personne propriétaire (colonne utilisateurId), un rôle éventuel}}.
-- Où c'est vérifié : côté serveur, dans chaque action (`actionConnectee` puis condition `utilisateurId` dans la requête) et dans chaque lecture (`utilisateurConnecte()` puis filtre `utilisateurId`). `src/proxy.ts` redirige seulement, par confort.
+- Où c'est vérifié : côté serveur, dans chaque action (`actionConnectee` puis condition `utilisateurId` dans le repository) et dans chaque lecture (`utilisateurConnecte()` puis filtre `utilisateurId`). `proxy.ts` redirige seulement, par confort.
 
 ## Secrets et variables d'environnement
 
