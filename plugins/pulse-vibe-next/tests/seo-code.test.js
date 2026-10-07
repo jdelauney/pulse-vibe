@@ -162,3 +162,17 @@ test("vrai 404 : proxy.ts à la racine est trouvé dans la nouvelle structure", 
   const c9 = controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail })).constats.find((x) => x.code === "C9");
   assert.doesNotMatch(c9.conseil, /src\/proxy/);
 });
+
+test("ancienne structure : C9 cite src/proxy.ts", () => {
+  const detail = 'export async function generateMetadata() { return metadonneesDePage({}); }\nexport default async function P() { if (!x) notFound(); }';
+  const c9 = controler(projet({ ...BASE, "src/app/blog/[slug]/page.tsx": detail })).constats.find((x) => x.code === "C9");
+  assert.match(c9.conseil, /src\/proxy\.ts/);
+});
+
+test("C1 metadataBase : le conseil cite le fichier site qui existe (ancien en repli, nouveau par défaut)", () => {
+  const sansBase = { ...BASE, "src/app/layout.tsx": 'export const metadata = { title: { default: "A", template: "%s | A" } };' };
+  const ancien = controler(projet({ ...sansBase, "src/lib/site.ts": "export {};" })).constats.find((x) => x.code === "C1");
+  assert.match(ancien.conseil, /src\/lib\/site\.ts/);
+  const defaut = controler(projet(sansBase)).constats.find((x) => x.code === "C1");
+  assert.match(defaut.conseil, /src\/config\/site\.ts/);
+});
