@@ -57,7 +57,7 @@ Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/t
 À partir des quatre blocs, Pulse déduit lui-même :
 
 - **Le MVP** (MoSCoW) : le parcours le plus court qui règle le problème principal = **Indispensable** ; le reste en Essentiel, Optionnel ou « En attente ».
-- **Les epics et les US** (règles de `/pulse:us` : identifiants, `<epic>`, `<nom>`, critères d'acceptation vérifiables), avec un **parcours utilisateur**.
+- **Les epics et les US** (règles de `/pulse:us` : identifiants, `<epic>`, `<nom>`, critères d'acceptation vérifiables, INVEST et Definition of Ready), avec un **parcours utilisateur** et un **ordre de réalisation**.
 - **Les besoins techniques**, à partir des actions notées : comptes ou espace réservé → connexion ; réservation, commande, fiche, contenu géré → données partagées ; paiement → service de paiement, en mode test ; dépôt de fichiers → stockage ; e-mails ou confirmations → service d'e-mail ; plusieurs langues → traduction. Seulement ce que la personne a décrit : une mesure d'audience, par exemple, attend une demande explicite.
 
 Une ambiguïté qui change le périmètre (paiement unique ou abonnement ? une seule personne ou une équipe ?) : poser **une seule** question ciblée.
@@ -84,7 +84,7 @@ Avec les modèles ci-dessus, en appliquant « Qui a décidé quoi » (`raisonnem
 
 - `docs/brief.md` (blocs 1 et 2) et `aidd_docs/memory/glossary.md` (les mots du métier employés par la personne) ;
 - `docs/prd.md` : objectifs, utilisateurs, MVP en MoSCoW, contraintes (bloc 4), questions ouvertes ;
-- `docs/user-stories.md` (référentiel) et un fichier `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` par US ;
+- `docs/user-stories.md` (référentiel) et un fichier `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` par US ; si la mémoire projet indique un outil de ticketing, les tickets aussi (étape 6 de `/pulse:us`) ;
 - les réponses du bloc 3 dans la section « Décisions prises » du brief, sur une ligne « Apparence souhaitée : <3 mots> ; références : … », pour l'étape 7.
 
 Lancer `pulse-aidd memoire`, puis `pulse-aidd travail-fini`.

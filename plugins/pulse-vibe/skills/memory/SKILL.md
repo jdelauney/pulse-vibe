@@ -42,7 +42,7 @@ Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s
    | `aidd_docs/memory/glossary.md` | Modèle : aidd_docs/memory/glossary.md |
    | `aidd_docs/memory/internal/.gitkeep`, `aidd_docs/memory/external/.gitkeep` | fichiers vides |
 
-3. **Remplir** les fichiers créés à partir de ce qui a été lu, selon les règles de la mémoire : vision et périmètre depuis le brief et le PRD, pile et conventions depuis la spec et le code, mots du métier depuis le brief. Écrire uniquement ce que disent les fichiers et omettre le reste (y compris les `{{…}}`) ; signaler ces manques à la fin.
+3. **Remplir** les fichiers créés à partir de ce qui a été lu, selon les règles de la mémoire : vision et périmètre depuis le brief et le PRD, pile et conventions depuis `docs/technical.md`, la conception technique des plans et le code, mots du métier depuis le brief. Écrire uniquement ce que disent les fichiers et omettre le reste (y compris les `{{…}}`) ; signaler ces manques à la fin.
 4. **Montrer** le contenu proposé, fichier par fichier, en version courte. Demander (AskUserQuestion) : « Écrire tel quel (recommandé) » / « Modifier quelque chose ».
 5. **Brancher la mémoire** : voir « Brancher et synchroniser » ci-dessous.
 

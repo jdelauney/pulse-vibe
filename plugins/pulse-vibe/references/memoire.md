@@ -16,7 +16,7 @@ Le bloc mémoire de `CLAUDE.md` se trouve entre `<!-- pulse_memoire:debut -->` e
 
 | Information | Destination | Chargée |
 |---|---|---|
-| Vision, public, périmètre MVP, règles produit stables | `aidd_docs/memory/project.md` | à chaque session |
+| Vision, public, périmètre MVP, règles produit stables, outils du projet (outil de ticketing) | `aidd_docs/memory/project.md` | à chaque session |
 | Pile technique, conventions de code, sécurité, pièges et leçons techniques | `aidd_docs/memory/technical.md` | à chaque session |
 | Les mots du métier et leur définition commune | `aidd_docs/memory/glossary.md` | à chaque session |
 | Une décision difficile à défaire (voir les 3 critères ci-dessous) | `aidd_docs/memory/internal/decisions/NNNN-titre.md` | à la demande |

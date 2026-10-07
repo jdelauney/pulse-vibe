@@ -1,6 +1,7 @@
 # Plan – {{NOM_DU_PROJET}} – US-{{XXX}} {{Titre court}}
 
-> Produit par `/pulse:plan` le {{DATE}} à partir de `SPEC-US-{{XXX}}-{{nom}}.md` (même dossier).
+> Produit par `/pulse:plan` le {{DATE}} à partir de `SPEC-US-{{XXX}}-{{nom}}.md` (même dossier, verrouillée) et de `docs/technical.md`.
+> La spec dit **ce que** l'utilisateur obtient ; ce plan décide **comment** le construire (« Conception technique »), puis le découpe en tâches.
 > Un plan par spec, donc par user story. Numéros de tâche uniques dans tout le projet : ce plan reprend après le plus grand `Tn` des autres plans de `aidd_docs/tasks/`.
 > La tâche « Mettre en ligne le MVP » figure uniquement dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
 > Statuts : `[ ]` à faire · `[~]` en cours · `[x]` terminé. C'est notre tableau **kanban**.
@@ -23,7 +24,68 @@ flowchart LR
 
 ## Avant de commencer
 
-- {{Questions à trancher, comptes à créer, accès à obtenir ; ou « rien »}}
+- {{Comptes à créer, accès à obtenir ; ou « rien »}}
+
+## Conception technique
+
+> D'après « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` : y renvoyer plutôt que les recopier.
+
+### Pile et services
+
+| Élément | Choix | Pourquoi (en une phrase) |
+|---|---|---|
+| Pile | {{reprise de « Pile retenue »}} | |
+| Données | {{stockage retenu}} | |
+| Services externes | {{aucun, ou ceux de « Pile retenue » et leur usage dans cette US}} | |
+
+### Écrans
+
+| Écran de la spec | Adresse | Public ou réservé | Référencement (écran public) |
+|---|---|---|---|
+| | | | {{titre, description (docs/seo.md, ou « à valider avec /pulse:seo textes »), indexé oui / non ; sinon « sans objet »}} |
+
+Maquette : {{docs/design/maquettes/US-XXX-<nom>/retenue/ | aucune}} · Design : {{docs/design.md | aucun}}
+
+### Données
+
+Pour chaque type d'information de la spec :
+
+#### {{Nom du type d'information}}
+
+**Stockée** : {{sur l'appareil / dans une base / dans des fichiers}}
+
+| Champ | Type | Obligatoire | Contrainte |
+|---|---|---|---|
+| | | | |
+
+**Contrôle d'accès vérifié** : {{côté serveur / dans la base / sans objet}}, selon « Qui peut » de la spec
+
+**Liens entre les informations** (si plusieurs types) :
+
+```mermaid
+erDiagram
+    {{TYPE_A}} ||--o{ {{TYPE_B}} : "{{verbe, ex. possède}}"
+```
+
+### Où chaque règle est vérifiée
+
+| Règle de la spec | Où (base / serveur ; navigateur en plus) |
+|---|---|
+| | |
+
+### Sécurité
+
+- **Secrets** : {{nom de chaque variable, côté serveur ou public ; ou « aucun »}}
+- **Formulaires** : {{contrôles côté serveur qui produisent le résultat décrit dans la spec}}
+- **Checklist** : {{identifiants S1 à S12 qui s'appliquent}}
+
+### Fichiers
+
+Organisation générale : voir « Organisation des fichiers » dans `docs/technical.md`.
+
+| Fichier | À créer / à modifier | Rôle |
+|---|---|---|
+| | | |
 
 ## Tâches
 
@@ -46,10 +108,11 @@ flowchart LR
 
 ## Ajouts proposés par Pulse
 
-<!-- Seulement si une tâche introduit un élément absent de la spec ; sinon supprimer cette section, avec ce commentaire. -->
+<!-- Seulement si la conception ou une tâche introduit un élément absent de la spec et de « Pile retenue », ou exigé par la sécurité ; sinon supprimer cette section, avec ce commentaire. -->
 
 | Détail | Proposition | Pourquoi ça compte | Tâche | Décision |
 |---|---|---|---|---|
+| {{ex. mots de passe}} | {{ex. les enregistrer sous une forme illisible (hachage)}} | {{ex. une fuite de la base ne révélerait aucun mot de passe}} | {{Tn}} | {{accepté · refusé · exigé par la sécurité}} |
 
 ## Points d'attention
 

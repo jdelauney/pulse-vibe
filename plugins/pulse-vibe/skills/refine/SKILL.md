@@ -35,8 +35,8 @@ Lire le plan, sa spec et son US (même dossier : `SPEC-US-XXX-<nom>.md`, `US-XXX
 | **Question** | « Pourquoi le filtre n'est pas dans le MVP ? » | répondre ; le plan reste tel quel |
 | **Ordre ou découpage** | « Je veux voir la liste avant le formulaire » | le plan |
 | **Changement de périmètre** | « Ajoutons l'export PDF au MVP » | `docs/prd.md` (MoSCoW) d'abord, puis une nouvelle US (référentiel et fichier), sa spec et son plan ; ou la priorité d'une US existante dans le référentiel |
-| **Souci technique** | « Je ne veux pas créer de compte chez ce fournisseur » | `docs/technical.md` / la spec → proposer `/pulse:tech` si la pile retenue change |
-| **Exigence manquante** | « Il faut pouvoir annuler une suppression » | le fichier de l'US (critère d'acceptation), sa spec si besoin, puis plan ; une exigence qui relève d'une autre US va dans celle-ci |
+| **Souci technique** | « Je ne veux pas créer de compte chez ce fournisseur » | la conception technique du plan, ou `docs/technical.md` → proposer `/pulse:tech` si la pile retenue change |
+| **Exigence manquante** | « Il faut pouvoir annuler une suppression » | une spec en brouillon : le fichier de l'US (critère d'acceptation), la spec, puis le plan ; une spec verrouillée reste telle quelle : l'exigence devient une nouvelle US (`/pulse:spec "…"`), avec sa spec et son plan ; une exigence qui relève d'une autre US va dans celle-ci |
 
 Les **faits** se cherchent dans les documents et le code ; seules les **décisions** se posent à la personne. Si une remarque est ambiguë, poser une ronde de questions (AskUserQuestion, 4 au plus, réponse recommandée en premier avec « (Recommandé) »).
 

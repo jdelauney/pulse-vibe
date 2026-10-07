@@ -77,7 +77,7 @@ Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <com
 1. **Explorer** : déléguer à `pulse:explorer` la demande, avec la consigne de rassembler les faits utiles (mémoire, US et critères liés, fichiers concernés, risques). Laisser l'explorateur trouver les faits : réserver à la personne les questions qu'il ne peut pas résoudre.
 2. **Situer la demande** :
    - **correction** d'un comportement prévu par une US : garder cette US ; la tâche ira dans le plan de **cette** US (si ce n'est pas l'US désignée, le dire et continuer avec son plan) ;
-   - **précision** d'une US déjà planifiée (un critère qui manque) : ajouter le critère dans le fichier de l'US, puis la tâche dans son plan ;
+   - **précision** d'une US déjà planifiée (un critère qui manque) : sa spec est verrouillée et reste telle quelle ; la précision devient une **nouvelle US** qui complète l'ancienne (cas suivant), avec sa spec et son plan ;
    - **nouveau comportement** prévu au PRD : créer une **nouvelle US** (numéro suivant, modèle d'US) dans l'epic qui convient (la demander : AskUserQuestion, l'epic la plus proche avec « (Recommandé) », « Nouvelle epic »), écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au référentiel `docs/user-stories.md`. Elle aura sa propre spec et son propre plan : passer à § S avec cette US ;
    - **nouveau comportement hors PRD** : c'est une décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
 3. **Clarifier ce qui change ce qui sera construit**, et seulement cela : poser les questions de la frontière en une ronde (AskUserQuestion, 4 questions au plus, réponse recommandée en premier, « (Recommandé) »), deux rondes au maximum. Employer et respecter les mots du glossaire ; signaler un mot employé dans un autre sens.
@@ -90,7 +90,7 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 - Si `docs/user-stories.md` manque : appliquer l'étape **us**.
 - Sans US désignée : la demander (les US sans spec, dans l'ordre du parcours, ou une demande décrite), puis appliquer l'étape **spec** avec cette **seule** US. Si sa spec existe déjà sans plan, passer à § P.
 
-✋ **Point de validation 1** (sauf `-a`) : résumé en 5 lignes (US, écrans, données, points de sécurité). « On passe au plan ? » → « Oui » / « Je veux modifier quelque chose ».
+✋ **Point de validation 1** (sauf `-a`) : résumé en 5 lignes (US, écrans, informations, hors objectifs, « terminé quand »). Une spec restée en brouillon (des `TBD:` restants) attend les réponses de la personne avant le plan, même avec `-a`. « On passe au plan ? » → « Oui » / « Je veux modifier quelque chose ».
 
 ## Worktree
 

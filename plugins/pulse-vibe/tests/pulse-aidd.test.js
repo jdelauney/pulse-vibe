@@ -183,9 +183,11 @@ test("contexte implement, spirc et test : la procédure des tests automatiques",
   }
 });
 
-test("contexte spec : Gherkin ; contexte plan : stratégie de tests", () => {
+test("contexte spec : Gherkin, sans checklist (le comment va au plan) ; contexte plan : stratégie de tests et checklist", () => {
   assert.ok(lancer("contexte", "spec").stdout.includes("===== Scénarios Gherkin ====="));
+  assert.ok(!lancer("contexte", "spec").stdout.includes("===== Checklist sécurité ====="));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Stratégie de tests ====="));
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ====="));
 });
 
 test("agents test-writer et test-runner disponibles, et cités dans le message d'erreur", () => {

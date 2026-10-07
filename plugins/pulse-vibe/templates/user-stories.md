@@ -18,6 +18,12 @@
 
 {{Les US Indispensables dans l'ordre où l'utilisateur les vit, en une ligne : US-001 → US-002 → US-003. La dernière clôt le MVP.}}
 
+## Ordre de réalisation
+
+> L'ordre dans lequel les US se spécifient et se réalisent : d'abord ce dont les autres dépendent, puis par priorité (Indispensable, Essentiel, Optionnel), puis dans l'ordre du parcours.
+
+{{US-001 → US-002 → US-004 → US-003 …}}
+
 ---
 
 ## Epic – {{Titre de l'epic}} (`{{epic}}`)
