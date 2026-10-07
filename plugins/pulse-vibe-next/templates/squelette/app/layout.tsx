@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { Toaster } from "@/components/ui/sonner";
-import { projet } from "@/lib/projet";
-import { partageCommun } from "@/lib/seo";
-import { adresseDuSite } from "@/lib/site";
+import { Toaster } from "@src/components/ui/sonner";
+import { projet } from "@src/config/projet";
+import { partageCommun } from "@src/lib/seo/seo";
+import { adresseDuSite } from "@src/config/site";
 import "./globals.css";
 
 // La variable porte le nom attendu par globals.css (--font-sans) : sans elle, le navigateur
@@ -16,7 +16,7 @@ const policeCode = Geist_Mono({
 });
 
 // Métadonnées communes. metadataBase complète les adresses relatives (adresse officielle, image de
-// partage) ; chaque page publique ajoute les siennes avec metadonneesDePage() de src/lib/seo.ts.
+// partage) ; chaque page publique ajoute les siennes avec metadonneesDePage() de src/lib/seo/seo.ts.
 export const metadata: Metadata = {
   metadataBase: new URL(adresseDuSite()),
   title: { default: projet.nom, template: `%s | ${projet.nom}` },

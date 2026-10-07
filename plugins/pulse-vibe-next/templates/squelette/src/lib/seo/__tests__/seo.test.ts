@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { projet } from "./projet";
-import { imageDePartage, metadonneesDePage } from "./seo";
-import { adresseDuSite } from "./site";
+import { projet } from "@src/config/projet";
+import { imageDePartage, metadonneesDePage } from "../seo";
+import { adresseDuSite } from "@src/config/site";
 
 describe("Métadonnées d'une page publique", () => {
   test("une page a son titre, sa description, son adresse officielle et une carte de partage complète", () => {

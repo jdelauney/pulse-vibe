@@ -5,7 +5,7 @@ export type DonneesStructurees = WithContext<Thing> | Graph;
 /**
  * Données structurées d'une page (JSON-LD), lues par Google et par les assistants.
  * Le caractère « < » est échappé : un texte saisi ne peut pas fermer la balise (méthode de la
- * documentation Next.js). Construire les données avec src/lib/donnees-structurees.ts.
+ * documentation Next.js). Construire les données avec src/lib/seo/donnees-structurees.ts.
  */
 export function JsonLd({ donnees }: { donnees: DonneesStructurees }) {
   return (

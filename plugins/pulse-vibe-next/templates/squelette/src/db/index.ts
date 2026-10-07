@@ -3,7 +3,7 @@ import { neonConfig, Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import ws from "ws";
-import { envServeur } from "@/lib/env";
+import { envServeur } from "@src/config/env";
 import * as schema from "./schema";
 
 // WebSocket pour Node.js 21 et moins (facultatif à partir de Node.js 22).

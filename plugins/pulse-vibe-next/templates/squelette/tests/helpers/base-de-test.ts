@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
-import type { Db } from "@/db";
-import * as schema from "@/db/schema";
+import type { Db } from "@src/db";
+import * as schema from "@src/db/schema";
 
 const DOSSIER_MIGRATIONS = "./drizzle";
 

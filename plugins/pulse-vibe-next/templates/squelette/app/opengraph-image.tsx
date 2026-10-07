@@ -1,9 +1,9 @@
 import { ImageResponse } from "next/og";
-import { projet } from "@/lib/projet";
+import { projet } from "@src/config/projet";
 
 // L'image affichée quand un lien du site est partagé (LinkedIn, WhatsApp, X…), 1200 × 630 pixels.
 // Couleurs à accorder à docs/design.md (une image se dessine avec des valeurs, pas avec les rôles du thème).
-// Une image fournie, src/app/opengraph-image.png avec opengraph-image.alt.txt, la remplace.
+// Une image fournie, app/opengraph-image.png avec opengraph-image.alt.txt, la remplace.
 export const alt = projet.nom;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

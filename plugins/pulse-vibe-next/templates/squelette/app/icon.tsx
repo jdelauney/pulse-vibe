@@ -1,11 +1,12 @@
 import { ImageResponse } from "next/og";
-import { projet } from "@/lib/projet";
+import { projet } from "@src/config/projet";
 
-// Icône de l'écran d'accueil des téléphones Apple. Une image fournie, src/app/apple-icon.png, la remplace.
-export const size = { width: 180, height: 180 };
+// Icône du site (onglet du navigateur, résultats de Google : plus de 48 × 48 pixels recommandé).
+// Une image fournie, app/icon.png (carrée), la remplace.
+export const size = { width: 192, height: 192 };
 export const contentType = "image/png";
 
-export default function IconeApple() {
+export default function Icone() {
   return new ImageResponse(
     <div
       style={{
@@ -16,7 +17,7 @@ export default function IconeApple() {
         justifyContent: "center",
         background: "#111111",
         color: "#ffffff",
-        fontSize: 110,
+        fontSize: 120,
         fontWeight: 700,
       }}
     >

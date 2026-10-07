@@ -4,7 +4,7 @@ import {
   filDAriane,
   organisation,
   siteWeb,
-} from "./donnees-structurees";
+} from "../donnees-structurees";
 
 describe("Données structurées", () => {
   test("le site : nom et adresse, contexte schema.org", () => {

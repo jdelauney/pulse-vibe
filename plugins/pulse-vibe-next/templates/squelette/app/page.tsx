@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { JsonLd } from "@/components/json-ld";
-import { siteWeb } from "@/lib/donnees-structurees";
-import { projet } from "@/lib/projet";
-import { metadonneesDePage } from "@/lib/seo";
-import { adresseDuSite } from "@/lib/site";
+import { JsonLd } from "@src/components/shared/elements/json-ld";
+import { siteWeb } from "@src/lib/seo/donnees-structurees";
+import { projet } from "@src/config/projet";
+import { metadonneesDePage } from "@src/lib/seo/seo";
+import { adresseDuSite } from "@src/config/site";
 
 export const metadata: Metadata = metadonneesDePage({
   titre: projet.nom,
