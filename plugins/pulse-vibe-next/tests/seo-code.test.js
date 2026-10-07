@@ -133,3 +133,32 @@ test("la recette seo suit le format commun des recettes", () => {
   assert.match(texte, /# language: fr/);
   assert.ok(fs.existsSync(path.join(RACINE, "references", "contexte", "seo.md")));
 });
+
+const BASE_RACINE = Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k.replace(/^src\/app\//, "app/"), v]));
+
+test("nouvelle structure (app/ à la racine) : aucun constat, messages avec les vrais chemins", () => {
+  assert.deepStrictEqual(controler(projet(BASE_RACINE)).constats, []);
+  const { "app/robots.ts": _r, ...sansRobots } = BASE_RACINE;
+  const c6 = controler(projet(sansRobots)).constats.find((x) => x.code === "C6");
+  assert.match(c6.message + c6.conseil, /app\/robots\.ts/);
+  assert.doesNotMatch(c6.message + c6.conseil, /src\/app/);
+});
+
+test("ancienne structure (src/app/) : les messages citent src/app/", () => {
+  const { "src/app/robots.ts": _r, ...sansRobots } = BASE;
+  const c6 = controler(projet(sansRobots)).constats.find((x) => x.code === "C6");
+  assert.match(c6.message + c6.conseil, /src\/app\/robots\.ts/);
+});
+
+test("nouvelle structure : les composants de app/ sont contrôlés (JSON-LD)", () => {
+  const d = projet({ ...BASE_RACINE, "app/a-propos/page.tsx": 'export default function P() { return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(x) }} />; }' });
+  assert.ok(codes(controler(d)).includes("C8:haute"));
+});
+
+test("vrai 404 : proxy.ts à la racine est trouvé dans la nouvelle structure", () => {
+  const detail = 'export async function generateMetadata() { return metadonneesDePage({}); }\nexport default async function P() { if (!x) notFound(); }';
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail }))), ["C9:basse"]);
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail, "proxy.ts": 'export const config = { matcher: "/blog/:slug" };' }))), []);
+  const c9 = controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail })).constats.find((x) => x.code === "C9");
+  assert.doesNotMatch(c9.conseil, /src\/proxy/);
+});

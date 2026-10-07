@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Pack Pulse Next.js – règles et tests réels des secrets de la pile (appelé par pulse-aidd secrets, via pulse-pile-next).
 //
-//   pulse-pile-next secrets regles          JSON : règles par variable et noms déclarés dans src/lib/env.ts
+//   pulse-pile-next secrets regles          JSON : règles par variable et noms déclarés dans src/config/env.ts (ou src/lib/env.ts)
 //   pulse-pile-next secrets tester <NOM>    test réel d'une valeur ; lit sur l'entrée standard un JSON { NOM: valeur, … }
 //   pulse-pile-next secrets fiche <NOM>     la fiche de la variable (references/contexte/secrets.md)
 //
@@ -227,9 +227,14 @@ async function tester(nom) {
 
 // ---------------------------------------------------------------- Règles et fiche
 
+/** Le fichier des variables validées : src/config/env.ts (structure actuelle), sinon src/lib/env.ts. */
+function fichierEnv(racine) {
+  return [path.join(racine, "src", "config", "env.ts"), path.join(racine, "src", "lib", "env.ts")].find((f) => fs.existsSync(f)) || null;
+}
+
 function nomsDuCode() {
-  const f = path.join(process.cwd(), "src", "lib", "env.ts");
-  if (!fs.existsSync(f)) return [];
+  const f = fichierEnv(process.cwd());
+  if (!f) return [];
   return [...fs.readFileSync(f, "utf8").matchAll(/^\s*([A-Z][A-Z0-9_]*)\s*:\s*z\./gm)].map((m) => m[1]);
 }
 
