@@ -58,6 +58,15 @@ function git(args, cwd) {
 }
 
 const versSlash = (p) => p.split(path.sep).join("/");
+// Chemin réel d'un dossier existant : Git donne la racine sous ce nom, le dossier courant peut en
+// porter un autre (lien, nom court Windows comme RUNNER~1). Sans lui, path.relative sort du dépôt.
+const cheminReel = (p) => {
+  try {
+    return fs.realpathSync.native(p);
+  } catch {
+    return p;
+  }
+};
 
 function lireFichier(chemin) {
   try {
@@ -145,9 +154,11 @@ function candidatsAdd(listeArgs, racine, cwd) {
   if (large) return modifies;
 
   const resultat = new Set();
+  const racineReelle = cheminReel(racine);
+  const cwdReel = cheminReel(cwd);
   for (const t of chemins) {
     if (t === "--") continue;
-    const rel = versSlash(path.relative(racine, path.resolve(cwd, t)));
+    const rel = versSlash(path.relative(racineReelle, path.resolve(cwdReel, t)));
     for (const f of modifies) if (f === rel || f.startsWith(rel + "/")) resultat.add(f);
     if (estFichierEnv(rel)) resultat.add(rel); // même s'il n'apparaît pas (ex. déjà ignoré mais forcé)
   }
