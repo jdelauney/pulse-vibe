@@ -43,6 +43,12 @@ const REFUS = "deny";
 const ACCORD = "ask";
 
 const MESSAGES = {
+  amendEnvoye:
+    "Pulse demande votre accord : ce commit a déjà été envoyé sur le dépôt distant ; le modifier obligerait ensuite à un envoi forcé, que Pulse refuse. " +
+    "À la place : faites un nouveau commit avec la correction.",
+  envoiProduction:
+    "Pulse demande votre accord : envoyer sur la branche principale met le site en ligne (déploiement continu). " +
+    "Vérifiez que cette version a été testée, ou passez par une demande de fusion (`/pulse:pr`).",
   envoiForce:
     "Pulse refuse l'envoi forcé : il réécrit l'historique du dépôt distant et peut effacer le travail d'une autre personne. " +
     "À la place : `git pull`, résoudre les différences, puis `git push`. En cas de blocage, `/pulse:get-help`.",
@@ -130,6 +136,37 @@ function aDejaUnCommit(cwd, prefixe) {
   }
 }
 
+const sortieGit = (args, cwd) => {
+  try {
+    return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5000 }).trim();
+  } catch (e) {
+    return "";
+  }
+};
+const BRANCHES_PRODUCTION = new Set(["main", "master"]);
+
+// Site publié automatiquement depuis ce dépôt : adresse notée dans CLAUDE.md, ou configuration d'un hébergeur.
+function hebergeurRelie(racine) {
+  if (!racine) return false;
+  try {
+    if (/^- Site en ligne\s*:\s*https?:\/\//m.test(fs.readFileSync(path.join(racine, "CLAUDE.md"), "utf8"))) return true;
+  } catch (e) {
+    // pas de CLAUDE.md
+  }
+  return ["vercel.json", ".vercel/project.json", "netlify.toml", "wrangler.toml", "wrangler.jsonc", "fly.toml", "render.yaml"].some((f) => fs.existsSync(path.join(racine, f)));
+}
+
+// Vrai si l'envoi vise main ou master (branche courante quand aucune destination n'est écrite).
+function versProduction(positions, cwd, prefixe) {
+  const courante = () => sortieGit([...prefixe, "rev-parse", "--abbrev-ref", "HEAD"], cwd);
+  const refspecs = positions.slice(1); // positions[0] : le dépôt distant
+  if (!refspecs.length) return BRANCHES_PRODUCTION.has(courante());
+  return refspecs.some((r) => {
+    const destination = r.replace(/^\+/, "").split(":").pop().replace(/^refs\/heads\//, "");
+    return BRANCHES_PRODUCTION.has(destination) || (destination === "HEAD" && BRANCHES_PRODUCTION.has(courante()));
+  });
+}
+
 // Option longue, éventuellement abrégée comme Git l'accepte (--har pour --hard), d'au moins `min` caractères.
 const longue = (o, nom, min = 4) => {
   const base = o.split("=")[0];
@@ -155,10 +192,13 @@ function reglesGit(c, cwd, constats) {
       if (noVerify) constats.push([REFUS, MESSAGES.noVerify]);
       if (aLongue("--delete") || options.includes("-d") || aLongue("--mirror") || positions.some((p) => p.startsWith(":") && p.length > 1))
         constats.push([ACCORD, MESSAGES.brancheDistante]);
+      if (hebergeurRelie(sortieGit([...prefixe, "rev-parse", "--show-toplevel"], cwd)) && versProduction(positions, cwd, prefixe))
+        constats.push([ACCORD, MESSAGES.envoiProduction]);
       break;
     case "commit":
       if (noVerify || court("n")) constats.push([REFUS, MESSAGES.noVerify]);
       if ((aLongue("--all") || court("a")) && aDejaUnCommit(cwd, prefixe)) constats.push([REFUS, MESSAGES.indexationGlobale]);
+      if (aLongue("--amend", 5) && sortieGit([...prefixe, "branch", "-r", "--contains", "HEAD"], cwd)) constats.push([ACCORD, MESSAGES.amendEnvoye]);
       break;
     case "merge":
     case "rebase":

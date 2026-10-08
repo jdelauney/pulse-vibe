@@ -469,3 +469,38 @@ test("liste blanche : les commandes ordinaires de la méthode passent", () => {
   ])
     passe(c, dir);
 });
+
+// ------------------------------------------------------------ Historique envoyé et branche de production
+
+function depotAvecDistant() {
+  const dir = depot({ avecCommit: true });
+  const distant = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-distant-"));
+  execFileSync("git", ["init", "-q", "--bare", distant]);
+  execFileSync("git", ["remote", "add", "origin", distant], { cwd: dir });
+  execFileSync("git", ["push", "-q", "-u", "origin", "main"], { cwd: dir, stdio: "ignore" });
+  return dir;
+}
+
+test("modifier un commit déjà envoyé : confirmation ; un commit encore local : libre", () => {
+  const dir = depotAvecDistant();
+  const d = confirmation('git commit --amend -m "x"', dir);
+  assert.match(d.raison, /nouveau commit/);
+  fs.writeFileSync(path.join(dir, "b.txt"), "b\n");
+  execFileSync("git", ["add", "b.txt"], { cwd: dir });
+  execFileSync("git", ["commit", "-q", "-m", "local"], { cwd: dir });
+  passe('git commit --amend -m "local, corrigé"', dir);
+});
+
+test("envoi sur la branche principale d'un site publié : confirmation", () => {
+  const dir = depotAvecDistant();
+  passe("git push", dir);
+  fs.writeFileSync(path.join(dir, "CLAUDE.md"), "## Adresses\n\n- Site en ligne : https://exemple.fr\n");
+  confirmation("git push", dir);
+  confirmation("git push origin main", dir);
+  confirmation("git push origin HEAD:main", dir);
+  passe("git push -u origin feat/x", dir);
+  fs.writeFileSync(path.join(dir, "CLAUDE.md"), "## Adresses\n\n- Site en ligne : pas encore en ligne\n");
+  passe("git push", dir);
+  fs.writeFileSync(path.join(dir, "vercel.json"), "{}\n");
+  confirmation("git push", dir);
+});
