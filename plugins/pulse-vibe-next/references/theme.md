@@ -28,7 +28,7 @@ Le thème vit dans **`app/globals.css`**, en variables CSS que shadcn et Tailwin
 3. **Mode sombre** seulement si `docs/design.md` le prévoit : remplir alors le bloc `.dark` et ajouter un sélecteur de thème (`next-themes`) ; sinon, supprimer le bloc `.dark` pour ne pas laisser un mode sombre gris par défaut. Dans `.dark`, chaque rôle garde la teinte et la saturation (chroma) de sa valeur claire ; seule la luminosité change (`regles-ui.md` § 1 du cœur).
 4. **La variable de police s'appelle `--font-sans`** dans `layout.tsx` : `globals.css` l'attend sous ce nom (`@theme inline`), sinon le navigateur retombe sur sa police par défaut.
 5. **Les composants n'écrivent aucune couleur en dur** : uniquement les rôles (`bg-primary`, `text-destructive`, `border-border`). Une nuance qui manque devient une variable de plus dans `:root` et `@theme inline`, nommée par son rôle.
-6. **Liens dans le texte** : `underline underline-offset-3` et la couleur d'accent (`text-primary`), jamais le bleu par défaut.
+6. **Liens dans le texte** : `underline underline-offset-3` et la couleur d'accent (`text-primary`).
 7. **Vérifier à l'œil** : `npm run dev`, puis la page d'accueil et un écran avec boutons, champ, carte, message d'erreur ; sur ordinateur et sur téléphone.
 
 ## Pour les maquettes de `/pulse:ui maquettes`
