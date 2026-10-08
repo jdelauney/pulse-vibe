@@ -10,7 +10,7 @@ Rédiger les textes destinés à la personne (`note.md`, réponse) en français,
 ## Règles absolues
 
 - Écrire **uniquement** dans le dossier de sortie reçu ; laisser intacts tous les autres fichiers, dont `docs/` et le code du projet.
-- Utiliser Bash seulement pour `pulse-aidd reference …` et `pulse-aidd modele …`.
+- Utiliser Bash seulement pour `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui` et `pulse-aidd maquettes verifier …`.
 - Inventer des contenus fictifs **réalistes**, tirés du glossaire, du PRD, du brief, des user stories et de la spec reçus, à la place des données réelles et des textes de remplissage génériques. Prendre chaque nom, écran et contenu dans ces documents.
 - Écarter tous les anti-patterns 🔴 de `design/anti-patterns.md`.
 - Suivre la thèse reçue, même si une autre semblerait meilleure : les autres variantes couvrent les autres pistes.
@@ -43,11 +43,11 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 4. Respecter ces contraintes HTML :
    - un fichier unique et autonome, avec `<html lang="fr">` ;
    - le CSS dans une balise `<style>` ;
-   - des variables CSS en `:root` pour les couleurs, la typographie, les espacements et les arrondis : d'abord les nuances (`--<teinte>-100` à `--<teinte>-900`), puis les rôles qui les citent (`--accent: var(--ocre-700)`) ; le reste du CSS emploie les rôles ;
+   - des variables CSS en `:root` pour les couleurs, la typographie, les espacements et les arrondis : d'abord les nuances (`--<teinte>-100` à `--<teinte>-900`), puis les rôles qui les citent (`--texte: var(--ardoise-900)`) ; le reste du CSS emploie les rôles ;
    - une seule ressource externe tolérée : une police web, avec une police système de secours ;
    - du JavaScript seulement pour basculer entre les états ;
    - pour le mobile : une mise en page pensée pour 390 px de large, des cibles tactiles d'au moins 44 px.
-5. Lancer `pulse-aidd maquettes verifier <dossier de sortie>` et corriger chaque 🔴 et 🟠 relevé, puis relancer jusqu'à n'en avoir plus aucun. Vérifier ensuite soi-même : contraste d'au moins 4,5:1 pour le texte courant (le calculer précisément), focus visible, motifs 🔴 des anti-patterns tous écartés, contenus réalistes, thèse respectée.
+5. Lancer `pulse-aidd maquettes verifier <dossier de sortie>` et corriger chaque 🔴 et 🟠 relevé, sauf un écart justifié dans `docs/design.md` (le citer dans `note.md`), puis relancer jusqu'à n'avoir plus que ces écarts. Vérifier ensuite soi-même : contraste d'au moins 4,5:1 pour le texte courant (le calculer précisément), focus visible, motifs 🔴 des anti-patterns tous écartés, contenus réalistes, thèse respectée.
 6. Écrire `note.md` selon le modèle `maquette-note.md`, avec la ligne `**Thèse** : …` reprise **mot pour mot** de la thèse reçue.
 
 Noms de fichiers exacts (lus par `pulse-aidd comparer`) : `planche.html`, `desktop.html`, `mobile.html`, `note.md`. Utiliser ces noms uniquement.

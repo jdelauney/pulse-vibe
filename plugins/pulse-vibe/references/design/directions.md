@@ -21,7 +21,7 @@ Deux directions venues de deux familles diffèrent déjà sur plusieurs axes. De
 La typographie porte le design, comme dans un magazine.
 - **Registre habituel** : vitrine, ou outil de lecture.
 - **Couleur** : sobre avec une touche ; un fond crème ou blanc cassé, un noir teinté, un accent chaud ou profond.
-- **Typographie** : une police à empattements (avec de petits traits au bout des lettres) pour les titres, en grand ; une police sans empattements pour le texte.
+- **Typographie** : une police à empattements (avec de petits traits au bout des lettres), choisie hors des polices réflexes, pour les titres, en grand ; une police sans empattements pour le texte.
 - **Densité et forme** : confortable ; grilles asymétriques, grandes marges, images pleine largeur.
 - **Mouvement** : rare ; apparitions douces au défilement en vitrine.
 - **Références** : The Atlantic, Medium, le blog de Stripe.
@@ -36,7 +36,7 @@ Styles :
 Un produit professionnel, fiable et efficace.
 - **Registre habituel** : outil, avec une page vitrine.
 - **Couleur** : sobre avec une touche pour le produit ; une couleur affirmée pour la vitrine ; neutres froids.
-- **Typographie** : une grotesque (sans empattements, aux formes simples et régulières) pour tout ; une graisse plus forte pour les titres.
+- **Typographie** : une grotesque (sans empattements, aux formes simples et régulières), choisie hors des polices réflexes, pour tout ; une graisse (épaisseur du trait) plus forte pour les titres.
 - **Densité et forme** : normale ; grille stricte, espacements réguliers, composants prévisibles.
 - **Mouvement** : transitions nettes et courtes.
 - **Références** : Linear, Vercel, Notion.
@@ -84,10 +84,10 @@ Un service proche, accueillant, pour tout le monde.
 - **Couleur** : plusieurs couleurs, ou une couleur affirmée ; tons chauds (ambre, terre cuite, pêche, sauge), neutres chauds.
 - **Typographie** : une police arrondie ou humaniste (aux formes proches de l'écriture) pour les titres ; une sans empattements lisible pour le texte.
 - **Densité et forme** : confortable ; rayons généreux, illustrations ou photos de vraies personnes.
-- **Mouvement** : doux, sans rebond.
+- **Mouvement** : doux, qui s'arrête net sur sa position.
 - **Références** : Headspace, Duolingo, Airbnb.
 
 Styles :
 - **Doux et chaud** : couleurs chaudes et douces, formes arrondies.
 - **Illustré et joueur** : illustrations sur mesure, icônes en couleur, mouvement léger.
-- **Nature** : verts, tons de terre, textures naturelles.
+- **Nature** : tons de terre et verts sourds, choisis d'après la personnalité plutôt que d'après le secteur ; textures naturelles.

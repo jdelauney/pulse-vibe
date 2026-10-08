@@ -167,3 +167,20 @@ test("génération : designer, ui-critic et skill ui emploient directions, extra
   const u = lireP("skills", "ui", "SKILL.md");
   for (const attendu of ["pulse-aidd identite extraire", "design/directions.md", "non trouvée"]) assert.ok(u.includes(attendu), `skill ui : ${attendu}`);
 });
+
+// --- Correctifs de la revue finale du lot 4 ---
+
+test("revue génération : designer autorisé à lancer le contrôle, écarts justifiés permis", () => {
+  const d = lireP("agents", "designer.md");
+  assert.match(d, /Utiliser Bash seulement[^\n]*`pulse-aidd pile contexte ui`[^\n]*`pulse-aidd maquettes verifier …`/);
+  assert.ok(d.includes("écart justifié dans `docs/design.md`"));
+});
+
+test("revue génération : exemples de rôles sans collision avec --accent de shadcn ; catalogue juste", () => {
+  for (const t of [lire("regles-ui.md"), lireP("agents", "designer.md")]) assert.ok(!t.includes("--accent: var("), "exemple neutre");
+  const th = fs.readFileSync(path.join(P, "..", "pulse-vibe-next", "references", "theme.md"), "utf8");
+  for (const attendu of ["--sidebar-ring", "Une couleur de rôle qui manque", "correspond à `--primary`", "`--ring`, `--input`"]) assert.ok(th.includes(attendu), attendu);
+  const dir = lire("directions.md");
+  for (const absent of ["sans rebond", "verts, tons de terre"]) assert.ok(!dir.includes(absent), absent);
+  for (const attendu of ["graisse (", "hors des polices réflexes"]) assert.ok(dir.includes(attendu), attendu);
+});

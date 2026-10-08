@@ -46,8 +46,23 @@ test("extraire : un dossier sans interface donne « non trouvé » pour chaque c
 test("extraire --json : structure lisible ; dossier absent : code 2", () => {
   const d = projet({ "a.css": ".a { border-radius: 4px; }\n" });
   const j = JSON.parse(lancer("extraire", d, "--json").stdout);
-  assert.deepStrictEqual(Object.keys(j).sort(), ["couleurs", "polices", "rayons"]);
+  assert.deepStrictEqual(Object.keys(j).sort(), ["couleurs", "ignores", "polices", "rayons"]);
   assert.strictEqual(j.rayons[0].valeur, "border-radius : 4px");
   assert.deepStrictEqual(j.rayons[0].lieux, ["a.css:1"]);
   assert.strictEqual(lancer("extraire", path.join(d, "absent")).status, 2);
+});
+
+test("revue : variable sur la ligne de :root, classes Tailwind, polices de tailwind.config, fichier trop gros signalé", () => {
+  const d = projet({
+    "app/a.css": ":root { --primary: oklch(0.5 0.1 30); }\n",
+    "app/page.tsx": "export default () => <p className=\"bg-indigo-600 text-[#123456]\">x</p>;\n",
+    "tailwind.config.ts": "export default { theme: { fontFamily: { titre: [\"Fraunces\", \"serif\"] } } };\n",
+    "app/gros.css": "a{}\n".repeat(300000),
+  });
+  const r = lancer("extraire", d);
+  assert.match(r.stdout, /--primary : oklch\(0\.5 0\.1 30\)\s+app\/a\.css:1/);
+  assert.match(r.stdout, /indigo-600 \(classe Tailwind\)\s+app\/page\.tsx:1/);
+  assert.match(r.stdout, /#123456\s+app\/page\.tsx:1/);
+  assert.match(r.stdout, /Fraunces\s+tailwind\.config\.ts:1/);
+  assert.match(r.stdout, /Ignoré \(plus de 1 Mo\) : app\/gros\.css/);
 });

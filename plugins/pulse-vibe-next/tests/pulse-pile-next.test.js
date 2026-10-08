@@ -289,7 +289,7 @@ test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair 
     };
     const fond = L("background");
     assert.ok(rapport(L("input") ** 3, fond ** 3) >= 3, `${bloc} --input`);
-    assert.ok(rapport(melange(L("ring"), 0.5, fond), fond ** 3) >= 3, `${bloc} halo ring-ring/50`);
+    for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(melange(L(ring), 0.5, fond), fond ** 3) >= 3, `${bloc} halo ${ring}/50`);
     if (bloc === ".dark {") assert.ok(rapport(L("foreground") ** 3, melange(L("input"), 0.3, fond)) >= 4.5, "texte sur bg-input/30");
   }
 });

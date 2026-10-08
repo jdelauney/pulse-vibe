@@ -85,11 +85,22 @@ function verifier(html) {
     for (const m of [...texte.matchAll(re)]) texte = masquer(texte, m.index, m.index + m[0].length);
 
   for (const seg of css) {
-    const s = seg.texte;
+    let s = seg.texte;
+    for (const m of [...s.matchAll(/\/\*[\s\S]*?\*\//g)]) s = masquer(s, m.index, m.index + m[0].length);
     const a = (i) => seg.debut + i;
+    // Sélecteur de la règle qui contient la position i (texte entre la fin de la règle précédente et « { »).
+    const selecteur = (i) => {
+      const ouverture = s.lastIndexOf("{", i);
+      return ouverture < 0 ? "" : s.slice(Math.max(s.lastIndexOf("}", ouverture), s.lastIndexOf("{", ouverture - 1)) + 1, ouverture);
+    };
     for (const m of s.matchAll(/background-clip\s*:\s*text/gi)) relever("degrade", a(m.index));
     for (const m of s.matchAll(/backdrop-filter\s*:[^;}]*blur/gi)) relever("verre", a(m.index));
-    for (const m of s.matchAll(/border-left(?:-width)?\s*:\s*(\d+(?:\.\d+)?)px/gi)) if (Number(m[1]) >= 3) relever("lisere", a(m.index));
+    for (const m of s.matchAll(/border-left(?:-width)?\s*:\s*(\d+(?:\.\d+)?)px([^;}]*)/gi)) {
+      // Un liseré neutre, transparent, de citation ou de navigation active reste permis.
+      const neutre = /transparent|var\(--(?:border|input|muted)/i.test(m[2]);
+      const permis = /blockquote|aria-current|\.(?:active|actif)\b/i.test(seg.enLigne ? "" : selecteur(m.index));
+      if (Number(m[1]) >= 3 && !neutre && !permis) relever("lisere", a(m.index));
+    }
     for (const m of s.matchAll(/cubic-bezier\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/gi)) {
       const [y1, y2] = [Number(m[2]), Number(m[4])];
       if (y1 < 0 || y1 > 1 || y2 < 0 || y2 > 1) relever("rebond", a(m.index));
@@ -97,7 +108,9 @@ function verifier(html) {
     for (const m of s.matchAll(COULEUR)) {
       const borne = Math.max(s.lastIndexOf(";", m.index), s.lastIndexOf("{", m.index), s.lastIndexOf("}", m.index));
       const declaration = s.slice(borne + 1, m.index);
-      if ((declaration.includes(":") || seg.enLigne) && !declaration.trim().startsWith("--")) relever("couleur", a(m.index));
+      const suite = s.slice(m.index).search(/[;{}]/);
+      const dansSelecteur = suite >= 0 && s[m.index + suite] === "{";
+      if ((declaration.includes(":") || seg.enLigne) && !dansSelecteur && !declaration.trim().startsWith("--")) relever("couleur", a(m.index));
     }
     for (const m of s.matchAll(VARIABLE_TITRE)) if (contientReflexe(m[2])) relever("police", a(m.index));
     if (!seg.enLigne)

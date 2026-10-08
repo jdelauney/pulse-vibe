@@ -83,3 +83,13 @@ test("ligne de commande : dossier parcouru (comparer.html et alternatives/ ignor
   assert.match(r.stdout, /🔴 v1-sobre\/mobile\.html:2\s+Langue de la page non déclarée/);
   assert.strictEqual(spawnSync(process.execPath, [SCRIPT, "verifier", path.join(d, "absent")]).status, 2);
 });
+
+test("revue : commentaires CSS, pseudo-classes devant un id, liseré neutre ou de citation sans constat", () => {
+  for (const ajout of [
+    "/* Accent : #c47a2c, essai précédent */",
+    ".t:hover #fab { color: var(--texte); }",
+    "blockquote { border-left: 4px solid var(--texte); }",
+    ".carte { border-left: 4px solid transparent; }",
+    "nav [aria-current=\"page\"] { border-left: 3px solid var(--texte); }",
+  ]) assert.deepStrictEqual(ids(page({ style: STYLE_PROPRE + "\n" + ajout })), [], ajout);
+});
