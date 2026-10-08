@@ -1,5 +1,5 @@
 ---
-description: Orchestrer pour le plan d'une user story Implémenter, Relire et Commiter (et Spécifier, Planifier s'il manque), avec des agents indépendants (explorer, test-writer, implementer, test-runner, reviewer, verifier), des points de validation et la mise à jour de la mémoire
+description: Enchaîner tout le travail d'une user story (spirc = Spécifier, Planifier, Implémenter, Relire, Commiter) - des assistants indépendants explorent, codent, relisent et vérifient ; je m'arrête pour votre accord et vous testez chaque tâche ; la spec et le plan s'écrivent d'abord s'ils manquent
 argument-hint: "<US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte pr) Bash(pulse-aidd contexte refine) Bash(pulse-aidd contexte spec) Bash(pulse-aidd contexte spirc) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte us) Bash(pulse-aidd etape *) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd secrets historique *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Bash(git ls-files *) Bash(git grep *) Bash(curl -sI *)
@@ -19,11 +19,11 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ## Lire les arguments
 
-**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme et l'examen se choisissent par une question avant la réalisation (section « Worktree ») ; **avec au moins une option**, ces deux choix non précisés prennent leur valeur par défaut (avec points de validation, examen standard), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
-- `-a` **autonome** : enchaîner les tâches sans s'arrêter : points de validation ✋1, ✋2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles communes § 6). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). S'arrêtent toujours en cours de route : les questions de besoin, de priorité ou de périmètre (dont « Bloqué – décision nécessaire » et les écarts de besoin) et les actions manuelles.
+**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme se choisit par une question avant la réalisation (section « Choisir la façon de travailler ») ; **avec au moins une option**, le rythme non précisé prend sa valeur par défaut (pas à pas, avec points de validation, sans contrôle de sécurité supplémentaire), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
+- `-a` **autonome** : enchaîner les tâches sans s'arrêter : point de validation ✋ 2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles communes § 6). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). S'arrêtent toujours en cours de route : les questions de besoin, de priorité ou de périmètre (dont « Bloqué – décision nécessaire » et les écarts de besoin) et les actions manuelles.
 - `-t` **tests d'abord** : avant le code de chaque tâche, `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord » ci-dessus, § [T]).
-- `-x` **examen renforcé** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
-- `-w` **worktree** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, le worktree est proposé (même avec `-a` : c'est une décision de la personne).
+- `-x` **contrôle de sécurité à chaque tâche** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
+- `-w` **copie à part du projet (worktree)** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Sans `-w`, si une autre session semble travailler sur ce dossier, la copie à part est proposée (même avec `-a` : c'est une décision de la personne).
 
 **US** (premier argument après les options) : l'US dont on réalise le plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), désignée selon les règles « User stories, specs et plans » ci-dessus. Une US qui a une spec sans plan, ou ni spec ni plan : commencer à § S ou § P. Absent ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel, avec en dernière réponse « Spécifier et planifier une autre US » (§ S).
 
@@ -59,7 +59,7 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 - Les sous-agents **travaillent sans les fichiers du plugin** : recopier dans chaque message de délégation les extraits utiles du contexte ci-dessus (sections utiles de `docs/technical.md`, checklist sécurité, conventions de la mémoire).
 - Lancer **en parallèle** (plusieurs appels Agent dans le même message) les sous-agents indépendants.
 - Si un sous-agent n'est pas disponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), et le signaler. Pour la relecture, la faire de préférence dans un contexte distinct de celui qui a écrit le code ; sinon, le dire à la personne.
-- **Travail en cours** : à chaque arrêt pour la personne (✋ 1, ✋ 2, test manuel, test groupé, choix de correction, « Continuer avec T4 ? »), écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; l'effacer (`pulse-aidd travail-fini`) quand la personne a répondu. Le relancement de `/pulse:spirc <US-XXX>` lit ce fichier et reprend à cette étape.
+- **Travail en cours** : à chaque arrêt pour la personne (✋ 2, test manuel, test groupé, choix de correction, « Continuer avec T4 ? »), écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) ; l'effacer (`pulse-aidd travail-fini`) quand la personne a répondu. Le relancement de `/pulse:spirc <US-XXX>` lit ce fichier et reprend à cette étape.
 
 ## Prérequis
 
@@ -90,26 +90,28 @@ Quand la personne choisit « Spécifier et planifier une autre US », que l'US d
 - Si `docs/user-stories.md` manque : appliquer l'étape **us**.
 - Sans US désignée : la demander (les US sans spec, dans l'ordre du parcours, ou une demande décrite), puis appliquer l'étape **spec** avec cette **seule** US. Si sa spec existe déjà sans plan, passer à § P.
 
-✋ **Point de validation 1** (sauf `-a`) : résumé en 5 lignes (US, écrans, informations, hors objectifs, « terminé quand »). Une spec restée en brouillon (des `TBD:` restants) attend les réponses de la personne avant le plan, même avec `-a`. « On passe au plan ? » → « Oui » / « Je veux modifier quelque chose ».
+La validation de la spec par l'étape **spec** vaut accord pour passer au plan : enchaîner sur § P, sans nouvelle question. Une spec restée en brouillon (des `TBD:` restants) attend les réponses de la personne avant le plan, même avec `-a`.
 
-## Worktree
+## Choisir la façon de travailler
 
-Avant la boucle par tâche (une fois la spec et le plan écrits et validés), poser **une seule ronde** (AskUserQuestion) qui regroupe, selon le cas :
-- **Rythme** (seulement si aucune option n'a été passée) : « Avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les étapes) / « Autonome » (j'enchaîne et je corrige seul ; vous testez tout à la fin) ;
-- **Examen** (seulement si aucune option n'a été passée) : « Standard (Recommandé) » (relecture et vérification) / « Renforcé » (plus un audit de sécurité à chaque tâche) ;
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés), poser **une seule ronde** (AskUserQuestion, 4 questions au plus) qui regroupe, selon le cas :
+
+- **Rythme** (seulement si aucune option n'a été passée), question « Comment avancer ? » : « Pas à pas, avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les tâches) / « Pas à pas, avec un contrôle de sécurité à chaque tâche » (en plus, un assistant vérifie la sécurité de chaque tâche) / « Autonome » (j'enchaîne et je corrige seul ; vous testez tout à la fin) ;
 - **Tests** (seulement sans `-t`, même avec d'autres options ou `-a`) : « 2. Choisir au démarrage » de la référence « Tests automatiques » ;
 - **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même en autonome : c'est une décision de la personne) ;
-- **Worktree** : « 1. Faut-il un worktree ? » de la référence worktree.
+- **Copie à part** : « 1. Faut-il un worktree ? » de la référence worktree.
 
-« Autonome » vaut `-a`, « Renforcé » vaut `-x`, « Tests d'abord » vaut `-t`. Les points ✋ 1 et ✋ 2 déjà passés ne se rejouent pas.
+« Autonome » vaut `-a`, « Pas à pas, avec un contrôle de sécurité à chaque tâche » vaut `-x`, « Tests d'abord » vaut `-t` ; autonome avec contrôle de sécurité : options `-ax`. Le point ✋ 2 déjà passé ne se rejoue pas.
 
-Puis, si un worktree est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que le worktree les contienne. Toute la suite (réalisation, relecture, commits) se fait dans le worktree. Sans worktree, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+**Mode découverte** (règles communes § 1) : ronde sautée ; chaque choix prend sa réponse recommandée, annoncée en une phrase.
+
+Puis, si une copie à part est retenue, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que la copie les contienne. Toute la suite (réalisation, relecture, commits) se fait dans la copie. Sans copie à part, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ## [P] Planifier
 
-- Plan à créer : appliquer l'étape **plan** avec l'US de § S. Plan existant : montrer son kanban résumé.
+- Plan à créer : appliquer l'étape **plan** avec l'US de § S. Sa validation vaut ✋ 2 (pas de nouvelle question) et l'étape écrit elle-même la ligne « plan validé » du journal (ne pas l'ajouter une seconde fois). Même avec `-a`, cette validation est posée : le plan fixe le besoin, c'est une décision de la personne (règles communes § 1, « les validations restent »). Plan existant : montrer la liste résumée de ses tâches (titres et statuts).
 
-✋ **Point de validation 2** (sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques, puis reposer la question. Une fois le plan accepté, ajouter au journal du plan la ligne « plan validé » (règles communes § 7 ; en mode autonome : « plan accepté sans validation, mode autonome »).
+✋ **Point de validation 2** (plan existant ou demande libre, sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques, puis reposer la question. Une fois le plan accepté, ajouter au journal du plan la ligne « plan validé » (règles communes § 7 ; en mode autonome : « plan accepté sans validation, mode autonome »).
 
 ## Boucle par tâche
 

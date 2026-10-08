@@ -527,3 +527,14 @@ test("implement : questions de démarrage en clair et mode découverte", () => {
   assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
   assert.doesNotMatch(texte, /Implémentation via sous-agent|Implémentation directe/);
 });
+
+test("spirc : une ronde de départ de 4 questions au plus, sans double validation", () => {
+  const texte = skillTexte("spirc");
+  assert.doesNotMatch(texte, /Point de validation 1|✋ ?1/);
+  assert.match(texte, /« Pas à pas, avec un contrôle de sécurité à chaque tâche »/);
+  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
+  const ronde = texte.split("## Choisir la façon de travailler")[1];
+  assert.ok(ronde, "section « Choisir la façon de travailler »");
+  const questions = ronde.split(/\n## /)[0].split("\n").filter((l) => /^- \*\*[^*]+\*\*/.test(l));
+  assert.ok(questions.length >= 3 && questions.length <= 4, `${questions.length} questions dans la ronde`);
+});
