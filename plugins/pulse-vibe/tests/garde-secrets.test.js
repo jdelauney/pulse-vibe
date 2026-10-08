@@ -418,9 +418,14 @@ test("secret en clair : valeurs hexadécimales et d'une seule casse signalées, 
   for (const c of [
     'const SECRET_HEADER_NAME = "x-webhook-signature-v2"',
     'const TOKEN_URL = "https://oauth2.googleapis.com/token"',
-    'const PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*\d).{8,}$"',
+    'const PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*\\d).{8,}$"',
     'BETTER_AUTH_SECRET="VOTRE_SECRET_ICI_A_REMPLACER"',
     'const TOKEN = "token-de-test-1234567890"',
+    'const TOKEN_COOKIE = "__secure-session-token-v2-prod"',
+    'const TOKEN_KEY = "pulse.auth.token.v2.storage"',
+    'const PASSWORD_MIN_MESSAGE = "password-too-short-error-2"',
+    'const API_SECRET_HEADER = "x-pulse-webhook-signature-2024"',
+    'const SECRET_NAME = "my-app-secret-key-name-1"',
   ])
     assert.deepStrictEqual(trouverSecrets(c), [], c);
 });
