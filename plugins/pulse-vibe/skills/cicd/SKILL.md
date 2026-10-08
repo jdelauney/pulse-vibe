@@ -17,7 +17,7 @@ Argument : `$ARGUMENTS`
 
 ## Objectif
 
-Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle qualité automatique : à chaque envoi et sur chaque demande de fusion, le fournisseur du dépôt vérifie que les secrets restent hors du code, que chaque scénario prévu en test automatique a bien son test, que le code respecte les règles et que l'appli se construit. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. »
+Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle qualité automatique : à chaque envoi et sur chaque demande de fusion, le fournisseur du dépôt vérifie que les secrets restent hors du code, que chaque scénario prévu en test automatique a bien son test, que les dépendances n'ont pas de faille grave connue, que le code respecte les règles et que l'appli se construit. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. »
 
 Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, se met en place avec `/pulse:deploy` : cette commande se limite à la CI.
 
@@ -67,7 +67,7 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
 
 ## 4. Essayer en local d'abord
 
-Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`/pulse:fix` ou `/pulse:auto-fix`), ou s'arrêter et l'expliquer.
+Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, l'audit des dépendances, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`/pulse:fix` ou `/pulse:auto-fix`), ou s'arrêter et l'expliquer.
 
 ## 5. Enregistrer et envoyer
 

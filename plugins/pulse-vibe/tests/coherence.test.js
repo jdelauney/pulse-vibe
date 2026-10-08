@@ -337,3 +337,17 @@ test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes 
   // Plus aucune mention de l'ancienne étendue de la checklist.
   assert.deepStrictEqual(TEXTES.filter(({ texte }) => /S1\s*(à|–|-)\s*S12\b/.test(texte)).map(({ fichier }) => fichier), []);
 });
+
+test("checklist sécurité : sauvegarde dans le modèle technique, audit dans l'essai local, S8 non concerné sans dépendance, S13 relié", () => {
+  assert.match(lire(RACINE, "templates", "technical.md"), /- Sauvegarde et restauration : \{\{/);
+  assert.match(lire(RACINE, "..", "pulse-vibe-next", "references", "technical.md"), /- Sauvegarde et restauration : /);
+  const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
+  assert.match(cicd.split("## 4. Essayer en local")[1].split("\n## ")[0], /audit des dépendances/);
+  assert.match(cicd.split("## Objectif")[1].split("\n## ")[0], /dépendances/);
+  assert.match(lire(RACINE, "README.md"), /\/pulse:cicd[^\n]*dépendances/);
+  assert.match(lire(RACINE, "agents", "security-auditor.md"), /aucun fichier de dépendances[^\n]*S8 vaut « — »/);
+  const code = lire(RACINE, "references", "qualite", "securite-code.md");
+  assert.match(code, /En-têtes de sécurité \| S12 \|/);
+  assert.match(code, /\| S13 \|/);
+  assert.match(code, /\(S13\)/);
+});

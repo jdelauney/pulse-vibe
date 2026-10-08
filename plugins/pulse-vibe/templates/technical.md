@@ -78,6 +78,7 @@ flowchart LR
 - Où sont les données : {{…}}
 - Qui peut lire, créer, modifier, supprimer quoi : {{…}}
 - Où ce contrôle est vérifié côté serveur ou dans la base : {{…}}
+- Sauvegarde et restauration : {{sauvegarde automatique de la base, et comment la restaurer}}
 
 ## Secrets et variables d'environnement
 

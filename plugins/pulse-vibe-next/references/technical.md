@@ -59,6 +59,7 @@ drizzle/                  migrations
 - Où sont les données : base Neon (Postgres), région Francfort (`aws-eu-central-1`).
 - Qui peut lire, créer, modifier, supprimer quoi : {{par table : la personne propriétaire (colonne utilisateurId), un rôle éventuel}}.
 - Où c'est vérifié : côté serveur, dans chaque action (`actionConnectee` puis condition `utilisateurId` dans le repository) et dans chaque lecture (`utilisateurConnecte()` puis filtre `utilisateurId`). `proxy.ts` redirige seulement, par confort.
+- Sauvegarde et restauration : Neon garde l'historique de la base ; restauration à un instant donné depuis la console Neon (Restore), à essayer une fois sur une branche de test.
 
 ## Secrets et variables d'environnement
 

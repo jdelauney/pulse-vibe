@@ -20,6 +20,7 @@ Points S1 à S13 : `references/checklist-securite.md`. Où se trouvent les donn�
 | Point d'entrée qui coûte | envoi d'email, appel à une IA, paiement, SMS | Code serveur uniquement (clé secrète) ; origine vérifiée ; limite de fréquence **fiable** (stockage partagé) ; utilisateur vérifié si possible ; contrainte d'unicité contre les doublons | S2, S10, S11 |
 | Envoi de fichiers | pièce jointe, photo de profil, document | Type et taille contrôlés côté serveur ; stockage privé ; liens temporaires | S7 |
 | Tout le site | toutes les pages | En-têtes de sécurité | S12 |
+| Application avec comptes ou actions qui modifient des données | connexion, actions, webhooks | Origine des requêtes vérifiée (CSRF), cookies de session protégés, session qui expire, signature des webhooks | S13 |
 
 ## 1. Validation serveur par liste blanche (S5)
 
@@ -215,4 +216,5 @@ fonction handleContact(request) :
 - [ ] Formulaire public : champ piège + délai minimal + limite de fréquence ; point d'entrée qui coûte : limite fiable en stockage partagé, contrainte d'unicité contre les doublons (S10).
 - [ ] Codes HTTP corrects, messages génériques, aucun détail interne, aucun journal de donnée personnelle, de jeton ou d'IP (S11).
 - [ ] En-têtes de sécurité en place : voir `/pulse:security entetes` (S12).
+- [ ] Actions qui modifient : origine vérifiée (CSRF), cookies `HttpOnly` `Secure` `SameSite`, session qui expire et se ferme côté serveur, signature des webhooks vérifiée (S13).
 - [ ] Testé « en cambrioleur » : formulaire vide, texte énorme, `<img src=x onerror=alert(1)>`, dix envois rapides, appel direct du point d'entrée sans passer par l'interface, action réservée appelée sans être connecté.
