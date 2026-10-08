@@ -271,3 +271,30 @@ test("contexte ui du pack : les composants réalisent les motifs tels quels", ()
   for (const attendu of ["duration: Infinity", "closeButton: true", "action: {", "sticky top-0", "overflow-y-auto", "useIsMobile", "accessibilityLayer", 'variant="destructive"'])
     assert.ok(t.includes(attendu), attendu);
 });
+
+// Contraste de deux gris OKLCH (chroma 0 : luminance = L³), avec mélange en sRGB pour une opacité.
+const versS = (y) => (y <= 0.0031308 ? 12.92 * y : 1.055 * y ** (1 / 2.4) - 0.055);
+const versY = (s) => (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4);
+const melange = (l, alpha, fond) => versY(alpha * versS(l ** 3) + (1 - alpha) * versS(fond ** 3));
+const rapport = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+
+test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair et en sombre", () => {
+  const css = lire(RACINE, "templates", "squelette", "app", "globals.css");
+  for (const bloc of [":root {", ".dark {"]) {
+    const corps = css.slice(css.indexOf(bloc)).split("}")[0];
+    const L = (nom) => {
+      const m = corps.match(new RegExp(`--${nom}: oklch\\(([\\d.]+) 0 0\\);`));
+      assert.ok(m, `${bloc} --${nom} : gris OKLCH opaque`);
+      return Number(m[1]);
+    };
+    const fond = L("background");
+    assert.ok(rapport(L("input") ** 3, fond ** 3) >= 3, `${bloc} --input`);
+    assert.ok(rapport(melange(L("ring"), 0.5, fond), fond ** 3) >= 3, `${bloc} halo ring-ring/50`);
+    if (bloc === ".dark {") assert.ok(rapport(L("foreground") ** 3, melange(L("input"), 0.3, fond)) >= 4.5, "texte sur bg-input/30");
+  }
+});
+
+test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
+  const t = lire(REF, "theme.md");
+  for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--"]) assert.ok(t.includes(attendu), attendu);
+});
