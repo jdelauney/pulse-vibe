@@ -172,3 +172,12 @@ test("la fiche s'accompagne de l'architecture, pour tech, plan, implement et rev
     assert.match(r.stdout, /----- Architecture du code/, commande);
   }
 });
+
+test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {
+  const texte = lire(REF, "recettes", "fichiers.md");
+  assert.match(texte, /\| `next\.config\.ts` \(modifié\) \|/);
+  assert.ok(texte.includes('"connect-src": ['), "bloc connect-src");
+  assert.ok(texte.includes(".eu.r2.cloudflarestorage.com`]"), "adresse R2 dans la CSP");
+  assert.match(texte, /### \d+\. La CSP autorise R2/);
+  assert.match(texte, /Refused to connect/);
+});
