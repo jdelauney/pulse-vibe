@@ -2,7 +2,7 @@
 
 {{Description en une phrase, complétée après /pulse:brainstorm.}}
 
-> Au premier message d'une nouvelle conversation, commencez par : « Bonjour, Pulse est prêt. Nous sommes le {date_du_jour} ({fuseau_horaire}). ».
+> Au premier message d'une nouvelle conversation, commencez par : « Bonjour, Pulse est prêt. Nous sommes le {date_du_jour} ({fuseau_horaire}). »
 
 ## Le projet
 
