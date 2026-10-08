@@ -2,7 +2,7 @@
 description: Démarrer ou reprendre un projet Pulse - prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle
 argument-hint: "[nom du projet]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte init) Bash(pulse-aidd contexte memory) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape *) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd guide) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd nouveau *) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config user.name) Bash(git config user.email) Bash(git config --global user.name *) Bash(git config --global user.email *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git rm docs/*) Bash(git commit -m *) Bash(git rev-parse *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git remote add origin *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -M main) Bash(gh auth status*) Bash(glab auth status*) Bash(git ls-files *) Bash(git grep *) Bash(curl -sI *)
+allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte init) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd contexte memory) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape *) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd guide) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd nouveau *) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config user.name) Bash(git config user.email) Bash(git config --global user.name *) Bash(git config --global user.email *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git rm docs/*) Bash(git commit -m *) Bash(git rev-parse *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git remote add origin *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -M main) Bash(gh auth status*) Bash(glab auth status*) Bash(git ls-files *) Bash(git grep *) Bash(curl -sI *)
 ---
 
 # /pulse:init – Démarrer et se repérer
@@ -33,32 +33,26 @@ Règles de la boucle :
 
 **Environnement** : `git --version`, `node --version`, `git config user.name`, `git config user.email`.
 
-**Fondations** (dans cet ordre) :
-
-| Fondation | Satisfaite quand | À reprendre quand |
-|---|---|---|
-| Profil | le bloc `<!-- pulse_profil:debut -->` de `CLAUDE.md` indique un niveau | bloc absent, ou niveau « à préciser ». Sans `CLAUDE.md` (projet neuf), les deux questions du profil se posent avec la préparation du projet |
-| Dossier du projet | `CLAUDE.md` mentionne la méthode Pulse | `CLAUDE.md` existe sans Pulse (projet existant) |
-| Mémoire branchée | `aidd_docs/memory/` contient `project.md`, `technical.md`, `glossary.md`, et `CLAUDE.md` contient `<!-- pulse_memoire:debut -->` | dossier présent mais fichier manquant, ou bloc absent |
-| Pile technique | `docs/technical.md` existe **et** le bloc `<!-- pulse_pile:debut -->` de `CLAUDE.md` n'indique plus « Pile non choisie » | marqueurs absents (projet créé avant Pulse 0.3), ou `docs/technical.md` présent alors que le bloc indique encore « Pile non choisie » |
-| Historique Git | `git rev-parse --show-toplevel` est le dossier du projet, avec au moins un commit | dossier inclus dans un autre dépôt Git, ou aucun commit |
-| Secrets protégés | `.claude/settings.json` contient la règle `permissions.deny` « `Read(./.env)` » | règle absente : la proposer une fois (« Protéger les secrets » ci-dessous), en expliquant qu'elle empêche l'IA de lire vos clés ; la suite continue quelle que soit la réponse |
-| Dépôt distant (facultatif) | `git remote -v` n'est pas vide, ou « Adresses » de `CLAUDE.md` indique « Dépôt distant : aucun pour l'instant » | ni l'un ni l'autre : poser la question une fois (« Le dépôt distant et l'envoi du travail », § 1) ; la suite continue quelle que soit la réponse |
+**État du projet** : lancer `pulse-aidd etat`. Il lit les fichiers du projet et Git, et répond en lignes « clé: valeur » : `prochaine` (la commande conseillée), `raison`, `regle`, au besoin `fondation` (ce qui reste à préparer ou à mettre à niveau), `attente`, `ancien` et `dossier` (une décision en attente), `aussi` (les alternatives utiles), `etapes` (l'avancement de la méthode) et `mvp` (tâches terminées des US Indispensables). `/pulse:status` affiche la même décision.
 
 **Projet existant** : du code est présent (fichiers source, manifeste de dépendances, configuration d'outils, dans n'importe quel langage) sans `CLAUDE.md` Pulse. La pile s'observe dans le code, avec `/pulse:tech`, plutôt que de la demander.
-
-**Avancement de la méthode** (cumulatif : un document plus avancé implique les précédents) : `docs/brief.md` → `docs/prd.md` → `docs/technical.md` → `docs/user-stories.md` (le référentiel par epic) et les fichiers d'US de `aidd_docs/tasks/<epic>/` → au moins une spec (`SPEC-US-XXX-<nom>.md`) → au moins un plan (`PLAN-SPEC-US-XXX-<nom>.md` ; tâches `[ ]`, `[~]`, `[x]` par plan, et pour l'ensemble des US Indispensables, le MVP ; une spec sans plan compte comme une étape à faire) → rapports de relecture (`aidd_docs/tasks/<epic>/revues/`) → en ligne (section « Adresses » de `CLAUDE.md`, `git remote -v`, `git status` « ahead »).
-
-**Santé** (seulement si le signal existe) : `docs/securite.md` absent alors que le MVP (toutes les US Indispensables) est terminé → `/pulse:security` ; erreurs signalées par les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) lors de la dernière session → `/pulse:auto-fix`.
 
 ## 2. Décider (la première règle qui s'applique)
 
 1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent, ou en version inférieure à 22.19** (`node --version`) → s'arrêter de la même façon : expliquer que Node.js fait tourner les garde-fous de Pulse (secrets, commandes risquées) et ses outils (vitesse, référencement), donner https://nodejs.org (version LTS, 22.19 ou plus), puis proposer de relancer `/pulse:init` une fois Node.js installé, après avoir **fermé puis relancé Claude Code** (pas seulement le terminal : Claude Code lit la liste des programmes installés à son démarrage).
-2. **Une fondation manquante ou à reprendre**, dans l'ordre du tableau. Proposer les étapes de la méthode une fois toutes les fondations en place. Exception : dans un **projet neuf**, la pile technique peut attendre ; elle se choisit à son tour dans la méthode (`/pulse:tech`, après le PRD). Dans un **projet existant**, elle se documente juste après la mémoire (`/pulse:memory creer`, puis `/pulse:tech`). Le **dépôt distant** est facultatif : la question se pose une seule fois (à la création du projet, ou à la première séance d'un projet Pulse qui n'en a pas), puis la méthode continue quelle que soit la réponse.
-3. **La première étape de la méthode restant à faire** : brief → `/pulse:brainstorm`, avec `/pulse:express` en alternative pour démarrer vite (brief, PRD et US en une conversation) ; PRD → `/pulse:prd` ; choix techniques → `/pulse:tech` ; identité visuelle, **facultative** → si `docs/design.md` et `docs/user-stories.md` n'existent pas encore, proposer `/pulse:ui identite` en précisant qu'elle est facultative (les user stories, specs et plans s'y conformeront), avec « Passer directement aux user stories » en alternative ; user stories → `/pulse:us` ; spec → `/pulse:spec <US-XXX>` (la prochaine US Indispensable du parcours) ; spec sans plan → `/pulse:plan <US-XXX>`.
-4. **Le travail en cours** : modifications d'une tâche `[~]` sans revue → `/pulse:review` ; tâche `[~]` relue → `/pulse:commit` ; tâches restantes → `/pulse:spirc <US-XXX>` (ou `/pulse:implement <US-XXX>`), les US Indispensables d'abord ; plan terminé et US Indispensables restantes → `/pulse:spec <US-XXX suivante du parcours>` ; MVP terminé et pas en ligne, ou commits non envoyés → `/pulse:deploy`.
-5. **Un signal de santé.**
-6. **Tout est à jour** : proposer `/pulse:spec <US-XXX suivante>` (US Essentielles à spécifier), `/pulse:spirc <US-XXX> "une demande"`, `/pulse:cicd` (si un dépôt distant est relié et qu'aucune CI n'existe), `/pulse:security`, `/pulse:memory actualiser`, `/pulse:guide`.
+2. **Sinon, appliquer le verdict de `pulse-aidd etat`** : la ligne `prochaine` est l'action recommandée, avec sa `raison` ; les lignes `aussi` donnent 1 ou 2 alternatives. Avec `ancien: oui`, demander d'abord si la décision en attente est toujours d'actualité ; sinon, l'effacer (`pulse-aidd travail-fini`, lancé dans son `dossier`). Quand une ligne `fondation` est présente, l'action se fait ici même (§ 4) :
+
+   | `fondation` | Action dans cette commande |
+   |---|---|
+   | `dossier` | « Préparer un nouveau projet » (dossier vide ou presque) ou « Reprendre un projet existant » (du code est présent) |
+   | `documents` | « Mettre à niveau un projet Pulse plus ancien » : documents à l'ancien format |
+   | `profil` | « Mettre à niveau un projet Pulse plus ancien » : les deux questions du profil |
+   | `memoire` | `pulse-aidd etape memory` (action `creer`) |
+   | `git` | « Préparer un nouveau projet », point 4 (un historique propre au projet) |
+   | `pile` | `pulse-aidd etape tech` |
+
+   Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Protéger les secrets » (§ 4, point 5) ou « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail ». La suite continue quelle que soit la réponse.
+3. **Après la mise en ligne** (`regle` R21, R22 ou R23) : proposer aussi `/pulse:status`, qui regarde la CI, le référencement et la Search Console.
 
 ## 3. Montrer l'écran
 
@@ -74,7 +68,7 @@ Votre projet :
   Git          ✅ 12 versions enregistrées    (ou ⚠️ <cause> · ❌)
   En ligne     ✅ dépôt relié · github.com/…   (ou ⬜ aucun pour l'instant · ❓ à décider)
 
-  Méthode : ✅ brief · ✅ PRD · [choix techniques] · ⬜ design (facultatif) · ⬜ US · ⬜ spec · ⬜ plan · ⬜ réalisation · ⬜ en ligne
+  Méthode : ✅ brief · ✅ PRD · [choix techniques] · ⬜ design (facultatif) · ⬜ US · ⬜ spec · ⬜ plan · ⬜ réalisation · ⬜ en ligne   (d'après la ligne etapes)
 
 ➡️ Prochaine étape : <action> — <pourquoi, en une phrase>
 ```
@@ -82,14 +76,14 @@ Votre projet :
 - `✅` fait · `⚠️` présent mais à reprendre (toujours avec sa cause) · `❌` manquant · l'étape en cours entre crochets.
 - Lignes courtes. La ligne « Prochaine étape » termine l'écran.
 
-Puis demander (AskUserQuestion) : l'action recommandée en premier avec « (Recommandé) », 1 ou 2 alternatives utiles, et « M'expliquer la méthode ». La personne peut aussi répondre librement.
+Puis demander (AskUserQuestion) : l'action recommandée (`prochaine`) en premier avec « (Recommandé) », 1 ou 2 alternatives tirées des lignes `aussi`, et « M'expliquer la méthode ». La personne peut aussi répondre librement.
 
 ## 4. Agir sur la réponse
 
 ### Préparer un nouveau projet (dossier vide ou presque)
 
 1. **Git sans nom ou email** : les demander (nom affiché dans l'historique, email, qui peut être celui du compte GitHub), puis `git config --global user.name "…"` et `git config --global user.email "…"`. Expliquer : chaque version enregistrée porte le nom de son auteur.
-2. **Questions** (une ronde AskUserQuestion) : le **nom** (si l'argument est vide) ; une **description** en une phrase (facultative) ; votre **niveau** en programmation : « Jamais programmé » / « Quelques notions » / « Développeur » ; la **quantité d'explications** voulue : « Normales (Recommandé) » / « L'essentiel » / « Détaillées ». Réserver les questions techniques à plus tard : la pile se choisit avec `/pulse:tech`, une fois le besoin compris.
+2. **Questions** : d'abord le **nom** (si l'argument est vide) et une **description** en une phrase (facultative), demandés en texte dans la conversation (réponse libre) ; puis, en une ronde AskUserQuestion, votre **niveau** en programmation : « Jamais programmé » / « Quelques notions » / « Développeur », et la **quantité d'explications** voulue : « Normales (Recommandé) » / « L'essentiel » / « Détaillées ». Réserver les questions techniques à plus tard : la pile se choisit avec `/pulse:tech`, une fois le besoin compris.
 3. **Créer** : lancer `pulse-aidd nouveau "<nom>" --ici --description "<description>" --oui`. Le script crée **uniquement les fichiers absents** (CLAUDE.md complet, avec un bloc Pile technique qui indique « Pile non choisie », `.gitignore`, `.env.example`, README, dossiers `docs/` et `aidd_docs/`, mémoire branchée) et fait le premier enregistrement Git. Il n'installe aucune technologie. Puis écrire les deux réponses du profil dans le bloc `<!-- pulse_profil:debut -->` de `CLAUDE.md` (lignes « Niveau » et « Explications »).
 4. **Lire sa sortie** et la traduire simplement. Si elle indique que le dossier fait partie d'un autre dépôt Git : expliquer le risque (les fichiers du projet finiraient dans ce dépôt) et proposer « Créer un historique propre à ce projet (Recommandé) » → `git init -b main`, puis `git add -A -- .` et `git commit -m "chore: initialisation du projet avec Pulse"`.
    Puis lancer `pulse-aidd installer-hook` : un contrôle des secrets s'exécute avant chaque commit, même fait hors de Claude Code ; le dire en une phrase.
@@ -123,6 +117,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 - Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
 - Bloc `pulse_profil` absent de `CLAUDE.md`, ou « Niveau : à préciser » → poser les deux questions du profil (niveau, quantité d'explications) en une ronde, puis ajouter ou remplir le bloc dans la section « Communication » (modèle `CLAUDE.md`).
+- `CLAUDE.md` contient l'ancien accueil « AI-Driven », la ligne « Commit et envoi vers le dépôt distant : uniquement sur demande » ou « `aidd_docs/tasks/` : traces de travail par session » → remplacer ces lignes par celles du modèle `CLAUDE.md` (accueil, « Commit et envoi », `aidd_docs/tasks/`), en le disant en une phrase.
 - `.gitignore` sans la ligne `aidd_docs/tasks/in-progress.md` → l'ajouter (avec les deux lignes du modèle `.gitignore`), en expliquant en une phrase : ce fichier note une décision en attente, propre à cette machine.
 - `scripts/verifier.js` présent sans le contrôle des scénarios (le mot « Scénarios » n'y figure pas) ou sans le contrôle avant commit (`--index` n'y figure pas) → montrer la différence (`pulse-aidd modele verifier.js` comparé à la copie du projet), demander l'accord de la personne, puis le mettre à jour avec `pulse-aidd installer-ci --forcer` (puis supprimer `scripts/ci-verifications.exemple.yml`, inutile), en expliquant en une phrase : le contrôle avant mise en ligne vérifie maintenant que chaque scénario prévu en test automatique a son test.
 - Aucun contrôle avant commit (`.git/hooks/pre-commit` absent, ou sans « pulse-aidd: contrôle des secrets ») → `pulse-aidd installer-hook`, en expliquant en une phrase que les commits faits hors de Claude Code sont désormais contrôlés eux aussi.

@@ -448,3 +448,18 @@ test("README : section « Mettre à jour » mise en avant, avec les commandes ex
   }
   if (fs.existsSync(path.join(DEPOT, "README.md"))) assert.match(lire(DEPOT, "README.md").split("\n## Installation\n")[0], /\[Mettre à jour\]\(#mettre-à-jour\)/);
 });
+
+// ---------------------------------------------------------------- Parcours et langage
+
+const unix = (f) => f.split(path.sep).join("/");
+const skillTexte = (nom) => lire(RACINE, "skills", nom, "SKILL.md");
+
+test("init et status appliquent le verdict de pulse-aidd etat, sans règles de décision recopiées", () => {
+  for (const skill of ["init", "status"]) {
+    const texte = skillTexte(skill);
+    assert.match(texte, /`pulse-aidd etat`/, `${skill} lance pulse-aidd etat`);
+    assert.doesNotMatch(texte, /spec sans plan → `\/pulse:plan/i, `${skill} : règle de décision recopiée`);
+  }
+  assert.doesNotMatch(skillTexte("status"), /Sa seule modification/);
+  assert.doesNotMatch(skillTexte("init"), /\*\*Questions\*\* \(une ronde AskUserQuestion\) : le \*\*nom\*\*/, "nom et description : réponse libre");
+});
