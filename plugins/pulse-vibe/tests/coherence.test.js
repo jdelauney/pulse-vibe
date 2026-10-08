@@ -168,7 +168,7 @@ test("chaque outil de bin/ a son relais .cmd pour PowerShell et cmd", () => {
     for (const f of lister(bin).filter((x) => !x.includes("."))) {
       const relais = path.join(bin, `${f}.cmd`);
       assert.ok(fs.existsSync(relais), `${path.relative(DEPOT, relais)} manquant`);
-      assert.match(lire(relais), new RegExp(`"%~dp0${f}" %\*`), `${f}.cmd relaie vers ${f}`);
+      assert.match(lire(relais), new RegExp(`"%~dp0${f}" %\\*`), `${f}.cmd relaie vers ${f}`);
     }
   }
 });
