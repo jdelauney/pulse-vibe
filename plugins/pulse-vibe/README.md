@@ -124,7 +124,23 @@ claude plugin install pulse@pulseia
 
 Pour tester en local sans GitHub : `claude plugin marketplace add ./chemin/vers/le-depot` (le dossier qui contient `.claude-plugin/marketplace.json`), ou `claude --plugin-dir ./chemin/vers/le-depot/plugins` pour une seule session.
 
-Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin update pulse@pulseia`, et redémarrer Claude Code.
+## Mettre à jour
+
+Les corrections de Pulse arrivent chez vous seulement après une mise à jour. Faites-la au début de chaque semaine de travail, et dès qu'un message de Pulse semble dépassé.
+
+Dans un terminal :
+
+```bash
+claude plugin marketplace update pulseia
+claude plugin update pulse@pulseia
+claude plugin update pulse-next@pulseia   # seulement avec la pile Next.js
+```
+
+Puis fermez et relancez Claude Code : la nouvelle version se charge au démarrage.
+
+Pour ne plus y penser : dans Claude Code, tapez `/plugin`, ouvrez **Marketplaces**, choisissez `pulseia`, puis **Enable auto-update**.
+
+Installé avec les anciens noms (`pulse-vibe@pulseia`, `pulse-vibe-next@pulseia`) : la mise à jour passe aux nouveaux noms toute seule. Si Claude Code signale ensuite « not cached », tapez une fois `/plugin install pulse@pulseia` (et `/plugin install pulse-next@pulseia` si vous aviez la pile Next.js), puis relancez Claude Code.
 
 ## Documentation
 

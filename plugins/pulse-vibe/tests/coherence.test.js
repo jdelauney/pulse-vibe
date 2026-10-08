@@ -380,3 +380,16 @@ test("catalogue : chaque entrée porte le nom de son manifeste, anciens noms red
   const connu = (nom) => noms.includes(nom) || /^pulse-(\$id|%s)$/.test(nom);
   assert.deepStrictEqual(cites.filter(({ nom }) => !connu(nom)).map(({ fichier, nom }) => `${fichier} : ${nom}@pulseia`), []);
 });
+
+test("README : section « Mettre à jour » mise en avant, avec les commandes exactes", () => {
+  const readmes = [path.join(DEPOT, "README.md"), path.join(RACINE, "README.md")].filter((f) => fs.existsSync(f));
+  assert.ok(readmes.length >= 1);
+  for (const readme of readmes) {
+    const nom = path.relative(DEPOT, readme);
+    const section = (lire(readme).split("\n## Mettre à jour\n")[1] || "").split("\n## ")[0];
+    assert.ok(section, `${nom} : section « Mettre à jour » absente`);
+    for (const attendu of ["claude plugin marketplace update pulseia", "claude plugin update pulse@pulseia", "claude plugin update pulse-next@pulseia", "relancez Claude Code", "Enable auto-update", "/plugin install pulse@pulseia"])
+      assert.ok(section.includes(attendu), `${nom} : « ${attendu} » absent de « Mettre à jour »`);
+  }
+  if (fs.existsSync(path.join(DEPOT, "README.md"))) assert.match(lire(DEPOT, "README.md").split("\n## Installation\n")[0], /\[Mettre à jour\]\(#mettre-à-jour\)/);
+});

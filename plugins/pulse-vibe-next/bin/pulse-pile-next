@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# pulse-pile-next – outil du pack de pile Next.js de Pulse (plugin pulse-vibe-next).
+# pulse-pile-next – outil du pack de pile Next.js de Pulse (plugin pulse-next).
 # Claude Code place le dossier bin/ du plugin dans le PATH. Le cœur Pulse l'appelle :
 #   - par pulse-aidd contexte <commande>, quand docs/technical.md déclare « **Pack de pile Pulse** : next » ;
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
