@@ -90,3 +90,13 @@ test("nom de paquet : minuscules, sans accent, tirets", () => {
   assert.strictEqual(nomDePaquet("Café Équipe 2"), "cafe-equipe-2");
   assert.strictEqual(nomDePaquet("!!!"), "mon-projet");
 });
+
+test("refuse un dossier qui contient déjà src/app/ et n'écrit rien", () => {
+  const d = dossierVide();
+  fs.mkdirSync(path.join(d, "src", "app"), { recursive: true });
+  const r = lancer("--nom", "Essai", "--dossier", d);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /refactoring ou alignement sur les règles du pack/);
+  assert.deepStrictEqual(fs.readdirSync(d), ["src"]);
+  assert.deepStrictEqual(fs.readdirSync(path.join(d, "src")), ["app"]);
+});

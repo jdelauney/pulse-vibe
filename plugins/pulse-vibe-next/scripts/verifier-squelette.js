@@ -87,6 +87,45 @@ function lancer(commande, cwd, env = {}) {
   }
 }
 
+/**
+ * Garde des règles de couches de biome.json : une importation interdite par dossier, plus un fichier
+ * de réexportation, écrits dans le dossier temporaire ; Biome doit signaler chacun.
+ */
+function controlerReglesDeCouches(dossier) {
+  const f = (chemin, contenu) => ({ chemin, contenu });
+  const fixtures = [
+    f("src/core/verification/essai.rules.ts", 'import { cache } from "react";\n\nexport const essai = cache;\n'),
+    f("src/db/verification/essai.repository.ts", 'import { essai } from "@src/adapters/verification/essai.adapter";\n\nexport const e = essai;\n'),
+    f("src/adapters/verification/essai.adapter.ts", 'import { e } from "@src/db/verification/essai.repository";\n\nexport const essai = e;\n'),
+    f("src/adapters/auth/essai-auth.ts", 'import { x } from "@src/features/verification/essai";\n\nexport const y = x;\n'),
+    f("src/features/verification/components/containers/essai.container.tsx", 'import { db } from "@src/db/verification/essai.repository";\n\nexport const c = db;\n'),
+    f("src/features/verification/components/sections/essai.tsx", 'import { c } from "../containers/essai.container";\n\nexport const s = c;\n'),
+    f("src/features/verification/components/composites/essai.tsx", 'import { s } from "../sections/essai";\n\nexport const c = s;\n'),
+    f("src/features/verification/components/elements/essai.tsx", 'import { c } from "../composites/essai";\n\nexport const e = c;\n'),
+    f("src/components/shared/elements/essai.tsx", 'import { c } from "../composites/essai";\n\nexport const e = c;\n'),
+    f("src/lib/verification/index.ts", 'export * from "./essai";\n'),
+  ];
+  console.log("\n▶ garde des règles de couches (Biome)");
+  const chemins = [];
+  for (const { chemin, contenu } of fixtures) {
+    const complet = path.join(dossier, ...chemin.split("/"));
+    fs.mkdirSync(path.dirname(complet), { recursive: true });
+    fs.writeFileSync(complet, contenu);
+    chemins.push(chemin);
+  }
+  const r = spawnSync(`npx biome lint --max-diagnostics=200 ${chemins.join(" ")}`, { cwd: dossier, shell: true, encoding: "utf8" });
+  const sortie = `${r.stdout || ""}${r.stderr || ""}`.replace(/\\/g, "/");
+  const nonSignales = chemins.filter((c) => !sortie.includes(c));
+  for (const c of chemins) fs.rmSync(path.join(dossier, ...c.split("/")), { force: true });
+  for (const d of ["src/core/verification", "src/lib/verification", "src/adapters/verification", "src/features/verification"])
+    fs.rmSync(path.join(dossier, ...d.split("/")), { recursive: true, force: true });
+  if (nonSignales.length) {
+    console.error(`\n❌ Les règles de couches de biome.json ne signalent pas : ${nonSignales.join(", ")}`);
+    process.exit(1);
+  }
+  console.log(`   ${chemins.length} importations interdites signalées.`);
+}
+
 function derniereVersion(paquet) {
   const r = spawnSync(`npm view ${paquet} version`, { shell: true, encoding: "utf8" });
   const v = (r.stdout || "").trim();
@@ -134,6 +173,7 @@ async function principal() {
   lancer("npm install --no-audit --no-fund", dossier);
   lancer("npm run check", dossier);
   lancer("npm run typecheck", dossier);
+  controlerReglesDeCouches(dossier);
   lancer("npm test", dossier);
   // drizzle-kit (et son esbuild) doit fonctionner après une installation neuve ; generate ne se connecte pas.
   // Le squelette n'a pas encore de table : une table d'essai, dans le dossier temporaire seulement,

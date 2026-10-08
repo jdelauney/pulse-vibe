@@ -31,7 +31,7 @@ src/
   features/<domaine>/     actions/, queries/, schemas/, components/{containers,sections,composites,elements}/, hooks/
   adapters/<service>/     services externes (auth, e-mail, fichiers, paiement)
   components/             ui/ (shadcn), shared/
-  lib/                    safe-action, logger, errors/, seo/, helpers/
+  lib/                    utils, auth-client, safe-action, logger, errors/, seo/, helpers/
   config/                 env, site, projet
 tests/helpers/            aides de test, base de test
 e2e/                      tests de bout en bout (Playwright)
@@ -40,7 +40,7 @@ drizzle/                  migrations
 
 - Sans fichier de réexportation (`index.ts`) : on importe directement le fichier visé ; une feature importe d'une autre seulement `actions/`, `queries/` et `components/`.
 - 20 fichiers au plus par dossier (hors `src/components/ui/`) ; tests unitaires et d'intégration dans `__tests__/`. Vérifié par `npm test` (`tests/structure.test.ts`) et `npm run check` (Biome).
-- Suffixes : `.entity`, `.rules`, `.errors`, `.port`, `.use-case`, `.table`, `.repository`, `.adapter`, `.action`, `.query`, `.schema`, `.webhook`, `.container`, `.test` (Vitest), `.spec` (Playwright).
+- Suffixes : `.entity`, `.rules`, `.errors`, `.port`, `.use-case`, `.table`, `.repository`, `.adapter`, `.action`, `.query`, `.schema`, `.webhook`, `.container`, `.store` (état global côté navigateur, dans `src/stores/`), `.test` (Vitest), `.spec` (Playwright).
 
 ## Commandes du projet
 

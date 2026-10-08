@@ -37,7 +37,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 .claude-plugin/plugin.json   manifeste ; dépend de pulse-vibe
 bin/pulse-pile-next          info | contexte <commande> | reference <chemin> | recettes | recette <nom> | squelette | seo-code | secrets | hebergeur
 references/                  fiche.md (règles de la pile), technical.md (valeurs de docs/technical.md),
-                             theme.md (de docs/design.md à shadcn), contexte/ (consignes par commande), recettes/
+                             theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), contexte/ (consignes par commande), recettes/
 templates/squelette/         le projet de départ
 scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi, mise à jour des versions),
                              seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles et tests réels des secrets),

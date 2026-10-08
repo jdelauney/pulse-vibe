@@ -60,6 +60,7 @@ drizzle/                          migrations
 | `src/core/` | `src/core/` seulement | Next, React, Drizzle, `server-only`, `db/`, `adapters/`, `features/`, `lib/`, `config/`, `app/` |
 | `src/db/` | `src/core/` (ports, types), `drizzle-orm`, `src/config/`, `src/lib/` | Next, `features/`, `adapters/`, `app/` |
 | `src/adapters/` | `src/core/` (ports, types), `src/config/`, `src/lib/`, SDK du service | `features/`, `db/`, `app/` |
+| `src/lib/` | `src/config/`, `src/lib/`, `src/adapters/` (ex. `safe-action.ts` lit la session par `src/adapters/auth/`), bibliothèques | `features/`, `app/`, la logique métier de `core/` (ses types restent permis) |
 | `src/features/` | `core/`, `db/`, `adapters/`, `components/`, `lib/`, `config/`, `hooks/`, `stores/` | `app/` |
 | `app/` | tout : c'est l'assemblage | — |
 
@@ -112,7 +113,7 @@ page (app/) → <Suspense> → container (serveur) → queries/<lecture>.query.t
 
 ## 7. Webhooks
 
-`app/api/<service>/route.ts` → `features/<d>/webhooks/<x>.webhook.ts` (vérifie la signature avec l'adapter du service) → use-case. Une erreur technique se renvoie avec `reponseErreur(erreur, contexte)` de `src/lib/errors/reponse-erreur.ts`. Une adresse appelée par le navigateur (ex. une balise de mesure) suit le même chemin ; la vérification de l'origine (`Origin`) remplace la signature.
+`app/api/<service>/route.ts` → `features/<d>/webhooks/<x>.webhook.ts` (vérifie la signature avec l'adapter du service) → use-case. Une erreur technique se renvoie avec `reponseErreur(erreur, contexte)` de `src/lib/errors/reponse-erreur.ts`. Une adresse appelée par le navigateur (ex. une balise de mesure) suit le même chemin ; la vérification de l'origine (`Origin`) filtre les requêtes venues d'autres sites ; elle n'authentifie pas l'expéditeur comme le fait une signature.
 
 ## 8. Erreurs
 
@@ -132,6 +133,7 @@ Kebab-case, `[nom].[suffixe].[extension]`, un fichier par action et par query.
 |---|---|
 | `.entity`, `.rules`, `.errors`, `.port`, `.use-case` | `src/core/` |
 | `.table`, `.repository` | `src/db/` |
+| `.store` (état global côté navigateur) | `src/stores/` |
 | `.adapter` | `src/adapters/` |
 | `.action`, `.query`, `.schema`, `.webhook`, `.container` | `src/features/` |
 | `.test` (dans `__tests__/`), `.spec` (dans `e2e/`) | tests |
