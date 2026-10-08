@@ -383,12 +383,12 @@ case "$1" in
       exit 1
     fi
     if [ -f "$racine/scripts/verifier.js" ] && ! grep -q -e "--index" "$racine/scripts/verifier.js"; then
-      echo "scripts/verifier.js est une ancienne version, sans contrôle avant commit : mettez-le à jour d'abord (pulse-aidd installer-ci, ou --forcer après avoir comparé avec « pulse-aidd modele verifier.js »), puis relancez pulse-aidd installer-hook."
+      echo "scripts/verifier.js est une ancienne version, sans contrôle avant commit : mettez-le à jour d'abord : comparez-le avec « pulse-aidd modele verifier.js », puis lancez « pulse-aidd installer-ci --forcer », puis relancez pulse-aidd installer-hook."
       exit 1
     fi
     [ -f "$racine/scripts/verifier.js" ] || { mkdir -p "$racine/scripts"; cp "$TPL/verifier.js" "$racine/scripts/verifier.js"; }
     mkdir -p "$(dirname "$crochet")"
-    printf '#!/bin/sh\n# pulse-aidd: contrôle des secrets avant chaque commit (installé par /pulse:cicd ou /pulse:init).\nexec node scripts/verifier.js --index\n' > "$crochet"
+    printf '#!/bin/sh\n# pulse-aidd: contrôle des secrets avant chaque commit (installé par /pulse:cicd ou /pulse:init).\n[ -f scripts/verifier.js ] || exit 0\nexec node scripts/verifier.js --index\n' > "$crochet"
     chmod +x "$crochet"
     echo "Installé : contrôle des secrets avant chaque commit, y compris ceux faits hors de Claude Code ($crochet)." ;;
   *)

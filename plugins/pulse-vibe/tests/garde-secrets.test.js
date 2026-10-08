@@ -386,3 +386,18 @@ test("verifier.js --index : contrôle le contenu indexé seulement", () => {
   assert.strictEqual(r2.status, 1);
   assert.match(r2.stderr, /Commit annulé/);
 });
+
+test("secret en clair : constantes ordinaires (URL, regex, nom d'en-tête) non signalées, vrais secrets signalés", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  for (const c of [
+    'const TOKEN_URL = "https://oauth2.googleapis.com/token"',
+    'GOOGLE_TOKEN_ENDPOINT: "https://oauth2.googleapis.com/token2"',
+    'const PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*\\d).{8,}$"',
+    'const SECRET_HEADER_NAME = "x-webhook-signature-v2"',
+    'API_KEY="VOTRE_CLE_ICI_1234567"',
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), [], c);
+  assert.deepStrictEqual(trouverSecrets("postgres" + "://admin:mypassword123@db.prod.internal.io"), ["mot de passe dans une adresse de base de données"]);
+  const alea = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd";
+  assert.deepStrictEqual(trouverSecrets(`BETTER_AUTH_SECRET='${alea}'`), ["secret en clair"]);
+});

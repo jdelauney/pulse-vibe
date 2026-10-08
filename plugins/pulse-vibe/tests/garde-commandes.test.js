@@ -504,3 +504,22 @@ test("envoi sur la branche principale d'un site publié : confirmation", () => {
   fs.writeFileSync(path.join(dir, "vercel.json"), "{}\n");
   confirmation("git push", dir);
 });
+
+test("Git Bash : disque entier refusé (/c, /mnt/c), sous-dossier confirmé", () => {
+  for (const c of ["rm -rf /c", "rm -rf /c/", "rm -rf /c/*", "rm -rf /mnt/d", "rm -rf /mnt/c/"]) refus(c);
+  confirmation("rm -rf /c/Users/x/projet/src");
+  confirmation('cmd //c "rd /s /q src"');
+});
+
+test("PowerShell : suppression dans un bloc { } après un tube : confirmation", () => {
+  confirmationPs("Get-ChildItem dist | ForEach-Object { Remove-Item $_.FullName -Recurse -Force }");
+  passePs("$h = @{ a = 1 }");
+});
+
+test("site en ligne noté avec <…>, ** ou accents graves : confirmation avant l'envoi", () => {
+  for (const note of ["<https://exemple.fr>", "**https://exemple.fr**", "`https://exemple.fr`"]) {
+    const dir = depotAvecDistant();
+    fs.writeFileSync(path.join(dir, "CLAUDE.md"), `## Adresses\n\n- Site en ligne : ${note}\n`);
+    confirmation("git push", dir);
+  }
+});

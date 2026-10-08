@@ -376,3 +376,17 @@ test("pulse-aidd.cmd fonctionne depuis cmd.exe (Windows)", { skip: process.platf
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.length > 0);
 });
+
+test("installer-hook : sans scripts/verifier.js (nouveau worktree), le commit n'est pas bloqué", () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hook-absent-"));
+  const git = (...a) => spawnSync("git", a, { cwd: d, encoding: "utf8" });
+  git("init", "-q", "-b", "main");
+  git("config", "user.email", "t@example.com");
+  git("config", "user.name", "T");
+  assert.strictEqual(dans(d, "installer-hook").status, 0);
+  fs.rmSync(path.join(d, "scripts", "verifier.js"));
+  fs.writeFileSync(path.join(d, "a.txt"), "bonjour\n");
+  git("add", "a.txt");
+  const r = git("commit", "-q", "-m", "x");
+  assert.strictEqual(r.status, 0, r.stderr + r.stdout);
+});

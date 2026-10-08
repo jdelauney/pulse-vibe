@@ -153,7 +153,7 @@ const BRANCHES_PRODUCTION = new Set(["main", "master"]);
 function hebergeurRelie(racine) {
   if (!racine) return false;
   try {
-    if (/^- Site en ligne\s*:\s*https?:\/\//m.test(fs.readFileSync(path.join(racine, "CLAUDE.md"), "utf8"))) return true;
+    if (/^- Site en ligne\s*:\s*[<*`]*https?:\/\//m.test(fs.readFileSync(path.join(racine, "CLAUDE.md"), "utf8"))) return true;
   } catch (e) {
     // pas de CLAUDE.md
   }
@@ -307,7 +307,7 @@ function configEcrit(reste) {
   return !(cle === "user.name" || cle === "user.email");
 }
 
-const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME|\$\{HOME\}|\$HOME\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\\/]?|[A-Za-z]:[\\/]\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
+const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME|\$\{HOME\}|\$HOME\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\\/]?|[A-Za-z]:[\\/]\*|\/[a-zA-Z]\/?|\/[a-zA-Z]\/\*|\/mnt\/[a-zA-Z]\/?|\/mnt\/[a-zA-Z]\/\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
 const COMMANDES_SUPPRESSION = new Set(["rm", "remove-item", "ri", "del", "erase", "rd", "rmdir", "unlink"]);
 const estRecursif = (a) => a === "--recursive" || (/^-[a-zA-Z]{1,4}$/.test(a) && /[rR]/.test(a)) || /^-r(e(c(u(r(s(e)?)?)?)?)?)?$/i.test(a) || /^\/s$/i.test(a);
 
@@ -318,7 +318,7 @@ function suppressionRecursive(cibles, constats) {
 }
 
 function reglesSuppression(c, constats) {
-  const cibles = c.args.filter((a) => !estOption(a) && a !== "--" && !/^\/[a-zA-Z]$/.test(a));
+  const cibles = c.args.filter((a) => !estOption(a) && a !== "--" && !(c.dialecte !== "bash" && ["del", "erase", "rd", "rmdir"].includes(c.cmd) && /^\/[a-zA-Z]$/.test(a)));
   const recursif = c.args.some(estRecursif);
   const motif = cibles.some((a) => /[*?]/.test(a));
   if ((recursif || motif) && cibles.some((a) => CIBLES_TOTALES.test(a))) constats.push([REFUS, MESSAGES.suppressionTotale]);

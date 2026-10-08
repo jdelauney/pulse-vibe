@@ -174,7 +174,7 @@ function decouper(script, dialecte = "bash") {
     } else if (c === " " || c === "\t" || c === "\r") {
       finirMot();
       i++;
-    } else if (c === ";" || c === "&" || c === "|" || c === "(" || c === ")") {
+    } else if (c === ";" || c === "&" || c === "|" || c === "(" || c === ")" || (dialecte === "powershell" && (c === "{" || c === "}") && !(mot || "").endsWith("$"))) {
       if (c === "&" && script[i + 1] === ">") {
         finirMot();
         redirection = "sortie";
