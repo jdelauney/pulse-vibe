@@ -235,7 +235,7 @@ function configEcrit(reste) {
   return !(cle === "user.name" || cle === "user.email");
 }
 
-const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME|\$\{HOME\}|\$HOME\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\/]?|[A-Za-z]:[\/]\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
+const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME|\$\{HOME\}|\$HOME\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\\/]?|[A-Za-z]:[\\/]\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
 const COMMANDES_SUPPRESSION = new Set(["rm", "remove-item", "ri", "del", "erase", "rd", "rmdir", "unlink"]);
 const estRecursif = (a) => a === "--recursive" || (/^-[a-zA-Z]{1,4}$/.test(a) && /[rR]/.test(a)) || /^-r(e(c(u(r(s(e)?)?)?)?)?)?$/i.test(a) || /^\/s$/i.test(a);
 

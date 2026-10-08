@@ -348,7 +348,8 @@ test("suppression de tout le disque, du dossier personnel ou du projet : refus",
     const d = refus(c);
     assert.match(d.raison, /nommez précisément/);
   }
-  refusPs("Remove-Item C:\ -Recurse -Force");
+  refusPs("Remove-Item C:\\ -Recurse -Force");
+  refusPs("Remove-Item D:\\* -Recurse");
 });
 
 test("suppressions PowerShell et cmd : confirmation", () => {
