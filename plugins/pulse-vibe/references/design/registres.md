@@ -17,6 +17,13 @@ Un « registre » est la famille à laquelle appartient un écran. Chaque famill
 | Mouvement | 150 à 250 ms ; le mouvement signale un changement d'état | Une seule séquence d'ouverture soignée |
 | Images | Rares et utiles | Au moins une image forte, obligatoire |
 
+**Ce que chaque registre écarte**
+
+- **Vitrine** : tableaux de données, navigation dense, squelettes de chargement (les blocs gris qui annoncent un contenu).
+- **Outil** : héros plein écran (grande image d'ouverture), texte d'ambiance, animations d'entrée, fonds décoratifs.
+
+Les durées et la densité de chaque registre sont détaillées dans `regles-ui.md` (§ 3 et § 6).
+
 ## 2. Reconnaître le registre
 
 Cherchez les indices dans trois endroits.

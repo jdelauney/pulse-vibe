@@ -25,9 +25,26 @@ Un anti-pattern est un défaut fréquent, reconnaissable à l'œil. Gravités : 
 | Bordure fine grise + grande ombre floue sur tout | 🟠 | Chaque bloc a un filet gris et une large ombre diffuse | Choisir : un filet, ou une ombre légère, sur peu d'éléments |
 | Mots creux de marketing (« révolutionnaire », « boostez », « sans effort ») | 🟠 | Promesses vagues dans les titres et les boutons | Dire ce que fait l'outil, avec des mots précis |
 | Texte de remplissage générique au lieu de contenus réalistes | 🟠 | « Lorem ipsum », « Titre ici », « Description » | Des contenus plausibles, dans le vocabulaire du glossaire |
+| Texte courant en majuscules | 🟠 | Un paragraphe ou une phrase entière en capitales | Minuscules ; les majuscules sur un libellé de 4 mots au plus |
 | Long texte centré | 🟢 | Paragraphe de plus de trois lignes aligné au centre | Aligner à gauche ; centrer seulement un titre ou une phrase courte |
 | Icône seule sans nom accessible | 🟢 | Bouton avec un pictogramme, sans texte ni nom lu par les lecteurs d'écran | Ajouter un nom accessible précis, ou un libellé visible |
 | Tiret cadratin décoratif dans les textes | 🟢 | Longs tirets utilisés comme ponctuation à la place de virgules ou de points | Phrases courtes, virgules, deux-points (règle PON-002 du détecteur, `pulse-aidd textes verifier`) |
 | Emoji en guise d'icônes d'interface | 🟢 | Pictogrammes colorés du système dans les boutons ou les titres | Un jeu d'icônes unique et cohérent, ou le texte seul |
+| Ombres fortes partout | 🟢 | Une ombre large et sombre sous chaque bloc | Une petite ombre douce ; l'ombre marquée pour ce qui flotte seulement |
+| Champs en pleine largeur sur grand écran | 🟢 | Un champ « code postal » aussi large que la page | Une largeur selon la saisie attendue |
+| Icônes génériques (fusée, ampoule, étoile, engrenage) | 🟢 | Les pictogrammes les plus attendus pour « lancement », « idée », « qualité », « réglages » | Une icône précise de ce que fait l'élément, ou le texte seul |
+| Introduction qui répète le titre | 🟢 | La première phrase redit le titre avec d'autres mots | Commencer par l'information suivante |
+| Liens bleus par défaut | 🟢 | Liens bleu vif soulignés, hors palette | La couleur d'accent et un soulignement décalé |
+
+**Palette devinable : clichés par secteur et autres pistes.** Une autre piste part de la personnalité de l'identité ; elle reste une idée à essayer, jamais une règle.
+
+| Secteur | Cliché | Autre piste |
+|---|---|---|
+| Logiciel en ligne | Bleu | Un vert profond, un orange brûlé |
+| Santé | Vert ou bleu clair | Un corail doux, un bleu nuit chaleureux |
+| Finance | Bleu marine | Un vert sapin, un bordeaux |
+| Luxe | Noir et or | Un ivoire et un brun chocolat |
+| Écologie | Vert | Un ocre, un bleu ardoise |
+| Enfance | Couleurs primaires vives | Des tons pastel contrastés |
 
 Une règle peut être enfreinte **volontairement** si `docs/design.md` le justifie (section « À faire / à éviter ») ; la raison y est écrite.
