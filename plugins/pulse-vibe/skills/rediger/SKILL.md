@@ -2,7 +2,7 @@
 description: Écrire les textes de vos pages (accueil, à propos, services…) dans la voix du site, sans tics d'écriture IA, puis les intégrer si vous le souhaitez
 argument-hint: "[page] [--humaniser]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte rediger) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd agent redacteur) Bash(pulse-aidd pile contexte rediger) Read Glob Grep
+allowed-tools: Bash(pulse-aidd contexte rediger) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd agent redacteur) Read Glob Grep
 ---
 
 # /pulse:rediger – Écrire les textes des pages
@@ -48,6 +48,6 @@ Lancer le sous-agent `pulse:redacteur`. Lui indiquer : la fiche de la page (obje
 
 Demander (AskUserQuestion) :
 - **Garder le document** : le texte reste dans `docs/textes/<page>.md`, prêt pour plus tard.
-- **Intégrer dans la page** : appliquer les consignes de la pile (`pulse-aidd pile contexte rediger`) ; sans pack de pile, suivre l'organisation des pages décrite dans `docs/technical.md`. Ensuite, lancer les vérifications du projet (« Commandes du projet » de `docs/technical.md`) et montrer la page à la personne.
+- **Intégrer dans la page** : appliquer les consignes de la section « Pack de pile » du contexte ci-dessus ; sans pack de pile, suivre l'organisation des pages décrite dans `docs/technical.md`. Ensuite, lancer les vérifications du projet (« Commandes du projet » de `docs/technical.md`) et montrer la page à la personne.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : une autre page avec `/pulse:rediger <page>`, sinon `/pulse:commit`.

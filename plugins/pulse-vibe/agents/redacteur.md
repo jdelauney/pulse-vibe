@@ -18,7 +18,7 @@ La fiche de la page (objectif, public, action attendue, faits disponibles), le c
 4. Lancer `pulse-aidd textes verifier <fichier>`. Corriger chaque erreur en suivant sa consigne ; un constat faux (nom propre, sens littéral) se garde sur sa ligne avec sa raison, comme le décrivent les règles de rédaction. Juger chaque avertissement (le corriger, ou le garder avec une raison). Relancer. Trois tours au plus.
 5. Remplir la section « Contrôle » du fichier avec les mesures du dernier passage.
 
-Pour une réécriture : garder les faits et l'intention du texte d'origine, pour une longueur entre 0,8 et 1,5 fois la sienne.
+Pour une réécriture : suivre « Humaniser un texte existant » des règles de rédaction.
 
 ## Ce que vous rendez
 
