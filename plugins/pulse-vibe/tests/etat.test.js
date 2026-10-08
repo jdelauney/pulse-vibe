@@ -305,3 +305,14 @@ test("pulse-aidd etat relaie vers le script et figure dans l'aide", { skip: spaw
   assert.match(r.stdout, /^prochaine: \/pulse:brainstorm$/m);
   assert.match(spawnSync("bash", [outil], { encoding: "utf8" }).stdout, /pulse-aidd etat /);
 });
+
+test("statut de tâche inconnu = à faire, plan sans tâche jamais terminé, décision vide sans « : » final", () => {
+  const base = { ...AVANT_US, ...SPECS_VALIDEES, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": PLAN("US-002", "- [x] **T1 – Afficher la page** · US-002") };
+  const inconnu = etat(projet({ ...base, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-001-creer-tache.md": PLAN("US-001", "- [x] **T2 – Créer** · US-001\n- [!] **T3 – Valider** · US-001") }, PILE_CHOISIE));
+  assert.deepStrictEqual([inconnu.regle, inconnu.prochaine], ["R19", "/pulse:spirc US-001"]);
+  const vide = etat(projet({ ...base, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-001-creer-tache.md": PLAN("US-001", "(rien)") }, PILE_CHOISIE));
+  assert.notStrictEqual(vide.regle, "R15");
+  const attente = etat(projet({ "aidd_docs/tasks/in-progress.md": "" }));
+  assert.strictEqual(attente.regle, "R1");
+  assert.doesNotMatch(attente.raison, /:\s*$/);
+});

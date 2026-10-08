@@ -87,8 +87,8 @@ function lireTaches(texte) {
       dansTaches = /^##\s+T[âa]ches\s*$/i.test(ligne);
       continue;
     }
-    const t = dansTaches && /^- \[( |~|x|X)\]\s+\*\*(T\d+)\s*[–—-]\s*(.+?)\*\*/.exec(ligne);
-    if (t) taches.push({ id: t[2], titre: t[3].trim(), statut: STATUTS[t[1]], miseEnLigne: /^mettre en ligne/i.test(t[3].trim()) });
+    const t = dansTaches && /^- \[(.)\]\s+\*\*(T\d+)\s*[–—-]\s*(.+?)\*\*/.exec(ligne);
+    if (t) taches.push({ id: t[2], titre: t[3].trim(), statut: STATUTS[t[1]] || "a-faire", miseEnLigne: /^mettre en ligne/i.test(t[3].trim()) });
   }
   return taches;
 }
@@ -229,7 +229,7 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
 function bilan(f) {
   const indispensables = f.us.filter((u) => u.priorite === 0);
   const taches = indispensables.flatMap((u) => (u.plan ? u.plan.taches : []));
-  const pret = indispensables.length > 0 && indispensables.every((u) => u.plan && u.plan.taches.every((t) => t.miseEnLigne || t.statut === "terminee"));
+  const pret = indispensables.length > 0 && indispensables.every((u) => u.plan && u.plan.taches.length > 0 && u.plan.taches.every((t) => t.miseEnLigne || t.statut === "terminee"));
   return { pret, faites: taches.filter((t) => t.statut === "terminee").length, total: taches.length };
 }
 
@@ -246,9 +246,10 @@ function decider(f) {
 
   const a = f.enAttente;
   if (a) {
+    const sujet = a.etape || a.commande;
     const raison = a.ancien
-      ? `une décision attend depuis plus de 7 jours (${a.etape || a.commande}) : demander si elle est toujours d'actualité, sinon l'effacer avec pulse-aidd travail-fini`
-      : `une décision vous attend : ${a.etape || a.commande}`;
+      ? `une décision attend depuis plus de 7 jours${sujet ? ` (${sujet})` : ""} : demander si elle est toujours d'actualité, sinon l'effacer avec pulse-aidd travail-fini`
+      : sujet ? `une décision vous attend : ${sujet}` : "une décision vous attend dans aidd_docs/tasks/in-progress.md";
     return verdict("R1", a.pourReprendre || a.commande || "/pulse:status", raison, { attente: a.etape, ancien: a.ancien ? "oui" : "", dossier: a.dossier });
   }
   if (f.claude === "absent") return verdict("R2", "/pulse:init", "le projet n'est pas encore préparé pour Pulse", { fondation: "dossier" });
