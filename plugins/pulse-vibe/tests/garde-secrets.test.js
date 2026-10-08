@@ -429,3 +429,19 @@ test("secret en clair : valeurs hexadécimales et d'une seule casse signalées, 
   ])
     assert.deepStrictEqual(trouverSecrets(c), [], c);
 });
+
+test("secret en clair : noms en majuscules, identifiants UUID et clés de traduction non signalés", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  const uuid = ["3F2504E0", "4F89", "11D3", "9A0C", "0305E82C3301"].join("-"); // construit à l'exécution, en majuscules
+  for (const c of [
+    'const SECRET_ENV_NAME = "STRIPE_WEBHOOK_SECRET_V2"',
+    `const TOKEN_ID = "${uuid}"`,
+    `const TOKEN_ID = "${uuid.toLowerCase()}"`,
+    'const PASSWORD_HINT_KEY = "auth.passwordHint.label2"',
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), [], c);
+  // Les vraies valeurs restent signalées.
+  const hex = "ab12".repeat(16);
+  const base64url = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd" + "Zq1Xe3HaVn";
+  for (const c of [`API_SECRET="${hex}"`, `API_SECRET="${base64url}"`, `API_SECRET="${base64url}.${hex}"`]) assert.deepStrictEqual(trouverSecrets(c), ["secret en clair"], c);
+});

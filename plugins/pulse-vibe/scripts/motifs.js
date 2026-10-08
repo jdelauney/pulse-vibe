@@ -8,8 +8,12 @@
 const HOTE_EXEMPLE = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|host\.docker\.internal|example\.(com|org|net)|[a-z0-9_-]+)(:\d+)?$/i;
 const VALEUR_EXEMPLE = /^(password|passwd|motdepasse|mot_de_passe|mdp|postgres|root|secret|changeme|change_me|example|exemple|test|pass|user|admin|x+|\*+|\.+|<[^>]*>|\$\{[^}]*\}|\{\{[^}]*\}\}|(votre|your)[_-](cle|clé|key|secret|mot[_-]?de[_-]?passe|password|token)\w*)$/i;
 const adresseReelle = (m) => !VALEUR_EXEMPLE.test(m[1]) && !HOTE_EXEMPLE.test(m[2]);
+// Des noms, pas des secrets : STRIPE_WEBHOOK_SECRET_V2, un UUID, une clé de traduction (auth.passwordHint.label2).
+const NOM_MAJUSCULES = /^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CLE_TRADUCTION = /^[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*){2,}$/;
 const valeurReelle = (v) =>
-  !VALEUR_EXEMPLE.test(v) && !/^(votre|your|change|exemple|example|xxx)/i.test(v) && !/(test|fake|factice|exemple|example|dummy|mock|demo)/i.test(v) && /^[A-Za-z0-9_+\/=.-]+$/.test(v) && !v.includes("://") && (/^[0-9a-f]{32,}$/i.test(v) || (/\d/.test(v) && /[a-z]/.test(v) && /[A-Z]/.test(v)) || (v.length >= 24 && /\d/.test(v) && /[A-Za-z]/.test(v) && !/^_*[a-z0-9]+(?:[-._]+[a-z0-9]+){2,}$/.test(v)));
+  !VALEUR_EXEMPLE.test(v) && !NOM_MAJUSCULES.test(v) && !UUID.test(v) && !CLE_TRADUCTION.test(v) && !/^(votre|your|change|exemple|example|xxx)/i.test(v) && !/(test|fake|factice|exemple|example|dummy|mock|demo)/i.test(v) && /^[A-Za-z0-9_+\/=.-]+$/.test(v) && !v.includes("://") && (/^[0-9a-f]{32,}$/i.test(v) || (/\d/.test(v) && /[a-z]/.test(v) && /[A-Z]/.test(v)) || (v.length >= 24 && /\d/.test(v) && /[A-Za-z]/.test(v) && !/^_*[a-z0-9]+(?:[-._]+[a-z0-9]+){2,}$/.test(v)));
 
 const MOTIFS = [
   { nom: "clé secrète (Stripe ou Clerk)", re: /\b[rs]k_(?:live|test)_[0-9a-zA-Z]{16,}/ },
