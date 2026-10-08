@@ -1,0 +1,59 @@
+// Garde des références de design de /pulse:ui : valeurs clés présentes, format des anti-patterns.
+// Lancer : node --test plugins/pulse-vibe/tests/design-references.test.js
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("fs");
+const path = require("path");
+
+const D = path.join(__dirname, "..", "references", "design");
+const lire = (f) => fs.readFileSync(path.join(D, f), "utf8");
+
+test("règles d'interface : valeurs chiffrées de couleur, typographie, espacement, mouvement, accessibilité", () => {
+  const t = lire("regles-ui.md");
+  for (const attendu of ["Cinq nuances", "0,005", "1,333", "1,5 à 1,6", "rem", "1 280 px", "320, 390, 768, 1 280 et 1 920 px", "120 à 150 ms", "300 ms à l'entrée", "50 à 60 ms", "WCAG 2.2", "18,66 px", "3:1", ":focus-visible", "aria-current", "soulignement décalé", "ne répète pas le titre"])
+    assert.ok(t.includes(attendu), attendu);
+  assert.ok(!/ease-out-back|rebond permis/i.test(t), "jamais de rebond");
+});
+
+test("anti-patterns : 4 colonnes, une gravité, les six nouveaux motifs et le tableau par secteur", () => {
+  const t = lire("anti-patterns.md");
+  const motifs = t.split("\n").filter((l) => /^\| /.test(l) && /🔴|🟠|🟢/.test(l));
+  for (const l of motifs) assert.strictEqual(l.split("|").length - 2, 4, l);
+  for (const attendu of ["Ombres fortes partout", "Texte courant en majuscules", "Champs en pleine largeur", "Icônes génériques", "Introduction qui répète le titre", "Liens bleus par défaut", "| Secteur |"])
+    assert.ok(t.includes(attendu), attendu);
+});
+
+test("registres : ce que chaque registre écarte, et renvoi aux durées", () => {
+  const t = lire("registres.md");
+  for (const attendu of ["Ce que chaque registre écarte", "squelettes de chargement", "héros plein écran", "regles-ui.md"]) assert.ok(t.includes(attendu), attendu);
+});
+
+// --- Correctifs de la revue finale ---
+
+test("revue : pas de contradiction interne (durées des registres, rapport d'échelle)", () => {
+  assert.ok(!lire("registres.md").includes("150 à 250"), "registres.md renvoie aux durées de regles-ui.md");
+  const t = lire("regles-ui.md");
+  assert.ok(!/≥ 1,25[^\n]*1,2 à 1,25/.test(t), "le rapport d'échelle ne contredit pas l'usage dense");
+  assert.ok(t.includes("Tailles en `rem`"));
+});
+
+test("revue : toute courbe citée reste dans sa cible (aucun dépassement, donc aucun rebond)", () => {
+  for (const f of ["regles-ui.md", "registres.md", "anti-patterns.md"])
+    for (const m of lire(f).matchAll(/cubic-bezier\(([^)]*)\)/g)) {
+      const [, y1, , y2] = m[1].split(",").map(Number);
+      assert.ok(y1 >= 0 && y1 <= 1 && y2 >= 0 && y2 <= 1, `${f} : ${m[0]}`);
+    }
+});
+
+test("revue : saturation baissée aux nuances extrêmes ; animations d'entrée en vitrine seulement", () => {
+  const t = lire("regles-ui.md");
+  assert.ok(t.includes("baisse aux nuances très claires ou très foncées"));
+  assert.match(t, /En vitrine.{0,40}apparitions décalées/i);
+});
+
+test("revue : le thème du pack exige 3:1 pour --input et --ring", () => {
+  const theme = fs.readFileSync(path.join(__dirname, "..", "..", "pulse-vibe-next", "references", "theme.md"), "utf8");
+  assert.ok(theme.includes("`--input` et `--ring` sur `--background` : 3:1"));
+});
