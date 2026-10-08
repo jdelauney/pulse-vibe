@@ -254,3 +254,14 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
   }
   assert.deepStrictEqual(manquants, []);
 });
+
+test("allowed-tools : chaque motif Bash(pulse-aidd …) commence par une sous-commande connue", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    for (const motif of motifsBash(fichier).filter((m) => m.startsWith("pulse-aidd"))) {
+      const sous = (motif.match(/^pulse-aidd ([a-z][a-z-]*)(?: |\*|$)/) || [])[1];
+      if (!SOUS_COMMANDES.has(sous)) problemes.push(`${path.relative(DEPOT, path.dirname(fichier))} : Bash(${motif})`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
