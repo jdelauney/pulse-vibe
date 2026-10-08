@@ -1,5 +1,5 @@
 ---
-description: Réaliser une tâche d'un plan et l'expliquer, directement ou via le sous-agent implementer, au besoin dans un worktree ; sans tâche, boucler sur tout le plan (réaliser, relire, corriger, commiter, tâche suivante)
+description: Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans une copie à part du projet ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante)
 argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte pr) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit) Bash(pulse-aidd etape pr) Bash(pulse-aidd etape review) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree
@@ -20,9 +20,9 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 ## Raccourcis (facultatifs)
 
 Les choix de la façon de travailler se font par une question au démarrage (§ 0). Les habitués peuvent les donner d'avance, avant l'US, regroupables (`-sw` = `-s -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
-- `-s` **via sous-agent** : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
-- `-d` **directe** : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
-- `-w` **worktree** : travailler dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
+- `-s` **en coulisse** (mode sous-agent) : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
+- `-d` **devant vous** (mode direct) : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
+- `-w` **copie à part du projet (worktree)** : travailler dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
 - `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord » ci-dessus).
 
 ## Objectif
@@ -41,13 +41,16 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 
 ### 0. Choisir la façon de travailler
 
-- **Mode** : sans `-s` ni `-d`, demander (AskUserQuestion, question « Comment réaliser la tâche ? ») : « 1. Implémentation via sous-agent (Recommandé) » (un assistant spécialisé code dans son propre contexte, la conversation reste légère) / « 2. Implémentation directe » (je code ici, vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
-- **Tests** : sans `-t`, appliquer « 2. Choisir au démarrage » de la référence « Tests automatiques » ; la question se pose **dans le même appel** AskUserQuestion que le mode.
-- **Worktree** : sans `-w`, appliquer « 1. Faut-il un worktree ? » de la référence worktree ; si la question se pose, la poser **dans le même appel** AskUserQuestion que le mode.
-- **Envoi** : appliquer « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (question posée dans le même appel AskUserQuestion que le mode et le worktree, seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir »), puis préparer la branche si le mode est PR.
-- **Avec un worktree** : le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans le worktree.
+**Mode découverte** (règles communes § 1) : aucune question ici ; chaque choix ci-dessous prend sa réponse recommandée, annoncée en une phrase. Sinon, poser **une seule ronde** (AskUserQuestion, 4 questions au plus) avec, selon le cas :
 
-Annoncer le choix en une ligne (« Mode : sous-agent · tests d'abord · dans le worktree `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+- **Mode** : sans `-s` ni `-d`, question « Comment réaliser la tâche ? » : « Je code en coulisse (Recommandé) » (un assistant spécialisé code à part : la conversation reste légère) / « Je code devant vous » (vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
+- **Tests** : sans `-t`, « 2. Choisir au démarrage » de la référence « Tests automatiques ».
+- **Copie à part** : sans `-w`, « 1. Faut-il un worktree ? » de la référence worktree, si la question se pose.
+- **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail », seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir » ; puis préparer la branche si le mode est PR.
+
+**Avec une copie à part** : la créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans cette copie.
+
+Annoncer le choix en une ligne (« Je code en coulisse · tests d'abord · dans la copie à part `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ### 1. Choisir la ou les tâches
 

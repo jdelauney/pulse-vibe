@@ -519,3 +519,11 @@ test("règles communes : rondes de 4 questions, réponses libres en texte, mode 
   const definitions = TEXTES.filter(({ texte }) => /\*\*Mode découverte\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
   assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-communes.md"]);
 });
+
+test("implement : questions de démarrage en clair et mode découverte", () => {
+  const texte = skillTexte("implement");
+  assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);
+  assert.match(texte, /« Je code devant vous »/);
+  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
+  assert.doesNotMatch(texte, /Implémentation via sous-agent|Implémentation directe/);
+});
