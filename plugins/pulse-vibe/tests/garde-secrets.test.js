@@ -375,3 +375,14 @@ test("secret en clair dans une variable, sauf valeur d'exemple", () => {
 test("identifiant qui commence par sk- sans chiffre : pas une clé OpenAI", () => {
   assert.deepStrictEqual(motifs("sk" + "-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-mon-identifiant"), []);
 });
+
+test("verifier.js --index : contrôle le contenu indexé seulement", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  const r1 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r1.status, 0, "fichier non indexé : rien à contrôler");
+  git("add", "app.js");
+  const r2 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r2.status, 1);
+  assert.match(r2.stderr, /Commit annulé/);
+});

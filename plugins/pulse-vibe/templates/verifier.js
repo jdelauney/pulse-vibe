@@ -11,6 +11,7 @@
 //
 //   node scripts/verifier.js               les trois contrôles
 //   node scripts/verifier.js --scenarios   l'état de couverture des scénarios de tous les plans, sans échouer
+//   node scripts/verifier.js --index       les fichiers prêts à être enregistrés (contrôle avant commit), sans les scénarios
 "use strict";
 
 const fs = require("fs");
@@ -125,6 +126,23 @@ function listerFichiers() {
     }
   })(".");
   return resultat;
+}
+
+function fichiersIndexes() {
+  try {
+    const sortie = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return sortie.split("\u0000").filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function contenuIndexe(f) {
+  try {
+    return execFileSync("git", ["show", `:${f}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 1024 * 1024 });
+  } catch (e) {
+    return "";
+  }
 }
 
 // ---------------------------------------------------------------- Scénarios
@@ -250,8 +268,9 @@ function controlerScenarios(erreurs) {
 
 function principal() {
   if (process.argv.includes("--scenarios")) return afficherCouverture();
+  const index = process.argv.includes("--index");
   const erreurs = [];
-  const fichiers = listerFichiers();
+  const fichiers = index ? fichiersIndexes() : listerFichiers();
 
   for (const f of fichiers) {
     if (estFichierEnv(f)) {
@@ -259,22 +278,25 @@ function principal() {
       continue;
     }
     let contenu = "";
-    try {
-      const st = fs.statSync(f);
-      if (!st.isFile() || st.size > 512 * 1024) continue;
-      contenu = fs.readFileSync(f, "utf8");
-    } catch (e) {
-      continue;
+    if (index) contenu = contenuIndexe(f);
+    else {
+      try {
+        const st = fs.statSync(f);
+        if (!st.isFile() || st.size > 512 * 1024) continue;
+        contenu = fs.readFileSync(f, "utf8");
+      } catch (e) {
+        continue;
+      }
     }
     if (contenu.includes("\u0000")) continue;
     const secrets = trouverSecrets(contenu);
     if (secrets.length) erreurs.push(`${f} : contient une ${secrets.join(", ")}. Déplacez-la dans les variables d'environnement.`);
   }
 
-  const bilanScenarios = controlerScenarios(erreurs);
+  const bilanScenarios = index ? "" : controlerScenarios(erreurs);
 
   if (erreurs.length) {
-    console.error("❌ Vérification échouée, la mise en ligne est annulée :\n");
+    console.error(index ? "❌ Commit annulé : un secret allait être enregistré.\n" : "❌ Vérification échouée, la mise en ligne est annulée :\n");
     for (const e of erreurs) console.error("  - " + e);
     console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");
     process.exit(1);

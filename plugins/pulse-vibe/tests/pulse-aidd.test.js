@@ -316,3 +316,46 @@ test("identite extraire et maquettes verifier : relaient vers leurs scripts", ()
   assert.strictEqual(m.status, 1, m.stdout + m.stderr);
   assert.match(m.stdout, /Texte en dégradé de couleur/);
 });
+
+const fs = require("fs");
+const os = require("os");
+const dans = (dossier, ...args) => spawnSync("bash", [OUTIL, ...args], { cwd: dossier, encoding: "utf8" });
+
+test("modele, agent et etape refusent un chemin hors du plugin", () => {
+  for (const args of [["modele", "../../.env"], ["modele", "/etc/passwd"], ["agent", "../hooks/hooks"]]) {
+    const r = lancer(...args);
+    assert.strictEqual(r.status, 1, args.join(" "));
+    assert.doesNotMatch(r.stdout, /SECRET|root:/);
+  }
+  const e = lancer("etape", "../hooks");
+  assert.strictEqual(e.status, 0, "etape ne sort jamais en erreur");
+  assert.match(e.stdout, /Commande inconnue/);
+});
+
+test("installer-ci garde un verifier.js adapté, sauf avec --forcer", () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-ci-"));
+  fs.mkdirSync(path.join(d, "scripts"));
+  fs.writeFileSync(path.join(d, "scripts", "verifier.js"), "// adapté\n");
+  const r = dans(d, "installer-ci");
+  assert.strictEqual(r.status, 1);
+  assert.strictEqual(fs.readFileSync(path.join(d, "scripts", "verifier.js"), "utf8"), "// adapté\n");
+  assert.strictEqual(dans(d, "installer-ci", "--forcer").status, 0);
+  assert.match(fs.readFileSync(path.join(d, "scripts", "verifier.js"), "utf8"), /DEBUT-MOTIFS/);
+});
+
+test("installer-hook : le commit d'une clé est refusé, même hors de Claude", () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hook-"));
+  const git = (...a) => spawnSync("git", a, { cwd: d, encoding: "utf8" });
+  git("init", "-q", "-b", "main");
+  git("config", "user.email", "t@example.com");
+  git("config", "user.name", "T");
+  assert.strictEqual(dans(d, "installer-hook").status, 0);
+  fs.writeFileSync(path.join(d, "app.js"), `const k = "${["sk", "live", "4eC39HqLyjWDarjtT1zdp7dc"].join("_")}";\n`);
+  git("add", "app.js");
+  const r = git("commit", "-m", "x");
+  assert.notStrictEqual(r.status, 0);
+  assert.match(r.stderr + r.stdout, /Commit annulé/);
+  fs.writeFileSync(path.join(d, "app.js"), "const k = process.env.STRIPE_KEY;\n");
+  git("add", "app.js");
+  assert.strictEqual(git("commit", "-q", "-m", "x").status, 0);
+});

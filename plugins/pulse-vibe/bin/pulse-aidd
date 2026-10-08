@@ -19,7 +19,8 @@
 #   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd travail-fini          efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier courant
-#   pulse-aidd installer-ci          copie le contrôle des secrets et un exemple de CI à adapter dans le projet
+#   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
+#   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
 #   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
 #   pulse-aidd pile <sous-commande>  relaie vers l'outil du pack déclaré (ex. pulse-aidd pile recette connexion)
@@ -37,6 +38,11 @@
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
 TPL="$RACINE/templates"
+
+nom_sur() { # nom_sur <nom> : vrai si le nom reste dans son dossier (ni .., ni chemin absolu, ni lecteur Windows)
+  case "$1" in ""|*..*|/*|\\*|[A-Za-z]:*) return 1 ;; esac
+  return 0
+}
 
 afficher() { # afficher <titre> <chemin>
   if [ -f "$2" ]; then
@@ -299,12 +305,13 @@ contexte() {
 case "$1" in
   contexte) contexte "$2"; exit 0 ;;
   etape)
+    if ! nom_sur "$2" || [ ! -f "$RACINE/skills/$2/SKILL.md" ]; then echo "Commande inconnue : $2. Commandes : $(ls "$RACINE/skills" | tr '\n' ' ')"; exit 0; fi
     afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
     contexte "$2"; exit 0 ;;
   modele)
-    if [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
+    if nom_sur "$2" && [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
   agent)
-    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
+    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
   qualite) qualite; exit 0 ;;
   tests) tests; exit 0 ;;
   reference)
@@ -357,9 +364,29 @@ case "$1" in
     echo "Travail en cours effacé : aucune décision en attente." ;;
   installer-ci)
     mkdir -p scripts
+    if [ -f scripts/verifier.js ] && ! cmp -s "$TPL/verifier.js" scripts/verifier.js && [ "$2" != "--forcer" ]; then
+      echo "scripts/verifier.js existe déjà et diffère du modèle de Pulse : rien n'est remplacé. Comparez avec « pulse-aidd modele verifier.js », puis relancez « pulse-aidd installer-ci --forcer » pour le remplacer."
+      exit 1
+    fi
     cp "$TPL/verifier.js" scripts/verifier.js
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
+  installer-hook)
+    racine="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "Pas de dépôt Git ici : lancez d'abord /pulse:init."; exit 1; }
+    if [ -n "$(git config --local core.hooksPath)" ]; then
+      echo "Ce projet range ses contrôles avant commit dans $(git config --local core.hooksPath) (Husky ou équivalent) : ajoutez-y la ligne « node scripts/verifier.js --index »."
+      exit 1
+    fi
+    crochet="$(git rev-parse --git-path hooks/pre-commit)"
+    if [ -f "$crochet" ] && ! grep -q "pulse-aidd: contrôle des secrets" "$crochet"; then
+      echo "Un contrôle avant commit existe déjà ($crochet) : rien n'est remplacé. Ajoutez-y la ligne « node scripts/verifier.js --index »."
+      exit 1
+    fi
+    [ -f "$racine/scripts/verifier.js" ] || { mkdir -p "$racine/scripts"; cp "$TPL/verifier.js" "$racine/scripts/verifier.js"; }
+    mkdir -p "$(dirname "$crochet")"
+    printf '#!/bin/sh\n# pulse-aidd: contrôle des secrets avant chaque commit (installé par /pulse:cicd ou /pulse:init).\nexec node scripts/verifier.js --index\n' > "$crochet"
+    chmod +x "$crochet"
+    echo "Installé : contrôle des secrets avant chaque commit, y compris ceux faits hors de Claude Code ($crochet)." ;;
   *)
-    sed -n '2,35p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,36p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac
