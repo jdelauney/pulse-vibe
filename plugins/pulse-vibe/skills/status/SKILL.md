@@ -1,7 +1,7 @@
 ---
 description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, copies à part du projet (worktrees) en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les copies déjà rassemblées
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
+allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
 
 # /pulse:status – Où en suis-je ?
@@ -56,7 +56,7 @@ Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non b
 ```
 
 La prochaine étape conseillée est celle de `pulse-aidd etat` (lignes `prochaine` et `raison`), la même que celle de `/pulse:init` :
-- avec `ancien: oui`, demander d'abord si ce travail est toujours d'actualité ; sinon, l'effacer (`pulse-aidd travail-fini`, lancé dans son `dossier`) ;
+- avec `ancien: oui`, demander d'abord si ce travail est toujours d'actualité ; sinon, l'effacer (`pulse-aidd travail-fini <dossier>`, avec la valeur de la ligne `dossier` ; sans cette ligne, `pulse-aidd travail-fini`) ;
 - dès que le MVP est en ligne (`mvp` montre toutes les tâches des US Indispensables terminées, ou « Site en ligne » est noté dans `CLAUDE.md`), regarder ces signaux, qui ne se lisent pas dans les documents de la méthode, quelle que soit la règle (`regle`) : une CI en échec ne reste jamais cachée derrière une étape de réalisation. Le verdict de `pulse-aidd etat` reste la recommandation principale ; avec `regle` R21, R22 ou R23 (tout est terminé), le premier signal qui s'applique devient la prochaine étape et le verdict passe dans « Aussi » ; sinon, les signaux s'ajoutent en tête de « Aussi », la CI en échec d'abord :
   1. dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec ;
   2. site en ligne sur son domaine définitif et « Être trouvé » de `docs/prd.md` à oui : section « Suivi » de `docs/seo.md` absente ou vide → `/pulse:seo lancer` ; sinon, section « Référencement » de `docs/technical.md` absente → `/pulse:search-console relier` ;

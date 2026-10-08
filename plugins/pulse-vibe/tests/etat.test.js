@@ -11,7 +11,7 @@ const { spawnSync } = require("child_process");
 
 const RACINE = path.join(__dirname, "..");
 const ETAT = path.join(RACINE, "scripts", "etat.js");
-const { lireFaits, decider } = require(ETAT);
+const { lireFaits, decider, sortieIllisible } = require(ETAT);
 
 const CLAUDE = (options = {}) => `# TodoIt
 
@@ -40,6 +40,26 @@ ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
 `;
 
 const PILE = "- **Pile** : HTML et JavaScript";
+
+/** Un rapport de relecture (modèle « revue ») : verdict, et au besoin résultat du test par la personne et blocage. */
+const RAPPORT = (verdict, { test, blocage } = {}) => `# Revue – T2 – 2026-10-07
+
+**Verdict** : ${verdict}
+**Mode** : /pulse:review
+
+## Vérification
+
+- **Verdict** : ✅ Prouvé
+
+## Constats
+
+${blocage ? `**Blocage** : ${blocage}` : ""}
+
+## Test par la personne
+
+- **Date** : 2026-10-07
+- **Résultat** : ${test || "✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)"}
+`;
 
 const REFERENTIEL = `# User stories – TodoIt
 
@@ -230,9 +250,9 @@ test("tâche en cours : relecture et vérification (R14), puis enregistrement un
   };
   const r = etat(projet(fichiers, PILE_CHOISIE));
   assert.deepStrictEqual([r.regle, r.prochaine], ["R14", "/pulse:review T2"]);
-  const relue = etat(projet({ ...fichiers, "aidd_docs/tasks/gerer-taches/revues/PLAN-SPEC-US-002-voir-liste/T2-2026-10-07.md": "# Revue\n" }, PILE_CHOISIE));
+  const relue = etat(projet({ ...fichiers, "aidd_docs/tasks/gerer-taches/revues/PLAN-SPEC-US-002-voir-liste/T2-2026-10-07.md": RAPPORT("✅ Validé") }, PILE_CHOISIE));
   assert.deepStrictEqual([relue.regle, relue.prochaine], ["R13", "/pulse:commit"]);
-  const autre = etat(projet({ ...fichiers, "aidd_docs/tasks/gerer-taches/revues/PLAN-SPEC-US-002-voir-liste/T21-2026-10-07.md": "# Revue\n" }, PILE_CHOISIE));
+  const autre = etat(projet({ ...fichiers, "aidd_docs/tasks/gerer-taches/revues/PLAN-SPEC-US-002-voir-liste/T21-2026-10-07.md": RAPPORT("✅ Validé") }, PILE_CHOISIE));
   assert.strictEqual(autre.regle, "R14", "le rapport de T21 ne vaut pas pour T2");
 });
 
@@ -315,4 +335,74 @@ test("statut de tâche inconnu = à faire, plan sans tâche jamais terminé, dé
   const attente = etat(projet({ "aidd_docs/tasks/in-progress.md": "" }));
   assert.strictEqual(attente.regle, "R1");
   assert.doesNotMatch(attente.raison, /:\s*$/);
+});
+
+const REVUES = "aidd_docs/tasks/gerer-taches/revues/PLAN-SPEC-US-002-voir-liste";
+const EN_COURS = {
+  ...AVANT_US,
+  ...SPECS_VALIDEES,
+  "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": PLAN("US-002", "- [x] **T1 – Afficher la page** · US-002\n- [~] **T2 – Voir la liste** · US-002"),
+};
+
+test("R13 seulement si la dernière relecture est validée ; sinon relire (R14) ou demander de l'aide", () => {
+  const avec = (fichiers) => etat(projet({ ...EN_COURS, ...fichiers }, PILE_CHOISIE));
+  const rapport = (nom) => `${REVUES}/${nom}.md`;
+  const bloquant = avec({ [rapport("T2-2026-10-07")]: RAPPORT("⛔ Bloquant") });
+  assert.deepStrictEqual([bloquant.regle, bloquant.prochaine], ["R14", "/pulse:review T2"]);
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("⚠️ À corriger") }).prochaine, "/pulse:review T2");
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("✅ Validé | ⚠️ À corriger | ⛔ Bloquant") }).prochaine, "/pulse:review T2", "modèle non rempli");
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: "# Revue\n" }).prochaine, "/pulse:review T2", "rapport sans verdict");
+  // le dernier rapport fait foi
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("⛔ Bloquant"), [rapport("T2-2026-10-08")]: RAPPORT("✅ Validé") }).regle, "R13");
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("✅ Validé"), [rapport("T2-2026-10-07-2")]: RAPPORT("⚠️ À corriger") }).prochaine, "/pulse:review T2");
+  // test par la personne
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("✅ Validé", { test: "❌ non concluant" }) }).prochaine, "/pulse:review T2");
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("✅ Validé", { test: "⏳ reporté au test groupé de fin de plan (mode autonome)" }) }).regle, "R13");
+  // bloquée après deux cycles
+  const aide = avec({ [rapport("T2-2026-10-07")]: RAPPORT("⛔ Bloquant", { blocage: "persiste après 2 cycles : /pulse:get-help" }) });
+  assert.deepStrictEqual([aide.regle, aide.prochaine], ["R14", "/pulse:get-help"]);
+  assert.strictEqual(avec({ [rapport("T2-2026-10-07")]: RAPPORT("⛔ Bloquant", { blocage: "{{aucun | persiste après 2 cycles : /pulse:get-help}}" }) }).prochaine, "/pulse:review T2", "ligne du modèle non remplie");
+});
+
+test("projet existant : du code sans brief ni choix techniques, documenter l'existant (R8c) avant R9", () => {
+  const codes = [{ "package.json": "{}" }, { "src/index.js": "x" }, { "app/page.tsx": "x" }, { "requirements.txt": "flask" }, { "composer.json": "{}" }, { Gemfile: "x" }, { "go.mod": "module x" }, { "Cargo.toml": "x" }, { "Api.csproj": "<Project/>" }, { "index.html": "<html>" }];
+  for (const code of codes) {
+    const r = etat(projet({ ...code, "aidd_docs/memory/project.md": "# {{NOM_DU_PROJET}}\n" }));
+    assert.deepStrictEqual([r.regle, r.prochaine], ["R8c", "/pulse:memory creer"], Object.keys(code)[0]);
+    assert.match(r.raison, /existant/);
+    assert.ok(r.aussi.some((a) => a.startsWith("/pulse:tech")), "le Chemin A documente la pile existante");
+  }
+  // mémoire déjà remplie : ne pas reboucler sur /pulse:memory creer
+  assert.deepStrictEqual([etat(projet({ "package.json": "{}" })).regle, etat(projet({ "package.json": "{}" })).prochaine], ["R8c", "/pulse:tech"]);
+  // avec un brief ou des choix techniques, la suite normale s'applique
+  assert.strictEqual(etat(projet({ "package.json": "{}", "docs/brief.md": "x" })).regle, "R10");
+  assert.strictEqual(etat(projet({ "package.json": "{}", "docs/technical.md": "x" }, PILE_CHOISIE)).regle, "R10");
+  assert.strictEqual(etat(projet()).regle, "R9");
+});
+
+test("modèle à mettre à niveau (R8b) : CLAUDE.md ancien, .gitignore sans le travail en cours, contrôle avant commit absent", () => {
+  const modele = (fichiers, options) => etat(projet(fichiers, options));
+  const ancien = modele({ "CLAUDE.md": CLAUDE().replace("Ce projet suit", "Projet AI-Driven : il suit") });
+  assert.deepStrictEqual([ancien.regle, ancien.prochaine, ancien.fondation], ["R8b", "/pulse:init", "modele"]);
+  assert.strictEqual(modele({ "CLAUDE.md": CLAUDE() + "\n- Commit et envoi vers le dépôt distant : uniquement sur demande.\n" }).fondation, "modele");
+  assert.strictEqual(modele({ "CLAUDE.md": CLAUDE() + "\n- `aidd_docs/tasks/` : traces de travail par session.\n" }).fondation, "modele");
+  assert.strictEqual(modele({ ".gitignore": ".env\n" }).fondation, "modele");
+  assert.strictEqual(modele({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }).regle, "R9");
+  const crochet = { "scripts/verifier.js": "x", ".git/hooks/pre-commit": "#!/bin/sh\nexit 0\n" };
+  assert.strictEqual(modele(crochet).fondation, "modele");
+  assert.strictEqual(modele({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\n" }).regle, "R9");
+  assert.strictEqual(modele({ "scripts/verifier.js": "x", ".git/hooks": "<dossier>" }).fondation, "modele", "crochet absent");
+  assert.strictEqual(modele({ ...crochet, ".git/config": "[core]\n\thooksPath = .husky\n" }).regle, "R9", "Husky range ses contrôles ailleurs");
+  assert.strictEqual(modele({ "scripts/verifier.js": "x" }).regle, "R9", "sans dépôt, pas de crochet à vérifier");
+  // la décision en attente et les autres fondations passent avant
+  assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/tasks/in-progress.md": "" }).regle, "R1");
+  assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/memory/glossary.md": null }).regle, "R6");
+});
+
+test("état illisible (R0) : demander de l'aide, sans reboucler sur /pulse:status", () => {
+  const lignes = sortieIllisible("EACCES").split("\n");
+  assert.deepStrictEqual(lignes.map((l) => l.split(":")[0]), ["prochaine", "raison", "regle"]);
+  assert.strictEqual(lignes[0], "prochaine: /pulse:get-help");
+  assert.match(lignes[1], /n'a pas pu être lu \(EACCES\)/);
+  assert.strictEqual(lignes[2], "regle: R0");
 });

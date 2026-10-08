@@ -19,7 +19,7 @@
 #   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
-#   pulse-aidd travail-fini          efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier courant
+#   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
@@ -365,7 +365,12 @@ case "$1" in
   etat)
     shift; exec node "$RACINE/scripts/etat.js" "$@" ;;
   travail-fini)
-    rm -f aidd_docs/tasks/in-progress.md
+    dossier="${2:-.}"
+    case "/$dossier/" in
+      */../*) echo "Le dossier ne doit pas contenir « .. » : donnez le dossier du projet ou de son worktree (ex. .claude/worktrees/us-001-creer-tache)."; exit 1 ;;
+    esac
+    [ -d "$dossier" ] || { echo "Dossier introuvable : $dossier"; exit 1; }
+    rm -f "$dossier/aidd_docs/tasks/in-progress.md"
     echo "Travail en cours effacé : aucune décision en attente." ;;
   installer-ci)
     mkdir -p scripts

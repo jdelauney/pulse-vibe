@@ -7,7 +7,7 @@
 //   prochaine: /pulse:spec US-003       la commande conseillée
 //   raison: …                            pourquoi, en une phrase
 //   regle: R20                           la règle appliquée
-//   fondation: profil                    R2 à R8 : ce que /pulse:init prépare ou met à niveau
+//   fondation: profil                    R2 à R8b : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile, modele)
 //   attente: … / ancien: oui / dossier: …   R1 : la décision en attente, si elle date de plus de 7 jours, son dossier
 //   aussi: /pulse:… — …                  alternatives utiles (zéro, une ou plusieurs lignes)
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
@@ -100,6 +100,30 @@ function statutSpec(texte) {
   return brouillon ? "brouillon" : "verrouillee";
 }
 
+/**
+ * La dernière relecture d'une tâche (rapport `<Tn>-AAAA-MM-JJ[-n].md`, modèle « revue ») :
+ * absente · validee (verdict ✅ seul, test par la personne non marqué ❌) · a-corriger · bloquee (ligne « Blocage » remplie).
+ */
+function lireRevue(dossier, id) {
+  const motif = new RegExp(`^${id}-(\\d{4}-\\d{2}-\\d{2})(?:-(\\d+))?\\.md$`, "i");
+  const rapports = fichiersDe(dossier)
+    .map((nom) => ({ nom, m: motif.exec(nom) }))
+    .filter((r) => r.m)
+    .sort((a, b) => a.m[1].localeCompare(b.m[1]) || Number(a.m[2] || 1) - Number(b.m[2] || 1));
+  if (rapports.length === 0) return "absente";
+  const texte = lireSi(path.join(dossier, rapports[rapports.length - 1].nom)) || "";
+  const valeur = (re) => ((re.exec(texte) || [])[1] || "").replace(/\{\{.*?\}\}/g, "");
+  if (/get-help|cycles/i.test(valeur(/^\*\*Blocage\*\*\s*:(.*)$/m))) return "bloquee";
+  const verdict = valeur(/^\*\*Verdict\*\*\s*:(.*)$/m);
+  if (!verdict.includes("✅") || /[⚠⛔❌]|critique/iu.test(verdict)) return "a-corriger";
+  // un champ rempli ne garde qu'un choix ; le modèle non rempli les liste tous (ignoré)
+  const apres = texte.split(/^## Test par la personne\s*$/m)[1] || "";
+  const test = (/^- \*\*R[ée]sultat\*\*\s*:(.*)$/m.exec(apres) || [])[1] || "";
+  const verification = (/^- \*\*Verdict\*\*\s*:(.*)$/m.exec(texte) || [])[1] || "";
+  const echec = (champ) => champ.includes("❌") && !champ.includes("✅");
+  return echec(test) || echec(verification) ? "a-corriger" : "validee";
+}
+
 /** Le référentiel docs/user-stories.md : priorité de chaque US (lignes de tableau « | US-001 | … | Indispensable | … »). */
 function lireReferentiel(texte) {
   const priorites = new Map();
@@ -146,9 +170,8 @@ function lireUs(racine) {
       } else if ((m = /^PLAN-SPEC-US-(\d+)-.+\.md$/i.exec(f))) {
         const u = us(m[1]);
         const texte = lireSi(path.join(dossier, f)) || "";
-        const rapports = fichiersDe(path.join(dossier, "revues", f.replace(/\.md$/i, "")));
-        const relue = (id) => rapports.some((r) => new RegExp(`^${id}-\\d{4}-\\d{2}-\\d{2}(-\\d+)?\\.md$`, "i").test(r));
-        u.plan = { taches: lireTaches(texte).map((t) => ({ ...t, relue: relue(t.id) })) };
+        const revues = path.join(dossier, "revues", f.replace(/\.md$/i, ""));
+        u.plan = { taches: lireTaches(texte).map((t) => ({ ...t, revue: lireRevue(revues, t.id) })) };
         if (u.priorite === INCONNUE) u.priorite = rangPriorite(prioriteDuTexte(texte));
       }
     }
@@ -184,6 +207,28 @@ function lireGit(racine) {
   return { depot, commits, remote, avance };
 }
 
+/** Du code déjà présent à la racine (manifeste de dépendances, sources, page), dans n'importe quel langage. */
+function codeExistant(racine) {
+  const manifestes = ["package.json", "requirements.txt", "pyproject.toml", "composer.json", "Gemfile", "go.mod", "Cargo.toml", "pom.xml", "build.gradle", "index.html"];
+  return (
+    manifestes.some((f) => existe(path.join(racine, f))) ||
+    ["src", "app"].some((d) => dossiers(racine).includes(d)) ||
+    fichiersDe(racine).some((f) => /\.(csproj|sln)$/i.test(f))
+  );
+}
+
+/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md, .gitignore sans le travail en cours, contrôle avant commit absent. */
+function modeleAncien(racine, texteClaude) {
+  const p = (...x) => path.join(racine, ...x);
+  if (texteClaude !== null && (/AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
+  const gitignore = lireSi(p(".gitignore"));
+  if (gitignore !== null && !gitignore.includes("aidd_docs/tasks/in-progress.md")) return true;
+  if (existe(p("scripts", "verifier.js")) && existe(p(".git", "hooks")) && !/hooksPath/.test(lireSi(p(".git", "config")) || "")) {
+    return !(lireSi(p(".git", "hooks", "pre-commit")) || "").includes("pulse-aidd: contrôle des secrets");
+  }
+  return false;
+}
+
 /** Tous les faits utiles à la décision. */
 function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
   const p = (...x) => path.join(racine, ...x);
@@ -205,6 +250,9 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     pile: claude.pile,
     enLigne: claude.enLigne,
     memoire: claude.memoireBloc && ["project.md", "technical.md", "glossary.md"].every((f) => existe(p("aidd_docs", "memory", f))),
+    modeleAncien: claude.etat === "pulse" && modeleAncien(racine, texteClaude),
+    codeExistant: codeExistant(racine),
+    memoireVide: (lireSi(p("aidd_docs", "memory", "project.md")) || "").includes("{{"),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
     ancienFormat: anciens,
@@ -265,7 +313,15 @@ function decider(f) {
     return verdict("R8", "/pulse:tech", "le bloc « Pile technique » de CLAUDE.md ne reflète pas docs/technical.md", { fondation: "pile" });
   }
 
+  if (f.modeleAncien) return verdict("R8b", "/pulse:init", "le projet a été créé avec un modèle plus ancien de Pulse : quelques éléments sont à mettre à niveau", { fondation: "modele" });
+
   const d = f.docs;
+  if (f.codeExistant && !d.brief && !d.prd && !d.userStories && !d.technical) {
+    if (f.memoireVide) aussi.unshift("/pulse:tech — documenter la pile observée dans le code (Chemin A)");
+    return f.memoireVide
+      ? verdict("R8c", "/pulse:memory creer", "le projet existant a déjà du code : la mémoire se remplit d'abord à partir de ce qui existe")
+      : verdict("R8c", "/pulse:tech", "le projet existant a déjà du code : documenter les outils qu'il utilise (Chemin A) avant de continuer");
+  }
   if (!d.brief && !d.prd && !d.userStories && !d.technical) {
     aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");
     return verdict("R9", "/pulse:brainstorm", "raconter l'idée est la première étape");
@@ -284,7 +340,9 @@ function decider(f) {
   if (enCours.length > 0) {
     const { t } = enCours[0];
     if (t.miseEnLigne) return verdict("R14", "/pulse:deploy", `${t.id} – ${t.titre} est en cours : la mise en ligne se fait avec /pulse:deploy`);
-    if (t.relue) return verdict("R13", "/pulse:commit", `${t.id} – ${t.titre} est relue : il reste à l'enregistrer`);
+    if (t.revue === "validee") return verdict("R13", "/pulse:commit", `${t.id} – ${t.titre} est relue : il reste à l'enregistrer`);
+    if (t.revue === "bloquee") return verdict("R14", "/pulse:get-help", `${t.id} – ${t.titre} reste bloquée après deux cycles de correction : demander de l'aide`);
+    if (t.revue === "a-corriger") return verdict("R14", `/pulse:review ${t.id}`, `${t.id} – ${t.titre} : la dernière relecture a des points à reprendre ou un test non concluant`);
     return verdict("R14", `/pulse:review ${t.id}`, `${t.id} – ${t.titre} est en cours : la relecture et la vérification viennent ensuite`);
   }
 
@@ -350,6 +408,11 @@ function formater(f, v) {
   return lignes.join("\n");
 }
 
+/** R0 : les fichiers n'ont pas pu être lus. /pulse:status relancerait cet outil : mieux vaut demander de l'aide. */
+function sortieIllisible(message) {
+  return `prochaine: /pulse:get-help\nraison: l'état du projet n'a pas pu être lu (${message}) : décrivez le problème à /pulse:get-help\nregle: R0`;
+}
+
 if (require.main === module) {
   try {
     const args = process.argv.slice(2);
@@ -358,8 +421,8 @@ if (require.main === module) {
     const faits = lireFaits(process.cwd(), { git: !args.includes("--sans-git"), aujourdhui: jour });
     console.log(formater(faits, decider(faits)));
   } catch (e) {
-    console.log(`prochaine: /pulse:status\nraison: l'état du projet n'a pas pu être lu (${e.message})\nregle: R0`);
+    console.log(sortieIllisible(e.message));
   }
 }
 
-module.exports = { lireFaits, decider, formater };
+module.exports = { lireFaits, decider, formater, sortieIllisible };

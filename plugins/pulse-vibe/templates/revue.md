@@ -52,6 +52,8 @@
 
 1. 🔴 Critique / 🟠 Haute / 🟡 Moyenne / 🔵 Basse {{problème}} — {{fichier:ligne}} — {{Corriger / Remplacer / Valider ...}}
 
+**Blocage** : {{aucun | persiste après 2 cycles : /pulse:get-help}}
+
 ## Suite donnée aux constats
 
 <!-- Rempli par la commande après la relecture. -->

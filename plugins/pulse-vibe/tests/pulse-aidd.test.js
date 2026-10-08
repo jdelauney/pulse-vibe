@@ -161,6 +161,31 @@ test("travail-fini : efface le travail en cours du dossier courant, sans erreur 
   assert.strictEqual(r.status, 0, r.stderr);
 });
 
+test("travail-fini <dossier> : efface seulement le travail en cours de ce dossier (worktree), refuse « .. »", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-fini-"));
+  const ecrire = (rel) => {
+    const f = path.join(d, rel, "aidd_docs", "tasks", "in-progress.md");
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, "# Travail en cours\n");
+    return f;
+  };
+  const principal = ecrire(".");
+  const worktree = ecrire(".claude/worktrees/us-001");
+  const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
+  let r = spawnSync("bash", [outil, "travail-fini", ".claude/worktrees/us-001"], { cwd: d, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!fs.existsSync(worktree), "celui du worktree est effacé");
+  assert.ok(fs.existsSync(principal), "celui du dossier courant reste");
+  r = spawnSync("bash", [outil, "travail-fini", ".claude/worktrees/absent"], { cwd: d, encoding: "utf8" });
+  assert.notStrictEqual(r.status, 0, "dossier inconnu");
+  r = spawnSync("bash", [outil, "travail-fini", "../autre"], { cwd: path.join(d, ".claude"), encoding: "utf8" });
+  assert.notStrictEqual(r.status, 0, "« .. » refusé");
+  assert.ok(fs.existsSync(principal));
+  assert.match(spawnSync("bash", [outil], { encoding: "utf8" }).stdout, /travail-fini \[dossier\]/);
+});
+
 test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
   const r = lancer("tests");
   assert.strictEqual(r.status, 0, r.stderr);
