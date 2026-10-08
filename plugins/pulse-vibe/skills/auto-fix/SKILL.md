@@ -2,7 +2,7 @@
 description: Faire passer au vert tous les contrôles automatiques du code (syntaxe, lint, types, formatage), en confiant les corrections à des agents en parallèle
 argument-hint: "[--detail]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git diff *) Read Glob Grep Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Read Glob Grep Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:auto-fix – Corriger les erreurs automatiquement détectables

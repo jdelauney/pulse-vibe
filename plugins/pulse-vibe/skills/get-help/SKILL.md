@@ -2,7 +2,7 @@
 description: Préparer une demande d'aide claire et sans secret, à transmettre à une personne qui programme (forum, communauté de la technologie, freelance) quand Pulse n'arrive pas à débloquer la situation
 argument-hint: "[\"ce qui bloque\"] (facultatif)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte get-help) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git remote *) Bash(git rev-parse *)
+allowed-tools: Bash(pulse-aidd contexte get-help) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile contexte *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *)
 ---
 
 # /pulse:get-help – Préparer une demande d'aide

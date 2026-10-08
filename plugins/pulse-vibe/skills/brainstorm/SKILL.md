@@ -2,7 +2,7 @@
 description: Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet (domain storytelling)
 argument-hint: "[votre idée en une phrase]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep
+allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd pile contexte *) Read Glob Grep
 ---
 
 # /pulse:brainstorm – Du besoin au brief

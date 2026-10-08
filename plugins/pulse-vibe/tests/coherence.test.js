@@ -255,6 +255,61 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
   assert.deepStrictEqual(manquants, []);
 });
 
+test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme, sont autorisées d'avance", () => {
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
+  const enchainees = (depart) => {
+    const vues = new Set([depart]);
+    const aVoir = [depart];
+    while (aVoir.length) {
+      for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        if (etape && SKILLS.has(etape) && !vues.has(etape)) {
+          vues.add(etape);
+          aVoir.push(etape);
+        }
+      }
+    }
+    return [...vues];
+  };
+  let verifies = 0;
+  const manquants = [];
+  for (const skill of SKILLS) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const textes = enchainees(skill).map(texteSkill);
+    const sources = new Map();
+    for (const texte of textes) {
+      for (const m of texte.matchAll(/(?<![\/\w-])pulse:([a-z][a-z-]*)|pulse-aidd agent ([a-z][a-z-]*)/g)) {
+        const agent = m[1] || m[2];
+        if (AGENTS.has(agent)) sources.set(`agent ${agent}`, lire(RACINE, "agents", `${agent}.md`));
+      }
+      for (const m of texte.matchAll(/pulse-aidd reference ([\w./-]+\.md)|references\/([\w./-]+\.md)/g)) {
+        const ref = m[1] || m[2];
+        if (fs.existsSync(path.join(RACINE, "references", ref))) sources.set(`référence ${ref}`, lire(RACINE, "references", ref));
+      }
+    }
+    for (const [origine, texte] of sources) {
+      for (const commande of citationsOutil(texte)) {
+        if (estSensible(commande) || commande === "pulse-aidd search-console") continue; // le second est un titre de tableau, pas une commande
+        verifies++;
+        if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} (${origine}) : ${commande}`);
+      }
+    }
+  }
+  assert.ok(verifies > 100, "lecture des agents et des références");
+  assert.deepStrictEqual([...new Set(manquants)], []);
+});
+
+test("allowed-tools : aucun skill n'autorise d'avance la modification d'un dépôt distant ni une récupération forcée", () => {
+  assert.ok(couvre("git remote *", "git remote remove origin") && !couvre("git remote -v", "git remote remove origin") && !couvre("git fetch origin", "git fetch origin +a:b"), "règle de correspondance");
+  const interdites = ["git remote remove origin", "git remote set-url origin X", "git remote rename origin X", "git fetch origin +refs/heads/main:refs/heads/main", "git fetch --force origin", "git fetch origin +main"];
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const skill = path.relative(DEPOT, path.dirname(fichier));
+    for (const motif of motifsBash(fichier)) for (const c of interdites) if (couvre(motif, c)) problemes.push(`${skill} : Bash(${motif}) couvre « ${c} »`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
 test("allowed-tools : chaque motif Bash(pulse-aidd …) commence par une sous-commande connue", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
