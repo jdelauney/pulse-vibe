@@ -477,3 +477,15 @@ test("init et status ne citent que des clés et des valeurs réellement émises 
     for (const c of cites) assert.ok(emises.has(c), `${skill} cite la clé ${c}, absente de etat.js`);
   }
 });
+
+test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour chaque chemin", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const delegations = TEXTES.filter(({ texte }) => /\*\*`pulse:verifier`\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
+  assert.deepStrictEqual(delegations, ["plugins/pulse-vibe/references/examen.md"]);
+  const examen = lire(RACINE, "references", "examen.md");
+  for (const agent of ["**`pulse:reviewer`**", "**`pulse:security-auditor`**"]) assert.ok(examen.includes(agent), agent);
+  for (const skill of ["review", "spirc"]) assert.match(skillTexte(skill), /référence « Examiner une tâche »/, skill);
+  assert.match(skillTexte("implement"), /`pulse:reviewer` et `pulse:verifier`/, "la boucle d'implement annonce la vérification");
+  assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
+  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
+});

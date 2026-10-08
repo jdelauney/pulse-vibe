@@ -1,13 +1,23 @@
 # Revue – {{TACHE}} – {{DATE}}
 
 **Verdict** : ✅ Validé | ⚠️ À corriger | ⛔ Bloquant
-**Mode** : {{/pulse:review | /pulse:implement | /pulse:spirc avec points de validation | /pulse:spirc autonome}}{{ · examen renforcé}}
+**Mode** : {{/pulse:review | /pulse:implement | /pulse:spirc avec points de validation | /pulse:spirc autonome}}{{ · contrôle de sécurité à chaque tâche}}
 
 ## Critères d'acceptation
 
 | Critère | Résultat | Commentaire |
 |---|---|---|
 | | ✅ / ❌ / ❓ à tester à la main | |
+
+## Vérification
+
+<!-- Verdict et tableau du verifier : chaque critère essayé sur l'application en marche. -->
+
+- **Verdict** : {{✅ Prouvé | ❓ Partiellement prouvé | ❌ Échoue}}
+
+| Critère | Attendu | Obtenu | Résultat | Preuve |
+|---|---|---|---|---|
+| | | | ✅ / ❌ / ❓ à tester à la main | |
 
 ## Tests automatiques
 

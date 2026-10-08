@@ -188,6 +188,7 @@ contexte() {
       afficher "Travailler dans un worktree" "$REF/worktree.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Examiner une tâche" "$REF/examen.md"
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md"
       lexique ;;
@@ -225,6 +226,7 @@ contexte() {
     fix) qualite; lexique ;;
     review)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
+      afficher "Examiner une tâche" "$REF/examen.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
     commit)
       afficher "Conventions Git" "$REF/git.md"

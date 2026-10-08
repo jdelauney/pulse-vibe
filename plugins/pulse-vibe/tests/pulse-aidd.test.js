@@ -390,3 +390,11 @@ test("installer-hook : sans scripts/verifier.js (nouveau worktree), le commit n'
   const r = git("commit", "-q", "-m", "x");
   assert.strictEqual(r.status, 0, r.stderr + r.stdout);
 });
+
+test("contexte review et spirc : la référence « Examiner une tâche »", () => {
+  for (const commande of ["review", "spirc"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Examiner une tâche ====="), commande);
+  }
+});
