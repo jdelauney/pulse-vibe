@@ -17,7 +17,7 @@
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Option Turnstile : clé de site du widget, publique (elle apparaît dans la page) |
 | `TURNSTILE_SECRET_KEY` | Option Turnstile : clé secrète du widget, côté serveur seulement |
 
-Dans `src/config/env.ts`, ajouter dans `z.object({ … })` :
+Dans `src/config/env.ts`, ajouter dans `server: { … }` :
 
 ```ts
     // Recette formulaire-public : signe le jeton de délai des formulaires (32 caractères au moins).
@@ -26,14 +26,14 @@ Dans `src/config/env.ts`, ajouter dans `z.object({ … })` :
 
 Dans `.env.example`, ajouter `FORMULAIRE_SECRET=` (sans valeur). Les variables Turnstile vont dans `.env.example` seulement avec l'option.
 
-`FORMULAIRE_SECRET` devient obligatoire : dans les tests qui lisent les vraies variables (`src/config/__tests__/env.test.ts` de la recette `limite`), ajouter `vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));` à côté de `DATABASE_URL`.
+`FORMULAIRE_SECRET` devient obligatoire : ajouter une valeur de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette), `FORMULAIRE_SECRET: "x".repeat(32),`.
 
 ## Fichiers créés ou modifiés
 
 | Fichier | Rôle |
 |---|---|
 | `src/config/env.ts`, `.env.example` (modifiés) | `FORMULAIRE_SECRET` (et les deux clés Turnstile avec l'option) |
-| `src/config/__tests__/env.test.ts` (modifié) | `FORMULAIRE_SECRET` fournie aux tests des variables |
+| `tests/helpers/env-de-test.ts` (modifié) | Valeur de test de `FORMULAIRE_SECRET` dans `VARIABLES_VALIDES` |
 | `src/lib/helpers/formulaire-public/champs.ts` | Noms des champs de protection, contrôle du champ piège |
 | `src/lib/helpers/formulaire-public/jeton.ts` | Jeton de délai signé (fonctions pures) |
 | `app/api/jeton-formulaire/route.ts` | Donne un jeton au navigateur à l'ouverture du formulaire |
@@ -60,7 +60,7 @@ Turnstile, en option, ajoute une vérification de Cloudflare pour les formulaire
 
 ### 1. La variable `FORMULAIRE_SECRET`
 
-Ajouter la ligne de `env.ts` (section « Variables d'environnement »), puis générer la valeur dans `.env` : `pulse-aidd secrets generer FORMULAIRE_SECRET`. Dans `src/config/__tests__/env.test.ts`, ajouter `vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));` à chaque test, puis `npm test`.
+Ajouter la ligne de `env.ts` (section « Variables d'environnement »), puis générer la valeur dans `.env` : `pulse-aidd secrets generer FORMULAIRE_SECRET`. Ajouter `FORMULAIRE_SECRET: "x".repeat(32),` dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts`, puis `npm test`.
 
 ### 2. Les noms des champs
 
@@ -155,7 +155,7 @@ Le navigateur demande le jeton à l'ouverture du formulaire : la page reste stat
 ```ts
 // app/api/jeton-formulaire/route.ts
 // Jeton de délai d'un formulaire public, demandé par le navigateur à l'ouverture du formulaire.
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import { NOM_FORMULAIRE } from "@src/lib/helpers/formulaire-public/champs";
 import { signerJeton } from "@src/lib/helpers/formulaire-public/jeton";
 import { connection } from "next/server";
@@ -170,7 +170,7 @@ export async function GET(request: Request) {
   const jeton = signerJeton(
     formulaire,
     Date.now(),
-    envServeur().FORMULAIRE_SECRET,
+    env.FORMULAIRE_SECRET,
   );
   return Response.json({ jeton }, { headers: { "Cache-Control": "no-store" } });
 }
@@ -281,7 +281,7 @@ export function ChampPiege({ ref }: { ref: Ref<HTMLInputElement> }) {
 // src/lib/formulaire-public.ts
 // Client d'action des formulaires publics : champ piège, jeton de délai, puis limite par adresse IP.
 import "server-only";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import {
   CHAMP_JETON,
   estPiegeRempli,
@@ -316,7 +316,7 @@ export function actionFormulairePublic(
       jeton,
       formulaire,
       Date.now(),
-      envServeur().FORMULAIRE_SECRET,
+      env.FORMULAIRE_SECRET,
     );
     if (etat !== "valide") {
       logger.warn({ formulaire, etat }, "Formulaire public : jeton refusé");
@@ -557,36 +557,46 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=VOTRE_CLE_ICI
 ```
 
-Ajouter les deux noms à `.env.example`. Dans `src/config/env.ts`, les deux clés s'ajoutent dans `z.object({ … })`, et une vérification les exige ensemble (une seule des deux bloquerait chaque envoi, ou laisserait le serveur sans contrôle) :
+Ajouter les deux noms à `.env.example`. Dans `src/config/env.ts` : la clé secrète dans `server: { … }`, la clé de site (publique) dans `client: { … }` et dans `experimental__runtimeEnv` :
 
 ```ts
-    // Recette formulaire-public, option Turnstile : les deux clés du widget (Cloudflare).
-    NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  server: {
+    // … variables des autres recettes
+    // Recette formulaire-public, option Turnstile : clé secrète du widget (Cloudflare).
     TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  },
+  client: {
+    // Recette formulaire-public, option Turnstile : clé de site du widget, publique.
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
+  },
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+  },
 ```
 
-puis, après la parenthèse fermante de `z.object({ … })` (à la suite d'un éventuel `.superRefine` d'une autre recette) :
+puis une vérification qui exige les deux clés ensemble : une seule des deux bloquerait chaque envoi, ou laisserait le serveur sans contrôle. S'il existe déjà un `createFinalSchema` (recette `limite`, option Redis), ajouter seulement ce `.superRefine(…)` à la suite du premier :
 
 ```ts
   // Recette formulaire-public, option Turnstile : les deux clés vont ensemble.
-  .superRefine((env, ctx) => {
-    if (!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY === !env.TURNSTILE_SECRET_KEY) return;
-    for (const nom of [
-      "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-      "TURNSTILE_SECRET_KEY",
-    ] as const) {
-      if (!env[nom]) {
-        ctx.addIssue({
-          code: "custom",
-          path: [nom],
-          message: "les deux clés Turnstile vont ensemble",
-        });
+  // Côté navigateur, seul le bloc client existe : la vérification se fait sur le serveur.
+  createFinalSchema: (forme, surLeServeur) =>
+    z.object(forme).superRefine((valeurs, ctx) => {
+      if (!surLeServeur) return;
+      if (!valeurs.NEXT_PUBLIC_TURNSTILE_SITE_KEY === !valeurs.TURNSTILE_SECRET_KEY) return;
+      for (const nom of [
+        "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+        "TURNSTILE_SECRET_KEY",
+      ] as const) {
+        if (!valeurs[nom]) {
+          ctx.addIssue({
+            code: "custom",
+            path: [nom],
+            message: "les deux clés Turnstile vont ensemble",
+          });
+        }
       }
-    }
-  })
+    }),
 ```
-
-Si le schéma s'écrivait `z.object({ … });`, il devient `z.object({ … }).superRefine(…);`.
 
 ### 12. La vérification côté serveur
 
@@ -595,7 +605,7 @@ La réponse du widget est vérifiée auprès de Cloudflare (`siteverify`). Une r
 ```ts
 // src/adapters/turnstile/turnstile.adapter.ts
 import "server-only";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { CHAMP_TURNSTILE } from "@src/lib/helpers/formulaire-public/champs";
 import { ipDepuis } from "@src/lib/helpers/limite/ip-et-message";
@@ -645,7 +655,7 @@ export async function verifierTurnstile(
 
 /** Pour une action : arrête l'action si Turnstile est actif et que la réponse du widget n'est pas valable. */
 export async function exigerTurnstile(entree: unknown): Promise<void> {
-  const secret = envServeur().TURNSTILE_SECRET_KEY;
+  const secret = env.TURNSTILE_SECRET_KEY;
   if (!secret) return;
   const reponse = (entree as Record<string, unknown> | null)?.[CHAMP_TURNSTILE];
   if (!(await verifierTurnstile(reponse, secret, ipDepuis(await headers())))) {
@@ -666,7 +676,7 @@ export async function exigerTurnstile(entree: unknown): Promise<void> {
 // puis Turnstile s'il est actif.
 import "server-only";
 import { exigerTurnstile } from "@src/adapters/turnstile/turnstile.adapter";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import {
   CHAMP_JETON,
   estPiegeRempli,
@@ -701,7 +711,7 @@ export function actionFormulairePublic(
       jeton,
       formulaire,
       Date.now(),
-      envServeur().FORMULAIRE_SECRET,
+      env.FORMULAIRE_SECRET,
     );
     if (etat !== "valide") {
       logger.warn({ formulaire, etat }, "Formulaire public : jeton refusé");
@@ -794,6 +804,7 @@ Le hook attend aussi la réponse du widget. Après chaque envoi, `apresEnvoi()` 
 // src/hooks/use-protection-formulaire.ts
 "use client";
 
+import { env } from "@src/config/env";
 import {
   CHAMP_JETON,
   CHAMP_PIEGE,
@@ -808,7 +819,7 @@ import {
 } from "react";
 
 // Clé publique du widget Turnstile (option) : absente, la protection fonctionne sans widget.
-const CLE_TURNSTILE = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const CLE_TURNSTILE = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 export type ProtectionFormulaire = {
   /** Vrai quand le jeton est arrivé (et que Turnstile a répondu, s'il est actif). */
@@ -1211,7 +1222,7 @@ Fonctionnalité: Protection des formulaires publics
 - [ ] **Tn – Préparer la protection des formulaires publics** · US-XXX
   - Objectif : le site sait reconnaître un envoi de robot (champ piège, jeton de délai) et limiter les envois en rafale
   - Dépend de : la tâche « Compter les tentatives par adresse IP » de la recette `limite`
-  - Fichiers : à créer : `src/lib/helpers/formulaire-public/champs.ts`, `src/lib/helpers/formulaire-public/jeton.ts`, `app/api/jeton-formulaire/route.ts`, `src/hooks/use-protection-formulaire.ts`, `src/components/shared/elements/champ-piege.tsx`, `src/lib/formulaire-public.ts` et leurs tests · à modifier : `src/config/env.ts`, `.env.example`, `src/config/__tests__/env.test.ts` (`FORMULAIRE_SECRET`)
+  - Fichiers : à créer : `src/lib/helpers/formulaire-public/champs.ts`, `src/lib/helpers/formulaire-public/jeton.ts`, `app/api/jeton-formulaire/route.ts`, `src/hooks/use-protection-formulaire.ts`, `src/components/shared/elements/champ-piege.tsx`, `src/lib/formulaire-public.ts` et leurs tests · à modifier : `src/config/env.ts`, `.env.example`, `tests/helpers/env-de-test.ts` (`FORMULAIRE_SECRET`)
   - Vérification : US-XXX critères 1 et 2 – `npm test` passe
   - Tests : « rempli, même avec une valeur qui n'est pas du texte… », « envoyé moins de 3 secondes après l'ouverture… », « ouvert depuis plus de 2 heures… », « horodatage modifié ou autre secret… » (unitaires)
   - Action manuelle : `pulse-aidd secrets generer FORMULAIRE_SECRET`
@@ -1366,7 +1377,7 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("@src/lib/logger", () => ({ logger: journal }));
 vi.mock("@src/config/env", () => ({
-  envServeur: () => ({ FORMULAIRE_SECRET: SECRET, LIMITE_STOCKAGE: "memoire" }),
+  env: { FORMULAIRE_SECRET: SECRET, LIMITE_STOCKAGE: "memoire" },
 }));
 
 const { envoyerMessage } = await import("../envoyer-message.action");
@@ -1528,7 +1539,7 @@ import { describe, expect, it, vi } from "vitest";
 const journal = vi.hoisted(() => ({ error: vi.fn() }));
 vi.mock("@src/lib/logger", () => ({ logger: journal }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
-vi.mock("@src/config/env", () => ({ envServeur: () => ({}) }));
+vi.mock("@src/config/env", () => ({ env: {} }));
 
 const { verifierTurnstile } = await import("../turnstile.adapter");
 
@@ -1599,40 +1610,32 @@ describe("Vérification Turnstile", () => {
 ```ts
 // src/adapters/turnstile/__tests__/variables-turnstile.test.ts
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { chargerEnvValide } from "../../../../tests/helpers/env-de-test";
 
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.resetModules();
 });
 
-async function lireEnv() {
-  const { envServeur } = await import("@src/config/env");
-  return envServeur();
-}
-
 describe("Variables Turnstile", () => {
   it("US-XXX-5 – clé secrète sans clé de site : le message nomme la clé manquante", async () => {
-    vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
-    vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));
-    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-turnstile-de-test");
-    await expect(lireEnv()).rejects.toThrow(/NEXT_PUBLIC_TURNSTILE_SITE_KEY/);
+    await expect(
+      chargerEnvValide({ TURNSTILE_SECRET_KEY: "secret-turnstile-de-test" }),
+    ).rejects.toThrow(/NEXT_PUBLIC_TURNSTILE_SITE_KEY/);
   });
 
   it("US-XXX-5 – clé de site sans clé secrète : le message nomme la clé manquante", async () => {
-    vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
-    vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));
-    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "cle-de-site-de-test");
-    await expect(lireEnv()).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
+    await expect(
+      chargerEnvValide({ NEXT_PUBLIC_TURNSTILE_SITE_KEY: "cle-de-site-de-test" }),
+    ).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
   });
 
   it("US-XXX-5 – les deux clés ensemble : acceptées", async () => {
-    vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
-    vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));
-    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "cle-de-site-de-test");
-    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-turnstile-de-test");
-    expect((await lireEnv()).TURNSTILE_SECRET_KEY).toBe(
-      "secret-turnstile-de-test",
-    );
+    const env = await chargerEnvValide({
+      NEXT_PUBLIC_TURNSTILE_SITE_KEY: "cle-de-site-de-test",
+      TURNSTILE_SECRET_KEY: "secret-turnstile-de-test",
+    });
+    expect(env.TURNSTILE_SECRET_KEY).toBe("secret-turnstile-de-test");
   });
 });
 ```
@@ -1687,11 +1690,14 @@ const reglages = vi.hoisted(() => ({
   turnstile: undefined as string | undefined,
 }));
 vi.mock("@src/config/env", () => ({
-  envServeur: () => ({
+  env: {
     FORMULAIRE_SECRET: SECRET,
     LIMITE_STOCKAGE: "memoire",
-    TURNSTILE_SECRET_KEY: reglages.turnstile,
-  }),
+    // Accesseur : la valeur est relue à chaque test.
+    get TURNSTILE_SECRET_KEY() {
+      return reglages.turnstile;
+    },
+  },
 }));
 
 // dans beforeEach : reglages.turnstile = undefined;

@@ -16,7 +16,7 @@ src/
 │   ├── shared/result.ts          Result, ok(), echec()
 │   └── <domaine>/                <sujet>.entity.ts, .rules.ts, .errors.ts, <sujet>-repository.port.ts, use-cases/
 ├── db/
-│   ├── index.ts                  getDb(), type Db
+│   ├── db-client.ts              getDb(), type Db
 │   └── <domaine>/                <sujet>.table.ts, <sujet>.repository.ts
 ├── features/<domaine>/
 │   ├── actions/                  <action>.action.ts (écritures)
@@ -68,7 +68,7 @@ drizzle/                          migrations
 - Un adapter qui sert de garde côté serveur (ex. `src/adapters/turnstile/`, recette `formulaire-public`) peut lire les en-têtes de la requête (`next/headers`) et renvoyer l'erreur d'action (`returnServerError`).
 - La limite de requêtes s'assemble dans `src/lib/limite.ts` (recette `limite`) : ce fichier choisit le limiteur (`src/db/limite/`, `src/adapters/limite/` ou la mémoire), lit les en-têtes de la requête et renvoie l'erreur d'action. C'est le seul fichier de `src/lib/` qui importe `src/db/`.
 
-`import "server-only"` en tête de chaque fichier de `src/db/`, `src/adapters/`, `queries/`, et de `src/config/env.ts`, `src/lib/logger.ts`. Les fichiers d'`actions/` commencent par `"use server"`.
+`import "server-only"` en tête de chaque fichier de `src/db/`, `src/adapters/`, `queries/`, et de `src/lib/logger.ts`. `src/config/env.ts` (t3 env) n'en a pas : les composants client y lisent leurs variables publiques. Les fichiers d'`actions/` commencent par `"use server"`.
 
 ## 4. Composants : containers et composants d'affichage
 
@@ -227,7 +227,7 @@ export const factures = pgTable("factures", {
 // src/db/factures/facture.repository.ts
 import "server-only";
 import type { FactureRepository } from "@src/core/factures/facture-repository.port";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { and, eq } from "drizzle-orm";
 import { factures } from "./facture.table";
 
@@ -268,7 +268,7 @@ export const MESSAGES_FACTURE: Record<ErreurFacture, string> = {
 "use server";
 
 import { payerFacture } from "@src/core/factures/use-cases/payer-facture.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { factureRepository } from "@src/db/factures/facture.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { refresh } from "next/cache";
@@ -292,7 +292,7 @@ export const payerFactureAction = actionConnectee
 ```ts
 // src/features/factures/queries/trouver-facture.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { factureRepository } from "@src/db/factures/facture.repository";
 import { notFound } from "next/navigation";
 

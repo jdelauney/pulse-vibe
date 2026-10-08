@@ -129,4 +129,5 @@ test("le squelette type ses variables avec t3 env et nomme son client Drizzle", 
   assert.ok(!env.includes("server-only"), "env.ts lisible par un composant client");
   assert.ok(fs.existsSync(path.join(S, "src", "db", "db-client.ts")), "db-client.ts");
   assert.ok(!fs.existsSync(path.join(S, "src", "db", "index.ts")), "plus de src/db/index.ts");
+  assert.ok(fs.existsSync(path.join(S, "tests", "helpers", "env-de-test.ts")), "aide VARIABLES_VALIDES");
 });

@@ -244,7 +244,7 @@ test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Red
 test("recette formulaire-public : correctifs de revue (champ neutre, clés Turnstile ensemble, échec du widget)", () => {
   const texte = lire(REF, "recettes", "formulaire-public.md");
   assert.ok(!texte.includes("site_web_societe"), "ancien nom du champ piège");
-  for (const attendu of ["data-1p-ignore", "n'a pas pu se charger", "NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional()", "les deux clés Turnstile vont ensemble", 'vi.stubEnv("FORMULAIRE_SECRET"', "e2e/turnstile.spec.ts"])
+  for (const attendu of ["data-1p-ignore", "n'a pas pu se charger", "NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional()", "les deux clés Turnstile vont ensemble", "VARIABLES_VALIDES", "e2e/turnstile.spec.ts"])
     assert.ok(texte.includes(attendu), attendu);
   assert.ok(!/@e2e\b/.test(texte), "étiquette @bout-en-bout, comme les autres recettes");
 });

@@ -7,7 +7,7 @@
 - Squelette du pack, version qui contient `src/config/site.ts` et `src/lib/seo/seo.ts`. Projet créé avec une version plus ancienne : relancer `pulse-aidd pile squelette --nom "<nom du projet>"` à la racine : il ajoute les fichiers manquants et garde les fichiers présents (les étapes 1 et 2 indiquent ce qui change dans `app/layout.tsx` et `app/page.tsx`).
 - Paquet de développement `schema-dts` (types schema.org, publiés par Google) : déjà dans le squelette ; sinon `npm install -D schema-dts` (dernière version ; recette vérifiée avec 2.1.0). Il sert seulement aux types (`import type`) : rien n'est ajouté au site.
 - Les textes des pages (titres, descriptions) sont validés dans `docs/seo.md` (`/pulse:seo textes`). En attendant, le nom et la description du projet servent.
-- Étapes 5 et 6 (page de détail lue en base) : `src/db/index.ts` (`getDb()`, type `Db`), `drizzle.config.ts` (il lit `src/db/*/*.table.ts`) et `tests/helpers/base-de-test.ts` du squelette ; une base Neon dont la variable `DATABASE_URL` est renseignée **au moment de la construction**, avec les migrations appliquées (`npm run db:migrate`) : `generateStaticParams` et le sitemap lisent la base pendant `npm run build`.
+- Étapes 5 et 6 (page de détail lue en base) : `src/db/db-client.ts` (`getDb()`, type `Db`), `drizzle.config.ts` (il lit `src/db/*/*.table.ts`) et `tests/helpers/base-de-test.ts` du squelette ; une base Neon dont la variable `DATABASE_URL` est renseignée **au moment de la construction**, avec les migrations appliquées (`npm run db:migrate`) : `generateStaticParams` et le sitemap lisent la base pendant `npm run build`.
 - Étape 4 : la recette `connexion` est faite (groupe `app/(connecte)/` et `proxy.ts` à la racine).
 
 ## Variables d'environnement
@@ -198,7 +198,7 @@ Le repository porte la condition « publiée » dans chaque requête ; `existePu
 // src/db/realisations/realisation.repository.ts
 import "server-only";
 import type { Realisation } from "@src/core/realisations/realisation.entity";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { and, desc, eq } from "drizzle-orm";
 import { realisations } from "./realisation.table";
 
@@ -251,7 +251,7 @@ export const TAG_REALISATIONS = "realisations";
 ```ts
 // src/features/realisations/queries/lire-realisation.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { realisationRepository } from "@src/db/realisations/realisation.repository";
 import { cacheLife, cacheTag } from "next/cache";
 import { TAG_REALISATIONS } from "../constants/cache-tags";
@@ -268,7 +268,7 @@ export async function lireRealisation(slug: string) {
 ```ts
 // src/features/realisations/queries/lister-realisations.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { realisationRepository } from "@src/db/realisations/realisation.repository";
 import { cacheLife, cacheTag } from "next/cache";
 import { TAG_REALISATIONS } from "../constants/cache-tags";
@@ -395,7 +395,7 @@ Avec Cache Components, une adresse inconnue de ce segment répond **200 avec `no
 
 ```ts
 // proxy.ts (à fusionner avec le proxy existant de la recette connexion)
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { realisationRepository } from "@src/db/realisations/realisation.repository";
 import { logger } from "@src/lib/logger";
 import { getSessionCookie } from "better-auth/cookies";
@@ -572,7 +572,7 @@ Le repository est testé sur une base en mémoire (`creerBaseDeTest()`) : une r�
 
 ```ts
 // src/db/realisations/__tests__/realisation.repository.test.ts
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import { realisationRepository } from "../realisation.repository";

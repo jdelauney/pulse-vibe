@@ -15,7 +15,7 @@ L'organisation complète est dans **Architecture du code** (affichée avec cette
 | Tables et accès aux données | `src/db/<domaine>/` : `<sujet>.table.ts`, `<sujet>.repository.ts` |
 | Écritures, lectures, écrans d'un domaine | `src/features/<domaine>/` : `actions/`, `queries/`, `schemas/`, `components/` |
 | Services externes | `src/adapters/<service>/` |
-| Connexion à la base | `src/db/index.ts` : `getDb()` et le type `Db` |
+| Connexion à la base | `src/db/db-client.ts` : `getDb()` et le type `Db` |
 | Environnement, adresse du site, nom du projet | `src/config/` : `env.ts`, `site.ts`, `projet.ts` |
 | Actions, journaux, erreurs techniques | `src/lib/` : `safe-action.ts`, `logger.ts`, `errors/` |
 | Composants shadcn | `src/components/ui/` (générés par la commande shadcn, puis adaptés au thème) |
@@ -51,8 +51,8 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 
 ## 4. Sécurité
 
-17. **`import "server-only"`** en tête de tout module qui touche la base, la session ou un secret (`src/db/`, `src/adapters/`, `queries/`, `src/config/env.ts`, `src/lib/logger.ts`) : un import par erreur depuis un composant client casse la construction au lieu de fuir.
-18. **Secrets** : lus par `envServeur()` de `src/config/env.ts` (validé par Zod à la première utilisation) ; jamais de préfixe `NEXT_PUBLIC_` (ces valeurs sont copiées dans le code du navigateur) ; `.env*` à la racine du projet, jamais dans `src/`.
+17. **`import "server-only"`** en tête de tout module qui touche la base, la session ou un secret (`src/db/`, `src/adapters/`, `queries/`, `src/lib/logger.ts`) : un import par erreur depuis un composant client casse la construction au lieu de fuir. `src/config/env.ts` en est exempté : un composant client y lit ses variables publiques, et t3 env refuse la lecture d'une variable serveur dans le navigateur.
+18. **Variables** : lues par `env` (`import { env } from "@src/config/env"`, t3 env, validé au chargement). Secrets dans `server` ; variables publiques `NEXT_PUBLIC_…` dans `client` **et** dans `experimental__runtimeEnv` (lecture écrite en entier, copiée dans le code du navigateur) ; jamais de secret en `NEXT_PUBLIC_`. `SKIP_ENV_VALIDATION=1` sert seulement aux constructions de vérification (CI), jamais sur Vercel. Chaque variable obligatoire a une valeur de test dans `VARIABLES_VALIDES` (`tests/helpers/env-de-test.ts`). `.env*` à la racine du projet, jamais dans `src/`.
 19. **`proxy.ts` sert au confort** : il lit la **présence** du cookie de session et redirige vers `/connexion`, avec un `matcher` qui exclut `api`, `_next/static`, `_next/image` et les fichiers publics. La protection réelle est dans `utilisateurConnecte()` et dans chaque action. Seule lecture en base permise dans le proxy : l'existence d'un contenu publié, pour un vrai 404 (recette `seo`).
 20. **HTML saisi par une personne** : l'afficher en texte simple ; si du HTML doit vraiment s'afficher, le nettoyer avec `isomorphic-dompurify` avant `dangerouslySetInnerHTML`.
 21. **Journaux** (`logger` de `src/lib/logger.ts`) : côté serveur, dans les actions et les Route Handlers ; jamais de mot de passe, de jeton, ni de donnée personnelle dans un message.
@@ -80,7 +80,7 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 
 ## 8. Pièges constatés sur ces versions
 
-36. **Lire la requête avant la base ou la session** : `await headers()` (ou `cookies()`) **avant** `getDb()` ou `getAuth()`. Dans l'ordre inverse, la construction (`npm run build`) échoue sans variables d'environnement.
+36. **Lire la requête avant la base ou la session** : `await headers()` (ou `cookies()`) **avant** `getDb()` ou `getAuth()`. Dans l'ordre inverse, la construction (`npm run build`) tente de pré-rendre la page avec la base ou la session, et échoue.
 37. **Pages gardées cachées dans le document** : Next.js garde les pages déjà visitées, masquées. Deux formulaires avec `id="email"` créent des doublons : préfixer les `id` avec `useId()`. Dans Playwright, viser les champs visibles (`getByLabel("E-mail", { exact: true })` filtré avec `{ visible: true }`, ou l'aide `champ()` de la recette `connexion`).
 38. **better-auth ne limite pas les appels serveur** (`auth.api.*`) : avant d'ouvrir le site au public, ajouter la recette `limite` sur la connexion et l'inscription (compteurs dans la base Neon par défaut). Un formulaire ouvert à tous (contact, devis, avis) reçoit la recette `formulaire-public` (champ piège, délai signé, limite).
 39. **Après une action qui change la session** (changement de mot de passe), lire la session depuis `cookies()` (aide `enTetesDeSession()` de la recette `connexion`) : `headers()` porte encore l'ancien cookie.
@@ -94,6 +94,7 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 47. **Données structurées** : `<JsonLd>` (`src/components/shared/elements/json-ld.tsx`) avec les fonctions de `src/lib/seo/donnees-structurees.ts`, jamais `JSON.stringify` nu dans `dangerouslySetInnerHTML`.
 48. **Images sur l'offre Hobby de Vercel** : 5 000 transformations d'images par mois ; au-delà, les nouvelles images répondent 402 et `next/image` affiche seulement le texte alternatif. Images du site en import statique ; pour un site très illustré, prévoir l'offre Pro (`pulse-aidd pile reference contexte/perf.md`).
 49. **Pages d'authentification** (connexion, inscription, mot de passe oublié, nouveau mot de passe) : `robots: { index: false, follow: false }`, hors du sitemap, accessibles à robots.txt pour que Google lise la consigne.
+50. **Projet créé avant pulse-vibe-next 0.11.0** (`envServeur()`, `src/db/index.ts`) : `npm install @t3-oss/env-nextjs`, reprendre du squelette `src/config/env.ts`, `src/db/db-client.ts`, `tests/helpers/env-de-test.ts` et le réglage `env` de `vitest.config.ts` ; reporter les variables du projet dans `server` (secrets) ou `client` + `experimental__runtimeEnv` (publiques), et les vérifications croisées dans `createFinalSchema` ; supprimer `src/db/index.ts` ; remplacer `envServeur().X` par `env.X` et `@src/db` par `@src/db/db-client` ; dans les tests, `{ envServeur: () => ({…}) }` devient `{ env: {…} }`. Puis `npm run check && npm run typecheck && npm test`.
 
 ## 9. Avant de rendre la main
 

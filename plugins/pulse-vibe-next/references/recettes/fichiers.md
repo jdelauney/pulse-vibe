@@ -4,7 +4,7 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/index.ts` (`getDb()`, type `Db`), `src/config/env.ts` (`envServeur()`), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
+- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/db-client.ts` (`getDb()`, type `Db`), `src/config/env.ts` (objet `env`, t3 env), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
 - `next.config.ts` avec la CSP et son objet `sources` (squelette de pulse-vibe-next 0.9.0 ou plus). Projet créé avec une version plus ancienne : lancez d'abord `/pulse:security entetes`, qui pose les en-têtes du squelette.
 - La recette `connexion` est faite (`pulse-aidd pile recette connexion`). Elle fournit :
   - `utilisateurConnecte()` dans `src/features/compte/queries/utilisateur-connecte.query.ts` (renvoie `{ id, nom }`, ou redirige vers `/connexion` sans session) ;
@@ -43,13 +43,22 @@ Le bucket reste **privé** : pas d'accès public, pas de domaine public.
 | `R2_SECRET_ACCESS_KEY` | Secret du jeton R2 (`VOTRE_CLE_ICI`) |
 | `R2_BUCKET` | Nom du bucket |
 
-Ajoutez ces lignes au schéma de `src/config/env.ts` (`schemaEnvServeur`) :
+Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
 
 ```ts
-  R2_ACCOUNT_ID: z.string().min(1),
-  R2_ACCESS_KEY_ID: z.string().min(1),
-  R2_SECRET_ACCESS_KEY: z.string().min(1),
-  R2_BUCKET: z.string().min(1),
+    R2_ACCOUNT_ID: z.string().min(1),
+    R2_ACCESS_KEY_ID: z.string().min(1),
+    R2_SECRET_ACCESS_KEY: z.string().min(1),
+    R2_BUCKET: z.string().min(1),
+```
+
+Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
+
+```ts
+  R2_ACCOUNT_ID: "compte",
+  R2_ACCESS_KEY_ID: "cle-acces",
+  R2_SECRET_ACCESS_KEY: "secret-de-test",
+  R2_BUCKET: "bucket-de-test",
 ```
 
 Ajoutez les quatre noms, **sans valeur**, à `.env.example` :
@@ -350,7 +359,7 @@ Chaque requête commence par la **condition de propriété** (`utilisateurId`, v
 import "server-only";
 import type { Fichier, TypeAutorise } from "@src/core/fichiers/fichier.entity";
 import type { FichierRepository } from "@src/core/fichiers/fichier-repository.port";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { and, desc, eq } from "drizzle-orm";
 import { fichiers } from "./fichier.table";
 
@@ -448,7 +457,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import type { StockageFichiers } from "@src/core/fichiers/stockage-fichiers.port";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 
@@ -458,7 +467,6 @@ let client: S3Client | undefined;
 
 function obtenirClient(): S3Client {
   if (!client) {
-    const env = envServeur();
     client = new S3Client({
       region: "auto",
       // Bucket créé avec la juridiction UE : adresse en ".eu.". Sans juridiction : retirer ".eu".
@@ -508,7 +516,7 @@ export const stockageFichiers: StockageFichiers = {
       return await getSignedUrl(
         obtenirClient(),
         new PutObjectCommand({
-          Bucket: envServeur().R2_BUCKET,
+          Bucket: env.R2_BUCKET,
           Key: params.cle,
           ContentType: params.typeMime,
           ContentLength: params.taille,
@@ -530,7 +538,7 @@ export const stockageFichiers: StockageFichiers = {
       return await getSignedUrl(
         obtenirClient(),
         new GetObjectCommand({
-          Bucket: envServeur().R2_BUCKET,
+          Bucket: env.R2_BUCKET,
           Key: params.cle,
           ResponseContentDisposition: `attachment; filename="${nomSur}"`,
         }),
@@ -545,7 +553,7 @@ export const stockageFichiers: StockageFichiers = {
   async lireObjet(cle) {
     try {
       const reponse = await obtenirClient().send(
-        new HeadObjectCommand({ Bucket: envServeur().R2_BUCKET, Key: cle }),
+        new HeadObjectCommand({ Bucket: env.R2_BUCKET, Key: cle }),
       );
       return {
         taille: reponse.ContentLength ?? 0,
@@ -560,7 +568,7 @@ export const stockageFichiers: StockageFichiers = {
   async supprimerObjet(cle) {
     try {
       await obtenirClient().send(
-        new DeleteObjectCommand({ Bucket: envServeur().R2_BUCKET, Key: cle }),
+        new DeleteObjectCommand({ Bucket: env.R2_BUCKET, Key: cle }),
       );
     } catch (erreur) {
       throw panneDeStockage(erreur);
@@ -633,7 +641,7 @@ L'identifiant de la propriétaire vient **de la session** (`ctx.utilisateur.id`)
 import { randomUUID } from "node:crypto";
 import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
 import { preparerEnvoi } from "@src/core/fichiers/use-cases/preparer-envoi.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { fichierRepository } from "@src/db/fichiers/fichier.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { demandeEnvoiSchema } from "../schemas/fichier.schema";
@@ -655,7 +663,7 @@ export const preparerEnvoiAction = actionConnectee
 
 import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
 import { confirmerEnvoi } from "@src/core/fichiers/use-cases/confirmer-envoi.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { fichierRepository } from "@src/db/fichiers/fichier.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { refresh } from "next/cache";
@@ -683,7 +691,7 @@ export const confirmerEnvoiAction = actionConnectee
 
 import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
 import { supprimerFichier } from "@src/core/fichiers/use-cases/supprimer-fichier.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { fichierRepository } from "@src/db/fichiers/fichier.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { refresh } from "next/cache";
@@ -709,7 +717,7 @@ Les lectures passent directement par le repository, sans use-case (architecture.
 ```ts
 // src/features/fichiers/queries/lister-fichiers.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { fichierRepository } from "@src/db/fichiers/fichier.repository";
 
 export async function listerFichiers(utilisateurId: string) {
@@ -720,7 +728,7 @@ export async function listerFichiers(utilisateurId: string) {
 ```ts
 // src/features/fichiers/queries/trouver-fichier.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { fichierRepository } from "@src/db/fichiers/fichier.repository";
 
 /** Le fichier envoyé de cette personne, ou null (inconnu, en attente, ou à quelqu'un d'autre). */
@@ -1490,12 +1498,12 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
   return { ...reel, S3Client: S3ClientDouble };
 });
 vi.mock("@src/config/env", () => ({
-  envServeur: () => ({
+  env: {
     R2_ACCOUNT_ID: "compte",
     R2_ACCESS_KEY_ID: "cle-acces",
     R2_SECRET_ACCESS_KEY: "secret-de-test",
     R2_BUCKET: "bucket-de-test",
-  }),
+  },
 }));
 
 const { stockageFichiers } = await import("../storage.adapter");
@@ -1587,7 +1595,7 @@ Le repository reçoit la base de test : aucune doublure de session ni de `getDb(
 
 ```ts
 // src/db/fichiers/__tests__/fichier.repository.test.ts
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { user } from "@src/db/compte/auth.table";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
@@ -1763,7 +1771,7 @@ test.describe("Fichiers", () => {
 - **Objet orphelin à la suppression** : `supprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
 - **Lignes « en_attente »** : un envoi abandonné laisse une ligne sans fichier. Elle reste invisible ; une tâche de ménage pourra les effacer plus tard.
 - **Type déclaré par le navigateur** : `File.type` vient de l'extension ; le contenu n'est pas inspecté. Le téléchargement forcé (`attachment`) évite qu'un fichier piégé s'exécute dans le site.
-- **Les quatre variables R2 deviennent obligatoires** : `envServeur()` valide tout le schéma à sa première lecture, et `next build` passe sans elles. Renseignez-les dans `.env` (une valeur factice suffit tant qu'aucun envoi réel n'a lieu) avant de lancer le site ou les tests de bout en bout.
+- **Les quatre variables R2 deviennent obligatoires** : `env` les valide au chargement ; la construction, le site et les tests de bout en bout les exigent. Renseignez-les dans `.env` (une valeur factice suffit tant qu'aucun envoi réel n'a lieu). Construction de vérification sans elles (CI) : `SKIP_ENV_VALIDATION=1 npm run build`.
 - **Langues** : avec la recette `langues`, la page va sous `app/[locale]/(connecte)/fichiers/` ; `app/api/fichiers/` reste à sa place.
 
 ## Sources
