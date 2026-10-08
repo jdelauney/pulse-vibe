@@ -108,7 +108,7 @@ test("un outil cité dans les consignes d'un agent lui est disponible", () => {
 });
 
 test("allowed-tools des skills : motifs précis, sans suppression, fusion de demande, envoi forcé ni configuration", () => {
-  // Permis : les fusions locales de worktree (git merge --no-ff, --abort) et la remise d'une branche locale sur l'origine.
+  // Permis : l'abandon d'une fusion en conflit (git merge --abort).
   assert.ok(SKILLS_PAR_PLUGIN.length >= SKILLS.size && SKILLS.size > 0, "lecture des skills");
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
@@ -278,4 +278,24 @@ test("envoi du travail : git push passe par la demande d'autorisation ; /pulse:c
   assert.match(commit, /si le \*\*premier mot\*\* est `push`/);
   assert.match(commit, /ajoute le bouton push/);
   assert.match(lire(RACINE, "references", "regles-communes.md"), /envoyer le travail sur le dépôt distant \(`git push`/);
+});
+
+test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale, ni dépôt distant créé ; commits par git commit -m", () => {
+  const interdit = /^(git branch -f\b|git merge --no-ff\b|git pull\b|gh repo create\b|glab repo create\b)/;
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const skill = path.relative(DEPOT, path.dirname(fichier));
+    for (const motif of motifsBash(fichier)) {
+      if (interdit.test(motif)) problemes.push(`${skill} : Bash(${motif})`);
+      if (/^git commit\b/.test(motif) && motif !== "git commit -m *") problemes.push(`${skill} : Bash(${motif}) (attendu : Bash(git commit -m *))`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  for (const operation of ["`git merge`", "`git branch -f`", "`git pull`", "créer un dépôt distant"]) assert.ok(regles.includes(operation), `règle 17 : ${operation}`);
+  const depot = lire(RACINE, "references", "depot-distant.md");
+  assert.match(depot, /`gh repo create <nom> --private /);
+  assert.match(depot, /`glab repo create <nom> --private`/);
+  assert.match(depot, /Claude Code demande l'accord de la personne/);
+  assert.match(lire(RACINE, "references", "git.md"), /`git commit -m "<description>"`/);
 });

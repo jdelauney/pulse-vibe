@@ -24,6 +24,7 @@ Réf. : <US-03, ticket…>   (facultatif)
 - **`(<Tâche>)`** : le numéro de tâche du plan (`T3`). Sans tâche, omettre la parenthèse, ou mettre une zone courte du projet (`docs`, `memoire`).
 - **Corps** : seulement s'il apporte le **pourquoi** (une contrainte, un choix, un piège évité). Une ligne vide le sépare de la description.
 - **Réf.** : les US concernées (identifiants `US-XXX` du référentiel `docs/user-stories.md`), ou un ticket.
+- **Commande** : `git commit -m "<description>"`, avec un `-m` de plus pour chaque paragraphe (corps, `Réf.`). C'est la forme que les commandes Pulse lancent sans demande ; toute autre forme passe par la demande d'autorisation de Claude Code.
 
 Types :
 

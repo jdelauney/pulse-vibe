@@ -2,7 +2,7 @@
 description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production (variables, services, retour arrière ; la CI se met en place avec /pulse:cicd)
 argument-hint: "[premiere | production] (détecté automatiquement si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-hook) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git remote *) Bash(git pull *) Bash(gh auth status*) Bash(gh repo create *) Bash(glab auth status*) Bash(glab repo create *) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-hook) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git remote *) Bash(gh auth status*) Bash(glab auth status*) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
 ---
 
 # /pulse:deploy – Mettre en ligne

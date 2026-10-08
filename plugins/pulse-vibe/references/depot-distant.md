@@ -19,7 +19,7 @@ Demander (AskUserQuestion) « Relier le projet à un dépôt distant ? » :
 
 Toujours **privé**, au nom du projet (minuscules, tirets), et **vide** : le projet a déjà son README et son fichier d'exclusion.
 
-- **Outil en ligne de commande installé et connecté** (`gh auth status` pour GitHub, `glab auth status` pour GitLab) : proposer la commande de création d'un dépôt privé relié à ce dossier sous le nom `origin`, avec le premier envoi, d'après la documentation officielle de l'outil (GitHub : `gh repo create <nom> --private --source . --remote origin --push`). La montrer, expliquer chaque partie, la lancer avec accord.
+- **Outil en ligne de commande installé et connecté** (`gh auth status` pour GitHub, `glab auth status` pour GitLab) : proposer la commande de création d'un dépôt privé relié à ce dossier sous le nom `origin`, avec le premier envoi, d'après la documentation officielle de l'outil (GitHub : `gh repo create <nom> --private --source . --remote origin --push` ; GitLab : `glab repo create <nom> --private`, puis § 1b, étape 2, si l'outil n'a pas relié le dossier). L'option `--private` figure toujours en toutes lettres dans la commande : un dépôt public expose pour toujours son historique. La montrer, expliquer chaque partie, puis la lancer : Claude Code demande l'accord de la personne.
 - **Sinon** : s'en tenir au site du fournisseur et guider pas à pas (nouveau dépôt, nom, visibilité **privée**, dépôt laissé vide), faire coller l'adresse du dépôt, puis § 1b, étape 2.
 
 ### 1b. Relier un dépôt existant
