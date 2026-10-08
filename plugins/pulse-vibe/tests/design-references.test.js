@@ -139,3 +139,21 @@ test("revue critique : heuristiques positives, sans doublon ni intention prêté
   for (const absent of ["Aucune décoration", "au fil de l'eau", "Le design sait-il", "L'interface parle-t-elle", "comment s'en sortir"]) assert.ok(!t.includes(absent), absent);
   assert.ok(t.includes("regles-ui.md` § 8"), "H9 renvoie aux messages d'erreur");
 });
+
+// --- Lot 4 : méthode de génération ---
+
+test("directions : 5 familles, 15 styles, conseil de choix", () => {
+  const t = lire("directions.md");
+  for (const f of ["Éditoriale", "Moderne", "Technique", "Affirmée", "Chaleureuse"]) assert.match(t, new RegExp(`^## ${f}`, "m"), f);
+  const styles = t.split("Styles :\n").slice(1).map((b) => b.split("\n\n")[0].split("\n").filter((l) => l.startsWith("- **")).length);
+  assert.deepStrictEqual(styles, [3, 3, 3, 3, 3], "3 styles par famille");
+  assert.ok(t.includes("## Choisir une famille"));
+  assert.ok(!t.includes("—"), "aucun tiret cadratin");
+});
+
+test("trois couches : règle dans regles-ui.md, nuances dans le modèle design.md", () => {
+  const r = lire("regles-ui.md");
+  assert.ok(r.includes("trois couches") && r.includes("--<teinte>-100"));
+  const d = lireP("templates", "design.md");
+  assert.ok(d.includes("| Nuance |") && d.includes("var(--"));
+});

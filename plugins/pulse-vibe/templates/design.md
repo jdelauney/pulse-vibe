@@ -39,6 +39,14 @@ Ce que la scène implique : {{clair ou sombre, densité, taille des cibles tacti
 
 **Stratégie** : {{Sobre avec une touche | Une couleur affirmée | Plusieurs couleurs | La couleur partout}}
 
+**Nuances** (5 par teinte, de la plus claire à la plus foncée ; règle des trois couches dans « Règles d'interface ») :
+
+| Nuance | Valeur |
+|---|---|
+| {{--<teinte>-100}} | {{oklch(…)}} |
+
+**Rôles** (la valeur cite une nuance, par exemple `var(--ocre-700)`) :
+
 | Rôle | Valeur | Contraste sur le fond | Usage |
 |---|---|---|---|
 | Fond | | — | |
@@ -91,7 +99,7 @@ Police de secours : {{police système}} · Longueur de ligne : 65 à 75 caractè
 
 - **Fichier du thème** : {{chemin du fichier où vivent les valeurs (couleurs par rôle, polices, rayons, espacements, ombres), d'après « Organisation des fichiers » de `docs/technical.md` ou le pack de pile ; ou « à créer à la mise en place »}}
 - **Règle** : les composants emploient ces valeurs par leur nom de rôle (fond, texte, accent…), plutôt qu'une valeur écrite en dur. Un changement d'identité se fait dans ce seul fichier.
-- **Correspondance** : {{rôle de la section 6 → nom de la valeur dans le code, ex. Accent → --primary}}
+- **Correspondance**, en trois couches : nuances (copiées telles quelles) → rôles de la section 6 → nom de la valeur dans le code, ex. Accent → `--primary: var(--ocre-700)` ; puis les valeurs de composant s'il y en a.
 
 ## 13. Sources
 
