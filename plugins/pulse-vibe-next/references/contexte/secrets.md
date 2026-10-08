@@ -110,6 +110,25 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 - **Traces** : console Upstash → la base → **Usage / Metrics**.
 - Sources : https://upstash.com/docs/redis/features/security ; https://upstash.com/blog/rotate-upstash-secrets-after-vercel-incident (2026-04-19).
 
+### `FORMULAIRE_SECRET`
+
+- **Rôle** : signe le jeton de délai des formulaires publics (recette `formulaire-public`).
+- **Longueur** : 32 caractères au moins, tirés au hasard : `pulse-aidd secrets generer FORMULAIRE_SECRET` (rien n'est affiché). Une valeur différente par environnement.
+- **Où renouveler** : nulle part ailleurs que dans le projet : la valeur est générée.
+- **Effet** : les formulaires ouverts avant le changement sont refusés une fois (« Rechargez la page et réessayez. ») ; après rechargement, tout fonctionne. Aucune donnée n'est perdue.
+- **Délai de grâce** : aucun ; un formulaire se recharge.
+- **Test** : `pulse-aidd secrets verifier FORMULAIRE_SECRET` (longueur), puis l'envoi d'un formulaire public sur le site après le redéploiement.
+
+### `TURNSTILE_SECRET_KEY`
+
+- **Rôle** : la clé secrète du widget Cloudflare Turnstile (recette `formulaire-public`, option Turnstile), avec `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (clé de site, publique : elle apparaît dans la page).
+- **Où renouveler** : tableau de bord Cloudflare → **Turnstile** → le widget → **Settings** → **Rotate Secret Key** → copier la nouvelle clé.
+- **Effet** : la rotation dure deux heures ; pendant ce temps, l'ancienne et la nouvelle clé sont acceptées toutes les deux.
+- **Délai de grâce** : deux heures : saisir la nouvelle clé dans Vercel et redéployer pendant ce délai.
+- **Test** : `pulse-aidd secrets verifier TURNSTILE_SECRET_KEY` (Cloudflare reconnaît la clé, sans vérifier de visiteur), puis l'envoi d'un formulaire protégé sur le site.
+- **Traces** : tableau de bord Cloudflare → Turnstile → **Analytics**.
+- Sources : https://developers.cloudflare.com/turnstile/troubleshooting/rotate-secret-key/ ; https://developers.cloudflare.com/turnstile/get-started/server-side-validation/.
+
 ## Autres secrets du poste
 
 - **Jeton GitHub** (`gh`, CI) : https://github.com/settings/tokens → créer le nouveau, mettre à jour la CI, supprimer l'ancien ; `gh auth refresh` pour le jeton de `gh`. Test : `gh auth status`. Un jeton poussé dans un dépôt public est révoqué automatiquement par GitHub.
