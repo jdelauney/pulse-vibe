@@ -8,14 +8,14 @@
 
 | Motif (`motifs.md`) | Composant |
 |---|---|
-| Notification | `sonner` (déjà dans le squelette : `toast()`) |
-| Boutons d'option | `radio-group` ou `toggle-group` |
+| Notification | `sonner` (déjà dans le squelette) : `toast.success(message)` ; annulation : `toast(message, { action: { label: "Annuler", onClick: annuler } })` ; erreur : `toast.error(message, { duration: Infinity, closeButton: true })` |
+| Boutons d'option | `radio-group` dans un formulaire ; `toggle-group` pour un filtre ; `checkbox` pour plusieurs choix |
 | Liste déroulante | `select`, ou `native-select` |
 | Sélection avec recherche | `combobox` |
-| Panneau latéral | `sheet` (`side="right"`, ou `"bottom"` sur téléphone) |
-| Fenêtre modale | `dialog` ; action destructive : `alert-dialog` |
-| Tableau de données | `table`, avec la recette `liste` (`pulse-aidd pile recette liste`) |
+| Panneau latéral | `sheet`, `side={estTelephone ? "bottom" : "right"}` avec `const estTelephone = useIsMobile()` (`@src/hooks/use-mobile`, installé avec `sidebar`) |
+| Fenêtre modale | `dialog` ; action destructive : `alert-dialog`, bouton de l'action en `variant="destructive"` |
+| Tableau de données | `table`, avec la recette `liste` (`pulse-aidd pile recette liste`) ; en-tête visible au défilement : dans `table.tsx`, le conteneur (`data-slot="table-container"`) reçoit une hauteur maximale et `overflow-y-auto`, et `TableHeader` reçoit `sticky top-0 bg-background` |
 | Squelette de chargement | `skeleton` |
 | État vide | `empty` |
-| Graphique | `chart`, couleurs `--chart-1` à `--chart-5` du thème |
+| Graphique | `chart`, couleurs `--chart-1` à `--chart-5` du thème ; `accessibilityLayer` sur le graphique (navigation au clavier) |
 | Navigation | `sidebar` (barre latérale), `tabs`, `breadcrumb`, `dropdown-menu` |

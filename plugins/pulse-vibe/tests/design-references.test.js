@@ -65,3 +65,23 @@ test("motifs d'écrans : neuf sections et renvoi aux formulaires", () => {
   assert.ok(t.includes("qualite/composants.md"));
   assert.ok(!t.includes("—"), "aucun tiret cadratin");
 });
+
+// --- Correctifs de la revue finale du lot 2 (motifs) ---
+
+test("revue motifs : chargés par le designer, cités par /pulse:ui et /pulse:plan", () => {
+  const P = path.join(__dirname, "..");
+  const l = (...p) => fs.readFileSync(path.join(P, ...p), "utf8");
+  assert.ok(l("agents", "designer.md").includes("pulse-aidd reference design/motifs.md"));
+  assert.ok(l("skills", "ui", "SKILL.md").includes("quatre références de design"));
+  assert.ok(l("skills", "plan", "SKILL.md").includes("design/motifs.md"));
+  assert.match(l("references", "tests", "test-manuel.md"), /notifications[^\n]*erreur[^\n]*ferm/i);
+});
+
+test("revue motifs : pas de chevauchement, squelette selon le registre, renvois sans doublon", () => {
+  const t = lire("motifs.md");
+  assert.ok(t.includes("| 2 à 6 |") && t.includes("| 7 à 15 |"), "tranches 2 à 6 puis 7 à 15");
+  assert.match(t, /en registre outil[^\n]*squelette/i);
+  for (const attendu of ["1 à 20 sur 134", "5 au plus", "quelques étapes", "Histogramme (", "Anneau (", "regles-ui.md` § 7", "composants.md` § 8"])
+    assert.ok(t.includes(attendu), attendu);
+  assert.ok(!t.includes("La touche Échap la ferme"), "le comportement de la modale reste dans composants.md");
+});

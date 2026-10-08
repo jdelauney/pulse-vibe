@@ -19,7 +19,7 @@ Action demandée : `$ARGUMENTS`
 
 Aider la personne à **voir** et choisir l'apparence de son outil, puis à la soigner. Phrase à dire : « On choisit une apparence en la regardant, plutôt qu'en lisant des codes couleur. »
 
-Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les trois références de design ont pour titres « Registres d'interface », « Règles d'interface » et « Anti-patterns d'interface » (la « liste noire ») ; on peut les réafficher avec `pulse-aidd reference design/<fichier>`.
+Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les quatre références de design ont pour titres « Registres d'interface », « Règles d'interface », « Anti-patterns d'interface » (la « liste noire ») et « Motifs d'écrans » ; on peut les réafficher avec `pulse-aidd reference design/<fichier>`.
 
 ## Choisir l'action
 

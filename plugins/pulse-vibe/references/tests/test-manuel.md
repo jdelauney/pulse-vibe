@@ -44,7 +44,7 @@ Le test manuel est fait par la personne, dans l'application, comme un utilisateu
 - [ ] Sans connexion internet, un message clair s'affiche et rien ne se perd.
 - [ ] Une erreur du serveur affiche un message compréhensible.
 - [ ] Les erreurs de saisie s'affichent à côté des champs.
-- [ ] Les notifications apparaissent puis disparaissent.
+- [ ] Les notifications de succès apparaissent puis disparaissent ; une notification d'erreur reste jusqu'à ce que vous la fermiez.
 
 ### Affichage
 - [ ] Sur téléphone, tout est lisible et utilisable.

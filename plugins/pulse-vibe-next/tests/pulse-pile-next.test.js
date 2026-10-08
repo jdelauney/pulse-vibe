@@ -265,3 +265,9 @@ test("contexte ui du pack : chaque motif a son composant shadcn", () => {
   const t = lire(REF, "contexte", "ui.md");
   for (const c of ["`combobox`", "`sheet`", "`alert-dialog`", "`empty`", "`chart`", "`sonner`", "`skeleton`", "`sidebar`"]) assert.ok(t.includes(c), c);
 });
+
+test("contexte ui du pack : les composants réalisent les motifs tels quels", () => {
+  const t = lire(REF, "contexte", "ui.md");
+  for (const attendu of ["duration: Infinity", "closeButton: true", "action: {", "sticky top-0", "overflow-y-auto", "useIsMobile", "accessibilityLayer", 'variant="destructive"'])
+    assert.ok(t.includes(attendu), attendu);
+});

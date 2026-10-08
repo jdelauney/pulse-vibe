@@ -35,7 +35,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Méthode
 
-1. Charger les références et le modèle : `pulse-aidd reference design/registres.md`, `pulse-aidd reference design/regles-ui.md`, `pulse-aidd reference design/anti-patterns.md`, `pulse-aidd modele maquette-note.md`.
+1. Charger les références et le modèle : `pulse-aidd reference design/registres.md`, `pulse-aidd reference design/regles-ui.md`, `pulse-aidd reference design/anti-patterns.md`, `pulse-aidd reference design/motifs.md`, `pulse-aidd modele maquette-note.md`.
 2. Lire `docs/design.md` (ou la direction provisoire reçue), les documents reçus (PRD, brief, spec, user stories) et le glossaire. Relever les mots du métier à employer dans les contenus fictifs.
 3. Produire les pages selon le type :
    - **planche** : écrire `planche.html`. Elle montre la palette **par rôle** (chaque couleur avec sa valeur et le contraste affiché), l'échelle typographique, les boutons et les champs dans **tous leurs états** (repos, survol, focus, désactivé, erreur), une liste, un message d'erreur, un état vide et une zone de navigation.
