@@ -58,12 +58,12 @@ Hors tâche en cours, omettre la parenthèse ou mettre une zone courte. Si la pe
 
 ### 5. Mettre à jour le plan
 
-Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles communes (§ 7) : mode autonome ou examen renforcé (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
+Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles communes (§ 7) : mode autonome ou contrôle de sécurité à chaque tâche (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
 
 ### 6. Enregistrer
 
 - Montrer les fichiers de ce commit et le message.
-- `git add <fichiers du sujet>` (nommer chaque fichier, plutôt que `git add -A`, tant que d'autres sujets restent), puis `git commit` avec le message (corps et `Réf.` compris).
+- `git add <fichiers du sujet>` (nommer chaque fichier, plutôt que `git add -A`, tant que d'autres sujets restent), puis `git commit` avec le message (corps et `Réf.` compris), sous la forme `git commit -m "<sujet>" -m "<corps>"`.
 - **Commit refusé par un contrôle** : appliquer « Quand un contrôle refuse le commit » des Conventions Git (correction mécanique dans les fichiers de ce commit, 3 essais au plus, sinon s'arrêter et expliquer ; jamais `--no-verify`).
 - Afficher `git log --oneline -3` et expliquer la première ligne (identifiant court + message).
 
@@ -71,8 +71,8 @@ Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dan
 
 - **Commit d'une tâche** : appliquer « 3. Envoyer après chaque tâche enregistrée » de la référence « Le dépôt distant et l'envoi du travail », selon la ligne « Envoi » de son plan. Si un dépôt distant existe et que cette ligne vaut encore « à choisir » : appliquer d'abord son § 2 (le choix est écrit dans le plan et enregistré au commit suivant ; en mode PR, sur la branche principale, les commits non envoyés se déplacent sur la branche de l'US comme le prévoit l'étape **pr**, section B.1).
 - **Autre commit** (documents, mémoire…) : envoyer seulement avec `push`.
-- Branche courante : `git branch --show-current`. Dépôt distant absent (`git remote` vide) : garder le commit en local ; avec `push`, proposer `/pulse:init` pour en relier un (ou `/pulse:deploy`).
-- `git push` (première fois pour cette branche : `git push -u origin <branche>`). **Jamais `--force`.** Envoi refusé parce que le dépôt distant a des changements plus récents : ne pas forcer ; expliquer et proposer `git pull` puis un nouvel envoi.
+- Branche courante : `git branch --show-current`. Dépôt distant absent (`git remote -v` vide) : garder le commit en local ; avec `push`, proposer `/pulse:init` pour en relier un (ou `/pulse:deploy`).
+- Annoncer en une phrase : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push` (première fois pour cette branche : `git push -u origin <branche>`). **Jamais `--force`.** Envoi refusé parce que le dépôt distant a des changements plus récents : ne pas forcer ; expliquer et proposer `git pull` puis un nouvel envoi.
 - Sur la branche principale, rappeler que l'envoi met le site à jour si le déploiement automatique est en place.
 
 ### 8. Compte rendu

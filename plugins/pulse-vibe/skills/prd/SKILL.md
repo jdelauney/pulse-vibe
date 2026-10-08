@@ -1,5 +1,5 @@
 ---
-description: Produire le PRD - besoin, objectifs et périmètre du MVP priorisé avec MoSCoW
+description: Produire le PRD - le besoin, les objectifs et le périmètre du MVP, décidés avec vous : ce qui est indispensable, ce qui peut attendre
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini)
 ---

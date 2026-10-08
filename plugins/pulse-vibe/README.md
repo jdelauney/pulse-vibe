@@ -15,7 +15,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:tech` | Choix techniques : besoins, 2-3 options comparées et vérifiées sur leur documentation officielle ; **c'est la personne qui choisit sa technologie** (ou la pile existante est documentée) ; un pack de pile installé est proposé comme option ; mise en ligne d'une page de départ dès le premier jour | `docs/technical.md`, bloc « Pile technique » de `CLAUDE.md` |
 | `/pulse:spec <US-003 \| "demande">` | Spécification d'une user story (une US = une spec), ou d'une demande décrite : l'intention seule, trous marqués `TBD:`, hors objectifs, données personnelles et accès ; verrouillée une fois validée | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
 | `/pulse:us` | Epics, user stories et critères d'acceptation, validées INVEST et prêtes (Definition of Ready), triées par ordre de réalisation, sauvegardées après validation (fichiers, et l'outil de ticketing de la mémoire projet) : un référentiel, puis un fichier par US rangé dans le dossier de son epic | `docs/user-stories.md`, `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
-| `/pulse:plan <US-003>` | Conception technique (pile, données, sécurité, fichiers), puis petites tâches ordonnées (kanban) pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
+| `/pulse:plan <US-003>` | Conception technique (pile, données, sécurité, fichiers), puis petites tâches ordonnées pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
 | `/pulse:refine [<US-003>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
 | `/pulse:guide` | Le carnet de route : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier, les actions manuelles. Mis à jour automatiquement à chaque modification du plan | `docs/guide/` |
 | `/pulse:implement <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, via le sous-agent implementer ou directement (question posée au démarrage), au besoin dans un worktree (proposé d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
@@ -58,13 +58,13 @@ Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se reg
 
 | Commande | Raccourci | Effet |
 |---|---|---|
-| `/pulse:implement` | `-s` / `-d` | réalisation par le sous-agent / directement dans la conversation |
-| `/pulse:implement`, `/pulse:spirc` | `-w` | dans un worktree |
+| `/pulse:implement` | `-s` / `-d` | je code en coulisse (agent implementer) / je code devant vous, dans la conversation |
+| `/pulse:implement`, `/pulse:spirc` | `-w` | dans une copie à part du projet (worktree) |
 | `/pulse:spirc` | `-a` | autonome : sans les points de validation, constats corrigés seuls (Critique à Moyenne ; Basse confrontés au code), test manuel regroupé à la fin du plan |
-| `/pulse:spirc` | `-x` | examen renforcé : audit de sécurité à chaque tâche |
+| `/pulse:spirc` | `-x` | contrôle de sécurité à chaque tâche (agent security-auditor) |
 | `/pulse:implement`, `/pulse:spirc` | `-t` | tests d'abord : les tests de chaque tâche sont écrits avant le code (agent test-writer), puis lancés et triés (agent test-runner) |
 
-Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus les questions de rythme et d'examen ; la question des tests se pose tant que `-t` est absent.
+Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus la question du rythme ; la question des tests se pose tant que `-t` est absent.
 
 ## Ce que le plugin contient en plus des commandes
 

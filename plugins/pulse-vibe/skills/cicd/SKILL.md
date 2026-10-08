@@ -73,7 +73,7 @@ Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js
 ## 5. Enregistrer et envoyer
 
 - Commit `ci: contrôles automatiques à chaque envoi et demande de fusion` (`scripts/verifier.js`, le fichier de CI), avec les contrôles de sécurité de `/pulse:commit`.
-- L'envoyer (`git push`, jamais `--force`) avec accord : la CI tourne seulement après l'envoi.
+- Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met le fichier de CI sur le dépôt distant. » Puis l'envoyer (`git push`, jamais `--force`) : la CI tourne seulement après l'envoi.
 - Mettre à jour la ligne « Contrôle automatique avant mise en ligne (CI) » de « Hébergement et mise en ligne » dans `docs/technical.md` (outil, fichier, ce qu'il contrôle), dans le même commit ou un commit `docs: CI`.
 
 ## 6. Voir le premier passage

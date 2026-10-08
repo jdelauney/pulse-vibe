@@ -72,7 +72,7 @@ Proposer une petite modification visible (par exemple le texte du titre), puis :
 
 ## 4. Mise à jour
 
-1. `git push` (après les contrôles de la section 1).
+1. Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie. » Puis `git push` (après les contrôles de la section 1).
 2. Expliquer que l'hébergeur publie la nouvelle version automatiquement, et où suivre l'avancement (liste des déploiements de l'hébergeur).
 3. Une fois la publication terminée chez l'hébergeur, lancer `pulse-aidd sonder <adresse du site>` (section « Adresses » de `CLAUDE.md`), avec `--texte` suivi d'un texte que la nouvelle version affiche, puis `pulse-aidd seo <adresse du site> --essentiel` (même règle qu'en 3b : ❌ = mise en ligne à corriger). Donner l'adresse à la personne pour qu'elle regarde la nouveauté.
 4. Si cette version change une page de « Pages suivies » dans `docs/performance.md`, proposer `/pulse:perf mesurer` en une ligne (la mesure reste au choix de la personne : elle prend quelques minutes).

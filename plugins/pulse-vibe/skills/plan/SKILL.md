@@ -1,5 +1,5 @@
 ---
-description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées (une spec = un plan, rangé à côté dans aidd_docs/tasks/<epic>/ ; découpage vertical, kanban)
+description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté dans aidd_docs/tasks/<epic>/), écrit une fois validé avec vous
 argument-hint: "<US-XXX [US-YYY…] | chemin de la spec>"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte refine) Bash(pulse-aidd etape refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr)
@@ -17,7 +17,7 @@ US (ou spec) à traiter : `$ARGUMENTS`
 
 ## Objectif
 
-Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spec `SPEC-US-XXX-<nom>.md` : la **conception technique** (comment réaliser ce que la spec demande) et la liste ordonnée des tâches qui réalisent cette spec (**une spec = un plan**), qui sert aussi de **tableau kanban** (`[ ]` à faire, `[~]` en cours, `[x]` terminé). Expliquer en une phrase : « On avance par petites tâches que vous pouvez tester une par une : l'IA se trompe moins, et vous gardez le contrôle. »
+Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spec `SPEC-US-XXX-<nom>.md` : la **conception technique** (comment réaliser ce que la spec demande) et la liste ordonnée des tâches qui réalisent cette spec (**une spec = un plan**), qui sert aussi de **tableau de suivi des tâches** (`[ ]` à faire, `[~]` en cours, `[x]` terminé). Expliquer en une phrase : « On avance par petites tâches que vous pouvez tester une par une : l'IA se trompe moins, et vous gardez le contrôle. »
 
 ## Prérequis
 

@@ -1,5 +1,5 @@
 ---
-description: Où en suis-je ? Étapes faites, kanban des tâches, état Git, worktrees en cours et prochaine étape conseillée ; propose de supprimer les worktrees déjà fusionnés
+description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, copies à part du projet (worktrees) en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les copies déjà rassemblées
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---

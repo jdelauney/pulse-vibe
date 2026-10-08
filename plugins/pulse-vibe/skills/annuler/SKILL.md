@@ -74,7 +74,7 @@ Demander (AskUserQuestion) : « Annuler » / « Ne rien faire ». Une réponse a
 1. Des changements non enregistrés existent : proposer d'abord de les mettre de côté (comme ci-dessus), sinon s'arrêter.
 2. Défaire les commits de la tâche (ou de toutes les tâches de l'US), comme ci-dessus.
 3. **Plan** : chaque tâche défaite repasse de `[x]` à `[ ]`, et une ligne s'ajoute au Journal (date, tâche, « annulée par /pulse:annuler », remarque). Les rapports de relecture restent en place.
-4. `git add <fichiers défaits> <plan>` puis `git commit` avec le message `revert(<Tâche ou US>): annule <description>` et un corps `Annule <commits>.`
+4. `git add <fichiers défaits> <plan>` puis `git commit -m "revert(<Tâche ou US>): annule <description>" -m "Annule <commits>."`
 
 **Version précédente** :
 1. Changements non enregistrés : comme pour une tâche.

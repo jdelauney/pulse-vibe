@@ -546,3 +546,48 @@ test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () =
   assert.match(texte, /vous testez tout à la fin\) ;/);
   assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
 });
+
+test("descriptions des commandes sans jargon", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const JARGON = /\b(INVEST|Definition of Ready|MoSCoW|kanban|TBD|storytelling|sous-agents?|Feynman)\b/i;
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const description = (lire(fichier).match(/^description:\s*(.*)$/m) || [])[1] || "";
+    const m = JARGON.exec(description);
+    if (m) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${m[0]}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("questions et accueil en clair : les anciens libellés ont disparu", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const ANCIENS = /Implémentation via sous-agent|Implémentation directe|Valider et verrouiller|[Ee]xamen renforcé|« Renforcé »|« Travailler dans un worktree \(|« Reprendre dans le worktree|AI-Driven Development/;
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => ANCIENS.test(texte)).map(({ fichier }) => unix(fichier)), []);
+  for (const f of ["CLAUDE.md", "banniere.txt"]) assert.doesNotMatch(lire(RACINE, "templates", f), /AI-Driven/, f);
+  assert.doesNotMatch(lire(RACINE, "templates", "plan.md"), /kanban/i);
+  assert.doesNotMatch(lire(RACINE, "templates", "CLAUDE.md"), /kanban/i);
+});
+
+test("les envois, fusions et récupérations soumis à l'accord sont annoncés en une phrase", () => {
+  const ANNONCE = /Claude Code (va|vous) (vous )?demander/;
+  for (const [fichier, motif] of [
+    [["skills", "commit", "SKILL.md"], /### 7\. Envoyer[\s\S]*Claude Code va vous demander/],
+    [["skills", "pr", "SKILL.md"], /Claude Code va vous demander l'accord pour \x60git pull\x60[\s\S]*Claude Code va vous demander l'accord pour envoyer/],
+    [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. Annoncer : « Claude Code va vous demander/],
+    [["skills", "cicd", "SKILL.md"], /Annoncer : « Claude Code va vous demander[^\n]*Puis l'envoyer \(\x60git push\x60/],
+    [["references", "worktree.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
+  ]) {
+    const texte = lire(RACINE, ...fichier);
+    assert.match(texte, ANNONCE, fichier.join("/"));
+    assert.match(texte, motif, fichier.join("/"));
+  }
+});
+
+test("commit et annuler nomment la forme `git commit -m`, et commit utilise `git remote -v`", () => {
+  for (const s of ["commit", "annuler"]) assert.match(lire(RACINE, "skills", s, "SKILL.md"), /git commit -m "<sujet>" -m "<corps>"|git commit -m "revert\(/, s);
+  const commit = lire(RACINE, "skills", "commit", "SKILL.md");
+  assert.match(commit, /git commit -m "<sujet>" -m "<corps>"/);
+  assert.doesNotMatch(commit, /`git remote`/);
+  assert.match(commit, /`git remote -v`/);
+  assert.match(commit, /contrôle de sécurité à chaque tâche/);
+});
