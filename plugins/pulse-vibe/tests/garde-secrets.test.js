@@ -261,3 +261,53 @@ test("Read d'un .ENV en majuscules : refusé", () => {
 test("écrire une clé dans .dev.vars (fichier de secrets de Wrangler) : autorisé", () => {
   assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/.dev.vars", content: `STRIPE=${FAUX.stripe}` } }), null);
 });
+
+const powershell = (commande, cwd) => ({ tool_name: "PowerShell", tool_input: { command: commande }, cwd });
+
+test("PowerShell : git add d'un .env et commit d'une clé refusés", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire(".env", "X=1\n");
+  assert.ok(refuse(lancerHook(powershell("git add -f .env", dir))));
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  git("add", "app.js");
+  assert.ok(refuse(lancerHook(powershell('git commit -m "x"', dir))));
+});
+
+test("git avec options globales, sous-shell ou xargs : contrôlé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  git("add", "app.js");
+  assert.ok(refuse(lancerHook(bash('git -c x=y commit -m "x"', dir))));
+  assert.ok(refuse(lancerHook(bash('git --no-pager commit -m "x"', dir))));
+  assert.ok(refuse(lancerHook(bash(`bash -c 'git commit -m x'`, dir))));
+});
+
+test("commit par chemin : le contenu du fichier nommé est contrôlé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", "const a = 1;\n");
+  git("add", "app.js");
+  git("commit", "-q", "-m", "app");
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  assert.ok(refuse(lancerHook(bash('git commit app.js -m "maj"', dir))));
+});
+
+test("texte cité : un echo qui contient « git add .env » passe", () => {
+  const { dir } = depotTemporaire();
+  assert.strictEqual(lancerHook(bash('echo "git add .env" >> notes.md', dir)), null);
+});
+
+test("Grep : glob qui vise .env, ou .env non ignoré dans le dossier fouillé : refusé", () => {
+  const { dir, ecrire } = depotTemporaire();
+  assert.ok(refuse(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", glob: "{.env,.env.local}" }, cwd: dir })));
+  ecrire(".env", "KEY=1\n");
+  assert.ok(refuse(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", path: dir }, cwd: dir })));
+  ecrire(".gitignore", ".env\n");
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", path: dir }, cwd: dir }), null);
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", glob: "*.ts" }, cwd: dir }), null);
+});
+
+test("pas de dépôt Git : la commande passe", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-sans-git-"));
+  assert.strictEqual(lancerHook(bash('git commit -m "x"', dir)), null);
+  assert.strictEqual(lancerHook(powershell('git commit -m "x"', path.join(dir, "inexistant"))), null);
+});

@@ -62,7 +62,6 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Bash(git *)",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-secrets.js"],
             "timeout": 20,
@@ -79,6 +78,13 @@
       {
         "matcher": "PowerShell",
         "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-secrets.js"],
+            "timeout": 20,
+            "statusMessage": "Pulse vérifie l'absence de secrets…"
+          },
           {
             "type": "command",
             "command": "node",
