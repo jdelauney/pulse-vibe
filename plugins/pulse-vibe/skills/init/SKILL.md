@@ -48,7 +48,7 @@ Règles de la boucle :
    | `documents` | « Mettre à niveau un projet Pulse plus ancien » : documents à l'ancien format |
    | `profil` | « Mettre à niveau un projet Pulse plus ancien » : les deux questions du profil |
    | `memoire` | `pulse-aidd etape memory` (action `creer`) |
-   | `git` | « Préparer un nouveau projet », point 4 (un historique propre au projet) |
+   | `git` | « Préparer un nouveau projet », point 4 (un historique propre au projet) ; si le dépôt existe sans aucune version, faire le premier enregistrement : ajouter les fichiers par leur nom, en montrer la liste, puis `git commit -m "chore: initialisation du projet avec Pulse"` |
    | `pile` | `pulse-aidd etape tech` |
 
    Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Protéger les secrets » (§ 4, point 5) ou « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail ». La suite continue quelle que soit la réponse.

@@ -451,7 +451,6 @@ test("README : section « Mettre à jour » mise en avant, avec les commandes ex
 
 // ---------------------------------------------------------------- Parcours et langage
 
-const unix = (f) => f.split(path.sep).join("/");
 const skillTexte = (nom) => lire(RACINE, "skills", nom, "SKILL.md");
 
 test("init et status appliquent le verdict de pulse-aidd etat, sans règles de décision recopiées", () => {
@@ -462,4 +461,19 @@ test("init et status appliquent le verdict de pulse-aidd etat, sans règles de d
   }
   assert.doesNotMatch(skillTexte("status"), /Sa seule modification/);
   assert.doesNotMatch(skillTexte("init"), /\*\*Questions\*\* \(une ronde AskUserQuestion\) : le \*\*nom\*\*/, "nom et description : réponse libre");
+});
+
+test("init et status ne citent que des clés et des valeurs réellement émises par etat.js", () => {
+  const source = lire(RACINE, "scripts", "etat.js");
+  const valeurs = [...new Set([...source.matchAll(/fondation: "([a-z]+)"/g)].map((m) => m[1]))];
+  assert.ok(valeurs.length >= 6, "valeurs de fondation lues dans etat.js");
+  const tableau = skillTexte("init").split("| `fondation` |")[1] || "";
+  for (const v of valeurs) assert.ok(tableau.includes(`| \`${v}\` |`), `init : ligne « ${v} » absente de la table des fondations`);
+  const emises = new Set(["prochaine", "raison", "regle", "etapes", "mvp", "aussi"]);
+  for (const m of source.matchAll(/for \(const cle of \[([^\]]+)\]\)/g)) for (const c of m[1].match(/"([a-z]+)"/g)) emises.add(c.replace(/"/g, ""));
+  for (const c of ["prochaine", "raison", "regle", "etapes", "mvp", "aussi"]) assert.ok(source.includes(`\`${c}: `) || source.includes(`\`${c}:`), `etat.js n'émet pas ${c}`);
+  for (const skill of ["init", "status"]) {
+    const cites = [...skillTexte(skill).matchAll(/`(prochaine|raison|regle|fondation|attente|ancien|dossier|aussi|etapes|mvp)(?::[^`]*)?`/g)].map((m) => m[1]);
+    for (const c of cites) assert.ok(emises.has(c), `${skill} cite la clé ${c}, absente de etat.js`);
+  }
 });

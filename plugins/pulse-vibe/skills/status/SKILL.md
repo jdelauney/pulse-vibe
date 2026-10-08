@@ -24,7 +24,7 @@ Cette commande **lit et résume**. Elle modifie seulement deux choses, chaque fo
 6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée. **Référencement** : la section « Référencement » de `docs/technical.md` (propriété reliée et date) et le rapport le plus récent de `docs/referencement/` (sa date, et la date du prochain rapport conseillé écrite à sa fin).
 7. **Dernière relecture** : le rapport de tâche le plus récent dans `aidd_docs/tasks/*/revues/*/` et son verdict ; le dernier audit `docs/securite.md` s'il existe.
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
-9. **Travail en cours** : `aidd_docs/tasks/in-progress.md` du dossier principal et de chaque worktree (`.claude/worktrees/*/aidd_docs/tasks/in-progress.md`), s'il existe (commande, étape, décision en attente, date « Mis à jour le »).
+9. **Travail en cours** : `pulse-aidd etat` signale la décision en attente (clé `attente`).
 
 ## Format de réponse
 
@@ -57,7 +57,7 @@ Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non b
 
 La prochaine étape conseillée est celle de `pulse-aidd etat` (lignes `prochaine` et `raison`), la même que celle de `/pulse:init` :
 - avec `ancien: oui`, demander d'abord si ce travail est toujours d'actualité ; sinon, l'effacer (`pulse-aidd travail-fini`, lancé dans son `dossier`) ;
-- quand `regle` vaut R21, R22 ou R23 (le MVP est terminé), regarder d'abord ces signaux, qui ne se lisent pas dans les documents de la méthode ; le premier qui s'applique devient la prochaine étape, et celle de `pulse-aidd etat` passe dans « Aussi » :
+- dès que le MVP est en ligne (`mvp` montre toutes les tâches des US Indispensables terminées, ou « Site en ligne » est noté dans `CLAUDE.md`), regarder ces signaux, qui ne se lisent pas dans les documents de la méthode, quelle que soit la règle (`regle`) : une CI en échec ne reste jamais cachée derrière une étape de réalisation. Le verdict de `pulse-aidd etat` reste la recommandation principale ; avec `regle` R21, R22 ou R23 (tout est terminé), le premier signal qui s'applique devient la prochaine étape et le verdict passe dans « Aussi » ; sinon, les signaux s'ajoutent en tête de « Aussi », la CI en échec d'abord :
   1. dernier passage de la CI en échec → `/pulse:fix` avec le message de l'étape en échec ;
   2. site en ligne sur son domaine définitif et « Être trouvé » de `docs/prd.md` à oui : section « Suivi » de `docs/seo.md` absente ou vide → `/pulse:seo lancer` ; sinon, section « Référencement » de `docs/technical.md` absente → `/pulse:search-console relier` ;
   3. rendez-vous dépassé : date de « Suivi » de `docs/seo.md` → `/pulse:seo audit` ; prochain rapport Search Console conseillé → `/pulse:search-console suivre`.
