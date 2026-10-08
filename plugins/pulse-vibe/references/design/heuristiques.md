@@ -16,13 +16,13 @@ Chaque dimension reçoit une note sur 10, justifiée en une phrase qui cite ce q
 
 ### Intention
 
-Le design sait-il pourquoi il existe ?
+Peut-on dire pourquoi cet écran existe ?
 - Peut-on dire, en une phrase, ce que l'écran veut faire ressentir ou faire faire ?
 - Les choix (couleurs, polices, densité) suivent-ils `docs/design.md` et son registre ?
 
 ### Hiérarchie
 
-L'œil sait-il où aller ?
+Le regard trouve-t-il tout de suite où aller ?
 - Quel élément le regard trouve-t-il en premier ? Est-ce le bon ?
 - L'action principale se voit-elle sans chercher ? Combien d'éléments ont le même poids ?
 
@@ -41,7 +41,7 @@ La tâche se fait-elle sans friction ?
 ### Personnalité
 
 L'écran a-t-il un choix mémorable ?
-- Un détail le distingue-t-il d'un modèle générique produit par une IA ?
+- Un détail le distingue-t-il d'un modèle générique (voir « Ce que chaque registre écarte » dans `registres.md`) ?
 - En registre outil, la personnalité passe par la justesse (typographie, densité, textes) : un outil sobre et précis mérite une bonne note.
 
 ## Les 10 heuristiques
@@ -57,7 +57,7 @@ La personne sait-elle toujours ce qui se passe ?
 
 ### 2. Les mots de la personne
 
-L'interface parle-t-elle comme son public ?
+Les mots de l'interface sont-ils ceux du public ?
 - Les libellés viennent du glossaire du projet, sans jargon technique.
 - Les icônes sont comprises sans légende, ou en ont une.
 - Les conventions connues sont respectées (le logo ramène à l'accueil).
@@ -65,7 +65,7 @@ L'interface parle-t-elle comme son public ?
 ### 3. Contrôle et liberté
 
 Peut-on revenir en arrière facilement ?
-- Une action qui se défait propose « Annuler ».
+- Une action qui se défait propose de l'annuler (motif « Notification »).
 - Chaque écran a une sortie (retour, fil d'Ariane, fermeture).
 - Une action irréversible demande confirmation (motif « Action destructive »).
 
@@ -79,7 +79,7 @@ Les mêmes choses se ressemblent-elles partout ?
 ### 5. Prévention des erreurs
 
 L'interface aide-t-elle à éviter l'erreur avant qu'elle arrive ?
-- La saisie est vérifiée au fil de l'eau, dès qu'on quitte le champ.
+- La saisie est vérifiée dès qu'on quitte le champ.
 - Le format attendu est indiqué avant la saisie (« jj/mm/aaaa »).
 - Un bouton indisponible se voit comme tel et dit pourquoi.
 
@@ -100,16 +100,15 @@ Une personne habituée peut-elle aller plus vite ?
 ### 8. Sobriété
 
 Chaque élément a-t-il une raison d'être là ?
-- Aucune décoration sans fonction.
+- Chaque décoration a une fonction : en vitrine, persuader ; en outil, guider.
 - La densité suit le registre (`registres.md`).
 - L'information secondaire passe au second plan.
 
 ### 9. Sortir d'une erreur
 
 Le message d'erreur aide-t-il à s'en sortir ?
-- Il dit ce qui s'est passé, en mots simples, sans code d'erreur brut.
-- Il propose une solution.
-- Il s'affiche à côté de la cause (le champ, la ligne).
+- Il suit les règles des messages d'erreur (`regles-ui.md` § 8), en mots simples.
+- Il s'affiche près de sa cause (formulaires : `qualite/composants.md`).
 
 ### 10. Aide
 

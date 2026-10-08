@@ -104,10 +104,11 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `doc
    - Laisser le commit à une étape ultérieure.
 8. **Critiquer.** Corriger une maquette coûte moins que corriger le code : proposer « Critiquer la maquette retenue (Recommandé) » / « Passer au plan ». Pour critiquer :
    - Lancer le sous-agent `pulse:ui-critic` en **mode maquette** (s'il n'est pas disponible, `pulse-aidd agent ui-critic`, consignes appliquées soi-même, en lecture seule). Lui indiquer la cible `docs/design/maquettes/<spec>/retenue/`, le chemin de `docs/design.md` (ou la direction provisoire) et la spec de l'US.
-   - Écrire sa réponse, à partir de sa deuxième ligne, dans `docs/design/maquettes/<spec>/retenue/critique.md`.
+   - Écrire sa réponse, à partir de sa deuxième ligne, dans `docs/design/maquettes/<spec>/retenue/critique.md` (après « Compléter », dans `critique-<k>.md`, avec le même `<k>` que les nouveaux écrans).
    - Montrer le verdict, la note sur 50 et les corrections rapides.
-   - Faire cocher les constats à corriger (AskUserQuestion multiSelect, les 🔴 et les corrections rapides recommandés).
-   - Corriger le HTML de `retenue/`, marquer ✅ les constats corrigés dans `critique.md`, et noter les changements dans `note.md`.
+   - Faire choisir les constats à corriger : Montrer la liste numérotée, puis proposer (AskUserQuestion) « Les 🔴 et les corrections rapides (Recommandé) » / « Tous les constats » / « Je donne les numéros » (réponse libre). Proposer `/pulse:refine` pour les constats renvoyés (ils changent la spec).
+   - Corriger le HTML de `retenue/` en respectant `docs/design.md`, la liste noire et les consignes du pack pour les maquettes. Dans le rapport, marquer ✅ les constats corrigés et ↪️ laissé les autres ; noter les changements dans `note.md`.
+   - Ouvrir `retenue/desktop.html` (section « Ouvrir une page ») pour que la personne regarde le résultat.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XXX>`.
 
@@ -126,7 +127,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` 
 
 1. **Partir du rapport** `docs/design/audits/ui-*.md` le plus récent qui couvre la cible. S'il n'y en a pas, faire d'abord l'audit (section « audit »).
 2. **Trier.** Retenir les constats **purement visuels ou de texte** : apparence et libellés seulement, hors logique métier, données et contrôle d'accès. Renvoyer les autres vers `/pulse:refine` (besoin ou parcours) ou `/pulse:fix` (comportement cassé), en le disant.
-3. **Faire choisir.** Montrer la liste ; la personne coche ceux à appliquer (AskUserQuestion multiSelect, les 🔴 cochés par défaut dans la recommandation).
+3. **Faire choisir.** Montrer la liste numérotée, puis proposer (AskUserQuestion) « Les 🔴 et les corrections rapides (Recommandé) » / « Tous les constats » / « Je donne les numéros » (réponse libre).
 4. **Appliquer** par petits lots. Avant d'écrire du code, lancer `pulse-aidd qualite` et appliquer ces règles. Respecter la pile retenue (`docs/technical.md`), `docs/design.md` et la maquette retenue. Lancer ensuite les contrôles automatiques de « Commandes du projet » (sauter ceux qui valent « aucune »).
 5. **Vérifier.** Demander à la personne de vérifier dans son navigateur. Marquer les constats corrigés (✅) dans le rapport.
 

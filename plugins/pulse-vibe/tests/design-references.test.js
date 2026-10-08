@@ -116,3 +116,26 @@ test("skill ui : critique de la maquette retenue, références à jour", () => {
   for (const attendu of ["Critiquer la maquette retenue (Recommandé)", "retenue/critique.md", "mode maquette"]) assert.ok(t.includes(attendu), attendu);
   assert.ok(!t.includes("trois références"), "plus de « trois références »");
 });
+
+// --- Correctifs de la revue finale du lot 3 ---
+
+test("revue critique : mode maquette juste (variables :root, consignes du pack), commandes autorisées", () => {
+  const t = lireP("agents", "ui-critic.md");
+  for (const attendu of ["En mode code, une valeur", "variables `:root`", "Dans les deux modes", "`pulse-aidd pile contexte ui`, `pulse-aidd textes verifier`", "desktop*.html:ligne", "3 au plus", "le numéro et le nom de l'heuristique"])
+    assert.ok(t.includes(attendu), attendu);
+  assert.ok(!t.includes("une action principale par écran"), "renvoi à regles-ui.md § 5 plutôt que recopie");
+});
+
+test("revue critique : choix des constats possible au-delà de 4, maquette regardée après correction", () => {
+  const t = lireP("skills", "ui", "SKILL.md");
+  assert.strictEqual(t.split("Je donne les numéros").length - 1, 2, "polish et maquettes");
+  for (const attendu of ["consignes du pack pour les maquettes", "↪️ laissé", "critique-<k>.md"]) assert.ok(t.includes(attendu), attendu);
+  assert.match(lireP("templates", "revue-ui.md"), /\*\*Verdict\*\*[^\n]*\/ 50/);
+  assert.match(fs.readFileSync(path.join(P, "README.md"), "utf8"), /ui-critic[^\n]*maquette retenue/);
+});
+
+test("revue critique : heuristiques positives, sans doublon ni intention prêtée au design", () => {
+  const t = lire("heuristiques.md");
+  for (const absent of ["Aucune décoration", "au fil de l'eau", "Le design sait-il", "L'interface parle-t-elle", "comment s'en sortir"]) assert.ok(!t.includes(absent), absent);
+  assert.ok(t.includes("regles-ui.md` § 8"), "H9 renvoie aux messages d'erreur");
+});

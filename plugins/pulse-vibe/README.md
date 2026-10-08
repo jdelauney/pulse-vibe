@@ -80,7 +80,7 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
   - `pulse:verifier` prouve que la tâche fonctionne, critère par critère, et prépare le test manuel (lecture seule) ;
   - `pulse:security-auditor` réalise l'audit de sécurité (lecture seule) ;
   - `pulse:designer` génère une proposition visuelle (identité, maquettes, variantes) ;
-  - `pulse:ui-critic` relit l'interface (contraste, cohérence, accessibilité) pour `/pulse:ui audit` (lecture seule) ;
+  - `pulse:ui-critic` relit l'interface (contraste, cohérence, accessibilité) pour `/pulse:ui audit` et la critique de la maquette retenue (`/pulse:ui maquettes`), en lecture seule ;
   - `pulse:memory-compactor` resserre et remet à jour la mémoire quand elle atteint 95 % de sa limite, pour `/pulse:memory compacter` (écrit seulement dans `aidd_docs/memory/`) ;
   - `pulse:fixer` corrige une liste précise d'erreurs dans 5 fichiers au plus (utilisé par `/pulse:auto-fix`).
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.
