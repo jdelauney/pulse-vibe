@@ -48,7 +48,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     fix: ["Pour réaliser et corriger", "Fiche de la pile"],
     spirc: ["Pour réaliser et corriger"],
     review: ["Pour relire", "Fiche de la pile"],
-    security: ["Pour relire"],
+    security: ["Pour relire", "Pour la sécurité", "Fiche de la pile"],
     test: ["Pour les tests"],
     deploy: ["Pour mettre en ligne"],
     cicd: ["Pour mettre en ligne"],
@@ -180,4 +180,10 @@ test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue �
   assert.ok(texte.includes(".eu.r2.cloudflarestorage.com`]"), "adresse R2 dans la CSP");
   assert.match(texte, /### \d+\. La CSP autorise R2/);
   assert.match(texte, /Refused to connect/);
+});
+
+test("contexte security : en-têtes dans next.config.ts, sans nonce, preload décidé par la personne", () => {
+  const texte = lire(REF, "contexte", "security.md");
+  for (const attendu of ["next.config.ts", "`sources`", "nonce", "cacheComponents", "preload", "proxy.ts", "curl -sI", "un seul `headers()`"])
+    assert.ok(texte.includes(attendu), attendu);
 });
