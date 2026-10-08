@@ -172,3 +172,85 @@ test("chaque outil de bin/ a son relais .cmd pour PowerShell et cmd", () => {
     }
   }
 });
+
+// ---------------------------------------------------------------- Autorisations d'avance des skills (allowed-tools)
+
+// Motifs Bash de la ligne allowed-tools d'un SKILL.md.
+function motifsBash(fichier) {
+  const entete = (lire(fichier).match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+  const ligne = (entete.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+  return [...ligne.matchAll(/Bash\(([^)]*)\)/g)].map((m) => m[1]);
+}
+
+// Règle de Claude Code : « * » remplace n'importe quel texte ; un « * » final précédé d'une espace,
+// seul joker du motif, couvre aussi la commande sans argument (Bash(ls *) couvre ls).
+function couvre(motif, commande) {
+  if (/^[^*]+ \*$/.test(motif)) {
+    const base = motif.slice(0, -2);
+    return commande === base || commande.startsWith(`${base} `);
+  }
+  const echappe = (s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${motif.split("*").map(echappe).join(".*")}$`, "s").test(commande);
+}
+
+// Ce qui change la production, crée ou retire un secret, ou coupe un accès : toujours par la demande d'autorisation.
+const SENSIBLES = [
+  "pulse-aidd secrets generer NOM",
+  "pulse-aidd secrets generer NOM --envoyer production,preview",
+  "pulse-aidd secrets envoyer NOM --env production",
+  "pulse-aidd secrets elaguer NOM",
+  "pulse-aidd secrets redeployer",
+  "pulse-aidd secrets redeployer --env production",
+  "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
+  "pulse-aidd search-console deconnecter",
+  "pulse-aidd pile hebergeur envoyer NOM production",
+  "pulse-aidd pile hebergeur redeployer production",
+];
+const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer)\b/.test(commande);
+
+// Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
+const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
+const citationsOutil = (texte) => [...texte.matchAll(/`(pulse-aidd [^`]+)`/g)].map((m) => essai(m[1]));
+
+test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisée d'avance", () => {
+  assert.ok(couvre("pulse-aidd *", SENSIBLES[0]) && !couvre("pulse-aidd secrets inventaire *", SENSIBLES[0]), "règle de correspondance");
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const skill = path.relative(DEPOT, path.dirname(fichier));
+    for (const motif of motifsBash(fichier)) {
+      if (motif === "pulse-aidd *") problemes.push(`${skill} : Bash(pulse-aidd *)`);
+      for (const commande of SENSIBLES) if (couvre(motif, commande)) problemes.push(`${skill} : Bash(${motif}) couvre « ${commande} »`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu'il enchaîne, est autorisé d'avance", () => {
+  assert.ok(couvre("pulse-aidd sonder *", "pulse-aidd sonder") && !couvre("pulse-aidd seo *", "pulse-aidd seobis") && couvre("pulse-aidd secrets inventaire*", "pulse-aidd secrets inventaire --json"), "règle de correspondance");
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
+  // Étapes enchaînées : chaque `pulse-aidd etape <commande>` nommée, de proche en proche.
+  const enchainees = (depart) => {
+    const vues = new Set([depart]);
+    const aVoir = [depart];
+    while (aVoir.length) {
+      for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        if (etape && SKILLS.has(etape) && !vues.has(etape)) {
+          vues.add(etape);
+          aVoir.push(etape);
+        }
+      }
+    }
+    return [...vues];
+  };
+  const manquants = [];
+  for (const skill of SKILLS) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const commandes = new Set(enchainees(skill).flatMap((s) => citationsOutil(texteSkill(s))));
+    for (const commande of commandes) {
+      if (estSensible(commande)) continue; // passe par la demande d'autorisation : c'est voulu
+      if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
+    }
+  }
+  assert.deepStrictEqual(manquants, []);
+});

@@ -2,7 +2,7 @@
 description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées (une spec = un plan, rangé à côté dans aidd_docs/tasks/<epic>/ ; découpage vertical, kanban)
 argument-hint: "<US-XXX [US-YYY…] | chemin de la spec>"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *)
+allowed-tools: Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte refine) Bash(pulse-aidd etape refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *)
 ---
 
 # /pulse:plan – Le plan de réalisation

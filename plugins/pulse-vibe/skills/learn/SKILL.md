@@ -2,7 +2,7 @@
 description: Apprendre la programmation avec un professeur patient - leçon, explication à la Feynman, exercices ou parcours, adaptés à votre niveau et illustrés avec votre projet, avec un carnet de progression et des révisions espacées
 argument-hint: "[<notion> | feynman <notion> | exercice <notion> | parcours \"<objectif>\"] (vide : réviser ou reprendre)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Bash(date *) Read Glob Grep Bash(git status *) Bash(git diff *)
+allowed-tools: Bash(pulse-aidd contexte learn) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Edit(docs/lexique.md) Write(docs/lexique.md) Bash(date *) Read Glob Grep Bash(git status *) Bash(git diff *)
 ---
 
 # /pulse:learn – Apprendre avec un professeur

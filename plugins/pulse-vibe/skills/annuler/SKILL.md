@@ -2,7 +2,7 @@
 description: Revenir en arrière sans rien perdre - abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération
 argument-hint: "[T3 | US-003] (facultatif : la tâche ou l'US à annuler)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git show *) Bash(git rev-parse *) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch sauvegarde/*) Bash(git stash push *) Bash(git stash list*) Bash(git stash show *) Bash(git stash apply *) Bash(git revert *) Bash(git merge --abort) Bash(git rev-list *) Bash(git checkout --ours *) Bash(git add *) Bash(git commit *) Bash(git push) Bash(git push -u origin *) Bash(git remote *) Bash(git symbolic-ref *)
+allowed-tools: Bash(pulse-aidd contexte annuler) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git show *) Bash(git rev-parse *) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch sauvegarde/*) Bash(git stash push *) Bash(git stash list*) Bash(git stash show *) Bash(git stash apply *) Bash(git revert *) Bash(git merge --abort) Bash(git rev-list *) Bash(git checkout --ours *) Bash(git add *) Bash(git commit *) Bash(git push) Bash(git push -u origin *) Bash(git remote *) Bash(git symbolic-ref *)
 ---
 
 # /pulse:annuler – Revenir en arrière

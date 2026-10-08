@@ -2,7 +2,7 @@
 description: Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser
 argument-hint: "[votre idée en une phrase]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(start "" *.html") Bash(open *.html") Bash(xdg-open *.html")
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape cicd) Bash(pulse-aidd etape commit) Bash(pulse-aidd etape deploy) Bash(pulse-aidd etape perf) Bash(pulse-aidd etape tech) Bash(pulse-aidd etape ui) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Read Glob Grep Bash(start "" *.html") Bash(open *.html") Bash(xdg-open *.html")
 ---
 
 # /pulse:express – Démarrer vite

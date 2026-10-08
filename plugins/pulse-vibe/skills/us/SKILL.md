@@ -1,7 +1,7 @@
 ---
 description: Écrire les user stories, découpées par epic (un fichier par US dans aidd_docs/tasks/<epic>/, référentiel dans docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), validées INVEST, prêtes (Definition of Ready), triées par ordre de réalisation, sauvegardées après validation
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *)
+allowed-tools: Bash(pulse-aidd contexte us) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini)
 ---
 
 # /pulse:us – Les user stories
