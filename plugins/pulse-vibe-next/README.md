@@ -1,4 +1,4 @@
-# Pulse-vibe-next – le pack de pile Next.js de Pulse
+# Pulse Next – le pack de pile Next.js de Pulse
 
 **Pulse-next** (plugin `pulse-next`) ajoute à la méthode Pulse ([plugin `pulse`](../pulse-vibe/README.md)) le savoir-faire d'une pile précise, pour construire une application web avec comptes et données : un code de départ vérifié, des conventions, les pièges connus des versions actuelles et des recettes prêtes. Objectif : un code juste du premier coup.
 

@@ -39,6 +39,7 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 - Celui de « Hébergement et mise en ligne » de `docs/technical.md` (ligne « Contrôle automatique avant mise en ligne (CI) ») s'il est renseigné.
 - Sinon, celui du fournisseur du dépôt distant, déduit de `git remote get-url origin` : GitHub → GitHub Actions ; GitLab → GitLab CI/CD. Le proposer en une phrase (« c'est la CI intégrée à votre dépôt : déjà prête et gratuite pour un petit projet »), avec « Autre outil » en alternative.
 - Une CI existe déjà (fichier de l'outil retenu, par exemple `.github/workflows/*.yml` ou `.gitlab-ci.yml`) : la lire, et proposer de la **compléter** plutôt que de la remplacer.
+- La ligne « Auditer les dépendances » de « Commandes du projet » manque (ancien `docs/technical.md`) : la remplir d'après la documentation officielle de la pile (l'outil d'audit des vulnérabilités de son gestionnaire de paquets), sinon écrire « aucune » ; la CI saute alors cette étape.
 
 ## 2. Préparer
 
