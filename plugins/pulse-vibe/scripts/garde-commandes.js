@@ -1,26 +1,30 @@
 #!/usr/bin/env node
-// Pulse – garde-fou des commandes (hook PreToolUse sur Bash).
+// Pulse – garde-fou des commandes (hook PreToolUse sur Bash et PowerShell).
 //
 // Une règle écrite influence ; un hook empêche. Ce garde-fou agit aussi en mode « bypass »,
 // où les demandes d'autorisation de Claude Code ne s'affichent plus.
 //
 // Refuse (avec l'alternative) :
-//  - un envoi forcé (git push --force, -f, --force-with-lease, +branche) ;
-//  - le contournement d'un contrôle (--no-verify, git commit -n) ;
-//  - l'indexation globale (git add -A / . / -u, git commit -a) dans un dépôt qui a déjà un commit :
-//    une autre session peut travailler dans le même dépôt.
+//  - un envoi forcé (git push --force, -f, --force-with-lease, +branche, formes abrégées comprises) ;
+//  - le contournement d'un contrôle (--no-verify, git commit -n, -c core.hooksPath, HUSKY=0…) ;
+//  - l'indexation globale (git add -A / . / -u / motifs / xargs, git commit -a) dans un dépôt qui a déjà un commit ;
+//  - la lecture d'un fichier .env (cat, <, source, copie, recherche récursive, code de node -e…) ;
+//  - la suppression de tout le disque, du dossier personnel ou du projet ;
+//  - la suppression d'un dépôt distant, ou son passage en public.
 // Demande confirmation pour :
-//  - ce qui jette du travail (git reset --hard, checkout/restore de fichiers, clean -f, stash drop/clear) ;
-//  - git branch -D, git worktree remove --force, la suppression d'une branche distante ;
-//  - git config qui écrit autre chose que user.name / user.email ;
-//  - une suppression récursive (rm -r, rimraf, find -delete) hors dossiers reconstruits ;
+//  - ce qui jette ou déplace du travail (reset --hard, checkout/restore/switch -f, clean -f, stash drop,
+//    branch -D / -f, update-ref, filter-branch, reflog expire, gc --prune=now) ;
+//  - git config au-delà de user.name / user.email ;
+//  - une suppression récursive ou par motif (rm, Remove-Item, rd /s, del /s, find -exec rm, xargs rm, code) ;
+//  - une commande dont le nom est calculé à l'exécution ($x, $(…)) ;
 //  - une commande de base de données qui écrase ou supprime (drizzle-kit push, db:push, prisma db push,
-//    migrate reset, supabase db reset/push, DROP / TRUNCATE / DELETE sans WHERE dans psql) ;
-//  - une mise en production directe (vercel --prod, promote, rollback, netlify deploy --prod,
-//    wrangler deploy / secret put) et une fusion (gh pr merge, glab mr merge).
+//    supabase db reset, DROP / TRUNCATE / DELETE sans WHERE par -c, -f, < ou un tube, neonctl delete) ;
+//  - une mise en production directe, un envoi sur main ou master quand le site est publié depuis ce dépôt,
+//    une variable changée chez l'hébergeur, un secret envoyé par pulse-aidd secrets, une fusion (gh pr merge),
+//    une suppression par gh api ;
+//  - la modification (git commit --amend) d'un commit déjà envoyé.
 //
-// La commande est lue comme le shell la lit : segments (&&, ||, ;, |, retours à la ligne, parenthèses),
-// préfixes retirés (sudo, env, VAR=…, npx, pnpm dlx…), sh -c, eval, heredoc lu par un shell et $(…) dépliés.
+// La commande est lue par lecture-commande.js (bash, PowerShell, cmd ; lanceurs dépliés).
 // Un texte cité (message de commit, echo, heredoc écrit dans un fichier) ne déclenche rien.
 //
 // Fail-open : en cas d'erreur du garde-fou, la commande passe.
