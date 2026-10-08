@@ -3,7 +3,7 @@
     "titre": "Détecteur de scories IA",
     "version": "1.2 du 31 mars 2026",
     "langue": "fr",
-    "description": "JSON de référence pour détecter et corriger les marqueurs d'écriture IA dans les textes en français. (Modifié localement : exemple « après » d'INJ-001 sans « De plus », interdit par LEX-005 ; doublon « véritablement » retiré de LEX-001.)",
+    "description": "JSON de référence pour détecter et corriger les marqueurs d'écriture IA dans les textes en français. (Modifié localement : exemple « après » d'INJ-001 sans « De plus », interdit par LEX-005 ; doublon « véritablement » retiré de LEX-001 ; listes complétées le 2026-10-08 (PAT-002, PAT-005, PAT-006, BIA-001, LEX-005) avec les formulations des exemples et des tics fréquents des pages.)",
     "sources": [
       "Wikipedia:Signs of AI writing",
       "Recherche Gemini Deep Research du 11 mars 2026",
@@ -210,7 +210,9 @@
           "il est essentiel de rappeler",
           "dans ce cadre",
           "par la suite",
-          "en conséquence (mécanique)"
+          "en conséquence (mécanique)",
+          "il est important de souligner",
+          "dans cette optique"
         ]
       },
       "severite": "erreur",
@@ -627,7 +629,12 @@
           "à l'ère de",
           "à l'ère du numérique",
           "plongeons dans",
-          "dans le monde trépidant d'aujourd'hui"
+          "dans le monde trépidant d'aujourd'hui",
+          "à la hauteur de vos attentes",
+          "mettre tout en œuvre",
+          "met tout en œuvre",
+          "mettons tout en œuvre",
+          "mettent tout en œuvre"
         ]
       },
       "severite": "erreur",
@@ -691,7 +698,12 @@
           "du local au global",
           "de la théorie à la pratique",
           "des associations aux entreprises",
-          "à toutes les échelles"
+          "à toutes les échelles",
+          "des petites X aux grandes Y",
+          "du plus petit au plus grand",
+          "de A à Z",
+          "quels que soient votre taille et votre secteur",
+          "que vous soyez... ou..."
         ]
       },
       "severite": "avertissement",
@@ -715,7 +727,11 @@
           "dans une première partie",
           "premièrement... deuxièmement... troisièmement",
           "pour conclure, nous avons vu que",
-          "cet article a montré que"
+          "cet article a montré que",
+          "dans cet article, nous aborderons",
+          "dans cet article, nous verrons",
+          "en conclusion, nous avons vu",
+          "nous avons vu que"
         ]
       },
       "severite": "avertissement",
@@ -893,7 +909,10 @@
           "réponse aux attentes",
           "à la hauteur des enjeux",
           "riche patrimoine",
-          "héritage précieux"
+          "héritage précieux",
+          "au cœur de nos préoccupations",
+          "notre priorité absolue",
+          "votre satisfaction est notre priorité"
         ]
       },
       "severite": "avertissement",

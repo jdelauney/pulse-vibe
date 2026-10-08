@@ -26,7 +26,11 @@ const MOT = "[\\p{L}\\d'-]+";
 const AVANT = "(?<![\\p{L}\\d-])(?:(?<!')|(?<=(?:^|[^\\p{L}])(?:[ldjmnstc]|qu|jusqu|lorsqu|puisqu)'))";
 // Fin de mot : rien de lettre ou chiffre après, sauf si le motif finit par une élision (« d' »).
 const APRES = "(?:(?<=')|(?![\\p{L}\\d]))";
-const DEBUT_DE_PHRASE = "(?<=^|[.!?…]\\s+|\\n)";
+// Début de phrase : début du texte ou d'une ligne, après une ponctuation finale, une puce de liste ou un guillemet ouvrant.
+const DEBUT_DE_PHRASE = "(?<=^|[.!?…]\\s+|\\n|(?:^|\\n)\\s*(?:[-*+]|\\d+[.)])\\s+|«\\s*)";
+// Mots en -ant qui ne sont pas des participes présents.
+const PAS_PARTICIPES = new Set(["avant", "pendant", "durant", "maintenant", "cependant", "suivant", "devant", "auparavant", "autant", "tant", "quant", "néant", "enfant", "enfants"]);
+const PUCE = /^\s*([-*+]|\d+[.)])?\s*$/;
 // Expressions qui ont aussi un sens ordinaire : ce qui les écarte avant ou après.
 const SAUF = { "de plus": { avant: "(?<!(?:fois|jour|rien|bien|encore)\\s)", apres: "(?=\\s*,)" } };
 // Terminaisons des verbes (le radical vient du détecteur).
@@ -153,16 +157,20 @@ function decouper(texte) {
     index = debut + bloc.length;
     const lignes = bloc.split("\n").filter((l) => l.trim());
     if (!lignes.length) continue;
-    const titre = lignes.every((l) => /^\s*#{1,6}\s/.test(l));
     const liste = lignes.every((l) => /^\s*([-*+]|\d+[.)])\s/.test(l));
+    // Un bouton ou un lien seul sur sa ligne n'est pas une phrase.
+    const bouton = lignes.every((l) => /^\s*\[[^\]]*\](\([^)]*\))?\s*$/.test(l));
+    // Une ligne seule, courte, sans ponctuation finale, est un titre même sans « # ».
+    const titreNu = !liste && !bouton && lignes.length === 1 && !/^\s*#/.test(lignes[0]) && !/[.!?…:;,»")\]]\s*$/.test(lignes[0]) && motsDe(lignes[0]).length <= 12;
+    const titre = titreNu || lignes.every((l) => /^\s*#{1,6}\s/.test(l));
     const prose = lignes
       .filter((l) => !/^\s*#{1,6}\s/.test(l))
       .join(" ")
       .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
       .replace(/[*_`]/g, "")
       .trim();
-    const phrases = titre || liste || !prose ? [] : prose.split(/(?<=[.!?…])\s+(?=[«"\p{Lu}\d—-])/u).filter((p) => /\p{L}/u.test(p));
-    paragraphes.push({ debut, bloc, titre, liste, phrases });
+    const phrases = titre || liste || bouton || !prose ? [] : prose.split(/(?<=[.!?…])\s+(?=[«"\p{Lu}\d—-])/u).filter((p) => /\p{L}/u.test(p));
+    paragraphes.push({ debut, bloc, titre, titreNu, liste, phrases });
   }
   return paragraphes;
 }
@@ -178,7 +186,7 @@ function verifier(brut, detecteur = JSON.parse(fs.readFileSync(DETECTEUR, "utf8"
   const phrases = paragraphes.flatMap((p) => p.phrases);
   const constats = [];
   const noter = (regle, severite, i, extrait, ajout = "") =>
-    constats.push({ regle: regle.id, label: regle.label, severite, ligne: ligne(i), extrait: extrait.trim().slice(0, 80), consigne: regle.regle + ajout });
+    constats.push({ regle: regle.id, label: regle.label, severite, ligne: ligne(i), extrait: extrait.trim().slice(0, 80), consigne: regle.regle + ajout, position: i });
 
   function chercherListe(regle, entrees, verbe = false, prefixe = "", souple = false) {
     for (const entree of entrees) {
@@ -195,7 +203,9 @@ function verifier(brut, detecteur = JSON.parse(fs.readFileSync(DETECTEUR, "utf8"
 
   const DETECTEURS = {
     "TYP-001": (r) => {
-      for (const m of texte.matchAll(/^\s*#{1,6}\s+(.+)$/gm)) {
+      const titres = [...texte.matchAll(/^\s*#{1,6}\s+(.+)$/gm)].map((m) => ({ index: m.index, 1: m[1] }));
+      for (const p of paragraphes.filter((x) => x.titreNu)) titres.push({ index: p.debut, 1: p.bloc.trim() });
+      for (const m of titres) {
         const suite = motsDe(m[1]).slice(1);
         const outils = suite.filter((x) => /^\p{Lu}/u.test(x) && MOTS_OUTILS.has(x.toLowerCase()));
         const longs = suite.filter((x) => x.length > 3);
@@ -236,7 +246,7 @@ function verifier(brut, detecteur = JSON.parse(fs.readFileSync(DETECTEUR, "utf8"
     "PON-002": (r) => {
       for (const m of texte.matchAll(/—/g)) {
         const debutLigne = texte.lastIndexOf("\n", m.index) + 1;
-        if (texte.slice(debutLigne, m.index).trim() === "") continue; // réplique de dialogue
+        if (PUCE.test(texte.slice(debutLigne, m.index))) continue; // réplique de dialogue, éventuellement dans une liste
         noter(r, r.severite, m.index, texte.slice(Math.max(0, m.index - 20), m.index + 20));
       }
     },
@@ -280,7 +290,8 @@ function verifier(brut, detecteur = JSON.parse(fs.readFileSync(DETECTEUR, "utf8"
     "SYN-001": (r) => {
       // Participe présent détaché suivi d'un complément : heuristique, avertissement seulement.
       const motif = /(?:^|,\s*)(\p{L}+ant)\s+(?:ainsi\s+)?(?:le|la|les|l'|un|une|des|de|du|d'|à|au|aux|en|leur|leurs|son|sa|ses|ce|cette|ces|notre|nos|votre|vos)(?=[\s'])/giu;
-      for (const p of paragraphes) for (const m of p.bloc.matchAll(motif)) noter(r, "avertissement", p.debut + m.index, m[0]);
+      for (const p of paragraphes)
+        for (const m of p.bloc.matchAll(motif)) if (!PAS_PARTICIPES.has(m[1].toLowerCase())) noter(r, "avertissement", p.debut + m.index, m[0]);
     },
   };
 
@@ -312,7 +323,15 @@ function verifier(brut, detecteur = JSON.parse(fs.readFileSync(DETECTEUR, "utf8"
   // Les constats gardés par un commentaire sur leur ligne sortent du compte, avec leur raison.
   const parLigne = gardesParLigne(original);
   const gardes = [];
-  const restants = constats.filter((c) => {
+  // Un même passage relevé par deux règles n'est signalé qu'une fois, sous la plus sévère.
+  const parPassage = new Map();
+  for (const c of constats) {
+    const cle = `${c.position}:${c.extrait.toLowerCase()}`;
+    const deja = parPassage.get(cle);
+    if (!deja || (deja.severite !== "erreur" && c.severite === "erreur")) parPassage.set(cle, c);
+  }
+  const uniques = [...parPassage.values()].map(({ position, ...c }) => c);
+  const restants = uniques.filter((c) => {
     const garde = (parLigne.get(c.ligne) || []).find((g) => g.regles.includes(c.regle));
     if (garde) gardes.push({ ...c, raison: garde.raison });
     return !garde;

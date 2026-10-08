@@ -186,3 +186,45 @@ test("revue 5 : chaque bloc <!-- texte --> est contrôlé, l'en-tête jamais", (
 test("revue : © ® ™ ne sont pas des émojis", () => {
   assert.ok(!regles("© 2026 Atelier Vélo. Marque déposée®, produit™.").includes("TYP-002"));
 });
+
+// --- Listes complétées et points mineurs ---
+
+test("listes complétées : exemples « avant » de PAT-005, PAT-006 et TYP-001 signalés", () => {
+  for (const id of ["PAT-005", "PAT-006", "TYP-001"]) {
+    const regle = DETECTEUR.regles.find((x) => x.id === id);
+    assert.ok(regles(regle.exemples.avant).includes(id), id);
+  }
+});
+
+test("listes complétées : tics fréquents des pages", () => {
+  assert.ok(regles("Nous mettons tout en œuvre pour vous satisfaire.").includes("PAT-002"));
+  assert.ok(regles("Un service à la hauteur de vos attentes.").includes("PAT-002"));
+  assert.ok(regles("Que vous soyez artisan ou commerçant, nous vous aidons.").includes("PAT-005"));
+  assert.ok(regles("Votre satisfaction est notre priorité.").includes("BIA-001"));
+  assert.ok(regles("Dans cette optique, nous ouvrons le samedi.").includes("LEX-005"));
+});
+
+test("titre sans # : repéré comme titre, une phrase courte ordinaire n'est pas signalée", () => {
+  assert.ok(!regles("Prix sur devis\n\nNous répondons sous deux jours.").includes("TYP-001"));
+});
+
+test("SYN-001 : « pendant », « avant »… ne sont pas des participes présents", () => {
+  assert.ok(!regles("Nous ouvrons, pendant les vacances, le samedi matin.").includes("SYN-001"));
+  assert.ok(!regles("Inscrivez-vous, avant le 15 mai, sur notre site.").includes("SYN-001"));
+});
+
+test("début de phrase après une puce ou un guillemet ; réplique en liste", () => {
+  assert.ok(regles("- Ainsi, le prix baisse.").includes("LEX-005"));
+  assert.ok(regles("« Ainsi, le prix baisse. »").includes("LEX-005"));
+  assert.ok(!regles("- — Bonjour, dit-elle.").includes("PON-002"));
+});
+
+test("une ligne qui n'est qu'un bouton ou un lien sort des mesures", () => {
+  assert.strictEqual(verifier("Une phrase complète ici.\n\n[Réserver une table](/reserver)\n").mesures.phrases, 1);
+  assert.strictEqual(verifier("Une phrase complète ici.\n\n[Réserver]\n").mesures.phrases, 1);
+});
+
+test("un même passage n'est signalé qu'une fois", () => {
+  const c = verifier("En définitive, le prix baisse.").constats.filter((x) => /en définitive/i.test(x.extrait));
+  assert.strictEqual(c.length, 1);
+});
