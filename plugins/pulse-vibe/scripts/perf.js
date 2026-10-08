@@ -450,7 +450,9 @@ function commandeNpx(args) {
   for (const cli of [path.join(dossier, "node_modules", "npm", "bin", "npx-cli.js"), path.join(dossier, "..", "lib", "node_modules", "npm", "bin", "npx-cli.js")]) {
     if (existe(cli)) return { cmd: process.execPath, args: [cli, ...args], shell: false };
   }
-  return { cmd: "npx", args, shell: process.platform === "win32" };
+  // Repli : npx par l'interpréteur de Windows ; chaque argument avec espace ou & est mis entre guillemets.
+  const surWindows = process.platform === "win32";
+  return { cmd: "npx", args: surWindows ? args.map((a) => (/[\s&]/.test(a) ? `"${a}"` : a)) : args, shell: surWindows };
 }
 
 function mesurerEnLocal(url, appareil, chrome) {
@@ -527,7 +529,14 @@ function ecrireJson(fichier, objet) {
   fs.writeFileSync(fichier, `${JSON.stringify(objet, null, 2)}\n`);
 }
 
-const estAdresse = (u) => /^https?:\/\/\S+$/.test(u);
+// Adresse http(s) sans caractère que cmd.exe interpréterait (le repli sans npx-cli.js passe par un interpréteur).
+const estAdresse = (u) => {
+  try {
+    return /^https?:$/.test(new URL(u).protocol) && /^https?:\/\/\S+$/.test(u) && !/["'`!^<>|]/.test(u) && !/%(?![0-9A-Fa-f]{2})/.test(u);
+  } catch {
+    return false;
+  }
+};
 function estLocale(u) {
   try {
     const h = new URL(u).hostname;
@@ -942,4 +951,4 @@ async function principal() {
 
 if (require.main === module) principal().catch(erreurInattendue);
 
-module.exports = { extraire, agreger, mediane, classer, classerScore, lireTerrain, lireHistorique, comparer, lireBudget, verifierBudget, lireLimite, cheminsSuivis, masquer, SEUILS };
+module.exports = { extraire, agreger, mediane, classer, classerScore, lireTerrain, lireHistorique, comparer, lireBudget, verifierBudget, lireLimite, cheminsSuivis, masquer, estAdresse, SEUILS };

@@ -476,3 +476,10 @@ test("installer : copie le script dans scripts/perf.js du projet (pour la CI)", 
   assert.strictEqual(r.code, 0, r.sortie);
   assert.strictEqual(fs.readFileSync(path.join(dossier, "scripts", "perf.js"), "utf8"), fs.readFileSync(PERF, "utf8"));
 });
+
+test("adresse : refusée si elle contient des caractères interprétés par cmd.exe", () => {
+  const { estAdresse } = perf;
+  assert.ok(estAdresse("https://exemple.fr/page?a=1"));
+  assert.ok(estAdresse("https://exemple.fr/caf%C3%A9"));
+  for (const u of ['https://exemple.fr/"&calc', "https://exemple.fr/%PATH%", "https://exemple.fr/a!b", "ftp://exemple.fr"]) assert.ok(!estAdresse(u), u);
+});

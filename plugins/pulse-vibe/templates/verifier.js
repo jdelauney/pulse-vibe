@@ -11,6 +11,7 @@
 //
 //   node scripts/verifier.js               les trois contrôles
 //   node scripts/verifier.js --scenarios   l'état de couverture des scénarios de tous les plans, sans échouer
+//   node scripts/verifier.js --index       les fichiers prêts à être enregistrés (contrôle avant commit), sans les scénarios
 "use strict";
 
 const fs = require("fs");
@@ -18,18 +19,31 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 
 // DEBUT-MOTIFS
+// Valeurs d'exemple : hôte local ou nom de service (sans point), mot de passe de démonstration.
+const HOTE_EXEMPLE = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|host\.docker\.internal|example\.(com|org|net)|[a-z0-9_-]+)(:\d+)?$/i;
+const VALEUR_EXEMPLE = /^(password|passwd|motdepasse|mot_de_passe|mdp|postgres|root|secret|changeme|change_me|example|exemple|test|pass|user|admin|x+|\*+|\.+|<[^>]*>|\$\{[^}]*\}|\{\{[^}]*\}\}|(votre|your)[_-](cle|clé|key|secret|mot[_-]?de[_-]?passe|password|token)\w*)$/i;
+const adresseReelle = (m) => !VALEUR_EXEMPLE.test(m[1]) && !HOTE_EXEMPLE.test(m[2]);
+const valeurReelle = (v) =>
+  !VALEUR_EXEMPLE.test(v) && !/^(votre|your|change|exemple|example|xxx)/i.test(v) && !/(test|fake|factice|exemple|example|dummy|mock|demo)/i.test(v) && /^[A-Za-z0-9_+\/=.-]+$/.test(v) && !v.includes("://") && /\d/.test(v) && /[a-z]/.test(v) && /[A-Z]/.test(v);
+
 const MOTIFS = [
-  { nom: "clé secrète Stripe", re: /\b[rs]k_(?:live|test)_[0-9a-zA-Z]{16,}/ },
+  { nom: "clé secrète (Stripe ou Clerk)", re: /\b[rs]k_(?:live|test)_[0-9a-zA-Z]{16,}/ },
   { nom: "secret de webhook Stripe", re: /\bwhsec_[0-9a-zA-Z]{20,}/ },
   { nom: "clé secrète Supabase", re: /\bsb_secret_[0-9a-zA-Z_-]{16,}/ },
   { nom: "clé Anthropic", re: /\bsk-ant-[0-9a-zA-Z_-]{20,}/ },
-  { nom: "clé OpenAI", re: /\bsk-(?:proj-)?[0-9a-zA-Z_-]{32,}/ },
+  { nom: "clé OpenAI", re: /\bsk-(?:proj-)?[0-9a-zA-Z_-]{32,}/g, garder: (m) => /\d/.test(m[0]) && /[A-Za-z]/.test(m[0].slice(3)) },
   { nom: "jeton GitHub", re: /\b(?:ghp|gho|ghu|ghs|ghr|github_pat)_[0-9a-zA-Z_.-]{20,}/ },
+  { nom: "jeton GitLab", re: /\bglpat-[0-9A-Za-z_-]{20,}/ },
+  { nom: "jeton npm", re: /\bnpm_[0-9A-Za-z]{36}\b/ },
+  { nom: "jeton Hugging Face", re: /\bhf_[0-9A-Za-z]{30,}/ },
+  { nom: "clé Groq", re: /\bgsk_[0-9A-Za-z]{40,}/ },
+  { nom: "jeton Replicate", re: /\br8_[0-9A-Za-z]{30,}/ },
   { nom: "clé AWS", re: /\bAKIA[0-9A-Z]{16}\b/ },
   { nom: "clé SendGrid", re: /\bSG\.[0-9a-zA-Z_-]{16,}\.[0-9a-zA-Z_-]{16,}/ },
   { nom: "jeton Slack", re: /\bxox[abprs]-[0-9a-zA-Z-]{10,}/ },
   { nom: "clé privée", re: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
-  { nom: "mot de passe dans une adresse de base de données", re: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?):\/\/[^:\s/@]+:[^@\s]{3,}@/ },
+  { nom: "mot de passe dans une adresse de base de données", re: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?):\/\/[^:\s/@]+:([^@\s]{3,})@([^/\s?#"'`]+)/g, garder: adresseReelle },
+  { nom: "mot de passe dans une adresse web", re: /\bhttps?:\/\/[^:\s/@]+:([^@\s]{3,})@([^/\s?#"'`]+)/g, garder: adresseReelle },
   { nom: "secret client Google OAuth", re: /\bGOCSPX-[0-9A-Za-z_-]{28}(?![0-9A-Za-z_-])/ },
   { nom: "jeton d'accès Google", re: /\bya29\.[0-9A-Za-z_-]{20,}/ },
   { nom: "jeton de rafraîchissement Google", re: /\b1\/\/0[0-9A-Za-z_-]{30,}/ },
@@ -38,6 +52,7 @@ const MOTIFS = [
   { nom: "clé d'API Neon", re: /\bnapi_[0-9a-z]{40,}/ },
   { nom: "jeton Vercel", re: /\bvc[pkiar]_[0-9A-Za-z]{24,}/ },
   { nom: "jeton d'API Cloudflare", re: /\bcf(?:k|ut|at)_[0-9A-Za-z]{40,}/ },
+  { nom: "secret en clair", re: /\b[A-Z0-9_]*(?:SECRET|PASSWORD|PASSWD|TOKEN|API_KEY|APIKEY|PRIVATE_KEY)[A-Z0-9_]*\s*[:=]\s*["']([^"'\s]{16,})["']/g, garder: (m) => valeurReelle(m[1]) },
 ];
 
 // Clé Resend : "re_" suivi d'un mélange de chiffres et de majuscules.
@@ -60,7 +75,17 @@ function roleJwt(segment) {
 function trouverSecrets(texte) {
   if (!texte || typeof texte !== "string") return [];
   const trouves = new Set();
-  for (const m of MOTIFS) if (m.re.test(texte)) trouves.add(m.nom);
+  for (const m of MOTIFS) {
+    if (!m.garder) {
+      if (m.re.test(texte)) trouves.add(m.nom);
+      continue;
+    }
+    for (const r of texte.matchAll(m.re))
+      if (m.garder(r)) {
+        trouves.add(m.nom);
+        break;
+      }
+  }
   for (const r of texte.match(RESEND) || []) {
     if (/\d/.test(r) && /[A-Z]/.test(r)) trouves.add("clé Resend");
   }
@@ -71,12 +96,14 @@ function trouverSecrets(texte) {
   }
   return [...trouves];
 }
-// FIN-MOTIFS
 
+/** Vrai pour .env, .env.local, .ENV, .dev.vars, .envrc… ; faux pour .env.example, .env.sample, .env.template. */
 function estFichierEnv(chemin) {
-  const nom = String(chemin).split(/[\\/]/).pop();
-  return /^\.env(\..+)?$/.test(nom) && !/^\.env\.(example|sample|template)$/.test(nom);
+  const nom = String(chemin).split(/[\\/]/).pop().toLowerCase();
+  if (/^\.env\.(example|sample|template)$/.test(nom)) return false;
+  return /^\.env(\..+)?$/.test(nom) || nom === ".dev.vars" || nom === ".envrc";
 }
+// FIN-MOTIFS
 
 const IGNORES = new Set([".git", "node_modules", ".netlify"]);
 
@@ -99,6 +126,23 @@ function listerFichiers() {
     }
   })(".");
   return resultat;
+}
+
+function fichiersIndexes() {
+  try {
+    const sortie = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return sortie.split("\u0000").filter(Boolean);
+  } catch (e) {
+    return [];
+  }
+}
+
+function contenuIndexe(f) {
+  try {
+    return execFileSync("git", ["show", `:${f}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 1024 * 1024 });
+  } catch (e) {
+    return "";
+  }
 }
 
 // ---------------------------------------------------------------- Scénarios
@@ -224,8 +268,9 @@ function controlerScenarios(erreurs) {
 
 function principal() {
   if (process.argv.includes("--scenarios")) return afficherCouverture();
+  const index = process.argv.includes("--index");
   const erreurs = [];
-  const fichiers = listerFichiers();
+  const fichiers = index ? fichiersIndexes() : listerFichiers();
 
   for (const f of fichiers) {
     if (estFichierEnv(f)) {
@@ -233,22 +278,25 @@ function principal() {
       continue;
     }
     let contenu = "";
-    try {
-      const st = fs.statSync(f);
-      if (!st.isFile() || st.size > 512 * 1024) continue;
-      contenu = fs.readFileSync(f, "utf8");
-    } catch (e) {
-      continue;
+    if (index) contenu = contenuIndexe(f);
+    else {
+      try {
+        const st = fs.statSync(f);
+        if (!st.isFile() || st.size > 512 * 1024) continue;
+        contenu = fs.readFileSync(f, "utf8");
+      } catch (e) {
+        continue;
+      }
     }
     if (contenu.includes("\u0000")) continue;
     const secrets = trouverSecrets(contenu);
     if (secrets.length) erreurs.push(`${f} : contient une ${secrets.join(", ")}. Déplacez-la dans les variables d'environnement.`);
   }
 
-  const bilanScenarios = controlerScenarios(erreurs);
+  const bilanScenarios = index ? "" : controlerScenarios(erreurs);
 
   if (erreurs.length) {
-    console.error("❌ Vérification échouée, la mise en ligne est annulée :\n");
+    console.error(index ? "❌ Commit annulé : un secret allait être enregistré.\n" : "❌ Vérification échouée, la mise en ligne est annulée :\n");
     for (const e of erreurs) console.error("  - " + e);
     console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");
     process.exit(1);

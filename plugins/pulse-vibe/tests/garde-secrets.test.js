@@ -247,3 +247,157 @@ test("reconnaît les jetons GitHub classiques et sans état (format JWT, environ
   assert.deepStrictEqual(trouverSecrets(`GH_TOKEN=${sansEtat}`), ["jeton GitHub"]);
   assert.deepStrictEqual(trouverSecrets("ghs_ ghp_court"), []);
 });
+
+test("fichiers d'environnement : casse, .dev.vars, .envrc ; exemples exclus", () => {
+  const { estFichierEnv } = require("../scripts/motifs");
+  for (const f of [".env", ".ENV", ".Env.Local", "app/.env.production", ".dev.vars", ".envrc"]) assert.ok(estFichierEnv(f), f);
+  for (const f of [".env.example", ".ENV.EXAMPLE", ".env.sample", ".env.template", "env.ts", ".environment"]) assert.ok(!estFichierEnv(f), f);
+});
+
+test("Read d'un .ENV en majuscules : refusé", () => {
+  assert.ok(refuse(lancerHook({ tool_name: "Read", tool_input: { file_path: "/p/.ENV" } })));
+});
+
+test("écrire une clé dans .dev.vars (fichier de secrets de Wrangler) : autorisé", () => {
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/.dev.vars", content: `STRIPE=${FAUX.stripe}` } }), null);
+});
+
+const powershell = (commande, cwd) => ({ tool_name: "PowerShell", tool_input: { command: commande }, cwd });
+
+test("PowerShell : git add d'un .env et commit d'une clé refusés", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire(".env", "X=1\n");
+  assert.ok(refuse(lancerHook(powershell("git add -f .env", dir))));
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  git("add", "app.js");
+  assert.ok(refuse(lancerHook(powershell('git commit -m "x"', dir))));
+});
+
+test("git avec options globales, sous-shell ou xargs : contrôlé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  git("add", "app.js");
+  assert.ok(refuse(lancerHook(bash('git -c x=y commit -m "x"', dir))));
+  assert.ok(refuse(lancerHook(bash('git --no-pager commit -m "x"', dir))));
+  assert.ok(refuse(lancerHook(bash(`bash -c 'git commit -m x'`, dir))));
+});
+
+test("commit par chemin : le contenu du fichier nommé est contrôlé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", "const a = 1;\n");
+  git("add", "app.js");
+  git("commit", "-q", "-m", "app");
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  assert.ok(refuse(lancerHook(bash('git commit app.js -m "maj"', dir))));
+});
+
+test("texte cité : un echo qui contient « git add .env » passe", () => {
+  const { dir } = depotTemporaire();
+  assert.strictEqual(lancerHook(bash('echo "git add .env" >> notes.md', dir)), null);
+});
+
+test("Grep : glob qui vise .env, ou .env non ignoré dans le dossier fouillé : refusé", () => {
+  const { dir, ecrire } = depotTemporaire();
+  assert.ok(refuse(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", glob: "{.env,.env.local}" }, cwd: dir })));
+  ecrire(".env", "KEY=1\n");
+  assert.ok(refuse(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", path: dir }, cwd: dir })));
+  ecrire(".gitignore", ".env\n");
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", path: dir }, cwd: dir }), null);
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", glob: "*.ts" }, cwd: dir }), null);
+});
+
+test("git -C vers un autre dépôt : le commit du dépôt courant reste contrôlé", () => {
+  const A = depotTemporaire();
+  const B = depotTemporaire();
+  A.ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  A.git("add", "app.js");
+  assert.ok(refuse(lancerHook(bash(`git -C "${B.dir}" status && git commit -m x`, A.dir))));
+});
+
+test("commit : valeur de -m collée, le chemin qui suit est contrôlé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", "const a = 1;\n");
+  git("add", "app.js");
+  git("commit", "-q", "-m", "app");
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  assert.ok(refuse(lancerHook(bash("git commit -mtest app.js", dir))));
+  assert.ok(refuse(lancerHook(bash("git commit -am msg", dir))));
+});
+
+test("Grep : glob qui nomme un fichier .env refusé, noms voisins autorisés", () => {
+  const { dir } = depotTemporaire();
+  const grep = (glob) => lancerHook({ tool_name: "Grep", tool_input: { pattern: "K", glob }, cwd: dir });
+  for (const g of ["{.env,.env.local}", ".env*", "**/.env", ".env.local", ".ENV"]) assert.ok(refuse(grep(g)), g);
+  for (const g of ["*.env.ts", "**/*.environment.ts", ".env.example", "*.ts"]) assert.strictEqual(grep(g), null, g);
+});
+
+test("pas de dépôt Git : la commande passe", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-sans-git-"));
+  assert.strictEqual(lancerHook(bash('git commit -m "x"', dir)), null);
+  assert.strictEqual(lancerHook(powershell('git commit -m "x"', path.join(dir, "inexistant"))), null);
+});
+
+// ------------------------------------------------------------ Motifs : exemples reconnus, nouveaux fournisseurs
+
+const { trouverSecrets: motifs } = require("../scripts/motifs");
+const alea = (n) => Array.from({ length: n }, (_, i) => "aB3dE5gH7jK9mN1pQ2rS4tU6vW8xY0z"[(i * 7 + 3) % 31]).join("");
+
+test("adresses d'exemple : jamais signalées", () => {
+  for (const t of [
+    "postgres" + "ql://user:password@localhost:5432/app",
+    "postgres" + "://postgres:postgres@db:5432/app",
+    "redis" + "://default:secret@redis:6379",
+    "mysql" + "://root:" + alea(12) + "@127.0.0.1/app",
+    "https" + "://user:pass@example.com/x",
+  ])
+    assert.deepStrictEqual(motifs(t), [], t);
+});
+
+test("vraie adresse de base : toujours signalée", () => {
+  assert.deepStrictEqual(motifs("postgres" + "ql://appli:" + alea(20) + "@ep-calme-1.eu-central-1.aws.neon.tech/base"), ["mot de passe dans une adresse de base de données"]);
+  assert.deepStrictEqual(motifs("https" + "://moi:" + alea(16) + "@registre.entreprise.fr/x"), ["mot de passe dans une adresse web"]);
+});
+
+test("nouveaux fournisseurs reconnus", () => {
+  assert.ok(motifs("hf" + "_" + alea(34)).includes("jeton Hugging Face"));
+  assert.ok(motifs("glpat" + "-" + alea(20)).includes("jeton GitLab"));
+  assert.ok(motifs("npm" + "_" + alea(36)).includes("jeton npm"));
+  assert.ok(motifs("gsk" + "_" + alea(52)).includes("clé Groq"));
+  assert.ok(motifs("r8" + "_" + alea(37)).includes("jeton Replicate"));
+});
+
+test("secret en clair dans une variable, sauf valeur d'exemple", () => {
+  assert.ok(motifs(`BETTER_AUTH_SECRET='${alea(32)}'`).includes("secret en clair"));
+  assert.deepStrictEqual(motifs('BETTER_AUTH_SECRET="VOTRE_SECRET_ICI_A_REMPLACER"'), []);
+  assert.deepStrictEqual(motifs('const TOKEN = "token-de-test-1234567890"'), []);
+});
+
+test("identifiant qui commence par sk- sans chiffre : pas une clé OpenAI", () => {
+  assert.deepStrictEqual(motifs("sk" + "-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-mon-identifiant"), []);
+});
+
+test("verifier.js --index : contrôle le contenu indexé seulement", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  const r1 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r1.status, 0, "fichier non indexé : rien à contrôler");
+  git("add", "app.js");
+  const r2 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r2.status, 1);
+  assert.match(r2.stderr, /Commit annulé/);
+});
+
+test("secret en clair : constantes ordinaires (URL, regex, nom d'en-tête) non signalées, vrais secrets signalés", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  for (const c of [
+    'const TOKEN_URL = "https://oauth2.googleapis.com/token"',
+    'GOOGLE_TOKEN_ENDPOINT: "https://oauth2.googleapis.com/token2"',
+    'const PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*\\d).{8,}$"',
+    'const SECRET_HEADER_NAME = "x-webhook-signature-v2"',
+    'API_KEY="VOTRE_CLE_ICI_1234567"',
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), [], c);
+  assert.deepStrictEqual(trouverSecrets("postgres" + "://admin:mypassword123@db.prod.internal.io"), ["mot de passe dans une adresse de base de données"]);
+  const alea = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd";
+  assert.deepStrictEqual(trouverSecrets(`BETTER_AUTH_SECRET='${alea}'`), ["secret en clair"]);
+});

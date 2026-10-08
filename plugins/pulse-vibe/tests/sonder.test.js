@@ -78,3 +78,13 @@ test("sans adresse ou avec une adresse invalide : usage et code 1", async () => 
     assert.match(r.sortie, /Usage : pulse-aidd sonder/);
   }
 });
+
+test("site injoignable : cause expliquée en français, délai invalide remplacé", async () => {
+  const serveur = http.createServer();
+  await new Promise((ok) => serveur.listen(0, "127.0.0.1", ok));
+  const { port } = serveur.address();
+  await new Promise((ok) => serveur.close(ok));
+  const r = await lancer([`http://127.0.0.1:${port}`, "--essais", "1", "--delai", "abc"]);
+  assert.strictEqual(r.code, 1);
+  assert.match(r.sortie, /refuse la connexion/);
+});

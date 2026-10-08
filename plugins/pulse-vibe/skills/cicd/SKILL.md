@@ -44,6 +44,8 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 
 Lancer `pulse-aidd installer-ci` : il copie `scripts/verifier.js` (le contrôle des secrets et, dans un projet Pulse, des scénarios sans test des US terminées ; sans dépendance) et `scripts/ci-verifications.exemple.yml` (la liste des étapes, à traduire pour l'outil retenu).
 
+Lancer aussi `pulse-aidd installer-hook` : le même contrôle des secrets s'exécute avant chaque commit, y compris ceux faits hors de Claude Code (éditeur, terminal). Si le projet a déjà ses contrôles avant commit (Husky…), suivre le message affiché pour y ajouter la ligne.
+
 ## 3. Écrire le fichier de CI
 
 D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle impose :

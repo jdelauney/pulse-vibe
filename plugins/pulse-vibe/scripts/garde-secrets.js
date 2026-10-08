@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// Pulse – garde-fou anti-secrets (hook PreToolUse).
+// Pulse – garde-fou anti-secrets (hook PreToolUse sur Write, Edit, Read, Grep, Bash et PowerShell).
 //
 // Bloque, avant qu'ils ne se produisent :
 //  - l'écriture d'une clé secrète dans un fichier de code (Write / Edit) ;
+//  - la lecture d'un fichier .env par l'IA (Read, Grep, y compris un .env non ignoré dans le dossier fouillé) ;
 //  - l'ajout d'un fichier .env à Git (git add) ;
-//  - un commit qui contient un fichier .env ou une clé secrète (git commit) ;
+//  - un commit qui contient un fichier .env ou une clé secrète (git commit, y compris par chemin) ;
 //  - un push alors qu'un fichier .env est suivi par Git (git push).
+// La commande est lue par lecture-commande.js, comme pour le garde-fou des commandes.
 //
 // Principe : en cas de doute technique (pas de dépôt Git, erreur de lecture…),
 // le script laisse passer sans rien dire, pour ne jamais bloquer une séance.
@@ -17,6 +19,7 @@ const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
 const { trouverSecrets, estFichierEnv } = require("./motifs");
+const { commandesSimples, optionsGlobalesGit } = require("./lecture-commande");
 
 const TAILLE_MAX = 512 * 1024; // on ne lit pas les gros fichiers
 
@@ -103,13 +106,33 @@ function verifierEcriture(ti) {
 
 // ---------------------------------------------------------------- Read / Grep
 
+// .env présents dans un dossier et non ignorés par Git : la recherche de Claude Code les lirait.
+function envNonIgnores(dossier) {
+  try {
+    if (!fs.statSync(dossier).isDirectory()) return [];
+    return fs.readdirSync(dossier).filter(estFichierEnv).filter((f) => git(["check-ignore", "-q", f], dossier) === null);
+  } catch (e) {
+    return [];
+  }
+}
+
 // Les valeurs de .env restent hors de la conversation : seuls les scripts de Pulse les lisent.
-function verifierLecture(outil, ti) {
+function verifierLecture(outil, ti, cwd) {
   const cibles = [ti.file_path, ti.path, ti.glob].filter((c) => typeof c === "string");
-  const visee = cibles.find((c) => estFichierEnv(c) || /(^|[\\/])\.env\*?$/.test(c) || /(^|[\\/])\.env\.\*$/.test(c));
+  let visee = cibles.find((c) => estFichierEnv(c) || /(^|[\\/])\.env\*?$/i.test(c) || /(^|[\\/])\.env\.\*$/i.test(c));
+  if (!visee && outil === "Grep" && typeof ti.glob === "string" && /(^|[\\/{,])\.env(?!\.(example|sample|template)\b)(?![A-Za-z0-9_-])/i.test(ti.glob)) visee = ti.glob;
+  let nonIgnore = false;
+  if (!visee && outil === "Grep" && !ti.glob && !ti.type) {
+    const exposes = envNonIgnores(path.resolve(cwd, ti.path || "."));
+    if (exposes.length) {
+      visee = exposes[0];
+      nonIgnore = true;
+    }
+  }
   if (!visee) return;
   refuser(
     `🔒 Pulse garde le contenu de « ${path.basename(visee)} » hors de la conversation : ce fichier contient les secrets du projet.\n` +
+      (nonIgnore ? `Cette recherche le lirait, car il ne figure pas dans .gitignore. À faire d'abord : ajouter « .env* » au .gitignore.\n` : "") +
       `À la place : \`pulse-aidd secrets inventaire\` liste les variables (noms, présence, sans aucune valeur) ; ` +
       `.env.example donne les noms attendus. La personne modifie elle-même .env dans son éditeur.`
   );
@@ -133,15 +156,35 @@ function fichiersModifies(racine) {
   return fichiers;
 }
 
-// Arguments qui suivent "git add" jusqu'au prochain séparateur de commande.
-function argumentsDe(commande, sousCommande) {
-  const re = new RegExp(`\\bgit\\s+(?:-C\\s+\\S+\\s+)?${sousCommande}\\b([^;&|\\n]*)`, "g");
-  const listes = [];
-  let m;
-  while ((m = re.exec(commande)) !== null) {
-    listes.push(m[1].trim().split(/\s+/).filter(Boolean).map((t) => t.replace(/^['"]|['"]$/g, "")));
+// Options de git commit suivies d'une valeur : le mot suivant n'est pas un chemin.
+const AVEC_VALEUR_COMMIT = new Set(["-m", "--message", "-F", "--file", "-C", "--reuse-message", "-c", "--reedit-message", "--author", "--date", "--fixup", "--squash", "-t", "--template", "--trailer", "--cleanup", "--pathspec-from-file"]);
+
+/** Les appels à git d'une commande (lanceurs dépliés, texte cité ignoré). */
+function appelsGit(commande, dialecte) {
+  return commandesSimples(commande, dialecte)
+    .filter((c) => c.cmd === "git")
+    .map((c) => {
+      const { k, prefixe } = optionsGlobalesGit(c.args);
+      return { sous: c.args[k], args: c.args.slice(k + 1), prefixe, viaXargs: c.viaXargs };
+    });
+}
+
+/** Chemins nommés dans git commit : Git enregistre leur contenu actuel, sans passer par l'index. */
+function cheminsDuCommit(args) {
+  const chemins = [];
+  for (let k = 0; k < args.length; k++) {
+    const a = args[k];
+    if (a === "--") {
+      chemins.push(...args.slice(k + 1));
+      break;
+    }
+    if (AVEC_VALEUR_COMMIT.has(a) || /^-[aqvsneiou]*[mFCct]$/.test(a)) {
+      k++;
+      continue;
+    }
+    if (!a.startsWith("-")) chemins.push(a);
   }
-  return listes;
+  return chemins;
 }
 
 function candidatsAdd(listeArgs, racine, cwd) {
@@ -172,58 +215,74 @@ function lignesAjoutees(diff) {
     .join("\n");
 }
 
-function verifierGit(commande, cwd) {
-  if (!/\bgit\b/.test(commande)) return;
-  const racine = (git(["rev-parse", "--show-toplevel"], cwd) || "").trim();
-  if (!racine) return; // pas un dépôt Git
-
-  const problemes = [];
-  const fichiersEnv = new Set();
-  const secretsTrouves = new Map(); // fichier -> types
-
+// Contrôle les appels git qui visent un même dépôt ; les constats s'ajoutent à `etat`.
+function controlerAppels(appels, dossier, racine, etat) {
+  const { problemes, fichiersEnv, secretsTrouves } = etat;
   const noter = (fichier, contenu) => {
     const s = trouverSecrets(contenu);
     if (s.length) secretsTrouves.set(fichier, s);
   };
 
   // git add
-  const adds = argumentsDe(commande, "add");
-  for (const args of adds) {
-    for (const f of candidatsAdd(args, racine, cwd)) {
+  for (const a of appels.filter((x) => x.sous === "add")) {
+    if (a.args.some((t) => t === "-n" || t === "--dry-run")) continue;
+    for (const f of candidatsAdd(a.viaXargs ? ["-A"] : a.args, racine, dossier)) {
       if (estFichierEnv(f)) fichiersEnv.add(f);
       else noter(f, lireFichier(path.join(racine, f)));
     }
   }
 
   // git commit
-  const commits = argumentsDe(commande, "commit");
+  const commits = appels.filter((x) => x.sous === "commit");
   if (commits.length) {
-    const toutAjouter = commits.some((a) => a.some((t) => t === "--all" || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(t)));
+    const toutAjouter = commits.some((a) => a.args.some((t) => t === "--all" || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(t)));
+    const chemins = commits.flatMap((a) => cheminsDuCommit(a.args));
     const indexes = (git(["diff", "--cached", "--name-only", "-z"], racine) || "").split("\u0000").filter(Boolean);
     const suivis = toutAjouter ? (git(["diff", "--name-only", "-z"], racine) || "").split("\u0000").filter(Boolean) : [];
-    for (const f of [...indexes, ...suivis]) if (estFichierEnv(f)) fichiersEnv.add(f);
+    const parChemin = chemins.length ? (git(["diff", "HEAD", "--name-only", "-z", "--", ...chemins], dossier) || "").split("\u0000").filter(Boolean) : [];
+    for (const f of [...indexes, ...suivis, ...parChemin, ...chemins]) if (estFichierEnv(f)) fichiersEnv.add(f);
 
     const diffIndex = git(["diff", "--cached", "-U0", "--no-color"], racine) || "";
     const diffSuivis = toutAjouter ? git(["diff", "-U0", "--no-color"], racine) || "" : "";
+    const diffChemins = chemins.length ? git(["diff", "HEAD", "-U0", "--no-color", "--", ...chemins], dossier) || "" : "";
     // Découpe par fichier pour pouvoir nommer le fichier fautif.
-    for (const bloc of (diffIndex + "\n" + diffSuivis).split(/^diff --git /m)) {
+    for (const bloc of [diffIndex, diffSuivis, diffChemins].join("\n").split(/^diff --git /m)) {
       const nom = (bloc.match(/^\+\+\+ b\/(.+)$/m) || [])[1];
       if (nom && !estFichierEnv(nom)) noter(nom, lignesAjoutees(bloc));
     }
   }
 
   // git push
-  if (/\bgit\s+(?:-C\s+\S+\s+)?push\b/.test(commande)) {
-    const suivis = (git(["ls-files", "-z"], racine) || "").split("\u0000").filter(Boolean);
-    const envSuivis = suivis.filter(estFichierEnv);
+  if (appels.some((x) => x.sous === "push")) {
+    const envSuivis = (git(["ls-files", "-z"], racine) || "").split("\u0000").filter(Boolean).filter(estFichierEnv);
     if (envSuivis.length) {
       problemes.push(
-        `Le fichier ${envSuivis.join(", ")} est enregistré dans Git : il serait envoyé sur GitHub.\n` +
+        `Le fichier ${envSuivis.join(", ")} est enregistré dans Git : il serait envoyé sur le dépôt distant.\n` +
           `À faire : ajouter .env au .gitignore, puis « git rm --cached ${envSuivis[0]} » et faire un nouveau commit. ` +
-          `Si une vraie clé a déjà été envoyée sur GitHub, il faut la révoquer et en créer une nouvelle chez le fournisseur.`
+          `Si une vraie clé a déjà été envoyée, il faut la révoquer et en créer une nouvelle chez le fournisseur (/pulse:secrets fuite).`
       );
     }
   }
+}
+
+function verifierGit(commande, cwd, dialecte) {
+  if (!/\bgit\b/i.test(commande)) return;
+  const appels = appelsGit(commande, dialecte);
+  if (!appels.length) return;
+
+  // Chaque appel vise son propre dépôt (option -C), à contrôler séparément.
+  const etat = { problemes: [], fichiersEnv: new Set(), secretsTrouves: new Map() };
+  const parDossier = new Map();
+  for (const a of appels) {
+    const dossier = a.prefixe[0] === "-C" ? path.resolve(cwd, a.prefixe[1]) : cwd;
+    if (!parDossier.has(dossier)) parDossier.set(dossier, []);
+    parDossier.get(dossier).push(a);
+  }
+  for (const [dossier, groupe] of parDossier) {
+    const racine = (git(["rev-parse", "--show-toplevel"], dossier) || "").trim();
+    if (racine) controlerAppels(groupe, dossier, racine, etat); // sinon : pas un dépôt Git
+  }
+  const { problemes, fichiersEnv, secretsTrouves } = etat;
 
   if (fichiersEnv.size) {
     problemes.push(
@@ -235,7 +294,7 @@ function verifierGit(commande, cwd) {
   for (const [fichier, types] of secretsTrouves) {
     problemes.push(
       `« ${fichier} » semble contenir une ${types.join(", ")}.\n` +
-        `À faire : déplacer la valeur dans .env et la lire avec process.env côté serveur, ` +
+        `À faire : déplacer la valeur dans .env et la lire côté serveur, ` +
         `ou la remplacer par un texte comme VOTRE_CLE_ICI si c'est un exemple.`
     );
   }
@@ -256,12 +315,14 @@ function principal() {
   const entree = lireEntree();
   if (!entree || !entree.tool_input) return;
   const outil = entree.tool_name;
+  const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
   if (["Write", "Edit", "MultiEdit", "NotebookEdit"].includes(outil)) {
     verifierEcriture(entree.tool_input);
   } else if (outil === "Read" || outil === "Grep") {
-    verifierLecture(outil, entree.tool_input);
-  } else if (outil === "Bash" && typeof entree.tool_input.command === "string") {
-    verifierGit(entree.tool_input.command, entree.cwd || process.cwd());
+    verifierLecture(outil, entree.tool_input, cwd);
+  } else if ((outil === "Bash" || outil === "PowerShell") && typeof entree.tool_input.command === "string") {
+    if (entree.cwd && !fs.existsSync(entree.cwd)) return;
+    verifierGit(entree.tool_input.command, cwd, outil === "PowerShell" ? "powershell" : "bash");
   }
 }
 
