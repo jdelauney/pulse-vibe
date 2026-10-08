@@ -542,7 +542,7 @@ import {
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
 import { useForm } from "@tanstack/react-form";
-import { useId, useRef } from "react";
+import { useId, useState } from "react";
 import type { ChampFacture } from "../../constants/factures";
 import {
   type CreerFactureEntree,
@@ -565,13 +565,13 @@ export function FormulaireFacture({
 }: Props) {
   const prefixe = useId();
   // Valeurs de la dernière tentative : l'erreur du serveur disparaît dès que le champ est modifié.
-  const envoyees = useRef<CreerFactureEntree | null>(null);
+  const [envoyees, setEnvoyees] = useState<CreerFactureEntree | null>(null);
 
   const form = useForm({
     defaultValues: { client: "", montant: "" },
     validators: { onSubmit: creerFactureSchema },
     onSubmit: async ({ value, formApi }) => {
-      envoyees.current = value;
+      setEnvoyees(value);
       if (await envoyer(value)) {
         formApi.reset();
       }
@@ -590,7 +590,7 @@ export function FormulaireFacture({
         <form.Field name="client">
           {(field) => {
             const erreurChamp =
-              envoyees.current?.[field.name] === field.state.value
+              envoyees?.[field.name] === field.state.value
                 ? erreursChamps?.[field.name]
                 : undefined;
             const invalide =
@@ -623,7 +623,7 @@ export function FormulaireFacture({
         <form.Field name="montant">
           {(field) => {
             const erreurChamp =
-              envoyees.current?.[field.name] === field.state.value
+              envoyees?.[field.name] === field.state.value
                 ? erreursChamps?.[field.name]
                 : undefined;
             const invalide =
