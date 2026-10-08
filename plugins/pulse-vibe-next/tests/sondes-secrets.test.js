@@ -182,6 +182,48 @@ test("Upstash : PONG accepté, 401 refusé", async () => {
   sansValeur(ok.sortie + ko.sortie, jeton);
 });
 
+test("Turnstile : clé reconnue (réponse factice refusée), clé refusée ; la clé part dans le corps, jamais à l'écran", async () => {
+  const d = projet();
+  let codes = ["invalid-input-response"];
+  const recues = [];
+  const s = http.createServer((req, res) => {
+    let corps = "";
+    req.on("data", (x) => (corps += x));
+    req.on("end", () => {
+      recues.push({ url: req.url, corps: new URLSearchParams(corps) });
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ success: false, "error-codes": codes }));
+    });
+  });
+  await new Promise((r) => s.listen(0, "127.0.0.1", r));
+  const env = { PULSE_SONDES_TURNSTILE_API: `http://127.0.0.1:${s.address().port}` };
+  const cle = "0x" + hasard(16);
+  const entree = JSON.stringify({ TURNSTILE_SECRET_KEY: cle });
+  const ok = await lancer(d, ["tester", "TURNSTILE_SECRET_KEY"], entree, env);
+  codes = ["invalid-input-secret"];
+  const ko = await lancer(d, ["tester", "TURNSTILE_SECRET_KEY"], entree, env);
+  s.close();
+  assert.strictEqual(ok.code, 0, ok.sortie);
+  assert.match(ok.sortie, /reconnaît cette clé/);
+  assert.strictEqual(ko.code, 1);
+  assert.match(ko.sortie, /refusée par Turnstile/);
+  assert.strictEqual(recues[0].url, "/turnstile/v0/siteverify");
+  assert.strictEqual(recues[0].corps.get("secret"), cle);
+  sansValeur(ok.sortie + ko.sortie, cle);
+});
+
+test("FORMULAIRE_SECRET : longueur vérifiée, valeur jamais affichée", async () => {
+  const d = projet();
+  const bonne = hasard(20);
+  const ok = await lancer(d, ["tester", "FORMULAIRE_SECRET"], JSON.stringify({ FORMULAIRE_SECRET: bonne }));
+  assert.strictEqual(ok.code, 0, ok.sortie);
+  assert.match(ok.sortie, /formulaire public/);
+  const courte = await lancer(d, ["tester", "FORMULAIRE_SECRET"], JSON.stringify({ FORMULAIRE_SECRET: "abc" + hasard(4) }));
+  assert.strictEqual(courte.code, 1);
+  assert.match(courte.sortie, /32 caractères/);
+  sansValeur(ok.sortie + courte.sortie, bonne);
+});
+
 test("SMTP : vérification par nodemailer du projet ; un message d'erreur qui contient le mot de passe est masqué", async () => {
   const d = projet({
     nodemailer: `exports.createTransport = (o) => ({ verify: async () => {

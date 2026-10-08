@@ -102,13 +102,32 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 
 ### `UPSTASH_REDIS_REST_TOKEN`
 
-- **Rôle** : le jeton de la base Redis Upstash (recette `limite`), avec `UPSTASH_REDIS_REST_URL` (adresse, préfixe `https://`, pas un secret).
+- **Rôle** : le jeton de la base Redis Upstash (recette `limite`, option Redis : `LIMITE_STOCKAGE=redis`), avec `UPSTASH_REDIS_REST_URL` (adresse, préfixe `https://`, pas un secret).
 - **Où renouveler** : console Upstash → la base → **Reset Credentials** (ou **Reset Password**) → confirmer en tapant le nom de la base → copier le nouveau jeton REST.
 - **Effet** : **immédiat** ; le mot de passe, le jeton REST et le jeton en lecture seule changent ensemble.
-- **Délai de grâce** : aucun. Coupure courte jusqu'au redémarrage : même préparation que pour Neon. Pendant la coupure, la limite de requêtes ne répond plus : les formulaires concernés renvoient une erreur.
+- **Délai de grâce** : aucun. Coupure courte jusqu'au redémarrage : même préparation que pour Neon. Pendant la coupure, la limite ne s'applique plus : les envois passent et chaque incident est journalisé.
 - **Test** : `pulse-aidd secrets verifier UPSTASH_REDIS_REST_TOKEN` (réponse PONG), puis un envoi de formulaire limité sur le site.
 - **Traces** : console Upstash → la base → **Usage / Metrics**.
 - Sources : https://upstash.com/docs/redis/features/security ; https://upstash.com/blog/rotate-upstash-secrets-after-vercel-incident (2026-04-19).
+
+### `FORMULAIRE_SECRET`
+
+- **Rôle** : signe le jeton de délai des formulaires publics (recette `formulaire-public`).
+- **Longueur** : 32 caractères au moins, tirés au hasard : `pulse-aidd secrets generer FORMULAIRE_SECRET` (rien n'est affiché). Une valeur différente par environnement.
+- **Où renouveler** : nulle part ailleurs que dans le projet : la valeur est générée.
+- **Effet** : les formulaires ouverts avant le changement sont refusés une fois (« Rechargez la page et réessayez. ») ; après rechargement, tout fonctionne. Aucune donnée n'est perdue.
+- **Délai de grâce** : aucun ; un formulaire se recharge.
+- **Test** : `pulse-aidd secrets verifier FORMULAIRE_SECRET` (longueur), puis l'envoi d'un formulaire public sur le site après le redéploiement.
+
+### `TURNSTILE_SECRET_KEY`
+
+- **Rôle** : la clé secrète du widget Cloudflare Turnstile (recette `formulaire-public`, option Turnstile), avec `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (clé de site, publique : elle apparaît dans la page).
+- **Où renouveler** : tableau de bord Cloudflare → **Turnstile** → le widget → **Settings** → **Rotate Secret Key** → copier la nouvelle clé.
+- **Effet** : la rotation dure deux heures ; pendant ce temps, l'ancienne et la nouvelle clé sont acceptées toutes les deux.
+- **Délai de grâce** : deux heures : saisir la nouvelle clé dans Vercel et redéployer pendant ce délai.
+- **Test** : `pulse-aidd secrets verifier TURNSTILE_SECRET_KEY` (Cloudflare reconnaît la clé, sans vérifier de visiteur), puis l'envoi d'un formulaire protégé sur le site.
+- **Traces** : tableau de bord Cloudflare → Turnstile → **Analytics**.
+- Sources : https://developers.cloudflare.com/turnstile/troubleshooting/rotate-secret-key/ ; https://developers.cloudflare.com/turnstile/get-started/server-side-validation/.
 
 ## Autres secrets du poste
 

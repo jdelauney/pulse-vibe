@@ -37,6 +37,8 @@ const VARIABLES = {
   R2_SECRET_ACCESS_KEY: { secret: true, fournisseur: "Cloudflare R2", groupe: R2, besoins: ["R2_ACCESS_KEY_ID", "R2_ACCOUNT_ID", "R2_BUCKET"] },
   UPSTASH_REDIS_REST_URL: { secret: false, fournisseur: "Upstash", prefixes: ["https://"], groupe: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"] },
   UPSTASH_REDIS_REST_TOKEN: { secret: true, fournisseur: "Upstash", groupe: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"], besoins: ["UPSTASH_REDIS_REST_URL"] },
+  FORMULAIRE_SECRET: { secret: true, fournisseur: "projet (valeur générée)", longueurMin: 32, genere: { octets: 32 } },
+  TURNSTILE_SECRET_KEY: { secret: true, fournisseur: "Cloudflare Turnstile" },
 };
 
 // ---------------------------------------------------------------- Sorties
@@ -195,6 +197,35 @@ async function testerUpstash(nom, v) {
   mauvais(`réponse inattendue d'Upstash (code ${reponse.status}).`);
 }
 
+function testerSecretFormulaire(nom, v) {
+  if (v[nom].length < 32) mauvais("trop courte : 32 caractères au moins (pulse-aidd secrets generer FORMULAIRE_SECRET).");
+  bon("longueur suffisante ; le vrai test : envoyer un formulaire public sur le site après le redéploiement.");
+}
+
+async function testerTurnstile(nom, v) {
+  const base = process.env.PULSE_SONDES_TURNSTILE_API || "https://challenges.cloudflare.com";
+  let reponse;
+  try {
+    reponse = await fetch(`${base}/turnstile/v0/siteverify`, {
+      method: "POST",
+      body: new URLSearchParams({ secret: v[nom], response: "verification-de-la-cle" }),
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch (e) {
+    mauvais(`Turnstile injoignable : ${raison(e.cause || e)}`);
+  }
+  let corps = {};
+  try {
+    corps = await reponse.json();
+  } catch (e) {
+    // réponse sans JSON
+  }
+  const codes = corps["error-codes"] || [];
+  if (codes.includes("invalid-input-secret")) mauvais("clé secrète refusée par Turnstile : supprimée, renouvelée ou mal copiée.");
+  if (corps.success === true || codes.includes("invalid-input-response")) bon("Turnstile reconnaît cette clé secrète (aucun visiteur vérifié).");
+  mauvais(`réponse inattendue de Turnstile (code ${reponse.status}).`);
+}
+
 const TESTS = {
   DATABASE_URL: testerNeon,
   DATABASE_URL_DIRECT: testerNeon,
@@ -205,6 +236,8 @@ const TESTS = {
   R2_ACCESS_KEY_ID: testerR2,
   R2_SECRET_ACCESS_KEY: testerR2,
   UPSTASH_REDIS_REST_TOKEN: testerUpstash,
+  FORMULAIRE_SECRET: testerSecretFormulaire,
+  TURNSTILE_SECRET_KEY: testerTurnstile,
 };
 const SANS_TEST = {
   STRIPE_WEBHOOK_SECRET: "pas de test direct : dans Stripe, envoyez un événement de test à la destination du webhook et vérifiez la réponse 2xx.",
