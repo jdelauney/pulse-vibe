@@ -265,3 +265,17 @@ test("allowed-tools : chaque motif Bash(pulse-aidd …) commence par une sous-co
   }
   assert.deepStrictEqual(problemes, []);
 });
+
+test("envoi du travail : git push passe par la demande d'autorisation ; /pulse:commit envoie seulement si push est le premier mot", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const skill = path.relative(DEPOT, path.dirname(fichier));
+    for (const motif of motifsBash(fichier)) if (/^git push\b/.test(motif)) problemes.push(`${skill} : Bash(${motif})`);
+  }
+  assert.deepStrictEqual(problemes, []);
+  const commit = lire(RACINE, "skills", "commit", "SKILL.md");
+  assert.doesNotMatch(commit, /n'importe où/);
+  assert.match(commit, /si le \*\*premier mot\*\* est `push`/);
+  assert.match(commit, /ajoute le bouton push/);
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /envoyer le travail sur le dépôt distant \(`git push`/);
+});

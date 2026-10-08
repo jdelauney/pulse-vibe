@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -f * origin/*) Bash(git push) Bash(git push -u origin *) Bash(git symbolic-ref *) Bash(git pull *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --no-ff *) Bash(git merge --abort) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -f * origin/*) Bash(git symbolic-ref *) Bash(git pull *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --no-ff *) Bash(git merge --abort) EnterWorktree ExitWorktree
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -13,7 +13,7 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bas
 
 Appliquer les « Règles communes Pulse » et les « Conventions Git » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
 
-Arguments : `$ARGUMENTS` — le mot `push` (n'importe où) demande d'envoyer la branche après le commit ; le reste, s'il y en a, est le message proposé par la personne.
+Arguments : `$ARGUMENTS` — si le **premier mot** est `push`, envoyer la branche après le commit ; le reste, s'il y en a, est le message proposé par la personne. Placé ailleurs, le mot `push` fait partie du message : `/pulse:commit "ajoute le bouton push"` enregistre sans envoyer.
 
 Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions` si l'on sort d'un worktree).
 
