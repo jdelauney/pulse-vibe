@@ -301,3 +301,7 @@ test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () =>
   assert.strictEqual(r.status, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /LEX-001/);
 });
+
+test("contexte ui et plan : les motifs d'écrans", () => {
+  for (const commande of ["ui", "plan"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Motifs d'écrans ====="), commande);
+});

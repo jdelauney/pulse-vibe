@@ -57,3 +57,11 @@ test("revue : le thème du pack exige 3:1 pour --input et --ring", () => {
   const theme = fs.readFileSync(path.join(__dirname, "..", "..", "pulse-vibe-next", "references", "theme.md"), "utf8");
   assert.ok(theme.includes("`--input` et `--ring` sur `--background` : 3:1"));
 });
+
+test("motifs d'écrans : neuf sections et renvoi aux formulaires", () => {
+  const t = lire("motifs.md");
+  for (const titre of ["## 1. Messages et retours", "## 2. Choisir dans une liste", "## 3. Panneaux et fenêtres", "## 4. Tableaux de données", "## 5. Indicateurs", "## 6. Navigation", "## 7. Page vitrine", "## 8. Graphiques", "## 9. Icônes, logo et images de partage"])
+    assert.ok(t.includes(titre), titre);
+  assert.ok(t.includes("qualite/composants.md"));
+  assert.ok(!t.includes("—"), "aucun tiret cadratin");
+});

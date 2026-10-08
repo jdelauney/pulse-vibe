@@ -205,6 +205,7 @@ contexte() {
     plan)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Stratégie de tests" "$REF/tests/strategie.md"
+      afficher "Motifs d'écrans" "$REF/design/motifs.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
       qualite
@@ -254,6 +255,7 @@ contexte() {
       afficher "Registres d'interface" "$REF/design/registres.md"
       afficher "Règles d'interface" "$REF/design/regles-ui.md"
       afficher "Anti-patterns d'interface" "$REF/design/anti-patterns.md"
+      afficher "Motifs d'écrans" "$REF/design/motifs.md"
       afficher "Modèle : docs/design.md" "$TPL/design.md"
       afficher "Modèle : note de variante" "$TPL/maquette-note.md"
       afficher "Modèle : rapport d'audit d'interface" "$TPL/revue-ui.md" ;;

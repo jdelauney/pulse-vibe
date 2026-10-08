@@ -260,3 +260,8 @@ test("la référence sécurité du cœur accepte le jeton signé et le refus neu
   assert.match(texte, /jeton signé par le serveur/);
   assert.match(texte, /Rechargez la page et réessayez/);
 });
+
+test("contexte ui du pack : chaque motif a son composant shadcn", () => {
+  const t = lire(REF, "contexte", "ui.md");
+  for (const c of ["`combobox`", "`sheet`", "`alert-dialog`", "`empty`", "`chart`", "`sonner`", "`skeleton`", "`sidebar`"]) assert.ok(t.includes(c), c);
+});
