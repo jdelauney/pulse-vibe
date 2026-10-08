@@ -1024,7 +1024,6 @@ Fonctionnalité: Fichiers
       Alors Camille reçoit une adresse d'envoi pour sa clé
       Et une ligne « en_attente » est réservée
 
-
   Règle: Une personne accède seulement à ses propres fichiers
 
     @US-XXX-4 @integration

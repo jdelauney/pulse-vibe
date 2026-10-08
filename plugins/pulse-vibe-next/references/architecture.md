@@ -148,6 +148,8 @@ Kebab-case, `[nom].[suffixe].[extension]`, un fichier par action et par query.
 | actions, queries, containers | parcours de bout en bout | `e2e/` |
 | composants d'affichage | pas de test dédié par défaut ; leurs props typées et les parcours `e2e/` les couvrent | — |
 
+Une aide de test propre à une feature se range dans le `__tests__/` de ses tests (ex. `sut-fichiers.ts`) ; une aide commune à plusieurs features va dans `tests/helpers/`.
+
 ## 11. Modèles de code (domaine `factures`)
 
 ```ts

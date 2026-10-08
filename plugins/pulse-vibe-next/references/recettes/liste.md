@@ -526,7 +526,7 @@ export const creerFactureAction = actionConnectee
 
 ### 8. Le formulaire : section et container
 
-La section porte les champs et le schéma Zod (`validators.onSubmit`, dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreursChamps` (erreurs de champ renvoyées par le serveur, affichées sous les champs concernés), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmit` appelle `envoyer` ; le formulaire se vide après une création réussie.
+La section porte les champs et le schéma Zod (`validators.onSubmit`, dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreursChamps` (erreurs de champ renvoyées par le serveur, affichées sous les champs concernés, jusqu'à la modification du champ), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmit` appelle `envoyer` ; le formulaire se vide après une création réussie.
 
 ```tsx
 // src/features/factures/components/sections/formulaire-facture.tsx
@@ -542,7 +542,7 @@ import {
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
 import { useForm } from "@tanstack/react-form";
-import { useId } from "react";
+import { useId, useRef } from "react";
 import type { ChampFacture } from "../../constants/factures";
 import {
   type CreerFactureEntree,
@@ -564,11 +564,14 @@ export function FormulaireFacture({
   enCours,
 }: Props) {
   const prefixe = useId();
+  // Valeurs de la dernière tentative : l'erreur du serveur disparaît dès que le champ est modifié.
+  const envoyees = useRef<CreerFactureEntree | null>(null);
 
   const form = useForm({
     defaultValues: { client: "", montant: "" },
     validators: { onSubmit: creerFactureSchema },
     onSubmit: async ({ value, formApi }) => {
+      envoyees.current = value;
       if (await envoyer(value)) {
         formApi.reset();
       }
@@ -586,7 +589,10 @@ export function FormulaireFacture({
       <FieldGroup>
         <form.Field name="client">
           {(field) => {
-            const erreurChamp = erreursChamps?.[field.name];
+            const erreurChamp =
+              envoyees.current?.[field.name] === field.state.value
+                ? erreursChamps?.[field.name]
+                : undefined;
             const invalide =
               (field.state.meta.isTouched && !field.state.meta.isValid) ||
               Boolean(erreurChamp);
@@ -616,7 +622,10 @@ export function FormulaireFacture({
 
         <form.Field name="montant">
           {(field) => {
-            const erreurChamp = erreursChamps?.[field.name];
+            const erreurChamp =
+              envoyees.current?.[field.name] === field.state.value
+                ? erreursChamps?.[field.name]
+                : undefined;
             const invalide =
               (field.state.meta.isTouched && !field.state.meta.isValid) ||
               Boolean(erreurChamp);
@@ -1942,7 +1951,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - Session better-auth côté serveur : https://www.better-auth.com/docs/integrations/next
 - nuqs, adaptateur App Router : https://nuqs.dev/docs/adapters ; lecture serveur `createLoader` / `createSearchParamsCache` : https://nuqs.dev/docs/server-side ; `useQueryStates` : https://nuqs.dev/docs/batching ; `shallow`, `startTransition`, `debounce`, `clearOnDefault` : https://nuqs.dev/docs/options ; parseurs et import `nuqs/server` : https://nuqs.dev/docs/parsers/built-in. Vérifié dans le paquet `nuqs@2.10.1` : l'adaptateur n'appelle `useSearchParams` que dans les hooks ; `debounce` et `inferParserType` sont exportés par `nuqs/server`.
 - next-safe-action : client et `.use()` : https://next-safe-action.dev/docs/define-actions/create-the-client ; erreurs de validation : https://next-safe-action.dev/docs/define-actions/validation-errors ; `useAction` et `executeAsync` : https://next-safe-action.dev/docs/execute-actions/hooks/useaction ; `returnServerError` : https://next-safe-action.dev/docs/concepts/error-handling. Vérifié dans le paquet `next-safe-action@8.7.3` : forme formatée `{ champ: { _errors } }`.
-- TanStack Form, validation `onSubmitAsync` qui renvoie `{ form, fields }` : https://tanstack.com/form/latest/docs/framework/react/guides/validation. Vérifié dans `@tanstack/form-core@1.33.5` : l'envoi marque tous les champs comme touchés, la validation asynchrone ne s'exécute que si la validation synchrone passe.
+- TanStack Form, `onSubmit` du formulaire et `formApi.reset()` après un envoi réussi : https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling. Vérifié dans `@tanstack/form-core@1.33.5` : l'envoi marque tous les champs comme touchés et n'appelle `onSubmit` que si la validation Zod passe. L'erreur de champ du serveur disparaît à la modification du champ (essai avec jsdom et Testing Library).
 - shadcn + TanStack Form : https://ui.shadcn.com/docs/forms/tanstack-form ; Field : https://ui.shadcn.com/docs/components/field ; Native Select : https://ui.shadcn.com/docs/components/native-select
 - Zod 4 (messages, `z.input`) : https://zod.dev/api
 - Drizzle : types de colonnes https://orm.drizzle.team/docs/column-types/pg ; `$count` https://orm.drizzle.team/docs/query-utils ; PGlite https://orm.drizzle.team/docs/connect-pglite ; migrations https://orm.drizzle.team/docs/migrations
