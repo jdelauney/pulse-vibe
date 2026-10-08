@@ -21,6 +21,8 @@ Le texte emploie seulement les faits fournis par la personne ou présents dans l
 
 - **Erreurs** : corrigées avant de présenter le texte, en suivant la consigne affichée.
 - **Avertissements** : jugés un par un ; corrigés, ou gardés avec une raison (un nom propre après deux-points, un mot employé dans son sens précis).
+- **Un constat faux** (un nom propre, un mot pris au sens littéral comme « naviguez dans le catalogue ») se garde sur sa ligne, avec sa raison : `<!-- garder LEX-007 : sens littéral, menu du site -->`. Le contrôle le range alors dans « gardé », hors du compte des erreurs, et la raison reste visible pour la relecture.
+- **Après trois tours**, les erreurs qui restent sont présentées à la personne, avec la phrase et la consigne : elle choisit de corriger ou de garder.
 
 ## La relecture à la main
 

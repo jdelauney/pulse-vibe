@@ -40,7 +40,7 @@ Lancer le sous-agent `pulse:redacteur`. Lui indiquer : la fiche de la page (obje
 
 ## 4. La relecture
 
-1. Relancer `pulse-aidd textes verifier docs/textes/<page>.md` : aucune erreur ne reste.
+1. Relancer `pulse-aidd textes verifier docs/textes/<page>.md`. S'il reste des erreurs après les trois tours du rédacteur, les montrer à la personne (phrase et consigne) : elle choisit de corriger, ou de garder le constat avec sa raison.
 2. Relire les règles listées « À relire » d'après la section « La relecture à la main » des règles de rédaction ; corriger le texte au besoin ; noter ce qui a été vérifié dans la section « Contrôle » du fichier.
 3. Présenter le texte, ses mesures (longueur des phrases, phrases courtes, connecteurs), les avertissements gardés et les « [à compléter] ». Proposer d'ajuster une phrase ou une section si la personne le souhaite.
 

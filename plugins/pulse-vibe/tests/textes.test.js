@@ -123,3 +123,66 @@ test("queue de phrase après un chiffre (« en 2024, illustrant ainsi »)", () =
   const regle = DETECTEUR.regles.find((x) => x.id === "PAT-001");
   assert.ok(regles(regle.exemples.avant).includes("PAT-001"));
 });
+
+// --- Correctifs de la revue finale ---
+
+test("revue 1 : un nom bâti sur le même radical qu'un verbe creux n'est pas signalé", () => {
+  for (const phrase of ["Garantie deux ans.", "Notre représentant vous répond.", "Participation à l'atelier.", "Les participants à la sortie.", "Une contribution à la cagnotte.", "La constitution du dossier.", "Votre assurance couvre le vol."])
+    assert.ok(!regles(phrase).includes("LEX-002"), phrase);
+  for (const phrase of ["Cela permet de gagner du temps.", "Ils permettent de partir tôt.", "Ce choix constitue un pari.", "Nous garantissons le prix.", "Il s'avère utile.", "Le pari s'est avéré payant."])
+    assert.ok(regles(phrase).includes("LEX-002"), phrase);
+});
+
+test("revue 2 : PON-001 en erreur seulement pour une vraie énumération (trois éléments avant « et »)", () => {
+  for (const phrase of ["Marie, notre gérante, et Paul vous accueillent.", "Le matin, nous ouvrons à 8 h, et le soir nous fermons tard."]) {
+    const c = verifier(phrase).constats.filter((x) => x.regle === "PON-001");
+    assert.ok(c.every((x) => x.severite === "avertissement"), phrase);
+  }
+  const c = verifier("Le projet mobilise des associations, des entreprises, des collectivités, et des citoyens.").constats.find((x) => x.regle === "PON-001");
+  assert.strictEqual(c && c.severite, "erreur");
+});
+
+test("revue 2 : titre avec des noms propres en avertissement, title case en erreur", () => {
+  for (const titre of ["Nos ateliers à Lausanne et Genève", "Rencontrez Marie Dupont"]) {
+    const c = verifier(`# ${titre}\n\nTexte.`).constats.filter((x) => x.regle === "TYP-001");
+    assert.ok(c.every((x) => x.severite === "avertissement"), titre);
+  }
+  const c = verifier("# Les Enjeux Du Numérique Dans Le Secteur\n\nTexte.").constats.find((x) => x.regle === "TYP-001");
+  assert.strictEqual(c && c.severite, "erreur");
+});
+
+test("revue 2 : « de plus » ordinaire (rien de plus simple, une fois de plus) n'est pas une transition", () => {
+  for (const phrase of ["Rien de plus simple.", "Une fois de plus, nous ouvrons.", "Un jour de plus."]) assert.ok(!regles(phrase).includes("LEX-005"), phrase);
+  assert.ok(regles("De plus, le prix baisse.").includes("LEX-005"));
+});
+
+test("revue 2 : une erreur gardée avec sa raison ne bloque plus le contrôle et reste visible", () => {
+  const r = verifier("Naviguez dans le catalogue. <!-- garder LEX-007 : sens littéral, menu du site -->\n");
+  assert.strictEqual(r.erreurs, 0);
+  assert.deepStrictEqual(r.gardes.map((g) => [g.regle, g.raison]), [["LEX-007", "sens littéral, menu du site"]]);
+});
+
+test("revue 3 : apostrophe typographique et élisions", () => {
+  assert.ok(regles("Il s’avère utile.").includes("LEX-002"));
+  assert.ok(regles("À l’ère du numérique, tout change.").includes("PAT-002"));
+  assert.ok(regles("Ce n’est pas une réparation, c’est une promesse.").includes("SYN-003"));
+  assert.ok(regles("Cela permet d'économiser.").includes("LEX-002"));
+  assert.ok(regles("C'est l'essentiel.").includes("LEX-001"));
+  assert.ok(!regles("Aujourd'hui, nous ouvrons.").includes("LEX-001"));
+});
+
+test("revue 4 : féminins en -elle et -rice", () => {
+  assert.ok(regles("Une étape essentielle.").includes("LEX-001"));
+  assert.ok(regles("Une démarche transformatrice.").includes("LEX-001"));
+  assert.ok(regles("Une équipe fédératrice.").includes("LEX-004"));
+});
+
+test("revue 5 : chaque bloc <!-- texte --> est contrôlé, l'en-tête jamais", () => {
+  const contenu = "# Page\n\n- Objectif : crucial\n\n<!-- texte -->\nUn premier bloc.\n<!-- /texte -->\n\n<!-- texte -->\nUn levier crucial.\n<!-- /texte -->\n";
+  const c = verifier(contenu).constats.filter((x) => x.regle === "LEX-001");
+  assert.deepStrictEqual(c.map((x) => x.ligne), [10]);
+});
+
+test("revue : © ® ™ ne sont pas des émojis", () => {
+  assert.ok(!regles("© 2026 Atelier Vélo. Marque déposée®, produit™.").includes("TYP-002"));
+});

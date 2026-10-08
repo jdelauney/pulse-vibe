@@ -32,6 +32,7 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:security` | Audit S1 à S12 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
 | `/pulse:secrets [inventaire \| renouveler <NOM> \| fuite [<NOM>]]` | Les secrets du projet sans jamais afficher une valeur : inventaire (noms, présence, type chez l'hébergeur), renouvellement sans coupure (nouvelle valeur d'abord, révocation après la preuve en production), réaction à une fuite (révoquer d'abord) ; la valeur va du fournisseur à `.env` par la personne, puis à l'hébergeur par l'entrée standard | `docs/secrets.md`, `docs/incidents/` |
 | `/pulse:seo [audit \| bases \| textes \| ia \| lancer]` | Être trouvé : audit du site **servi** (comme un robot, sans JavaScript) rangé par 4 questions (Google peut-il venir ? garder la page ? comment se présente-t-elle ? mérite-t-elle d'être choisie ?) ; fondations ; titres et descriptions **choisis par vous** ; politique des robots IA (4 choix expliqués, sans recommandation) ; lancement (Search Console, Bing, carte de partage). `/pulse:deploy` vérifie à chaque mise en ligne qu'aucun `noindex`, `Disallow: /` ou `localhost` n'est parti | `docs/seo.md`, `docs/seo/audits/seo-<date>.md` |
+| `/pulse:rediger [page] [--humaniser]` | Les textes de vos pages (accueil, à propos, services…) dans la voix du site : entretien court (voix, objectif, public, action attendue, faits), rédaction par un agent, contrôle des tics d'écriture IA (`pulse-aidd textes verifier`), puis intégration dans la page si vous le souhaitez | `docs/voix.md`, `docs/textes/<page>.md` |
 | `/pulse:perf [mesurer \| corriger \| suivre]` | La vitesse vécue par vos visiteurs : simulation Lighthouse 13 en plusieurs passages (médiane, instabilité signalée) et vrais visiteurs (CrUX), jamais mélangés ; 3 priorités corrigées avec un avant/après prouvé ; mesure réelle, budget et vérification automatique. Clé Google personnelle facultative (`PULSE_PSI_CLE`, sur votre poste), sinon Lighthouse sur votre poste | `docs/performance.md`, `docs/performance/mesures/` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez | `docs/design.md` |
 | `/pulse:ui maquettes <US-003>` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
@@ -136,15 +137,15 @@ Le plugin vit dans `plugins/pulse-vibe/` du dépôt ; le catalogue `.claude-plug
 ```
 .claude-plugin/plugin.json        manifeste du plugin
 skills/<commande>/SKILL.md        les commandes
-agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, fixer, memory-compactor
+agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, redacteur, fixer, memory-compactor
 hooks/hooks.json                  garde-fou anti-secrets, garde-fou des commandes, synchronisation de la mémoire, registre des sessions, régénération du guide
-scripts/                          garde-secrets.js, garde-commandes.js, motifs.js, sonder.js, secrets.js (pulse-aidd secrets), seo.js, seo-html.js, seo-regles.js, robots.js (pulse-aidd seo), perf.js (pulse-aidd perf), search-console.js (pulse-aidd search-console), memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
+scripts/                          garde-secrets.js, garde-commandes.js, motifs.js, sonder.js, secrets.js (pulse-aidd secrets), textes.js (pulse-aidd textes), seo.js, seo-html.js, seo-regles.js, robots.js (pulse-aidd seo), perf.js (pulse-aidd perf), search-console.js (pulse-aidd search-console), memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
 bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI)
 references/                       règles communes, aide au choix technique, checklist sécurité, mémoire,
                                   secrets/ (saisie hors conversation, réaction à une fuite), seo/ (règles, textes, lancement, assistants IA),
                                   performance.md (/pulse:perf), search-console.md (/pulse:search-console),
                                   qualite/ (références de qualité du code), securite/ (actions de /pulse:security),
-                                  design/ (références d'interface de /pulse:ui), pedagogie.md (/pulse:learn),
+                                  design/ (références d'interface de /pulse:ui), redaction/ (détecteur de tics d'écriture IA et règles de /pulse:rediger), pedagogie.md (/pulse:learn),
                                   git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle),
                                   tests/ (stratégie de tests, Gherkin, TDD), tests-automatiques.md (option -t)
 templates/                        modèles de documents et de fichiers projet
