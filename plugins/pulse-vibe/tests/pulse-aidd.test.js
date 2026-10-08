@@ -11,7 +11,7 @@ const RACINE = path.join(__dirname, "..");
 // Chemin relatif et cwd = racine du plugin : fonctionne avec Git Bash, Cygwin, macOS et Linux.
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-aidd", ...args], { cwd: RACINE, encoding: "utf8" });
 
-test("contexte ui : règles communes, trois références de design et trois modèles", () => {
+test("contexte ui : règles communes, quatre références de design et trois modèles", () => {
   const r = lancer("contexte", "ui");
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of [
@@ -19,6 +19,7 @@ test("contexte ui : règles communes, trois références de design et trois mod�
     "===== Registres d'interface =====",
     "===== Règles d'interface =====",
     "===== Anti-patterns d'interface =====",
+    "===== Motifs d'écrans =====",
     "===== Modèle : docs/design.md =====",
     "===== Modèle : note de variante =====",
     "===== Modèle : rapport d'audit d'interface =====",

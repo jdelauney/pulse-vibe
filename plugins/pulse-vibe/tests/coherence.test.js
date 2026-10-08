@@ -628,3 +628,13 @@ test("tests automatiques : installer un outil de test est recommandé quand la p
   assert.match(texte, /« Installer un outil de test \(Recommandé\) »/);
   assert.match(texte, /« Sans tests automatiques »/);
 });
+
+test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
+  const claude = lire(RACINE, "templates", "CLAUDE.md");
+  assert.doesNotMatch(claude, /uniquement sur demande/);
+  assert.match(claude, /boucles de `\/pulse:implement` et `\/pulse:spirc`/);
+  assert.doesNotMatch(claude, /traces de travail par session/);
+  assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
+  assert.match(skillTexte("ui"), /quatre références de design/);
+  assert.doesNotMatch(skillTexte("ui"), /trois références/);
+});
