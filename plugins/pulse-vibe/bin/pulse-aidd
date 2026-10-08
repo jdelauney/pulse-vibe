@@ -28,6 +28,8 @@
 #   pulse-aidd seo <adresse> [options]   audit de référencement du site servi (options : pulse-aidd seo) ; pulse-aidd seo robots <A|B|C|D> : robots.txt d'une politique IA
 #   pulse-aidd perf <action> [options]  mesure la vitesse : mesurer, terrain, comparer, budget, cle, installer (sans action : l'aide)
 #   pulse-aidd textes verifier <fichier|-> [--json]   contrôle les tics d'écriture IA d'un texte (/pulse:rediger)
+#   pulse-aidd identite extraire [dossier] [--json]   relève couleurs, polices et rayons déjà écrits dans le projet (/pulse:ui)
+#   pulse-aidd maquettes verifier <fichier|dossier>   contrôle les anti-patterns détectables dans les pages HTML (/pulse:ui)
 #   pulse-aidd search-console <action>  Search Console en lecture seule : connecter, deconnecter, proprietes, lire, suivre, inspecter <adresse>
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
@@ -336,6 +338,10 @@ case "$1" in
     shift; exec node "$RACINE/scripts/secrets.js" "$@" ;;
   textes)
     shift; exec node "$RACINE/scripts/textes.js" "$@" ;;
+  identite)
+    shift; exec node "$RACINE/scripts/identite.js" "$@" ;;
+  maquettes)
+    shift; exec node "$RACINE/scripts/maquettes.js" "$@" ;;
   seo)
     # Git Bash (Windows) transforme « /compte » en « C:/Program Files/Git/compte » avant de lancer Node.
     # Les chemins passés (--chemins /compte) restent tels quels ; le script est donné sous sa forme Windows.
@@ -355,5 +361,5 @@ case "$1" in
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,33p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,35p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac
