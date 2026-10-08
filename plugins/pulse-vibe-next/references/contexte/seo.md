@@ -12,6 +12,7 @@
 | Image de partage, icônes | `app/opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx` |
 | Données structurées | `src/lib/seo/donnees-structurees.ts` (fonctions typées avec `schema-dts`) et `src/components/shared/elements/json-ld.tsx` (`<JsonLd>`) |
 | Pages connectées hors de Google | `app/(connecte)/layout.tsx` (`robots: { index: false, follow: false }`) |
+| Pages d'authentification (connexion, inscription, mot de passe) | `robots: { index: false, follow: false }` dans leur `metadata`, hors du sitemap, ouvertes à robots.txt (fiche, règle 49) |
 
 - **audit** : construire avec `npm run build`, servir avec `npm run start` (adresse `http://localhost:3000`), puis `pulse-aidd seo http://localhost:3000 --ia --chemins "$(pulse-aidd pile seo-code --pages)"`. Ensuite `pulse-aidd pile seo-code` (contrôles C1 à C13, NC1 à NC3). Ordre de correction : C1 et C6 (adresse du site, robots, sitemap), puis les constats L4, L5, L11, puis C3 et C4 (métadonnées des pages), puis le reste.
 - **bases** : `pulse-aidd pile recette seo`.

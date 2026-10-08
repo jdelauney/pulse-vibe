@@ -1008,7 +1008,11 @@ export async function CompteContainer() {
 import { InscriptionContainer } from "@src/features/compte/components/containers/inscription.container";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Créer un compte" };
+// Page d'authentification : hors de Google (fiche, règle 49).
+export const metadata: Metadata = {
+  title: "Créer un compte",
+  robots: { index: false, follow: false },
+};
 
 export default function PageInscription() {
   return (
@@ -1025,7 +1029,11 @@ export default function PageInscription() {
 import { ConnexionContainer } from "@src/features/compte/components/containers/connexion.container";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "Se connecter" };
+// Page d'authentification : hors de Google (fiche, règle 49).
+export const metadata: Metadata = {
+  title: "Se connecter",
+  robots: { index: false, follow: false },
+};
 
 export default function PageConnexion() {
   return (

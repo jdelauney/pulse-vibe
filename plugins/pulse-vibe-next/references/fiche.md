@@ -42,7 +42,7 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 ## 3. Écrire (Server Actions avec next-safe-action)
 
 10. **Toute écriture passe par une action** de `features/<domaine>/actions/<action>.action.ts`, construite avec `actionConnectee` (ou `actionPublique` pour une page publique) de `src/lib/safe-action.ts`, et un schéma Zod de `schemas/<sujet>.schema.ts` (`.inputSchema(schema)`). Elle appelle un use-case s'il y a une règle métier, sinon le repository (Architecture §5).
-11. **Une action est une adresse publique** : n'importe qui peut l'appeler directement. `actionConnectee` relit la session ; **l'action vérifie en plus que la donnée appartient à la personne**, dans la requête, avec la condition de propriété du repository : `where(and(eq(factures.id, id), eq(factures.utilisateurId, utilisateurId)))`.
+11. **Une action est une adresse publique** : n'importe qui peut l'appeler directement. `actionConnectee` relit la session ; **l'action vérifie en plus que la donnée appartient à la personne**, dans la requête, avec la condition de propriété du repository (l'action lui passe `ctx.utilisateur.id`) : `where(and(eq(factures.id, id), eq(factures.utilisateurId, utilisateurId)))`.
 12. **L'identité vient de la session (`ctx.utilisateur.id`), jamais des données reçues.**
 13. **Le retour d'une action part dans le navigateur** : renvoyer seulement ce que l'écran affiche (`{ ok: true }`, un message). Une erreur attendue est une valeur de retour ; une erreur imprévue est journalisée côté serveur et remplacée par un message générique. Une erreur attendue vient d'un `Result` du métier et se traduit par `erreur-messages.ts` (Architecture §8).
 14. **Après une écriture, rafraîchir ce qui est affiché** : `refresh()` (de `next/cache`) si la lecture n'est pas en cache ; `updateTag(tag)` si elle l'est avec ce tag ; `revalidateTag(tag, "max")` (deux arguments) depuis un Route Handler.
@@ -93,6 +93,7 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 46. **Sitemap et robots** : `lastModified` = vraie date de mise à jour du contenu, jamais `new Date()` ; ni `priority` ni `changeFrequency` ; un seul robots.txt (`app/robots.ts`, pas de `public/robots.txt`).
 47. **Données structurées** : `<JsonLd>` (`src/components/shared/elements/json-ld.tsx`) avec les fonctions de `src/lib/seo/donnees-structurees.ts`, jamais `JSON.stringify` nu dans `dangerouslySetInnerHTML`.
 48. **Images sur l'offre Hobby de Vercel** : 5 000 transformations d'images par mois ; au-delà, les nouvelles images répondent 402 et `next/image` affiche seulement le texte alternatif. Images du site en import statique ; pour un site très illustré, prévoir l'offre Pro (`pulse-aidd pile reference contexte/perf.md`).
+49. **Pages d'authentification** (connexion, inscription, mot de passe oublié, nouveau mot de passe) : `robots: { index: false, follow: false }`, hors du sitemap, accessibles à robots.txt pour que Google lise la consigne.
 
 ## 9. Avant de rendre la main
 

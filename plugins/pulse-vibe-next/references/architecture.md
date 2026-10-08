@@ -40,9 +40,9 @@ drizzle/                          migrations
 - **20 fichiers au plus par dossier** (hors `src/components/ui/`). Au-delà, découper par sujet : `sections/liste/`, `sections/formulaire/`, `use-cases/paiement/`.
 - Alias : `@app/…` pour `app/`, `@src/…` pour `src/`. Dans un même dossier, import relatif (`./facture.rules`).
 - `src/lib/auth-client.ts` (client Better Auth, exécuté dans le navigateur) reste dans `lib/` ; `src/adapters/auth/` porte la configuration serveur de Better Auth (`server-only`).
-- Créés au besoin : `app/@modal/`, `app/[...catchAll]/`, `src/db/seed/`, `tests/fixtures/`.
 - Les tables se placent un niveau sous `src/db/` : `src/db/<domaine>/<sujet>.table.ts` (motif lu par `drizzle.config.ts`).
 - `npm run db:generate` demande au moins une table : la première US qui stocke des données la crée.
+- Créés au besoin : `app/@modal/`, `app/[...catchAll]/`, `src/db/seed/`, `tests/fixtures/`.
 
 ## 2. Le domaine en miroir et les imports entre features
 
