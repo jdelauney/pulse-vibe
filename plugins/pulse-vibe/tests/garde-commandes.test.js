@@ -326,3 +326,17 @@ test("indexation globale déguisée : refus dans un dépôt qui a un commit", ()
   passe("git add -n .", dir);
   passe("git add src/a.js", dir);
 });
+
+// ------------------------------------------------------------ Git : corrections de revue
+
+test("chemins à crochets, texte cité et options courtes groupées", () => {
+  const dir = depot({ avecCommit: true });
+  passe('git add "app/[id]/page.tsx"', dir);
+  refus("git add *.js", dir);
+  passe('git commit -m "note: export HUSKY=0 desactive"');
+  refusPs('$env:HUSKY = 0; git commit -m "x"');
+  refus('export HUSKY=0; git commit -m "x"');
+  passe("git checkout -qb x origin/main");
+  confirmation("git checkout -fq main");
+  confirmation("git switch -fq main");
+});

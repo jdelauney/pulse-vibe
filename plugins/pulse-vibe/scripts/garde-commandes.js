@@ -139,7 +139,7 @@ function reglesGit(c, cwd, constats) {
       const globale =
         c.viaXargs ||
         options.some((o) => ["-A", "-u", "--no-ignore-removal"].includes(o) || longue(o, "--all") || longue(o, "--update") || /^-[a-zA-Z]*[Au][a-zA-Z]*$/.test(o)) ||
-        positions.some((p) => [":/", ":(top)", ":/*"].includes(p) || normalise(p) === "." || /[*?[]/.test(p) || p.startsWith("$(") || p.startsWith("`"));
+        positions.some((p) => [":/", ":(top)", ":/*"].includes(p) || normalise(p) === "." || /[*?]/.test(p) || p.startsWith("$(") || p.startsWith("`"));
       if (globale && aDejaUnCommit(cwd, prefixe)) constats.push([REFUS, MESSAGES.indexationGlobale]);
       break;
     }
@@ -150,15 +150,15 @@ function reglesGit(c, cwd, constats) {
       const AVEC_VALEUR = new Set(["-b", "-B", "--orphan", "--conflict"]);
       const cibles = [];
       for (let j = 0; j < reste.length; j++) {
-        if (AVEC_VALEUR.has(reste[j])) j++;
+        if (AVEC_VALEUR.has(reste[j]) || /^-[a-zA-Z]*[bB]$/.test(reste[j])) j++;
         else if (!estOption(reste[j]) && reste[j] !== "--") cibles.push(reste[j]);
       }
-      if (reste.includes("--") || cibles.includes(".") || cibles.length >= 2 || options.includes("-f") || aLongue("--force")) constats.push([ACCORD, MESSAGES.travailJete]);
+      if (reste.includes("--") || cibles.includes(".") || cibles.length >= 2 || court("f") || aLongue("--force")) constats.push([ACCORD, MESSAGES.travailJete]);
       break;
     }
     case "switch":
-      if (options.includes("-f") || aLongue("--force") || aLongue("--discard-changes", 5)) constats.push([ACCORD, MESSAGES.travailJete]);
-      if (options.includes("-C") || aLongue("--force-create", 9)) constats.push([ACCORD, MESSAGES.brancheDeplacee]);
+      if (court("f") || aLongue("--force") || aLongue("--discard-changes", 5)) constats.push([ACCORD, MESSAGES.travailJete]);
+      if (court("C") || aLongue("--force-create", 9)) constats.push([ACCORD, MESSAGES.brancheDeplacee]);
       break;
     case "restore": {
       const worktree = options.includes("--worktree") || options.includes("-W") || !(options.includes("--staged") || options.includes("-S"));
@@ -312,7 +312,7 @@ function analyser(commande, cwd, dialecte) {
   for (const c of commandesSimples(commande, dialecte)) appliquerRegles(c, cwd, constats);
   // Contrôles coupés par une variable posée avant la commande (export HUSKY=0 ; $env:HUSKY = 0).
   const coupe = /(^|[\s;&|(])(export\s+|\$env:)(HUSKY\s*=\s*['"]?0|HUSKY_SKIP_HOOKS\s*=\s*['"]?1|SKIP_SIMPLE_GIT_HOOKS\s*=\s*['"]?1|LEFTHOOK\s*=\s*['"]?0)\b/i;
-  if (coupe.test(commande) && commandesSimples(commande, dialecte).some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.controlesCoupes]);
+  if (coupe.test(commande.replace(/(?<!=)('[^']*'|"(?:[^"\\]|\\.)*")/g, "")) && commandesSimples(commande, dialecte).some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.controlesCoupes]);
   return constats;
 }
 
