@@ -56,6 +56,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     seo: ["Pour /pulse:seo", "Fiche de la pile", "Recettes disponibles"],
     perf: ["Pour /pulse:perf", "Fiche de la pile"],
     "search-console": ["Pour Search Console"],
+    rediger: ["Pour /pulse:rediger"],
   };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);

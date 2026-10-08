@@ -2,7 +2,7 @@
 description: Être trouvé sur Google et par les assistants IA - audit du site servi, fondations (adresse, titres, sitemap, robots, carte de partage), textes choisis par vous, politique des robots IA, lancement (Search Console, Bing)
 argument-hint: "[audit | bases | textes [page] | ia | lancer] (par défaut : audit)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte seo) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd seo *) Bash(pulse-aidd sonder *) Bash(pulse-aidd pile seo-code*) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git log *) Read Glob Grep
+allowed-tools: Bash(pulse-aidd contexte seo) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd seo *) Bash(pulse-aidd sonder *) Bash(pulse-aidd pile seo-code*) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git log *) Read Glob Grep
 ---
 
 # /pulse:seo – Être trouvé

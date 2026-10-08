@@ -6,7 +6,7 @@
 #   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
 #   pulse-aidd etape <commande>      idem, précédé des instructions de la commande (pour /pulse:spirc)
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/
-#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, memory-compactor)
+#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
 #   pulse-aidd qualite               affiche les règles de qualité du code
 #   pulse-aidd tests                 affiche la méthode de tests (stratégie, écriture, niveaux, TDD, Gherkin)
@@ -27,6 +27,7 @@
 #   pulse-aidd secrets [action]      les secrets du projet, sans jamais afficher une valeur (inventaire, preparer, generer, verifier, envoyer, redeployer, historique, journal ; voir pulse-aidd secrets aide)
 #   pulse-aidd seo <adresse> [options]   audit de référencement du site servi (options : pulse-aidd seo) ; pulse-aidd seo robots <A|B|C|D> : robots.txt d'une politique IA
 #   pulse-aidd perf <action> [options]  mesure la vitesse : mesurer, terrain, comparer, budget, cle, installer (sans action : l'aide)
+#   pulse-aidd textes verifier <fichier|-> [--json]   contrôle les tics d'écriture IA d'un texte (/pulse:rediger)
 #   pulse-aidd search-console <action>  Search Console en lecture seule : connecter, deconnecter, proprietes, lire, suivre, inspecter <adresse>
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
@@ -256,6 +257,11 @@ contexte() {
       afficher "Modèle : docs/design.md" "$TPL/design.md"
       afficher "Modèle : note de variante" "$TPL/maquette-note.md"
       afficher "Modèle : rapport d'audit d'interface" "$TPL/revue-ui.md" ;;
+    rediger)
+      afficher "Rédiger les textes des pages" "$REF/redaction/regles.md"
+      afficher "Modèle : docs/voix.md" "$TPL/voix.md"
+      afficher "Modèle : docs/textes/<page>.md" "$TPL/texte-page.md"
+      lexique ;;
     seo)
       afficher "Référencement : les règles" "$REF/seo/regles.md"
       afficher "Référencement : assistants IA" "$REF/seo/ia.md"
@@ -294,7 +300,7 @@ case "$1" in
   modele)
     if [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
   agent)
-    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, memory-compactor)"; exit 1; fi ;;
+    if [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
   qualite) qualite; exit 0 ;;
   tests) tests; exit 0 ;;
   reference)
@@ -326,6 +332,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/sonder.js" "$@" ;;
   secrets)
     shift; exec node "$RACINE/scripts/secrets.js" "$@" ;;
+  textes)
+    shift; exec node "$RACINE/scripts/textes.js" "$@" ;;
   seo)
     # Git Bash (Windows) transforme « /compte » en « C:/Program Files/Git/compte » avant de lancer Node.
     # Les chemins passés (--chemins /compte) restent tels quels ; le script est donné sous sa forme Windows.
@@ -345,5 +353,5 @@ case "$1" in
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   *)
-    sed -n '2,32p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,33p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac
