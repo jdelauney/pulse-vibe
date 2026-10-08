@@ -2,7 +2,7 @@
 description: Ajuster le plan à partir des questions ou remarques de la personne - répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider
 argument-hint: "[<US-XXX>] \"vos questions ou remarques sur le plan\""
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git log *)
+allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr) Read Glob Grep Bash(git status *) Bash(git log *)
 ---
 
 # /pulse:refine – Ajuster le plan

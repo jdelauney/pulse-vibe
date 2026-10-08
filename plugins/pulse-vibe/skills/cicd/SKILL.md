@@ -2,7 +2,7 @@
 description: Mettre en place l'intégration continue (CI) - contrôles automatiques (secrets, lint, tests, construction) à chaque envoi et sur chaque demande de fusion, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale
 argument-hint: "[proteger] (vide : installer ou mettre à jour la CI)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git remote *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit *) Bash(git push) Bash(git push -u origin *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*)
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte perf) Bash(pulse-aidd etape perf) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Read Glob Grep Bash(git status *) Bash(git remote -v) Bash(git remote get-url *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit -m *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*)
 ---
 
 # /pulse:cicd – Les contrôles automatiques (CI)
@@ -17,13 +17,13 @@ Argument : `$ARGUMENTS`
 
 ## Objectif
 
-Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle qualité automatique : à chaque envoi et sur chaque demande de fusion, le fournisseur du dépôt vérifie que les secrets restent hors du code, que chaque scénario prévu en test automatique a bien son test, que le code respecte les règles et que l'appli se construit. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. »
+Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle qualité automatique : à chaque envoi et sur chaque demande de fusion, le fournisseur du dépôt vérifie que les secrets restent hors du code, que chaque scénario prévu en test automatique a bien son test, que les dépendances n'ont pas de faille grave connue, que le code respecte les règles et que l'appli se construit. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. »
 
 Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, se met en place avec `/pulse:deploy` : cette commande se limite à la CI.
 
 | Argument | Action |
 |---|---|
-| vide | Installer la CI, ou la mettre à jour si elle existe (§ 1 à 6), puis proposer la protection (§ 7) |
+| vide | Installer la CI, ou la mettre à jour si elle existe (§ 1 à 6), puis proposer la protection (§ 7) et les mises à jour des dépendances (§ 8) |
 | `proteger` | Seulement protéger la branche principale (§ 7) ; la CI doit déjà exister |
 
 ## Prérequis
@@ -39,6 +39,7 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 - Celui de « Hébergement et mise en ligne » de `docs/technical.md` (ligne « Contrôle automatique avant mise en ligne (CI) ») s'il est renseigné.
 - Sinon, celui du fournisseur du dépôt distant, déduit de `git remote get-url origin` : GitHub → GitHub Actions ; GitLab → GitLab CI/CD. Le proposer en une phrase (« c'est la CI intégrée à votre dépôt : déjà prête et gratuite pour un petit projet »), avec « Autre outil » en alternative.
 - Une CI existe déjà (fichier de l'outil retenu, par exemple `.github/workflows/*.yml` ou `.gitlab-ci.yml`) : la lire, et proposer de la **compléter** plutôt que de la remplacer.
+- La ligne « Auditer les dépendances » de « Commandes du projet » manque (ancien `docs/technical.md`) : la remplir d'après la documentation officielle de la pile (l'outil d'audit des vulnérabilités de son gestionnaire de paquets), sinon écrire « aucune » ; la CI saute alors cette étape.
 
 ## 2. Préparer
 
@@ -56,9 +57,10 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
   2. installer l'environnement d'exécution de la pile retenue, à la version de « Pile retenue » ;
   3. installer les dépendances (« installer ») ;
   4. contrôler les secrets et les scénarios : `node scripts/verifier.js` (Node.js doit être disponible : l'installer dans une étape si la pile utilise un autre langage que JavaScript) ;
-  5. les contrôles automatiques (lint, format, types) ;
-  6. les tests (« tester ») ;
-  7. la construction (« construire »).
+  5. auditer les dépendances (« Auditer les dépendances » : une faille de gravité élevée ou critique fait échouer la CI) ;
+  6. les contrôles automatiques (lint, format, types) ;
+  7. les tests (« tester ») ;
+  8. la construction (« construire »).
 - **Versions fixées** pour chaque action ou image utilisée, comme pour une bibliothèque (règle commune 8).
 - **Secrets hors du fichier**. Si la construction a besoin d'une variable d'environnement, écrire seulement son **nom** ; la personne saisit elle-même la valeur dans les réglages du dépôt (« secrets » ou « variables » de la CI), guidée pas à pas. La valeur va uniquement dans ces réglages, jamais dans la conversation.
 - Montrer le fichier complet, expliquer chaque bloc en une ligne, puis l'écrire avec accord. Supprimer ensuite `scripts/ci-verifications.exemple.yml`, devenu inutile.
@@ -66,7 +68,7 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
 
 ## 4. Essayer en local d'abord
 
-Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`/pulse:fix` ou `/pulse:auto-fix`), ou s'arrêter et l'expliquer.
+Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, l'audit des dépendances, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`/pulse:fix` ou `/pulse:auto-fix`), ou s'arrêter et l'expliquer.
 
 ## 5. Enregistrer et envoyer
 
@@ -87,6 +89,14 @@ Proposer (AskUserQuestion) : « Exiger que les contrôles passent avant toute fu
 - Guider la personne pas à pas dans les réglages du dépôt, d'après la documentation officielle du fournisseur (règles de protection de branche) : la protection se règle sur le site, par la personne.
 - Selon l'offre du fournisseur, cette protection peut être indisponible pour un dépôt **privé** gratuit : le vérifier dans sa documentation et le dire simplement. La CI reste utile : la croix rouge reste visible sur chaque demande.
 - Avec la protection, l'envoi direct sur la branche principale peut être refusé : le rappeler si des plans ont « **Envoi** : branche principale », et proposer de passer en mode PR (`/pulse:refine US-XXX "changer l'envoi"`).
+
+## 8. Mises à jour des dépendances (facultatif)
+
+Proposer (AskUserQuestion) : « Recevoir chaque semaine une demande de fusion pour les nouvelles versions des dépendances (Recommandé) » / « Plus tard ». Expliquer : « Un robot du dépôt propose les nouvelles versions, failles corrigées comprises ; la CI vérifie chacune avant que vous l'acceptiez. »
+
+- GitHub : Dependabot (fichier `.github/dependabot.yml`) ; GitLab ou autre fournisseur : Renovate. Écrire la configuration d'après la documentation officielle de l'outil : l'écosystème de la pile retenue, et celui des actions de la CI ; fréquence hebdomadaire.
+- Montrer le fichier, expliquer chaque bloc en une ligne, puis l'enregistrer et l'envoyer comme en § 5.
+- Chaque demande reçue se relit et se fusionne par la personne, sur le site du dépôt, une fois la CI verte.
 
 ## Fin
 

@@ -2,7 +2,7 @@
 description: Lancer les tests automatiques du projet et expliquer chaque échec (lancer), ou écrire les tests d'un code existant à partir des scénarios de la spec (ecrire), via les agents test-runner et test-writer
 argument-hint: "[lancer | ecrire <US-XXX | Tn | chemin>]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd agent test-writer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:test – Les tests automatiques

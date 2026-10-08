@@ -2,7 +2,7 @@
 description: Rédiger la spécification d'une user story (une US = une spec, rangée à côté de l'US dans aidd_docs/tasks/<epic>/) - l'intention seule, la solution étant laissée au plan - périmètre, hors objectifs, écrans, informations, règles, scénarios, « terminé quand » ; les trous marqués TBD ; verrouillée une fois validée
 argument-hint: "<US-XXX [US-YYY…] | \"description de la demande\">"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *)
+allowed-tools: Bash(pulse-aidd contexte spec) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *)
 ---
 
 # /pulse:spec – La spécification

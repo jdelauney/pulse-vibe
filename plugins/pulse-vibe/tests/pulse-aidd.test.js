@@ -264,7 +264,7 @@ test("contexte : pack déclaré mais absent, un avertissement et aucune erreur",
   const r = projetAvecPack({ declare: "essai" }).lancerIci("etape", "tech");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /Pack de pile : essai \(non installé\)/);
-  assert.match(r.stdout, /pulse-vibe-essai/);
+  assert.match(r.stdout, /pulse-essai@pulseia/);
 });
 
 test("contexte : sans pack déclaré, aucune section de pack", () => {
@@ -286,7 +286,7 @@ test("pile <sous-commande> : sans pack déclaré ou pack absent, message et code
   assert.match(sans.stdout + sans.stderr, /Aucun pack de pile déclaré/);
   const absent = projetAvecPack({ declare: "essai" }).lancerIci("pile", "recette", "connexion");
   assert.strictEqual(absent.status, 1);
-  assert.match(absent.stdout + absent.stderr, /pulse-vibe-essai/);
+  assert.match(absent.stdout + absent.stderr, /pulse-essai@pulseia/);
 });
 
 test("contexte rediger : règles communes, règles de rédaction, modèles de la voix et du texte de page", () => {

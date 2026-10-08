@@ -2,7 +2,7 @@
 description: Expliquer simplement un fichier, une fonction ou une ligne de code, avec une question pour vérifier
 argument-hint: "[fichier | fichier:ligne | nom de fonction | question]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *)
+allowed-tools: Bash(pulse-aidd contexte explain) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *)
 ---
 
 # /pulse:explain – Comprendre le code

@@ -83,6 +83,6 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 3. **Jamais de vraie donnée ni de vraie clé** dans la conversation ou dans le code.
 4. **« Si ce n'est pas interdit côté serveur, c'est autorisé. »**
 
-⚙️ Avec le pack **pulse-vibe-next** installé, `/pulse:tech` vous propose une pile Next.js prête à l'emploi : un projet de départ vérifié, et des recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite) que la spec et le plan reprennent pour vous.
+⚙️ Avec le pack **pulse-next** installé, `/pulse:tech` vous propose une pile Next.js prête à l'emploi : un projet de départ vérifié, et des recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite) que la spec et le plan reprennent pour vous.
 
 🔒 Si Pulse refuse une commande ou vous demande votre accord (« Pulse demande votre accord… »), c'est son garde-fou : il protège votre travail, vos données et votre site. Lisez la raison, puis acceptez seulement si vous comprenez ce qui va se passer.

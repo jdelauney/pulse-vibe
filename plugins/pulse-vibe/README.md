@@ -22,14 +22,14 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:review` | Relecture indépendante, test manuel, corrections | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
-| `/pulse:cicd [proteger]` | Contrôles automatiques (CI) à chaque envoi et sur chaque demande de fusion : secrets, lint, tests, construction, adaptés au fournisseur du dépôt (GitHub Actions, GitLab CI…) ; `proteger` : n'accepter une fusion que si la CI est verte | fichier de CI, `scripts/verifier.js` |
+| `/pulse:cicd [proteger]` | Contrôles automatiques (CI) à chaque envoi et sur chaque demande de fusion : secrets, audit des dépendances, lint, tests, construction (et, en option, robot de mises à jour des dépendances), adaptés au fournisseur du dépôt (GitHub Actions, GitLab CI…) ; `proteger` : n'accepter une fusion que si la CI est verte | fichier de CI, `scripts/verifier.js` |
 | `/pulse:deploy` | Mise en ligne et déploiement continu (CD), puis mode production (variables, services, retour arrière) ; chaque mise en ligne est prouvée par `pulse-aidd sonder` et par le garde-fou de référencement `pulse-aidd seo --essentiel` | site en ligne |
 | `/pulse:search-console [relier \| lire [28j\|3m] \| suivre \| inspecter <adresse>]` | Après la mise en ligne : relier le site à Google Search Console et à Bing (balise ou DNS, sitemap), puis lire ce que Google voit, en lecture seule (export CSV, ou connexion Google personnelle dont l'accès reste hors du projet) : chiffres, requêtes à potentiel, pages oubliées, échantillon d'indexation, 3 actions ; `suivre` compare 28 jours aux 28 précédents | `docs/referencement/search-console-<date>.md`, section « Référencement » de `docs/technical.md` |
 | `/pulse:spirc <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Rythme (avec validations ou autonome) et examen (standard ou renforcé) choisis au démarrage | tout ce qui précède |
 | `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
 | `/pulse:learn [<notion>]` | Un professeur de programmation, limité au développement logiciel : leçon, `feynman <notion>` (vous expliquez, il vous aide à combler les trous), `exercice <notion>`, `parcours "<objectif>"` ; adapté à votre niveau, illustré avec votre projet. Sans argument : révision des notions à revoir | `docs/apprentissage.md` (carnet, facultatif) |
-| `/pulse:security` | Audit S1 à S12 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
+| `/pulse:security` | Audit S1 à S13 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
 | `/pulse:secrets [inventaire \| renouveler <NOM> \| fuite [<NOM>]]` | Les secrets du projet sans jamais afficher une valeur : inventaire (noms, présence, type chez l'hébergeur), renouvellement sans coupure (nouvelle valeur d'abord, révocation après la preuve en production), réaction à une fuite (révoquer d'abord) ; la valeur va du fournisseur à `.env` par la personne, puis à l'hébergeur par l'entrée standard | `docs/secrets.md`, `docs/incidents/` |
 | `/pulse:seo [audit \| bases \| textes \| ia \| lancer]` | Être trouvé : audit du site **servi** (comme un robot, sans JavaScript) rangé par 4 questions (Google peut-il venir ? garder la page ? comment se présente-t-elle ? mérite-t-elle d'être choisie ?) ; fondations ; titres et descriptions **choisis par vous** ; politique des robots IA (4 choix expliqués, sans recommandation) ; lancement (Search Console, Bing, carte de partage). `/pulse:deploy` vérifie à chaque mise en ligne qu'aucun `noindex`, `Disallow: /` ou `localhost` n'est parti | `docs/seo.md`, `docs/seo/audits/seo-<date>.md` |
 | `/pulse:rediger [page] [--humaniser]` | Les textes de vos pages (accueil, à propos, services…) dans la voix du site : entretien court (voix, objectif, public, action attendue, faits), rédaction par un agent, contrôle des tics d'écriture IA (`pulse-aidd textes verifier`), puis intégration dans la page si vous le souhaitez | `docs/voix.md`, `docs/textes/<page>.md` |
@@ -105,26 +105,42 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
 
 ## Installation
 
-Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js LTS. Sous Windows, **Git for Windows** est indispensable (le plugin utilise Git Bash).
+Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js 22.19 ou plus (version LTS conseillée). Sous Windows, **Git for Windows** est indispensable (le plugin utilise Git Bash).
 Les outils du plugin fonctionnent aussi depuis PowerShell et l'invite de commandes, par un petit relais vers Git Bash.
 
 Dans une session Claude Code :
 
 ```
 /plugin marketplace add jdelauney/pulse-vibe
-/plugin install pulse-vibe@pulseia
+/plugin install pulse@pulseia
 ```
 
 Ou depuis un terminal :
 
 ```bash
 claude plugin marketplace add jdelauney/pulse-vibe
-claude plugin install pulse-vibe@pulseia
+claude plugin install pulse@pulseia
 ```
 
 Pour tester en local sans GitHub : `claude plugin marketplace add ./chemin/vers/le-depot` (le dossier qui contient `.claude-plugin/marketplace.json`), ou `claude --plugin-dir ./chemin/vers/le-depot/plugins` pour une seule session.
 
-Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin update pulse-vibe@pulseia`, et redémarrer Claude Code.
+## Mettre à jour
+
+Les corrections de Pulse arrivent chez vous seulement après une mise à jour. Faites-la au début de chaque semaine de travail, et dès qu'un message de Pulse semble dépassé.
+
+Dans un terminal :
+
+```bash
+claude plugin marketplace update pulseia
+claude plugin update pulse@pulseia
+claude plugin update pulse-next@pulseia   # seulement avec la pile Next.js
+```
+
+Puis fermez et relancez Claude Code : la nouvelle version se charge au démarrage.
+
+Pour ne plus y penser : dans Claude Code, tapez `/plugin`, ouvrez **Marketplaces**, choisissez `pulseia`, puis **Enable auto-update**.
+
+Installé avec les anciens noms (`pulse-vibe@pulseia`, `pulse-vibe-next@pulseia`) : la mise à jour passe aux nouveaux noms toute seule. Si Claude Code signale ensuite « not cached », tapez une fois `/plugin install pulse@pulseia` (et `/plugin install pulse-next@pulseia` si vous aviez la pile Next.js), puis relancez Claude Code.
 
 ## Documentation
 

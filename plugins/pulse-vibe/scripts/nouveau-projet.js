@@ -204,7 +204,7 @@ async function principal() {
     console.log("\nProchaines étapes :");
     console.log(`  1. cd ${path.relative(process.cwd(), dest) || "."}`);
     console.log("  2. Si le plugin Pulse n'est pas encore installé :");
-    console.log("       claude plugin marketplace add <compte>/<depot>");
+    console.log("       claude plugin marketplace add jdelauney/pulse-vibe");
     console.log("       claude plugin install pulse@pulseia");
     console.log("  3. claude      puis      /pulse:init   (état du projet et prochaine étape)");
   }

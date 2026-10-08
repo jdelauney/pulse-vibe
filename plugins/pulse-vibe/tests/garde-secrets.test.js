@@ -401,3 +401,47 @@ test("secret en clair : constantes ordinaires (URL, regex, nom d'en-tête) non s
   const alea = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd";
   assert.deepStrictEqual(trouverSecrets(`BETTER_AUTH_SECRET='${alea}'`), ["secret en clair"]);
 });
+
+test("secret en clair : valeurs hexadécimales et d'une seule casse signalées, exemples non signalés", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  const hex = "ab12".repeat(16);
+  const base64url = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd" + "Zq1Xe3HaVn";
+  assert.strictEqual(base64url.length, 32);
+  const long = "mysecretpass" + "2024" + "abcdefghijkl"; // 28 caractères, un chiffre, une seule casse
+  for (const c of [
+    `BETTER_AUTH_SECRET="${hex}"`,
+    `BETTER_AUTH_SECRET="${hex.toUpperCase()}"`,
+    `BETTER_AUTH_SECRET="${base64url}"`,
+    `DB_PASSWORD="${long}"`,
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), ["secret en clair"], c);
+  for (const c of [
+    'const SECRET_HEADER_NAME = "x-webhook-signature-v2"',
+    'const TOKEN_URL = "https://oauth2.googleapis.com/token"',
+    'const PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*\\d).{8,}$"',
+    'BETTER_AUTH_SECRET="VOTRE_SECRET_ICI_A_REMPLACER"',
+    'const TOKEN = "token-de-test-1234567890"',
+    'const TOKEN_COOKIE = "__secure-session-token-v2-prod"',
+    'const TOKEN_KEY = "pulse.auth.token.v2.storage"',
+    'const PASSWORD_MIN_MESSAGE = "password-too-short-error-2"',
+    'const API_SECRET_HEADER = "x-pulse-webhook-signature-2024"',
+    'const SECRET_NAME = "my-app-secret-key-name-1"',
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), [], c);
+});
+
+test("secret en clair : noms en majuscules, identifiants UUID et clés de traduction non signalés", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  const uuid = ["3F2504E0", "4F89", "11D3", "9A0C", "0305E82C3301"].join("-"); // construit à l'exécution, en majuscules
+  for (const c of [
+    'const SECRET_ENV_NAME = "STRIPE_WEBHOOK_SECRET_V2"',
+    `const TOKEN_ID = "${uuid}"`,
+    `const TOKEN_ID = "${uuid.toLowerCase()}"`,
+    'const PASSWORD_HINT_KEY = "auth.passwordHint.label2"',
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), [], c);
+  // Les vraies valeurs restent signalées.
+  const hex = "ab12".repeat(16);
+  const base64url = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd" + "Zq1Xe3HaVn";
+  for (const c of [`API_SECRET="${hex}"`, `API_SECRET="${base64url}"`, `API_SECRET="${base64url}.${hex}"`]) assert.deepStrictEqual(trouverSecrets(c), ["secret en clair"], c);
+});

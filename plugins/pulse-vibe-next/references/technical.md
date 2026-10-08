@@ -50,6 +50,7 @@ drizzle/                  migrations
 | Lancer en local | `npm run dev`, puis ouvrir http://localhost:3000 |
 | Tester | `npm test` (bout en bout : `npm run test:e2e`) |
 | Contrôles automatiques (lint, format, types) | `npm run check` et `npm run typecheck` (corriger le format : `npm run format`) |
+| Auditer les dépendances | `npm audit --omit=dev --audit-level=high` |
 | Construire | `npm run build` |
 | Déployer | automatique à chaque envoi sur `main` (Vercel) ; migrations de base : `npm run db:migrate` |
 
@@ -58,6 +59,7 @@ drizzle/                  migrations
 - Où sont les données : base Neon (Postgres), région Francfort (`aws-eu-central-1`).
 - Qui peut lire, créer, modifier, supprimer quoi : {{par table : la personne propriétaire (colonne utilisateurId), un rôle éventuel}}.
 - Où c'est vérifié : côté serveur, dans chaque action (`actionConnectee` puis condition `utilisateurId` dans le repository) et dans chaque lecture (`utilisateurConnecte()` puis filtre `utilisateurId`). `proxy.ts` redirige seulement, par confort.
+- Sauvegarde et restauration : Neon garde l'historique de la base ; restauration à un instant donné depuis la console Neon (Restore), à essayer une fois sur une branche de test.
 
 ## Secrets et variables d'environnement
 

@@ -1,6 +1,6 @@
 # Audit de sécurité – {{NOM_DU_PROJET}} – {{DATE}}
 
-> Produit par `/pulse:security`. Référence : checklist sécurité Pulse (S1 à S12).
+> Produit par `/pulse:security`. Référence : checklist sécurité Pulse (S1 à S13).
 
 ## Résumé
 
@@ -24,6 +24,7 @@
 | S10 Abus et coûts | | | |
 | S11 Messages d'erreur | | | |
 | S12 En-têtes de sécurité | | | |
+| S13 CSRF, sessions et cookies | | | |
 
 Légende : ✅ conforme · ⚠️ à améliorer · ⛔ faille · — non concerné
 

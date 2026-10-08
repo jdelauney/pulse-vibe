@@ -94,3 +94,12 @@ test("CLAUDE.md créé contient le bloc profil, à compléter par /pulse:init", 
   const claude = lire(path.join(parent, "profil"), "CLAUDE.md");
   assert.match(claude, /<!-- pulse_profil:debut -->\r?\n- \*\*Niveau\*\* : à préciser\r?\n- \*\*Explications\*\* : normales\r?\n<!-- pulse_profil:fin -->/);
 });
+
+test("prochaines étapes : les commandes d'installation exactes du catalogue pulseia", () => {
+  const parent = tmp();
+  const r = lancer(NOUVEAU, ["Installe", "--oui", "--sans-git"], parent);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /claude plugin marketplace add jdelauney\/pulse-vibe\r?\n/);
+  assert.match(r.stdout, /claude plugin install pulse@pulseia\r?\n/);
+  assert.doesNotMatch(r.stdout, /<compte>|<depot>/);
+});
