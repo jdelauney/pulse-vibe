@@ -375,3 +375,43 @@ test("suppressions déguisées : confirmation", () => {
   passe("rm notes.txt");
   passe("rm -rf node_modules .next");
 });
+
+// ------------------------------------------------------------ Lecture de .env
+
+test("lire .env par un chemin détourné : refus", () => {
+  for (const c of [
+    "cat .ENV",
+    "cat < .env",
+    "less<.env",
+    "cat .env*",
+    "head .dev.vars",
+    "cat .envrc",
+    "source .env && printenv",
+    ". .env",
+    "cp .env /tmp/x && cat /tmp/x",
+    `node -e "console.log(require('fs').readFileSync('.env','utf8'))"`,
+    `python -c "print(open('.env').read())"`,
+    `node -e "require('dotenv').config(); console.log(process.env)"`,
+  ])
+    refus(c);
+  refusPs("[IO.File]::ReadAllText('.env')");
+  refusPs("Get-Content .env");
+});
+
+test("recherche récursive dans un dossier qui contient .env : refus avec l'alternative", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-env-"));
+  fs.writeFileSync(path.join(dir, ".env"), "API_KEY=1\n");
+  fs.mkdirSync(path.join(dir, "src"));
+  const d = refus("grep -r API_KEY .", dir);
+  assert.match(d.raison, /--exclude/);
+  refus("grep -rn API_KEY", dir);
+  refus("rg -uu API_KEY", dir);
+  passe("grep -r API_KEY src", dir);
+  passe("grep -r --exclude='.env*' API_KEY .", dir);
+  passe("rg API_KEY", dir);
+});
+
+test("créer .env à partir de l'exemple : passe", () => {
+  passe("cp .env.example .env");
+  passe("cat .env.example");
+});

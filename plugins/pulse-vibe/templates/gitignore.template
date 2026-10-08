@@ -2,6 +2,11 @@
 .env
 .env.*
 !.env.example
+!.env.sample
+!.env.template
+.dev.vars
+.envrc
+*.pem
 # identifiants personnels téléchargés (Google Cloud…) : jamais dans le dépôt
 client_secret*.json
 *service-account*.json

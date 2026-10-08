@@ -86,10 +86,26 @@ const MESSAGES = {
   lectureEnv:
     "Pulse garde le contenu des fichiers .env hors de la conversation : ils contiennent les secrets du projet. " +
     "À la place : `pulse-aidd secrets inventaire` liste les variables (noms, présence, sans aucune valeur) ; `.env.example` donne les noms attendus.",
+  rechercheEnv:
+    "Pulse refuse cette recherche : elle parcourt aussi les fichiers .env, et leurs secrets entreraient dans la conversation. " +
+    "À la place : ajoutez `--exclude='.env*'` (grep), ou utilisez l'outil de recherche de Claude Code, qui ignore les fichiers du .gitignore.",
 };
 
-// Commandes qui affichent le contenu d'un fichier (shell et PowerShell).
-const LECTEURS = new Set(["cat", "type", "more", "less", "head", "tail", "grep", "egrep", "rg", "nl", "bat", "get-content", "gc", "select-string", "sls", "awk", "sed", "strings", "xxd", "od"]);
+// Commandes qui affichent ou chargent le contenu d'un fichier (shell et PowerShell).
+const LECTEURS = new Set(["cat", "type", "more", "less", "head", "tail", "grep", "egrep", "rg", "nl", "bat", "get-content", "gc", "select-string", "sls", "awk", "sed", "strings", "xxd", "od", "source", "."]);
+// Commandes qui copient un fichier : la dernière position est la destination.
+const COPIEURS = new Set(["cp", "scp", "rsync", "copy", "copy-item", "cpi", "xcopy", "robocopy"]);
+const estMotifEnv = (a) => estFichierEnv(a) || /^\.env\.?\*$/i.test(String(a).split(/[\\/]/).pop());
+const TEXTES_CITES = /(["'`])((?:\\.|(?!\1)[^\\])*)\1/g;
+// Vrai si le dossier contient directement un fichier .env (les .env plus profonds relèvent du garde-fou anti-secrets).
+const contientEnv = (cwd, dossier) => {
+  try {
+    const d = path.resolve(cwd, dossier);
+    return fs.statSync(d).isDirectory() && fs.readdirSync(d).some(estFichierEnv);
+  } catch (e) {
+    return false;
+  }
+};
 
 // ---------------------------------------------------------------- Règles par commande
 
@@ -273,7 +289,19 @@ function appliquerRegles(c, cwd, constats) {
   if (COMMANDES_SUPPRESSION.has(cmd)) reglesSuppression(c, constats);
   if (c.code !== undefined && /\b(rmSync|rmdirSync|unlinkSync|rimraf|rmtree|remove_tree|rm_rf|os\.remove|os\.unlink|unlink|rmdir)\b/.test(c.code))
     constats.push([ACCORD, MESSAGES.suppression]);
-  if (LECTEURS.has(cmd) && args.some((a) => !estOption(a) && estFichierEnv(a))) constats.push([REFUS, MESSAGES.lectureEnv]);
+  if (c.lectures.some(estMotifEnv)) constats.push([REFUS, MESSAGES.lectureEnv]);
+  if (LECTEURS.has(cmd) && args.some((a) => !estOption(a) && estMotifEnv(a))) constats.push([REFUS, MESSAGES.lectureEnv]);
+  if (COPIEURS.has(cmd) && args.filter((a) => !estOption(a)).slice(0, -1).some(estMotifEnv)) constats.push([REFUS, MESSAGES.lectureEnv]);
+  // Recherche récursive : refusée seulement si un dossier fouillé contient directement un .env.
+  const positionsRecherche = args.filter((a) => !estOption(a));
+  if (["grep", "egrep", "fgrep"].includes(cmd) && args.some((a) => a === "--recursive" || a === "--dereference-recursive" || (/^-[a-zA-Z]+$/.test(a) && /[rR]/.test(a))) && !/--exclude[= ]['"]?\.env/.test(args.join(" ")))
+    if ((positionsRecherche.slice(1).length ? positionsRecherche.slice(1) : ["."]).some((d) => contientEnv(cwd, d))) constats.push([REFUS, MESSAGES.rechercheEnv]);
+  if (cmd === "rg" && (args.some((a) => /^-u{2,}$/.test(a)) || (args.some((a) => a.startsWith("--no-ignore")) && args.includes("--hidden"))) && !/(-g|--glob)[= ]['"]?!\.env/.test(args.join(" ")))
+    if ((positionsRecherche.slice(1).length ? positionsRecherche.slice(1) : ["."]).some((d) => contientEnv(cwd, d))) constats.push([REFUS, MESSAGES.rechercheEnv]);
+  if (c.code !== undefined) {
+    const cites = [...c.code.matchAll(TEXTES_CITES)].map((t) => t[2]);
+    if (cites.some(estMotifEnv) || (/\b(dotenv|load_dotenv)\b/.test(c.code) && /\b(console\.log|print|puts|echo)\b/.test(c.code))) constats.push([REFUS, MESSAGES.lectureEnv]);
+  }
 
   switch (cmd) {
     case "git":
@@ -334,6 +362,8 @@ function analyser(commande, cwd, dialecte) {
   // Contrôles coupés par une variable posée avant la commande (export HUSKY=0 ; $env:HUSKY = 0).
   const coupe = /(^|[\s;&|(])(export\s+|\$env:)(HUSKY\s*=\s*['"]?0|HUSKY_SKIP_HOOKS\s*=\s*['"]?1|SKIP_SIMPLE_GIT_HOOKS\s*=\s*['"]?1|LEFTHOOK\s*=\s*['"]?0)\b/i;
   if (coupe.test(commande.replace(/(?<!=)('[^']*'|"(?:[^"\\]|\\.)*")/g, "")) && commandesSimples(commande, dialecte).some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.controlesCoupes]);
+  // Lecture .NET depuis PowerShell : [IO.File]::ReadAllText('.env').
+  for (const m of commande.matchAll(/::ReadAll(?:Text|Lines|Bytes)\s*\(\s*['"]([^'"]+)['"]/gi)) if (estMotifEnv(m[1])) constats.push([REFUS, MESSAGES.lectureEnv]);
   return constats;
 }
 

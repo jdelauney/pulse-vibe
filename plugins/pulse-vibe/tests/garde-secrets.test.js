@@ -247,3 +247,17 @@ test("reconnaît les jetons GitHub classiques et sans état (format JWT, environ
   assert.deepStrictEqual(trouverSecrets(`GH_TOKEN=${sansEtat}`), ["jeton GitHub"]);
   assert.deepStrictEqual(trouverSecrets("ghs_ ghp_court"), []);
 });
+
+test("fichiers d'environnement : casse, .dev.vars, .envrc ; exemples exclus", () => {
+  const { estFichierEnv } = require("../scripts/motifs");
+  for (const f of [".env", ".ENV", ".Env.Local", "app/.env.production", ".dev.vars", ".envrc"]) assert.ok(estFichierEnv(f), f);
+  for (const f of [".env.example", ".ENV.EXAMPLE", ".env.sample", ".env.template", "env.ts", ".environment"]) assert.ok(!estFichierEnv(f), f);
+});
+
+test("Read d'un .ENV en majuscules : refusé", () => {
+  assert.ok(refuse(lancerHook({ tool_name: "Read", tool_input: { file_path: "/p/.ENV" } })));
+});
+
+test("écrire une clé dans .dev.vars (fichier de secrets de Wrangler) : autorisé", () => {
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/.dev.vars", content: `STRIPE=${FAUX.stripe}` } }), null);
+});

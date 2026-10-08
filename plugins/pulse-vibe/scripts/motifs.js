@@ -57,12 +57,13 @@ function trouverSecrets(texte) {
   }
   return [...trouves];
 }
-// FIN-MOTIFS
 
-/** Vrai pour .env, .env.local, .env.production… mais pas pour .env.example. */
+/** Vrai pour .env, .env.local, .ENV, .dev.vars, .envrc… ; faux pour .env.example, .env.sample, .env.template. */
 function estFichierEnv(chemin) {
-  const nom = String(chemin).split(/[\\/]/).pop();
-  return /^\.env(\..+)?$/.test(nom) && !/^\.env\.(example|sample|template)$/.test(nom);
+  const nom = String(chemin).split(/[\\/]/).pop().toLowerCase();
+  if (/^\.env\.(example|sample|template)$/.test(nom)) return false;
+  return /^\.env(\..+)?$/.test(nom) || nom === ".dev.vars" || nom === ".envrc";
 }
+// FIN-MOTIFS
 
 module.exports = { trouverSecrets, estFichierEnv };
