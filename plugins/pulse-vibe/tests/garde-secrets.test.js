@@ -238,3 +238,12 @@ test("reconnaît les jetons Neon, Vercel, Cloudflare et les adresses Redis, cons
   assert.deepStrictEqual(trouverSecrets("redis" + "s://default:" + h(8) + "@exemple.upstash.io:6379"), ["mot de passe dans une adresse de base de données"]);
   assert.deepStrictEqual(trouverSecrets("napi_ vcp_ cfat_"), []);
 });
+
+test("reconnaît les jetons GitHub classiques et sans état (format JWT, environ 520 caractères)", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  const b64 = (n) => require("crypto").randomBytes(n).toString("base64url");
+  assert.deepStrictEqual(trouverSecrets("ghp" + "_" + b64(27)), ["jeton GitHub"]);
+  const sansEtat = "ghs" + "_" + ["eyJh-" + b64(30), "eyJ" + b64(300), b64(170)].join(".");
+  assert.deepStrictEqual(trouverSecrets(`GH_TOKEN=${sansEtat}`), ["jeton GitHub"]);
+  assert.deepStrictEqual(trouverSecrets("ghs_ ghp_court"), []);
+});
