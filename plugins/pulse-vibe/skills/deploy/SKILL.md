@@ -2,7 +2,7 @@
 description: Mettre l'appli en ligne avec déploiement automatique (CD), puis en mode production (variables, services, retour arrière ; la CI se met en place avec /pulse:cicd)
 argument-hint: "[premiere | production] (détecté automatiquement si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-hook) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git remote *) Bash(gh auth status*) Bash(glab auth status*) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-hook) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git ls-files *) Bash(git grep *) Bash(curl -sI *) Bash(git remote *) Bash(gh auth status*) Bash(glab auth status*) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js)
 ---
 
 # /pulse:deploy – Mettre en ligne
@@ -35,7 +35,8 @@ Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hé
 2. Branche : `git branch --show-current`. Si c'est `master`, proposer `git branch -M main` et expliquer que `main` est la branche publiée.
 3. Tout est enregistré : si `git status --short` liste des fichiers, proposer `/pulse:commit` d'abord.
 4. Secrets : lancer `pulse-aidd verifier` depuis la racine du projet. Il vérifie que les fichiers d'environnement restent hors de Git et que le projet est exempt de clés secrètes. S'il échoue, expliquer chaque problème simplement et corriger avant d'aller plus loin.
-5. Contrôles du projet : lancer les contrôles automatiques et la commande « construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur bloque l'envoi : proposer `/pulse:fix` ou `/pulse:auto-fix`. Si aucune commande de contrôle n'existe, le signaler et proposer d'en ajouter avec `/pulse:tech`.
+5. Contrôles du projet : lancer les contrôles automatiques, la commande « Tester » et la commande « Construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur ou un test en échec bloque l'envoi : proposer `/pulse:fix` ou `/pulse:auto-fix`. Si aucune commande de contrôle ni de test n'existe, le signaler et proposer d'en ajouter avec `/pulse:tech`.
+6. Sécurité, avant la **première** mise en ligne (aucun dépôt distant, mode `premiere`, ou ligne « Site en ligne » de `docs/technical.md` encore vide) : appliquer à l'identique le contrôle rapide de `/pulse:security rapide` (`pulse-aidd reference securite/rapide.md`, en lecture seule). Un ⛔ bloque la mise en ligne : le corriger d'abord (une clé exposée se traite avec `/pulse:secrets fuite`). Les ⚠️ s'affichent avec leur correction proposée, et la mise en ligne continue.
 
 ## 2. Choisir le mode
 
@@ -99,5 +100,7 @@ Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en lig
 Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
 
 Site sur son adresse définitive, « Être trouvé » de `docs/prd.md` à oui (ou absent), et section « Référencement » de `docs/technical.md` absente : la prochaine étape proposée est `/pulse:seo lancer` (vérification minimale : Search Console, Bing, carte de partage), puis `/pulse:search-console relier` (données et suivi). Si le pack de pile prévoit un envoi IndexNow, il se fait ici, après les preuves ci-dessous.
+
+Après la première mise en ligne, ou si `docs/securite.md` est absent : proposer `/pulse:security audit` (audit complet et test du cambrioleur), car le site est désormais ouvert à tous.
 
 Terminer avec le bloc de fin de commande, en indiquant l'adresse du site, le résultat de `pulse-aidd sonder` et celui de `pulse-aidd seo --essentiel` (les lignes ✅ ou ❌ qu'ils affichent) comme preuves de la mise en ligne.

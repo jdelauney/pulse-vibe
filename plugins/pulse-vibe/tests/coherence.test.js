@@ -299,3 +299,16 @@ test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale,
   assert.match(depot, /Claude Code demande l'accord de la personne/);
   assert.match(lire(RACINE, "references", "git.md"), /`git commit -m "<description>"`/);
 });
+
+test("mise en ligne : tests, contrôle rapide de sécurité avant la première fois, audit complet proposé en clôture", () => {
+  const fichier = path.join(RACINE, "skills", "deploy", "SKILL.md");
+  const deploy = lire(fichier);
+  const controles = deploy.split("## 1. Contrôles avant envoi")[1].split("\n## 2.")[0];
+  assert.match(controles, /la commande « Tester »/);
+  assert.match(controles, /avant la \*\*première\*\* mise en ligne/);
+  assert.match(controles, /`pulse-aidd reference securite\/rapide\.md`/);
+  assert.match(controles, /Un ⛔ bloque la mise en ligne/);
+  assert.match(deploy.split("## 6. Clore")[1], /`\/pulse:security audit`/);
+  const motifs = motifsBash(fichier);
+  for (const m of ["git ls-files *", "git grep *", "curl -sI *"]) assert.ok(motifs.includes(m), `allowed-tools de deploy : Bash(${m})`);
+});
