@@ -1075,7 +1075,7 @@ export default function ErreurFactures({
 }
 ```
 
-Ajoutez enfin l'adresse de la page au `matcher` de `proxy.ts` (racine du projet, recette `connexion`) : Si la recette `langues` est appliquée, ajoutez plutôt l'adresse à `PAGES_CONNECTEES` (recette `langues`).
+Ajoutez enfin l'adresse de la page au `matcher` de `proxy.ts` (racine du projet, recette `connexion`) :
 
 ```ts
 export const config = {
@@ -1083,6 +1083,8 @@ export const config = {
   matcher: ["/compte/:path*", "/factures/:path*"],
 };
 ```
+
+Avec la recette `langues` : voir `connexion`, étape 12.
 
 ### 12. Quand utiliser TanStack Query ou Zustand
 

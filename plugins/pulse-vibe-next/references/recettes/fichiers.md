@@ -954,11 +954,13 @@ export default function PageFichiers() {
 
 ### 11. Le renvoi vers la connexion
 
-Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` : Si la recette `langues` est appliquée, ajoutez plutôt l'adresse à `PAGES_CONNECTEES` (recette `langues`).
+Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` :
 
 ```ts
   matcher: ["/compte/:path*", "/fichiers/:path*"],
 ```
+
+Avec la recette `langues` : voir `connexion`, étape 12.
 
 La page reste protégée par `utilisateurConnecte()`, et le téléchargement par le Route Handler.
 

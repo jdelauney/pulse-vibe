@@ -814,7 +814,7 @@ export default function PageMerci({
 
 ### 10. Le renvoi vers la connexion
 
-Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` : `"/paiement/:path*"`. `/api/stripe/webhook` reste hors du `matcher` : Stripe n'a pas de cookie de session. Si la recette `langues` est appliquée, ajoutez plutôt l'adresse à `PAGES_CONNECTEES` (recette `langues`).
+Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` : `"/paiement/:path*"`. `/api/stripe/webhook` reste hors du `matcher` : Stripe n'a pas de cookie de session. Avec la recette `langues` : voir `connexion`, étape 12.
 
 ### 11. Recevoir les webhooks en local
 

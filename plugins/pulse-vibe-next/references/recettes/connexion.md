@@ -1099,6 +1099,8 @@ export const config = {
 
 `getSessionCookie` regarde seulement si le cookie existe (il reconnaît aussi le préfixe `__Secure-` de la production). Il ne le valide pas : la vraie vérification reste dans `utilisateurConnecte()` et `actionConnectee`.
 
+Si la recette `langues` est appliquée, ajoutez plutôt l'adresse à `PAGES_CONNECTEES`, sans `/:path*` (étape 10 de `langues`).
+
 Le test `request.method === "GET"` laisse passer les actions. Une Server Action envoie un POST à l'adresse de la page : redirigée par le proxy, elle s'arrêterait sans aucun message (essai fait : réponse 307, formulaire muet).
 
 ## Scénarios Gherkin à ajouter à la spec
@@ -1543,7 +1545,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - **`npm run check` signale `noRestrictedImports` dans `src/adapters/auth/`** : le `biome.json` du projet date d'avant l'exception de l'adapter d'authentification. Copiez dans `overrides`, juste après celui de `src/adapters/**`, l'override `src/adapters/auth/**` du squelette du pack (il ferme seulement `app/` et les features). Seul l'adapter de better-auth a cette exception.
 - **`authClient.signIn.email` répond 404** : ces adresses sont fermées par `disabledPaths`. Appelez l'action `connecter`. Une recette qui ajoute un parcours HTTP de better-auth retire son chemin de `disabledPaths`.
 - **Page connectée qui ne se construit pas** (`next build` signale `cookies()` ou `headers()` « accessed outside of `<Suspense>` ») : la lecture de session va dans un container sous `<Suspense>`, jamais au premier niveau d'une page ou d'un layout.
-- **Nouvelle page connectée accessible sans renvoi** : ajoutez son adresse au `matcher` de `proxy.ts` (`"/factures/:path*"`). La page reste protégée par `utilisateurConnecte()` même si vous l'oubliez. Si la recette `langues` est appliquée, ajoutez plutôt l'adresse à `PAGES_CONNECTEES` (recette `langues`).
+- **Nouvelle page connectée accessible sans renvoi** : ajoutez son adresse au `matcher` de `proxy.ts` (`"/factures/:path*"`). La page reste protégée par `utilisateurConnecte()` même si vous l'oubliez.
 - **Formulaire muet sur une page connectée quand la session a expiré** : `proxy.ts` redirige aussi le POST de la Server Action (réponse 307), et l'action ne répond rien. Gardez le test `request.method === "GET"` du proxy : l'action arrive alors à `actionConnectee`, qui répond « Connexion requise ».
 - **Redirection vers `/connexion` en réponse 200** : quand la session manque dans un composant sous `<Suspense>`, Next.js a déjà commencé à envoyer la page ; la redirection se fait dans le navigateur. C'est normal ; `proxy.ts` répond 307 avant, dès que le cookie manque.
 - **Test d'intégration qui plante sur `server-only`** : ajoutez l'alias `server-only` dans `vitest.config.ts` (voir « Prérequis »).
