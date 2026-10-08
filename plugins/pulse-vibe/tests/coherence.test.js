@@ -638,3 +638,11 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   assert.match(skillTexte("ui"), /quatre références de design/);
   assert.doesNotMatch(skillTexte("ui"), /trois références/);
 });
+
+test("la règle deny se propose en clair : le bloc JSON se montre seulement sur demande", () => {
+  for (const s of ["init", "secrets"]) {
+    const texte = lire(RACINE, "skills", s, "SKILL.md");
+    assert.doesNotMatch(texte, /montrer le bloc/i, `${s} : ne plus montrer le bloc d'office`);
+    assert.match(texte, /bloc[^.]*sur demande/i, `${s} : le bloc reste disponible sur demande`);
+  }
+});
