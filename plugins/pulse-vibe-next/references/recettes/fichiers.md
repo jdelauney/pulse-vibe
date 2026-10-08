@@ -90,7 +90,9 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | `app/api/fichiers/[id]/route.ts` | Téléchargement par adresse signée |
 | `app/(connecte)/fichiers/page.tsx` | Page « Mes fichiers » |
 | `proxy.ts` (modifié) | `"/fichiers/:path*"` dans le `matcher` |
-| `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/fichiers.use-cases.test.ts` | Tests unitaires du métier (doublures en mémoire) |
+| `src/core/fichiers/__tests__/fichier.rules.test.ts` | Tests unitaires des règles |
+| `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts` | Doublures en mémoire des deux ports, partagées par les tests des use-cases |
+| `src/core/fichiers/use-cases/__tests__/preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts` | Tests unitaires des trois use-cases, un fichier chacun |
 | `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` | Tests unitaires du schéma |
 | `src/adapters/storage/__tests__/storage.adapter.test.ts` | Tests de l'adapter (SDK doublé) |
 | `src/db/fichiers/__tests__/fichier.repository.test.ts` | Tests d'intégration avec PGlite |
@@ -339,12 +341,13 @@ npm run db:migrate
 
 ### 5. Le repository
 
-Chaque requête commence par la **condition de propriété** (`utilisateurId`, venu de la session). `trouverEnvoye` et `listerEnvoyes` ignorent les lignes `en_attente`. La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests.
+Chaque requête commence par la **condition de propriété** (`utilisateurId`, venu de la session). `trouverEnvoye` et `listerEnvoyes` ignorent les lignes `en_attente`. La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests. `satisfies FichierRepository` fait vérifier par TypeScript que le repository remplit le port des use-cases, sans cacher ses lectures propres à l'écran (`listerEnvoyes`, `trouverEnvoye`).
 
 ```ts
 // src/db/fichiers/fichier.repository.ts
 import "server-only";
 import type { Fichier, TypeAutorise } from "@src/core/fichiers/fichier.entity";
+import type { FichierRepository } from "@src/core/fichiers/fichier-repository.port";
 import type { Db } from "@src/db";
 import { and, desc, eq } from "drizzle-orm";
 import { fichiers } from "./fichier.table";
@@ -354,7 +357,7 @@ export function fichierRepository(db: Db) {
   const proprietaire = (id: string, utilisateurId: string) =>
     and(eq(fichiers.id, id), eq(fichiers.utilisateurId, utilisateurId));
 
-  return {
+  const repository = {
     async reserver(donnees: {
       id: string;
       utilisateurId: string;
@@ -422,6 +425,9 @@ export function fichierRepository(db: Db) {
       return ligne ?? null;
     },
   };
+
+  // Le repository remplit le port des use-cases ; TypeScript le vérifie ici, sans perdre les lectures propres à l'écran.
+  return repository satisfies FichierRepository;
 }
 ```
 
@@ -770,12 +776,12 @@ import { TYPES_AUTORISES } from "@src/core/fichiers/fichier.entity";
 import { useId } from "react";
 
 type Props = {
-  envoyer: (fichier: File) => void;
+  quandChoisi: (fichier: File) => void;
   enCours: boolean;
   erreur?: string;
 };
 
-export function ChampEnvoiFichier({ envoyer, enCours, erreur }: Props) {
+export function ChampEnvoiFichier({ quandChoisi, enCours, erreur }: Props) {
   const id = useId();
 
   return (
@@ -791,7 +797,7 @@ export function ChampEnvoiFichier({ envoyer, enCours, erreur }: Props) {
         onChange={(evenement) => {
           const choisi = evenement.target.files?.[0];
           if (choisi) {
-            envoyer(choisi);
+            quandChoisi(choisi);
           }
           evenement.target.value = "";
         }}
@@ -879,7 +885,11 @@ export function EnvoiFichierContainer() {
   }
 
   return (
-    <ChampEnvoiFichier envoyer={envoyer} enCours={enCours} erreur={erreur} />
+    <ChampEnvoiFichier
+      quandChoisi={envoyer}
+      enCours={enCours}
+      erreur={erreur}
+    />
   );
 }
 ```
@@ -1005,12 +1015,15 @@ Fonctionnalité: Fichiers
       Quand la clé de l'objet est construite
       Alors elle commence par l'identifiant de Camille
 
+  Règle: Un envoi se prépare avec une adresse signée et une ligne en attente
+
     @US-XXX-3 @unitaire
     Exemple: Camille reçoit une adresse d'envoi et une ligne en attente est réservée
       Étant donné Camille choisit une image PNG autorisée
       Quand le serveur prépare l'envoi
       Alors Camille reçoit une adresse d'envoi pour sa clé
       Et une ligne « en_attente » est réservée
+
 
   Règle: Une personne accède seulement à ses propres fichiers
 
@@ -1035,16 +1048,16 @@ Fonctionnalité: Fichiers
       Alors sa liste est vide
 
     @US-XXX-4 @integration @securite
-    Exemple: Léo ne peut ni confirmer ni supprimer la facture de Camille
+    Exemple: La base refuse à Léo de confirmer ou d'effacer la ligne de Camille
       Étant donné Camille a réservé un envoi « en_attente »
-      Quand Léo essaie de confirmer puis de supprimer ce fichier
+      Quand la base reçoit de Léo la confirmation puis l'effacement de cette ligne
       Alors rien n'est supprimé
       Et l'envoi de Camille reste « en_attente »
 
     @US-XXX-4 @unitaire @securite
     Exemple: Léo ne peut pas confirmer l'envoi de Camille
       Étant donné Camille a préparé l'envoi d'une image PNG
-      Quand Léo confirme cet envoi
+      Quand Léo demande au serveur de confirmer cet envoi
       Alors le fichier est introuvable
       Et l'envoi de Camille reste « en_attente »
 
@@ -1154,21 +1167,21 @@ Fonctionnalité: Fichiers
   - Dépend de : —
   - Fichiers : à créer : `src/core/fichiers/fichier.entity.ts`, `fichier.errors.ts`, `fichier.rules.ts`, `fichier-repository.port.ts`, `stockage-fichiers.port.ts`, `src/db/fichiers/fichier.table.ts`, `src/db/fichiers/fichier.repository.ts`, `src/adapters/storage/storage.adapter.ts`, `src/adapters/storage/__tests__/storage.adapter.test.ts`, `src/db/fichiers/__tests__/fichier.repository.test.ts`, migration dans `drizzle/` · à modifier : `src/config/env.ts`, `.env.example`
   - Vérification : US-XXX critères 4 et 6 – `npm test` passe ; `npm run db:migrate` crée la table `fichiers`
-  - Tests : « Camille ouvre sa facture », « Léo ne peut pas ouvrir la facture de Camille », « La liste de Léo ne contient pas la facture de Camille » (intégration) ; « Un refus de R2 lève une erreur de service « stockage » sans la clé de l'objet », « Un objet absent n'est pas une panne », « L'adresse d'envoi signe le type et la taille exacts » (unitaires)
+  - Tests : « Camille ouvre sa facture », « Léo ne peut pas ouvrir la facture de Camille », « La liste de Léo ne contient pas la facture de Camille », « La base refuse à Léo de confirmer ou d'effacer la ligne de Camille », « Un fichier « en_attente » n'apparaît ni dans la liste ni au téléchargement » (intégration) ; « Un refus de R2 lève une erreur de service « stockage » sans la clé de l'objet », « Un objet absent n'est pas une panne : le stockage répond « rien reçu » », « L'adresse d'envoi signe le type et la taille exacts », « L'adresse de lecture force le téléchargement sous un nom nettoyé » (unitaires)
   - Action manuelle : créer le bucket (juridiction UE), le jeton R2 et la règle CORS dans Cloudflare ; remplir `.env`
 - [ ] **Tn+1 – Envoyer un fichier** · US-XXX
   - Objectif : une personne connectée envoie une image ou un PDF, contrôlé par le serveur, puis confirmé après vérification dans R2
   - Dépend de : Tn
-  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts`, `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/fichiers.use-cases.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts`
+  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts`, `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts`
   - Vérification : US-XXX critères 1 à 3 – une image PNG passe ; un `.exe` et un PDF de 6 Mo sont refusés avec le message prévu
-  - Tests : « Une photo PNG de 2 Mo est acceptée », « Un fichier interdit ou trop lourd est refusé avec un message clair », « La clé du fichier de Camille commence par l'identifiant de Camille », « L'envoi conforme passe la ligne à « envoye » », « Un envoi différent de l'annonce est effacé avec sa ligne » (unitaires)
+  - Tests : « Une photo PNG de 2 Mo est acceptée », « Un fichier interdit ou trop lourd est refusé avec un message clair », « La clé du fichier de Camille commence par l'identifiant de Camille », « Camille reçoit une adresse d'envoi et une ligne en attente est réservée », « L'envoi conforme passe la ligne à « envoye » », « Un envoi différent de l'annonce est effacé avec sa ligne », « Léo ne peut pas confirmer l'envoi de Camille », « Camille supprime son fichier : la ligne et l'objet disparaissent », « Léo ne peut pas supprimer le fichier de Camille » (unitaires)
   - Attention : le serveur contrôle le type et la taille, même si le champ `accept` filtre déjà ; un fichier d'`actions/` commence par `"use server"` et n'exporte que son action
 - [ ] **Tn+2 – Retrouver et télécharger ses fichiers** · US-XXX
   - Objectif : une personne voit ses fichiers et les télécharge par un lien temporaire
   - Dépend de : Tn+1
   - Fichiers : à créer : `src/features/fichiers/queries/lister-fichiers.query.ts`, `queries/trouver-fichier.query.ts`, `components/sections/liste-fichiers.tsx`, `components/containers/liste-fichiers.container.tsx`, `app/api/fichiers/[id]/route.ts`, `app/(connecte)/fichiers/page.tsx`, `e2e/fichiers.spec.ts` · à modifier : `proxy.ts`
   - Vérification : US-XXX critères 4 et 5 – envoyer un fichier, le voir dans la liste, le télécharger ; connecté avec un autre compte, `/api/fichiers/<id>` répond « Fichier introuvable. »
-  - Tests : « Camille envoie une photo et la voit dans sa liste » (bout en bout)
+  - Tests : « Camille envoie une photo et la voit dans sa liste », « L'envoi échoue en route : un message clair, la page reste en place » (bout en bout) ; « Un lien de téléchargement copié ne sert plus après 5 minutes » (manuel : ouvrir le lien copié en navigation privée après 6 minutes)
   - Action manuelle : saisir les variables R2 dans Vercel ; ajouter l'adresse du site en ligne à la règle CORS
 
 ## Tests
@@ -1199,9 +1212,10 @@ describe("Fichiers", () => {
 });
 ```
 
+Les trois use-cases partagent les mêmes doublures en mémoire, rangées dans un petit fichier d'aide ; chaque use-case a son fichier de tests.
+
 ```ts
-// src/core/fichiers/use-cases/__tests__/fichiers.use-cases.test.ts
-import { describe, expect, it } from "vitest";
+// src/core/fichiers/use-cases/__tests__/sut-fichiers.ts
 import type { Fichier } from "../../fichier.entity";
 import type { FichierRepository } from "../../fichier-repository.port";
 import type { StockageFichiers } from "../../stockage-fichiers.port";
@@ -1209,10 +1223,10 @@ import { confirmerEnvoi } from "../confirmer-envoi.use-case";
 import { preparerEnvoi } from "../preparer-envoi.use-case";
 import { supprimerFichier } from "../supprimer-fichier.use-case";
 
-const ID = "0f8b6c1e-6f0a-4a57-9a4e-2f1f0c7f9b10";
+export const ID = "0f8b6c1e-6f0a-4a57-9a4e-2f1f0c7f9b10";
 
-/** Doublures en mémoire des deux ports. */
-function creerSut() {
+/** Doublures en mémoire des deux ports, et les trois use-cases branchés dessus. */
+export function creerSut() {
   const lignes = new Map<string, Fichier>();
   const objets = new Map<string, { taille: number; typeMime: string }>();
 
@@ -1280,9 +1294,15 @@ function creerSut() {
       supprimerFichier(deps, { id: ID, utilisateurId }),
   };
 }
+```
+
+```ts
+// src/core/fichiers/use-cases/__tests__/preparer-envoi.use-case.test.ts
+import { describe, expect, it } from "vitest";
+import { creerSut, ID } from "./sut-fichiers";
 
 describe("Fichiers", () => {
-  describe("La clé d'un fichier commence par l'identifiant de sa propriétaire", () => {
+  describe("Un envoi se prépare avec une adresse signée et une ligne en attente", () => {
     it("US-XXX-3 – Camille reçoit une adresse d'envoi et une ligne en attente est réservée", async () => {
       const sut = creerSut();
 
@@ -1295,7 +1315,15 @@ describe("Fichiers", () => {
       });
     });
   });
+});
+```
 
+```ts
+// src/core/fichiers/use-cases/__tests__/confirmer-envoi.use-case.test.ts
+import { describe, expect, it } from "vitest";
+import { creerSut, ID } from "./sut-fichiers";
+
+describe("Fichiers", () => {
   describe("Un envoi n'est confirmé que s'il correspond à ce qui était annoncé", () => {
     it("US-XXX-6 – L'envoi conforme passe la ligne à « envoye »", async () => {
       const sut = creerSut();
@@ -1339,7 +1367,17 @@ describe("Fichiers", () => {
       expect(resultat).toEqual({ ok: false, raison: "fichier-introuvable" });
       expect(sut.lignes.get(ID)?.statut).toBe("en_attente");
     });
+  });
+});
+```
 
+```ts
+// src/core/fichiers/use-cases/__tests__/supprimer-fichier.use-case.test.ts
+import { describe, expect, it } from "vitest";
+import { creerSut } from "./sut-fichiers";
+
+describe("Fichiers", () => {
+  describe("Une personne accède seulement à ses propres fichiers", () => {
     it("US-XXX-4 – Camille supprime son fichier : la ligne et l'objet disparaissent", async () => {
       const sut = creerSut();
       await sut.givenEnvoiPrepare();
@@ -1598,7 +1636,7 @@ describe("Fichiers", () => {
       expect(liste).toEqual([]);
     });
 
-    it("US-XXX-4 – Léo ne peut ni confirmer ni supprimer la facture de Camille", async () => {
+    it("US-XXX-4 – La base refuse à Léo de confirmer ou d'effacer la ligne de Camille", async () => {
       await camilleEnvoie(false);
       const fichiers = fichierRepository(db);
 
@@ -1701,6 +1739,7 @@ test.describe("Fichiers", () => {
 - **403 `SignatureDoesNotMatch`** : le navigateur doit envoyer exactement le `Content-Type` signé (`choisi.type`) et le fichier annoncé (même taille).
 - **Bucket UE** : il répond seulement à `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`. Sans juridiction, retirez `.eu` dans `src/adapters/storage/storage.adapter.ts`.
 - **Clé secrète perdue** : Cloudflare l'affiche une seule fois. Créez un nouveau jeton, puis supprimez l'ancien.
+- **Objet orphelin à la suppression** : `supprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
 - **Lignes « en_attente »** : un envoi abandonné laisse une ligne sans fichier. Elle reste invisible ; une tâche de ménage pourra les effacer plus tard.
 - **Type déclaré par le navigateur** : `File.type` vient de l'extension ; le contenu n'est pas inspecté. Le téléchargement forcé (`attachment`) évite qu'un fichier piégé s'exécute dans le site.
 - **Les quatre variables R2 deviennent obligatoires** : `envServeur()` valide tout le schéma à sa première lecture, et `next build` passe sans elles. Renseignez-les dans `.env` (une valeur factice suffit tant qu'aucun envoi réel n'a lieu) avant de lancer le site ou les tests de bout en bout.

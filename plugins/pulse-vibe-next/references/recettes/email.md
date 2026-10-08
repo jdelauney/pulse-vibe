@@ -642,7 +642,7 @@ import {
 } from "../../schemas/compte.schema";
 
 type Props = {
-  envoyer: (valeurs: MotDePasseOublie) => Promise<void>;
+  envoyer: (valeurs: MotDePasseOublie) => Promise<boolean>;
   erreurServeur?: string;
   /** Réponse de l'action : la même que l'adresse ait un compte ou non. */
   message?: string;
@@ -745,7 +745,7 @@ const champs = [
 ] as const;
 
 type Props = {
-  envoyer: (valeurs: NouveauMotDePasse) => Promise<void>;
+  envoyer: (valeurs: NouveauMotDePasse) => Promise<boolean>;
   erreurServeur?: string;
   /** Réponse de l'action une fois le mot de passe changé : elle remplace le formulaire. */
   message?: string;
@@ -845,7 +845,8 @@ export function MotDePasseOublieContainer() {
   return (
     <FormulaireMotDePasseOublie
       envoyer={async (valeurs) => {
-        await executeAsync(valeurs);
+        const reponse = await executeAsync(valeurs);
+        return Boolean(reponse?.data);
       }}
       erreurServeur={result.serverError}
       message={result.data?.message}
@@ -870,7 +871,8 @@ export function NouveauMotDePasseContainer({ token }: { token: string }) {
   return (
     <FormulaireNouveauMotDePasse
       envoyer={async (valeurs) => {
-        await executeAsync({ ...valeurs, token });
+        const reponse = await executeAsync({ ...valeurs, token });
+        return Boolean(reponse?.data);
       }}
       erreurServeur={result.serverError}
       message={result.data?.message}
@@ -1101,7 +1103,7 @@ Fonctionnalité: E-mails du compte
 
   Règle: Une panne du serveur d'e-mail est signalée comme une panne de service
 
-    @US-XXX-5 @integration
+    @US-XXX-5 @unitaire
     Exemple: L'échec de l'envoi lève une erreur de service « email » sans l'adresse
       Étant donné le serveur d'e-mail refuse l'adresse de Camille
       Quand l'application envoie un e-mail à Camille

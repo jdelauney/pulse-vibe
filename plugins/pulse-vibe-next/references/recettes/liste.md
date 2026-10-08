@@ -359,7 +359,6 @@ export function factureRepository(db: Db) {
         throw new Error("La base n'a pas renvoyé la facture créée.");
       return facture;
     },
-
   };
 }
 ```
@@ -527,7 +526,7 @@ export const creerFactureAction = actionConnectee
 
 ### 8. Le formulaire : section et container
 
-La section porte les champs et le schéma Zod (`validators.onSubmit`, dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)`, `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmitAsync` appelle `envoyer` ; les erreurs de champ renvoyées par le serveur s'affichent sous les champs concernés, et le formulaire se vide après une création réussie.
+La section porte les champs et le schéma Zod (`validators.onSubmit`, dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreursChamps` (erreurs de champ renvoyées par le serveur, affichées sous les champs concernés), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmit` appelle `envoyer` ; le formulaire se vide après une création réussie.
 
 ```tsx
 // src/features/factures/components/sections/formulaire-facture.tsx
@@ -550,31 +549,29 @@ import {
   creerFactureSchema,
 } from "../../schemas/facture.schema";
 
-export type ReponseEnvoi =
-  | { ok: true }
-  | { ok: false; champs?: Partial<Record<ChampFacture, { message: string }>> };
-
 type Props = {
-  envoyer: (valeurs: CreerFactureEntree) => Promise<ReponseEnvoi>;
+  envoyer: (valeurs: CreerFactureEntree) => Promise<boolean>;
+  /** Erreurs de champ renvoyées par le serveur, affichées sous les champs concernés. */
+  erreursChamps?: Partial<Record<ChampFacture, { message: string }>>;
   erreurServeur?: string;
   enCours: boolean;
 };
 
-export function FormulaireFacture({ envoyer, erreurServeur, enCours }: Props) {
+export function FormulaireFacture({
+  envoyer,
+  erreursChamps,
+  erreurServeur,
+  enCours,
+}: Props) {
   const prefixe = useId();
 
   const form = useForm({
     defaultValues: { client: "", montant: "" },
-    validators: {
-      onSubmit: creerFactureSchema,
-      onSubmitAsync: async ({ value }) => {
-        const reponse = await envoyer(value);
-        if (reponse.ok) return null;
-        return { form: "Création refusée.", fields: reponse.champs ?? {} };
-      },
-    },
-    onSubmit: ({ formApi }) => {
-      formApi.reset();
+    validators: { onSubmit: creerFactureSchema },
+    onSubmit: async ({ value, formApi }) => {
+      if (await envoyer(value)) {
+        formApi.reset();
+      }
     },
   });
 
@@ -589,8 +586,10 @@ export function FormulaireFacture({ envoyer, erreurServeur, enCours }: Props) {
       <FieldGroup>
         <form.Field name="client">
           {(field) => {
+            const erreurChamp = erreursChamps?.[field.name];
             const invalide =
-              field.state.meta.isTouched && !field.state.meta.isValid;
+              (field.state.meta.isTouched && !field.state.meta.isValid) ||
+              Boolean(erreurChamp);
             return (
               <Field data-invalid={invalide}>
                 <FieldLabel htmlFor={`${prefixe}-${field.name}`}>
@@ -605,7 +604,11 @@ export function FormulaireFacture({ envoyer, erreurServeur, enCours }: Props) {
                   aria-invalid={invalide}
                   autoComplete="organization"
                 />
-                {invalide && <FieldError errors={field.state.meta.errors} />}
+                {invalide && (
+                  <FieldError
+                    errors={[...field.state.meta.errors, erreurChamp]}
+                  />
+                )}
               </Field>
             );
           }}
@@ -613,8 +616,10 @@ export function FormulaireFacture({ envoyer, erreurServeur, enCours }: Props) {
 
         <form.Field name="montant">
           {(field) => {
+            const erreurChamp = erreursChamps?.[field.name];
             const invalide =
-              field.state.meta.isTouched && !field.state.meta.isValid;
+              (field.state.meta.isTouched && !field.state.meta.isValid) ||
+              Boolean(erreurChamp);
             return (
               <Field data-invalid={invalide}>
                 <FieldLabel htmlFor={`${prefixe}-${field.name}`}>
@@ -631,7 +636,11 @@ export function FormulaireFacture({ envoyer, erreurServeur, enCours }: Props) {
                   autoComplete="off"
                 />
                 <FieldDescription>Par exemple 120,50.</FieldDescription>
-                {invalide && <FieldError errors={field.state.meta.errors} />}
+                {invalide && (
+                  <FieldError
+                    errors={[...field.state.meta.errors, erreurChamp]}
+                  />
+                )}
               </Field>
             );
           }}
@@ -673,17 +682,18 @@ export function CreationFactureContainer() {
         const reponse = await executeAsync(valeurs);
         if (reponse?.data) {
           toast.success("Facture créée.");
-          return { ok: true };
+          return true;
         }
         if (reponse?.validationErrors) {
           toast.error("Vérifiez les champs signalés.");
-          return {
-            ok: false,
-            champs: erreursDeChamps(CHAMPS_FACTURE, reponse.validationErrors),
-          };
         }
-        return { ok: false };
+        return false;
       }}
+      erreursChamps={
+        result.validationErrors
+          ? erreursDeChamps(CHAMPS_FACTURE, result.validationErrors)
+          : undefined
+      }
       erreurServeur={result.serverError}
       enCours={isPending}
     />
@@ -902,19 +912,26 @@ export function TableauFactures({ factures, total, filtresActifs }: Props) {
     );
   }
 
+  const nombre = (
+    <p className="text-sm text-muted-foreground">
+      {total} facture{total > 1 ? "s" : ""}
+    </p>
+  );
+
   if (factures.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-        Cette page est vide. Revenez à la page précédente.
-      </p>
+      <>
+        {nombre}
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Cette page est vide. Revenez à la page précédente.
+        </p>
+      </>
     );
   }
 
   return (
     <>
-      <p className="text-sm text-muted-foreground">
-        {total} facture{total > 1 ? "s" : ""}
-      </p>
+      {nombre}
       <Table>
         <TableCaption className="sr-only">Mes factures</TableCaption>
         <TableHeader>
@@ -1299,6 +1316,18 @@ Fonctionnalité: Consulter et créer mes factures
       Quand Camille recherche « 100% »
       Alors la liste contient seulement « Remise 100% »
 
+    @US-XXX-2 @integration
+    Exemple: Le signe _ est cherché comme un caractère
+      Étant donné Camille a une facture pour « Client_1 » et une pour « Client11 »
+      Quand Camille recherche « Client_1 »
+      Alors la liste contient seulement « Client_1 »
+
+    @US-XXX-2 @integration
+    Exemple: La barre oblique inverse est cherchée comme un caractère
+      Étant donné Camille a une facture pour « Atelier\Dupont » et une pour « Atelier Dupont »
+      Quand Camille recherche « Atelier\Dupont »
+      Alors la liste contient seulement « Atelier\Dupont »
+
   Règle: On peut trier par date ou par montant
 
     @US-XXX-3 @integration
@@ -1401,7 +1430,7 @@ Fonctionnalité: Consulter et créer mes factures
   - Dépend de : T1
   - Fichiers : à créer : `src/db/factures/facture.table.ts`, migration dans `drizzle/`, `src/db/factures/facture.repository.ts`, `src/db/factures/__tests__/facture.repository.test.ts`
   - Vérification : US-XXX critères 1 à 4 – la migration crée la table `factures` avec `utilisateur_id`, `montant_centimes` et `cree_le` en `timestamp with time zone` ; `npm test` passe sur la base PGlite
-  - Tests : « Camille ne voit pas les factures de Léo » (intégration) ; « Filtre « Payée » » (intégration) ; « La recherche ignore les majuscules » (intégration) ; « Le signe % est cherché comme un caractère » (intégration) ; « Tri par montant décroissant » (intégration) ; « 12 factures : 10 en page 1, 2 en page 2 » (intégration)
+  - Tests : « Camille ne voit pas les factures de Léo » (intégration) ; « Filtre « Payée » » (intégration) ; « La recherche ignore les majuscules » (intégration) ; « Le signe % est cherché comme un caractère » (intégration) ; « Le signe _ est cherché comme un caractère » (intégration) ; « La barre oblique inverse est cherchée comme un caractère » (intégration) ; « Tri par montant décroissant » (intégration) ; « 12 factures : 10 en page 1, 2 en page 2 » (intégration)
   - Attention : relire le SQL généré avant `npm run db:migrate` ; chaque requête du repository commence par la condition `utilisateurId` (S3)
 - [ ] **T3 – Création d'une facture : use-case, schéma, action, formulaire** · US-XXX
   - Objectif : la personne crée une facture et voit le message de confirmation
@@ -1712,6 +1741,30 @@ describe("factureRepository.lister", () => {
     });
 
     expect(liste.map((f) => f.client)).toEqual(["Remise 100%"]);
+  });
+
+  it("US-XXX-2 – le signe _ est cherché comme un caractère, pas comme « n'importe quel caractère »", async () => {
+    await ajouter("camille", "Client_1", 1000);
+    await ajouter("camille", "Client11", 2000);
+
+    const { factures: liste } = await factureRepository(db).lister("camille", {
+      ...FILTRES_PAR_DEFAUT,
+      recherche: "Client_1",
+    });
+
+    expect(liste.map((f) => f.client)).toEqual(["Client_1"]);
+  });
+
+  it("US-XXX-2 – la barre oblique inverse est cherchée comme un caractère", async () => {
+    await ajouter("camille", "Atelier\\Dupont", 1000);
+    await ajouter("camille", "Atelier Dupont", 2000);
+
+    const { factures: liste } = await factureRepository(db).lister("camille", {
+      ...FILTRES_PAR_DEFAUT,
+      recherche: "Atelier\\Dupont",
+    });
+
+    expect(liste.map((f) => f.client)).toEqual(["Atelier\\Dupont"]);
   });
 
   it("US-XXX-3 – le tri par montant décroissant range 120,50 €, 80 €, 45 €", async () => {

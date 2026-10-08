@@ -84,7 +84,7 @@ Le niveau d'un composant se décide par **ce qu'il importe**.
 - Les composants d'affichage peuvent importer les types et les constantes pures de `src/core/` (ex. les statuts d'une entité) ; les données elles-mêmes arrivent en props.
 - Les composants d'affichage reçoivent tout par props, typées ; l'état visuel (`useState` pour ouvert/fermé) leur reste permis.
 - Les `hooks/` d'une feature servent ses containers ; les composants d'affichage reçoivent le résultat en props.
-- **Formulaire** : la section porte les champs (TanStack Form + `Field`) et la validation Zod dans le navigateur ; elle reçoit `envoyer(valeurs)` et `erreurServeur` en props. Le container (client) appelle `useAction(action)` et les lui passe.
+- **Formulaire** : la section porte les champs (TanStack Form + `Field`) et la validation Zod dans le navigateur ; elle reçoit `envoyer(valeurs)` et `erreurServeur` en props. `envoyer` a toujours la même forme, `(valeurs) => Promise<boolean>` : `true` quand l'action a réussi (la section peut alors vider le formulaire), `false` sinon. Le container (client) appelle `useAction(action)` et les lui passe.
 
 ## 5. Écrire
 

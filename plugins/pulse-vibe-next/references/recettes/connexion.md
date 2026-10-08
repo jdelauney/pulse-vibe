@@ -536,7 +536,7 @@ Codes vérifiés avec better-auth 1.7.7 : adresse déjà prise → `USER_ALREADY
 
 ### 9. Les formulaires : sections (TanStack Form + Field)
 
-Chaque formulaire est une section : les champs, et le **même** schéma Zod que l'action en `validators.onSubmit` (validation dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)`, `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Un `form.Field` par champ ; les `id` sont préfixés par `useId()` (voir « Pièges connus »).
+Chaque formulaire est une section : les champs, et le **même** schéma Zod que l'action en `validators.onSubmit` (validation dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Un `form.Field` par champ ; les `id` sont préfixés par `useId()` (voir « Pièges connus »).
 
 ```tsx
 // src/features/compte/components/sections/formulaire-inscription.tsx
@@ -575,7 +575,7 @@ const champs = [
 ] as const;
 
 type Props = {
-  envoyer: (valeurs: Inscription) => Promise<void>;
+  envoyer: (valeurs: Inscription) => Promise<boolean>;
   erreurServeur?: string;
   enCours: boolean;
 };
@@ -684,7 +684,7 @@ const champs = [
 ] as const;
 
 type Props = {
-  envoyer: (valeurs: Connexion) => Promise<void>;
+  envoyer: (valeurs: Connexion) => Promise<boolean>;
   erreurServeur?: string;
   enCours: boolean;
 };
@@ -759,7 +759,7 @@ export function FormulaireConnexion({
 }
 ```
 
-Le formulaire de mot de passe se vide après un changement réussi : `envoyer` répond `true` dans ce cas.
+Le formulaire de mot de passe se vide après un changement réussi : `envoyer` répond `true` dans ce cas (la réponse n'est lue que par ce formulaire ; les deux autres l'ignorent).
 
 ```tsx
 // src/features/compte/components/sections/formulaire-mot-de-passe.tsx
@@ -894,7 +894,8 @@ export function InscriptionContainer() {
   return (
     <FormulaireInscription
       envoyer={async (valeurs) => {
-        await executeAsync(valeurs);
+        const reponse = await executeAsync(valeurs);
+        return Boolean(reponse?.data);
       }}
       erreurServeur={result.serverError}
       enCours={isPending}
@@ -916,7 +917,8 @@ export function ConnexionContainer() {
   return (
     <FormulaireConnexion
       envoyer={async (valeurs) => {
-        await executeAsync(valeurs);
+        const reponse = await executeAsync(valeurs);
+        return Boolean(reponse?.data);
       }}
       erreurServeur={result.serverError}
       enCours={isPending}
