@@ -7,7 +7,7 @@
 //   prochaine: /pulse:spec US-003       la commande conseillée
 //   raison: …                            pourquoi, en une phrase
 //   regle: R20                           la règle appliquée
-//   fondation: profil                    R2 à R8b : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile, modele)
+//   fondation: profil                    R2 à R8 : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile)
 //   attente: … / ancien: oui / dossier: …   R1 : la décision en attente, si elle date de plus de 7 jours, son dossier
 //   aussi: /pulse:… — …                  alternatives utiles (zéro, une ou plusieurs lignes)
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
@@ -115,13 +115,14 @@ function lireRevue(dossier, id) {
   const valeur = (re) => ((re.exec(texte) || [])[1] || "").replace(/\{\{.*?\}\}/g, "");
   if (/get-help|cycles/i.test(valeur(/^\*\*Blocage\*\*\s*:(.*)$/m))) return "bloquee";
   const verdict = valeur(/^\*\*Verdict\*\*\s*:(.*)$/m);
-  if (!verdict.includes("✅") || /[⚠⛔❌]|critique/iu.test(verdict)) return "a-corriger";
-  // un champ rempli ne garde qu'un choix ; le modèle non rempli les liste tous (ignoré)
+  // Seul le Verdict en tête compte (examen § 3 et § 4 le tiennent à jour) ; « ⚠️ … accepté par la personne » vaut prêt (review § 7).
+  const accepte = verdict.includes("⚠") && /accept[ée]/i.test(verdict) && !/[⛔❌]|critique/iu.test(verdict);
+  if (!accepte && (!verdict.includes("✅") || /[⚠⛔❌]|critique/iu.test(verdict))) return "a-corriger";
+  // Le dernier Résultat du test par la personne fait foi ; le modèle non rempli les liste tous (ignoré).
   const apres = texte.split(/^## Test par la personne\s*$/m)[1] || "";
-  const test = (/^- \*\*R[ée]sultat\*\*\s*:(.*)$/m.exec(apres) || [])[1] || "";
-  const verification = (/^- \*\*Verdict\*\*\s*:(.*)$/m.exec(texte) || [])[1] || "";
-  const echec = (champ) => champ.includes("❌") && !champ.includes("✅");
-  return echec(test) || echec(verification) ? "a-corriger" : "validee";
+  const resultats = [...apres.matchAll(/^- \*\*R[ée]sultat\*\*\s*:(.*)$/gm)];
+  const test = resultats.length ? resultats[resultats.length - 1][1] : "";
+  return test.includes("❌") && !test.includes("✅") ? "a-corriger" : "validee";
 }
 
 /** Le référentiel docs/user-stories.md : priorité de chaque US (lignes de tableau « | US-001 | … | Indispensable | … »). */
@@ -224,7 +225,8 @@ function modeleAncien(racine, texteClaude) {
   const gitignore = lireSi(p(".gitignore"));
   if (gitignore !== null && !gitignore.includes("aidd_docs/tasks/in-progress.md")) return true;
   if (existe(p("scripts", "verifier.js")) && existe(p(".git", "hooks")) && !/hooksPath/.test(lireSi(p(".git", "config")) || "")) {
-    return !(lireSi(p(".git", "hooks", "pre-commit")) || "").includes("pulse-aidd: contrôle des secrets");
+    const crochet = lireSi(p(".git", "hooks", "pre-commit")) || "";
+    return !(crochet.includes("pulse-aidd: contrôle des secrets") || crochet.includes("verifier.js --index"));
   }
   return false;
 }
@@ -252,7 +254,6 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     memoire: claude.memoireBloc && ["project.md", "technical.md", "glossary.md"].every((f) => existe(p("aidd_docs", "memory", f))),
     modeleAncien: claude.etat === "pulse" && modeleAncien(racine, texteClaude),
     codeExistant: codeExistant(racine),
-    memoireVide: (lireSi(p("aidd_docs", "memory", "project.md")) || "").includes("{{"),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
     ancienFormat: anciens,
@@ -289,6 +290,7 @@ function decider(f) {
   const verdict = (regle, prochaine, raison, extra = {}) => ({ regle, prochaine, raison, aussi, ...extra });
   if (f.claude === "pulse") {
     if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
+    if (f.modeleAncien) aussi.push("/pulse:init — mettre à niveau le projet (modèles et contrôles)");
     if (f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
   }
 
@@ -313,14 +315,9 @@ function decider(f) {
     return verdict("R8", "/pulse:tech", "le bloc « Pile technique » de CLAUDE.md ne reflète pas docs/technical.md", { fondation: "pile" });
   }
 
-  if (f.modeleAncien) return verdict("R8b", "/pulse:init", "le projet a été créé avec un modèle plus ancien de Pulse : quelques éléments sont à mettre à niveau", { fondation: "modele" });
-
   const d = f.docs;
   if (f.codeExistant && !d.brief && !d.prd && !d.userStories && !d.technical) {
-    if (f.memoireVide) aussi.unshift("/pulse:tech — documenter la pile observée dans le code (Chemin A)");
-    return f.memoireVide
-      ? verdict("R8c", "/pulse:memory creer", "le projet existant a déjà du code : la mémoire se remplit d'abord à partir de ce qui existe")
-      : verdict("R8c", "/pulse:tech", "le projet existant a déjà du code : documenter les outils qu'il utilise (Chemin A) avant de continuer");
+    return verdict("R8c", "/pulse:tech", "le projet existant a déjà du code : documenter les outils qu'il utilise (Chemin A) avant de continuer");
   }
   if (!d.brief && !d.prd && !d.userStories && !d.technical) {
     aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");

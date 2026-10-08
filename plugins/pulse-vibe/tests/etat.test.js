@@ -42,14 +42,14 @@ ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
 const PILE = "- **Pile** : HTML et JavaScript";
 
 /** Un rapport de relecture (modèle « revue ») : verdict, et au besoin résultat du test par la personne et blocage. */
-const RAPPORT = (verdict, { test, blocage } = {}) => `# Revue – T2 – 2026-10-07
+const RAPPORT = (verdict, { test, blocage, verif = "✅ Prouvé", retest } = {}) => `# Revue – T2 – 2026-10-07
 
 **Verdict** : ${verdict}
 **Mode** : /pulse:review
 
 ## Vérification
 
-- **Verdict** : ✅ Prouvé
+- **Verdict** : ${verif}
 
 ## Constats
 
@@ -59,7 +59,7 @@ ${blocage ? `**Blocage** : ${blocage}` : ""}
 
 - **Date** : 2026-10-07
 - **Résultat** : ${test || "✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)"}
-`;
+${retest ? `- **Résultat** : ${retest}\n` : ""}`;
 
 const REFERENTIEL = `# User stories – TodoIt
 
@@ -368,35 +368,46 @@ test("projet existant : du code sans brief ni choix techniques, documenter l'exi
   const codes = [{ "package.json": "{}" }, { "src/index.js": "x" }, { "app/page.tsx": "x" }, { "requirements.txt": "flask" }, { "composer.json": "{}" }, { Gemfile: "x" }, { "go.mod": "module x" }, { "Cargo.toml": "x" }, { "Api.csproj": "<Project/>" }, { "index.html": "<html>" }];
   for (const code of codes) {
     const r = etat(projet({ ...code, "aidd_docs/memory/project.md": "# {{NOM_DU_PROJET}}\n" }));
-    assert.deepStrictEqual([r.regle, r.prochaine], ["R8c", "/pulse:memory creer"], Object.keys(code)[0]);
+    assert.deepStrictEqual([r.regle, r.prochaine], ["R8c", "/pulse:tech"], Object.keys(code)[0]);
     assert.match(r.raison, /existant/);
-    assert.ok(r.aussi.some((a) => a.startsWith("/pulse:tech")), "le Chemin A documente la pile existante");
   }
-  // mémoire déjà remplie : ne pas reboucler sur /pulse:memory creer
-  assert.deepStrictEqual([etat(projet({ "package.json": "{}" })).regle, etat(projet({ "package.json": "{}" })).prochaine], ["R8c", "/pulse:tech"]);
   // avec un brief ou des choix techniques, la suite normale s'applique
   assert.strictEqual(etat(projet({ "package.json": "{}", "docs/brief.md": "x" })).regle, "R10");
   assert.strictEqual(etat(projet({ "package.json": "{}", "docs/technical.md": "x" }, PILE_CHOISIE)).regle, "R10");
   assert.strictEqual(etat(projet()).regle, "R9");
 });
 
-test("modèle à mettre à niveau (R8b) : CLAUDE.md ancien, .gitignore sans le travail en cours, contrôle avant commit absent", () => {
+test("modèle à mettre à niveau : une ligne « aussi », jamais un blocage du parcours", () => {
   const modele = (fichiers, options) => etat(projet(fichiers, options));
+  const MAJ = "/pulse:init — mettre à niveau le projet (modèles et contrôles)";
   const ancien = modele({ "CLAUDE.md": CLAUDE().replace("Ce projet suit", "Projet AI-Driven : il suit") });
-  assert.deepStrictEqual([ancien.regle, ancien.prochaine, ancien.fondation], ["R8b", "/pulse:init", "modele"]);
-  assert.strictEqual(modele({ "CLAUDE.md": CLAUDE() + "\n- Commit et envoi vers le dépôt distant : uniquement sur demande.\n" }).fondation, "modele");
-  assert.strictEqual(modele({ "CLAUDE.md": CLAUDE() + "\n- `aidd_docs/tasks/` : traces de travail par session.\n" }).fondation, "modele");
-  assert.strictEqual(modele({ ".gitignore": ".env\n" }).fondation, "modele");
-  assert.strictEqual(modele({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }).regle, "R9");
+  assert.deepStrictEqual([ancien.regle, ancien.prochaine, ancien.fondation], ["R9", "/pulse:brainstorm", undefined]);
+  assert.ok(ancien.aussi.includes(MAJ));
+  const a = (fichiers) => modele(fichiers).aussi.includes(MAJ);
+  assert.ok(a({ "CLAUDE.md": CLAUDE() + "\n- Commit et envoi vers le dépôt distant : uniquement sur demande.\n" }));
+  assert.ok(a({ "CLAUDE.md": CLAUDE() + "\n- `aidd_docs/tasks/` : traces de travail par session.\n" }));
+  assert.ok(a({ ".gitignore": ".env\n" }));
+  assert.ok(!a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }));
   const crochet = { "scripts/verifier.js": "x", ".git/hooks/pre-commit": "#!/bin/sh\nexit 0\n" };
-  assert.strictEqual(modele(crochet).fondation, "modele");
-  assert.strictEqual(modele({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\n" }).regle, "R9");
-  assert.strictEqual(modele({ "scripts/verifier.js": "x", ".git/hooks": "<dossier>" }).fondation, "modele", "crochet absent");
-  assert.strictEqual(modele({ ...crochet, ".git/config": "[core]\n\thooksPath = .husky\n" }).regle, "R9", "Husky range ses contrôles ailleurs");
-  assert.strictEqual(modele({ "scripts/verifier.js": "x" }).regle, "R9", "sans dépôt, pas de crochet à vérifier");
-  // la décision en attente et les autres fondations passent avant
+  assert.ok(a(crochet));
+  assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\n" }));
+  assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "#!/bin/sh\nnode scripts/verifier.js --index\n" }), "ligne ajoutée à la main");
+  assert.ok(a({ "scripts/verifier.js": "x", ".git/hooks": "<dossier>" }), "crochet absent");
+  assert.ok(!a({ ...crochet, ".git/config": "[core]\n\thooksPath = .husky\n" }), "Husky range ses contrôles ailleurs");
+  assert.ok(!a({ "scripts/verifier.js": "x" }), "sans dépôt, pas de crochet à vérifier");
+  // la décision en attente et les autres fondations gardent leur place
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/tasks/in-progress.md": "" }).regle, "R1");
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/memory/glossary.md": null }).regle, "R6");
+});
+
+test("R13 lit le verdict du rapport à jour, pas le résultat d'origine du verifier", () => {
+  const r = (opts, verdict = "✅ Validé") => etat(projet({ ...EN_COURS, [`${REVUES}/T2-2026-10-07.md`]: RAPPORT(verdict, opts) }, PILE_CHOISIE));
+  assert.strictEqual(r({ verif: "❌ Échoue" }).regle, "R13", "verifier d'origine ❌, contrôle ✅ : le Verdict en tête fait foi");
+  assert.strictEqual(r({}, "⚠️ À corriger, accepté par la personne").regle, "R13");
+  assert.strictEqual(r({ test: "❌ non concluant", retest: "✅ concluant" }).regle, "R13", "dernier Résultat");
+  assert.strictEqual(r({ test: "✅ concluant", retest: "❌ non concluant" }).prochaine, "/pulse:review T2");
+  assert.strictEqual(r({}, "⚠️ À corriger").prochaine, "/pulse:review T2");
+  assert.strictEqual(r({}, "⛔ Bloquant, accepté par la personne").prochaine, "/pulse:review T2");
 });
 
 test("état illisible (R0) : demander de l'aide, sans reboucler sur /pulse:status", () => {

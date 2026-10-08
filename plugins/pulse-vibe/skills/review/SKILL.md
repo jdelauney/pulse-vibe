@@ -61,6 +61,6 @@ Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer
 
 ### 7. Conclure
 
-Quand le verdict est ✅ (ou ⚠️ accepté par la personne, noté dans « Suite donnée aux constats ») **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
+Après un nouveau test manuel (suite à une correction), réécrire « Test par la personne » avec son dernier résultat. Quand la personne accepte un ⚠️, le noter dans « Suite donnée aux constats » et écrire la ligne **Verdict** en tête du rapport « ⚠️ … accepté par la personne » (ou ✅). Quand le verdict est ✅ (ou ⚠️ accepté par la personne, noté dans « Suite donnée aux constats ») **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.

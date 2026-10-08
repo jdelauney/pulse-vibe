@@ -50,9 +50,8 @@ Règles de la boucle :
    | `memoire` | `pulse-aidd etape memory` (action `creer`) |
    | `git` | « Préparer un nouveau projet », point 4 (un historique propre au projet) ; si le dépôt existe sans aucune version, faire le premier enregistrement : ajouter les fichiers par leur nom, en montrer la liste, puis `git commit -m "chore: initialisation du projet avec Pulse"` |
    | `pile` | `pulse-aidd etape tech` |
-   | `modele` | « Mettre à niveau un projet Pulse plus ancien » : l'ancien `CLAUDE.md`, le `.gitignore` sans le travail en cours, le contrôle avant commit manquant (les autres points de cette section se traitent aussi s'ils se présentent) |
 
-   Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Protéger les secrets » (§ 4, point 5) ou « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail ». La suite continue quelle que soit la réponse.
+   Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Protéger les secrets » (§ 4, point 5) « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail », ou « Mettre à niveau un projet Pulse plus ancien » (§ 4 : l'ancien `CLAUDE.md`, le `.gitignore` sans le travail en cours, le contrôle avant commit manquant). La personne peut refuser un point, ou garder son propre contrôle avant commit : la suite continue quelle que soit la réponse.
 3. **Après la mise en ligne** (`regle` R21, R22 ou R23) : proposer aussi `/pulse:status`, qui regarde la CI, le référencement et la Search Console.
 
 ## 3. Montrer l'écran
