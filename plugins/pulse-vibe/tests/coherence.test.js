@@ -597,3 +597,28 @@ test("commit et annuler nomment la forme `git commit -m`, et commit utilise `git
   assert.match(commit, /`git remote -v`/);
   assert.match(commit, /contrôle de sécurité à chaque tâche/);
 });
+
+test("prd, us, spec et plan lisent et écrivent leurs documents sans demande d'autorisation", () => {
+  const attendus = {
+    prd: ["Read", "Glob", "Grep", "Write(docs/prd.md)", "Edit(docs/prd.md)", "Write(aidd_docs/tasks/in-progress.md)", "Edit(aidd_docs/tasks/in-progress.md)"],
+    us: ["Read", "Glob", "Grep", "Write(docs/user-stories.md)", "Edit(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+    spec: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/user-stories.md)", "Edit(docs/prd.md)"],
+    plan: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+  };
+  for (const [skill, outils] of Object.entries(attendus)) {
+    const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    const jetons = ligne.match(/[A-Za-z]+(?:\([^)]*\))?/g) || [];
+    for (const outil of [...outils, "Write(docs/lexique.md)", "Edit(docs/lexique.md)"]) assert.ok(jetons.includes(outil), `${skill} : ${outil} manquant`);
+  }
+});
+
+test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const ligne = (lire(fichier).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    for (const [, outil, motif] of ligne.matchAll(/\b(Write|Edit|MultiEdit)\(([^)]*)\)/g)) {
+      if (!/^(docs|aidd_docs)\/\S+$/.test(motif)) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
