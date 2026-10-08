@@ -288,3 +288,16 @@ test("pile <sous-commande> : sans pack déclaré ou pack absent, message et code
   assert.strictEqual(absent.status, 1);
   assert.match(absent.stdout + absent.stderr, /pulse-vibe-essai/);
 });
+
+test("contexte rediger : règles communes, règles de rédaction, modèles de la voix et du texte de page", () => {
+  const r = lancer("contexte", "rediger");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md =====", "===== Modèle : docs/textes/<page>.md ====="])
+    assert.ok(r.stdout.includes(titre), titre);
+});
+
+test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () => {
+  const r = spawnSync("bash", ["bin/pulse-aidd", "textes", "verifier", "-"], { cwd: RACINE, encoding: "utf8", input: "Un projet crucial.\n" });
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /LEX-001/);
+});
