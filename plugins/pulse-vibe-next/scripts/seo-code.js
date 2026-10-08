@@ -116,6 +116,22 @@ function pagesPubliques(dossier) {
     .sort();
 }
 
+/** Métadonnées en noindex volontaire : robots: "noindex..." ou robots: { index: false } (au premier niveau de l'objet). */
+function estNoindex(texte) {
+  if (/robots\s*:\s*["'`][^"'`]*noindex/.test(texte)) return true;
+  const m = /robots\s*:\s*\{/.exec(texte);
+  if (!m) return false;
+  let profondeur = 0;
+  let niveau1 = "";
+  for (let i = m.index + m[0].length - 1; i < texte.length; i++) {
+    const ch = texte[i];
+    if (ch === "{") profondeur++;
+    else if (ch === "}" && --profondeur === 0) break;
+    else if (profondeur === 1) niveau1 += ch;
+  }
+  return /\bindex\s*:\s*false/.test(niveau1);
+}
+
 function controler(dossier) {
   const constats = [];
   const rel = (f) => path.relative(dossier, f).split(path.sep).join("/");
@@ -150,7 +166,7 @@ function controler(dossier) {
     const dynamique = /export\s+(async\s+)?function\s+generateMetadata\b/.test(t);
     if (!statique && !dynamique) {
       constats.push(c("C3", "haute", `Page publique ${p.route} sans métadonnées : titre et description par défaut, pas d'adresse officielle.`, `Exporter metadata = metadonneesDePage({ titre, description, chemin }) (${seoRel}), avec les textes de docs/seo.md.`, f));
-    } else if (!/metadonneesDePage\s*\(/.test(t) && !/canonical\s*:/.test(t) && !/robots\s*:\s*\{[^}]*\bindex\s*:\s*false/.test(t)) {
+    } else if (!/metadonneesDePage\s*\(/.test(t) && !/canonical\s*:/.test(t) && !estNoindex(t)) {
       constats.push(c("C3", "moyenne", `Page publique ${p.route} sans adresse officielle (canonique).`, "Construire les métadonnées avec metadonneesDePage(), qui pose la canonique.", f));
     }
     if (/openGraph\s*:/.test(t) && !/metadonneesDePage\s*\(/.test(t)) constats.push(c("C4", "moyenne", `${p.route} définit openGraph à la main : Next.js remplace alors tout celui du layout (nom du site, image).`, "Passer par metadonneesDePage(), qui reconstruit la carte complète.", f));
@@ -235,7 +251,13 @@ function controler(dossier) {
     const tousTextes = [texteLayout, ...publiques.map((p) => lire(p.fichier))].join("\n");
     const appelHelper = /\bversionsDeLangue\s*\(/.test(tousTextes);
     // Le helper de la recette langues pose x-default : le contrôle lit sa définition dans le projet.
-    const definiAvecDefaut = (f) => /\.(ts|tsx|js|jsx)$/.test(f) && /function\s+versionsDeLangue\b/.test(lire(f)) && /x-default/.test(lire(f));
+    const definiAvecDefaut = (f) => {
+      const t = lire(f);
+      const debut = t.search(/function\s+versionsDeLangue\b/);
+      if (!/\.(ts|tsx|js|jsx)$/.test(f) || debut < 0) return false;
+      const suite = t.slice(debut + 1).search(/\n(export\s|(async\s+)?function\s)/);
+      return /x-default/.test(suite >= 0 ? t.slice(debut, debut + 1 + suite) : t.slice(debut));
+    };
     const helperAvecDefaut = appelHelper && [...fichiers(path.join(dossier, "src")), ...fichiers(path.join(dossier, "lib"))].some(definiAvecDefaut);
     if (!/languages\s*:/.test(tousTextes) && !appelHelper) constats.push(c("C13", "haute", "Site en plusieurs langues sans versions déclarées (alternates.languages) : Google peut montrer la mauvaise langue.", "Ajouter alternates.languages, avec x-default, à chaque page publique (recette langues).", rel(layoutRacine || app)));
     else if (!/x-default/.test(tousTextes) && !helperAvecDefaut) constats.push(c("C13", "basse", "Versions de langue sans x-default.", "Ajouter x-default vers la langue par défaut.", rel(layoutRacine || app)));

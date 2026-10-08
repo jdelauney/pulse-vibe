@@ -122,6 +122,25 @@ test("versions de langue déclarées par le helper versionsDeLangue() : language
   assert.deepStrictEqual(codes(controler(projetLangues("return {};"))), ["C13:basse"], "un helper sans x-default reste signalé");
 });
 
+test("x-default cité par une autre fonction du fichier du helper : C13 basse conservé", () => {
+  const { "src/app/layout.tsx": layout, "src/app/page.tsx": page, ...reste } = BASE;
+  const d = projet({
+    ...reste,
+    "src/app/sitemap.ts": "export default function sitemap() { return [{ url: '/', alternates: { languages: {} } }]; }",
+    "src/app/[locale]/layout.tsx": layout,
+    "src/app/[locale]/page.tsx": 'export const metadata = { ...metadonneesDePage({ titre: "A", description: "d", chemin: "/" }), alternates: { canonical: "/", languages: versionsDeLangue("/") } };',
+    "src/lib/seo/referencement.ts": ["export function versionsDeLangue(chemin) {", "  return {};", "}", "", "export function autre() {", "  return { \"x-default\": \"/\" };", "}", ""].join("\n"),
+  });
+  assert.deepStrictEqual(codes(controler(d)), ["C13:basse"]);
+});
+
+test("noindex en texte ou après un objet imbriqué : pas de constat C3 ; index:false d'un sous-objet seul : constat", () => {
+  const page = (m) => projet({ ...BASE, "src/app/merci/page.tsx": `export const metadata = ${m};` });
+  assert.deepStrictEqual(codes(controler(page('{ title: "Merci", robots: "noindex, nofollow" }'))), []);
+  assert.deepStrictEqual(codes(controler(page('{ title: "Merci", robots: { googleBot: { noimageindex: true }, index: false } }'))), []);
+  assert.deepStrictEqual(codes(controler(page('{ title: "Merci", robots: { index: true, googleBot: { index: false } } }'))), ["C3:moyenne"]);
+});
+
 test("page publique en noindex volontaire : pas de constat C3", () => {
   const d = projet({ ...BASE, "src/app/merci/page.tsx": 'export const metadata = { title: "Merci", robots: { index: false, follow: false } };' });
   assert.deepStrictEqual(codes(controler(d)), []);

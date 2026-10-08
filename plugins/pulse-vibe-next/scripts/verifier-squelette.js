@@ -157,6 +157,7 @@ function controlerReglesDeCouches(dossier) {
       if (regle && !categories.includes(regle)) manques.push(`${chemin} (attendu : ${regle}, reçu : ${categories.join(", ") || "rien"})`);
       if (!regle && categories.includes(IMPORT_INTERDIT)) manques.push(`${chemin} (ne doit pas être restreint, mais ${IMPORT_INTERDIT} le signale)`);
     }
+    if (!fs.existsSync(path.join(dossier, "src", "lib", "utils.ts"))) manques.push("src/lib/utils.ts est introuvable : la garde ne peut pas vérifier l'absence de diagnostic barrel");
     const utils = diag["src/lib/utils.ts"] || [];
     if (utils.some((c) => c === BARREL || c === REEXPORT_TOUT)) manques.push(`src/lib/utils.ts (la réexportation shadcn ne doit pas être signalée, reçu : ${utils.join(", ")})`);
   } catch (erreur) {
