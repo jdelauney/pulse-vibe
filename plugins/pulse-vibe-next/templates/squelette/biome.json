@@ -70,7 +70,6 @@
                       "drizzle-orm/**",
                       "server-only",
                       "@app/**",
-                      "@src/db",
                       "@src/db/**",
                       "@src/adapters/**",
                       "@src/features/**",
@@ -135,7 +134,6 @@
                     "group": [
                       "@app/**",
                       "@src/features/**",
-                      "@src/db",
                       "@src/db/**",
                       "**/features/**",
                       "**/db/**"
@@ -185,7 +183,6 @@
                     "group": [
                       "drizzle-orm",
                       "drizzle-orm/**",
-                      "@src/db",
                       "@src/db/**",
                       "@src/adapters/**",
                       "**/db/**",
@@ -217,7 +214,6 @@
                     "group": [
                       "drizzle-orm",
                       "drizzle-orm/**",
-                      "@src/db",
                       "@src/db/**",
                       "@src/adapters/**",
                       "@src/stores/**",
@@ -256,7 +252,6 @@
                     "group": [
                       "drizzle-orm",
                       "drizzle-orm/**",
-                      "@src/db",
                       "@src/db/**",
                       "@src/adapters/**",
                       "@src/stores/**",
@@ -296,7 +291,6 @@
                     "group": [
                       "drizzle-orm",
                       "drizzle-orm/**",
-                      "@src/db",
                       "@src/db/**",
                       "@src/adapters/**",
                       "@src/stores/**",

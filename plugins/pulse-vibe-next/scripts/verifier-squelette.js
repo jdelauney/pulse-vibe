@@ -227,12 +227,13 @@ async function principal() {
   fs.mkdirSync(path.join(dossier, "src", "db", "verification"), { recursive: true });
   fs.writeFileSync(path.join(dossier, "src", "db", "verification", "essai.table.ts"), 'import { pgTable, text } from "drizzle-orm/pg-core";\n\nexport const essais = pgTable("essais", { id: text("id").primaryKey() });\n');
   lancer("npm run db:generate", dossier, { DATABASE_URL_DIRECT: "postgresql://verification@localhost:5432/verification" });
-  lancer("npm run build", dossier);
+  // La construction de vérification se fait sans variables : t3 env saute alors la validation.
+  lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1" });
   controlerCodeSeo(dossier);
   if (opts.e2e) {
     // En CI (Linux), --with-deps installe aussi les bibliothèques système du navigateur.
     lancer(`npx playwright install ${process.env.CI ? "--with-deps " : ""}chromium`, dossier);
-    lancer("npm run test:e2e", dossier, { CI: "true" });
+    lancer("npm run test:e2e", dossier, { CI: "true", SKIP_ENV_VALIDATION: "1" });
     await auditerSiteServi(dossier);
     if (process.exitCode) process.exit(1);
   }

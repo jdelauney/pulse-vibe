@@ -16,5 +16,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["{app,src}/**/*.test.{ts,tsx}", "tests/**/*.test.ts"],
+    // Les tests simulent env ; src/config/__tests__/env.test.ts rétablit la validation.
+    env: { SKIP_ENV_VALIDATION: "1" },
   },
 });

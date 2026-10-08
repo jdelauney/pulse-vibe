@@ -119,3 +119,14 @@ test("next.config.ts du squelette déclare les sept en-têtes de sécurité, san
   assert.doesNotMatch(config, /'nonce-|x-nonce/);
   assert.match(config, /browsing-topics=\(\)/);
 });
+
+test("le squelette type ses variables avec t3 env et nomme son client Drizzle", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const paquet = JSON.parse(fs.readFileSync(path.join(S, "package.json"), "utf8"));
+  assert.ok(paquet.dependencies["@t3-oss/env-nextjs"], "dépendance @t3-oss/env-nextjs");
+  const env = fs.readFileSync(path.join(S, "src", "config", "env.ts"), "utf8");
+  for (const attendu of ["createEnv", "experimental__runtimeEnv", "emptyStringAsUndefined: true", "SKIP_ENV_VALIDATION", "export const env"]) assert.ok(env.includes(attendu), attendu);
+  assert.ok(!env.includes("server-only"), "env.ts lisible par un composant client");
+  assert.ok(fs.existsSync(path.join(S, "src", "db", "db-client.ts")), "db-client.ts");
+  assert.ok(!fs.existsSync(path.join(S, "src", "db", "index.ts")), "plus de src/db/index.ts");
+});

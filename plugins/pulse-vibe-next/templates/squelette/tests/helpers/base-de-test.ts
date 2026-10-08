@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 
