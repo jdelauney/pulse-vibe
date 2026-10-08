@@ -25,7 +25,7 @@ const SECTIONS_RECETTE = [
   "## Points de sécurité",
   "## Pièges connus",
 ];
-const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "seo", "mesure-reelle"];
+const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle"];
 
 test("info : les quatre lignes du contrat, avec la version du manifeste", () => {
   const r = lancer("info");
@@ -213,4 +213,20 @@ test("le chemin de la garde de limite est le même partout", () => {
   for (const f of ["recettes/mesure-reelle.md", "recettes/email.md", "recettes/connexion.md", "architecture.md", "fiche.md"])
     if (lire(REF, f).includes("@src/adapters/limite/limite.adapter")) anciens.push(f);
   assert.deepStrictEqual(anciens, []);
+});
+
+test("recette formulaire-public : champ piège, jeton signé, limite, Turnstile en option avec sa CSP", () => {
+  const texte = lire(REF, "recettes", "formulaire-public.md");
+  for (const attendu of ["site_web_societe", "FORMULAIRE_SECRET", "actionFormulairePublic", "useProtectionFormulaire", "app/api/jeton-formulaire/route.ts", "pulse-aidd pile recette limite", "timingSafeEqual", "Rechargez la page et réessayez.", "Envoi trop rapide. Patientez quelques secondes, puis réessayez."])
+    assert.ok(texte.includes(attendu), attendu);
+  assert.match(texte, /### Option : Turnstile/);
+  assert.match(texte, /### \d+\. La CSP autorise Turnstile/);
+  assert.ok(texte.includes('"frame-src": ["https://challenges.cloudflare.com"]'), "frame-src Turnstile");
+  assert.match(texte, /\n## CSRF\n/);
+  assert.match(texte, /\| `next\.config\.ts` \(modifié, option Turnstile\) \|/);
+});
+
+test("contexte security : Turnstile parmi les sources ajoutées par les recettes", () => {
+  const texte = lire(REF, "contexte", "security.md");
+  assert.ok(texte.includes("challenges.cloudflare.com"), "hôte Turnstile");
 });

@@ -6,7 +6,7 @@
 
 - La base Neon du squelette : par défaut, les compteurs y sont rangés (aucun compte ni aucune clé en plus).
 - Pour protéger la connexion et l'inscription : recette `connexion` appliquée (actions `inscrire` et `connecter`, `actionPublique` de `src/lib/safe-action.ts`).
-- Pour un formulaire ouvert à tous (contact, devis, avis) : cette recette, puis la recette `formulaire-public`.
+- Pour un formulaire ouvert à tous (contact, devis, avis) : cette recette, puis la recette `formulaire-public` (`pulse-aidd pile recette formulaire-public`).
 - Option Redis (site à fort trafic) : voir « Option : Redis (Upstash) » en fin d'étapes.
 
 ## Variables d'environnement
