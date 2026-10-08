@@ -861,7 +861,7 @@ describe("Mesure réelle : enregistrement et lecture", () => {
 
 ## Points de sécurité
 
-- **S10 – Abus et coûts** : la route est publique (un navigateur l'appelle sans session). Elle refuse les autres origines, les corps de plus de 2 000 caractères et tout ce qui sort du schéma ; chaque envoi ajoute une petite ligne. Avec la recette `limite`, ajouter en tête de `recevoirMesure` une vérification `verifierLimite("formulairePublic", ipDepuis(request.headers))` (`verifierLimite` de `@src/adapters/limite/limite.adapter`, `ipDepuis` de `@src/lib/helpers/limite/ip-et-message`) qui répond 429 quand la limite est atteinte.
+- **S10 – Abus et coûts** : la route est publique (un navigateur l'appelle sans session). Elle refuse les autres origines, les corps de plus de 2 000 caractères et tout ce qui sort du schéma ; chaque envoi ajoute une petite ligne. Avec la recette `limite`, ajouter en tête de `recevoirMesure` une vérification `verifierLimite("formulairePublic", ipDepuis(request.headers))` (`verifierLimite` de `@src/lib/limite`, `ipDepuis` de `@src/lib/helpers/limite/ip-et-message`) qui répond 429 quand la limite est atteinte.
 - **S9 – Données personnelles** : ni IP, ni cookie, ni identifiant de compte, ni adresse complète (les identifiants des adresses deviennent `[id]`) ; effacement après 90 jours ; mention de confidentialité à jour.
 - **S11 – Messages d'erreur** : la route répond par un code seul pour une requête refusée, et par le message générique de `reponseErreur()` pour une panne ; l'erreur de base va dans le journal du serveur, sans le contenu reçu.
 - Option A : les données vont chez Vercel (sous-traitant déjà utilisé pour l'hébergement) ; les citer dans la mention.

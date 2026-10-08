@@ -200,3 +200,17 @@ test("contexte security : sources de toutes les recettes qui touchent la CSP", (
   const texte = lire(REF, "contexte", "security.md");
   for (const attendu of ["mesure-reelle", "va.vercel-scripts.com", "vercel.live", "si elle manque"]) assert.ok(texte.includes(attendu), attendu);
 });
+
+test("recette limite : trois stratégies, la base par défaut, la garde dans src/lib/limite.ts", () => {
+  const texte = lire(REF, "recettes", "limite.md");
+  for (const attendu of ["LIMITE_STOCKAGE", "limiteurBase", "limiteurUpstash", "limiteurMemoire", "src/core/shared/limiteur.port.ts", "src/lib/limite.ts", "onConflictDoUpdate", "verifierContratLimiteur"])
+    assert.ok(texte.includes(attendu), attendu);
+  assert.match(texte, /z\.enum\(\["base", "redis", "memoire"\]\)\.default\("base"\)/);
+});
+
+test("le chemin de la garde de limite est le même partout", () => {
+  const anciens = [];
+  for (const f of ["recettes/mesure-reelle.md", "recettes/email.md", "recettes/connexion.md", "architecture.md", "fiche.md"])
+    if (lire(REF, f).includes("@src/adapters/limite/limite.adapter")) anciens.push(f);
+  assert.deepStrictEqual(anciens, []);
+});

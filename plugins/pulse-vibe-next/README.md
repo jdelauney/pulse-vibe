@@ -23,7 +23,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 | `fichiers` | Dépôt de fichiers sur Cloudflare R2 par adresse signée, type et taille contrôlés |
 | `paiement` | Stripe Checkout en mode test, webhook vérifié |
 | `langues` | Plusieurs langues avec next-intl |
-| `limite` | Limite de requêtes sur les formulaires publics (Upstash) |
+| `limite` | Limite de requêtes : connexion, inscription, formulaires (base Neon par défaut, Upstash en option) |
 | `seo` | Référencement : adresse du site, métadonnées complètes par page, robots.txt selon la politique IA, sitemap aux vraies dates, image de partage, données structurées typées (`schema-dts`), pages connectées hors de Google, vrai 404 |
 | `mesure-reelle` | Vitesse vécue par les vrais visiteurs : Speed Insights de Vercel, ou mesures envoyées au site (table Neon, 75e centile par page) |
 

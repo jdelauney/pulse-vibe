@@ -102,10 +102,10 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 
 ### `UPSTASH_REDIS_REST_TOKEN`
 
-- **Rôle** : le jeton de la base Redis Upstash (recette `limite`), avec `UPSTASH_REDIS_REST_URL` (adresse, préfixe `https://`, pas un secret).
+- **Rôle** : le jeton de la base Redis Upstash (recette `limite`, option Redis : `LIMITE_STOCKAGE=redis`), avec `UPSTASH_REDIS_REST_URL` (adresse, préfixe `https://`, pas un secret).
 - **Où renouveler** : console Upstash → la base → **Reset Credentials** (ou **Reset Password**) → confirmer en tapant le nom de la base → copier le nouveau jeton REST.
 - **Effet** : **immédiat** ; le mot de passe, le jeton REST et le jeton en lecture seule changent ensemble.
-- **Délai de grâce** : aucun. Coupure courte jusqu'au redémarrage : même préparation que pour Neon. Pendant la coupure, la limite de requêtes ne répond plus : les formulaires concernés renvoient une erreur.
+- **Délai de grâce** : aucun. Coupure courte jusqu'au redémarrage : même préparation que pour Neon. Pendant la coupure, la limite ne s'applique plus : les envois passent et chaque incident est journalisé.
 - **Test** : `pulse-aidd secrets verifier UPSTASH_REDIS_REST_TOKEN` (réponse PONG), puis un envoi de formulaire limité sur le site.
 - **Traces** : console Upstash → la base → **Usage / Metrics**.
 - Sources : https://upstash.com/docs/redis/features/security ; https://upstash.com/blog/rotate-upstash-secrets-after-vercel-incident (2026-04-19).
