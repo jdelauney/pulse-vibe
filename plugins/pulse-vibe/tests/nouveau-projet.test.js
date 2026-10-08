@@ -71,7 +71,9 @@ test("Git : un nouveau projet a son propre dépôt, même dans un dépôt parent
   const r = lancer(NOUVEAU, ["enfant", "--oui"], parent);
   assert.strictEqual(r.status, 0, r.stderr);
   const top = spawnSync("git", ["rev-parse", "--show-toplevel"], { cwd: path.join(parent, "enfant"), encoding: "utf8" });
-  assert.strictEqual(path.resolve(top.stdout.trim()).toLowerCase(), path.resolve(parent, "enfant").toLowerCase());
+  // Chemins réels : Git donne le nom long, os.tmpdir() peut donner un nom court Windows (RUNNER~1).
+  const reel = (p) => fs.realpathSync.native(p).toLowerCase();
+  assert.strictEqual(reel(top.stdout.trim()), reel(path.join(parent, "enfant")));
   const index = spawnSync("git", ["diff", "--cached", "--name-only"], { cwd: parent, encoding: "utf8" });
   assert.strictEqual(index.stdout.trim(), "", "le dépôt parent n'a rien reçu");
 });

@@ -109,6 +109,19 @@ test("git add d'un fichier précis sain : autorisé même si un autre fichier po
   assert.ok(refuse(lancerHook(bash("git add brouillon.js", d.dir))));
 });
 
+test("git add d'un fichier précis : bloqué aussi quand le dossier courant passe par un lien (ou un nom court Windows)", () => {
+  const d = depotTemporaire();
+  d.ecrire("brouillon.js", `const k = "${FAUX.stripe}";\n`);
+  // Git renvoie le chemin réel du dépôt ; le dossier courant peut en être un autre nom (lien, RUNNER~1).
+  const lien = path.join(os.tmpdir(), `pulse-lien-${process.pid}-${Date.now()}`);
+  fs.symlinkSync(d.dir, lien, "junction");
+  try {
+    assert.ok(refuse(lancerHook(bash("git add brouillon.js", lien))));
+  } finally {
+    fs.unlinkSync(lien);
+  }
+});
+
 test("git commit avec un secret dans l'index : bloqué et le fichier est nommé", () => {
   const d = depotTemporaire();
   d.ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
