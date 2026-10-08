@@ -83,6 +83,18 @@ test("regles : lit src/config/env.ts (structure actuelle) avant src/lib/env.ts",
   assert.deepStrictEqual(JSON.parse(r.sortie).code, ["DATABASE_URL", "CLE_NOUVELLE"]);
 });
 
+test("regles : lit les noms des blocs server et client d'un env.ts t3", async () => {
+  const d = projet();
+  fs.mkdirSync(path.join(d, "src", "config"), { recursive: true });
+  fs.writeFileSync(
+    path.join(d, "src", "config", "env.ts"),
+    "export const env = createEnv({\n  server: {\n    DATABASE_URL: z.url(),\n  },\n  client: {\n    NEXT_PUBLIC_CLE_SITE: z.string().min(1).optional(),\n  },\n  experimental__runtimeEnv: {\n    NEXT_PUBLIC_CLE_SITE: process.env.NEXT_PUBLIC_CLE_SITE,\n  },\n});\n",
+  );
+  const r = await lancer(d, ["regles"]);
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.deepStrictEqual(JSON.parse(r.sortie).code, ["DATABASE_URL", "NEXT_PUBLIC_CLE_SITE"]);
+});
+
 test("la fiche décrit chaque variable des règles, avec ses préfixes attendus", () => {
   const texte = fs.readFileSync(FICHE, "utf8");
   for (const [nom, regle] of Object.entries(VARIABLES)) {
