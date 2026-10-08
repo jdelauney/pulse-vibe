@@ -28,6 +28,7 @@ Aucune nouvelle variable.
 | Fichier | Option | Rôle |
 |---|---|---|
 | `app/layout.tsx` (modifié) | A et B | Ajoute `<SpeedInsights />` (A) ou `<MesureVitesse />` (B) |
+| `next.config.ts` (modifié) | A | Script de diagnostic de Speed Insights autorisé par la CSP, en développement |
 | `src/core/vitesse/mesure.entity.ts` | B | Mesures et notes acceptées, durée de conservation, types |
 | `src/core/vitesse/mesure.rules.ts` | B | Chemin sans identifiant, date limite de conservation (fonctions pures) |
 | `src/core/vitesse/mesure-repository.port.ts` | B | Ce dont le use-case a besoin : enregistrer, effacer les anciennes |
@@ -61,8 +62,19 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
         <SpeedInsights />
 ```
 
-4. `npm run build` (le composant gère seul son `<Suspense>` : la page d'accueil reste statique), `/pulse:commit`, puis mise en ligne (`/pulse:deploy`). Le script se charge depuis le site lui-même (`/_vercel/speed-insights/script.js`) et ne mesure rien en développement.
-5. Les premières données apparaissent dans l'onglet Speed Insights après quelques visites réelles.
+4. Dans `next.config.ts`, objet `sources` : en développement, le composant charge sa version de diagnostic depuis `https://va.vercel-scripts.com`. Remplacer le bloc `"script-src"` par :
+
+```ts
+  "script-src": [
+    "'self'",
+    "'unsafe-inline'",
+    // Développement : messages d'erreur de React, et script de diagnostic de Speed Insights.
+    ...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : []),
+  ],
+```
+
+5. `npm run build` (le composant gère seul son `<Suspense>` : la page d'accueil reste statique), `/pulse:commit`, puis mise en ligne (`/pulse:deploy`). En ligne, le script se charge depuis le site lui-même (`/_vercel/speed-insights/script.js`) : la CSP de production reste inchangée. Rien n'est mesuré en développement.
+6. Les premières données apparaissent dans l'onglet Speed Insights après quelques visites réelles.
 
 ### Option B – Mesure envoyée au site
 

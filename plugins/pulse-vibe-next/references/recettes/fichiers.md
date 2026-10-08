@@ -5,6 +5,7 @@
 ## Prérequis
 
 - Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/index.ts` (`getDb()`, type `Db`), `src/config/env.ts` (`envServeur()`), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
+- `next.config.ts` avec la CSP et son objet `sources` (squelette de pulse-vibe-next 0.9.0 ou plus). Projet créé avec une version plus ancienne : lancez d'abord `/pulse:security entetes`, qui pose les en-têtes du squelette.
 - La recette `connexion` est faite (`pulse-aidd pile recette connexion`). Elle fournit :
   - `utilisateurConnecte()` dans `src/features/compte/queries/utilisateur-connecte.query.ts` (renvoie `{ id, nom }`, ou redirige vers `/connexion` sans session) ;
   - `actionConnectee` dans `src/lib/safe-action.ts` (`ctx.utilisateur` = `{ id, nom }`) ;
@@ -980,16 +981,19 @@ La page reste protégée par `utilisateurConnecte()`, et le téléchargement par
 Le navigateur envoie le fichier directement à R2 (`fetch` avec `PUT`). La CSP bloque tout appel vers une adresse absente de `connect-src` : dans l'objet `sources` de `next.config.ts`, remplacez la ligne `"connect-src": ["'self'"],` par :
 
 ```ts
-  // Envoi direct des fichiers vers R2 (recette fichiers). Sans juridiction UE, retirer « .eu ».
+  // Envoi direct des fichiers vers R2 (recette fichiers) : l'adresse signée commence par le nom
+  // du bucket. Sans juridiction UE, retirer « .eu ».
   "connect-src": [
     "'self'",
-    ...(process.env.R2_ACCOUNT_ID
-      ? [`https://${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`]
+    ...(process.env.R2_BUCKET && process.env.R2_ACCOUNT_ID
+      ? [
+          `https://${process.env.R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
+        ]
       : []),
   ],
 ```
 
-Next.js lit `.env` avant `next.config.ts` : la valeur est connue en local. Sur Vercel, la CSP est fixée à la construction : `R2_ACCOUNT_ID` doit être saisie pour Production et Preview **avant** la mise en ligne. Le téléchargement passe par `/api/fichiers/<id>` (un lien du site) : il reste hors de `connect-src`.
+L'adresse signée par l'adapter a la forme `https://<bucket>.<ACCOUNT_ID>.eu.r2.cloudflarestorage.com/<clé>` : la CSP autorise exactement cet hôte. Next.js lit `.env` avant `next.config.ts` : les valeurs sont connues en local. Sur Vercel, la CSP est fixée à la construction : `R2_BUCKET` et `R2_ACCOUNT_ID` doivent être saisies pour Production et Preview **avant** la mise en ligne. Le téléchargement passe par `/api/fichiers/<id>` (un lien du site) : il reste hors de `connect-src`.
 
 ### 13. Essayer
 
@@ -1754,7 +1758,7 @@ test.describe("Fichiers", () => {
 - **Erreur CORS à l'envoi** : l'adresse de la page (protocole et port compris) doit figurer dans `AllowedOrigins`. Une règle met jusqu'à 30 secondes à s'appliquer. Chaque prévisualisation Vercel a sa propre adresse : ajoutez celles qui servent.
 - **403 `SignatureDoesNotMatch`** : le navigateur doit envoyer exactement le `Content-Type` signé (`choisi.type`) et le fichier annoncé (même taille).
 - **Bucket UE** : il répond seulement à `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`. Sans juridiction, retirez `.eu` dans `src/adapters/storage/storage.adapter.ts` et dans `connect-src` de `next.config.ts`.
-- **Envoi bloqué, console « Refused to connect … violates the following Content Security Policy directive: connect-src »** : l'adresse R2 manque à `connect-src`. Vérifiez l'étape « La CSP autorise R2 », la présence de `R2_ACCOUNT_ID` au moment de la construction (Vercel : Production et Preview), puis reconstruisez.
+- **Envoi bloqué, console « Refused to connect … violates the following Content Security Policy directive: connect-src »** : l'adresse R2 manque à `connect-src`. Vérifiez l'étape « La CSP autorise R2 », la présence de `R2_BUCKET` et `R2_ACCOUNT_ID` au moment de la construction (Vercel : Production et Preview), puis reconstruisez. L'hôte bloqué, affiché dans le message, doit être identique à celui écrit dans `connect-src`.
 - **Clé secrète perdue** : Cloudflare l'affiche une seule fois. Créez un nouveau jeton, puis supprimez l'ancien.
 - **Objet orphelin à la suppression** : `supprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
 - **Lignes « en_attente »** : un envoi abandonné laisse une ligne sans fichier. Elle reste invisible ; une tâche de ménage pourra les effacer plus tard.

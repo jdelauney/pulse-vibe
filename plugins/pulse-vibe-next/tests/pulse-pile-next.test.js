@@ -177,7 +177,9 @@ test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue �
   const texte = lire(REF, "recettes", "fichiers.md");
   assert.match(texte, /\| `next\.config\.ts` \(modifié\) \|/);
   assert.ok(texte.includes('"connect-src": ['), "bloc connect-src");
-  assert.ok(texte.includes(".eu.r2.cloudflarestorage.com`]"), "adresse R2 dans la CSP");
+  // Sans forcePathStyle, le SDK signe une adresse <bucket>.<compte>.eu.r2… : la CSP vise cet hôte exact.
+  assert.ok(texte.includes("`https://${process.env.R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`"), "hôte R2 avec le bucket dans la CSP");
+  assert.match(texte, /pulse-vibe-next 0.9.0/, "version du squelette qui porte l'objet sources");
   assert.match(texte, /### \d+\. La CSP autorise R2/);
   assert.match(texte, /Refused to connect/);
 });
@@ -186,4 +188,15 @@ test("contexte security : en-têtes dans next.config.ts, sans nonce, preload dé
   const texte = lire(REF, "contexte", "security.md");
   for (const attendu of ["next.config.ts", "`sources`", "nonce", "cacheComponents", "preload", "proxy.ts", "curl -sI", "un seul `headers()`"])
     assert.ok(texte.includes(attendu), attendu);
+});
+
+test("recette mesure-reelle : en développement, la CSP autorise le script de diagnostic de Speed Insights", () => {
+  const texte = lire(REF, "recettes", "mesure-reelle.md");
+  assert.ok(texte.includes("| `next.config.ts` (modifié) | A |"), "ligne du tableau des fichiers");
+  assert.ok(texte.includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
+});
+
+test("contexte security : sources de toutes les recettes qui touchent la CSP", () => {
+  const texte = lire(REF, "contexte", "security.md");
+  for (const attendu of ["mesure-reelle", "va.vercel-scripts.com", "vercel.live", "si elle manque"]) assert.ok(texte.includes(attendu), attendu);
 });

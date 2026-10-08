@@ -158,4 +158,6 @@ test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit 
   assert.ok(entetes.includes("browsing-topics=()"), "Permissions-Policy avec browsing-topics");
   assert.match(entetes, /prérend/, "règle nonce et pages prérendues");
   assert.match(entetes, /`preload`/, "règle preload");
+  const rapide = lire(RACINE, "references", "securite", "rapide.md");
+  for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de securite/rapide.md`);
 });
