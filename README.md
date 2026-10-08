@@ -4,8 +4,10 @@ Ce dépôt est le catalogue **`pulseia`** : il contient les plugins de la métho
 
 | Plugin | Ce qu'il apporte | Documentation |
 |---|---|---|
-| `pulse-vibe` | La méthode Pulse : du brief à la mise en ligne, avec garde-fous de sécurité, agents indépendants et mémoire projet. Aucune technologie imposée | [plugins/pulse-vibe/README.md](plugins/pulse-vibe/README.md) |
-| `pulse-vibe-next` | Le pack de pile Next.js (Drizzle + Neon, better-auth, shadcn/ui, Vercel) : code de départ vérifié, conventions, pièges connus et recettes prêtes. Installe aussi `pulse-vibe` | [plugins/pulse-vibe-next/README.md](plugins/pulse-vibe-next/README.md) |
+| `pulse` | La méthode Pulse : du brief à la mise en ligne, avec garde-fous de sécurité, agents indépendants et mémoire projet. Aucune technologie imposée | [plugins/pulse-vibe/README.md](plugins/pulse-vibe/README.md) |
+| `pulse-next` | Le pack de pile Next.js (Drizzle + Neon, better-auth, shadcn/ui, Vercel) : code de départ vérifié, conventions, pièges connus et recettes prêtes. Installe aussi `pulse` | [plugins/pulse-vibe-next/README.md](plugins/pulse-vibe-next/README.md) |
+
+**Les noms** : le dépôt GitHub s'appelle `jdelauney/pulse-vibe` et le catalogue `pulseia`. Chaque plugin porte le même nom dans le catalogue et dans son manifeste : `pulse` (dossier `plugins/pulse-vibe/`, commandes `/pulse:*`) et `pulse-next` (dossier `plugins/pulse-vibe-next/`). Les anciens noms `pulse-vibe` et `pulse-vibe-next` sont redirigés automatiquement vers ces noms.
 
 ## Installation
 
@@ -15,12 +17,12 @@ Dans une session Claude Code :
 
 ```
 /plugin marketplace add jdelauney/pulse-vibe
-/plugin install pulse-vibe@pulseia
+/plugin install pulse@pulseia
 ```
 
-Pour la pile Next.js prête à l'emploi : `/plugin install pulse-vibe-next@pulseia` (installe aussi `pulse-vibe`).
+Pour la pile Next.js prête à l'emploi : `/plugin install pulse-next@pulseia` (installe aussi `pulse`).
 
-Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin update pulse-vibe@pulseia` (et `pulse-vibe-next@pulseia`), et redémarrer Claude Code.
+Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin update pulse@pulseia` (et `pulse-next@pulseia`), et redémarrer Claude Code.
 
 ## Structure du dépôt
 

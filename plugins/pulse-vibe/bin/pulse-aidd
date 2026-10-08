@@ -113,7 +113,7 @@ pile() {
   local id; id="$(pack_declare)"
   if [ -z "$id" ]; then echo "Aucun pack de pile déclaré dans docs/technical.md."
   elif command -v "pulse-pile-$id" >/dev/null 2>&1; then echo "Pack de pile déclaré : $id – installé ($(pack_info "$id" nom), version $(pack_info "$id" version))."
-  else echo "Pack de pile déclaré : $id – non installé (plugin pulse-vibe-$id)."
+  else echo "Pack de pile déclaré : $id – non installé (plugin pulse-$id)."
   fi
 }
 
@@ -124,7 +124,7 @@ relais_pack() { # relais_pack <sous-commande> [arguments] : exécute pulse-pile-
     exit 1
   fi
   if ! command -v "pulse-pile-$id" >/dev/null 2>&1; then
-    echo "Le pack de pile « $id » est déclaré mais pas installé : /plugin install pulse-vibe-$id@pulseia, puis redémarrer Claude Code."
+    echo "Le pack de pile « $id » est déclaré mais pas installé : /plugin install pulse-$id@pulseia, puis redémarrer Claude Code."
     exit 1
   fi
   exec "pulse-pile-$id" "$@"
@@ -147,7 +147,7 @@ contexte_pack() { # contexte_pack <commande>
 
 ' "$id"
     printf 'Le projet déclare le pack de pile « %s » (docs/technical.md), mais il manque sur cette machine. ' "$id"
-    printf "Proposer à la personne d'installer son plugin : /plugin install pulse-vibe-%s@pulseia, puis de redémarrer Claude Code. " "$id"
+    printf "Proposer à la personne d'installer son plugin : /plugin install pulse-%s@pulseia, puis de redémarrer Claude Code. " "$id"
     printf 'En attendant, suivre docs/technical.md et la documentation officielle de la pile retenue.
 '
   fi

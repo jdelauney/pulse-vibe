@@ -112,19 +112,19 @@ Dans une session Claude Code :
 
 ```
 /plugin marketplace add jdelauney/pulse-vibe
-/plugin install pulse-vibe@pulseia
+/plugin install pulse@pulseia
 ```
 
 Ou depuis un terminal :
 
 ```bash
 claude plugin marketplace add jdelauney/pulse-vibe
-claude plugin install pulse-vibe@pulseia
+claude plugin install pulse@pulseia
 ```
 
 Pour tester en local sans GitHub : `claude plugin marketplace add ./chemin/vers/le-depot` (le dossier qui contient `.claude-plugin/marketplace.json`), ou `claude --plugin-dir ./chemin/vers/le-depot/plugins` pour une seule session.
 
-Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin update pulse-vibe@pulseia`, et redémarrer Claude Code.
+Mise à jour : `claude plugin marketplace update pulseia` puis `claude plugin update pulse@pulseia`, et redémarrer Claude Code.
 
 ## Documentation
 

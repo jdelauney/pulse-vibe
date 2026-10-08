@@ -1,6 +1,6 @@
 # Pulse-vibe-next – le pack de pile Next.js de Pulse
 
-**Pulse-vibe-next** ajoute à la méthode Pulse ([pulse-vibe](../pulse-vibe/README.md)) le savoir-faire d'une pile précise, pour construire une application web avec comptes et données : un code de départ vérifié, des conventions, les pièges connus des versions actuelles et des recettes prêtes. Objectif : un code juste du premier coup.
+**Pulse-next** (plugin `pulse-next`) ajoute à la méthode Pulse ([plugin `pulse`](../pulse-vibe/README.md)) le savoir-faire d'une pile précise, pour construire une application web avec comptes et données : un code de départ vérifié, des conventions, les pièges connus des versions actuelles et des recettes prêtes. Objectif : un code juste du premier coup.
 
 Il n'a pas de commande à lui : il s'utilise à travers les commandes `/pulse:*`, qui reçoivent ses consignes quand le projet l'a choisi.
 
@@ -35,7 +35,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 ## Contenu
 
 ```
-.claude-plugin/plugin.json   manifeste ; dépend de pulse-vibe
+.claude-plugin/plugin.json   manifeste ; dépend de pulse
 bin/pulse-pile-next          info | contexte <commande> | reference <chemin> | recettes | recette <nom> | squelette | seo-code | secrets | hebergeur
 references/                  fiche.md (règles de la pile), technical.md (valeurs de docs/technical.md),
                              theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), contexte/ (consignes par commande), recettes/
@@ -52,10 +52,10 @@ Prérequis : ceux de la méthode Pulse (Git, Node.js 22.19 ou plus), et npm, liv
 
 ```
 /plugin marketplace add jdelauney/pulse-vibe
-/plugin install pulse-vibe-next@pulseia
+/plugin install pulse-next@pulseia
 ```
 
-L'installation ajoute aussi `pulse-vibe` (dépendance). Redémarrer Claude Code ensuite.
+L'installation ajoute aussi `pulse` (dépendance). Redémarrer Claude Code ensuite.
 
 ## Maintenance
 

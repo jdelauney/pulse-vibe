@@ -6,14 +6,18 @@
   },
   "plugins": [
     {
-      "name": "pulse-vibe",
+      "name": "pulse",
       "source": "./plugins/pulse-vibe",
       "description": "Méthode Pulse : du brief à la mise en ligne avec l'IA, étape par étape, avec garde-fous de sécurité. En français."
     },
     {
-      "name": "pulse-vibe-next",
+      "name": "pulse-next",
       "source": "./plugins/pulse-vibe-next",
-      "description": "Pack de pile Next.js pour la méthode Pulse : code de départ vérifié, conventions, pièges connus et recettes prêtes. Installe aussi pulse-vibe. En français."
+      "description": "Pack de pile Next.js pour la méthode Pulse : code de départ vérifié, conventions, pièges connus et recettes prêtes. Installe aussi pulse. En français."
     }
-  ]
+  ],
+  "renames": {
+    "pulse-vibe": "pulse",
+    "pulse-vibe-next": "pulse-next"
+  }
 }

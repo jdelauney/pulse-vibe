@@ -361,3 +361,22 @@ test("Node.js 22.19 ou plus : prérequis bloquant de /pulse:init, annoncé par l
   assert.ok(readmes.length >= 1);
   for (const readme of readmes) assert.match(lire(readme), /Node\.js 22\.19 ou plus/, path.relative(DEPOT, readme));
 });
+
+test("catalogue : chaque entrée porte le nom de son manifeste, anciens noms redirigés, commandes d'installation exactes", { skip: !fs.existsSync(path.join(DEPOT, ".claude-plugin", "marketplace.json")) }, () => {
+  const catalogue = JSON.parse(lire(DEPOT, ".claude-plugin", "marketplace.json"));
+  const noms = catalogue.plugins.map((p) => p.name);
+  for (const p of catalogue.plugins) {
+    const { name, dependencies = [] } = JSON.parse(lire(DEPOT, p.source, ".claude-plugin", "plugin.json"));
+    assert.strictEqual(p.name, name, `${p.source} : entrée « ${p.name} », manifeste « ${name} »`);
+    for (const d of dependencies) {
+      const dependance = typeof d === "string" ? d : d.name;
+      assert.ok(noms.includes(dependance), `${name} : dépendance « ${dependance} » absente du catalogue`);
+    }
+  }
+  assert.deepStrictEqual(catalogue.renames, { "pulse-vibe": "pulse", "pulse-vibe-next": "pulse-next" });
+  const textes = [...TEXTES, { fichier: "README.md", texte: fs.existsSync(path.join(DEPOT, "README.md")) ? lire(DEPOT, "README.md") : "" }, { fichier: "bin/pulse-aidd", texte: OUTIL }];
+  const cites = textes.flatMap(({ fichier, texte }) => [...texte.matchAll(/plugin (?:install|update) ([a-z0-9$%{}-]+)@pulseia/g)].map((m) => ({ fichier, nom: m[1] })));
+  assert.ok(cites.length >= 3, "commandes d'installation citées");
+  const connu = (nom) => noms.includes(nom) || /^pulse-(\$id|%s)$/.test(nom);
+  assert.deepStrictEqual(cites.filter(({ nom }) => !connu(nom)).map(({ fichier, nom }) => `${fichier} : ${nom}@pulseia`), []);
+});
