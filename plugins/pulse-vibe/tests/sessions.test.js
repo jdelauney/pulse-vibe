@@ -80,3 +80,11 @@ test("hook : entrée invalide ou identifiant suspect, aucune erreur et rien d'in
   assert.strictEqual(hook("--debut", "../../evil").status, 0);
   assert.deepStrictEqual(fs.existsSync(registre) ? fs.readdirSync(registre) : [], []);
 });
+
+test("sans identifiant : la session la plus récente est considérée comme la session courante", () => {
+  const { lancer, hook } = contexte();
+  hook("--debut", "aaaaaaaa-1111-2222-3333-444444444444");
+  hook("--debut", "bbbbbbbb-1111-2222-3333-444444444444");
+  const r = lancer([]);
+  assert.match(r.stdout, /autres=1/);
+});

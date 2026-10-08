@@ -98,7 +98,8 @@ if (args[0] === "--debut" || args[0] === "--fin") {
   const dossier = racine(process.cwd());
   const toutes = sessions(dossier);
   // Sans identifiant fiable, la session courante est l'une des inscrites : on la retire du compte.
-  const autres = valide(args[0]) ? toutes.filter((s) => s.id !== args[0]) : toutes.slice(1);
+  const parDebut = [...toutes].sort((a, b) => String(b.debut).localeCompare(String(a.debut)));
+  const autres = valide(args[0]) ? toutes.filter((s) => s.id !== args[0]) : parDebut.slice(1);
   console.log(`autres=${autres.length}`);
   if (autres.length === 0) {
     console.log("Aucune autre session Claude Code ouverte sur ce dossier.");
