@@ -401,3 +401,26 @@ test("secret en clair : constantes ordinaires (URL, regex, nom d'en-tête) non s
   const alea = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd";
   assert.deepStrictEqual(trouverSecrets(`BETTER_AUTH_SECRET='${alea}'`), ["secret en clair"]);
 });
+
+test("secret en clair : valeurs hexadécimales et d'une seule casse signalées, exemples non signalés", () => {
+  const { trouverSecrets } = require("../scripts/motifs");
+  const hex = "ab12".repeat(16);
+  const base64url = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd" + "Zq1Xe3HaVn";
+  assert.strictEqual(base64url.length, 32);
+  const long = "mysecretpass" + "2024" + "abcdefghijkl"; // 28 caractères, un chiffre, une seule casse
+  for (const c of [
+    `BETTER_AUTH_SECRET="${hex}"`,
+    `BETTER_AUTH_SECRET="${hex.toUpperCase()}"`,
+    `BETTER_AUTH_SECRET="${base64url}"`,
+    `DB_PASSWORD="${long}"`,
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), ["secret en clair"], c);
+  for (const c of [
+    'const SECRET_HEADER_NAME = "x-webhook-signature-v2"',
+    'const TOKEN_URL = "https://oauth2.googleapis.com/token"',
+    'const PASSWORD_REGEX = "^(?=.*[A-Z])(?=.*\d).{8,}$"',
+    'BETTER_AUTH_SECRET="VOTRE_SECRET_ICI_A_REMPLACER"',
+    'const TOKEN = "token-de-test-1234567890"',
+  ])
+    assert.deepStrictEqual(trouverSecrets(c), [], c);
+});
