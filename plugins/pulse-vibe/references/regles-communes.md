@@ -166,7 +166,7 @@ Ce qui s'est passé doit se retrouver dans les fichiers du projet, sans dépendr
 
 - **Rapport de relecture** (`aidd_docs/tasks/<epic>/revues/…`) : le verdict, le mode (`Mode`), la suite donnée à chaque constat, et le **résultat du test par la personne** (date, résultat, remarque).
 - **Journal du plan** : une ligne par événement, avec la date. La colonne « Remarque » est **obligatoire** quand :
-  - le plan est validé (✋ 2) ou modifié (`/pulse:refine`) : tâche « — », remarque « plan validé » ou « plan modifié : … » ;
+  - le plan est validé (`/pulse:plan`, ou ✋ 2 de `/pulse:spirc`) ou modifié (`/pulse:refine`) : tâche « — », remarque « plan validé » ou « plan modifié : … » ;
   - une tâche est enregistrée sans rapport de relecture (« enregistrée sans relecture, à la demande de la personne ») ;
   - la tâche a été faite en mode autonome ou avec l'examen renforcé ;
   - le test par la personne est reporté (mode autonome), non concluant mais accepté, ou si un constat Critique, Haute ou Moyenne reste sans correction avec l'accord de la personne ;

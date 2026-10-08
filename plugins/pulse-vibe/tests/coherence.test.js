@@ -499,3 +499,12 @@ test("examen d'une tâche : chaque agent nommé par la référence est repliable
     for (const a of agents) assert.ok(motifs.some((m) => couvre(m, `pulse-aidd agent ${a}`)), `${skill} : pulse-aidd agent ${a}`);
   }
 });
+
+test("plan : montré et validé avant d'être écrit, avec la ligne « plan validé » du journal", () => {
+  const deroule = skillTexte("plan").split("## Déroulé")[1];
+  const valider = deroule.indexOf("« Valider le plan (Recommandé) »");
+  const ecrire = deroule.indexOf("Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`");
+  assert.ok(valider !== -1 && ecrire !== -1, "validation et écriture présentes");
+  assert.ok(valider < ecrire, "la validation précède l'écriture");
+  assert.match(deroule, /« plan validé »/);
+});
