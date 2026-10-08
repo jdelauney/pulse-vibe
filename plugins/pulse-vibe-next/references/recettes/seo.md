@@ -390,12 +390,13 @@ Une action qui publie ou modifie une réalisation appelle `updateTag(TAG_REALISA
 
 ### 6. Un vrai 404 pour un `slug` inconnu (facultatif)
 
-Avec Cache Components, une adresse inconnue de ce segment répond **200 avec `noindex`** à Googlebot et aux robots IA (la coquille prérendue part avant `notFound()`) ; Google l'écarte des résultats, mais la compte comme « soft 404 ». Pour un vrai 404, vérifier l'existence dans `proxy.ts` (à la racine), qui agit avant le rendu. Le proxy appelle `existePubliee` du repository : c'est la seule lecture de base permise dans le proxy, une requête légère (colonne indexée), jamais le contenu entier.
+Avec Cache Components, une adresse inconnue de ce segment répond **200 avec `noindex`** à Googlebot et aux robots IA (la coquille prérendue part avant `notFound()`) ; Google l'écarte des résultats, mais la compte comme « soft 404 ». Pour un vrai 404, vérifier l'existence dans `proxy.ts` (à la racine), qui agit avant le rendu. Le proxy appelle `existePubliee` du repository : c'est la seule lecture de base permise dans le proxy, une requête légère (colonne indexée), jamais le contenu entier. Si la base est indisponible, le proxy journalise un message fixe (`logger.warn`, sans donnée de la requête) et laisse la page répondre : un « soft 404 » vaut mieux qu'une erreur 500 pour tout le segment.
 
 ```ts
 // proxy.ts (à fusionner avec le proxy existant de la recette connexion)
 import { getDb } from "@src/db";
 import { realisationRepository } from "@src/db/realisations/realisation.repository";
+import { logger } from "@src/lib/logger";
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -405,9 +406,14 @@ export async function proxy(request: NextRequest) {
   // Page publique : un slug sans contenu publié répond 404 avant le rendu (vrai 404 pour les robots).
   if (pathname.startsWith("/realisations/")) {
     const slug = pathname.split("/")[2] ?? "";
-    if (!(await realisationRepository(getDb()).existePubliee(slug))) {
-      // Adresse sans page : Next.js répond 404 avec app/not-found.tsx.
-      return NextResponse.rewrite(new URL("/introuvable", request.url));
+    try {
+      if (!(await realisationRepository(getDb()).existePubliee(slug))) {
+        // Adresse sans page : Next.js répond 404 avec app/not-found.tsx.
+        return NextResponse.rewrite(new URL("/introuvable", request.url));
+      }
+    } catch {
+      // Base indisponible : la page décide (404 « soft ») plutôt qu'une erreur 500 pour tout le segment.
+      logger.warn("Proxy : vérification d'existence impossible");
     }
     return NextResponse.next();
   }
@@ -518,7 +524,7 @@ Fonctionnalité: Référencement des pages publiques
 - [ ] **Tn+3 – Les pages de détail publiques** · US-XXX
   - Objectif : chaque contenu publié a sa page, son entrée de sitemap datée et, pour une adresse inconnue, un vrai 404
   - Dépend de : Tn, Tn+1
-  - Fichiers : à créer : `src/core/realisations/realisation.entity.ts`, `src/db/realisations/realisation.table.ts`, `src/db/realisations/realisation.repository.ts`, `src/features/realisations/constants/cache-tags.ts`, `src/features/realisations/queries/lire-realisation.query.ts`, `src/features/realisations/queries/lister-realisations.query.ts`, `src/features/realisations/components/sections/detail-realisation.tsx`, `src/features/realisations/components/containers/detail-realisation.container.tsx`, `app/(public)/realisations/[slug]/page.tsx` · à modifier : `app/sitemap.ts`, `proxy.ts`
+  - Fichiers : à créer : `src/core/realisations/realisation.entity.ts`, `src/db/realisations/realisation.table.ts`, `src/db/realisations/realisation.repository.ts`, `src/features/realisations/constants/cache-tags.ts`, `src/features/realisations/queries/lire-realisation.query.ts`, `src/features/realisations/queries/lister-realisations.query.ts`, `src/features/realisations/components/sections/detail-realisation.tsx`, `src/features/realisations/components/containers/detail-realisation.container.tsx`, `app/(public)/realisations/[slug]/page.tsx` · `drizzle/<numéro>_<nom>.sql` (migration générée) · à modifier : `app/sitemap.ts`, `proxy.ts`
   - Vérification : US-XXX critère 4 – `/realisations/inconnu` répond 404 ; le sitemap liste les réalisations publiées avec leur `lastmod`
   - Tests : « Un brouillon n'est ni trouvé ni listé » (intégration PGlite, `src/db/realisations/__tests__/realisation.repository.test.ts`)
 
@@ -637,12 +643,14 @@ describe("realisationRepository", () => {
 - **`loading.tsx` dans un segment public** : toute adresse de ce segment répond 200 avant `notFound()`, et Googlebot reçoit une « soft 404 ».
 - **`slug` inconnu** : 200 avec `noindex` même sans `loading.tsx` (étape 6 pour un vrai 404). Les robots dits « HTML limités » (Bingbot, facebookexternalhit) reçoivent, eux, un 404.
 - **`generateStaticParams` vide** : erreur de construction avec Cache Components ; renvoyer au moins une valeur.
+- **Aucune ligne publiée pendant `npm run build`** : juste après les migrations la table est vide, `generateStaticParams` renvoie `[]` et la construction échoue. Insérer d'abord au moins une réalisation publiée (`publiee = true`), par exemple depuis l'écran d'administration du projet ou une insertion SQL, puis construire.
 - **Base injoignable pendant `npm run build`** : `generateStaticParams` et le sitemap lisent la base ; sans `DATABASE_URL` valide et sans migrations appliquées, la construction échoue (« Failed to collect page data for /realisations/[slug] »). Appliquer les migrations avant de construire.
 - **`lastModified: new Date()`** dans le sitemap : Google et Bing ignorent alors toutes les dates. Seulement une vraie date de modification.
 - **`public/robots.txt`** en plus de `app/robots.ts` : deux fichiers pour la même adresse ; garder `robots.ts`.
 - **`htmlLimitedBots`** : le définir remplace toute la liste par défaut de Next.js. Inutile quand les métadonnées des pages publiques sont prérendables.
 - **`cookies()` ou `headers()` dans `generateMetadata`** d'une page publique : métadonnées envoyées en fin de page pour Googlebot et les robots IA.
 - **Types `schema-dts`** : un type comme `Organization` inclut aussi une chaîne ; dans un test, vérifier l'objet entier (`toMatchObject`) plutôt qu'une propriété.
+- **Base indisponible dans le proxy** : l'appel à `existePubliee` est entouré d'un `try/catch` ; sans lui, une panne de base ferait répondre 500 à toutes les adresses `/realisations/…`. Le message du journal reste fixe (ni adresse ni donnée de la requête).
 - **Proxy fusionné avec la connexion** : si le contrôle de session s'applique avant le bloc des réalisations, une page publique est renvoyée vers `/connexion`. Garder le bloc des réalisations en premier, avec son `return`.
 
 ## Sources

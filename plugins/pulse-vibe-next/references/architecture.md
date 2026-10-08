@@ -104,6 +104,7 @@ page (app/) → <Suspense> → container (serveur) → queries/<lecture>.query.t
 
 - La query est `server-only` ; elle porte ce qui est propre à Next : `"use cache"`, `cacheLife`, `cacheTag`, `notFound()`.
 - Une lecture va directement au repository, sans use-case.
+- Une query mise en cache (`"use cache"`) renvoie `null` quand la donnée manque ; le container (et `generateMetadata`) appelle `notFound()`, hors du cache.
 - Tags de cache d'un domaine : `features/<d>/constants/cache-tags.ts`.
 - La session : `utilisateurConnecte()` dans `features/compte/queries/utilisateur-connecte.query.ts`.
 
