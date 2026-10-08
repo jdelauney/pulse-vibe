@@ -336,3 +336,42 @@ test("pas de dépôt Git : la commande passe", () => {
   assert.strictEqual(lancerHook(bash('git commit -m "x"', dir)), null);
   assert.strictEqual(lancerHook(powershell('git commit -m "x"', path.join(dir, "inexistant"))), null);
 });
+
+// ------------------------------------------------------------ Motifs : exemples reconnus, nouveaux fournisseurs
+
+const { trouverSecrets: motifs } = require("../scripts/motifs");
+const alea = (n) => Array.from({ length: n }, (_, i) => "aB3dE5gH7jK9mN1pQ2rS4tU6vW8xY0z"[(i * 7 + 3) % 31]).join("");
+
+test("adresses d'exemple : jamais signalées", () => {
+  for (const t of [
+    "postgres" + "ql://user:password@localhost:5432/app",
+    "postgres" + "://postgres:postgres@db:5432/app",
+    "redis" + "://default:secret@redis:6379",
+    "mysql" + "://root:" + alea(12) + "@127.0.0.1/app",
+    "https" + "://user:pass@example.com/x",
+  ])
+    assert.deepStrictEqual(motifs(t), [], t);
+});
+
+test("vraie adresse de base : toujours signalée", () => {
+  assert.deepStrictEqual(motifs("postgres" + "ql://appli:" + alea(20) + "@ep-calme-1.eu-central-1.aws.neon.tech/base"), ["mot de passe dans une adresse de base de données"]);
+  assert.deepStrictEqual(motifs("https" + "://moi:" + alea(16) + "@registre.entreprise.fr/x"), ["mot de passe dans une adresse web"]);
+});
+
+test("nouveaux fournisseurs reconnus", () => {
+  assert.ok(motifs("hf" + "_" + alea(34)).includes("jeton Hugging Face"));
+  assert.ok(motifs("glpat" + "-" + alea(20)).includes("jeton GitLab"));
+  assert.ok(motifs("npm" + "_" + alea(36)).includes("jeton npm"));
+  assert.ok(motifs("gsk" + "_" + alea(52)).includes("clé Groq"));
+  assert.ok(motifs("r8" + "_" + alea(37)).includes("jeton Replicate"));
+});
+
+test("secret en clair dans une variable, sauf valeur d'exemple", () => {
+  assert.ok(motifs(`BETTER_AUTH_SECRET='${alea(32)}'`).includes("secret en clair"));
+  assert.deepStrictEqual(motifs('BETTER_AUTH_SECRET="VOTRE_SECRET_ICI_A_REMPLACER"'), []);
+  assert.deepStrictEqual(motifs('const TOKEN = "token-de-test-1234567890"'), []);
+});
+
+test("identifiant qui commence par sk- sans chiffre : pas une clé OpenAI", () => {
+  assert.deepStrictEqual(motifs("sk" + "-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-mon-identifiant"), []);
+});

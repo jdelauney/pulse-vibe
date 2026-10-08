@@ -392,7 +392,7 @@ test("historique : retrouve une clé et un .env passés dans un ancien commit, s
 
   const r = lancer(p, ["historique"]);
   assert.strictEqual(r.code, 1, r.sortie);
-  assert.match(r.sortie, /src\/config\.js : clé secrète Stripe – retiré depuis/);
+  assert.match(r.sortie, /src\/config\.js : clé secrète \(Stripe ou Clerk\) – retiré depuis/);
   assert.match(r.sortie, /\.env\.local : fichier d'environnement enregistré/);
   assert.match(r.sortie, /Aucun dépôt distant/);
   sansValeur(r.sortie, CLE_STRIPE, MOT_DE_PASSE_BASE);
