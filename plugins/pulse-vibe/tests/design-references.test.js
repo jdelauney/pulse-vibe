@@ -85,3 +85,34 @@ test("revue motifs : pas de chevauchement, squelette selon le registre, renvois 
     assert.ok(t.includes(attendu), attendu);
   assert.ok(!t.includes("La touche Échap la ferme"), "le comportement de la modale reste dans composants.md");
 });
+
+// --- Lot 3 : critique élargie ---
+
+const P = path.join(__dirname, "..");
+const lireP = (...p) => fs.readFileSync(path.join(P, ...p), "utf8");
+const RUBRIQUES = ["Fidélité au design", "Hiérarchie", "Usage", "Anti-pattern", "État manquant", "Accessibilité", "Textes"];
+
+test("heuristiques : les 10 heuristiques et les 5 dimensions avec leurs paliers", () => {
+  const t = lire("heuristiques.md");
+  for (let n = 1; n <= 10; n++) assert.match(t, new RegExp(`^### ${n}\. `, "m"), `heuristique ${n}`);
+  for (const d of ["Intention", "Hiérarchie", "Finition", "Usage", "Personnalité"]) assert.match(t, new RegExp(`^### ${d}`, "m"), d);
+  for (const palier of ["0 à 2", "3 à 4", "5 à 6", "7 à 8", "9 à 10"]) assert.ok(t.includes(palier), palier);
+  assert.ok(!t.includes("—"), "aucun tiret cadratin");
+});
+
+test("ui-critic : charge heuristiques et motifs, 7 rubriques, mode maquette, corrections rapides", () => {
+  const t = lireP("agents", "ui-critic.md");
+  for (const attendu of ["design/heuristiques.md", "design/motifs.md", "mode maquette", "Corrections rapides", "Évaluation d'ensemble", ...RUBRIQUES.map((r) => "`" + r + "`")])
+    assert.ok(t.includes(attendu), attendu);
+});
+
+test("modèle revue-ui : évaluation d'ensemble, corrections rapides, 7 rubriques", () => {
+  const t = lireP("templates", "revue-ui.md");
+  for (const attendu of ["## Évaluation d'ensemble", "## Corrections rapides", "/ 50", RUBRIQUES.join(" / ")]) assert.ok(t.includes(attendu), attendu);
+});
+
+test("skill ui : critique de la maquette retenue, références à jour", () => {
+  const t = lireP("skills", "ui", "SKILL.md");
+  for (const attendu of ["Critiquer la maquette retenue (Recommandé)", "retenue/critique.md", "mode maquette"]) assert.ok(t.includes(attendu), attendu);
+  assert.ok(!t.includes("trois références"), "plus de « trois références »");
+});

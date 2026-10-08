@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd *) Bash(start "" *.html") Bash(open *.html") Bash
 
 !`pulse-aidd contexte ui`
 
-Appliquer les « Règles communes Pulse », les « Règles de la mémoire projet » et les trois références de design ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
+Appliquer les « Règles communes Pulse », les « Règles de la mémoire projet » et les références de design ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS`
 
@@ -102,6 +102,12 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `doc
    - Déplacer les autres variantes dans `docs/design/maquettes/<spec>/alternatives/`, puis supprimer `comparer.html` devenu périmé (`pulse-aidd comparer` a besoin de variantes pour le régénérer).
    - La spec reste telle quelle : le plan retrouve la maquette retenue à cet emplacement et la cite dans sa conception technique (si le plan existe déjà, y ajouter la ligne « Maquette », avec l'accord de la personne).
    - Laisser le commit à une étape ultérieure.
+8. **Critiquer.** Corriger une maquette coûte moins que corriger le code : proposer « Critiquer la maquette retenue (Recommandé) » / « Passer au plan ». Pour critiquer :
+   - Lancer le sous-agent `pulse:ui-critic` en **mode maquette** (s'il n'est pas disponible, `pulse-aidd agent ui-critic`, consignes appliquées soi-même, en lecture seule). Lui indiquer la cible `docs/design/maquettes/<spec>/retenue/`, le chemin de `docs/design.md` (ou la direction provisoire) et la spec de l'US.
+   - Écrire sa réponse, à partir de sa deuxième ligne, dans `docs/design/maquettes/<spec>/retenue/critique.md`.
+   - Montrer le verdict, la note sur 50 et les corrections rapides.
+   - Faire cocher les constats à corriger (AskUserQuestion multiSelect, les 🔴 et les corrections rapides recommandés).
+   - Corriger le HTML de `retenue/`, marquer ✅ les constats corrigés dans `critique.md`, et noter les changements dans `note.md`.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XXX>`.
 
@@ -109,10 +115,10 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XX
 
 Cible : un écran, un fichier, un dossier, ou toute l'interface (vide = toute l'interface, à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon le code existant). Vérifier d'abord que le fichier ou l'écran existe (Glob, Grep) ; sinon, lister ce qui existe et demander.
 
-1. **Lancer l'audit.** Expliquer en une phrase qu'il se fait en lecture seule. Lancer le sous-agent `pulse:ui-critic` ; s'il n'est pas disponible, lancer `pulse-aidd agent ui-critic` et appliquer ses consignes soi-même, en lecture seule. Lui indiquer : la cible, le chemin de `docs/design.md` (ou « absent »), la ou les maquettes retenues des specs dont relève la cible (`docs/design/maquettes/<spec>/retenue/`), l'emplacement du code d'interface d'après « Organisation des fichiers », et les trois références.
-2. **Contenu attendu.** Pour 5 rubriques (fidélité à `docs/design.md` et à la maquette ; anti-patterns ; états manquants ; accessibilité : contraste, focus visible, libellés, taille des cibles ; textes d'interface) : des constats classés 🔴 bloquant, 🟠 important, 🟢 finition, chacun avec le fichier, ce qui se voit, pourquoi c'est gênant et la correction proposée ; plus 3 points « ce qui va bien ». La réponse commence par une ligne `Verdict : …`, suivie du rapport complet.
+1. **Lancer l'audit.** Expliquer en une phrase qu'il se fait en lecture seule. Lancer le sous-agent `pulse:ui-critic` ; s'il n'est pas disponible, lancer `pulse-aidd agent ui-critic` et appliquer ses consignes soi-même, en lecture seule. Lui indiquer : la cible, le chemin de `docs/design.md` (ou « absent »), la ou les maquettes retenues des specs dont relève la cible (`docs/design/maquettes/<spec>/retenue/`), l'emplacement du code d'interface d'après « Organisation des fichiers », et le mode `code`.
+2. **Contenu attendu.** Une évaluation d'ensemble (5 dimensions notées sur 10 : intention, hiérarchie, finition, usage, personnalité). Pour 7 rubriques (fidélité à `docs/design.md` et à la maquette ; hiérarchie ; usage, d'après les 10 heuristiques de Nielsen ; anti-patterns ; états manquants ; accessibilité : contraste, focus visible, libellés, taille des cibles ; textes d'interface) : des constats classés 🔴 bloquant, 🟠 important, 🟢 finition, chacun avec le fichier, ce qui se voit, pourquoi c'est gênant et la correction proposée. Plus 3 points « ce qui va bien » et 3 corrections rapides. La réponse commence par une ligne `Verdict : …`, suivie du rapport complet.
 3. **Enregistrer.** Écrire sa réponse à partir de sa deuxième ligne (la première, `Verdict : …`, est réservée au résumé dans le chat ; le modèle a sa propre ligne **Verdict**), dans `docs/design/audits/ui-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe déjà), selon le modèle `revue-ui.md`.
-4. **Présenter** l'essentiel en 5 lignes : le verdict, les 🔴, ce qui va bien.
+4. **Présenter** l'essentiel en 5 lignes : le verdict, la note sur 50, les 🔴, les corrections rapides.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` ; `/pulse:refine` pour un constat qui change le besoin ou le parcours ; `/pulse:fix` pour un comportement cassé.
 
