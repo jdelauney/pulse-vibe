@@ -67,7 +67,7 @@ Le secret de webhook du poste et celui du site en ligne sont **différents** : c
 | `app/api/stripe/webhook/route.ts` | Réception des webhooks (délègue à `features/paiement/webhooks/`) |
 | `app/(connecte)/paiement/page.tsx`, `app/(connecte)/paiement/merci/page.tsx` | Pages « Paiement » et « Merci » |
 | `proxy.ts` (modifié) | `"/paiement/:path*"` dans le `matcher` |
-| `src/core/paiement/use-cases/__tests__/paiement.use-cases.test.ts` | Tests unitaires des use-cases (doublures en mémoire) |
+| `src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts`, `confirmer-paiement.use-case.test.ts` | Tests unitaires des use-cases (doublures en mémoire) |
 | `src/adapters/payment/__tests__/payment.adapter.test.ts` | Tests de l'adapter (Stripe doublé, signatures réelles) |
 | `src/db/paiement/__tests__/commande.repository.test.ts` | Tests d'intégration avec PGlite |
 | `src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts` | Tests du webhook (réponses, journal) |
@@ -889,13 +889,13 @@ Fonctionnalité: Paiement
 
   Règle: Seuls les messages signés par Stripe sont acceptés
 
-    @US-XXX-4 @unitaire @integration @securite
+    @US-XXX-4 @unitaire @securite
     Exemple: Un message correctement signé est accepté
       Étant donné un message signé avec le secret du webhook
       Quand le message arrive sur le webhook
       Alors le webhook répond 200
 
-    @US-XXX-4 @unitaire @integration @securite
+    @US-XXX-4 @unitaire @securite
     Exemple: Un message à la signature fausse est refusé
       Étant donné un message signé avec un autre secret
       Quand le message arrive sur le webhook
@@ -908,13 +908,13 @@ Fonctionnalité: Paiement
       Quand le serveur vérifie le message
       Alors le message est refusé
 
-    @US-XXX-4 @integration @securite
+    @US-XXX-4 @unitaire @securite
     Exemple: Un message sans signature est refusé
       Étant donné un message sans en-tête de signature
       Quand le message arrive sur le webhook
       Alors le webhook répond 400
 
-    @US-XXX-4 @integration @securite
+    @US-XXX-4 @unitaire @securite
     Exemple: Un message refusé n'écrit ni son contenu ni sa signature dans le journal
       Étant donné un message signé avec un autre secret, qui contient l'adresse de Camille
       Quand le message arrive sur le webhook
@@ -972,7 +972,7 @@ Fonctionnalité: Paiement
       Quand le serveur ouvre la session de paiement
       Alors une erreur de service « paiement » est levée
 
-    @US-XXX-7 @integration @securite
+    @US-XXX-7 @unitaire @securite
     Exemple: Une panne de la base répond 500 avec un message générique, et Stripe renverra le message
       Étant donné un message correctement signé
       Et la base est en panne
@@ -1022,15 +1022,15 @@ Fonctionnalité: Paiement
 - [ ] **Tn+1 – Payer sur la page de Stripe** · US-XXX
   - Objectif : une personne connectée clique sur « Payer » et arrive sur la page de paiement de Stripe
   - Dépend de : Tn
-  - Fichiers : à créer : `src/core/paiement/passerelle-paiement.port.ts`, `src/core/paiement/use-cases/ouvrir-paiement.use-case.ts`, `src/adapters/payment/payment.adapter.ts`, `src/features/paiement/constants/offre.ts`, `actions/payer.action.ts`, `components/sections/bouton-payer.tsx`, `components/containers/bouton-payer.container.tsx`, `app/(connecte)/paiement/page.tsx`, `src/core/paiement/use-cases/__tests__/paiement.use-cases.test.ts`, `src/adapters/payment/__tests__/payment.adapter.test.ts` · à modifier : `proxy.ts`
+  - Fichiers : à créer : `src/core/paiement/passerelle-paiement.port.ts`, `src/core/paiement/use-cases/ouvrir-paiement.use-case.ts`, `src/adapters/payment/payment.adapter.ts`, `src/features/paiement/constants/offre.ts`, `actions/payer.action.ts`, `components/sections/bouton-payer.tsx`, `components/containers/bouton-payer.container.tsx`, `app/(connecte)/paiement/page.tsx`, `src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts`, `src/adapters/payment/__tests__/payment.adapter.test.ts` · à modifier : `proxy.ts`
   - Vérification : US-XXX critère 6 – « Payer 19,00 € » ouvre la page Stripe avec « Accès complet » et 19,00 €
   - Tests : « Camille ouvre le paiement… », « La session est ouverte avec le prix du serveur… », « Un refus de Stripe lève une erreur de service « paiement »… » (unitaires) ; le parcours Stripe se vérifie à la main (« Camille paie avec la carte de test 4242… »)
 - [ ] **Tn+2 – Confirmer le paiement par webhook** · US-XXX
   - Objectif : un paiement réussi passe la commande en « payée », une seule fois, et la page « Merci » l'affiche
   - Dépend de : Tn+1
-  - Fichiers : à créer : `src/core/paiement/use-cases/confirmer-paiement.use-case.ts`, `src/features/paiement/webhooks/stripe-paiement.webhook.ts`, `queries/commande-par-session.query.ts`, `components/sections/statut-paiement.tsx`, `components/containers/statut-paiement.container.tsx`, `app/api/stripe/webhook/route.ts`, `app/(connecte)/paiement/merci/page.tsx`, `src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts`
+  - Fichiers : à créer : `src/core/paiement/use-cases/confirmer-paiement.use-case.ts`, `src/features/paiement/webhooks/stripe-paiement.webhook.ts`, `queries/commande-par-session.query.ts`, `components/sections/statut-paiement.tsx`, `components/containers/statut-paiement.container.tsx`, `app/api/stripe/webhook/route.ts`, `app/(connecte)/paiement/merci/page.tsx`, `src/core/paiement/use-cases/__tests__/confirmer-paiement.use-case.test.ts`, `src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts`
   - Vérification : US-XXX critères 1 à 5 – avec `stripe listen`, payer avec 4242 : « Paiement reçu » ; avec 4000 0000 0000 0002 : refus, commande en attente
-  - Tests : « Un message correctement signé est accepté », « Un message à la signature fausse est refusé », « Un message refusé n'écrit ni son contenu ni sa signature dans le journal », « Une panne de la base répond 500… » (intégration) ; « Un paiement différé (non payé) ne confirme rien » (unitaire)
+  - Tests : « Un message correctement signé est accepté », « Un message à la signature fausse est refusé », « Un message refusé n'écrit ni son contenu ni sa signature dans le journal », « Une panne de la base répond 500… », « Un paiement encaissé est transmis aux commandes », « Un événement sans paiement encaissé est ignoré » (unitaires, doublures) ; « Un paiement différé (non payé) ne confirme rien » (unitaire)
   - Attention : lire le corps avec `requete.text()` avant toute autre lecture ; un `JSON.parse` puis `JSON.stringify` casse la signature
   - Action manuelle : lancer `stripe listen` et copier le secret `whsec_…` dans `.env`
 - [ ] **Tn+3 – Recevoir les paiements de test sur le site en ligne** · US-XXX
@@ -1044,15 +1044,14 @@ Fonctionnalité: Paiement
 
 ### Unitaires : use-cases
 
-Les use-cases s'essaient sans base ni réseau : le repository et la passerelle de paiement sont remplacés par des doublures en mémoire.
+Les use-cases s'essaient sans base ni réseau : le repository et la passerelle de paiement sont remplacés par des doublures en mémoire. Un fichier par use-case, créé avec lui.
 
 ```ts
-// src/core/paiement/use-cases/__tests__/paiement.use-cases.test.ts
+// src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts
 import { describe, expect, it } from "vitest";
-import type { Offre, ResultatConfirmation } from "../../commande.entity";
+import type { Offre } from "../../commande.entity";
 import type { CommandeRepository } from "../../commande-repository.port";
 import type { PasserellePaiement } from "../../passerelle-paiement.port";
-import { confirmerPaiement } from "../confirmer-paiement.use-case";
 import { ouvrirPaiement } from "../ouvrir-paiement.use-case";
 
 const OFFRE: Offre = {
@@ -1065,7 +1064,6 @@ const OFFRE: Offre = {
 function createSut() {
   const commandes: { id: string; utilisateurId: string; sessionId?: string }[] =
     [];
-  const confirmations: { evenementId: string; commandeId: string }[] = [];
   const sessionsCreees: { commandeId: string; urlSucces: string }[] = [];
 
   const repository: CommandeRepository = {
@@ -1080,9 +1078,8 @@ function createSut() {
       );
       if (ligne) ligne.sessionId = sessionId;
     },
-    async enregistrerConfirmation(confirmation) {
-      confirmations.push(confirmation);
-      return "payee" satisfies ResultatConfirmation;
+    async enregistrerConfirmation() {
+      throw new Error("non utilisé dans ce test");
     },
   };
   const paiement: PasserellePaiement = {
@@ -1107,18 +1104,6 @@ function createSut() {
         },
       );
     },
-    async whenStripeEnvoie(confirmation: boolean) {
-      return confirmerPaiement(
-        { commandes: repository },
-        {
-          id: "evt_001",
-          type: "checkout.session.completed",
-          confirmation: confirmation
-            ? { commandeId: "commande-1", montantCentimes: 1900 }
-            : null,
-        },
-      );
-    },
     thenCommandeReliee() {
       expect(commandes).toEqual([
         {
@@ -1134,14 +1119,11 @@ function createSut() {
         },
       ]);
     },
-    thenConfirmationsTransmises(attendu: number) {
-      expect(confirmations).toHaveLength(attendu);
-    },
   };
 }
 
 describe("Paiement", () => {
-  describe("Une commande est créée avant d'ouvrir la page de paiement", () => {
+  describe("La page de paiement s'ouvre avec le prix du serveur", () => {
     it("US-XXX-6 – Camille ouvre le paiement : sa commande est reliée à la session Stripe", async () => {
       const sut = createSut();
 
@@ -1151,8 +1133,54 @@ describe("Paiement", () => {
       sut.thenCommandeReliee();
     });
   });
+});
+```
 
-  describe("Seul un paiement encaissé compte", () => {
+```ts
+// src/core/paiement/use-cases/__tests__/confirmer-paiement.use-case.test.ts
+import { describe, expect, it } from "vitest";
+import type { ResultatConfirmation } from "../../commande.entity";
+import type { CommandeRepository } from "../../commande-repository.port";
+import { confirmerPaiement } from "../confirmer-paiement.use-case";
+
+/** Doublure en mémoire du repository. */
+function createSut() {
+  const confirmations: { evenementId: string; commandeId: string }[] = [];
+
+  const commandes: CommandeRepository = {
+    async creer() {
+      throw new Error("non utilisé dans ce test");
+    },
+    async attacherSession() {
+      throw new Error("non utilisé dans ce test");
+    },
+    async enregistrerConfirmation(confirmation) {
+      confirmations.push(confirmation);
+      return "payee" satisfies ResultatConfirmation;
+    },
+  };
+
+  return {
+    async whenStripeEnvoie(confirmation: boolean) {
+      return confirmerPaiement(
+        { commandes },
+        {
+          id: "evt_001",
+          type: "checkout.session.completed",
+          confirmation: confirmation
+            ? { commandeId: "commande-1", montantCentimes: 1900 }
+            : null,
+        },
+      );
+    },
+    thenConfirmationsTransmises(attendu: number) {
+      expect(confirmations).toHaveLength(attendu);
+    },
+  };
+}
+
+describe("Paiement", () => {
+  describe("Un paiement confirmé par Stripe marque la commande payée, une seule fois", () => {
     it("US-XXX-1 – Un paiement encaissé est transmis aux commandes", async () => {
       const sut = createSut();
 
@@ -1545,7 +1573,7 @@ describe("Paiement", () => {
 });
 ```
 
-### Intégration : webhook
+### Unitaires : webhook
 
 Le test appelle le webhook de la feature avec de vraies signatures. La base, le journal et le use-case sont doublés : le test vérifie les réponses, et que le journal ne reçoit ni le contenu du message ni sa signature.
 
@@ -1682,6 +1710,8 @@ Le parcours sur la page de Stripe reste un test manuel : cette page appartient �
 - **`payment_method_types`** : retiré de la création de session dans stripe 23. Les moyens de paiement se règlent dans le tableau de bord Stripe.
 - **Clé lue pendant la construction** : l'adapter crée le client à la première utilisation ; `next build` passe sans `STRIPE_SECRET_KEY`.
 - **Les deux variables Stripe deviennent obligatoires** : `envServeur()` valide tout le schéma à sa première lecture. Renseignez-les dans `.env` (une valeur factice commençant par `sk_` et `whsec_` suffit tant qu'aucun paiement réel n'a lieu) avant de lancer le site.
+- **Commande « en_attente » restée seule** : si Stripe échoue après la création de la commande, la ligne reste « en_attente », sans session. Elle est invisible pour la personne et ne passe jamais « payee » ; une tâche de ménage pourra l'effacer plus tard.
+- **Événement ignoré, puis renvoyé** : un événement dont le montant ne correspond pas est noté comme reçu, la commande reste « en_attente ». Si Stripe le renvoie, la réponse est « deja_traite » : la commande ne change pas. Corrigez la cause (montant, commande) puis relancez un **nouveau** paiement.
 - **Un webhook en panne répond 500 ou 503** : Stripe renvoie le message plus tard ; la table `evenement_stripe` garantit qu'il ne compte qu'une fois.
 - **Langues** : avec la recette `langues`, `success_url` et `cancel_url` restent les adresses françaises (sans préfixe), toujours valides ; les pages vont sous `app/[locale]/(connecte)/paiement/` et `app/api/stripe/` reste à sa place.
 
