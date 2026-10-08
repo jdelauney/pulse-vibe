@@ -140,7 +140,7 @@ fonction sendReminders({ loadInvoices, sendEmail, today }) :
 - **Dépendre seulement de ce qu'on utilise** : passer à une fonction les champs dont elle a besoin plutôt qu'un objet complet de la base, et s'appuyer sur ce qu'un autre module expose plutôt que sur sa forme interne.
 - **Le sens des dépendances va vers le métier** : l'affichage et l'accès aux données dépendent des règles, et les règles restent indépendantes d'eux (`qualite/organisation.md` §6).
 - **Les détails techniques restent au bord** : le format d'un service externe, d'une table ou d'une bibliothèque est traduit dans le module qui lui parle ; le reste du code manipule les types du projet. Changer de service touche seulement ce module.
-- Une fonctionnalité passe par ce qu'une autre expose (son `index`) et laisse ses fichiers internes de côté.
+- Une fonctionnalité passe par ce qu'une autre expose (son `index`, ou les dossiers ouverts quand le framework déconseille l'`index`) et laisse ses fichiers internes de côté.
 - Demander une valeur au module qui la possède, plutôt que de la chercher par une chaîne d'accès qui traverse plusieurs objets (`order.customer.account.settings.currency`).
 - **Faible couplage, abstraction minimale** : on ajoute une interface, un port ou une fabrique seulement lorsqu'il existe déjà deux implémentations, ou qu'un test en a réellement besoin pour passer une doublure (§10, YAGNI). Passer une fonction en paramètre suffit souvent.
 
@@ -208,7 +208,7 @@ fonction loadItems() :
 - On crée un fichier **au moment d'y écrire du code utile** : dossiers et fichiers naissent avec leur premier contenu, au fil des besoins.
 - L'emplacement des fichiers suit le code existant, puis « Organisation des fichiers » de `docs/technical.md`, puis la liste de fichiers de la tâche du plan. L'arborescence vient de ces sources, et d'elles seules. Nommage des fichiers, paliers de structure et règles de dépendance entre dossiers : `qualite/organisation.md`.
 - Une couche d'abstraction (service, dépôt, fabrique) s'ajoute quand elle évite une vraie duplication ou qu'elle rend testable un code difficile à tester (§5), plutôt que par principe. Isoler les règles métier dans leur module est à part : c'est toujours requis.
-- Importer directement le module qui définit ce qu'on utilise, plutôt qu'un fichier qui ne fait que réexporter d'autres modules. **Seule exception** : l'`index` public d'une feature, qui liste explicitement ce qu'elle partage (`qualite/organisation.md` §6).
+- Importer directement le module qui définit ce qu'on utilise, plutôt qu'un fichier qui ne fait que réexporter d'autres modules. **Seule exception** : l'`index` public d'une feature, qui liste explicitement ce qu'elle partage, quand le framework le permet (`qualite/organisation.md` §6).
 - Imports à sens unique : quand A dépend de B, B reste indépendant de A.
 - Avant d'importer un module du projet, vérifier qu'il existe.
 
@@ -275,7 +275,7 @@ fonction loadItems() :
 - [ ] Chaque règle métier est une fonction nommée, écrite une seule fois dans le module de règles, indépendante de l'interface, des données, du réseau et du framework.
 - [ ] Les décisions sont des calculs purs ; heure, hasard, accès aux données et services externes sont reçus en paramètre.
 - [ ] Les règles métier ont leurs tests (nominal, limites, refus), qui passent sans base, réseau ni interface.
-- [ ] Les dépendances vont vers le métier ; les formats externes sont traduits au bord ; chaque fonctionnalité passe par l'index public des autres.
+- [ ] Les dépendances vont vers le métier ; les formats externes sont traduits au bord ; chaque fonctionnalité passe par ce que les autres exposent (index public, ou dossiers ouverts).
 - [ ] Commentaire en tête de fichier ; commentaires en français sur le *pourquoi* (sauf règle contraire du `CLAUDE.md`).
 - [ ] Types stricts si le langage le permet, sinon entrées et sorties documentées ; données entrantes validées à la frontière.
 - [ ] Chaque erreur est traitée ou remonte au gestionnaire prévu ; messages compréhensibles ; détails internes gardés côté serveur.

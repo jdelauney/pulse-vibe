@@ -1,5 +1,5 @@
+import { projet } from "@src/config/projet";
 import type { Metadata } from "next";
-import { projet } from "./projet";
 
 /** Champs de partage communs à toutes les pages. */
 export const partageCommun = {
@@ -8,7 +8,7 @@ export const partageCommun = {
   type: "website",
 } as const;
 
-/** L'image de partage du site, produite par src/app/opengraph-image.tsx. */
+/** L'image de partage du site, produite par app/opengraph-image.tsx. */
 export const imageDePartage = {
   url: "/opengraph-image",
   width: 1200,

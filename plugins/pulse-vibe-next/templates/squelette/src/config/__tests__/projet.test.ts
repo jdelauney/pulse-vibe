@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { projet } from "./projet";
+import { projet } from "../projet";
 
 describe("Projet", () => {
   test("le nom du projet est renseigné", () => {

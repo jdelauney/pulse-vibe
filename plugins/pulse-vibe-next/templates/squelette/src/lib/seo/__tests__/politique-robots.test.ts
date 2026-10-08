@@ -3,7 +3,7 @@ import {
   ROBOTS_ENTRAINEMENT,
   ROBOTS_REPONSES_IA,
   reglesRobots,
-} from "./politique-robots";
+} from "../politique-robots";
 
 describe("Politique des robots IA", () => {
   test("A : tout est ouvert", () => {

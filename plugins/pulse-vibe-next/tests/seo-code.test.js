@@ -107,6 +107,47 @@ test("site en plusieurs langues : versions non déclarées (C13)", () => {
   assert.deepStrictEqual(codes(controler(d)), ["C13:haute", "C13:moyenne"]);
 });
 
+test("versions de langue déclarées par le helper versionsDeLangue() : languages et x-default reconnus (C13)", () => {
+  const { "src/app/layout.tsx": layout, "src/app/page.tsx": page, ...reste } = BASE;
+  const helper = (corps) => `export function versionsDeLangue(chemin) { ${corps} }`;
+  const projetLangues = (corps) =>
+    projet({
+      ...reste,
+      "src/app/sitemap.ts": "export default function sitemap() { return [{ url: '/', alternates: { languages: {} } }]; }",
+      "src/app/[locale]/layout.tsx": layout,
+      "src/app/[locale]/page.tsx": 'export const metadata = { ...metadonneesDePage({ titre: "A", description: "d", chemin: "/" }), alternates: { canonical: "/", languages: versionsDeLangue("/") } };',
+      "src/lib/seo/referencement.ts": helper(corps),
+    });
+  assert.deepStrictEqual(codes(controler(projetLangues('const l = {}; l["x-default"] = chemin; return l;'))), []);
+  assert.deepStrictEqual(codes(controler(projetLangues("return {};"))), ["C13:basse"], "un helper sans x-default reste signalé");
+});
+
+test("x-default cité par une autre fonction du fichier du helper : C13 basse conservé", () => {
+  const { "src/app/layout.tsx": layout, "src/app/page.tsx": page, ...reste } = BASE;
+  const d = projet({
+    ...reste,
+    "src/app/sitemap.ts": "export default function sitemap() { return [{ url: '/', alternates: { languages: {} } }]; }",
+    "src/app/[locale]/layout.tsx": layout,
+    "src/app/[locale]/page.tsx": 'export const metadata = { ...metadonneesDePage({ titre: "A", description: "d", chemin: "/" }), alternates: { canonical: "/", languages: versionsDeLangue("/") } };',
+    "src/lib/seo/referencement.ts": ["export function versionsDeLangue(chemin) {", "  return {};", "}", "", "export function autre() {", "  return { \"x-default\": \"/\" };", "}", ""].join("\n"),
+  });
+  assert.deepStrictEqual(codes(controler(d)), ["C13:basse"]);
+});
+
+test("noindex en texte ou après un objet imbriqué : pas de constat C3 ; index:false d'un sous-objet seul : constat", () => {
+  const page = (m) => projet({ ...BASE, "src/app/merci/page.tsx": `export const metadata = ${m};` });
+  assert.deepStrictEqual(codes(controler(page('{ title: "Merci", robots: "noindex, nofollow" }'))), []);
+  assert.deepStrictEqual(codes(controler(page('{ title: "Merci", robots: { googleBot: { noimageindex: true }, index: false } }'))), []);
+  assert.deepStrictEqual(codes(controler(page('{ title: "Merci", robots: { index: true, googleBot: { index: false } } }'))), ["C3:moyenne"]);
+});
+
+test("page publique en noindex volontaire : pas de constat C3", () => {
+  const d = projet({ ...BASE, "src/app/merci/page.tsx": 'export const metadata = { title: "Merci", robots: { index: false, follow: false } };' });
+  assert.deepStrictEqual(codes(controler(d)), []);
+  const d2 = projet({ ...BASE, "src/app/merci/page.tsx": 'export const metadata = { title: "Merci", robots: { index: true } };' });
+  assert.deepStrictEqual(codes(controler(d2)), ["C3:moyenne"]);
+});
+
 test("--pages : liste des pages publiques fixes, séparées par des virgules ; option inconnue : code 2", () => {
   const d = projet({ ...BASE, "src/app/(public)/a-propos/page.tsx": "x", "src/app/api/x/page.ts": "x", "src/app/blog/[slug]/page.tsx": "x" });
   const r = lancer("--pages", "--dossier", d);
@@ -117,7 +158,7 @@ test("--pages : liste des pages publiques fixes, séparées par des virgules ; o
 
 test("la politique des robots du squelette reprend les rôles de robots-ia.json (cœur)", () => {
   const liste = JSON.parse(fs.readFileSync(path.join(RACINE, "..", "pulse-vibe", "references", "seo", "robots-ia.json"), "utf8")).robots;
-  const texte = fs.readFileSync(path.join(RACINE, "templates", "squelette", "src", "lib", "politique-robots.ts"), "utf8");
+  const texte = fs.readFileSync(path.join(RACINE, "templates", "squelette", "src", "lib", "seo", "politique-robots.ts"), "utf8");
   const tableau = (nom) => [...texte.match(new RegExp(`export const ${nom} = \\[([\\s\\S]*?)\\];`))[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort();
   const parRoles = (...roles) => liste.filter((r) => roles.includes(r.role)).map((r) => r.jeton).sort();
   assert.deepStrictEqual(tableau("ROBOTS_ENTRAINEMENT"), parRoles("entrainement", "jeton-entrainement"));
@@ -132,4 +173,47 @@ test("la recette seo suit le format commun des recettes", () => {
     assert.ok(texte.includes(`\n${section}\n`), section);
   assert.match(texte, /# language: fr/);
   assert.ok(fs.existsSync(path.join(RACINE, "references", "contexte", "seo.md")));
+});
+
+const BASE_RACINE = Object.fromEntries(Object.entries(BASE).map(([k, v]) => [k.replace(/^src\/app\//, "app/"), v]));
+
+test("nouvelle structure (app/ à la racine) : aucun constat, messages avec les vrais chemins", () => {
+  assert.deepStrictEqual(controler(projet(BASE_RACINE)).constats, []);
+  const { "app/robots.ts": _r, ...sansRobots } = BASE_RACINE;
+  const c6 = controler(projet(sansRobots)).constats.find((x) => x.code === "C6");
+  assert.match(c6.message + c6.conseil, /app\/robots\.ts/);
+  assert.doesNotMatch(c6.message + c6.conseil, /src\/app/);
+});
+
+test("ancienne structure (src/app/) : les messages citent src/app/", () => {
+  const { "src/app/robots.ts": _r, ...sansRobots } = BASE;
+  const c6 = controler(projet(sansRobots)).constats.find((x) => x.code === "C6");
+  assert.match(c6.message + c6.conseil, /src\/app\/robots\.ts/);
+});
+
+test("nouvelle structure : les composants de app/ sont contrôlés (JSON-LD)", () => {
+  const d = projet({ ...BASE_RACINE, "app/a-propos/page.tsx": 'export default function P() { return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(x) }} />; }' });
+  assert.ok(codes(controler(d)).includes("C8:haute"));
+});
+
+test("vrai 404 : proxy.ts à la racine est trouvé dans la nouvelle structure", () => {
+  const detail = 'export async function generateMetadata() { return metadonneesDePage({}); }\nexport default async function P() { if (!x) notFound(); }';
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail }))), ["C9:basse"]);
+  assert.deepStrictEqual(codes(controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail, "proxy.ts": 'export const config = { matcher: "/blog/:slug" };' }))), []);
+  const c9 = controler(projet({ ...BASE_RACINE, "app/blog/[slug]/page.tsx": detail })).constats.find((x) => x.code === "C9");
+  assert.doesNotMatch(c9.conseil, /src\/proxy/);
+});
+
+test("ancienne structure : C9 cite src/proxy.ts", () => {
+  const detail = 'export async function generateMetadata() { return metadonneesDePage({}); }\nexport default async function P() { if (!x) notFound(); }';
+  const c9 = controler(projet({ ...BASE, "src/app/blog/[slug]/page.tsx": detail })).constats.find((x) => x.code === "C9");
+  assert.match(c9.conseil, /src\/proxy\.ts/);
+});
+
+test("C1 metadataBase : le conseil cite le fichier site qui existe (ancien en repli, nouveau par défaut)", () => {
+  const sansBase = { ...BASE, "src/app/layout.tsx": 'export const metadata = { title: { default: "A", template: "%s | A" } };' };
+  const ancien = controler(projet({ ...sansBase, "src/lib/site.ts": "export {};" })).constats.find((x) => x.code === "C1");
+  assert.match(ancien.conseil, /src\/lib\/site\.ts/);
+  const defaut = controler(projet(sansBase)).constats.find((x) => x.code === "C1");
+  assert.match(defaut.conseil, /src\/config\/site\.ts/);
 });

@@ -14,7 +14,8 @@ if (!adresseDirecte) {
 
 export default defineConfig({
   dialect: "postgresql",
-  schema: "./src/db/schema/index.ts",
+  // Chaque domaine range ses tables dans src/db/<domaine>/<sujet>.table.ts.
+  schema: "./src/db/*/*.table.ts",
   out: "./drizzle",
   dbCredentials: { url: adresseDirecte },
   strict: true,

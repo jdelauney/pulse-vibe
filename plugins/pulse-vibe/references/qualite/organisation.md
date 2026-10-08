@@ -42,7 +42,7 @@ Une exception vaut seulement si elle est **imposée** (le code fonctionne unique
 | Fichiers au nom fixé par le framework | le nom exact demandé par la documentation | `page.tsx`, `layout.tsx`, `+page.svelte`, `manage.py` |
 | Fichiers conventionnels de la racine | le nom d'usage | `README.md`, `LICENSE`, `Dockerfile`, `Makefile`, `CLAUDE.md` |
 | Fichiers de configuration et fichiers « point » | le nom attendu par l'outil | `.gitignore`, `.env.example`, `tsconfig.json`, `vite.config.ts` |
-| Point d'entrée public d'une feature | `index` + extension du langage | `index.ts`, `__init__.py` |
+| Point d'entrée public d'une feature (si le framework le permet, §6) | `index` + extension du langage | `index.ts`, `__init__.py` |
 
 Dans ces langages, le **suffixe** se reporte dans le nom selon la convention du langage (`item_repository.py`, `ItemRepository.java`) : le rôle reste lisible, seule la forme change.
 
@@ -62,7 +62,7 @@ Liste **fermée extensible** : on choisit son suffixe dans ce catalogue. Un proj
 | `.types` | Types partagés, déclarations seulement | la couche qui les définit | `item.types.ts` |
 | `.config` | Configuration lue au démarrage | `config/` ou racine | `app.config.ts` |
 | `.component` | Composant d'interface, si le projet préfère l'indiquer | `ui/` | `item-card.component.tsx` |
-| `.test` | Test du fichier de même nom | à côté du fichier testé | `item.rules.test.ts` |
+| `.test` | Test du fichier de même nom | dans le même dossier que le fichier testé, ou dans son sous-dossier `__tests__/` (§7) | `item.rules.test.ts` |
 
 `.component` est facultatif : un projet choisit `item-card.tsx` **ou** `item-card.component.tsx`, et s'y tient partout. Les tests utilisent `.test` plutôt que `.spec`, pour les distinguer des specs de la méthode (`SPEC-US-XXX-<nom>.md`).
 
@@ -89,7 +89,11 @@ Liste **fermée extensible** : on choisit son suffixe dans ce catalogue. Un proj
 
 ## 5. Le code : des paliers progressifs, découpés par fonctionnalité
 
-Le code est **d'abord découpé par fonctionnalité** (`features/<nom>/`) : tout ce qui sert à une même fonction est au même endroit. À l'intérieur d'une feature, les **couches** apparaissent au moment où le projet en a besoin. Trois paliers :
+Le code est **d'abord découpé par fonctionnalité** (`features/<nom>/`) : tout ce qui sert à une même fonction est au même endroit. À l'intérieur d'une feature, les **couches** apparaissent au moment où le projet en a besoin.
+
+Les arborescences ci-dessous montrent l'`index` public de chaque feature ; il disparaît quand le framework déconseille les fichiers de réexportation (§6).
+
+Trois paliers :
 
 ### Palier 1 — simple
 
@@ -186,10 +190,11 @@ Au palier 1, sans couches, la même idée s'applique au niveau des fichiers : le
 - Une feature importe une autre feature **seulement par son `index`** et laisse ses fichiers internes de côté (`features/item/domain/item.rules.ts` reste hors de portée depuis `features/project/`).
 - À l'intérieur d'une feature, on importe directement le fichier qui définit ce qu'on utilise, plutôt que son propre `index`.
 - Imports à sens unique entre features : si deux features ont besoin l'une de l'autre, la partie commune va dans `shared/`.
+- **Quand le framework déconseille les fichiers de réexportation** (ex. Next.js : ils dégradent le tree shaking), la feature n'a pas d'`index` : on importe directement le fichier visé, et « Organisation des fichiers » de `docs/technical.md` liste les dossiers qu'une autre feature peut importer.
 
 ## 7. Tests
 
-- **Tests unitaires et d'intégration à côté du fichier testé**, même nom avec `.test` : `item.rules.ts` → `item.rules.test.ts`. On voit d'un coup d'œil ce qui est testé et ce qui reste à tester.
+- **Tests unitaires et d'intégration près du fichier testé**, même nom avec `.test` : `item.rules.ts` → `item.rules.test.ts`, dans le même dossier **ou** dans son sous-dossier `__tests__/`. Un projet choisit l'une des deux formes et s'y tient (« Organisation des fichiers ») ; `__tests__/` garde les dossiers courts quand ils grandissent.
 - **Tests de bout en bout** (parcours complet dans l'application) dans `tests/e2e/`, nommés par parcours : `create-item.e2e.test.ts`.
 - Données et doublures de test partagées : `tests/fixtures/` ; une doublure propre à une feature reste à côté de ses tests.
 - Si l'outil de test du langage impose un autre emplacement (`tests/` obligatoire, préfixe `test_` en Python), on suit l'outil et on le note dans « Organisation des fichiers ».
@@ -206,5 +211,5 @@ Au palier 1, sans couches, la même idée s'applique au niveau des fichiers : le
 | Passer au palier 3 pour un petit projet | Rester au palier le plus simple qui répond au besoin constaté |
 | Inventer un suffixe (`.manager`, `.helper`, `.handler`) | Utiliser le catalogue (§3) ou l'étendre dans `docs/technical.md` |
 | Le domaine qui importe la base de données ou le framework | Un port dans `application/ports/`, implémenté dans `infrastructure/` |
-| Importer un fichier interne d'une autre feature | Passer par son `index` public |
+| Importer un fichier interne d'une autre feature | Passer par son `index` public, ou, sans index (§6), par les dossiers qu'« Organisation des fichiers » ouvre aux autres features |
 | Renommer ou déplacer des fichiers existants pour suivre ce guide | Suivre l'organisation existante ; proposer une réorganisation comme tâche à part |

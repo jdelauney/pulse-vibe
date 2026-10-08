@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@src/components/ui/button";
 
 // Affiché quand une page rencontre une erreur imprévue. Le détail technique reste dans les journaux du serveur.
 export default function Erreur({

@@ -6,7 +6,7 @@
 //
 //   --pages   affiche les pages publiques fixes, séparées par des virgules, pour : pulse-aidd seo <adresse> --chemins <liste>
 //
-// Lit les fichiers du projet (src/app/, next.config.ts, public/) sans rien modifier. Contrôles C1 à C13
+// Lit les fichiers du projet (app/ ou src/app/, src/, next.config.ts, public/) sans rien modifier. Contrôles C1 à C13
 // (métadonnées, robots, sitemap, image de partage, données structurées, vrai 404, langues) et NC1 à NC3
 // (politique des robots IA, robots.txt unique, htmlLimitedBots). Gravités Pulse.
 // Code de sortie : 0 sans constat Critique, 1 avec au moins un constat Critique, 2 si l'appel est invalide.
@@ -93,6 +93,17 @@ function trouverApp(dossier) {
   return null;
 }
 
+/** Chemin relatif du dossier des routes, pour les messages : app ou src/app. */
+function cheminApp(dossier) {
+  const app = trouverApp(dossier);
+  return app ? path.relative(dossier, app).split(path.sep).join("/") : "app";
+}
+
+/** Le chemin relatif qui existe dans le projet (nouvelle structure, sinon ancienne) ; le nouveau par défaut. */
+function cheminDuCode(dossier, nouveau, ancien) {
+  return !fs.existsSync(path.join(dossier, nouveau)) && fs.existsSync(path.join(dossier, ancien)) ? ancien : nouveau;
+}
+
 /** Les pages publiques fixes (hors groupe connecté, api, segments dynamiques). */
 function pagesPubliques(dossier) {
   const app = trouverApp(dossier);
@@ -105,11 +116,33 @@ function pagesPubliques(dossier) {
     .sort();
 }
 
+/** Métadonnées en noindex volontaire : robots: "noindex..." ou robots: { index: false } (au premier niveau de l'objet). */
+function estNoindex(texte) {
+  if (/robots\s*:\s*["'`][^"'`]*noindex/.test(texte)) return true;
+  const m = /robots\s*:\s*\{/.exec(texte);
+  if (!m) return false;
+  let profondeur = 0;
+  let niveau1 = "";
+  for (let i = m.index + m[0].length - 1; i < texte.length; i++) {
+    const ch = texte[i];
+    if (ch === "{") profondeur++;
+    else if (ch === "}" && --profondeur === 0) break;
+    else if (profondeur === 1) niveau1 += ch;
+  }
+  return /\bindex\s*:\s*false/.test(niveau1);
+}
+
 function controler(dossier) {
   const constats = [];
   const rel = (f) => path.relative(dossier, f).split(path.sep).join("/");
   const app = trouverApp(dossier);
-  if (!app) return { constats: [c("C1", "critique", "Dossier src/app/ introuvable : est-ce bien un projet Next.js (App Router) ?", "Lancer la commande depuis la racine du projet, ou indiquer --dossier.", null)], pages: [] };
+  const A = cheminApp(dossier);
+  const proxyRel = A === "src/app" ? "src/proxy.ts" : "proxy.ts";
+  const siteRel = cheminDuCode(dossier, "src/config/site.ts", "src/lib/site.ts");
+  const seoRel = cheminDuCode(dossier, "src/lib/seo/seo.ts", "src/lib/seo.ts");
+  const robotsRel = cheminDuCode(dossier, "src/lib/seo/politique-robots.ts", "src/lib/politique-robots.ts");
+  const jsonLdRel = cheminDuCode(dossier, "src/components/shared/elements/json-ld.tsx", "src/components/json-ld.tsx");
+  if (!app) return { constats: [c("C1", "critique", "Dossier app/ (ou src/app/) introuvable : est-ce bien un projet Next.js (App Router) ?", "Lancer la commande depuis la racine du projet, ou indiquer --dossier.", null)], pages: [] };
   const tous = fichiers(app);
   const pages = tous.filter((f) => /[\\/]page\.(tsx|ts|jsx|js|mdx)$/.test(f)).map((f) => decrirePage(f, app));
   const publiques = pages.filter((p) => !p.connectee && !p.api && !p.privee);
@@ -118,9 +151,9 @@ function controler(dossier) {
   const texteLayout = lire(layoutRacine);
 
   // C1, C2 – layout racine
-  if (!layoutRacine) constats.push(c("C1", "critique", "Layout racine introuvable.", "Créer src/app/layout.tsx (squelette du pack).", null));
+  if (!layoutRacine) constats.push(c("C1", "critique", "Layout racine introuvable.", `Créer ${A}/layout.tsx (squelette du pack).`, null));
   else {
-    if (!/metadataBase\s*:/.test(texteLayout)) constats.push(c("C1", "critique", "Le layout racine ne définit pas metadataBase : adresses officielles et images de partage risquent de pointer vers localhost.", "Ajouter metadataBase: new URL(adresseDuSite()) (src/lib/site.ts, recette seo).", rel(layoutRacine)));
+    if (!/metadataBase\s*:/.test(texteLayout)) constats.push(c("C1", "critique", "Le layout racine ne définit pas metadataBase : adresses officielles et images de partage risquent de pointer vers localhost.", `Ajouter metadataBase: new URL(adresseDuSite()) (${siteRel}, recette seo).`, rel(layoutRacine)));
     else if (/metadataBase\s*:\s*new URL\(\s*["'`]https?:\/\/localhost/.test(texteLayout)) constats.push(c("C1", "critique", "metadataBase est écrit en dur sur localhost.", "Utiliser adresseDuSite() (variable SITE_URL en production).", rel(layoutRacine)));
     if (!/template\s*:/.test(texteLayout)) constats.push(c("C2", "moyenne", "Pas de modèle de titre (title.template) dans le layout racine : chaque page doit répéter le nom du site.", 'Écrire title: { default: projet.nom, template: `%s | ${projet.nom}` }.', rel(layoutRacine)));
   }
@@ -132,8 +165,8 @@ function controler(dossier) {
     const statique = /export\s+const\s+metadata\b/.test(t);
     const dynamique = /export\s+(async\s+)?function\s+generateMetadata\b/.test(t);
     if (!statique && !dynamique) {
-      constats.push(c("C3", "haute", `Page publique ${p.route} sans métadonnées : titre et description par défaut, pas d'adresse officielle.`, "Exporter metadata = metadonneesDePage({ titre, description, chemin }) (src/lib/seo.ts), avec les textes de docs/seo.md.", f));
-    } else if (!/metadonneesDePage\s*\(/.test(t) && !/canonical\s*:/.test(t)) {
+      constats.push(c("C3", "haute", `Page publique ${p.route} sans métadonnées : titre et description par défaut, pas d'adresse officielle.`, `Exporter metadata = metadonneesDePage({ titre, description, chemin }) (${seoRel}), avec les textes de docs/seo.md.`, f));
+    } else if (!/metadonneesDePage\s*\(/.test(t) && !/canonical\s*:/.test(t) && !estNoindex(t)) {
       constats.push(c("C3", "moyenne", `Page publique ${p.route} sans adresse officielle (canonique).`, "Construire les métadonnées avec metadonneesDePage(), qui pose la canonique.", f));
     }
     if (/openGraph\s*:/.test(t) && !/metadonneesDePage\s*\(/.test(t)) constats.push(c("C4", "moyenne", `${p.route} définit openGraph à la main : Next.js remplace alors tout celui du layout (nom du site, image).`, "Passer par metadonneesDePage(), qui reconstruit la carte complète.", f));
@@ -158,7 +191,7 @@ function controler(dossier) {
       else {
         const prefixe = p.route.split("/[")[0] || "/";
         const proxy = lire(premier(path.dirname(app), ["proxy.ts", "proxy.js"]) || "");
-        if (!proxy.includes(prefixe)) constats.push(c("C9", "basse", `${p.route} : une adresse inconnue répond 200 avec noindex (coquille prérendue envoyée avant notFound()). Google l'écarte, mais la compte comme « soft 404 ».`, "Pour un vrai 404 : vérifier l'existence dans src/proxy.ts (recette seo, étape « vrai 404 »).", f));
+        if (!proxy.includes(prefixe)) constats.push(c("C9", "basse", `${p.route} : une adresse inconnue répond 200 avec noindex (coquille prérendue envoyée avant notFound()). Google l'écarte, mais la compte comme « soft 404 ».`, `Pour un vrai 404 : vérifier l'existence dans ${proxyRel} (recette seo, étape « vrai 404 »).`, f));
       }
     }
   }
@@ -167,32 +200,35 @@ function controler(dossier) {
   if (pages.some((p) => p.connectee)) {
     const dossierConnecte = path.join(app, ...(avecLangues ? ["[locale]"] : []), "(connecte)");
     const layoutConnecte = premier(dossierConnecte, ["layout.tsx", "layout.ts", "layout.jsx", "layout.js"]);
-    if (!layoutConnecte || !/index\s*:\s*false/.test(lire(layoutConnecte))) constats.push(c("C5", "moyenne", "Les pages connectées ne demandent pas noindex : un lien partagé peut faire apparaître leur adresse dans Google.", "Ajouter src/app/(connecte)/layout.tsx avec robots: { index: false, follow: false } (recette seo).", layoutConnecte ? rel(layoutConnecte) : rel(dossierConnecte)));
+    if (!layoutConnecte || !/index\s*:\s*false/.test(lire(layoutConnecte))) constats.push(c("C5", "moyenne", "Les pages connectées ne demandent pas noindex : un lien partagé peut faire apparaître leur adresse dans Google.", `Ajouter ${A}/(connecte)/layout.tsx avec robots: { index: false, follow: false } (recette seo).`, layoutConnecte ? rel(layoutConnecte) : rel(dossierConnecte)));
   }
 
   // C6, NC1, NC2 – robots et sitemap
   const robots = premier(app, ["robots.ts", "robots.js", "robots.txt"]);
   const sitemap = premier(app, ["sitemap.ts", "sitemap.js", "sitemap.xml"]);
   const publicDir = path.join(dossier, "public");
-  if (!robots) constats.push(c("C6", "haute", "Pas de robots.txt (src/app/robots.ts) : Google ne trouve pas le sitemap.", "Ajouter src/app/robots.ts (squelette du pack).", null));
-  if (!sitemap) constats.push(c("C6", "haute", "Pas de sitemap (src/app/sitemap.ts).", "Ajouter src/app/sitemap.ts avec les pages publiques (squelette du pack).", null));
-  if (fs.existsSync(path.join(publicDir, "robots.txt"))) constats.push(c("NC2", "haute", "public/robots.txt en plus de src/app/robots.ts : deux fichiers pour la même adresse.", "Supprimer public/robots.txt et garder src/app/robots.ts.", "public/robots.txt"));
-  if (fs.existsSync(path.join(publicDir, "sitemap.xml"))) constats.push(c("C6", "haute", "public/sitemap.xml en plus du sitemap généré.", "Supprimer public/sitemap.xml et garder src/app/sitemap.ts.", "public/sitemap.xml"));
+  if (!robots) constats.push(c("C6", "haute", `Pas de robots.txt (${A}/robots.ts) : Google ne trouve pas le sitemap.`, `Ajouter ${A}/robots.ts (squelette du pack).`, null));
+  if (!sitemap) constats.push(c("C6", "haute", `Pas de sitemap (${A}/sitemap.ts).`, `Ajouter ${A}/sitemap.ts avec les pages publiques (squelette du pack).`, null));
+  if (fs.existsSync(path.join(publicDir, "robots.txt"))) constats.push(c("NC2", "haute", `public/robots.txt en plus de ${A}/robots.ts : deux fichiers pour la même adresse.`, `Supprimer public/robots.txt et garder ${A}/robots.ts.`, "public/robots.txt"));
+  if (fs.existsSync(path.join(publicDir, "sitemap.xml"))) constats.push(c("C6", "haute", "public/sitemap.xml en plus du sitemap généré.", `Supprimer public/sitemap.xml et garder ${A}/sitemap.ts.`, "public/sitemap.xml"));
   if (sitemap) {
     const t = lire(sitemap);
     if (/new Date\(\s*\)/.test(t)) constats.push(c("C6", "moyenne", "Le sitemap date chaque page du jour de génération (new Date()) : Google ignore alors toutes ses dates.", "Indiquer la vraie date de mise à jour du contenu (colonne en base), ou aucune date.", rel(sitemap)));
     if (/\b(priority|changeFrequency)\s*:/.test(t)) constats.push(c("C6", "basse", "Le sitemap remplit priority ou changeFrequency, que Google ignore.", "Retirer ces champs.", rel(sitemap)));
   }
-  if (robots && /\.(ts|js)$/.test(robots) && !/politiqueRobotsIa|reglesRobots\s*\(/.test(lire(robots))) constats.push(c("NC1", "basse", "robots.ts n'utilise pas la politique des robots IA (src/lib/politique-robots.ts).", "Construire les règles avec reglesRobots(politiqueRobotsIa) (recette seo) ; décider la politique avec /pulse:seo ia.", rel(robots)));
+  if (robots && /\.(ts|js)$/.test(robots) && !/politiqueRobotsIa|reglesRobots\s*\(/.test(lire(robots))) constats.push(c("NC1", "basse", `robots.ts n'utilise pas la politique des robots IA (${robotsRel}).`, "Construire les règles avec reglesRobots(politiqueRobotsIa) (recette seo) ; décider la politique avec /pulse:seo ia.", rel(robots)));
 
   // C7 – image de partage
-  if (!premier(app, ["opengraph-image.tsx", "opengraph-image.ts", "opengraph-image.jsx", "opengraph-image.js", "opengraph-image.png", "opengraph-image.jpg", "opengraph-image.jpeg"])) constats.push(c("C7", "moyenne", "Pas d'image de partage pour le site (src/app/opengraph-image).", "Ajouter src/app/opengraph-image.tsx (squelette du pack) ou une image de 1200 × 630.", null));
+  if (!premier(app, ["opengraph-image.tsx", "opengraph-image.ts", "opengraph-image.jsx", "opengraph-image.js", "opengraph-image.png", "opengraph-image.jpg", "opengraph-image.jpeg"])) constats.push(c("C7", "moyenne", `Pas d'image de partage pour le site (${A}/opengraph-image).`, `Ajouter ${A}/opengraph-image.tsx (squelette du pack) ou une image de 1200 × 630.`, null));
 
   // C8, C11 – fichiers de composants
-  const sources = fichiers(path.join(dossier, "src")).filter((f) => /\.(tsx|jsx)$/.test(f) && !/[\\/]components[\\/]ui[\\/]/.test(f));
+  const sources = [path.join(dossier, "src"), path.join(dossier, "app")]
+    .filter((d) => fs.existsSync(d))
+    .flatMap((d) => fichiers(d))
+    .filter((f) => /\.(tsx|jsx)$/.test(f) && !/[\\/]components[\\/]ui[\\/]/.test(f));
   for (const f of sources) {
     const t = lire(f);
-    if (/dangerouslySetInnerHTML/.test(t) && /JSON\.stringify\(/.test(t) && !/\\\\u003c/.test(t)) constats.push(c("C8", "haute", "JSON-LD écrit avec JSON.stringify sans échapper « < » : un texte saisi peut injecter du code (XSS).", "Utiliser le composant JsonLd (src/components/json-ld.tsx).", rel(f)));
+    if (/dangerouslySetInnerHTML/.test(t) && /JSON\.stringify\(/.test(t) && !/\\\\u003c/.test(t)) constats.push(c("C8", "haute", "JSON-LD écrit avec JSON.stringify sans échapper « < » : un texte saisi peut injecter du code (XSS).", `Utiliser le composant JsonLd (${jsonLdRel}).`, rel(f)));
     for (const m of t.matchAll(/<Image\b[\s\S]*?\/?>/g)) {
       if (!/\balt\s*=/.test(m[0])) {
         constats.push(c("C11", "moyenne", "Image next/image sans texte alternatif (alt).", "Décrire l'image en quelques mots ; alt=\"\" pour une image décorative.", rel(f)));
@@ -213,8 +249,18 @@ function controler(dossier) {
   // C13 – langues
   if (avecLangues) {
     const tousTextes = [texteLayout, ...publiques.map((p) => lire(p.fichier))].join("\n");
-    if (!/languages\s*:/.test(tousTextes)) constats.push(c("C13", "haute", "Site en plusieurs langues sans versions déclarées (alternates.languages) : Google peut montrer la mauvaise langue.", "Ajouter alternates.languages, avec x-default, à chaque page publique (recette langues).", rel(layoutRacine || app)));
-    else if (!/x-default/.test(tousTextes)) constats.push(c("C13", "basse", "Versions de langue sans x-default.", "Ajouter x-default vers la langue par défaut.", rel(layoutRacine || app)));
+    const appelHelper = /\bversionsDeLangue\s*\(/.test(tousTextes);
+    // Le helper de la recette langues pose x-default : le contrôle lit sa définition dans le projet.
+    const definiAvecDefaut = (f) => {
+      const t = lire(f);
+      const debut = t.search(/function\s+versionsDeLangue\b/);
+      if (!/\.(ts|tsx|js|jsx)$/.test(f) || debut < 0) return false;
+      const suite = t.slice(debut + 1).search(/\n(export\s|(async\s+)?function\s)/);
+      return /x-default/.test(suite >= 0 ? t.slice(debut, debut + 1 + suite) : t.slice(debut));
+    };
+    const helperAvecDefaut = appelHelper && [...fichiers(path.join(dossier, "src")), ...fichiers(path.join(dossier, "lib"))].some(definiAvecDefaut);
+    if (!/languages\s*:/.test(tousTextes) && !appelHelper) constats.push(c("C13", "haute", "Site en plusieurs langues sans versions déclarées (alternates.languages) : Google peut montrer la mauvaise langue.", "Ajouter alternates.languages, avec x-default, à chaque page publique (recette langues).", rel(layoutRacine || app)));
+    else if (!/x-default/.test(tousTextes) && !helperAvecDefaut) constats.push(c("C13", "basse", "Versions de langue sans x-default.", "Ajouter x-default vers la langue par défaut.", rel(layoutRacine || app)));
     if (sitemap && !/alternates\s*:/.test(lire(sitemap))) constats.push(c("C13", "moyenne", "Le sitemap ne liste pas les versions de langue.", "Ajouter alternates.languages à chaque entrée du sitemap (recette langues).", rel(sitemap)));
   }
 

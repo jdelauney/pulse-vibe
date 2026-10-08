@@ -87,6 +87,91 @@ function lancer(commande, cwd, env = {}) {
   }
 }
 
+const IMPORT_INTERDIT = "lint/style/noRestrictedImports";
+const REEXPORT_TOUT = "lint/performance/noReExportAll";
+const BARREL = "lint/performance/noBarrelFile";
+
+/** Fichiers d'essai : `regle` = règle Biome qui doit les signaler ; `regle: null` = aucun diagnostic de cette famille attendu. */
+function fixturesDeCouches() {
+  const f = (chemin, contenu, regle = IMPORT_INTERDIT) => ({ chemin, contenu, regle });
+  const importe = (nom, source) => `import { ${nom} } from "${source}";\n\nexport const ${nom}2 = ${nom};\n`;
+  const core = (nom, source) => f(`src/core/verification/${nom}.rules.ts`, importe("x", source));
+  const action = importe("creer", "../../actions/essai.action");
+  return [
+    core("react", "react"),
+    core("lib-alias", "@src/lib/utils"),
+    core("lib-relatif", "../../lib/verification/x"),
+    core("config-relatif", "../../config/verification/x"),
+    core("components-relatif", "../../components/verification/x"),
+    core("app-relatif", "../../app/verification/x"),
+    f("src/db/verification/essai.repository.ts", importe("essai", "@src/adapters/verification/essai.adapter")),
+    f("src/adapters/verification/essai.adapter.ts", importe("e", "@src/db/verification/essai.repository")),
+    f("src/adapters/auth/essai-auth.ts", importe("x", "@src/features/verification/essai")),
+    f("src/features/verification/components/containers/essai.container.tsx", importe("db", "@src/db/verification/essai.repository")),
+    f("src/features/verification/components/sections/essai.tsx", importe("c", "../containers/essai.container")),
+    f("src/features/verification/components/composites/essai.tsx", importe("s", "../sections/essai")),
+    f("src/features/verification/components/elements/essai.tsx", importe("c", "../composites/essai")),
+    f("src/components/shared/elements/essai.tsx", importe("c", "../composites/essai")),
+    f("src/features/verification/components/sections/essai-action.tsx", action),
+    // Les tests d'un composant peuvent importer ce que le composant ignore.
+    f("src/features/verification/components/sections/__tests__/essai.test.tsx", action, null),
+    f("src/lib/verification/index.ts", 'export * from "./essai";\n', REEXPORT_TOUT),
+    f("src/lib/verification-nomme/index.ts", 'export { a } from "./a";\n', BARREL),
+  ];
+}
+
+/** Diagnostics de `biome lint` par fichier : { "chemin/relatif": [catégories] }. */
+function diagnosticsBiome(dossier, chemins) {
+  const r = spawnSync(`npx biome lint --reporter=json --max-diagnostics=500 ${chemins.join(" ")}`, { cwd: dossier, shell: true, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const ligne = (r.stdout || "").split("\n").find((l) => l.startsWith('{"summary"'));
+  if (!ligne) throw new Error(`\n❌ Sortie JSON de Biome illisible :\n${r.stdout || ""}${r.stderr || ""}`);
+  const parFichier = {};
+  for (const d of JSON.parse(ligne).diagnostics) {
+    const chemin = String(d.location?.path?.file ?? d.location?.path ?? "").replace(/\\/g, "/");
+    (parFichier[chemin] ||= []).push(d.category);
+  }
+  return parFichier;
+}
+
+/**
+ * Garde des règles de couches de biome.json : une importation interdite par dossier, plus des fichiers
+ * de réexportation, écrits dans le dossier temporaire ; Biome (rapport JSON) doit les signaler par la règle
+ * visée, et épargner les tests des composants et src/lib/utils.ts. Les fichiers créés sont toujours retirés.
+ */
+function controlerReglesDeCouches(dossier) {
+  console.log("\n▶ garde des règles de couches (Biome)");
+  const fixtures = fixturesDeCouches();
+  const crees = []; // seulement ce que la garde crée : dossiers nouveaux et fichiers
+  const manques = [];
+  try {
+    for (const { chemin, contenu } of fixtures) {
+      const complet = path.join(dossier, ...chemin.split("/"));
+      const premierDossier = fs.mkdirSync(path.dirname(complet), { recursive: true });
+      if (premierDossier) crees.push(premierDossier);
+      fs.writeFileSync(complet, contenu);
+      crees.push(complet);
+    }
+    const diag = diagnosticsBiome(dossier, [...fixtures.map((x) => x.chemin), "src/lib/utils.ts"]);
+    for (const { chemin, regle } of fixtures) {
+      const categories = diag[chemin] || [];
+      if (regle && !categories.includes(regle)) manques.push(`${chemin} (attendu : ${regle}, reçu : ${categories.join(", ") || "rien"})`);
+      if (!regle && categories.includes(IMPORT_INTERDIT)) manques.push(`${chemin} (ne doit pas être restreint, mais ${IMPORT_INTERDIT} le signale)`);
+    }
+    if (!fs.existsSync(path.join(dossier, "src", "lib", "utils.ts"))) manques.push("src/lib/utils.ts est introuvable : la garde ne peut pas vérifier l'absence de diagnostic barrel");
+    const utils = diag["src/lib/utils.ts"] || [];
+    if (utils.some((c) => c === BARREL || c === REEXPORT_TOUT)) manques.push(`src/lib/utils.ts (la réexportation shadcn ne doit pas être signalée, reçu : ${utils.join(", ")})`);
+  } catch (erreur) {
+    manques.push(erreur.message);
+  } finally {
+    for (const c of crees.reverse()) fs.rmSync(c, { recursive: true, force: true });
+  }
+  if (manques.length) {
+    console.error(`\n❌ Les règles de couches de biome.json ne se comportent pas comme prévu :\n  - ${manques.join("\n  - ")}`);
+    process.exit(1);
+  }
+  console.log(`   ${fixtures.length} fichiers d'essai : chaque règle attendue signale le sien ; tests de composants et utils.ts épargnés.`);
+}
+
 function derniereVersion(paquet) {
   const r = spawnSync(`npm view ${paquet} version`, { shell: true, encoding: "utf8" });
   const v = (r.stdout || "").trim();
@@ -134,8 +219,13 @@ async function principal() {
   lancer("npm install --no-audit --no-fund", dossier);
   lancer("npm run check", dossier);
   lancer("npm run typecheck", dossier);
+  controlerReglesDeCouches(dossier);
   lancer("npm test", dossier);
   // drizzle-kit (et son esbuild) doit fonctionner après une installation neuve ; generate ne se connecte pas.
+  // Le squelette n'a pas encore de table : une table d'essai, dans le dossier temporaire seulement,
+  // vérifie que drizzle-kit trouve les tables par motif et génère une migration.
+  fs.mkdirSync(path.join(dossier, "src", "db", "verification"), { recursive: true });
+  fs.writeFileSync(path.join(dossier, "src", "db", "verification", "essai.table.ts"), 'import { pgTable, text } from "drizzle-orm/pg-core";\n\nexport const essais = pgTable("essais", { id: text("id").primaryKey() });\n');
   lancer("npm run db:generate", dossier, { DATABASE_URL_DIRECT: "postgresql://verification@localhost:5432/verification" });
   lancer("npm run build", dossier);
   controlerCodeSeo(dossier);

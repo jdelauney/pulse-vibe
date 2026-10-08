@@ -22,11 +22,26 @@ test("crée le projet de départ et remplit le nom et la description", () => {
   assert.strictEqual(r.status, 0, r.stderr);
   const paquet = JSON.parse(lire(d, "package.json"));
   assert.strictEqual(paquet.name, "l-atelier-bois-co");
-  assert.match(lire(d, "src/lib/projet.ts"), /nom: "L'Atelier \\"Bois & Co\\"",/);
-  assert.match(lire(d, "src/lib/projet.ts"), /description: "Réservez un créneau\.",/);
-  for (const f of ["src/app/layout.tsx", "src/app/page.tsx", "next.config.ts", "biome.json", "vercel.json", "src/components/ui/button.tsx", "src/app/favicon.ico"])
+  assert.match(lire(d, "src/config/projet.ts"), /nom: "L'Atelier \\"Bois & Co\\"",/);
+  assert.match(lire(d, "src/config/projet.ts"), /description: "Réservez un créneau\.",/);
+  for (const f of ["app/layout.tsx", "app/page.tsx", "app/favicon.ico", "next.config.ts", "biome.json", "vercel.json", "src/components/ui/button.tsx", "src/config/env.ts", "src/lib/seo/seo.ts", "src/components/shared/elements/json-ld.tsx"])
     assert.ok(fs.existsSync(path.join(d, f)), f);
+  assert.ok(!fs.existsSync(path.join(d, "src", "app")), "plus de src/app/");
   assert.ok(!fs.existsSync(path.join(d, "gitignore.template")), "les modèles à fusionner ne sont pas copiés tels quels");
+});
+
+test("aucun import @/ : les alias sont @app/ et @src/", () => {
+  const d = dossierVide();
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  const fautifs = [];
+  (function parcourir(dossier) {
+    for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = path.join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (/\.(ts|tsx|json)$/.test(e.name) && /["']@\//.test(fs.readFileSync(chemin, "utf8"))) fautifs.push(path.relative(d, chemin));
+    }
+  })(d);
+  assert.deepStrictEqual(fautifs, []);
 });
 
 test("aucun repère {{…}} ne reste dans les fichiers créés", () => {
@@ -74,4 +89,14 @@ test("sans nom ou avec une option inconnue : message et code 1", () => {
 test("nom de paquet : minuscules, sans accent, tirets", () => {
   assert.strictEqual(nomDePaquet("Café Équipe 2"), "cafe-equipe-2");
   assert.strictEqual(nomDePaquet("!!!"), "mon-projet");
+});
+
+test("refuse un dossier qui contient déjà src/app/ et n'écrit rien", () => {
+  const d = dossierVide();
+  fs.mkdirSync(path.join(d, "src", "app"), { recursive: true });
+  const r = lancer("--nom", "Essai", "--dossier", d);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /refactoring ou alignement sur les règles du pack/);
+  assert.deepStrictEqual(fs.readdirSync(d), ["src"]);
+  assert.deepStrictEqual(fs.readdirSync(path.join(d, "src")), ["app"]);
 });

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { projet } from "../src/lib/projet";
+import { projet } from "../src/config/projet";
 
 test.describe("Référencement", () => {
   test("robots.txt répond et cite le sitemap par son adresse complète", async ({

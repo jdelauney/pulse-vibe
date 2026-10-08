@@ -1,8 +1,8 @@
+import { projet } from "@src/config/projet";
 import { ImageResponse } from "next/og";
-import { projet } from "@/lib/projet";
 
 // Icône du site (onglet du navigateur, résultats de Google : plus de 48 × 48 pixels recommandé).
-// Une image fournie, src/app/icon.png (carrée), la remplace.
+// Une image fournie, app/icon.png (carrée), la remplace.
 export const size = { width: 192, height: 192 };
 export const contentType = "image/png";
 

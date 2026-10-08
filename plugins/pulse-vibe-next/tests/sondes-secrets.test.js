@@ -72,6 +72,17 @@ test("regles : JSON des variables du pack et noms déclarés dans src/lib/env.ts
   assert.strictEqual(json.variables.BETTER_AUTH_URL.secret, false);
 });
 
+test("regles : lit src/config/env.ts (structure actuelle) avant src/lib/env.ts", async () => {
+  const d = projet();
+  fs.mkdirSync(path.join(d, "src", "config"), { recursive: true });
+  fs.writeFileSync(path.join(d, "src", "config", "env.ts"), "const s = z.object({\n  DATABASE_URL: z.url(),\n  CLE_NOUVELLE: z.string().min(1),\n});\n");
+  fs.mkdirSync(path.join(d, "src", "lib"), { recursive: true });
+  fs.writeFileSync(path.join(d, "src", "lib", "env.ts"), "const s = z.object({\n  ANCIENNE: z.string(),\n});\n");
+  const r = await lancer(d, ["regles"]);
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.deepStrictEqual(JSON.parse(r.sortie).code, ["DATABASE_URL", "CLE_NOUVELLE"]);
+});
+
 test("la fiche décrit chaque variable des règles, avec ses préfixes attendus", () => {
   const texte = fs.readFileSync(FICHE, "utf8");
   for (const [nom, regle] of Object.entries(VARIABLES)) {

@@ -88,6 +88,7 @@ function creerSquelette(opts) {
     NOM_DU_PROJET_JSON: JSON.stringify(opts.nom.trim()),
     DESCRIPTION_JSON: JSON.stringify((opts.description || "").trim()),
   };
+  if (fs.existsSync(path.join(opts.dossier, "src", "app"))) throw new Error("Ce projet suit l'organisation précédente (app/ dans src/). L'aligner sur la nouvelle structure est une tâche du plan (« refactoring ou alignement sur les règles du pack ») ; rien n'a été écrit.");
   fs.mkdirSync(opts.dossier, { recursive: true });
   const bilan = { crees: [], gardes: [], fusionnes: [] };
   for (const rel of listerFichiers(SOURCE)) {

@@ -1,5 +1,5 @@
+import { adresseDuSite } from "@src/config/site";
 import type { MetadataRoute } from "next";
-import { adresseDuSite } from "@/lib/site";
 
 // Les pages publiques, chacune par son adresse officielle. Ajouter ici chaque nouvelle page publique ;
 // des contenus publiés en base se lisent avec une fonction "use cache" (recette seo).

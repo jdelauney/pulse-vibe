@@ -4,7 +4,7 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`), mis en ligne sur Vercel (`/pulse:deploy`).
+- Le squelette du pack est en place (`pulse-aidd pile squelette`), mis en ligne sur Vercel (`/pulse:deploy`) : `src/db/index.ts` exporte `getDb()` et le type `Db` ; `src/lib/errors/reponse-erreur.ts` fournit `reponseErreur()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`.
 - Deux options ; la personne choisit (AskUserQuestion), après lecture de leurs limites :
 
 | | A. Speed Insights de Vercel | B. Mesure envoyée au site lui-même |
@@ -27,16 +27,21 @@ Aucune nouvelle variable.
 
 | Fichier | Option | Rôle |
 |---|---|---|
-| `src/app/layout.tsx` (modifié) | A et B | Ajoute `<SpeedInsights />` (A) ou `<MesureVitesse />` (B) |
-| `src/db/schema/vitesse.ts` | B | Table `mesures_vitesse` |
-| `src/db/schema/index.ts` (modifié) | B | `export * from "./vitesse";` |
+| `app/layout.tsx` (modifié) | A et B | Ajoute `<SpeedInsights />` (A) ou `<MesureVitesse />` (B) |
+| `src/core/vitesse/mesure.entity.ts` | B | Mesures et notes acceptées, durée de conservation, types |
+| `src/core/vitesse/mesure.rules.ts` | B | Chemin sans identifiant, date limite de conservation (fonctions pures) |
+| `src/core/vitesse/mesure-repository.port.ts` | B | Ce dont le use-case a besoin : enregistrer, effacer les anciennes |
+| `src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts` | B | Use-case « enregistrer une mesure » |
+| `src/db/vitesse/mesure-vitesse.table.ts` | B | Table `mesures_vitesse` |
 | `drizzle/<numéro>_<nom>.sql` | B | Migration générée par `npm run db:generate` |
-| `src/features/vitesse/regles.ts` | B | Mesures acceptées, durée de conservation, chemin sans identifiant (fonction pure) |
-| `src/features/vitesse/schemas.ts` | B | Schéma Zod d'une mesure reçue |
-| `src/features/vitesse/queries.ts` | B | Enregistrer, effacer les anciennes, 75e centile par page |
-| `src/app/api/vitesse/route.ts` | B | Route qui reçoit les mesures des navigateurs |
-| `src/features/vitesse/components/mesure-vitesse.tsx` | B | Composant client qui mesure et envoie |
-| `src/features/vitesse/regles.test.ts`, `queries.test.ts`, `src/app/api/vitesse/route.test.ts` | B | Tests unitaires et d'intégration |
+| `src/db/vitesse/mesure-vitesse.repository.ts` | B | `mesureVitesseRepository(db)` : `enregistrer`, `effacerAvant`, `p75ParPage` |
+| `src/features/vitesse/schemas/mesure.schema.ts` | B | Schéma Zod d'une mesure reçue |
+| `src/features/vitesse/webhooks/recevoir-mesure.webhook.ts` | B | Contrôles de la requête, puis use-case |
+| `app/api/vitesse/route.ts` | B | Route qui reçoit les mesures des navigateurs |
+| `src/components/shared/elements/mesure-vitesse.tsx` | B | Composant client qui mesure et envoie |
+| `src/core/vitesse/__tests__/mesure.rules.test.ts`, `src/core/vitesse/__tests__/enregistrer-mesure.use-case.test.ts` | B | Tests unitaires des règles et du use-case |
+| `src/features/vitesse/schemas/__tests__/mesure.schema.test.ts`, `src/features/vitesse/webhooks/__tests__/recevoir-mesure.webhook.test.ts` | B | Tests unitaires du schéma et de la réception |
+| `src/db/vitesse/__tests__/mesure-vitesse.repository.test.ts` | B | Tests d'intégration avec PGlite |
 | Mention de confidentialité du site (modifiée) | A et B | Mesure de la vitesse, anonyme |
 
 ## Étapes
@@ -45,7 +50,7 @@ Aucune nouvelle variable.
 
 1. Dans Vercel : le projet → onglet **Speed Insights** → **Enable** (libellés à vérifier à l'écran).
 2. `npm install @vercel/speed-insights`.
-3. Dans `src/app/layout.tsx`, importer le composant et le placer dans `<body>`, après `{children}` :
+3. Dans `app/layout.tsx`, importer le composant et le placer dans `<body>`, après `<Toaster />` :
 
 ```tsx
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -61,10 +66,130 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 ### Option B – Mesure envoyée au site
 
-#### 1. La table et sa migration
+Le domaine `vitesse` a ses trois dossiers miroirs : `src/core/vitesse/` (les règles), `src/db/vitesse/` (le stockage), `src/features/vitesse/` (la réception). Le composant qui mesure sert tout le site : il va dans `src/components/shared/elements/`.
+
+#### 1. Le métier : entité, règles, port et use-case
+
+Les adresses passent par `normaliserChemin` : un segment qui ressemble à un identifiant devient `[id]`. Les mesures se regroupent ainsi par gabarit, et aucune adresse enregistrée ne désigne une personne ou un document. Le métier ne dépend de rien d'autre que `src/core/`.
 
 ```ts
-// src/db/schema/vitesse.ts
+// src/core/vitesse/mesure.entity.ts
+export const MESURES = ["LCP", "INP", "CLS", "FCP", "TTFB"] as const;
+export type NomMesure = (typeof MESURES)[number];
+
+export const NOTES = ["good", "needs-improvement", "poor"] as const;
+export type NoteMesure = (typeof NOTES)[number];
+
+export const DUREE_CONSERVATION_JOURS = 90;
+
+/** Intervalle minimal entre deux effacements des anciennes mesures. */
+export const INTERVALLE_PURGE_MS = 3_600_000;
+
+/** Une mesure envoyée par le navigateur d'un visiteur : anonyme (ni IP, ni compte, ni adresse complète). */
+export type MesureVitesse = {
+  page: string;
+  mesure: NomMesure;
+  valeur: number;
+  note: NoteMesure;
+  navigation?: string | undefined;
+};
+
+export type LigneP75 = {
+  page: string;
+  mesure: string;
+  p75: number;
+  nombre: number;
+};
+```
+
+```ts
+// src/core/vitesse/mesure.rules.ts
+import { DUREE_CONSERVATION_JOURS, INTERVALLE_PURGE_MS } from "./mesure.entity";
+
+// Un segment d'adresse qui ressemble à un identifiant (nombre, uuid, jeton) devient « [id] » :
+// les mesures se regroupent par gabarit, et aucune adresse ne désigne une personne ou un document.
+const IDENTIFIANT = /^(\d+|[0-9a-f]{8}-[0-9a-f-]{27}|(?=.*\d)[\w-]{16,})$/i;
+
+export function normaliserChemin(adresse: string): string {
+  const chemin = adresse.split(/[?#]/)[0] ?? "";
+  const segments = chemin
+    .split("/")
+    .filter(Boolean)
+    .map((s) => (IDENTIFIANT.test(s) ? "[id]" : s.slice(0, 60)));
+  return `/${segments.join("/")}`.slice(0, 200);
+}
+
+/** L'effacement a lieu au plus une fois par intervalle : la première fois, ou une heure après la précédente. */
+export function purgeNecessaire(
+  dernierePurge: Date | null,
+  maintenant: Date,
+): boolean {
+  return (
+    dernierePurge === null ||
+    maintenant.getTime() - dernierePurge.getTime() >= INTERVALLE_PURGE_MS
+  );
+}
+
+/** Les mesures créées avant cette date sont effacées. */
+export function limiteDeConservation(maintenant: Date): Date {
+  return new Date(maintenant.getTime() - DUREE_CONSERVATION_JOURS * 86_400_000);
+}
+```
+
+Enregistrer une mesure applique une règle métier (le chemin sans identifiant) : l'écriture passe donc par un use-case (architecture.md §5, point 2). L'effacement au plus une fois par heure est un réglage d'exploitation, pas une règle métier : la durée de conservation (90 jours) reste la seule promesse faite aux visiteurs. Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 3 le fournit.
+
+```ts
+// src/core/vitesse/mesure-repository.port.ts
+import type { MesureVitesse } from "./mesure.entity";
+
+export type MesureVitesseRepository = {
+  enregistrer(mesure: MesureVitesse): Promise<void>;
+  /** Efface les mesures créées avant `limite`. */
+  effacerAvant(limite: Date): Promise<void>;
+};
+```
+
+```ts
+// src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts
+import type { MesureVitesse } from "../mesure.entity";
+import {
+  limiteDeConservation,
+  normaliserChemin,
+  purgeNecessaire,
+} from "../mesure.rules";
+import type { MesureVitesseRepository } from "../mesure-repository.port";
+
+/**
+ * Enregistre la mesure avec une page sans identifiant. Les mesures trop anciennes s'effacent
+ * au plus une fois par heure (`dernierePurge` : date du dernier effacement connu de l'appelant).
+ * Renvoie `purge: true` quand l'effacement a eu lieu.
+ */
+export async function enregistrerMesure(
+  deps: { mesures: MesureVitesseRepository },
+  entree: {
+    mesure: MesureVitesse;
+    maintenant: Date;
+    dernierePurge: Date | null;
+  },
+): Promise<{ purge: boolean }> {
+  await deps.mesures.enregistrer({
+    ...entree.mesure,
+    page: normaliserChemin(entree.mesure.page),
+  });
+  if (!purgeNecessaire(entree.dernierePurge, entree.maintenant)) {
+    return { purge: false };
+  }
+  await deps.mesures.effacerAvant(limiteDeConservation(entree.maintenant));
+  return { purge: true };
+}
+```
+
+#### 2. La table et sa migration
+
+`drizzle.config.ts` lit déjà `src/db/*/*.table.ts` : rien à déclarer ailleurs.
+
+```ts
+// src/db/vitesse/mesure-vitesse.table.ts
 import {
   doublePrecision,
   index,
@@ -90,132 +215,96 @@ export const mesuresVitesse = pgTable(
 );
 ```
 
-Ajouter `export * from "./vitesse";` à `src/db/schema/index.ts`. Puis générer la migration, relire le fichier SQL créé dans `drizzle/`, et l'appliquer :
+Générez la migration, relisez le fichier SQL créé dans `drizzle/`, puis appliquez-la :
 
 ```bash
 npm run db:generate
 npm run db:migrate
 ```
 
-#### 2. Les règles et le schéma
+#### 3. Le repository
 
-Les adresses passent par `normaliserChemin` : un segment qui ressemble à un identifiant devient `[id]`. Les mesures se regroupent ainsi par gabarit, et aucune adresse enregistrée ne désigne une personne ou un document.
+La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests. `p75ParPage` n'est pas dans le port (le use-case n'en a pas besoin) : il sert à une future page d'administration.
 
 ```ts
-// src/features/vitesse/regles.ts
-// Règles pures de la mesure réelle : testées en unitaire.
+// src/db/vitesse/mesure-vitesse.repository.ts
+import "server-only";
+import type { LigneP75 } from "@src/core/vitesse/mesure.entity";
+import type { MesureVitesseRepository } from "@src/core/vitesse/mesure-repository.port";
+import type { Db } from "@src/db";
+import { lt, sql } from "drizzle-orm";
+import { mesuresVitesse } from "./mesure-vitesse.table";
 
-export const MESURES = ["LCP", "INP", "CLS", "FCP", "TTFB"] as const;
-export const NOTES = ["good", "needs-improvement", "poor"] as const;
-export const DUREE_CONSERVATION_JOURS = 90;
+export function mesureVitesseRepository(db: Db): MesureVitesseRepository & {
+  p75ParPage(depuis: Date): Promise<LigneP75[]>;
+} {
+  return {
+    async enregistrer(mesure) {
+      await db.insert(mesuresVitesse).values(mesure);
+    },
 
-// Un segment d'adresse qui ressemble à un identifiant (nombre, uuid, jeton) devient « [id] » :
-// les mesures se regroupent par gabarit, et aucune adresse ne désigne une personne ou un document.
-const IDENTIFIANT = /^(\d+|[0-9a-f]{8}-[0-9a-f-]{27}|(?=.*\d)[\w-]{16,})$/i;
+    async effacerAvant(limite) {
+      await db.delete(mesuresVitesse).where(lt(mesuresVitesse.creeLe, limite));
+    },
 
-export function normaliserChemin(adresse: string): string {
-  const chemin = adresse.split(/[?#]/)[0] ?? "";
-  const segments = chemin
-    .split("/")
-    .filter(Boolean)
-    .map((s) => (IDENTIFIANT.test(s) ? "[id]" : s.slice(0, 60)));
-  return `/${segments.join("/")}`.slice(0, 200);
+    /** 75e centile par page et par mesure depuis une date (même calcul que Google). */
+    async p75ParPage(depuis) {
+      return db
+        .select({
+          page: mesuresVitesse.page,
+          mesure: mesuresVitesse.mesure,
+          p75: sql<number>`percentile_cont(0.75) within group (order by ${mesuresVitesse.valeur})`.mapWith(
+            Number,
+          ),
+          nombre: sql<number>`count(*)`.mapWith(Number),
+        })
+        .from(mesuresVitesse)
+        .where(sql`${mesuresVitesse.creeLe} >= ${depuis}`)
+        .groupBy(mesuresVitesse.page, mesuresVitesse.mesure)
+        .orderBy(mesuresVitesse.page, mesuresVitesse.mesure);
+    },
+  };
 }
 ```
 
+#### 4. Le schéma et la réception des mesures
+
+Le schéma Zod décrit ce que le navigateur envoie.
+
 ```ts
-// src/features/vitesse/schemas.ts
+// src/features/vitesse/schemas/mesure.schema.ts
+import { MESURES, NOTES } from "@src/core/vitesse/mesure.entity";
 import { z } from "zod";
-import { MESURES, NOTES } from "./regles";
 
 // Ce que le navigateur envoie pour une mesure (une ligne par mesure et par page vue).
-export const schemaMesureVitesse = z.object({
+export const mesureVitesseSchema = z.object({
   page: z.string().min(1).max(300),
   mesure: z.enum(MESURES),
   valeur: z.number().finite().min(0).max(600_000),
   note: z.enum(NOTES),
   navigation: z.string().max(30).optional(),
 });
-
-export type MesureVitesse = z.infer<typeof schemaMesureVitesse>;
 ```
 
-#### 3. L'accès à la base
+Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (fonction pure `purgeNecessaire`, testable sans horloge réelle). Un effacement à chaque mesure ajouterait une requête `DELETE` à chaque visite. Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
 
 ```ts
-// src/features/vitesse/queries.ts
-import "server-only";
-import { lt, sql } from "drizzle-orm";
-import { type Db, getDb } from "@/db";
-import { mesuresVitesse } from "@/db/schema";
-import { DUREE_CONSERVATION_JOURS } from "./regles";
-import type { MesureVitesse } from "./schemas";
-
-export async function enregistrerMesure(
-  mesure: MesureVitesse,
-  db: Db = getDb(),
-): Promise<void> {
-  await db.insert(mesuresVitesse).values(mesure);
-}
-
-/** Efface les mesures plus anciennes que la durée de conservation. */
-export async function effacerMesuresAnciennes(
-  maintenant: Date,
-  db: Db = getDb(),
-): Promise<void> {
-  const limite = new Date(
-    maintenant.getTime() - DUREE_CONSERVATION_JOURS * 86_400_000,
-  );
-  await db.delete(mesuresVitesse).where(lt(mesuresVitesse.creeLe, limite));
-}
-
-export type LigneP75 = {
-  page: string;
-  mesure: string;
-  p75: number;
-  nombre: number;
-};
-
-/** 75e centile par page et par mesure sur les derniers jours (même calcul que Google). */
-export async function p75ParPage(
-  depuis: Date,
-  db: Db = getDb(),
-): Promise<LigneP75[]> {
-  return db
-    .select({
-      page: mesuresVitesse.page,
-      mesure: mesuresVitesse.mesure,
-      p75: sql<number>`percentile_cont(0.75) within group (order by ${mesuresVitesse.valeur})`.mapWith(
-        Number,
-      ),
-      nombre: sql<number>`count(*)`.mapWith(Number),
-    })
-    .from(mesuresVitesse)
-    .where(sql`${mesuresVitesse.creeLe} >= ${depuis}`)
-    .groupBy(mesuresVitesse.page, mesuresVitesse.mesure)
-    .orderBy(mesuresVitesse.page, mesuresVitesse.mesure);
-}
-```
-
-#### 4. La route qui reçoit les mesures
-
-Elle accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; elle efface au passage les mesures de plus de 90 jours.
-
-```ts
-// src/app/api/vitesse/route.ts
+// src/features/vitesse/webhooks/recevoir-mesure.webhook.ts
+import { enregistrerMesure } from "@src/core/vitesse/use-cases/enregistrer-mesure.use-case";
+import { getDb } from "@src/db";
+import { mesureVitesseRepository } from "@src/db/vitesse/mesure-vitesse.repository";
+import { reponseErreur } from "@src/lib/errors/reponse-erreur";
 import type { NextRequest } from "next/server";
-import {
-  effacerMesuresAnciennes,
-  enregistrerMesure,
-} from "@/features/vitesse/queries";
-import { normaliserChemin } from "@/features/vitesse/regles";
-import { schemaMesureVitesse } from "@/features/vitesse/schemas";
-import { logger } from "@/lib/logger";
+import { mesureVitesseSchema } from "../schemas/mesure.schema";
 
 const TAILLE_MAX = 2_000;
 
-// Reçoit une mesure envoyée par le navigateur d'un visiteur (navigator.sendBeacon).
-export async function POST(request: NextRequest) {
+// Dernier effacement des anciennes mesures par cette instance du serveur : le use-case l'efface
+// au plus une fois par heure, au lieu d'une requête DELETE à chaque mesure reçue.
+let dernierePurge: Date | null = null;
+
+/** Reçoit une mesure envoyée par le navigateur d'un visiteur (navigator.sendBeacon). */
+export async function recevoirMesure(request: NextRequest): Promise<Response> {
   // Seulement depuis les pages du site lui-même.
   const origine = request.headers.get("origin");
   if (origine && origine !== request.nextUrl.origin) {
@@ -231,34 +320,46 @@ export async function POST(request: NextRequest) {
   } catch {
     return new Response(null, { status: 400 });
   }
-  const lu = schemaMesureVitesse.safeParse(corps);
+  const lu = mesureVitesseSchema.safeParse(corps);
   if (!lu.success) {
     return new Response(null, { status: 400 });
   }
   try {
-    await enregistrerMesure({
-      ...lu.data,
-      page: normaliserChemin(lu.data.page),
-    });
-    await effacerMesuresAnciennes(new Date());
+    const maintenant = new Date();
+    const { purge } = await enregistrerMesure(
+      { mesures: mesureVitesseRepository(getDb()) },
+      { mesure: lu.data, maintenant, dernierePurge },
+    );
+    if (purge) dernierePurge = maintenant;
   } catch (erreur) {
-    logger.error({ err: erreur }, "Mesure de vitesse non enregistrée");
-    return new Response(null, { status: 500 });
+    return reponseErreur(erreur, "Mesure de vitesse non enregistrée");
   }
   return new Response(null, { status: 204 });
 }
 ```
 
+La route reste fine : elle délègue (architecture.md §7).
+
+```ts
+// app/api/vitesse/route.ts
+import { recevoirMesure } from "@src/features/vitesse/webhooks/recevoir-mesure.webhook";
+import type { NextRequest } from "next/server";
+
+export function POST(request: NextRequest) {
+  return recevoirMesure(request);
+}
+```
+
 #### 5. Le composant qui mesure
 
-`useReportWebVitals` donne les mesures du navigateur ; `navigator.sendBeacon` les envoie même quand le visiteur quitte la page. Rien n'est envoyé en développement.
+`useReportWebVitals` donne les mesures du navigateur ; `navigator.sendBeacon` les envoie même quand le visiteur quitte la page. Rien n'est envoyé en développement. Le composant ne lit aucune donnée et n'appelle aucune action : c'est un élément partagé.
 
 ```tsx
-// src/features/vitesse/components/mesure-vitesse.tsx
+// src/components/shared/elements/mesure-vitesse.tsx
 "use client";
 
+import { MESURES } from "@src/core/vitesse/mesure.entity";
 import { useReportWebVitals } from "next/web-vitals";
-import { MESURES } from "../regles";
 
 type Rapport = Parameters<typeof useReportWebVitals>[0];
 
@@ -291,10 +392,10 @@ export function MesureVitesse() {
 }
 ```
 
-Dans `src/app/layout.tsx` :
+Dans `app/layout.tsx` :
 
 ```tsx
-import { MesureVitesse } from "@/features/vitesse/components/mesure-vitesse";
+import { MesureVitesse } from "@src/components/shared/elements/mesure-vitesse";
 ```
 
 ```tsx
@@ -316,7 +417,7 @@ group by page, mesure
 order by page, mesure;
 ```
 
-Lecture : LCP, FCP, TTFB et INP en millisecondes, CLS sans unité ; seuils de `pulse-aidd reference performance.md`. Une ligne avec moins d'une cinquantaine de mesures se lit comme une indication. `p75ParPage` fait le même calcul, pour une future page d'administration.
+Lecture : LCP, FCP, TTFB et INP en millisecondes, CLS sans unité ; seuils de `pulse-aidd reference performance.md`. Une ligne avec moins d'une cinquantaine de mesures se lit comme une indication. `p75ParPage` du repository fait le même calcul, pour une future page d'administration.
 
 ### Mention de confidentialité (A et B)
 
@@ -356,6 +457,12 @@ Fonctionnalité: Mesure réelle de la vitesse
       Quand la route le reçoit
       Alors elle répond 403, 400 ou 413 et n'enregistre rien
 
+    @US-XXX-2 @unitaire @securite
+    Exemple: Base indisponible : réponse générique, sans détail
+      Étant donné la base de données ne répond pas
+      Quand la route reçoit une mesure valide
+      Alors elle répond 500 sans afficher le détail de l'erreur, qui reste dans le journal du serveur
+
   Règle: Les chiffres se lisent au 75e centile, et les anciennes mesures s'effacent
 
     @US-XXX-3 @integration
@@ -370,6 +477,18 @@ Fonctionnalité: Mesure réelle de la vitesse
       Quand les anciennes mesures sont effacées
       Alors seule celle de 89 jours reste
 
+    @US-XXX-3 @unitaire
+    Exemple: L'effacement des anciennes mesures a lieu au plus une fois par heure
+      Étant donné aucun effacement encore fait
+      Quand deux mesures arrivent à 12 h 00, une à 12 h 59, puis une à 13 h 00
+      Alors l'effacement a lieu à 12 h 00 (première mesure) et à 13 h 00 seulement
+
+    @US-XXX-3 @unitaire
+    Exemple: La limite de conservation est à 90 jours
+      Étant donné la date du 8 octobre 2026
+      Quand la limite de conservation est calculée
+      Alors elle tombe le 10 juillet 2026
+
     @US-XXX-4 @manuel
     Exemple: Visite réelle : les mesures arrivent dans la base
       Étant donné le site en ligne avec la mesure réelle
@@ -382,22 +501,25 @@ Fonctionnalité: Mesure réelle de la vitesse
 - [ ] **Tn – Mesurer la vitesse chez les vrais visiteurs** · US-XXX
   - Objectif : chaque visite envoie ses mesures de vitesse au site, anonymes, lisibles par page
   - Dépend de : —
-  - Fichiers : à créer : `src/db/schema/vitesse.ts`, `src/features/vitesse/regles.ts`, `schemas.ts`, `queries.ts`, `components/mesure-vitesse.tsx`, `src/app/api/vitesse/route.ts`, les trois fichiers de test, migration dans `drizzle/` · à modifier : `src/db/schema/index.ts`, `src/app/layout.tsx`, mention de confidentialité
+  - Fichiers : à créer : `src/core/vitesse/mesure.entity.ts`, `mesure.rules.ts`, `mesure-repository.port.ts`, `use-cases/enregistrer-mesure.use-case.ts`, `src/db/vitesse/mesure-vitesse.table.ts`, `mesure-vitesse.repository.ts`, `src/features/vitesse/schemas/mesure.schema.ts`, `webhooks/recevoir-mesure.webhook.ts`, `app/api/vitesse/route.ts`, `src/components/shared/elements/mesure-vitesse.tsx`, les cinq fichiers de test (dans les `__tests__/` de chaque dossier), migration dans `drizzle/` · à modifier : `app/layout.tsx`, mention de confidentialité
   - Vérification : US-XXX critères 1 à 3 – `npm test` passe ; `npm run build` garde l'accueil statique (○)
-  - Tests : « Adresse d'une facture… », « Page ordinaire… », « Mesure valide envoyée par le site… », « Envoi depuis un autre site… » (unitaires) ; « Quatre LCP sur l'accueil… », « Mesure de plus de 90 jours… » (intégration) ; « Visite réelle… » (manuel)
+  - Tests : « Adresse d'une facture… », « Page ordinaire… », « L'effacement… au plus une fois par heure », « La limite de conservation… » (`src/core/vitesse/__tests__/mesure.rules.test.ts`) ; « Mesure valide : enregistrée sans identifiant… » (`enregistrer-mesure.use-case.test.ts`, avec « Effacement fait il y a moins d'une heure… ») ; « Mesure LCP valide… », « Mesure inconnue… » (`mesure.schema.test.ts`) ; « Mesure valide envoyée par le site… », « Envoi depuis un autre site… », « Base indisponible… », « Les anciennes mesures s'effacent au plus une fois par heure » (`recevoir-mesure.webhook.test.ts`, horloge simulée) ; « Quatre LCP sur l'accueil… », « Mesure de plus de 90 jours… » (`mesure-vitesse.repository.test.ts`, intégration) ; « Visite réelle… » (manuel)
   - Action manuelle : appliquer la migration en production (`npm run db:migrate`), puis, après quelques jours, lancer la requête dans le SQL Editor de Neon
 
 ## Tests
 
-Unitaires (règles, schéma, route avec l'accès à la base remplacé) et intégration (PGlite, vraies migrations) :
+Unitaires (règles, use-case avec doublure en mémoire, schéma, réception avec l'accès à la base remplacé) et intégration (PGlite, vraies migrations). Chaque test vit dans le `__tests__/` de son dossier.
 
 ```ts
-// src/features/vitesse/regles.test.ts
+// src/core/vitesse/__tests__/mesure.rules.test.ts
 import { describe, expect, it } from "vitest";
-import { normaliserChemin } from "./regles";
-import { schemaMesureVitesse } from "./schemas";
+import {
+  limiteDeConservation,
+  normaliserChemin,
+  purgeNecessaire,
+} from "../mesure.rules";
 
-describe("Mesure réelle de la vitesse", () => {
+describe("Mesure réelle de la vitesse : règles", () => {
   describe("Les mesures se regroupent par gabarit, sans identifiant", () => {
     it("US-XXX-1 – Adresse d'une facture : l'identifiant devient [id]", () => {
       expect(
@@ -416,15 +538,113 @@ describe("Mesure réelle de la vitesse", () => {
     });
   });
 
+  describe("Les anciennes mesures s'effacent", () => {
+    it("US-XXX-3 – La limite de conservation est à 90 jours", () => {
+      const maintenant = new Date("2026-10-08T12:00:00.000Z");
+
+      expect(limiteDeConservation(maintenant).toISOString()).toBe(
+        "2026-07-10T12:00:00.000Z",
+      );
+    });
+
+    it("US-XXX-3 – L'effacement a lieu au plus une fois par heure", () => {
+      const premiere = new Date("2026-10-08T12:00:00.000Z");
+
+      expect(purgeNecessaire(null, premiere)).toBe(true);
+      expect(
+        purgeNecessaire(premiere, new Date("2026-10-08T12:59:59.999Z")),
+      ).toBe(false);
+      expect(
+        purgeNecessaire(premiere, new Date("2026-10-08T13:00:00.000Z")),
+      ).toBe(true);
+    });
+  });
+});
+```
+
+```ts
+// src/core/vitesse/__tests__/enregistrer-mesure.use-case.test.ts
+import { describe, expect, it } from "vitest";
+import type { MesureVitesse } from "../mesure.entity";
+import type { MesureVitesseRepository } from "../mesure-repository.port";
+import { enregistrerMesure } from "../use-cases/enregistrer-mesure.use-case";
+
+function repositoryEnMemoire() {
+  const enregistrees: MesureVitesse[] = [];
+  const limites: Date[] = [];
+  const mesures: MesureVitesseRepository = {
+    async enregistrer(mesure) {
+      enregistrees.push(mesure);
+    },
+    async effacerAvant(limite) {
+      limites.push(limite);
+    },
+  };
+  return { mesures, enregistrees, limites };
+}
+
+describe("Use-case : enregistrer une mesure", () => {
+  it("US-XXX-2 – Mesure valide : enregistrée sans identifiant, anciennes mesures effacées", async () => {
+    const { mesures, enregistrees, limites } = repositoryEnMemoire();
+    const maintenant = new Date("2026-10-08T12:00:00.000Z");
+
+    await enregistrerMesure(
+      { mesures },
+      {
+        mesure: {
+          page: "/factures/1234",
+          mesure: "INP",
+          valeur: 180,
+          note: "good",
+        },
+        maintenant,
+        dernierePurge: null,
+      },
+    );
+
+    expect(enregistrees).toEqual([
+      { page: "/factures/[id]", mesure: "INP", valeur: 180, note: "good" },
+    ]);
+    expect(limites.map((l) => l.toISOString())).toEqual([
+      "2026-07-10T12:00:00.000Z",
+    ]);
+  });
+
+  it("US-XXX-3 – Effacement fait il y a moins d'une heure : mesure enregistrée, sans nouvel effacement", async () => {
+    const { mesures, enregistrees, limites } = repositoryEnMemoire();
+
+    const resultat = await enregistrerMesure(
+      { mesures },
+      {
+        mesure: { page: "/", mesure: "LCP", valeur: 900, note: "good" },
+        maintenant: new Date("2026-10-08T12:30:00.000Z"),
+        dernierePurge: new Date("2026-10-08T12:00:00.000Z"),
+      },
+    );
+
+    expect(resultat).toEqual({ purge: false });
+    expect(enregistrees).toHaveLength(1);
+    expect(limites).toEqual([]);
+  });
+});
+```
+
+```ts
+// src/features/vitesse/schemas/__tests__/mesure.schema.test.ts
+import { describe, expect, it } from "vitest";
+import { mesureVitesseSchema } from "../mesure.schema";
+
+describe("Mesure réelle de la vitesse : schéma", () => {
   describe("Seules des mesures valides sont acceptées", () => {
     it("US-XXX-2 – Mesure LCP valide : acceptée", () => {
-      const lu = schemaMesureVitesse.safeParse({
+      const lu = mesureVitesseSchema.safeParse({
         page: "/",
         mesure: "LCP",
         valeur: 2100.5,
         note: "good",
         navigation: "navigate",
       });
+
       expect(lu.success).toBe(true);
     });
 
@@ -434,7 +654,7 @@ describe("Mesure réelle de la vitesse", () => {
         { page: "/", mesure: "LCP", valeur: -1, note: "good" },
         { page: "/", mesure: "LCP", valeur: 9e9, note: "good" },
       ]) {
-        expect(schemaMesureVitesse.safeParse(corps).success).toBe(false);
+        expect(mesureVitesseSchema.safeParse(corps).success).toBe(false);
       }
     });
   });
@@ -442,19 +662,32 @@ describe("Mesure réelle de la vitesse", () => {
 ```
 
 ```ts
-// src/app/api/vitesse/route.test.ts
+// src/features/vitesse/webhooks/__tests__/recevoir-mesure.webhook.test.ts
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const enregistrees: unknown[] = [];
-vi.mock("@/features/vitesse/queries", () => ({
-  enregistrerMesure: async (m: unknown) => {
-    enregistrees.push(m);
-  },
-  effacerMesuresAnciennes: async () => {},
+let effacements = 0;
+let panne = false;
+
+vi.mock("@src/db", () => ({ getDb: () => ({}) }));
+vi.mock("@src/db/vitesse/mesure-vitesse.repository", () => ({
+  mesureVitesseRepository: () => ({
+    enregistrer: async (mesure: unknown) => {
+      if (panne) throw new Error("Base indisponible");
+      enregistrees.push(mesure);
+    },
+    effacerAvant: async () => {
+      effacements += 1;
+    },
+  }),
 }));
 
-const { POST } = await import("./route");
+// Chaque test repart d'un module neuf : la date du dernier effacement est gardée dans le module.
+async function chargerWebhook() {
+  vi.resetModules();
+  return (await import("../recevoir-mesure.webhook")).recevoirMesure;
+}
 
 function requete(corps: string, origine = "http://localhost:3000") {
   return new NextRequest("http://localhost:3000/api/vitesse", {
@@ -464,22 +697,28 @@ function requete(corps: string, origine = "http://localhost:3000") {
   });
 }
 
+const mesureValide = {
+  page: "/factures/1234",
+  mesure: "INP",
+  valeur: 180,
+  note: "good",
+};
+
 beforeEach(() => {
   enregistrees.length = 0;
+  effacements = 0;
+  panne = false;
 });
 
-describe("Route de réception des mesures", () => {
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe("Réception des mesures", () => {
   it("US-XXX-2 – Mesure valide envoyée par le site : enregistrée sans identifiant", async () => {
-    const reponse = await POST(
-      requete(
-        JSON.stringify({
-          page: "/factures/1234",
-          mesure: "INP",
-          valeur: 180,
-          note: "good",
-        }),
-      ),
-    );
+    const recevoirMesure = await chargerWebhook();
+
+    const reponse = await recevoirMesure(requete(JSON.stringify(mesureValide)));
 
     expect(reponse.status).toBe(204);
     expect(enregistrees).toEqual([
@@ -488,34 +727,57 @@ describe("Route de réception des mesures", () => {
   });
 
   it("US-XXX-2 – Envoi depuis un autre site ou corps illisible : refusé", async () => {
-    const corps = JSON.stringify({
-      page: "/",
-      mesure: "LCP",
-      valeur: 1,
-      note: "good",
-    });
+    const recevoirMesure = await chargerWebhook();
+    const corps = JSON.stringify(mesureValide);
 
-    expect((await POST(requete(corps, "https://autre.example"))).status).toBe(
-      403,
-    );
-    expect((await POST(requete("pas du json"))).status).toBe(400);
-    expect((await POST(requete("x".repeat(3000)))).status).toBe(413);
+    expect(
+      (await recevoirMesure(requete(corps, "https://autre.example"))).status,
+    ).toBe(403);
+    expect((await recevoirMesure(requete("pas du json"))).status).toBe(400);
+    expect((await recevoirMesure(requete("x".repeat(3000)))).status).toBe(413);
     expect(enregistrees).toEqual([]);
+  });
+
+  it("US-XXX-2 – Base indisponible : réponse générique, sans détail", async () => {
+    const recevoirMesure = await chargerWebhook();
+    panne = true;
+
+    const reponse = await recevoirMesure(requete(JSON.stringify(mesureValide)));
+
+    expect(reponse.status).toBe(500);
+    expect(await reponse.text()).not.toContain("Base indisponible");
+  });
+
+  it("US-XXX-3 – Les anciennes mesures s'effacent au plus une fois par heure", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-08T12:00:00.000Z"));
+    const recevoirMesure = await chargerWebhook();
+    const corps = JSON.stringify(mesureValide);
+
+    await recevoirMesure(requete(corps));
+    await recevoirMesure(requete(corps));
+    vi.setSystemTime(new Date("2026-10-08T12:59:00.000Z"));
+    await recevoirMesure(requete(corps));
+
+    expect(enregistrees).toHaveLength(3);
+    expect(effacements).toBe(1);
+
+    vi.setSystemTime(new Date("2026-10-08T13:00:00.000Z"));
+    await recevoirMesure(requete(corps));
+
+    expect(effacements).toBe(2);
   });
 });
 ```
 
 ```ts
-// src/features/vitesse/queries.test.ts
+// src/db/vitesse/__tests__/mesure-vitesse.repository.test.ts
+import { limiteDeConservation } from "@src/core/vitesse/mesure.rules";
+import type { Db } from "@src/db";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { Db } from "@/db";
-import { mesuresVitesse } from "@/db/schema";
-import { creerBaseDeTest } from "../../../tests/helpers/base-de-test";
-import {
-  effacerMesuresAnciennes,
-  enregistrerMesure,
-  p75ParPage,
-} from "./queries";
+import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
+import { mesureVitesseRepository } from "../mesure-vitesse.repository";
+import { mesuresVitesse } from "../mesure-vitesse.table";
 
 let db: Db;
 let fermer: () => Promise<void>;
@@ -532,18 +794,23 @@ const JOUR = 86_400_000;
 
 describe("Mesure réelle : enregistrement et lecture", () => {
   it("US-XXX-3 – Quatre LCP sur l'accueil : le 75e centile est calculé par page", async () => {
+    const mesures = mesureVitesseRepository(db);
     for (const valeur of [1000, 2000, 3000, 4000]) {
-      await enregistrerMesure(
-        { page: "/", mesure: "LCP", valeur, note: "good" },
-        db,
-      );
+      await mesures.enregistrer({
+        page: "/",
+        mesure: "LCP",
+        valeur,
+        note: "good",
+      });
     }
-    await enregistrerMesure(
-      { page: "/tarifs", mesure: "CLS", valeur: 0.02, note: "good" },
-      db,
-    );
+    await mesures.enregistrer({
+      page: "/tarifs",
+      mesure: "CLS",
+      valeur: 0.02,
+      note: "good",
+    });
 
-    const lignes = await p75ParPage(new Date(Date.now() - 28 * JOUR), db);
+    const lignes = await mesures.p75ParPage(new Date(Date.now() - 28 * JOUR));
 
     expect(lignes).toEqual([
       { page: "/", mesure: "LCP", p75: 3250, nombre: 4 },
@@ -570,7 +837,9 @@ describe("Mesure réelle : enregistrement et lecture", () => {
       },
     ]);
 
-    await effacerMesuresAnciennes(maintenant, db);
+    await mesureVitesseRepository(db).effacerAvant(
+      limiteDeConservation(maintenant),
+    );
 
     const restantes = await db.select().from(mesuresVitesse);
     expect(restantes.map((m) => m.valeur)).toEqual([2]);
@@ -580,18 +849,19 @@ describe("Mesure réelle : enregistrement et lecture", () => {
 
 ## Points de sécurité
 
-- **S10 – Abus et coûts** : la route est publique (un navigateur l'appelle sans session). Elle refuse les autres origines, les corps de plus de 2 000 caractères et tout ce qui sort du schéma ; chaque envoi ajoute une petite ligne. Avec la recette `limite`, ajouter en tête de `POST` une vérification `verifierLimite("formulairePublic", ipDepuis(request.headers))` qui répond 429 quand la limite est atteinte.
+- **S10 – Abus et coûts** : la route est publique (un navigateur l'appelle sans session). Elle refuse les autres origines, les corps de plus de 2 000 caractères et tout ce qui sort du schéma ; chaque envoi ajoute une petite ligne. Avec la recette `limite`, ajouter en tête de `recevoirMesure` une vérification `verifierLimite("formulairePublic", ipDepuis(request.headers))` (`verifierLimite` de `@src/adapters/limite/limite.adapter`, `ipDepuis` de `@src/lib/helpers/limite/ip-et-message`) qui répond 429 quand la limite est atteinte.
 - **S9 – Données personnelles** : ni IP, ni cookie, ni identifiant de compte, ni adresse complète (les identifiants des adresses deviennent `[id]`) ; effacement après 90 jours ; mention de confidentialité à jour.
-- **S11 – Messages d'erreur** : la route répond par un code seul, sans détail ; l'erreur de base va dans le journal du serveur, sans le contenu reçu.
+- **S11 – Messages d'erreur** : la route répond par un code seul pour une requête refusée, et par le message générique de `reponseErreur()` pour une panne ; l'erreur de base va dans le journal du serveur, sans le contenu reçu.
 - Option A : les données vont chez Vercel (sous-traitant déjà utilisé pour l'hébergement) ; les citer dans la mention.
 
 ## Pièges connus
 
-- **Composant monté hors du layout racine** : `<MesureVitesse />` va dans `src/app/layout.tsx`, une seule fois ; ailleurs, les mesures d'une page arrivent en double ou manquent.
+- **Composant monté hors du layout racine** : `<MesureVitesse />` va dans `app/layout.tsx`, une seule fois ; ailleurs, les mesures d'une page arrivent en double ou manquent.
 - **Fonction de rappel recréée à chaque rendu** : `envoyer` est définie hors du composant ; une fonction créée dans le composant fait renvoyer les mesures déjà envoyées (documentation de `useReportWebVitals`).
 - **Rien en développement** : `npm run dev` n'envoie rien (voulu) ; pour essayer, `npm run build` puis `npx next start`.
 - **CLS et INP arrivent à la sortie de la page** : ils partent quand l'onglet est caché ou fermé ; un essai qui reste sur la page voit seulement TTFB, FCP et LCP.
 - **Selon le navigateur** : le CLS et les navigations internes se mesurent seulement sous Chrome et Edge ; les autres mesures dépendent de la version du navigateur. Les chiffres décrivent donc surtout les visiteurs de Chrome et Edge.
+- **Effacement des anciennes mesures** : il a lieu au plus une fois par heure et par instance du serveur (date gardée en mémoire dans le webhook), pas à chaque mesure. Après un redémarrage ou sur une nouvelle instance, le premier envoi efface ; une mesure de plus de 90 jours peut donc rester jusqu'à une heure de plus. Pour un effacement indépendant des visites, une tâche planifiée de Vercel (cron) peut appeler `effacerAvant`.
 - **Mesure perdue** : un bloqueur de contenu ou une coupure réseau en perd quelques-unes ; le 75e centile reste fiable avec assez de visites.
 - **Speed Insights gratuit** : seulement le score global dans le tableau de bord ; pour lire le LCP par page sans payer, l'option B.
 
@@ -600,7 +870,7 @@ describe("Mesure réelle : enregistrement et lecture", () => {
 - Next.js 16.4, documentation livrée : `01-app/02-guides/analytics.md`, `01-app/03-api-reference/04-functions/use-report-web-vitals.md` (`rating`, `navigationType` dont `soft-navigation`, `navigationURL`, référence de fonction stable).
 - `@vercel/speed-insights` 2.0.0, paquet installé : `README.md`, `dist/next/index.d.mts` (`SpeedInsights`, `sampleRate`, `beforeSend`) ; Vercel : https://vercel.com/docs/speed-insights/limits-and-pricing, https://vercel.com/docs/speed-insights/privacy-policy (relevés le 2026-10-06).
 - Seuils et 75e centile : web.dev/articles/vitals ; CNIL : cnil.fr/fr/cookies-solutions-pour-les-outils-de-mesure-daudience.
-- Vérifications locales (squelette du pack, 2026-10-07) : `npm run typecheck`, `biome check`, `npm run build` (accueil statique, `/api/vitesse` dynamique) et Vitest passent ; dans Chromium (Playwright), une visite de deux pages envoie TTFB, FCP et LCP avec la page et la note attendues ; `<SpeedInsights />` charge `/_vercel/speed-insights/script.js`.
+- Vérifications locales (squelette du pack, 2026-10-08) : `npm run check`, `npm run typecheck`, `npm test` et `npm run build` passent (accueil statique, `/api/vitesse` dynamique) ; l'option A (`<SpeedInsights />`) passe `typecheck` et `build` avec `@vercel/speed-insights` 2.0.0 ; en 2026-10-07, dans Chromium (Playwright), une visite de deux pages envoyait TTFB, FCP et LCP avec la page et la note attendues et `<SpeedInsights />` chargeait `/_vercel/speed-insights/script.js`.
 
 ## Points à vérifier
 
