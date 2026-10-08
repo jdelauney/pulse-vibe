@@ -63,3 +63,42 @@ test("options globales de git : -C, -c, --git-dir avec valeur séparée", () => 
   assert.deepStrictEqual(optionsGlobalesGit(["-c", "core.hooksPath=/dev/null", "commit"]), { k: 2, prefixe: [], configs: ["core.hooksPath=/dev/null"] });
   assert.deepStrictEqual(optionsGlobalesGit(["-C", "sous", "--no-pager", "log"]), { k: 3, prefixe: ["-C", "sous"], configs: [] });
 });
+
+test("PowerShell : la barre oblique inverse est un caractère ordinaire", () => {
+  const [c] = commandesSimples("Remove-Item C:\\Users\\x\\projet\\dist -Recurse", "powershell");
+  assert.strictEqual(c.cmd, "remove-item");
+  assert.deepStrictEqual(c.args, ["C:\\Users\\x\\projet\\dist", "-Recurse"]);
+});
+
+test("PowerShell : l'accent grave en fin de ligne continue la commande", () => {
+  assert.deepStrictEqual(noms("git push origin main `\n  --force", "powershell"), ["git push origin main --force"]);
+});
+
+test("PowerShell : un here-string reste un texte cité", () => {
+  assert.deepStrictEqual(noms("$m = @'\ngit push --force\n'@\ngit commit -m $m", "powershell").filter((x) => x.startsWith("git")), ["git commit -m $m"]);
+});
+
+test("lanceurs Windows : pwsh -c, powershell -EncodedCommand, cmd /c, iex, Start-Process", () => {
+  assert.ok(noms("pwsh -c 'git push --force'").includes("git push --force"));
+  const code = Buffer.from("git push --force", "utf16le").toString("base64");
+  assert.ok(noms(`powershell -EncodedCommand ${code}`).includes("git push --force"));
+  assert.ok(noms('cmd //c "rd /s /q src"').includes("rd /s /q src"));
+  assert.ok(noms("cmd.exe /c git push --force").includes("git push --force"));
+  assert.ok(noms("iex 'git push -f'", "powershell").includes("git push -f"));
+  assert.ok(noms("Start-Process git -ArgumentList 'push','--force'", "powershell").includes("git push --force"));
+});
+
+test("code d'un interpréteur : les textes cités sont lus comme des commandes", () => {
+  assert.ok(noms(`node -e "require('child_process').execSync('git push -f')"`).includes("git push -f"));
+  assert.ok(noms(`perl -e 'system("rm -rf src")'`).includes("rm -rf src"));
+  const [n] = commandesSimples(`node -e "fs.rmSync('src',{recursive:true})"`);
+  assert.strictEqual(n.code, "fs.rmSync('src',{recursive:true})");
+});
+
+test("cmd : l'accent circonflexe échappe, l'apostrophe est ordinaire", () => {
+  assert.deepStrictEqual(noms("echo l'^&x", "cmd"), ["echo l'&x"]);
+});
+
+test("env -S déplie la chaîne en commande", () => {
+  assert.ok(noms('env -S "git push -f"').includes("git push -f"));
+});

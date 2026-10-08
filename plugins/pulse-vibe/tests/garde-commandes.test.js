@@ -11,9 +11,9 @@ const { execFileSync, spawnSync } = require("child_process");
 
 const HOOK = path.join(__dirname, "..", "scripts", "garde-commandes.js");
 
-function decision(commande, cwd = os.tmpdir(), env = {}) {
+function decision(commande, cwd = os.tmpdir(), env = {}, outil = "Bash") {
   const r = spawnSync("node", [HOOK], {
-    input: JSON.stringify({ tool_name: "Bash", tool_input: { command: commande }, cwd }),
+    input: JSON.stringify({ tool_name: outil, tool_input: { command: commande }, cwd }),
     encoding: "utf8",
     env: { ...process.env, PULSE_GARDE_COMMANDES_OFF: "", ...env },
   });
@@ -33,6 +33,17 @@ const confirmation = (c, cwd) => {
   assert.ok(d && d.decision === "ask", `confirmation attendue : ${c} → ${JSON.stringify(d)}`);
   return d;
 };
+const refusPs = (c, cwd) => {
+  const d = decision(c, cwd, {}, "PowerShell");
+  assert.ok(d && d.decision === "deny", `refus attendu (PowerShell) : ${c} → ${JSON.stringify(d)}`);
+  return d;
+};
+const confirmationPs = (c, cwd) => {
+  const d = decision(c, cwd, {}, "PowerShell");
+  assert.ok(d && d.decision === "ask", `confirmation attendue (PowerShell) : ${c} → ${JSON.stringify(d)}`);
+  return d;
+};
+const passePs = (c, cwd) => assert.strictEqual(decision(c, cwd, {}, "PowerShell"), null, `doit passer (PowerShell) : ${c}`);
 const passe = (c, cwd) => assert.strictEqual(decision(c, cwd), null, `doit passer : ${c}`);
 
 function depot({ avecCommit }) {
@@ -251,4 +262,18 @@ test("l'outil PowerShell est lu par le même garde-fou", () => {
   assert.strictEqual(lancerPs("git push --force origin main"), "deny");
   assert.strictEqual(lancerPs("Get-Content .env"), "deny");
   assert.strictEqual(lancerPs("Get-ChildItem src"), null);
+});
+
+// ------------------------------------------------------------ Windows
+
+test("lanceurs Windows : l'envoi forcé reste refusé", () => {
+  refus("pwsh -c 'git push --force'");
+  refus("cmd.exe /c git push --force");
+  refusPs("git push origin main `\n --force");
+  refusPs("iex 'git push -f'");
+  refusPs("Start-Process git -ArgumentList 'push','--force'");
+});
+
+test("PowerShell : un message de commit qui cite une commande passe", () => {
+  passePs('git commit -m "ne jamais faire git push --force"');
 });
