@@ -26,11 +26,14 @@ Dans `src/config/env.ts`, ajouter dans `z.object({ … })` :
 
 Dans `.env.example`, ajouter `FORMULAIRE_SECRET=` (sans valeur). Les variables Turnstile vont dans `.env.example` seulement avec l'option.
 
+`FORMULAIRE_SECRET` devient obligatoire : dans les tests qui lisent les vraies variables (`src/config/__tests__/env.test.ts` de la recette `limite`), ajouter `vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));` à côté de `DATABASE_URL`.
+
 ## Fichiers créés ou modifiés
 
 | Fichier | Rôle |
 |---|---|
-| `src/config/env.ts`, `.env.example` (modifiés) | `FORMULAIRE_SECRET` (et `TURNSTILE_SECRET_KEY` avec l'option) |
+| `src/config/env.ts`, `.env.example` (modifiés) | `FORMULAIRE_SECRET` (et les deux clés Turnstile avec l'option) |
+| `src/config/__tests__/env.test.ts` (modifié) | `FORMULAIRE_SECRET` fournie aux tests des variables |
 | `src/lib/helpers/formulaire-public/champs.ts` | Noms des champs de protection, contrôle du champ piège |
 | `src/lib/helpers/formulaire-public/jeton.ts` | Jeton de délai signé (fonctions pures) |
 | `app/api/jeton-formulaire/route.ts` | Donne un jeton au navigateur à l'ouverture du formulaire |
@@ -40,7 +43,8 @@ Dans `.env.example`, ajouter `FORMULAIRE_SECRET=` (sans valeur). Les variables T
 | `src/features/contact/…` (schéma, action, section, container), `app/(public)/contact/page.tsx` | Exemple : formulaire de contact protégé |
 | `src/components/ui/textarea.tsx` | Zone de texte de shadcn (exemple) |
 | Tests : `src/lib/helpers/formulaire-public/__tests__/`, `src/features/contact/actions/__tests__/`, `e2e/formulaire-public.spec.ts` | Unitaires, intégration, bout en bout |
-| `src/adapters/turnstile/turnstile.adapter.ts` et son test (option Turnstile) | Vérification de la réponse du widget auprès de Cloudflare |
+| `src/adapters/turnstile/turnstile.adapter.ts` et ses tests (option Turnstile) | Vérification de la réponse du widget auprès de Cloudflare ; les deux clés vont ensemble |
+| `e2e/turnstile.spec.ts` (option Turnstile) | Le widget en vrai, avec les clés de test de Cloudflare |
 | `src/components/shared/elements/widget-turnstile.tsx` (option Turnstile) | Le widget |
 | `next.config.ts` (modifié, option Turnstile) | Le script et le cadre du widget autorisés par la CSP |
 
@@ -56,7 +60,7 @@ Turnstile, en option, ajoute une vérification de Cloudflare pour les formulaire
 
 ### 1. La variable `FORMULAIRE_SECRET`
 
-Ajouter la ligne de `env.ts` (section « Variables d'environnement »), puis générer la valeur dans `.env` : `pulse-aidd secrets generer FORMULAIRE_SECRET`.
+Ajouter la ligne de `env.ts` (section « Variables d'environnement »), puis générer la valeur dans `.env` : `pulse-aidd secrets generer FORMULAIRE_SECRET`. Dans `src/config/__tests__/env.test.ts`, ajouter `vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));` à chaque test, puis `npm test`.
 
 ### 2. Les noms des champs
 
@@ -66,7 +70,8 @@ Partagés par le navigateur et le serveur.
 // src/lib/helpers/formulaire-public/champs.ts
 // Noms des champs de protection d'un formulaire public, communs au navigateur et au serveur.
 
-export const CHAMP_PIEGE = "site_web_societe";
+// Le nom du champ piège n'évoque aucun champ que le navigateur remplit tout seul (nom, société, adresse…).
+export const CHAMP_PIEGE = "champ_verification";
 export const CHAMP_JETON = "jeton_formulaire";
 export const CHAMP_TURNSTILE = "cf-turnstile-response";
 
@@ -249,7 +254,7 @@ export function ChampPiege({ ref }: { ref: Ref<HTMLInputElement> }) {
       aria-hidden="true"
       className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden"
     >
-      <label htmlFor={CHAMP_PIEGE}>Site web de la société</label>
+      <label htmlFor={CHAMP_PIEGE}>Laissez ce champ vide</label>
       <input
         ref={ref}
         id={CHAMP_PIEGE}
@@ -257,6 +262,10 @@ export function ChampPiege({ ref }: { ref: Ref<HTMLInputElement> }) {
         type="text"
         tabIndex={-1}
         autoComplete="off"
+        // Ignoré par les gestionnaires de mots de passe (1Password, LastPass, Bitwarden).
+        data-1p-ignore=""
+        data-lpignore="true"
+        data-bwignore=""
         defaultValue=""
       />
     </div>
@@ -529,7 +538,7 @@ Pour un autre formulaire public : un nom de formulaire (lettres minuscules, chif
 
 ### 9. Essayer
 
-`npm run dev`, ouvrir `/contact`, écrire un message, attendre quelques secondes, envoyer : « Message envoyé. Merci ! » s'affiche. Puis, dans les outils du navigateur, écrire quelque chose dans le champ `site_web_societe` et envoyer : « Rechargez la page et réessayez. » s'affiche.
+`npm run dev`, ouvrir `/contact`, écrire un message, attendre quelques secondes, envoyer : « Message envoyé. Merci ! » s'affiche. Puis, dans les outils du navigateur, écrire quelque chose dans le champ `champ_verification` et envoyer : « Rechargez la page et réessayez. » s'affiche.
 
 ### 10. Mettre en ligne
 
@@ -548,12 +557,36 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=VOTRE_CLE_ICI
 ```
 
-Ajouter les deux noms à `.env.example`, et dans `src/config/env.ts`, dans `z.object({ … })` :
+Ajouter les deux noms à `.env.example`. Dans `src/config/env.ts`, les deux clés s'ajoutent dans `z.object({ … })`, et une vérification les exige ensemble (une seule des deux bloquerait chaque envoi, ou laisserait le serveur sans contrôle) :
 
 ```ts
-    // Recette formulaire-public, option Turnstile : clé secrète du widget (Cloudflare).
+    // Recette formulaire-public, option Turnstile : les deux clés du widget (Cloudflare).
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
     TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
 ```
+
+puis, après la parenthèse fermante de `z.object({ … })` (à la suite d'un éventuel `.superRefine` d'une autre recette) :
+
+```ts
+  // Recette formulaire-public, option Turnstile : les deux clés vont ensemble.
+  .superRefine((env, ctx) => {
+    if (!env.NEXT_PUBLIC_TURNSTILE_SITE_KEY === !env.TURNSTILE_SECRET_KEY) return;
+    for (const nom of [
+      "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+      "TURNSTILE_SECRET_KEY",
+    ] as const) {
+      if (!env[nom]) {
+        ctx.addIssue({
+          code: "custom",
+          path: [nom],
+          message: "les deux clés Turnstile vont ensemble",
+        });
+      }
+    }
+  })
+```
+
+Si le schéma s'écrivait `z.object({ … });`, il devient `z.object({ … }).superRefine(…);`.
 
 ### 12. La vérification côté serveur
 
@@ -714,9 +747,12 @@ declare global {
 export function WidgetTurnstile({
   cleSite,
   surReponse,
+  surErreur,
 }: {
   cleSite: string;
   surReponse: (jeton: string | null) => void;
+  /** Le script ou le widget n'a pas pu se charger (bloqueur, réseau, erreur Cloudflare). */
+  surErreur: () => void;
 }) {
   const conteneur = useRef<HTMLDivElement>(null);
   const [scriptCharge, setScriptCharge] = useState(false);
@@ -728,10 +764,13 @@ export function WidgetTurnstile({
       language: "fr",
       callback: (jeton) => surReponse(jeton),
       "expired-callback": () => surReponse(null),
-      "error-callback": () => surReponse(null),
+      "error-callback": () => {
+        surReponse(null);
+        surErreur();
+      },
     });
     return () => window.turnstile?.remove(id);
-  }, [scriptCharge, cleSite, surReponse]);
+  }, [scriptCharge, cleSite, surReponse, surErreur]);
 
   return (
     <>
@@ -739,6 +778,7 @@ export function WidgetTurnstile({
         src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
         strategy="afterInteractive"
         onReady={() => setScriptCharge(true)}
+        onError={surErreur}
       />
       <div ref={conteneur} />
     </>
@@ -748,7 +788,7 @@ export function WidgetTurnstile({
 
 ### 15. Hook, section et container
 
-Le hook attend aussi la réponse du widget. Après chaque envoi, `apresEnvoi()` relance le widget (sa `key` change) : une réponse ne sert qu'une fois.
+Le hook attend aussi la réponse du widget. Après chaque envoi, `apresEnvoi()` relance le widget (sa `key` change) : une réponse ne sert qu'une fois. Si le widget ne peut pas se charger (bloqueur de publicités, réseau d'entreprise, erreur de Cloudflare), la section le dit et propose quoi faire.
 
 ```ts
 // src/hooks/use-protection-formulaire.ts
@@ -781,6 +821,9 @@ export type ProtectionFormulaire = {
   /** Change après chaque envoi : sert de `key` au widget, qui repart avec une réponse neuve. */
   tourTurnstile: number;
   surTurnstile: (jeton: string | null) => void;
+  /** Vrai si le widget Turnstile n'a pas pu se charger : la section dit quoi faire. */
+  echecTurnstile: boolean;
+  surErreurTurnstile: () => void;
   /** Valeurs de protection à ajouter aux données envoyées : { ...valeurs, ...champs() }. */
   champs: () => Record<string, string>;
   /** À appeler après chaque envoi : une réponse Turnstile ne sert qu'une fois. */
@@ -796,6 +839,7 @@ export function useProtectionFormulaire(
   const [echec, setEchec] = useState(false);
   const [reponseTurnstile, setReponseTurnstile] = useState<string | null>(null);
   const [tourTurnstile, setTourTurnstile] = useState(0);
+  const [echecTurnstile, setEchecTurnstile] = useState(false);
 
   useEffect(() => {
     const controleur = new AbortController();
@@ -816,6 +860,11 @@ export function useProtectionFormulaire(
 
   const surTurnstile = useCallback((reponse: string | null) => {
     setReponseTurnstile(reponse);
+    if (reponse) setEchecTurnstile(false);
+  }, []);
+
+  const surErreurTurnstile = useCallback(() => {
+    setEchecTurnstile(true);
   }, []);
 
   return {
@@ -825,6 +874,8 @@ export function useProtectionFormulaire(
     cleTurnstile: CLE_TURNSTILE,
     tourTurnstile,
     surTurnstile,
+    echecTurnstile,
+    surErreurTurnstile,
     champs: () => ({
       [CHAMP_JETON]: jeton ?? "",
       [CHAMP_PIEGE]: refPiege.current?.value ?? "",
@@ -874,6 +925,9 @@ type Props = {
   /** Change après chaque envoi : le widget repart avec une réponse neuve. */
   tourTurnstile: number;
   surTurnstile: (jeton: string | null) => void;
+  /** Le widget Turnstile n'a pas pu se charger. */
+  echecTurnstile: boolean;
+  surErreurTurnstile: () => void;
 };
 
 export function FormulaireContact({
@@ -886,6 +940,8 @@ export function FormulaireContact({
   cleTurnstile,
   tourTurnstile,
   surTurnstile,
+  echecTurnstile,
+  surErreurTurnstile,
 }: Props) {
   const prefixe = useId();
   const form = useForm({
@@ -936,7 +992,14 @@ export function FormulaireContact({
             key={tourTurnstile}
             cleSite={cleTurnstile}
             surReponse={surTurnstile}
+            surErreur={surErreurTurnstile}
           />
+        )}
+        {echecTurnstile && (
+          <p role="alert" className="text-sm text-destructive">
+            La vérification anti-robot n'a pas pu se charger. Rechargez la page,
+            ou désactivez le bloqueur de publicités pour ce site.
+          </p>
         )}
 
         {echecPreparation && (
@@ -995,6 +1058,8 @@ export function ContactContainer() {
       cleTurnstile={protection.cleTurnstile}
       tourTurnstile={protection.tourTurnstile}
       surTurnstile={protection.surTurnstile}
+      echecTurnstile={protection.echecTurnstile}
+      surErreurTurnstile={protection.surErreurTurnstile}
     />
   );
 }
@@ -1054,7 +1119,7 @@ Fonctionnalité: Protection des formulaires publics
       Alors elle répond « Rechargez la page et réessayez. »
       Et le journal ne contient pas « spam.example »
 
-    @US-XXX-1 @e2e
+    @US-XXX-1 @bout-en-bout
     Exemple: un robot qui remplit le champ piège est refusé
       Étant donné le formulaire de contact est ouvert
       Quand un robot remplit le champ piège et envoie
@@ -1094,7 +1159,7 @@ Fonctionnalité: Protection des formulaires publics
       Quand il est envoyé
       Alors le message est reçu
 
-    @US-XXX-3 @e2e
+    @US-XXX-3 @bout-en-bout
     Exemple: une personne qui prend le temps d'écrire envoie son message
       Étant donné Camille ouvre la page de contact
       Quand Camille écrit son message et l'envoie après quelques secondes
@@ -1110,11 +1175,20 @@ Fonctionnalité: Protection des formulaires publics
 
   Règle: Le formulaire explique quoi faire s'il n'a pas pu se préparer
 
-    @US-XXX-2 @e2e
+    @US-XXX-2 @bout-en-bout
     Exemple: sans jeton, le bouton reste désactivé et la page explique quoi faire
       Étant donné la demande du jeton échoue
       Quand la page de contact s'ouvre
       Alors la page affiche « Le formulaire n'a pas pu se préparer. Rechargez la page. »
+      Et le bouton « Envoyer » reste désactivé
+
+  Règle: Le widget Turnstile explique quoi faire s'il ne se charge pas (option)
+
+    @US-XXX-5 @bout-en-bout
+    Exemple: widget bloqué : la page explique quoi faire
+      Étant donné Turnstile est actif et son script est bloqué
+      Quand la page de contact s'ouvre
+      Alors la page affiche « La vérification anti-robot n'a pas pu se charger. »
       Et le bouton « Envoyer » reste désactivé
 
   Règle: Turnstile refuse un envoi sans réponse valable (option)
@@ -1137,7 +1211,7 @@ Fonctionnalité: Protection des formulaires publics
 - [ ] **Tn – Préparer la protection des formulaires publics** · US-XXX
   - Objectif : le site sait reconnaître un envoi de robot (champ piège, jeton de délai) et limiter les envois en rafale
   - Dépend de : la tâche « Compter les tentatives par adresse IP » de la recette `limite`
-  - Fichiers : à créer : `src/lib/helpers/formulaire-public/champs.ts`, `src/lib/helpers/formulaire-public/jeton.ts`, `app/api/jeton-formulaire/route.ts`, `src/hooks/use-protection-formulaire.ts`, `src/components/shared/elements/champ-piege.tsx`, `src/lib/formulaire-public.ts` et leurs tests · à modifier : `src/config/env.ts`, `.env.example`
+  - Fichiers : à créer : `src/lib/helpers/formulaire-public/champs.ts`, `src/lib/helpers/formulaire-public/jeton.ts`, `app/api/jeton-formulaire/route.ts`, `src/hooks/use-protection-formulaire.ts`, `src/components/shared/elements/champ-piege.tsx`, `src/lib/formulaire-public.ts` et leurs tests · à modifier : `src/config/env.ts`, `.env.example`, `src/config/__tests__/env.test.ts` (`FORMULAIRE_SECRET`)
   - Vérification : US-XXX critères 1 et 2 – `npm test` passe
   - Tests : « rempli, même avec une valeur qui n'est pas du texte… », « envoyé moins de 3 secondes après l'ouverture… », « ouvert depuis plus de 2 heures… », « horodatage modifié ou autre secret… » (unitaires)
   - Action manuelle : `pulse-aidd secrets generer FORMULAIRE_SECRET`
@@ -1151,9 +1225,9 @@ Fonctionnalité: Protection des formulaires publics
 - [ ] **Tn+2 (facultative) – Ajouter Turnstile** · US-XXX
   - Objectif : les formulaires visés par les robots passent aussi par la vérification de Cloudflare
   - Dépend de : Tn+1
-  - Fichiers : à créer : `src/adapters/turnstile/turnstile.adapter.ts` et son test, `src/components/shared/elements/widget-turnstile.tsx` · à modifier : `src/lib/formulaire-public.ts`, `src/hooks/use-protection-formulaire.ts`, la section et le container du formulaire, `src/config/env.ts`, `.env.example`, `next.config.ts`
+  - Fichiers : à créer : `src/adapters/turnstile/turnstile.adapter.ts`, `src/adapters/turnstile/__tests__/turnstile.adapter.test.ts`, `src/adapters/turnstile/__tests__/variables-turnstile.test.ts`, `src/components/shared/elements/widget-turnstile.tsx`, `e2e/turnstile.spec.ts` · à modifier : `src/lib/formulaire-public.ts`, `src/hooks/use-protection-formulaire.ts`, la section et le container du formulaire, `src/config/env.ts`, `.env.example`, `next.config.ts`
   - Vérification : US-XXX critère 5 – `npm test` passe ; essai avec les clés de test de l'étape 17
-  - Tests : « Turnstile actif et réponse absente : refusé », « Cloudflare injoignable… » (intégration)
+  - Tests : « Turnstile actif et réponse absente : refusé », « Cloudflare injoignable… », « clé secrète sans clé de site… » (intégration) ; « widget bloqué : la page explique quoi faire » (bout en bout, avec les clés de test)
   - Action manuelle : créer le widget Turnstile, saisir les deux clés dans `.env` et dans Vercel, puis redéployer
 
 ## Tests
@@ -1178,6 +1252,26 @@ describe("Champ piège", () => {
     expect(estPiegeRempli({ [CHAMP_PIEGE]: 0 })).toBe(true);
     expect(estPiegeRempli({ [CHAMP_PIEGE]: false })).toBe(true);
     expect(estPiegeRempli({ [CHAMP_PIEGE]: {} })).toBe(true);
+  });
+
+  it("US-XXX-1 – le nom du champ piège n'évoque aucun champ que le navigateur remplit tout seul", () => {
+    for (const mot of [
+      "soci",
+      "entreprise",
+      "company",
+      "organization",
+      "nom",
+      "name",
+      "mail",
+      "adresse",
+      "address",
+      "tel",
+      "phone",
+      "ville",
+      "city",
+    ]) {
+      expect(CHAMP_PIEGE).not.toContain(mot);
+    }
   });
 
   it("les noms de formulaire restent simples", () => {
@@ -1293,7 +1387,7 @@ describe("Formulaire public", () => {
     const r = await envoyerMessage({
       message: "Bonjour",
       jeton_formulaire: jetonDe(5_000),
-      site_web_societe: "",
+      champ_verification: "",
     } as never);
     expect(r?.data).toEqual({ ok: true });
     expect(journal.info).toHaveBeenCalledWith({ longueur: 7 }, "Message reçu");
@@ -1303,7 +1397,7 @@ describe("Formulaire public", () => {
     const r = await envoyerMessage({
       message: "Achetez",
       jeton_formulaire: jetonDe(5_000),
-      site_web_societe: "https://spam.example",
+      champ_verification: "https://spam.example",
     } as never);
     expect(r?.serverError).toBe("Rechargez la page et réessayez.");
     expect(JSON.stringify(journal.warn.mock.calls)).not.toContain(
@@ -1378,7 +1472,7 @@ test.describe("Formulaire public", () => {
     await expect(page.getByRole("button", { name: "Envoyer" })).toBeEnabled();
     await page.getByLabel("Votre message").fill("Achetez maintenant");
     await page
-      .locator("#site_web_societe")
+      .locator("#champ_verification")
       .fill("https://spam.example", { force: true });
     await page.waitForTimeout(3_200);
     await page.getByRole("button", { name: "Envoyer" }).click();
@@ -1405,16 +1499,27 @@ test.describe("Formulaire public", () => {
     await expect(page.getByRole("button", { name: "Envoyer" })).toBeDisabled();
   });
 
+  test("les gestionnaires de mots de passe ignorent le champ piège", async ({
+    page,
+  }) => {
+    await page.goto("/contact");
+    const piege = page.locator("#champ_verification");
+    await expect(piege).toHaveAttribute("autocomplete", "off");
+    await expect(piege).toHaveAttribute("data-1p-ignore", "");
+    await expect(piege).toHaveAttribute("data-lpignore", "true");
+    await expect(piege).toHaveAttribute("data-bwignore", "");
+  });
+
   test("le champ piège reste hors de portée du clavier", async ({ page }) => {
     await page.goto("/contact");
     await page.getByLabel("Votre message").focus();
     await page.keyboard.press("Tab");
-    await expect(page.locator("#site_web_societe")).not.toBeFocused();
+    await expect(page.locator("#champ_verification")).not.toBeFocused();
   });
 });
 ```
 
-Option Turnstile : l'adapter, avec un faux `fetch`.
+Option Turnstile : l'adapter, avec un faux `fetch`, et les deux clés qui vont ensemble.
 
 ```ts
 // src/adapters/turnstile/__tests__/turnstile.adapter.test.ts
@@ -1491,6 +1596,90 @@ describe("Vérification Turnstile", () => {
 });
 ```
 
+```ts
+// src/adapters/turnstile/__tests__/variables-turnstile.test.ts
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.resetModules();
+});
+
+async function lireEnv() {
+  const { envServeur } = await import("@src/config/env");
+  return envServeur();
+}
+
+describe("Variables Turnstile", () => {
+  it("US-XXX-5 – clé secrète sans clé de site : le message nomme la clé manquante", async () => {
+    vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
+    vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-turnstile-de-test");
+    await expect(lireEnv()).rejects.toThrow(/NEXT_PUBLIC_TURNSTILE_SITE_KEY/);
+  });
+
+  it("US-XXX-5 – clé de site sans clé secrète : le message nomme la clé manquante", async () => {
+    vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
+    vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "cle-de-site-de-test");
+    await expect(lireEnv()).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
+  });
+
+  it("US-XXX-5 – les deux clés ensemble : acceptées", async () => {
+    vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
+    vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "cle-de-site-de-test");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-turnstile-de-test");
+    expect((await lireEnv()).TURNSTILE_SECRET_KEY).toBe(
+      "secret-turnstile-de-test",
+    );
+  });
+});
+```
+
+Le widget en vrai : ces tests tournent seulement quand le site est construit avec les clés (en local, les clés de test « toujours accepté » de Cloudflare dans `.env`, puis `npm run build` et `npm run test:e2e`).
+
+```ts
+// e2e/turnstile.spec.ts
+import { expect, test } from "@playwright/test";
+
+// Option Turnstile : ces tests tournent quand le site est construit avec les clés
+// (en local, les clés de test de Cloudflare « toujours accepté »).
+test.skip(
+  !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+  "Turnstile n'est pas activé (NEXT_PUBLIC_TURNSTILE_SITE_KEY absente)",
+);
+
+test.describe("Formulaire public avec Turnstile", () => {
+  test("le widget répond : le message part, puis le widget repart", async ({
+    page,
+  }) => {
+    await page.goto("/contact");
+    const bouton = page.getByRole("button", { name: "Envoyer" });
+    await expect(bouton).toBeEnabled({ timeout: 15_000 });
+    await page.getByLabel("Votre message").fill("Bonjour");
+    await page.waitForTimeout(3_200);
+    await bouton.click();
+    await expect(page.getByText("Message envoyé. Merci !")).toBeVisible({
+      timeout: 10_000,
+    });
+    // Une réponse Turnstile ne sert qu'une fois : le widget en donne une nouvelle.
+    await expect(bouton).toBeEnabled({ timeout: 15_000 });
+  });
+
+  test("widget bloqué : la page explique quoi faire", async ({ page }) => {
+    await page.route("**/turnstile/v0/api.js**", (route) => route.abort());
+    await page.goto("/contact");
+    await expect(
+      page.getByRole("alert").filter({
+        hasText: "La vérification anti-robot n'a pas pu se charger.",
+      }),
+    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Envoyer" })).toBeDisabled();
+  });
+});
+```
+
 Et dans le test de l'action, une version réglable du faux `env.ts` et un test de plus :
 
 ```ts
@@ -1531,7 +1720,7 @@ vi.mock("@src/config/env", () => ({
 ## Pièges connus
 
 - **Nom de formulaire différent entre le container et l'action** : le jeton est refusé à chaque envoi. La constante du schéma (`FORMULAIRE_CONTACT`) sert aux deux.
-- **Vrai champ nommé `site_web_societe`** : chaque envoi serait refusé. Ce nom reste réservé au champ piège.
+- **Vrai champ nommé `champ_verification`** : chaque envoi serait refusé. Ce nom reste réservé au champ piège.
 - **Tests de bout en bout trop rapides** : le délai se mesure avec l'horloge du serveur (`page.clock` ne la change pas) ; le test attend 3 secondes (`page.waitForTimeout(3_200)`).
 - **`getByRole("alert")` trouve deux éléments dans Playwright** : Next.js ajoute son propre élément `role="alert"` (annonce de navigation). Filtrer par le texte attendu : `page.getByRole("alert").filter({ hasText: "…" })`.
 - **Limite atteinte pendant les tests de bout en bout** : en local, toutes les requêtes ont la même adresse ; espacer les essais ou relever `REGLES.formulairePublic` le temps des essais.
@@ -1539,6 +1728,7 @@ vi.mock("@src/config/env", () => ({
 - **Turnstile : second envoi refusé après une erreur** : une réponse du widget ne sert qu'une fois. Le container appelle `protection.apresEnvoi()` après chaque envoi, qui relance le widget.
 - **Turnstile activé sans la CSP** : le widget reste vide et la console affiche « Refused to load the script » ; appliquer l'étape 16.
 - **Clé de site Turnstile changée sans reconstruire** : `NEXT_PUBLIC_TURNSTILE_SITE_KEY` est lue à la construction ; redéployer après l'avoir changée.
+- **Widget Turnstile bloqué** (bloqueur de publicités, réseau d'entreprise) : la section affiche « La vérification anti-robot n'a pas pu se charger… » et le bouton reste désactivé ; la personne recharge la page ou autorise le site dans son bloqueur.
 - **Le cadre du widget est introuvable dans un test Playwright** : Turnstile l'affiche dans un shadow DOM. Vérifier plutôt que le bouton s'active (la réponse est arrivée).
 
 ## Sources

@@ -33,7 +33,7 @@
 | `src/lib/helpers/limite/__tests__/`, `src/db/limite/__tests__/`, `src/lib/__tests__/limite.test.ts`, `src/config/__tests__/env.test.ts` | Tests |
 | `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `exigerLimite` en tête |
 | `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` (modifié, avec la recette `email`) | `exigerLimite("motDePasseOublie")` en tête |
-| `src/adapters/limite/upstash.adapter.ts` (option Redis) | Limiteur Upstash |
+| `src/adapters/limite/upstash.adapter.ts` et son test (option Redis) | Limiteur Upstash |
 
 Formulaires publics (contact, avis, lettre) : recette `formulaire-public`, qui s'appuie sur celle-ci.
 
@@ -207,35 +207,12 @@ async function effacerAnciens(db: Db, maintenant: number) {
 
 ### 5. Les variables
 
-Dans `src/config/env.ts`, le schéma devient :
+Dans `src/config/env.ts`, ajouter dans `z.object({ … })` (en gardant les variables des autres recettes) :
 
 ```ts
-const schemaEnvServeur = z
-  .object({
-    DATABASE_URL: z.url(),
-    // Recette limite : où ranger les compteurs (base par défaut ; redis ; memoire pour les tests).
-    LIMITE_STOCKAGE: z.enum(["base", "redis", "memoire"]).default("base"),
-    UPSTASH_REDIS_REST_URL: z.url().optional(),
-    UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
-  })
-  .superRefine((env, ctx) => {
-    if (env.LIMITE_STOCKAGE !== "redis") return;
-    for (const nom of [
-      "UPSTASH_REDIS_REST_URL",
-      "UPSTASH_REDIS_REST_TOKEN",
-    ] as const) {
-      if (!env[nom]) {
-        ctx.addIssue({
-          code: "custom",
-          path: [nom],
-          message: "requise avec LIMITE_STOCKAGE=redis",
-        });
-      }
-    }
-  });
+  // Recette limite : où ranger les compteurs (base par défaut ; memoire pour les tests).
+  LIMITE_STOCKAGE: z.enum(["base", "memoire"]).default("base"),
 ```
-
-Gardez les variables que d'autres recettes ont déjà ajoutées dans `z.object({ … })`. Avec `LIMITE_STOCKAGE=redis` sans les deux variables Upstash, le site s'arrête avec un message qui les nomme.
 
 ### 6. La garde
 
@@ -245,7 +222,6 @@ Gardez les variables que d'autres recettes ont déjà ajoutées dans `z.object({
 // src/lib/limite.ts
 // Limite de requêtes : règles, choix du limiteur (LIMITE_STOCKAGE) et garde des actions.
 import "server-only";
-import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";
 import { envServeur } from "@src/config/env";
 import type { Limiteur, RegleLimite } from "@src/core/shared/limiteur.port";
 import { getDb } from "@src/db";
@@ -278,18 +254,11 @@ let limiteurDuProjet: Limiteur | undefined;
 /** Le limiteur choisi par LIMITE_STOCKAGE, créé une fois puis gardé. */
 function limiteurChoisi(): Limiteur {
   if (!limiteurDuProjet) {
-    const {
-      LIMITE_STOCKAGE,
-      UPSTASH_REDIS_REST_URL: url,
-      UPSTASH_REDIS_REST_TOKEN: token,
-    } = envServeur();
-    // env.ts exige les deux variables Upstash quand LIMITE_STOCKAGE vaut redis.
-    if (LIMITE_STOCKAGE === "redis" && url && token) {
-      limiteurDuProjet = limiteurUpstash({ url, token });
-    } else if (LIMITE_STOCKAGE === "memoire") {
+    const { LIMITE_STOCKAGE } = envServeur();
+    if (LIMITE_STOCKAGE === "memoire") {
       if (process.env.VERCEL) {
         logger.warn(
-          "LIMITE_STOCKAGE=memoire sur Vercel : chaque instance compte de son côté. Utilisez base ou redis.",
+          "LIMITE_STOCKAGE=memoire sur Vercel : chaque instance compte de son côté. Retirez la variable pour compter dans la base.",
         );
       }
       limiteurDuProjet = limiteurMemoire();
@@ -411,7 +380,37 @@ La base suffit à la plupart des sites. Redis répond plus vite sous une forte c
    ```
 
    et dans `.env.example`, les trois noms. Une ligne vide dans `.env` ferait échouer la validation (`z.url()` refuse une adresse vide) : ajoutez ces lignes seulement avec cette option.
-5. Créer l'adapter :
+5. Dans `src/config/env.ts` : `LIMITE_STOCKAGE` accepte `redis`, les deux variables Upstash s'ajoutent, et une vérification les exige ensemble avec `redis`. Le schéma devient (en gardant les variables des autres recettes dans `z.object({ … })`) :
+
+```ts
+const schemaEnvServeur = z
+  .object({
+    DATABASE_URL: z.url(),
+    // Recette limite : où ranger les compteurs (base par défaut ; redis ; memoire pour les tests).
+    LIMITE_STOCKAGE: z.enum(["base", "redis", "memoire"]).default("base"),
+    UPSTASH_REDIS_REST_URL: z.url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+  })
+  // Recette limite, option Redis : les deux variables Upstash sont requises.
+  .superRefine((env, ctx) => {
+    if (env.LIMITE_STOCKAGE !== "redis") return;
+    for (const nom of [
+      "UPSTASH_REDIS_REST_URL",
+      "UPSTASH_REDIS_REST_TOKEN",
+    ] as const) {
+      if (!env[nom]) {
+        ctx.addIssue({
+          code: "custom",
+          path: [nom],
+          message: "requise avec LIMITE_STOCKAGE=redis",
+        });
+      }
+    }
+  });
+```
+
+   Si `LIMITE_STOCKAGE=redis` arrive sans les deux variables Upstash, la première action qui lit les variables échoue, et le journal du serveur nomme les variables manquantes.
+6. Créer l'adapter :
 
 ```ts
 // src/adapters/limite/upstash.adapter.ts
@@ -454,7 +453,126 @@ export function limiteurUpstash(acces: {
 }
 ```
 
-6. Dans Vercel, saisir les trois variables pour Production et Preview, puis redéployer. Une même base peut servir en local et en ligne : les compteurs sont alors partagés.
+7. La garde complète : `src/lib/limite.ts` choisit aussi Upstash quand `LIMITE_STOCKAGE` vaut `redis`.
+
+```ts
+// src/lib/limite.ts
+// Limite de requêtes : règles, choix du limiteur (LIMITE_STOCKAGE) et garde des actions.
+import "server-only";
+import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";
+import { envServeur } from "@src/config/env";
+import type { Limiteur, RegleLimite } from "@src/core/shared/limiteur.port";
+import { getDb } from "@src/db";
+import { limiteurBase } from "@src/db/limite/limite.repository";
+import { ErreurService } from "@src/lib/errors/erreur-service";
+import { ipDepuis, messageLimite } from "@src/lib/helpers/limite/ip-et-message";
+import { limiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
+import { logger } from "@src/lib/logger";
+import { headers } from "next/headers";
+import { returnServerError } from "next-safe-action";
+
+const MINUTE = 60_000;
+
+// Une règle par usage : nombre de tentatives par adresse IP, sur une fenêtre de temps.
+const REGLES = {
+  connexion: { nombre: 5, fenetreMs: MINUTE },
+  inscription: { nombre: 3, fenetreMs: 10 * MINUTE },
+  motDePasseOublie: { nombre: 3, fenetreMs: 10 * MINUTE },
+  formulairePublic: { nombre: 5, fenetreMs: MINUTE },
+} as const satisfies Record<string, RegleLimite>;
+
+export type NomLimite = keyof typeof REGLES;
+
+export type Verdict =
+  | { autorise: true }
+  | { autorise: false; message: string; reset: number };
+
+let limiteurDuProjet: Limiteur | undefined;
+
+/** Le limiteur choisi par LIMITE_STOCKAGE, créé une fois puis gardé. */
+function limiteurChoisi(): Limiteur {
+  if (!limiteurDuProjet) {
+    const {
+      LIMITE_STOCKAGE,
+      UPSTASH_REDIS_REST_URL: url,
+      UPSTASH_REDIS_REST_TOKEN: token,
+    } = envServeur();
+    // env.ts exige les deux variables Upstash quand LIMITE_STOCKAGE vaut redis.
+    if (LIMITE_STOCKAGE === "redis" && url && token) {
+      limiteurDuProjet = limiteurUpstash({ url, token });
+    } else if (LIMITE_STOCKAGE === "memoire") {
+      if (process.env.VERCEL) {
+        logger.warn(
+          "LIMITE_STOCKAGE=memoire sur Vercel : chaque instance compte de son côté. Retirez la variable pour compter dans la base.",
+        );
+      }
+      limiteurDuProjet = limiteurMemoire();
+    } else {
+      limiteurDuProjet = limiteurBase(getDb());
+    }
+  }
+  return limiteurDuProjet;
+}
+
+/**
+ * Codes techniques de l'erreur, sans son texte : le texte d'une erreur réseau peut citer l'adresse appelée.
+ */
+function causeTechnique(erreur: unknown) {
+  const brute = (erreur ?? {}) as Record<string, unknown>;
+  const texte = (v: unknown) => (typeof v === "string" ? v : undefined);
+  const origine = (brute.cause ?? {}) as Record<string, unknown>;
+  return {
+    nom: texte(brute.name),
+    code: texte(brute.code) ?? texte(origine.code),
+  };
+}
+
+export async function verifierLimite(
+  nom: NomLimite,
+  identifiant: string,
+  limiteur: Limiteur = limiteurChoisi(),
+): Promise<Verdict> {
+  try {
+    const maintenant = Date.now();
+    const { accepte, reset } = await limiteur.verifier(
+      `${nom}:${identifiant}`,
+      REGLES[nom],
+      maintenant,
+    );
+    if (accepte) {
+      return { autorise: true };
+    }
+    return {
+      autorise: false,
+      message: messageLimite(reset, maintenant),
+      reset,
+    };
+  } catch (erreur) {
+    // Limiteur injoignable : le site reste utilisable, et l'incident est journalisé (sans l'adresse IP).
+    logger.error(
+      {
+        err: new ErreurService("limite", "Limiteur indisponible", {
+          cause: causeTechnique(erreur),
+        }),
+        limite: nom,
+      },
+      "Limiteur indisponible : requête laissée passer",
+    );
+    return { autorise: true };
+  }
+}
+
+// Pour une action next-safe-action : arrête l'action avec un message clair si la limite est atteinte.
+export async function exigerLimite(nom: NomLimite): Promise<void> {
+  const verdict = await verifierLimite(nom, ipDepuis(await headers()));
+  if (!verdict.autorise) {
+    returnServerError(verdict.message);
+  }
+}
+```
+
+8. Le test de panne d'Upstash et le test des variables (section « Tests »), puis `npm test`.
+9. Dans Vercel, saisir les trois variables pour Production et Preview, puis redéployer. Une même base peut servir en local et en ligne : les compteurs sont alors partagés.
 
 #### Si Upstash est indisponible
 
@@ -502,8 +620,8 @@ Fonctionnalité: Limite de requêtes
   Règle: Limiteur indisponible : le site reste utilisable
 
     @US-XXX-3 @integration
-    Exemple: Upstash injoignable : la tentative est laissée passer
-      Étant donné Upstash ne répond pas
+    Exemple: L'incident est journalisé sans l'adresse IP
+      Étant donné le limiteur ne répond pas
       Quand un formulaire public est envoyé
       Alors l'envoi est accepté et l'incident est journalisé
 
@@ -523,7 +641,7 @@ Fonctionnalité: Limite de requêtes
   - Dépend de : —
   - Fichiers : à créer : `src/core/shared/limiteur.port.ts`, `src/lib/helpers/limite/ip-et-message.ts`, `src/lib/helpers/limite/limiteur-memoire.ts`, `src/db/limite/limite.table.ts`, migration dans `drizzle/`, `src/db/limite/limite.repository.ts`, `src/lib/limite.ts`, `tests/helpers/contrat-limiteur.ts` et les tests de la section « Tests » · à modifier : `src/config/env.ts`
   - Vérification : US-XXX critères 1 à 4 – `npm test` passe (base PGlite et mémoire)
-  - Tests : « Sixième tentative de connexion en une minute… », « Attente de 9 minutes et demie… », « L'adresse retenue est la première de x-forwarded-for » (unitaires) ; « Upstash injoignable : la tentative est laissée passer », « L'incident est journalisé sans l'adresse IP », « des envois simultanés ne dépassent jamais la limite » (intégration)
+  - Tests : « Sixième tentative de connexion en une minute… », « Attente de 9 minutes et demie… », « L'adresse retenue est la première de x-forwarded-for » (unitaires) ; « L'incident est journalisé sans l'adresse IP », « des envois simultanés ne dépassent jamais la limite » (intégration)
 - [ ] **Tn+1 – Freiner les essais en rafale** · US-XXX
   - Objectif : la connexion, l'inscription et le mot de passe oublié refusent les essais en rafale
   - Dépend de : Tn
@@ -533,8 +651,8 @@ Fonctionnalité: Limite de requêtes
 - [ ] **Tn+2 (facultative) – Passer les compteurs sur Redis** · US-XXX
   - Objectif : les compteurs sont rangés dans Upstash pour tenir un fort trafic
   - Dépend de : Tn
-  - Fichiers : à créer : `src/adapters/limite/upstash.adapter.ts` · à modifier : `.env.example`
-  - Vérification : `npm test` passe ; un essai sur le site montre les clés `limite:…` dans la console Upstash
+  - Fichiers : à créer : `src/adapters/limite/upstash.adapter.ts`, `src/adapters/limite/__tests__/upstash.adapter.test.ts` · à modifier : `src/config/env.ts`, `src/lib/limite.ts`, `src/config/__tests__/env.test.ts`, `.env.example`
+  - Vérification : `npm test` passe, dont « Upstash injoignable : la tentative est laissée passer » ; un essai sur le site montre les clés `limite:…` dans la console Upstash
   - Action manuelle : créer la base Upstash (Francfort, offre gratuite), saisir `LIMITE_STOCKAGE=redis`, `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` dans `.env` et dans Vercel, puis redéployer
 
 ## Tests
@@ -689,11 +807,10 @@ describe("Limite de requêtes", () => {
 });
 ```
 
-La garde : verdict, choix du limiteur, panne d'Upstash (l'adresse `http://127.0.0.1:9` ne répond jamais) et contenu du journal.
+La garde : verdict, choix du limiteur, panne d'un limiteur et contenu du journal.
 
 ```ts
 // src/lib/__tests__/limite.test.ts
-import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { limiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -742,22 +859,6 @@ describe("Limite de requêtes", () => {
   });
 
   describe("Limiteur indisponible : le site reste utilisable", () => {
-    it("US-XXX-3 – Upstash injoignable : la tentative est laissée passer", async () => {
-      // Adresse volontairement injoignable : simule une panne d'Upstash.
-      const enPanne = limiteurUpstash({
-        url: "http://127.0.0.1:9",
-        token: "jeton-de-test",
-      });
-
-      const verdict = await verifierLimite(
-        "formulairePublic",
-        "203.0.113.7",
-        enPanne,
-      );
-
-      expect(verdict).toEqual({ autorise: true });
-    }, 10_000);
-
     it("US-XXX-3 – L'incident est journalisé sans l'adresse IP", async () => {
       const enPanne = {
         verifier: async () => {
@@ -806,7 +907,49 @@ describe("Variables de la limite", () => {
     vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
     expect((await lireEnv()).LIMITE_STOCKAGE).toBe("base");
   });
+});
+```
 
+Chaque variable obligatoire ajoutée à `env.ts` par une autre recette (par exemple `FORMULAIRE_SECRET`) s'ajoute aussi à ces tests : `vi.stubEnv("FORMULAIRE_SECRET", "x".repeat(32));`.
+
+Option Redis : la panne d'Upstash (l'adresse `http://127.0.0.1:9` ne répond jamais) et un test de plus pour les variables.
+
+```ts
+// src/adapters/limite/__tests__/upstash.adapter.test.ts
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
+vi.mock("@src/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn() },
+}));
+vi.mock("@src/config/env", () => ({
+  envServeur: () => ({ LIMITE_STOCKAGE: "memoire" }),
+}));
+
+const { verifierLimite } = await import("@src/lib/limite");
+const { limiteurUpstash } = await import("../upstash.adapter");
+
+describe("Limite de requêtes, option Redis", () => {
+  it("US-XXX-3 – Upstash injoignable : la tentative est laissée passer", async () => {
+    // Adresse volontairement injoignable : simule une panne d'Upstash.
+    const enPanne = limiteurUpstash({
+      url: "http://127.0.0.1:9",
+      token: "jeton-de-test",
+    });
+
+    const verdict = await verifierLimite(
+      "formulairePublic",
+      "203.0.113.7",
+      enPanne,
+    );
+
+    expect(verdict).toEqual({ autorise: true });
+  }, 10_000);
+});
+```
+
+```ts
+// à ajouter dans src/config/__tests__/env.test.ts
   it("redis sans les variables Upstash : le message nomme les variables manquantes", async () => {
     vi.stubEnv("DATABASE_URL", "postgresql://localhost:5432/essai");
     vi.stubEnv("LIMITE_STOCKAGE", "redis");
@@ -814,10 +957,7 @@ describe("Variables de la limite", () => {
       /UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN/,
     );
   });
-});
 ```
-
-Si d'autres recettes ont ajouté des variables obligatoires à `env.ts`, ajoutez-les aussi par `vi.stubEnv` dans ces deux tests.
 
 ## Points de sécurité
 
@@ -850,7 +990,7 @@ Si d'autres recettes ont ajouté des variables obligatoires à `env.ts`, ajoutez
 - better-auth : https://www.better-auth.com/docs/concepts/rate-limit (« Server-side requests using `auth.api` bypass rate limiting »)
 - next-safe-action 8.7.3 : `dist/index.d.mts` (`returnServerError`)
 - Next.js 16.4, documentation embarquée : `01-app/03-api-reference/04-functions/headers.md`
-- Vérifications locales le 2026-10-08, sur le squelette du pack (Next.js 16.4.0, Drizzle 0.45.3, PGlite 0.5.8, Zod 4.6.5, Vitest 5.0.3) : `npm run db:generate`, `npm run check`, `npm run typecheck`, `npm test` (dont le contrat des limiteurs en mémoire et sur PGlite, et la panne d'Upstash) et `npm run build` passent
+- Vérifications locales le 2026-10-08, sur le squelette du pack (Next.js 16.4.0, Drizzle 0.45.3, PGlite 0.5.8, Zod 4.6.5, Vitest 5.0.3) : `npm run db:generate`, `npm run check`, `npm run typecheck`, `npm test` (dont le contrat des limiteurs en mémoire et sur PGlite) et `npm run build` passent sans les paquets Upstash ; puis, avec l'option Redis appliquée, les mêmes commandes et le test de panne d'Upstash
 
 ## Points à vérifier
 

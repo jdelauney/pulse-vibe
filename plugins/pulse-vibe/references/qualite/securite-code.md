@@ -79,11 +79,11 @@ Si la base retenue le permet (règles par ligne, politiques d'accès, vues filtr
 
 ## 4. Champ piège et délai minimal (S10)
 
-**Champ piège (honeypot)** : un champ au nom crédible (par exemple « site web »), invisible pour les humains et les technologies d'assistance, exclu de la tabulation et du remplissage automatique. Le placer hors de l'écran, plutôt que de le masquer d'une façon que certains robots repèrent (champ de type caché, affichage supprimé).
+**Champ piège (honeypot)** : un champ invisible pour les humains et les technologies d'assistance, exclu de la tabulation et du remplissage automatique. Son nom n'évoque aucun champ que le navigateur ou un gestionnaire de mots de passe remplit tout seul (nom, société, adresse, e-mail, téléphone). Le placer hors de l'écran, plutôt que de le masquer d'une façon que certains robots repèrent (champ de type caché, affichage supprimé).
 
-**Délai minimal** : la durée de remplissage est mesurée **côté client** (les horloges diffèrent) et envoyée avec le formulaire ; côté serveur, moins de 2 à 3 secondes ou une valeur illisible = robot probable.
+**Délai minimal** : le serveur connaît l'heure d'ouverture du formulaire, de préférence par un **jeton signé par le serveur** à l'ouverture (horodatage + nom du formulaire + signature HMAC), que le navigateur ne peut pas falsifier. À défaut, une durée mesurée côté client (les horloges diffèrent), falsifiable. Moins de 2 à 3 secondes, ou une valeur illisible = robot probable.
 
-Dans les deux cas : **abandonner la requête en silence et répondre comme un succès**, pour que le robot ignore qu'il a été repéré. La valeur du champ piège est jetée, jamais enregistrée. Ces deux mesures arrêtent seulement les robots naïfs (valeurs falsifiables) : les combiner avec la limite de fréquence.
+Dans les deux cas, la requête est abandonnée et la valeur du champ piège jetée, jamais enregistrée. Deux réponses conviennent : un **message neutre qui dit quoi faire** (« Rechargez la page et réessayez. »), qui laisse une issue à une personne dont le navigateur aurait rempli le piège ; ou **un faux succès**, pour que le robot ignore qu'il a été repéré. Le refus est noté au journal dans les deux cas. Ces deux mesures arrêtent seulement les robots naïfs (valeurs falsifiables) : les combiner avec la limite de fréquence.
 
 ## 5. Limitation de fréquence (S10)
 
@@ -142,7 +142,7 @@ Un service tiers reçoit des données techniques du visiteur : le citer dans la 
 
 | Code | Quand | Message affiché |
 |---|---|---|
-| 200 neutre | Robot repéré (champ piège, délai) | Même message que le succès |
+| 200 neutre, ou 400 | Robot repéré (champ piège, délai) | Même message que le succès, ou « Rechargez la page et réessayez. » |
 | 400 | Validation échouée, corps illisible | Message simple de la validation |
 | 401 | Pas de session ou session invalide | « Merci de vous reconnecter. » |
 | 403 | Origine refusée, droit insuffisant | « Action non autorisée. » |

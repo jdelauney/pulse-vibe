@@ -217,7 +217,7 @@ test("le chemin de la garde de limite est le même partout", () => {
 
 test("recette formulaire-public : champ piège, jeton signé, limite, Turnstile en option avec sa CSP", () => {
   const texte = lire(REF, "recettes", "formulaire-public.md");
-  for (const attendu of ["site_web_societe", "FORMULAIRE_SECRET", "actionFormulairePublic", "useProtectionFormulaire", "app/api/jeton-formulaire/route.ts", "pulse-aidd pile recette limite", "timingSafeEqual", "Rechargez la page et réessayez.", "Envoi trop rapide. Patientez quelques secondes, puis réessayez."])
+  for (const attendu of ["champ_verification", "FORMULAIRE_SECRET", "actionFormulairePublic", "useProtectionFormulaire", "app/api/jeton-formulaire/route.ts", "pulse-aidd pile recette limite", "timingSafeEqual", "Rechargez la page et réessayez.", "Envoi trop rapide. Patientez quelques secondes, puis réessayez."])
     assert.ok(texte.includes(attendu), attendu);
   assert.match(texte, /### Option : Turnstile/);
   assert.match(texte, /### \d+\. La CSP autorise Turnstile/);
@@ -229,4 +229,33 @@ test("recette formulaire-public : champ piège, jeton signé, limite, Turnstile 
 test("contexte security : Turnstile parmi les sources ajoutées par les recettes", () => {
   const texte = lire(REF, "contexte", "security.md");
   assert.ok(texte.includes("challenges.cloudflare.com"), "hôte Turnstile");
+});
+
+test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Redis l'ajoute", () => {
+  const texte = lire(REF, "recettes", "limite.md");
+  const [base, option] = texte.split("### Option : Redis");
+  assert.ok(option, "section de l'option Redis");
+  assert.ok(!base.includes("@src/adapters/limite/upstash.adapter"), "aucun import d'Upstash avant l'option");
+  assert.ok(!base.includes("npm install @upstash"), "aucune installation d'Upstash avant l'option");
+  assert.ok(base.includes('z.enum(["base", "memoire"]).default("base")'), "variables de base sans redis");
+  assert.ok(option.includes('import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";'), "la garde complète dans l'option");
+});
+
+test("recette formulaire-public : correctifs de revue (champ neutre, clés Turnstile ensemble, échec du widget)", () => {
+  const texte = lire(REF, "recettes", "formulaire-public.md");
+  assert.ok(!texte.includes("site_web_societe"), "ancien nom du champ piège");
+  for (const attendu of ["data-1p-ignore", "n'a pas pu se charger", "NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional()", "les deux clés Turnstile vont ensemble", 'vi.stubEnv("FORMULAIRE_SECRET"', "e2e/turnstile.spec.ts"])
+    assert.ok(texte.includes(attendu), attendu);
+  assert.ok(!/@e2e\b/.test(texte), "étiquette @bout-en-bout, comme les autres recettes");
+});
+
+test("express et spec orientent vers formulaire-public", () => {
+  assert.match(lire(REF, "contexte", "express.md"), /formulaires publics → `formulaire-public`/);
+  assert.match(lire(REF, "contexte", "spec.md"), /formulaire public/);
+});
+
+test("la référence sécurité du cœur accepte le jeton signé et le refus neutre de la recette", () => {
+  const texte = lire(RACINE, "..", "pulse-vibe", "references", "qualite", "securite-code.md");
+  assert.match(texte, /jeton signé par le serveur/);
+  assert.match(texte, /Rechargez la page et réessayez/);
 });
