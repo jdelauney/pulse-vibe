@@ -622,3 +622,9 @@ test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et 
   }
   assert.deepStrictEqual(problemes, []);
 });
+
+test("tests automatiques : installer un outil de test est recommandé quand la pile en a un", () => {
+  const texte = lire(RACINE, "references", "tests-automatiques.md");
+  assert.match(texte, /« Installer un outil de test \(Recommandé\) »/);
+  assert.match(texte, /« Sans tests automatiques »/);
+});

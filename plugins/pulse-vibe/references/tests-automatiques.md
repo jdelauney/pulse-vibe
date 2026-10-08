@@ -20,7 +20,8 @@ Si un sous-agent est indisponible : faire son travail soi-même en suivant **str
 - **Option `-t`** : tests d'abord, sans question.
 - **Sans `-t`** : poser la question avec les autres questions de démarrage (même appel AskUserQuestion) quand la commande pose ses questions (voir la commande), avec la réponse recommandée selon « Tester » de « Commandes du projet » (`docs/technical.md`) :
   - commande présente : « Tests d'abord (Recommandé) » (un assistant écrit les tests avant le code, qui doit les faire passer) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
-  - « aucune » : « Sans tests automatiques (Recommandé) » / « Installer un outil de test, puis tests d'abord » (§ 3).
+  - « aucune », et la documentation officielle de la pile retenue recommande un outil de test : « Installer un outil de test (Recommandé) » (§ 3, puis tests d'abord) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
+  - « aucune », sans outil de test connu pour cette pile : « Sans tests automatiques (Recommandé) » / « Installer un outil de test, puis tests d'abord » (§ 3).
 - Annoncer le choix dans la ligne de démarrage (« … · tests d'abord »).
 
 ## 3. Si l'outil de test manque
