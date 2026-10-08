@@ -18,6 +18,7 @@
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
+#   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
 #   pulse-aidd travail-fini          efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier courant
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
@@ -359,6 +360,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/perf.js" "$@" ;;
   search-console)
     shift; exec node "$RACINE/scripts/search-console.js" "$@" ;;
+  etat)
+    shift; exec node "$RACINE/scripts/etat.js" "$@" ;;
   travail-fini)
     rm -f aidd_docs/tasks/in-progress.md
     echo "Travail en cours effacé : aucune décision en attente." ;;
@@ -392,5 +395,5 @@ case "$1" in
     chmod +x "$crochet"
     echo "Installé : contrôle des secrets avant chaque commit, y compris ceux faits hors de Claude Code ($crochet)." ;;
   *)
-    sed -n '2,36p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,37p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
 esac
