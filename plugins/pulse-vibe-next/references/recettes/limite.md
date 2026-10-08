@@ -37,9 +37,9 @@ Dans Vercel, les saisir pour Production et Preview. Une même base peut servir e
 | Fichier | Rôle |
 |---|---|
 | `src/config/env.ts`, `.env.example` (modifiés) | Les deux variables Upstash |
-| `src/lib/helpers/limite/limite.ts` | Lecture de l'IP et message (fonctions pures) |
+| `src/lib/helpers/limite/ip-et-message.ts` | Lecture de l'IP et message (fonctions pures) |
 | `src/adapters/limite/limite.adapter.ts` | Adapter Upstash : règles, `verifierLimite`, `exigerLimite` |
-| `src/lib/helpers/limite/__tests__/limite.test.ts` | Tests unitaires des fonctions pures |
+| `src/lib/helpers/limite/__tests__/ip-et-message.test.ts` | Tests unitaires des fonctions pures |
 | `src/adapters/limite/__tests__/limite.adapter.test.ts` | Tests du verdict et de la panne d'Upstash |
 | `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `exigerLimite` en tête |
 | `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` (modifié, avec la recette `email`) | `exigerLimite("motDePasseOublie")` en tête |
@@ -53,10 +53,10 @@ Créer la base (Prérequis), remplir `.env`, compléter `src/config/env.ts` et `
 
 ### 2. Les fonctions pures
 
-Techniques et sans service : elles vivent dans `src/lib/helpers/limite/`.
+Techniques et sans service : elles vivent dans `src/lib/helpers/limite/`, dans un fichier au nom différent de l'adapter (`ip-et-message.ts`, pas `limite.ts`) pour ne pas les confondre.
 
 ```ts
-// src/lib/helpers/limite/limite.ts
+// src/lib/helpers/limite/ip-et-message.ts
 // Fonctions pures de la limite de requêtes, testées en unitaire.
 
 // Sur Vercel, x-forwarded-for est réécrit par la plateforme : la première adresse est celle du visiteur.
@@ -80,7 +80,7 @@ Le limiteur appelle un service externe (Upstash) : il vit dans `src/adapters/lim
 import "server-only";
 import { envServeur } from "@src/config/env";
 import { ErreurService } from "@src/lib/errors/erreur-service";
-import { ipDepuis, messageLimite } from "@src/lib/helpers/limite/limite";
+import { ipDepuis, messageLimite } from "@src/lib/helpers/limite/ip-et-message";
 import { logger } from "@src/lib/logger";
 import { type Duration, Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
@@ -304,14 +304,14 @@ Fonctionnalité: Limite de requêtes
 - [ ] **Tn – Compter les tentatives par adresse IP** · US-XXX
   - Objectif : le site sait compter les tentatives par adresse IP et refuser au-delà de la limite, avec un message clair
   - Dépend de : —
-  - Fichiers : à créer : `src/lib/helpers/limite/limite.ts`, `src/adapters/limite/limite.adapter.ts`, `src/lib/helpers/limite/__tests__/limite.test.ts`, `src/adapters/limite/__tests__/limite.adapter.test.ts` · à modifier : `src/config/env.ts`, `.env.example`
+  - Fichiers : à créer : `src/lib/helpers/limite/ip-et-message.ts`, `src/adapters/limite/limite.adapter.ts`, `src/lib/helpers/limite/__tests__/ip-et-message.test.ts`, `src/adapters/limite/__tests__/limite.adapter.test.ts` · à modifier : `src/config/env.ts`, `.env.example`
   - Vérification : US-XXX critères 1 à 3 – `npm test` passe
   - Tests : « Sixième tentative de connexion en une minute… », « Attente de 9 minutes et demie… », « L'adresse retenue est la première de x-forwarded-for » (unitaires) ; « Upstash injoignable : la tentative est laissée passer », « L'incident est journalisé sans l'adresse IP » (intégration)
   - Action manuelle : créer la base Upstash (Francfort, offre gratuite) et copier l'adresse et le jeton REST dans `.env`
 - [ ] **Tn+1 – Freiner les essais en rafale** · US-XXX
   - Objectif : la connexion, l'inscription, le mot de passe oublié et les formulaires publics refusent les essais en rafale
   - Dépend de : Tn
-  - Fichiers : à modifier : `src/features/compte/actions/inscrire.action.ts`, `src/features/compte/actions/connecter.action.ts` (et `demander-nouveau-mot-de-passe.action.ts` avec la recette `email`), les actions publiques
+  - Fichiers : à créer : `src/features/contact/schemas/contact.schema.ts`, `src/features/contact/actions/envoyer-message.action.ts` (exemple de formulaire public : adapter au projet) · à modifier : `src/features/compte/actions/inscrire.action.ts`, `src/features/compte/actions/connecter.action.ts` (et `demander-nouveau-mot-de-passe.action.ts` avec la recette `email`), les actions publiques
   - Vérification : US-XXX critère 1 – six mots de passe faux en moins d'une minute : le message s'affiche
   - Tests : « Six mots de passe faux de suite sur le site… » (manuel)
   - Action manuelle : saisir `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` dans Vercel, puis redéployer
@@ -321,9 +321,9 @@ Fonctionnalité: Limite de requêtes
 Unitaires pour les fonctions pures ; test de l'adapter pour le verdict, la panne d'Upstash (l'adresse `http://127.0.0.1:9` ne répond jamais) et le contenu du journal :
 
 ```ts
-// src/lib/helpers/limite/__tests__/limite.test.ts
+// src/lib/helpers/limite/__tests__/ip-et-message.test.ts
 import { describe, expect, it } from "vitest";
-import { ipDepuis, messageLimite } from "../limite";
+import { ipDepuis, messageLimite } from "../ip-et-message";
 
 describe("Limite de requêtes", () => {
   describe("Au-delà de la limite, la personne reçoit un message clair", () => {

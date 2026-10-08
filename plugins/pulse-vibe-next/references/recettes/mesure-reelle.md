@@ -82,6 +82,9 @@ export type NoteMesure = (typeof NOTES)[number];
 
 export const DUREE_CONSERVATION_JOURS = 90;
 
+/** Intervalle minimal entre deux effacements des anciennes mesures. */
+export const INTERVALLE_PURGE_MS = 3_600_000;
+
 /** Une mesure envoyée par le navigateur d'un visiteur : anonyme (ni IP, ni compte, ni adresse complète). */
 export type MesureVitesse = {
   page: string;
@@ -101,7 +104,7 @@ export type LigneP75 = {
 
 ```ts
 // src/core/vitesse/mesure.rules.ts
-import { DUREE_CONSERVATION_JOURS } from "./mesure.entity";
+import { DUREE_CONSERVATION_JOURS, INTERVALLE_PURGE_MS } from "./mesure.entity";
 
 // Un segment d'adresse qui ressemble à un identifiant (nombre, uuid, jeton) devient « [id] » :
 // les mesures se regroupent par gabarit, et aucune adresse ne désigne une personne ou un document.
@@ -116,13 +119,24 @@ export function normaliserChemin(adresse: string): string {
   return `/${segments.join("/")}`.slice(0, 200);
 }
 
+/** L'effacement a lieu au plus une fois par intervalle : la première fois, ou une heure après la précédente. */
+export function purgeNecessaire(
+  dernierePurge: Date | null,
+  maintenant: Date,
+): boolean {
+  return (
+    dernierePurge === null ||
+    maintenant.getTime() - dernierePurge.getTime() >= INTERVALLE_PURGE_MS
+  );
+}
+
 /** Les mesures créées avant cette date sont effacées. */
 export function limiteDeConservation(maintenant: Date): Date {
   return new Date(maintenant.getTime() - DUREE_CONSERVATION_JOURS * 86_400_000);
 }
 ```
 
-Enregistrer une mesure applique une règle métier (le chemin sans identifiant) : l'écriture passe donc par un use-case (architecture.md §5, point 2). Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 3 le fournit.
+Enregistrer une mesure applique deux règles métier (le chemin sans identifiant, l'effacement au plus une fois par heure) : l'écriture passe donc par un use-case (architecture.md §5, point 2). Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 3 le fournit.
 
 ```ts
 // src/core/vitesse/mesure-repository.port.ts
@@ -138,19 +152,35 @@ export type MesureVitesseRepository = {
 ```ts
 // src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts
 import type { MesureVitesse } from "../mesure.entity";
-import { limiteDeConservation, normaliserChemin } from "../mesure.rules";
+import {
+  limiteDeConservation,
+  normaliserChemin,
+  purgeNecessaire,
+} from "../mesure.rules";
 import type { MesureVitesseRepository } from "../mesure-repository.port";
 
-/** Enregistre la mesure avec une page sans identifiant, puis efface les mesures trop anciennes. */
+/**
+ * Enregistre la mesure avec une page sans identifiant. Les mesures trop anciennes s'effacent
+ * au plus une fois par heure (`dernierePurge` : date du dernier effacement connu de l'appelant).
+ * Renvoie `purge: true` quand l'effacement a eu lieu.
+ */
 export async function enregistrerMesure(
   deps: { mesures: MesureVitesseRepository },
-  entree: { mesure: MesureVitesse; maintenant: Date },
-): Promise<void> {
+  entree: {
+    mesure: MesureVitesse;
+    maintenant: Date;
+    dernierePurge: Date | null;
+  },
+): Promise<{ purge: boolean }> {
   await deps.mesures.enregistrer({
     ...entree.mesure,
     page: normaliserChemin(entree.mesure.page),
   });
+  if (!purgeNecessaire(entree.dernierePurge, entree.maintenant)) {
+    return { purge: false };
+  }
   await deps.mesures.effacerAvant(limiteDeConservation(entree.maintenant));
+  return { purge: true };
 }
 ```
 
@@ -256,7 +286,7 @@ export const mesureVitesseSchema = z.object({
 });
 ```
 
-Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours. Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
+Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (règle `purgeNecessaire`). Un effacement à chaque mesure ajouterait une requête `DELETE` à chaque visite. Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
 
 ```ts
 // src/features/vitesse/webhooks/recevoir-mesure.webhook.ts
@@ -268,6 +298,10 @@ import type { NextRequest } from "next/server";
 import { mesureVitesseSchema } from "../schemas/mesure.schema";
 
 const TAILLE_MAX = 2_000;
+
+// Dernier effacement des anciennes mesures par cette instance du serveur : le use-case l'efface
+// au plus une fois par heure, au lieu d'une requête DELETE à chaque mesure reçue.
+let dernierePurge: Date | null = null;
 
 /** Reçoit une mesure envoyée par le navigateur d'un visiteur (navigator.sendBeacon). */
 export async function recevoirMesure(request: NextRequest): Promise<Response> {
@@ -291,10 +325,12 @@ export async function recevoirMesure(request: NextRequest): Promise<Response> {
     return new Response(null, { status: 400 });
   }
   try {
-    await enregistrerMesure(
+    const maintenant = new Date();
+    const { purge } = await enregistrerMesure(
       { mesures: mesureVitesseRepository(getDb()) },
-      { mesure: lu.data, maintenant: new Date() },
+      { mesure: lu.data, maintenant, dernierePurge },
     );
+    if (purge) dernierePurge = maintenant;
   } catch (erreur) {
     return reponseErreur(erreur, "Mesure de vitesse non enregistrée");
   }
@@ -442,6 +478,12 @@ Fonctionnalité: Mesure réelle de la vitesse
       Alors seule celle de 89 jours reste
 
     @US-XXX-3 @unitaire
+    Exemple: L'effacement des anciennes mesures a lieu au plus une fois par heure
+      Étant donné un effacement fait à 12 h 00
+      Quand deux mesures arrivent à 12 h 05 et 12 h 59, puis une à 13 h 00
+      Alors rien n'est effacé avant 13 h 00, où un nouvel effacement a lieu
+
+    @US-XXX-3 @unitaire
     Exemple: La limite de conservation est à 90 jours
       Étant donné la date du 8 octobre 2026
       Quand la limite de conservation est calculée
@@ -461,7 +503,7 @@ Fonctionnalité: Mesure réelle de la vitesse
   - Dépend de : —
   - Fichiers : à créer : `src/core/vitesse/mesure.entity.ts`, `mesure.rules.ts`, `mesure-repository.port.ts`, `use-cases/enregistrer-mesure.use-case.ts`, `src/db/vitesse/mesure-vitesse.table.ts`, `mesure-vitesse.repository.ts`, `src/features/vitesse/schemas/mesure.schema.ts`, `webhooks/recevoir-mesure.webhook.ts`, `app/api/vitesse/route.ts`, `src/components/shared/elements/mesure-vitesse.tsx`, les cinq fichiers de test (dans les `__tests__/` de chaque dossier), migration dans `drizzle/` · à modifier : `app/layout.tsx`, mention de confidentialité
   - Vérification : US-XXX critères 1 à 3 – `npm test` passe ; `npm run build` garde l'accueil statique (○)
-  - Tests : « Adresse d'une facture… », « Page ordinaire… », « La limite de conservation… » (`src/core/vitesse/__tests__/mesure.rules.test.ts`) ; « Mesure valide : enregistrée sans identifiant… » (`enregistrer-mesure.use-case.test.ts`) ; « Mesure LCP valide… », « Mesure inconnue… » (`mesure.schema.test.ts`) ; « Mesure valide envoyée par le site… », « Envoi depuis un autre site… », « Base indisponible… » (`recevoir-mesure.webhook.test.ts`) ; « Quatre LCP sur l'accueil… », « Mesure de plus de 90 jours… » (`mesure-vitesse.repository.test.ts`, intégration) ; « Visite réelle… » (manuel)
+  - Tests : « Adresse d'une facture… », « Page ordinaire… », « L'effacement… au plus une fois par heure », « La limite de conservation… » (`src/core/vitesse/__tests__/mesure.rules.test.ts`) ; « Mesure valide : enregistrée sans identifiant… » (`enregistrer-mesure.use-case.test.ts`, avec « Effacement fait il y a moins d'une heure… ») ; « Mesure LCP valide… », « Mesure inconnue… » (`mesure.schema.test.ts`) ; « Mesure valide envoyée par le site… », « Envoi depuis un autre site… », « Base indisponible… », « Les anciennes mesures s'effacent au plus une fois par heure » (`recevoir-mesure.webhook.test.ts`, horloge simulée) ; « Quatre LCP sur l'accueil… », « Mesure de plus de 90 jours… » (`mesure-vitesse.repository.test.ts`, intégration) ; « Visite réelle… » (manuel)
   - Action manuelle : appliquer la migration en production (`npm run db:migrate`), puis, après quelques jours, lancer la requête dans le SQL Editor de Neon
 
 ## Tests
@@ -471,7 +513,11 @@ Unitaires (règles, use-case avec doublure en mémoire, schéma, réception avec
 ```ts
 // src/core/vitesse/__tests__/mesure.rules.test.ts
 import { describe, expect, it } from "vitest";
-import { limiteDeConservation, normaliserChemin } from "../mesure.rules";
+import {
+  limiteDeConservation,
+  normaliserChemin,
+  purgeNecessaire,
+} from "../mesure.rules";
 
 describe("Mesure réelle de la vitesse : règles", () => {
   describe("Les mesures se regroupent par gabarit, sans identifiant", () => {
@@ -499,6 +545,18 @@ describe("Mesure réelle de la vitesse : règles", () => {
       expect(limiteDeConservation(maintenant).toISOString()).toBe(
         "2026-07-10T12:00:00.000Z",
       );
+    });
+
+    it("US-XXX-3 – L'effacement a lieu au plus une fois par heure", () => {
+      const premiere = new Date("2026-10-08T12:00:00.000Z");
+
+      expect(purgeNecessaire(null, premiere)).toBe(true);
+      expect(
+        purgeNecessaire(premiere, new Date("2026-10-08T12:59:59.999Z")),
+      ).toBe(false);
+      expect(
+        purgeNecessaire(premiere, new Date("2026-10-08T13:00:00.000Z")),
+      ).toBe(true);
     });
   });
 });
@@ -540,6 +598,7 @@ describe("Use-case : enregistrer une mesure", () => {
           note: "good",
         },
         maintenant,
+        dernierePurge: null,
       },
     );
 
@@ -549,6 +608,23 @@ describe("Use-case : enregistrer une mesure", () => {
     expect(limites.map((l) => l.toISOString())).toEqual([
       "2026-07-10T12:00:00.000Z",
     ]);
+  });
+
+  it("US-XXX-3 – Effacement fait il y a moins d'une heure : mesure enregistrée, sans nouvel effacement", async () => {
+    const { mesures, enregistrees, limites } = repositoryEnMemoire();
+
+    const resultat = await enregistrerMesure(
+      { mesures },
+      {
+        mesure: { page: "/", mesure: "LCP", valeur: 900, note: "good" },
+        maintenant: new Date("2026-10-08T12:30:00.000Z"),
+        dernierePurge: new Date("2026-10-08T12:00:00.000Z"),
+      },
+    );
+
+    expect(resultat).toEqual({ purge: false });
+    expect(enregistrees).toHaveLength(1);
+    expect(limites).toEqual([]);
   });
 });
 ```
@@ -588,9 +664,10 @@ describe("Mesure réelle de la vitesse : schéma", () => {
 ```ts
 // src/features/vitesse/webhooks/__tests__/recevoir-mesure.webhook.test.ts
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const enregistrees: unknown[] = [];
+let effacements = 0;
 let panne = false;
 
 vi.mock("@src/db", () => ({ getDb: () => ({}) }));
@@ -600,11 +677,17 @@ vi.mock("@src/db/vitesse/mesure-vitesse.repository", () => ({
       if (panne) throw new Error("Base indisponible");
       enregistrees.push(mesure);
     },
-    effacerAvant: async () => {},
+    effacerAvant: async () => {
+      effacements += 1;
+    },
   }),
 }));
 
-const { recevoirMesure } = await import("../recevoir-mesure.webhook");
+// Chaque test repart d'un module neuf : la date du dernier effacement est gardée dans le module.
+async function chargerWebhook() {
+  vi.resetModules();
+  return (await import("../recevoir-mesure.webhook")).recevoirMesure;
+}
 
 function requete(corps: string, origine = "http://localhost:3000") {
   return new NextRequest("http://localhost:3000/api/vitesse", {
@@ -623,11 +706,18 @@ const mesureValide = {
 
 beforeEach(() => {
   enregistrees.length = 0;
+  effacements = 0;
   panne = false;
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("Réception des mesures", () => {
   it("US-XXX-2 – Mesure valide envoyée par le site : enregistrée sans identifiant", async () => {
+    const recevoirMesure = await chargerWebhook();
+
     const reponse = await recevoirMesure(requete(JSON.stringify(mesureValide)));
 
     expect(reponse.status).toBe(204);
@@ -637,6 +727,7 @@ describe("Réception des mesures", () => {
   });
 
   it("US-XXX-2 – Envoi depuis un autre site ou corps illisible : refusé", async () => {
+    const recevoirMesure = await chargerWebhook();
     const corps = JSON.stringify(mesureValide);
 
     expect(
@@ -648,12 +739,33 @@ describe("Réception des mesures", () => {
   });
 
   it("US-XXX-2 – Base indisponible : réponse générique, sans détail", async () => {
+    const recevoirMesure = await chargerWebhook();
     panne = true;
 
     const reponse = await recevoirMesure(requete(JSON.stringify(mesureValide)));
 
     expect(reponse.status).toBe(500);
     expect(await reponse.text()).not.toContain("Base indisponible");
+  });
+
+  it("US-XXX-3 – Les anciennes mesures s'effacent au plus une fois par heure", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-08T12:00:00.000Z"));
+    const recevoirMesure = await chargerWebhook();
+    const corps = JSON.stringify(mesureValide);
+
+    await recevoirMesure(requete(corps));
+    await recevoirMesure(requete(corps));
+    vi.setSystemTime(new Date("2026-10-08T12:59:00.000Z"));
+    await recevoirMesure(requete(corps));
+
+    expect(enregistrees).toHaveLength(3);
+    expect(effacements).toBe(1);
+
+    vi.setSystemTime(new Date("2026-10-08T13:00:00.000Z"));
+    await recevoirMesure(requete(corps));
+
+    expect(effacements).toBe(2);
   });
 });
 ```
@@ -737,7 +849,7 @@ describe("Mesure réelle : enregistrement et lecture", () => {
 
 ## Points de sécurité
 
-- **S10 – Abus et coûts** : la route est publique (un navigateur l'appelle sans session). Elle refuse les autres origines, les corps de plus de 2 000 caractères et tout ce qui sort du schéma ; chaque envoi ajoute une petite ligne. Avec la recette `limite`, ajouter en tête de `recevoirMesure` une vérification `verifierLimite("formulairePublic", ipDepuis(request.headers))` (`verifierLimite` de `@src/adapters/limite/limite.adapter`, `ipDepuis` de `@src/lib/helpers/limite/limite`) qui répond 429 quand la limite est atteinte.
+- **S10 – Abus et coûts** : la route est publique (un navigateur l'appelle sans session). Elle refuse les autres origines, les corps de plus de 2 000 caractères et tout ce qui sort du schéma ; chaque envoi ajoute une petite ligne. Avec la recette `limite`, ajouter en tête de `recevoirMesure` une vérification `verifierLimite("formulairePublic", ipDepuis(request.headers))` (`verifierLimite` de `@src/adapters/limite/limite.adapter`, `ipDepuis` de `@src/lib/helpers/limite/ip-et-message`) qui répond 429 quand la limite est atteinte.
 - **S9 – Données personnelles** : ni IP, ni cookie, ni identifiant de compte, ni adresse complète (les identifiants des adresses deviennent `[id]`) ; effacement après 90 jours ; mention de confidentialité à jour.
 - **S11 – Messages d'erreur** : la route répond par un code seul pour une requête refusée, et par le message générique de `reponseErreur()` pour une panne ; l'erreur de base va dans le journal du serveur, sans le contenu reçu.
 - Option A : les données vont chez Vercel (sous-traitant déjà utilisé pour l'hébergement) ; les citer dans la mention.
@@ -749,6 +861,7 @@ describe("Mesure réelle : enregistrement et lecture", () => {
 - **Rien en développement** : `npm run dev` n'envoie rien (voulu) ; pour essayer, `npm run build` puis `npx next start`.
 - **CLS et INP arrivent à la sortie de la page** : ils partent quand l'onglet est caché ou fermé ; un essai qui reste sur la page voit seulement TTFB, FCP et LCP.
 - **Selon le navigateur** : le CLS et les navigations internes se mesurent seulement sous Chrome et Edge ; les autres mesures dépendent de la version du navigateur. Les chiffres décrivent donc surtout les visiteurs de Chrome et Edge.
+- **Effacement des anciennes mesures** : il a lieu au plus une fois par heure et par instance du serveur (date gardée en mémoire dans le webhook), pas à chaque mesure. Après un redémarrage ou sur une nouvelle instance, le premier envoi efface ; une mesure de plus de 90 jours peut donc rester jusqu'à une heure de plus. Pour un effacement indépendant des visites, une tâche planifiée de Vercel (cron) peut appeler `effacerAvant`.
 - **Mesure perdue** : un bloqueur de contenu ou une coupure réseau en perd quelques-unes ; le 75e centile reste fiable avec assez de visites.
 - **Speed Insights gratuit** : seulement le score global dans le tableau de bord ; pour lire le LCP par page sans payer, l'option B.
 

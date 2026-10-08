@@ -50,6 +50,7 @@ Le squelette contient déjà les fichiers marqués « squelette » ; les étapes
 | `proxy.ts` (modifié) | Vrai 404 pour un `slug` inconnu (étape 6) |
 | `src/db/realisations/__tests__/realisation.repository.test.ts` | Tests d'intégration avec PGlite |
 | `e2e/referencement.spec.ts` (squelette) | robots.txt, sitemap, vraie 404, balises de l'accueil |
+| `e2e/realisations.spec.ts` | 404 d'un `slug` inconnu (aussi pour Googlebot) et `lastmod` d'une réalisation publiée |
 
 ## Étapes
 
@@ -483,6 +484,18 @@ Fonctionnalité: Référencement des pages publiques
       Quand un robot ouvre une adresse qui n'existe pas
       Alors la réponse est 404
 
+    @US-XXX-5 @bout-en-bout
+    Exemple: Une réalisation inconnue répond « introuvable », même à Googlebot
+      Étant donné une réalisation publiée « table-en-chene »
+      Quand un robot, dont Googlebot, ouvre « /realisations/slug-inconnu »
+      Alors la réponse est 404
+
+    @US-XXX-6 @bout-en-bout
+    Exemple: Le sitemap donne la date de modification d'une réalisation publiée
+      Étant donné une réalisation publiée « table-en-chene »
+      Quand un robot ouvre « /sitemap.xml »
+      Alors l'entrée de « /realisations/table-en-chene » porte une date « lastmod »
+
   Règle: Les robots IA suivent la politique choisie
 
     @US-XXX-3 @unitaire
@@ -524,9 +537,9 @@ Fonctionnalité: Référencement des pages publiques
 - [ ] **Tn+3 – Les pages de détail publiques** · US-XXX
   - Objectif : chaque contenu publié a sa page, son entrée de sitemap datée et, pour une adresse inconnue, un vrai 404
   - Dépend de : Tn, Tn+1
-  - Fichiers : à créer : `src/core/realisations/realisation.entity.ts`, `src/db/realisations/realisation.table.ts`, `src/db/realisations/realisation.repository.ts`, `src/features/realisations/constants/cache-tags.ts`, `src/features/realisations/queries/lire-realisation.query.ts`, `src/features/realisations/queries/lister-realisations.query.ts`, `src/features/realisations/components/sections/detail-realisation.tsx`, `src/features/realisations/components/containers/detail-realisation.container.tsx`, `app/(public)/realisations/[slug]/page.tsx` · `drizzle/<numéro>_<nom>.sql` (migration générée) · à modifier : `app/sitemap.ts`, `proxy.ts`
+  - Fichiers : à créer : `e2e/realisations.spec.ts`, `src/core/realisations/realisation.entity.ts`, `src/db/realisations/realisation.table.ts`, `src/db/realisations/realisation.repository.ts`, `src/features/realisations/constants/cache-tags.ts`, `src/features/realisations/queries/lire-realisation.query.ts`, `src/features/realisations/queries/lister-realisations.query.ts`, `src/features/realisations/components/sections/detail-realisation.tsx`, `src/features/realisations/components/containers/detail-realisation.container.tsx`, `app/(public)/realisations/[slug]/page.tsx` · `drizzle/<numéro>_<nom>.sql` (migration générée) · à modifier : `app/sitemap.ts`, `proxy.ts`
   - Vérification : US-XXX critère 4 – `/realisations/inconnu` répond 404 ; le sitemap liste les réalisations publiées avec leur `lastmod`
-  - Tests : « Un brouillon n'est ni trouvé ni listé » (intégration PGlite, `src/db/realisations/__tests__/realisation.repository.test.ts`)
+  - Tests : « Un brouillon n'est ni trouvé ni listé » (intégration PGlite, `src/db/realisations/__tests__/realisation.repository.test.ts`) ; « Une réalisation inconnue répond « introuvable », même à Googlebot » et « Le sitemap donne la date de modification d'une réalisation publiée » (bout en bout, `e2e/realisations.spec.ts`, base avec une réalisation publiée « table-en-chene »)
 
 ## Tests
 
@@ -628,6 +641,58 @@ describe("realisationRepository", () => {
 
 `e2e/referencement.spec.ts` du squelette : robots.txt (200, ligne `Sitemap:` complète), sitemap.xml, adresse inconnue en 404, titre, adresse officielle et image de partage dans `<head>` de l'accueil.
 
+`e2e/realisations.spec.ts` (étapes 5 et 6) prouve le vrai 404 d'un `slug` inconnu, avec le `User-Agent` de Googlebot aussi, et la date `lastmod` du sitemap. Prérequis : une base qui contient les migrations et **une réalisation publiée** (`publiee = true`) de slug `table-en-chene` (insertion SQL ou écran d'administration du projet ; changer `SLUG_PUBLIE` pour un autre slug), avec `DATABASE_URL` renseignée. Le test cible la version construite, celle que reçoivent les robots : `CI=1 npx playwright test e2e/realisations.spec.ts` construit le site, le démarre, puis lance les tests.
+
+```ts
+// e2e/realisations.spec.ts
+import { expect, test } from "@playwright/test";
+
+// Prérequis : la base de l'application (DATABASE_URL) contient une réalisation publiée
+// (publiee = true) dont le slug est « table-en-chene », avec les migrations appliquées.
+// À lancer sur la version construite : CI=1 npx playwright test e2e/realisations.spec.ts
+const SLUG_PUBLIE = "table-en-chene";
+const GOOGLEBOT = "Googlebot/2.1 (+http://www.google.com/bot.html)";
+
+test.describe("Réalisations publiques", () => {
+  test("US-XXX-5 – Une réalisation inconnue répond 404", async ({
+    request,
+  }) => {
+    const reponse = await request.get("/realisations/slug-inconnu");
+
+    expect(reponse.status()).toBe(404);
+  });
+
+  test("US-XXX-5 – Une réalisation inconnue répond 404 à Googlebot", async ({
+    request,
+  }) => {
+    const reponse = await request.get("/realisations/slug-inconnu", {
+      headers: { "user-agent": GOOGLEBOT },
+    });
+
+    expect(reponse.status()).toBe(404);
+  });
+
+  test("US-XXX-5 – Une réalisation publiée répond 200", async ({ request }) => {
+    const reponse = await request.get(`/realisations/${SLUG_PUBLIE}`);
+
+    expect(reponse.status()).toBe(200);
+  });
+
+  test("US-XXX-6 – Le sitemap donne la date de modification d'une réalisation publiée", async ({
+    request,
+  }) => {
+    const reponse = await request.get("/sitemap.xml");
+
+    expect(reponse.status()).toBe(200);
+    expect(await reponse.text()).toMatch(
+      new RegExp(
+        String.raw`<loc>[^<]*/realisations/${SLUG_PUBLIE}</loc>\s*<lastmod>\d{4}-\d{2}-\d{2}T`,
+      ),
+    );
+  });
+});
+```
+
 ## Points de sécurité
 
 - **S6 – Affichage** : les données structurées passent par `<JsonLd>`, qui échappe `<` ; jamais `JSON.stringify` nu dans `dangerouslySetInnerHTML`.
@@ -659,6 +724,7 @@ describe("realisationRepository", () => {
 - Code de Next.js 16.4 : `dist/lib/metadata/metadata-resolution-primitives.js` (`mergeStaticMetadata`)
 - Google Search Central (dates dans la référence du cœur « Référencement : les règles ») ; `schema-dts` 2.1.0 (npm, 2026-10-02)
 - Essais du 2026-10-07 (squelette construit, `next start`) : `/robots.txt` 200 avec `Sitemap:` complet ; `/sitemap.xml` 200 ; adresse inconnue à la racine 404 ; `/a-propos` avec titre « À propos | Nom », canonique et `og:image` complètes ; `(connecte)` : `noindex, nofollow` ; `[slug]` inconnu : 200 + `noindex` pour un navigateur, Googlebot et OAI-SearchBot, 404 pour Bingbot et facebookexternalhit ; avec le proxy de l'étape 6 : 404 pour tous ; `slug` publié après la construction (lecture asynchrone en `"use cache"`) : titre et canonique dans `<head>` pour Googlebot. `pulse-aidd seo http://localhost:3000 --ia` : aucun Critique ni Haute.
+- Essai du 2026-10-08 (`e2e/realisations.spec.ts`, version construite, base PGlite en mémoire avec une réalisation publiée et un brouillon, à la place de Neon) : les 16 tests de `realisations.spec.ts` et `referencement.spec.ts` passent (ordinateur et téléphone).
 - Essai du 2026-10-08 (structure hexagonale, projet d'essai avec `connexion` et `liste`, base PGlite en mémoire à la place de Neon) : construction réussie avec `generateStaticParams` et sitemap lus en base ; `/realisations/table-en-chene` 200 (titre « Table en chêne | Essai », canonique) ; `/realisations/inconnu` et le brouillon 404, y compris avec l'en-tête Googlebot ; `/sitemap.xml` avec `lastmod` de la réalisation ; `/compte` sans session renvoyé vers `/connexion` ; `pulse-aidd pile seo-code` : aucun Critique ni Haute.
 
 ## Points à vérifier

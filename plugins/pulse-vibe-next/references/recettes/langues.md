@@ -31,7 +31,8 @@ Aucune.
 | `app/api/`, `global-error.tsx`, `globals.css`, `favicon.ico`, `robots.ts`, `sitemap.ts`, `opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx` | Restent dans `app/` |
 | `app/[locale]/page.tsx` (modifié) | Exemple d'une page publique qui déclare ses versions de langue |
 | `app/sitemap.ts` (modifié) | Une entrée par page et par langue, avec ses versions de langue |
-| `src/components/shared/elements/choix-langue.tsx` | Sélecteur de langue |
+| `src/components/shared/elements/choix-langue.tsx` | Sélecteur de langue (affichage : tout arrive en props) |
+| `src/features/langues/components/containers/choix-langue.container.tsx` | Container client du sélecteur : lit la langue courante, l'adresse et les textes |
 | `proxy.ts` (réécrit) | Renvoi vers la connexion + langues |
 | `src/features/compte/components/containers/compte.container.tsx`, `app/[locale]/(connecte)/compte/page.tsx` (modifiés) | Exemples d'écrans traduits |
 | `src/features/contact/schemas/contact.schema.ts`, `src/features/contact/actions/envoyer-message.action.ts` | Exemple d'action qui traduit ses messages |
@@ -268,7 +269,9 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
   },
   "Compte": {
     "titre": "Mon compte",
-    "connecteEnTantQue": "Connecté en tant que {nom}"
+    "connecteEnTantQue": "Connecté en tant que {nom}",
+    "chargement": "Chargement…",
+    "changerMotDePasse": "Changer mon mot de passe"
   }
 }
 ```
@@ -284,7 +287,9 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
   },
   "Compte": {
     "titre": "My account",
-    "connecteEnTantQue": "Signed in as {nom}"
+    "connecteEnTantQue": "Signed in as {nom}",
+    "chargement": "Loading…",
+    "changerMotDePasse": "Change my password"
   }
 }
 ```
@@ -303,11 +308,11 @@ Version du squelette, complétée : langue validée, `generateStaticParams`, `la
 
 ```tsx
 // app/[locale]/layout.tsx
-import { ChoixLangue } from "@src/components/shared/elements/choix-langue";
 import { Toaster } from "@src/components/ui/sonner";
 import { routing } from "@src/config/i18n";
 import { projet } from "@src/config/projet";
 import { adresseDuSite } from "@src/config/site";
+import { ChoixLangueContainer } from "@src/features/langues/components/containers/choix-langue.container";
 import { partageCommun } from "@src/lib/seo/seo";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -359,7 +364,7 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <NuqsAdapter>
             <header className="flex justify-end px-6 py-3">
-              <ChoixLangue />
+              <ChoixLangueContainer />
             </header>
             {children}
           </NuqsAdapter>
@@ -371,34 +376,63 @@ export default async function RootLayout({
 }
 ```
 
-Le sélecteur est un composant client qui n'importe que `lib/` et `config/` : il se range dans `src/components/shared/elements/`.
+Le sélecteur se découpe en deux (architecture §4). L'élément d'affichage reçoit tout par props : le nom de chaque langue, la langue courante, l'adresse de la page. Le container client lit la langue (`useLocale`), l'adresse (`usePathname`) et les textes (`useTranslations`) : seul un composant client connaît l'adresse courante, et le layout, qui reste un composant serveur prérendu, ne la connaît pas. Le container se range dans la feature `langues` (le layout est de `app/`, qui peut tout importer) ; l'élément reste dans `src/components/shared/elements/`.
 
 ```tsx
 // src/components/shared/elements/choix-langue.tsx
+import { Link } from "@src/lib/i18n/navigation";
+
+type Props = {
+  libelle: string;
+  chemin: string;
+  langueCourante: string;
+  langues: { code: string; nom: string }[];
+};
+
+export function ChoixLangue({
+  libelle,
+  chemin,
+  langueCourante,
+  langues,
+}: Props) {
+  return (
+    <nav aria-label={libelle} className="flex gap-3 text-sm">
+      {langues.map(({ code, nom }) => (
+        <Link
+          key={code}
+          href={chemin}
+          locale={code}
+          aria-current={code === langueCourante ? "true" : undefined}
+          className={code === langueCourante ? "font-semibold" : "underline"}
+        >
+          {nom}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+```
+
+```tsx
+// src/features/langues/components/containers/choix-langue.container.tsx
 "use client";
 
+import { ChoixLangue } from "@src/components/shared/elements/choix-langue";
 import { routing } from "@src/config/i18n";
-import { Link, usePathname } from "@src/lib/i18n/navigation";
+import { usePathname } from "@src/lib/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
-export function ChoixLangue() {
+export function ChoixLangueContainer() {
   const t = useTranslations("ChoixLangue");
   const langueCourante = useLocale();
   const chemin = usePathname();
   return (
-    <nav aria-label={t("libelle")} className="flex gap-3 text-sm">
-      {routing.locales.map((langue) => (
-        <Link
-          key={langue}
-          href={chemin}
-          locale={langue}
-          aria-current={langue === langueCourante ? "true" : undefined}
-          className={langue === langueCourante ? "font-semibold" : "underline"}
-        >
-          {t(langue)}
-        </Link>
-      ))}
-    </nav>
+    <ChoixLangue
+      libelle={t("libelle")}
+      chemin={chemin}
+      langueCourante={langueCourante}
+      langues={routing.locales.map((code) => ({ code, nom: t(code) }))}
+    />
   );
 }
 ```
@@ -469,9 +503,9 @@ export const config = {
 - Composant serveur `async` : `const t = await getTranslations("Compte");` (de `next-intl/server`) puis `t("connecteEnTantQue", { nom: utilisateur.nom })`.
 - Liens internes : `Link` de `@src/lib/i18n/navigation` à la place de `next/link` (dans `app/[locale]/not-found.tsx` et les formulaires de `connexion`, par exemple).
 - Les lectures de session et de données restent sous `<Suspense>`, comme avant.
-- Les containers et les pages portent les textes ; une section qui a besoin d'un texte le reçoit en props, ou appelle `useTranslations` quand c'est un composant client d'affichage.
+- Les containers et les pages portent les textes ; une section, un composite ou un élément qui a besoin d'un texte le reçoit en props (comme `ChoixLangue`, qui reçoit ses libellés de `ChoixLangueContainer`).
 
-Exemple avec l'écran « Mon compte » : le container serveur lit la traduction, la page lit son titre.
+Exemple avec l'écran « Mon compte » : le container serveur lit la traduction, la page lit son titre et son texte de chargement, et `generateMetadata` traduit le titre de l'onglet (la langue vient de `params`).
 
 ```tsx
 // src/features/compte/components/containers/compte.container.tsx
@@ -490,7 +524,7 @@ export async function CompteContainer() {
         <BoutonDeconnexionContainer />
       </section>
       <section>
-        <h2 className="mb-4 text-lg font-medium">Changer mon mot de passe</h2>
+        <h2 className="mb-4 text-lg font-medium">{t("changerMotDePasse")}</h2>
         <MotDePasseContainer />
       </section>
     </>
@@ -503,16 +537,25 @@ export async function CompteContainer() {
 import { CompteContainer } from "@src/features/compte/components/containers/compte.container";
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
-export const metadata: Metadata = { title: "Mon compte" };
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/compte">): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Compte" });
+  return { title: t("titre") };
+}
 
 export default function PageCompte() {
   const t = useTranslations("Compte");
   return (
     <main className="mx-auto max-w-sm space-y-8 p-6">
       <h1 className="text-2xl font-semibold">{t("titre")}</h1>
-      <Suspense fallback={<p className="text-muted-foreground">Chargement…</p>}>
+      <Suspense
+        fallback={<p className="text-muted-foreground">{t("chargement")}</p>}
+      >
         <CompteContainer />
       </Suspense>
     </main>
@@ -654,7 +697,7 @@ Fonctionnalité: Langues
 - [ ] **Tn – Installer les langues** · US-XXX
   - Objectif : le site répond en français sans préfixe et en anglais sous `/en`
   - Dépend de : —
-  - Fichiers : à créer : `src/config/i18n.ts`, `src/lib/i18n/request.ts`, `navigation.ts`, `chemins.ts`, `src/lib/i18n/messages/fr.json`, `en.json`, `src/lib/i18n/__tests__/chemins.test.ts`, `src/components/shared/elements/choix-langue.tsx`, `app/[locale]/layout.tsx`, `app/[locale]/[...reste]/page.tsx` · à modifier : `next.config.ts`, `proxy.ts` · à déplacer : les pages sous `app/[locale]/`
+  - Fichiers : à créer : `src/config/i18n.ts`, `src/lib/i18n/request.ts`, `navigation.ts`, `chemins.ts`, `src/lib/i18n/messages/fr.json`, `en.json`, `src/lib/i18n/__tests__/chemins.test.ts`, `src/components/shared/elements/choix-langue.tsx`, `src/features/langues/components/containers/choix-langue.container.tsx`, `app/[locale]/layout.tsx`, `app/[locale]/[...reste]/page.tsx` · à modifier : `next.config.ts`, `proxy.ts` · à déplacer : les pages sous `app/[locale]/`
   - Vérification : US-XXX critères 1 et 3 – `npm run build` passe et liste `/fr` et `/en` ; `/en/compte` sans session mène à `/en/connexion`
   - Tests : « Une adresse donne sa langue et sa page », « La page de connexion se trouve dans la langue courante » (unitaires)
   - Attention : `app/api/` reste hors de `[locale]` ; reprendre polices, `NuqsAdapter` et `Toaster` de l'ancien layout ; ajouter `[locale]` aux clés de `PageProps` et `LayoutProps`
@@ -805,7 +848,7 @@ test.describe("Langues", () => {
 - next-intl 4.14.9 : https://next-intl.dev/docs/routing/setup (source `docs/src/pages/docs/routing/setup.mdx` du dépôt amannn/next-intl : `next/root-params`, `setRequestLocale` ancien) ; `routing/middleware.mdx` (composition du proxy, `matcher`) ; `environments/actions-metadata-route-handlers.mdx` (actions : `getTranslations({ locale, namespace })`) ; code du paquet (argument de `createNextIntlPlugin` : chemin de `request.ts`, cookie `NEXT_LOCALE`)
 - Next.js 16.4, documentation embarquée : `01-app/02-guides/internationalization.md` ; `01-app/03-api-reference/04-functions/next-root-params.md` (indisponible dans les actions et les Route Handlers ; `generateStaticParams` obligatoire avec Cache Components) ; `01-app/01-getting-started/16-proxy.md` ; `01-app/03-api-reference/03-file-conventions/not-found.md`
 - better-auth 1.7.7 : `dist/cookies/index.d.mts` (`getSessionCookie`)
-- Vérifications locales (squelette du pack + recette `connexion`, puis cette recette) : `npm run check`, `npm run typecheck`, Vitest (47 tests) et `next build` passent ; `next start` : `/` → 200 (`lang="fr"`), `/en` → 200 (`lang="en"`), `/fr` → 307 `/`, `/compte` → 307 `/connexion`, `/en/compte` → 307 `/en/connexion`, navigateur anglais sur `/` → 307 `/en`, adresse inconnue (`/xyz`, `/en/xyz`, `/xx/compte`) → 404 ; sitemap : une entrée par langue avec ses versions ; Playwright (`langues.spec.ts`, `referencement.spec.ts`) : 14 tests passent sur ordinateur et sur téléphone ; `seo-code.js` : aucun constat Critique ou Haute
+- Vérifications locales (squelette du pack + recette `connexion`, puis cette recette) : `npm run check`, `npm run typecheck`, Vitest (47 tests) et `next build` passent (sélecteur découpé en élément et container, textes de « Mon compte » traduits) ; `next start` : `/` → 200 (`lang="fr"`), `/en` → 200 (`lang="en"`), `/fr` → 307 `/`, `/compte` → 307 `/connexion`, `/en/compte` → 307 `/en/connexion`, navigateur anglais sur `/` → 307 `/en`, adresse inconnue (`/xyz`, `/en/xyz`, `/xx/compte`) → 404 ; sitemap : une entrée par langue avec ses versions ; Playwright (`langues.spec.ts`, `referencement.spec.ts`) : 14 tests passent sur ordinateur et sur téléphone ; `seo-code.js` : aucun constat Critique ou Haute
 
 ## Points à vérifier
 
