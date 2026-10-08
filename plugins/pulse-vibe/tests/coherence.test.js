@@ -583,6 +583,12 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
   }
 });
 
+test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section", () => {
+  const sections = lire(RACINE, "skills", "deploy", "SKILL.md").split(/^## /m).filter((s) => /git push/.test(s));
+  assert.ok(sections.length >= 4, "sections avec envoi");
+  for (const s of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord|accord annoncé au § 3/, s.slice(0, 30));
+});
+
 test("commit et annuler nomment la forme `git commit -m`, et commit utilise `git remote -v`", () => {
   for (const s of ["commit", "annuler"]) assert.match(lire(RACINE, "skills", s, "SKILL.md"), /git commit -m "<sujet>" -m "<corps>"|git commit -m "revert\(/, s);
   const commit = lire(RACINE, "skills", "commit", "SKILL.md");

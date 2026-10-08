@@ -46,6 +46,8 @@ Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hé
 
 ## 3. Première mise en ligne
 
+Chaque envoi déclenche une demande d'accord de Claude Code : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie. Le dire en une phrase avant le premier envoi (3a), puis avant chacun des suivants dans cette commande.
+
 ### 3a. Le dépôt distant
 
 Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/pulse:init`) : l'envoyer à jour (`git push`) et passer à 3b. Sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; le fournisseur est celui de « Hébergement et mise en ligne ». Si la personne répond « Non, plus tard », expliquer qu'une mise en ligne passe par un dépôt distant, et s'arrêter.
@@ -93,11 +95,11 @@ Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en lig
 4. **Environnements** : si l'hébergeur le propose, expliquer la différence entre une adresse de **prévisualisation** (pour une branche ou une demande de fusion, pour tester sans toucher au site) et la **production** publiée depuis `main` (le site des clients).
 5. **Être trouvé** (si « Être trouvé » de `docs/prd.md` répond oui) : une seule adresse officielle pour le site (domaine définitif, autres variantes redirigées). Le référencement et Search Console suivent en clôture (section 6).
 6. **Retour arrière** : montrer, d'après la documentation de l'hébergeur, comment republier une version précédente. Rassurer : tout reste réparable.
-7. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push`. Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
+7. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push` (accord annoncé au § 3). Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
 
 ## 6. Clore
 
-Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`).
+Si une tâche « Mettre en ligne… » est `[ ]` ou `[~]` dans un plan de `aidd_docs/tasks/`, la faire passer à `[x]` et ajouter une ligne au journal de ce plan (puis enregistrer ce changement avec un commit `docs: plan à jour` et un `git push`, accord annoncé au § 3).
 
 Site sur son adresse définitive, « Être trouvé » de `docs/prd.md` à oui (ou absent), et section « Référencement » de `docs/technical.md` absente : la prochaine étape proposée est `/pulse:seo lancer` (vérification minimale : Search Console, Bing, carte de partage), puis `/pulse:search-console relier` (données et suivi). Si le pack de pile prévoit un envoi IndexNow, il se fait ici, après les preuves ci-dessous.
 
