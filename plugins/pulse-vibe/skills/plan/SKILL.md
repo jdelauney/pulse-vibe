@@ -70,4 +70,4 @@ Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses 
 4. Plan validé. Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (section « Ajouts proposés par Pulse » seulement s'il y en a), avec la ligne « plan validé » dans son journal (règles communes § 7), et les lignes « En parallèle avec » des autres plans concernés.
 5. Lancer `pulse-aidd guide` : il produit le guide de réalisation `docs/guide/` (les commandes à copier, tâche par tâche). Le présenter en une phrase : « Votre carnet de route est dans `docs/guide/index.md` ; il se met à jour tout seul. »
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:implement US-XXX <première tâche>` pour réaliser la première tâche, ou `/pulse:spirc US-XXX` pour enchaîner réalisation, relecture et commit tâche par tâche.
+Terminer avec le bloc de fin de commande. Prochaine étape recommandée : `/pulse:spirc US-XXX`, qui enchaîne réalisation, relecture et commit tâche par tâche ; ou, pour réaliser seulement la première tâche, `/pulse:implement US-XXX <première tâche>`.

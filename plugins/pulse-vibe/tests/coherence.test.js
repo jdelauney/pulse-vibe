@@ -299,6 +299,39 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
   assert.deepStrictEqual([...new Set(manquants)], []);
 });
 
+test("allowed-tools : les commandes git de lecture citées par un skill, ou par une étape qu'il enchaîne, sont autorisées d'avance", () => {
+  assert.ok(couvre("git log *", "git log --oneline") && !couvre("git remote -v", "git remote add origin x"), "règle de correspondance");
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
+  const enchainees = (depart) => {
+    const vues = new Set([depart]);
+    const aVoir = [depart];
+    while (aVoir.length) {
+      for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        if (etape && SKILLS.has(etape) && !vues.has(etape)) {
+          vues.add(etape);
+          aVoir.push(etape);
+        }
+      }
+    }
+    return [...vues];
+  };
+  // Formes en lecture seule ou sans effet distant : `git remote -v`, `git remote get-url …`, `git fetch origin`, `git status …`, `git log …`, `git diff …`.
+  const lecture = /`(git (?:remote -v|remote get-url [^`]+|fetch origin|status(?: [^`]*)?|log(?: [^`]*)?|diff(?: [^`]*)?))`/g;
+  let verifiees = 0;
+  const manquants = [];
+  for (const skill of SKILLS) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const commandes = new Set(enchainees(skill).flatMap((s) => [...texteSkill(s).matchAll(lecture)].map((m) => essai(m[1]))));
+    for (const commande of commandes) {
+      verifiees++;
+      if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
+    }
+  }
+  assert.ok(verifiees > 20, "lecture des commandes git citées");
+  assert.deepStrictEqual(manquants, []);
+});
+
 test("allowed-tools : aucun skill n'autorise d'avance la modification d'un dépôt distant ni une récupération forcée", () => {
   assert.ok(couvre("git remote *", "git remote remove origin") && !couvre("git remote -v", "git remote remove origin") && !couvre("git fetch origin", "git fetch origin +a:b"), "règle de correspondance");
   const interdites = ["git remote remove origin", "git remote set-url origin X", "git remote rename origin X", "git fetch origin +refs/heads/main:refs/heads/main", "git fetch --force origin", "git fetch origin +main"];
@@ -610,6 +643,24 @@ test("prd, us, spec et plan lisent et écrivent leurs documents sans demande d'a
     const jetons = ligne.match(/[A-Za-z]+(?:\([^)]*\))?/g) || [];
     for (const outil of [...outils, "Write(docs/lexique.md)", "Edit(docs/lexique.md)"]) assert.ok(jetons.includes(outil), `${skill} : ${outil} manquant`);
   }
+});
+
+test("les commandes qui écrivent des documents, ou enchaînent des étapes qui le font, les écrivent sans demande d'autorisation", () => {
+  const attendus = {
+    brainstorm: ["Write(docs/brief.md)", "Edit(docs/brief.md)"],
+    init: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
+    express: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
+    spirc: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)", "Edit(docs/user-stories.md)", "Write(docs/lexique.md)"],
+    implement: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)"],
+    review: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+    commit: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+  };
+  for (const [skill, outils] of Object.entries(attendus)) {
+    const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    const jetons = ligne.match(/[A-Za-z]+(?:\([^)]*\))?/g) || [];
+    for (const outil of outils) assert.ok(jetons.includes(outil), `${skill} : ${outil} manquant`);
+  }
+  assert.match(lire(RACINE, "references", "examen.md"), /Claude Code demande alors l'accord de la personne pour démarrer l'application/);
 });
 
 test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/", () => {

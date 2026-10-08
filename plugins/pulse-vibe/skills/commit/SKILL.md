@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin)
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -81,7 +81,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 
 ## Suite
 
-- S'il reste des tâches dans le plan : prochaine étape `/pulse:implement <US-XXX> <tâche suivante>`.
+- S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
 - Si le plan est terminé et que son « Envoi » est **PR** : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.

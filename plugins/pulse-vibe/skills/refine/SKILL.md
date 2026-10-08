@@ -2,7 +2,7 @@
 description: Ajuster le plan à partir des questions ou remarques de la personne - répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider
 argument-hint: "[<US-XXX>] \"vos questions ou remarques sur le plan\""
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr) Read Glob Grep Bash(git status *) Bash(git log *)
+allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr) Read Glob Grep Bash(git status *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:refine – Ajuster le plan
@@ -84,4 +84,4 @@ Demander (AskUserQuestion) : « Appliquer ces changements (Recommandé) » / « 
 - Une décision durable est apparue (ex. « pas de compte utilisateur dans le MVP ») : proposer de la noter dans la mémoire (`aidd_docs/memory/project.md`, section « Décisions importantes »).
 - Le guide de réalisation (`docs/guide/`) se met à jour automatiquement ; lancer `pulse-aidd guide` pour afficher la prochaine étape.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée par `pulse-aidd guide` (en général `/pulse:implement` ou `/pulse:spirc`), ou `/pulse:tech` si un choix technique est remis en cause.
+Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée par `pulse-aidd guide` (en général `/pulse:spirc <US-XXX>`, ou `/pulse:implement <US-XXX> <tâche>` pour la faire pas à pas), ou `/pulse:tech` si un choix technique est remis en cause.
