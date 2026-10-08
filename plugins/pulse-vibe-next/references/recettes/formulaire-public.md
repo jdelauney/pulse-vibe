@@ -32,7 +32,8 @@ Dans `.env.example`, ajouter `FORMULAIRE_SECRET=` (sans valeur). Les variables T
 
 | Fichier | Rôle |
 |---|---|
-| `src/config/env.ts`, `.env.example` (modifiés) | `FORMULAIRE_SECRET` (et les deux clés Turnstile avec l'option) |
+| `src/config/env.ts`, `.env.example` (modifiés) | `FORMULAIRE_SECRET` (et la clé secrète Turnstile avec l'option) |
+| `src/config/env-public.ts` (modifié, option Turnstile) | La clé de site Turnstile, publique |
 | `tests/helpers/env-de-test.ts` (modifié) | Valeur de test de `FORMULAIRE_SECRET` dans `VARIABLES_VALIDES` |
 | `src/lib/helpers/formulaire-public/champs.ts` | Noms des champs de protection, contrôle du champ piège |
 | `src/lib/helpers/formulaire-public/jeton.ts` | Jeton de délai signé (fonctions pures) |
@@ -557,44 +558,42 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=VOTRE_CLE_ICI
 ```
 
-Ajouter les deux noms à `.env.example`. Dans `src/config/env.ts` : la clé secrète dans `server: { … }`, la clé de site (publique) dans `client: { … }` et dans `experimental__runtimeEnv` :
+Ajouter les deux noms à `.env.example`. La clé de site est publique : elle va dans `src/config/env-public.ts`, dans `client: { … }` et dans `experimental__runtimeEnv` :
 
 ```ts
-  server: {
-    // … variables des autres recettes
-    // Recette formulaire-public, option Turnstile : clé secrète du widget (Cloudflare).
-    TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
-  },
   client: {
     // Recette formulaire-public, option Turnstile : clé de site du widget, publique.
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional(),
   },
+  // Next.js n'inscrit dans le code du navigateur que les lectures écrites en entier.
   experimental__runtimeEnv: {
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
   },
 ```
 
-puis une vérification qui exige les deux clés ensemble : une seule des deux bloquerait chaque envoi, ou laisserait le serveur sans contrôle. S'il existe déjà un `createFinalSchema` (recette `limite`, option Redis), ajouter seulement ce `.superRefine(…)` à la suite du premier :
+(ajouter `import { z } from "zod";` en tête d'`env-public.ts` s'il n'y est pas). La clé secrète va dans `src/config/env.ts`, dans `server: { … }` :
 
 ```ts
-  // Recette formulaire-public, option Turnstile : les deux clés vont ensemble.
-  // Côté navigateur, seul le bloc client existe : la vérification se fait sur le serveur.
-  createFinalSchema: (forme, surLeServeur) =>
+    // Recette formulaire-public, option Turnstile : clé secrète du widget (Cloudflare).
+    TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+```
+
+puis, toujours dans `env.ts`, une vérification qui exige les deux clés ensemble : une seule des deux bloquerait chaque envoi, ou laisserait le serveur sans contrôle. S'il existe déjà un `createFinalSchema` (recette `limite`, option Redis), ajouter seulement ce `.superRefine(…)` à la suite du premier :
+
+```ts
+  // Recette formulaire-public, option Turnstile : les deux clés vont ensemble
+  // (la clé de site est dans env-public.ts).
+  createFinalSchema: (forme) =>
     z.object(forme).superRefine((valeurs, ctx) => {
-      if (!surLeServeur) return;
-      if (!valeurs.NEXT_PUBLIC_TURNSTILE_SITE_KEY === !valeurs.TURNSTILE_SECRET_KEY) return;
-      for (const nom of [
-        "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
-        "TURNSTILE_SECRET_KEY",
-      ] as const) {
-        if (!valeurs[nom]) {
-          ctx.addIssue({
-            code: "custom",
-            path: [nom],
-            message: "les deux clés Turnstile vont ensemble",
-          });
-        }
-      }
+      const cleSite = envPublic.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+      if (!cleSite === !valeurs.TURNSTILE_SECRET_KEY) return;
+      ctx.addIssue({
+        code: "custom",
+        path: [
+          cleSite ? "TURNSTILE_SECRET_KEY" : "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+        ],
+        message: "les deux clés Turnstile vont ensemble",
+      });
     }),
 ```
 
@@ -804,7 +803,7 @@ Le hook attend aussi la réponse du widget. Après chaque envoi, `apresEnvoi()` 
 // src/hooks/use-protection-formulaire.ts
 "use client";
 
-import { env } from "@src/config/env";
+import { envPublic } from "@src/config/env-public";
 import {
   CHAMP_JETON,
   CHAMP_PIEGE,
@@ -819,7 +818,7 @@ import {
 } from "react";
 
 // Clé publique du widget Turnstile (option) : absente, la protection fonctionne sans widget.
-const CLE_TURNSTILE = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const CLE_TURNSTILE = envPublic.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 
 export type ProtectionFormulaire = {
   /** Vrai quand le jeton est arrivé (et que Turnstile a répondu, s'il est actif). */

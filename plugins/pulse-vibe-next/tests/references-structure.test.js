@@ -22,7 +22,7 @@ const ANCIENS = [
   [/db\.query\./, "constructeur de requêtes db.select().from(table)"],
   [/\benvServeur\b/, 'import { env } from "@src/config/env" (t3 env)'],
   [/from ["']@src\/db["']/, "@src/db/db-client"],
-  [/src\/db\/index\.ts/, "src/db/db-client.ts"],
+  [/\bdb\/index\.ts\b/, "src/db/db-client.ts"],
 ];
 
 function fichiers() {

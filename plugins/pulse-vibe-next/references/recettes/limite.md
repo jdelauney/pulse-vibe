@@ -393,10 +393,9 @@ La base suffit à la plupart des sites. Redis répond plus vite sous une forte c
 
 ```ts
   // Recette limite, option Redis : les deux variables Upstash sont requises.
-  // Côté navigateur, seul le bloc client existe : la vérification se fait sur le serveur.
-  createFinalSchema: (forme, surLeServeur) =>
+  createFinalSchema: (forme) =>
     z.object(forme).superRefine((valeurs, ctx) => {
-      if (!surLeServeur || valeurs.LIMITE_STOCKAGE !== "redis") return;
+      if (valeurs.LIMITE_STOCKAGE !== "redis") return;
       for (const nom of [
         "UPSTASH_REDIS_REST_URL",
         "UPSTASH_REDIS_REST_TOKEN",

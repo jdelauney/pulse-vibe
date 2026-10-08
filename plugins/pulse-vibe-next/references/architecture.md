@@ -68,7 +68,7 @@ drizzle/                          migrations
 - Un adapter qui sert de garde côté serveur (ex. `src/adapters/turnstile/`, recette `formulaire-public`) peut lire les en-têtes de la requête (`next/headers`) et renvoyer l'erreur d'action (`returnServerError`).
 - La limite de requêtes s'assemble dans `src/lib/limite.ts` (recette `limite`) : ce fichier choisit le limiteur (`src/db/limite/`, `src/adapters/limite/` ou la mémoire), lit les en-têtes de la requête et renvoie l'erreur d'action. C'est le seul fichier de `src/lib/` qui importe `src/db/`.
 
-`import "server-only"` en tête de chaque fichier de `src/db/`, `src/adapters/`, `queries/`, et de `src/lib/logger.ts`. `src/config/env.ts` (t3 env) n'en a pas : les composants client y lisent leurs variables publiques. Les fichiers d'`actions/` commencent par `"use server"`.
+`import "server-only"` en tête de chaque fichier de `src/db/`, `src/adapters/`, `queries/`, et de `src/config/env.ts`, `src/lib/logger.ts`. Les composants client lisent leurs variables publiques par `src/config/env-public.ts` (sans `server-only`). Les fichiers d'`actions/` commencent par `"use server"`.
 
 ## 4. Composants : containers et composants d'affichage
 
