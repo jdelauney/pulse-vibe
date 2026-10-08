@@ -538,3 +538,11 @@ test("spirc : une ronde de départ de 4 questions au plus, sans double validatio
   const questions = ronde.split(/\n## /)[0].split("\n").filter((l) => /^- \*\*[^*]+\*\*/.test(l));
   assert.ok(questions.length >= 3 && questions.length <= 4, `${questions.length} questions dans la ronde`);
 });
+
+test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () => {
+  const texte = skillTexte("spirc");
+  const puce = texte.split("\n").find((l) => l.startsWith("- `-a`"));
+  assert.match(puce, /validation du plan quand il vient d'être créé/);
+  assert.match(texte, /vous testez tout à la fin\) ;/);
+  assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
+});
