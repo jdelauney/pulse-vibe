@@ -47,7 +47,7 @@ Le profil ci-dessous règle le niveau des explications. Il est rempli par `/puls
 - **Changements chirurgicaux** : le minimum qui répond à la tâche, en laissant le code plus propre qu'avant. Un problème hors de la tâche se signale en une ligne et reste en l'état.
 - **Vérifiez** chaque API, option ou comportement dans la documentation ou le code avant de l'employer. Vos connaissances peuvent être dépassées.
 - **Ajoutez une bibliothèque seulement avec l'accord de la personne**, et seulement si elle existe sous ce nom exact (version fixée).
-- **Commit et envoi vers le dépôt distant** : par `/pulse:commit`, ou par les boucles de `/pulse:implement` et `/pulse:spirc` selon le choix d'envoi du plan (ligne « Envoi ») ; la mise en ligne par `/pulse:deploy`.
+- **Commit et envoi vers le dépôt distant** : par `/pulse:commit`, ou par les boucles de `/pulse:implement` et `/pulse:spirc` selon le choix d'envoi du plan (ligne « Envoi ») ; la mise en ligne par `/pulse:deploy`. En dehors de `/pulse:commit` et de ces boucles, un commit se fait à votre demande, et chaque envoi passe par la demande d'accord de Claude Code.
 - Utilisez uniquement des **données fictives**.
 - Une tâche ambiguë ou coûteuse : posez **une** question précise avant de construire.
 

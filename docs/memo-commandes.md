@@ -25,24 +25,26 @@
 |---|---|---|
 | `/pulse:spec US-001` ou `/pulse:spec "…"` | Décrit ce que l'utilisateur obtient pour cette user story (une spec par US) ou pour votre demande : écrans, informations, règles, hors objectifs ; chaque inconnue notée `TBD:` ; verrouillée une fois validée | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
 | `/pulse:ui maquettes US-001` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
-| `/pulse:plan US-001` | Décide comment construire la spec (pile, données, sécurité, fichiers), puis la découpe en petites tâches T1, T2… (un plan par spec) | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (votre kanban) et `docs/guide/` (votre carnet de route) |
+| `/pulse:plan US-001` | Décide comment construire la spec (pile, données, sécurité, fichiers), puis la découpe en petites tâches T1, T2… (un plan par spec) | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (votre tableau de tâches) et `docs/guide/` (votre carnet de route) |
 | `/pulse:refine US-001 "…"` | Change le plan selon vos remarques, après vous avoir montré ce qui change | le plan mis à jour |
 
 ## 4. Construire, tâche par tâche
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, via un assistant spécialisé ou directement devant vous : on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
-| `/pulse:review` | Un relecteur indépendant vérifie ; **vous testez** ; on corrige |
+| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
+| `/pulse:review` | Deux assistants indépendants relisent et essaient la tâche en marche ; **vous testez** ; on corrige |
 | `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne |
 
 🔁 Recommencez pour chaque tâche. Ou laissez `/pulse:spirc US-001` enchaîner : des assistants réalisent, relisent et vérifient ; il s'arrête pour votre accord et c'est vous qui testez.
 Astuce : `/pulse:spirc US-001 "ajouter un filtre par date"` ajoute une demande précise au plan de l'US (ou crée une nouvelle US si c'est un nouveau besoin) et la traite de bout en bout.
 Sans argument, chaque commande vous montre les specs ou les plans existants et vous demande lequel choisir.
 
-🌿 En équipe ou pour tester avant de publier : `/pulse:pr branche US-001` avant de construire (une copie de travail), puis `/pulse:pr` pour proposer la fusion (une demande relisible, souvent avec une adresse de prévisualisation).
+🧭 Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent les réglages conseillés sans vous poser de questions techniques ; dites-le si vous préférez autre chose.
 
-🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose un **worktree**, une deuxième copie du projet sur sa propre branche, puis rassemble le travail à la fin.
+🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une branche pour l'US et une demande de fusion » : Pulse prépare la copie de travail et la demande de fusion (une demande relisible, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
+
+🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose une **copie à part du projet** (un worktree), sur sa propre branche, puis rassemble le travail à la fin.
 
 ## 5. Mettre en ligne
 
@@ -58,7 +60,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 | Commande | Quand l'utiliser |
 |---|---|
-| `/pulse:status` | « Où en suis-je ? Que faire maintenant ? » |
+| `/pulse:status` | « Où en suis-je ? Que faire maintenant ? » (même calcul que `/pulse:init`) |
 | `/pulse:explain app.js` | « Je ne comprends pas ce code » |
 | `/pulse:learn les fonctions` | « Je veux apprendre une notion de programmation » (aussi : `feynman <notion>`, `exercice <notion>`, `parcours "<objectif>"` ; sans argument : réviser) |
 | `/pulse:security` | « Mon appli est-elle bien protégée ? » (`rapide` pour un contrôle en 2 minutes) |
