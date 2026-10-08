@@ -22,7 +22,7 @@ Un anti-pattern est un défaut fréquent, reconnaissable à l'œil. Gravités : 
 | État vide réduit à une icône | 🟠 | Zone vide avec un pictogramme et rien d'autre | Une phrase qui explique + le bouton qui permet d'agir |
 | Espacements tous identiques | 🟠 | Même écart partout, tout paraît à égalité | Grouper : écart faible dans un groupe, écart net entre groupes |
 | Rayons d'arrondi incohérents | 🟠 | Coins très ronds ici, à peine arrondis là, carrés ailleurs | Un ou deux rayons, définis une fois |
-| Bordure fine grise + grande ombre floue sur tout | 🟠 | Chaque bloc a un filet gris et une large ombre diffuse | Choisir : un filet, ou une ombre légère, sur peu d'éléments |
+| Ombres fortes partout | 🟠 | Une ombre large et sombre sous chaque bloc, souvent avec un filet gris | Une petite ombre douce, ou un filet, sur peu d'éléments ; l'ombre marquée pour ce qui flotte seulement |
 | Mots creux de marketing (« révolutionnaire », « boostez », « sans effort ») | 🟠 | Promesses vagues dans les titres et les boutons | Dire ce que fait l'outil, avec des mots précis |
 | Texte de remplissage générique au lieu de contenus réalistes | 🟠 | « Lorem ipsum », « Titre ici », « Description » | Des contenus plausibles, dans le vocabulaire du glossaire |
 | Texte courant en majuscules | 🟠 | Un paragraphe ou une phrase entière en capitales | Minuscules ; les majuscules sur un libellé de 4 mots au plus |
@@ -30,13 +30,12 @@ Un anti-pattern est un défaut fréquent, reconnaissable à l'œil. Gravités : 
 | Icône seule sans nom accessible | 🟢 | Bouton avec un pictogramme, sans texte ni nom lu par les lecteurs d'écran | Ajouter un nom accessible précis, ou un libellé visible |
 | Tiret cadratin décoratif dans les textes | 🟢 | Longs tirets utilisés comme ponctuation à la place de virgules ou de points | Phrases courtes, virgules, deux-points (règle PON-002 du détecteur, `pulse-aidd textes verifier`) |
 | Emoji en guise d'icônes d'interface | 🟢 | Pictogrammes colorés du système dans les boutons ou les titres | Un jeu d'icônes unique et cohérent, ou le texte seul |
-| Ombres fortes partout | 🟢 | Une ombre large et sombre sous chaque bloc | Une petite ombre douce ; l'ombre marquée pour ce qui flotte seulement |
 | Champs en pleine largeur sur grand écran | 🟢 | Un champ « code postal » aussi large que la page | Une largeur selon la saisie attendue |
 | Icônes génériques (fusée, ampoule, étoile, engrenage) | 🟢 | Les pictogrammes les plus attendus pour « lancement », « idée », « qualité », « réglages » | Une icône précise de ce que fait l'élément, ou le texte seul |
 | Introduction qui répète le titre | 🟢 | La première phrase redit le titre avec d'autres mots | Commencer par l'information suivante |
 | Liens bleus par défaut | 🟢 | Liens bleu vif soulignés, hors palette | La couleur d'accent et un soulignement décalé |
 
-**Palette devinable : clichés par secteur et autres pistes.** Une autre piste part de la personnalité de l'identité ; elle reste une idée à essayer, jamais une règle.
+**Palette devinable : clichés par secteur et autres pistes.** Une autre piste part de la personnalité de l'identité ; c'est une piste à essayer.
 
 | Secteur | Cliché | Autre piste |
 |---|---|---|

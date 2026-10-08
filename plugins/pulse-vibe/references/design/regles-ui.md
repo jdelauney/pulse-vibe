@@ -15,28 +15,24 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 
 - **Règle 60-30-10**, en poids visuel : 60 % de fond, 30 % de surfaces secondaires, 10 % d'accent. L'accent fonctionne parce qu'il est rare.
 - **Rôles obligatoires de la palette** : fond, surface, texte, texte secondaire, accent, succès, alerte, erreur.
-- **Noir et blanc teintés** : teintez-les légèrement vers la couleur de la marque, au lieu des valeurs pures.
-- **Contraste** (écart de luminosité entre texte et fond) : texte courant ≥ 4,5:1 ; grands textes et icônes utiles ≥ 3:1 (détails au § 7).
-- **Toute information portée par la couleur est doublée** : ajoutez un mot, une icône ou une forme.
-- Définissez chaque teinte dans la palette plutôt que de la fabriquer par transparence (signe d'une palette mal définie).
-- **Cinq nuances par teinte**, de la plus claire à la plus foncée : en OKLCH (une notation de couleur où la luminosité se règle à part), seule la luminosité change ; la teinte et la saturation restent fixes.
-- **Neutres teintés** : une saturation de 0,005 à 0,01 vers la teinte de la marque (gris, fonds, textes).
-- **Couleurs de rôle** placées dans leur zone de teinte, puis accordées à la palette : succès vers 150 (vert), alerte vers 80 (ambre), erreur vers 25 (rouge).
-- **Mode sombre** : même teinte et même saturation pour chaque rôle, seule la luminosité change. Le fond s'assombrit, le texte s'éclaircit ; une surface en relief est un peu plus claire que le fond.
+- **Toute couleur vient de la palette**, par une variable, y compris dans les maquettes ; chaque teinte y est définie à part entière, plutôt que fabriquée par transparence (signe d'une palette mal définie).
+- **Cinq nuances par teinte**, de la plus claire à la plus foncée. En OKLCH (une notation de couleur où la luminosité se règle à part de la teinte), la luminosité change d'une nuance à l'autre ; la teinte reste fixe ; la saturation reste proche, et baisse aux nuances très claires ou très foncées si la couleur sort de ce que l'écran peut afficher (un outil de conversion le signale).
+- **Neutres teintés** (noir, blanc, gris, fonds) : une saturation de 0,005 à 0,01 vers la teinte de la marque, au lieu des valeurs pures.
+- **Couleurs de rôle** placées dans leur zone de teinte (en degrés sur le cercle des couleurs), puis accordées à la palette : succès vers 150 (vert), alerte vers 80 (ambre), erreur vers 25 (rouge).
+- **Mode sombre** : même teinte pour chaque rôle ; la luminosité s'inverse et la saturation suit la même règle que les nuances. Le fond s'assombrit, le texte s'éclaircit ; une surface en relief est un peu plus claire que le fond.
 - **Liens** : la couleur d'accent et un soulignement décalé du texte ; le bleu par défaut du navigateur reste réservé aux pages sans identité.
-- **Toute couleur vient de la palette**, par une variable, y compris dans les maquettes.
-- **Le contraste se calcule** avec un outil (rapport exact), pour chaque paire texte et fond.
+- **Contraste** : les seuils sont au § 7. Il se calcule avec un outil (rapport exact), pour chaque paire de couleurs.
+- **Toute information portée par la couleur est doublée** : ajoutez un mot, une icône ou une forme.
 
 ## 2. Typographie
 
-- **Échelle** de tailles avec un rapport ≥ 1,25 entre deux niveaux voisins, selon l'usage : 1,2 à 1,25 pour un outil dense, 1,333 pour un équilibre, 1,5 pour une vitrine.
+- **Échelle** de tailles, avec un rapport fixe entre deux niveaux voisins, choisi selon l'usage : 1,2 à 1,25 pour un outil dense, 1,333 pour un équilibre, 1,5 pour une vitrine.
 - **Interligne** (l'espace entre deux lignes) : 1,5 à 1,6 pour le texte courant, 1,1 à 1,25 pour les titres.
 - **Longueur de ligne** : 65 à 75 caractères pour le texte courant.
 - **Corps de texte** ≥ 16 px.
-- **Deux familles de polices au plus.**
-- **Une police de titre distincte de celle du texte** quand l'identité le demande (par exemple une police à empattements pour les titres, une police sans empattements pour le texte), dans la limite de deux familles.
-- **Grands titres** légèrement resserrés : espacement des lettres de −0,01 à −0,02 em.
-- **Majuscules** sur un libellé court (4 mots au plus) ; un paragraphe s'écrit en minuscules.
+- **Deux familles de polices au plus.** Quand l'identité le demande, la police des titres se distingue de celle du texte (par exemple, une police à empattements, avec de petits traits au bout des lettres, pour les titres ; une police sans empattements pour le texte).
+- **Grands titres** légèrement resserrés : espacement des lettres de −0,01 à −0,02 em (em : la taille du texte lui-même).
+- **Majuscules** ponctuellement, sur un libellé court de 4 mots au plus ; un paragraphe s'écrit en minuscules.
 - **Tailles en `rem`** (une unité qui suit la taille de texte choisie par la personne dans son système) plutôt qu'en pixels fixes.
 - **Polices « réflexes »** : pour les titres, choisissez une autre police que celles que les IA prennent par défaut : Inter, Roboto, Arial, Open Sans, Poppins, Montserrat, Space Grotesk, DM Sans, Playfair Display, Fraunces. Exception possible avec une raison explicite, écrite dans `docs/design.md`.
 - Choisissez la police à partir des **3 mots de personnalité** de l'identité, par choix réfléchi plutôt que par habitude.
@@ -51,7 +47,7 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 - **Ombres** : une petite ombre douce pour les éléments courants ; une ombre plus marquée seulement pour ce qui flotte au-dessus de la page (menu ouvert, fenêtre modale, notification).
 - **Densité** selon le registre : compacte ou normale en outil, confortable en vitrine.
 - **En vitrine**, l'espacement entre sections varie et reste borné : 80 à 140 px pour l'ouverture de la page, 60 à 100 px entre sections, avec `clamp()` (une valeur qui suit la largeur d'écran entre un minimum et un maximum).
-- **Largeur de contenu** de 1 280 px au plus ; un paragraphe reste à 65–75 caractères.
+- **Largeur de contenu** de 1 280 px au plus.
 - **Largeur d'un champ** selon ce qu'on y saisit : court pour un code postal, plus long pour une adresse.
 
 ## 4. Composants et états obligatoires
@@ -74,12 +70,12 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 - **Un seul niveau de cartes** (jamais de cartes dans des cartes) : à l'intérieur, séparez par l'espace et des filets.
 - **L'action en place d'abord** ; la **fenêtre modale** (qui s'ouvre par-dessus la page) en second choix.
 - Le **mobile se conçoit pour lui-même** : pensez l'ordre et les priorités pour le petit écran, au lieu de rétrécir la version ordinateur.
-- **Cibles tactiles** ≥ 44 × 44 px.
+- **Cibles tactiles** ≥ 44 × 44 px (Pulse vise plus large que le minimum de 24 px de WCAG 2.2).
 - **Vérifier chaque écran aux largeurs 320, 390, 768, 1 280 et 1 920 px** (petit téléphone, téléphone courant, tablette, ordinateur, grand écran).
 
 ## 6. Mouvement
 
-- Animer seulement **la position, l'échelle et l'opacité**.
+- Animer **la position, l'échelle et l'opacité** ; la couleur, seulement pour le survol et le focus.
 - **Durées** :
 
 | Interaction | Durée |
@@ -92,10 +88,9 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 | Chargement vers contenu | 250 ms |
 | Changement de page (vitrine) | 300 à 400 ms |
 
-- **Courbe** : à l'entrée, le mouvement ralentit en arrivant (*ease-out*, par exemple `cubic-bezier(0.25, 1, 0.5, 1)`) ; à la sortie, il accélère en partant (*ease-in*). Un mouvement à vitesse constante reste réservé aux barres de progression. **Sans rebond.**
-- **Apparitions décalées** : 50 à 60 ms entre deux éléments d'une liste, 6 éléments au plus.
-- **Révélation au défilement** : une seule fois par élément.
-- **« Réduire les animations »** (préférence du système, `prefers-reduced-motion`) : un fondu court à la place des déplacements, et aucune lecture automatique.
+- **Courbe** : à l'entrée, le mouvement ralentit en arrivant (*ease-out*, par exemple `cubic-bezier(0.25, 1, 0.5, 1)`) ; à la sortie, il accélère en partant (*ease-in*). Le mouvement s'arrête net sur sa position finale. Une vitesse constante sert aux barres de progression et aux indicateurs de chargement qui tournent.
+- **En vitrine**, les apparitions décalées (50 à 60 ms entre deux éléments, 6 éléments au plus) et la révélation au défilement (une seule fois par élément) font partie de la séquence d'ouverture. En outil, le mouvement signale seulement un changement d'état.
+- **« Réduire les animations »** (préférence du système, `prefers-reduced-motion`) : un fondu court remplace les déplacements ; vidéos et animations attendent un geste de la personne.
 - **Vidéo** : contrôles visibles, son coupé au départ.
 
 ## 7. Accessibilité
@@ -103,10 +98,10 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 Niveau visé : **WCAG 2.2 AA** (le référentiel international d'accessibilité du web).
 
 - **Contraste** : texte courant ≥ 4,5:1 ; grand texte (24 px, ou 18,66 px en gras) ≥ 3:1 ; contours de champs, boutons, icônes utiles et focus ≥ 3:1.
-- **Focus visible** en permanence : un contour de 2 px au moins, décalé de l'élément, visible sur tous les fonds, montré à la navigation au clavier (`:focus-visible`).
+- **Focus** toujours visible à la navigation au clavier (`:focus-visible`) : un contour de 2 px au moins, décalé de l'élément, visible sur tous les fonds (exigence de Pulse, au-delà du niveau AA).
 - Chaque **champ** a une étiquette visible ; son aide est reliée au champ (`aria-describedby`).
 - Chaque **icône seule** a un nom accessible (le texte lu par les lecteurs d'écran) ; une icône décorative est cachée aux lecteurs d'écran (`aria-hidden`).
-- **Ordre de tabulation** logique, celui de la lecture ; les **flèches du clavier** déplacent dans une liste, des onglets ou un menu.
+- **Ordre de tabulation** logique, celui de la lecture ; les **flèches du clavier** déplacent dans une liste de choix, des onglets ou un menu.
 - **Page en cours** signalée dans la navigation (`aria-current`) ; chaque zone de navigation porte un nom.
 - **Langue de la page** déclarée.
 
@@ -121,5 +116,5 @@ Niveau visé : **WCAG 2.2 AA** (le référentiel international d'accessibilité 
 
 ## Sources
 
-- WCAG 2.2 : critères 1.4.3 (contraste du texte ; grand texte = 18 pt, ou 14 pt en gras), 1.4.11 (contraste des composants), 2.4.7 (focus visible), 2.5.8 (taille des cibles) : https://www.w3.org/TR/WCAG22/
+- WCAG 2.2 : critères 1.4.3 (contraste du texte ; grand texte = 18 pt, ou 14 pt en gras), 1.4.11 (contraste des composants), 2.4.7 (focus visible), 2.4.13 (apparence du focus, niveau AAA, base du contour de 2 px), 2.5.8 (taille des cibles : 24 px au minimum ; Pulse vise 44 px) : https://www.w3.org/TR/WCAG22/
 - MDN : `prefers-reduced-motion`, `:focus-visible`, `text-underline-offset`, `oklch()`, `clamp()` : https://developer.mozilla.org/
