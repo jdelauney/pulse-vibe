@@ -87,43 +87,88 @@ function lancer(commande, cwd, env = {}) {
   }
 }
 
+const IMPORT_INTERDIT = "lint/style/noRestrictedImports";
+const REEXPORT_TOUT = "lint/performance/noReExportAll";
+const BARREL = "lint/performance/noBarrelFile";
+
+/** Fichiers d'essai : `regle` = règle Biome qui doit les signaler ; `regle: null` = aucun diagnostic de cette famille attendu. */
+function fixturesDeCouches() {
+  const f = (chemin, contenu, regle = IMPORT_INTERDIT) => ({ chemin, contenu, regle });
+  const importe = (nom, source) => `import { ${nom} } from "${source}";\n\nexport const ${nom}2 = ${nom};\n`;
+  const core = (nom, source) => f(`src/core/verification/${nom}.rules.ts`, importe("x", source));
+  const action = importe("creer", "../../actions/essai.action");
+  return [
+    core("react", "react"),
+    core("lib-alias", "@src/lib/utils"),
+    core("lib-relatif", "../../lib/verification/x"),
+    core("config-relatif", "../../config/verification/x"),
+    core("components-relatif", "../../components/verification/x"),
+    core("app-relatif", "../../app/verification/x"),
+    f("src/db/verification/essai.repository.ts", importe("essai", "@src/adapters/verification/essai.adapter")),
+    f("src/adapters/verification/essai.adapter.ts", importe("e", "@src/db/verification/essai.repository")),
+    f("src/adapters/auth/essai-auth.ts", importe("x", "@src/features/verification/essai")),
+    f("src/features/verification/components/containers/essai.container.tsx", importe("db", "@src/db/verification/essai.repository")),
+    f("src/features/verification/components/sections/essai.tsx", importe("c", "../containers/essai.container")),
+    f("src/features/verification/components/composites/essai.tsx", importe("s", "../sections/essai")),
+    f("src/features/verification/components/elements/essai.tsx", importe("c", "../composites/essai")),
+    f("src/components/shared/elements/essai.tsx", importe("c", "../composites/essai")),
+    f("src/features/verification/components/sections/essai-action.tsx", action),
+    // Les tests d'un composant peuvent importer ce que le composant ignore.
+    f("src/features/verification/components/sections/__tests__/essai.test.tsx", action, null),
+    f("src/lib/verification/index.ts", 'export * from "./essai";\n', REEXPORT_TOUT),
+    f("src/lib/verification-nomme/index.ts", 'export { a } from "./a";\n', BARREL),
+  ];
+}
+
+/** Diagnostics de `biome lint` par fichier : { "chemin/relatif": [catégories] }. */
+function diagnosticsBiome(dossier, chemins) {
+  const r = spawnSync(`npx biome lint --reporter=json --max-diagnostics=500 ${chemins.join(" ")}`, { cwd: dossier, shell: true, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const ligne = (r.stdout || "").split("\n").find((l) => l.startsWith('{"summary"'));
+  if (!ligne) throw new Error(`\n❌ Sortie JSON de Biome illisible :\n${r.stdout || ""}${r.stderr || ""}`);
+  const parFichier = {};
+  for (const d of JSON.parse(ligne).diagnostics) {
+    const chemin = String(d.location?.path?.file ?? d.location?.path ?? "").replace(/\\/g, "/");
+    (parFichier[chemin] ||= []).push(d.category);
+  }
+  return parFichier;
+}
+
 /**
- * Garde des règles de couches de biome.json : une importation interdite par dossier, plus un fichier
- * de réexportation, écrits dans le dossier temporaire ; Biome doit signaler chacun.
+ * Garde des règles de couches de biome.json : une importation interdite par dossier, plus des fichiers
+ * de réexportation, écrits dans le dossier temporaire ; Biome (rapport JSON) doit les signaler par la règle
+ * visée, et épargner les tests des composants et src/lib/utils.ts. Les fichiers créés sont toujours retirés.
  */
 function controlerReglesDeCouches(dossier) {
-  const f = (chemin, contenu) => ({ chemin, contenu });
-  const fixtures = [
-    f("src/core/verification/essai.rules.ts", 'import { cache } from "react";\n\nexport const essai = cache;\n'),
-    f("src/db/verification/essai.repository.ts", 'import { essai } from "@src/adapters/verification/essai.adapter";\n\nexport const e = essai;\n'),
-    f("src/adapters/verification/essai.adapter.ts", 'import { e } from "@src/db/verification/essai.repository";\n\nexport const essai = e;\n'),
-    f("src/adapters/auth/essai-auth.ts", 'import { x } from "@src/features/verification/essai";\n\nexport const y = x;\n'),
-    f("src/features/verification/components/containers/essai.container.tsx", 'import { db } from "@src/db/verification/essai.repository";\n\nexport const c = db;\n'),
-    f("src/features/verification/components/sections/essai.tsx", 'import { c } from "../containers/essai.container";\n\nexport const s = c;\n'),
-    f("src/features/verification/components/composites/essai.tsx", 'import { s } from "../sections/essai";\n\nexport const c = s;\n'),
-    f("src/features/verification/components/elements/essai.tsx", 'import { c } from "../composites/essai";\n\nexport const e = c;\n'),
-    f("src/components/shared/elements/essai.tsx", 'import { c } from "../composites/essai";\n\nexport const e = c;\n'),
-    f("src/lib/verification/index.ts", 'export * from "./essai";\n'),
-  ];
   console.log("\n▶ garde des règles de couches (Biome)");
-  const chemins = [];
-  for (const { chemin, contenu } of fixtures) {
-    const complet = path.join(dossier, ...chemin.split("/"));
-    fs.mkdirSync(path.dirname(complet), { recursive: true });
-    fs.writeFileSync(complet, contenu);
-    chemins.push(chemin);
+  const fixtures = fixturesDeCouches();
+  const crees = []; // seulement ce que la garde crée : dossiers nouveaux et fichiers
+  const manques = [];
+  try {
+    for (const { chemin, contenu } of fixtures) {
+      const complet = path.join(dossier, ...chemin.split("/"));
+      const premierDossier = fs.mkdirSync(path.dirname(complet), { recursive: true });
+      if (premierDossier) crees.push(premierDossier);
+      fs.writeFileSync(complet, contenu);
+      crees.push(complet);
+    }
+    const diag = diagnosticsBiome(dossier, [...fixtures.map((x) => x.chemin), "src/lib/utils.ts"]);
+    for (const { chemin, regle } of fixtures) {
+      const categories = diag[chemin] || [];
+      if (regle && !categories.includes(regle)) manques.push(`${chemin} (attendu : ${regle}, reçu : ${categories.join(", ") || "rien"})`);
+      if (!regle && categories.includes(IMPORT_INTERDIT)) manques.push(`${chemin} (ne doit pas être restreint, mais ${IMPORT_INTERDIT} le signale)`);
+    }
+    const utils = diag["src/lib/utils.ts"] || [];
+    if (utils.some((c) => c === BARREL || c === REEXPORT_TOUT)) manques.push(`src/lib/utils.ts (la réexportation shadcn ne doit pas être signalée, reçu : ${utils.join(", ")})`);
+  } catch (erreur) {
+    manques.push(erreur.message);
+  } finally {
+    for (const c of crees.reverse()) fs.rmSync(c, { recursive: true, force: true });
   }
-  const r = spawnSync(`npx biome lint --max-diagnostics=200 ${chemins.join(" ")}`, { cwd: dossier, shell: true, encoding: "utf8" });
-  const sortie = `${r.stdout || ""}${r.stderr || ""}`.replace(/\\/g, "/");
-  const nonSignales = chemins.filter((c) => !sortie.includes(c));
-  for (const c of chemins) fs.rmSync(path.join(dossier, ...c.split("/")), { force: true });
-  for (const d of ["src/core/verification", "src/lib/verification", "src/adapters/verification", "src/features/verification"])
-    fs.rmSync(path.join(dossier, ...d.split("/")), { recursive: true, force: true });
-  if (nonSignales.length) {
-    console.error(`\n❌ Les règles de couches de biome.json ne signalent pas : ${nonSignales.join(", ")}`);
+  if (manques.length) {
+    console.error(`\n❌ Les règles de couches de biome.json ne se comportent pas comme prévu :\n  - ${manques.join("\n  - ")}`);
     process.exit(1);
   }
-  console.log(`   ${chemins.length} importations interdites signalées.`);
+  console.log(`   ${fixtures.length} fichiers d'essai : chaque règle attendue signale le sien ; tests de composants et utils.ts épargnés.`);
 }
 
 function derniereVersion(paquet) {

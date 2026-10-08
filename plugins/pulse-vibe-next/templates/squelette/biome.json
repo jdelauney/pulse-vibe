@@ -79,7 +79,11 @@
                       "@src/lib/**",
                       "**/db/**",
                       "**/adapters/**",
-                      "**/features/**"
+                      "**/features/**",
+                      "**/lib/**",
+                      "**/config/**",
+                      "**/components/**",
+                      "**/app/**"
                     ],
                     "message": "src/core reste pur : il importe seulement src/core (son domaine et core/shared). Voir architecture.md §3."
                   }
@@ -166,7 +170,10 @@
       }
     },
     {
-      "includes": ["src/features/*/components/containers/**"],
+      "includes": [
+        "src/features/*/components/containers/**",
+        "!**/__tests__/**"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -196,7 +203,8 @@
     {
       "includes": [
         "src/features/*/components/sections/**",
-        "src/components/shared/sections/**"
+        "src/components/shared/sections/**",
+        "!**/__tests__/**"
       ],
       "linter": {
         "rules": {
@@ -234,7 +242,8 @@
     {
       "includes": [
         "src/features/*/components/composites/**",
-        "src/components/shared/composites/**"
+        "src/components/shared/composites/**",
+        "!**/__tests__/**"
       ],
       "linter": {
         "rules": {
@@ -273,7 +282,8 @@
     {
       "includes": [
         "src/features/*/components/elements/**",
-        "src/components/shared/elements/**"
+        "src/components/shared/elements/**",
+        "!**/__tests__/**"
       ],
       "linter": {
         "rules": {

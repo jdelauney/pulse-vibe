@@ -150,7 +150,7 @@ function controler(dossier) {
     const dynamique = /export\s+(async\s+)?function\s+generateMetadata\b/.test(t);
     if (!statique && !dynamique) {
       constats.push(c("C3", "haute", `Page publique ${p.route} sans métadonnées : titre et description par défaut, pas d'adresse officielle.`, `Exporter metadata = metadonneesDePage({ titre, description, chemin }) (${seoRel}), avec les textes de docs/seo.md.`, f));
-    } else if (!/metadonneesDePage\s*\(/.test(t) && !/canonical\s*:/.test(t)) {
+    } else if (!/metadonneesDePage\s*\(/.test(t) && !/canonical\s*:/.test(t) && !/robots\s*:\s*\{[^}]*\bindex\s*:\s*false/.test(t)) {
       constats.push(c("C3", "moyenne", `Page publique ${p.route} sans adresse officielle (canonique).`, "Construire les métadonnées avec metadonneesDePage(), qui pose la canonique.", f));
     }
     if (/openGraph\s*:/.test(t) && !/metadonneesDePage\s*\(/.test(t)) constats.push(c("C4", "moyenne", `${p.route} définit openGraph à la main : Next.js remplace alors tout celui du layout (nom du site, image).`, "Passer par metadonneesDePage(), qui reconstruit la carte complète.", f));
@@ -233,8 +233,12 @@ function controler(dossier) {
   // C13 – langues
   if (avecLangues) {
     const tousTextes = [texteLayout, ...publiques.map((p) => lire(p.fichier))].join("\n");
-    if (!/languages\s*:/.test(tousTextes)) constats.push(c("C13", "haute", "Site en plusieurs langues sans versions déclarées (alternates.languages) : Google peut montrer la mauvaise langue.", "Ajouter alternates.languages, avec x-default, à chaque page publique (recette langues).", rel(layoutRacine || app)));
-    else if (!/x-default/.test(tousTextes)) constats.push(c("C13", "basse", "Versions de langue sans x-default.", "Ajouter x-default vers la langue par défaut.", rel(layoutRacine || app)));
+    const appelHelper = /\bversionsDeLangue\s*\(/.test(tousTextes);
+    // Le helper de la recette langues pose x-default : le contrôle lit sa définition dans le projet.
+    const definiAvecDefaut = (f) => /\.(ts|tsx|js|jsx)$/.test(f) && /function\s+versionsDeLangue\b/.test(lire(f)) && /x-default/.test(lire(f));
+    const helperAvecDefaut = appelHelper && [...fichiers(path.join(dossier, "src")), ...fichiers(path.join(dossier, "lib"))].some(definiAvecDefaut);
+    if (!/languages\s*:/.test(tousTextes) && !appelHelper) constats.push(c("C13", "haute", "Site en plusieurs langues sans versions déclarées (alternates.languages) : Google peut montrer la mauvaise langue.", "Ajouter alternates.languages, avec x-default, à chaque page publique (recette langues).", rel(layoutRacine || app)));
+    else if (!/x-default/.test(tousTextes) && !helperAvecDefaut) constats.push(c("C13", "basse", "Versions de langue sans x-default.", "Ajouter x-default vers la langue par défaut.", rel(layoutRacine || app)));
     if (sitemap && !/alternates\s*:/.test(lire(sitemap))) constats.push(c("C13", "moyenne", "Le sitemap ne liste pas les versions de langue.", "Ajouter alternates.languages à chaque entrée du sitemap (recette langues).", rel(sitemap)));
   }
 

@@ -1,11 +1,19 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { dossiersTropPleins, testsMalRanges } from "../structure";
+
+const racines: string[] = [];
+
+afterEach(() => {
+  for (const r of racines.splice(0))
+    rmSync(r, { recursive: true, force: true });
+});
 
 function projet(fichiers: string[]): string {
   const racine = mkdtempSync(join(tmpdir(), "structure-"));
+  racines.push(racine);
   for (const f of fichiers) {
     mkdirSync(join(racine, f, ".."), { recursive: true });
     writeFileSync(join(racine, f), "");
@@ -50,6 +58,14 @@ describe("testsMalRanges", () => {
     expect(testsMalRanges([join(r, "app"), join(r, "src")], r).sort()).toEqual([
       "app/factures/page.test.tsx",
       "src/core/factures/facture.rules.test.ts",
+    ]);
+  });
+
+  it("un projet posé sous un dossier nommé __tests__ est contrôlé comme les autres", () => {
+    const r = projet(["__tests__/projet/src/a/mal-range.test.ts"]);
+    const base = join(r, "__tests__", "projet");
+    expect(testsMalRanges([join(base, "src")], base)).toEqual([
+      "src/a/mal-range.test.ts",
     ]);
   });
 

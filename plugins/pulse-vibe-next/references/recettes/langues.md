@@ -814,4 +814,3 @@ test.describe("Langues", () => {
 - « Mon compte » en anglais pour une personne connectée (« Signed in as … ») : écrit, mais non constaté, faute de base de données dans l'essai.
 - `NextIntlClientProvider` sans `messages` transmet tous les messages de la langue aux composants clients ; pour un gros fichier de messages, ne transmettre que les espaces de noms utiles.
 - Le serveur de développement journalise une erreur « Could not validate `instant` » pour `app/[locale]/[...reste]/page.tsx` (la page appelle `notFound()` par conception) ; la réponse reste 404 et les tests passent.
-- Le contrôle `seo-code.js` (C13) cherche `languages:` et `x-default` dans le texte des pages et du layout, sans suivre `versionsDeLangue()` : il signale un constat Basse « sans x-default » alors que la page le déclare par le helper.

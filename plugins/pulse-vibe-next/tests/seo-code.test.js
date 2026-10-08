@@ -107,6 +107,28 @@ test("site en plusieurs langues : versions non déclarées (C13)", () => {
   assert.deepStrictEqual(codes(controler(d)), ["C13:haute", "C13:moyenne"]);
 });
 
+test("versions de langue déclarées par le helper versionsDeLangue() : languages et x-default reconnus (C13)", () => {
+  const { "src/app/layout.tsx": layout, "src/app/page.tsx": page, ...reste } = BASE;
+  const helper = (corps) => `export function versionsDeLangue(chemin) { ${corps} }`;
+  const projetLangues = (corps) =>
+    projet({
+      ...reste,
+      "src/app/sitemap.ts": "export default function sitemap() { return [{ url: '/', alternates: { languages: {} } }]; }",
+      "src/app/[locale]/layout.tsx": layout,
+      "src/app/[locale]/page.tsx": 'export const metadata = { ...metadonneesDePage({ titre: "A", description: "d", chemin: "/" }), alternates: { canonical: "/", languages: versionsDeLangue("/") } };',
+      "src/lib/seo/referencement.ts": helper(corps),
+    });
+  assert.deepStrictEqual(codes(controler(projetLangues('const l = {}; l["x-default"] = chemin; return l;'))), []);
+  assert.deepStrictEqual(codes(controler(projetLangues("return {};"))), ["C13:basse"], "un helper sans x-default reste signalé");
+});
+
+test("page publique en noindex volontaire : pas de constat C3", () => {
+  const d = projet({ ...BASE, "src/app/merci/page.tsx": 'export const metadata = { title: "Merci", robots: { index: false, follow: false } };' });
+  assert.deepStrictEqual(codes(controler(d)), []);
+  const d2 = projet({ ...BASE, "src/app/merci/page.tsx": 'export const metadata = { title: "Merci", robots: { index: true } };' });
+  assert.deepStrictEqual(codes(controler(d2)), ["C3:moyenne"]);
+});
+
 test("--pages : liste des pages publiques fixes, séparées par des virgules ; option inconnue : code 2", () => {
   const d = projet({ ...BASE, "src/app/(public)/a-propos/page.tsx": "x", "src/app/api/x/page.ts": "x", "src/app/blog/[slug]/page.tsx": "x" });
   const r = lancer("--pages", "--dossier", d);

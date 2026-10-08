@@ -38,7 +38,7 @@ export function testsMalRanges(
 ): string[] {
   return racines
     .flatMap(tousLesDossiers)
-    .filter((d) => !d.split(sep).includes("__tests__"))
+    .filter((d) => !relatif(base, d).split("/").includes("__tests__"))
     .flatMap((d) =>
       fichiersDe(d)
         .filter((e) => /\.test\.tsx?$/.test(e.name))

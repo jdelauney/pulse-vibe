@@ -1,27 +1,35 @@
-import { describe, expect, it } from "vitest";
+import { logger } from "@src/lib/logger";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErreurService } from "../erreur-service";
 import { reponseErreur } from "../reponse-erreur";
 
+vi.mock("@src/lib/logger", () => ({ logger: { error: vi.fn() } }));
+
 describe("reponseErreur", () => {
+  beforeEach(() => {
+    vi.mocked(logger.error).mockClear();
+  });
+
   it("panne d'un service externe : 503 et message générique", async () => {
-    const r = reponseErreur(
-      new ErreurService("paiement", "Délai dépassé", {
-        cause: new Error("timeout"),
-      }),
+    const err = new ErreurService("paiement", "Délai dépassé", {
+      cause: new Error("timeout"),
+    });
+    const r = reponseErreur(err, "Webhook paiement");
+    expect(r.status).toBe(503);
+    expect(logger.error).toHaveBeenCalledWith(
+      { err, service: "paiement" },
       "Webhook paiement",
     );
-    expect(r.status).toBe(503);
     expect(await r.json()).toEqual({
       message: "Service momentanément indisponible. Réessayez dans un instant.",
     });
   });
 
   it("erreur imprévue : 500, sans détail technique dans la réponse", async () => {
-    const r = reponseErreur(
-      new Error("mot de passe de la base : secret"),
-      "Route test",
-    );
+    const err = new Error("mot de passe de la base : secret");
+    const r = reponseErreur(err, "Route test");
     expect(r.status).toBe(500);
+    expect(logger.error).toHaveBeenCalledWith({ err }, "Route test");
     const corps = await r.json();
     expect(corps).toEqual({
       message: "Une erreur est survenue. Réessayez dans un instant.",
