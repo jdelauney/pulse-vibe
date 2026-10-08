@@ -136,7 +136,7 @@ export function limiteDeConservation(maintenant: Date): Date {
 }
 ```
 
-Enregistrer une mesure applique deux règles métier (le chemin sans identifiant, l'effacement au plus une fois par heure) : l'écriture passe donc par un use-case (architecture.md §5, point 2). Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 3 le fournit.
+Enregistrer une mesure applique une règle métier (le chemin sans identifiant) : l'écriture passe donc par un use-case (architecture.md §5, point 2). L'effacement au plus une fois par heure est un réglage d'exploitation, pas une règle métier : la durée de conservation (90 jours) reste la seule promesse faite aux visiteurs. Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 3 le fournit.
 
 ```ts
 // src/core/vitesse/mesure-repository.port.ts
@@ -286,7 +286,7 @@ export const mesureVitesseSchema = z.object({
 });
 ```
 
-Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (règle `purgeNecessaire`). Un effacement à chaque mesure ajouterait une requête `DELETE` à chaque visite. Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
+Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (fonction pure `purgeNecessaire`, testable sans horloge réelle). Un effacement à chaque mesure ajouterait une requête `DELETE` à chaque visite. Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
 
 ```ts
 // src/features/vitesse/webhooks/recevoir-mesure.webhook.ts
@@ -479,9 +479,9 @@ Fonctionnalité: Mesure réelle de la vitesse
 
     @US-XXX-3 @unitaire
     Exemple: L'effacement des anciennes mesures a lieu au plus une fois par heure
-      Étant donné un effacement fait à 12 h 00
-      Quand deux mesures arrivent à 12 h 05 et 12 h 59, puis une à 13 h 00
-      Alors rien n'est effacé avant 13 h 00, où un nouvel effacement a lieu
+      Étant donné aucun effacement encore fait
+      Quand deux mesures arrivent à 12 h 00, une à 12 h 59, puis une à 13 h 00
+      Alors l'effacement a lieu à 12 h 00 (première mesure) et à 13 h 00 seulement
 
     @US-XXX-3 @unitaire
     Exemple: La limite de conservation est à 90 jours

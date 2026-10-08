@@ -484,18 +484,6 @@ Fonctionnalité: Référencement des pages publiques
       Quand un robot ouvre une adresse qui n'existe pas
       Alors la réponse est 404
 
-    @US-XXX-5 @bout-en-bout
-    Exemple: Une réalisation inconnue répond « introuvable », même à Googlebot
-      Étant donné une réalisation publiée « table-en-chene »
-      Quand un robot, dont Googlebot, ouvre « /realisations/slug-inconnu »
-      Alors la réponse est 404
-
-    @US-XXX-6 @bout-en-bout
-    Exemple: Le sitemap donne la date de modification d'une réalisation publiée
-      Étant donné une réalisation publiée « table-en-chene »
-      Quand un robot ouvre « /sitemap.xml »
-      Alors l'entrée de « /realisations/table-en-chene » porte une date « lastmod »
-
   Règle: Les robots IA suivent la politique choisie
 
     @US-XXX-3 @unitaire
@@ -511,6 +499,20 @@ Fonctionnalité: Référencement des pages publiques
       Étant donné une réalisation non publiée et deux réalisations publiées
       Quand on cherche ou on liste les réalisations pour le public
       Alors le brouillon n'existe pas et la liste montre les deux autres, les plus récentes d'abord
+
+  Règle: Les pages de détail répondent comme les robots l'attendent
+
+    @US-XXX-5 @bout-en-bout
+    Exemple: Une réalisation inconnue répond « introuvable », même à Googlebot
+      Étant donné une réalisation publiée « table-en-chene »
+      Quand un robot, dont Googlebot, ouvre « /realisations/slug-inconnu »
+      Alors la réponse est 404
+
+    @US-XXX-6 @bout-en-bout
+    Exemple: Le sitemap donne la date de modification d'une réalisation publiée
+      Étant donné une réalisation publiée « table-en-chene »
+      Quand un robot ouvre « /sitemap.xml »
+      Alors l'entrée de « /realisations/table-en-chene » porte une date « lastmod »
 ```
 
 ## Tâches de plan prêtes
@@ -538,7 +540,8 @@ Fonctionnalité: Référencement des pages publiques
   - Objectif : chaque contenu publié a sa page, son entrée de sitemap datée et, pour une adresse inconnue, un vrai 404
   - Dépend de : Tn, Tn+1
   - Fichiers : à créer : `e2e/realisations.spec.ts`, `src/core/realisations/realisation.entity.ts`, `src/db/realisations/realisation.table.ts`, `src/db/realisations/realisation.repository.ts`, `src/features/realisations/constants/cache-tags.ts`, `src/features/realisations/queries/lire-realisation.query.ts`, `src/features/realisations/queries/lister-realisations.query.ts`, `src/features/realisations/components/sections/detail-realisation.tsx`, `src/features/realisations/components/containers/detail-realisation.container.tsx`, `app/(public)/realisations/[slug]/page.tsx` · `drizzle/<numéro>_<nom>.sql` (migration générée) · à modifier : `app/sitemap.ts`, `proxy.ts`
-  - Vérification : US-XXX critère 4 – `/realisations/inconnu` répond 404 ; le sitemap liste les réalisations publiées avec leur `lastmod`
+  - Vérification : US-XXX critères 4 à 6 – `/realisations/inconnu` répond 404 ; le sitemap liste les réalisations publiées avec leur `lastmod`
+  - Action manuelle : insérer une réalisation publiée (`publiee = true`, slug `table-en-chene`) dans une base de **test ou de branche** (une branche Neon), jamais dans la base de production ; y lancer `npm run db:migrate` avant, puis `CI=1 npx playwright test e2e/realisations.spec.ts`
   - Tests : « Un brouillon n'est ni trouvé ni listé » (intégration PGlite, `src/db/realisations/__tests__/realisation.repository.test.ts`) ; « Une réalisation inconnue répond « introuvable », même à Googlebot » et « Le sitemap donne la date de modification d'une réalisation publiée » (bout en bout, `e2e/realisations.spec.ts`, base avec une réalisation publiée « table-en-chene »)
 
 ## Tests
@@ -641,7 +644,7 @@ describe("realisationRepository", () => {
 
 `e2e/referencement.spec.ts` du squelette : robots.txt (200, ligne `Sitemap:` complète), sitemap.xml, adresse inconnue en 404, titre, adresse officielle et image de partage dans `<head>` de l'accueil.
 
-`e2e/realisations.spec.ts` (étapes 5 et 6) prouve le vrai 404 d'un `slug` inconnu, avec le `User-Agent` de Googlebot aussi, et la date `lastmod` du sitemap. Prérequis : une base qui contient les migrations et **une réalisation publiée** (`publiee = true`) de slug `table-en-chene` (insertion SQL ou écran d'administration du projet ; changer `SLUG_PUBLIE` pour un autre slug), avec `DATABASE_URL` renseignée. Le test cible la version construite, celle que reçoivent les robots : `CI=1 npx playwright test e2e/realisations.spec.ts` construit le site, le démarre, puis lance les tests.
+`e2e/realisations.spec.ts` (étapes 5 et 6) prouve le vrai 404 d'un `slug` inconnu, avec le `User-Agent` de Googlebot aussi, et la date `lastmod` du sitemap. Prérequis : une base qui contient les migrations et **une réalisation publiée** (`publiee = true`) de slug `table-en-chene` (insertion SQL ou écran d'administration du projet ; changer `SLUG_PUBLIE` pour un autre slug), avec `DATABASE_URL` renseignée. Cette base est une base de test ou une branche Neon : jamais la production. Le test cible la version construite, celle que reçoivent les robots : `CI=1 npx playwright test e2e/realisations.spec.ts` construit le site, le démarre, puis lance les tests.
 
 ```ts
 // e2e/realisations.spec.ts
@@ -684,9 +687,10 @@ test.describe("Réalisations publiques", () => {
     const reponse = await request.get("/sitemap.xml");
 
     expect(reponse.status()).toBe(200);
+    // Dans le bloc <url> de la réalisation : avec les langues, des <xhtml:link> précèdent <lastmod>.
     expect(await reponse.text()).toMatch(
       new RegExp(
-        String.raw`<loc>[^<]*/realisations/${SLUG_PUBLIE}</loc>\s*<lastmod>\d{4}-\d{2}-\d{2}T`,
+        String.raw`<url>(?:(?!</url>)[\s\S])*?/realisations/${SLUG_PUBLIE}</loc>(?:(?!</url>)[\s\S])*?<lastmod>\d{4}-\d{2}-\d{2}T`,
       ),
     );
   });
