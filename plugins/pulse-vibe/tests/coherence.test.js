@@ -508,3 +508,14 @@ test("plan : montré et validé avant d'être écrit, avec la ligne « plan vali
   assert.ok(valider < ecrire, "la validation précède l'écriture");
   assert.match(deroule, /« plan validé »/);
 });
+
+test("règles communes : rondes de 4 questions, réponses libres en texte, mode découverte écrit une fois", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.doesNotMatch(regles, /Poser les questions une par une/);
+  assert.match(regles, /une ronde de 4 questions au plus/);
+  assert.match(regles, /réponse libre/);
+  assert.doesNotMatch(regles, /`\/pulse:pr branche <US-XXX>` avant `\/pulse:implement`/);
+  const definitions = TEXTES.filter(({ texte }) => /\*\*Mode découverte\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
+  assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-communes.md"]);
+});
