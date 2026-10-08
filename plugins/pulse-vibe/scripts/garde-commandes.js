@@ -70,6 +70,12 @@ const MESSAGES = {
   brancheDistante: "Pulse demande votre accord : cette commande supprime une branche sur le dépôt distant.",
   config: "Pulse demande votre accord : cette commande change la configuration de Git au-delà du nom et de l'e-mail.",
   suppression: "Pulse demande votre accord : cette commande supprime des fichiers et des dossiers entiers, sans passer par la corbeille.",
+  suppressionTotale:
+    "Pulse refuse cette suppression : elle viserait tout le disque, votre dossier personnel ou tout le projet. " +
+    "À la place : nommez précisément le dossier à supprimer (par exemple `rm -r dist`).",
+  commandeMasquee:
+    "Pulse demande votre accord : le nom de cette commande n'est connu qu'au moment de l'exécution, Pulse ne peut donc pas vérifier ce qu'elle fait. " +
+    "Écrivez plutôt la commande en clair.",
   baseDeDonnees:
     "Pulse demande votre accord : cette commande peut écraser ou supprimer des données de la base, qui est peut-être celle du site en ligne. " +
     "Préférez une migration relue et testée en local.",
@@ -229,9 +235,23 @@ function configEcrit(reste) {
   return !(cle === "user.name" || cle === "user.email");
 }
 
+const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME|\$\{HOME\}|\$HOME\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\/]?|[A-Za-z]:[\/]\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
+const COMMANDES_SUPPRESSION = new Set(["rm", "remove-item", "ri", "del", "erase", "rd", "rmdir", "unlink"]);
+const estRecursif = (a) => a === "--recursive" || (/^-[a-zA-Z]{1,4}$/.test(a) && /[rR]/.test(a)) || /^-r(e(c(u(r(s(e)?)?)?)?)?)?$/i.test(a) || /^\/s$/i.test(a);
+
 function suppressionRecursive(cibles, constats) {
+  if (cibles.some((c) => CIBLES_TOTALES.test(c))) return constats.push([REFUS, MESSAGES.suppressionTotale]);
   const aRisque = cibles.filter((c) => !DOSSIERS_RECONSTRUITS.has(c.replace(/[\\/]+$/, "").split(/[\\/]/).pop()));
   if (aRisque.length) constats.push([ACCORD, MESSAGES.suppression]);
+}
+
+function reglesSuppression(c, constats) {
+  const cibles = c.args.filter((a) => !estOption(a) && a !== "--" && !/^\/[a-zA-Z]$/.test(a));
+  const recursif = c.args.some(estRecursif);
+  const motif = cibles.some((a) => /[*?]/.test(a));
+  if ((recursif || motif) && cibles.some((a) => CIBLES_TOTALES.test(a))) constats.push([REFUS, MESSAGES.suppressionTotale]);
+  else if (c.viaFind || c.viaXargs || (c.apresTube && !cibles.length)) constats.push([ACCORD, MESSAGES.suppression]);
+  else if (recursif || motif) suppressionRecursive(cibles, constats);
 }
 
 function reglesSql(texte, constats) {
@@ -249,6 +269,10 @@ function reglesSql(texte, constats) {
 
 function appliquerRegles(c, cwd, constats) {
   const { cmd, args } = c;
+  if (c.dialecte !== "powershell" && c.brut.startsWith("$")) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+  if (COMMANDES_SUPPRESSION.has(cmd)) reglesSuppression(c, constats);
+  if (c.code !== undefined && /\b(rmSync|rmdirSync|unlinkSync|rimraf|rmtree|remove_tree|rm_rf|os\.remove|os\.unlink|unlink|rmdir)\b/.test(c.code))
+    constats.push([ACCORD, MESSAGES.suppression]);
   if (LECTEURS.has(cmd) && args.some((a) => !estOption(a) && estFichierEnv(a))) constats.push([REFUS, MESSAGES.lectureEnv]);
 
   switch (cmd) {
@@ -261,9 +285,6 @@ function appliquerRegles(c, cwd, constats) {
     case "bun":
       // Script du projet qui écrase la base (pnpm db:push, npm run db:reset…).
       if (args.some((w) => /^db:(push|reset|drop)\b/.test(w))) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
-      break;
-    case "rm":
-      if (args.some((a) => a === "--recursive" || /^-[a-zA-Z]*[rR][a-zA-Z]*$/.test(a))) suppressionRecursive(args.filter((a) => !estOption(a) && a !== "--"), constats);
       break;
     case "rimraf":
       suppressionRecursive(args.filter((a) => !estOption(a)), constats);

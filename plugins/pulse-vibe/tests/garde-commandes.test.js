@@ -340,3 +340,37 @@ test("chemins à crochets, texte cité et options courtes groupées", () => {
   confirmation("git checkout -fq main");
   confirmation("git switch -fq main");
 });
+
+// ------------------------------------------------------------ Suppressions
+
+test("suppression de tout le disque, du dossier personnel ou du projet : refus", () => {
+  for (const c of ["rm -rf /", "rm -rf ~", 'rm -rf "$HOME"', "rm -rf .", "rm -rf *", "rm -f *"]) {
+    const d = refus(c);
+    assert.match(d.raison, /nommez précisément/);
+  }
+  refusPs("Remove-Item C:\ -Recurse -Force");
+});
+
+test("suppressions PowerShell et cmd : confirmation", () => {
+  confirmationPs("Remove-Item src -Recurse -Force");
+  confirmationPs("ri -r -fo src");
+  confirmationPs("Get-ChildItem src | Remove-Item");
+  confirmation('cmd //c "rd /s /q src"');
+  confirmation('cmd //c "del /s /q src"');
+  passePs("Remove-Item dist -Recurse -Force");
+  passePs("Remove-Item notes.txt -Force");
+});
+
+test("suppressions déguisées : confirmation", () => {
+  confirmation("$(echo rm) -rf src");
+  confirmation('x=rm; $x -rf src');
+  confirmation("busybox rm -rf src");
+  confirmation(`node -e "require('fs').rmSync('src',{recursive:true})"`);
+  confirmation(`python -c "import shutil; shutil.rmtree('src')"`);
+  confirmation(`perl -e 'system("rm -rf src")'`);
+  confirmation("find . -name '*.js' -exec rm {} +");
+  confirmation("ls src | xargs rm");
+  confirmation("rm -f src/*.js");
+  passe("rm notes.txt");
+  passe("rm -rf node_modules .next");
+});
