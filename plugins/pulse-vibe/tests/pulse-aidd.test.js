@@ -305,3 +305,14 @@ test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () =>
 test("contexte ui et plan : les motifs d'écrans", () => {
   for (const commande of ["ui", "plan"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Motifs d'écrans ====="), commande);
 });
+
+test("identite extraire et maquettes verifier : relaient vers leurs scripts", () => {
+  const vide = fsP.mkdtempSync(path.join(osP.tmpdir(), "pulse-relais-"));
+  const i = lancer("identite", "extraire", vide);
+  assert.strictEqual(i.status, 0, i.stdout + i.stderr);
+  assert.match(i.stdout, /non trouvé/);
+  fsP.writeFileSync(path.join(vide, "p.html"), "<html><body><h1 style=\"background-clip: text\">A</h1></body></html>\n");
+  const m = lancer("maquettes", "verifier", path.join(vide, "p.html"));
+  assert.strictEqual(m.status, 1, m.stdout + m.stderr);
+  assert.match(m.stdout, /Texte en dégradé de couleur/);
+});
