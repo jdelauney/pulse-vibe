@@ -415,3 +415,57 @@ test("créer .env à partir de l'exemple : passe", () => {
   passe("cp .env.example .env");
   passe("cat .env.example");
 });
+
+// ------------------------------------------------------------ Services, bases, outils Pulse
+
+test("dépôt distant supprimé ou rendu public : refus", () => {
+  refus("gh repo delete moi/projet --yes");
+  refus("gh repo edit --visibility public");
+  refus("gh repo edit --visibility=public");
+  refus("gh repo create projet --public");
+  refus("glab repo delete moi/projet");
+  passe("gh repo create projet --private --source=. --remote=origin");
+});
+
+test("suppression par l'API, variables chez l'hébergeur, base Neon : confirmation", () => {
+  confirmation("gh api -X DELETE repos/moi/projet/branches/x");
+  confirmation("gh api --method delete /repos/x");
+  confirmation("vercel env rm DATABASE_URL production");
+  confirmation("vercel env add STRIPE_KEY production");
+  confirmation("neonctl branches delete dev");
+});
+
+test("SQL envoyé par un tube ou un fichier : lu ou confirmé", () => {
+  confirmation("echo 'DROP TABLE users' | psql $DATABASE_URL");
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-sql-"));
+  fs.writeFileSync(path.join(dir, "drop.sql"), "DROP TABLE users;");
+  fs.writeFileSync(path.join(dir, "lecture.sql"), "SELECT 1;");
+  confirmation("psql -f drop.sql", dir);
+  confirmation("psql < drop.sql", dir);
+  passe("psql -f lecture.sql", dir);
+});
+
+test("outils Pulse qui modifient la production : confirmation", () => {
+  confirmation("pulse-aidd secrets envoyer STRIPE_KEY --env production");
+  confirmation("pulse-aidd secrets redeployer");
+  confirmation("bash bin/pulse-aidd secrets generer BETTER_AUTH_SECRET");
+  confirmation("pulse-aidd search-console deconnecter");
+  passe("pulse-aidd secrets inventaire");
+  passe("pulse-aidd contexte implement");
+});
+
+test("liste blanche : les commandes ordinaires de la méthode passent", () => {
+  const dir = depot({ avecCommit: true });
+  for (const c of [
+    "git add src/a.js",
+    'git commit -m "feat(T3): permet de cocher une tâche"',
+    "git push -u origin feat/us-003-cocher",
+    "git push",
+    "npm run build",
+    "pnpm drizzle-kit generate",
+    "cp .env.example .env",
+    "rm -rf node_modules",
+    "gh pr create --draft --title x --body y",
+  ])
+    passe(c, dir);
+});

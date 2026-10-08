@@ -82,6 +82,18 @@ const MESSAGES = {
   production:
     "Pulse demande votre accord : cette commande publie ou modifie directement le site en ligne. " +
     "D'habitude, la mise en ligne passe par `git push` (le déploiement continu publie la nouvelle version).",
+  depotSupprime:
+    "Pulse refuse la suppression d'un dépôt distant depuis la conversation : elle est définitive. " +
+    "Si vous le voulez vraiment, faites-le vous-même sur le site du dépôt (Settings, puis Danger Zone).",
+  depotPublic:
+    "Pulse refuse de rendre un dépôt public depuis la conversation : tout son historique, secrets compris, deviendrait lisible par tous, sans retour possible. " +
+    "À la place : créez ou gardez le dépôt privé (`--private`). Pour le publier plus tard, vérifiez d'abord l'historique avec `/pulse:security`, puis changez la visibilité vous-même sur le site du dépôt.",
+  apiSuppression: "Pulse demande votre accord : cette commande supprime quelque chose sur le site du dépôt.",
+  variablesHebergeur:
+    "Pulse demande votre accord : cette commande change une variable chez l'hébergeur ; le site en ligne l'utilisera au prochain déploiement. " +
+    "Préférez `/pulse:secrets`, qui ne montre jamais la valeur.",
+  secretsHebergeur: "Pulse demande votre accord : cette commande crée, envoie ou retire un secret chez l'hébergeur, ou redéploie le site en ligne.",
+  deconnexion: "Pulse demande votre accord : cette commande supprime l'accès Search Console enregistré sur ce poste.",
   fusion: "Pulse demande votre accord : cette commande fusionne une demande de fusion. D'habitude, la fusion se fait par vous, sur le site du dépôt.",
   lectureEnv:
     "Pulse garde le contenu des fichiers .env hors de la conversation : ils contiennent les secrets du projet. " +
@@ -281,6 +293,16 @@ function reglesSql(texte, constats) {
       }
 }
 
+function reglesSqlFichier(fichier, cwd, constats) {
+  try {
+    const chemin = path.resolve(cwd, fichier);
+    if (fs.statSync(chemin).size > 1024 * 1024) return constats.push([ACCORD, MESSAGES.baseDeDonnees]);
+    reglesSql(fs.readFileSync(chemin, "utf8"), constats);
+  } catch (e) {
+    constats.push([ACCORD, MESSAGES.baseDeDonnees]);
+  }
+}
+
 // ---------------------------------------------------------------- Analyse
 
 function appliquerRegles(c, cwd, constats) {
@@ -329,13 +351,39 @@ function appliquerRegles(c, cwd, constats) {
     case "supabase":
       if (args[0] === "db" && (args[1] === "reset" || args[1] === "push")) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
       break;
-    case "psql":
-      for (let k = 0; k < args.length; k++) if (args[k] === "-c" || args[k] === "--command") reglesSql(args[k + 1], constats);
-      for (const e of c.entrees) reglesSql(e, constats);
+    case "psql": {
+      let sqlConnu = false;
+      for (let k = 0; k < args.length; k++) {
+        if (args[k] === "-c" || args[k] === "--command") {
+          reglesSql(args[k + 1], constats);
+          sqlConnu = true;
+        } else if (args[k] === "-f" || args[k] === "--file") {
+          reglesSqlFichier(args[k + 1], cwd, constats);
+          sqlConnu = true;
+        } else if (args[k].startsWith("--file=")) {
+          reglesSqlFichier(args[k].slice(7), cwd, constats);
+          sqlConnu = true;
+        }
+      }
+      for (const e of c.entrees) {
+        reglesSql(e, constats);
+        sqlConnu = true;
+      }
+      for (const f of c.lectures) {
+        reglesSqlFichier(f, cwd, constats);
+        sqlConnu = true;
+      }
+      if (!sqlConnu && c.apresTube) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
+      break;
+    }
+    case "neonctl":
+    case "neon":
+      if (args.some((a) => ["delete", "reset", "restore"].includes(a))) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
       break;
     case "vercel": {
       const prod = args.some((a) => a === "--prod" || a === "--production" || a === "--target=production") || args.join(" ").includes("--target production");
-      if ((prod && args[0] !== "build") || ["promote", "rollback", "remove", "rm"].includes(args[0])) constats.push([ACCORD, MESSAGES.production]);
+      if ((prod && args[0] !== "build" && args[0] !== "env") || ["promote", "rollback", "remove", "rm"].includes(args[0])) constats.push([ACCORD, MESSAGES.production]);
+      if (args[0] === "env" && ["add", "update", "rm", "remove"].includes(args[1])) constats.push([ACCORD, MESSAGES.variablesHebergeur]);
       break;
     }
     case "netlify":
@@ -346,10 +394,19 @@ function appliquerRegles(c, cwd, constats) {
         constats.push([ACCORD, MESSAGES.production]);
       break;
     case "gh":
-      if (args[0] === "pr" && args[1] === "merge") constats.push([ACCORD, MESSAGES.fusion]);
+    case "glab": {
+      const [a0, a1] = args;
+      if ((cmd === "gh" && a0 === "pr" && a1 === "merge") || (cmd === "glab" && a0 === "mr" && a1 === "merge")) constats.push([ACCORD, MESSAGES.fusion]);
+      if (a0 === "repo" && a1 === "delete") constats.push([REFUS, MESSAGES.depotSupprime]);
+      const publicDemande = args.includes("--public") || args.some((a, j) => (a === "--visibility" && /^public$/i.test(args[j + 1] || "")) || /^--visibility=public$/i.test(a));
+      if (a0 === "repo" && ["create", "edit"].includes(a1) && publicDemande) constats.push([REFUS, MESSAGES.depotPublic]);
+      if (cmd === "gh" && a0 === "api" && args.some((a, j) => (["-X", "--method"].includes(a) && /^delete$/i.test(args[j + 1] || "")) || /^(-X|--method=)delete$/i.test(a)))
+        constats.push([ACCORD, MESSAGES.apiSuppression]);
       break;
-    case "glab":
-      if (args[0] === "mr" && args[1] === "merge") constats.push([ACCORD, MESSAGES.fusion]);
+    }
+    case "pulse-aidd":
+      if (args[0] === "secrets" && ["generer", "envoyer", "elaguer", "redeployer"].includes(args[1])) constats.push([ACCORD, MESSAGES.secretsHebergeur]);
+      if (args[0] === "search-console" && args[1] === "deconnecter") constats.push([ACCORD, MESSAGES.deconnexion]);
       break;
     default:
       break;
