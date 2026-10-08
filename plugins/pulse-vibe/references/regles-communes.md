@@ -77,6 +77,7 @@ Dans le projet de la personne :
 - **Ancien projet** (`docs/specs/`, `docs/plans/`, `docs/revues/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
 
 Les modèles de ces fichiers sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
+Les outils `pulse-aidd` et `pulse-pile-<id>` se lancent avec l'outil Bash (Git Bash sous Windows), où s'appliquent les autorisations des commandes ; depuis PowerShell, leur relais `.cmd` les lance aussi.
 La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite` (elles sont aussi incluses dans `pulse-aidd contexte implement`).
 L'état des scénarios des specs (testés, sans test, manuels) s'affiche avec `pulse-aidd scenarios`. La méthode de tests (stratégie, écriture, niveaux, TDD, scénarios Gherkin) s'affiche avec `pulse-aidd tests` ; la procédure des tests d'abord (option `-t`) avec `pulse-aidd reference tests-automatiques.md`.
 Les conventions Git (commits, branches, demandes de fusion) s'affichent avec `pulse-aidd reference git.md`.

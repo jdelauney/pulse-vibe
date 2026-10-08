@@ -370,3 +370,9 @@ test("installer-hook n'installe rien si scripts/verifier.js est une ancienne ver
   assert.match(r.stdout, /ancienne version/);
   assert.ok(!fs.existsSync(path.join(d, ".git", "hooks", "pre-commit")));
 });
+
+test("pulse-aidd.cmd fonctionne depuis cmd.exe (Windows)", { skip: process.platform !== "win32" }, () => {
+  const r = spawnSync("cmd.exe", ["/d", "/c", path.join(RACINE, "bin", "pulse-aidd.cmd"), "modele", "lexique.md"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length > 0);
+});

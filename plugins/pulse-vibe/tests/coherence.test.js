@@ -161,3 +161,14 @@ test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit 
   const rapide = lire(RACINE, "references", "securite", "rapide.md");
   for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de securite/rapide.md`);
 });
+
+test("chaque outil de bin/ a son relais .cmd pour PowerShell et cmd", () => {
+  for (const p of PLUGINS) {
+    const bin = path.join(p, "bin");
+    for (const f of lister(bin).filter((x) => !x.includes("."))) {
+      const relais = path.join(bin, `${f}.cmd`);
+      assert.ok(fs.existsSync(relais), `${path.relative(DEPOT, relais)} manquant`);
+      assert.match(lire(relais), new RegExp(`"%~dp0${f}" %\*`), `${f}.cmd relaie vers ${f}`);
+    }
+  }
+});
