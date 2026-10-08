@@ -64,6 +64,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:security` | « Mon appli est-elle bien protégée ? » (`rapide` pour un contrôle en 2 minutes) |
 | `/pulse:secrets` | « Où sont mes clés ? » ; `renouveler <NOM>` pour changer une clé sans couper le site ; `fuite` dès qu'une clé a été vue (dépôt, conversation, écran) : on la révoque d'abord |
 | `/pulse:seo` | « Mon site est-il trouvable sur Google et par les assistants IA ? » (`bases`, `textes`, `ia`, `lancer`) |
+| `/pulse:rediger accueil` | « Je veux le texte de ma page, dans la voix du site, sans tics d'IA » (`--humaniser` : réécrire un texte existant) |
 | `/pulse:perf` | « Mon site est-il rapide pour mes visiteurs ? » (`corriger` : améliorer, avec un avant/après chiffré ; `suivre` : vrais visiteurs et vérification chaque semaine) |
 | `/pulse:ui audit` puis `/pulse:ui polish` | « Mon interface est-elle soignée, lisible, cohérente ? » |
 | `/pulse:auto-fix` | « Il y a des erreurs rouges dans le code » |

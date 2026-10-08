@@ -27,7 +27,7 @@ Un anti-pattern est un défaut fréquent, reconnaissable à l'œil. Gravités : 
 | Texte de remplissage générique au lieu de contenus réalistes | 🟠 | « Lorem ipsum », « Titre ici », « Description » | Des contenus plausibles, dans le vocabulaire du glossaire |
 | Long texte centré | 🟢 | Paragraphe de plus de trois lignes aligné au centre | Aligner à gauche ; centrer seulement un titre ou une phrase courte |
 | Icône seule sans nom accessible | 🟢 | Bouton avec un pictogramme, sans texte ni nom lu par les lecteurs d'écran | Ajouter un nom accessible précis, ou un libellé visible |
-| Tiret cadratin décoratif dans les textes | 🟢 | Longs tirets utilisés comme ponctuation à la place de virgules ou de points | Phrases courtes, virgules, deux-points |
+| Tiret cadratin décoratif dans les textes | 🟢 | Longs tirets utilisés comme ponctuation à la place de virgules ou de points | Phrases courtes, virgules, deux-points (règle PON-002 du détecteur, `pulse-aidd textes verifier`) |
 | Emoji en guise d'icônes d'interface | 🟢 | Pictogrammes colorés du système dans les boutons ou les titres | Un jeu d'icônes unique et cohérent, ou le texte seul |
 
 Une règle peut être enfreinte **volontairement** si `docs/design.md` le justifie (section « À faire / à éviter ») ; la raison y est écrite.

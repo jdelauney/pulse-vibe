@@ -79,5 +79,5 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 - **Libellés d'action précis** : verbe + objet. Dès qu'on peut dire ce qui se passe, nommez-le plutôt qu'écrire « Valider » ou « Découvrir » seuls.
 - **Messages d'erreur** : ils disent ce qui s'est passé et comment s'en sortir.
 - **Des mots précis** qui disent ce que fait l'outil, plutôt que du **jargon marketing**.
-- **Ponctuation simple** (virgules, points, deux-points) à la place du **tiret cadratin** (le long tiret) décoratif.
+- **Textes de plus d'une phrase** (accroches, présentations) : contrôle des tics d'écriture IA, `pulse-aidd textes verifier` (règles : `references/redaction/regles.md` ; ponctuation, lexique, rythme).
 - **Vocabulaire du glossaire** du projet (`aidd_docs/memory/glossary.md`) : les mêmes mots partout.

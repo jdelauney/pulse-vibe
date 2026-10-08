@@ -40,6 +40,7 @@ Ce qu'un client (ou un assistant IA) doit trouver écrit en clair, sur l'accueil
 ## 5. Les textes générés par l'IA
 
 - Chaque texte proposé par Pulse est un **brouillon** : la personne le relit et vérifie chaque fait (prix, horaires, adresses, chiffres, noms) avant publication.
+- Avant de montrer un texte proposé, le passer au contrôle des tics d'écriture IA : `pulse-aidd textes verifier -` (texte sur l'entrée standard) ; corriger les erreurs. Pour le texte complet d'une page : `/pulse:rediger`.
 - Relire aussi ce qui ne se voit pas : titres, descriptions, textes alternatifs des images, données structurées.
 - Publier peu de pages utiles plutôt que beaucoup de pages semblables (politique « scaled content abuse », 2026-08-28).
 - Les avis et témoignages sont réels, avec l'accord de leur auteur ; jamais inventés.

@@ -41,7 +41,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - **Anti-pattern** : parcourir chaque entrée de la liste de `design/anti-patterns.md`.
    - **État manquant** : comparer avec le tableau « Composants et états obligatoires » de `design/regles-ui.md`.
    - **Accessibilité** : contraste (le calculer quand les couleurs sont lisibles dans le code), focus visible, étiquettes des champs, noms accessibles des boutons et icônes, cibles tactiles.
-   - **Textes** : textes d'interface (clarté, ton, messages d'erreur, boutons).
+   - **Textes** : textes d'interface (clarté, ton, messages d'erreur, boutons). Si `docs/textes/*.md` existent, lancer `pulse-aidd textes verifier` sur chacun et reporter les erreurs restantes.
 5. Classer chaque constat : 🔴 bloquant, 🟠 important, 🟢 finition.
 6. Relever 3 points qui vont bien (« Ce qui va bien »).
 

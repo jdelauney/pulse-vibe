@@ -94,6 +94,8 @@ contexte() {
       fiche ;;
     search-console)
       afficher "Pour Search Console" "$REF/contexte/search-console.md" ;;
+    rediger)
+      afficher "Pour /pulse:rediger" "$REF/contexte/rediger.md" ;;
     *) ;;
   esac
 }
