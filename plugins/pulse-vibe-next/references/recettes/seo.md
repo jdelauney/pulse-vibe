@@ -112,7 +112,7 @@ Pour un commerce avec une adresse physique, ajouter sur l'accueil ou la page « 
 
 ### 3. Chaque page publique
 
-Les pages publiques vivent dans `app/(public)/` ; les métadonnées de chaque page passent par `metadonneesDePage()`.
+Les pages publiques vivent dans `app/(public)/` ; les métadonnées de chaque page passent par `metadonneesDePage()`. Les pages d'authentification font exception : fiche, règle 49.
 
 ```tsx
 // app/(public)/tarifs/page.tsx
@@ -135,7 +135,7 @@ export default function Tarifs() {
 }
 ```
 
-Puis ajouter la page à `PAGES_PUBLIQUES` de `app/sitemap.ts` (`{ chemin: "/tarifs" }`). Une page qui a sa propre image de partage la passe en `image` (`{ url, width: 1200, height: 630, alt }`).
+Puis ajouter la page à `PAGES_PUBLIQUES` de `app/sitemap.ts` (`{ chemin: "/tarifs" }`). Les pages d'authentification font exception : fiche, règle 49. Une page qui a sa propre image de partage la passe en `image` (`{ url, width: 1200, height: 630, alt }`).
 
 ### 4. Les pages connectées hors de Google
 
@@ -510,7 +510,7 @@ Fonctionnalité: Référencement des pages publiques
   - Tests : « robots.txt cite le sitemap par son adresse complète », « Une adresse inconnue répond « introuvable » » (bout en bout, `e2e/referencement.spec.ts` du squelette)
   - Action manuelle : la personne saisit `SITE_URL` dans Vercel (Production) quand le domaine est définitif
 - [ ] **Tn+1 – Les textes des pages publiques** · US-XXX
-  - Objectif : chaque page publique a le titre et la description validés dans `docs/seo.md`
+  - Objectif : chaque page publique a le titre et la description validés dans `docs/seo.md` (sauf les pages d'authentification : fiche, règle 49)
   - Dépend de : Tn, `/pulse:seo textes`
   - Fichiers : à modifier : chaque `app/(public)/<page>/page.tsx`, `app/sitemap.ts` · à créer : `app/(public)/tarifs/__tests__/metadonnees.test.ts` (une page par test)
   - Vérification : US-XXX critère 1 – `pulse-aidd seo http://localhost:3000 --chemins …` : titres et descriptions présents et uniques
