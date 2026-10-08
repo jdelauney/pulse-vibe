@@ -77,7 +77,7 @@ erDiagram
 
 - **Secrets** : {{nom de chaque variable, côté serveur ou public ; ou « aucun »}}
 - **Formulaires** : {{contrôles côté serveur qui produisent le résultat décrit dans la spec}}
-- **Checklist** : {{identifiants S1 à S12 qui s'appliquent}}
+- **Checklist** : {{identifiants S1 à S13 qui s'appliquent}}
 
 ### Fichiers
 

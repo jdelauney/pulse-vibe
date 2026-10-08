@@ -48,7 +48,7 @@ Chaque exemple porte, sur la ligne du dessus, des étiquettes qui le relient au 
 | `@US-003-1` | Illustre le critère d'acceptation n° 1 de l'US-003 (au moins une par exemple) |
 | `@unitaire`, `@integration`, `@bout-en-bout` | Niveau de test automatique prévu, selon `tests/strategie.md` §2 |
 | `@manuel` | Vérifié par le test manuel seulement (rendu visuel, confort, parcours non automatisé) |
-| `@securite` | Règle d'accès ou de protection (checklist S1 à S12) |
+| `@securite` | Règle d'accès ou de protection (checklist S1 à S13) |
 
 Chaque critère d'acceptation de l'US est couvert par au moins un exemple.
 

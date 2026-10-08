@@ -1,6 +1,6 @@
 # Sécurité du code
 
-Points S1 à S12 : `references/checklist-securite.md`. Où se trouvent les données, qui peut lire et écrire quoi, et où c'est vérifié : « Données et contrôle d'accès » de `docs/technical.md`. Pour l'API exacte de la technologie retenue (validation, session, réglages de l'authentification) : documentation officielle, consultée à chaque fois.
+Points S1 à S13 : `references/checklist-securite.md`. Où se trouvent les données, qui peut lire et écrire quoi, et où c'est vérifié : « Données et contrôle d'accès » de `docs/technical.md`. Pour l'API exacte de la technologie retenue (validation, session, réglages de l'authentification) : documentation officielle, consultée à chaque fois.
 
 ## Principe directeur
 

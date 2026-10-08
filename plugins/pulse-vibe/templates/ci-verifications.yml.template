@@ -10,6 +10,8 @@ etapes:
     commande: node scripts/verifier.js   # nécessite Node.js sur la machine de CI
   - nom: Installer les dépendances
     commande: "{{Installer les dépendances}}"
+  - nom: Auditer les dépendances   # une faille de gravité élevée ou critique fait échouer la CI
+    commande: "{{Auditer les dépendances}}"
   - nom: Contrôles automatiques
     commande: "{{Contrôles automatiques}}"
   - nom: Tests

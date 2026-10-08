@@ -23,7 +23,7 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 
 | Argument | Action |
 |---|---|
-| vide | Installer la CI, ou la mettre à jour si elle existe (§ 1 à 6), puis proposer la protection (§ 7) |
+| vide | Installer la CI, ou la mettre à jour si elle existe (§ 1 à 6), puis proposer la protection (§ 7) et les mises à jour des dépendances (§ 8) |
 | `proteger` | Seulement protéger la branche principale (§ 7) ; la CI doit déjà exister |
 
 ## Prérequis
@@ -56,9 +56,10 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
   2. installer l'environnement d'exécution de la pile retenue, à la version de « Pile retenue » ;
   3. installer les dépendances (« installer ») ;
   4. contrôler les secrets et les scénarios : `node scripts/verifier.js` (Node.js doit être disponible : l'installer dans une étape si la pile utilise un autre langage que JavaScript) ;
-  5. les contrôles automatiques (lint, format, types) ;
-  6. les tests (« tester ») ;
-  7. la construction (« construire »).
+  5. auditer les dépendances (« Auditer les dépendances » : une faille de gravité élevée ou critique fait échouer la CI) ;
+  6. les contrôles automatiques (lint, format, types) ;
+  7. les tests (« tester ») ;
+  8. la construction (« construire »).
 - **Versions fixées** pour chaque action ou image utilisée, comme pour une bibliothèque (règle commune 8).
 - **Secrets hors du fichier**. Si la construction a besoin d'une variable d'environnement, écrire seulement son **nom** ; la personne saisit elle-même la valeur dans les réglages du dépôt (« secrets » ou « variables » de la CI), guidée pas à pas. La valeur va uniquement dans ces réglages, jamais dans la conversation.
 - Montrer le fichier complet, expliquer chaque bloc en une ligne, puis l'écrire avec accord. Supprimer ensuite `scripts/ci-verifications.exemple.yml`, devenu inutile.
@@ -87,6 +88,14 @@ Proposer (AskUserQuestion) : « Exiger que les contrôles passent avant toute fu
 - Guider la personne pas à pas dans les réglages du dépôt, d'après la documentation officielle du fournisseur (règles de protection de branche) : la protection se règle sur le site, par la personne.
 - Selon l'offre du fournisseur, cette protection peut être indisponible pour un dépôt **privé** gratuit : le vérifier dans sa documentation et le dire simplement. La CI reste utile : la croix rouge reste visible sur chaque demande.
 - Avec la protection, l'envoi direct sur la branche principale peut être refusé : le rappeler si des plans ont « **Envoi** : branche principale », et proposer de passer en mode PR (`/pulse:refine US-XXX "changer l'envoi"`).
+
+## 8. Mises à jour des dépendances (facultatif)
+
+Proposer (AskUserQuestion) : « Recevoir chaque semaine une demande de fusion pour les nouvelles versions des dépendances (Recommandé) » / « Plus tard ». Expliquer : « Un robot du dépôt propose les nouvelles versions, failles corrigées comprises ; la CI vérifie chacune avant que vous l'acceptiez. »
+
+- GitHub : Dependabot (fichier `.github/dependabot.yml`) ; GitLab ou autre fournisseur : Renovate. Écrire la configuration d'après la documentation officielle de l'outil : l'écosystème de la pile retenue, et celui des actions de la CI ; fréquence hebdomadaire.
+- Montrer le fichier, expliquer chaque bloc en une ligne, puis l'enregistrer et l'envoyer comme en § 5.
+- Chaque demande reçue se relit et se fusionne par la personne, sur le site du dépôt, une fois la CI verte.
 
 ## Fin
 

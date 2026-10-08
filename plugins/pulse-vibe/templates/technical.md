@@ -69,6 +69,7 @@ flowchart LR
 | Lancer en local | {{commande, et adresse à ouvrir}} |
 | Tester | {{commande ou « aucune »}} |
 | Contrôles automatiques (lint, format, types) | {{commandes ou « aucune »}} |
+| Auditer les dépendances | {{commande ou « aucune » : l'outil d'audit des vulnérabilités de la pile}} |
 | Construire | {{commande ou « aucune »}} |
 | Déployer | {{automatique à chaque envoi sur la branche principale, ou commande}} |
 

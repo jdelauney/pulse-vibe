@@ -50,6 +50,7 @@ drizzle/                  migrations
 | Lancer en local | `npm run dev`, puis ouvrir http://localhost:3000 |
 | Tester | `npm test` (bout en bout : `npm run test:e2e`) |
 | Contrôles automatiques (lint, format, types) | `npm run check` et `npm run typecheck` (corriger le format : `npm run format`) |
+| Auditer les dépendances | `npm audit --omit=dev --audit-level=high` |
 | Construire | `npm run build` |
 | Déployer | automatique à chaque envoi sur `main` (Vercel) ; migrations de base : `npm run db:migrate` |
 

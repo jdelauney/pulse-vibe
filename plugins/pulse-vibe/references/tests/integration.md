@@ -16,7 +16,7 @@ Un test d'intégration prouve que **plusieurs morceaux réels fonctionnent ensem
 |---|---|
 | **Accès aux données** (dépôts, requêtes) | Enregistrement puis relecture, filtres et tris, transactions (tout ou rien), contraintes (unicité, champ obligatoire), cas d'erreur |
 | **Services externes** (adaptateurs d'API) | Traduction entre le format du service et les types du projet, erreurs renvoyées, délai dépassé, nouvelles tentatives |
-| **Points d'entrée serveur** (routes, actions serveur) | Validation des entrées, contrôle d'accès, réponse, codes d'erreur, contrôles S1–S12 de `qualite/securite-code.md` |
+| **Points d'entrée serveur** (routes, actions serveur) | Validation des entrées, contrôle d'accès, réponse, codes d'erreur, contrôles S1–S13 de `qualite/securite-code.md` |
 | **Code exécuté côté serveur** | Avec la base de test et un utilisateur de test : un cas « connecté et autorisé », un cas « non connecté », un cas « pas le droit » |
 | **Configuration** | L'application démarre avec la configuration attendue, et refuse de démarrer quand un réglage obligatoire manque |
 | **Passage entre couches** | Une action complète côté serveur : entrée reçue → règle appliquée → donnée enregistrée → réponse |

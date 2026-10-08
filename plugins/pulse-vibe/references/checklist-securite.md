@@ -20,6 +20,7 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 - Le contrôle d'accès est vérifié **côté serveur ou par des règles au niveau de la base**, pour chaque table ou collection, tel que décrit dans « Données et contrôle d'accès ».
 - Chaque table ou collection a des règles explicites : qui peut lire, créer, modifier, supprimer. Les données privées ont des règles restreintes, jamais « tout le monde peut tout faire ».
 - Un utilisateur voit et modifie seulement **ses** données, sauf rôle autorisé (admin, manager).
+- Les données de la base sont **sauvegardées** automatiquement (fonction de l'hébergeur de la base), et la **restauration** a été essayée une fois ; la procédure est écrite dans « Données et contrôle d'accès » de `docs/technical.md`.
 - Test du cambrioleur : connecté en « Client B », peut-on voir ou modifier une donnée du « Client A » en changeant un identifiant dans l'adresse ou dans la requête ?
 
 ## S4 – Pages et actions réservées (si l'application a des comptes ou des rôles)
@@ -30,7 +31,10 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 ## S5 – Validation des entrées
 - Les champs obligatoires, les longueurs maximales et les formats sont contrôlés **côté serveur** (code serveur, contraintes de la base : non nul, vérification, longueur) en plus de l'interface. Sans serveur, la validation dans l'interface suffit, puisque les données restent sur l'appareil.
 - Seuls les champs attendus sont acceptés (liste blanche).
-- Test : envoyer un formulaire vide, un texte très long, des caractères spéciaux (`<script>`, `' OR 1=1 --`, émojis).
+- Les requêtes à la base sont **paramétrées** (requêtes préparées, ou constructeur de requêtes de la pile) : une saisie reste toujours une valeur, séparée du texte de la requête.
+- Une adresse de retour reçue dans une requête (`next`, `redirect`, `returnTo`…) mène seulement vers une page du site : chemin relatif, ou domaine d'une liste blanche (sinon : redirection ouverte, utile à l'hameçonnage).
+- Le serveur appelle seulement des adresses prévues : une adresse fournie par l'utilisateur (aperçu de lien, import) passe par une liste blanche de domaines, et les adresses internes (`localhost`, réseau privé, `169.254.169.254`) restent hors d'atteinte (SSRF).
+- Test : envoyer un formulaire vide, un texte très long, des caractères spéciaux (`<script>`, `' OR 1=1 --`, émojis) ; ajouter `?redirect=https://exemple.com` à l'adresse de connexion et vérifier qu'on reste sur le site.
 
 ## S6 – Affichage sans injection (XSS)
 - Les données saisies par un utilisateur sont **affichées comme du texte**, avec le mécanisme d'affichage sûr de la technologie retenue.
@@ -66,6 +70,13 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 ## S12 – En-têtes de sécurité (si l'application est servie par le web)
 - Le site envoie des en-têtes de sécurité (CSP, HSTS, X-Frame-Options ou `frame-ancestors`, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy), configurés là où la pile retenue le permet : voir `/pulse:security entetes`.
 
+## S13 – CSRF, sessions et cookies (si l'application a des comptes ou des actions qui modifient des données)
+- Chaque action qui modifie des données vérifie l'origine de la requête : jeton anti-CSRF, ou contrôle de l'en-tête `Origin` par le framework (voir sa documentation). Une requête `GET` laisse les données intactes.
+- Les cookies de session portent `HttpOnly`, `Secure` et `SameSite` (`Lax` ou `Strict`), avec une durée de vie limitée.
+- La session expire après une période d'inactivité, change d'identifiant à la connexion, et devient inutilisable côté serveur à la déconnexion.
+- Un webhook reçu (paiement, service externe) est accepté seulement après vérification de sa **signature** avec le secret fourni par le service.
+- Test : se déconnecter, revenir en arrière avec le navigateur, puis recharger : la page privée redemande la connexion.
+
 ---
 
 ## Fiche du cambrioleur (tests manuels, sans compétence technique)
@@ -78,3 +89,4 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 4. **Secrets** : sur le dépôt en ligne, ouvrez les fichiers du projet. Voyez-vous une clé, un mot de passe ou un fichier d'environnement ?
 5. **Formulaire malmené** : envoyez un formulaire vide, un texte énorme, et `<img src=x onerror=alert(1)>`.
 6. **Doublon** : essayez de faire deux fois la même chose en même temps (enregistrer deux fois la même opération, payer deux fois).
+7. **Déconnexion** : déconnectez-vous, revenez en arrière avec le navigateur, puis rechargez la page. Voyez-vous encore vos données ?

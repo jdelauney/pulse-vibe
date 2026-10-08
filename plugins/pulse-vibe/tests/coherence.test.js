@@ -150,7 +150,7 @@ test("fins de ligne LF dans bin/, scripts/ et hooks/ de chaque plugin", () => {
 });
 
 test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit dans securite/entetes.md", () => {
-  const s12 = lire(RACINE, "references", "checklist-securite.md").split("## S12")[1].split("\n---")[0];
+  const s12 = lire(RACINE, "references", "checklist-securite.md").split("## S12")[1].split(/\n## S13|\n---/)[0];
   const entetes = lire(RACINE, "references", "securite", "entetes.md");
   const noms = [...s12.matchAll(/\b[A-Z][a-zA-Z]*(?:-[A-Z][a-zA-Z]*)+\b/g)].map((m) => m[0]);
   assert.ok(noms.includes("Cross-Origin-Opener-Policy"), "S12 cite Cross-Origin-Opener-Policy");
@@ -311,4 +311,29 @@ test("mise en ligne : tests, contrôle rapide de sécurité avant la première f
   assert.match(deploy.split("## 6. Clore")[1], /`\/pulse:security audit`/);
   const motifs = motifsBash(fichier);
   for (const m of ["git ls-files *", "git grep *", "curl -sI *"]) assert.ok(motifs.includes(m), `allowed-tools de deploy : Bash(${m})`);
+});
+
+test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes paramétrées, redirections, SSRF, sauvegardes ; audit des dépendances exigé", () => {
+  const checklist = lire(RACINE, "references", "checklist-securite.md");
+  const section = (id) => (checklist.split(`\n## ${id} `)[1] || "").split(/\n## |\n---/)[0];
+  assert.match(section("S3"), /\*\*restauration\*\*/);
+  assert.match(section("S5"), /\*\*paramétrées\*\*/);
+  assert.match(section("S5"), /redirection ouverte/);
+  assert.match(section("S5"), /SSRF/);
+  const s13 = section("S13");
+  for (const mot of ["CSRF", "`Origin`", "`HttpOnly`", "`Secure`", "`SameSite`", "expire", "**signature**"]) assert.ok(s13.includes(mot), `S13 : ${mot}`);
+  assert.match(checklist, /\n7\. \*\*Déconnexion\*\*/);
+  const auditeur = lire(RACINE, "agents", "security-auditor.md");
+  assert.match(auditeur, /S8 vaut ✅ seulement avec cette sortie/);
+  assert.match(auditeur, /\*\*S13\*\*/);
+  assert.match(lire(RACINE, "templates", "securite.md"), /\| S13 CSRF, sessions et cookies \|/);
+  assert.match(lire(RACINE, "templates", "technical.md"), /\| Auditer les dépendances \|/);
+  assert.match(lire(RACINE, "templates", "ci-verifications.yml.template"), /\{\{Auditer les dépendances\}\}/);
+  const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
+  assert.match(cicd, /auditer les dépendances \(« Auditer les dépendances »/);
+  assert.match(cicd, /## 8\. Mises à jour des dépendances/);
+  assert.match(cicd, /Dependabot/);
+  assert.match(cicd, /Renovate/);
+  // Plus aucune mention de l'ancienne étendue de la checklist.
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /S1\s*(à|–|-)\s*S12\b/.test(texte)).map(({ fichier }) => fichier), []);
 });
