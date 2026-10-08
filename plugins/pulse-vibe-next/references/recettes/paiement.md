@@ -4,7 +4,7 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/index.ts` (`getDb()`, type `Db`), `src/config/env.ts` (`envServeur()`), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `src/lib/logger.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
+- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/db-client.ts` (`getDb()`, type `Db`), `src/config/env.ts` (objet `env`, t3 env), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `src/lib/logger.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
 - La recette `connexion` est faite (`pulse-aidd pile recette connexion`). Elle fournit :
   - `utilisateurConnecte()` dans `src/features/compte/queries/utilisateur-connecte.query.ts` (renvoie `{ id, nom }`, ou redirige vers `/connexion` sans session) ;
   - `actionConnectee` dans `src/lib/safe-action.ts` (`ctx.utilisateur` = `{ id, nom }`) ;
@@ -26,11 +26,18 @@
 
 `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` reste inutile : la page de paiement est hébergée par Stripe et le navigateur y arrive par une redirection. Elle servira seulement si un formulaire de carte est intégré au site.
 
-Ajoutez ces lignes au schéma de `src/config/env.ts` (`schemaEnvServeur`) :
+Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
 
 ```ts
-  STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
-  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+    STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
+    STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+```
+
+Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
+
+```ts
+  STRIPE_SECRET_KEY: "sk_test_cle-de-test",
+  STRIPE_WEBHOOK_SECRET: "whsec_secret-de-test",
 ```
 
 Ajoutez les deux noms, **sans valeur**, à `.env.example` :
@@ -298,7 +305,7 @@ import type {
   Offre,
   ResultatConfirmation,
 } from "@src/core/paiement/commande.entity";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { and, eq } from "drizzle-orm";
 import { commande } from "./commande.table";
 import { evenementStripe } from "./evenement-stripe.table";
@@ -396,7 +403,7 @@ Le client Stripe et la vérification de signature vivent dans `src/adapters/paym
 ```ts
 // src/adapters/payment/payment.adapter.ts
 import "server-only";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import type { EvenementPaiement } from "@src/core/paiement/commande.entity";
 import type { PasserellePaiement } from "@src/core/paiement/passerelle-paiement.port";
 import { echec, ok } from "@src/core/shared/result";
@@ -407,7 +414,7 @@ let client: Stripe | undefined;
 
 // Client créé à la première utilisation : la construction du site n'a pas besoin de la clé.
 function obtenirClient(): Stripe {
-  client ??= new Stripe(envServeur().STRIPE_SECRET_KEY);
+  client ??= new Stripe(env.STRIPE_SECRET_KEY);
   return client;
 }
 
@@ -501,7 +508,7 @@ export const passerellePaiement: PasserellePaiement = {
   // La signature porte sur les octets exacts du corps : il arrive brut, jamais relu ni transformé.
   lireEvenement(corps, signature) {
     const stripe = obtenirClient();
-    const secret = envServeur().STRIPE_WEBHOOK_SECRET;
+    const secret = env.STRIPE_WEBHOOK_SECRET;
     let evenement: Stripe.Event;
     try {
       evenement = stripe.webhooks.constructEvent(corps, signature, secret);
@@ -540,9 +547,9 @@ L'action assemble le use-case avec le repository et l'adapter, puis redirige ver
 "use server";
 
 import { passerellePaiement } from "@src/adapters/payment/payment.adapter";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import { ouvrirPaiement } from "@src/core/paiement/use-cases/ouvrir-paiement.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { commandeRepository } from "@src/db/paiement/commande.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { headers } from "next/headers";
@@ -553,7 +560,7 @@ export const payerAction = actionConnectee.action(async ({ ctx }) => {
   // Adresse du site qui appelle l'action (Next.js vérifie qu'elle est bien la sienne),
   // sinon l'adresse publique déclarée pour better-auth.
   const origine =
-    (await headers()).get("origin") ?? envServeur().BETTER_AUTH_URL;
+    (await headers()).get("origin") ?? env.BETTER_AUTH_URL;
   const { url } = await ouvrirPaiement(
     { commandes: commandeRepository(getDb()), paiement: passerellePaiement },
     {
@@ -575,7 +582,7 @@ Dans un Route Handler de Next.js 16, le corps brut s'obtient avec `await requete
 // src/features/paiement/webhooks/stripe-paiement.webhook.ts
 import { passerellePaiement } from "@src/adapters/payment/payment.adapter";
 import { confirmerPaiement } from "@src/core/paiement/use-cases/confirmer-paiement.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { commandeRepository } from "@src/db/paiement/commande.repository";
 import { reponseErreur } from "@src/lib/errors/reponse-erreur";
 import { logger } from "@src/lib/logger";
@@ -631,7 +638,7 @@ La lecture de la commande passe par une query. Le statut vient de la base, jamai
 ```ts
 // src/features/paiement/queries/commande-par-session.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { commandeRepository } from "@src/db/paiement/commande.repository";
 
 /** La commande de cette personne pour cette session de paiement, ou null (inconnue, ou à quelqu'un d'autre). */
@@ -1227,10 +1234,10 @@ vi.mock("stripe", async (importOriginal) => {
   return { ...reel, default: StripeDouble };
 });
 vi.mock("@src/config/env", () => ({
-  envServeur: () => ({
+  env: {
     STRIPE_SECRET_KEY: "sk_test_cle-de-test",
     STRIPE_WEBHOOK_SECRET: SECRET_DE_TEST,
-  }),
+  },
 }));
 
 const { passerellePaiement } = await import("../payment.adapter");
@@ -1444,7 +1451,7 @@ Le repository reçoit la base de test : aucune doublure de session ni de `getDb(
 ```ts
 // src/db/paiement/__tests__/commande.repository.test.ts
 import type { ResultatConfirmation } from "@src/core/paiement/commande.entity";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { user } from "@src/db/compte/auth.table";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -1590,12 +1597,12 @@ const etat = vi.hoisted(() => ({
 }));
 
 vi.mock("@src/config/env", () => ({
-  envServeur: () => ({
+  env: {
     STRIPE_SECRET_KEY: "sk_test_cle-de-test",
     STRIPE_WEBHOOK_SECRET: SECRET_DE_TEST,
-  }),
+  },
 }));
-vi.mock("@src/db", () => ({ getDb: () => ({}) }));
+vi.mock("@src/db/db-client", () => ({ getDb: () => ({}) }));
 vi.mock("@src/lib/logger", () => ({ logger: etat.journal }));
 vi.mock("@src/core/paiement/use-cases/confirmer-paiement.use-case", () => ({
   confirmerPaiement: etat.confirmer,
@@ -1708,8 +1715,8 @@ Le parcours sur la page de Stripe reste un test manuel : cette page appartient �
 - **Événements en double ou dans le désordre** : Stripe peut renvoyer un événement (jusqu'à trois jours en mode réel, trois fois en quelques heures en bac à sable) et ne garantit pas l'ordre. La table `evenement_stripe` absorbe les doublons.
 - **Paiements différés** (prélèvement, virement) : `checkout.session.completed` arrive avec `payment_status` à `unpaid` ; la commande passe en `payee` à l'événement `checkout.session.async_payment_succeeded`.
 - **`payment_method_types`** : retiré de la création de session dans stripe 23. Les moyens de paiement se règlent dans le tableau de bord Stripe.
-- **Clé lue pendant la construction** : l'adapter crée le client à la première utilisation ; `next build` passe sans `STRIPE_SECRET_KEY`.
-- **Les deux variables Stripe deviennent obligatoires** : `envServeur()` valide tout le schéma à sa première lecture. Renseignez-les dans `.env` (une valeur factice commençant par `sk_` et `whsec_` suffit tant qu'aucun paiement réel n'a lieu) avant de lancer le site.
+- **Client Stripe créé à la première utilisation** : la construction ne contacte jamais Stripe.
+- **Les deux variables Stripe deviennent obligatoires** : `env` les valide au chargement. Renseignez-les dans `.env` (une valeur factice commençant par `sk_` et `whsec_` suffit tant qu'aucun paiement réel n'a lieu) avant de construire ou de lancer le site. Construction de vérification sans elles (CI) : `SKIP_ENV_VALIDATION=1 npm run build`.
 - **Commande « en_attente » restée seule** : si Stripe échoue après la création de la commande, la ligne reste « en_attente », sans session. Elle est invisible pour la personne et ne passe jamais « payee » ; une tâche de ménage pourra l'effacer plus tard.
 - **Événement ignoré, puis renvoyé** : un événement dont le montant ne correspond pas est noté comme reçu, la commande reste « en_attente ». Si Stripe le renvoie, la réponse est « deja_traite » : la commande ne change pas. Corrigez la cause (montant, commande) puis relancez un **nouveau** paiement.
 - **Un webhook en panne répond 500 ou 503** : Stripe renvoie le message plus tard ; la table `evenement_stripe` garantit qu'il ne compte qu'une fois.

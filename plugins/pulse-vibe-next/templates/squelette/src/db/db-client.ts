@@ -1,6 +1,6 @@
 import "server-only";
 import { neonConfig, Pool } from "@neondatabase/serverless";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import ws from "ws";
@@ -17,7 +17,7 @@ let db: Db | undefined;
 /** La base de l'application, créée à la première demande (pas pendant la construction). */
 export function getDb(): Db {
   if (!db) {
-    const pool = new Pool({ connectionString: envServeur().DATABASE_URL });
+    const pool = new Pool({ connectionString: env.DATABASE_URL });
     db = drizzle({ client: pool });
   }
   return db;

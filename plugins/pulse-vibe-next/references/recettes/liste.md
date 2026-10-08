@@ -4,7 +4,7 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `next.config.ts` contient `cacheComponents: true`, `partialPrefetching: true` et `reactCompiler: true` ; `src/db/index.ts` exporte `getDb()` et le type `Db` ; `src/core/shared/result.ts` fournit `Result`, `ok()` et `echec()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`, et remplace `server-only` par un module vide.
+- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `next.config.ts` contient `cacheComponents: true`, `partialPrefetching: true` et `reactCompiler: true` ; `src/db/db-client.ts` exporte `getDb()` et le type `Db` ; `src/core/shared/result.ts` fournit `Result`, `ok()` et `echec()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`, et remplace `server-only` par un module vide.
 - La recette `connexion` est faite (`pulse-aidd pile recette connexion`). Elle fournit :
   - `utilisateurConnecte()` dans `src/features/compte/queries/utilisateur-connecte.query.ts` (`server-only`, `React.cache`) : renvoie `{ id, nom }`, ou redirige vers `/connexion` sans session ; elle s'appelle dans un container placé sous `<Suspense>` ;
   - `actionConnectee` dans `src/lib/safe-action.ts`, qui fournit `ctx.utilisateur` = `{ id, nom }` et garde la forme d'erreurs de validation par défaut de next-safe-action (forme « formatée » : `{ champ: { _errors: [...] } }`) ;
@@ -282,7 +282,7 @@ import type {
   StatutFacture,
   TriFactures,
 } from "@src/core/factures/facture.entity";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { decalagePourPage } from "@src/lib/helpers/pagination/pagination";
 import { and, asc, desc, eq, ilike, type SQL } from "drizzle-orm";
 import { factures } from "./facture.table";
@@ -473,7 +473,7 @@ La lecture va directement au repository, sans use-case (architecture.md §6). El
 ```ts
 // src/features/factures/queries/lister-factures.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { factureRepository } from "@src/db/factures/facture.repository";
 import { TAILLE_PAGE } from "../constants/factures";
 import type { FiltresFactures } from "../schemas/filtres.schema";
@@ -499,7 +499,7 @@ L'identifiant du propriétaire vient **de la session** (`ctx.utilisateur.id`), j
 "use server";
 
 import { creerFacture } from "@src/core/factures/use-cases/creer-facture.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { factureRepository } from "@src/db/factures/facture.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { refresh } from "next/cache";
@@ -1180,7 +1180,7 @@ Ajoutez cette méthode à l'objet renvoyé par `factureRepository` (`src/db/fact
 ```ts
 // src/features/factures/queries/total-impaye.query.ts
 import "server-only";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { factureRepository } from "@src/db/factures/facture.repository";
 
 export async function totalImpaye(utilisateurId: string): Promise<number> {
@@ -1194,7 +1194,7 @@ import { getAuth } from "@src/adapters/auth/auth.adapter";
 import { totalImpaye } from "@src/features/factures/queries/total-impaye.query";
 
 export async function GET(request: Request) {
-  // La requête est lue avant getAuth() : `next build` passe ainsi sans variables d'environnement.
+  // La requête est lue avant getAuth() : la route est rendue à la demande, jamais pré-rendue.
   const enTetes = request.headers;
   const session = await getAuth().api.getSession({ headers: enTetes });
   if (!session) {
@@ -1659,7 +1659,7 @@ Chaque test reçoit une base PGlite neuve (Postgres en mémoire) avec les vraies
 ```ts
 // src/db/factures/__tests__/facture.repository.test.ts
 import type { StatutFacture } from "@src/core/factures/facture.entity";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { user } from "@src/db/compte/auth.table";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
@@ -1930,7 +1930,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 - **Test qui échoue sur « 120,50 € »** : `Intl` insère une espace insécable avant « € ». Comparez après `replace(/\s/g, " ")`, ou avec `/120,50\s€/` dans Playwright.
 - **Test d'intégration qui plante sur `server-only`** : vérifiez l'alias `server-only` de `vitest.config.ts` (squelette), ou ajoutez `vi.mock("server-only", () => ({}))` en tête du fichier de test.
 - **Test d'intégration refusé par `tsc` (« not assignable to type 'Db' »)** : utilisez la base de `creerBaseDeTest()` du squelette, déjà typée `Db`.
-- **`next build` échoue sur une route API avec « Variables d'environnement invalides »** : lisez `request.headers` sur sa propre ligne, avant `getAuth()`, comme dans `total-impaye/route.ts`. La lecture de la requête arrête le pré-rendu.
+- **`next build` échoue sur une route API pendant le pré-rendu** : lisez `request.headers` sur sa propre ligne, avant `getAuth()`, comme dans `total-impaye/route.ts`. La lecture de la requête arrête le pré-rendu.
 - **TanStack Query et Cache Components** : un composant qui utilise `useQuery` au premier affichage va sous `<Suspense>`, sinon la construction signale une lecture de l'heure courante.
 - **Zustand** : créez le magasin dans un fournisseur (`useState(() => creer…())`) ; un magasin global serait partagé entre les visiteurs côté serveur.
 

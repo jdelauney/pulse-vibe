@@ -27,7 +27,7 @@ app/                      routes ; (connecte)/ pour les pages réservées ; api/
 proxy.ts                  redirection vers la connexion
 src/
   core/<domaine>/         règles métier pures : entity, rules, errors, ports, use-cases/
-  db/<domaine>/           tables (.table.ts) et repositories (.repository.ts) ; db/index.ts : getDb()
+  db/<domaine>/           tables (.table.ts) et repositories (.repository.ts) ; db/db-client.ts : getDb()
   features/<domaine>/     actions/, queries/, schemas/, components/{containers,sections,composites,elements}/, hooks/
   adapters/<service>/     services externes (auth, e-mail, fichiers, paiement)
   components/             ui/ (shadcn), shared/

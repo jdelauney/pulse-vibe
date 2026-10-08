@@ -20,6 +20,9 @@ const ANCIENS = [
   [/features\/[^\s`/]+\/(actions|queries|schemas|regles|constantes|filtres|session)\.ts/, "un fichier par action/query dans actions/, queries/… (architecture.md)"],
   [/\bregles\.ts\b/, "src/core/<domaine>/<sujet>.rules.ts"],
   [/db\.query\./, "constructeur de requêtes db.select().from(table)"],
+  [/\benvServeur\b/, 'import { env } from "@src/config/env" (t3 env)'],
+  [/from ["']@src\/db["']/, "@src/db/db-client"],
+  [/\bdb\/index\.ts\b/, "src/db/db-client.ts"],
 ];
 
 function fichiers() {
@@ -39,6 +42,8 @@ for (const fichier of fichiers()) {
   test(`${path.relative(RACINE, fichier)} : aucun ancien chemin`, () => {
     const fautes = [];
     fs.readFileSync(fichier, "utf8").split("\n").forEach((ligne, i) => {
+      // Les notes de migration citent volontairement les anciens noms.
+      if (/créé avant pulse-vibe-next/.test(ligne)) return;
       for (const [motif, attendu] of ANCIENS) if (motif.test(ligne)) fautes.push(`ligne ${i + 1} (${attendu}) : ${ligne.trim().slice(0, 120)}`);
     });
     assert.deepStrictEqual(fautes, []);

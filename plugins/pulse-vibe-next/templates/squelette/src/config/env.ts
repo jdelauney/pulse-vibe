@@ -1,28 +1,17 @@
 import "server-only";
+import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
+import { optionsCommunes } from "./env-commun";
+import { envPublic } from "./env-public";
 
-// Variables d'environnement du serveur. Une recette qui en ajoute une la déclare ici.
-const schemaEnvServeur = z.object({
-  DATABASE_URL: z.url(),
+// Variables d'environnement du serveur, validées au chargement. Importer ce fichier et utiliser `env`
+// (les variables publiques d'env-public.ts y sont aussi). Un composant client qui l'importe fait
+// échouer la construction : il lit envPublic. Une recette qui ajoute un secret le déclare dans `server`.
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.url(),
+  },
+  extends: [envPublic],
+  experimental__runtimeEnv: {},
+  ...optionsCommunes,
 });
-
-export type EnvServeur = z.infer<typeof schemaEnvServeur>;
-
-let envValide: EnvServeur | undefined;
-
-/** Valide process.env à la première utilisation (pas au chargement), puis garde le résultat. */
-export function envServeur(): EnvServeur {
-  if (!envValide) {
-    const resultat = schemaEnvServeur.safeParse(process.env);
-    if (!resultat.success) {
-      const manquantes = resultat.error.issues
-        .map((i) => i.path.join("."))
-        .join(", ");
-      throw new Error(
-        `Variables d'environnement invalides ou manquantes : ${manquantes}`,
-      );
-    }
-    envValide = resultat.data;
-  }
-  return envValide;
-}

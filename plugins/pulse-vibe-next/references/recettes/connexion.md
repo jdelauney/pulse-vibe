@@ -4,7 +4,7 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/index.ts` (`getDb()`, type `Db`), `drizzle.config.ts` (lit `src/db/*/*.table.ts`), `src/config/env.ts` (`envServeur()`), `src/lib/logger.ts`, `src/lib/safe-action.ts` (`actionPublique`), `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
+- Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/db-client.ts` (`getDb()`, type `Db`), `drizzle.config.ts` (lit `src/db/*/*.table.ts`), `src/config/env.ts` (objet `env`, t3 env), `src/lib/logger.ts`, `src/lib/safe-action.ts` (`actionPublique`), `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
 - Une base Neon existe, avec ses deux adresses dans `.env` : `DATABASE_URL` (adresse « pooled », avec `-pooler`) et `DATABASE_URL_DIRECT` (adresse directe).
 - Paquets : ceux du squelette (`drizzle-orm`, `drizzle-kit`, `next-safe-action`, `zod`, `@tanstack/react-form`, `sonner`), plus `better-auth` à installer à sa dernière version : `npm install better-auth` (recette vérifiée avec 1.7.7). L'adaptateur Drizzle est inclus (`better-auth/adapters/drizzle`) : rien d'autre à installer.
 - Composants shadcn du squelette : `button`, `field`, `input`, `sonner`. Le layout racine (`app/layout.tsx`) affiche `<Toaster />` (`@src/components/ui/sonner`) ; ajoutez-le après `{children}` s'il manque.
@@ -69,45 +69,27 @@ Le secret est généré par `pulse-aidd secrets generer`, qui l'écrit dans `.en
 
 ### 1. Les variables validées
 
+Dans `src/config/env.ts`, ajouter dans `server: { … }` :
+
 ```ts
-// src/config/env.ts
-import "server-only";
-import { z } from "zod";
-
-// Variables d'environnement du serveur. Une recette qui en ajoute une la déclare ici.
-const schemaEnvServeur = z.object({
-  DATABASE_URL: z.url(),
-  BETTER_AUTH_SECRET: z.string().min(32),
-  // Rotation douce (better-auth 1.5 et plus), lue directement par better-auth : « 2:nouvelle,1:ancienne ».
-  // La première version doit faire 32 caractères au moins. BETTER_AUTH_SECRET reste pour relire l'existant.
-  BETTER_AUTH_SECRETS: z
-    .string()
-    .regex(/^\d+:[^,]{32,}(,\d+:[^,]+)*$/)
-    .optional(),
-  BETTER_AUTH_URL: z.url(),
-});
-
-export type EnvServeur = z.infer<typeof schemaEnvServeur>;
-
-let envValide: EnvServeur | undefined;
-
-/** Valide process.env à la première utilisation (pas au chargement), puis garde le résultat. */
-export function envServeur(): EnvServeur {
-  if (!envValide) {
-    const resultat = schemaEnvServeur.safeParse(process.env);
-    if (!resultat.success) {
-      const manquantes = resultat.error.issues
-        .map((i) => i.path.join("."))
-        .join(", ");
-      throw new Error(
-        `Variables d'environnement invalides ou manquantes : ${manquantes}`,
-      );
-    }
-    envValide = resultat.data;
-  }
-  return envValide;
-}
+    BETTER_AUTH_SECRET: z.string().min(32),
+    // Rotation douce (better-auth 1.5 et plus), lue directement par better-auth : « 2:nouvelle,1:ancienne ».
+    // La première version doit faire 32 caractères au moins. BETTER_AUTH_SECRET reste pour relire l'existant.
+    BETTER_AUTH_SECRETS: z
+      .string()
+      .regex(/^\d+:[^,]{32,}(,\d+:[^,]+)*$/)
+      .optional(),
+    BETTER_AUTH_URL: z.url(),
 ```
+
+Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
+
+```ts
+  BETTER_AUTH_SECRET: "x".repeat(32),
+  BETTER_AUTH_URL: "http://localhost:3000",
+```
+
+`env` valide ces variables dès le chargement : le code les lit par `env.BETTER_AUTH_SECRET`, etc. (import `import { env } from "@src/config/env"`).
 
 ### 2. Les tables de better-auth et leur migration
 
@@ -206,8 +188,8 @@ better-auth enregistre ses comptes et ses sessions dans la base du projet : son 
 ```ts
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
-import { envServeur } from "@src/config/env";
-import { type Db, getDb } from "@src/db";
+import { env } from "@src/config/env";
+import { type Db, getDb } from "@src/db/db-client";
 import {
   account,
   session,
@@ -254,7 +236,6 @@ let instance: Auth | undefined;
 /** L'instance de l'application, créée une seule fois, à la première demande. */
 export function getAuth(): Auth {
   if (!instance) {
-    const env = envServeur();
     instance = creerAuth(getDb(), {
       secret: env.BETTER_AUTH_SECRET,
       baseURL: env.BETTER_AUTH_URL,
@@ -267,7 +248,7 @@ export function getAuth(): Auth {
  * En-têtes de la requête, avec les cookies à jour.
  * Après une action qui change la session, Next.js réaffiche la page dans la même réponse :
  * headers() garde l'ancien cookie, cookies() donne le nouveau.
- * La requête est lue avant getAuth() : `next build` passe ainsi sans variables d'environnement.
+ * La requête est lue avant getAuth() : la page est rendue à la demande, jamais pré-rendue avec une session.
  */
 export async function enTetesDeSession(): Promise<Headers> {
   const enTetes = new Headers(await headers());
@@ -1548,7 +1529,7 @@ Commandes : `npm test` (unitaires et intégration), `npm run test:e2e` (bout en 
 
 ## Pièges connus
 
-- **`next build` échoue sur `/compte` avec « Variables d'environnement invalides »** : la requête doit être lue **avant** `getAuth()`. Passez par `enTetesDeSession()` (ou `const enTetes = await headers();` sur sa propre ligne), jamais `getAuth().api.getSession({ headers: await headers() })` dans une page.
+- **`next build` échoue sur `/compte` pendant le pré-rendu** : la requête doit être lue **avant** `getAuth()`. Passez par `enTetesDeSession()` (ou `const enTetes = await headers();` sur sa propre ligne), jamais `getAuth().api.getSession({ headers: await headers() })` dans une page.
 - **Renvoyé vers `/connexion` juste après « Mot de passe modifié »** : la page est réaffichée dans la réponse de l'action avec l'ancien cookie si la session est lue avec `headers()` seul. Lisez-la avec `enTetesDeSession()`, qui prend les cookies à jour.
 - **Libellé qui remplit le mauvais champ, ou champ introuvable dans Playwright** : Next.js garde les pages visitées, cachées, dans le document. Préfixez les `id` avec `useId()` ; dans Playwright, utilisez `champ(page, "…")` (libellé exact + `visible: true`).
 - **`npx auth generate` refuse de démarrer** (« Please remove import 'server-only' ») : utilisez le fichier `src/db/compte/auth.table.ts` de la recette. Pour un plugin better-auth qui ajoute des tables, lancez la CLI sur un fichier temporaire sans `server-only`, copiez les nouvelles tables dans `src/db/compte/auth.table.ts`, ajoutez-les à l'objet `schema` de `auth.adapter.ts`, puis supprimez le fichier temporaire.

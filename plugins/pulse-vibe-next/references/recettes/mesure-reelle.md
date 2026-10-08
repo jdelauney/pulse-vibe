@@ -4,7 +4,7 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`), mis en ligne sur Vercel (`/pulse:deploy`) : `src/db/index.ts` exporte `getDb()` et le type `Db` ; `src/lib/errors/reponse-erreur.ts` fournit `reponseErreur()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`.
+- Le squelette du pack est en place (`pulse-aidd pile squelette`), mis en ligne sur Vercel (`/pulse:deploy`) : `src/db/db-client.ts` exporte `getDb()` et le type `Db` ; `src/lib/errors/reponse-erreur.ts` fournit `reponseErreur()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`.
 - Deux options ; la personne choisit (AskUserQuestion), après lecture de leurs limites :
 
 | | A. Speed Insights de Vercel | B. Mesure envoyée au site lui-même |
@@ -243,7 +243,7 @@ La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tes
 import "server-only";
 import type { LigneP75 } from "@src/core/vitesse/mesure.entity";
 import type { MesureVitesseRepository } from "@src/core/vitesse/mesure-repository.port";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { lt, sql } from "drizzle-orm";
 import { mesuresVitesse } from "./mesure-vitesse.table";
 
@@ -303,7 +303,7 @@ Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il 
 ```ts
 // src/features/vitesse/webhooks/recevoir-mesure.webhook.ts
 import { enregistrerMesure } from "@src/core/vitesse/use-cases/enregistrer-mesure.use-case";
-import { getDb } from "@src/db";
+import { getDb } from "@src/db/db-client";
 import { mesureVitesseRepository } from "@src/db/vitesse/mesure-vitesse.repository";
 import { reponseErreur } from "@src/lib/errors/reponse-erreur";
 import type { NextRequest } from "next/server";
@@ -682,7 +682,7 @@ const enregistrees: unknown[] = [];
 let effacements = 0;
 let panne = false;
 
-vi.mock("@src/db", () => ({ getDb: () => ({}) }));
+vi.mock("@src/db/db-client", () => ({ getDb: () => ({}) }));
 vi.mock("@src/db/vitesse/mesure-vitesse.repository", () => ({
   mesureVitesseRepository: () => ({
     enregistrer: async (mesure: unknown) => {
@@ -785,7 +785,7 @@ describe("Réception des mesures", () => {
 ```ts
 // src/db/vitesse/__tests__/mesure-vitesse.repository.test.ts
 import { limiteDeConservation } from "@src/core/vitesse/mesure.rules";
-import type { Db } from "@src/db";
+import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import { mesureVitesseRepository } from "../mesure-vitesse.repository";

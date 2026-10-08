@@ -25,14 +25,22 @@
 | `SMTP_PASSWORD` | Mot de passe | vide | le mot de passe d'application (`VOTRE_MOT_DE_PASSE_ICI`) |
 | `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <adresse.du.projet@gmail.com>` |
 
-Ajoutez ces lignes au schéma de `src/config/env.ts`, après `BETTER_AUTH_URL` :
+Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts`, après `BETTER_AUTH_URL` :
 
 ```ts
-  SMTP_HOST: z.string().min(1),
-  SMTP_PORT: z.coerce.number().int().positive(),
-  SMTP_USER: z.string().optional(),
-  SMTP_PASSWORD: z.string().optional(),
-  MAIL_FROM: z.string().min(1),
+    SMTP_HOST: z.string().min(1),
+    SMTP_PORT: z.coerce.number().int().positive(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
+    MAIL_FROM: z.string().min(1),
+```
+
+Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
+
+```ts
+  SMTP_HOST: "localhost",
+  SMTP_PORT: "1025",
+  MAIL_FROM: "Mon projet <ne-pas-repondre@exemple.fr>",
 ```
 
 Ajoutez les cinq noms, **sans valeur**, à `.env.example` :
@@ -107,7 +115,7 @@ export type EnvoyeurEmail = (message: MessageEmail) => Promise<void>;
 ```ts
 // src/adapters/email/email.adapter.ts
 import "server-only";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import type { EnvoyeurEmail, MessageEmail } from "@src/core/compte/email.port";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { logger } from "@src/lib/logger";
@@ -117,7 +125,6 @@ let transporteur: Transporter | undefined;
 
 function obtenirTransporteur(): Transporter {
   if (!transporteur) {
-    const env = envServeur();
     transporteur = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
@@ -158,7 +165,7 @@ export const envoyerEmail: EnvoyeurEmail = async ({
 }: MessageEmail) => {
   try {
     const info = await obtenirTransporteur().sendMail({
-      from: envServeur().MAIL_FROM,
+      from: env.MAIL_FROM,
       to: a,
       subject: sujet,
       text: texte,
@@ -267,14 +274,14 @@ Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerA
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
 import { envoyerEmail } from "@src/adapters/email/email.adapter";
-import { envServeur } from "@src/config/env";
+import { env } from "@src/config/env";
 import type { EnvoyeurEmail } from "@src/core/compte/email.port";
 import {
   emailCompteExistant,
   emailMotDePasseOublie,
   emailVerificationAdresse,
 } from "@src/core/compte/emails-compte.rules";
-import { type Db, getDb } from "@src/db";
+import { type Db, getDb } from "@src/db/db-client";
 import {
   account,
   session,
@@ -366,7 +373,6 @@ let instance: Auth | undefined;
 /** L'instance de l'application, créée une seule fois, à la première demande. */
 export function getAuth(): Auth {
   if (!instance) {
-    const env = envServeur();
     instance = creerAuth(getDb(), {
       secret: env.BETTER_AUTH_SECRET,
       baseURL: env.BETTER_AUTH_URL,
@@ -382,7 +388,7 @@ export function getAuth(): Auth {
  * En-têtes de la requête, avec les cookies à jour.
  * Après une action qui change la session, Next.js réaffiche la page dans la même réponse :
  * headers() garde l'ancien cookie, cookies() donne le nouveau.
- * La requête est lue avant getAuth() : `next build` passe ainsi sans variables d'environnement.
+ * La requête est lue avant getAuth() : la page est rendue à la demande, jamais pré-rendue avec une session.
  */
 export async function enTetesDeSession(): Promise<Headers> {
   const enTetes = new Headers(await headers());
@@ -1213,11 +1219,11 @@ vi.mock("nodemailer", () => ({
   },
 }));
 vi.mock("@src/config/env", () => ({
-  envServeur: () => ({
+  env: {
     SMTP_HOST: "localhost",
     SMTP_PORT: 1025,
     MAIL_FROM: "Mon projet <ne-pas-repondre@exemple.fr>",
-  }),
+  },
 }));
 
 describe("Envoi d'e-mails", () => {

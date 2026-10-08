@@ -119,3 +119,19 @@ test("next.config.ts du squelette déclare les sept en-têtes de sécurité, san
   assert.doesNotMatch(config, /'nonce-|x-nonce/);
   assert.match(config, /browsing-topics=\(\)/);
 });
+
+test("le squelette type ses variables avec t3 env et nomme son client Drizzle", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const paquet = JSON.parse(fs.readFileSync(path.join(S, "package.json"), "utf8"));
+  assert.ok(paquet.dependencies["@t3-oss/env-nextjs"], "dépendance @t3-oss/env-nextjs");
+  const env = fs.readFileSync(path.join(S, "src", "config", "env.ts"), "utf8");
+  for (const attendu of ["createEnv", 'import "server-only"', "extends: [envPublic]", "...optionsCommunes", "export const env"]) assert.ok(env.includes(attendu), attendu);
+  const envPublic = fs.readFileSync(path.join(S, "src", "config", "env-public.ts"), "utf8");
+  assert.ok(!envPublic.includes("server-only"), "env-public.ts lisible par un composant client");
+  assert.ok(envPublic.includes("experimental__runtimeEnv"), "variables publiques lues en entier");
+  const commun = fs.readFileSync(path.join(S, "src", "config", "env-commun.ts"), "utf8");
+  for (const attendu of ["emptyStringAsUndefined: true", "SKIP_ENV_VALIDATION", "!process.env.VERCEL"]) assert.ok(commun.includes(attendu), attendu);
+  assert.ok(fs.existsSync(path.join(S, "src", "db", "db-client.ts")), "db-client.ts");
+  assert.ok(!fs.existsSync(path.join(S, "src", "db", "index.ts")), "plus de src/db/index.ts");
+  assert.ok(fs.existsSync(path.join(S, "tests", "helpers", "env-de-test.ts")), "aide VARIABLES_VALIDES");
+});
