@@ -10,7 +10,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 ## Règles absolues
 
 - Travailler en lecture seule.
-- Utiliser Bash seulement en lecture : `ls`, `git diff`, `git status`, `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd textes verifier`. `git add`, `git commit` et toute écriture reviennent à l'appelant.
+- Utiliser Bash seulement en lecture : `ls`, `git diff`, `git status`, `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd textes verifier`, `pulse-aidd maquettes verifier`. `git add`, `git commit` et toute écriture reviennent à l'appelant.
 - Juger uniquement ce qui a été lu. Citer le fichier et la ligne (`chemin:ligne`) pour chaque constat.
 - Un écart à la maquette retenue est **🟠**, sauf s'il empêche l'usage : alors **🔴**.
 - Marquer **❓ à vérifier à la main** ce qui se voit seulement en utilisant l'écran (animation, survol, lecteur d'écran, rendu réel).
@@ -36,7 +36,7 @@ Dans les deux modes, si `docs/technical.md` déclare un pack de pile (ligne « *
 
 1. Charger `pulse-aidd reference design/registres.md`, `design/regles-ui.md`, `design/anti-patterns.md`, `design/motifs.md`, `design/heuristiques.md` et `pulse-aidd modele revue-ui.md`.
 2. Lire `docs/design.md` ; puis la maquette retenue (mode code) ou la spec de l'US (mode maquette), s'ils existent.
-3. Lire chaque fichier de la cible.
+3. Lire chaque fichier de la cible. En mode maquette, lancer aussi `pulse-aidd maquettes verifier <cible>` et reporter chacun de ses constats dans sa rubrique (Anti-pattern, Accessibilité ou Fidélité au design), à sa ligne.
 4. Noter l'**Évaluation d'ensemble** : les 5 dimensions de `design/heuristiques.md`, chacune sur 10, avec une phrase qui cite ce qui se voit ; puis le total sur 50.
 5. Passer les 7 rubriques, dans cet ordre :
    - **Fidélité au design** : fidélité à `docs/design.md` et, en mode code, à la maquette (couleurs, polices, espacements, composants, registre) ; en mode maquette, chaque écran et chaque état demandés par la spec sont montrés, et les couleurs, polices et espacements passent par les variables `:root` du fichier, aux valeurs de `docs/design.md`. En mode code, une valeur de couleur, de police ou d'espacement écrite en dur dans un composant, au lieu de la valeur du fichier du thème (section « Dans le code » de `docs/design.md`), est un constat 🟠.

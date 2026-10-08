@@ -157,3 +157,13 @@ test("trois couches : règle dans regles-ui.md, nuances dans le modèle design.m
   const d = lireP("templates", "design.md");
   assert.ok(d.includes("| Nuance |") && d.includes("var(--"));
 });
+
+test("génération : designer, ui-critic et skill ui emploient directions, extraction et contrôle", () => {
+  const d = lireP("agents", "designer.md");
+  for (const attendu of ["pulse-aidd maquettes verifier", "design/directions.md", "var(--"]) assert.ok(d.includes(attendu), `designer : ${attendu}`);
+  const c = lireP("agents", "ui-critic.md");
+  assert.ok(c.includes("`pulse-aidd maquettes verifier`"), "ui-critic : commande autorisée");
+  assert.match(c, /mode maquette[^\n]*pulse-aidd maquettes verifier/, "ui-critic : lancé en mode maquette");
+  const u = lireP("skills", "ui", "SKILL.md");
+  for (const attendu of ["pulse-aidd identite extraire", "design/directions.md", "non trouvée"]) assert.ok(u.includes(attendu), `skill ui : ${attendu}`);
+});
