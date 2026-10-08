@@ -1,8 +1,8 @@
 ---
-description: Relecture indépendante d'une tâche (critères d'acceptation et sécurité), test manuel, puis corrections
+description: Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections
 argument-hint: "[T3 | <US-XXX> | tout]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *)
+allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:review – Relire, tester, corriger
@@ -17,7 +17,7 @@ Tâche demandée (facultative) : `$ARGUMENTS`
 
 ## Objectif
 
-Lancer une relecture indépendante du code, faire tester la personne elle-même, puis corriger. Expliquer en une phrase : « Relire avec un regard externe aide à détecter les erreurs oubliées ; valider ensuite en testant manuellement. »
+Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un relit le code, l'autre essaie l'application en marche), faire tester la personne elle-même, puis corriger. Expliquer en une phrase : « Un regard extérieur repère les oublis, et un essai en marche prouve que ça fonctionne ; votre test manuel le confirme ensuite. »
 
 ## Prérequis
 
@@ -29,34 +29,27 @@ Lancer une relecture indépendante du code, faire tester la personne elle-même,
 ### 1. Identifier la tâche
 
 - `T3` : cette tâche, cherchée dans tous les plans de `aidd_docs/tasks/` (les numéros sont uniques).
-- **une US** (`US-003`, son plan) : toutes ses tâches `[~]`, relues une par une (une délégation et un rapport par tâche, délégations lancées en parallèle), puis un test manuel par tâche.
+- **une US** (`US-003`, son plan) : toutes ses tâches `[~]`, relues une par une (un examen et un rapport par tâche, examens lancés en parallèle), puis un test manuel par tâche.
 - `tout` : la relecture porte sur l'ensemble du projet par rapport à toutes les US terminées.
 - vide : la tâche `[~]` ; s'il y en a zéro ou plusieurs, demander.
 
-Le plan qui contient la tâche, la spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) sont les documents de référence de la relecture.
+Les documents de référence sont ceux du § 1 de la référence « Examiner une tâche ».
 
-### 2. Lancer la relecture indépendante
+### 2. Lancer l'examen
 
-Utiliser l'outil Agent avec le sous-agent **`pulse:reviewer`**. Dans le message de délégation, indiquer :
-- la tâche (identifiant et titre) et la racine du projet ;
-- les documents à lire : le plan, la spec et l'US de la tâche (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, `aidd_docs/tasks/<epic>/US-XXX-<nom>.md`), `docs/user-stories.md` ;
-- la **checklist sécurité complète**, recopiée dans le message (le sous-agent voit seulement les fichiers du projet) ;
-- si elles existent, le chemin de `docs/design.md` et celui de la maquette citée par la spec ou la tâche (`docs/design/maquettes/US-XXX-<nom>/retenue/`) ;
-- le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »), et la consigne de charger les références de qualité avec `pulse-aidd qualite`.
-
-Si le sous-agent est indisponible, faire la relecture en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent reviewer`, en lecture seule pendant la relecture.
+Appliquer le § 2 de la référence « Examiner une tâche » : `pulse:reviewer` et `pulse:verifier` en parallèle, pour chaque tâche. Avec `tout` : seulement `pulse:reviewer`, sur l'ensemble du projet par rapport à toutes les US terminées ; la vérification en marche se fait tâche par tâche.
 
 ### 3. Enregistrer le rapport
 
-Écrire le rapport à côté du plan de la tâche, dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md` (structure : le modèle de rapport de revue ; créer le dossier au besoin). Si un rapport du même jour existe, ajouter un suffixe `-2`, `-3`. Avec `tout` : `docs/revue-projet-<AAAA-MM-JJ>.md`.
+Appliquer le § 3 de la référence « Examiner une tâche ». Avec `tout` : `docs/revue-projet-<AAAA-MM-JJ>.md`.
 
 ### 4. Présenter
 
-Présenter en quelques lignes : le verdict, le nombre de constats par gravité (Critique, Haute, Moyenne, Basse), et les 3 plus importants **traduits en langage simple** (ce que ça change pour l'utilisateur).
+Présenter en quelques lignes : le **rapport de réalisation** (règles communes § 4, construit à partir du tableau du verifier), le verdict, le nombre de constats par gravité (Critique, Haute, Moyenne, Basse), et les 3 plus importants **traduits en langage simple** (ce que ça change pour l'utilisateur).
 
 ### 5. Le test manuel par la personne
 
-Donner les étapes du test manuel du rapport, puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
+Donner les étapes du test manuel du rapport, en commençant par les critères ❓ du verifier, puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
 
 Noter la réponse dans la section « Test par la personne » du rapport (date, résultat, remarque).
 
@@ -64,10 +57,10 @@ Noter la réponse dans la section « Test par la personne » du rapport (date, r
 
 Traiter les constats selon « Les constats de relecture » des règles communes (§ 6) : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
 
-Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite relancer **une** relecture courte (même sous-agent) pour confirmer, et ajouter son résultat à la fin du même rapport, dans une section `## Relecture de contrôle` (date, verdict, points restants). Mettre à jour la ligne **Verdict** en tête du rapport. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement et proposer `/pulse:get-help`.
+Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche »). Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer `/pulse:get-help`.
 
 ### 7. Conclure
 
-Quand le verdict est ✅ (ou ⚠️ accepté par la personne, noté dans « Suite donnée aux constats ») **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
+Après un nouveau test manuel (suite à une correction), réécrire « Test par la personne » avec son dernier résultat. Quand la personne accepte un ⚠️, le noter dans « Suite donnée aux constats » et écrire la ligne **Verdict** en tête du rapport « ⚠️ … accepté par la personne » (ou ✅). Quand le verdict est ✅ (ou ⚠️ accepté par la personne, noté dans « Suite donnée aux constats ») **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.

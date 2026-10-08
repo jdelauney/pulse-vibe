@@ -1,8 +1,8 @@
 ---
-description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées (une spec = un plan, rangé à côté dans aidd_docs/tasks/<epic>/ ; découpage vertical, kanban)
+description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté dans aidd_docs/tasks/<epic>/), écrit une fois validé avec vous
 argument-hint: "<US-XXX [US-YYY…] | chemin de la spec>"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte refine) Bash(pulse-aidd etape refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr)
+allowed-tools: Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte refine) Bash(pulse-aidd etape refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr) Read Glob Grep Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Edit(docs/prd.md)
 ---
 
 # /pulse:plan – Le plan de réalisation
@@ -17,7 +17,7 @@ US (ou spec) à traiter : `$ARGUMENTS`
 
 ## Objectif
 
-Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spec `SPEC-US-XXX-<nom>.md` : la **conception technique** (comment réaliser ce que la spec demande) et la liste ordonnée des tâches qui réalisent cette spec (**une spec = un plan**), qui sert aussi de **tableau kanban** (`[ ]` à faire, `[~]` en cours, `[x]` terminé). Expliquer en une phrase : « On avance par petites tâches que vous pouvez tester une par une : l'IA se trompe moins, et vous gardez le contrôle. »
+Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spec `SPEC-US-XXX-<nom>.md` : la **conception technique** (comment réaliser ce que la spec demande) et la liste ordonnée des tâches qui réalisent cette spec (**une spec = un plan**), qui sert aussi de **tableau de suivi des tâches** (`[ ]` à faire, `[~]` en cours, `[x]` terminé). Expliquer en une phrase : « On avance par petites tâches que vous pouvez tester une par une : l'IA se trompe moins, et vous gardez le contrôle. »
 
 ## Prérequis
 
@@ -60,14 +60,14 @@ Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses 
    - les fichiers de leurs tâches (lignes « Fichiers ») sont distincts, y compris les fichiers partagés que l'une modifierait (mise en page, navigation, schéma des données, configuration) ;
    - elles créent et modifient des types d'information différents (« Informations manipulées » des specs, « Données » de la conception des plans) ;
    - toutes deux sont exemptes de tâche de mise en place du squelette et de tâche « Mettre en ligne le MVP ».
-   Dans le doute, les traiter comme dépendantes : un conflit de fusion coûte plus cher que le temps gagné. La relation vaut dans les deux sens : mettre à jour aussi la ligne « En parallèle avec » des plans concernés (seulement cette ligne, avec l'accord donné à l'étape 4).
+   Dans le doute, les traiter comme dépendantes : un conflit de fusion coûte plus cher que le temps gagné. La relation vaut dans les deux sens : mettre à jour aussi la ligne « En parallèle avec » des plans concernés (seulement cette ligne, avec l'accord donné à l'étape 3).
 
 ## Déroulé
 
 1. Remplir la conception technique, puis construire les tâches selon ces règles, avec le modèle de plan. Numéroter à la suite des autres plans (T1, T2… pour le premier ; Tn+1, Tn+2… si le plus grand numéro existant est Tn).
 2. Compter les tâches : viser **1 à 4** pour une US (hors mise en place et mise en ligne). Au-delà, le signaler et proposer de découper l'US en deux (`/pulse:us`, puis une spec et un plan pour chacune).
-3. Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`. **Ajouts proposés par Pulse** : un élément absent de la spec et de « Pile retenue » (bibliothèque, écran, règle, réglage), ou exigé par la checklist sécurité, se signale dans la section « Ajouts proposés par Pulse » du plan, validée avec le plan. Sinon, supprimer cette section.
-4. Présenter la conception technique en 5 lignes au plus (pile et services, stockage et contrôle d'accès, secrets, points de sécurité, fichiers principaux), puis le plan sous forme de kanban résumé (titres seulement), avec la ligne « En parallèle avec » et, si d'autres plans sont mis à jour en conséquence, lesquels ; demander validation. Si la personne veut des changements : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques.
+3. **Montrer, puis faire valider.** Présenter la conception technique en 5 lignes au plus (pile et services, stockage et contrôle d'accès, secrets, points de sécurité, fichiers principaux), puis la liste résumée des tâches (titres), avec la ligne « En parallèle avec » et, si d'autres plans sont mis à jour en conséquence, lesquels. **Ajouts proposés par Pulse** : un élément absent de la spec et de « Pile retenue » (bibliothèque, écran, règle, réglage), ou exigé par la checklist sécurité, se présente aussi, et se valide avec le plan. Demander (AskUserQuestion) : « Valider le plan (Recommandé) » / « Je veux changer quelque chose ». Si la personne veut des changements : les appliquer au plan présenté en respectant les règles ci-dessus, montrer ce qui change, puis redemander. Un changement de périmètre (une fonctionnalité en plus) se note « En attente » dans `docs/prd.md` ; il se traitera avec `/pulse:refine` une fois le plan écrit.
+4. Plan validé. Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (section « Ajouts proposés par Pulse » seulement s'il y en a), avec la ligne « plan validé » dans son journal (règles communes § 7), et les lignes « En parallèle avec » des autres plans concernés.
 5. Lancer `pulse-aidd guide` : il produit le guide de réalisation `docs/guide/` (les commandes à copier, tâche par tâche). Le présenter en une phrase : « Votre carnet de route est dans `docs/guide/index.md` ; il se met à jour tout seul. »
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:implement US-XXX <première tâche>` pour réaliser la première tâche, ou `/pulse:spirc US-XXX` pour enchaîner réalisation, relecture et commit tâche par tâche.
+Terminer avec le bloc de fin de commande. Prochaine étape recommandée : `/pulse:spirc US-XXX`, qui enchaîne réalisation, relecture et commit tâche par tâche ; ou, pour réaliser seulement la première tâche, `/pulse:implement US-XXX <première tâche>`.

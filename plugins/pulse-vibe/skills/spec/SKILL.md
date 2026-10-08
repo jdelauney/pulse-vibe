@@ -1,8 +1,8 @@
 ---
-description: Rédiger la spécification d'une user story (une US = une spec, rangée à côté de l'US dans aidd_docs/tasks/<epic>/) - l'intention seule, la solution étant laissée au plan - périmètre, hors objectifs, écrans, informations, règles, scénarios, « terminé quand » ; les trous marqués TBD ; verrouillée une fois validée
+description: Rédiger la spécification d'une user story (une US = une spec, rangée à côté de l'US dans aidd_docs/tasks/<epic>/) - l'intention seule, la solution étant laissée au plan - périmètre, hors objectifs, écrans, informations, règles, scénarios, « terminé quand » ; les points encore ouverts notés comme questions ; figée une fois validée
 argument-hint: "<US-XXX [US-YYY…] | \"description de la demande\">"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte spec) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *)
+allowed-tools: Bash(pulse-aidd contexte spec) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/user-stories.md) Edit(docs/prd.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
 
 # /pulse:spec – La spécification
@@ -83,6 +83,6 @@ La troisième (ce que vit l'utilisateur qui remplit mal un formulaire) se dédui
 1. **Ajouts proposés par Pulse** : relever tout ce que la spec ajoute au-delà de l'US et du PRD (un écran, un message, une confirmation, une règle d'accès) et le présenter dans la section « Ajouts proposés par Pulse », une ligne par ajout, avec « Pourquoi ça compte » en langage courant. Faire trancher chaque ligne (AskUserQuestion, choix multiple « Lesquels gardez-vous ? »). Un ajout refusé sort de la spec ; s'il reste une bonne idée, il va dans `docs/prd.md` (« En attente »).
 2. **Les `TBD:`** : poser les questions en suspens par rondes de 3 au plus (AskUserQuestion, réponse recommandée en premier quand un document la suggère) ; chaque réponse remplace son `TBD:`. Une question que la personne veut garder ouverte reste `TBD:`, et la spec reste en brouillon.
 3. Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Présenter un résumé en 5 lignes au plus (US, écrans, informations, hors objectifs, « terminé quand »), puis les **titres des scénarios**, groupés par règle (« Voici ce que l'outil devra faire, exemple par exemple »).
-4. **Validation** (AskUserQuestion) : « Valider et verrouiller » / « Corriger un scénario ou un point ». « Valider et verrouiller » est proposé seulement quand il ne reste aucun `TBD:` ; sinon, dire lesquels restent et proposer « La garder en brouillon ». À la validation, écrire `Statut : verrouillée le <date du jour>`. Plusieurs US demandées : passer à la suivante seulement après cette validation.
+4. **Validation** (AskUserQuestion) : « Valider (la spec ne bougera plus) » / « Corriger un scénario ou un point ». « Valider (la spec ne bougera plus) » est proposé seulement quand il ne reste aucun `TBD:` ; sinon, dire lesquels restent et proposer « La garder en brouillon ». À la validation, écrire `Statut : verrouillée le <date du jour>`. Plusieurs US demandées : passer à la suivante seulement après cette validation.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan US-XXX` pour une spec verrouillée (ou `/pulse:ui maquettes US-XXX` d'abord, si la spec a des écrans et que la personne veut les voir avant de construire) ; `/pulse:spec US-XXX` pour une spec restée en brouillon.

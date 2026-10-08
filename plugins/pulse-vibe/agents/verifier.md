@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Prouver qu'une tâche fonctionne vraiment, en l'exerçant sur sa surface réelle (page servie, requête, commande), critère par critère, avec des preuves, sans modifier le code ni les documents. Prépare le test manuel de la personne. Utilisé par /pulse:spirc (phase eXaminer).
+description: Prouver qu'une tâche fonctionne vraiment, en l'exerçant sur sa surface réelle (page servie, requête, commande), critère par critère, avec des preuves, sans modifier le code ni les documents. Prépare le test manuel de la personne. Utilisé par /pulse:review (et donc la boucle de /pulse:implement) et par /pulse:spirc (phase eXaminer).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 ---
 

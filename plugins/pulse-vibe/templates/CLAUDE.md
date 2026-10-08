@@ -2,7 +2,7 @@
 
 {{Description en une phrase, complétée après /pulse:brainstorm.}}
 
-> Au premier message d'une nouvelle conversation, commencez par : « AI-Driven Development ON ⚡ – Date : {date_du_jour}, TZ : {fuseau_horaire} ».
+> Au premier message d'une nouvelle conversation, commencez par : « Bonjour, Pulse est prêt. Nous sommes le {date_du_jour} ({fuseau_horaire}). »
 
 ## Le projet
 
@@ -16,7 +16,7 @@ Ce projet suit la **méthode Pulse** (plugin `pulse`). Les documents de référe
 | `docs/user-stories.md` | Le référentiel des user stories, découpées par epic, et le parcours utilisateur |
 | `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | Une user story : le comportement attendu et ses critères d'acceptation |
 | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | La spec de cette US (une US = une spec) : ce que l'utilisateur obtient (écrans, informations, règles, scénarios), verrouillée une fois validée |
-| `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | Le plan de cette spec (une spec = un plan) : les tâches et leur statut (kanban) |
+| `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | Le plan de cette spec (une spec = un plan) : les tâches et leur statut (à faire, en cours, terminé) |
 
 `/pulse:status` indique à tout moment où en est le projet et la prochaine étape ; `/pulse:init` prépare le projet et le met à niveau après une mise à jour de Pulse.
 
@@ -47,7 +47,7 @@ Le profil ci-dessous règle le niveau des explications. Il est rempli par `/puls
 - **Changements chirurgicaux** : le minimum qui répond à la tâche, en laissant le code plus propre qu'avant. Un problème hors de la tâche se signale en une ligne et reste en l'état.
 - **Vérifiez** chaque API, option ou comportement dans la documentation ou le code avant de l'employer. Vos connaissances peuvent être dépassées.
 - **Ajoutez une bibliothèque seulement avec l'accord de la personne**, et seulement si elle existe sous ce nom exact (version fixée).
-- **Commit et envoi vers le dépôt distant : uniquement sur demande**, en passant par `/pulse:commit` et `/pulse:deploy`.
+- **Commit et envoi vers le dépôt distant** : par `/pulse:commit`, ou par les boucles de `/pulse:implement` et `/pulse:spirc` selon le choix d'envoi du plan (ligne « Envoi ») ; la mise en ligne par `/pulse:deploy`. En dehors de `/pulse:commit` et de ces boucles, un commit se fait à votre demande, et chaque envoi passe par la demande d'accord de Claude Code.
 - Utilisez uniquement des **données fictives**.
 - Une tâche ambiguë ou coûteuse : posez **une** question précise avant de construire.
 
@@ -79,7 +79,7 @@ Les fichiers ci-dessous sont chargés à chaque session. Ce bloc est rempli auto
 <!-- pulse_memoire:fin -->
 
 - `aidd_docs/memory/` : mémoire durable (projet, technique, glossaire) ; `internal/decisions/` et `external/` se lisent quand la tâche le demande.
-- `aidd_docs/tasks/` : traces de travail par session.
+- `aidd_docs/tasks/<epic>/` : les user stories, leurs specs, leurs plans et les rapports de relecture ; `aidd_docs/tasks/in-progress.md` : la décision qui attend la personne (non enregistrée dans Git).
 - Employez les mots du glossaire, dans les échanges comme dans le code.
 - Quand une décision importante est prise ou qu'un piège est découvert, proposez de l'ajouter à la mémoire (`/pulse:memory retenir`).
 

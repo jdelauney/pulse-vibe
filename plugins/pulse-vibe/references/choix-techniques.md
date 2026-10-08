@@ -19,7 +19,7 @@ Pulse laisse chaque technologie ouverte au choix : toute proposition part du bes
 
 ## Les questions à se poser
 
-Chercher d'abord les réponses dans `docs/brief.md` et `docs/prd.md` ; poser à la personne seulement les questions restées ouvertes, une par une.
+Chercher d'abord les réponses dans `docs/brief.md` et `docs/prd.md` ; poser à la personne seulement les questions restées ouvertes (une à la fois, ou une ronde de 4 au plus).
 
 1. **Utilisateurs et volume** : combien de personnes utiliseront l'outil (une, une équipe, le public) ? Combien de données, à quelle fréquence ?
 2. **Partage de données** : les données restent-elles sur un seul appareil, ou doivent-elles être partagées entre personnes ou appareils ?

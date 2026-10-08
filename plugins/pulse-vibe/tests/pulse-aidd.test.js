@@ -11,7 +11,7 @@ const RACINE = path.join(__dirname, "..");
 // Chemin relatif et cwd = racine du plugin : fonctionne avec Git Bash, Cygwin, macOS et Linux.
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-aidd", ...args], { cwd: RACINE, encoding: "utf8" });
 
-test("contexte ui : règles communes, trois références de design et trois modèles", () => {
+test("contexte ui : règles communes, quatre références de design et trois modèles", () => {
   const r = lancer("contexte", "ui");
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of [
@@ -19,6 +19,7 @@ test("contexte ui : règles communes, trois références de design et trois mod�
     "===== Registres d'interface =====",
     "===== Règles d'interface =====",
     "===== Anti-patterns d'interface =====",
+    "===== Motifs d'écrans =====",
     "===== Modèle : docs/design.md =====",
     "===== Modèle : note de variante =====",
     "===== Modèle : rapport d'audit d'interface =====",
@@ -158,6 +159,31 @@ test("travail-fini : efface le travail en cours du dossier courant, sans erreur 
   assert.ok(!fs.existsSync(fichier), "le fichier est effacé");
   r = spawnSync("bash", [outil, "travail-fini"], { cwd: d, encoding: "utf8" });
   assert.strictEqual(r.status, 0, r.stderr);
+});
+
+test("travail-fini <dossier> : efface seulement le travail en cours de ce dossier (worktree), refuse « .. »", () => {
+  const fs = require("fs");
+  const os = require("os");
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-fini-"));
+  const ecrire = (rel) => {
+    const f = path.join(d, rel, "aidd_docs", "tasks", "in-progress.md");
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, "# Travail en cours\n");
+    return f;
+  };
+  const principal = ecrire(".");
+  const worktree = ecrire(".claude/worktrees/us-001");
+  const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
+  let r = spawnSync("bash", [outil, "travail-fini", ".claude/worktrees/us-001"], { cwd: d, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!fs.existsSync(worktree), "celui du worktree est effacé");
+  assert.ok(fs.existsSync(principal), "celui du dossier courant reste");
+  r = spawnSync("bash", [outil, "travail-fini", ".claude/worktrees/absent"], { cwd: d, encoding: "utf8" });
+  assert.notStrictEqual(r.status, 0, "dossier inconnu");
+  r = spawnSync("bash", [outil, "travail-fini", "../autre"], { cwd: path.join(d, ".claude"), encoding: "utf8" });
+  assert.notStrictEqual(r.status, 0, "« .. » refusé");
+  assert.ok(fs.existsSync(principal));
+  assert.match(spawnSync("bash", [outil], { encoding: "utf8" }).stdout, /travail-fini \[dossier\]/);
 });
 
 test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
@@ -389,4 +415,12 @@ test("installer-hook : sans scripts/verifier.js (nouveau worktree), le commit n'
   git("add", "a.txt");
   const r = git("commit", "-q", "-m", "x");
   assert.strictEqual(r.status, 0, r.stderr + r.stdout);
+});
+
+test("contexte review et spirc : la référence « Examiner une tâche »", () => {
+  for (const commande of ["review", "spirc"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Examiner une tâche ====="), commande);
+  }
 });

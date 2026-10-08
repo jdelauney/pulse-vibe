@@ -2,7 +2,7 @@
 
 **Pulse-vibe** est un plugin pour Claude Code qui guide une personne non développeuse **du brief à la mise en ligne**, étape par étape, avec l'IA. Il s'adresse aux indépendants, dirigeants et collaborateurs de petites structures.
 
-Tout est en français. Chaque commande pose ses questions une par une, explique ce qu'elle fait, produit un document ou du code, et indique la prochaine étape.
+Tout est en français. Chaque commande pose ses questions (une à la fois, ou en une ronde de 4 au plus), explique ce qu'elle fait, produit un document ou du code, et indique la prochaine étape.
 
 ## Les commandes
 
@@ -15,18 +15,18 @@ Tout est en français. Chaque commande pose ses questions une par une, explique 
 | `/pulse:tech` | Choix techniques : besoins, 2-3 options comparées et vérifiées sur leur documentation officielle ; **c'est la personne qui choisit sa technologie** (ou la pile existante est documentée) ; un pack de pile installé est proposé comme option ; mise en ligne d'une page de départ dès le premier jour | `docs/technical.md`, bloc « Pile technique » de `CLAUDE.md` |
 | `/pulse:spec <US-003 \| "demande">` | Spécification d'une user story (une US = une spec), ou d'une demande décrite : l'intention seule, trous marqués `TBD:`, hors objectifs, données personnelles et accès ; verrouillée une fois validée | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
 | `/pulse:us` | Epics, user stories et critères d'acceptation, validées INVEST et prêtes (Definition of Ready), triées par ordre de réalisation, sauvegardées après validation (fichiers, et l'outil de ticketing de la mémoire projet) : un référentiel, puis un fichier par US rangé dans le dossier de son epic | `docs/user-stories.md`, `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
-| `/pulse:plan <US-003>` | Conception technique (pile, données, sécurité, fichiers), puis petites tâches ordonnées (kanban) pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
+| `/pulse:plan <US-003>` | Conception technique (pile, données, sécurité, fichiers), puis petites tâches ordonnées pour la spec d'une US (une spec = un plan) ; numéros de tâche uniques dans tout le projet | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` |
 | `/pulse:refine [<US-003>] "…"` | Ajuster un plan selon vos questions ou remarques : réponse à chaque point, changements montrés avant d'écrire | le plan (et PRD, US si besoin) |
 | `/pulse:guide` | Le carnet de route : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier, les actions manuelles. Mis à jour automatiquement à chaque modification du plan | `docs/guide/` |
-| `/pulse:implement <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, via le sous-agent implementer ou directement (question posée au démarrage), au besoin dans un worktree (proposé d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
-| `/pulse:review` | Relecture indépendante, test manuel, corrections | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/Tn-date.md` |
+| `/pulse:implement <US-003> [T3]` | Réaliser une tâche du plan et l'expliquer, en coulisse (agent implementer) ou devant vous (question posée au démarrage, sauf en mode découverte), au besoin dans une copie à part du projet (worktree, proposée d'office si une autre session travaille sur le même dossier) ; sans tâche, boucler sur tout le plan : réaliser → relire et vérifier → corriger → commiter → tâche suivante | le code des tâches, un commit par tâche |
+| `/pulse:review` | Relecture (agent reviewer) et essai de l'application en marche (agent verifier) en parallèle, test manuel, corrections ; la même preuve que spirc | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/Tn-date.md` |
 | `/pulse:commit [push] ["message"]` | Enregistrer une version après contrôle des secrets : un sujet par commit (modifications triées, plusieurs commits proposés si besoin), message conventionnel avec le pourquoi et l'US, correction encadrée si un contrôle refuse le commit ; `push` l'envoie ensuite | un ou plusieurs commits Git |
 | `/pulse:pr [branche [<US-003>] \| <base>]` | `branche` : créer la branche de travail d'un plan ; sans argument : ouvrir une demande de fusion (pull request) **en brouillon**, décrite à partir des commits, du plan et des relectures (GitHub `gh`, GitLab `glab`, sinon lien à ouvrir). Ne fusionne jamais | une branche, une PR en brouillon |
 | `/pulse:cicd [proteger]` | Contrôles automatiques (CI) à chaque envoi et sur chaque demande de fusion : secrets, audit des dépendances, lint, tests, construction (et, en option, robot de mises à jour des dépendances), adaptés au fournisseur du dépôt (GitHub Actions, GitLab CI…) ; `proteger` : n'accepter une fusion que si la CI est verte | fichier de CI, `scripts/verifier.js` |
 | `/pulse:deploy` | Mise en ligne et déploiement continu (CD), puis mode production (variables, services, retour arrière) ; chaque mise en ligne est prouvée par `pulse-aidd sonder` et par le garde-fou de référencement `pulse-aidd seo --essentiel` | site en ligne |
 | `/pulse:search-console [relier \| lire [28j\|3m] \| suivre \| inspecter <adresse>]` | Après la mise en ligne : relier le site à Google Search Console et à Bing (balise ou DNS, sitemap), puis lire ce que Google voit, en lecture seule (export CSV, ou connexion Google personnelle dont l'accès reste hors du projet) : chiffres, requêtes à potentiel, pages oubliées, échantillon d'indexation, 3 actions ; `suivre` compare 28 jours aux 28 précédents | `docs/referencement/search-console-<date>.md`, section « Référencement » de `docs/technical.md` |
-| `/pulse:spirc <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Rythme (avec validations ou autonome) et examen (standard ou renforcé) choisis au démarrage | tout ce qui précède |
-| `/pulse:status` | Où en suis-je ? Prochaine étape conseillée | — |
+| `/pulse:spirc <US-003> [T3 \| "demande"]` | Orchestre pour le plan d'une US **I**mplémentation, **R**evue, **C**ommit avec des agents indépendants, tâche par tâche (et **S**pec, **P**lan s'il n'y a pas encore de plan) ; une demande libre est ajoutée au plan. Une seule ronde de 4 questions au plus au démarrage. Rythme choisi au démarrage : pas à pas, pas à pas avec un contrôle de sécurité à chaque tâche, ou autonome | tout ce qui précède |
+| `/pulse:status` | Où en suis-je ? Prochaine étape conseillée, calculée par `pulse-aidd etat` comme pour `/pulse:init` | — |
 | `/pulse:explain` | Expliquer un fichier, une fonction, une ligne | — |
 | `/pulse:learn [<notion>]` | Un professeur de programmation, limité au développement logiciel : leçon, `feynman <notion>` (vous expliquez, il vous aide à combler les trous), `exercice <notion>`, `parcours "<objectif>"` ; adapté à votre niveau, illustré avec votre projet. Sans argument : révision des notions à revoir | `docs/apprentissage.md` (carnet, facultatif) |
 | `/pulse:security` | Audit S1 à S13 et « test du cambrioleur » ; `rapide` (contrôle en 2 min), `entetes` (CSP, HSTS…), `preparer` (`endpoints.txt`, `.gitleaks.toml`) | `docs/securite.md` |
@@ -58,13 +58,15 @@ Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se reg
 
 | Commande | Raccourci | Effet |
 |---|---|---|
-| `/pulse:implement` | `-s` / `-d` | réalisation par le sous-agent / directement dans la conversation |
-| `/pulse:implement`, `/pulse:spirc` | `-w` | dans un worktree |
+| `/pulse:implement` | `-s` / `-d` | je code en coulisse (agent implementer) / je code devant vous, dans la conversation |
+| `/pulse:implement`, `/pulse:spirc` | `-w` | dans une copie à part du projet (worktree) |
 | `/pulse:spirc` | `-a` | autonome : sans les points de validation, constats corrigés seuls (Critique à Moyenne ; Basse confrontés au code), test manuel regroupé à la fin du plan |
-| `/pulse:spirc` | `-x` | examen renforcé : audit de sécurité à chaque tâche |
+| `/pulse:spirc` | `-x` | contrôle de sécurité à chaque tâche (agent security-auditor) |
 | `/pulse:implement`, `/pulse:spirc` | `-t` | tests d'abord : les tests de chaque tâche sont écrits avant le code (agent test-writer), puis lancés et triés (agent test-runner) |
 
-Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus les questions de rythme et d'examen ; la question des tests se pose tant que `-t` est absent.
+Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus la question du rythme ; la question des tests se pose tant que `-t` est absent.
+
+Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent les réglages conseillés sans poser ces questions, et le disent en une phrase (mode découverte, règles communes § 1).
 
 ## Ce que le plugin contient en plus des commandes
 
@@ -157,14 +159,14 @@ Le plugin vit dans `plugins/pulse-vibe/` du dépôt ; le catalogue `.claude-plug
 skills/<commande>/SKILL.md        les commandes
 agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, redacteur, fixer, memory-compactor
 hooks/hooks.json                  garde-fou anti-secrets, garde-fou des commandes, synchronisation de la mémoire, registre des sessions, régénération du guide
-scripts/                          garde-secrets.js, garde-commandes.js, motifs.js, sonder.js, secrets.js (pulse-aidd secrets), textes.js (pulse-aidd textes), seo.js, seo-html.js, seo-regles.js, robots.js (pulse-aidd seo), perf.js (pulse-aidd perf), search-console.js (pulse-aidd search-console), memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), guide.js, comparer.js, sessions.js
+scripts/                          garde-secrets.js, garde-commandes.js, motifs.js, sonder.js, secrets.js (pulse-aidd secrets), textes.js (pulse-aidd textes), seo.js, seo-html.js, seo-regles.js, robots.js (pulse-aidd seo), perf.js (pulse-aidd perf), search-console.js (pulse-aidd search-console), memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), etat.js (pulse-aidd etat, /pulse:init et /pulse:status), guide.js, comparer.js, sessions.js
 bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI)
 references/                       règles communes, aide au choix technique, checklist sécurité, mémoire,
                                   secrets/ (saisie hors conversation, réaction à une fuite), seo/ (règles, textes, lancement, assistants IA),
                                   performance.md (/pulse:perf), search-console.md (/pulse:search-console),
                                   qualite/ (références de qualité du code), securite/ (actions de /pulse:security),
                                   design/ (références d'interface de /pulse:ui), redaction/ (détecteur de tics d'écriture IA et règles de /pulse:rediger), pedagogie.md (/pulse:learn),
-                                  git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle),
+                                  git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle), examen.md (relecture et vérification d'une tâche),
                                   tests/ (stratégie de tests, Gherkin, TDD), tests-automatiques.md (option -t)
 templates/                        modèles de documents et de fichiers projet
 tests/                            tests (depuis la racine du dépôt : node --test plugins/*/tests/*.test.js)

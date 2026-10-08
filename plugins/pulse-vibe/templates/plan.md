@@ -4,7 +4,7 @@
 > La spec dit **ce que** l'utilisateur obtient ; ce plan décide **comment** le construire (« Conception technique »), puis le découpe en tâches.
 > Un plan par spec, donc par user story. Numéros de tâche uniques dans tout le projet : ce plan reprend après le plus grand `Tn` des autres plans de `aidd_docs/tasks/`.
 > La tâche « Mettre en ligne le MVP » figure uniquement dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
-> Statuts : `[ ]` à faire · `[~]` en cours · `[x]` terminé. C'est notre tableau **kanban**.
+> Statuts : `[ ]` à faire · `[~]` en cours · `[x]` terminé : c'est le tableau de suivi des tâches.
 > Chaque tâche est petite (une seule chose visible à tester) et livre de la valeur (découpage vertical).
 
 ## Vue d'ensemble

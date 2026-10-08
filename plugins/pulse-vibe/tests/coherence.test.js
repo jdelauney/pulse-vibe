@@ -299,6 +299,39 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
   assert.deepStrictEqual([...new Set(manquants)], []);
 });
 
+test("allowed-tools : les commandes git de lecture citées par un skill, ou par une étape qu'il enchaîne, sont autorisées d'avance", () => {
+  assert.ok(couvre("git log *", "git log --oneline") && !couvre("git remote -v", "git remote add origin x"), "règle de correspondance");
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
+  const enchainees = (depart) => {
+    const vues = new Set([depart]);
+    const aVoir = [depart];
+    while (aVoir.length) {
+      for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        if (etape && SKILLS.has(etape) && !vues.has(etape)) {
+          vues.add(etape);
+          aVoir.push(etape);
+        }
+      }
+    }
+    return [...vues];
+  };
+  // Formes en lecture seule ou sans effet distant : `git remote -v`, `git remote get-url …`, `git fetch origin`, `git status …`, `git log …`, `git diff …`.
+  const lecture = /`(git (?:remote -v|remote get-url [^`]+|fetch origin|status(?: [^`]*)?|log(?: [^`]*)?|diff(?: [^`]*)?))`/g;
+  let verifiees = 0;
+  const manquants = [];
+  for (const skill of SKILLS) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const commandes = new Set(enchainees(skill).flatMap((s) => [...texteSkill(s).matchAll(lecture)].map((m) => essai(m[1]))));
+    for (const commande of commandes) {
+      verifiees++;
+      if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
+    }
+  }
+  assert.ok(verifiees > 20, "lecture des commandes git citées");
+  assert.deepStrictEqual(manquants, []);
+});
+
 test("allowed-tools : aucun skill n'autorise d'avance la modification d'un dépôt distant ni une récupération forcée", () => {
   assert.ok(couvre("git remote *", "git remote remove origin") && !couvre("git remote -v", "git remote remove origin") && !couvre("git fetch origin", "git fetch origin +a:b"), "règle de correspondance");
   const interdites = ["git remote remove origin", "git remote set-url origin X", "git remote rename origin X", "git fetch origin +refs/heads/main:refs/heads/main", "git fetch --force origin", "git fetch origin +main"];
@@ -447,4 +480,220 @@ test("README : section « Mettre à jour » mise en avant, avec les commandes ex
       assert.ok(section.includes(attendu), `${nom} : « ${attendu} » absent de « Mettre à jour »`);
   }
   if (fs.existsSync(path.join(DEPOT, "README.md"))) assert.match(lire(DEPOT, "README.md").split("\n## Installation\n")[0], /\[Mettre à jour\]\(#mettre-à-jour\)/);
+});
+
+// ---------------------------------------------------------------- Parcours et langage
+
+const skillTexte = (nom) => lire(RACINE, "skills", nom, "SKILL.md");
+
+test("init et status appliquent le verdict de pulse-aidd etat, sans règles de décision recopiées", () => {
+  for (const skill of ["init", "status"]) {
+    const texte = skillTexte(skill);
+    assert.match(texte, /`pulse-aidd etat`/, `${skill} lance pulse-aidd etat`);
+    assert.doesNotMatch(texte, /spec sans plan → `\/pulse:plan/i, `${skill} : règle de décision recopiée`);
+  }
+  assert.doesNotMatch(skillTexte("status"), /Sa seule modification/);
+  assert.doesNotMatch(skillTexte("init"), /\*\*Questions\*\* \(une ronde AskUserQuestion\) : le \*\*nom\*\*/, "nom et description : réponse libre");
+});
+
+test("init et status ne citent que des clés et des valeurs réellement émises par etat.js", () => {
+  const source = lire(RACINE, "scripts", "etat.js");
+  const valeurs = [...new Set([...source.matchAll(/fondation: "([a-z]+)"/g)].map((m) => m[1]))];
+  assert.ok(valeurs.length >= 6, "valeurs de fondation lues dans etat.js");
+  const tableau = skillTexte("init").split("| `fondation` |")[1] || "";
+  for (const v of valeurs) assert.ok(tableau.includes(`| \`${v}\` |`), `init : ligne « ${v} » absente de la table des fondations`);
+  const emises = new Set(["prochaine", "raison", "regle", "etapes", "mvp", "aussi"]);
+  for (const m of source.matchAll(/for \(const cle of \[([^\]]+)\]\)/g)) for (const c of m[1].match(/"([a-z]+)"/g)) emises.add(c.replace(/"/g, ""));
+  for (const c of ["prochaine", "raison", "regle", "etapes", "mvp", "aussi"]) assert.ok(source.includes(`\`${c}: `) || source.includes(`\`${c}:`), `etat.js n'émet pas ${c}`);
+  for (const skill of ["init", "status"]) {
+    const cites = [...skillTexte(skill).matchAll(/`(prochaine|raison|regle|fondation|attente|ancien|dossier|aussi|etapes|mvp)(?::[^`]*)?`/g)].map((m) => m[1]);
+    for (const c of cites) assert.ok(emises.has(c), `${skill} cite la clé ${c}, absente de etat.js`);
+  }
+});
+
+test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour chaque chemin", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const delegations = TEXTES.filter(({ texte }) => /\*\*`pulse:verifier`\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
+  assert.deepStrictEqual(delegations, ["plugins/pulse-vibe/references/examen.md"]);
+  const examen = lire(RACINE, "references", "examen.md");
+  for (const agent of ["**`pulse:reviewer`**", "**`pulse:security-auditor`**"]) assert.ok(examen.includes(agent), agent);
+  for (const skill of ["review", "spirc"]) assert.match(skillTexte(skill), /référence « Examiner une tâche »/, skill);
+  assert.match(skillTexte("implement"), /`pulse:reviewer` et `pulse:verifier`/, "la boucle d'implement annonce la vérification");
+  assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
+  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
+});
+
+test("examen d'une tâche : chaque agent nommé par la référence est repliable par `pulse-aidd agent <nom>` dans les skills qui la chargent", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  const agents = [...AGENTS].filter((a) => new RegExp(`(?<![\w-])${a}(?![\w-])`).test(examen));
+  assert.ok(agents.length >= 4, agents.join(","));
+  for (const skill of ["review", "spirc", "implement"]) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    for (const a of agents) assert.ok(motifs.some((m) => couvre(m, `pulse-aidd agent ${a}`)), `${skill} : pulse-aidd agent ${a}`);
+  }
+});
+
+test("plan : montré et validé avant d'être écrit, avec la ligne « plan validé » du journal", () => {
+  const deroule = skillTexte("plan").split("## Déroulé")[1];
+  const valider = deroule.indexOf("« Valider le plan (Recommandé) »");
+  const ecrire = deroule.indexOf("Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`");
+  assert.ok(valider !== -1 && ecrire !== -1, "validation et écriture présentes");
+  assert.ok(valider < ecrire, "la validation précède l'écriture");
+  assert.match(deroule, /« plan validé »/);
+});
+
+test("règles communes : rondes de 4 questions, réponses libres en texte, mode découverte écrit une fois", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.doesNotMatch(regles, /Poser les questions une par une/);
+  assert.match(regles, /une ronde de 4 questions au plus/);
+  assert.match(regles, /réponse libre/);
+  assert.doesNotMatch(regles, /`\/pulse:pr branche <US-XXX>` avant `\/pulse:implement`/);
+  const definitions = TEXTES.filter(({ texte }) => /\*\*Mode découverte\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
+  assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-communes.md"]);
+});
+
+test("implement : questions de démarrage en clair et mode découverte", () => {
+  const texte = skillTexte("implement");
+  assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);
+  assert.match(texte, /« Je code devant vous »/);
+  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
+  assert.doesNotMatch(texte, /Implémentation via sous-agent|Implémentation directe/);
+});
+
+test("spirc : une ronde de départ de 4 questions au plus, sans double validation", () => {
+  const texte = skillTexte("spirc");
+  assert.doesNotMatch(texte, /Point de validation 1|✋ ?1/);
+  assert.match(texte, /« Pas à pas, avec un contrôle de sécurité à chaque tâche »/);
+  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
+  const ronde = texte.split("## Choisir la façon de travailler")[1];
+  assert.ok(ronde, "section « Choisir la façon de travailler »");
+  const questions = ronde.split(/\n## /)[0].split("\n").filter((l) => /^- \*\*[^*]+\*\*/.test(l));
+  assert.ok(questions.length >= 3 && questions.length <= 4, `${questions.length} questions dans la ronde`);
+});
+
+test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () => {
+  const texte = skillTexte("spirc");
+  const puce = texte.split("\n").find((l) => l.startsWith("- `-a`"));
+  assert.match(puce, /validation du plan quand il vient d'être créé/);
+  assert.match(texte, /vous testez tout à la fin\) ;/);
+  assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
+});
+
+test("descriptions des commandes sans jargon", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const JARGON = /\b(INVEST|Definition of Ready|MoSCoW|kanban|TBD|storytelling|sous-agents?|Feynman)\b/i;
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const description = (lire(fichier).match(/^description:\s*(.*)$/m) || [])[1] || "";
+    const m = JARGON.exec(description);
+    if (m) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${m[0]}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("questions et accueil en clair : les anciens libellés ont disparu", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const ANCIENS = /Implémentation via sous-agent|Implémentation directe|Valider et verrouiller|[Ee]xamen renforcé|« Renforcé »|« Travailler dans un worktree \(|« Reprendre dans le worktree|AI-Driven Development/;
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => ANCIENS.test(texte)).map(({ fichier }) => unix(fichier)), []);
+  for (const f of ["CLAUDE.md", "banniere.txt"]) assert.doesNotMatch(lire(RACINE, "templates", f), /AI-Driven/, f);
+  assert.doesNotMatch(lire(RACINE, "templates", "plan.md"), /kanban/i);
+  assert.doesNotMatch(lire(RACINE, "templates", "CLAUDE.md"), /kanban/i);
+});
+
+test("les envois, fusions et récupérations soumis à l'accord sont annoncés en une phrase", () => {
+  const ANNONCE = /Claude Code (va|vous) (vous )?demander/;
+  for (const [fichier, motif] of [
+    [["skills", "commit", "SKILL.md"], /### 7\. Envoyer[\s\S]*Claude Code va vous demander/],
+    [["skills", "pr", "SKILL.md"], /Claude Code va vous demander l'accord pour \x60git pull\x60[\s\S]*Claude Code va vous demander l'accord pour envoyer/],
+    [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. Annoncer : « Claude Code va vous demander/],
+    [["skills", "cicd", "SKILL.md"], /Annoncer : « Claude Code va vous demander[^\n]*Puis l'envoyer \(\x60git push\x60/],
+    [["references", "worktree.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
+  ]) {
+    const texte = lire(RACINE, ...fichier);
+    assert.match(texte, ANNONCE, fichier.join("/"));
+    assert.match(texte, motif, fichier.join("/"));
+  }
+});
+
+test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section", () => {
+  const sections = lire(RACINE, "skills", "deploy", "SKILL.md").split(/^## /m).filter((s) => /git push/.test(s));
+  assert.ok(sections.length >= 4, "sections avec envoi");
+  for (const s of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord|accord annoncé au § 3/, s.slice(0, 30));
+});
+
+test("commit et annuler nomment la forme `git commit -m`, et commit utilise `git remote -v`", () => {
+  for (const s of ["commit", "annuler"]) assert.match(lire(RACINE, "skills", s, "SKILL.md"), /git commit -m "<sujet>" -m "<corps>"|git commit -m "revert\(/, s);
+  const commit = lire(RACINE, "skills", "commit", "SKILL.md");
+  assert.match(commit, /git commit -m "<sujet>" -m "<corps>"/);
+  assert.doesNotMatch(commit, /`git remote`/);
+  assert.match(commit, /`git remote -v`/);
+  assert.match(commit, /contrôle de sécurité à chaque tâche/);
+});
+
+test("prd, us, spec et plan lisent et écrivent leurs documents sans demande d'autorisation", () => {
+  const attendus = {
+    prd: ["Read", "Glob", "Grep", "Write(docs/prd.md)", "Edit(docs/prd.md)", "Write(aidd_docs/tasks/in-progress.md)", "Edit(aidd_docs/tasks/in-progress.md)"],
+    us: ["Read", "Glob", "Grep", "Write(docs/user-stories.md)", "Edit(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+    spec: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/user-stories.md)", "Edit(docs/prd.md)"],
+    plan: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+  };
+  for (const [skill, outils] of Object.entries(attendus)) {
+    const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    const jetons = ligne.match(/[A-Za-z]+(?:\([^)]*\))?/g) || [];
+    for (const outil of [...outils, "Write(docs/lexique.md)", "Edit(docs/lexique.md)"]) assert.ok(jetons.includes(outil), `${skill} : ${outil} manquant`);
+  }
+});
+
+test("les commandes qui écrivent des documents, ou enchaînent des étapes qui le font, les écrivent sans demande d'autorisation", () => {
+  const attendus = {
+    brainstorm: ["Write(docs/brief.md)", "Edit(docs/brief.md)"],
+    init: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
+    express: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
+    spirc: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)", "Edit(docs/user-stories.md)", "Write(docs/lexique.md)"],
+    implement: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)"],
+    review: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+    commit: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+  };
+  for (const [skill, outils] of Object.entries(attendus)) {
+    const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    const jetons = ligne.match(/[A-Za-z]+(?:\([^)]*\))?/g) || [];
+    for (const outil of outils) assert.ok(jetons.includes(outil), `${skill} : ${outil} manquant`);
+  }
+  assert.match(lire(RACINE, "references", "examen.md"), /Claude Code demande alors l'accord de la personne pour démarrer l'application/);
+});
+
+test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const ligne = (lire(fichier).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    for (const [, outil, motif] of ligne.matchAll(/\b(Write|Edit|MultiEdit)\(([^)]*)\)/g)) {
+      if (!/^(docs|aidd_docs)\/\S+$/.test(motif)) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("tests automatiques : installer un outil de test est recommandé quand la pile en a un", () => {
+  const texte = lire(RACINE, "references", "tests-automatiques.md");
+  assert.match(texte, /« Installer un outil de test \(Recommandé\) »/);
+  assert.match(texte, /« Sans tests automatiques »/);
+});
+
+test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
+  const claude = lire(RACINE, "templates", "CLAUDE.md");
+  assert.doesNotMatch(claude, /uniquement sur demande/);
+  assert.match(claude, /boucles de `\/pulse:implement` et `\/pulse:spirc`/);
+  assert.doesNotMatch(claude, /traces de travail par session/);
+  assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
+  assert.match(skillTexte("ui"), /quatre références de design/);
+  assert.doesNotMatch(skillTexte("ui"), /trois références/);
+});
+
+test("la règle deny se propose en clair : le bloc JSON se montre seulement sur demande", () => {
+  for (const s of ["init", "secrets"]) {
+    const texte = lire(RACINE, "skills", s, "SKILL.md");
+    assert.doesNotMatch(texte, /montrer le bloc/i, `${s} : ne plus montrer le bloc d'office`);
+    assert.match(texte, /bloc[^.]*sur demande/i, `${s} : le bloc reste disponible sur demande`);
+  }
 });
