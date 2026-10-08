@@ -120,7 +120,7 @@ function envNonIgnores(dossier) {
 function verifierLecture(outil, ti, cwd) {
   const cibles = [ti.file_path, ti.path, ti.glob].filter((c) => typeof c === "string");
   let visee = cibles.find((c) => estFichierEnv(c) || /(^|[\\/])\.env\*?$/i.test(c) || /(^|[\\/])\.env\.\*$/i.test(c));
-  if (!visee && outil === "Grep" && typeof ti.glob === "string" && /\.env(?!\.(example|sample|template)\b)/i.test(ti.glob)) visee = ti.glob;
+  if (!visee && outil === "Grep" && typeof ti.glob === "string" && /(^|[\\/{,])\.env(?!\.(example|sample|template)\b)(?![A-Za-z0-9_-])/i.test(ti.glob)) visee = ti.glob;
   let nonIgnore = false;
   if (!visee && outil === "Grep" && !ti.glob && !ti.type) {
     const exposes = envNonIgnores(path.resolve(cwd, ti.path || "."));
@@ -178,7 +178,7 @@ function cheminsDuCommit(args) {
       chemins.push(...args.slice(k + 1));
       break;
     }
-    if (AVEC_VALEUR_COMMIT.has(a) || /^-[a-zA-Z]*[mFCct]$/.test(a)) {
+    if (AVEC_VALEUR_COMMIT.has(a) || /^-[aqvsneiou]*[mFCct]$/.test(a)) {
       k++;
       continue;
     }
@@ -215,18 +215,9 @@ function lignesAjoutees(diff) {
     .join("\n");
 }
 
-function verifierGit(commande, cwd, dialecte) {
-  if (!/\bgit\b/i.test(commande)) return;
-  const appels = appelsGit(commande, dialecte);
-  if (!appels.length) return;
-  const avecDossier = appels.find((a) => a.prefixe[0] === "-C");
-  const dossier = avecDossier ? path.resolve(cwd, avecDossier.prefixe[1]) : cwd;
-  const racine = (git(["rev-parse", "--show-toplevel"], dossier) || "").trim();
-  if (!racine) return; // pas un dépôt Git
-
-  const problemes = [];
-  const fichiersEnv = new Set();
-  const secretsTrouves = new Map(); // fichier -> types
+// Contrôle les appels git qui visent un même dépôt ; les constats s'ajoutent à `etat`.
+function controlerAppels(appels, dossier, racine, etat) {
+  const { problemes, fichiersEnv, secretsTrouves } = etat;
   const noter = (fichier, contenu) => {
     const s = trouverSecrets(contenu);
     if (s.length) secretsTrouves.set(fichier, s);
@@ -272,6 +263,26 @@ function verifierGit(commande, cwd, dialecte) {
       );
     }
   }
+}
+
+function verifierGit(commande, cwd, dialecte) {
+  if (!/\bgit\b/i.test(commande)) return;
+  const appels = appelsGit(commande, dialecte);
+  if (!appels.length) return;
+
+  // Chaque appel vise son propre dépôt (option -C), à contrôler séparément.
+  const etat = { problemes: [], fichiersEnv: new Set(), secretsTrouves: new Map() };
+  const parDossier = new Map();
+  for (const a of appels) {
+    const dossier = a.prefixe[0] === "-C" ? path.resolve(cwd, a.prefixe[1]) : cwd;
+    if (!parDossier.has(dossier)) parDossier.set(dossier, []);
+    parDossier.get(dossier).push(a);
+  }
+  for (const [dossier, groupe] of parDossier) {
+    const racine = (git(["rev-parse", "--show-toplevel"], dossier) || "").trim();
+    if (racine) controlerAppels(groupe, dossier, racine, etat); // sinon : pas un dépôt Git
+  }
+  const { problemes, fichiersEnv, secretsTrouves } = etat;
 
   if (fichiersEnv.size) {
     problemes.push(

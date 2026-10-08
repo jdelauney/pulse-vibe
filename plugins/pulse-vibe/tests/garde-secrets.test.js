@@ -306,6 +306,31 @@ test("Grep : glob qui vise .env, ou .env non ignoré dans le dossier fouillé : 
   assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "KEY", glob: "*.ts" }, cwd: dir }), null);
 });
 
+test("git -C vers un autre dépôt : le commit du dépôt courant reste contrôlé", () => {
+  const A = depotTemporaire();
+  const B = depotTemporaire();
+  A.ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  A.git("add", "app.js");
+  assert.ok(refuse(lancerHook(bash(`git -C "${B.dir}" status && git commit -m x`, A.dir))));
+});
+
+test("commit : valeur de -m collée, le chemin qui suit est contrôlé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("app.js", "const a = 1;\n");
+  git("add", "app.js");
+  git("commit", "-q", "-m", "app");
+  ecrire("app.js", `const k = "${FAUX.stripe}";\n`);
+  assert.ok(refuse(lancerHook(bash("git commit -mtest app.js", dir))));
+  assert.ok(refuse(lancerHook(bash("git commit -am msg", dir))));
+});
+
+test("Grep : glob qui nomme un fichier .env refusé, noms voisins autorisés", () => {
+  const { dir } = depotTemporaire();
+  const grep = (glob) => lancerHook({ tool_name: "Grep", tool_input: { pattern: "K", glob }, cwd: dir });
+  for (const g of ["{.env,.env.local}", ".env*", "**/.env", ".env.local", ".ENV"]) assert.ok(refuse(grep(g)), g);
+  for (const g of ["*.env.ts", "**/*.environment.ts", ".env.example", "*.ts"]) assert.strictEqual(grep(g), null, g);
+});
+
 test("pas de dépôt Git : la commande passe", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-sans-git-"));
   assert.strictEqual(lancerHook(bash('git commit -m "x"', dir)), null);
