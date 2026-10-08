@@ -382,6 +382,10 @@ case "$1" in
       echo "Un contrôle avant commit existe déjà ($crochet) : rien n'est remplacé. Ajoutez-y la ligne « node scripts/verifier.js --index »."
       exit 1
     fi
+    if [ -f "$racine/scripts/verifier.js" ] && ! grep -q -e "--index" "$racine/scripts/verifier.js"; then
+      echo "scripts/verifier.js est une ancienne version, sans contrôle avant commit : mettez-le à jour d'abord (pulse-aidd installer-ci, ou --forcer après avoir comparé avec « pulse-aidd modele verifier.js »), puis relancez pulse-aidd installer-hook."
+      exit 1
+    fi
     [ -f "$racine/scripts/verifier.js" ] || { mkdir -p "$racine/scripts"; cp "$TPL/verifier.js" "$racine/scripts/verifier.js"; }
     mkdir -p "$(dirname "$crochet")"
     printf '#!/bin/sh\n# pulse-aidd: contrôle des secrets avant chaque commit (installé par /pulse:cicd ou /pulse:init).\nexec node scripts/verifier.js --index\n' > "$crochet"

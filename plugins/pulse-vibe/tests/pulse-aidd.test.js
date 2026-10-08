@@ -359,3 +359,14 @@ test("installer-hook : le commit d'une clé est refusé, même hors de Claude", 
   git("add", "app.js");
   assert.strictEqual(git("commit", "-q", "-m", "x").status, 0);
 });
+
+test("installer-hook n'installe rien si scripts/verifier.js est une ancienne version", () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hook-ancien-"));
+  spawnSync("git", ["init", "-q", "-b", "main"], { cwd: d });
+  fs.mkdirSync(path.join(d, "scripts"));
+  fs.writeFileSync(path.join(d, "scripts", "verifier.js"), "// ancienne version\n");
+  const r = dans(d, "installer-hook");
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /ancienne version/);
+  assert.ok(!fs.existsSync(path.join(d, ".git", "hooks", "pre-commit")));
+});
