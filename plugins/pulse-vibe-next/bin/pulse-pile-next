@@ -72,8 +72,12 @@ contexte() {
       afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"
       fiche
       liste_recettes ;;
-    review|security)
+    review)
       afficher "Pour relire" "$REF/contexte/review.md"
+      fiche ;;
+    security)
+      afficher "Pour relire" "$REF/contexte/review.md"
+      afficher "Pour la sécurité" "$REF/contexte/security.md"
       fiche ;;
     test)
       afficher "Pour les tests" "$REF/contexte/test.md" ;;

@@ -5,6 +5,7 @@
 ## Prérequis
 
 - Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/index.ts` (`getDb()`, type `Db`), `src/config/env.ts` (`envServeur()`), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
+- `next.config.ts` avec la CSP et son objet `sources` (squelette de pulse-vibe-next 0.9.0 ou plus). Projet créé avec une version plus ancienne : lancez d'abord `/pulse:security entetes`, qui pose les en-têtes du squelette.
 - La recette `connexion` est faite (`pulse-aidd pile recette connexion`). Elle fournit :
   - `utilisateurConnecte()` dans `src/features/compte/queries/utilisateur-connecte.query.ts` (renvoie `{ id, nom }`, ou redirige vers `/connexion` sans session) ;
   - `actionConnectee` dans `src/lib/safe-action.ts` (`ctx.utilisateur` = `{ id, nom }`) ;
@@ -67,6 +68,7 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | Fichier | Rôle |
 |---|---|
 | `src/config/env.ts`, `.env.example` (modifiés) | Les quatre variables R2 |
+| `next.config.ts` (modifié) | L'adresse R2 dans `connect-src` de la CSP |
 | `src/core/fichiers/fichier.entity.ts` | Types autorisés, taille maximale, statuts, type `Fichier` |
 | `src/core/fichiers/fichier.errors.ts` | Codes des erreurs attendues |
 | `src/core/fichiers/fichier.rules.ts` | Clé d'objet, propriété de la clé, envoi conforme (fonctions pures) |
@@ -974,11 +976,30 @@ Avec la recette `langues` : voir `connexion`, étape 12.
 
 La page reste protégée par `utilisateurConnecte()`, et le téléchargement par le Route Handler.
 
-### 12. Essayer
+### 12. La CSP autorise R2
+
+Le navigateur envoie le fichier directement à R2 (`fetch` avec `PUT`). La CSP bloque tout appel vers une adresse absente de `connect-src` : dans l'objet `sources` de `next.config.ts`, remplacez la ligne `"connect-src": ["'self'"],` par :
+
+```ts
+  // Envoi direct des fichiers vers R2 (recette fichiers) : l'adresse signée commence par le nom
+  // du bucket. Sans juridiction UE, retirer « .eu ».
+  "connect-src": [
+    "'self'",
+    ...(process.env.R2_BUCKET && process.env.R2_ACCOUNT_ID
+      ? [
+          `https://${process.env.R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
+        ]
+      : []),
+  ],
+```
+
+L'adresse signée par l'adapter a la forme `https://<bucket>.<ACCOUNT_ID>.eu.r2.cloudflarestorage.com/<clé>` : la CSP autorise exactement cet hôte. Next.js lit `.env` avant `next.config.ts` : les valeurs sont connues en local. Sur Vercel, la CSP est fixée à la construction : `R2_BUCKET` et `R2_ACCOUNT_ID` doivent être saisies pour Production et Preview **avant** la mise en ligne. Le téléchargement passe par `/api/fichiers/<id>` (un lien du site) : il reste hors de `connect-src`.
+
+### 13. Essayer
 
 Envoyez une image PNG, puis un fichier `.exe`, puis un PDF de plus de 5 Mo ; cliquez sur un fichier de la liste.
 
-### 13. Mettre en ligne
+### 14. Mettre en ligne
 
 Saisissez les quatre variables dans Vercel, ajoutez l'adresse du site en ligne à la règle CORS du bucket, redéployez.
 
@@ -1171,7 +1192,7 @@ Fonctionnalité: Fichiers
 - [ ] **Tn+1 – Envoyer un fichier** · US-XXX
   - Objectif : une personne connectée envoie une image ou un PDF, contrôlé par le serveur, puis confirmé après vérification dans R2
   - Dépend de : Tn
-  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts`, `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts`
+  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts`, `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` · à modifier : `next.config.ts` (CSP, étape 12)
   - Vérification : US-XXX critères 1 à 3 – une image PNG passe ; un `.exe` et un PDF de 6 Mo sont refusés avec le message prévu
   - Tests : « Une photo PNG de 2 Mo est acceptée », « Un fichier interdit ou trop lourd est refusé avec un message clair », « La clé du fichier de Camille commence par l'identifiant de Camille », « Camille reçoit une adresse d'envoi et une ligne en attente est réservée », « L'envoi conforme passe la ligne à « envoye » », « Un envoi différent de l'annonce est effacé avec sa ligne », « Léo ne peut pas confirmer l'envoi de Camille », « Camille supprime son fichier : la ligne et l'objet disparaissent », « Léo ne peut pas supprimer le fichier de Camille » (unitaires)
   - Attention : le serveur contrôle le type et la taille, même si le champ `accept` filtre déjà ; un fichier d'`actions/` commence par `"use server"` et n'exporte que son action
@@ -1736,7 +1757,8 @@ test.describe("Fichiers", () => {
 
 - **Erreur CORS à l'envoi** : l'adresse de la page (protocole et port compris) doit figurer dans `AllowedOrigins`. Une règle met jusqu'à 30 secondes à s'appliquer. Chaque prévisualisation Vercel a sa propre adresse : ajoutez celles qui servent.
 - **403 `SignatureDoesNotMatch`** : le navigateur doit envoyer exactement le `Content-Type` signé (`choisi.type`) et le fichier annoncé (même taille).
-- **Bucket UE** : il répond seulement à `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`. Sans juridiction, retirez `.eu` dans `src/adapters/storage/storage.adapter.ts`.
+- **Bucket UE** : il répond seulement à `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`. Sans juridiction, retirez `.eu` dans `src/adapters/storage/storage.adapter.ts` et dans `connect-src` de `next.config.ts`.
+- **Envoi bloqué, console « Refused to connect … violates the following Content Security Policy directive: connect-src »** : l'adresse R2 manque à `connect-src`. Vérifiez l'étape « La CSP autorise R2 », la présence de `R2_BUCKET` et `R2_ACCOUNT_ID` au moment de la construction (Vercel : Production et Preview), puis reconstruisez. L'hôte bloqué, affiché dans le message, doit être identique à celui écrit dans `connect-src`.
 - **Clé secrète perdue** : Cloudflare l'affiche une seule fois. Créez un nouveau jeton, puis supprimez l'ancien.
 - **Objet orphelin à la suppression** : `supprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
 - **Lignes « en_attente »** : un envoi abandonné laisse une ligne sans fichier. Elle reste invisible ; une tâche de ménage pourra les effacer plus tard.

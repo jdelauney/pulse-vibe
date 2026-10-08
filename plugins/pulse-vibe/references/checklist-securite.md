@@ -64,7 +64,7 @@ Chaque point a un identifiant pour pouvoir y faire référence dans les rapports
 - Les journaux (logs) sont exempts de données personnelles et de jetons.
 
 ## S12 – En-têtes de sécurité (si l'application est servie par le web)
-- Le site envoie des en-têtes de sécurité (CSP, HSTS, X-Frame-Options ou `frame-ancestors`, X-Content-Type-Options, Referrer-Policy, Permissions-Policy), configurés là où la pile retenue le permet : voir `/pulse:security entetes`.
+- Le site envoie des en-têtes de sécurité (CSP, HSTS, X-Frame-Options ou `frame-ancestors`, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy), configurés là où la pile retenue le permet : voir `/pulse:security entetes`.
 
 ---
 

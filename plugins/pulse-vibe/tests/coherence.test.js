@@ -148,3 +148,16 @@ test("fins de ligne LF dans bin/, scripts/ et hooks/ de chaque plugin", () => {
     .map((f) => path.relative(DEPOT, f));
   assert.deepStrictEqual(crlf, []);
 });
+
+test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit dans securite/entetes.md", () => {
+  const s12 = lire(RACINE, "references", "checklist-securite.md").split("## S12")[1].split("\n---")[0];
+  const entetes = lire(RACINE, "references", "securite", "entetes.md");
+  const noms = [...s12.matchAll(/\b[A-Z][a-zA-Z]*(?:-[A-Z][a-zA-Z]*)+\b/g)].map((m) => m[0]);
+  assert.ok(noms.includes("Cross-Origin-Opener-Policy"), "S12 cite Cross-Origin-Opener-Policy");
+  for (const nom of noms) assert.ok(entetes.includes(`| \`${nom}\` |`), `${nom} absent du tableau de entetes.md`);
+  assert.ok(entetes.includes("browsing-topics=()"), "Permissions-Policy avec browsing-topics");
+  assert.match(entetes, /prérend/, "règle nonce et pages prérendues");
+  assert.match(entetes, /`preload`/, "règle preload");
+  const rapide = lire(RACINE, "references", "securite", "rapide.md");
+  for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de securite/rapide.md`);
+});

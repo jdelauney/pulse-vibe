@@ -38,11 +38,12 @@ Selon la pile retenue : configuration du serveur, de l'hébergeur ou du framewor
 | En-tête | Valeur de départ | Rôle |
 |---|---|---|
 | `Content-Security-Policy` | voir ci-dessous | Seules les sources listées peuvent charger du code, des styles, des images… |
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | Toujours en HTTPS (2 ans) |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains` | Toujours en HTTPS (2 ans) ; `preload` seulement sur décision de la personne (voir plus bas) |
 | `X-Frame-Options` | `DENY` | Interdit d'afficher le site dans un cadre (anti-clickjacking) |
 | `X-Content-Type-Options` | `nosniff` | Le navigateur respecte le type annoncé des fichiers |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` | Envoie seulement l'origine du site aux autres sites |
-| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Coupe les fonctions sensibles non utilisées |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), browsing-topics=()` | Coupe les fonctions sensibles non utilisées et le suivi publicitaire du navigateur |
+| `Cross-Origin-Opener-Policy` | `same-origin` | Une page d'un autre site, ouverte depuis l'appli, ne peut pas piloter sa fenêtre |
 
 CSP de départ, directive par directive, à compléter avec les sources repérées à l'étape 1 :
 
@@ -62,6 +63,8 @@ CSP de départ, directive par directive, à compléter avec les sources repéré
 Les directives sont séparées par `; ` dans la valeur de l'en-tête.
 
 - Viser un `script-src` sans `'unsafe-inline'` : le code va dans des fichiers séparés, plutôt que dans des attributs d'événement ou des scripts en ligne. Si la technologie retenue injecte des scripts en ligne, chercher dans sa documentation la méthode recommandée (nonce ou empreinte) ; à défaut, accepter `'unsafe-inline'` en l'expliquant à la personne.
+- Nonce et pages prérendues : un nonce change à chaque visite, donc chaque page qui le porte est recalculée à chaque visite (plus lente, plus coûteuse, sans cache). Si la technologie prérend des pages, préférer les empreintes quand elle les propose ; sinon garder `'unsafe-inline'` et l'expliquer à la personne.
+- `preload` dans `Strict-Transport-Security` inscrit le domaine dans les navigateurs, pour tous ses sous-domaines, et se retire difficilement : l'ajouter seulement si la personne le décide, informée de cette conséquence.
 - `'unsafe-eval'` seulement si la documentation l'exige, et uniquement en développement.
 - Si l'appli utilise la géolocalisation, la caméra ou le micro, retirer la valeur correspondante de `Permissions-Policy`.
 - En développement, la commande « lancer en local » peut nécessiter une connexion locale supplémentaire (rechargement automatique) : l'autoriser seulement en développement.
@@ -73,6 +76,7 @@ Les directives sont séparées par `; ` dans la valeur de l'en-tête.
 2. `curl -sI <adresse>` : les en-têtes apparaissent dans la réponse.
 3. Ouvrir l'appli, parcourir les écrans principaux avec la console du navigateur ouverte (F12) : la console doit rester exempte d'erreur « Content Security Policy ». Sinon, ajouter précisément la source légitime bloquée, jamais `*`.
 4. Après la mise en ligne : https://securityheaders.com et https://csp-evaluator.withgoogle.com.
+5. Si « Commandes du projet » prévoit des tests de bout en bout : écrire un test qui demande la page d'accueil, une adresse inconnue et un fichier comme `robots.txt`, puis vérifie la présence de chaque en-tête du tableau et des directives `frame-ancestors`, `object-src`, `base-uri` et `form-action` de la CSP. Il protège les en-têtes réellement servis, à chaque lancement des tests.
 
 ## 5. Rapport
 
@@ -80,7 +84,7 @@ Les directives sont séparées par `; ` dans la valeur de l'en-tête.
 🛡️ En-têtes de sécurité – <projet>
 Fichier ou réglage modifié : <emplacement, selon la pile retenue>
 Services autorisés dans la CSP : <liste>
-En-têtes : ✅ CSP · ✅ HSTS · ✅ X-Frame-Options · ✅ X-Content-Type-Options · ✅ Referrer-Policy · ✅ Permissions-Policy
+En-têtes : ✅ CSP · ✅ HSTS · ✅ X-Frame-Options · ✅ X-Content-Type-Options · ✅ Referrer-Policy · ✅ Permissions-Policy · ✅ Cross-Origin-Opener-Policy
 À tester : <étapes de la section 4>
 ```
 

@@ -39,7 +39,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - **S9** : page ou mention de confidentialité ; données collectées vs nécessaires (spec).
    - **S10** : formulaires publics sans protection anti-spam ; code serveur qui envoie des emails ou appelle un service payant sans limite ; absence de contrainte d'unicité là où un doublon serait grave.
    - **S11** : messages d'erreur qui affichent l'erreur brute ; journaux (logs) qui contiennent des données personnelles ou des jetons.
-   - **S12** : en-têtes de sécurité (CSP, HSTS, protection contre l'intégration dans un cadre, type de contenu, politique de référent, permissions) dans la configuration de l'hébergeur ou du serveur.
+   - **S12** : en-têtes de sécurité (CSP, HSTS, protection contre l'intégration dans un cadre, type de contenu, politique de référent, permissions, isolation de la fenêtre) dans la configuration de l'hébergeur ou du serveur.
 4. Préparer la **fiche du cambrioleur** : reprendre les tests génériques de la checklist et **les adapter au projet** (noms réels des pages, des rôles, des données, des formulaires). Pour un projet sans serveur ni comptes, garder seulement les tests pertinents (secrets, formulaire malmené, affichage).
 
 ## Format de votre réponse (à respecter exactement)

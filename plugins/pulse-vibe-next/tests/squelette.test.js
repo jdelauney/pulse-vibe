@@ -100,3 +100,22 @@ test("refuse un dossier qui contient déjà src/app/ et n'écrit rien", () => {
   assert.deepStrictEqual(fs.readdirSync(d), ["src"]);
   assert.deepStrictEqual(fs.readdirSync(path.join(d, "src")), ["app"]);
 });
+
+test("next.config.ts du squelette déclare les sept en-têtes de sécurité, sans nonce", () => {
+  const config = fs.readFileSync(path.join(__dirname, "..", "templates", "squelette", "next.config.ts"), "utf8");
+  for (const entete of [
+    "Content-Security-Policy",
+    "Strict-Transport-Security",
+    "Cross-Origin-Opener-Policy",
+    "Permissions-Policy",
+    "X-Frame-Options",
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+  ])
+    assert.ok(config.includes(`key: "${entete}"`), entete);
+  assert.match(config, /const sources: Record<string, string\[\]> = \{/);
+  assert.match(config, /"max-age=63072000; includeSubDomains"/);
+  assert.doesNotMatch(config, /preload/);
+  assert.doesNotMatch(config, /'nonce-|x-nonce/);
+  assert.match(config, /browsing-topics=\(\)/);
+});

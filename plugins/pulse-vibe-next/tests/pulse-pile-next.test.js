@@ -48,7 +48,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     fix: ["Pour réaliser et corriger", "Fiche de la pile"],
     spirc: ["Pour réaliser et corriger"],
     review: ["Pour relire", "Fiche de la pile"],
-    security: ["Pour relire"],
+    security: ["Pour relire", "Pour la sécurité", "Fiche de la pile"],
     test: ["Pour les tests"],
     deploy: ["Pour mettre en ligne"],
     cicd: ["Pour mettre en ligne"],
@@ -171,4 +171,32 @@ test("la fiche s'accompagne de l'architecture, pour tech, plan, implement et rev
     assert.strictEqual(r.status, 0);
     assert.match(r.stdout, /----- Architecture du code/, commande);
   }
+});
+
+test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {
+  const texte = lire(REF, "recettes", "fichiers.md");
+  assert.match(texte, /\| `next\.config\.ts` \(modifié\) \|/);
+  assert.ok(texte.includes('"connect-src": ['), "bloc connect-src");
+  // Sans forcePathStyle, le SDK signe une adresse <bucket>.<compte>.eu.r2… : la CSP vise cet hôte exact.
+  assert.ok(texte.includes("`https://${process.env.R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`"), "hôte R2 avec le bucket dans la CSP");
+  assert.match(texte, /pulse-vibe-next 0.9.0/, "version du squelette qui porte l'objet sources");
+  assert.match(texte, /### \d+\. La CSP autorise R2/);
+  assert.match(texte, /Refused to connect/);
+});
+
+test("contexte security : en-têtes dans next.config.ts, sans nonce, preload décidé par la personne", () => {
+  const texte = lire(REF, "contexte", "security.md");
+  for (const attendu of ["next.config.ts", "`sources`", "nonce", "cacheComponents", "preload", "proxy.ts", "curl -sI", "un seul `headers()`"])
+    assert.ok(texte.includes(attendu), attendu);
+});
+
+test("recette mesure-reelle : en développement, la CSP autorise le script de diagnostic de Speed Insights", () => {
+  const texte = lire(REF, "recettes", "mesure-reelle.md");
+  assert.ok(texte.includes("| `next.config.ts` (modifié) | A |"), "ligne du tableau des fichiers");
+  assert.ok(texte.includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
+});
+
+test("contexte security : sources de toutes les recettes qui touchent la CSP", () => {
+  const texte = lire(REF, "contexte", "security.md");
+  for (const attendu of ["mesure-reelle", "va.vercel-scripts.com", "vercel.live", "si elle manque"]) assert.ok(texte.includes(attendu), attendu);
 });
