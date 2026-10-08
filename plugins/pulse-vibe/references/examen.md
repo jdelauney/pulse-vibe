@@ -1,6 +1,6 @@
 # Examiner une tâche : relecture et vérification
 
-Utilisé par `/pulse:review`, par la boucle de `/pulse:implement` (sans tâche, à travers `/pulse:review`) et par `/pulse:spirc`. Une seule façon d'examiner une tâche, quel que soit le chemin : un assistant relit le code, un autre l'essaie en marche. Aucun des deux n'a écrit le code.
+Utilisé par `/pulse:review`, par la boucle de `/pulse:implement` (lancé sans numéro de tâche, elle passe par `/pulse:review`) et par `/pulse:spirc`. Une seule façon d'examiner une tâche, quel que soit le chemin : un assistant relit le code, un autre l'essaie en marche. Aucun des deux n'a écrit le code.
 
 À expliquer en une phrase, la première fois : « Deux assistants qui n'ont pas écrit le code l'examinent : l'un le relit, l'autre lance l'application et essaie chaque critère. »
 
@@ -14,6 +14,7 @@ Lancer **en parallèle** (plusieurs appels Agent dans le même message) :
 
 - **`pulse:reviewer`** : la tâche (identifiant et titre) et la racine du projet ; les documents de référence (§ 1), `docs/brief.md` et `aidd_docs/memory/glossary.md` ; la **checklist sécurité complète**, recopiée dans le message (l'agent voit seulement les fichiers du projet) ; les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` ; s'ils existent, le chemin de `docs/design.md` et celui de la maquette citée par la spec ou la tâche (`docs/design/maquettes/US-XXX-<nom>/retenue/`) ; la consigne de juger la qualité avec `pulse-aidd qualite`. Avec les tests d'abord : en plus, les fichiers de test et le dernier rapport du test-runner.
 - **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne, ou l'objectif de la tâche), ses critères d'acceptation complets, les fichiers modifiés (`git status`, `git diff --stat`), la section « Commandes du projet » de `docs/technical.md` (contrôles automatiques, tests, lancer en local).
+  Le verifier démarre lui-même l'application (commande « Lancer en local » de « Commandes du projet »), note l'adresse, puis l'arrête à la fin.
 - Avec le **contrôle de sécurité à chaque tâche** (option `-x` de `/pulse:spirc`) : **`pulse:security-auditor`**, avec la checklist sécurité complète et la consigne de se limiter aux fichiers modifiés par la tâche.
 
 Un agent indisponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), en lecture seule, et le signaler. La relecture se fait de préférence dans un autre contexte que celui qui a écrit le code ; sinon, le dire à la personne.

@@ -489,3 +489,13 @@ test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour ch
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
   assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
 });
+
+test("examen d'une tâche : chaque agent nommé par la référence est repliable par `pulse-aidd agent <nom>` dans les skills qui la chargent", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  const agents = [...AGENTS].filter((a) => new RegExp(`(?<![\w-])${a}(?![\w-])`).test(examen));
+  assert.ok(agents.length >= 4, agents.join(","));
+  for (const skill of ["review", "spirc", "implement"]) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    for (const a of agents) assert.ok(motifs.some((m) => couvre(m, `pulse-aidd agent ${a}`)), `${skill} : pulse-aidd agent ${a}`);
+  }
+});
