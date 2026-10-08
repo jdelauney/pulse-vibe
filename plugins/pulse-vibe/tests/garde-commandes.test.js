@@ -277,3 +277,52 @@ test("lanceurs Windows : l'envoi forcé reste refusé", () => {
 test("PowerShell : un message de commit qui cite une commande passe", () => {
   passePs('git commit -m "ne jamais faire git push --force"');
 });
+
+// ------------------------------------------------------------ Git : contournements fermés
+
+test("options globales avec valeur : l'envoi forcé reste refusé", () => {
+  refus("git --git-dir .git push --force");
+  refus("git --work-tree . push --force");
+  refus("git --namespace x push -f");
+});
+
+test("options longues abrégées comme Git les accepte", () => {
+  refus("git push --forc");
+  refus("git push --no-verif");
+  refus('git commit --no-veri -m "x"');
+  confirmation("git reset --har");
+});
+
+test("contrôles désactivés autrement que par --no-verify : refus", () => {
+  refus('git -c core.hooksPath=/dev/null commit -m "x"');
+  refus('HUSKY=0 git commit -m "x"');
+  refus('export HUSKY=0; git commit -m "x"');
+  refusPs('$env:HUSKY = 0; git commit -m "x"');
+  passe("HUSKY=0 npm ci");
+});
+
+test("ce qui jette ou déplace du travail : confirmation", () => {
+  confirmation("git switch -f main");
+  confirmation("git switch --discard-changes main");
+  confirmation("git checkout HEAD~3 src/app.js");
+  confirmation("git branch -f main HEAD~5");
+  confirmation("git update-ref -d refs/heads/x");
+  confirmation("git filter-branch --tree-filter 'rm -f x' HEAD");
+  confirmation("git reflog expire --expire=now --all");
+  confirmation("git gc --prune=now");
+  passe("git checkout -b feat/x origin/main");
+  passe("git switch -c feat/x");
+});
+
+test("lire .env dans l'historique : refus", () => {
+  refus("git show HEAD:.env");
+  refus("git cat-file -p HEAD:.env.local");
+  passe("git show HEAD:.env.example");
+});
+
+test("indexation globale déguisée : refus dans un dépôt qui a un commit", () => {
+  const dir = depot({ avecCommit: true });
+  for (const c of ["git add *.js", "git add src/..", "git ls-files -m | xargs git add", "git add $(git ls-files -m)"]) refus(c, dir);
+  passe("git add -n .", dir);
+  passe("git add src/a.js", dir);
+});

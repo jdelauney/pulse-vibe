@@ -49,6 +49,15 @@ const MESSAGES = {
   noVerify:
     "Pulse refuse le contournement des contrôles (--no-verify) : ils protègent vos secrets et la qualité du projet. " +
     "À la place : corriger ce que le contrôle signale, puis relancer la commande.",
+  controlesCoupes:
+    "Pulse refuse de désactiver les contrôles avant commit (core.hooksPath, HUSKY=0…) : ils protègent vos secrets et la qualité du projet. " +
+    "À la place : corriger ce que le contrôle signale, puis relancer la commande.",
+  brancheDeplacee:
+    "Pulse demande votre accord : cette commande déplace ou réécrit une branche ; les commits qu'elle seule contenait ne seront plus visibles. " +
+    "Pour revenir en arrière sans rien perdre, préférez `/pulse:annuler`.",
+  historiqueReecrit:
+    "Pulse demande votre accord : cette commande réécrit l'historique du projet ou efface les moyens de récupérer un travail. " +
+    "Elle sert rarement, par exemple pour retirer un secret de l'historique (`/pulse:secrets fuite` vous guide).",
   indexationGlobale:
     "Pulse refuse l'indexation globale dans un dépôt qui a déjà un historique : une autre session peut travailler dans le même dépôt, " +
     "et ses fichiers partiraient dans votre commit. À la place : `git add <fichier> <fichier>…` en nommant les fichiers du sujet, puis `git commit`.",
@@ -87,44 +96,69 @@ function aDejaUnCommit(cwd, prefixe) {
   }
 }
 
-function reglesGit(args, cwd, constats) {
-  const { k, prefixe } = optionsGlobalesGit(args);
-  const sous = args[k];
-  const reste = args.slice(k + 1);
+// Option longue, éventuellement abrégée comme Git l'accepte (--har pour --hard), d'au moins `min` caractères.
+const longue = (o, nom, min = 4) => {
+  const base = o.split("=")[0];
+  return base.startsWith("--") && base.length >= min && nom.startsWith(base);
+};
+const COUPE_HOOKS = /^(HUSKY=0|HUSKY_SKIP_HOOKS=1|SKIP_SIMPLE_GIT_HOOKS=1|LEFTHOOK=0)$/;
+
+function reglesGit(c, cwd, constats) {
+  const { k, prefixe, configs } = optionsGlobalesGit(c.args);
+  if (configs.some((v) => /^core\.hookspath=/i.test(v)) || c.affectations.some((a) => COUPE_HOOKS.test(a))) constats.push([REFUS, MESSAGES.controlesCoupes]);
+  const sous = c.args[k];
+  const reste = c.args.slice(k + 1);
   const options = reste.filter(estOption);
   const positions = reste.filter((m) => !estOption(m) && m !== "--");
-  const aFlag = (...noms) => options.some((o) => noms.includes(o) || noms.some((nm) => nm.length === 2 && flagsCourts(o).includes(nm[1])));
+  const court = (lettre) => options.some((o) => flagsCourts(o).includes(lettre));
+  const aLongue = (nom, min) => options.some((o) => longue(o, nom, min));
+  const noVerify = aLongue("--no-verify", 6);
 
   switch (sous) {
     case "push":
-      if (options.some((o) => o === "--force" || o.startsWith("--force-with-lease") || o === "--force-if-includes" || flagsCourts(o).includes("f")) || positions.some((p) => p.startsWith("+")))
+      if (aLongue("--force") || aLongue("--force-with-lease") || aLongue("--force-if-includes") || court("f") || positions.some((p) => p.startsWith("+")))
         constats.push([REFUS, MESSAGES.envoiForce]);
-      if (options.includes("--no-verify")) constats.push([REFUS, MESSAGES.noVerify]);
-      if (options.includes("--delete") || options.includes("-d") || options.includes("--mirror") || positions.some((p) => p.startsWith(":") && p.length > 1))
+      if (noVerify) constats.push([REFUS, MESSAGES.noVerify]);
+      if (aLongue("--delete") || options.includes("-d") || aLongue("--mirror") || positions.some((p) => p.startsWith(":") && p.length > 1))
         constats.push([ACCORD, MESSAGES.brancheDistante]);
       break;
     case "commit":
-      if (options.includes("--no-verify") || options.some((o) => flagsCourts(o).includes("n"))) constats.push([REFUS, MESSAGES.noVerify]);
-      if ((options.includes("--all") || options.some((o) => flagsCourts(o).includes("a"))) && aDejaUnCommit(cwd, prefixe))
-        constats.push([REFUS, MESSAGES.indexationGlobale]);
+      if (noVerify || court("n")) constats.push([REFUS, MESSAGES.noVerify]);
+      if ((aLongue("--all") || court("a")) && aDejaUnCommit(cwd, prefixe)) constats.push([REFUS, MESSAGES.indexationGlobale]);
       break;
     case "merge":
     case "rebase":
     case "am":
-      if (options.includes("--no-verify")) constats.push([REFUS, MESSAGES.noVerify]);
+    case "cherry-pick":
+    case "revert":
+      if (noVerify) constats.push([REFUS, MESSAGES.noVerify]);
       break;
     case "add": {
+      if (aLongue("--dry-run") || court("n")) break;
+      const normalise = (p) => path.posix.normalize(p.replace(/\\/g, "/").replace(/\/+$/, "") || "/");
       const globale =
-        options.some((o) => ["-A", "--all", "-u", "--update", "--no-ignore-removal"].includes(o) || /^-[a-zA-Z]*[Au][a-zA-Z]*$/.test(o)) ||
-        positions.some((p) => [".", "./", ":/", "*", ":(top)", ":/*"].includes(p));
+        c.viaXargs ||
+        options.some((o) => ["-A", "-u", "--no-ignore-removal"].includes(o) || longue(o, "--all") || longue(o, "--update") || /^-[a-zA-Z]*[Au][a-zA-Z]*$/.test(o)) ||
+        positions.some((p) => [":/", ":(top)", ":/*"].includes(p) || normalise(p) === "." || /[*?[]/.test(p) || p.startsWith("$(") || p.startsWith("`"));
       if (globale && aDejaUnCommit(cwd, prefixe)) constats.push([REFUS, MESSAGES.indexationGlobale]);
       break;
     }
     case "reset":
-      if (options.includes("--hard")) constats.push([ACCORD, MESSAGES.travailJete]);
+      if (aLongue("--hard")) constats.push([ACCORD, MESSAGES.travailJete]);
       break;
-    case "checkout":
-      if (reste.includes("--") || positions.includes(".") || options.includes("-f") || options.includes("--force")) constats.push([ACCORD, MESSAGES.travailJete]);
+    case "checkout": {
+      const AVEC_VALEUR = new Set(["-b", "-B", "--orphan", "--conflict"]);
+      const cibles = [];
+      for (let j = 0; j < reste.length; j++) {
+        if (AVEC_VALEUR.has(reste[j])) j++;
+        else if (!estOption(reste[j]) && reste[j] !== "--") cibles.push(reste[j]);
+      }
+      if (reste.includes("--") || cibles.includes(".") || cibles.length >= 2 || options.includes("-f") || aLongue("--force")) constats.push([ACCORD, MESSAGES.travailJete]);
+      break;
+    }
+    case "switch":
+      if (options.includes("-f") || aLongue("--force") || aLongue("--discard-changes", 5)) constats.push([ACCORD, MESSAGES.travailJete]);
+      if (options.includes("-C") || aLongue("--force-create", 9)) constats.push([ACCORD, MESSAGES.brancheDeplacee]);
       break;
     case "restore": {
       const worktree = options.includes("--worktree") || options.includes("-W") || !(options.includes("--staged") || options.includes("-S"));
@@ -132,14 +166,32 @@ function reglesGit(args, cwd, constats) {
       break;
     }
     case "clean":
-      if (options.some((o) => o === "--force" || flagsCourts(o).includes("f"))) constats.push([ACCORD, MESSAGES.travailJete]);
+      if (aLongue("--force") || court("f")) constats.push([ACCORD, MESSAGES.travailJete]);
       break;
     case "stash":
       if (positions[0] === "drop" || positions[0] === "clear") constats.push([ACCORD, MESSAGES.travailJete]);
       break;
     case "branch":
-      if (options.includes("-D") || ((options.includes("--delete") || options.includes("-d")) && (options.includes("--force") || options.includes("-f"))))
-        constats.push([ACCORD, MESSAGES.brancheForcee]);
+      if (court("D") || ((aLongue("--delete") || court("d")) && (aLongue("--force") || court("f")))) constats.push([ACCORD, MESSAGES.brancheForcee]);
+      // -M (renommer en écrasant) reste libre : /pulse:deploy l'emploie pour renommer master en main.
+      else if (court("f") || aLongue("--force") || court("C")) constats.push([ACCORD, MESSAGES.brancheDeplacee]);
+      break;
+    case "update-ref":
+      constats.push([ACCORD, MESSAGES.brancheDeplacee]);
+      break;
+    case "filter-branch":
+    case "filter-repo":
+      constats.push([ACCORD, MESSAGES.historiqueReecrit]);
+      break;
+    case "reflog":
+      if (positions[0] === "expire" || positions[0] === "delete") constats.push([ACCORD, MESSAGES.historiqueReecrit]);
+      break;
+    case "gc":
+      if (options.some((o) => /^--prune=(now|all)$/.test(o))) constats.push([ACCORD, MESSAGES.historiqueReecrit]);
+      break;
+    case "show":
+    case "cat-file":
+      if (positions.some((p) => p.includes(":") && estFichierEnv(p.slice(p.indexOf(":") + 1)))) constats.push([REFUS, MESSAGES.lectureEnv]);
       break;
     case "worktree":
       if (positions[0] === "remove" && (options.includes("--force") || options.includes("-f"))) constats.push([ACCORD, MESSAGES.brancheForcee]);
@@ -152,7 +204,6 @@ function reglesGit(args, cwd, constats) {
   }
 }
 
-/** Vrai si `git config <reste>` écrit autre chose que user.name / user.email. */
 function configEcrit(reste) {
   const AVEC_VALEUR = new Set(["--file", "-f", "--blob", "--type", "--default"]);
   const ECRITURES = ["--unset", "--unset-all", "--add", "--replace-all", "--edit", "-e", "--rename-section", "--remove-section"];
@@ -202,7 +253,7 @@ function appliquerRegles(c, cwd, constats) {
 
   switch (cmd) {
     case "git":
-      reglesGit(args, cwd, constats);
+      reglesGit(c, cwd, constats);
       break;
     case "npm":
     case "pnpm":
@@ -259,6 +310,9 @@ function appliquerRegles(c, cwd, constats) {
 function analyser(commande, cwd, dialecte) {
   const constats = [];
   for (const c of commandesSimples(commande, dialecte)) appliquerRegles(c, cwd, constats);
+  // Contrôles coupés par une variable posée avant la commande (export HUSKY=0 ; $env:HUSKY = 0).
+  const coupe = /(^|[\s;&|(])(export\s+|\$env:)(HUSKY\s*=\s*['"]?0|HUSKY_SKIP_HOOKS\s*=\s*['"]?1|SKIP_SIMPLE_GIT_HOOKS\s*=\s*['"]?1|LEFTHOOK\s*=\s*['"]?0)\b/i;
+  if (coupe.test(commande) && commandesSimples(commande, dialecte).some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.controlesCoupes]);
   return constats;
 }
 
