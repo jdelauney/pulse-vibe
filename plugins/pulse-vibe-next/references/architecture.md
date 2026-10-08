@@ -63,7 +63,8 @@ drizzle/                          migrations
 | `src/features/` | `core/`, `db/`, `adapters/`, `components/`, `lib/`, `config/`, `hooks/`, `stores/` | `app/` |
 | `app/` | tout : c'est l'assemblage | — |
 
-- Exception : `src/adapters/auth/` importe aussi `src/db/` (tables de Better Auth), déclarée dans `biome.json`.
+- Exception : `src/adapters/auth/` importe aussi `src/db/` (tables de Better Auth), déclarée dans `biome.json` ; `auth.adapter.ts` y assemble aussi son expéditeur d'e-mails depuis `src/adapters/email/` (recette `email`).
+- Un adapter qui sert de garde côté serveur (ex. `src/adapters/limite/`) peut lire les en-têtes de la requête (`next/headers`) et renvoyer l'erreur d'action (`returnServerError`).
 
 `import "server-only"` en tête de chaque fichier de `src/db/`, `src/adapters/`, `queries/`, et de `src/config/env.ts`, `src/lib/logger.ts`. Les fichiers d'`actions/` commencent par `"use server"`.
 
@@ -74,11 +75,12 @@ Le niveau d'un composant se décide par **ce qu'il importe**.
 | Niveau | Rôle | Importe | Laisse de côté |
 |---|---|---|---|
 | `containers/` (`<nom>.container.tsx`) | lit les données (query, session, store), branche les actions, transmet des props | `queries/`, `actions/`, `hooks/`, `stores/`, `sections/` et en dessous, d'autres containers de la feature | `db/`, `adapters/`, `drizzle-orm` |
-| `sections/` | un bloc d'écran (liste, formulaire, en-tête) à partir de props | `composites/`, `elements/`, `components/ui`, `components/shared`, `lib/` | `actions/`, `queries/`, `hooks/`, `stores/`, `containers/`, `db/`, `adapters/` |
-| `composites/` | quelques éléments combinés (carte, ligne de tableau) | `elements/`, `components/ui`, `components/shared/elements`, `lib/` | idem + `sections/` |
-| `elements/` | une seule chose (badge de statut, montant formaté) | `components/ui`, `lib/` | tout autre composant de feature |
+| `sections/` | un bloc d'écran (liste, formulaire, en-tête) à partir de props | `composites/`, `elements/`, `components/ui`, `components/shared`, `lib/`, `src/core/` (types, constantes) | `actions/`, `queries/`, `hooks/`, `stores/`, `containers/`, `db/`, `adapters/` |
+| `composites/` | quelques éléments combinés (carte, ligne de tableau) | `elements/`, `components/ui`, `components/shared/elements`, `lib/`, `src/core/` (types, constantes) | idem + `sections/` |
+| `elements/` | une seule chose (badge de statut, montant formaté) | `components/ui`, `lib/`, `src/core/` (types, constantes) | tout autre composant de feature |
 
 - Une page de `app/` rend des containers (ou des sections sans données), chacun sous `<Suspense>` s'il lit des données.
+- Les composants d'affichage peuvent importer les types et les constantes pures de `src/core/` (ex. les statuts d'une entité) ; les données elles-mêmes arrivent en props.
 - Les composants d'affichage reçoivent tout par props, typées ; l'état visuel (`useState` pour ouvert/fermé) leur reste permis.
 - Les `hooks/` d'une feature servent ses containers ; les composants d'affichage reçoivent le résultat en props.
 - **Formulaire** : la section porte les champs (TanStack Form + `Field`) et la validation Zod dans le navigateur ; elle reçoit `envoyer(valeurs)` et `erreurServeur` en props. Le container (client) appelle `useAction(action)` et les lui passe.
@@ -110,7 +112,7 @@ page (app/) → <Suspense> → container (serveur) → queries/<lecture>.query.t
 
 ## 7. Webhooks
 
-`app/api/<service>/route.ts` → `features/<d>/webhooks/<x>.webhook.ts` (vérifie la signature avec l'adapter du service) → use-case. Une erreur technique se renvoie avec `reponseErreur(erreur, contexte)` de `src/lib/errors/reponse-erreur.ts`.
+`app/api/<service>/route.ts` → `features/<d>/webhooks/<x>.webhook.ts` (vérifie la signature avec l'adapter du service) → use-case. Une erreur technique se renvoie avec `reponseErreur(erreur, contexte)` de `src/lib/errors/reponse-erreur.ts`. Une adresse appelée par le navigateur (ex. une balise de mesure) suit le même chemin ; la vérification de l'origine (`Origin`) remplace la signature.
 
 ## 8. Erreurs
 

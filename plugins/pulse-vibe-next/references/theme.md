@@ -1,6 +1,6 @@
 # Le thème : de `docs/design.md` à shadcn
 
-Le thème vit dans **`src/app/globals.css`**, en variables CSS que shadcn et Tailwind emploient partout (`bg-primary`, `text-muted-foreground`…). Traduire l'identité, c'est remplacer les valeurs de ces variables : les composants suivent seuls.
+Le thème vit dans **`app/globals.css`**, en variables CSS que shadcn et Tailwind emploient partout (`bg-primary`, `text-muted-foreground`…). Traduire l'identité, c'est remplacer les valeurs de ces variables : les composants suivent seuls.
 
 ## Correspondance
 
@@ -16,7 +16,7 @@ Le thème vit dans **`src/app/globals.css`**, en variables CSS que shadcn et Tai
 | Bordures et champs | `--border`, `--input` |
 | Graphiques (s'il y en a) | `--chart-1` à `--chart-5` |
 | Arrondis | `--radius` (les autres rayons en découlent) |
-| Police du texte | `Geist` → la police choisie, dans `src/app/layout.tsx` (`next/font/google`), avec `variable: "--font-sans"` |
+| Police du texte | `Geist` → la police choisie, dans `app/layout.tsx` (`next/font/google`), avec `variable: "--font-sans"` |
 | Police des titres | ajouter une seconde police `variable: "--font-titre"` et, dans `@theme inline`, `--font-heading: var(--font-titre);` |
 
 `--sidebar-*` : reprendre les valeurs de fond, texte, accent et bordure si le projet a une barre latérale ; sinon les laisser.

@@ -4,7 +4,7 @@
 
 ## Balise de vérification (préfixe d'URL, ou repli quand le DNS bloque)
 
-Dans l'objet `metadata` du layout racine `src/app/layout.tsx`, ajouter le champ `verification` (doc Next.js 16.4, `generateMetadata` → `verification`) :
+Dans l'objet `metadata` du layout racine `app/layout.tsx`, ajouter le champ `verification` (doc Next.js 16.4, `generateMetadata` → `verification`) :
 
 ```tsx
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 - Les **prévisualisations** Vercel (branches, demandes de fusion) et les anciens déploiements de production reçoivent l'en-tête `X-Robots-Tag: noindex` : c'est voulu, rien à faire. Une branche de prévisualisation reliée à un domaine personnalisé ne le reçoit pas : la garder sur un sous-domaine privé, ou ajouter `noindex` à ses pages.
 - Avec un domaine personnel, l'adresse `<projet>.vercel.app` continue de servir le site : la rediriger vers le domaine. Tableau de bord Vercel : Settings → Domains → l'adresse `vercel.app` → Edit → « Redirect to » le domaine (redirection permanente). Si l'option manque, une redirection permanente par hôte dans `next.config.ts` (`redirects`, avec `has: [{ type: "host", value: "<projet>.vercel.app" }]`).
-- Le sitemap (`src/app/sitemap.ts`) et `robots.ts` tirent l'adresse du site de la même source que `metadataBase` : toujours le domaine définitif (ni une adresse de prévisualisation, ni l'exemple de la documentation). Contrôle : `pulse-aidd sonder <domaine>/sitemap.xml --texte "<domaine>"`.
+- Le sitemap (`app/sitemap.ts`) et `robots.ts` tirent l'adresse du site de la même source que `metadataBase` : toujours le domaine définitif (ni une adresse de prévisualisation, ni l'exemple de la documentation). Contrôle : `pulse-aidd sonder <domaine>/sitemap.xml --texte "<domaine>"`.
 
 ## IndexNow (facultatif, pour Bing et les moteurs partenaires)
 
