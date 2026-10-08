@@ -351,3 +351,13 @@ test("checklist sécurité : sauvegarde dans le modèle technique, audit dans l'
   assert.match(code, /\| S13 \|/);
   assert.match(code, /\(S13\)/);
 });
+
+test("Node.js 22.19 ou plus : prérequis bloquant de /pulse:init, annoncé par les README", () => {
+  const regle = lire(RACINE, "skills", "init", "SKILL.md").split("## 2. Décider")[1].split("\n2. ")[0];
+  assert.match(regle, /\*\*Node\.js absent, ou en version inférieure à 22\.19\*\*/);
+  assert.match(regle, /s'arrêter de la même façon/);
+  assert.doesNotMatch(regle, /prévenir et continuer/);
+  const readmes = [path.join(DEPOT, "README.md"), path.join(RACINE, "README.md"), path.join(DEPOT, "plugins", "pulse-vibe-next", "README.md")].filter((f) => fs.existsSync(f));
+  assert.ok(readmes.length >= 1);
+  for (const readme of readmes) assert.match(lire(readme), /Node\.js 22\.19 ou plus/, path.relative(DEPOT, readme));
+});

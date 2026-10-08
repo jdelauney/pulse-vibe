@@ -48,6 +48,8 @@ tests/                       tests du pack
 
 ## Installation
 
+Prérequis : ceux de la méthode Pulse (Git, Node.js 22.19 ou plus), et npm, livré avec Node.js.
+
 ```
 /plugin marketplace add jdelauney/pulse-vibe
 /plugin install pulse-vibe-next@pulseia

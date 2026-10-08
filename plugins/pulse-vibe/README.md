@@ -105,7 +105,7 @@ Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose 
 
 ## Installation
 
-Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js LTS. Sous Windows, **Git for Windows** est indispensable (le plugin utilise Git Bash).
+Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js 22.19 ou plus (version LTS conseillée). Sous Windows, **Git for Windows** est indispensable (le plugin utilise Git Bash).
 Les outils du plugin fonctionnent aussi depuis PowerShell et l'invite de commandes, par un petit relais vers Git Bash.
 
 Dans une session Claude Code :

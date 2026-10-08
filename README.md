@@ -9,7 +9,7 @@ Ce dépôt est le catalogue **`pulseia`** : il contient les plugins de la métho
 
 ## Installation
 
-Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js LTS. Sous Windows, **Git for Windows** est indispensable (les plugins utilisent Git Bash).
+Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js 22.19 ou plus (version LTS conseillée). Sous Windows, **Git for Windows** est indispensable (les plugins utilisent Git Bash).
 
 Dans une session Claude Code :
 
