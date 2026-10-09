@@ -48,7 +48,7 @@ Installé avec les anciens noms (`pulse-vibe@pulseia`, `pulse-vibe-next@pulseia`
 .claude-plugin/marketplace.json   le catalogue « pulseia » : la liste des plugins
 plugins/<plugin>/                 un dossier par plugin
 docs/                             mémo des commandes
-.github/workflows/                tests des plugins ; vérification hebdomadaire du squelette Next.js
+.github/workflows/                tests des plugins (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine
 ```
 
 ## Licence

@@ -408,7 +408,7 @@ test("renvois « fiche, règle N » : chaque numéro vise la règle annoncée", 
 
 test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", () => {
   const notes = lire(REF, "migrations.md");
-  for (const version of ["0.9.0", "0.11.0", "0.17.0"]) assert.match(notes, new RegExp(`Projet créé avant pulse-next ${version.replace(/\./g, "\.")}`));
+  for (const version of ["0.9.0", "0.11.0", "0.17.0"]) assert.match(notes, new RegExp(`Projet créé avant pulse-next ${version.replace(/\./g, "\\.")}`));
   for (const commande of ["tech", "plan", "implement", "review", "security", "deploy", "seo"])
     assert.ok(!lancer("contexte", commande).stdout.includes("mettre à niveau un projet plus ancien"), commande);
   assert.strictEqual(lancer("reference", "migrations.md").status, 0);

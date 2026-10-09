@@ -9,7 +9,7 @@ Ce dépôt est le catalogue Claude Code `pulseia` (méthode Pulse, en français)
 | `.claude-plugin/marketplace.json` | Le catalogue : un plugin par entrée, au nom identique au `name` de son manifeste (`pulse`, `pulse-next`), `source` = son dossier dans `plugins/` ; `renames` garde la mise à jour des installations faites sous les anciens noms (`pulse-vibe`, `pulse-vibe-next`) |
 | `plugins/pulse-vibe/` | Le cœur, plugin `pulse` : la méthode Pulse, agnostique de la technologie (préfixe `/pulse:*`) |
 | `plugins/pulse-vibe-next/` | Le pack de pile Next.js, plugin `pulse-next` : outil `bin/pulse-pile-next` (contrat des packs : `info`, `contexte <commande>`), fiche, recettes découpées en étapes, squelette ; dépend de `pulse` |
-| `.github/workflows/` | Tests des plugins à chaque envoi (Ubuntu et Windows) ; squelette Next.js et chaînes de recettes vérifiés chaque semaine aux dernières versions |
+| `.github/workflows/` | Tests des plugins à chaque envoi (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur qu'il utilise, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine aux dernières versions |
 | `docs/` | Mémo des commandes (`docs/superpowers/` : conceptions, revues et plans, gardés en local, hors Git) |
 
 Dans un plugin (chemins relatifs à son dossier) :
