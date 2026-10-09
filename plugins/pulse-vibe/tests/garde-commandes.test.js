@@ -740,6 +740,17 @@ test("PowerShell ordinaire avec un bloc { } qui ne lit rien : passe, même dans 
   ])
     passePs(c, dir);
   for (const c of ["Get-ChildItem | ForEach-Object { Get-Content $_ }", "gci | % { $_.OpenText().ReadToEnd() }", "gc @(echo .env)"]) refusPs(c, dir);
+  // Tout bloc qui fait autre chose que lire des propriétés, filtrer, trier ou afficher compte comme une lecture.
+  for (const c of [
+    "gci .env | % { [IO.File]::ReadLines($_) }",
+    "Get-ChildItem | % { [IO.File]::ReadLines($_.FullName) }",
+    "gci .env | % { (New-Object IO.StreamReader $_.FullName).ReadLine() }",
+    `gci .env | % { node -p "require('fs').readFileSync(process.argv[1],'utf8')" $_ }`,
+    "gci .env | % { Copy-Item $_ x.txt }",
+    `gci -Force | ForEach-Object { python -c "print(open(r'$_').read())" }`,
+  ])
+    refusPs(c, dir);
+  passePs("gci .env | % { $_.Name.ToUpper() }", dir);
 });
 
 test("recherche récursive avec un motif collé : les dossiers fouillés sont les bons", () => {

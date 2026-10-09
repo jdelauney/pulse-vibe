@@ -146,8 +146,32 @@ const ECRIVAINS_PS = new Set(["add-content", "ac", "set-content", "sc", "out-fil
 // sauf par celles qui montrent seulement les noms et les propriétés.
 const LISTEURS_PS = new Set(["ls", "dir", "get-childitem", "gci"]);
 const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "where-object", "where", "?", "foreach-object", "foreach", "%"]);
-// Commandes qui, dans un bloc { } après le tube, liraient chaque fichier listé.
-const LECTEURS_BLOC_PS = new Set(["get-content", "gc", "cat", "type", "more", "select-string", "sls", "import-csv", "ipcsv", "format-hex", "fhx", "import-clixml", "import-powershelldatafile", "get-filehash"]);
+// Bloc { } après le tube : sûr seulement s'il lit des propriétés ($_.Name), compare, filtre, trie ou affiche.
+const SURES_BLOC_PS = new Set(["where-object", "where", "?", "select-object", "select", "sort-object", "sort", "write-output", "write-host", "echo", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "measure-object", "measure", "out-null", "foreach-object", "foreach", "%"]);
+const METHODES_SURES_PS = new Set(["tostring", "replace", "substring", "tolower", "toupper", "trim"]);
+
+/** Les textes des blocs { } d'une commande PowerShell (blocs imbriqués compris dans leur bloc parent). */
+function blocsPs(commande) {
+  const blocs = [];
+  for (let i = 0; i < commande.length; i++) {
+    if (commande[i] !== "{") continue;
+    let profondeur = 0;
+    let j = i;
+    for (; j < commande.length; j++) {
+      if (commande[j] === "{") profondeur++;
+      else if (commande[j] === "}" && --profondeur === 0) break;
+    }
+    blocs.push(commande.slice(i + 1, j));
+    i = j;
+  }
+  return blocs;
+}
+
+/** Vrai si le bloc ne fait que lire des propriétés, comparer, filtrer, trier ou afficher : aucune autre commande, aucun appel de méthode qui lit. */
+function blocSur(texte) {
+  for (const m of texte.matchAll(/(::|\.)\s*([A-Za-z_]\w*)\s*\(/g)) if (m[1] === "::" || !METHODES_SURES_PS.has(m[2].toLowerCase())) return false;
+  return commandesSimples(texte, "powershell").every((d) => d.cmd === "" || /^[$-]/.test(d.brut) || SURES_BLOC_PS.has(d.cmd));
+}
 // PowerShell : commandes qui produisent un nom de fichier (lu ensuite s'il est passé entre parenthèses à une autre commande).
 const PRODUCTEURS_PS = new Set(["echo", "write-output", "printf", "ls", "dir", "get-childitem", "gci", "realpath", "basename", "dirname"]);
 // find sans action qui lance une commande : il affiche seulement des noms.
@@ -656,11 +680,10 @@ function analyser(commande, cwd, dialecte) {
   if (commandes.some((c) => c.viaXargs && lecteur(c)) && listeurs.some((c) => listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   if (commandes.some((c) => c.viaFind && lecteur(c)) && listeurs.some((c) => c.cmd === "find" && listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   // PowerShell : des fichiers .env listés puis passés par un tube à une commande qui les lit (Get-ChildItem .env | Get-Content).
-  // Un bloc { } ou @{ } lit chaque fichier quand il contient une commande de lecture (gc $_) ou une méthode de lecture (.OpenText()).
-  const methodeLecture = /\.(OpenText|OpenRead|ReadToEnd)\s*\(|::ReadAll\w*\s*\(/i.test(commande);
+  // Un bloc { } ou @{ } compte comme une lecture, sauf s'il ne fait que lire des propriétés, comparer, filtrer, trier ou afficher (blocSur).
+  const blocLit = dialecte === "powershell" && !blocsPs(commande).every(blocSur);
   commandes.forEach((c, i) => {
     if (c.dialecte !== "powershell" || !LISTEURS_PS.has(c.cmd) || !listeurCouvreEnv(c, cwd)) return;
-    const blocLit = methodeLecture || commandes.slice(i + 1).some((d) => LECTEURS_BLOC_PS.has(d.cmd));
     for (let j = i + 1; j < commandes.length && commandes[j].apresTube; j++)
       if (blocLit || !SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
   });
