@@ -42,6 +42,7 @@ const CHAINES = [
   ["connexion", "liste"],
   ["connexion", "fichiers"],
   ["connexion", "paiement"],
+  ["connexion", "email"],
 ];
 
 // Chemins (relatifs au dépôt) dont dépend chaque chaîne : un changement ici les fait toutes vérifier.
@@ -239,7 +240,7 @@ function poserRecette(dossier, nom, nonVerifies, texte = null) {
   const etapes = extraireEtapes(texte === null ? texteRecette(nom) : texte);
   if (!etapes.length) throw new Error(`recette ${nom} : aucune balise (voir l'en-tête de ce script)`);
   const nonVerifiees = etapes.filter((e) => e.type === "sans-verification").length;
-  console.log(`\n■ Recette ${nom} : ${etapes.length} étapes, dont ${nonVerifiees} non vérifiées`);
+  console.log(`\n■ Recette ${nom} : ${etapes.length} étapes, dont ${nonVerifiees} non vérifiée${nonVerifiees > 1 ? "s" : ""}`);
   const poses = [];
   for (const e of etapes) {
     if (e.type === "sans-verification") {

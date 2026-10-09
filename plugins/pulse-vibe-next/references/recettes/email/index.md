@@ -14,6 +14,7 @@
 - Pour le site en ligne, un compte SMTP :
   - **Pour essayer en ligne** : un compte Gmail que la personne crée pour le projet (jamais son compte personnel), avec la validation en deux étapes, puis un **mot de passe d'application** créé sur https://myaccount.google.com/apppasswords. La personne le colle elle-même dans `.env`, puis dans Vercel ; il ne passe jamais par la conversation. Elle le révoque sur la même page quand il ne sert plus.
   - **Pour un vrai lancement** : le SMTP d'un fournisseur, avec le nom de domaine du projet. Infomaniak (suisse) : `mail.infomaniak.com`, port 587, identifiant = l'adresse e-mail complète. Brevo (français) : `smtp-relay.brevo.com`, port 587, identifiant = l'adresse du compte Brevo, mot de passe = une clé SMTP créée dans « SMTP & API ».
+- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `connexion,email` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration, construction. Les tests de bout en bout (`e2e/email.spec.ts`, avec Mailpit) se lancent à la main.
 
 ## Variables d'environnement
 
@@ -27,6 +28,7 @@
 
 Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts`, après `BETTER_AUTH_URL` :
 
+<!-- ajout: src/config/env.ts après: BETTER_AUTH_URL: z.url(), -->
 ```ts
     SMTP_HOST: z.string().min(1),
     SMTP_PORT: z.coerce.number().int().positive(),
@@ -37,6 +39,7 @@ Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts`, après `BETTER
 
 Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
 
+<!-- ajout: tests/helpers/env-de-test.ts après: BETTER_AUTH_URL: "http://localhost:3000", -->
 ```ts
   SMTP_HOST: "localhost",
   SMTP_PORT: "1025",
@@ -45,6 +48,7 @@ Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `V
 
 Ajoutez les cinq noms, **sans valeur**, à `.env.example` :
 
+<!-- ajout: .env.example -->
 ```
 SMTP_HOST=
 SMTP_PORT=
@@ -83,6 +87,8 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | `e2e/aides/mailpit.ts`, `e2e/aides/connexion.ts` (modifié), `e2e/email.spec.ts` | Lecture de Mailpit dans Playwright |
 
 ## Étapes
+
+<!-- commande: npm install nodemailer -->
 
 Le parcours une fois la recette en place :
 
