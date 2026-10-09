@@ -234,7 +234,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -262,7 +262,7 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -307,7 +307,7 @@ test("allowed-tools : les commandes git de lecture citées par un skill, ou par 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -729,4 +729,28 @@ test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs 
   const cycle = lire(RACINE, "references", "cycle.md");
   assert.ok(cycle.includes("/pulse:init → /pulse:brainstorm"));
   assert.ok(cycle.includes('`/pulse:spirc <US-XXX> [tâche | "demande"]`'));
+});
+
+test("une étape enchaînée par une commande se charge sans les règles communes", () => {
+  const sources = [...fichiers(path.join(RACINE, "skills"), ".md"), ...fichiers(path.join(RACINE, "references"), ".md")];
+  const problemes = [];
+  for (const f of sources) {
+    const corps = lire(f).replace(/^---\n[\s\S]*?\n---\n/, "");
+    for (const m of corps.matchAll(/pulse-aidd etape (\S+)( --sans-communes)?/g))
+      if (!m[2]) problemes.push(`${path.relative(DEPOT, f)} : pulse-aidd etape ${m[1]}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("les sous-commandes etape, reference et qualite citées par un skill sont permises par son allowed-tools", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const motifs = motifsBash(fichier);
+    const corps = lire(fichier).replace(/^---\n[\s\S]*?\n---\n/, "");
+    for (const [, citation] of corps.matchAll(/`(pulse-aidd (?:etape|reference|qualite)\b[^`]*)`/g)) {
+      const commande = essai(citation);
+      if (!motifs.some((m) => couvre(m, commande))) problemes.push(`${path.relative(DEPOT, fichier)} : ${commande}`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
 });

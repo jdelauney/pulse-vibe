@@ -70,7 +70,7 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 
 ## Comment appliquer une étape de la méthode
 
-Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <commande>`**, puis appliquer sa section « Déroulé » à l'identique (prérequis, questions, fichiers produits, garde-fous), **hors** son bloc de fin de commande.
+Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <commande> --sans-communes`**, puis appliquer sa section « Déroulé » à l'identique (prérequis, questions, fichiers produits, garde-fous), **hors** son bloc de fin de commande.
 
 ## [A] Analyser – seulement pour une demande libre
 
@@ -111,13 +111,13 @@ Puis, si une copie à part est retenue, « 2. Créer le worktree ou y revenir »
 
 - Plan à créer : appliquer l'étape **plan** avec l'US de § S. Sa validation vaut ✋ 2 : l'étape écrit elle-même la ligne « plan validé » du journal (ne pas l'ajouter une seconde fois). Cette validation est la seule question sur le plan, y compris avec `-a` : le plan fixe le besoin, c'est une décision de la personne (règles communes § 1, « les validations restent »). Plan existant : montrer la liste résumée de ses tâches (titres et statuts).
 
-✋ **Point de validation 2** (plan existant ou demande libre, sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine`) avec ses remarques, puis reposer la question. Une fois le plan accepté, ajouter au journal du plan la ligne « plan validé » (règles communes § 7 ; en mode autonome : « plan accepté sans validation, mode autonome »).
+✋ **Point de validation 2** (plan existant ou demande libre, sauf `-a`) : « Le plan vous convient ? On commence la réalisation ? » Pour une demande libre : montrer la tâche ajoutée (objectif, critères, fichiers). Si la personne veut le modifier : appliquer l'étape **refine** (`pulse-aidd etape refine --sans-communes`) avec ses remarques, puis reposer la question. Une fois le plan accepté, ajouter au journal du plan la ligne « plan validé » (règles communes § 7 ; en mode autonome : « plan accepté sans validation, mode autonome »).
 
 ## Boucle par tâche
 
 Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (un rapport existe déjà dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` : reprendre à l'examen).
 
-**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a` (en mode autonome, elle passe après le test groupé). Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy`).
+**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a` (en mode autonome, elle passe après le test groupé). Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy --sans-communes`).
 
 ### [T] Tests d'abord (avec `-t`)
 

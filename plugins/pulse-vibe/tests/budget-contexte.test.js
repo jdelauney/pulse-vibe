@@ -62,7 +62,7 @@ const PLAFONDS = {
 };
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
-const PLAFONDS_ETAPES = { review: 48000, commit: 52500 };
+const PLAFONDS_ETAPES = { review: 22000, commit: 26500 };
 
 // Une boucle de 4 tâches : ce que la conversation principale charge, une seule fois.
 const BOUCLES = {
@@ -79,7 +79,7 @@ const BOUCLES = {
 // Cibles pas encore atteintes : chaque tâche du plan 4 retire celles qu'elle atteint ; la tâche 11 supprime ce mécanisme.
 const EN_ATTENTE = new Set([
   "spirc",
-  "etape review", "etape commit", "boucle implement", "boucle spirc",
+  "boucle implement", "boucle spirc",
 ]);
 const attente = (cle) => (EN_ATTENTE.has(cle) ? "plafond atteint plus loin dans le plan 4" : false);
 

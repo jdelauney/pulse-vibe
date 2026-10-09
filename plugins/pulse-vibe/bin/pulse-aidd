@@ -4,7 +4,7 @@
 # l'utilisent pour charger leurs règles et modèles sans demander d'autorisation de lecture.
 #
 #   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
-#   pulse-aidd etape <commande>      idem, précédé des instructions de la commande (pour /pulse:spirc)
+#   pulse-aidd etape <commande> [--sans-communes]   idem, précédé des instructions de la commande ; --sans-communes : sans les règles communes, déjà chargées par la commande qui enchaîne l'étape
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/
 #   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
@@ -155,8 +155,8 @@ contexte_pack() { # contexte_pack <commande>
   fi
 }
 
-contexte() {
-  afficher "Règles communes Pulse" "$REF/regles-communes.md"
+contexte() { # contexte <commande> [--sans-communes]
+  [ "$2" = "--sans-communes" ] || afficher "Règles communes Pulse" "$REF/regles-communes.md"
   case "$1" in
     init)
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
@@ -315,7 +315,7 @@ case "$1" in
   etape)
     if ! nom_sur "$2" || [ ! -f "$RACINE/skills/$2/SKILL.md" ]; then echo "Commande inconnue : $2. Commandes : $(ls "$RACINE/skills" | tr '\n' ' ')"; exit 0; fi
     afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
-    contexte "$2"; exit 0 ;;
+    contexte "$2" "$3"; exit 0 ;;
   modele)
     if nom_sur "$2" && [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
   agent)

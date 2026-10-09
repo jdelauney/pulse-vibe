@@ -50,7 +50,7 @@ Quand le plan de l'US est terminé, ou quand la personne s'arrête, demander (As
 5. Nettoyer : `git worktree remove .claude/worktrees/us-xxx-<nom>` puis `git branch -d feat/us-xxx-<nom>` (jamais `-D`, ni `--force` : si Git refuse, il reste du travail à fusionner ; le dire et s'arrêter).
 6. Lancer `pulse-aidd guide`. Rappeler que le travail reste local pour l'instant : `/pulse:deploy` ou `/pulse:commit push`.
 
-**Demande de fusion** : depuis le worktree, appliquer l'étape **pr** (`pulse-aidd etape pr`, section B) avec la branche `feat/us-xxx-<nom>`. Garder le worktree jusqu'à la fusion sur le site ; ensuite, `/pulse:status` propose de le supprimer.
+**Demande de fusion** : depuis le worktree, appliquer l'étape **pr** (`pulse-aidd etape pr --sans-communes`, section B) avec la branche `feat/us-xxx-<nom>`. Garder le worktree jusqu'à la fusion sur le site ; ensuite, `/pulse:status` propose de le supprimer.
 
 **Garder** : `ExitWorktree`, puis `pulse-aidd sessions --ici <session>`. Pour reprendre : `/pulse:implement US-XXX` ou `/pulse:spirc US-XXX` propose de revenir dans le même worktree.
 

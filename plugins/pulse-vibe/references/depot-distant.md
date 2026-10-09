@@ -45,14 +45,14 @@ Demander (AskUserQuestion) « Comment envoyer le travail de US-XXX sur le dépô
 
 **Préparer la branche (mode PR)**, avant de coder la première tâche :
 - dans un worktree : sa branche est déjà `feat/us-xxx-<nom>`, elle est prête ;
-- sinon, si la branche courante est une autre que `feat/us-xxx-<nom>` : appliquer l'étape **pr** section A (`pulse-aidd etape pr`) avec cette US (la branche existe déjà : y revenir).
+- sinon, si la branche courante est une autre que `feat/us-xxx-<nom>` : appliquer l'étape **pr** section A (`pulse-aidd etape pr --sans-communes`) avec cette US (la branche existe déjà : y revenir).
 - À chaque reprise du plan (`/pulse:implement`, `/pulse:spirc`) : vérifier qu'on est bien sur cette branche, sinon y revenir (`git switch feat/us-xxx-<nom>`, si toutes les modifications sont enregistrées).
 
 ## 3. Envoyer après chaque tâche enregistrée
 
 Appliqué par `/pulse:commit` juste après le commit d'une tâche, selon la ligne « Envoi » de son plan (l'argument `push` envoie toujours, quel que soit le mode) :
 
-- **PR** : `git push -u origin feat/us-xxx-<nom>` (jamais `--force`). Si la demande de fusion de cette branche reste à créer (`gh pr view`, `glab mr view`) : appliquer l'étape **pr** section B (`pulse-aidd etape pr`) pour l'ouvrir en brouillon. Sinon, dire en une ligne que la demande est à jour, avec son adresse.
+- **PR** : `git push -u origin feat/us-xxx-<nom>` (jamais `--force`). Si la demande de fusion de cette branche reste à créer (`gh pr view`, `glab mr view`) : appliquer l'étape **pr** section B (`pulse-aidd etape pr --sans-communes`) pour l'ouvrir en brouillon. Sinon, dire en une ligne que la demande est à jour, avec son adresse.
 - **Branche principale** : `git push`. La première fois, rappeler que, si le déploiement automatique est en place, la tâche est maintenant en ligne.
 - **Local** : tout reste local.
 - Envoi refusé (le dépôt distant a des changements plus récents) : expliquer, proposer `git pull` puis un nouvel envoi ; jamais d'envoi forcé.

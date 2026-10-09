@@ -211,6 +211,20 @@ test("travail-fini <dossier> : efface seulement le travail en cours de ce dossie
   assert.match(spawnSync("bash", [outil], { encoding: "utf8" }).stdout, /travail-fini \[dossier\]/);
 });
 
+test("etape --sans-communes : instructions et contexte de l'étape, sans les règles communes", () => {
+  const avec = lancer("etape", "commit");
+  const sans = lancer("etape", "commit", "--sans-communes");
+  assert.strictEqual(sans.status, 0, sans.stderr);
+  assert.ok(avec.stdout.includes("===== Règles communes Pulse ====="), "sans option : règles communes");
+  assert.ok(!sans.stdout.includes("===== Règles communes Pulse ====="), "avec l'option : sans règles communes");
+  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== Le dépôt distant et l'envoi du travail ====="])
+    assert.ok(sans.stdout.includes(titre), titre);
+});
+
+test("l'aide décrit l'option --sans-communes", () => {
+  assert.match(lancer().stdout, /etape <commande> \[--sans-communes\]/);
+});
+
 test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
   const r = lancer("tests");
   assert.strictEqual(r.status, 0, r.stderr);
@@ -448,4 +462,11 @@ test("contexte review et spirc : la référence « Examiner une tâche »", () =
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Examiner une tâche ====="), commande);
   }
+});
+
+test("etape --sans-communes : les consignes du pack restent", () => {
+  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("etape", "implement", "--sans-communes");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /Consignes du pack pour implement/);
+  assert.doesNotMatch(r.stdout, /===== Règles communes Pulse =====/);
 });

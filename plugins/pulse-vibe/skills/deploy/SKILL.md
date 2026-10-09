@@ -66,7 +66,7 @@ Ensuite : inscrire l'adresse du dépôt et celle du site dans la section « Adre
 
 Ensuite, **garde-fou de référencement** : `pulse-aidd seo <adresse du site> --essentiel` (ajouter `--previsualisation` pour une adresse de prévisualisation). Il lit `docs/seo.md` (site privé, pages privées). S'il affiche ❌ (constat Critique : `noindex` sur une page publique, `Disallow: /`, adresse officielle vers localhost ou un autre domaine, boucle de redirections, page privée servie à un inconnu), la mise en ligne n'est pas déclarée réussie : expliquer le constat et sa conséquence, corriger, remettre en ligne, relancer.
 
-Le site répond et le garde-fou passe : proposer une **première mesure de vitesse** (AskUserQuestion) : « Mesurer la vitesse de la page d'accueil maintenant (2 minutes, point de départ) (Recommandé) » / « Plus tard ». Maintenant : appliquer « mesurer » de `/pulse:perf` (`pulse-aidd etape perf`) sur l'accueil seul, 3 passages, puis revenir à 3c.
+Le site répond et le garde-fou passe : proposer une **première mesure de vitesse** (AskUserQuestion) : « Mesurer la vitesse de la page d'accueil maintenant (2 minutes, point de départ) (Recommandé) » / « Plus tard ». Maintenant : appliquer « mesurer » de `/pulse:perf` (`pulse-aidd etape perf --sans-communes`) sur l'accueil seul, 3 passages, puis revenir à 3c.
 
 ### 3c. Voir le déploiement automatique en action
 
@@ -84,7 +84,7 @@ Proposer une petite modification visible (par exemple le texte du titre), puis :
 Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en ligne, un contrôle qualité automatique vérifie le projet. Si le contrôle échoue, l'ancienne version reste en ligne à la place de la nouvelle, défectueuse. »
 
 1. **Installer le contrôle** :
-   - si la CI reste à installer : appliquer l'étape **cicd** (`pulse-aidd etape cicd`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
+   - si la CI reste à installer : appliquer l'étape **cicd** (`pulse-aidd etape cicd --sans-communes`, § 1 à 6), qui installe `scripts/verifier.js` et les contrôles automatiques à chaque envoi et sur chaque demande de fusion. La personne peut aussi préférer s'appuyer seulement sur l'hébergeur (point suivant) ;
    - si l'hébergeur le permet, le configurer pour exécuter ce contrôle **avant chaque mise en ligne** (commande de construction qui enchaîne `node scripts/verifier.js`, les contrôles du projet, puis la construction), d'après sa documentation ; si le pack de pile fournit déjà une commande de construction (migrations…), insérer les contrôles avant elle, sans la remplacer ;
    - lancer `node scripts/verifier.js` pour vérifier qu'il passe.
 2. **Variables d'environnement** : lancer `pulse-aidd secrets inventaire` (noms, présence dans `.env` et chez l'hébergeur, type Secret ou Config, sans aucune valeur). Pour chaque variable absente de la production :
