@@ -42,7 +42,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    **Fidélité à la maquette** : si une maquette retenue existe pour l'US (`docs/design/maquettes/US-XXX-*/retenue/`), ajouter le critère « L'écran ressemble à la maquette retenue ». Avec un outil de navigateur : capturer l'écran réel et la maquette (fichier HTML ouvert dans un autre onglet), aux mêmes largeurs (ordinateur, puis téléphone), et relever les écarts visibles : disposition, ordre des informations, couleurs, textes, états montrés par la maquette (vide, chargement, erreur). Sans outil de navigateur : ❓, reporté au test manuel avec le chemin de la maquette à ouvrir à côté.
 4. **Conclure chaque critère** : ✅ Prouvé (avec la preuve) · ❌ Échoue (ce qui se passe à la place) · ❓ Non prouvé (pourquoi, et à tester à la main).
 5. **Comparer à la demande d'origine**, en plus des critères : signaler un écart entre ce qui était voulu et ce qui est obtenu.
-6. **Préparer le test manuel** : les étapes que la personne fera elle-même, avec des données fictives réalistes, en commençant par les critères ❓.
+6. **Préparer le test manuel** selon `pulse-aidd reference tests/test-manuel.md` : les étapes que la personne fera elle-même, avec des données fictives réalistes, en commençant par les critères ❓.
 
 ## Format de votre réponse
 

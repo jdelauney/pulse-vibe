@@ -860,3 +860,28 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   assert.match(implement, /y compris à une reprise/);
   assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
 });
+
+// ---------------------------------------------------------------- Références atteignables
+
+// Une référence sert si l'outil du plugin l'affiche ($REF/<chemin>), si une consigne la nomme sur une ligne qui
+// charge des références (`pulse-aidd reference …`, `pulse-aidd pile reference …`, ou une liste qui suit), ou si
+// un script la lit. Les recettes du pack sont servies par « recette <nom> » (references-structure.test.js).
+test("chaque référence est atteignable : affichée par l'outil, nommée pour être chargée, ou lue par un script", () => {
+  const citees = new Set();
+  for (const f of PLUGINS.flatMap((p) => ["skills", "agents", "references", "templates"].flatMap((d) => fichiers(path.join(p, d), ".md"))))
+    for (const ligne of lire(f).split("\n"))
+      if (/\breference /.test(ligne)) for (const m of ligne.matchAll(/[\w-]+(?:\/[\w.-]+)*\.(?:md|json)/g)) citees.add(m[0]);
+  const manquantes = [];
+  for (const p of PLUGINS) {
+    const ref = path.join(p, "references");
+    const outils = lister(path.join(p, "bin")).filter((f) => !f.includes(".")).map((f) => lire(p, "bin", f)).join("\n");
+    const scripts = fichiers(path.join(p, "scripts"), ".js").map((f) => lire(f)).join("\n");
+    for (const f of [...fichiers(ref, ".md"), ...fichiers(ref, ".json")]) {
+      const r = path.relative(ref, f).split(path.sep).join("/");
+      if (r.startsWith("recettes/")) continue;
+      if (outils.includes(`$REF/${r}`) || citees.has(r) || scripts.includes(path.basename(r))) continue;
+      manquantes.push(path.relative(DEPOT, f).split(path.sep).join("/"));
+    }
+  }
+  assert.deepStrictEqual(manquantes, []);
+});
