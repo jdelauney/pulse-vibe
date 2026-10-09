@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pulse – garde-fou des commandes (hook PreToolUse sur Bash et PowerShell).
+// Pulse – garde-fou des commandes (hook PreToolUse sur Bash et PowerShell, appelé par garde.js ; se lance aussi seul).
 //
 // Une règle écrite influence ; un hook empêche. Ce garde-fou agit aussi en mode « bypass »,
 // où les demandes d'autorisation de Claude Code ne s'affichent plus.
@@ -470,39 +470,35 @@ function analyser(commande, cwd, dialecte) {
 
 // ---------------------------------------------------------------- Point d'entrée
 
-function repondre(decision, raison) {
-  fs.writeSync(
-    1,
-    JSON.stringify({
-      hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: decision, permissionDecisionReason: raison },
-    })
-  );
+/** Décision du garde-fou des commandes pour une entrée de hook : { decision, raison }, ou null pour laisser passer. */
+function evaluer(entree) {
+  if (process.env.PULSE_GARDE_COMMANDES_OFF === "1") return null;
+  if (!entree || !["Bash", "PowerShell"].includes(entree.tool_name) || !entree.tool_input || typeof entree.tool_input.command !== "string") return null;
+  try {
+    const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
+    const constats = analyser(entree.tool_input.command, cwd, entree.tool_name === "PowerShell" ? "powershell" : "bash");
+    if (!constats.length) return null;
+    const refus = constats.filter(([d]) => d === REFUS);
+    const raisons = [...new Set((refus.length ? refus : constats).map(([, r]) => r))];
+    return {
+      decision: refus.length ? REFUS : ACCORD,
+      raison: `🔒 ${raisons.join("\n\n")}${refus.length ? "\n\nExpliquez simplement la raison à la personne, puis utilisez l'alternative." : ""}`,
+    };
+  } catch (e) {
+    return null; // Fail-open : une erreur du garde-fou ne bloque jamais une séance.
+  }
 }
 
-function principal() {
-  if (process.env.PULSE_GARDE_COMMANDES_OFF === "1") return;
-  let entree;
+module.exports = { evaluer };
+
+if (require.main === module) {
+  let entree = null;
   try {
     entree = JSON.parse(fs.readFileSync(0, "utf8"));
   } catch (e) {
-    return;
+    // entrée illisible : rien à décider
   }
-  if (!entree || !["Bash", "PowerShell"].includes(entree.tool_name) || !entree.tool_input || typeof entree.tool_input.command !== "string") return;
-  const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
-
-  const dialecte = entree.tool_name === "PowerShell" ? "powershell" : "bash";
-  const constats = analyser(entree.tool_input.command, cwd, dialecte);
-  if (!constats.length) return;
-
-  const refus = constats.filter(([d]) => d === REFUS);
-  const retenus = refus.length ? refus : constats;
-  const raisons = [...new Set(retenus.map(([, r]) => r))];
-  repondre(refus.length ? REFUS : ACCORD, `🔒 ${raisons.join("\n\n")}${refus.length ? "\n\nExpliquez simplement la raison à la personne, puis utilisez l'alternative." : ""}`);
+  const r = evaluer(entree);
+  if (r) fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: r.decision, permissionDecisionReason: r.raison } }));
+  process.exit(0);
 }
-
-try {
-  principal();
-} catch (e) {
-  // Fail-open : une erreur du garde-fou ne bloque jamais une séance.
-}
-process.exit(0);

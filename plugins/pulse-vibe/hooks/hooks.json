@@ -46,61 +46,14 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell|Read|Grep",
         "hooks": [
           {
             "type": "command",
             "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-secrets.js"],
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde.js"],
             "timeout": 20,
-            "statusMessage": "Pulse vérifie l'absence de secrets…"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-secrets.js"],
-            "timeout": 20,
-            "statusMessage": "Pulse vérifie l'absence de secrets…"
-          },
-          {
-            "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-commandes.js"],
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-secrets.js"],
-            "timeout": 20,
-            "statusMessage": "Pulse vérifie l'absence de secrets…"
-          },
-          {
-            "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-commandes.js"],
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Read|Grep",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde-secrets.js"],
-            "timeout": 10
+            "statusMessage": "Pulse vérifie…"
           }
         ]
       }

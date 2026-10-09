@@ -1,4 +1,4 @@
-// Les hooks du plugin : chaque script existe, et les deux garde-fous couvrent Bash et PowerShell.
+// Les hooks du plugin : chaque script existe, et un seul point d'entrée (garde.js) couvre les outils surveillés.
 // Lancer : node --test plugins/pulse-vibe/tests/hooks.test.js
 "use strict";
 
@@ -21,18 +21,15 @@ test("chaque script cité par hooks.json existe", () => {
       for (const x of h.hooks) assert.ok(fs.existsSync(x.args[0].replace("${CLAUDE_PLUGIN_ROOT}", RACINE)), x.args[0]);
 });
 
-test("Bash et PowerShell passent par les deux garde-fous, sans filtre if", () => {
-  for (const outil of ["Bash", "PowerShell"]) {
+test("PreToolUse : un seul point d'entrée, garde.js, pour chaque outil surveillé, sans filtre if", () => {
+  for (const outil of ["Bash", "PowerShell", "Write", "Edit", "MultiEdit", "NotebookEdit", "Read", "Grep"]) {
     const s = scriptsPour("PreToolUse", outil);
-    for (const nom of ["garde-secrets.js", "garde-commandes.js"]) {
-      const h = s.find((x) => x.script === nom);
-      assert.ok(h, `${outil} → ${nom}`);
-      assert.strictEqual(h.si, undefined, `${outil} → ${nom} sans filtre if`);
-    }
+    assert.deepStrictEqual(s.map((x) => x.script), ["garde.js"], outil);
+    assert.strictEqual(s[0].si, undefined, `${outil} sans filtre if`);
   }
 });
 
-test("écritures et lectures passent par le garde-fou anti-secrets", () => {
-  for (const outil of ["Write", "Edit", "MultiEdit", "NotebookEdit", "Read", "Grep"])
-    assert.ok(scriptsPour("PreToolUse", outil).some((x) => x.script === "garde-secrets.js"), outil);
+test("garde.js passe l'entrée aux deux garde-fous", () => {
+  const source = fs.readFileSync(path.join(RACINE, "scripts", "garde.js"), "utf8");
+  for (const m of ["./garde-secrets", "./garde-commandes"]) assert.ok(source.includes(`"${m}"`), m);
 });

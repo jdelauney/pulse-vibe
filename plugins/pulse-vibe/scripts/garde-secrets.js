@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Pulse – garde-fou anti-secrets (hook PreToolUse sur Write, Edit, Read, Grep, Bash et PowerShell).
+// Pulse – garde-fou anti-secrets (hook PreToolUse, appelé par garde.js ; se lance aussi seul).
 //
 // Bloque, avant qu'ils ne se produisent :
 //  - l'écriture d'une clé secrète dans un fichier de code (Write / Edit) ;
@@ -31,19 +31,18 @@ function lireEntree() {
   }
 }
 
+// Décision rendue par un contrôle : refus ("deny") ou demande d'accord ("ask"). Levée, puis rendue par evaluer().
+class Decision {
+  constructor(decision, raison) {
+    this.decision = decision;
+    this.raison = raison;
+  }
+}
 function refuser(raison) {
-  // Écriture synchrone : garantit que la réponse part avant la fin du processus (Windows compris).
-  fs.writeSync(
-    1,
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        permissionDecision: "deny",
-        permissionDecisionReason: raison,
-      },
-    })
-  );
-  process.exit(0);
+  throw new Decision("deny", raison);
+}
+function demander(raison) {
+  throw new Decision("ask", raison);
 }
 
 function git(args, cwd) {
@@ -310,9 +309,8 @@ function verifierGit(commande, cwd, dialecte) {
 
 // ---------------------------------------------------------------- Point d'entrée
 
-function principal() {
+function verifier(entree) {
   if (process.env.PULSE_GARDE_OFF === "1") return;
-  const entree = lireEntree();
   if (!entree || !entree.tool_input) return;
   const outil = entree.tool_name;
   const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
@@ -326,9 +324,22 @@ function principal() {
   }
 }
 
-try {
-  principal();
-} catch (e) {
-  // Ne jamais bloquer une séance à cause d'une erreur du garde-fou lui-même.
+/** Décision du garde-fou anti-secrets pour une entrée de hook : { decision, raison }, ou null pour laisser passer. */
+function evaluer(entree) {
+  try {
+    verifier(entree);
+  } catch (e) {
+    if (e instanceof Decision) return { decision: e.decision, raison: e.raison };
+    // Ne jamais bloquer une séance à cause d'une erreur du garde-fou lui-même.
+  }
+  return null;
 }
-process.exit(0);
+
+module.exports = { evaluer };
+
+if (require.main === module) {
+  const r = evaluer(lireEntree());
+  // Écriture synchrone : garantit que la réponse part avant la fin du processus (Windows compris).
+  if (r) fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: r.decision, permissionDecisionReason: r.raison } }));
+  process.exit(0);
+}
