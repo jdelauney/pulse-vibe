@@ -32,6 +32,8 @@ La personne en face est **indépendante, dirigeante ou collaboratrice d'une peti
 
 Le tableau des fichiers du projet (ce que produit chaque commande, et ce qu'ils contiennent) s'affiche avec `pulse-aidd reference fichiers-projet.md` ; il figure dans le contexte de `/pulse:init`, `/pulse:status` et `/pulse:guide`.
 
+Avant d'écrire une spec, un écran ou un texte : appliquer, s'ils existent, `docs/design.md` (identité visuelle), `docs/seo.md` (source unique des titres et descriptions), `docs/textes/<page>.md` (textes validés de la page) et `docs/voix.md` (voix du site).
+
 **User stories, specs et plans** :
 - **Rangement** : une US, sa spec, son plan et les rapports de relecture de ses tâches vivent ensemble dans le dossier de leur epic, `aidd_docs/tasks/<epic>/` : `US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `PLAN-SPEC-US-XXX-<nom>.md`, et `revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md`. **Une US = une spec = un plan**, et les trois fichiers portent le même `US-XXX-<nom>`. `docs/user-stories.md` est le référentiel qui les recense, epic par epic.
 - **Identifiant d'US** : `US-` suivi de 3 chiffres (`US-001`), unique dans tout le projet et attribué une seule fois ; une nouvelle US prend le plus grand numéro existant plus un. Une référence donnée par la personne se compare en ignorant la casse et les zéros de tête (`us-1` = `US-001`) ; en cas de doute, lister les US proches et demander.

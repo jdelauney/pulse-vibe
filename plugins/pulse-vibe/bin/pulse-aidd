@@ -314,6 +314,7 @@ case "$1" in
   contexte) contexte "$2"; exit 0 ;;
   etape)
     if ! nom_sur "$2" || [ ! -f "$RACINE/skills/$2/SKILL.md" ]; then echo "Commande inconnue : $2. Commandes : $(ls "$RACINE/skills" | tr '\n' ' ')"; exit 0; fi
+    [ "$3" = "--sans-communes" ] && echo "(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Déroulé ci-dessous.)"
     afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
     contexte "$2" "$3"; exit 0 ;;
   modele)

@@ -95,9 +95,9 @@ Consignes de réalisation (pour les deux modes) :
 
 ### 4. Vérifier vous-même
 
-**Tests d'abord** : appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques », jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles.
+**Tests d'abord** : appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques » (en mode sous-agent, lancer d'abord `pulse-aidd qualite` si ces règles ne figurent pas encore dans la conversation), jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles.
 
-Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
+Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (en mode sous-agent, lancer d'abord `pulse-aidd qualite` si ces règles ne figurent pas encore dans la conversation ; s'il reste beaucoup d'erreurs : `/pulse:auto-fix`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
 
 ### 5. Expliquer
 

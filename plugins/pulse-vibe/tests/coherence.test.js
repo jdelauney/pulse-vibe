@@ -754,3 +754,22 @@ test("les sous-commandes etape, reference et qualite citées par un skill sont p
   }
   assert.deepStrictEqual(problemes, []);
 });
+
+test("règles communes : les documents du projet restent appliqués par les commandes qui écrivent", () => {
+  const { spawnSync } = require("child_process");
+  for (const commande of ["implement", "spec", "spirc"]) {
+    const r = spawnSync("bash", ["bin/pulse-aidd", "contexte", commande], { cwd: RACINE, encoding: "utf8" });
+    for (const doc of ["docs/design.md", "docs/seo.md", "docs/textes", "docs/voix.md"])
+      assert.ok(r.stdout.includes(doc), `${commande} : ${doc}`);
+  }
+});
+
+test("les lectures de fichiers-projet.md et cycle.md, citées par les règles communes, sont permises dans chaque skill", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const motifs = motifsBash(fichier);
+    for (const ref of ["fichiers-projet.md", "cycle.md"])
+      if (!motifs.some((m) => couvre(m, `pulse-aidd reference ${ref}`))) problemes.push(`${path.relative(DEPOT, fichier)} : ${ref}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});

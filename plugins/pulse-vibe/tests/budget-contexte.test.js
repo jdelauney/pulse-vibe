@@ -26,7 +26,7 @@ function taille(...args) {
 // Plafonds en caractères de « pulse-aidd contexte <commande> ».
 // Cibles (÷2) : implement et spirc ; les autres plafonds = mesure de départ arrondie au 500 supérieur (la tâche 11 les resserre).
 const PLAFONDS = {
-  init: 41000,
+  init: 43500,
   brainstorm: 38000,
   tech: 63500,
   memory: 36500,
@@ -36,7 +36,7 @@ const PLAFONDS = {
   us: 35000,
   spec: 39500,
   plan: 54000,
-  implement: 46000,
+  implement: 46500,
   fix: 22500,
   review: 43000,
   commit: 42500,
@@ -57,8 +57,8 @@ const PLAFONDS = {
   explain: 28000,
   test: 42500,
   "auto-fix": 27500,
-  status: 28000,
-  guide: 28000,
+  status: 29500,
+  guide: 29500,
 };
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
