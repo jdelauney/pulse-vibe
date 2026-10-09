@@ -92,6 +92,19 @@ describe("Migrations avant construction", () => {
     expect(d.appliquerMigrations).not.toHaveBeenCalled();
   });
 
+  it("production, base jamais migrée : rien à sauvegarder, la migration passe même sans clé Neon", async () => {
+    const { NEON_API_KEY: _cle, ...sansCle } = PRODUCTION;
+    const d = dependances(sansCle, null);
+    expect(await migrer(d)).toBe("applique");
+    expect(d.sauvegarder).not.toHaveBeenCalled();
+    expect(d.appliquerMigrations).toHaveBeenCalledWith(
+      "postgresql://production",
+    );
+    expect(d.dire).toHaveBeenCalledWith(
+      expect.stringMatching(/jamais migrée.*sauvegarde/),
+    );
+  });
+
   it("production à jour : ni sauvegarde ni migration", async () => {
     const d = dependances(PRODUCTION, "2000");
     expect(await migrer(d)).toBe("a-jour");
@@ -100,7 +113,7 @@ describe("Migrations avant construction", () => {
   });
 
   it("échec de la sauvegarde : aucune migration appliquée", async () => {
-    const d = dependances(PRODUCTION, null);
+    const d = dependances(PRODUCTION, "1000");
     d.sauvegarder.mockRejectedValueOnce(new Error("l'API Neon répond 401"));
     await expect(migrer(d)).rejects.toThrow(/401/);
     expect(d.appliquerMigrations).not.toHaveBeenCalled();

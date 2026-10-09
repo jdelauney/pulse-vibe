@@ -9,6 +9,7 @@
 // - Prévisualisation : applique les migrations sur la branche Neon de la prévisualisation.
 // - Production : si au moins une migration reste à appliquer, crée d'abord une branche Neon de
 //   sauvegarde (expire au bout de 7 jours ; NEON_API_KEY et NEON_PROJECT_ID), puis applique.
+//   Base jamais migrée (première mise en ligne) : rien à sauvegarder, la sauvegarde est ignorée.
 //   Les sauvegardes Pulse (sauvegarde-AAAAMMJJ-HHMM) au-delà des 2 dernières sont supprimées avant (Neon limite le nombre
 //   de branches : 10 sur les offres Free et Launch).
 // Un échec arrête la construction : la version en ligne reste celle d'avant.
@@ -239,13 +240,16 @@ export async function migrer({
         : "la base de prévisualisation manque (DATABASE_URL_UNPOOLED) : reliez Neon à Vercel (intégration Vercel–Neon, docs/technical.md) puis redéployez",
     );
   }
-  const enAttente = migrationsEnAttente(journal, await lireDerniere(adresse));
+  const derniere = await lireDerniere(adresse);
+  const enAttente = migrationsEnAttente(journal, derniere);
   if (!enAttente.length) {
     dire("Base à jour : aucune migration à appliquer.");
     return "a-jour";
   }
   dire(`Migrations à appliquer : ${enAttente.map((m) => m.tag).join(", ")}`);
-  if (env.VERCEL_ENV === "production") {
+  if (env.VERCEL_ENV === "production" && derniere === null) {
+    dire("Base jamais migrée : rien à sauvegarder, sauvegarde ignorée.");
+  } else if (env.VERCEL_ENV === "production") {
     if (!env.NEON_API_KEY || !env.NEON_PROJECT_ID) {
       throw new Error(
         "NEON_API_KEY et NEON_PROJECT_ID manquent en Production : sans sauvegarde, la migration attend (docs/technical.md, « Mise en place »)",
