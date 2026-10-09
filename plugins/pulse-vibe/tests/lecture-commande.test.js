@@ -102,3 +102,57 @@ test("cmd : l'accent circonflexe échappe, l'apostrophe est ordinaire", () => {
 test("env -S déplie la chaîne en commande", () => {
   assert.ok(noms('env -S "git push -f"').includes("git push -f"));
 });
+
+test("segment sans commande : redirection d'entrée et affectation gardées", () => {
+  const boucle = commandesSimples("while read l; do echo $l; done < .env").find((c) => c.cmd === "");
+  assert.ok(boucle, "pseudo-commande de « done < .env »");
+  assert.deepStrictEqual(boucle.lectures, [".env"]);
+  const [a] = commandesSimples("f=.env");
+  assert.deepStrictEqual([a.cmd, a.affectations], ["", ["f=.env"]]);
+  const sous = commandesSimples("export $(xargs < .env) && env").find((c) => c.cmd === "" && c.lectures.length);
+  assert.deepStrictEqual(sous.lectures, [".env"]);
+});
+
+test("redirections de sortie notées (ecritures)", () => {
+  const [c] = commandesSimples("echo x > .git/hooks/pre-commit");
+  assert.deepStrictEqual(c.ecritures, [".git/hooks/pre-commit"]);
+  const [seule] = commandesSimples("> src/app.ts");
+  assert.deepStrictEqual([seule.cmd, seule.ecritures], ["", ["src/app.ts"]]);
+  assert.deepStrictEqual(commandesSimples("cat a.txt").map((x) => x.ecritures), [[]]);
+});
+
+test("redirection >&N : la cible n'est pas un fichier écrit", () => {
+  assert.deepStrictEqual(commandesSimples("echo x >&2")[0].ecritures, []);
+  assert.deepStrictEqual(commandesSimples("ls 2>&1")[0].ecritures, []);
+  assert.deepStrictEqual(commandesSimples("ls > f.txt 2>&1")[0].ecritures, ["f.txt"]);
+});
+
+test("wsl : la commande lancée est lue", () => {
+  assert.ok(noms("wsl git push --force").includes("git push --force"));
+  assert.ok(noms("wsl.exe -d Ubuntu git push -f").includes("git push -f"));
+  assert.ok(noms("wsl git push --force", "powershell").includes("git push --force"));
+});
+
+test("tube ou redirection vers un shell : marqué scriptInconnu", () => {
+  for (const [s, d] of [
+    ["echo 'git push --force' | bash", "bash"],
+    ["echo Z2l0 | base64 -d | sh", "bash"],
+    ["bash < installer.sh", "bash"],
+    ["Get-Content x.ps1 | iex", "powershell"],
+    ["iex $code", "powershell"],
+    ["'git push' | pwsh", "powershell"],
+  ])
+    assert.ok(commandesSimples(s, d).some((c) => c.scriptInconnu), s);
+  for (const s of ["bash -c 'ls'", "bash <<< 'ls'", "bash scripts/x.sh", "echo ok | cat"]) assert.ok(!commandesSimples(s).some((c) => c.scriptInconnu), s);
+});
+
+test("commandes d'une substitution $(…) : marquées dansSubstitution", () => {
+  assert.ok(commandesSimples("cat $(echo .env)").find((c) => c.cmd === "echo").dansSubstitution);
+  assert.ok(!commandesSimples("echo .env").find((c) => c.cmd === "echo").dansSubstitution);
+});
+
+test("tsx -e et ts-node -e : le code est lu", () => {
+  const [c] = commandesSimples('npx tsx -e "await db.execute(sql`DROP TABLE x`)"').filter((x) => x.cmd === "tsx");
+  assert.match(c.code, /DROP TABLE x/);
+  assert.match(commandesSimples("ts-node -e 'console.log(1)'")[0].code, /console\.log/);
+});
