@@ -29,9 +29,16 @@ export const CHEMINS_MASQUES = CLES_MASQUEES.flatMap((cle) => [
   `*.*.*["${cle}"]`,
 ]);
 
+// Une erreur se journalise toujours sous la clé err (le masquage et ce nettoyage ne s'appliquent qu'à elle).
 // Champs d'erreur qui portent des valeurs saisies : paramètres d'une requête Drizzle, détail et
 // contexte d'une erreur de Postgres (« Key (email)=(…) already exists »).
-const CHAMPS_ERREUR_RETIRES = ["params", "detail", "where", "internalQuery"];
+const CHAMPS_ERREUR_RETIRES = [
+  "params",
+  "detail",
+  "where",
+  "internalQuery",
+  "hint",
+];
 
 /** Message d'une requête Drizzle qui échoue (« Failed query: … params: … ») → la requête seule, pour l'erreur et ses causes. */
 function messagesSansValeurs(erreur: unknown): Map<string, string> {
@@ -51,7 +58,12 @@ function messagesSansValeurs(erreur: unknown): Map<string, string> {
 
 /** Erreur prête pour le journal : celle de pino, sans les valeurs des requêtes SQL. */
 export function serialiserErreur(erreur: unknown): unknown {
+  return serialiser(erreur, new Set());
+}
+
+function serialiser(erreur: unknown, vues: Set<unknown>): unknown {
   if (!(erreur instanceof Error)) return erreur;
+  // Une erreur déjà en cours de traitement (référence circulaire) garde la version de pino, sans ses valeurs.
   const sortie = pino.stdSerializers.err(erreur) as unknown as Record<
     string,
     unknown
@@ -65,6 +77,22 @@ export function serialiserErreur(erreur: unknown): unknown {
     }
   }
   for (const champ of CHAMPS_ERREUR_RETIRES) delete sortie[champ];
+  if (vues.has(erreur)) return sortie;
+  vues.add(erreur);
+  // Le code et la contrainte de la cause (Postgres) aident à comprendre la panne, sans valeurs.
+  const cause = erreur.cause as { code?: unknown; constraint?: unknown } | null;
+  if (typeof cause?.code === "string") sortie.causeCode = cause.code;
+  if (typeof cause?.constraint === "string") {
+    sortie.causeConstraint = cause.constraint;
+  }
+  if (erreur instanceof AggregateError) {
+    sortie.aggregateErrors = erreur.errors.map((e) => serialiser(e, vues));
+  }
+  for (const [cle, valeur] of Object.entries(erreur)) {
+    if (cle !== "cause" && valeur instanceof Error) {
+      sortie[cle] = serialiser(valeur, vues);
+    }
+  }
   return sortie;
 }
 
