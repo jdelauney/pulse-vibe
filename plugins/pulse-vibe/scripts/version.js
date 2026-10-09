@@ -14,6 +14,7 @@ const path = require("path");
 
 const JOURS_CATALOGUE = 14;
 const JOUR = 24 * 60 * 60 * 1000;
+const VERSION_LISIBLE = /^\d+\.\d+/;
 
 function lireJson(fichier) {
   try {
@@ -63,7 +64,10 @@ function avertissementsVersion({ racinePlugin, dossierClaude, projet = null, mai
       if (typeof p.source !== "string") continue;
       const publiee = lireJson(path.join(dossier, p.source, ".claude-plugin", "plugin.json"))?.version;
       if (typeof publiee !== "string") continue;
-      const installee = utiles(p.name).map((e) => e.version).find((v) => comparerVersions(v, publiee) < 0);
+      // Une version installée illisible (« unknown », empreinte de commit) ne se compare pas : pas de fausse alerte.
+      const installee = utiles(p.name)
+        .map((e) => e.version)
+        .find((v) => VERSION_LISIBLE.test(String(v ?? "")) && comparerVersions(v, publiee) < 0);
       if (installee) retards.push({ nom: p.name, installee, publiee });
     }
     if (retards.length) {
@@ -82,7 +86,8 @@ function avertissementsVersion({ racinePlugin, dossierClaude, projet = null, mai
       lignes.push(
         utiles(nouveau).length > 0
           ? `Pulse – ${ancien}@${marche} (ancien nom) est encore installé à côté de ${nouveau}@${marche} : ses anciens garde-fous tournent en plus des nouveaux. Dans un terminal : \`claude plugin uninstall ${ancien}@${marche}\`, puis fermer et relancer Claude Code.`
-          : `Pulse – installé sous l'ancien nom ${ancien}@${marche}. Dans un terminal : \`claude plugin install ${nouveau}@${marche}\`, puis \`claude plugin uninstall ${ancien}@${marche}\`, puis fermer et relancer Claude Code.`,
+          : // Comme README.md « Mettre à jour » : la mise à jour passe au nouveau nom (renames du catalogue).
+            `Pulse – installé sous l'ancien nom ${ancien}@${marche}. Dans un terminal : \`claude plugin marketplace update ${marche}\`, puis \`claude plugin update ${ancien}@${marche}\` (la mise à jour passe au nouveau nom ${nouveau}). Si Claude Code signale ensuite « not cached », dans Claude Code : \`/plugin install ${nouveau}@${marche}\`. Puis fermer et relancer Claude Code.`,
       );
     }
   }

@@ -72,13 +72,25 @@ test(`catalogue pas actualisé depuis ${JOURS_CATALOGUE} jours : la commande qui
   assert.deepStrictEqual(avertissementsVersion({ ...poste({ jours: JOURS_CATALOGUE - 1, installes: { "pulse@pulseia": utilisateur("0.35.0") } }), maintenant: MAINTENANT }), []);
 });
 
-test("ancien nom : à côté du nouveau (désinstaller l'ancien), ou seul (installer le nouveau)", () => {
+test("ancien nom : à côté du nouveau (désinstaller l'ancien), ou seul (mise à jour vers le nouveau)", () => {
   const double = avertissementsVersion({ ...poste({ installes: { "pulse@pulseia": utilisateur("0.35.0"), "pulse-vibe@pulseia": utilisateur("0.13.0") } }), maintenant: MAINTENANT }).join("\n");
   assert.match(double, /pulse-vibe@pulseia \(ancien nom\) est encore installé à côté de pulse@pulseia/);
   assert.match(double, /`claude plugin uninstall pulse-vibe@pulseia`/);
   const seul = avertissementsVersion({ ...poste({ installes: { "pulse-vibe@pulseia": utilisateur("0.13.0") } }), maintenant: MAINTENANT }).join("\n");
   assert.match(seul, /installé sous l'ancien nom pulse-vibe@pulseia/);
-  assert.match(seul, /`claude plugin install pulse@pulseia`, puis `claude plugin uninstall pulse-vibe@pulseia`/);
+  // Comme README.md « Mettre à jour » : la mise à jour passe au nouveau nom ; « not cached » : /plugin install dans Claude Code.
+  assert.match(seul, /Dans un terminal : `claude plugin marketplace update pulseia`, puis `claude plugin update pulse-vibe@pulseia`/);
+  assert.match(seul, /« not cached », dans Claude Code : `\/plugin install pulse@pulseia`/);
+  assert.doesNotMatch(seul, /`claude plugin install/);
+});
+
+test("version installée illisible (unknown, empreinte de commit) : pas de fausse mise à jour", () => {
+  for (const version of ["unknown", "a1b2c3d4e5f6", "", undefined]) {
+    const p = poste({ publiee: "0.36.0", installes: { "pulse@pulseia": utilisateur(version) } });
+    assert.deepStrictEqual(avertissementsVersion({ ...p, maintenant: MAINTENANT }), [], String(version));
+  }
+  const q = poste({ publiee: "0.36.0", installes: { "pulse@pulseia": [{ scope: "user", version: "unknown" }, { scope: "user", version: "0.35.0" }] } });
+  assert.match(avertissementsVersion({ ...q, maintenant: MAINTENANT })[0], /pulse 0\.36\.0 \(installé : 0\.35\.0\)/);
 });
 
 test("installations de portée projet : seulement celles de ce dossier", () => {
