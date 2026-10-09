@@ -110,7 +110,7 @@ Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent l
 ## Installation
 
 Prérequis : Claude Code (abonnement Pro, Max, Team, Enterprise ou compte Console), Git, Node.js 22.19 ou plus (version LTS conseillée). Sous Windows, **Git for Windows** est indispensable (le plugin utilise Git Bash).
-Les outils du plugin fonctionnent aussi depuis PowerShell et l'invite de commandes, par un petit relais (`.cmd`) vers Git Bash.
+Les outils du plugin fonctionnent aussi depuis PowerShell et l'invite de commandes, par un petit relais vers Git Bash (`.ps1` pour PowerShell, qui transmet les arguments tels quels ; `.cmd` pour l'invite de commandes).
 
 Dans une session Claude Code :
 
@@ -162,7 +162,7 @@ skills/<commande>/SKILL.md        les commandes
 agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, redacteur, fixer, memory-compactor
 hooks/hooks.json                  garde-fous anti-secrets et des commandes (un seul processus, garde.js), synchronisation de la mémoire, registre des sessions, régénération du guide
 scripts/                          garde.js (point d'entrée unique des garde-fous), garde-secrets.js, garde-commandes.js, lecture-commande.js (lecture des commandes pour les deux garde-fous), motifs.js, chemins-sensibles.js (fichiers .env et contrôle avant commit reconnus par les garde-fous), sonder.js, secrets.js (pulse-aidd secrets), textes.js (pulse-aidd textes), seo.js, seo-html.js, seo-regles.js, robots.js (pulse-aidd seo), perf.js (pulse-aidd perf), search-console.js (pulse-aidd search-console), port-libre.js (port local accepté par le navigateur, pour le retour de connexion), memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), etat.js (pulse-aidd etat, /pulse:init et /pulse:status), guide.js, comparer.js, sessions.js, contraste.js (pulse-aidd contraste), identite.js (pulse-aidd identite), maquettes.js (pulse-aidd maquettes)
-bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI) ; `etape <commande> --sans-communes` charge une étape sans répéter les règles communes déjà chargées ; relais pulse-aidd.cmd pour PowerShell et cmd
+bin/pulse-aidd                    outil interne (charge règles et modèles, contrôle, CI) ; `etape <commande> --sans-communes` charge une étape sans répéter les règles communes déjà chargées ; relais pulse-aidd.ps1 (PowerShell) et pulse-aidd.cmd (cmd)
 references/                       règles communes (le noyau), `references/fichiers-projet.md` (les fichiers produits dans le projet), `references/cycle.md` (le cycle en un coup d'œil), aide au choix technique, checklist sécurité, mémoire,
                                   secrets/ (saisie hors conversation, réaction à une fuite), seo/ (règles, textes, lancement, assistants IA),
                                   performance.md (/pulse:perf), search-console.md (/pulse:search-console),

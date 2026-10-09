@@ -162,15 +162,29 @@ test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit 
   for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de securite/rapide.md`);
 });
 
-test("chaque outil de bin/ a son relais .cmd pour PowerShell et cmd", () => {
+test("chaque outil de bin/ a ses relais .ps1 (PowerShell) et .cmd (cmd), identiques d'un plugin à l'autre", () => {
+  const relais = { ps1: new Set(), cmd: new Set() };
   for (const p of PLUGINS) {
     const bin = path.join(p, "bin");
     for (const f of lister(bin).filter((x) => !x.includes("."))) {
-      const relais = path.join(bin, `${f}.cmd`);
-      assert.ok(fs.existsSync(relais), `${path.relative(DEPOT, relais)} manquant`);
-      assert.match(lire(relais), new RegExp(`"%~dp0${f}" %\\*`), `${f}.cmd relaie vers ${f}`);
+      for (const ext of ["ps1", "cmd"]) {
+        const fichier = path.join(bin, `${f}.${ext}`);
+        assert.ok(fs.existsSync(fichier), `${path.relative(DEPOT, fichier)} manquant`);
+        relais[ext].add(lire(fichier));
+      }
+      assert.match(lire(bin, f), /\nif \[ -n "\$\{PULSE_RELAIS_ARGC:-\}" \]; then\n/, `${f} relit les arguments du relais .ps1`);
     }
   }
+  assert.strictEqual(relais.ps1.size, 1, "les relais .ps1 diffèrent d'un outil à l'autre");
+  assert.strictEqual(relais.cmd.size, 1, "les relais .cmd diffèrent d'un outil à l'autre");
+  const [ps1] = relais.ps1;
+  assert.match(ps1, /^[\x00-\x7F]*$/, "relais .ps1 en ASCII seulement (Windows PowerShell 5.1)");
+  assert.match(ps1, /GetFileNameWithoutExtension\(\$PSCommandPath\)/, "le .ps1 lance le script bash de son propre nom");
+  assert.doesNotMatch(ps1, /System32|WindowsApps/i, "jamais le bash de WSL");
+  const [cmd] = relais.cmd;
+  assert.match(cmd, /"%~dpn0" %\*/, "le .cmd lance le script bash de son propre nom");
+  assert.doesNotMatch(cmd, /set "PULSE_BASH=bash"/, "jamais un bash pris au hasard dans le PATH (WSL)");
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /relais `\.ps1`/, "règle commune : le relais .ps1");
 });
 
 // ---------------------------------------------------------------- Autorisations d'avance des skills (allowed-tools)

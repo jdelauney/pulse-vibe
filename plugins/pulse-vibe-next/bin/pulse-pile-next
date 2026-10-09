@@ -16,6 +16,13 @@
 #
 # Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
 
+# Relais PowerShell (bin/<outil>.ps1) : les arguments arrivent par l'environnement, tels quels ; les relire, puis les effacer.
+if [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
+  _n="$PULSE_RELAIS_ARGC"; unset PULSE_RELAIS_ARGC; set --
+  for ((_i = 0; _i < _n; _i++)); do _v="PULSE_RELAIS_ARG_$_i"; set -- "$@" "${!_v}"; unset "$_v"; done
+  unset _n _i _v
+fi
+
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
 

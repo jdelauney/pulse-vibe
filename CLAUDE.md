@@ -21,7 +21,7 @@ Dans un plugin (chemins relatifs à son dossier) :
 | `references/` | Règles partagées, chargées par `pulse-aidd contexte` ou `pulse-aidd reference` (`regles-communes.md` : le noyau commun à toutes les commandes du cœur) |
 | `templates/` | Modèles des fichiers produits dans les projets |
 | `hooks/hooks.json`, `scripts/` | Hooks et leurs scripts Node ; `garde.js` réunit les deux garde-fous dans un seul processus ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) et `chemins-sensibles.js` reconnaît les fichiers `.env` pour eux |
-| `bin/` | Outils placés dans le PATH par Claude Code (`pulse-aidd` pour le cœur), chacun avec son relais `.cmd` pour PowerShell et cmd |
+| `bin/` | Outils placés dans le PATH par Claude Code (`pulse-aidd` pour le cœur), chacun avec ses relais `.ps1` (PowerShell : arguments passés par l'environnement, relus par le prologue du script bash) et `.cmd` (cmd), identiques d'un outil à l'autre |
 | `tests/` | Tests du plugin |
 
 ## Règles d'écriture des consignes

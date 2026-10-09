@@ -472,3 +472,12 @@ test("recette <nom> tests sans tests.md : message clair et code 1", () => {
     fs.rmSync(d, { recursive: true, force: true });
   }
 });
+
+test("relais .ps1 : bash relit les arguments dans l'environnement, tels quels", () => {
+  const env = {};
+  for (const [k, v] of Object.entries(process.env)) if (!/^PULSE_RELAIS_/i.test(k)) env[k] = v;
+  const arg = 'a&b "c" d';
+  const r = spawnSync("bash", ["bin/pulse-pile-next"], { cwd: RACINE, encoding: "utf8", env: { ...env, PULSE_RELAIS_ARGC: "2", PULSE_RELAIS_ARG_0: "reference", PULSE_RELAIS_ARG_1: arg } });
+  assert.strictEqual(r.status, 1, r.stderr);
+  assert.ok(r.stdout.includes(`Référence introuvable : ${arg}.`), r.stdout);
+});
