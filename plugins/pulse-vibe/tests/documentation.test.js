@@ -31,8 +31,11 @@ test("installation : noms du catalogue égaux aux noms de manifeste, et seuls ci
   const catalogue = JSON.parse(lire(DEPOT, ".claude-plugin", "marketplace.json"));
   assert.deepStrictEqual(catalogue.plugins.map((p) => p.name).sort(), ["pulse", "pulse-next"]);
   for (const p of catalogue.plugins) assert.strictEqual(JSON.parse(lire(DEPOT, p.source, ".claude-plugin", "plugin.json")).name, p.name, p.source);
-  // Le README du dépôt cite les anciens noms une fois, sur la ligne qui explique la redirection (« anciens noms »).
-  const sansRedirection = (f) => texte(f).split(/\r?\n/).filter((l) => !/anciens noms/.test(l)).join(" ");
+  // Les README du dépôt et du cœur citent les anciens noms une fois, sur la ligne qui explique la redirection ;
+  // cette ligne donne la commande avec le nouveau nom et jamais une installation sous l'ancien.
+  const AVEC_REDIRECTION = ["README.md", "plugins/pulse-vibe/README.md"];
+  const redirection = (l) => /anciens noms/.test(l) && /install pulse@pulseia/.test(l) && !/install pulse-vibe/.test(l);
+  const sansRedirection = (f) => texte(f).split(/\r?\n/).filter((l) => !(AVEC_REDIRECTION.includes(f) && redirection(l))).join(" ");
   for (const f of DOCUMENTS) assert.doesNotMatch(sansRedirection(f), /\bpulse-vibe(?:-next)?@pulseia\b/, `${f} : ancien nom d'installation`);
   assert.match(texte("README.md"), /pulse@pulseia/);
   assert.match(texte("README.md"), /pulse-next@pulseia/);
