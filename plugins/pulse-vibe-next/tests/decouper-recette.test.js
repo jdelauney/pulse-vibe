@@ -76,3 +76,13 @@ test("recettes découpées : vue d'ensemble ≤ 30 000 caractères, chaque étap
     }
   }
 });
+
+test("recomposer : un fichier d'étape sans saut de ligne final ne perd aucun caractère", () => {
+  const fichiers = {
+    "index.md": "# R\n- Étape 1 – Un : `pulse-aidd pile recette r etape 1`\nfin",
+    "etape-1.md": "### 1. Un\nCode",
+  };
+  assert.strictEqual(recomposer(fichiers), "# R\n### 1. Un\nCode\nfin");
+  fichiers["etape-1.md"] += "\n";
+  assert.strictEqual(recomposer(fichiers), "# R\n### 1. Un\nCode\nfin");
+});

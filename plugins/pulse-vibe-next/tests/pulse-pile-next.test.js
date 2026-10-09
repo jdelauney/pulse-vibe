@@ -457,3 +457,18 @@ test("toutes les recettes sont découpées : un dossier avec index.md, plus aucu
   assert.strictEqual(lancer("recette", "formulaire-public", "etape", "option-turnstile").status, 0);
   assert.strictEqual(lancer("recette", "suivi-erreurs", "etape", "2").status, 0);
 });
+
+test("recette <nom> tests sans tests.md : message clair et code 1", () => {
+  const d = fs.mkdtempSync(path.join(require("os").tmpdir(), "pulse-pack-"));
+  try {
+    fs.mkdirSync(path.join(d, "bin"));
+    fs.copyFileSync(path.join(RACINE, "bin", "pulse-pile-next"), path.join(d, "bin", "pulse-pile-next"));
+    fs.mkdirSync(path.join(d, "references", "recettes", "essai"), { recursive: true });
+    fs.writeFileSync(path.join(d, "references", "recettes", "essai", "index.md"), "# Recette : essai\n");
+    const r = spawnSync("bash", ["bin/pulse-pile-next", "recette", "essai", "tests"], { cwd: d, encoding: "utf8" });
+    assert.strictEqual(r.status, 1);
+    assert.match(r.stdout, /La recette essai n'a pas de tests à copier/);
+  } finally {
+    fs.rmSync(d, { recursive: true, force: true });
+  }
+});

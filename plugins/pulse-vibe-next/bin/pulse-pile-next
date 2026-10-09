@@ -125,7 +125,8 @@ case "$1" in
     if [ ! -f "$dossier/index.md" ]; then echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi
     case "$3" in
       "") cat "$dossier/index.md" ;;
-      tests) cat "$dossier/tests.md" ;;
+      tests)
+        if [ -f "$dossier/tests.md" ]; then cat "$dossier/tests.md"; else echo "La recette $2 n'a pas de tests à copier : ses tests se trouvent dans ses étapes."; exit 1; fi ;;
       etape)
         case "$4" in
           ""|*/*|*..*) echo "Indiquez une étape de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;

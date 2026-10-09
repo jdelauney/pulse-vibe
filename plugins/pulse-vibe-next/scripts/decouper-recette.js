@@ -84,7 +84,7 @@ function recomposer(fichiers) {
       continue;
     }
     if (fichiers[fichier] === undefined) throw new Error(`${fichier} absent`);
-    sortie.push(...fichiers[fichier].slice(0, -1).split("\n"));
+    sortie.push(...fichiers[fichier].replace(/\n$/, "").split("\n"));
   }
   return sortie.join("\n");
 }
