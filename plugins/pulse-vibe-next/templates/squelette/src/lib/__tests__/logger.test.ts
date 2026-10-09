@@ -181,6 +181,50 @@ describe("Erreurs de requête SQL dans le journal", () => {
     });
   });
 
+  it("le code de la cause est cherché le long de la chaîne des causes", () => {
+    const { journal, lignes } = journalDeTest();
+    const enveloppe = new Error("Inscription impossible", {
+      cause: inscriptionEnDouble().erreur,
+    });
+    journal.error({ err: enveloppe }, "Erreur dans une action serveur");
+    expect(lignes[0].err).toMatchObject({
+      causeCode: "23505",
+      causeConstraint: "utilisateur_email_unique",
+    });
+  });
+
+  it("une référence circulaire ne laisse pas fuir les valeurs", () => {
+    const { journal, lignes } = journalDeTest();
+    const b = inscriptionEnDouble().erreur;
+    const a = Object.assign(new Error("A"), { original: b });
+    Object.assign(b, { retour: a });
+    journal.error({ err: a }, "Erreur dans une action serveur");
+    const texte = JSON.stringify(lignes[0]);
+    for (const valeur of VALEURS) expect(texte).not.toContain(valeur);
+    const original = (lignes[0].err as { original: { retour: unknown } })
+      .original;
+    expect(original.retour).toEqual({
+      type: "Error",
+      message: "[erreur déjà journalisée]",
+    });
+  });
+
+  it("une erreur présente deux fois dans une AggregateError ne fuit pas", () => {
+    const { journal, lignes } = journalDeTest();
+    const x = inscriptionEnDouble().erreur;
+    journal.error({ err: new AggregateError([x, x]) }, "Plusieurs échecs");
+    const texte = JSON.stringify(lignes[0]);
+    for (const valeur of VALEURS) expect(texte).not.toContain(valeur);
+    const [premiere, seconde] = (
+      lignes[0].err as { aggregateErrors: Record<string, unknown>[] }
+    ).aggregateErrors;
+    expect(premiere.query).toBe(REQUETE);
+    expect(seconde).toEqual({
+      type: "Error",
+      message: "[erreur déjà journalisée]",
+    });
+  });
+
   it("une valeur lancée qui n'est pas une erreur reste telle quelle", () => {
     expect(serialiserErreur("texte")).toBe("texte");
     expect(serialiserErreur(undefined)).toBeUndefined();

@@ -29,7 +29,7 @@ export const CHEMINS_MASQUES = CLES_MASQUEES.flatMap((cle) => [
   `*.*.*["${cle}"]`,
 ]);
 
-// Une erreur se journalise toujours sous la clé err (le masquage et ce nettoyage ne s'appliquent qu'à elle).
+// Une erreur se journalise toujours sous la clé err : ce nettoyage ne s'applique qu'à la clé err.
 // Champs d'erreur qui portent des valeurs saisies : paramètres d'une requête Drizzle, détail et
 // contexte d'une erreur de Postgres (« Key (email)=(…) already exists »).
 const CHAMPS_ERREUR_RETIRES = [
@@ -63,7 +63,11 @@ export function serialiserErreur(erreur: unknown): unknown {
 
 function serialiser(erreur: unknown, vues: Set<unknown>): unknown {
   if (!(erreur instanceof Error)) return erreur;
-  // Une erreur déjà en cours de traitement (référence circulaire) garde la version de pino, sans ses valeurs.
+  // Une erreur déjà rencontrée (référence circulaire, ou deux fois la même) : un résumé sans aucune valeur.
+  if (vues.has(erreur)) {
+    return { type: erreur.name, message: "[erreur déjà journalisée]" };
+  }
+  vues.add(erreur);
   const sortie = pino.stdSerializers.err(erreur) as unknown as Record<
     string,
     unknown
@@ -77,13 +81,14 @@ function serialiser(erreur: unknown, vues: Set<unknown>): unknown {
     }
   }
   for (const champ of CHAMPS_ERREUR_RETIRES) delete sortie[champ];
-  if (vues.has(erreur)) return sortie;
-  vues.add(erreur);
-  // Le code et la contrainte de la cause (Postgres) aident à comprendre la panne, sans valeurs.
-  const cause = erreur.cause as { code?: unknown; constraint?: unknown } | null;
-  if (typeof cause?.code === "string") sortie.causeCode = cause.code;
-  if (typeof cause?.constraint === "string") {
-    sortie.causeConstraint = cause.constraint;
+  // Le code et la contrainte de la cause (Postgres) aident à comprendre la panne, sans valeurs :
+  // la première cause qui porte un code, le long de la chaîne (Drizzle enveloppe l'erreur de Postgres).
+  const cause = causeAvecCode(erreur);
+  if (cause) {
+    sortie.causeCode = cause.code;
+    if (typeof cause.constraint === "string") {
+      sortie.causeConstraint = cause.constraint;
+    }
   }
   if (erreur instanceof AggregateError) {
     sortie.aggregateErrors = erreur.errors.map((e) => serialiser(e, vues));
@@ -94,6 +99,24 @@ function serialiser(erreur: unknown, vues: Set<unknown>): unknown {
     }
   }
   return sortie;
+}
+
+/** Première cause de la chaîne qui porte un code (texte), ou null. */
+function causeAvecCode(
+  erreur: Error,
+): { code: string; constraint?: unknown } | null {
+  const vues = new Set<unknown>([erreur]);
+  let cause = erreur.cause;
+  while (cause instanceof Object && !vues.has(cause)) {
+    vues.add(cause);
+    const { code, constraint } = cause as {
+      code?: unknown;
+      constraint?: unknown;
+    };
+    if (typeof code === "string") return { code, constraint };
+    cause = (cause as { cause?: unknown }).cause;
+  }
+  return null;
 }
 
 export const optionsJournal: LoggerOptions = {
