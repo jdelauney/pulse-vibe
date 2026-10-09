@@ -343,6 +343,27 @@ test("envoyer : une variable propre à chaque environnement ne part pas de .env 
   assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "hebergeur").map((a) => a.argv[3]), ["preview", "production"]);
 });
 
+test("envoyer : seule la source .env.envoi libère une variable propre à chaque environnement vers la production", () => {
+  const p = projet();
+  ecrire(p, ".env", `DATABASE_URL="${ADRESSE_BASE}"
+`);
+  ecrire(p, ".env.local", `DATABASE_URL="${ADRESSE_BASE}"
+`);
+  const sources = ["./.env", ".\.env", ".env.local", ".ENV", path.join(p.dossier, ".env")];
+  for (const source of sources) {
+    const r = lancer(p, ["envoyer", "DATABASE_URL", "--env", "production", "--depuis", source]);
+    assert.strictEqual(r.code, 1, source + " : " + r.sortie);
+    assert.match(r.sortie, /propre à chaque environnement/, source);
+  }
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "hebergeur"), [], "rien envoyé");
+  const preview = lancer(p, ["envoyer", "DATABASE_URL", "--env", "preview"]);
+  assert.strictEqual(preview.code, 0, preview.sortie);
+  ecrire(p, ".env.envoi", `DATABASE_URL="${ADRESSE_BASE}"
+`);
+  const ok = lancer(p, ["envoyer", "DATABASE_URL", "--env", "production", "--depuis", "./.env.envoi"]);
+  assert.strictEqual(ok.code, 0, ok.sortie);
+});
+
 test("envoyer : échec partiel → code 1 et rotation déclarée incomplète ; vide refusé ; --vider après succès", () => {
   const p = projet();
   ecrire(p, ".env", `STRIPE_SECRET_KEY=${CLE_STRIPE}\nAPP_URL=https://exemple.test\nVIDE_SECRET=\n`);

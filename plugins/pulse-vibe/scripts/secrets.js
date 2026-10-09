@@ -565,13 +565,15 @@ function envoyer(nom, options) {
   // Variable propre à chaque environnement (règle « parEnvironnement » du pack) : la valeur de .env sert au
   // développement ; celle de la production arrive par .env.envoi, sauf si la personne confirme qu'elle est la même.
   const regle = regles().variables[nom];
-  if (regle && regle.parEnvironnement && source === ".env" && envs.includes("production") && !options["--meme-valeur"]) {
+  if (regle && regle.parEnvironnement && path.basename(path.resolve(source)).toLowerCase() !== ".env.envoi" && envs.includes("production") && !options["--meme-valeur"]) {
     echec(
-      `⚠️ ${nom} est propre à chaque environnement : la valeur de .env sert au développement. Rien envoyé.
+      `⚠️ ${nom} est propre à chaque environnement : la valeur de ${source} ne part pas en production. Rien envoyé.
 ` +
         `   Valeur de production : pulse-aidd secrets preparer ${nom} --fichier .env.envoi ; la personne y colle la valeur ; puis pulse-aidd secrets envoyer ${nom} --env production --depuis .env.envoi --vider.
 ` +
-        `   La personne confirme que la valeur de .env est aussi celle de la production : relancez avec --meme-valeur.`
+        `   Pour la prévisualisation (--env preview), la valeur de .env peut convenir si votre base de prévisualisation est la branche dev.
+` +
+        `   La personne confirme que la valeur de ${source} est aussi celle de la production : relancez avec --meme-valeur.`
     );
   }
   const v = lireVariable(source, nom);
