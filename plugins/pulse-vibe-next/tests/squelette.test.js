@@ -184,6 +184,8 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
   assert.match(lireS("instrumentation.ts"), /export const onRequestError: Instrumentation\.onRequestError/);
   assert.match(lireS("instrumentation.ts"), /process\.env\.NEXT_RUNTIME !== "nodejs"/);
   assert.match(lireS("src", "lib", "logger.ts"), /`\*\.\*\.\*\["\$\{cle\}"\]`/);
+  for (const attendu of ["serializers: { err: serialiserErreur }", '"params"', "pino.multistream", "dedupe: true", "process.stderr"])
+    assert.ok(lireS("src", "lib", "logger.ts").includes(attendu), `logger.ts : ${attendu}`);
   for (const cle of ["password", "motDePasse", "token", "authorization", "Authorization", "Cookie", "set-cookie", "x-api-key", "apiKey", "secret", "clientSecret", "cookie", "email"]) assert.ok(lireS("src", "lib", "logger.ts").includes(`"${cle}"`), cle);
   for (const f of ["error.tsx", "global-error.tsx"]) assert.match(lireS("app", f), /Référence à nous transmettre : <code>\{error\.digest\}<\/code>/, f);
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "errors", "__tests__", "erreur-de-requete.test.ts")));
