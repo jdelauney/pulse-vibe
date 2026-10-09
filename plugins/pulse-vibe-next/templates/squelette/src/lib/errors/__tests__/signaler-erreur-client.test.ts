@@ -47,6 +47,23 @@ describe("signalerErreurClient", () => {
     );
   });
 
+  it("valeur levée qui n'est pas une Error (texte, null, objet) : envoyée sans planter", () => {
+    expect(() => signalerErreurClient("panne" as never)).not.toThrow();
+    expect(() => signalerErreurClient(null as never)).not.toThrow();
+    expect(() => signalerErreurClient({ code: 1 } as never)).not.toThrow();
+    const corps = balise.mock.calls.map(
+      (appel) => JSON.parse((appel as unknown as [string, string])[1]).message,
+    );
+    expect(corps).toEqual(["panne", "null", "[object Object]"]);
+  });
+
+  it("navigateur qui refuse l'envoi : rien ne remonte à la page d'erreur", () => {
+    balise.mockImplementationOnce(() => {
+      throw new TypeError("sendBeacon refusé");
+    });
+    expect(() => signalerErreurClient(new Error("boum"))).not.toThrow();
+  });
+
   it("en développement : rien n'est envoyé (l'erreur s'affiche déjà à l'écran)", () => {
     vi.stubEnv("NODE_ENV", "development");
     signalerErreurClient(new Error("boum"));

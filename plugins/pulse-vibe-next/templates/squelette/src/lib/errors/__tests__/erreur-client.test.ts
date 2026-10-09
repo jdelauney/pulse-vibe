@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   creerLimiteur,
   recevoirErreurClient,
+  sansDonneesDAdresse,
   TAILLE_MAX,
 } from "../erreur-client";
 
@@ -63,6 +64,26 @@ describe("Erreurs du navigateur", () => {
     );
   });
 
+  it("nettoyage du message : e-mails masqués, requête retirée même après une apostrophe", () => {
+    expect(
+      sansDonneesDAdresse(
+        "compte jean.dupont@exemple.fr introuvable sur https://h/p'?token=abc",
+      ),
+    ).toBe("compte [e-mail] introuvable sur https://h/p'");
+    expect(sansDonneesDAdresse("échec sur /compte/42/factures")).toBe(
+      "échec sur /compte/42/factures",
+    );
+  });
+
+  it("une référence (digest) envoyée par le navigateur n'est pas journalisée", async () => {
+    await recevoirErreurClient(
+      envoi(JSON.stringify({ digest: "1234", message: "boum", chemin: "/" })),
+      toujours,
+    );
+    const [champs] = vi.mocked(logger.error).mock.calls[0];
+    expect(champs).not.toHaveProperty("digest");
+  });
+
   it("refus sans rien écrire : autre site, sans origine, trop gros, illisible, incomplet", async () => {
     const cas: [NextRequest, number][] = [
       [envoi('{"chemin":"/"}', { origin: "https://autre-site.fr" }), 403],
@@ -119,5 +140,17 @@ describe("Erreurs du navigateur", () => {
     expect(accepter("198.51.100.1")).toBe(true);
     instant = 60_000;
     expect(accepter("203.0.113.7")).toBe(true);
+  });
+
+  it("limiteur plein : les minutes écoulées sont retirées, une adresse bloquée le reste", () => {
+    let instant = 0;
+    const accepter = creerLimiteur(() => instant);
+    for (let i = 0; i < 999; i++)
+      accepter(`10.0.${Math.floor(i / 256)}.${i % 256}`);
+    instant = 30_000;
+    for (let i = 0; i < 11; i++) accepter("203.0.113.7");
+    instant = 70_000;
+    expect(accepter("198.51.100.1")).toBe(true);
+    expect(accepter("203.0.113.7")).toBe(false);
   });
 });
