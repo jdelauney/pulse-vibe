@@ -135,3 +135,31 @@ test("le squelette type ses variables avec t3 env et nomme son client Drizzle", 
   assert.ok(!fs.existsSync(path.join(S, "src", "db", "index.ts")), "plus de src/db/index.ts");
   assert.ok(fs.existsSync(path.join(S, "tests", "helpers", "env-de-test.ts")), "aide VARIABLES_VALIDES");
 });
+
+test("fins de ligne LF et versions exactes : .gitattributes et .npmrc posés, complétés sans doublon", () => {
+  const d = dossierVide();
+  fs.writeFileSync(path.join(d, ".gitattributes"), "*.png binary\n");
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  const attendu = "*.png binary\n\n# Ajouté par Pulse Next.js\n* text=auto eol=lf\n";
+  assert.strictEqual(lire(d, ".gitattributes"), attendu);
+  assert.strictEqual(lire(d, ".npmrc"), "save-exact=true\n");
+  for (const modele of ["gitattributes.template", "npmrc.template"]) assert.ok(!fs.existsSync(path.join(d, modele)), modele);
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  assert.strictEqual(lire(d, ".gitattributes"), attendu, "deuxième passage : rien ne change");
+  assert.doesNotMatch(lire(d, ".gitignore"), /package-lock/, "package-lock.json s'enregistre avec le code");
+});
+
+test("dépendances du squelette : WebSocket natif, outils en développement, Node 22.19 ou plus, sans next-themes", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const paquet = JSON.parse(fs.readFileSync(path.join(S, "package.json"), "utf8"));
+  for (const nom of ["ws", "next-themes", "shadcn"]) assert.ok(!paquet.dependencies[nom], `${nom} hors des dépendances d'exécution`);
+  assert.ok(!paquet.devDependencies["@types/ws"], "@types/ws retiré");
+  assert.ok(paquet.devDependencies.shadcn, "shadcn en devDependencies (seul shadcn/tailwind.css est importé, à la construction)");
+  assert.deepStrictEqual(paquet.engines, { node: ">=22.19.0" });
+  assert.doesNotMatch(fs.readFileSync(path.join(S, "src", "db", "db-client.ts"), "utf8"), /webSocketConstructor|from "ws"/);
+  const sonner = fs.readFileSync(path.join(S, "src", "components", "ui", "sonner.tsx"), "utf8");
+  assert.doesNotMatch(sonner, /next-themes/);
+  assert.match(sonner, /theme="light"/);
+  const theme = fs.readFileSync(path.join(__dirname, "..", "references", "theme.md"), "utf8");
+  for (const attendu of ["npm install next-themes", "<ThemeProvider attribute=\"class\"", "suppressHydrationWarning", "useTheme()"]) assert.ok(theme.includes(attendu), `theme.md : ${attendu}`);
+});

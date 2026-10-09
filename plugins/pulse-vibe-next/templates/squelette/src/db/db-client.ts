@@ -1,12 +1,11 @@
 import "server-only";
-import { neonConfig, Pool } from "@neondatabase/serverless";
+import { Pool } from "@neondatabase/serverless";
 import { env } from "@src/config/env";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
-import ws from "ws";
 
-// WebSocket pour Node.js 21 et moins (facultatif à partir de Node.js 22).
-neonConfig.webSocketConstructor = ws;
+// Le pilote Neon passe par WebSocket, fourni par Node.js 22 et plus (package.json : engines) :
+// aucun paquet à ajouter.
 
 // Type commun à Neon (application) et PGlite (tests) : les repositories reçoivent la base en paramètre.
 // Les tables s'importent directement depuis src/db/<domaine>/<sujet>.table.ts (pas d'objet schéma global).
