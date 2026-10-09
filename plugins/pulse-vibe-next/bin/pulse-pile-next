@@ -22,8 +22,10 @@ if [ $# -eq 0 ] && [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
   _n="$PULSE_RELAIS_ARGC"
   case "$_n" in ''|*[!0-9]*|?????*) _n=0 ;; esac # un nombre de 1 à 4 chiffres, jamais une expression
   _n=$((10#$_n))
-  for ((_i = 0; _i < _n; _i++)); do _v="PULSE_RELAIS_ARG_$_i"; set -- "$@" "${!_v}"; done
-  unset _n _i _v
+  _a=()
+  for ((_i = 0; _i < _n; _i++)); do _v="PULSE_RELAIS_ARG_$_i"; _a+=("${!_v}"); done
+  if [ "${#_a[@]}" -gt 0 ]; then set -- "${_a[@]}"; fi # un seul set (pas de reconstruction à chaque tour)
+  unset _n _i _v _a
 fi
 unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
 
