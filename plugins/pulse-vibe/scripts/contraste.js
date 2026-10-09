@@ -30,7 +30,7 @@ const gamma = (c) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.05
 const borner = (c) => Math.min(1, Math.max(0, c));
 
 /** OKLCH → sRGB gamma (0..1), d'après les matrices de Björn Ottosson (CSS Color 4). Hors gamut : ramené dans [0, 1]. */
-function oklchVersRgb(L, C, H) {
+function oklchVersRgb(L, C, H, brut = false) {
   const h = (H * Math.PI) / 180;
   const a = C * Math.cos(h);
   const b = C * Math.sin(h);
@@ -40,8 +40,12 @@ function oklchVersRgb(L, C, H) {
   const r = 4.0767416621 * l_ - 3.3077115913 * m_ + 0.2309699292 * s_;
   const g = -1.2684380046 * l_ + 2.6097574011 * m_ - 0.3413193965 * s_;
   const bl = -0.0041960863 * l_ - 0.7034186147 * m_ + 1.707614701 * s_;
-  return [r, g, bl].map((c) => borner(gamma(c)));
+  const valeurs = [r, g, bl].map(gamma);
+  return brut ? valeurs : valeurs.map(borner);
 }
+
+/** Vrai si la couleur OKLCH sort de la gamme sRGB (l'écran la ramène à une couleur plus terne). */
+const horsGamme = (L, C, H) => oklchVersRgb(L, C, H, true).some((c) => !(c >= -1e-4 && c <= 1 + 1e-4));
 
 /** Lit une couleur : { rgb: [r, g, b] en 0..1 (gamma), alpha, oklch?: [L, C, H] }. */
 function lireCouleur(texte) {
@@ -60,8 +64,10 @@ function lireCouleur(texte) {
   if (m[1] === "oklch") {
     const L = borner(nombre(parties[0]));
     const C = Math.max(0, nombre(parties[1]));
+    if (/(turn|rad|grad)$/.test(parties[2]))
+      throw new Error(`unité d'angle non acceptée dans « ${texte} » : seuls les degrés (avec ou sans « deg ») sont acceptés.`);
     const H = parties[2] === "none" ? 0 : nombre(parties[2].replace(/deg$/, ""));
-    return { rgb: oklchVersRgb(L, C, H), alpha, oklch: [L, C, H] };
+    return { rgb: oklchVersRgb(L, C, H), alpha, oklch: [L, C, H], horsGamme: horsGamme(L, C, H) };
   }
   const rgb = parties.map((p) => (p.endsWith("%") ? nombre(p) : nombre(p) / 255)).map(borner);
   return { rgb, alpha };
@@ -109,6 +115,7 @@ function analyser(texteCouleur, texteFond, cible) {
     exact,
     seuils: SEUILS.map((s) => ({ ...s, atteint: exact >= s.rapport })),
   };
+  if (couleur.horsGamme || fond.horsGamme) resultat.horsGamme = true;
   if (cible !== undefined) resultat.proposition = viser(couleur, fond, cible);
   return resultat;
 }
@@ -116,7 +123,16 @@ function analyser(texteCouleur, texteFond, cible) {
 function principal(argv) {
   const json = argv.includes("--json");
   const i = argv.indexOf("--viser");
-  const cible = i >= 0 ? nombre(argv[i + 1]) : undefined;
+  let cible;
+  if (i >= 0) {
+    try {
+      cible = nombre(argv[i + 1]);
+      if (!(cible > 1)) throw new Error("cible");
+    } catch {
+      console.log("❌ --viser attend un rapport supérieur à 1, par exemple --viser 4.5");
+      return 1;
+    }
+  }
   const positionnels = argv.filter((a, k) => !a.startsWith("--") && !(i >= 0 && k === i + 1));
   if (positionnels.length !== 2) {
     console.log("Usage : pulse-aidd contraste <couleur> <fond> [--viser <rapport>] [--json]\nExemple : pulse-aidd contraste \"oklch(0.556 0 0)\" \"#ffffff\"");
@@ -135,6 +151,7 @@ function principal(argv) {
   }
   console.log(`Contraste : ${r.rapport.toFixed(2)}:1 (${r.couleur} sur ${r.fond})`);
   for (const s of r.seuils) console.log(`  ${s.atteint ? "✅" : "❌"} ${s.rapport}:1 – ${s.libelle}`);
+  if (r.horsGamme) console.log("⚠️ couleur hors de la gamme sRGB : l'écran l'affiche plus terne ; mesure faite sur la couleur affichée");
   if (cible !== undefined)
     console.log(r.proposition ? `➡️ Pour ${cible}:1 : ${r.proposition.valeur} (${r.proposition.rapport.toFixed(2)}:1)` : `➡️ ${cible}:1 est hors d'atteinte avec cette teinte et ce chroma sur ce fond.`);
   return 0;

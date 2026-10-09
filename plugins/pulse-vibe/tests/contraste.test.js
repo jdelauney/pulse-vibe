@@ -67,3 +67,30 @@ test("l'aide de pulse-aidd cite contraste", () => {
   const r = spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8" });
   assert.match(r.stdout, /pulse-aidd contraste <couleur> <fond>/);
 });
+
+test("--viser : valeur absente, illisible ou trop basse = message en français, code 1", () => {
+  for (const args of [["#000", "#fff", "--viser"], ["#000", "#fff", "--viser", "abc"], ["#000", "#fff", "--viser", "0"], ["#000", "#fff", "--viser", "-3"], ["#000", "#fff", "--viser", "1"]]) {
+    const r = lancer(...args);
+    assert.strictEqual(r.status, 1, args.join(" "));
+    assert.match(r.stdout, /--viser attend un rapport supérieur à 1, par exemple --viser 4.5/);
+    assert.strictEqual(r.stderr, "");
+  }
+});
+
+test("angle en turn, rad ou grad : message nommant la couleur, degrés seuls acceptés", () => {
+  for (const u of ["0.5turn", "1rad", "100grad"]) {
+    const r = lancer(`oklch(0.5 0.1 ${u})`, "#fff");
+    assert.strictEqual(r.status, 1);
+    assert.match(r.stdout, /oklch\(0\.5 0\.1 .*\).*degrés/);
+  }
+});
+
+test("couleur OKLCH hors de la gamme sRGB : avertissement et indicateur JSON", () => {
+  const r = lancer("oklch(0.7 0.4 150)", "#ffffff");
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /⚠️ couleur hors de la gamme sRGB : l'écran l'affiche plus terne ; mesure faite sur la couleur affichée/);
+  assert.strictEqual(JSON.parse(lancer("oklch(0.7 0.4 150)", "#ffffff", "--json").stdout).horsGamme, true);
+  const ok = lancer("oklch(0.556 0 0)", "#ffffff");
+  assert.doesNotMatch(ok.stdout, /hors de la gamme/);
+  assert.strictEqual(JSON.parse(lancer("oklch(0.556 0 0)", "#ffffff", "--json").stdout).horsGamme, undefined);
+});
