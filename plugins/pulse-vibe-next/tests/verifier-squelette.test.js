@@ -41,3 +41,14 @@ test("--dernieres --majeures : toutes les versions montent", () => {
   assert.strictEqual(lireArguments(["--dernieres", "--majeures"]).majeures, true);
   assert.throws(() => lireArguments(["--inconnue"]), /Option inconnue/);
 });
+
+test("CI hebdomadaire : mineures et majeures en demandes de fusion séparées, recettes vérifiées", () => {
+  const ci = fs.readFileSync(path.join(__dirname, "..", "..", "..", ".github", "workflows", "squelette-next.yml"), "utf8");
+  assert.match(ci, /verifier-squelette\.js --dernieres --ecrire --e2e\n/, "mineures sans --majeures");
+  assert.match(ci, /verifier-squelette\.js --dernieres --majeures --ecrire --e2e/);
+  assert.match(ci, /branch: chore\/squelette-next-dernieres-versions/);
+  assert.match(ci, /branch: chore\/squelette-next-versions-majeures/);
+  assert.match(ci, /verifier-recettes\.js --recettes connexion,liste/);
+  assert.match(ci, /verifier-recettes\.js --recettes connexion,fichiers/);
+  assert.match(ci, /verifier-recettes\.js --recettes connexion,paiement/);
+});

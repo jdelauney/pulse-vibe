@@ -1,29 +1,61 @@
-# Squelette du pack pulse-vibe-next : chaque semaine, il passe toutes ses dépendances à leur
-# dernière version, puis s'installe, se contrôle, se teste et se construit (bout en bout compris).
-# Si tout passe et que des versions ont changé, une demande de fusion propose la mise à jour.
-name: Squelette Next.js (dernières versions)
+# Squelette et recettes du pack pulse-vibe-next.
+# - Sur chaque demande de fusion qui touche le pack : le squelette (bout en bout compris), puis les
+#   recettes balisées posées sur lui (contrôles, types, tests, construction).
+# - Chaque semaine : toutes les dépendances à leur dernière version, sauf les versions majeures ; si tout
+#   passe, une demande de fusion propose la mise à jour. Les versions majeures passent à part, dans leur
+#   propre demande de fusion, pour lire leurs notes de version avant de fusionner.
+name: Squelette Next.js
 
 on:
+  pull_request:
+    paths:
+      - "plugins/pulse-vibe-next/**"
+      - ".github/workflows/squelette-next.yml"
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
-  squelette:
+  verifier:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.0.0
         with:
           node-version: lts/*
-      - name: Vérifier le squelette avec les dernières versions
+      - name: Vérifier le squelette
+        run: node plugins/pulse-vibe-next/scripts/verifier-squelette.js --e2e
+        env:
+          CI: "true"
+      - name: Vérifier les recettes balisées
+        run: |
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
+
+  dernieres-versions:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: lts/*
+      - name: Vérifier le squelette avec les dernières versions (hors versions majeures)
         run: node plugins/pulse-vibe-next/scripts/verifier-squelette.js --dernieres --ecrire --e2e
         env:
           CI: "true"
+      - name: Vérifier les recettes balisées avec ces versions
+        run: |
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
       - name: Proposer la mise à jour
         uses: peter-evans/create-pull-request@v8.1.1
         with:
@@ -31,7 +63,38 @@ jobs:
           commit-message: "chore(next): squelette aux dernières versions"
           title: "chore(next): squelette aux dernières versions"
           body: |
-            Mise à jour automatique des dépendances du squelette de pulse-vibe-next.
-            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions.
+            Mise à jour automatique des dépendances du squelette de pulse-vibe-next, hors versions majeures.
+            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; les recettes balisées (connexion, liste, fichiers, paiement) aussi.
             Avant de fusionner : monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (correctif).
+          add-paths: plugins/pulse-vibe-next/templates/squelette
+
+  versions-majeures:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: lts/*
+      - name: Vérifier le squelette avec les dernières versions, majeures comprises
+        run: node plugins/pulse-vibe-next/scripts/verifier-squelette.js --dernieres --majeures --ecrire --e2e
+        env:
+          CI: "true"
+      - name: Vérifier les recettes balisées avec ces versions
+        run: |
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
+      - name: Proposer la mise à jour majeure
+        uses: peter-evans/create-pull-request@v8.1.1
+        with:
+          branch: chore/squelette-next-versions-majeures
+          commit-message: "chore(next): squelette aux dernières versions majeures"
+          title: "chore(next): squelette aux dernières versions majeures"
+          body: |
+            Versions majeures des dépendances du squelette de pulse-vibe-next (liste : journal de l'étape « Vérifier le squelette »).
+            Le squelette et les recettes balisées passent avec ces versions. Avant de fusionner : lire les notes de version de chaque paquet, adapter la fiche, l'architecture et les recettes non balisées si besoin, puis monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (mineure).
           add-paths: plugins/pulse-vibe-next/templates/squelette

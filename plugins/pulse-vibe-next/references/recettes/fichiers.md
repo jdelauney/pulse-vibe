@@ -1007,6 +1007,8 @@ export default function PageFichiers() {
 
 Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` :
 
+Conservez les pages déjà listées par d'autres recettes (par exemple `/factures/:path*` de `liste`) en ajoutant celle-ci.
+
 <!-- remplacer-ligne: proxy.ts début: matcher: -->
 ```ts
   matcher: ["/compte/:path*", "/fichiers/:path*"],

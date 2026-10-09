@@ -850,6 +850,8 @@ export default function PageMerci({
 
 Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` (ici à la suite de `/compte`, recette `connexion`) :
 
+Conservez les pages déjà listées par d'autres recettes (par exemple `/factures/:path*` de `liste`) en ajoutant celle-ci.
+
 <!-- remplacer-ligne: proxy.ts début: matcher: -->
 ```ts
   matcher: ["/compte/:path*", "/paiement/:path*"],
