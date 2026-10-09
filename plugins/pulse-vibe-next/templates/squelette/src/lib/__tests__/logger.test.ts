@@ -146,6 +146,41 @@ describe("Erreurs de requête SQL dans le journal", () => {
     });
   });
 
+  it("une AggregateError qui contient une DrizzleQueryError ne la laisse pas fuir", () => {
+    const { journal, lignes } = journalDeTest();
+    const groupe = new AggregateError(
+      [inscriptionEnDouble().erreur],
+      "Plusieurs échecs",
+    );
+    journal.error({ err: groupe }, "Erreur dans une action serveur");
+    const texte = JSON.stringify(lignes[0]);
+    for (const valeur of VALEURS) expect(texte).not.toContain(valeur);
+    const interne = (
+      lignes[0].err as { aggregateErrors: { message: string; query: string }[] }
+    ).aggregateErrors[0];
+    expect(interne.query).toBe(REQUETE);
+    expect(interne.message).toContain(`Failed query: ${REQUETE}`);
+  });
+
+  it("une erreur rangée dans une autre propriété que cause ne fuit pas", () => {
+    const { journal, lignes } = journalDeTest();
+    const enveloppe = Object.assign(new Error("A"), {
+      original: inscriptionEnDouble().erreur,
+    });
+    journal.error({ err: enveloppe }, "Erreur dans une action serveur");
+    const texte = JSON.stringify(lignes[0]);
+    for (const valeur of VALEURS) expect(texte).not.toContain(valeur);
+  });
+
+  it("le code et la contrainte de la cause restent visibles", () => {
+    const { journal, lignes } = journalDeTest();
+    journal.error({ err: inscriptionEnDouble().erreur }, "Erreur de la base");
+    expect(lignes[0].err).toMatchObject({
+      causeCode: "23505",
+      causeConstraint: "utilisateur_email_unique",
+    });
+  });
+
   it("une valeur lancée qui n'est pas une erreur reste telle quelle", () => {
     expect(serialiserErreur("texte")).toBe("texte");
     expect(serialiserErreur(undefined)).toBeUndefined();
