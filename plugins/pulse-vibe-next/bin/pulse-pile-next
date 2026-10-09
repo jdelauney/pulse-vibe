@@ -70,7 +70,7 @@ contexte() {
       liste_recettes ;;
     implement|fix|spirc|auto-fix)
       afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"
-      fiche
+      afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"
       liste_recettes ;;
     review)
       afficher "Pour relire" "$REF/contexte/review.md"

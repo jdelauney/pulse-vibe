@@ -166,11 +166,16 @@ test("aucune clé ressemblant à une vraie dans les références et le squelette
   assert.deepStrictEqual(trouves, []);
 });
 
-test("la fiche s'accompagne de l'architecture, pour tech, plan, implement et review", () => {
-  for (const commande of ["tech", "plan", "implement", "review"]) {
+test("la fiche s'accompagne de l'architecture pour tech, plan et review ; à la demande pour réaliser et corriger", () => {
+  for (const commande of ["tech", "plan", "review"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0);
     assert.match(r.stdout, /----- Architecture du code/, commande);
+  }
+  for (const commande of ["implement", "fix", "spirc", "auto-fix"]) {
+    const r = lancer("contexte", commande);
+    assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
+    assert.match(r.stdout, /pulse-aidd pile reference architecture.md/, commande);
   }
 });
 
