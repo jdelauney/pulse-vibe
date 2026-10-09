@@ -501,3 +501,12 @@ test("aide : pulse-pile-next sans argument liste exactement ses sous-commandes, 
   assert.deepStrictEqual([...listees].sort(), [...new Set(code)].sort());
   assert.doesNotMatch(aide, /RACINE=|PULSE_RELAIS|^#!/m);
 });
+
+test("deploy : tests dans la construction, prévisualisations sans vrais destinataires, clé Neon exposée", () => {
+  const deploy = lire(REF, "contexte", "deploy.md");
+  for (const attendu of ["npm test && node scripts/migrer.mjs --vercel && npm run build", "copie des données réelles", "Deployment Protection", "SMTP de test", "clés de test", "réserver une variable à la construction"])
+    assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
+  const secrets = lire(REF, "contexte", "secrets.md");
+  assert.ok(secrets.includes("lisible par le code du site"), "secrets.md : NEON_API_KEY lisible à l'exécution");
+  assert.match(lire(REF, "migrations.md"), /Projet créé avant pulse-next 0\.22\.0/);
+});
