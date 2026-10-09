@@ -63,9 +63,13 @@ function chainesTouchees(fichiers, chaines = CHAINES) {
   return chaines.filter((chaine) => chaine.some((nom) => recettes.has(nom)));
 }
 
-/** Fichiers modifiés entre la base commune de <ref> et HEAD (git diff <ref>...HEAD) ; null si Git ne sait pas comparer. */
+/**
+ * Fichiers modifiés entre la base commune de <ref> et HEAD (git diff <ref>...HEAD) ; null si Git ne sait pas comparer.
+ * --no-renames : un fichier déplacé d'une recette à une autre compte pour les deux (ancien et nouveau chemin).
+ * core.quotepath=off : un nom accentué sort tel quel, et non entre guillemets avec des codes octaux.
+ */
 function fichiersModifies(ref, cwd = path.join(__dirname, "..", "..", "..")) {
-  const r = spawnSync("git", ["diff", "--name-only", `${ref}...HEAD`, "--"], { cwd, encoding: "utf8" });
+  const r = spawnSync("git", ["-c", "core.quotepath=off", "diff", "--name-only", "--no-renames", `${ref}...HEAD`, "--"], { cwd, encoding: "utf8" });
   if (r.status !== 0) return null;
   return r.stdout.split("\n").map((l) => l.trim()).filter(Boolean);
 }
@@ -124,7 +128,10 @@ function extraireEtapes(texte) {
         const m = /^(\S+)\s+vers:\s+(\S+)$/.exec(valeur);
         if (!m) throw new Error(`ligne ${i + 1} : deplacer demande « <source> vers: <destination> »`);
         etapes.push({ type, chemin: verifierChemin(m[1], i + 1), vers: verifierChemin(m[2], i + 1), ligne: i + 1 });
-      } else if (type === "sans-verification") attente = { type, raison: valeur, ligne: i + 1 };
+      } else if (type === "sans-verification") {
+        if (!/\S/.test(valeur)) throw new Error(`ligne ${i + 1} : sans-verification demande une raison`);
+        attente = { type, raison: valeur.trim(), ligne: i + 1 };
+      }
       else attente = { type, ...lireCible(type, valeur, i + 1), ligne: i + 1 };
       continue;
     }
@@ -222,11 +229,17 @@ function poserEtape(dossier, e) {
   return e.chemin;
 }
 
-function poserRecette(dossier, nom, nonVerifies) {
-  if (!fs.existsSync(path.join(RECETTES, nom, "index.md"))) throw new Error(`recette introuvable : ${nom}`);
-  const etapes = extraireEtapes(texteRecette(nom));
+/**
+ * Pose une recette dans le projet (texte : lu dans references/recettes/ s'il n'est pas donné) ; rend les chemins écrits.
+ * Les blocs sans-verification s'ajoutent à nonVerifies. Une recette dont aucun fichier n'est posé (fichier, ajout,
+ * remplacer, remplacer-ligne) ne vérifierait rien : échec.
+ */
+function poserRecette(dossier, nom, nonVerifies, texte = null) {
+  if (texte === null && !fs.existsSync(path.join(RECETTES, nom, "index.md"))) throw new Error(`recette introuvable : ${nom}`);
+  const etapes = extraireEtapes(texte === null ? texteRecette(nom) : texte);
   if (!etapes.length) throw new Error(`recette ${nom} : aucune balise (voir l'en-tête de ce script)`);
-  console.log(`\n■ Recette ${nom} : ${etapes.length} étapes balisées`);
+  const nonVerifiees = etapes.filter((e) => e.type === "sans-verification").length;
+  console.log(`\n■ Recette ${nom} : ${etapes.length} étapes, dont ${nonVerifiees} non vérifiées`);
   const poses = [];
   for (const e of etapes) {
     if (e.type === "sans-verification") {
@@ -242,6 +255,7 @@ function poserRecette(dossier, nom, nonVerifies) {
     const pose = poserEtape(dossier, e);
     if (pose) poses.push(pose);
   }
+  if (!poses.length) throw new Error(`recette ${nom} : aucun fichier posé (balises fichier, ajout, remplacer ou remplacer-ligne) : rien de la recette ne serait vérifié`);
   return poses;
 }
 
@@ -267,11 +281,12 @@ function lireArguments(argv) {
   return opts;
 }
 
-/** Vérifie une chaîne de recettes sur un squelette neuf (ou sur --projet) ; rend true si tout passe. */
+/** Vérifie une chaîne de recettes sur un squelette neuf (ou sur --projet) ; rend { reussi, nonVerifies } (blocs laissés de côté, avec leur raison). */
 function verifierChaine(recettes, { projet = null, garder = false } = {}) {
   let dossier = projet;
   const temporaire = !dossier;
   let reussi = false;
+  const nonVerifies = [];
   try {
     if (temporaire) {
       const { creerSquelette } = require("./squelette");
@@ -280,7 +295,6 @@ function verifierChaine(recettes, { projet = null, garder = false } = {}) {
       lancer("npm", ["install", "--no-audit", "--no-fund"], dossier);
     }
     const poses = [];
-    const nonVerifies = [];
     for (const nom of recettes) poses.push(...poserRecette(dossier, nom, nonVerifies));
     // Mise en forme Biome des fichiers posés (et toujours présents) : un écart de forme se corrige chez la personne par npm run format.
     const uniques = [...new Set(poses)].filter((p) => fs.existsSync(path.join(dossier, p)));
@@ -295,12 +309,13 @@ function verifierChaine(recettes, { projet = null, garder = false } = {}) {
     lancer("npm", ["run", "typecheck"], dossier);
     lancer("npm", ["test"], dossier);
     lancer("npm", ["run", "build"], dossier, { SKIP_ENV_VALIDATION: "1" });
-    if (nonVerifies.length) console.log(`\n⚠️ Blocs non vérifiés (raison écrite dans la recette) :\n  ${nonVerifies.join("\n  ")}`);
     console.log(`\n✅ Recettes vérifiées : ${recettes.join(" → ")}.`);
     reussi = true;
   } catch (e) {
     console.error(`\n❌ Échec (${recettes.join(" → ")}) : ${e.message}`);
   } finally {
+    // Après un succès comme après un échec : les blocs laissés de côté restent à relire à la main.
+    if (nonVerifies.length) console.log(`\n⚠️ Blocs non vérifiés (raison écrite dans la recette) :\n  ${nonVerifies.join("\n  ")}`);
     if (temporaire && dossier) {
       if (garder || !reussi) console.log(`Dossier gardé : ${dossier}`);
       else {
@@ -314,7 +329,7 @@ function verifierChaine(recettes, { projet = null, garder = false } = {}) {
       }
     }
   }
-  return reussi;
+  return { reussi, nonVerifies };
 }
 
 /** Les chaînes à vérifier selon les options : toutes, celles touchées depuis une référence, ou celle de --recettes. */
@@ -339,14 +354,21 @@ function chainesAVerifier(opts) {
 function principal() {
   const opts = lireArguments(process.argv.slice(2));
   const chaines = chainesAVerifier(opts);
-  const echecs = chaines.filter((chaine) => !verifierChaine(chaine, opts));
+  const echecs = [];
+  const nonVerifies = new Set();
+  for (const chaine of chaines) {
+    const r = verifierChaine(chaine, opts);
+    if (!r.reussi) echecs.push(chaine);
+    for (const bloc of r.nonVerifies) nonVerifies.add(bloc);
+  }
   if (chaines.length > 1) {
     const bilan = `${chaines.length - echecs.length}/${chaines.length} chaînes vérifiées`;
     console.log(echecs.length ? `\n❌ ${bilan} ; en échec : ${echecs.map((c) => c.join(",")).join(" ; ")}` : `\n✅ ${bilan}.`);
+    if (nonVerifies.size) console.log(`⚠️ Blocs non vérifiés, toutes chaînes confondues :\n  ${[...nonVerifies].join("\n  ")}`);
   }
   if (echecs.length) process.exitCode = 1;
 }
 
 if (require.main === module) principal();
 
-module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, CHAINES, chainesTouchees, fichiersModifies };
+module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies };

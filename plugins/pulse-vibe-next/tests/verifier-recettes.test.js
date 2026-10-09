@@ -9,7 +9,7 @@ const path = require("path");
 
 const os = require("os");
 const { spawnSync } = require("child_process");
-const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
+const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes à baliser (tâches 11 à 16 du plan « Corrections 3 ») : chaque tâche retire la sienne.
 const EN_ATTENTE = ["email", "formulaire-public", "langues", "limite", "seo", "mesure-reelle"];
@@ -177,6 +177,26 @@ test("fichiers modifiés : lus par Git depuis la base commune ; référence inco
     assert.deepStrictEqual(fichiersModifies("HEAD", d), []);
     assert.strictEqual(fichiersModifies("0000000000000000000000000000000000000000", d), null, "premier envoi d'une branche : pas de commit d'avant");
     assert.strictEqual(fichiersModifies("branche-inconnue", d), null);
+    // Étape déplacée d'une recette à une autre : les deux chemins, donc les deux chaînes.
+    const R = "plugins/pulse-vibe-next/references/recettes";
+    fs.writeFileSync(path.join(recette, "etape-2.md"), "## Étape 2\n\nUn texte assez long pour que Git reconnaisse le déplacement.\n");
+    git("add", ".");
+    git("commit", "-q", "-m", "etape");
+    const avantDeplacement = git("rev-parse", "HEAD").stdout.trim();
+    fs.mkdirSync(path.join(d, ...R.split("/"), "liste"), { recursive: true });
+    git("mv", `${R}/email/etape-2.md`, `${R}/liste/etape-2.md`);
+    git("commit", "-q", "-m", "deplacement");
+    const deplaces = fichiersModifies(avantDeplacement, d);
+    assert.deepStrictEqual([...deplaces].sort(), [`${R}/email/etape-2.md`, `${R}/liste/etape-2.md`]);
+    const chaines = [["connexion", "liste"], ["connexion", "email"], ["paiement"]];
+    assert.deepStrictEqual(chainesTouchees(deplaces, chaines), [["connexion", "liste"], ["connexion", "email"]]);
+    // Nom accentué : sorti tel quel (sans guillemets ni codes octaux), donc rattaché à sa recette.
+    const avantAccent = git("rev-parse", "HEAD").stdout.trim();
+    fs.writeFileSync(path.join(d, ...R.split("/"), "liste", "étape-3.md"), "x\n");
+    git("add", ".");
+    git("commit", "-q", "-m", "accent");
+    assert.deepStrictEqual(fichiersModifies(avantAccent, d), [`${R}/liste/étape-3.md`]);
+    assert.deepStrictEqual(chainesTouchees(fichiersModifies(avantAccent, d), chaines), [["connexion", "liste"]]);
   } finally {
     fs.rmSync(d, { recursive: true, force: true });
   }
@@ -227,6 +247,7 @@ test("balises supprimer, deplacer et sans-verification : lues dans l'ordre, chem
   assert.throws(() => extraireEtapes("<!-- deplacer: app/a.tsx vers: ../b.tsx -->\n"), /hors du projet/);
   assert.throws(() => extraireEtapes("<!-- deplacer: app/a.tsx -->\n"), /vers:/);
   assert.throws(() => extraireEtapes("<!-- sans-verification: raison -->\nTexte\n"), /doit précéder directement un bloc/);
+  assert.throws(() => extraireEtapes(`<!-- sans-verification:   -->\n${F}tsx\nX\n${F}\n`), /sans-verification demande une raison/);
 });
 
 test("pose : suppression et déplacement dans le projet, refus si la source manque ou si la destination existe", () => {
@@ -247,6 +268,22 @@ test("pose : suppression et déplacement dans le projet, refus si la source manq
     assert.throws(() => poserEtape(d, { type: "deplacer", chemin: "app/a.tsx", vers: "app/[locale]/(public)", ligne: 6 }), /ligne 6.*existe déjà/);
     assert.strictEqual(poserEtape(d, { type: "fichier", chemin: "src/b.ts", contenu: "b\n", ligne: 7 }), "src/b.ts");
     assert.strictEqual(fs.readFileSync(path.join(d, "src", "b.ts"), "utf8"), "b\n");
+  } finally {
+    fs.rmSync(d, { recursive: true, force: true });
+  }
+});
+
+test("recette : blocs non vérifiés comptés et listés ; une recette sans aucun fichier posé échoue", (t) => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-recettes-recette-"));
+  const messages = [];
+  t.mock.method(console, "log", (m) => messages.push(m));
+  try {
+    const nonVerifies = [];
+    const sansVerif = `<!-- sans-verification: lit la base pendant la construction -->\n${F}ts\n// app/sitemap.ts\n${F}\n`;
+    assert.deepStrictEqual(poserRecette(d, "essai", nonVerifies, `${sansVerif}<!-- fichier: src/a.ts -->\n${F}ts\nexport const a = 1;\n${F}\n`), ["src/a.ts"]);
+    assert.ok(messages.some((m) => /Recette essai : 2 étapes, dont 1 non vérifiées/.test(m)), messages.join("\n"));
+    assert.deepStrictEqual(nonVerifies, ["essai, ligne 1 : lit la base pendant la construction"]);
+    assert.throws(() => poserRecette(d, "vide", [], sansVerif), /recette vide : aucun fichier posé/);
   } finally {
     fs.rmSync(d, { recursive: true, force: true });
   }
