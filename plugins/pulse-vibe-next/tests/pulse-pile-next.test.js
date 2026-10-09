@@ -378,7 +378,7 @@ test("architecture : une facture se paie une seule fois, même avec deux demande
 
 test("production : base dev séparée, intégration Vercel–Neon, migrations sauvegardées, retour arrière", () => {
   const technique = lire(REF, "technical.md");
-  for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "package-lock.json"])
+  for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "NEON_ENDPOINT_PRODUCTION", "package-lock.json"])
     assert.ok(technique.includes(attendu), `technical.md : ${attendu}`);
   const deploy = lire(REF, "contexte", "deploy.md");
   for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables", "/api/sante", "Level", "1 heure", "Erreur dans le navigateur", "100 CU-h", "veille", "app/global-error.tsx", "/essai-surveillance"])
