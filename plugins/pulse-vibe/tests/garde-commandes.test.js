@@ -134,7 +134,8 @@ test("configuration Git : nom et e-mail passent, le reste demande confirmation",
   passe("git config user.name");
   passe("git config --get remote.origin.url");
   passe("git config --list");
-  confirmation("git config core.hooksPath /tmp/hooks");
+  const hooks = confirmation("git config core.hooksPath /tmp/hooks");
+  assert.match(hooks.raison, /contrôle des secrets/, "core.hooksPath : message du contrôle avant commit");
   confirmation("git config --global --unset core.autocrlf");
   confirmation("git config set core.autocrlf true");
 });
@@ -1080,4 +1081,32 @@ test("contrôle avant commit modifié par une commande : accord demandé", () =>
   assert.match(confirmation("rm -rf scripts/", projet).raison, /pulse-aidd installer-hook/);
   assert.match(confirmationPs("Move-Item scripts scripts2", projet).raison, /pulse-aidd installer-hook/);
   passe("mv src/a.js src/b.js", projet);
+});
+
+test("dernier tour : git grep -O, filtres de noms, --redact répété, hooksPath, motif -e, --output, alias:", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-dernier-tour-"));
+  fs.writeFileSync(path.join(dir, ".env"), "A=1\n");
+  fs.writeFileSync(path.join(dir, ".gitignore"), ".env\n");
+  // git grep -O lance la commande donnée.
+  for (const c of ['git grep -n -O"node -e 1" x', "git grep -O vim x", "git grep --open-files-in-pager=less x"]) confirmation(c, dir);
+  passe("git grep -n TODO", dir);
+  // Filtrer des noms ne lit rien.
+  for (const c of ["Get-ChildItem -Force | Where-Object Name -like '.env*'", 'Get-ChildItem | Where-Object { $_.Name -like ".env*" }', "gci -Force | ? Name -match '^.env'"]) passePs(c, dir);
+  for (const c of ["gci .env | ? { gc $_ }", "Get-ChildItem .env | Where-Object { (Get-Content $_) -match 'x' }"]) refusPs(c, dir);
+  // La dernière occurrence de --redact décide.
+  refus("gitleaks detect --config .gitleaks.toml --redact --redact=0 -v");
+  passe("gitleaks detect --redact=0 --redact");
+  // Le motif de -e, --regexp et -Pattern n'est pas un fichier.
+  passePs("Select-String -Path .gitignore -Pattern '.env'", dir);
+  passe('grep -e ".env" .gitignore', dir);
+  refus("grep -eKEY .env", dir);
+  refus("grep -e KEY .env", dir);
+  // --output écrit un fichier.
+  for (const c of ["git log --output=x.txt", "git diff --output=x.txt", "git log --output x"]) confirmation(c, dir);
+  // Un alias créé par Set-Item ou New-Item demande l'accord, comme Set-Alias.
+  for (const c of ["Set-Item alias:g git", "New-Item -Path alias:g -Value git", "si alias:g git"]) {
+    const d = decision(c, dir, {}, "PowerShell");
+    assert.ok(d && d.decision === "ask", "confirmation attendue : " + c);
+  }
+  passePs("Set-Item env:FOO bar", dir);
 });

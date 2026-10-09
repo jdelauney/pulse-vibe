@@ -161,7 +161,7 @@ const MESSAGES = {
 // Commandes qui copient ou déplacent un fichier : la dernière position est la destination.
 const COPIEURS = new Set(["cp", "scp", "rsync", "copy", "copy-item", "cpi", "xcopy", "robocopy", "mv", "move", "move-item", "mi"]);
 // Commandes qui nomment un .env sans en montrer le contenu : vérifier, lister, créer, ouvrir pour la personne, écrire du texte.
-const SANS_LECTURE = new Set(["test", "[", "stat", "touch", "chmod", "icacls", "code", "cursor", "notepad", "open", "xdg-open", "start", "invoke-item", "ii", "test-path", "new-item", "ni", "echo", "printf", "write-output", "write-host", "add-content", "ac", "set-content", "sc", "out-file", "tee", "pulse-aidd", "pulse-pile-next", "ls", "dir", "get-childitem", "gci", "basename", "dirname", "realpath"]);
+const SANS_LECTURE = new Set(["test", "[", "stat", "touch", "chmod", "icacls", "code", "cursor", "notepad", "open", "xdg-open", "start", "invoke-item", "ii", "test-path", "new-item", "ni", "echo", "printf", "write-output", "write-host", "add-content", "ac", "set-content", "sc", "out-file", "tee", "pulse-aidd", "pulse-pile-next", "ls", "dir", "get-childitem", "gci", "basename", "dirname", "realpath", "where-object", "where", "?"]);
 // Sous-commandes Git qui nomment un .env sans l'afficher (le garde-fou anti-secrets contrôle add et commit).
 const GIT_SANS_LECTURE = new Set(["add", "stage", "commit", "check-ignore", "check-attr", "ls-files", "status", "rm", "restore", "reset", "update-index"]);
 // Recherche : le premier mot libre est le motif cherché, pas un fichier (sauf -e, -f ou -Pattern).
@@ -286,6 +286,12 @@ function motsLus(c) {
   const mots = [];
   for (let j = 0; j < args.length; j++) {
     const a = args[j];
+    // La valeur de -e, --regexp ou -Pattern est le motif cherché, pas un fichier.
+    if (/^(-e|--regexp|-pattern)$/i.test(a) && (CHERCHEURS.has(c.cmd) || (git && c.args[git.k] === "grep"))) {
+      mots.push(a);
+      j++;
+      continue;
+    }
     if (/^(--exclude|--exclude-dir|--exclude-from|--ignore-file|-exclude)$/i.test(a)) {
       j++;
       continue;
@@ -385,6 +391,8 @@ function listeurCouvreEnv(c, cwd) {
 
 /** Vrai si la commande lit un .env : redirection d'entrée, chargeur de .env, ou un mot (la commande elle-même comprise) qui le désigne. */
 function litEnv(c, cwd) {
+  // PowerShell : Where-Object Name -like '.env*' ou { $_.Name -like ".env*" } compare des noms sans rien lire.
+  if (c.dialecte === "powershell" && /^\$[\w.]+$/.test(c.brut) && c.args.length && /^-(i|c)?(like|notlike|match|notmatch|eq|ne)$/i.test(c.args[0])) return false;
   if (c.lectures.some((f) => designeEnv(f, cwd, c.dialecte))) return true;
   if (optionLitEnv(c, cwd)) return true;
   if (c.cmd === "git") {
@@ -547,6 +555,9 @@ function reglesGit(c, cwd, constats) {
   // --config-env=<clé>=<variable> : la valeur vient de l'environnement, Pulse ne la voit pas.
   const configsEnv = valeursOption(c.args.slice(0, k), ["--config-env"]);
 
+  // --output=<fichier> : git log, diff et show écrivent le résultat dans ce fichier.
+  if (["log", "diff", "show", "format-patch"].includes(sous) && options.some((o) => /^--output(=|$)/.test(o))) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+
   switch (sous) {
     case "push":
       if (aLongue("--force") || aLongue("--force-with-lease") || aLongue("--force-if-includes") || court("f") || positions.some((p) => p.startsWith("+")))
@@ -629,6 +640,8 @@ function reglesGit(c, cwd, constats) {
     case "diff": {
       // --no-index, --untracked, --no-exclude-standard : Git lit aussi les fichiers ignorés, dont .env.
       const horsDepot = options.some((o) => o === "--no-index" || longue(o, "--untracked", 5) || longue(o, "--no-exclude-standard", 6));
+      // -O<commande> / --open-files-in-pager : git grep lance la commande donnée.
+      if (sous === "grep" && options.some((o) => /^(-[a-zA-Z]*O|--open-files-in-pager)/.test(o))) constats.push([ACCORD, MESSAGES.commandeMasquee]);
       if (!horsDepot) break;
       const tirets = reste.indexOf("--");
       const chemins = tirets >= 0 ? reste.slice(tirets + 1) : sous === "grep" && !options.some((o) => o === "-e" || o === "-f") ? positions.slice(1) : positions;
@@ -639,7 +652,7 @@ function reglesGit(c, cwd, constats) {
       if (positions[0] === "remove" && (options.includes("--force") || options.includes("-f"))) constats.push([ACCORD, MESSAGES.brancheForcee]);
       break;
     case "config":
-      if (configEcrit(reste)) constats.push([ACCORD, MESSAGES.config]);
+      if (configEcrit(reste)) constats.push([ACCORD, reste.some((m) => /^core\.hookspath$/i.test(m)) ? MESSAGE_CONTROLE : MESSAGES.config]);
       break;
     case "rm":
       if (options.includes("--cached")) break;
@@ -855,7 +868,9 @@ function appliquerRegles(c, cwd, constats) {
       break;
     case "gitleaks": {
       // --redact masque tout ; --redact=N ne masque que N % de chaque secret.
-      const masque = args.some((a) => a === "--redact" || Number((/^--redact=(\d+)$/.exec(a) || [])[1]) >= 100);
+      // Seule la dernière occurrence compte.
+      const dernier = args.filter((a) => /^--redact(=|$)/.test(a)).pop();
+      const masque = dernier !== undefined && (dernier === "--redact" || Number((/^--redact=(\d+)$/.exec(dernier) || [])[1]) >= 100);
       if (args.some((a) => ["detect", "dir", "git", "protect", "stdin"].includes(a)) && !masque) constats.push([REFUS, MESSAGES.gitleaksSansMasque]);
       break;
     }
@@ -895,6 +910,13 @@ function appliquerRegles(c, cwd, constats) {
       if (a0 === "release" && a1 === "delete") constats.push([ACCORD, MESSAGES.apiSuppression]);
       break;
     }
+    case "set-item":
+    case "si":
+    case "new-item":
+    case "ni":
+      // Set-Item alias:g git crée un alias, comme Set-Alias.
+      if (args.some((a) => /^(-(path|literalpath|name):?)?alias:/i.test(a) || /^alias:?$/i.test(a))) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+      break;
     case "alias":
     case "set-alias":
     case "sal":
