@@ -202,6 +202,51 @@ describe("API Neon", () => {
     });
   });
 
+  it("création : sans expiration si Neon refuse expires_at (400), une seule fois", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(reponse(200, { branches: [] }))
+      .mockResolvedValueOnce(
+        reponse(400, { message: "expires_at not allowed" }),
+      )
+      .mockResolvedValueOnce(reponse(201, {}));
+    const dire = vi.fn();
+    await creerSauvegarde(
+      {
+        cle: "k",
+        projet: "p",
+        nom: "sauvegarde-20261008-1405",
+        expiration: "2026-10-15T14:05:30Z",
+      },
+      { fetchFn, ...sansAttente },
+      dire,
+    );
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(JSON.parse(fetchFn.mock.calls[2][1].body)).toEqual({
+      branch: { name: "sauvegarde-20261008-1405" },
+    });
+    expect(dire).toHaveBeenCalledWith(
+      expect.stringContaining("2 sauvegardes les plus récentes"),
+    );
+  });
+
+  it("création : la limite de branches n'est pas rejouée", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(reponse(200, { branches: [] }))
+      .mockResolvedValueOnce(
+        reponse(422, { message: "branches limit exceeded" }),
+      );
+    await expect(
+      creerSauvegarde(
+        { cle: "k", projet: "p", nom: "s", expiration: "2026-10-15T14:05:30Z" },
+        { fetchFn, ...sansAttente },
+        () => {},
+      ),
+    ).rejects.toThrow(/limite de branches/);
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
   it("nettoyage : garde les 2 sauvegardes les plus récentes, jamais la branche par défaut", async () => {
     const fetchFn = vi
       .fn()

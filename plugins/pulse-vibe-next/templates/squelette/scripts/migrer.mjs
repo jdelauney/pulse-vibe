@@ -119,8 +119,11 @@ export async function appelNeon(
       const limite = /branch\w*.*limit|limit.*branch/i.test(message)
         ? " — limite de branches Neon atteinte : supprimez des branches inutiles (anciennes prévisualisations preview/…, branches *_old_* laissées par une restauration) dans la console Neon, puis redéployez"
         : "";
-      throw new Error(
-        `l'API Neon répond ${reponse.status}${message ? ` (${message})` : ""}${limite}`,
+      throw Object.assign(
+        new Error(
+          `l'API Neon répond ${reponse.status}${message ? ` (${message})` : ""}${limite}`,
+        ),
+        { status: reponse.status, limiteBranches: limite !== "" },
       );
     }
     return reponse.status === 204 ? {} : await reponse.json().catch(() => ({}));
@@ -174,15 +177,25 @@ export async function creerSauvegarde(
   dire = console.log,
 ) {
   await nettoyerSauvegardes({ cle, projet }, options, dire);
-  await appelNeon(
-    {
-      cle,
-      methode: "POST",
-      chemin: `/projects/${projet}/branches`,
-      corps: { branch: { name: nom, expires_at: expiration } },
-    },
-    options,
-  );
+  const requete = (branch) => ({
+    cle,
+    methode: "POST",
+    chemin: `/projects/${projet}/branches`,
+    corps: { branch },
+  });
+  try {
+    await appelNeon(requete({ name: nom, expires_at: expiration }), options);
+  } catch (erreur) {
+    // expires_at est réservé à certains comptes : un refus (400, 403 ou 422) se
+    // rejoue une fois sans expiration. La limite de branches ne se rejoue pas.
+    const refus =
+      [400, 403, 422].includes(erreur?.status) && !erreur.limiteBranches;
+    if (!refus) throw erreur;
+    dire(
+      "Neon refuse l'expiration automatique de la branche : sauvegarde recréée sans expiration ; le nettoyage qui garde les 2 sauvegardes les plus récentes la supprimera plus tard.",
+    );
+    await appelNeon(requete({ name: nom }), options);
+  }
 }
 
 function appliquer(adresse) {
@@ -229,7 +242,7 @@ export async function migrer({
   }
   if (vercel && !env.VERCEL_ENV) {
     throw new Error(
-      "VERCEL_ENV manque : activez l'accès aux variables système de Vercel (Settings → Environment Variables → Automatically expose System Environment Variables)",
+      "VERCEL_ENV manque : activez l'accès aux variables système de Vercel (Settings → Environment Variables → cochez « Enable access to System Environment Variables »)",
     );
   }
   const adresse = env.DATABASE_URL_UNPOOLED;
