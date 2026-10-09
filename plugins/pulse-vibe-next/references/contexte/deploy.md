@@ -19,3 +19,4 @@
 - IndexNow (facultatif, si `public/<clé>.txt` existe) : envoi après les preuves, d'après « IndexNow » des consignes Search Console du pack (`pulse-aidd pile reference contexte/search-console.md`).
 
 **CI (GitHub Actions)**, pour `/pulse:cicd` : Node.js LTS récent, `npm ci`, `node scripts/verifier.js`, `npm run check`, `npm run typecheck`, `npm test`, `npm run build` avec `SKIP_ENV_VALIDATION=1` (la CI n'a pas les secrets ; t3 env saute alors la validation). Bout en bout en CI : `npx playwright install --with-deps chromium`, puis `npm run test:e2e` (avec `CI=true` et `SKIP_ENV_VALIDATION=1`).
+- Surveillance (`/pulse:deploy` § 5) : sonde de disponibilité sur l'adresse de production ; pour être prévenu des erreurs, la recette `suivi-erreurs` (facultative, `pulse-aidd pile recette suivi-erreurs`).

@@ -25,7 +25,7 @@ const SECTIONS_RECETTE = [
   "## Points de sécurité",
   "## Pièges connus",
 ];
-const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle"];
+const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle", "suivi-erreurs"];
 
 test("info : les quatre lignes du contrat, avec la version du manifeste", () => {
   const r = lancer("info");

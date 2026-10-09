@@ -707,3 +707,8 @@ test("production : retour arrière dans le modèle technical.md et dans deploy ;
   assert.match(deploy, /propre à chaque environnement/);
   assert.match(lire(RACINE, "references", "secrets", "sans-conversation.md"), /--meme-valeur/);
 });
+
+test("mise en production : une sonde de disponibilité est proposée et notée", () => {
+  assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
+  assert.match(lire(RACINE, "templates", "technical.md"), /^- Surveillance : /m);
+});
