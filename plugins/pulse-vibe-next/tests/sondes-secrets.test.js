@@ -75,7 +75,7 @@ test("regles : JSON des variables du pack et noms déclarés dans src/lib/env.ts
 test("regles : variables propres à chaque environnement et clé de sauvegarde Neon", () => {
   const propres = Object.entries(VARIABLES).filter(([, r]) => r.parEnvironnement).map(([nom]) => nom);
   assert.deepStrictEqual(propres.sort(), ["BETTER_AUTH_URL", "DATABASE_URL", "DATABASE_URL_DIRECT", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]);
-  assert.deepStrictEqual(VARIABLES.NEON_API_KEY.prefixes, ["napi_"]);
+  assert.strictEqual(VARIABLES.NEON_API_KEY.prefixes, undefined);
   assert.strictEqual(VARIABLES.NEON_PROJECT_ID.secret, false);
 });
 

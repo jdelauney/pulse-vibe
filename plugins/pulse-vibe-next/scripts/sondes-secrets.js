@@ -22,7 +22,7 @@ const R2 = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
 const VARIABLES = {
   DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"], parEnvironnement: true },
   DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"], parEnvironnement: true },
-  NEON_API_KEY: { secret: true, fournisseur: "Neon", prefixes: ["napi_"], besoins: ["NEON_PROJECT_ID"] },
+  NEON_API_KEY: { secret: true, fournisseur: "Neon", besoins: ["NEON_PROJECT_ID"] },
   NEON_PROJECT_ID: { secret: false, fournisseur: "Neon" },
   BETTER_AUTH_SECRET: { secret: true, fournisseur: "projet (valeur générée)", longueurMin: 32, genere: { octets: 32 }, versionnee: "BETTER_AUTH_SECRETS" },
   BETTER_AUTH_SECRETS: { secret: true, fournisseur: "projet (valeur générée)", genere: { octets: 32 } },
