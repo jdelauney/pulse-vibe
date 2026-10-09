@@ -12,7 +12,7 @@ const { spawnSync } = require("child_process");
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes à baliser (tâches 11 à 16 du plan « Corrections 3 ») : chaque tâche retire la sienne.
-const EN_ATTENTE = ["email", "formulaire-public", "langues", "limite", "seo", "mesure-reelle"];
+const EN_ATTENTE = ["formulaire-public", "langues", "limite", "seo", "mesure-reelle"];
 // Recettes qui créent une table : leur chaîne génère la migration.
 const AVEC_MIGRATION = ["connexion", "liste", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";
@@ -281,8 +281,10 @@ test("recette : blocs non vérifiés comptés et listés ; une recette sans aucu
     const nonVerifies = [];
     const sansVerif = `<!-- sans-verification: lit la base pendant la construction -->\n${F}ts\n// app/sitemap.ts\n${F}\n`;
     assert.deepStrictEqual(poserRecette(d, "essai", nonVerifies, `${sansVerif}<!-- fichier: src/a.ts -->\n${F}ts\nexport const a = 1;\n${F}\n`), ["src/a.ts"]);
-    assert.ok(messages.some((m) => /Recette essai : 2 étapes, dont 1 non vérifiées/.test(m)), messages.join("\n"));
+    assert.ok(messages.some((m) => /Recette essai : 2 étapes, dont 1 non vérifiée$/.test(m)), messages.join("\n"));
     assert.deepStrictEqual(nonVerifies, ["essai, ligne 1 : lit la base pendant la construction"]);
+    poserRecette(d, "double", [], `${sansVerif}${sansVerif}<!-- fichier: src/a.ts -->\n${F}ts\nexport const a = 1;\n${F}\n`);
+    assert.ok(messages.some((m) => /Recette double : 3 étapes, dont 2 non vérifiées$/.test(m)), messages.join("\n"));
     assert.throws(() => poserRecette(d, "vide", [], sansVerif), /recette vide : aucun fichier posé/);
   } finally {
     fs.rmSync(d, { recursive: true, force: true });

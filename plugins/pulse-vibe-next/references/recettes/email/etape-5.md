@@ -2,6 +2,7 @@
 
 Ajoutez à la fin de `src/features/compte/schemas/compte.schema.ts` (la constante `motDePasse` y existe déjà) :
 
+<!-- ajout: src/features/compte/schemas/compte.schema.ts -->
 ```ts
 // src/features/compte/schemas/compte.schema.ts (à la fin du fichier)
 // Ajouts de la recette email.

@@ -2,6 +2,7 @@
 
 Chaque section reçoit `envoyer`, `erreurServeur`, `message` et `enCours` par props ; son container appelle `useAction`. Le jeton du lien arrive au container (`token`), jamais à la section : il n'est pas un champ.
 
+<!-- fichier: src/features/compte/components/sections/formulaire-mot-de-passe-oublie.tsx -->
 ```tsx
 // src/features/compte/components/sections/formulaire-mot-de-passe-oublie.tsx
 "use client";
@@ -99,6 +100,7 @@ export function FormulaireMotDePasseOublie({
 }
 ```
 
+<!-- fichier: src/features/compte/components/sections/formulaire-nouveau-mot-de-passe.tsx -->
 ```tsx
 // src/features/compte/components/sections/formulaire-nouveau-mot-de-passe.tsx
 "use client";
@@ -210,6 +212,7 @@ export function FormulaireNouveauMotDePasse({
 }
 ```
 
+<!-- fichier: src/features/compte/components/containers/mot-de-passe-oublie.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/mot-de-passe-oublie.container.tsx
 "use client";
@@ -236,6 +239,7 @@ export function MotDePasseOublieContainer() {
 }
 ```
 
+<!-- fichier: src/features/compte/components/containers/nouveau-mot-de-passe.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/nouveau-mot-de-passe.container.tsx
 "use client";
@@ -264,6 +268,7 @@ export function NouveauMotDePasseContainer({ token }: { token: string }) {
 
 La page « Nouveau mot de passe » lit l'adresse (`?token=…` ou `?error=…`) : c'est une lecture de la requête, faite par un container serveur sous `<Suspense>`. Il compose le container du formulaire de sa feature.
 
+<!-- fichier: src/features/compte/components/containers/lien-mot-de-passe.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/lien-mot-de-passe.container.tsx
 import Link from "next/link";
