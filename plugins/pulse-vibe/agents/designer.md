@@ -47,7 +47,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - une seule ressource externe tolérée : une police web, avec une police système de secours ;
    - du JavaScript seulement pour basculer entre les états ;
    - pour le mobile : une mise en page pensée pour 390 px de large, des cibles tactiles d'au moins 44 px.
-5. Lancer `pulse-aidd maquettes verifier <dossier de sortie>` et corriger chaque 🔴 et 🟠 relevé, sauf un écart justifié dans `docs/design.md` (le citer dans `note.md`), puis relancer jusqu'à n'avoir plus que ces écarts. Vérifier ensuite soi-même : contraste d'au moins 4,5:1 pour le texte courant (le calculer précisément), focus visible, motifs 🔴 des anti-patterns tous écartés, contenus réalistes, thèse respectée.
+5. Lancer `pulse-aidd maquettes verifier <dossier de sortie>` et corriger chaque 🔴 et 🟠 relevé, sauf un écart justifié dans `docs/design.md` (le citer dans `note.md`), puis relancer jusqu'à n'avoir plus que ces écarts. Vérifier ensuite soi-même : contraste mesuré avec `pulse-aidd contraste <couleur> <fond>` pour chaque paire (4,5:1 au moins pour le texte courant, 3:1 pour les contours de champs et le focus), focus visible, motifs 🔴 des anti-patterns tous écartés, contenus réalistes, thèse respectée.
 6. Écrire `note.md` selon le modèle `maquette-note.md`, avec la ligne `**Thèse** : …` reprise **mot pour mot** de la thèse reçue.
 
 Noms de fichiers exacts (lus par `pulse-aidd comparer`) : `planche.html`, `desktop.html`, `mobile.html`, `note.md`. Utiliser ces noms uniquement.

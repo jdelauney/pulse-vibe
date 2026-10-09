@@ -91,7 +91,15 @@ flowchart LR
 - Dépôt distant : {{…}}
 - Hébergeur : {{…}} ; mise en ligne : {{automatique à chaque envoi / manuelle}}
 - Site en ligne : {{adresse, vérifiée avec `pulse-aidd sonder`, ou « pas encore en ligne »}}
+- Surveillance : {{service de sonde de disponibilité et adresse surveillée ; suivi des erreurs s'il existe ; ou « aucune »}}
 - Contrôle automatique avant mise en ligne (CI) : {{outil, ou « à mettre en place avec /pulse:cicd »}}
+
+## Retour arrière
+
+<!-- Écrit par /pulse:tech (valeurs du pack de pile, ou documentation de l'hébergeur et de la base), montré par /pulse:deploy. -->
+- Revenir à la version précédente du site : {{où cliquer chez l'hébergeur, ou commande ; délai}}
+- Revenir à l'état précédent des données : {{sauvegarde ou restauration de la base ; jusqu'à quand c'est possible}}
+- Après un retour arrière : {{ce qui reste à faire : remettre la mise en ligne automatique, corriger, remettre en ligne}}
 
 ## Référencement
 

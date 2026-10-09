@@ -36,7 +36,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${policeTexte.variable} ${policeCode.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <NuqsAdapter>{children}</NuqsAdapter>
+        {/* Lien d'évitement : le premier élément atteint au clavier mène droit au contenu. */}
+        <a
+          href="#contenu"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-3 focus:ring-ring"
+        >
+          Aller au contenu
+        </a>
+        <div
+          id="contenu"
+          tabIndex={-1}
+          className="flex flex-1 flex-col outline-none"
+        >
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </div>
         <Toaster />
       </body>
     </html>

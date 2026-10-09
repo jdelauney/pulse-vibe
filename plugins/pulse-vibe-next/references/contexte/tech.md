@@ -7,7 +7,7 @@ La pile de ce pack est **une option** du tableau « Les options comparées » : 
 Une fois la pile choisie :
 
 1. Écrire `docs/technical.md` avec les valeurs de la section « Valeurs de docs/technical.md » ci-dessous, dont la ligne `**Pack de pile Pulse** : next`, adaptées au projet (tableau des données et du contrôle d'accès d'après le PRD).
-2. **Mise en place** : suivre la section « Mise en place » des valeurs. Le squelette se pose avec `pulse-aidd pile squelette --nom "<nom>" --description "<phrase>"` : il garde `CLAUDE.md`, `README.md` et les documents Pulse, et complète `.gitignore` et `.env.example`. Puis `npm install` et `npx playwright install chromium`.
+2. **Mise en place** : suivre la section « Mise en place » des valeurs. Le squelette se pose avec `pulse-aidd pile squelette --nom "<nom>" --description "<phrase>"` : il garde `CLAUDE.md`, `README.md` et les documents Pulse, et complète `.gitignore` et `.env.example`. Puis `npm install` et `npx playwright install chromium`. Dans `README.md`, remplacer le contenu de la section « Tester en local » par le bloc de base de `pulse-aidd pile reference readme.md`.
 3. Vérifier que tout passe : `npm run check`, `npm run typecheck`, `npm test`, puis `npm run dev` (la page d'accueil affiche le nom du projet).
 4. Si `docs/design.md` existe : appliquer le thème (référence « Le thème »), puis remplir « Dans le code » de `docs/design.md`.
 5. **En ligne dès le premier jour** (si la personne l'accepte) : la page de départ ne demande aucune variable d'environnement ; la première mise en ligne relie le dépôt GitHub à Vercel, puis `pulse-aidd sonder <adresse> --texte "<nom du projet>"`.

@@ -697,3 +697,18 @@ test("la règle deny se propose en clair : le bloc JSON se montre seulement sur 
     assert.match(texte, /bloc[^.]*sur demande/i, `${s} : le bloc reste disponible sur demande`);
   }
 });
+
+test("production : retour arrière dans le modèle technical.md et dans deploy ; variables propres à chaque environnement", () => {
+  const modele = lire(RACINE, "templates", "technical.md");
+  assert.match(modele, /\n## Retour arrière\n/);
+  assert.ok(modele.indexOf("## Retour arrière") < modele.indexOf("## Référencement"), "après « Hébergement et mise en ligne »");
+  const deploy = lire(RACINE, "skills", "deploy", "SKILL.md");
+  assert.match(deploy, /section « Retour arrière » de `docs\/technical\.md`/);
+  assert.match(deploy, /propre à chaque environnement/);
+  assert.match(lire(RACINE, "references", "secrets", "sans-conversation.md"), /--meme-valeur/);
+});
+
+test("mise en production : une sonde de disponibilité est proposée et notée", () => {
+  assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
+  assert.match(lire(RACINE, "templates", "technical.md"), /^- Surveillance : /m);
+});

@@ -6,7 +6,7 @@
 //   pulse-aidd secrets generer <NOM> [--octets 32] [--versionne [--ancien <NOM>] [--seul]] [--envoyer production,preview] [--sans-local]
 //   pulse-aidd secrets elaguer <NOM> [--fichier .env]
 //   pulse-aidd secrets verifier <NOM> [--fichier .env] [--sans-test]
-//   pulse-aidd secrets envoyer <NOM> [--env production,preview] [--depuis .env] [--vider]
+//   pulse-aidd secrets envoyer <NOM> [--env production,preview] [--depuis .env] [--vider] [--meme-valeur]
 //   pulse-aidd secrets redeployer [--env production]
 //   pulse-aidd secrets historique [--depuis <commit>]
 //   pulse-aidd secrets journal <NOM> <raison> [--revoquee <AAAA-MM-JJ|non>] [--production oui|non]
@@ -15,7 +15,7 @@
 // du fichier .env à l'hébergeur par l'entrée standard d'un adaptateur fourni par le pack
 // de pile déclaré dans docs/technical.md (le cœur ne connaît aucun hébergeur).
 // Contrat du pack (outil pulse-pile-<id>) utilisé ici :
-//   secrets regles                       JSON : règles par variable (préfixes, groupes, tests) et noms lus dans le code
+//   secrets regles                       JSON : règles par variable (préfixes, groupes, tests, parEnvironnement) et noms lus dans le code
 //   secrets tester <NOM>                 test réel ; reçoit sur l'entrée standard un JSON { NOM: valeur, … } ; code 0 bon, 1 mauvais, 3 sans test
 //   hebergeur ls                         JSON : { hebergeur, variables: [{ nom, environnements, type }] }, sans valeur
 //   hebergeur envoyer <NOM> <env> [--type secret|config]   valeur sur l'entrée standard
@@ -562,6 +562,20 @@ function verifier(nom, options) {
 function envoyer(nom, options) {
   const source = options["--depuis"] || ".env";
   const envs = listeEnvironnements(options["--env"], "production,preview");
+  // Variable propre à chaque environnement (règle « parEnvironnement » du pack) : la valeur de .env sert au
+  // développement ; celle de la production arrive par .env.envoi, sauf si la personne confirme qu'elle est la même.
+  const regle = regles().variables[nom];
+  if (regle && regle.parEnvironnement && path.basename(path.resolve(source)).toLowerCase() !== ".env.envoi" && envs.includes("production") && !options["--meme-valeur"]) {
+    echec(
+      `⚠️ ${nom} est propre à chaque environnement : la valeur de ${source} ne part pas en production. Rien envoyé.
+` +
+        `   Valeur de production : pulse-aidd secrets preparer ${nom} --fichier .env.envoi ; la personne y colle la valeur ; puis pulse-aidd secrets envoyer ${nom} --env production --depuis .env.envoi --vider.
+` +
+        `   Pour la prévisualisation (--env preview), la valeur de .env peut convenir si votre base de prévisualisation est la branche dev.
+` +
+        `   La personne confirme que la valeur de ${source} est aussi celle de la production : relancez avec --meme-valeur.`
+    );
+  }
   const v = lireVariable(source, nom);
   if (!v.present || v.valeur === "") echec(`❌ ${nom} est ${v.present ? "vide" : "absente"} dans ${source} : rien envoyé (une valeur vide remplacerait la bonne). pulse-aidd secrets preparer ${nom}${source !== ".env" ? ` --fichier ${source}` : ""}`);
   if (v.anomalies.length) echec(`❌ ${nom} dans ${source} : ${v.anomalies.join(" ; ")}. Rien envoyé : corrigez la ligne, puis relancez.`);
@@ -698,6 +712,7 @@ const AIDE = `pulse-aidd secrets – les secrets du projet, sans jamais afficher
   elaguer <NOM> [--fichier .env]           garde seulement la version la plus récente d'une valeur versionnée
   verifier <NOM> [--fichier .env] [--sans-test]   présence, pièges de copier-coller, préfixe attendu, test réel (pack)
   envoyer <NOM> [--env production,preview] [--depuis .env] [--vider]   vers l'hébergeur par l'entrée standard
+           [--meme-valeur]                 variable propre à chaque environnement : la valeur de .env part aussi en production
   redeployer [--env production]            relance le dernier déploiement (une variable sert au déploiement suivant)
   historique [--depuis <commit>]           clés et fichiers d'environnement passés dans l'historique Git (code 1 si trouvés)
   journal <NOM> <raison> [--revoquee <AAAA-MM-JJ|non>] [--production oui|non]   ligne du journal de docs/secrets.md`;

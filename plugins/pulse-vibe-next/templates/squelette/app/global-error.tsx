@@ -3,7 +3,9 @@
 import "./globals.css";
 
 // Remplace la mise en page racine quand celle-ci rencontre une erreur : elle porte donc ses propres <html> et <body>.
+// La référence (digest) permet de retrouver la bonne ligne du journal du serveur.
 export default function ErreurGlobale({
+  error,
   retry,
 }: {
   error: Error & { digest?: string };
@@ -17,6 +19,11 @@ export default function ErreurGlobale({
         <p>
           Réessayez dans un instant. Si le problème continue, prévenez-nous.
         </p>
+        {error.digest ? (
+          <p className="text-sm">
+            Référence à nous transmettre : <code>{error.digest}</code>
+          </p>
+        ) : null}
         <button
           type="button"
           onClick={() => retry()}

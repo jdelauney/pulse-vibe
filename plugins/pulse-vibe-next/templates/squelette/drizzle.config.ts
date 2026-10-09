@@ -5,10 +5,13 @@ import { defineConfig } from "drizzle-kit";
 loadEnvConfig(process.cwd());
 
 // Adresse directe (sans -pooler) : les migrations ne passent pas par le regroupement de connexions.
-const adresseDirecte = process.env.DATABASE_URL_DIRECT;
+// En local : DATABASE_URL_DIRECT de .env (branche dev). Sur Vercel : DATABASE_URL_UNPOOLED, posée par
+// l'intégration Vercel–Neon pour chaque environnement.
+const adresseDirecte =
+  process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL_UNPOOLED;
 if (!adresseDirecte) {
   throw new Error(
-    "DATABASE_URL_DIRECT manque dans .env (adresse directe de Neon, sans -pooler).",
+    "DATABASE_URL_DIRECT manque dans .env (adresse directe de la branche dev de Neon, sans -pooler).",
   );
 }
 

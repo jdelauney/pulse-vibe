@@ -363,6 +363,7 @@ import { FORMULAIRE_CONTACT, schemaMessage } from "../schemas/contact.schema";
 
 // Le schéma retire les champs de protection : parsedInput ne contient que le message.
 export const envoyerMessage = actionFormulairePublic(FORMULAIRE_CONTACT)
+  .metadata({ nom: "envoyerMessage" })
   .inputSchema(schemaMessage)
   .action(async ({ parsedInput }) => {
     logger.info({ longueur: parsedInput.message.length }, "Message reçu");

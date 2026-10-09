@@ -25,7 +25,7 @@ const SECTIONS_RECETTE = [
   "## Points de sécurité",
   "## Pièges connus",
 ];
-const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle"];
+const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle", "suivi-erreurs"];
 
 test("info : les quatre lignes du contrat, avec la version du manifeste", () => {
   const r = lancer("info");
@@ -272,29 +272,137 @@ test("contexte ui du pack : les composants réalisent les motifs tels quels", ()
     assert.ok(t.includes(attendu), attendu);
 });
 
-// Contraste de deux gris OKLCH (chroma 0 : luminance = L³), avec mélange en sRGB pour une opacité.
-const versS = (y) => (y <= 0.0031308 ? 12.92 * y : 1.055 * y ** (1 / 2.4) - 0.055);
-const versY = (s) => (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4);
-const melange = (l, alpha, fond) => versY(alpha * versS(l ** 3) + (1 - alpha) * versS(fond ** 3));
-const rapport = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+// Contrastes mesurés par l'outil du cœur (pulse-aidd contraste), transparence comprise.
+const { lireCouleur, poser, rapport } = require(path.join(RACINE, "..", "pulse-vibe", "scripts", "contraste.js"));
 
 test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair et en sombre", () => {
   const css = lire(RACINE, "templates", "squelette", "app", "globals.css");
   for (const bloc of [":root {", ".dark {"]) {
     const corps = css.slice(css.indexOf(bloc)).split("}")[0];
-    const L = (nom) => {
-      const m = corps.match(new RegExp(`--${nom}: oklch\\(([\\d.]+) 0 0\\);`));
-      assert.ok(m, `${bloc} --${nom} : gris OKLCH opaque`);
-      return Number(m[1]);
+    const valeur = (nom, opacite) => {
+      const m = corps.match(new RegExp(`--${nom}: oklch\\(([^)/]+)\\);`));
+      assert.ok(m, `${bloc} --${nom} : couleur OKLCH opaque`);
+      return lireCouleur(`oklch(${m[1]}${opacite === undefined ? "" : ` / ${opacite}`})`);
     };
-    const fond = L("background");
-    assert.ok(rapport(L("input") ** 3, fond ** 3) >= 3, `${bloc} --input`);
-    for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(melange(L(ring), 0.5, fond), fond ** 3) >= 3, `${bloc} halo ${ring}/50`);
-    if (bloc === ".dark {") assert.ok(rapport(L("foreground") ** 3, melange(L("input"), 0.3, fond)) >= 4.5, "texte sur bg-input/30");
+    const fond = valeur("background");
+    assert.ok(rapport(valeur("input"), fond) >= 3, `${bloc} --input`);
+    for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(valeur(ring, 0.5), fond) >= 3, `${bloc} halo ${ring}/50`);
+    if (bloc === ".dark {") assert.ok(rapport(valeur("foreground"), poser(valeur("input", 0.3), fond)) >= 4.5, "texte sur bg-input/30");
   }
+});
+
+test("le cœur et le pack mesurent les contrastes avec pulse-aidd contraste", () => {
+  const coeur = path.join(RACINE, "..", "pulse-vibe");
+  for (const f of [["references", "design", "regles-ui.md"], ["agents", "designer.md"], ["agents", "ui-critic.md"], ["skills", "ui", "SKILL.md"]]) {
+    const t = lire(coeur, ...f);
+    assert.ok(t.includes("pulse-aidd contraste"), f.join("/"));
+    assert.doesNotMatch(t, /calculer précisément|\(calculer\)|le calculer quand/, f.join("/"));
+  }
+  assert.ok(lire(REF, "theme.md").includes("pulse-aidd contraste"), "theme.md");
 });
 
 test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
   const t = lire(REF, "theme.md");
   for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--"]) assert.ok(t.includes(attendu), attendu);
+});
+
+test("chaque action des recettes et de l'architecture porte un nom (.metadata), journalisé par safe-action", () => {
+  const sansNom = [];
+  const fichiers = [...fs.readdirSync(path.join(REF, "recettes")).map((n) => path.join(REF, "recettes", n)), path.join(REF, "architecture.md")];
+  for (const f of fichiers) {
+    const lignes = lire(f).split("\n");
+    lignes.forEach((ligne, i) => {
+      // Une action commence par « export const x = <client> » ; la ligne suivante la nomme.
+      const m = /^export const (\w+) = (?:actionPublique|actionConnectee|actionFormulairePublic\([^)]*\))(\.action\(.*)?$/.exec(ligne);
+      if (m && (m[2] || !/^ {2}\.metadata\(\{ nom: "[^"]+" \}\)$/.test(lignes[i + 1] || ""))) sansNom.push(`${path.basename(f)} : ${m[1]}`);
+    });
+  }
+  assert.deepStrictEqual(sansNom, []);
+  const safeAction = lire(REF, "recettes", "connexion.md").split("// src/lib/safe-action.ts")[1].split("```")[0];
+  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+});
+
+test("architecture : une facture se paie une seule fois, même avec deux demandes simultanées", () => {
+  const t = lire(REF, "architecture.md");
+  for (const attendu of ["marquerPayee(id: string, utilisateurId: string, le: Date): Promise<boolean>;", "isNull(factures.payeeLe)", ".returning({ id: factures.id })", 'return marquee ? ok(undefined) : echec("facture-deja-payee");'])
+    assert.ok(t.includes(attendu), attendu);
+});
+
+test("production : base dev séparée, intégration Vercel–Neon, migrations sauvegardées, retour arrière", () => {
+  const technique = lire(REF, "technical.md");
+  for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "package-lock.json"])
+    assert.ok(technique.includes(attendu), `technical.md : ${attendu}`);
+  const deploy = lire(REF, "contexte", "deploy.md");
+  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables"])
+    assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
+  assert.ok(!deploy.includes("appliquer `npm run db:migrate` sur la base de production"), "plus de migration à la main en production");
+  const secrets = lire(REF, "contexte", "secrets.md");
+  assert.match(secrets, /^### `NEON_API_KEY`$/m);
+  assert.ok(secrets.includes("Une valeur par environnement"), "DATABASE_URL : une valeur par environnement");
+});
+
+test("fiche : règles numérotées de 1 à N sans trou, sans note de migration", () => {
+  const fiche = lire(REF, "fiche.md");
+  const numeros = [...fiche.matchAll(/^(\d+)\. /gm)].map((m) => Number(m[1]));
+  assert.deepStrictEqual(numeros, numeros.map((_, i) => i + 1));
+  assert.doesNotMatch(fiche, /créé avant pulse-vibe-next/);
+});
+
+test("renvois « fiche, règle N » : chaque numéro vise la règle annoncée", () => {
+  const fiche = lire(REF, "fiche.md");
+  const regle = (n) => (fiche.match(new RegExp(`^${n}\. (.*)$`, "m")) || [])[1] || "";
+  const sujets = { 5: "use cache", 26: "Types", 32: "Images", 41: "Métadonnées d'une page publique", 47: "Pages d'authentification" };
+  const textes = [];
+  (function parcourir(dossier) {
+    for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = path.join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (/\.(md|js)$/.test(e.name) && chemin !== __filename) textes.push(chemin);
+    }
+  })(RACINE);
+  for (const f of textes) {
+    for (const m of lire(f).matchAll(/fiche, règle (\d+)|règle (\d+) de la fiche/g)) {
+      const n = m[1] || m[2];
+      assert.ok(sujets[n], `${path.relative(RACINE, f)} cite la règle ${n} : ajouter son sujet à ce test`);
+      assert.ok(regle(n).includes(sujets[n]), `${path.relative(RACINE, f)} : la règle ${n} n'est plus « ${sujets[n]} »`);
+    }
+  }
+});
+
+test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", () => {
+  const notes = lire(REF, "migrations.md");
+  for (const version of ["0.9.0", "0.11.0", "0.17.0"]) assert.match(notes, new RegExp(`Projet créé avant pulse-vibe-next ${version.replace(/\./g, "\.")}`));
+  for (const commande of ["tech", "plan", "implement", "review", "security", "deploy", "seo"])
+    assert.ok(!lancer("contexte", commande).stdout.includes("mettre à niveau un projet plus ancien"), commande);
+  assert.strictEqual(lancer("reference", "migrations.md").status, 0);
+  assert.match(lire(RACINE, "..", "pulse-vibe", "skills", "init", "SKILL.md"), /pulse-aidd pile reference migrations\.md/);
+  assert.match(lire(REF, "contexte", "security.md"), /pulse-aidd pile reference migrations\.md/);
+});
+
+test("README du projet : « Tester en local » fourni par le pack, lignes des recettes à outil", () => {
+  const readme = lire(REF, "readme.md");
+  for (const attendu of ["npm install", "npx playwright install chromium", "npm run dev", "http://localhost:3000", "vercel link", "mailpit", "http://localhost:8025"]) assert.ok(readme.includes(attendu), attendu);
+  const ecoute = lire(REF, "recettes", "paiement.md").match(/^stripe listen .*$/m)[0];
+  assert.ok(readme.includes(ecoute), "même commande stripe listen que la recette paiement");
+  assert.match(lire(REF, "contexte", "tech.md"), /« Tester en local » par le bloc de base de `pulse-aidd pile reference readme\.md`/);
+  assert.match(lire(REF, "contexte", "implement.md"), /pulse-aidd pile reference readme\.md/);
+});
+
+test("recette langues : le layout par langue garde le lien d'évitement et la zone #contenu du squelette", () => {
+  const langues = lire(REF, "recettes", "langues.md");
+  const layout = langues.slice(langues.indexOf("// app/[locale]/layout.tsx"));
+  const code = layout.slice(0, layout.indexOf("```"));
+  assert.ok(code.includes('href="#contenu"'), 'lien href="#contenu"');
+  assert.ok(code.includes('id="contenu"'), 'zone id="contenu"');
+  assert.ok(code.includes('t("allerAuContenu")'), "texte du lien traduit");
+  assert.match(langues, /"allerAuContenu": "Aller au contenu"/);
+  assert.match(langues, /"allerAuContenu": "Skip to content"/);
+});
+
+test("deploy : commande de construction complète, migrations juste avant la construction", () => {
+  const deploy = lire(REF, "contexte", "deploy.md");
+  assert.ok(
+    deploy.includes("node scripts/verifier.js && npm run check && npm run typecheck && npm test && node scripts/migrer.mjs --vercel && npm run build"),
+    "buildCommand complet avec migrer.mjs juste avant npm run build",
+  );
 });

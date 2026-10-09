@@ -5,7 +5,7 @@
 //
 // Copie templates/squelette/ dans le dossier du projet (le dossier courant par défaut).
 // Principe : ne rien remplacer. Un fichier déjà présent est gardé tel quel et signalé ;
-// .gitignore et .env.example reçoivent seulement les lignes qui leur manquent.
+// .gitignore, .env.example, .gitattributes et .npmrc reçoivent seulement les lignes qui leur manquent.
 // N'installe rien : la commande suivante est « npm install ».
 "use strict";
 
@@ -13,7 +13,14 @@ const fs = require("fs");
 const path = require("path");
 
 const SOURCE = path.join(__dirname, "..", "templates", "squelette");
-const MODELES_A_FUSIONNER = { "gitignore.template": ".gitignore", "env.example.template": ".env.example" };
+// Fichiers à point du projet : livrés sous un autre nom (un .gitignore dans le plugin s'appliquerait au plugin lui-même),
+// complétés ligne à ligne s'ils existent déjà.
+const MODELES_A_FUSIONNER = {
+  "gitignore.template": ".gitignore",
+  "env.example.template": ".env.example",
+  "gitattributes.template": ".gitattributes",
+  "npmrc.template": ".npmrc",
+};
 const EXTENSIONS_TEXTE = new Set([".ts", ".tsx", ".js", ".mjs", ".json", ".css", ".md", ".template"]);
 
 function lireArguments(argv) {

@@ -2,8 +2,10 @@
 
 import { Button } from "@src/components/ui/button";
 
-// Affiché quand une page rencontre une erreur imprévue. Le détail technique reste dans les journaux du serveur.
+// Affiché quand une page rencontre une erreur imprévue. Le détail technique reste dans les journaux
+// du serveur ; la référence (digest) permet de retrouver la bonne ligne du journal.
 export default function Erreur({
+  error,
   retry,
 }: {
   error: Error & { digest?: string };
@@ -15,6 +17,11 @@ export default function Erreur({
       <p className="text-muted-foreground">
         Réessayez dans un instant. Si le problème continue, prévenez-nous.
       </p>
+      {error.digest ? (
+        <p className="text-sm text-muted-foreground">
+          Référence à nous transmettre : <code>{error.digest}</code>
+        </p>
+      ) : null}
       <div>
         <Button onClick={() => retry()}>Réessayer</Button>
       </div>

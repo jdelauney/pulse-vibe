@@ -187,7 +187,8 @@ import type { Facture } from "./facture.entity";
 
 export type FactureRepository = {
   trouver(id: string, utilisateurId: string): Promise<Facture | null>;
-  marquerPayee(id: string, utilisateurId: string, le: Date): Promise<void>;
+  /** Marque la facture payée si elle ne l'est pas encore ; false si une autre demande l'a payée avant. */
+  marquerPayee(id: string, utilisateurId: string, le: Date): Promise<boolean>;
 };
 ```
 
@@ -206,8 +207,14 @@ export async function payerFacture(
   if (!facture) return echec("facture-introuvable");
   const verification = verifierPaiementPossible(facture);
   if (!verification.ok) return verification;
-  await deps.factures.marquerPayee(entree.id, entree.utilisateurId, entree.le);
-  return ok(undefined);
+  // La lecture sert au message ; l'écriture conditionnelle décide : deux demandes simultanées
+  // passent la vérification, une seule marque la facture payée.
+  const marquee = await deps.factures.marquerPayee(
+    entree.id,
+    entree.utilisateurId,
+    entree.le,
+  );
+  return marquee ? ok(undefined) : echec("facture-deja-payee");
 }
 ```
 
@@ -228,7 +235,7 @@ export const factures = pgTable("factures", {
 import "server-only";
 import type { FactureRepository } from "@src/core/factures/facture-repository.port";
 import type { Db } from "@src/db/db-client";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { factures } from "./facture.table";
 
 export function factureRepository(db: Db): FactureRepository {
@@ -243,10 +250,13 @@ export function factureRepository(db: Db): FactureRepository {
       return ligne ?? null;
     },
     async marquerPayee(id, utilisateurId, le) {
-      await db
+      // Une seule requête : la condition « pas encore payée » et l'écriture sont atomiques.
+      const lignes = await db
         .update(factures)
         .set({ payeeLe: le })
-        .where(proprietaire(id, utilisateurId));
+        .where(and(proprietaire(id, utilisateurId), isNull(factures.payeeLe)))
+        .returning({ id: factures.id });
+      return lignes.length === 1;
     },
   };
 }
@@ -276,7 +286,9 @@ import { returnServerError } from "next-safe-action";
 import { z } from "zod";
 import { MESSAGES_FACTURE } from "../constants/erreur-messages";
 
+// Le nom (.metadata) se pose avant .action(…) : il identifie l'action dans les journaux d'erreurs.
 export const payerFactureAction = actionConnectee
+  .metadata({ nom: "payerFacture" })
   .inputSchema(z.object({ id: z.uuid() }))
   .action(async ({ parsedInput, ctx }) => {
     const resultat = await payerFacture(

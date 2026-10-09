@@ -7,7 +7,7 @@ Fiche par variable du squelette et des recettes : où renouveler, effet, délai 
 - **Envoi automatique** : `pulse-aidd secrets envoyer` passe la valeur à `vercel env update` (variable existante) ou `vercel env add … --type secret` (nouvelle), **par l'entrée standard**. Prérequis sur le poste : le Vercel CLI (`npm install -g vercel`), `vercel login`, puis `vercel link` dans le dossier du projet (crée `.vercel/`, déjà ignoré par Git). Sans CLI : la personne saisit la valeur dans Project → Settings → Environment Variables.
 - **Type Secret** pour tout secret : sa valeur ne se relit plus, ni par l'équipe ni par le CLI. Une variable déjà enregistrée en type Config se supprime dans les réglages (par la personne), puis se renvoie : elle revient en Secret. Production et Preview sont en Secret par défaut ; Development accepte aussi les Secrets.
 - **Une variable modifiée sert au déploiement suivant** : les déploiements existants gardent l'ancienne valeur. `pulse-aidd secrets redeployer --env production` relance le dernier déploiement prêt (`vercel redeploy`). Les adresses de prévisualisation se reconstruisent au prochain envoi de la branche ; une ancienne adresse de prévisualisation cesse de marcher quand l'ancienne valeur est révoquée : c'est attendu.
-- **Valeurs distinctes** : Production et Preview reçoivent chacune leur valeur pour les secrets générés (`pulse-aidd secrets generer <NOM> --envoyer production,preview`). Pour Preview, une base Neon de prévisualisation (branche Neon) et des clés de test (Stripe, R2) évitent de toucher aux données réelles.
+- **Valeurs distinctes** : Production et Preview reçoivent chacune leur valeur pour les secrets générés (`pulse-aidd secrets generer <NOM> --envoyer production,preview`). Les adresses de la base viennent de l'intégration Vercel–Neon (une branche par prévisualisation) ; des clés de test (Stripe, R2) en Preview évitent de toucher aux données réelles. Les variables propres à chaque environnement (`DATABASE_URL`, `DATABASE_URL_DIRECT`, `BETTER_AUTH_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) reçoivent en production leur propre valeur (l'intégration Vercel–Neon pour la base, `.env.envoi` pour les autres) : `pulse-aidd secrets envoyer` depuis `.env` vers la production s'arrête pour elles.
 - **Variables propres à une branche Git** : l'adaptateur les laisse de côté ; elles se gèrent dans les réglages Vercel.
 - **Traces d'utilisation** : Vercel → Team → Activity (variables modifiées, déploiements) ; les journaux de chaque fournisseur ci-dessous.
 - **Jeton d'accès Vercel** (CLI, CI) : Account Settings → Tokens ; créer le nouveau, mettre à jour la CI, supprimer l'ancien. Les jetons récents commencent par `vcp_` (personnel) ou `vck_` (clé d'API). Test : `vercel whoami`.
@@ -19,14 +19,28 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 ### `DATABASE_URL` et `DATABASE_URL_DIRECT`
 
 - **Rôle** : adresses de la base Neon. `DATABASE_URL` (« pooled », l'hôte contient `-pooler`) sert à l'application ; `DATABASE_URL_DIRECT` (sans `-pooler`) aux migrations. Les deux contiennent le **même mot de passe** : elles se renouvellent ensemble.
+- **Une valeur par environnement** : `.env` porte les adresses de la branche `dev` ; en ligne, l'intégration Vercel–Neon écrit `DATABASE_URL` et `DATABASE_URL_UNPOOLED` (l'adresse directe, lue par `drizzle.config.ts` à la place de `DATABASE_URL_DIRECT`) pour Production et pour chaque prévisualisation : rien à envoyer depuis le poste. Sans intégration : l'adresse de la branche principale passe par `.env.envoi` (`pulse-aidd secrets preparer DATABASE_URL --fichier .env.envoi`).
 - **Préfixe attendu** : `postgresql://` (ou `postgres://`).
 - **Où renouveler** : console Neon → le projet → sélecteur **Branch** (la branche de production) → **Postgres database** → **Roles** → menu du rôle → **Reset password** → **Reset**. Le nouveau mot de passe s'affiche ; les adresses complètes se copient ensuite depuis le bouton **Connect** (choisir « pooled » puis direct). Pas de commande CLI pour cette opération.
-- **Effet** : immédiat pour les nouvelles connexions ; les connexions déjà ouvertes restent actives jusqu'au redémarrage du calcul. Chaque branche Neon a ses propres rôles : la branche de prévisualisation se renouvelle à part.
-- **Délai de grâce** : aucun. Coupure entre la réinitialisation et la fin du redéploiement (quelques minutes) : prévenir, choisir une heure creuse, tout préparer avant (`.env` ouvert, commandes prêtes), puis enchaîner : réinitialisation → `.env` → `verifier` → `envoyer` → `redeployer`.
+- **Effet** : immédiat pour les nouvelles connexions ; les connexions déjà ouvertes restent actives jusqu'au redémarrage du calcul. Chaque branche Neon a ses propres rôles : la branche `dev` (`.env`) se renouvelle à part. Pour la branche principale, l'intégration recopie le nouveau mot de passe dans Vercel ; il sert au déploiement suivant (`pulse-aidd secrets redeployer`).
+- **Délai de grâce** : aucun. Coupure entre la réinitialisation et la fin du redéploiement (quelques minutes) : prévenir, choisir une heure creuse, tout préparer avant (`.env` ouvert, commandes prêtes), puis enchaîner selon la branche :
+  - branche `dev` (`.env`, aucun effet en ligne) : réinitialisation → `.env` → `verifier` ;
+  - branche principale (production) : réinitialisation dans Neon → avec l'intégration Vercel–Neon, elle met à jour les variables de Vercel elle-même ; sans intégration, `.env.envoi` → `envoyer` → puis, dans les deux cas, `redeployer`.
 - **Après une fuite** : réinitialiser, puis **redémarrer le calcul** pour fermer les connexions ouvertes avec l'ancien mot de passe : **Postgres database** → **Computes** → **Restart compute** (interrompt les connexions en cours, voulu ici).
 - **Test** : `pulse-aidd secrets verifier DATABASE_URL` (connexion et `select 1` avec le pilote du projet ; vérifie aussi que les deux adresses ont le même mot de passe), puis une page qui lit la base en production, et `npm run db:migrate` qui doit passer avec l'adresse directe.
 - **Traces** : console Neon → **Monitoring** (connexions, requêtes) sur la période d'exposition.
 - Sources : https://neon.com/docs/manage/roles ; https://neon.com/faqs/rotate-database-password-after-leak ; https://neon.com/docs/manage/computes ; https://neon.com/docs/connect/connection-pooling.
+
+### `NEON_API_KEY`
+
+- **Rôle** : crée la branche de sauvegarde avant chaque migration de production (`scripts/migrer.mjs`), avec `NEON_PROJECT_ID` (identifiant du projet, pas un secret). En Production seulement.
+- **Préfixe attendu** : `napi_`.
+- **Où renouveler** : console Neon → **Settings** (de l'organisation) → **API keys** → **Create new** → **Project-scoped** → le projet du site (une clé personnelle : **Account settings** → **API keys**). La clé s'affiche une seule fois. Après l'envoi et le redéploiement, révoquer l'ancienne dans la même liste (**Revoke**).
+- **Effet** : la révocation est immédiate. Une clé limitée au projet agit seulement sur lui ; elle peut créer et supprimer ses branches.
+- **Délai de grâce** : oui, tant que l'ancienne clé n'est pas révoquée.
+- **Après une fuite** : révoquer tout de suite, puis vérifier la liste des branches du projet (**Branches**) et l'historique des opérations.
+- **Test** : pas de test direct de la valeur. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.
+- Source : https://neon.com/docs/manage/api-keys.
 
 ### `BETTER_AUTH_SECRET`
 
@@ -132,4 +146,3 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 ## Autres secrets du poste
 
 - **Jeton GitHub** (`gh`, CI) : https://github.com/settings/tokens → créer le nouveau, mettre à jour la CI, supprimer l'ancien ; `gh auth refresh` pour le jeton de `gh`. Test : `gh auth status`. Un jeton poussé dans un dépôt public est révoqué automatiquement par GitHub.
-- **Clé d'API Neon** (`napi_…`, administration, rarement utile au projet) : console Neon → Account settings → API keys → Revoke ; montrée une seule fois.

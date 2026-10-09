@@ -13,7 +13,7 @@ Pourquoi : tout ce qui passe dans la conversation est enregistré sur l'ordinate
 | Secret à inventer (clé de session, signature…) | vous | `pulse-aidd secrets generer <NOM>` : écrit une valeur aléatoire dans `.env`, sans l'afficher |
 | Contrôler | vous | `pulse-aidd secrets verifier <NOM>` : présence, pièges de copier-coller, préfixe attendu, test réel ; aucun caractère de la valeur n'est affiché |
 | Envoyer à l'hébergeur | vous | `pulse-aidd secrets envoyer <NOM> --env production,preview` : la valeur passe par l'entrée standard de l'outil de l'hébergeur, jamais dans une commande visible |
-| Valeur propre à la production (clé « live », base de production) | la personne, puis vous | `pulse-aidd secrets preparer <NOM> --fichier .env.envoi` ; la personne y colle la valeur ; `pulse-aidd secrets envoyer <NOM> --env production --depuis .env.envoi --vider` (la ligne est vidée après l'envoi) |
+| Valeur propre à la production (clé « live », base de production) | la personne, puis vous | `pulse-aidd secrets preparer <NOM> --fichier .env.envoi` ; la personne y colle la valeur ; `pulse-aidd secrets envoyer <NOM> --env production --depuis .env.envoi --vider` (la ligne est vidée après l'envoi). Pour une variable que le pack marque « propre à chaque environnement », `envoyer` depuis `.env` vers la production s'arrête et rappelle ce chemin ; `--meme-valeur` sert seulement quand la personne confirme que sa valeur locale est aussi celle de la production |
 | Redéployer | vous | `pulse-aidd secrets redeployer --env production` |
 
 Sans pack de pile capable d'envoyer à l'hébergeur : la personne colle la valeur elle-même dans les réglages de l'hébergeur ; guidez-la écran par écran, d'après la documentation officielle.

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Pulse Next.js – vérification du squelette (outil du dépôt : CI hebdomadaire et maintenance).
 //
-//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres] [--ecrire] [--e2e] [--dossier <chemin>]
+//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres [--majeures]] [--ecrire] [--e2e] [--dossier <chemin>]
 //
-//   --dernieres   passe chaque dépendance à sa dernière version publiée (npm view) avant de vérifier
+//   --dernieres   passe chaque dépendance à sa dernière version publiée (npm view) avant de vérifier,
+//                 sauf un changement de version majeure, signalé et laissé tel quel
+//   --majeures    avec --dernieres : monte aussi les versions majeures (demande de fusion à part)
 //   --ecrire      si tout passe, reporte ces versions dans templates/squelette/package.json (et biome.json)
 //   --e2e         lance aussi les tests de bout en bout (Chromium doit être installé) et l'audit de
 //                 référencement du site servi (scripts/seo.js du cœur)
@@ -66,10 +68,11 @@ async function auditerSiteServi(dossier) {
 }
 
 function lireArguments(argv) {
-  const opts = { dernieres: false, ecrire: false, e2e: false, dossier: null };
+  const opts = { dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dernieres") opts.dernieres = true;
+    else if (a === "--majeures") opts.majeures = true;
     else if (a === "--ecrire") opts.ecrire = true;
     else if (a === "--e2e") opts.e2e = true;
     else if (a === "--dossier") opts.dossier = path.resolve(argv[++i]);
@@ -179,19 +182,37 @@ function derniereVersion(paquet) {
   return v;
 }
 
-/** Passe les dépendances à leur dernière version ; rend la liste des changements. */
-function monterLesVersions(paquet) {
+/**
+ * Changement majeur au sens de npm (^) : le premier nombre non nul change.
+ * 1.4.0 → 2.0.0, 0.45.3 → 0.46.0 et 0.0.1 → 0.0.2 sont majeurs ; 1.4.0 → 1.5.2 et 0.45.3 → 0.45.4 ne le sont pas.
+ */
+function changementMajeur(actuelle, derniere) {
+  const [a, b] = [actuelle, derniere].map((v) => v.split(/[.+-]/).slice(0, 3).map(Number));
+  const rang = a[0] !== 0 ? 0 : a[1] !== 0 ? 1 : 2;
+  return a.slice(0, rang + 1).join(".") !== b.slice(0, rang + 1).join(".");
+}
+
+/**
+ * Passe les dépendances à leur dernière version ; un changement majeur reste en attente, sauf avec `majeures`.
+ * Rend { changements, retenues } : des lignes « paquet actuelle → dernière ».
+ */
+function monterLesVersions(paquet, { majeures = false, lireDerniere = derniereVersion } = {}) {
   const changements = [];
+  const retenues = [];
   for (const groupe of ["dependencies", "devDependencies"]) {
     for (const [nom, actuelle] of Object.entries(paquet[groupe] || {})) {
-      const derniere = derniereVersion(nom);
-      if (derniere !== actuelle) {
-        changements.push(`${nom} ${actuelle} → ${derniere}`);
-        paquet[groupe][nom] = derniere;
+      const derniere = lireDerniere(nom);
+      if (derniere === actuelle) continue;
+      const ligne = `${nom} ${actuelle} → ${derniere}`;
+      if (changementMajeur(actuelle, derniere) && !majeures) {
+        retenues.push(ligne);
+        continue;
       }
+      changements.push(ligne);
+      paquet[groupe][nom] = derniere;
     }
   }
-  return changements;
+  return { changements, retenues };
 }
 
 /** Le schéma de biome.json porte la version de Biome : il la suit. */
@@ -210,10 +231,12 @@ async function principal() {
   const paquet = JSON.parse(fs.readFileSync(fichierPaquet, "utf8"));
   let changements = [];
   if (opts.dernieres) {
-    changements = monterLesVersions(paquet);
+    const montee = monterLesVersions(paquet, { majeures: opts.majeures });
+    changements = montee.changements;
     fs.writeFileSync(fichierPaquet, `${JSON.stringify(paquet, null, 2)}\n`);
     accorderBiome(path.join(dossier, "biome.json"), paquet.devDependencies["@biomejs/biome"]);
-    console.log(changements.length ? `Versions montées :\n  ${changements.join("\n  ")}` : "Toutes les dépendances sont déjà à leur dernière version.");
+    console.log(changements.length ? `Versions montées :\n  ${changements.join("\n  ")}` : "Aucune version à monter.");
+    if (montee.retenues.length) console.log(`Versions majeures en attente (vérification à part : --dernieres --majeures) :\n  ${montee.retenues.join("\n  ")}`);
   }
 
   lancer("npm install --no-audit --no-fund", dossier);
@@ -248,4 +271,6 @@ async function principal() {
   console.log(`\n✅ Squelette vérifié${changements.length ? ` avec ${changements.length} mise(s) à jour` : ""}.`);
 }
 
-principal();
+if (require.main === module) principal();
+
+module.exports = { changementMajeur, monterLesVersions, lireArguments };

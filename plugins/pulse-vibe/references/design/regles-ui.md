@@ -22,7 +22,7 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 - **Couleurs de rôle** placées dans leur zone de teinte (en degrés sur le cercle des couleurs), puis accordées à la palette : succès vers 150 (vert), alerte vers 80 (ambre), erreur vers 25 (rouge).
 - **Mode sombre** : même teinte pour chaque rôle ; la luminosité s'inverse et la saturation suit la même règle que les nuances. Le fond s'assombrit, le texte s'éclaircit ; une surface en relief est un peu plus claire que le fond.
 - **Liens** : la couleur d'accent et un soulignement décalé du texte ; le bleu par défaut du navigateur reste réservé aux pages sans identité.
-- **Contraste** : les seuils sont au § 7. Il se calcule avec un outil (rapport exact), pour chaque paire de couleurs.
+- **Contraste** : les seuils sont au § 7. Il se mesure pour chaque paire de couleurs avec `pulse-aidd contraste <couleur> <fond>` (hexadécimal, `rgb()` ou `oklch()`, transparence comprise) : rapport exact et seuils atteints. `--viser 4.5` propose la luminosité OKLCH qui atteint le seuil, à teinte et chroma égales. Convertir d'abord en hexadécimal ou en `oklch()` une variable CSS, un nom de couleur ou un `hsl()`, et prendre un fond opaque.
 - **Toute information portée par la couleur est doublée** : ajoutez un mot, une icône ou une forme.
 
 ## 2. Typographie

@@ -23,6 +23,7 @@
 
 Ajoutez les deux nouveaux noms à `.env.example`, **sans valeur** :
 
+<!-- ajout: .env.example -->
 ```
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=
@@ -67,10 +68,13 @@ Le secret est généré par `pulse-aidd secrets generer`, qui l'écrit dans `.en
 
 ## Étapes
 
+<!-- commande: npm install better-auth -->
+
 ### 1. Les variables validées
 
 Dans `src/config/env.ts`, ajouter dans `server: { … }` :
 
+<!-- ajout: src/config/env.ts après: server: { -->
 ```ts
     BETTER_AUTH_SECRET: z.string().min(32),
     // Rotation douce (better-auth 1.5 et plus), lue directement par better-auth : « 2:nouvelle,1:ancienne ».
@@ -84,6 +88,7 @@ Dans `src/config/env.ts`, ajouter dans `server: { … }` :
 
 Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
 
+<!-- ajout: tests/helpers/env-de-test.ts après: export const VARIABLES_VALIDES: Record<string, string> = { -->
 ```ts
   BETTER_AUTH_SECRET: "x".repeat(32),
   BETTER_AUTH_URL: "http://localhost:3000",
@@ -95,6 +100,7 @@ Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `V
 
 Le domaine s'appelle `compte` : ses tables vont dans `src/db/compte/`. Le fichier ci-dessous est la sortie de la CLI better-auth 1.7.7 (`npx auth@1.7.7 generate --adapter drizzle --dialect postgresql`, e-mail et mot de passe, sans plugin), mise en forme par Biome (`npm run format`), sans les `relations` que la CLI ajoute à la fin : l'application lit avec `db.select().from(table)`, qui s'en passe. Copiez-le tel quel. La CLI refuse un fichier de configuration qui importe `server-only` : la recette fournit donc le résultat. Gardez les noms de tables et de colonnes : l'adaptateur les attend.
 
+<!-- fichier: src/db/compte/auth.table.ts -->
 ```ts
 // src/db/compte/auth.table.ts
 import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
@@ -176,6 +182,7 @@ Les tables métier qui appartiennent à une personne importent `user` de `@src/d
 
 `drizzle.config.ts` lit déjà `src/db/*/*.table.ts` : rien à déclarer ailleurs. Générez la migration, relisez le SQL créé dans `drizzle/` (quatre `CREATE TABLE`), puis appliquez-la :
 
+<!-- commande: npm run db:generate -->
 ```bash
 npm run db:generate
 npm run db:migrate
@@ -185,17 +192,18 @@ npm run db:migrate
 
 better-auth enregistre ses comptes et ses sessions dans la base du projet : son adapter est le seul à importer `src/db/`. Cette exception est déclarée dans `biome.json` (override `src/adapters/auth/**`, architecture.md §3) ; les autres adapters laissent la base aux repositories. L'objet `schema` de l'adaptateur Drizzle se construit ici, à partir des quatre tables.
 
+<!-- fichier: src/adapters/auth/auth.adapter.ts -->
 ```ts
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
 import { env } from "@src/config/env";
-import { type Db, getDb } from "@src/db/db-client";
 import {
   account,
   session,
   user,
   verification,
 } from "@src/db/compte/auth.table";
+import { type Db, getDb } from "@src/db/db-client";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -263,6 +271,7 @@ Pour lire la session ailleurs (Route Handler, par exemple) : `await getAuth().ap
 
 Le client tourne dans le navigateur : il reste dans `src/lib/`, hors de `src/adapters/` (réservé au serveur).
 
+<!-- fichier: src/lib/auth-client.ts -->
 ```ts
 // src/lib/auth-client.ts
 import { createAuthClient } from "better-auth/react";
@@ -271,6 +280,7 @@ import { createAuthClient } from "better-auth/react";
 export const authClient = createAuthClient();
 ```
 
+<!-- fichier: app/api/auth/[...all]/route.ts -->
 ```ts
 // app/api/auth/[...all]/route.ts
 import { getAuth } from "@src/adapters/auth/auth.adapter";
@@ -287,20 +297,49 @@ export async function POST(request: Request) {
 
 ### 5. Le client d'action « connecté »
 
+<!-- fichier: src/lib/safe-action.ts -->
 ```ts
 // src/lib/safe-action.ts
 import "server-only";
 import { enTetesDeSession, getAuth } from "@src/adapters/auth/auth.adapter";
 import { logger } from "@src/lib/logger";
+import { headers } from "next/headers";
 import { createSafeActionClient, returnServerError } from "next-safe-action";
+import { z } from "zod";
 
+export const MESSAGE_ERREUR_ACTION =
+  "Une erreur est survenue. Réessayez dans un instant.";
+
+// Chaque action porte un nom : actionPublique.metadata({ nom: "envoyerMessage" }). Sans lui,
+// la vérification des types (npm run typecheck) signale l'action.
 // Une erreur attendue se renvoie avec returnServerError("message") ; une erreur imprévue
-// est journalisée et remplacée par un message générique.
+// est journalisée avec le nom de l'action et remplacée par un message générique.
 export const actionPublique = createSafeActionClient({
-  handleServerError(erreur) {
-    logger.error({ err: erreur }, "Erreur dans une action serveur");
-    return "Une erreur est survenue. Réessayez dans un instant.";
+  defineMetadataSchema() {
+    return z.object({ nom: z.string().min(1) });
   },
+  handleServerError(erreur, { metadata }) {
+    logger.error(
+      { err: erreur, action: metadata?.nom },
+      "Erreur dans une action serveur",
+    );
+    return MESSAGE_ERREUR_ACTION;
+  },
+}).use(async ({ next, metadata }) => {
+  // x-vercel-id : l'identifiant de la requête, le même que dans les journaux de Vercel.
+  const requete = (await headers()).get("x-vercel-id") ?? undefined;
+  const debut = performance.now();
+  const resultat = await next();
+  logger.info(
+    {
+      action: metadata.nom,
+      requete,
+      duree: Math.round(performance.now() - debut),
+      reussite: resultat.success,
+    },
+    "Action terminée",
+  );
+  return resultat;
 });
 
 /** Action réservée aux personnes connectées : fournit ctx.utilisateur = { id, nom }. */
@@ -320,6 +359,7 @@ export const actionConnectee = actionPublique.use(async ({ next }) => {
 
 ### 6. La personne connectée, côté pages
 
+<!-- fichier: src/features/compte/queries/utilisateur-connecte.query.ts -->
 ```ts
 // src/features/compte/queries/utilisateur-connecte.query.ts
 import "server-only";
@@ -346,6 +386,7 @@ Appelez-la dans un container placé sous `<Suspense>`, jamais au premier niveau 
 
 ### 7. Les schémas partagés
 
+<!-- fichier: src/features/compte/schemas/compte.schema.ts -->
 ```ts
 // src/features/compte/schemas/compte.schema.ts
 import { z } from "zod";
@@ -393,6 +434,7 @@ export type ChangementMotDePasse = z.infer<typeof schemaChangementMotDePasse>;
 
 Une action par fichier. better-auth porte les règles du compte (mots de passe, sessions) : rien à placer dans `src/core/`, donc pas de `Result` ni de `erreur-messages.ts`. Chaque action traduit elle-même l'erreur attendue de better-auth en message, avec `returnServerError("…")`.
 
+<!-- fichier: src/features/compte/actions/inscrire.action.ts -->
 ```ts
 // src/features/compte/actions/inscrire.action.ts
 "use server";
@@ -406,6 +448,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaInscription } from "../schemas/compte.schema";
 
 export const inscrire = actionPublique
+  .metadata({ nom: "inscrire" })
   .inputSchema(schemaInscription)
   .action(async ({ parsedInput }) => {
     try {
@@ -432,6 +475,7 @@ export const inscrire = actionPublique
   });
 ```
 
+<!-- fichier: src/features/compte/actions/connecter.action.ts -->
 ```ts
 // src/features/compte/actions/connecter.action.ts
 "use server";
@@ -445,6 +489,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaConnexion } from "../schemas/compte.schema";
 
 export const connecter = actionPublique
+  .metadata({ nom: "connecter" })
   .inputSchema(schemaConnexion)
   .action(async ({ parsedInput }) => {
     try {
@@ -462,6 +507,7 @@ export const connecter = actionPublique
   });
 ```
 
+<!-- fichier: src/features/compte/actions/changer-mot-de-passe.action.ts -->
 ```ts
 // src/features/compte/actions/changer-mot-de-passe.action.ts
 "use server";
@@ -474,6 +520,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaChangementMotDePasse } from "../schemas/compte.schema";
 
 export const changerMotDePasse = actionConnectee
+  .metadata({ nom: "changerMotDePasse" })
   .inputSchema(schemaChangementMotDePasse)
   .action(async ({ parsedInput }) => {
     try {
@@ -498,6 +545,7 @@ export const changerMotDePasse = actionConnectee
   });
 ```
 
+<!-- fichier: src/features/compte/actions/deconnecter.action.ts -->
 ```ts
 // src/features/compte/actions/deconnecter.action.ts
 "use server";
@@ -507,10 +555,12 @@ import { actionConnectee } from "@src/lib/safe-action";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const deconnecter = actionConnectee.action(async () => {
-  await getAuth().api.signOut({ headers: await headers() });
-  redirect("/connexion");
-});
+export const deconnecter = actionConnectee
+  .metadata({ nom: "deconnecter" })
+  .action(async () => {
+    await getAuth().api.signOut({ headers: await headers() });
+    redirect("/connexion");
+  });
 ```
 
 Codes vérifiés avec better-auth 1.7.7 : adresse déjà prise → `USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` (422) ; mauvais mot de passe à la connexion → `UNAUTHORIZED` / `INVALID_EMAIL_OR_PASSWORD` ; mauvais mot de passe actuel → `INVALID_PASSWORD` (400). `revokeOtherSessions: true` déconnecte les autres appareils et remplace la session en cours par une nouvelle.
@@ -519,6 +569,7 @@ Codes vérifiés avec better-auth 1.7.7 : adresse déjà prise → `USER_ALREADY
 
 Chaque formulaire est une section : les champs, et le **même** schéma Zod que l'action en `validators.onSubmit` (validation dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Un `form.Field` par champ ; les `id` sont préfixés par `useId()` (voir « Pièges connus »).
 
+<!-- fichier: src/features/compte/components/sections/formulaire-inscription.tsx -->
 ```tsx
 // src/features/compte/components/sections/formulaire-inscription.tsx
 "use client";
@@ -632,6 +683,7 @@ export function FormulaireInscription({
 
 `formulaire-connexion.tsx` suit la même structure, avec deux champs.
 
+<!-- fichier: src/features/compte/components/sections/formulaire-connexion.tsx -->
 ```tsx
 // src/features/compte/components/sections/formulaire-connexion.tsx
 "use client";
@@ -742,6 +794,7 @@ export function FormulaireConnexion({
 
 Le formulaire de mot de passe se vide après un changement réussi : `envoyer` répond `true` dans ce cas (la réponse n'est lue que par ce formulaire ; les deux autres l'ignorent).
 
+<!-- fichier: src/features/compte/components/sections/formulaire-mot-de-passe.tsx -->
 ```tsx
 // src/features/compte/components/sections/formulaire-mot-de-passe.tsx
 "use client";
@@ -862,6 +915,7 @@ export function FormulaireMotDePasse({
 
 Un container client par formulaire : il appelle `useAction(action)` de `next-safe-action/hooks` et passe `envoyer`, `erreurServeur` (`result.serverError`) et `enCours` (`isPending`) à sa section.
 
+<!-- fichier: src/features/compte/components/containers/inscription.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/inscription.container.tsx
 "use client";
@@ -885,6 +939,7 @@ export function InscriptionContainer() {
 }
 ```
 
+<!-- fichier: src/features/compte/components/containers/connexion.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/connexion.container.tsx
 "use client";
@@ -908,6 +963,7 @@ export function ConnexionContainer() {
 }
 ```
 
+<!-- fichier: src/features/compte/components/containers/mot-de-passe.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/mot-de-passe.container.tsx
 "use client";
@@ -936,6 +992,7 @@ export function MotDePasseContainer() {
 }
 ```
 
+<!-- fichier: src/features/compte/components/containers/bouton-deconnexion.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/bouton-deconnexion.container.tsx
 "use client";
@@ -961,6 +1018,7 @@ export function BoutonDeconnexionContainer() {
 
 Le contenu de « Mon compte » lit la session : c'est un container serveur, rendu sous `<Suspense>` par la page.
 
+<!-- fichier: src/features/compte/components/containers/compte.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/compte.container.tsx
 import { utilisateurConnecte } from "../../queries/utilisateur-connecte.query";
@@ -986,12 +1044,13 @@ export async function CompteContainer() {
 
 ### 11. Les pages
 
+<!-- fichier: app/(public)/inscription/page.tsx -->
 ```tsx
 // app/(public)/inscription/page.tsx
 import { InscriptionContainer } from "@src/features/compte/components/containers/inscription.container";
 import type { Metadata } from "next";
 
-// Page d'authentification : hors de Google (fiche, règle 49).
+// Page d'authentification : hors de Google (fiche, règle 47).
 export const metadata: Metadata = {
   title: "Créer un compte",
   robots: { index: false, follow: false },
@@ -1007,12 +1066,13 @@ export default function PageInscription() {
 }
 ```
 
+<!-- fichier: app/(public)/connexion/page.tsx -->
 ```tsx
 // app/(public)/connexion/page.tsx
 import { ConnexionContainer } from "@src/features/compte/components/containers/connexion.container";
 import type { Metadata } from "next";
 
-// Page d'authentification : hors de Google (fiche, règle 49).
+// Page d'authentification : hors de Google (fiche, règle 47).
 export const metadata: Metadata = {
   title: "Se connecter",
   robots: { index: false, follow: false },
@@ -1028,6 +1088,7 @@ export default function PageConnexion() {
 }
 ```
 
+<!-- fichier: app/(connecte)/layout.tsx -->
 ```tsx
 // app/(connecte)/layout.tsx
 import type { Metadata } from "next";
@@ -1042,6 +1103,7 @@ export default function LayoutConnecte({ children }: LayoutProps<"/">) {
 }
 ```
 
+<!-- fichier: app/(connecte)/compte/page.tsx -->
 ```tsx
 // app/(connecte)/compte/page.tsx
 import { CompteContainer } from "@src/features/compte/components/containers/compte.container";
@@ -1068,6 +1130,7 @@ Chaque nouvelle page connectée suit ce modèle : page synchrone, lecture de `ut
 
 `proxy.ts` se place à la racine du projet, à côté d'`app/`.
 
+<!-- fichier: proxy.ts -->
 ```ts
 // proxy.ts
 import { getSessionCookie } from "better-auth/cookies";
@@ -1232,6 +1295,7 @@ Fonctionnalité: Compte personnel
 
 better-auth tourne sur une base PGlite neuve, avec les migrations du projet. `creerAuth` reçoit cette base : aucune variable d'environnement n'est lue.
 
+<!-- fichier: src/adapters/auth/__tests__/auth.adapter.test.ts -->
 ```ts
 // src/adapters/auth/__tests__/auth.adapter.test.ts
 import { account } from "@src/db/compte/auth.table";
@@ -1372,6 +1436,7 @@ describe("chemins HTTP fermés", () => {
 
 Un test par ligne du plan « Une saisie invalide… » et un pour « Confirmation différente ».
 
+<!-- fichier: src/features/compte/schemas/__tests__/compte.schema.test.ts -->
 ```ts
 // src/features/compte/schemas/__tests__/compte.schema.test.ts
 import { describe, expect, it } from "vitest";
@@ -1422,6 +1487,7 @@ describe("Schéma de changement de mot de passe", () => {
 
 L'aide `connecterNouvelUtilisateur(page)` sert aussi aux autres recettes (`liste`, par exemple).
 
+<!-- fichier: e2e/aides/connexion.ts -->
 ```ts
 // e2e/aides/connexion.ts
 import { expect, type Page } from "@playwright/test";
@@ -1455,6 +1521,7 @@ export async function connecterNouvelUtilisateur(
 }
 ```
 
+<!-- fichier: e2e/compte.spec.ts -->
 ```ts
 // e2e/compte.spec.ts
 import { expect, test } from "@playwright/test";

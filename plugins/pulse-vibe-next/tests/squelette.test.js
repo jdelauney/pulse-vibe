@@ -135,3 +135,74 @@ test("le squelette type ses variables avec t3 env et nomme son client Drizzle", 
   assert.ok(!fs.existsSync(path.join(S, "src", "db", "index.ts")), "plus de src/db/index.ts");
   assert.ok(fs.existsSync(path.join(S, "tests", "helpers", "env-de-test.ts")), "aide VARIABLES_VALIDES");
 });
+
+test("fins de ligne LF et versions exactes : .gitattributes et .npmrc posés, complétés sans doublon", () => {
+  const d = dossierVide();
+  fs.writeFileSync(path.join(d, ".gitattributes"), "*.png binary\n");
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  const attendu = "*.png binary\n\n# Ajouté par Pulse Next.js\n* text=auto eol=lf\n";
+  assert.strictEqual(lire(d, ".gitattributes"), attendu);
+  assert.strictEqual(lire(d, ".npmrc"), "save-exact=true\n");
+  for (const modele of ["gitattributes.template", "npmrc.template"]) assert.ok(!fs.existsSync(path.join(d, modele)), modele);
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  assert.strictEqual(lire(d, ".gitattributes"), attendu, "deuxième passage : rien ne change");
+  assert.doesNotMatch(lire(d, ".gitignore"), /package-lock/, "package-lock.json s'enregistre avec le code");
+});
+
+test("dépendances du squelette : WebSocket natif, outils en développement, Node 22.19 ou plus, sans next-themes", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const paquet = JSON.parse(fs.readFileSync(path.join(S, "package.json"), "utf8"));
+  for (const nom of ["ws", "next-themes", "shadcn"]) assert.ok(!paquet.dependencies[nom], `${nom} hors des dépendances d'exécution`);
+  assert.ok(!paquet.devDependencies["@types/ws"], "@types/ws retiré");
+  assert.ok(paquet.devDependencies.shadcn, "shadcn en devDependencies (seul shadcn/tailwind.css est importé, à la construction)");
+  assert.deepStrictEqual(paquet.engines, { node: ">=22.19.0" });
+  assert.doesNotMatch(fs.readFileSync(path.join(S, "src", "db", "db-client.ts"), "utf8"), /webSocketConstructor|from "ws"/);
+  const sonner = fs.readFileSync(path.join(S, "src", "components", "ui", "sonner.tsx"), "utf8");
+  assert.doesNotMatch(sonner, /next-themes/);
+  assert.match(sonner, /theme="light"/);
+  const theme = fs.readFileSync(path.join(__dirname, "..", "references", "theme.md"), "utf8");
+  for (const attendu of ["npm install next-themes", "<ThemeProvider attribute=\"class\"", "suppressHydrationWarning", "useTheme()"]) assert.ok(theme.includes(attendu), `theme.md : ${attendu}`);
+});
+
+test("accessibilité du squelette : lien d'évitement, axe sur l'accueil", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const lireS = (...p) => fs.readFileSync(path.join(S, ...p), "utf8");
+  const layout = lireS("app", "layout.tsx");
+  assert.match(layout, /<a\s+href="#contenu"/);
+  assert.match(layout, /id="contenu"/);
+  assert.ok(layout.indexOf('href="#contenu"') < layout.indexOf("<NuqsAdapter>"), "premier élément du corps");
+  const paquet = JSON.parse(lireS("package.json"));
+  assert.ok(paquet.devDependencies["@axe-core/playwright"], "@axe-core/playwright");
+  const accueil = lireS("e2e", "accueil.spec.ts");
+  assert.match(accueil, /new AxeBuilder\(\{ page \}\)\.withTags\(WCAG_AA\)/);
+  assert.match(accueil, /"wcag22aa"/);
+});
+
+test("journaux et erreurs du squelette : onRequestError, masquage profond, référence affichée", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const lireS = (...p) => fs.readFileSync(path.join(S, ...p), "utf8");
+  assert.match(lireS("instrumentation.ts"), /export const onRequestError: Instrumentation\.onRequestError/);
+  assert.match(lireS("instrumentation.ts"), /process\.env\.NEXT_RUNTIME !== "nodejs"/);
+  assert.match(lireS("src", "lib", "logger.ts"), /`\*\.\*\.\*\["\$\{cle\}"\]`/);
+  for (const cle of ["password", "motDePasse", "token", "authorization", "Authorization", "Cookie", "set-cookie", "x-api-key", "apiKey", "secret", "clientSecret", "cookie", "email"]) assert.ok(lireS("src", "lib", "logger.ts").includes(`"${cle}"`), cle);
+  for (const f of ["error.tsx", "global-error.tsx"]) assert.match(lireS("app", f), /Référence à nous transmettre : <code>\{error\.digest\}<\/code>/, f);
+  assert.ok(fs.existsSync(path.join(S, "src", "lib", "errors", "__tests__", "erreur-de-requete.test.ts")));
+  assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "logger.test.ts")));
+});
+
+test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const action = fs.readFileSync(path.join(S, "src", "lib", "safe-action.ts"), "utf8");
+  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
+  assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "safe-action.test.ts")));
+});
+
+test("migrations du squelette : construction Vercel précédée de scripts/migrer.mjs, adresse directe de l'intégration", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const vercel = JSON.parse(fs.readFileSync(path.join(S, "vercel.json"), "utf8"));
+  assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "node scripts/migrer.mjs --vercel && npm run build" });
+  assert.match(fs.readFileSync(path.join(S, "drizzle.config.ts"), "utf8"), /process\.env\.DATABASE_URL_DIRECT \?\? process\.env\.DATABASE_URL_UNPOOLED/);
+  const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
+  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations"]) assert.ok(migrer.includes(attendu), attendu);
+  assert.ok(fs.existsSync(path.join(S, "tests", "migrer.test.ts")));
+});
