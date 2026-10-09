@@ -24,45 +24,46 @@ function taille(...args) {
 }
 
 // Plafonds en caractères de « pulse-aidd contexte <commande> ».
-// Cibles (÷2) : implement et spirc ; les autres plafonds = mesure de départ arrondie au 500 supérieur (la tâche 11 les resserre).
+// Plafond = mesure à la fin du plan 4 × 1,05, arrondie au 500 supérieur (boucle implement : cible du plan, plus basse).
+// Une commande qui grossit doit dépasser 5 % avant d’échouer : relever son plafond est alors un choix explicite.
 const PLAFONDS = {
   init: 43500,
-  brainstorm: 38000,
-  tech: 63500,
-  memory: 36500,
+  brainstorm: 33500,
+  tech: 60000,
+  memory: 31500,
   spirc: 29500,
-  express: 44500,
-  prd: 33000,
-  us: 35000,
-  spec: 39500,
-  plan: 54000,
+  express: 40000,
+  prd: 28000,
+  us: 30000,
+  spec: 35000,
+  plan: 50000,
   implement: 39000,
   fix: 22500,
   review: 29000,
-  commit: 42500,
-  pr: 36500,
-  annuler: 42000,
-  "get-help": 28500,
-  cicd: 43000,
-  deploy: 39500,
-  security: 43500,
-  secrets: 42500,
-  refine: 47500,
-  ui: 64500,
-  rediger: 32500,
-  seo: 55000,
-  perf: 47500,
-  "search-console": 47000,
-  learn: 40000,
-  explain: 28000,
-  test: 42500,
-  "auto-fix": 27500,
+  commit: 38000,
+  pr: 31500,
+  annuler: 37500,
+  "get-help": 23500,
+  cicd: 38500,
+  deploy: 35000,
+  security: 39000,
+  secrets: 38000,
+  refine: 43000,
+  ui: 61500,
+  rediger: 27500,
+  seo: 51000,
+  perf: 43000,
+  "search-console": 42500,
+  learn: 35000,
+  explain: 23000,
+  test: 38000,
+  "auto-fix": 22000,
   status: 29500,
   guide: 29500,
 };
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
-const PLAFONDS_ETAPES = { review: 22000, commit: 26500 };
+const PLAFONDS_ETAPES = { review: 12500, commit: 26500 };
 
 // Une boucle de 4 tâches : ce que la conversation principale charge, une seule fois.
 const BOUCLES = {
@@ -76,24 +77,20 @@ const BOUCLES = {
   },
 };
 
-// Cibles pas encore atteintes (vide : toutes les cibles sont atteintes ou ramenées à la mesure obtenue) ; la tâche 11 supprime ce mécanisme.
-const EN_ATTENTE = new Set();
-const attente = (cle) => (EN_ATTENTE.has(cle) ? "plafond atteint plus loin dans le plan 4" : false);
-
 test("chaque commande a un plafond de contexte", () => {
   const skills = fs.readdirSync(path.join(RACINE, "skills")).sort();
   assert.deepStrictEqual(Object.keys(PLAFONDS).sort(), skills);
 });
 
 for (const [commande, plafond] of Object.entries(PLAFONDS)) {
-  test(`contexte ${commande} : ${plafond} caractères au plus`, { todo: attente(commande) }, () => {
+  test(`contexte ${commande} : ${plafond} caractères au plus`, () => {
     const mesure = taille("contexte", commande);
     assert.ok(mesure <= plafond, `contexte ${commande} : ${mesure} > ${plafond}`);
   });
 }
 
 for (const [commande, plafond] of Object.entries(PLAFONDS_ETAPES)) {
-  test(`etape ${commande} --sans-communes : ${plafond} caractères au plus, sans les règles communes`, { todo: attente(`etape ${commande}`) }, () => {
+  test(`etape ${commande} --sans-communes : ${plafond} caractères au plus, sans les règles communes`, () => {
     const r = lancer("etape", commande, "--sans-communes");
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(!r.stdout.includes("===== Règles communes Pulse ====="), "règles communes absentes");
@@ -103,7 +100,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_ETAPES)) {
 }
 
 for (const [commande, { plafond, parties }] of Object.entries(BOUCLES)) {
-  test(`boucle ${commande} de 4 tâches : ${plafond} caractères au plus`, { todo: attente(`boucle ${commande}`) }, () => {
+  test(`boucle ${commande} de 4 tâches : ${plafond} caractères au plus`, () => {
     const total = parties.reduce((somme, args) => somme + taille(...args), 0);
     assert.ok(total <= plafond, `${total} > ${plafond}`);
   });
@@ -120,4 +117,4 @@ function tableau() {
 
 if (process.argv.includes("--tableau")) console.log(tableau());
 
-module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, EN_ATTENTE };
+module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES };
