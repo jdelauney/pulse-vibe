@@ -222,7 +222,10 @@ test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé
 test("migrations du squelette : construction Vercel précédée de scripts/migrer.mjs, adresse directe de l'intégration", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const vercel = JSON.parse(fs.readFileSync(path.join(S, "vercel.json"), "utf8"));
-  assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "node scripts/migrer.mjs --vercel && npm run build" });
+  // Les tests passent avant les migrations : une version refusée ne migre jamais la base de production.
+  assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "npm test && node scripts/migrer.mjs --vercel && npm run build" });
+  const etapes = vercel.buildCommand.split(" && ");
+  assert.ok(etapes.indexOf("npm test") < etapes.indexOf("node scripts/migrer.mjs --vercel"), "tests avant migrations");
   assert.match(fs.readFileSync(path.join(S, "drizzle.config.ts"), "utf8"), /process\.env\.DATABASE_URL_DIRECT \?\? process\.env\.DATABASE_URL_UNPOOLED/);
   const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
   for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations", "NEON_ENDPOINT_PRODUCTION", '"ignore-production"']) assert.ok(migrer.includes(attendu), attendu);
