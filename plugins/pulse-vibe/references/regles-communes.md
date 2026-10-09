@@ -46,7 +46,7 @@ Avant d'écrire une spec, un écran ou un texte : appliquer, s'ils existent, `do
 - **Le MVP** : ce sont les US **Indispensables**. Il est terminé quand les plans de toutes ces US sont terminés ; la tâche « Mettre en ligne le MVP » se trouve dans le plan de la dernière US Indispensable du parcours (`docs/user-stories.md`).
 - **Ancien projet** (`docs/specs/`, `docs/plans/`, `docs/revues/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
 
-Les modèles de ces fichiers sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
+Les modèles des fichiers du projet sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
 Les outils `pulse-aidd` et `pulse-pile-<id>` se lancent avec l'outil Bash (Git Bash sous Windows), où s'appliquent les autorisations des commandes ; depuis PowerShell, leur relais `.cmd` les lance aussi.
 La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite` : chaque commande ou agent qui écrit ou relit du code les charge à ce moment-là (règle 12).
 L'état des scénarios des specs (testés, sans test, manuels) s'affiche avec `pulse-aidd scenarios`. La méthode de tests (stratégie, écriture, niveaux, TDD, scénarios Gherkin) s'affiche avec `pulse-aidd tests` ; la procédure des tests d'abord (option `-t`) avec `pulse-aidd reference tests-automatiques.md`.
