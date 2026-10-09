@@ -42,7 +42,7 @@ references/                  fiche.md (règles de la pile), technical.md (valeur
                              theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), contexte/ (consignes par commande), recettes/<nom>/ (index.md, une étape par fichier, tests.md)
 templates/squelette/         le projet de départ
 scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi, mise à jour des versions),
-                             seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles et tests réels des secrets),
+                             seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles et tests réels des secrets, envoyés seulement aux serveurs reconnus),
                              secrets-vercel.js (adaptateur Vercel de pulse-aidd secrets),
                              decouper-recette.js (découpe une recette rédigée d'un seul tenant en index, étapes et tests ; vérifie la recomposition exacte)
 tests/                       tests du pack

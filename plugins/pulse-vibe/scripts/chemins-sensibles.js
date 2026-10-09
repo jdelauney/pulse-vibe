@@ -16,7 +16,7 @@ const NOMS_ENV_COURANTS = [".env", ".env.local", ".env.development", ".env.devel
 const DOSSIERS_IGNORES = new Set(["node_modules", ".git", ".next", "dist", "build", "coverage", ".turbo", ".vercel"]);
 
 const MESSAGE_CONTROLE =
-  "Pulse demande votre accord : cette action modifie le contrôle des secrets avant commit (.git/hooks, .git/pulse, .git/config ou scripts/verifier.js)." +
+  "Pulse demande votre accord : cette action modifie le contrôle des secrets avant commit (.git/hooks, .git/pulse, .git/config ou scripts/verifier.js). " +
   "Pour le remettre à jour, préférez `pulse-aidd installer-ci --forcer` puis `pulse-aidd installer-hook`.";
 
 /** Les lectures possibles d'un mot : lui-même, la valeur d'une option, sans @ ni < de tête, la partie après « : » d'une référence Git, chaque élément d'une liste a,b. */
