@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte impleme
 
 !`pulse-aidd contexte implement`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus, sauf les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS` (les options, l'US dont on réalise le plan, puis la tâche, facultative)
 
@@ -46,7 +46,7 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 - **Mode** : sans `-s` ni `-d`, question « Comment réaliser la tâche ? » : « Je code en coulisse (Recommandé) » (un assistant spécialisé code à part : la conversation reste légère) / « Je code devant vous » (vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
 - **Tests** : sans `-t`, « 2. Choisir au démarrage » de la référence « Tests automatiques ».
 - **Copie à part** : sans `-w`, « 1. Faut-il un worktree ? » de la référence worktree, si la question se pose.
-- **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail », seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir » ; puis préparer la branche si le mode est PR.
+- **Envoi** : lancer `pulse-aidd reference depot-distant.md`, puis appliquer « 2. Choisir comment envoyer le travail d'un plan », seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir » ; puis préparer la branche si le mode est PR.
 
 **Avec une copie à part** : la créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans cette copie.
 
@@ -114,12 +114,14 @@ Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `
 
 ### 6. Boucle sur tout le plan (sans tâche)
 
+**Avant la première tâche**, charger une seule fois les deux étapes qui servent à chaque tâche : `pulse-aidd etape review --sans-communes` et `pulse-aidd etape commit --sans-communes`. Si elles ne figurent plus dans la conversation (après un résumé automatique), les relancer.
+
 Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
-2. **Relire et vérifier** : lancer `pulse-aidd etape review --sans-communes` et appliquer sa section « Déroulé » à l'identique pour cette tâche, **hors** son bloc de fin de commande : examen par `pulse:reviewer` et `pulse:verifier` (référence « Examiner une tâche »), rapport, présentation du verdict, **test manuel par la personne**.
+2. **Relire et vérifier** : appliquer la section « Déroulé » de l'étape **review** (chargée avant la première tâche) à l'identique pour cette tâche, **hors** son bloc de fin de commande : examen par `pulse:reviewer` et `pulse:verifier` (référence « Examiner une tâche »), rapport, présentation du verdict, **test manuel par la personne**.
 3. **Corriger** : appliquer l'étape « Corriger » de la relecture (constats Critique, Haute et Moyenne, constats Basse confrontés au code, test non concluant : règles communes § 6), avec la relecture de contrôle. En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un constat Critique persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
-4. **Commiter** : lancer `pulse-aidd etape commit --sans-communes` et appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : la relecture est faite, passer directement au commit.
+4. **Commiter** : appliquer la section « Déroulé » de l'étape **commit** (chargée avant la première tâche) à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : la relecture est faite, passer directement au commit.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 
 S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` qui a déjà un rapport reprend à la correction ou au commit).

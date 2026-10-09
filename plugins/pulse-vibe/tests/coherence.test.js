@@ -786,3 +786,15 @@ test("checklist sécurité : chargée par les agents qui relisent, plus recopié
   for (const fichier of [["skills", "review", "SKILL.md"], ["skills", "spirc", "SKILL.md"], ["skills", "security", "SKILL.md"], ["references", "examen.md"]])
     assert.doesNotMatch(lire(RACINE, ...fichier), /checklist sécurité complète/, fichier.join("/"));
 });
+
+test("boucles d'implement et de spirc : review et commit chargés une seule fois", () => {
+  const implement = lire(RACINE, "skills", "implement", "SKILL.md");
+  const boucle = implement.slice(implement.indexOf("### 6. Boucle sur tout le plan"));
+  assert.match(boucle, /\*\*Avant la première tâche\*\*/);
+  assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
+  assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "spirc : commit chargée une fois");
+  for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
+    assert.ok(spirc.includes(ref), ref);
+});

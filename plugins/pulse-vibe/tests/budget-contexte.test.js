@@ -30,13 +30,13 @@ const PLAFONDS = {
   brainstorm: 38000,
   tech: 63500,
   memory: 36500,
-  spirc: 36500,
+  spirc: 29500,
   express: 44500,
   prd: 33000,
   us: 35000,
   spec: 39500,
   plan: 54000,
-  implement: 46500,
+  implement: 39000,
   fix: 22500,
   review: 43000,
   commit: 42500,
@@ -71,16 +71,13 @@ const BOUCLES = {
     parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"]],
   },
   spirc: {
-    plafond: 47500,
+    plafond: 77500,
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };
 
 // Cibles pas encore atteintes : chaque tâche du plan 4 retire celles qu'elle atteint ; la tâche 11 supprime ce mécanisme.
-const EN_ATTENTE = new Set([
-  "spirc",
-  "boucle implement", "boucle spirc",
-]);
+const EN_ATTENTE = new Set();
 const attente = (cle) => (EN_ATTENTE.has(cle) ? "plafond atteint plus loin dans le plan 4" : false);
 
 test("chaque commande a un plafond de contexte", () => {

@@ -239,8 +239,8 @@ test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
   ]) assert.ok(r.stdout.includes(titre), titre);
 });
 
-test("contexte implement, spirc et test : la procédure des tests automatiques", () => {
-  for (const commande of ["implement", "spirc", "test"]) {
+test("contexte implement et test : la procédure des tests automatiques", () => {
+  for (const commande of ["implement", "test"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Tests automatiques : tests d'abord ====="), commande);
@@ -485,4 +485,13 @@ test("contexte review : modèle de rapport, checklist chargée par le reviewer",
   assert.ok(!lancer("contexte", "spirc").stdout.includes("===== Checklist sécurité ====="), "spirc sans checklist");
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ="), "plan la garde");
   assert.ok(lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security la garde");
+});
+
+test("contexte spirc : règles communes, modèle de revue et lexique ; références de réalisation à la demande", () => {
+  const r = lancer("contexte", "spirc");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : rapport de revue =====", "===== Modèle : docs/lexique.md ====="])
+    assert.ok(r.stdout.includes(titre), titre);
+  for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques : tests d'abord =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+    assert.ok(!r.stdout.includes(titre), titre);
 });
