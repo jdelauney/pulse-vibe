@@ -14,7 +14,7 @@ const PORTS_BLOQUES = new Set([
 
 /** Met `serveur` (net.Server ou http.Server) à l'écoute sur `hote`, sur un port accepté par fetch ; rend ce port. */
 async function ecouter(serveur, hote = "127.0.0.1") {
-  for (;;) {
+  for (let essai = 1; ; essai++) {
     await new Promise((ok, ko) => {
       const echec = (e) => ko(e);
       serveur.once("error", echec);
@@ -26,6 +26,7 @@ async function ecouter(serveur, hote = "127.0.0.1") {
     const { port } = serveur.address();
     if (!PORTS_BLOQUES.has(port)) return port;
     await new Promise((ok) => serveur.close(() => ok()));
+    if (essai === 20) throw new Error("aucun port local accepté par le navigateur après 20 essais : relancez la commande");
   }
 }
 
