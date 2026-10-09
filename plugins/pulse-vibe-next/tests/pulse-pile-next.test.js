@@ -378,3 +378,12 @@ test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", 
   assert.match(lire(RACINE, "..", "pulse-vibe", "skills", "init", "SKILL.md"), /pulse-aidd pile reference migrations\.md/);
   assert.match(lire(REF, "contexte", "security.md"), /pulse-aidd pile reference migrations\.md/);
 });
+
+test("README du projet : « Tester en local » fourni par le pack, lignes des recettes à outil", () => {
+  const readme = lire(REF, "readme.md");
+  for (const attendu of ["npm install", "npx playwright install chromium", "npm run dev", "http://localhost:3000", "vercel link", "mailpit", "http://localhost:8025"]) assert.ok(readme.includes(attendu), attendu);
+  const ecoute = lire(REF, "recettes", "paiement.md").match(/^stripe listen .*$/m)[0];
+  assert.ok(readme.includes(ecoute), "même commande stripe listen que la recette paiement");
+  assert.match(lire(REF, "contexte", "tech.md"), /« Tester en local » par le bloc de base de `pulse-aidd pile reference readme\.md`/);
+  assert.match(lire(REF, "contexte", "implement.md"), /pulse-aidd pile reference readme\.md/);
+});
