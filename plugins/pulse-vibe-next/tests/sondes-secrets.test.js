@@ -72,6 +72,13 @@ test("regles : JSON des variables du pack et noms déclarés dans src/lib/env.ts
   assert.strictEqual(json.variables.BETTER_AUTH_URL.secret, false);
 });
 
+test("regles : variables propres à chaque environnement et clé de sauvegarde Neon", () => {
+  const propres = Object.entries(VARIABLES).filter(([, r]) => r.parEnvironnement).map(([nom]) => nom);
+  assert.deepStrictEqual(propres.sort(), ["BETTER_AUTH_URL", "DATABASE_URL", "DATABASE_URL_DIRECT", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]);
+  assert.deepStrictEqual(VARIABLES.NEON_API_KEY.prefixes, ["napi_"]);
+  assert.strictEqual(VARIABLES.NEON_PROJECT_ID.secret, false);
+});
+
 test("regles : lit src/config/env.ts (structure actuelle) avant src/lib/env.ts", async () => {
   const d = projet();
   fs.mkdirSync(path.join(d, "src", "config"), { recursive: true });
@@ -98,7 +105,7 @@ test("regles : lit les noms des blocs server et client d'un env.ts t3", async ()
 test("la fiche décrit chaque variable des règles, avec ses préfixes attendus", () => {
   const texte = fs.readFileSync(FICHE, "utf8");
   for (const [nom, regle] of Object.entries(VARIABLES)) {
-    if (/^(SMTP_HOST|SMTP_PORT|SMTP_USER|MAIL_FROM|R2_ACCOUNT_ID|R2_BUCKET|UPSTASH_REDIS_REST_URL)$/.test(nom)) {
+    if (/^(SMTP_HOST|SMTP_PORT|SMTP_USER|MAIL_FROM|R2_ACCOUNT_ID|R2_BUCKET|UPSTASH_REDIS_REST_URL|NEON_PROJECT_ID)$/.test(nom)) {
       assert.ok(texte.includes(`\`${nom}\``), `${nom} cité dans la fiche`);
       continue;
     }

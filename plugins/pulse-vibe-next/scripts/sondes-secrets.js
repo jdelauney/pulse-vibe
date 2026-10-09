@@ -16,16 +16,19 @@ const { createRequire } = require("module");
 const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets.md");
 
 // Règles par variable : la fiche (references/contexte/secrets.md) en donne l'explication ; un test vérifie qu'elles restent alignées.
+// parEnvironnement : la valeur de .env (développement) diffère de celle de la production ; le cœur refuse de l'y envoyer telle quelle.
 const NEON = ["DATABASE_URL", "DATABASE_URL_DIRECT"];
 const R2 = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
 const VARIABLES = {
-  DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"] },
-  DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"] },
+  DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"], parEnvironnement: true },
+  DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"], parEnvironnement: true },
+  NEON_API_KEY: { secret: true, fournisseur: "Neon", prefixes: ["napi_"], besoins: ["NEON_PROJECT_ID"] },
+  NEON_PROJECT_ID: { secret: false, fournisseur: "Neon" },
   BETTER_AUTH_SECRET: { secret: true, fournisseur: "projet (valeur générée)", longueurMin: 32, genere: { octets: 32 }, versionnee: "BETTER_AUTH_SECRETS" },
   BETTER_AUTH_SECRETS: { secret: true, fournisseur: "projet (valeur générée)", genere: { octets: 32 } },
-  BETTER_AUTH_URL: { secret: false, fournisseur: "projet", prefixes: ["http://", "https://"] },
-  STRIPE_SECRET_KEY: { secret: true, fournisseur: "Stripe", prefixes: ["sk_test_", "sk_live_", "rk_test_", "rk_live_"], modes: { sk_test_: "mode test", sk_live_: "mode live", rk_test_: "clé restreinte, mode test", rk_live_: "clé restreinte, mode live" } },
-  STRIPE_WEBHOOK_SECRET: { secret: true, fournisseur: "Stripe", prefixes: ["whsec_"] },
+  BETTER_AUTH_URL: { secret: false, fournisseur: "projet", prefixes: ["http://", "https://"], parEnvironnement: true },
+  STRIPE_SECRET_KEY: { secret: true, fournisseur: "Stripe", prefixes: ["sk_test_", "sk_live_", "rk_test_", "rk_live_"], parEnvironnement: true, modes: { sk_test_: "mode test", sk_live_: "mode live", rk_test_: "clé restreinte, mode test", rk_live_: "clé restreinte, mode live" } },
+  STRIPE_WEBHOOK_SECRET: { secret: true, fournisseur: "Stripe", prefixes: ["whsec_"], parEnvironnement: true },
   SMTP_HOST: { secret: false, fournisseur: "fournisseur d'e-mail" },
   SMTP_PORT: { secret: false, fournisseur: "fournisseur d'e-mail" },
   SMTP_USER: { secret: false, fournisseur: "fournisseur d'e-mail" },

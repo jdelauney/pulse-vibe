@@ -327,3 +327,16 @@ test("architecture : une facture se paie une seule fois, même avec deux demande
   for (const attendu of ["marquerPayee(id: string, utilisateurId: string, le: Date): Promise<boolean>;", "isNull(factures.payeeLe)", ".returning({ id: factures.id })", 'return marquee ? ok(undefined) : echec("facture-deja-payee");'])
     assert.ok(t.includes(attendu), attendu);
 });
+
+test("production : base dev séparée, intégration Vercel–Neon, migrations sauvegardées, retour arrière", () => {
+  const technique = lire(REF, "technical.md");
+  for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "package-lock.json"])
+    assert.ok(technique.includes(attendu), `technical.md : ${attendu}`);
+  const deploy = lire(REF, "contexte", "deploy.md");
+  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables"])
+    assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
+  assert.ok(!deploy.includes("appliquer `npm run db:migrate` sur la base de production"), "plus de migration à la main en production");
+  const secrets = lire(REF, "contexte", "secrets.md");
+  assert.match(secrets, /^### `NEON_API_KEY`$/m);
+  assert.ok(secrets.includes("Une valeur par environnement"), "DATABASE_URL : une valeur par environnement");
+});
