@@ -56,13 +56,20 @@ const reponse = (status: number) => new Response(null, { status });
  * Les segments du chemin restent lisibles.
  */
 export function sansDonneesDAdresse(texte: string): string {
-  return texte
-    .replace(/\/\/[^\s/@]+@/g, "//")
-    .replace(/[^\s@"'(<:]+@[^\s@"')>]+\.[a-z]{2,}/gi, "[e-mail]")
-    .replace(
-      /((?:[a-z][a-z\d+.-]*:\/\/|mailto:|\/)[^\s?#]*)[?#]\S*?(?=["')\]>.,;!]*(?:\s|$))/gi,
-      "$1",
-    );
+  return (
+    texte
+      .replace(/\/\/[^\s/@]+@/g, "//")
+      // Seuls les guillemets et parenthèses de tête restent en place : une apostrophe ou deux-points
+      // dans la partie avant @ (o'brien@, jean:motdepasse@) est masquée avec le reste.
+      .replace(
+        /(mailto:)?[^\s@"'(<][^\s@")>]*@[^\s@"')>]+\.[a-z]{2,}/gi,
+        "$1[e-mail]",
+      )
+      .replace(
+        /((?:[a-z][a-z\d+.-]*:\/\/|mailto:|\/)[^\s?#]*)[?#]\S*?(?=["')\]>.,;!]*(?:\s|$))/gi,
+        "$1",
+      )
+  );
 }
 
 /** Corps de la requête, lu jusqu'à TAILLE_MAX octets ; undefined au-delà (lecture arrêtée). */
