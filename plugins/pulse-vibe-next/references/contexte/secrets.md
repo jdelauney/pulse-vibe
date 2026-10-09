@@ -40,7 +40,6 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 - **Test** : pas de test direct de la valeur. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.
 - Source : https://neon.com/docs/manage/api-keys.
 
-
 ### `BETTER_AUTH_SECRET`
 
 - **Rôle** : signe les cookies de session et chiffre les données internes de better-auth (recette `connexion`).

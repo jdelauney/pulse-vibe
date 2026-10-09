@@ -333,7 +333,7 @@ test("production : base dev séparée, intégration Vercel–Neon, migrations sa
   for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "package-lock.json"])
     assert.ok(technique.includes(attendu), `technical.md : ${attendu}`);
   const deploy = lire(REF, "contexte", "deploy.md");
-  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables"])
+  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables"])
     assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
   assert.ok(!deploy.includes("appliquer `npm run db:migrate` sur la base de production"), "plus de migration à la main en production");
   const secrets = lire(REF, "contexte", "secrets.md");

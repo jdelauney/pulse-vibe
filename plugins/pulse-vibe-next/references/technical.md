@@ -59,14 +59,14 @@ drizzle/                  migrations
 - Où sont les données : base Neon (Postgres), région Francfort (`aws-eu-central-1`).
 - Qui peut lire, créer, modifier, supprimer quoi : {{par table : la personne propriétaire (colonne utilisateurId), un rôle éventuel}}.
 - Où c'est vérifié : côté serveur, dans chaque action (`actionConnectee` puis condition `utilisateurId` dans le repository) et dans chaque lecture (`utilisateurConnecte()` puis filtre `utilisateurId`). `proxy.ts` redirige seulement, par confort.
-- Sauvegarde et restauration : Neon garde l'historique de la base ; restauration à un instant donné depuis la console Neon (Restore), à essayer une fois sur une branche de test. Avant chaque migration de production, une branche `sauvegarde-AAAAMMJJ-HHMM` est gardée 7 jours (`scripts/migrer.mjs`). Marche à suivre : section « Retour arrière » plus bas.
+- Sauvegarde et restauration : Neon garde l'historique de la base ; restauration à un instant donné depuis la console Neon (Restore), à essayer une fois sur une branche de test. Avant chaque migration de production, une branche `sauvegarde-AAAAMMJJ-HHMM` est gardée 7 jours (`scripts/migrer.mjs`, qui ne garde que les 2 plus récentes : Neon limite à 10 branches sur les offres Free et Launch). Marche à suivre : section « Retour arrière » plus bas.
 
 ## Secrets et variables d'environnement
 
 - Fichier local non versionné : `.env` (ou `.env.local`) à la racine ; modèle versionné : `.env.example`.
 - Variables : `DATABASE_URL` (adresse « pooled » de Neon, serveur), `DATABASE_URL_DIRECT` (adresse directe, migrations), puis celles des recettes (ex. `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` pour la connexion). Toutes côté serveur ; aucune ne commence par `NEXT_PUBLIC_` sauf une clé prévue pour être publique.
 - `SITE_URL` (non secrète, Production) : l'adresse officielle du site, une fois le domaine définitif.
-- Une base par environnement : `.env` porte les adresses de la branche `dev` de Neon ; Production et chaque prévisualisation reçoivent les leurs de l'intégration Vercel–Neon (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`), jamais celles de `.env`.
+- Une base par environnement : `.env` porte les adresses de la branche `dev` de Neon ; Production et chaque prévisualisation reçoivent les leurs de l'intégration Vercel–Neon (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`) ; les adresses de `.env` restent sur le poste.
 - `NEON_API_KEY` (clé d'API limitée au projet, secret) et `NEON_PROJECT_ID` (identifiant du projet Neon), en Production seulement : la sauvegarde avant chaque migration.
 - En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview, ou `pulse-aidd secrets envoyer` (Vercel CLI relié). Une variable propre à chaque environnement (adresse du site, clés Stripe) part en production depuis `.env.envoi`. L'inventaire et le journal des rotations : `docs/secrets.md` (`/pulse:secrets`).
 

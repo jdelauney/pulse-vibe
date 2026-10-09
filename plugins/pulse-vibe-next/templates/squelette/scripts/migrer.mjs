@@ -1,12 +1,16 @@
 // Migrations de la base, lancées par Vercel avant chaque construction (vercel.json : buildCommand).
 //
-//   node scripts/migrer.mjs
+//   node scripts/migrer.mjs --vercel
 //
-// - Hors Vercel : rien (en local, npm run db:migrate sur la branche dev de .env).
-// - Prévisualisation : applique les migrations sur la branche Neon de la prévisualisation
-//   (intégration Vercel–Neon : DATABASE_URL_UNPOOLED).
+// - Hors Vercel : rien (en local, npm run db:migrate sur la branche dev de .env). Le drapeau --vercel
+//   (posé par vercel.json) rend l'absence de VERCEL_ENV bloquante au lieu de passer en silence.
+// - Sur Vercel, seule DATABASE_URL_UNPOOLED (intégration Vercel–Neon) désigne la base : une adresse
+//   laissée à la main ne peut pas envoyer une prévisualisation vers la production.
+// - Prévisualisation : applique les migrations sur la branche Neon de la prévisualisation.
 // - Production : si au moins une migration reste à appliquer, crée d'abord une branche Neon de
 //   sauvegarde (expire au bout de 7 jours ; NEON_API_KEY et NEON_PROJECT_ID), puis applique.
+//   Les sauvegardes plus anciennes que les 2 dernières sont supprimées avant (Neon limite le nombre
+//   de branches : 10 sur les offres Free et Launch).
 // Un échec arrête la construction : la version en ligne reste celle d'avant.
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
@@ -14,6 +18,10 @@ import { pathToFileURL } from "node:url";
 
 const JOURNAL = "drizzle/meta/_journal.json";
 const JOURS_DE_SAUVEGARDE = 7;
+const SAUVEGARDES_GARDEES = 2;
+const API_NEON = "https://console.neon.tech/api/v2";
+const DELAI_NEON_MS = 20000;
+const REESSAIS_423 = 2;
 
 /** Migrations du dossier drizzle/ : [{ tag, when }] (vide sans migration). */
 export function lireJournal(chemin = JOURNAL) {
@@ -60,25 +68,96 @@ async function derniereAppliquee(adresse) {
   }
 }
 
-/** Branche Neon de sauvegarde, copie de la branche par défaut (production), sans calcul attaché. */
-async function creerSauvegarde({ cle, projet, nom, expiration }) {
-  const reponse = await fetch(
-    `https://console.neon.tech/api/v2/projects/${projet}/branches`,
-    {
-      method: "POST",
+/**
+ * Appel à l'API Neon : délai de 20 s, deux nouveaux essais si la ressource est verrouillée (423).
+ * Une réponse en erreur lève un message qui reprend celui de Neon.
+ * @param {{ cle: string; methode?: string; chemin: string; corps?: unknown }} requete
+ * @param {{ fetchFn?: typeof fetch; attendre?: (ms: number) => Promise<void> }} [options]
+ */
+export async function appelNeon(
+  { cle, methode = "GET", chemin, corps },
+  {
+    fetchFn = fetch,
+    attendre = (ms) => new Promise((fin) => setTimeout(fin, ms)),
+  } = {},
+) {
+  for (let essai = 0; ; essai++) {
+    const reponse = await fetchFn(`${API_NEON}${chemin}`, {
+      method: methode,
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${cle}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ branch: { name: nom, expires_at: expiration } }),
+      body: corps ? JSON.stringify(corps) : undefined,
+      signal: AbortSignal.timeout(DELAI_NEON_MS),
+    });
+    if (reponse.status === 423 && essai < REESSAIS_423) {
+      await attendre(1000 * (essai + 1));
+      continue;
+    }
+    if (!reponse.ok) {
+      const texte = await reponse.text().catch(() => "");
+      let message = texte;
+      try {
+        message = JSON.parse(texte).message ?? texte;
+      } catch {
+        // Corps qui n'est pas du JSON : on garde le texte brut.
+      }
+      const limite = /limit/i.test(message)
+        ? " — limite de branches atteinte : supprimez d'anciennes branches sauvegarde-… dans la console Neon"
+        : "";
+      throw new Error(
+        `l'API Neon répond ${reponse.status}${message ? ` (${message})` : ""}${limite}`,
+      );
+    }
+    return reponse.status === 204 ? {} : await reponse.json().catch(() => ({}));
+  }
+}
+
+/** Supprime les branches sauvegarde-… au-delà des plus récentes (limite de branches de Neon). */
+export async function nettoyerSauvegardes({ cle, projet }, options) {
+  const liste = await appelNeon(
+    {
+      cle,
+      chemin: `/projects/${projet}/branches?search=sauvegarde-&sort_by=created_at&sort_order=desc&limit=100`,
     },
+    options,
   );
-  if (!reponse.ok) {
-    throw new Error(
-      `l'API Neon répond ${reponse.status} ${reponse.statusText}`,
+  const anciennes = (liste.branches ?? [])
+    .filter(
+      (b) => b.name?.startsWith("sauvegarde-") && !b.default && !b.protected,
+    )
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+    .slice(SAUVEGARDES_GARDEES);
+  for (const b of anciennes) {
+    await appelNeon(
+      {
+        cle,
+        methode: "DELETE",
+        chemin: `/projects/${projet}/branches/${b.id}`,
+      },
+      options,
     );
   }
+  return anciennes.map((b) => b.name);
+}
+
+/** Branche Neon de sauvegarde, copie de la branche par défaut (production), sans calcul attaché. */
+export async function creerSauvegarde(
+  { cle, projet, nom, expiration },
+  options,
+) {
+  await nettoyerSauvegardes({ cle, projet }, options);
+  await appelNeon(
+    {
+      cle,
+      methode: "POST",
+      chemin: `/projects/${projet}/branches`,
+      corps: { branch: { name: nom, expires_at: expiration } },
+    },
+    options,
+  );
 }
 
 function appliquer(adresse) {
@@ -100,6 +179,7 @@ function appliquer(adresse) {
  *   sauvegarder?: (sauvegarde: { cle: string; projet: string; nom: string; expiration: string }) => Promise<void>;
  *   appliquerMigrations?: (adresse: string) => void;
  *   dire?: (message: string) => void;
+ *   vercel?: boolean;
  * }} [options]
  */
 export async function migrer({
@@ -110,8 +190,14 @@ export async function migrer({
   sauvegarder = creerSauvegarde,
   appliquerMigrations = appliquer,
   dire = console.log,
+  vercel = process.argv.includes("--vercel"),
 } = {}) {
-  if (env.VERCEL !== "1") {
+  if (vercel && !env.VERCEL_ENV) {
+    throw new Error(
+      "VERCEL_ENV manque : activez l'accès aux variables système de Vercel (Settings → Environment Variables → Automatically expose System Environment Variables)",
+    );
+  }
+  if (!vercel && env.VERCEL !== "1") {
     dire(
       "Hors Vercel : migrations non lancées (en local : npm run db:migrate).",
     );
@@ -121,10 +207,12 @@ export async function migrer({
     dire("Aucune migration dans drizzle/ : rien à appliquer.");
     return "rien";
   }
-  const adresse = env.DATABASE_URL_UNPOOLED ?? env.DATABASE_URL_DIRECT;
+  const adresse = env.DATABASE_URL_UNPOOLED;
   if (!adresse) {
     throw new Error(
-      "DATABASE_URL_UNPOOLED manque : reliez Neon au projet Vercel (intégration Vercel–Neon, docs/technical.md)",
+      env.VERCEL_ENV === "production"
+        ? "la base de production manque (DATABASE_URL_UNPOOLED) : reliez Neon à Vercel (intégration Vercel–Neon, docs/technical.md) puis redéployez"
+        : "la base de prévisualisation manque (DATABASE_URL_UNPOOLED) : reliez Neon à Vercel (intégration Vercel–Neon, docs/technical.md) puis redéployez",
     );
   }
   const enAttente = migrationsEnAttente(journal, await lireDerniere(adresse));

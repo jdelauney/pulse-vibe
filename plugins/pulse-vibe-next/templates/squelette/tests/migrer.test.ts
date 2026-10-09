@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  appelNeon,
+  creerSauvegarde,
   migrationsEnAttente,
   migrer,
   sauvegardePour,
@@ -102,5 +104,163 @@ describe("Migrations avant construction", () => {
     d.sauvegarder.mockRejectedValueOnce(new Error("l'API Neon répond 401"));
     await expect(migrer(d)).rejects.toThrow(/401/);
     expect(d.appliquerMigrations).not.toHaveBeenCalled();
+  });
+
+  it("prévisualisation avec la seule adresse directe : refus, rien n'est lancé", async () => {
+    const d = dependances(
+      {
+        VERCEL: "1",
+        VERCEL_ENV: "preview",
+        DATABASE_URL_DIRECT: "postgresql://production",
+      },
+      "1000",
+    );
+    await expect(migrer(d)).rejects.toThrow(/base de prévisualisation manque/);
+    expect(d.lireDerniere).not.toHaveBeenCalled();
+    expect(d.appliquerMigrations).not.toHaveBeenCalled();
+  });
+
+  it("production avec la seule adresse directe : refus", async () => {
+    const { DATABASE_URL_UNPOOLED: _adresse, ...reste } = PRODUCTION;
+    const d = dependances(
+      { ...reste, DATABASE_URL_DIRECT: "postgresql://x" },
+      "1000",
+    );
+    await expect(migrer(d)).rejects.toThrow(/base de production manque/);
+    expect(d.appliquerMigrations).not.toHaveBeenCalled();
+  });
+
+  it("DATABASE_URL_UNPOOLED est préférée à l'adresse directe", async () => {
+    const d = dependances(
+      { ...PRODUCTION, DATABASE_URL_DIRECT: "postgresql://autre" },
+      "2000",
+    );
+    await migrer(d);
+    expect(d.lireDerniere).toHaveBeenCalledWith("postgresql://production");
+  });
+
+  it("--vercel sans VERCEL_ENV : arrêt avec consigne ; sans le drapeau : rien", async () => {
+    const d = { ...dependances({ VERCEL: "1" }, null), vercel: true };
+    await expect(migrer(d)).rejects.toThrow(/variables système de Vercel/);
+    const local = { ...dependances({}, null), vercel: false };
+    expect(await migrer(local)).toBe("hors-vercel");
+  });
+});
+
+function reponse(status: number, corps: unknown) {
+  return new Response(JSON.stringify(corps), { status });
+}
+
+describe("API Neon", () => {
+  const sansAttente = { attendre: async () => {} };
+
+  it("création : adresse, méthode, en-têtes et corps", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(reponse(200, { branches: [] }))
+      .mockResolvedValueOnce(reponse(201, {}));
+    await creerSauvegarde(
+      {
+        cle: "k",
+        projet: "p",
+        nom: "sauvegarde-20261008-1405",
+        expiration: "2026-10-15T14:05:30Z",
+      },
+      { fetchFn, ...sansAttente },
+    );
+    const [url, init] = fetchFn.mock.calls[1];
+    expect(url).toBe("https://console.neon.tech/api/v2/projects/p/branches");
+    expect(init.method).toBe("POST");
+    expect(init.headers.Authorization).toBe("Bearer k");
+    expect(JSON.parse(init.body)).toEqual({
+      branch: {
+        name: "sauvegarde-20261008-1405",
+        expires_at: "2026-10-15T14:05:30Z",
+      },
+    });
+  });
+
+  it("nettoyage : garde les 2 sauvegardes les plus récentes, jamais la branche par défaut", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(
+        reponse(200, {
+          branches: [
+            {
+              id: "br-1",
+              name: "sauvegarde-a",
+              created_at: "2026-10-01T00:00:00Z",
+            },
+            {
+              id: "br-3",
+              name: "sauvegarde-c",
+              created_at: "2026-10-03T00:00:00Z",
+            },
+            {
+              id: "br-2",
+              name: "sauvegarde-b",
+              created_at: "2026-10-02T00:00:00Z",
+            },
+            {
+              id: "br-0",
+              name: "sauvegarde-principale",
+              default: true,
+              created_at: "2026-09-01T00:00:00Z",
+            },
+          ],
+        }),
+      )
+      .mockResolvedValue(reponse(200, {}));
+    await creerSauvegarde(
+      {
+        cle: "k",
+        projet: "p",
+        nom: "sauvegarde-n",
+        expiration: "2026-10-15T00:00:00Z",
+      },
+      { fetchFn, ...sansAttente },
+    );
+    const suppressions = fetchFn.mock.calls.filter(
+      ([, init]) => init.method === "DELETE",
+    );
+    expect(suppressions.map(([url]) => url)).toEqual([
+      "https://console.neon.tech/api/v2/projects/p/branches/br-1",
+    ]);
+  });
+
+  it("erreur 4xx : le message de Neon est repris, avec la consigne si la limite est atteinte", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValue(reponse(422, { message: "branches limit exceeded" }));
+    await expect(
+      appelNeon(
+        { cle: "k", chemin: "/projects/p/branches", methode: "POST" },
+        { fetchFn, ...sansAttente },
+      ),
+    ).rejects.toThrow(
+      /422 \(branches limit exceeded\).*limite de branches atteinte/,
+    );
+  });
+
+  it("423 : deux nouveaux essais, puis réussite", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(reponse(423, { message: "locked" }))
+      .mockResolvedValueOnce(reponse(423, { message: "locked" }))
+      .mockResolvedValueOnce(reponse(200, { ok: true }));
+    expect(
+      await appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, ...sansAttente }),
+    ).toEqual({ ok: true });
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+  });
+
+  it("423 persistant : échec après trois appels", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockImplementation(async () => reponse(423, { message: "locked" }));
+    await expect(
+      appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, ...sansAttente }),
+    ).rejects.toThrow(/423/);
+    expect(fetchFn).toHaveBeenCalledTimes(3);
   });
 });
