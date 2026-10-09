@@ -85,6 +85,15 @@ describe("Migrations avant construction", () => {
     );
   });
 
+  it("production, expiration refusée par Neon : le journal n'annonce pas de date", async () => {
+    const d = dependances(PRODUCTION, "1000");
+    d.sauvegarder.mockResolvedValueOnce({ expiration: null });
+    expect(await migrer(d)).toBe("applique");
+    const messages = d.dire.mock.calls.map(([m]) => String(m)).join(" ");
+    expect(messages).toMatch(/sans date d'expiration.*2 plus récentes/);
+    expect(messages).not.toMatch(/gardée jusqu'au/);
+  });
+
   it("production sans clé Neon : la migration attend et la construction s'arrête", async () => {
     const { NEON_API_KEY: _cle, ...sansCle } = PRODUCTION;
     const d = dependances(sansCle, "1000");
@@ -211,7 +220,7 @@ describe("API Neon", () => {
       )
       .mockResolvedValueOnce(reponse(201, {}));
     const dire = vi.fn();
-    await creerSauvegarde(
+    const posee = await creerSauvegarde(
       {
         cle: "k",
         projet: "p",
@@ -221,6 +230,7 @@ describe("API Neon", () => {
       { fetchFn, ...sansAttente },
       dire,
     );
+    expect(posee).toEqual({ expiration: null });
     expect(fetchFn).toHaveBeenCalledTimes(3);
     expect(JSON.parse(fetchFn.mock.calls[2][1].body)).toEqual({
       branch: { name: "sauvegarde-20261008-1405" },
