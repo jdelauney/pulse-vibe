@@ -13,6 +13,6 @@
 ## Vérifier
 
 1. `npm run build`, puis `npm run start`.
-2. `curl -sI http://localhost:3000` : les sept en-têtes apparaissent.
+2. `pulse-aidd sonder http://localhost:3000 --entetes` : les sept en-têtes apparaissent.
 3. `npm run test:e2e` : `e2e/securite.spec.ts` vérifie les en-têtes servis et l'absence de violation de la CSP.
-4. Après la mise en ligne : `curl -sI <adresse du site>` montre une seule ligne `strict-transport-security`, puis https://securityheaders.com.
+4. Après la mise en ligne : `pulse-aidd sonder <adresse du site> --entetes` montre une seule ligne `strict-transport-security`, puis https://securityheaders.com.

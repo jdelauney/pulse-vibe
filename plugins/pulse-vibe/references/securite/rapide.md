@@ -35,7 +35,7 @@ Chaque contrôle donne un statut : ✅ bon · ⚠️ à améliorer · ⛔ à cor
 
 - Trouver où la pile retenue configure les en-têtes (configuration du serveur, de l'hébergeur ou du framework, selon sa documentation et « Hébergement et mise en ligne »).
 - Attendus : `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options` (ou `frame-ancestors` dans la CSP), `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`. ⚠️ par en-tête manquant → proposer `/pulse:security entetes`.
-- Si le site est en ligne : `curl -sI <adresse>` confirme ce qui est réellement envoyé.
+- Si le site est en ligne : `pulse-aidd sonder <adresse> --entetes` confirme ce qui est réellement envoyé.
 
 ## 6. Connexion et droits
 

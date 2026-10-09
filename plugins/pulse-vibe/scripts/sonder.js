@@ -1,22 +1,26 @@
 #!/usr/bin/env node
-// Pulse – sonde de mise en ligne (`pulse-aidd sonder`, /pulse:deploy et /pulse:tech).
+// Pulse – sonde de mise en ligne (`pulse-aidd sonder`, /pulse:deploy, /pulse:tech et /pulse:security).
 //
 //   pulse-aidd sonder <adresse> [--texte "<texte attendu>"] [--essais 5] [--delai 6000]
+//   pulse-aidd sonder <adresse> --entetes
 //
 // Vérifie qu'un site en ligne répond : code 200, et le texte attendu dans la page s'il est donné.
 // Plusieurs essais espacés, car un hébergeur met parfois quelques secondes à publier.
 // Sort avec le code 0 si le site répond comme prévu, 1 sinon (avec la cause, en français).
+// --entetes : une requête HEAD, sans suivre de redirection ; affiche le code et les en-têtes servis,
+// un par ligne, doublons compris (deux lignes strict-transport-security restent deux lignes).
 "use strict";
 
-const USAGE = 'Usage : pulse-aidd sonder <adresse> [--texte "<texte attendu>"] [--essais 5] [--delai 6000]';
+const USAGE = 'Usage : pulse-aidd sonder <adresse> [--texte "<texte attendu>"] [--essais 5] [--delai 6000] [--entetes]';
 
 function lireArguments(argv) {
-  const opts = { adresse: null, texte: null, essais: 5, delai: 6000 };
+  const opts = { adresse: null, texte: null, essais: 5, delai: 6000, entetes: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--texte") opts.texte = argv[++i];
     else if (a === "--essais") opts.essais = Number(argv[++i]);
     else if (a === "--delai") opts.delai = Number(argv[++i]);
+    else if (a === "--entetes") opts.entetes = true;
     else if (!a.startsWith("--") && opts.adresse === null) opts.adresse = a;
   }
   return opts;
@@ -53,11 +57,39 @@ async function essayer(adresse, texte) {
   return null;
 }
 
+/** En-têtes servis, tels qu'envoyés (un par ligne, doublons compris), par une requête HEAD sans redirection. */
+function lireEntetes(adresse) {
+  const client = adresse.startsWith("https:") ? require("https") : require("http");
+  return new Promise((resoudre, rejeter) => {
+    const req = client.request(adresse, { method: "HEAD", timeout: 15000 }, (res) => {
+      const lignes = [];
+      for (let i = 0; i < res.rawHeaders.length; i += 2) lignes.push(`${res.rawHeaders[i].toLowerCase()}: ${res.rawHeaders[i + 1]}`);
+      res.resume();
+      resoudre({ statut: res.statusCode, lignes });
+    });
+    req.on("timeout", () => req.destroy(Object.assign(new Error("délai dépassé"), { code: "TimeoutError" })));
+    req.on("error", rejeter);
+    req.end();
+  });
+}
+
 async function principal() {
   const opts = lireArguments(process.argv.slice(2));
   if (!opts.adresse || !/^https?:\/\/\S+$/.test(opts.adresse)) {
     console.error(USAGE);
     process.exit(1);
+  }
+  if (opts.entetes) {
+    try {
+      const { statut, lignes } = await lireEntetes(opts.adresse);
+      console.log(`HTTP ${statut} – ${opts.adresse}`);
+      for (const l of lignes) console.log(l);
+    } catch (e) {
+      const code = (e && (e.code || e.name)) || "erreur";
+      console.error(`❌ ${opts.adresse} : le site ne répond pas : ${CAUSES[code] || "erreur réseau"} (${code}).`);
+      process.exit(1);
+    }
+    return;
   }
   const essais = Number.isInteger(opts.essais) && opts.essais > 0 ? opts.essais : 5;
   let cause = null;
