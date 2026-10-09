@@ -1,6 +1,8 @@
 "use client";
 
 import "./globals.css";
+import { signalerErreurClient } from "@src/lib/errors/signaler-erreur-client";
+import { useEffect } from "react";
 
 // Remplace la mise en page racine quand celle-ci rencontre une erreur : elle porte donc ses propres <html> et <body>.
 // La référence (digest) permet de retrouver la bonne ligne du journal du serveur.
@@ -11,6 +13,9 @@ export default function ErreurGlobale({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  useEffect(() => {
+    signalerErreurClient(error);
+  }, [error]);
   return (
     <html lang="fr">
       <body className="flex min-h-screen flex-col items-start justify-center gap-4 px-6">
