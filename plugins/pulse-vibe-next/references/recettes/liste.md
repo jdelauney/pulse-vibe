@@ -527,6 +527,7 @@ import { MESSAGES_FACTURE } from "../constants/erreur-messages";
 import { creerFactureSchema } from "../schemas/facture.schema";
 
 export const creerFactureAction = actionConnectee
+  .metadata({ nom: "creerFacture" })
   .inputSchema(creerFactureSchema)
   .action(async ({ parsedInput, ctx }) => {
     const resultat = await creerFacture(

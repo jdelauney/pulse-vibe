@@ -574,21 +574,23 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { OFFRE } from "../constants/offre";
 
-export const payerAction = actionConnectee.action(async ({ ctx }) => {
-  // Adresse du site qui appelle l'action (Next.js vérifie qu'elle est bien la sienne),
-  // sinon l'adresse publique déclarée pour better-auth.
-  const origine = (await headers()).get("origin") ?? env.BETTER_AUTH_URL;
-  const { url } = await ouvrirPaiement(
-    { commandes: commandeRepository(getDb()), paiement: passerellePaiement },
-    {
-      utilisateurId: ctx.utilisateur.id,
-      offre: OFFRE,
-      urlSucces: `${origine}/paiement/merci?session_id={SESSION_ID}`,
-      urlAnnulation: `${origine}/paiement?annule=1`,
-    },
-  );
-  redirect(url);
-});
+export const payerAction = actionConnectee
+  .metadata({ nom: "payer" })
+  .action(async ({ ctx }) => {
+    // Adresse du site qui appelle l'action (Next.js vérifie qu'elle est bien la sienne),
+    // sinon l'adresse publique déclarée pour better-auth.
+    const origine = (await headers()).get("origin") ?? env.BETTER_AUTH_URL;
+    const { url } = await ouvrirPaiement(
+      { commandes: commandeRepository(getDb()), paiement: passerellePaiement },
+      {
+        utilisateurId: ctx.utilisateur.id,
+        offre: OFFRE,
+        urlSucces: `${origine}/paiement/merci?session_id={SESSION_ID}`,
+        urlAnnulation: `${origine}/paiement?annule=1`,
+      },
+    );
+    redirect(url);
+  });
 ```
 
 ### 8. Le webhook

@@ -337,6 +337,7 @@ import { exigerLimite } from "@src/lib/limite";
 ```ts
 // src/features/compte/actions/inscrire.action.ts
 export const inscrire = actionPublique
+  .metadata({ nom: "inscrire" })
   .inputSchema(schemaInscription)
   .action(async ({ parsedInput }) => {
     await exigerLimite("inscription");
@@ -346,6 +347,7 @@ export const inscrire = actionPublique
 ```ts
 // src/features/compte/actions/connecter.action.ts
 export const connecter = actionPublique
+  .metadata({ nom: "connecter" })
   .inputSchema(schemaConnexion)
   .action(async ({ parsedInput }) => {
     await exigerLimite("connexion");

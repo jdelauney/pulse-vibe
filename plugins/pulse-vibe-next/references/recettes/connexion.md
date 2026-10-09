@@ -303,15 +303,43 @@ export async function POST(request: Request) {
 import "server-only";
 import { enTetesDeSession, getAuth } from "@src/adapters/auth/auth.adapter";
 import { logger } from "@src/lib/logger";
+import { headers } from "next/headers";
 import { createSafeActionClient, returnServerError } from "next-safe-action";
+import { z } from "zod";
 
+export const MESSAGE_ERREUR_ACTION =
+  "Une erreur est survenue. Réessayez dans un instant.";
+
+// Chaque action porte un nom : actionPublique.metadata({ nom: "envoyerMessage" }). Sans lui,
+// la vérification des types (npm run typecheck) signale l'action.
 // Une erreur attendue se renvoie avec returnServerError("message") ; une erreur imprévue
-// est journalisée et remplacée par un message générique.
+// est journalisée avec le nom de l'action et remplacée par un message générique.
 export const actionPublique = createSafeActionClient({
-  handleServerError(erreur) {
-    logger.error({ err: erreur }, "Erreur dans une action serveur");
-    return "Une erreur est survenue. Réessayez dans un instant.";
+  defineMetadataSchema() {
+    return z.object({ nom: z.string().min(1) });
   },
+  handleServerError(erreur, { metadata }) {
+    logger.error(
+      { err: erreur, action: metadata?.nom },
+      "Erreur dans une action serveur",
+    );
+    return MESSAGE_ERREUR_ACTION;
+  },
+}).use(async ({ next, metadata }) => {
+  // x-vercel-id : l'identifiant de la requête, le même que dans les journaux de Vercel.
+  const requete = (await headers()).get("x-vercel-id") ?? undefined;
+  const debut = performance.now();
+  const resultat = await next();
+  logger.info(
+    {
+      action: metadata.nom,
+      requete,
+      duree: Math.round(performance.now() - debut),
+      reussite: resultat.success,
+    },
+    "Action terminée",
+  );
+  return resultat;
 });
 
 /** Action réservée aux personnes connectées : fournit ctx.utilisateur = { id, nom }. */
@@ -420,6 +448,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaInscription } from "../schemas/compte.schema";
 
 export const inscrire = actionPublique
+  .metadata({ nom: "inscrire" })
   .inputSchema(schemaInscription)
   .action(async ({ parsedInput }) => {
     try {
@@ -460,6 +489,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaConnexion } from "../schemas/compte.schema";
 
 export const connecter = actionPublique
+  .metadata({ nom: "connecter" })
   .inputSchema(schemaConnexion)
   .action(async ({ parsedInput }) => {
     try {
@@ -490,6 +520,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaChangementMotDePasse } from "../schemas/compte.schema";
 
 export const changerMotDePasse = actionConnectee
+  .metadata({ nom: "changerMotDePasse" })
   .inputSchema(schemaChangementMotDePasse)
   .action(async ({ parsedInput }) => {
     try {
@@ -524,10 +555,12 @@ import { actionConnectee } from "@src/lib/safe-action";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export const deconnecter = actionConnectee.action(async () => {
-  await getAuth().api.signOut({ headers: await headers() });
-  redirect("/connexion");
-});
+export const deconnecter = actionConnectee
+  .metadata({ nom: "deconnecter" })
+  .action(async () => {
+    await getAuth().api.signOut({ headers: await headers() });
+    redirect("/connexion");
+  });
 ```
 
 Codes vérifiés avec better-auth 1.7.7 : adresse déjà prise → `USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL` (422) ; mauvais mot de passe à la connexion → `UNAUTHORIZED` / `INVALID_EMAIL_OR_PASSWORD` ; mauvais mot de passe actuel → `INVALID_PASSWORD` (400). `revokeOtherSessions: true` déconnecte les autres appareils et remplace la session en cours par une nouvelle.

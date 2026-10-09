@@ -461,6 +461,7 @@ import { schemaInscription } from "../schemas/compte.schema";
 
 // Même réponse que l'adresse soit libre ou déjà prise : personne ne peut tester les comptes.
 export const inscrire = actionPublique
+  .metadata({ nom: "inscrire" })
   .inputSchema(schemaInscription)
   .action(async ({ parsedInput }) => {
     await getAuth().api.signUpEmail({
@@ -492,6 +493,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaConnexion } from "../schemas/compte.schema";
 
 export const connecter = actionPublique
+  .metadata({ nom: "connecter" })
   .inputSchema(schemaConnexion)
   .action(async ({ parsedInput }) => {
     try {
@@ -532,6 +534,7 @@ import { schemaMotDePasseOublie } from "../schemas/compte.schema";
 
 // Même réponse que l'adresse existe ou non : personne ne peut tester les comptes.
 export const demanderNouveauMotDePasse = actionPublique
+  .metadata({ nom: "demanderNouveauMotDePasse" })
   .inputSchema(schemaMotDePasseOublie)
   .action(async ({ parsedInput }) => {
     await getAuth().api.requestPasswordReset({
@@ -557,6 +560,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaChoixMotDePasse } from "../schemas/compte.schema";
 
 export const choisirNouveauMotDePasse = actionPublique
+  .metadata({ nom: "choisirNouveauMotDePasse" })
   .inputSchema(schemaChoixMotDePasse)
   .action(async ({ parsedInput }) => {
     try {

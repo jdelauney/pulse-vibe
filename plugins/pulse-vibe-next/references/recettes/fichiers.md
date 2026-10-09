@@ -669,6 +669,7 @@ import { demandeEnvoiSchema } from "../schemas/fichier.schema";
 
 // 1. Le serveur contrôle le type et la taille (schéma), réserve une ligne, puis signe une adresse d'envoi courte.
 export const preparerEnvoiAction = actionConnectee
+  .metadata({ nom: "preparerEnvoi" })
   .inputSchema(demandeEnvoiSchema)
   .action(async ({ parsedInput, ctx }) =>
     preparerEnvoi(
@@ -695,6 +696,7 @@ import { idFichierSchema } from "../schemas/fichier.schema";
 
 // 2. Après l'envoi par le navigateur : le serveur vérifie ce que R2 a vraiment reçu.
 export const confirmerEnvoiAction = actionConnectee
+  .metadata({ nom: "confirmerEnvoi" })
   .inputSchema(idFichierSchema)
   .action(async ({ parsedInput, ctx }) => {
     const resultat = await confirmerEnvoi(
@@ -723,6 +725,7 @@ import { MESSAGES_FICHIER } from "../constants/erreur-messages";
 import { idFichierSchema } from "../schemas/fichier.schema";
 
 export const supprimerFichierAction = actionConnectee
+  .metadata({ nom: "supprimerFichier" })
   .inputSchema(idFichierSchema)
   .action(async ({ parsedInput, ctx }) => {
     const resultat = await supprimerFichier(

@@ -277,6 +277,7 @@ import { z } from "zod";
 import { MESSAGES_FACTURE } from "../constants/erreur-messages";
 
 export const payerFactureAction = actionConnectee
+  .metadata({ nom: "payerFacture" })
   .inputSchema(z.object({ id: z.uuid() }))
   .action(async ({ parsedInput, ctx }) => {
     const resultat = await payerFacture(

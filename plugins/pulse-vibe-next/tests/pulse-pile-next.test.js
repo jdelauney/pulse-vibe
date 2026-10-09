@@ -305,3 +305,19 @@ test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
   const t = lire(REF, "theme.md");
   for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--"]) assert.ok(t.includes(attendu), attendu);
 });
+
+test("chaque action des recettes et de l'architecture porte un nom (.metadata), journalisé par safe-action", () => {
+  const sansNom = [];
+  const fichiers = [...fs.readdirSync(path.join(REF, "recettes")).map((n) => path.join(REF, "recettes", n)), path.join(REF, "architecture.md")];
+  for (const f of fichiers) {
+    const lignes = lire(f).split("\n");
+    lignes.forEach((ligne, i) => {
+      // Une action commence par « export const x = <client> » ; la ligne suivante la nomme.
+      const m = /^export const (\w+) = (?:actionPublique|actionConnectee|actionFormulairePublic\([^)]*\))(\.action\(.*)?$/.exec(ligne);
+      if (m && (m[2] || !/^ {2}\.metadata\(\{ nom: "[^"]+" \}\)$/.test(lignes[i + 1] || ""))) sansNom.push(`${path.basename(f)} : ${m[1]}`);
+    });
+  }
+  assert.deepStrictEqual(sansNom, []);
+  const safeAction = lire(REF, "recettes", "connexion.md").split("// src/lib/safe-action.ts")[1].split("```")[0];
+  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+});

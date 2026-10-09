@@ -604,6 +604,7 @@ import { returnServerError } from "next-safe-action";
 import { schemaMessage } from "../schemas/contact.schema";
 
 export const envoyerMessage = actionPublique
+  .metadata({ nom: "envoyerMessage" })
   .inputSchema(schemaMessage)
   .action(async ({ parsedInput }) => {
     // next/root-params est indisponible dans une action : la langue arrive avec les valeurs.
