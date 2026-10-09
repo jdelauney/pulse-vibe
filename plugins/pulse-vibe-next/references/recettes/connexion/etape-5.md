@@ -13,6 +13,13 @@ import { z } from "zod";
 export const MESSAGE_ERREUR_ACTION =
   "Une erreur est survenue. Réessayez dans un instant.";
 
+/** Identifiant de requête posé dans le contexte par le .use() ci-dessous (absent si l'erreur le précède). */
+function requeteDu(ctx: object): string | undefined {
+  return "requete" in ctx && typeof ctx.requete === "string"
+    ? ctx.requete
+    : undefined;
+}
+
 // Chaque action porte un nom : actionPublique.metadata({ nom: "envoyerMessage" }). Sans lui,
 // la vérification des types (npm run typecheck) signale l'action.
 // Une erreur attendue se renvoie avec returnServerError("message") ; une erreur imprévue
@@ -21,9 +28,9 @@ export const actionPublique = createSafeActionClient({
   defineMetadataSchema() {
     return z.object({ nom: z.string().min(1) });
   },
-  handleServerError(erreur, { metadata }) {
+  handleServerError(erreur, { metadata, ctx }) {
     logger.error(
-      { err: erreur, action: metadata?.nom },
+      { err: erreur, action: metadata?.nom, requete: requeteDu(ctx) },
       "Erreur dans une action serveur",
     );
     return MESSAGE_ERREUR_ACTION;
@@ -32,7 +39,7 @@ export const actionPublique = createSafeActionClient({
   // x-vercel-id : l'identifiant de la requête, le même que dans les journaux de Vercel.
   const requete = (await headers()).get("x-vercel-id") ?? undefined;
   const debut = performance.now();
-  const resultat = await next();
+  const resultat = await next({ ctx: { requete } });
   logger.info(
     {
       action: metadata.nom,

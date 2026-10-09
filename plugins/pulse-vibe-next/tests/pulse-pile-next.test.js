@@ -356,7 +356,12 @@ test("chaque action des recettes et de l'architecture porte un nom (.metadata), 
   }
   assert.deepStrictEqual(sansNom, []);
   const safeAction = texteRecette("connexion").split("// src/lib/safe-action.ts")[1].split("```")[0];
-  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata, ctx })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+  // Le client public de la recette est celui du squelette, à l'identique : un seul modèle à tenir.
+  const squelette = lire(RACINE, "templates", "squelette", "src", "lib", "safe-action.ts");
+  const clientPublic = (t) => t.slice(t.indexOf("export const MESSAGE_ERREUR_ACTION"), t.indexOf("\n});\n", t.indexOf("export const actionPublique")) + 5);
+  const commentaires = (t) => t.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  assert.strictEqual(commentaires(clientPublic(safeAction)), commentaires(clientPublic(squelette)), "connexion etape-5 : actionPublique identique au squelette");
 });
 
 test("architecture : une facture se paie une seule fois, même avec deux demandes simultanées", () => {
