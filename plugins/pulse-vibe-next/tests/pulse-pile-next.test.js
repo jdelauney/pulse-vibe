@@ -272,26 +272,33 @@ test("contexte ui du pack : les composants réalisent les motifs tels quels", ()
     assert.ok(t.includes(attendu), attendu);
 });
 
-// Contraste de deux gris OKLCH (chroma 0 : luminance = L³), avec mélange en sRGB pour une opacité.
-const versS = (y) => (y <= 0.0031308 ? 12.92 * y : 1.055 * y ** (1 / 2.4) - 0.055);
-const versY = (s) => (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4);
-const melange = (l, alpha, fond) => versY(alpha * versS(l ** 3) + (1 - alpha) * versS(fond ** 3));
-const rapport = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+// Contrastes mesurés par l'outil du cœur (pulse-aidd contraste), transparence comprise.
+const { lireCouleur, poser, rapport } = require(path.join(RACINE, "..", "pulse-vibe", "scripts", "contraste.js"));
 
 test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair et en sombre", () => {
   const css = lire(RACINE, "templates", "squelette", "app", "globals.css");
   for (const bloc of [":root {", ".dark {"]) {
     const corps = css.slice(css.indexOf(bloc)).split("}")[0];
-    const L = (nom) => {
-      const m = corps.match(new RegExp(`--${nom}: oklch\\(([\\d.]+) 0 0\\);`));
-      assert.ok(m, `${bloc} --${nom} : gris OKLCH opaque`);
-      return Number(m[1]);
+    const valeur = (nom, opacite) => {
+      const m = corps.match(new RegExp(`--${nom}: oklch\\(([^)/]+)\\);`));
+      assert.ok(m, `${bloc} --${nom} : couleur OKLCH opaque`);
+      return lireCouleur(`oklch(${m[1]}${opacite === undefined ? "" : ` / ${opacite}`})`);
     };
-    const fond = L("background");
-    assert.ok(rapport(L("input") ** 3, fond ** 3) >= 3, `${bloc} --input`);
-    for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(melange(L(ring), 0.5, fond), fond ** 3) >= 3, `${bloc} halo ${ring}/50`);
-    if (bloc === ".dark {") assert.ok(rapport(L("foreground") ** 3, melange(L("input"), 0.3, fond)) >= 4.5, "texte sur bg-input/30");
+    const fond = valeur("background");
+    assert.ok(rapport(valeur("input"), fond) >= 3, `${bloc} --input`);
+    for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(valeur(ring, 0.5), fond) >= 3, `${bloc} halo ${ring}/50`);
+    if (bloc === ".dark {") assert.ok(rapport(valeur("foreground"), poser(valeur("input", 0.3), fond)) >= 4.5, "texte sur bg-input/30");
   }
+});
+
+test("le cœur et le pack mesurent les contrastes avec pulse-aidd contraste", () => {
+  const coeur = path.join(RACINE, "..", "pulse-vibe");
+  for (const f of [["references", "design", "regles-ui.md"], ["agents", "designer.md"], ["agents", "ui-critic.md"], ["skills", "ui", "SKILL.md"]]) {
+    const t = lire(coeur, ...f);
+    assert.ok(t.includes("pulse-aidd contraste"), f.join("/"));
+    assert.doesNotMatch(t, /calculer précisément|\(calculer\)|le calculer quand/, f.join("/"));
+  }
+  assert.ok(lire(REF, "theme.md").includes("pulse-aidd contraste"), "theme.md");
 });
 
 test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {

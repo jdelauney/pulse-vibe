@@ -44,7 +44,7 @@ Dans les deux modes, si `docs/technical.md` déclare un pack de pile (ligne « *
    - **Usage** : les 10 heuristiques de `design/heuristiques.md` ; citer le numéro et le nom de l'heuristique (« H3 Contrôle et liberté »).
    - **Anti-pattern** : parcourir chaque entrée de la liste de `design/anti-patterns.md`, puis les motifs de `design/motifs.md` : un écart à un motif se signale avec le motif attendu.
    - **État manquant** : comparer avec le tableau « Composants et états obligatoires » de `design/regles-ui.md`.
-   - **Accessibilité** : contraste (le calculer quand les couleurs sont lisibles dans le code), focus visible, étiquettes des champs, noms accessibles des boutons et icônes, cibles tactiles.
+   - **Accessibilité** : contraste (mesuré avec `pulse-aidd contraste <couleur> <fond>` quand les couleurs sont lisibles dans le code), focus visible, étiquettes des champs, noms accessibles des boutons et icônes, cibles tactiles.
    - **Textes** : textes d'interface (clarté, ton, messages d'erreur, boutons). Si `docs/textes/*.md` existent, lancer `pulse-aidd textes verifier` sur chacun et reporter les erreurs restantes.
 6. Classer chaque constat : 🔴 bloquant, 🟠 important, 🟢 finition.
 7. Relever 3 points qui vont bien (« Ce qui va bien »).
