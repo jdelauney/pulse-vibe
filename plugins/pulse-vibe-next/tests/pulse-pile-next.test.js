@@ -214,7 +214,7 @@ test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue �
   assert.ok(texte.includes('"connect-src": ['), "bloc connect-src");
   // Sans forcePathStyle, le SDK signe une adresse <bucket>.<compte>.eu.r2… : la CSP vise cet hôte exact.
   assert.ok(texte.includes("`https://${process.env.R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`"), "hôte R2 avec le bucket dans la CSP");
-  assert.match(texte, /pulse-vibe-next 0.9.0/, "version du squelette qui porte l'objet sources");
+  assert.match(texte, /pulse-next 0.9.0/, "version du squelette qui porte l'objet sources");
   assert.match(texte, /### \d+\. La CSP autorise R2/);
   assert.match(texte, /Refused to connect/);
 });
@@ -382,7 +382,7 @@ test("fiche : règles numérotées de 1 à N sans trou, sans note de migration",
   const fiche = lire(REF, "fiche.md");
   const numeros = [...fiche.matchAll(/^(\d+)\. /gm)].map((m) => Number(m[1]));
   assert.deepStrictEqual(numeros, numeros.map((_, i) => i + 1));
-  assert.doesNotMatch(fiche, /créé avant pulse-vibe-next/);
+  assert.doesNotMatch(fiche, /créé avant pulse-(?:vibe-)?next/);
 });
 
 test("renvois « fiche, règle N » : chaque numéro vise la règle annoncée", () => {
@@ -408,7 +408,7 @@ test("renvois « fiche, règle N » : chaque numéro vise la règle annoncée", 
 
 test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", () => {
   const notes = lire(REF, "migrations.md");
-  for (const version of ["0.9.0", "0.11.0", "0.17.0"]) assert.match(notes, new RegExp(`Projet créé avant pulse-vibe-next ${version.replace(/\./g, "\.")}`));
+  for (const version of ["0.9.0", "0.11.0", "0.17.0"]) assert.match(notes, new RegExp(`Projet créé avant pulse-next ${version.replace(/\./g, "\.")}`));
   for (const commande of ["tech", "plan", "implement", "review", "security", "deploy", "seo"])
     assert.ok(!lancer("contexte", commande).stdout.includes("mettre à niveau un projet plus ancien"), commande);
   assert.strictEqual(lancer("reference", "migrations.md").status, 0);

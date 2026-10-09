@@ -885,3 +885,20 @@ test("chaque référence est atteignable : affichée par l'outil, nommée pour �
   }
   assert.deepStrictEqual(manquantes, []);
 });
+
+test("les textes lus par la personne nomment les plugins pulse et pulse-next (les anciens noms restent dans les chemins)", () => {
+  // Un ancien nom employé comme nom : ni dans un chemin (plugins/pulse-vibe/, jdelauney/pulse-vibe), ni dans un nom d'installation.
+  const ANCIEN = /(?<![\w./@-])pulse-vibe(?:-next)?(?![\w/@.-])/;
+  const trouves = [];
+  for (const p of PLUGINS) {
+    const textes = [
+      ...["skills", "agents", "references", "templates"].flatMap((d) => fichiers(path.join(p, d), ".md")),
+      ...lister(path.join(p, "bin")).filter((f) => !f.includes(".")).map((f) => path.join(p, "bin", f)),
+    ];
+    for (const f of textes)
+      lire(f).split("\n").forEach((ligne, i) => {
+        if (ANCIEN.test(ligne)) trouves.push(`${path.relative(DEPOT, f).split(path.sep).join("/")}:${i + 1}`);
+      });
+  }
+  assert.deepStrictEqual(trouves, []);
+});

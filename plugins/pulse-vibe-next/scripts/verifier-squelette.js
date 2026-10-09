@@ -40,7 +40,7 @@ function controlerCodeSeo(dossier) {
 /** Sert la construction (next start, sur un port dédié), lance l'audit du cœur, puis arrête ce serveur seulement. */
 async function auditerSiteServi(dossier) {
   if (!fs.existsSync(AUDIT_SEO)) {
-    console.log("\n(audit de référencement sauté : plugin pulse-vibe absent à côté du pack)");
+    console.log("\n(audit de référencement sauté : plugin pulse absent à côté du pack, dans plugins/pulse-vibe/)");
     return;
   }
   const port = 3123;

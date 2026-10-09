@@ -43,7 +43,7 @@ for (const fichier of fichiers()) {
     const fautes = [];
     fs.readFileSync(fichier, "utf8").split("\n").forEach((ligne, i) => {
       // Les notes de migration citent volontairement les anciens noms.
-      if (/créé avant pulse-vibe-next/.test(ligne)) return;
+      if (/créé avant pulse-(?:vibe-)?next/.test(ligne)) return;
       for (const [motif, attendu] of ANCIENS) if (motif.test(ligne)) fautes.push(`ligne ${i + 1} (${attendu}) : ${ligne.trim().slice(0, 120)}`);
     });
     assert.deepStrictEqual(fautes, []);
