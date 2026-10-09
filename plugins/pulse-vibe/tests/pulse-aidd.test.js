@@ -476,3 +476,13 @@ test("etape --sans-communes : une ligne rappelle que les règles communes sont d
   assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Déroulé ci-dessous.)"));
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
+
+test("contexte review : modèle de rapport, checklist chargée par le reviewer", () => {
+  const r = lancer("contexte", "review");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Modèle : rapport de revue ====="));
+  assert.ok(!r.stdout.includes("===== Checklist sécurité ====="));
+  assert.ok(!lancer("contexte", "spirc").stdout.includes("===== Checklist sécurité ====="), "spirc sans checklist");
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ="), "plan la garde");
+  assert.ok(lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security la garde");
+});

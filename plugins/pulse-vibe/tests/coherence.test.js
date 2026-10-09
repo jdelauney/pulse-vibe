@@ -773,3 +773,16 @@ test("les lectures de fichiers-projet.md et cycle.md, citées par les règles co
   }
   assert.deepStrictEqual(problemes, []);
 });
+
+test("checklist sécurité : chargée par les agents qui relisent, plus recopiée dans les délégations", () => {
+  for (const agent of ["reviewer", "security-auditor"]) {
+    const texte = lire(RACINE, "agents", `${agent}.md`);
+    assert.ok(texte.includes("pulse-aidd reference checklist-securite.md"), `${agent} charge la checklist`);
+    const entete = texte.match(/^---\n([\s\S]*?)\n---/)[1];
+    const liste = (cle) => ((entete.match(new RegExp(`^${cle}:\s*(.*)$`, "m")) || [])[1] || "").split(",").map((t) => t.trim()).filter(Boolean);
+    const permis = liste("tools");
+    assert.ok(permis.length ? permis.includes("Bash") : !liste("disallowedTools").includes("Bash"), `${agent} a Bash`);
+  }
+  for (const fichier of [["skills", "review", "SKILL.md"], ["skills", "spirc", "SKILL.md"], ["skills", "security", "SKILL.md"], ["references", "examen.md"]])
+    assert.doesNotMatch(lire(RACINE, ...fichier), /checklist sécurité complète/, fichier.join("/"));
+});

@@ -20,7 +20,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 
 ## Informations reçues
 
-Le message de délégation indique : la tâche (ex. T3), le chemin des documents (le plan, la spec et l'US de la tâche, rangés ensemble dans `aidd_docs/tasks/<epic>/` : `PLAN-SPEC-US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md` ; `docs/user-stories.md`, `docs/technical.md`), et le texte complet de la checklist sécurité. La technologie du projet est décrite dans `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement ») : la lire avant de juger.
+Le message de délégation indique : la tâche (ex. T3), le chemin des documents (le plan, la spec et l'US de la tâche, rangés ensemble dans `aidd_docs/tasks/<epic>/` : `PLAN-SPEC-US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md` ; `docs/user-stories.md`, `docs/technical.md`). Charger la checklist sécurité avec `pulse-aidd reference checklist-securite.md`. La technologie du projet est décrite dans `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement ») : la lire avant de juger.
 
 ## Pack de pile
 
