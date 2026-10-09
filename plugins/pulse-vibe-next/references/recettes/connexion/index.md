@@ -17,7 +17,7 @@
 |---|---|---|
 | `BETTER_AUTH_SECRET` | `.env`, Vercel (Production et Preview) | 32 caractères au moins, tirés au hasard, une valeur différente par environnement : `pulse-aidd secrets generer BETTER_AUTH_SECRET` (`.env`), puis `pulse-aidd secrets generer BETTER_AUTH_SECRET --envoyer production,preview --sans-local` (Vercel). Rien n'est affiché. |
 | `BETTER_AUTH_SECRETS` | facultative, ajoutée lors d'une rotation | Forme versionnée `2:<nouvelle>,1:<ancienne>` (better-auth 1.5 et plus), lue directement par better-auth : voir `/pulse:secrets renouveler BETTER_AUTH_SECRET`. Absente au départ. |
-| `BETTER_AUTH_URL` | `.env`, Vercel | Adresse du site : `http://localhost:3000` en local, `https://<projet>.vercel.app` (ou le domaine) en production |
+| `BETTER_AUTH_URL` | `.env`, Vercel | Adresse du site : `http://localhost:3000` en local, `https://<projet>.vercel.app` (ou le domaine) en production. Si vous changez le port avec `PORT`, adaptez `BETTER_AUTH_URL` (par exemple `http://localhost:3001`). |
 | `DATABASE_URL` | déjà là | Adresse « pooled » de Neon (application) |
 | `DATABASE_URL_DIRECT` | déjà là | Adresse directe de Neon (drizzle-kit) |
 

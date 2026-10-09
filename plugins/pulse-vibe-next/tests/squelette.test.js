@@ -179,6 +179,7 @@ test("accessibilité du squelette : lien d'évitement, axe et cibles sur chaque 
   assert.match(aide, /"nextjs-portal"/);
   assert.match(aide, /"wcag22aa"/);
   assert.match(aide, /projet === "telephone" \? 44 : 24/);
+  assert.ok(aide.includes('a[data-slot="button"]'), "lien affiché en bouton mesuré");
   assert.match(lireS("e2e", "accessibilite.spec.ts"), /verifierAccessibilite\(page, testInfo\)/);
   assert.ok(fs.existsSync(path.join(S, "src", "components", "ui", "__tests__", "cibles-tactiles.test.ts")));
   assert.match(fs.readFileSync(path.join(__dirname, "..", "references", "contexte", "test.md"), "utf8"), /verifierAccessibilite/);
