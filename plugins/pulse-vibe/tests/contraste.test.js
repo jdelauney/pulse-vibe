@@ -94,3 +94,9 @@ test("couleur OKLCH hors de la gamme sRGB : avertissement et indicateur JSON", (
   assert.doesNotMatch(ok.stdout, /hors de la gamme/);
   assert.strictEqual(JSON.parse(lancer("oklch(0.556 0 0)", "#ffffff", "--json").stdout).horsGamme, undefined);
 });
+
+test("chroma OKLCH en pourcentage : 100 % vaut 0,4 (CSS Color 4), pas 1", () => {
+  assert.strictEqual(lireCouleur("oklch(0.6 50% 250)").oklch[1], 0.2);
+  assert.strictEqual(lireCouleur("oklch(0.6 0.2 250)").oklch[1], 0.2);
+  assert.strictEqual(lireCouleur("oklch(60% 100% 250)").oklch[1], 0.4);
+});

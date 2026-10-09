@@ -63,7 +63,8 @@ function lireCouleur(texte) {
   const alpha = transparence === undefined ? 1 : borner(nombre(transparence));
   if (m[1] === "oklch") {
     const L = borner(nombre(parties[0]));
-    const C = Math.max(0, nombre(parties[1]));
+    // CSS Color 4 : pour le chroma, 100 % vaut 0,4 (nombre() divise par 100 : on remultiplie par 0,4).
+    const C = Math.max(0, parties[1].endsWith("%") ? (nombre(parties[1]) * 0.4) : nombre(parties[1]));
     if (/(turn|rad|grad)$/.test(parties[2]))
       throw new Error(`unité d'angle non acceptée dans « ${texte} » : seuls les degrés (avec ou sans « deg ») sont acceptés.`);
     const H = parties[2] === "none" ? 0 : nombre(parties[2].replace(/deg$/, ""));
