@@ -2,7 +2,7 @@
 
 - Appliquer la fiche ci-dessous à chaque fichier. En cas de doute sur une API de Next.js, lire `node_modules/next/dist/docs/` (exacte pour la version installée) avant d'écrire.
 - Avant de créer un fichier dans un dossier qui n'existe pas encore, ou d'écrire un modèle de code (entité, use-case, repository, action, container) : lancer `pulse-aidd pile reference architecture.md` (arborescence, sens des imports, modèles de code) et l'appliquer.
-- Une tâche qui cite une recette (« Recette : connexion ») : la charger avec `pulse-aidd pile recette <nom>` et suivre ses étapes, dans l'organisation de la fiche.
+- Une tâche qui cite une recette (« Recette : connexion ») : afficher sa vue d'ensemble avec `pulse-aidd pile recette <nom>` (fichiers, liste des étapes, sécurité, pièges), puis chaque étape utile à la tâche au moment de l'écrire, avec `pulse-aidd pile recette <nom> etape <id>`, et le code de ses tests avec `pulse-aidd pile recette <nom> tests`. Suivre ses étapes dans l'organisation de la fiche.
 - Nouvelle bibliothèque : seulement celles qu'une recette ou la fiche prévoit, à leur dernière version (`npm view <paquet> version`, puis `npm install <paquet>`), avec l'accord de la personne.
 - Recette réalisée qui demande un outil sur le poste (`email`, `paiement`) : ajouter sa ligne à « Tester en local » de `README.md` (`pulse-aidd pile reference readme.md`).
 - Composant d'interface : `npx shadcn@latest add <composant>` s'il manque, puis rôles du thème uniquement.

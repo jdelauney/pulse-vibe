@@ -28,6 +28,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const RECETTES = path.join(__dirname, "..", "references", "recettes");
+const { texteRecette } = require("./decouper-recette.js");
 const CHAINE = ["connexion", "liste"];
 // Commandes qu'une balise peut lancer : installation de paquets, composants shadcn, génération des migrations.
 // Chaque argument est contrôlé ; la commande est lancée sans interpréteur (voir lancer).
@@ -144,9 +145,8 @@ function lancer(programme, args, cwd, env = {}) {
 }
 
 function poserRecette(dossier, nom) {
-  const fichier = path.join(RECETTES, `${nom}.md`);
-  if (!fs.existsSync(fichier)) throw new Error(`recette introuvable : ${nom}`);
-  const etapes = extraireEtapes(fs.readFileSync(fichier, "utf8"));
+  if (!fs.existsSync(path.join(RECETTES, nom, "index.md")) && !fs.existsSync(path.join(RECETTES, `${nom}.md`))) throw new Error(`recette introuvable : ${nom}`);
+  const etapes = extraireEtapes(texteRecette(nom));
   if (!etapes.length) throw new Error(`recette ${nom} : aucune balise (voir l'en-tête de ce script)`);
   console.log(`\n■ Recette ${nom} : ${etapes.length} étapes balisées`);
   const poses = [];

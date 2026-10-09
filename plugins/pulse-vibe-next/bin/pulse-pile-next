@@ -8,7 +8,7 @@
 #   pulse-pile-next contexte <commande>   consignes du pack pour /pulse:<commande>
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
-#   pulse-pile-next recette <nom>         affiche une recette (ex. connexion)
+#   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
 #   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
 #   pulse-pile-next seo-code [--pages] [--json] [--dossier <projet>]   contrôles du code pour le référencement
 #   pulse-pile-next secrets regles|tester <NOM>|fiche <NOM>   règles, test réel (valeurs en JSON sur l'entrée standard) et fiche d'une variable (pour pulse-aidd secrets)
@@ -31,12 +31,19 @@ version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin
 
 recettes() {
   local f nom titre
-  for f in "$REF"/recettes/*.md; do
+  for f in "$REF"/recettes/*/index.md "$REF"/recettes/*.md; do
     [ -f "$f" ] || continue
-    nom="$(basename "$f" .md)"
+    case "$f" in
+      */index.md) nom="$(basename "$(dirname "$f")")" ;;
+      *) nom="$(basename "$f" .md)" ;;
+    esac
     titre="$(sed -n 's/^> Quand l.utiliser : //p' "$f" | head -n 1)"
     printf -- '- %s : %s\n' "$nom" "$titre"
   done
+}
+
+etapes_recette() { # etapes_recette <dossier> : liste « - etape <id> : <titre> » des étapes
+  sed -n 's/^- Étape \([^ ]*\) – \(.*\) : `pulse-aidd pile recette .*`$/- etape \1 : \2/p' "$1/index.md"
 }
 
 fiche() {
@@ -117,7 +124,22 @@ case "$1" in
     case "$2" in
       ""|*/*|*..*) echo "Indiquez le nom d'une recette. Disponibles :"; recettes; exit 1 ;;
     esac
-    if [ -f "$REF/recettes/$2.md" ]; then cat "$REF/recettes/$2.md"; else echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi ;;
+    dossier="$REF/recettes/$2"
+    if [ ! -f "$dossier/index.md" ]; then
+      if [ -z "$3" ] && [ -f "$REF/recettes/$2.md" ]; then cat "$REF/recettes/$2.md"; exit 0; fi
+      echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1
+    fi
+    case "$3" in
+      "") cat "$dossier/index.md" ;;
+      tests) cat "$dossier/tests.md" ;;
+      etape)
+        case "$4" in
+          ""|*/*|*..*) echo "Indiquez une étape de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;
+        esac
+        if [ -f "$dossier/etape-$4.md" ]; then cat "$dossier/etape-$4.md"; else echo "Étape introuvable : $4. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1; fi ;;
+      *) echo "Usage : pulse-pile-next recette <nom> [etape <id> | tests]. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;
+    esac
+    exit 0 ;;
   squelette)
     shift; exec node "$RACINE/scripts/squelette.js" "$@" ;;
   seo-code)
