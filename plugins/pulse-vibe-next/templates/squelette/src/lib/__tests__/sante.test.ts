@@ -7,11 +7,11 @@ vi.mock("@src/lib/logger", () => ({ logger: { error: vi.fn() } }));
 describe("Sonde de santé", () => {
   beforeEach(() => vi.mocked(logger.error).mockClear());
 
-  it("la base répond : 200, jamais mis en cache", async () => {
+  it("la base répond : 200, gardé 15 minutes par le CDN (la base peut se mettre en veille)", async () => {
     const r = await verifierSante(async () => [{ "?column?": 1 }]);
     expect(r.status).toBe(200);
     expect(await r.json()).toEqual({ etat: "ok" });
-    expect(r.headers.get("cache-control")).toBe("no-store");
+    expect(r.headers.get("cache-control")).toBe("public, s-maxage=900");
   });
 
   it("la base refuse : 503 sans détail, cause journalisée", async () => {
@@ -20,6 +20,7 @@ describe("Sonde de santé", () => {
     });
     expect(r.status).toBe(503);
     expect(await r.json()).toEqual({ etat: "indisponible" });
+    expect(r.headers.get("cache-control")).toBe("no-store");
     expect(logger.error).toHaveBeenCalledOnce();
   });
 

@@ -208,6 +208,8 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
   for (const f of ["error.tsx", "global-error.tsx"]) assert.match(lireS("app", f), /signalerErreurClient\(error\)/, f);
   assert.match(lireS("app", "api", "erreur-client", "route.ts"), /export async function POST/);
   assert.match(lireS("app", "api", "sante", "route.ts"), /await connection\(\)/);
+  assert.match(lireS("src", "lib", "sante.ts"), /"public, s-maxage=900"/, "sonde gardée 15 minutes par le CDN");
+  assert.match(lireS("app", "essai-surveillance", "page.tsx"), /robots: \{ index: false, follow: false \}/);
 });
 
 test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé", () => {
