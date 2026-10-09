@@ -28,9 +28,12 @@ function principal() {
     return;
   }
   const decisions = [];
-  for (const module of ["./garde-secrets", "./garde-commandes"]) {
+  // Les commandes d'abord (rapide) : un refus est la décision la plus stricte, on s'arrête là.
+  for (const module of ["./garde-commandes", "./garde-secrets"]) {
     try {
-      decisions.push(require(module).evaluer(entree));
+      const d = require(module).evaluer(entree);
+      decisions.push(d);
+      if (d && d.decision === "deny") break;
     } catch (e) {
       // Un garde-fou en erreur laisse passer ; l'autre décide quand même.
     }

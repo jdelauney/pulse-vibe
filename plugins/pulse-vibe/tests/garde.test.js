@@ -49,3 +49,10 @@ test("chaque garde-fou se désactive séparément ; entrée illisible : rien n'e
   assert.strictEqual(lancer(bash("cat .env"), { PULSE_GARDE_OFF: "1" }).permissionDecision, "deny");
   for (const e of ["", "pas du json"]) assert.strictEqual(lancer(e), null);
 });
+
+test("un refus de commande est rendu sans attendre le garde-fou anti-secrets", () => {
+  const tmp = os.tmpdir();
+  const r = lancer({ tool_name: "Bash", tool_input: { command: "git push --force" }, cwd: tmp });
+  assert.strictEqual(r.permissionDecision, "deny");
+  assert.ok(!/secrets/i.test(r.permissionDecisionReason) || r.permissionDecisionReason.includes("🔒"));
+});

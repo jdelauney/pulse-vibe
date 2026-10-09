@@ -482,6 +482,18 @@ test("code ordinaire qui porte un nom de secret : jamais signalé", () => {
     "NPM_TOKEN: ${{ secrets.NPM_TOKEN }}",
     "--token-color: #123456789abcdef0;",
     "if (token === previousTokenValue2024) {}",
+    'const tokenStorageKey = "myApp_authToken_v2";',
+    'tokenCookieName: "__Host-AuthToken2",',
+    'resetTokenRoute: "/api/auth/resetToken2",',
+    'secretsPath: "src/lib/secretsManager2.ts",',
+    'const passwordInputId = "passwordInput2FA";',
+    'const apiKeyRef = "projects/abc123/Secrets/Key";',
+    'data-token="tokenValuePlaceholder1"',
+    "token = generateToken2FA",
+    "password = getPasswordFromVault2",
+    "secret: SecretManagerClient2024",
+    "PASSWORD_HASH_ALGO=Argon2idDefaultParams",
+    "TOKEN_TTL=PT15M30S_Default2",
   ])
     assert.deepStrictEqual(motifs(c), [], c);
 });
@@ -506,4 +518,14 @@ test("faux positifs de la revue (F1 à F16) : aucun refus", () => {
     ["README.md", "Collez votre clé " + ["sk", "live", "..."].join("_") + " dans .env"],
   ])
     assert.strictEqual(ecrire(fichier, contenu), null, `${fichier} : ${contenu}`);
+});
+
+test("valeurs tirées au hasard : toujours signalées malgré le filtre de texte lisible", () => {
+  for (const v of ["Qz8x" + "K2mP9vL4nR7tW1yB5cD3", "Qx7kR2mZp9Lw4Tn8" + "vBc5YdZq1Xe3HaVn"]) assert.deepStrictEqual(motifs(`const apiKey = "${v}";`), ["secret en clair"], v);
+});
+
+test("refus de lecture d'un .env déguisé : le nom affiché est celui du fichier", () => {
+  const r = lancerHook({ tool_name: "Read", tool_input: { file_path: "E:/p/.env/." } });
+  assert.ok(refuse(r));
+  assert.ok(r.permissionDecisionReason.includes("« .env »"), r.permissionDecisionReason);
 });

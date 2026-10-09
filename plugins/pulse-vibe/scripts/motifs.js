@@ -18,10 +18,15 @@ const adresseReelle = (m) => !VALEUR_EXEMPLE.test(m[2]) && !HOTE_LOCAL.test(m[3]
 const NOM_MAJUSCULES = /^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CLE_TRADUCTION = /^[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*){2,}$/;
-const valeurReelle = (v) =>
-  !VALEUR_EXEMPLE.test(v) && !NOM_MAJUSCULES.test(v) && !UUID.test(v) && !CLE_TRADUCTION.test(v) && !/^(votre|your|change|exemple|example|xxx)/i.test(v) && !/(test|fake|factice|exemple|example|dummy|mock|demo)/i.test(v) && /^[A-Za-z0-9_+\/=.-]+$/.test(v) && !v.includes("://") && (/^[0-9a-f]{32,}$/i.test(v) || (/\d/.test(v) && /[a-z]/.test(v) && /[A-Z]/.test(v)) || (v.length >= 24 && /\d/.test(v) && /[A-Za-z]/.test(v) && !/^_*[a-z0-9]+(?:[-._]+[a-z0-9]+){2,}$/.test(v)));
+// Du texte lisible (generateToken2FA, SecretManagerClient2024, src/lib/secretsManager2.ts), pas une valeur tirée au hasard.
+const motsDe = (v) => (v.match(/[A-Z]?[a-z]{3,}/g) || []).join("").length;
+const texteLisible = (v) => (v.includes("/") && !(v.length >= 32 && /^[A-Za-z0-9+/=]+$/.test(v))) || (v.length < 40 && motsDe(v) / v.length >= 0.35);
+// Valeur entre guillemets sous un nom en MAJUSCULES_SNAKE : le texte lisible reste signalé ; ailleurs (camelCase, sans guillemets), il est du code.
+const valeurReelle = (v, prudent) =>
+  !VALEUR_EXEMPLE.test(v) && !(prudent && texteLisible(v)) && !NOM_MAJUSCULES.test(v) && !UUID.test(v) && !CLE_TRADUCTION.test(v) && !/^(votre|your|change|exemple|example|xxx)/i.test(v) && !/(test|fake|factice|exemple|example|dummy|mock|demo)/i.test(v) && /^[A-Za-z0-9_+\/=.-]+$/.test(v) && !v.includes("://") && (/^[0-9a-f]{32,}$/i.test(v) || (/\d/.test(v) && /[a-z]/.test(v) && /[A-Z]/.test(v)) || (v.length >= 24 && /\d/.test(v) && /[A-Za-z]/.test(v) && !/^_*[a-z0-9]+(?:[-._]+[a-z0-9]+){2,}$/.test(v)));
 // Noms qui annoncent un secret, quelle que soit la casse (apiKey, client_secret, DB_PASSWORD), et les suffixes _PASS / Pass (DB_PASS, dbPass).
 const NOM_SECRET = /(secret|password|passwd|token|api[_-]?key|private[_-]?key)/i;
+const NOM_MAJUSCULES_SNAKE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
 const nomSecret = (n) => NOM_SECRET.test(n) || /(?:_PASS|_pass|[a-z0-9]Pass)$/.test(n);
 // Une référence (process.env.R2_SECRET_2, config.auth.token), pas une valeur.
 const CHAINE_IDENTIFIANTS = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
@@ -53,9 +58,9 @@ const MOTIFS = [
   { nom: "jeton Vercel", re: /\bvc[pkiar]_[0-9A-Za-z]{24,}/ },
   { nom: "jeton d'API Cloudflare", re: /\bcf(?:k|ut|at)_[0-9A-Za-z]{40,}/ },
   // Valeur entre guillemets : const apiKey = "…", { secret: "…" }, "password": "…".
-  { nom: "secret en clair", re: /(?<![\w$.-])([A-Za-z_][\w-]*)["']?[ \t]*[:=][ \t]*["'`]([^"'`\s]{16,})["'`]/g, garder: (m) => nomSecret(m[1]) && valeurReelle(m[2]) },
+  { nom: "secret en clair", re: /(?<![\w$.-])([A-Za-z_][\w-]*)["']?[ \t]*[:=][ \t]*["'`]([^"'`\s]{16,})["'`]/g, garder: (m) => nomSecret(m[1]) && valeurReelle(m[2], !NOM_MAJUSCULES_SNAKE.test(m[1])) },
   // Valeur sans guillemets, seule sur sa ligne : AUTH_SECRET=…, export CLIENT_SECRET=…, password: … (YAML).
-  { nom: "secret en clair", re: /^[ \t]*(?:export[ \t]+)?([A-Za-z_][\w-]*)[ \t]*[:=][ \t]*([A-Za-z0-9_+\/=.-]{16,})[ \t]*$/gm, garder: (m) => nomSecret(m[1]) && valeurReelle(m[2]) && !CHAINE_IDENTIFIANTS.test(m[2]) },
+  { nom: "secret en clair", re: /^[ \t]*(?:export[ \t]+)?([A-Za-z_][\w-]*)[ \t]*[:=][ \t]*([A-Za-z0-9_+\/=.-]{16,})[ \t]*$/gm, garder: (m) => nomSecret(m[1]) && valeurReelle(m[2], true) && !CHAINE_IDENTIFIANTS.test(m[2]) },
 ];
 
 // Clé Resend : "re_" suivi d'un mélange de chiffres et de majuscules.
@@ -117,4 +122,4 @@ function estFichierEnv(chemin) {
 }
 // FIN-MOTIFS
 
-module.exports = { trouverSecrets, estFichierEnv };
+module.exports = { trouverSecrets, estFichierEnv, nomReel };

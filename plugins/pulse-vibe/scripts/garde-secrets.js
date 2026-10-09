@@ -18,7 +18,7 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
-const { trouverSecrets, estFichierEnv } = require("./motifs");
+const { trouverSecrets, estFichierEnv, nomReel } = require("./motifs");
 const { commandesSimples, optionsGlobalesGit } = require("./lecture-commande");
 
 const TAILLE_MAX = 512 * 1024; // on ne lit pas les gros fichiers
@@ -130,7 +130,7 @@ function verifierLecture(outil, ti, cwd) {
   }
   if (!visee) return;
   refuser(
-    `🔒 Pulse garde le contenu de « ${path.basename(visee)} » hors de la conversation : ce fichier contient les secrets du projet.\n` +
+    `🔒 Pulse garde le contenu de « ${nomReel(visee) || visee} » hors de la conversation : ce fichier contient les secrets du projet.\n` +
       (nonIgnore ? `Cette recherche le lirait, car il ne figure pas dans .gitignore. À faire d'abord : ajouter « .env* » au .gitignore.\n` : "") +
       `À la place : \`pulse-aidd secrets inventaire\` liste les variables (noms, présence, sans aucune valeur) ; ` +
       `.env.example donne les noms attendus. La personne modifie elle-même .env dans son éditeur.`
