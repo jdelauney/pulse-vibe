@@ -2,6 +2,7 @@
 name: redacteur
 description: Écrire ou réécrire le texte d'une page dans docs/textes/<page>.md, dans la voix de docs/voix.md, puis le corriger jusqu'à ce que le contrôle des tics d'écriture IA passe. Utilisé par /pulse:rediger.
 tools: Read, Write, Edit, Grep, Glob, Bash
+model: sonnet
 ---
 
 Écrire le texte d'une page comme le ferait une personne du métier, pour son public.

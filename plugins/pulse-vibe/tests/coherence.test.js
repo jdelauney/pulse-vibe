@@ -234,7 +234,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -262,7 +262,7 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -307,7 +307,7 @@ test("allowed-tools : les commandes git de lecture citées par un skill, ou par 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -711,4 +711,113 @@ test("production : retour arrière dans le modèle technical.md et dans deploy ;
 test("mise en production : une sonde de disponibilité est proposée et notée", () => {
   assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
   assert.match(lire(RACINE, "templates", "technical.md"), /^- Surveillance : /m);
+});
+
+test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références", () => {
+  const communes = lire(RACINE, "references", "regles-communes.md");
+  for (const titre of ["## 1. À qui vous parlez", "## 3. Garde-fous de la méthode", "## 4. Format de fin de commande", "## 6. Les constats de relecture"])
+    assert.ok(communes.includes(titre), titre);
+  assert.ok(!communes.includes("| Fichier | Produit par | Contenu |"), "tableau des fichiers sorti des règles communes");
+  assert.ok(!communes.includes("/pulse:init → /pulse:brainstorm"), "cycle sorti des règles communes");
+  assert.ok(communes.includes("pulse-aidd reference fichiers-projet.md"), "renvoi vers les fichiers du projet");
+  assert.ok(communes.includes("pulse-aidd reference cycle.md"), "renvoi vers le cycle");
+  const fichiersProjet = lire(RACINE, "references", "fichiers-projet.md");
+  assert.ok(fichiersProjet.includes("| Fichier | Produit par | Contenu |"));
+  assert.ok(fichiersProjet.split("\n").filter((l) => l.startsWith("| `")).length >= 30, "les lignes du tableau");
+  for (const f of ["`CLAUDE.md`", "`docs/technical.md`", "`aidd_docs/tasks/in-progress.md`", "`docs/lexique.md`", "`aidd_docs/memory/internal/decisions/`"])
+    assert.ok(fichiersProjet.includes(`| ${f} |`), f);
+  const cycle = lire(RACINE, "references", "cycle.md");
+  assert.ok(cycle.includes("/pulse:init → /pulse:brainstorm"));
+  assert.ok(cycle.includes('`/pulse:spirc <US-XXX> [tâche | "demande"]`'));
+});
+
+test("une étape enchaînée par une commande se charge sans les règles communes", () => {
+  const sources = [...fichiers(path.join(RACINE, "skills"), ".md"), ...fichiers(path.join(RACINE, "references"), ".md")];
+  const problemes = [];
+  for (const f of sources) {
+    const corps = lire(f).replace(/^---\n[\s\S]*?\n---\n/, "");
+    for (const m of corps.matchAll(/pulse-aidd etape (\S+)( --sans-communes)?/g))
+      if (!m[2]) problemes.push(`${path.relative(DEPOT, f)} : pulse-aidd etape ${m[1]}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("les sous-commandes etape, reference et qualite citées par un skill sont permises par son allowed-tools", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const motifs = motifsBash(fichier);
+    const corps = lire(fichier).replace(/^---\n[\s\S]*?\n---\n/, "");
+    for (const [, citation] of corps.matchAll(/`(pulse-aidd (?:etape|reference|qualite)\b[^`]*)`/g)) {
+      const commande = essai(citation);
+      if (!motifs.some((m) => couvre(m, commande))) problemes.push(`${path.relative(DEPOT, fichier)} : ${commande}`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("règles communes : les documents du projet restent appliqués par les commandes qui écrivent", () => {
+  const { spawnSync } = require("child_process");
+  for (const commande of ["implement", "spec", "spirc"]) {
+    const r = spawnSync("bash", ["bin/pulse-aidd", "contexte", commande], { cwd: RACINE, encoding: "utf8" });
+    for (const doc of ["docs/design.md", "docs/seo.md", "docs/textes", "docs/voix.md"])
+      assert.ok(r.stdout.includes(doc), `${commande} : ${doc}`);
+  }
+});
+
+test("les lectures de fichiers-projet.md et cycle.md, citées par les règles communes, sont permises dans chaque skill", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const motifs = motifsBash(fichier);
+    for (const ref of ["fichiers-projet.md", "cycle.md"])
+      if (!motifs.some((m) => couvre(m, `pulse-aidd reference ${ref}`))) problemes.push(`${path.relative(DEPOT, fichier)} : ${ref}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("checklist sécurité : chargée par les agents qui relisent, plus recopiée dans les délégations", () => {
+  for (const agent of ["reviewer", "security-auditor"]) {
+    const texte = lire(RACINE, "agents", `${agent}.md`);
+    assert.ok(texte.includes("pulse-aidd reference checklist-securite.md"), `${agent} charge la checklist`);
+    const entete = texte.match(/^---\n([\s\S]*?)\n---/)[1];
+    const liste = (cle) => ((entete.match(new RegExp(`^${cle}:\s*(.*)$`, "m")) || [])[1] || "").split(",").map((t) => t.trim()).filter(Boolean);
+    const permis = liste("tools");
+    assert.ok(permis.length ? permis.includes("Bash") : !liste("disallowedTools").includes("Bash"), `${agent} a Bash`);
+  }
+  for (const fichier of [["skills", "review", "SKILL.md"], ["skills", "spirc", "SKILL.md"], ["skills", "security", "SKILL.md"], ["references", "examen.md"]])
+    assert.doesNotMatch(lire(RACINE, ...fichier), /checklist sécurité complète/, fichier.join("/"));
+});
+
+test("boucles d'implement et de spirc : review et commit chargés une seule fois", () => {
+  const implement = lire(RACINE, "skills", "implement", "SKILL.md");
+  const boucle = implement.slice(implement.indexOf("### 6. Boucle sur tout le plan"));
+  assert.match(boucle, /\*\*Avant la première tâche\*\*/);
+  assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
+  assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "spirc : commit chargée une fois");
+  for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
+    assert.ok(spirc.includes(ref), ref);
+});
+
+test("chaque agent a un modèle explicite (model:)", () => {
+  // Valeurs acceptées par Claude Code : https://code.claude.com/docs/en/sub-agents
+  const MODELES = /^(sonnet|opus|haiku|fable|inherit|claude-[a-z0-9-]+)$/;
+  const problemes = [];
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const entete = (lire(fichier).match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+    const modele = (entete.match(/^model:\s*(\S+)\s*$/m) || [])[1];
+    if (!modele || !MODELES.test(modele)) problemes.push(`${path.relative(DEPOT, fichier)} : ${modele || "absent"}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("reprise : spirc et implement rechargent les références de la réalisation, implement vérifie le dépôt distant", () => {
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  assert.match(spirc, /y compris une reprise[^\n]*ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler »/);
+  assert.match(spirc, /avant la première tâche, le test groupé ou la fin/);
+  const groupe = spirc.slice(spirc.indexOf("## Test groupé"));
+  assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 2, "test groupé et fin rappellent le rechargement");
+  const implement = lire(RACINE, "skills", "implement", "SKILL.md");
+  assert.match(implement, /y compris à une reprise/);
+  assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
 });

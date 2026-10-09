@@ -47,9 +47,9 @@ Règles de la boucle :
    | `dossier` | « Préparer un nouveau projet » (dossier vide ou presque) ou « Reprendre un projet existant » (du code est présent) |
    | `documents` | « Mettre à niveau un projet Pulse plus ancien » : documents à l'ancien format |
    | `profil` | « Mettre à niveau un projet Pulse plus ancien » : les deux questions du profil |
-   | `memoire` | `pulse-aidd etape memory` (action `creer`) |
+   | `memoire` | `pulse-aidd etape memory --sans-communes` (action `creer`) |
    | `git` | « Préparer un nouveau projet », point 4 (un historique propre au projet) ; si le dépôt existe sans aucune version, faire le premier enregistrement : ajouter les fichiers par leur nom, en montrer la liste, puis `git commit -m "chore: initialisation du projet avec Pulse"` |
-   | `pile` | `pulse-aidd etape tech` |
+   | `pile` | `pulse-aidd etape tech --sans-communes` |
 
    Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Protéger les secrets » (§ 4, point 5) « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail », ou « Mettre à niveau un projet Pulse plus ancien » (§ 4 : l'ancien `CLAUDE.md`, le `.gitignore` sans le travail en cours, le contrôle avant commit manquant). La personne peut refuser un point, ou garder son propre contrôle avant commit : la suite continue quelle que soit la réponse.
 3. **Après la mise en ligne** (`regle` R21, R22 ou R23) : proposer aussi `/pulse:status`, qui regarde la CI, le référencement et la Search Console.
@@ -103,7 +103,7 @@ README.md        → la présentation du projet
 
 Ajouter : « Le code et ses dossiers viendront après le choix de la pile technique (`/pulse:tech`). »
 
-8. **Choisir le parcours** (AskUserQuestion) : « Parcours express (Recommandé pour démarrer vite) » : une seule conversation pour l'idée, les écrans, l'apparence et les contraintes, puis les outils et l'identité visuelle, jusqu'à la première US prête à réaliser ; ou « Parcours complet, étape par étape » : brief, PRD, choix techniques, identité, user stories, chacun avec son entretien approfondi. Express : lancer `pulse-aidd etape express`, puis appliquer à l'identique ses sections « 1. Annoncer le parcours » à « 7. L'identité visuelle », et sa « Fin » hors bloc de fin de commande. Complet : reprendre la boucle (prochaine étape : `/pulse:brainstorm`).
+8. **Choisir le parcours** (AskUserQuestion) : « Parcours express (Recommandé pour démarrer vite) » : une seule conversation pour l'idée, les écrans, l'apparence et les contraintes, puis les outils et l'identité visuelle, jusqu'à la première US prête à réaliser ; ou « Parcours complet, étape par étape » : brief, PRD, choix techniques, identité, user stories, chacun avec son entretien approfondi. Express : lancer `pulse-aidd etape express --sans-communes`, puis appliquer à l'identique ses sections « 1. Annoncer le parcours » à « 7. L'identité visuelle », et sa « Fin » hors bloc de fin de commande. Complet : reprendre la boucle (prochaine étape : `/pulse:brainstorm`).
 
 ### Reprendre un projet existant (du code sans Pulse)
 
@@ -115,13 +115,13 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 ### Mettre à niveau un projet Pulse plus ancien
 
-- Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory` (action `creer`).
+- Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory --sans-communes` (action `creer`).
 - Bloc `pulse_profil` absent de `CLAUDE.md`, ou « Niveau : à préciser » → poser les deux questions du profil (niveau, quantité d'explications) en une ronde, puis ajouter ou remplir le bloc dans la section « Communication » (modèle `CLAUDE.md`).
 - `CLAUDE.md` contient l'ancien accueil « AI-Driven », la ligne « Commit et envoi vers le dépôt distant : uniquement sur demande » ou « `aidd_docs/tasks/` : traces de travail par session » → remplacer ces lignes par celles du modèle `CLAUDE.md` (accueil, « Commit et envoi », `aidd_docs/tasks/`), en le disant en une phrase.
 - `.gitignore` sans la ligne `aidd_docs/tasks/in-progress.md` → l'ajouter (avec les deux lignes du modèle `.gitignore`), en expliquant en une phrase : ce fichier note une décision en attente, propre à cette machine.
 - `scripts/verifier.js` présent sans le contrôle des scénarios (le mot « Scénarios » n'y figure pas) ou sans le contrôle avant commit (`--index` n'y figure pas) → montrer la différence (`pulse-aidd modele verifier.js` comparé à la copie du projet), demander l'accord de la personne, puis le mettre à jour avec `pulse-aidd installer-ci --forcer` (puis supprimer `scripts/ci-verifications.exemple.yml`, inutile), en expliquant en une phrase : le contrôle avant mise en ligne vérifie maintenant que chaque scénario prévu en test automatique a son test.
 - Aucun contrôle avant commit (`.git/hooks/pre-commit` absent, ou sans « pulse-aidd: contrôle des secrets ») → `pulse-aidd installer-hook`, en expliquant en une phrase que les commits faits hors de Claude Code sont désormais contrôlés eux aussi.
-- Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
+- Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech --sans-communes` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
 - `docs/technical.md` déclare un pack de pile (`**Pack de pile Pulse** : <id>`) → lire ses notes de mise à niveau : `pulse-aidd pile reference migrations.md` (« Référence introuvable » : le pack n'en a pas, rien à faire). Pour chaque note dont le signe se voit dans le projet : l'expliquer en une phrase, l'appliquer avec l'accord de la personne, puis lancer les contrôles de « Commandes du projet ».
 - **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
   1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.
@@ -133,7 +133,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 ### Lancer une étape de la méthode
 
-Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande>` (ex. `pulse-aidd etape brainstorm`), puis appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
+Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande> --sans-communes` (ex. `pulse-aidd etape brainstorm --sans-communes`), puis appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
 
 Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/clear` puis lancez `<commande>` : vous repartirez avec une conversation légère. »
 

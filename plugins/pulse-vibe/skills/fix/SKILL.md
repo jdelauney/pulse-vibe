@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd reference *) Bash(p
 
 !`pulse-aidd contexte fix`
 
-Appliquer les « Règles communes Pulse » et les règles de qualité ci-dessus pendant toute la commande. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les règles de qualité du code se chargent à l'étape 3, avec `pulse-aidd qualite`. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
 
 Problème signalé : `$ARGUMENTS`
 
@@ -59,7 +59,7 @@ Repères fréquents :
 
 ## 3. Choisir la correction
 
-Évaluer 1 à 3 solutions selon : **corrige la cause** (plutôt que le symptôme), **préserve ce qui fonctionne**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
+Lancer `pulse-aidd qualite` (règles de qualité du code), puis évaluer 1 à 3 solutions selon : **corrige la cause** (plutôt que le symptôme), **préserve ce qui fonctionne**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
 
 Si la correction **change le comportement attendu** (une règle métier, un écran) : cela devient une décision, au-delà d'une correction. La poser à la personne (AskUserQuestion), et proposer de mettre à jour la user story.
 

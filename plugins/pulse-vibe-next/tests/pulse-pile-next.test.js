@@ -13,6 +13,7 @@ const REF = path.join(RACINE, "references");
 // Chemin relatif et cwd = racine du plugin : fonctionne avec Git Bash, macOS et Linux.
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-pile-next", ...args], { cwd: RACINE, encoding: "utf8" });
 const lire = (...p) => fs.readFileSync(path.join(...p), "utf8");
+const { texteRecette } = require("../scripts/decouper-recette.js");
 
 const SECTIONS_RECETTE = [
   "## Prérequis",
@@ -110,9 +111,7 @@ test("reference : affiche un fichier du pack, refuse une sortie du dossier", () 
 
 test("chaque recette suit le format commun", () => {
   for (const nom of RECETTES) {
-    const fichier = path.join(REF, "recettes", `${nom}.md`);
-    assert.ok(fs.existsSync(fichier), `${nom}.md absent`);
-    const texte = lire(fichier);
+    const texte = texteRecette(nom);
     assert.match(texte, new RegExp(`^# Recette : ${nom}$`, "m"), nom);
     assert.match(texte, /^> Quand l'utiliser : .+$/m, `${nom} : « Quand l'utiliser »`);
     for (const section of SECTIONS_RECETTE) assert.ok(texte.includes(`\n${section}\n`), `${nom} : ${section}`);
@@ -120,15 +119,45 @@ test("chaque recette suit le format commun", () => {
   }
 });
 
-test("chaque recette ou référence citée existe", () => {
+test("chaque recette, étape ou référence citée existe", () => {
   const textes = [...fs.readdirSync(path.join(REF, "contexte")).map((f) => path.join(REF, "contexte", f)), path.join(REF, "fiche.md"), path.join(REF, "technical.md"), path.join(REF, "theme.md")];
-  for (const d of ["recettes"]) for (const f of fs.readdirSync(path.join(REF, d))) textes.push(path.join(REF, d, f));
+  (function parcourir(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const chemin = path.join(d, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (e.name.endsWith(".md")) textes.push(chemin);
+    }
+  })(path.join(REF, "recettes"));
+  const existe = (nom) => fs.existsSync(path.join(REF, "recettes", nom, "index.md"));
   const manquantes = [];
   for (const f of textes) {
-    for (const [, nom] of lire(f).matchAll(/pulse-aidd pile recette ([a-z][a-z-]*)/g))
-      if (!fs.existsSync(path.join(REF, "recettes", `${nom}.md`))) manquantes.push(`${path.basename(f)} : ${nom}`);
+    const texte = lire(f);
+    for (const [, nom] of texte.matchAll(/pulse-aidd pile recette ([a-z][a-z-]*)/g)) if (!existe(nom)) manquantes.push(`${path.relative(REF, f)} : ${nom}`);
+    for (const [, nom, id] of texte.matchAll(/pulse-aidd pile recette ([a-z][a-z-]*) etape ([a-z0-9-]+)/g))
+      if (!fs.existsSync(path.join(REF, "recettes", nom, `etape-${id}.md`))) manquantes.push(`${path.relative(REF, f)} : ${nom} etape ${id}`);
+    for (const [, chemin] of texte.matchAll(/pulse-aidd pile reference ([\w./-]+\.md)/g))
+      if (!fs.existsSync(path.join(REF, chemin))) manquantes.push(`${path.relative(REF, f)} : ${chemin}`);
   }
   assert.deepStrictEqual(manquantes, []);
+});
+
+test("recette connexion : vue d'ensemble, une étape, les tests ; étape ou argument inconnus refusés", () => {
+  const index = lancer("recette", "connexion");
+  assert.strictEqual(index.status, 0, index.stderr);
+  assert.match(index.stdout, /^# Recette : connexion$/m);
+  assert.match(index.stdout, /^- Étape 1 – .+ : `pulse-aidd pile recette connexion etape 1`$/m);
+  assert.ok(index.stdout.length <= 30000, `vue d'ensemble : ${index.stdout.length}`);
+  const etape = lancer("recette", "connexion", "etape", "3");
+  assert.strictEqual(etape.status, 0);
+  assert.match(etape.stdout, /^### 3\. /);
+  const tests = lancer("recette", "connexion", "tests");
+  assert.strictEqual(tests.status, 0);
+  assert.match(tests.stdout, /### Intégration/);
+  for (const args of [["recette", "connexion", "etape", "99"], ["recette", "connexion", "etape", "../index"], ["recette", "connexion", "etape"], ["recette", "connexion", "autre"]]) {
+    const r = lancer(...args);
+    assert.strictEqual(r.status, 1, args.join(" "));
+    assert.match(r.stdout, /etape 1|Usage/, args.join(" "));
+  }
 });
 
 test("le pack reste générique : aucune mention d'une formation, d'un formateur ou de stagiaires", () => {
@@ -166,16 +195,21 @@ test("aucune clé ressemblant à une vraie dans les références et le squelette
   assert.deepStrictEqual(trouves, []);
 });
 
-test("la fiche s'accompagne de l'architecture, pour tech, plan, implement et review", () => {
-  for (const commande of ["tech", "plan", "implement", "review"]) {
+test("la fiche s'accompagne de l'architecture pour tech, plan et review ; à la demande pour réaliser et corriger", () => {
+  for (const commande of ["tech", "plan", "review"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0);
     assert.match(r.stdout, /----- Architecture du code/, commande);
   }
+  for (const commande of ["implement", "fix", "spirc", "auto-fix"]) {
+    const r = lancer("contexte", commande);
+    assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
+    assert.match(r.stdout, /pulse-aidd pile reference architecture.md/, commande);
+  }
 });
 
 test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {
-  const texte = lire(REF, "recettes", "fichiers.md");
+  const texte = texteRecette("fichiers");
   assert.match(texte, /\| `next\.config\.ts` \(modifié\) \|/);
   assert.ok(texte.includes('"connect-src": ['), "bloc connect-src");
   // Sans forcePathStyle, le SDK signe une adresse <bucket>.<compte>.eu.r2… : la CSP vise cet hôte exact.
@@ -192,7 +226,7 @@ test("contexte security : en-têtes dans next.config.ts, sans nonce, preload dé
 });
 
 test("recette mesure-reelle : en développement, la CSP autorise le script de diagnostic de Speed Insights", () => {
-  const texte = lire(REF, "recettes", "mesure-reelle.md");
+  const texte = texteRecette("mesure-reelle");
   assert.ok(texte.includes("| `next.config.ts` (modifié) | A |"), "ligne du tableau des fichiers");
   assert.ok(texte.includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
 });
@@ -203,7 +237,7 @@ test("contexte security : sources de toutes les recettes qui touchent la CSP", (
 });
 
 test("recette limite : trois stratégies, la base par défaut, la garde dans src/lib/limite.ts", () => {
-  const texte = lire(REF, "recettes", "limite.md");
+  const texte = texteRecette("limite");
   for (const attendu of ["LIMITE_STOCKAGE", "limiteurBase", "limiteurUpstash", "limiteurMemoire", "src/core/shared/limiteur.port.ts", "src/lib/limite.ts", "onConflictDoUpdate", "verifierContratLimiteur"])
     assert.ok(texte.includes(attendu), attendu);
   assert.match(texte, /z\.enum\(\["base", "redis", "memoire"\]\)\.default\("base"\)/);
@@ -211,13 +245,13 @@ test("recette limite : trois stratégies, la base par défaut, la garde dans src
 
 test("le chemin de la garde de limite est le même partout", () => {
   const anciens = [];
-  for (const f of ["recettes/mesure-reelle.md", "recettes/email.md", "recettes/connexion.md", "architecture.md", "fiche.md"])
-    if (lire(REF, f).includes("@src/adapters/limite/limite.adapter")) anciens.push(f);
+  for (const nom of ["mesure-reelle", "email", "connexion"]) if (texteRecette(nom).includes("@src/adapters/limite/limite.adapter")) anciens.push(`recettes/${nom}`);
+  for (const f of ["architecture.md", "fiche.md"]) if (lire(REF, f).includes("@src/adapters/limite/limite.adapter")) anciens.push(f);
   assert.deepStrictEqual(anciens, []);
 });
 
 test("recette formulaire-public : champ piège, jeton signé, limite, Turnstile en option avec sa CSP", () => {
-  const texte = lire(REF, "recettes", "formulaire-public.md");
+  const texte = texteRecette("formulaire-public");
   for (const attendu of ["champ_verification", "FORMULAIRE_SECRET", "actionFormulairePublic", "useProtectionFormulaire", "app/api/jeton-formulaire/route.ts", "pulse-aidd pile recette limite", "timingSafeEqual", "Rechargez la page et réessayez.", "Envoi trop rapide. Patientez quelques secondes, puis réessayez."])
     assert.ok(texte.includes(attendu), attendu);
   assert.match(texte, /### Option : Turnstile/);
@@ -233,7 +267,7 @@ test("contexte security : Turnstile parmi les sources ajoutées par les recettes
 });
 
 test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Redis l'ajoute", () => {
-  const texte = lire(REF, "recettes", "limite.md");
+  const texte = texteRecette("limite");
   const [base, option] = texte.split("### Option : Redis");
   assert.ok(option, "section de l'option Redis");
   assert.ok(!base.includes("@src/adapters/limite/upstash.adapter"), "aucun import d'Upstash avant l'option");
@@ -243,7 +277,7 @@ test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Red
 });
 
 test("recette formulaire-public : correctifs de revue (champ neutre, clés Turnstile ensemble, échec du widget)", () => {
-  const texte = lire(REF, "recettes", "formulaire-public.md");
+  const texte = texteRecette("formulaire-public");
   assert.ok(!texte.includes("site_web_societe"), "ancien nom du champ piège");
   for (const attendu of ["data-1p-ignore", "n'a pas pu se charger", "NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional()", "les deux clés Turnstile vont ensemble", "VARIABLES_VALIDES", "e2e/turnstile.spec.ts"])
     assert.ok(texte.includes(attendu), attendu);
@@ -308,7 +342,10 @@ test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
 
 test("chaque action des recettes et de l'architecture porte un nom (.metadata), journalisé par safe-action", () => {
   const sansNom = [];
-  const fichiers = [...fs.readdirSync(path.join(REF, "recettes")).map((n) => path.join(REF, "recettes", n)), path.join(REF, "architecture.md")];
+  const fichiers = [path.join(REF, "architecture.md")];
+  (function parcourir(d) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) (e.isDirectory() ? parcourir : (c) => fichiers.push(c))(path.join(d, e.name));
+  })(path.join(REF, "recettes"));
   for (const f of fichiers) {
     const lignes = lire(f).split("\n");
     lignes.forEach((ligne, i) => {
@@ -318,7 +355,7 @@ test("chaque action des recettes et de l'architecture porte un nom (.metadata), 
     });
   }
   assert.deepStrictEqual(sansNom, []);
-  const safeAction = lire(REF, "recettes", "connexion.md").split("// src/lib/safe-action.ts")[1].split("```")[0];
+  const safeAction = texteRecette("connexion").split("// src/lib/safe-action.ts")[1].split("```")[0];
   for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
 });
 
@@ -382,14 +419,14 @@ test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", 
 test("README du projet : « Tester en local » fourni par le pack, lignes des recettes à outil", () => {
   const readme = lire(REF, "readme.md");
   for (const attendu of ["npm install", "npx playwright install chromium", "npm run dev", "http://localhost:3000", "vercel link", "mailpit", "http://localhost:8025"]) assert.ok(readme.includes(attendu), attendu);
-  const ecoute = lire(REF, "recettes", "paiement.md").match(/^stripe listen .*$/m)[0];
+  const ecoute = texteRecette("paiement").match(/^stripe listen .*$/m)[0];
   assert.ok(readme.includes(ecoute), "même commande stripe listen que la recette paiement");
   assert.match(lire(REF, "contexte", "tech.md"), /« Tester en local » par le bloc de base de `pulse-aidd pile reference readme\.md`/);
   assert.match(lire(REF, "contexte", "implement.md"), /pulse-aidd pile reference readme\.md/);
 });
 
 test("recette langues : le layout par langue garde le lien d'évitement et la zone #contenu du squelette", () => {
-  const langues = lire(REF, "recettes", "langues.md");
+  const langues = texteRecette("langues");
   const layout = langues.slice(langues.indexOf("// app/[locale]/layout.tsx"));
   const code = layout.slice(0, layout.indexOf("```"));
   assert.ok(code.includes('href="#contenu"'), 'lien href="#contenu"');
@@ -405,4 +442,33 @@ test("deploy : commande de construction complète, migrations juste avant la con
     deploy.includes("node scripts/verifier.js && npm run check && npm run typecheck && npm test && node scripts/migrer.mjs --vercel && npm run build"),
     "buildCommand complet avec migrer.mjs juste avant npm run build",
   );
+});
+
+test("toutes les recettes sont découpées : un dossier avec index.md, plus aucun recettes/<nom>.md", () => {
+  for (const nom of RECETTES) {
+    assert.ok(fs.existsSync(path.join(REF, "recettes", nom, "index.md")), `${nom}/index.md`);
+    assert.ok(fs.existsSync(path.join(REF, "recettes", nom, "tests.md")), `${nom}/tests.md`);
+    assert.ok(!fs.existsSync(path.join(REF, "recettes", `${nom}.md`)), `${nom}.md retiré`);
+  }
+  const limite = lancer("recette", "limite", "etape", "option-redis");
+  assert.strictEqual(limite.status, 0);
+  assert.match(limite.stdout, /^### Option : Redis/);
+  assert.strictEqual(lancer("recette", "mesure-reelle", "etape", "option-a").status, 0);
+  assert.strictEqual(lancer("recette", "formulaire-public", "etape", "option-turnstile").status, 0);
+  assert.strictEqual(lancer("recette", "suivi-erreurs", "etape", "2").status, 0);
+});
+
+test("recette <nom> tests sans tests.md : message clair et code 1", () => {
+  const d = fs.mkdtempSync(path.join(require("os").tmpdir(), "pulse-pack-"));
+  try {
+    fs.mkdirSync(path.join(d, "bin"));
+    fs.copyFileSync(path.join(RACINE, "bin", "pulse-pile-next"), path.join(d, "bin", "pulse-pile-next"));
+    fs.mkdirSync(path.join(d, "references", "recettes", "essai"), { recursive: true });
+    fs.writeFileSync(path.join(d, "references", "recettes", "essai", "index.md"), "# Recette : essai\n");
+    const r = spawnSync("bash", ["bin/pulse-pile-next", "recette", "essai", "tests"], { cwd: d, encoding: "utf8" });
+    assert.strictEqual(r.status, 1);
+    assert.match(r.stdout, /La recette essai n'a pas de tests à copier/);
+  } finally {
+    fs.rmSync(d, { recursive: true, force: true });
+  }
 });

@@ -130,6 +130,31 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
+test("contexte init, status et guide : fichiers du projet et cycle Pulse", () => {
+  for (const commande of ["init", "status", "guide"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    for (const titre of ["===== Règles communes Pulse =====", "===== Les fichiers du projet =====", "===== Le cycle Pulse ====="])
+      assert.ok(r.stdout.includes(titre), `${commande} : ${titre}`);
+  }
+  assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
+});
+
+test("contexte implement et fix : règles de qualité chargées à la demande", () => {
+  for (const commande of ["implement", "fix"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(!r.stdout.includes("===== Règles de qualité du code ====="), commande);
+    assert.ok(!r.stdout.includes("===== Clean code ====="), commande);
+  }
+  assert.ok(lancer("qualite").stdout.includes("===== Clean code ====="), "pulse-aidd qualite reste complet");
+  const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
+  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite` une fois/);
+  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite` \(règles de qualité du code\), puis évaluer/);
+  const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
+  assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
+});
+
 test("contexte implement, spirc, fix, learn et explain : modèle du lexique", () => {
   for (const commande of ["implement", "spirc", "fix", "learn", "explain"]) {
     const r = lancer("contexte", commande);
@@ -186,6 +211,20 @@ test("travail-fini <dossier> : efface seulement le travail en cours de ce dossie
   assert.match(spawnSync("bash", [outil], { encoding: "utf8" }).stdout, /travail-fini \[dossier\]/);
 });
 
+test("etape --sans-communes : instructions et contexte de l'étape, sans les règles communes", () => {
+  const avec = lancer("etape", "commit");
+  const sans = lancer("etape", "commit", "--sans-communes");
+  assert.strictEqual(sans.status, 0, sans.stderr);
+  assert.ok(avec.stdout.includes("===== Règles communes Pulse ====="), "sans option : règles communes");
+  assert.ok(!sans.stdout.includes("===== Règles communes Pulse ====="), "avec l'option : sans règles communes");
+  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== Le dépôt distant et l'envoi du travail ====="])
+    assert.ok(sans.stdout.includes(titre), titre);
+});
+
+test("l'aide décrit l'option --sans-communes", () => {
+  assert.match(lancer().stdout, /etape <commande> \[--sans-communes\]/);
+});
+
 test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
   const r = lancer("tests");
   assert.strictEqual(r.status, 0, r.stderr);
@@ -200,8 +239,8 @@ test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
   ]) assert.ok(r.stdout.includes(titre), titre);
 });
 
-test("contexte implement, spirc et test : la procédure des tests automatiques", () => {
-  for (const commande of ["implement", "spirc", "test"]) {
+test("contexte implement et test : la procédure des tests automatiques", () => {
+  for (const commande of ["implement", "test"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Tests automatiques : tests d'abord ====="), commande);
@@ -423,4 +462,36 @@ test("contexte review et spirc : la référence « Examiner une tâche »", () =
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Examiner une tâche ====="), commande);
   }
+});
+
+test("etape --sans-communes : les consignes du pack restent", () => {
+  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("etape", "implement", "--sans-communes");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /Consignes du pack pour implement/);
+  assert.doesNotMatch(r.stdout, /===== Règles communes Pulse =====/);
+});
+
+test("etape --sans-communes : une ligne rappelle que les règles communes sont déjà chargées", () => {
+  const sans = lancer("etape", "commit", "--sans-communes").stdout;
+  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Déroulé ci-dessous.)"));
+  assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
+});
+
+test("contexte review : modèle de rapport, checklist chargée par le reviewer", () => {
+  const r = lancer("contexte", "review");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Modèle : rapport de revue ====="));
+  assert.ok(!r.stdout.includes("===== Checklist sécurité ====="));
+  assert.ok(!lancer("contexte", "spirc").stdout.includes("===== Checklist sécurité ====="), "spirc sans checklist");
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ="), "plan la garde");
+  assert.ok(lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security la garde");
+});
+
+test("contexte spirc : règles communes, modèle de revue et lexique ; références de réalisation à la demande", () => {
+  const r = lancer("contexte", "spirc");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : rapport de revue =====", "===== Modèle : docs/lexique.md ====="])
+    assert.ok(r.stdout.includes(titre), titre);
+  for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques : tests d'abord =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+    assert.ok(!r.stdout.includes(titre), titre);
 });

@@ -9,7 +9,7 @@ const path = require("path");
 
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const F = "```";
-const RECETTES = path.join(__dirname, "..", "references", "recettes");
+const { texteRecette } = require("../scripts/decouper-recette.js");
 
 test("extraction : fichiers, ajouts, remplacements et commandes, dans l'ordre du document", () => {
   const texte = [
@@ -123,7 +123,7 @@ test("arguments : --recettes sans valeur, option inconnue", () => {
 test("recettes balisées : connexion, liste, fichiers, paiement ; chaque fichier complet porte sa balise", () => {
   const sansBalise = { liste: "### 12. Quand utiliser TanStack Query ou Zustand" };
   for (const nom of ["connexion", "liste", "fichiers", "paiement"]) {
-    const texte = fs.readFileSync(path.join(RECETTES, `${nom}.md`), "utf8");
+    const texte = texteRecette(nom);
     const etapes = extraireEtapes(texte);
     assert.ok(etapes.some((e) => e.type === "commande" && e.commande === "npm run db:generate"), `${nom} : génération de la migration`);
     const lignes = texte.split("\n");

@@ -2,7 +2,7 @@
 description: Les secrets du projet - inventaire sans aucune valeur, renouvellement sans coupure, réaction à une fuite de clé (révoquer d'abord) ; la valeur ne passe jamais par la conversation
 argument-hint: "[inventaire | renouveler <NOM> | fuite [<NOM>]] (par défaut : inventaire)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte secrets) Bash(pulse-aidd reference secrets/*) Bash(pulse-aidd modele *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *) Bash(pulse-aidd sonder *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git log *) Bash(git ls-files *) Bash(git check-ignore *) Bash(git remote -v) Bash(git remote get-url *)
+allowed-tools: Bash(pulse-aidd contexte secrets) Bash(pulse-aidd reference secrets/*) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd modele *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *) Bash(pulse-aidd sonder *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git log *) Bash(git ls-files *) Bash(git check-ignore *) Bash(git remote -v) Bash(git remote get-url *)
 ---
 
 # /pulse:secrets – Les secrets du projet
