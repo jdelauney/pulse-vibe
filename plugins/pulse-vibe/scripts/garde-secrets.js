@@ -3,8 +3,9 @@
 //
 // Bloque, avant qu'ils ne se produisent :
 //  - l'écriture d'une clé secrète dans un fichier de code (Write / Edit) ;
-//  - la lecture d'un fichier .env par l'IA (Read, Grep, y compris un .env non ignoré dans le dossier fouillé) ;
-//  - l'ajout d'un fichier .env à Git (git add) ;
+//  - la lecture d'un fichier .env par l'IA (Read, Grep, y compris un .env non ignoré dans le dossier fouillé
+//    et un filtre de Grep qui couvre un .env) ;
+//  - l'ajout d'un fichier .env à Git (git add, git stage, git update-index --add, --pathspec-from-file) ;
 //  - un commit qui contient un fichier .env ou une clé secrète (git commit, y compris par chemin) ;
 //  - un push alors qu'un fichier .env est suivi par Git (git push).
 // La commande est lue par lecture-commande.js, comme pour le garde-fou des commandes.
@@ -20,6 +21,7 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 const { trouverSecrets, estFichierEnv, nomReel } = require("./motifs");
 const { commandesSimples, optionsGlobalesGit } = require("./lecture-commande");
+const { globCouvreEnv } = require("./chemins-sensibles");
 
 const TAILLE_MAX = 512 * 1024; // on ne lit pas les gros fichiers
 
@@ -120,6 +122,12 @@ function verifierLecture(outil, ti, cwd) {
   const cibles = [ti.file_path, ti.path, ti.glob].filter((c) => typeof c === "string");
   let visee = cibles.find((c) => estFichierEnv(c) || /(^|[\\/])\.env\*?$/i.test(c) || /(^|[\\/])\.env\.\*$/i.test(c));
   if (!visee && outil === "Grep" && typeof ti.glob === "string" && /(^|[\\/{,])\.env(?!\.(example|sample|template)\b)(?![A-Za-z0-9_-])/i.test(ti.glob)) visee = ti.glob;
+  // Un glob donné à Grep passe outre .gitignore : il ne doit couvrir aucun .env.
+  let parFiltre = false;
+  if (!visee && outil === "Grep" && typeof ti.glob === "string" && globCouvreEnv(ti.glob, path.resolve(cwd, ti.path || "."))) {
+    visee = ti.glob;
+    parFiltre = true;
+  }
   let nonIgnore = false;
   if (!visee && outil === "Grep" && !ti.glob && !ti.type) {
     const exposes = envNonIgnores(path.resolve(cwd, ti.path || "."));
@@ -130,7 +138,10 @@ function verifierLecture(outil, ti, cwd) {
   }
   if (!visee) return;
   refuser(
-    `🔒 Pulse garde le contenu de « ${nomReel(visee) || visee} » hors de la conversation : ce fichier contient les secrets du projet.\n` +
+    (parFiltre
+      ? `🔒 Pulse garde le contenu des fichiers .env hors de la conversation : le filtre « ${visee} » de cette recherche les couvre, même quand .gitignore les écarte.\n` +
+        `À faire : un filtre qui nomme le type de fichier cherché (par exemple « *.ts »).\n`
+      : `🔒 Pulse garde le contenu de « ${nomReel(visee) || visee} » hors de la conversation : ce fichier contient les secrets du projet.\n`) +
       (nonIgnore ? `Cette recherche le lirait, car il ne figure pas dans .gitignore. À faire d'abord : ajouter « .env* » au .gitignore.\n` : "") +
       `À la place : \`pulse-aidd secrets inventaire\` liste les variables (noms, présence, sans aucune valeur) ; ` +
       `.env.example donne les noms attendus. La personne modifie elle-même .env dans son éditeur.`
@@ -158,15 +169,45 @@ function fichiersModifies(racine) {
 // Options de git commit suivies d'une valeur : le mot suivant n'est pas un chemin.
 const AVEC_VALEUR_COMMIT = new Set(["-m", "--message", "-F", "--file", "-C", "--reuse-message", "-c", "--reedit-message", "--author", "--date", "--fixup", "--squash", "-t", "--template", "--trailer", "--cleanup", "--pathspec-from-file"]);
 
-/** Les appels à git d'une commande (lanceurs dépliés, texte cité ignoré). */
+/** Les appels à git d'une commande (lanceurs dépliés, texte cité ignoré). git stage = git add ; git update-index --add indexe aussi. */
 function appelsGit(commande, dialecte) {
   return commandesSimples(commande, dialecte)
     .filter((c) => c.cmd === "git")
     .map((c) => {
       const { k, prefixe } = optionsGlobalesGit(c.args);
-      return { sous: c.args[k], args: c.args.slice(k + 1), prefixe, viaXargs: c.viaXargs };
+      let sous = c.args[k];
+      let args = c.args.slice(k + 1);
+      if (sous === "stage") sous = "add";
+      if (sous === "update-index" && args.includes("--add")) {
+        sous = "add";
+        args = args.filter((a) => !a.startsWith("-"));
+      }
+      return { sous, args, prefixe, viaXargs: c.viaXargs };
     });
 }
+
+/** Chemins lus dans --pathspec-from-file (un par ligne). null : liste lue sur l'entrée standard (« - »), inconnue. */
+function cheminsDepuisFichier(args, cwd) {
+  for (let k = 0; k < args.length; k++) {
+    const a = args[k];
+    const valeur = a.startsWith("--pathspec-from-file=") ? a.slice("--pathspec-from-file=".length) : a === "--pathspec-from-file" ? args[k + 1] : undefined;
+    if (valeur === undefined) continue;
+    if (valeur === "-") return null;
+    try {
+      return fs
+        .readFileSync(path.resolve(cwd, valeur), "utf8")
+        .split(/\r?\n|\0/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+/** Les arguments sans --pathspec-from-file ni sa valeur (forme collée ou séparée). */
+const sansFichierDeChemins = (args) => args.filter((t, k) => !t.startsWith("--pathspec-from-file") && args[k - 1] !== "--pathspec-from-file");
 
 /** Chemins nommés dans git commit : Git enregistre leur contenu actuel, sans passer par l'index. */
 function cheminsDuCommit(args) {
@@ -225,7 +266,9 @@ function controlerAppels(appels, dossier, racine, etat) {
   // git add
   for (const a of appels.filter((x) => x.sous === "add")) {
     if (a.args.some((t) => t === "-n" || t === "--dry-run")) continue;
-    for (const f of candidatsAdd(a.viaXargs ? ["-A"] : a.args, racine, dossier)) {
+    const depuis = cheminsDepuisFichier(a.args, dossier);
+    const liste = a.viaXargs || depuis === null ? ["-A"] : [...sansFichierDeChemins(a.args), ...depuis];
+    for (const f of candidatsAdd(liste, racine, dossier)) {
       if (estFichierEnv(f)) fichiersEnv.add(f);
       else noter(f, lireFichier(path.join(racine, f)));
     }
@@ -234,8 +277,9 @@ function controlerAppels(appels, dossier, racine, etat) {
   // git commit
   const commits = appels.filter((x) => x.sous === "commit");
   if (commits.length) {
-    const toutAjouter = commits.some((a) => a.args.some((t) => t === "--all" || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(t)));
-    const chemins = commits.flatMap((a) => cheminsDuCommit(a.args));
+    const depuisFichiers = commits.map((a) => cheminsDepuisFichier(a.args, dossier));
+    const toutAjouter = depuisFichiers.includes(null) || commits.some((a) => a.args.some((t) => t === "--all" || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(t)));
+    const chemins = [...commits.flatMap((a) => cheminsDuCommit(sansFichierDeChemins(a.args))), ...depuisFichiers.flatMap((d) => d || [])];
     const indexes = (git(["diff", "--cached", "--name-only", "-z"], racine) || "").split("\u0000").filter(Boolean);
     const suivis = toutAjouter ? (git(["diff", "--name-only", "-z"], racine) || "").split("\u0000").filter(Boolean) : [];
     const parChemin = chemins.length ? (git(["diff", "HEAD", "--name-only", "-z", "--", ...chemins], dossier) || "").split("\u0000").filter(Boolean) : [];

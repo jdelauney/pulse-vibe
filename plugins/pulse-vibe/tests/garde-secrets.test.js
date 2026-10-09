@@ -529,3 +529,59 @@ test("refus de lecture d'un .env déguisé : le nom affiché est celui du fichie
   assert.ok(refuse(r));
   assert.ok(r.permissionDecisionReason.includes("« .env »"), r.permissionDecisionReason);
 });
+
+test("Grep avec un filtre qui couvre un .env : refusé, même ignoré par Git ; filtres ordinaires permis", () => {
+  const { dir, ecrire } = depotTemporaire();
+  ecrire(".env", "STRIPE=1\n");
+  ecrire(".gitignore", ".env\n");
+  const grep = (glob) => lancerHook({ tool_name: "Grep", tool_input: { pattern: "STRIPE", path: dir, glob, output_mode: "content" }, cwd: dir });
+  for (const g of ["*", ".e?v", ".e*", "{.env,x}", "**/.[e]nv", "!*.js"]) {
+    const s = grep(g);
+    assert.ok(refuse(s), g);
+    assert.match(s.permissionDecisionReason, /pulse-aidd secrets inventaire/);
+  }
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}", "src/**/*.js", ".env.example"]) assert.strictEqual(grep(g), null, g);
+});
+
+test("Grep avec un filtre large dans un dossier sans .env : permis", () => {
+  const { dir } = depotTemporaire();
+  for (const g of ["*", "!*.js"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
+});
+
+test("git stage, update-index --add et --pathspec-from-file : contrôlés comme git add et git commit", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("config.js", "const a = 1;\n");
+  git("add", "config.js");
+  git("commit", "-q", "-m", "c");
+  ecrire("config.js", `const k = "${FAUX.stripe}";\n`);
+  ecrire("liste.txt", "config.js\n");
+  for (const c of [
+    "git stage config.js",
+    "git update-index --add config.js",
+    "git commit --pathspec-from-file=liste.txt -m x",
+    "git add --pathspec-from-file=liste.txt",
+    "git add --pathspec-from-file liste.txt",
+    "git commit --pathspec-from-file liste.txt -m x",
+  ])
+    assert.ok(refuse(lancerHook(bash(c, dir))), c);
+  assert.strictEqual(lancerHook(bash("git stage public/index.html", dir)), null);
+  // Ruling F7 : le nom du fichier-liste (forme avec espace) n'est pas lu comme un chemin à indexer.
+  ecrire("sain.txt", "public/index.html\n");
+  assert.strictEqual(lancerHook(bash("git add --pathspec-from-file sain.txt", dir)), null);
+});
+
+test("--pathspec-from-file : le fichier-liste n'est pas pris pour un chemin (forme avec espace)", () => {
+  const { dir, ecrire } = depotTemporaire();
+  // Le fichier-liste porte lui-même un secret : seul son contenu (la liste) compte, pas le fichier.
+  ecrire("liste.txt", `public/index.html\n# ${FAUX.stripe}\n`);
+  assert.strictEqual(lancerHook(bash("git add --pathspec-from-file liste.txt", dir)), null);
+  assert.ok(refuse(lancerHook(bash("git add liste.txt", dir))));
+});
+
+test("Review Focus 2 : Grep avec *.ts, **/*.tsx, *.{ts,tsx} permis ; * permis sans .env", () => {
+  const { dir, ecrire } = depotTemporaire();
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: "*" }, cwd: dir }), null);
+  ecrire(".env", "A=1\n");
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
+});
