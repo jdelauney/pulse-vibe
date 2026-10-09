@@ -4,11 +4,9 @@
 
 const test = require("node:test");
 const assert = require("node:assert");
-const fs = require("fs");
 const path = require("path");
 
-const { extraireEtapes, appliquerAuTexte } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
-const RECETTES = path.join(__dirname, "..", "references", "recettes");
+const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const F = "```";
 
 test("extraction : fichiers, ajouts, remplacements et commandes, dans l'ordre du document", () => {
@@ -70,4 +68,52 @@ test("pose : ajout après une ligne, ajout en fin de fichier, remplacement d'un 
   assert.strictEqual(appliquerAuTexte(null, { type: "fichier", chemin: "a.ts", contenu: "x\n", ligne: 1 }), "x\n");
   assert.throws(() => appliquerAuTexte(null, { type: "ajout", chemin: "env.ts", ancre: "server: {", contenu: "x\n", ligne: 3 }), /n'existe pas/);
   assert.throws(() => appliquerAuTexte(env, { type: "ajout", chemin: "env.ts", ancre: "client: {", contenu: "x\n", ligne: 3 }), /ancrage introuvable/);
+});
+
+test("commandes : chaque argument est contrôlé, sans interpréteur", () => {
+  for (const mauvaise of [
+    "npm install x --prefix ..",
+    "npm install x ../evil",
+    "npm install a/b",
+    "npm install --global x",
+    "npm install x --registry evil",
+    "npm install",
+    "npx shadcn@latest add button --cwd src",
+    "npx shadcn@latest add Button",
+    "npx shadcn@latest add",
+    "npm run db:generate -- --x",
+    "npm run build",
+  ]) assert.throws(() => analyserCommande(mauvaise, 4), /ligne 4 : commande non permise/, mauvaise);
+  assert.deepStrictEqual(analyserCommande("npm install better-auth@1.7.7 drizzle-orm @scope/pkg@^1.2.0", 1), {
+    programme: "npm",
+    args: ["install", "better-auth@1.7.7", "drizzle-orm", "@scope/pkg@^1.2.0"],
+  });
+  assert.deepStrictEqual(analyserCommande("npx shadcn@latest add button card", 1), { programme: "npx", args: ["shadcn@latest", "add", "button", "card"] });
+  assert.deepStrictEqual(analyserCommande("npm run db:generate", 1), { programme: "npm", args: ["run", "db:generate"] });
+  assert.throws(() => extraireEtapes("<!-- commande: npm install a/b -->\n"), /commande non permise/);
+});
+
+test("chemins : lecteur Windows relatif ou option déguisée refusés", () => {
+  assert.throws(() => extraireEtapes(`<!-- fichier: C:foo.ts -->\n${F}\nX\n${F}\n`), /hors du projet/);
+  assert.throws(() => extraireEtapes(`<!-- fichier: -rf -->\n${F}\nX\n${F}\n`), /hors du projet/);
+});
+
+test("remplacer : accolades imbriquées, fin absente ou ambiguë, bloc vide", () => {
+  const f = "function a() {\n  if (x) {\n    y;\n  }\n}\n\nconst b = 1;\n";
+  const bloc = "function a() {\n  if (z) {\n    w;\n  }\n}\n";
+  assert.strictEqual(
+    appliquerAuTexte(f, { type: "remplacer", chemin: "a.ts", contenu: bloc, ligne: 5 }),
+    "function a() {\n  if (z) {\n    w;\n  }\n}\n\nconst b = 1;\n",
+  );
+  assert.throws(() => appliquerAuTexte("function a() {\n  x;\n", { type: "remplacer", chemin: "a.ts", contenu: "function a() {\n  y;\n}\n", ligne: 7 }), /ligne 7/);
+  assert.throws(() => appliquerAuTexte("f() {\n  x;\n}\nf() {\n  y;\n}\n", { type: "remplacer", chemin: "a.ts", contenu: "f() {\n  z;\n}\n", ligne: 8 }), /ligne 8.*plusieurs/);
+  assert.throws(() => appliquerAuTexte("a\n", { type: "remplacer", chemin: "a.ts", contenu: "\n", ligne: 9 }), /ligne 9.*vide/);
+});
+
+test("arguments : --recettes sans valeur, option inconnue", () => {
+  assert.deepStrictEqual(lireArguments(["--recettes", "connexion, liste"]).recettes, ["connexion", "liste"]);
+  assert.deepStrictEqual(lireArguments([]).recettes, ["connexion", "liste"]);
+  assert.throws(() => lireArguments(["--recettes"]), /--recettes demande/);
+  assert.throws(() => lireArguments(["--projet"]), /--projet demande/);
+  assert.throws(() => lireArguments(["--x"]), /Option inconnue/);
 });

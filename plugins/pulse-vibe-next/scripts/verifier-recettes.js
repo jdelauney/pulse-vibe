@@ -30,7 +30,18 @@ const { spawnSync } = require("child_process");
 const RECETTES = path.join(__dirname, "..", "references", "recettes");
 const CHAINE = ["connexion", "liste"];
 // Commandes qu'une balise peut lancer : installation de paquets, composants shadcn, génération des migrations.
-const COMMANDES_PERMISES = [/^npm install [@a-z0-9][\w@./ -]*$/, /^npx shadcn@latest add [a-z0-9 -]+$/, /^npm run db:generate$/];
+// Chaque argument est contrôlé ; la commande est lancée sans interpréteur (voir lancer).
+const PAQUET = /^(@[a-z0-9-]+\/)?[a-z0-9][a-z0-9._-]*(@[\w.^~-]+)?$/;
+const COMPOSANT = /^[a-z0-9][a-z0-9-]*$/;
+
+/** Découpe une commande balisée : { programme, args } ; refuse tout argument non prévu. */
+function analyserCommande(commande, numero) {
+  const [programme, ...args] = commande.trim().split(/\s+/);
+  if (programme === "npm" && args[0] === "install" && args.length > 1 && args.slice(1).every((a) => PAQUET.test(a))) return { programme, args };
+  if (programme === "npx" && args[0] === "shadcn@latest" && args[1] === "add" && args.length > 2 && args.slice(2).every((a) => COMPOSANT.test(a))) return { programme, args };
+  if (programme === "npm" && args.length === 2 && args[0] === "run" && args[1] === "db:generate") return { programme, args };
+  throw new Error(`ligne ${numero} : commande non permise dans une balise : ${commande}`);
+}
 // drizzle-kit generate lit une adresse sans s'y connecter.
 const ADRESSE_FACTICE = "postgresql://verification@localhost:5432/verification";
 const BALISE = /^<!--\s*(fichier|ajout|remplacer-ligne|remplacer|commande):\s*(.+?)\s*-->\s*$/;
@@ -40,7 +51,7 @@ function lireCible(type, valeur, numero) {
   const m = /^(\S+)(?:\s+(après|début):\s+(.+))?$/.exec(valeur);
   if (!m) throw new Error(`ligne ${numero} : balise illisible : ${valeur}`);
   const [, chemin, mot, ancre] = m;
-  if (path.isAbsolute(chemin) || chemin.split(/[\\/]/).includes("..")) throw new Error(`ligne ${numero} : chemin hors du projet : ${chemin}`);
+  if (path.isAbsolute(chemin) || /^[a-zA-Z]:/.test(chemin) || chemin.startsWith("-") || chemin.split(/[\\/]/).includes("..")) throw new Error(`ligne ${numero} : chemin hors du projet : ${chemin}`);
   if (mot === "après" && type !== "ajout") throw new Error(`ligne ${numero} : « après: » sert seulement à la balise ajout`);
   if (mot === "début" && type !== "remplacer-ligne") throw new Error(`ligne ${numero} : « début: » sert seulement à la balise remplacer-ligne`);
   if (type === "remplacer-ligne" && !ancre) throw new Error(`ligne ${numero} : remplacer-ligne demande « début: <texte> »`);
@@ -59,7 +70,7 @@ function extraireEtapes(texte) {
       if (attente) throw new Error(`ligne ${attente.ligne} : la balise « ${attente.type} » n'est suivie d'aucun bloc de code`);
       const [, type, valeur] = balise;
       if (type === "commande") {
-        if (!COMMANDES_PERMISES.some((m) => m.test(valeur))) throw new Error(`ligne ${i + 1} : commande non permise dans une balise : ${valeur}`);
+        analyserCommande(valeur, i + 1);
         etapes.push({ type, commande: valeur, ligne: i + 1 });
       } else attente = { type, ...lireCible(type, valeur, i + 1), ligne: i + 1 };
       continue;
@@ -100,19 +111,36 @@ function appliquerAuTexte(actuel, etape) {
     lignes.splice(k, 1, ...bloc);
     return lignes.join("\n");
   }
-  // remplacer : de la première ligne du bloc à la ligne suivante égale à sa dernière ligne.
-  const debut = lignes.findIndex((l) => l.trim() === bloc[0].trim());
-  if (debut < 0) throw new Error(`${ou} : début du passage introuvable : ${bloc[0].trim()}`);
-  const fin = lignes.findIndex((l, k) => k >= debut && l.trim() === bloc[bloc.length - 1].trim());
-  if (fin < 0) throw new Error(`${ou} : fin du passage introuvable : ${bloc[bloc.length - 1].trim()}`);
+  // remplacer : de la première ligne du bloc à la ligne suivante égale à sa dernière ligne, de même indentation.
+  if (etape.contenu.trim() === "") throw new Error(`${ou} : le bloc à remplacer est vide`);
+  const debuts = lignes.flatMap((l, k) => (l.trim() === bloc[0].trim() ? [k] : []));
+  if (!debuts.length) throw new Error(`${ou} : début du passage introuvable : ${bloc[0].trim()}`);
+  if (debuts.length > 1) throw new Error(`${ou} : plusieurs passages commencent par « ${bloc[0].trim()} » (lignes ${debuts.map((k) => k + 1).join(", ")} du fichier) : précisez la balise`);
+  const debut = debuts[0];
+  const indentation = (l) => /^\s*/.exec(l)[0];
+  const derniere = bloc[bloc.length - 1].trim();
+  const fin = lignes.findIndex((l, k) => k >= (bloc.length > 1 ? debut + 1 : debut) && l.trim() === derniere && indentation(l) === indentation(bloc[0]));
+  if (fin < 0) throw new Error(`${ou} : fin du passage introuvable (ligne « ${derniere} » de même indentation que le début)`);
   lignes.splice(debut, fin - debut + 1, ...bloc);
   return lignes.join("\n");
 }
 
-function lancer(commande, cwd, env = {}) {
-  console.log(`\n▶ ${commande}`);
-  const r = spawnSync(commande, { cwd, shell: true, stdio: "inherit", env: { ...process.env, ...env } });
-  if (r.status !== 0) throw new Error(`${commande} (code ${r.status})`);
+/** Programme et arguments de lancement sans interpréteur : sous Windows, npm et npx passent par leur script Node. */
+function sansInterpreteur(programme, args) {
+  if (process.platform === "win32" && (programme === "npm" || programme === "npx")) {
+    const script = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", `${programme}-cli.js`);
+    if (fs.existsSync(script)) return { exe: process.execPath, args: [script, ...args] };
+  }
+  return { exe: programme, args };
+}
+
+function lancer(programme, args, cwd, env = {}) {
+  const texte = [programme, ...args].join(" ");
+  console.log(`\n▶ ${texte}`);
+  const { exe, args: complets } = sansInterpreteur(programme, args);
+  const r = spawnSync(exe, complets, { cwd, shell: false, stdio: "inherit", env: { ...process.env, ...env } });
+  if (r.error) throw new Error(`${texte} (${r.error.message})`);
+  if (r.status !== 0) throw new Error(`${texte} (code ${r.status})`);
 }
 
 function poserRecette(dossier, nom) {
@@ -125,8 +153,8 @@ function poserRecette(dossier, nom) {
   for (const e of etapes) {
     if (e.type === "commande") {
       // shadcn demande confirmation pour un composant déjà présent : --yes --overwrite répond à sa place.
-      const commande = e.commande.startsWith("npx shadcn@latest add") ? `${e.commande} --yes --overwrite` : e.commande;
-      lancer(commande, dossier, { DATABASE_URL_DIRECT: ADRESSE_FACTICE });
+      const { programme, args } = analyserCommande(e.commande, e.ligne);
+      lancer(programme, programme === "npx" ? [...args, "--yes", "--overwrite"] : args, dossier, { DATABASE_URL_DIRECT: ADRESSE_FACTICE });
       continue;
     }
     const cible = path.join(dossier, ...e.chemin.split("/"));
@@ -142,7 +170,8 @@ function lireArguments(argv) {
   const opts = { recettes: CHAINE, projet: null, garder: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--recettes") opts.recettes = String(argv[++i] || "").split(",").map((x) => x.trim()).filter(Boolean);
+    if (["--recettes", "--projet"].includes(a) && (argv[i + 1] === undefined || argv[i + 1].startsWith("--"))) throw new Error(`${a} demande une valeur`);
+    if (a === "--recettes") opts.recettes = String(argv[++i]).split(",").map((x) => x.trim()).filter(Boolean);
     else if (a === "--projet") opts.projet = path.resolve(argv[++i]);
     else if (a === "--garder") opts.garder = true;
     else throw new Error(`Option inconnue : ${a}`);
@@ -159,20 +188,23 @@ function principal() {
       const { creerSquelette } = require("./squelette");
       dossier = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-recettes-"));
       creerSquelette({ nom: "Projet de vérification", description: "Vérification automatique des recettes.", dossier });
-      lancer("npm install --no-audit --no-fund", dossier);
+      lancer("npm", ["install", "--no-audit", "--no-fund"], dossier);
     }
     const poses = [];
     for (const nom of opts.recettes) poses.push(...poserRecette(dossier, nom));
     // Mise en forme Biome des fichiers posés : un écart de forme se corrige chez la personne par npm run format.
     const uniques = [...new Set(poses)];
     const avant = new Map(uniques.map((p) => [p, fs.readFileSync(path.join(dossier, p), "utf8")]));
-    spawnSync(`npx biome format --write ${uniques.map((p) => `"${p}"`).join(" ")}`, { cwd: dossier, shell: true, stdio: "ignore" });
+    if (uniques.length) {
+      const { exe, args } = sansInterpreteur("npx", ["biome", "format", "--write", ...uniques]);
+      spawnSync(exe, args, { cwd: dossier, shell: false, stdio: "ignore" });
+    }
     const reformes = uniques.filter((p) => fs.readFileSync(path.join(dossier, p), "utf8") !== avant.get(p));
     if (reformes.length) console.log(`\n⚠️ Mise en forme différente de Biome (à reporter dans la recette) :\n  ${reformes.join("\n  ")}`);
-    lancer("npm run check", dossier);
-    lancer("npm run typecheck", dossier);
-    lancer("npm test", dossier);
-    lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1" });
+    lancer("npm", ["run", "check"], dossier);
+    lancer("npm", ["run", "typecheck"], dossier);
+    lancer("npm", ["test"], dossier);
+    lancer("npm", ["run", "build"], dossier, { SKIP_ENV_VALIDATION: "1" });
     console.log(`\n✅ Recettes vérifiées : ${opts.recettes.join(" → ")}.`);
   } catch (e) {
     console.error(`\n❌ Échec : ${e.message}`);
@@ -187,4 +219,4 @@ function principal() {
 
 if (require.main === module) principal();
 
-module.exports = { extraireEtapes, appliquerAuTexte, COMMANDES_PERMISES };
+module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments };
