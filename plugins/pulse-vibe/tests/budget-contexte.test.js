@@ -24,7 +24,7 @@ function taille(...args) {
 }
 
 // Plafonds en caractères de « pulse-aidd contexte <commande> ».
-// Plafond = mesure à la fin du plan 4 × 1,05, arrondie au 500 supérieur (boucle implement : cible du plan, plus basse).
+// Plafond = mesure à la fin du plan 4 × 1,05, arrondie au 500 supérieur.
 // Une commande qui grossit doit dépasser 5 % avant d’échouer : relever son plafond est alors un choix explicite.
 const PLAFONDS = {
   init: 43500,
@@ -68,8 +68,8 @@ const PLAFONDS_ETAPES = { review: 12500, commit: 26500 };
 // Une boucle de 4 tâches : ce que la conversation principale charge, une seule fois.
 const BOUCLES = {
   implement: {
-    plafond: 75000,
-    parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"]],
+    plafond: 85000,
+    parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"]],
   },
   spirc: {
     plafond: 77500,
