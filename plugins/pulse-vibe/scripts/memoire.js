@@ -10,6 +10,8 @@
 // elle occupe le contexte de chaque conversation, et /pulse:memory compacter la resserre.
 // En mode hook, rappelle aussi le travail en cours (aidd_docs/tasks/in-progress.md) : une décision
 // laissée en attente avant la fermeture de la session, un /clear ou un compactage.
+// En mode hook toujours, signale une mise à jour disponible, un catalogue ancien ou un ancien nom installé
+// (scripts/version.js, sans réseau), quand Claude Code donne la racine du plugin (CLAUDE_PLUGIN_ROOT).
 //
 // Ne remplit qu'un bloc déjà présent : le reste de CLAUDE.md n'est jamais touché.
 //
@@ -266,5 +268,19 @@ if (!rapport) {
     if (alerteHook !== null) process.stdout.write(`${alerteHook}\n`);
   } catch {
     // Même règle que la synchronisation : rien ne doit empêcher la session de démarrer.
+  }
+}
+
+if (!rapport && process.env.CLAUDE_PLUGIN_ROOT) {
+  try {
+    const { avertissementsVersion, dossierClaudeParDefaut } = require("./version");
+    const avis = avertissementsVersion({
+      racinePlugin: process.env.CLAUDE_PLUGIN_ROOT,
+      dossierClaude: dossierClaudeParDefaut(),
+      projet: process.env.CLAUDE_PROJECT_DIR || null,
+    });
+    if (avis.length) process.stdout.write(`${avis.join("\n")}\n`);
+  } catch {
+    // Même règle : rien ne doit empêcher la session de démarrer.
   }
 }

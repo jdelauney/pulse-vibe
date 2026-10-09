@@ -26,7 +26,7 @@ function projet(fichiers) {
 function lancer(dossier, ...args) {
   return spawnSync("node", [SCRIPT, ...args], {
     encoding: "utf8",
-    env: { ...process.env, CLAUDE_PROJECT_DIR: dossier },
+    env: { ...process.env, CLAUDE_PROJECT_DIR: dossier, CLAUDE_PLUGIN_ROOT: "" },
   });
 }
 
@@ -205,4 +205,25 @@ test("reste silencieux juste sous le seuil de 95 %", () => {
   const presque = Array.from({ length: 180 }, (_, i) => `- point ${i}`).join("\n");
   const d = projet({ ...BANQUE, "aidd_docs/memory/technical.md": presque, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
   assert.doesNotMatch(lancer(d).stdout, /de sa limite/);
+});
+
+test("hook : signale une mise à jour disponible (version.js), en plus de la synchronisation", () => {
+  const dossier = projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n` });
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-memoire-version-"));
+  const ecrire = (f, objet) => {
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, JSON.stringify(objet));
+  };
+  const plugin = path.join(base, "plugin");
+  const catalogue = path.join(base, "catalogue");
+  const claude = path.join(base, "claude");
+  ecrire(path.join(plugin, ".claude-plugin", "plugin.json"), { name: "pulse", version: "0.35.0" });
+  ecrire(path.join(catalogue, ".claude-plugin", "marketplace.json"), { name: "pulseia", plugins: [{ name: "pulse", source: "./plugins/pulse-vibe" }] });
+  ecrire(path.join(catalogue, "plugins", "pulse-vibe", ".claude-plugin", "plugin.json"), { name: "pulse", version: "0.36.0" });
+  ecrire(path.join(claude, "plugins", "known_marketplaces.json"), { pulseia: { installLocation: catalogue, lastUpdated: new Date().toISOString() } });
+  ecrire(path.join(claude, "plugins", "installed_plugins.json"), { version: 2, plugins: { "pulse@pulseia": [{ scope: "user", version: "0.35.0" }] } });
+  const r = spawnSync("node", [SCRIPT], { encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: dossier, CLAUDE_PLUGIN_ROOT: plugin, CLAUDE_CONFIG_DIR: claude } });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /mise à jour disponible : pulse 0\.36\.0 \(installé : 0\.35\.0\)/);
+  assert.match(lire(dossier, "CLAUDE.md"), /@aidd_docs\/memory\/project\.md/, "la synchronisation a eu lieu");
 });
