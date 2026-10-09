@@ -20,7 +20,7 @@ Dans un plugin (chemins relatifs à son dossier) :
 | `agents/` | Les sous-agents ; `tools` ou `disallowedTools` = outils réellement disponibles ; `model` toujours explicite |
 | `references/` | Règles partagées, chargées par `pulse-aidd contexte` ou `pulse-aidd reference` (`regles-communes.md` : le noyau commun à toutes les commandes du cœur) |
 | `templates/` | Modèles des fichiers produits dans les projets |
-| `hooks/hooks.json`, `scripts/` | Hooks et leurs scripts Node ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) pour les deux garde-fous |
+| `hooks/hooks.json`, `scripts/` | Hooks et leurs scripts Node ; `garde.js` réunit les deux garde-fous dans un seul processus ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) et `chemins-sensibles.js` reconnaît les fichiers `.env` pour eux |
 | `bin/` | Outils placés dans le PATH par Claude Code (`pulse-aidd` pour le cœur), chacun avec son relais `.cmd` pour PowerShell et cmd |
 | `tests/` | Tests du plugin |
 

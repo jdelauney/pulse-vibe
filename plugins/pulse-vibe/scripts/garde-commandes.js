@@ -6,31 +6,30 @@
 //
 // Refuse (avec l'alternative) :
 //  - un envoi forcé (git push --force, -f, --force-with-lease, +branche, formes abrégées comprises) ;
-//  - le contournement d'un contrôle (--no-verify, git commit -n, -c core.hooksPath, HUSKY=0, variables GIT_CONFIG_…) ;
-//  - un alias Git défini dans la commande (git -c alias.…) ;
+//  - le contournement d'un contrôle (--no-verify, git commit -n, -c core.hooksPath, HUSKY=0, GIT_CONFIG_…, -c alias.…) ;
 //  - l'indexation globale (git add -A / . / -u / motifs / xargs, git commit -a) dans un dépôt qui a déjà un commit ;
-//  - la lecture d'un fichier .env : toute commande dont un mot le désigne (nom, motif, option, référence Git),
-//    sauf celles qui le nomment sans le lire (test, touch, ls, echo, git rm…) ; git grep et git diff hors dépôt ;
+//  - toute commande qui désigne un fichier .env (argument, valeur d'option, @fichier, HEAD:.env, motif qui le couvre),
+//    sauf celles qui le nomment sans le lire (git add/rm --cached/check-ignore, echo, touch, code, pulse-aidd…) ;
+//  - git grep / git diff avec --no-index, --untracked ou --no-exclude-standard dans un dossier qui contient un .env ;
 //  - la suppression de tout le disque, du dossier personnel ou du projet ;
-//  - la suppression d'un dépôt distant, ou son passage en public (gh repo edit, gh api … private=false) ;
-//  - gitleaks sans --redact (les secrets trouvés s'afficheraient).
+//  - la suppression d'un dépôt distant, ou son passage en public (gh repo, gh api private=false) ;
+//  - gitleaks sans --redact.
 // Demande confirmation pour :
 //  - ce qui jette ou déplace du travail (reset --hard, checkout/restore/switch -f, clean -f, stash drop,
 //    branch -D / -f, update-ref, filter-branch, reflog expire, gc --prune=now) ;
 //  - git config au-delà de user.name / user.email ;
-//  - une suppression récursive ou par motif (rm, Remove-Item, rd /s, del /s, find -exec rm, xargs rm, git rm -rf,
-//    rsync --delete, shred, ::Delete, code), ou d'un fichier .env ;
-//  - une commande dont le nom est calculé à l'exécution ($x, $(…), & $g, git $x, alias, Set-Alias) ;
-//  - un texte exécuté par un shell sans être visible (curl … | sh, iex (irm …), bash <(curl …)) ;
-//  - une commande de base de données qui écrase ou supprime (drizzle-kit push, db:push, prisma db push,
-//    supabase db reset, pg_restore, DROP / TRUNCATE / DELETE sans WHERE par -c, -f, < , un tube ou du code, neonctl delete) ;
-//  - une mise en production directe, un envoi sur main ou master quand le site est publié depuis ce dépôt
-//    (--all, push.default=matching, refspec à motif ou calculé compris),
-//    une variable changée chez l'hébergeur, un secret envoyé par pulse-aidd secrets, une fusion (gh pr merge),
-//    une suppression par gh api, vercel … rm, gh repo archive|rename, gh secret set|delete, gh release delete,
-//    les scripts de Pulse appelés directement (node …/secrets.js envoyer), une variable PULSE_SONDES_… ;
-//  - la modification (git commit --amend) d'un commit déjà envoyé ;
-//  - le nom d'un .env rangé dans une variable, l'écriture dans un .env existant, vercel env pull.
+//  - une suppression récursive ou par motif (rm, git rm -rf, Remove-Item, rd /s, del /s, rsync --delete, shred,
+//    find -exec rm, xargs rm, code), ou d'un fichier .env ;
+//  - une commande calculée ($x, $(…), & $x), un tube vers un shell (| sh, | iex), un alias ;
+//  - une commande de base de données qui écrase ou supprime (drizzle-kit push, db:push, prisma db push, pg_restore,
+//    supabase db reset, DROP / TRUNCATE / DELETE sans WHERE par -c, --command=, -f, <, un tube ou du code, neonctl delete) ;
+//  - une mise en production directe, un envoi vers main ou master quand le site est publié depuis ce dépôt
+//    (--all, refspec à motif ou calculé compris), une variable changée chez l'hébergeur, vercel … rm,
+//    un secret envoyé par pulse-aidd secrets (ou par l'appel direct de scripts/secrets.js), une fusion,
+//    une suppression, une archive ou un secret changé par gh ;
+//  - une écriture dans un .env existant, le remplacement de .env.local (vercel env pull) ;
+//  - une modification du contrôle avant commit (.git/hooks, scripts/verifier.js) ;
+//  - la modification (git commit --amend) d'un commit déjà envoyé.
 //
 // La commande est lue par lecture-commande.js (bash, PowerShell, cmd ; lanceurs dépliés).
 // Un texte cité (message de commit, echo, heredoc écrit dans un fichier) ne déclenche rien.
