@@ -226,7 +226,9 @@ function modeleAncien(racine, texteClaude) {
   if (gitignore !== null && !gitignore.includes("aidd_docs/tasks/in-progress.md")) return true;
   if (existe(p("scripts", "verifier.js")) && existe(p(".git", "hooks")) && !/hooksPath/.test(lireSi(p(".git", "config")) || "")) {
     const crochet = lireSi(p(".git", "hooks", "pre-commit")) || "";
-    return !(crochet.includes("pulse-aidd: contrôle des secrets") || crochet.includes("verifier.js --index"));
+    // Crochet de Pulse : à jour seulement avec la copie de secours (l'ancien laissait passer sans scripts/verifier.js).
+    if (crochet.includes("pulse-aidd: contrôle des secrets")) return !crochet.includes("pulse/verifier.js");
+    return !crochet.includes("verifier.js --index");
   }
   return false;
 }

@@ -609,3 +609,17 @@ test("Review Focus 2 : Grep avec *.ts, **/*.tsx, *.{ts,tsx} permis ; * permis sa
   ecrire(".env", "A=1\n");
   for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
 });
+
+test("écrire dans le contrôle avant commit : accord demandé ; avec une clé : refus", () => {
+  for (const [outil, ti] of [
+    ["Write", { file_path: "/p/scripts/verifier.js", content: "// adapté\n" }],
+    ["Edit", { file_path: "/p/.git/hooks/pre-commit", old_string: "x", new_string: "exit 0" }],
+    ["Write", { file_path: "C:\\p\\scripts\\verifier.js", content: "x" }],
+  ]) {
+    const s = lancerHook({ tool_name: outil, tool_input: ti });
+    assert.strictEqual(s && s.permissionDecision, "ask", `${outil} ${ti.file_path}`);
+    assert.match(s.permissionDecisionReason, /pulse-aidd installer-hook/);
+  }
+  assert.ok(refuse(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/scripts/verifier.js", content: `const k = "${FAUX.stripe}";` } })));
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/scripts/autre.js", content: "x" } }), null);
+});

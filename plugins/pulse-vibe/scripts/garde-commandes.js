@@ -46,7 +46,7 @@ const { execFileSync } = require("child_process");
 const path = require("path");
 const { commandesSimples, decouper, nomCommande, optionsGlobalesGit, estOption, flagsCourts } = require("./lecture-commande");
 const { estFichierEnv } = require("./motifs");
-const { designeEnv, contientEnv, envDuDossier, motifVersRegex, NOMS_ENV_COURANTS } = require("./chemins-sensibles");
+const { designeEnv, contientEnv, envDuDossier, motifVersRegex, NOMS_ENV_COURANTS, estControleAvantCommit, MESSAGE_CONTROLE } = require("./chemins-sensibles");
 
 const DOSSIERS_RECONSTRUITS = new Set(["node_modules", ".next", "dist", "build", "coverage", ".turbo", ".vercel", "out", ".cache", ".svelte-kit", ".nuxt", ".output", "playwright-report", "test-results"]);
 
@@ -423,6 +423,21 @@ function ecritEnvExistant(c, cwd) {
   return cibles.some((f) => f && estFichierEnv(f) && existe(f));
 }
 
+// Commandes qui modifient, déplacent ou suppriment le fichier qu'elles nomment.
+const MODIFIEURS = new Set(["rm", "unlink", "shred", "chmod", "chown", "truncate", "ln", "remove-item", "ri", "del", "erase", "rename-item", "rni", "set-content", "sc", "add-content", "ac", "out-file", "clear-content", "clc", "tee", "curl", "wget"]);
+
+/** Vrai si la commande modifie le contrôle des secrets avant commit (.git/hooks, scripts/verifier.js). */
+function toucheControle(c) {
+  if ((c.ecritures || []).some(estControleAvantCommit)) return true;
+  const positions = c.args.filter((a) => !estOption(a));
+  if (COPIEURS.has(c.cmd)) {
+    const deplace = ["mv", "move", "move-item", "mi"].includes(c.cmd);
+    return (positions.length >= 2 && estControleAvantCommit(positions[positions.length - 1])) || (deplace && positions.some(estControleAvantCommit));
+  }
+  if ((c.cmd === "sed" || c.cmd === "perl") && c.args.some((a) => /^-[a-zA-Z]*i/.test(a) || a.startsWith("--in-place"))) return positions.some(estControleAvantCommit);
+  return MODIFIEURS.has(c.cmd) && c.args.some(estControleAvantCommit);
+}
+
 // ---------------------------------------------------------------- Règles par commande
 
 function aDejaUnCommit(cwd, prefixe) {
@@ -709,6 +724,7 @@ function appliquerRegles(c, cwd, constats) {
   // Une variable qui contient le nom d'un .env (f=.env ; cat $f).
   if (c.affectations.some((a) => designeEnv(a.slice(a.indexOf("=") + 1), cwd, c.dialecte))) constats.push([ACCORD, MESSAGES.envDansVariable]);
   if (ecritEnvExistant(c, cwd)) constats.push([ACCORD, MESSAGES.envModifie]);
+  if (toucheControle(c)) constats.push([ACCORD, MESSAGE_CONTROLE]);
   if (c.cmd === "vercel" && c.args[0] === "env" && c.args[1] === "pull") constats.push([ACCORD, MESSAGES.envEcrase]);
   // Recherche récursive : refusée seulement si un dossier fouillé contient un .env.
   // Les dossiers fouillés : les positions, sans le motif (premier mot libre, ou valeur de -e, -eTODO, --regexp…).

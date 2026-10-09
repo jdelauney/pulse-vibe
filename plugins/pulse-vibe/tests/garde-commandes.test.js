@@ -1035,3 +1035,21 @@ test("envoi vers main : @, heads/main, push.default=upstream, --bran, --config-e
   refus("gh api -X PATCH repos/o/r -F private=false");
   refus("gh api repos/o/r --raw-field visibility=public -X PATCH");
 });
+
+test("contrôle avant commit modifié par une commande : accord demandé", () => {
+  for (const c of [
+    "curl -sI https://example.com -o .git/hooks/pre-commit",
+    "curl -s https://example.com --output=scripts/verifier.js",
+    "chmod -x .git/hooks/pre-commit",
+    "rm scripts/verifier.js",
+    "echo exit 0 > .git/hooks/pre-commit",
+    "mv scripts/verifier.js x.js",
+    "cp vide.js scripts/verifier.js",
+    "sed -i 's/exit 1/exit 0/' scripts/verifier.js",
+  ]) {
+    const d = confirmation(c);
+    assert.match(d.raison, /pulse-aidd installer-hook/, c);
+  }
+  confirmationPs("Set-Content .git/hooks/pre-commit 'exit 0'");
+  for (const c of ["node scripts/verifier.js", "node scripts/verifier.js --index", "cat scripts/verifier.js", "git add scripts/verifier.js", "pulse-aidd installer-hook", "cp scripts/verifier.js /tmp/copie.js"]) passe(c);
+});

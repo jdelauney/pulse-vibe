@@ -21,7 +21,7 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 const { trouverSecrets, estFichierEnv, nomReel } = require("./motifs");
 const { commandesSimples, optionsGlobalesGit } = require("./lecture-commande");
-const { globCouvreEnv } = require("./chemins-sensibles");
+const { globCouvreEnv, estControleAvantCommit, MESSAGE_CONTROLE } = require("./chemins-sensibles");
 
 const TAILLE_MAX = 512 * 1024; // on ne lit pas les gros fichiers
 
@@ -92,7 +92,10 @@ function verifierEcriture(ti) {
   const morceaux = [ti.content, ti.new_string, ti.new_source];
   if (Array.isArray(ti.edits)) for (const e of ti.edits) morceaux.push(e && e.new_string);
   const secrets = trouverSecrets(morceaux.filter((m) => typeof m === "string").join("\n"));
-  if (!secrets.length) return;
+  if (!secrets.length) {
+    if (estControleAvantCommit(fichier)) demander(`🔒 ${MESSAGE_CONTROLE}`);
+    return;
+  }
 
   refuser(
     `🔒 Pulse a bloqué l'écriture de « ${path.basename(fichier)} » : le contenu ressemble à une ${secrets.join(", ")}.\n` +
