@@ -19,16 +19,27 @@ const path = require("path");
 const { execFileSync } = require("child_process");
 
 // DEBUT-MOTIFS
-// Valeurs d'exemple : hôte local ou nom de service (sans point), mot de passe de démonstration.
-const HOTE_EXEMPLE = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|host\.docker\.internal|example\.(com|org|net)|[a-z0-9_-]+)(:\d+)?$/i;
+// Valeurs d'exemple : hôte local, mot de passe de démonstration.
+const HOTE_LOCAL = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]|host\.docker\.internal|example\.(com|org|net))(:\d+)?$/i;
+// Hôte sans point (nom de service : db, postgres, redis…) : un exemple seulement avec un mot de passe d'exemple.
+const HOTE_SANS_POINT = /^[a-z0-9_-]+(:\d+)?$/i;
 const VALEUR_EXEMPLE = /^(password|passwd|motdepasse|mot_de_passe|mdp|postgres|root|secret|changeme|change_me|example|exemple|test|pass|user|admin|x+|\*+|\.+|<[^>]*>|\$\{[^}]*\}|\{\{[^}]*\}\}|(votre|your)[_-](cle|clé|key|secret|mot[_-]?de[_-]?passe|password|token)\w*)$/i;
-const adresseReelle = (m) => !VALEUR_EXEMPLE.test(m[1]) && !HOTE_EXEMPLE.test(m[2]);
+// Un mot de passe tiré au hasard ; app:app@db ou postgres:postgres@db n'en sont pas.
+const motDePasseAleatoire = (mdp, utilisateur) =>
+  mdp !== utilisateur && !/(pass|secret|change|exemple|example|test|demo)/i.test(mdp) && ((/\d/.test(mdp) && /[a-z]/.test(mdp) && /[A-Z]/.test(mdp)) || (mdp.length >= 16 && /\d/.test(mdp) && /[A-Za-z]/.test(mdp)));
+// m[1] : utilisateur, m[2] : mot de passe, m[3] : hôte.
+const adresseReelle = (m) => !VALEUR_EXEMPLE.test(m[2]) && !HOTE_LOCAL.test(m[3]) && (!HOTE_SANS_POINT.test(m[3]) || motDePasseAleatoire(m[2], m[1]));
 // Des noms, pas des secrets : STRIPE_WEBHOOK_SECRET_V2, un UUID, une clé de traduction (auth.passwordHint.label2).
 const NOM_MAJUSCULES = /^[A-Z0-9]+(?:_[A-Z0-9]+){2,}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CLE_TRADUCTION = /^[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*){2,}$/;
 const valeurReelle = (v) =>
   !VALEUR_EXEMPLE.test(v) && !NOM_MAJUSCULES.test(v) && !UUID.test(v) && !CLE_TRADUCTION.test(v) && !/^(votre|your|change|exemple|example|xxx)/i.test(v) && !/(test|fake|factice|exemple|example|dummy|mock|demo)/i.test(v) && /^[A-Za-z0-9_+\/=.-]+$/.test(v) && !v.includes("://") && (/^[0-9a-f]{32,}$/i.test(v) || (/\d/.test(v) && /[a-z]/.test(v) && /[A-Z]/.test(v)) || (v.length >= 24 && /\d/.test(v) && /[A-Za-z]/.test(v) && !/^_*[a-z0-9]+(?:[-._]+[a-z0-9]+){2,}$/.test(v)));
+// Noms qui annoncent un secret, quelle que soit la casse (apiKey, client_secret, DB_PASSWORD), et les suffixes _PASS / Pass (DB_PASS, dbPass).
+const NOM_SECRET = /(secret|password|passwd|token|api[_-]?key|private[_-]?key)/i;
+const nomSecret = (n) => NOM_SECRET.test(n) || /(?:_PASS|_pass|[a-z0-9]Pass)$/.test(n);
+// Une référence (process.env.R2_SECRET_2, config.auth.token), pas une valeur.
+const CHAINE_IDENTIFIANTS = /^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)+$/;
 
 const MOTIFS = [
   { nom: "clé secrète (Stripe ou Clerk)", re: /\b[rs]k_(?:live|test)_[0-9a-zA-Z]{16,}/ },
@@ -46,8 +57,8 @@ const MOTIFS = [
   { nom: "clé SendGrid", re: /\bSG\.[0-9a-zA-Z_-]{16,}\.[0-9a-zA-Z_-]{16,}/ },
   { nom: "jeton Slack", re: /\bxox[abprs]-[0-9a-zA-Z-]{10,}/ },
   { nom: "clé privée", re: /-----BEGIN [A-Z ]*PRIVATE KEY-----/ },
-  { nom: "mot de passe dans une adresse de base de données", re: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?):\/\/[^:\s/@]+:([^@\s]{3,})@([^/\s?#"'`]+)/g, garder: adresseReelle },
-  { nom: "mot de passe dans une adresse web", re: /\bhttps?:\/\/[^:\s/@]+:([^@\s]{3,})@([^/\s?#"'`]+)/g, garder: adresseReelle },
+  { nom: "mot de passe dans une adresse de base de données", re: /\b(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?):\/\/([^:\s/@]+):([^@\s]{3,})@([^/\s?#"'`]+)/g, garder: adresseReelle },
+  { nom: "mot de passe dans une adresse web", re: /\bhttps?:\/\/([^:\s/@]+):([^@\s]{3,})@([^/\s?#"'`]+)/g, garder: adresseReelle },
   { nom: "secret client Google OAuth", re: /\bGOCSPX-[0-9A-Za-z_-]{28}(?![0-9A-Za-z_-])/ },
   { nom: "jeton d'accès Google", re: /\bya29\.[0-9A-Za-z_-]{20,}/ },
   { nom: "jeton de rafraîchissement Google", re: /\b1\/\/0[0-9A-Za-z_-]{30,}/ },
@@ -56,7 +67,10 @@ const MOTIFS = [
   { nom: "clé d'API Neon", re: /\bnapi_[0-9a-z]{40,}/ },
   { nom: "jeton Vercel", re: /\bvc[pkiar]_[0-9A-Za-z]{24,}/ },
   { nom: "jeton d'API Cloudflare", re: /\bcf(?:k|ut|at)_[0-9A-Za-z]{40,}/ },
-  { nom: "secret en clair", re: /\b[A-Z0-9_]*(?:SECRET|PASSWORD|PASSWD|TOKEN|API_KEY|APIKEY|PRIVATE_KEY)[A-Z0-9_]*\s*[:=]\s*["']([^"'\s]{16,})["']/g, garder: (m) => valeurReelle(m[1]) },
+  // Valeur entre guillemets : const apiKey = "…", { secret: "…" }, "password": "…".
+  { nom: "secret en clair", re: /(?<![\w$.-])([A-Za-z_][\w-]*)["']?[ \t]*[:=][ \t]*["'`]([^"'`\s]{16,})["'`]/g, garder: (m) => nomSecret(m[1]) && valeurReelle(m[2]) },
+  // Valeur sans guillemets, seule sur sa ligne : AUTH_SECRET=…, export CLIENT_SECRET=…, password: … (YAML).
+  { nom: "secret en clair", re: /^[ \t]*(?:export[ \t]+)?([A-Za-z_][\w-]*)[ \t]*[:=][ \t]*([A-Za-z0-9_+\/=.-]{16,})[ \t]*$/gm, garder: (m) => nomSecret(m[1]) && valeurReelle(m[2]) && !CHAINE_IDENTIFIANTS.test(m[2]) },
 ];
 
 // Clé Resend : "re_" suivi d'un mélange de chiffres et de majuscules.
@@ -101,10 +115,19 @@ function trouverSecrets(texte) {
   return [...trouves];
 }
 
-/** Vrai pour .env, .env.local, .ENV, .dev.vars, .envrc… ; faux pour .env.example, .env.sample, .env.template. */
+// Fichiers de code nommés comme un fichier d'environnement (.env.ts, .env.mjs) : du code, pas des secrets.
+const EXTENSIONS_CODE = /\.(?:d\.ts|[cm]?[jt]sx?|py|rb|go|rs|php|vue|svelte|astro)$/i;
+
+/** Nom de fichier tel que le système le lit : sans « / » ni « /. » finaux, sans flux NTFS (::$DATA, :flux), sans points ni espaces finaux (Windows les ignore). */
+function nomReel(chemin) {
+  const segments = String(chemin).trim().split(/[\\/]/).filter((s) => s !== "" && s !== ".");
+  return (segments.pop() || "").replace(/::\$\w+$/, "").replace(/(.):[^:]*$/, "$1").replace(/[. ]+$/, "");
+}
+
+/** Vrai pour .env, .env.local, .ENV, .dev.vars, .envrc, y compris sous un chemin déguisé (.env/, .env::$DATA) ; faux pour .env.example, .env.sample, .env.template et le code (.env.ts). */
 function estFichierEnv(chemin) {
-  const nom = String(chemin).split(/[\\/]/).pop().toLowerCase();
-  if (/^\.env\.(example|sample|template)$/.test(nom)) return false;
+  const nom = nomReel(chemin).toLowerCase();
+  if (/^\.env\.(example|sample|template)$/.test(nom) || EXTENSIONS_CODE.test(nom)) return false;
   return /^\.env(\..+)?$/.test(nom) || nom === ".dev.vars" || nom === ".envrc";
 }
 // FIN-MOTIFS

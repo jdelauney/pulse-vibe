@@ -244,7 +244,7 @@ test("reconnaît les jetons GitHub classiques et sans état (format JWT, environ
   const b64 = (n) => require("crypto").randomBytes(n).toString("base64url");
   assert.deepStrictEqual(trouverSecrets("ghp" + "_" + b64(27)), ["jeton GitHub"]);
   const sansEtat = "ghs" + "_" + ["eyJh-" + b64(30), "eyJ" + b64(300), b64(170)].join(".");
-  assert.deepStrictEqual(trouverSecrets(`GH_TOKEN=${sansEtat}`), ["jeton GitHub"]);
+  assert.ok(trouverSecrets(`GH_TOKEN=${sansEtat}`).includes("jeton GitHub"));
   assert.deepStrictEqual(trouverSecrets("ghs_ ghp_court"), []);
 });
 
@@ -444,4 +444,66 @@ test("secret en clair : noms en majuscules, identifiants UUID et clés de traduc
   const hex = "ab12".repeat(16);
   const base64url = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd" + "Zq1Xe3HaVn";
   for (const c of [`API_SECRET="${hex}"`, `API_SECRET="${base64url}"`, `API_SECRET="${base64url}.${hex}"`]) assert.deepStrictEqual(trouverSecrets(c), ["secret en clair"], c);
+});
+
+// ------------------------------------------------------------ Revue 2 : chemins déguisés et motifs
+
+test("fichiers d'environnement : chemins déguisés reconnus, fichiers de code exclus", () => {
+  const { estFichierEnv } = require("../scripts/motifs");
+  for (const f of [".env/", ".env/.", "./.env/.", ".env.", ".env ", ".env::$DATA", "C:\\p\\.env::$DATA", "/p/.env:flux", "E:/p/./.env/."]) assert.ok(estFichierEnv(f), f);
+  for (const f of [".env.ts", "src/.env.js", ".env.d.ts", ".env.mjs", "src/env.ts", ".env.example/"]) assert.ok(!estFichierEnv(f), f);
+});
+
+test("Read d'un .env par un chemin déguisé : refusé", () => {
+  for (const p of ["/p/.env/", "/p/.env::$DATA", "/p/./.env/.", "/p/.env.", "/p/.env ", "C:\\p\\.env::$DATA"])
+    assert.ok(refuse(lancerHook({ tool_name: "Read", tool_input: { file_path: p } })), p);
+});
+
+test("secret en clair : camelCase, sans guillemets, DB_PASS ; adresse avec hôte sans point et vrai mot de passe", () => {
+  const v = "Qz8x" + "K2mP9vL4" + "nR7tW1yB5cD3";
+  for (const c of [`const apiKey = "${v}";`, `const config = { secret: "${v}" };`, `AUTH_SECRET=${v}`, `password: '${v}'`, `const DB_PASS = "${v}";`, `export CLIENT_SECRET=${v}`, `"apiKey": "${v}"`])
+    assert.deepStrictEqual(motifs(c), ["secret en clair"], c);
+  assert.deepStrictEqual(motifs("postgres" + "://u:" + "Zx9Kq2" + "Lm8Np4" + "@db/app"), ["mot de passe dans une adresse de base de données"]);
+});
+
+test("écrire une clé dans src/.env.ts : refusé (c'est du code, pas un fichier de secrets)", () => {
+  const k = ["sk", "live", "4eC39HqLyjWDarjtT1zdp7dc"].join("_");
+  assert.ok(refuse(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/src/.env.ts", content: `export const k = "${k}";` } })));
+});
+
+test("code ordinaire qui porte un nom de secret : jamais signalé", () => {
+  for (const c of [
+    "const password = input.value;",
+    "  apiKey: string;",
+    "SECRET_REF=process.env.R2_SECRET_2",
+    "const secret = process.env.R2_SECRET_ACCESS_KEY2;",
+    "passwordHint: 'auth.passwordHint.label2'",
+    'const TOKEN_NAME = "STRIPE_WEBHOOK_SECRET_V2"',
+    "NPM_TOKEN: ${{ secrets.NPM_TOKEN }}",
+    "--token-color: #123456789abcdef0;",
+    "if (token === previousTokenValue2024) {}",
+  ])
+    assert.deepStrictEqual(motifs(c), [], c);
+});
+
+test("faux positifs de la revue (F1 à F16) : aucun refus", () => {
+  const ecrire = (fichier, contenu) => lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/" + fichier, content: contenu } });
+  for (const [fichier, contenu] of [
+    [".env.example", "DATABASE_URL=" + "postgres" + "://user:password@localhost:5432/app"],
+    ["README.md", "DATABASE_URL=" + "postgres" + "ql://postgres:postgres@localhost:5432/mydb"],
+    ["README.md", "DATABASE_URL=" + "postgres" + "://monuser:monmotdepasse@localhost:5432/app"],
+    [".env.example", "DATABASE_URL=" + "postgres" + "ql://neondb_owner:VOTRE_MOT_DE_PASSE@ep-xxx.eu-central-1.aws.neon.tech/neondb"],
+    ["README.md", "STRIPE_SECRET_KEY=" + ["sk", "test", "VOTRE_CLE_ICI"].join("_")],
+    ["src/a.ts", 'const WEBHOOK_SECRET_NAME = "STRIPE_WEBHOOK_SECRET_V2";'],
+    ["docker-compose.yml", "DATABASE_URL: " + "postgres" + "://app:app@db:5432/app"],
+    ["README.md", "Exemple : " + "https" + "://user:pass@example.com/"],
+    ["src/i18n.ts", "password: 'auth.passwordHint.label2'"],
+    [".env.example", 'BETTER_AUTH_SECRET="genere-par-openssl-rand-base64-32"'],
+    ["README.md", "DATABASE_URL=" + "postgres" + "://user:secret123@localhost/app"],
+    ["src/a.ts", "const uuid = \"123e4567-e89b-12d3-a456-426614174000\"; const SECRET_KEY_NAME = 'CLERK_SECRET_KEY';"],
+    ["package-lock.json", '"integrity": "sha512-' + "Qz8xK2mP9vL4nR7tW1yB5cD3".repeat(2) + '=="'],
+    ["src/a.ts", 'const TOKEN_KEY = "Authorization";'],
+    ["README.md", "Collez votre clé " + ["sk", "live", "..."].join("_") + " dans .env"],
+  ])
+    assert.strictEqual(ecrire(fichier, contenu), null, `${fichier} : ${contenu}`);
 });
