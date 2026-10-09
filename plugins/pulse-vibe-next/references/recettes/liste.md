@@ -60,12 +60,15 @@ Aucune nouvelle variable. La recette utilise la base déjà configurée par le s
 
 ## Étapes
 
+<!-- commande: npx shadcn@latest add native-select table badge -->
+
 Exemple fil rouge : les **factures** d'une personne connectée. Remplacez `factures` par le mot du glossaire du projet, et `US-XXX` par le numéro de l'US. Le domaine `factures` a ses trois dossiers miroirs : `src/core/factures/` (les règles), `src/db/factures/` (le stockage), `src/features/factures/` (l'écran, l'action, la lecture).
 
 ### 1. Le métier : entité, erreurs, règles
 
 Le métier ne dépend de rien d'autre que `src/core/`. Les statuts et les tris y vivent : la table, le repository et l'écran les lisent au même endroit.
 
+<!-- fichier: src/core/factures/facture.entity.ts -->
 ```ts
 // src/core/factures/facture.entity.ts
 export const STATUTS_FACTURE = ["brouillon", "envoyee", "payee"] as const;
@@ -90,11 +93,13 @@ export type Facture = {
 };
 ```
 
+<!-- fichier: src/core/factures/facture.errors.ts -->
 ```ts
 // src/core/factures/facture.errors.ts
 export type ErreurFacture = "montant-invalide";
 ```
 
+<!-- fichier: src/core/factures/facture.rules.ts -->
 ```ts
 // src/core/factures/facture.rules.ts
 import { echec, ok, type Result } from "@src/core/shared/result";
@@ -124,6 +129,7 @@ export function montantEnCentimes(
 
 Créer une facture applique une règle métier (le montant positif) : l'écriture passe donc par un use-case (architecture.md §5, point 2). Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 5 le fournit.
 
+<!-- fichier: src/core/factures/facture-repository.port.ts -->
 ```ts
 // src/core/factures/facture-repository.port.ts
 export type FactureRepository = {
@@ -134,6 +140,7 @@ export type FactureRepository = {
 };
 ```
 
+<!-- fichier: src/core/factures/use-cases/creer-facture.use-case.ts -->
 ```ts
 // src/core/factures/use-cases/creer-facture.use-case.ts
 import { ok, type Result } from "@src/core/shared/result";
@@ -161,6 +168,7 @@ Le schéma Zod de l'étape 6 applique la même règle dans le navigateur ; le us
 
 Pagination, affichage des montants et des dates, erreurs de formulaire : rien de propre aux factures. Elles vont dans `src/lib/helpers/<catégorie>/` et servent à toutes les listes du projet.
 
+<!-- fichier: src/lib/helpers/pagination/pagination.ts -->
 ```ts
 // src/lib/helpers/pagination/pagination.ts
 /** Une page reçue dans l'adresse : entier à partir de 1, sinon 1. */
@@ -177,6 +185,7 @@ export function nombreDePages(total: number, taillePage: number): number {
 }
 ```
 
+<!-- fichier: src/lib/helpers/format/format.ts -->
 ```ts
 // src/lib/helpers/format/format.ts
 const formatEuros = new Intl.NumberFormat("fr-FR", {
@@ -199,6 +208,7 @@ export function formaterDate(date: Date): string {
 }
 ```
 
+<!-- fichier: src/lib/helpers/formulaire/erreurs-de-champs.ts -->
 ```ts
 // src/lib/helpers/formulaire/erreurs-de-champs.ts
 type ErreursFormatees<C extends string> = Partial<
@@ -223,6 +233,7 @@ export function erreursDeChamps<C extends string>(
 
 Montant en **centimes entiers**, date de création en `timestamp with time zone`, propriétaire dans `utilisateur_id`.
 
+<!-- fichier: src/db/factures/facture.table.ts -->
 ```ts
 // src/db/factures/facture.table.ts
 import { STATUTS_FACTURE } from "@src/core/factures/facture.entity";
@@ -265,6 +276,7 @@ export const factures = pgTable(
 
 `drizzle.config.ts` lit déjà `src/db/*/*.table.ts` : rien à déclarer ailleurs. Générez la migration, relisez le fichier SQL créé dans `drizzle/`, puis appliquez-la :
 
+<!-- commande: npm run db:generate -->
 ```bash
 npm run db:generate
 npm run db:migrate
@@ -274,6 +286,7 @@ npm run db:migrate
 
 Toute la lecture et l'écriture des factures en base. Chaque requête commence par la **condition de propriété** (`utilisateurId`) : une personne ne lit et n'écrit que ses propres factures. La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests.
 
+<!-- fichier: src/db/factures/facture.repository.ts -->
 ```ts
 // src/db/factures/facture.repository.ts
 import "server-only";
@@ -369,6 +382,7 @@ Le repository fournit la méthode `inserer` du port : TypeScript le vérifie qua
 
 Les libellés affichés et la taille de page appartiennent à l'écran : ils vont dans `constants/`.
 
+<!-- fichier: src/features/factures/constants/factures.ts -->
 ```ts
 // src/features/factures/constants/factures.ts
 import {
@@ -401,6 +415,7 @@ export type ChampFacture = (typeof CHAMPS_FACTURE)[number];
 
 `erreur-messages.ts` donne un message à chaque code d'erreur du métier : un code sans message fait échouer `npm run typecheck`.
 
+<!-- fichier: src/features/factures/constants/erreur-messages.ts -->
 ```ts
 // src/features/factures/constants/erreur-messages.ts
 import type { ErreurFacture } from "@src/core/factures/facture.errors";
@@ -412,6 +427,7 @@ export const MESSAGES_FACTURE: Record<ErreurFacture, string> = {
 
 Le formulaire et l'action valident avec **le même** schéma, qui réutilise les règles du métier. Le montant reste une saisie en euros ; le use-case le convertit en centimes.
 
+<!-- fichier: src/features/factures/schemas/facture.schema.ts -->
 ```ts
 // src/features/factures/schemas/facture.schema.ts
 import {
@@ -441,6 +457,7 @@ export type CreerFactureEntree = z.input<typeof creerFactureSchema>;
 
 Un seul fichier décrit les paramètres de l'adresse. Il importe depuis `nuqs/server`, ce qui le rend utilisable **côté serveur et côté client**.
 
+<!-- fichier: src/features/factures/schemas/filtres.schema.ts -->
 ```ts
 // src/features/factures/schemas/filtres.schema.ts
 import { TRIS_FACTURES } from "@src/core/factures/facture.entity";
@@ -470,6 +487,7 @@ export const chargerFiltresFactures = createLoader(filtresFactures);
 
 La lecture va directement au repository, sans use-case (architecture.md §6). Elle traduit les filtres de l'adresse en filtres du repository.
 
+<!-- fichier: src/features/factures/queries/lister-factures.query.ts -->
 ```ts
 // src/features/factures/queries/lister-factures.query.ts
 import "server-only";
@@ -494,6 +512,7 @@ export async function listerFactures(
 
 L'identifiant du propriétaire vient **de la session** (`ctx.utilisateur.id`), jamais de la saisie. L'action assemble le use-case et le repository, traduit un échec en message, puis appelle `refresh()` : la page revient à jour dans la même réponse. La liste est lue sans cache (`"use cache"` absent), donc il n'y a pas d'étiquette de cache à invalider.
 
+<!-- fichier: src/features/factures/actions/creer-facture.action.ts -->
 ```ts
 // src/features/factures/actions/creer-facture.action.ts
 "use server";
@@ -528,6 +547,7 @@ export const creerFactureAction = actionConnectee
 
 La section porte les champs et le schéma Zod (`validators.onSubmit`, dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreursChamps` (erreurs de champ renvoyées par le serveur, affichées sous les champs concernés, jusqu'à la modification du champ), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmit` appelle `envoyer` ; le formulaire se vide après une création réussie.
 
+<!-- fichier: src/features/factures/components/sections/formulaire-facture.tsx -->
 ```tsx
 // src/features/factures/components/sections/formulaire-facture.tsx
 "use client";
@@ -672,6 +692,7 @@ export function FormulaireFacture({
 
 Le container (client) appelle `useAction` de `next-safe-action/hooks`, affiche les messages `toast` et passe ses props à la section.
 
+<!-- fichier: src/features/factures/components/containers/creation-facture.container.tsx -->
 ```tsx
 // src/features/factures/components/containers/creation-facture.container.tsx
 "use client";
@@ -714,6 +735,7 @@ export function CreationFactureContainer() {
 
 Ils lisent et écrivent l'état de l'adresse (`useQueryStates`) : ce sont des containers. `shallow: false` demande au serveur de refaire la liste à chaque changement d'adresse. `startTransition` donne l'indicateur « Mise à jour… ». Chaque changement de filtre ramène à la page 1.
 
+<!-- fichier: src/features/factures/components/containers/filtres-factures.container.tsx -->
 ```tsx
 // src/features/factures/components/containers/filtres-factures.container.tsx
 "use client";
@@ -817,6 +839,7 @@ export function FiltresFacturesContainer() {
 }
 ```
 
+<!-- fichier: src/features/factures/components/containers/pagination-factures.container.tsx -->
 ```tsx
 // src/features/factures/components/containers/pagination-factures.container.tsx
 "use client";
@@ -872,6 +895,7 @@ export function PaginationFacturesContainer({
 
 Le tableau est une section : il affiche ce qu'il reçoit, y compris les deux états vides (aucune facture, aucune facture pour ces filtres) et la page vide.
 
+<!-- fichier: src/features/factures/components/sections/tableau-factures.tsx -->
 ```tsx
 // src/features/factures/components/sections/tableau-factures.tsx
 import { Badge } from "@src/components/ui/badge";
@@ -975,6 +999,7 @@ export function TableauFactures({ factures, total, filtresActifs }: Props) {
 
 Le container serveur lit la session, les filtres et la liste, puis compose le tableau et le container de pagination (un container peut rendre d'autres containers de sa feature, architecture.md §4).
 
+<!-- fichier: src/features/factures/components/containers/liste-factures.container.tsx -->
 ```tsx
 // src/features/factures/components/containers/liste-factures.container.tsx
 import { utilisateurConnecte } from "@src/features/compte/queries/utilisateur-connecte.query";
@@ -1017,6 +1042,7 @@ export async function ListeFacturesContainer({
 
 Avec Cache Components, tout ce qui lit la requête (session, `searchParams`) ou la base sans cache se place **sous `<Suspense>`**. La page elle-même reste synchrone : elle passe la promesse `searchParams` au container sans l'attendre. Le titre, le formulaire et les squelettes partent tout de suite ; la liste arrive ensuite. La recette n'utilise pas `loading.tsx` : la documentation recommande `<Suspense>` au plus près de la lecture.
 
+<!-- fichier: app/(connecte)/factures/page.tsx -->
 ```tsx
 // app/(connecte)/factures/page.tsx
 import { Skeleton } from "@src/components/ui/skeleton";
@@ -1067,6 +1093,7 @@ function SqueletteListe() {
 }
 ```
 
+<!-- fichier: app/(connecte)/factures/error.tsx -->
 ```tsx
 // app/(connecte)/factures/error.tsx
 "use client";
@@ -1103,6 +1130,7 @@ export default function ErreurFactures({
 
 Ajoutez enfin l'adresse de la page au `matcher` de `proxy.ts` (racine du projet, recette `connexion`) :
 
+<!-- remplacer: proxy.ts -->
 ```ts
 export const config = {
   // Une ligne par page du groupe (connecte) : les groupes de routes n'apparaissent pas dans l'adresse.
@@ -1466,6 +1494,7 @@ Fonctionnalité: Consulter et créer mes factures
 
 ### Unitaires (Vitest)
 
+<!-- fichier: src/core/factures/__tests__/facture.rules.test.ts -->
 ```ts
 // src/core/factures/__tests__/facture.rules.test.ts
 import { describe, expect, it } from "vitest";
@@ -1500,6 +1529,7 @@ describe("Règles du montant", () => {
 
 Le use-case se teste avec une doublure du port, en mémoire : aucune base.
 
+<!-- fichier: src/core/factures/__tests__/creer-facture.use-case.test.ts -->
 ```ts
 // src/core/factures/__tests__/creer-facture.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -1554,6 +1584,7 @@ describe("creerFacture", () => {
 });
 ```
 
+<!-- fichier: src/lib/helpers/pagination/__tests__/pagination.test.ts -->
 ```ts
 // src/lib/helpers/pagination/__tests__/pagination.test.ts
 import { describe, expect, it } from "vitest";
@@ -1577,6 +1608,7 @@ describe("Pagination", () => {
 });
 ```
 
+<!-- fichier: src/lib/helpers/format/__tests__/format.test.ts -->
 ```ts
 // src/lib/helpers/format/__tests__/format.test.ts
 import { describe, expect, it } from "vitest";
@@ -1596,6 +1628,7 @@ describe("Affichage", () => {
 });
 ```
 
+<!-- fichier: src/lib/helpers/formulaire/__tests__/erreurs-de-champs.test.ts -->
 ```ts
 // src/lib/helpers/formulaire/__tests__/erreurs-de-champs.test.ts
 import { describe, expect, it } from "vitest";
@@ -1614,6 +1647,7 @@ describe("erreursDeChamps", () => {
 });
 ```
 
+<!-- fichier: src/features/factures/schemas/__tests__/facture.schema.test.ts -->
 ```ts
 // src/features/factures/schemas/__tests__/facture.schema.test.ts
 import { describe, expect, it } from "vitest";
@@ -1656,11 +1690,12 @@ describe("Schéma de création de facture", () => {
 
 Chaque test reçoit une base PGlite neuve (Postgres en mémoire) avec les vraies migrations : `creerBaseDeTest()` du squelette. La base est passée au repository ; le test n'ouvre jamais la base réelle.
 
+<!-- fichier: src/db/factures/__tests__/facture.repository.test.ts -->
 ```ts
 // src/db/factures/__tests__/facture.repository.test.ts
 import type { StatutFacture } from "@src/core/factures/facture.entity";
-import type { Db } from "@src/db/db-client";
 import { user } from "@src/db/compte/auth.table";
+import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import {
@@ -1832,6 +1867,7 @@ describe("factureRepository.inserer", () => {
 
 `champ(page, libellé)` (recette `connexion`) vise le champ visible par son libellé exact.
 
+<!-- fichier: e2e/factures.spec.ts -->
 ```ts
 // e2e/factures.spec.ts
 import { expect, type Page, test } from "@playwright/test";

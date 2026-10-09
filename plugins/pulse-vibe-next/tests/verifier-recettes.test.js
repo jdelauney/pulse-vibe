@@ -4,10 +4,12 @@
 
 const test = require("node:test");
 const assert = require("node:assert");
+const fs = require("fs");
 const path = require("path");
 
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const F = "```";
+const RECETTES = path.join(__dirname, "..", "references", "recettes");
 
 test("extraction : fichiers, ajouts, remplacements et commandes, dans l'ordre du document", () => {
   const texte = [
@@ -116,4 +118,22 @@ test("arguments : --recettes sans valeur, option inconnue", () => {
   assert.throws(() => lireArguments(["--recettes"]), /--recettes demande/);
   assert.throws(() => lireArguments(["--projet"]), /--projet demande/);
   assert.throws(() => lireArguments(["--x"]), /Option inconnue/);
+});
+
+test("recettes balisées : connexion et liste ; chaque fichier complet porte sa balise", () => {
+  const sansBalise = { liste: "### 12. Quand utiliser TanStack Query ou Zustand" };
+  for (const nom of ["connexion", "liste"]) {
+    const texte = fs.readFileSync(path.join(RECETTES, `${nom}.md`), "utf8");
+    const etapes = extraireEtapes(texte);
+    assert.ok(etapes.some((e) => e.type === "commande" && e.commande === "npm run db:generate"), `${nom} : génération de la migration`);
+    const lignes = texte.split("\n");
+    let section = "";
+    const oublis = [];
+    lignes.forEach((ligne, i) => {
+      if (/^###? /.test(ligne)) section = ligne;
+      const chemin = /^```tsx?$/.test(ligne) && /^\/\/ ((?:app|src|e2e|tests)\/\S+|proxy\.ts)$/.exec(lignes[i + 1] || "");
+      if (chemin && section !== sansBalise[nom] && lignes[i - 1] !== `<!-- fichier: ${chemin[1]} -->`) oublis.push(`${nom}.md:${i + 1} ${chemin[1]}`);
+    });
+    assert.deepStrictEqual(oublis, [], "bloc « // chemin » sans sa balise <!-- fichier: … -->");
+  }
 });
