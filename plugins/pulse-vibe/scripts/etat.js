@@ -422,7 +422,8 @@ function lireOptions(args) {
     else if (args[i] === "--aujourdhui") {
       const jour = args[++i];
       const date = /^\d{4}-\d{2}-\d{2}$/.test(jour || "") ? Date.parse(`${jour}T00:00:00Z`) : NaN;
-      if (Number.isNaN(date)) throw new Error(`« --aujourdhui » attend une date AAAA-MM-JJ, reçu « ${jour ?? ""} » (${OPTIONS})`);
+      // Une date relue différemment n'existe pas au calendrier (2026-02-31 deviendrait le 3 mars).
+      if (Number.isNaN(date) || new Date(date).toISOString().slice(0, 10) !== jour) throw new Error(`« --aujourdhui » attend une date AAAA-MM-JJ, reçu « ${jour ?? ""} » (${OPTIONS})`);
       options.aujourdhui = date;
     } else throw new Error(`option inconnue « ${args[i]} » (${OPTIONS})`);
   }

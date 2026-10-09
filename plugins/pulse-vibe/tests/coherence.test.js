@@ -172,7 +172,10 @@ test("chaque outil de bin/ a ses relais .ps1 (PowerShell) et .cmd (cmd), identiq
         assert.ok(fs.existsSync(fichier), `${path.relative(DEPOT, fichier)} manquant`);
         relais[ext].add(lire(fichier));
       }
-      assert.match(lire(bin, f), /\nif \[ -n "\$\{PULSE_RELAIS_ARGC:-\}" \]; then\n/, `${f} relit les arguments du relais .ps1`);
+      const script = lire(bin, f);
+      assert.match(script, /\nif \[ \$# -eq 0 \] && \[ -n "\$\{PULSE_RELAIS_ARGC:-\}" \]; then\n/, `${f} relit les arguments du relais .ps1, seulement sans argument`);
+      assert.match(script, /\n {2}case "\$_n" in ''\|\*\[!0-9\]\*\|\?{5}\*\) _n=0 ;; esac/, `${f} vérifie le nombre d'arguments avant tout calcul`);
+      assert.match(script, /\nunset "\$\{!PULSE_RELAIS_ARG@\}" PULSE_RELAIS_ARGC\n/, `${f} efface toujours les variables du relais`);
     }
   }
   assert.strictEqual(relais.ps1.size, 1, "les relais .ps1 diffèrent d'un outil à l'autre");

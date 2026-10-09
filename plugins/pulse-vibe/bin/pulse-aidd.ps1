@@ -35,14 +35,18 @@ if (-not $bash) {
 }
 
 $liste = @($args | ForEach-Object { [string]$_ })
-Clear-PulseArguments
-[Environment]::SetEnvironmentVariable('PULSE_RELAIS_ARGC', [string]$liste.Count)
-for ($i = 0; $i -lt $liste.Count; $i++) { [Environment]::SetEnvironmentVariable("PULSE_RELAIS_ARG_$i", $liste[$i]) }
+# L'environnement est commun a tout le processus : deux appels en parallele (ForEach-Object -Parallel) melangeraient
+# leurs arguments. Un verrou propre a ce processus les fait passer l'un apres l'autre ; les autres sessions restent libres.
+$verrou = New-Object System.Threading.Mutex($false, "Local\PulseRelais-$PID")
+try { [void]$verrou.WaitOne() } catch [System.Threading.AbandonedMutexException] { }
 $entreeAvant = $global:OutputEncoding
 $sortieAvant = [Console]::OutputEncoding
 $utf8 = New-Object System.Text.UTF8Encoding $false
 $code = 1
 try {
+  Clear-PulseArguments
+  [Environment]::SetEnvironmentVariable('PULSE_RELAIS_ARGC', [string]$liste.Count)
+  for ($i = 0; $i -lt $liste.Count; $i++) { [Environment]::SetEnvironmentVariable("PULSE_RELAIS_ARG_$i", $liste[$i]) }
   $global:OutputEncoding = $utf8
   [Console]::OutputEncoding = $utf8
   $script = Join-Path $PSScriptRoot $nom
@@ -52,5 +56,7 @@ try {
   $global:OutputEncoding = $entreeAvant
   [Console]::OutputEncoding = $sortieAvant
   Clear-PulseArguments
+  $verrou.ReleaseMutex()
+  $verrou.Dispose()
 }
 exit $code

@@ -434,4 +434,8 @@ test("lireOptions : --sans-git et --aujourdhui", () => {
   assert.strictEqual(lireOptions([]).git, true);
   assert.throws(() => lireOptions(["--aujourdhui", "demain"]), /« --aujourdhui » attend une date AAAA-MM-JJ, reçu « demain »/);
   assert.throws(() => lireOptions(["--aujourdhui"]), /« --aujourdhui » attend une date AAAA-MM-JJ/);
+  for (const jour of ["2026-02-31", "2026-13-01", "2025-02-29"]) assert.throws(() => lireOptions(["--aujourdhui", jour]), new RegExp(`attend une date AAAA-MM-JJ, reçu « ${jour} »`), jour);
+  assert.strictEqual(lireOptions(["--aujourdhui", "2028-02-29"]).aujourdhui, Date.parse("2028-02-29T00:00:00Z"));
+  const r = spawnSync(process.execPath, [ETAT, "--aujourdhui", "2026-02-31"], { cwd: os.tmpdir(), encoding: "utf8" });
+  assert.strictEqual(r.status, 2);
 });

@@ -290,7 +290,7 @@ function projetAvecPack({ declare, installe }) {
         `  info) printf 'id: ${installe}\nnom: Pile ${installe}\nresume: Une pile de test.\nversion: 0.1.0\n' ;;\n` +
         '  contexte) echo "Consignes du pack pour $2" ;;\n' +
         '  echo) shift; printf "[%s]" "$@" ;;\n' +
-        '  relais) printf "%s" "${PULSE_RELAIS_ARGC:-absent}" ;;\n' +
+        '  relais) printf "%s" "${PULSE_RELAIS_ARGC:-absent}"; env | grep -q "^PULSE_RELAIS_" && printf " (variables restantes)" ;;\n' +
         "  echec) exit 3 ;;\n" +
         "esac\n"
     );
@@ -590,6 +590,34 @@ test("relais .ps1 : bash relit les arguments dans l'environnement, tels quels, p
   assert.strictEqual(p.stdout, "absent", p.stdout + p.stderr);
 });
 
+test("relais .ps1 : un nombre d'arguments non numérique ou démesuré ne s'exécute pas, et vaut zéro", () => {
+  const d = fsP.mkdtempSync(path.join(osP.tmpdir(), "pulse-argc-"));
+  const temoin = path.join(d, "execute").split(path.sep).join("/");
+  for (const argc of [`a[$(touch "${temoin}")]`, `x[$(touch "${temoin}")]+1`, "99999999", "-1", "2+3"]) {
+    const r = spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8", timeout: 20000, env: environnement({ PULSE_RELAIS_ARGC: argc, PULSE_RELAIS_ARG_0: "reference" }) });
+    assert.strictEqual(r.status, 0, `${argc} : ${r.stderr}`);
+    assert.match(r.stdout, /pulse-aidd contexte <commande>/, `${argc} : sans argument, l'aide`);
+    assert.ok(!fsP.existsSync(path.join(d, "execute")), `${argc} : expression exécutée`);
+  }
+});
+
+test("relais .ps1 : avec des arguments sur la ligne de commande, l'environnement est ignoré puis effacé", () => {
+  const r = spawnSync("bash", ["bin/pulse-aidd", "reference", "x"], {
+    cwd: RACINE,
+    encoding: "utf8",
+    env: environnement({ PULSE_RELAIS_ARGC: "2", PULSE_RELAIS_ARG_0: "secrets", PULSE_RELAIS_ARG_1: "envoyer" }),
+  });
+  assert.strictEqual(r.status, 1, r.stderr);
+  assert.ok(r.stdout.includes("Référence introuvable : x."), r.stdout);
+  const pack = projetAvecPack({ declare: "essai", installe: "essai" });
+  const p = spawnSync("bash", ["-c", `PATH="$(cd "${pack.bin}" && pwd):$PATH" exec bash "${OUTIL}" pile relais`], {
+    cwd: pack.d,
+    encoding: "utf8",
+    env: environnement({ PULSE_RELAIS_ARGC: "1", PULSE_RELAIS_ARG_0: "secrets", PULSE_RELAIS_ARG_7: "reste" }),
+  });
+  assert.strictEqual(p.stdout, "absent", p.stdout + p.stderr);
+});
+
 test("piles : les relais .ps1 et .cmd d'un pack ne comptent pas comme d'autres packs", () => {
   const avec = projetAvecPack({ installe: "essai" });
   for (const ext of ["ps1", "cmd"]) {
@@ -614,6 +642,16 @@ test("relais .ps1 (Windows) : « & », espaces, guillemets et accents arrivent t
     assert.strictEqual(v.status, 0, `${exe} : ${v.stderr}`);
     assert.strictEqual(v.stdout.replace(/\r\n/g, "\n"), fsP.readFileSync(path.join(RACINE, "templates", "lexique.md"), "utf8"), exe);
   }
+});
+
+const PWSH7 = POWERSHELLS.find((f) => /pwsh\.exe$/i.test(f));
+test("relais .ps1 (PowerShell 7) : des appels en parallèle gardent chacun leurs arguments", { skip: !PWSH7 && "PowerShell 7 absent" }, () => {
+  const script =
+    `$r = 1..12 | ForEach-Object -ThrottleLimit 12 -Parallel { $o = (& ${litteral(RELAIS_PS1)} reference "v$_" "w$_") -join ' '; ` +
+    `if ($o -notlike "*introuvable : v$_.*") { "melange $_ : $o" } }; $r; exit 0`;
+  const r = spawnSync(PWSH7, ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-EncodedCommand", Buffer.from(script, "utf16le").toString("base64")], { encoding: "utf8", timeout: 120000 });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(r.stdout.trim(), "", r.stdout);
 });
 
 test("relais .ps1 et .cmd (Windows) : depuis un dossier avec espaces et accents", { skip: sansPowerShell }, () => {
