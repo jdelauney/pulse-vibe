@@ -164,7 +164,7 @@ test("dépendances du squelette : WebSocket natif, outils en développement, Nod
   for (const attendu of ["npm install next-themes", "<ThemeProvider attribute=\"class\"", "suppressHydrationWarning", "useTheme()"]) assert.ok(theme.includes(attendu), `theme.md : ${attendu}`);
 });
 
-test("accessibilité du squelette : lien d'évitement, axe sur l'accueil", () => {
+test("accessibilité du squelette : lien d'évitement, axe et cibles sur chaque page", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const lireS = (...p) => fs.readFileSync(path.join(S, ...p), "utf8");
   const layout = lireS("app", "layout.tsx");
@@ -173,9 +173,23 @@ test("accessibilité du squelette : lien d'évitement, axe sur l'accueil", () =>
   assert.ok(layout.indexOf('href="#contenu"') < layout.indexOf("<NuqsAdapter>"), "premier élément du corps");
   const paquet = JSON.parse(lireS("package.json"));
   assert.ok(paquet.devDependencies["@axe-core/playwright"], "@axe-core/playwright");
-  const accueil = lireS("e2e", "accueil.spec.ts");
-  assert.match(accueil, /new AxeBuilder\(\{ page \}\)\.withTags\(WCAG_AA\)/);
-  assert.match(accueil, /"wcag22aa"/);
+  const aide = lireS("e2e", "aides", "accessibilite.ts");
+  assert.match(aide, /new AxeBuilder\(\{ page \}\)\s*\.withTags\(WCAG_AA\)/);
+  assert.match(aide, /\.exclude\(OUTILS_NEXT\)/, "outils de développement de Next ignorés");
+  assert.match(aide, /"nextjs-portal"/);
+  assert.match(aide, /"wcag22aa"/);
+  assert.match(aide, /projet === "telephone" \? 44 : 24/);
+  assert.match(lireS("e2e", "accessibilite.spec.ts"), /verifierAccessibilite\(page, testInfo\)/);
+  assert.ok(fs.existsSync(path.join(S, "src", "components", "ui", "__tests__", "cibles-tactiles.test.ts")));
+  assert.match(fs.readFileSync(path.join(__dirname, "..", "references", "contexte", "test.md"), "utf8"), /verifierAccessibilite/);
+});
+
+test("Playwright du squelette : port réglable, verifier-squelette.js prend un port libre", () => {
+  const config = fs.readFileSync(path.join(__dirname, "..", "templates", "squelette", "playwright.config.ts"), "utf8");
+  assert.match(config, /const port = process\.env\.PORT \?\? "3000";/);
+  assert.equal((config.match(/`http:\/\/localhost:\$\{port\}`/g) || []).length, 2, "baseURL et webServer.url suivent le port");
+  assert.match(config, /trace: "on-first-retry",/);
+  assert.match(fs.readFileSync(path.join(__dirname, "..", "scripts", "verifier-squelette.js"), "utf8"), /PORT: String\(await portLibre\(\)\)/);
 });
 
 test("journaux et erreurs du squelette : onRequestError, masquage profond, référence affichée", () => {

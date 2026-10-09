@@ -30,6 +30,7 @@ Le thème vit dans **`app/globals.css`**, en variables CSS que shadcn et Tailwin
 5. **Les composants n'écrivent aucune couleur en dur** : uniquement les rôles (`bg-primary`, `text-destructive`, `border-border`). Une couleur de rôle qui manque devient une variable de plus dans `:root` et `@theme inline`, nommée par son rôle.
 6. **Liens dans le texte** : `underline underline-offset-3` et la couleur d'accent (`text-primary`).
 7. **Vérifier à l'œil** : `npm run dev`, puis la page d'accueil et un écran avec boutons, champ, carte, message d'erreur ; sur ordinateur et sur téléphone.
+8. **Cibles tactiles de 44 px** sur téléphone : le squelette livre boutons et champs à `h-11` (44 px) ; les tailles compactes (`xs`, `sm`, `icon-xs`, `icon-sm`) le restent à partir de `md:`. Un composant réécrit par `npx shadcn add` reprend ces tailles : `src/components/ui/__tests__/cibles-tactiles.test.ts` signale l'écart.
 
 ## Pour les maquettes de `/pulse:ui maquettes`
 
