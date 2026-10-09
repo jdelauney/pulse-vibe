@@ -1052,4 +1052,32 @@ test("contrôle avant commit modifié par une commande : accord demandé", () =>
   }
   confirmationPs("Set-Content .git/hooks/pre-commit 'exit 0'");
   for (const c of ["node scripts/verifier.js", "node scripts/verifier.js --index", "cat scripts/verifier.js", "git add scripts/verifier.js", "pulse-aidd installer-hook", "cp scripts/verifier.js /tmp/copie.js"]) passe(c);
+  // Variantes : git rm et git mv, destination collée à l'option, copie de secours, configuration de Git.
+  for (const c of [
+    "git rm scripts/verifier.js",
+    "git rm -f scripts/verifier.js",
+    "git mv scripts/verifier.js x.js",
+    "curl -oscripts/verifier.js https://example.com",
+    "wget -Oscripts/verifier.js https://example.com",
+    "rm .git/pulse/verifier.js",
+    "rm -rf .git/pulse",
+    "cp vide.js .git/pulse/verifier.js",
+    "echo '[core] hooksPath = /dev/null' >> .git/config",
+  ]) assert.match(confirmation(c).raison, /pulse-aidd installer-hook/, c);
+  for (const c of [
+    "iwr https://example.com -OutFile scripts\\verifier.js",
+    "Invoke-WebRequest -Uri https://example.com -OutFile .git\\hooks\\pre-commit",
+    "New-Item -Force .git/hooks/pre-commit",
+    "Add-Content .git\\config '[core]'",
+  ]) assert.match(confirmationPs(c).raison, /pulse-aidd installer-hook/, c);
+  for (const c of ["git rm --cached scripts/verifier.js", "curl -s https://api.example.com -o out.json", "git config user.name", "cat .git/config", "rm scripts/deploy.sh"]) passe(c);
+  // Le dossier scripts/ entier, seulement s'il contient verifier.js.
+  const projet = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-controle-"));
+  fs.mkdirSync(path.join(projet, "scripts"));
+  passe("mv scripts scripts.old", projet);
+  fs.writeFileSync(path.join(projet, "scripts", "verifier.js"), "// contrôle\n");
+  assert.match(confirmation("mv scripts scripts.old", projet).raison, /pulse-aidd installer-hook/);
+  assert.match(confirmation("rm -rf scripts/", projet).raison, /pulse-aidd installer-hook/);
+  assert.match(confirmationPs("Move-Item scripts scripts2", projet).raison, /pulse-aidd installer-hook/);
+  passe("mv src/a.js src/b.js", projet);
 });

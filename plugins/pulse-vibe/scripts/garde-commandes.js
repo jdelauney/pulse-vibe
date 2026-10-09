@@ -424,18 +424,42 @@ function ecritEnvExistant(c, cwd) {
 }
 
 // Commandes qui modifient, déplacent ou suppriment le fichier qu'elles nomment.
-const MODIFIEURS = new Set(["rm", "unlink", "shred", "chmod", "chown", "truncate", "ln", "remove-item", "ri", "del", "erase", "rename-item", "rni", "set-content", "sc", "add-content", "ac", "out-file", "clear-content", "clc", "tee", "curl", "wget"]);
+const MODIFIEURS = new Set(["rm", "unlink", "shred", "chmod", "chown", "truncate", "ln", "remove-item", "ri", "del", "erase", "rename-item", "rni", "set-content", "sc", "add-content", "ac", "out-file", "clear-content", "clc", "tee", "curl", "wget", "invoke-webrequest", "iwr", "invoke-restmethod", "irm", "new-item", "ni"]);
+// Commandes qui déplacent ou suppriment un dossier entier.
+const DEPLACEURS_DOSSIER = new Set(["mv", "move", "move-item", "mi", "rename-item", "rni", "rm", "remove-item", "ri", "del", "erase", "rd", "rmdir"]);
 
-/** Vrai si la commande modifie le contrôle des secrets avant commit (.git/hooks, scripts/verifier.js). */
-function toucheControle(c) {
+/** Vrai si le chemin désigne le dossier scripts/ qui contient verifier.js (mv scripts scripts.old). */
+function dossierDuControle(chemin, cwd) {
+  const n = path.posix.normalize(String(chemin).replace(/\\/g, "/")).replace(/\/+$/, "");
+  if (!/(^|\/)scripts$/i.test(n)) return false;
+  try {
+    return fs.statSync(path.resolve(cwd, n, "verifier.js")).isFile();
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Vrai si la commande modifie le contrôle des secrets avant commit (.git/hooks, .git/pulse, .git/config, scripts/verifier.js). */
+function toucheControle(c, cwd) {
   if ((c.ecritures || []).some(estControleAvantCommit)) return true;
   const positions = c.args.filter((a) => !estOption(a));
+  // git rm, git mv (sauf --cached, qui laisse le fichier en place).
+  if (c.cmd === "git") {
+    const { k } = optionsGlobalesGit(c.args);
+    const reste = c.args.slice(k + 1);
+    if (!["rm", "mv"].includes(c.args[k]) || reste.includes("--cached")) return false;
+    return reste.filter((a) => !estOption(a)).some((a) => estControleAvantCommit(a) || dossierDuControle(a, cwd));
+  }
+  if (DEPLACEURS_DOSSIER.has(c.cmd) && positions.some((a) => dossierDuControle(a, cwd))) return true;
   if (COPIEURS.has(c.cmd)) {
     const deplace = ["mv", "move", "move-item", "mi"].includes(c.cmd);
     return (positions.length >= 2 && estControleAvantCommit(positions[positions.length - 1])) || (deplace && positions.some(estControleAvantCommit));
   }
   if ((c.cmd === "sed" || c.cmd === "perl") && c.args.some((a) => /^-[a-zA-Z]*i/.test(a) || a.startsWith("--in-place"))) return positions.some(estControleAvantCommit);
-  return MODIFIEURS.has(c.cmd) && c.args.some(estControleAvantCommit);
+  if (!MODIFIEURS.has(c.cmd)) return false;
+  // curl -oscripts/verifier.js, wget -Oscripts/verifier.js : la destination collée à l'option.
+  const colle = (a) => (c.cmd === "curl" || c.cmd === "wget") && /^-[a-zA-Z]*[oO]./.test(a) && estControleAvantCommit(a.slice(a.search(/[oO]/) + 1));
+  return c.args.some((a) => estControleAvantCommit(a) || colle(a));
 }
 
 // ---------------------------------------------------------------- Règles par commande
@@ -724,7 +748,7 @@ function appliquerRegles(c, cwd, constats) {
   // Une variable qui contient le nom d'un .env (f=.env ; cat $f).
   if (c.affectations.some((a) => designeEnv(a.slice(a.indexOf("=") + 1), cwd, c.dialecte))) constats.push([ACCORD, MESSAGES.envDansVariable]);
   if (ecritEnvExistant(c, cwd)) constats.push([ACCORD, MESSAGES.envModifie]);
-  if (toucheControle(c)) constats.push([ACCORD, MESSAGE_CONTROLE]);
+  if (toucheControle(c, cwd)) constats.push([ACCORD, MESSAGE_CONTROLE]);
   if (c.cmd === "vercel" && c.args[0] === "env" && c.args[1] === "pull") constats.push([ACCORD, MESSAGES.envEcrase]);
   // Recherche récursive : refusée seulement si un dossier fouillé contient un .env.
   // Les dossiers fouillés : les positions, sans le motif (premier mot libre, ou valeur de -e, -eTODO, --regexp…).

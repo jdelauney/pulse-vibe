@@ -399,8 +399,8 @@ case "$1" in
       exit 1
     fi
     [ -f "$racine/scripts/verifier.js" ] || { mkdir -p "$racine/scripts"; cp "$TPL/verifier.js" "$racine/scripts/verifier.js"; }
-    # Copie de secours, partagée par les worktrees : un worktree créé avant le premier commit de scripts/verifier.js reste contrôlé.
-    secours="$(git rev-parse --path-format=absolute --git-common-dir)/pulse/verifier.js"
+    # Copie de secours, partagée par les worktrees (chemin absolu calculé par cd et pwd : --path-format demande Git 2.31) : un worktree créé avant le premier commit de scripts/verifier.js reste contrôlé.
+    secours="$(cd "$(git rev-parse --git-common-dir)" && pwd)/pulse/verifier.js"
     mkdir -p "$(dirname "$secours")" "$(dirname "$crochet")"
     cp "$TPL/verifier.js" "$secours"
     cat > "$crochet" <<'CROCHET'
@@ -409,7 +409,7 @@ case "$1" in
 # scripts/verifier.js du projet, sinon la copie gardée par Git ; sans l'un ni l'autre, le commit est refusé.
 command -v node >/dev/null 2>&1 || { echo "❌ Commit annulé : Node.js est introuvable, le contrôle des secrets ne peut pas tourner. Installez Node.js 22.19 ou plus, puis relancez le commit." >&2; exit 1; }
 [ -f scripts/verifier.js ] && exec node scripts/verifier.js --index
-secours="$(git rev-parse --path-format=absolute --git-common-dir)/pulse/verifier.js"
+secours="$(cd "$(git rev-parse --git-common-dir)" && pwd)/pulse/verifier.js"
 [ -f "$secours" ] && exec node "$secours" --index
 {
   echo "❌ Commit annulé : le contrôle des secrets est introuvable."

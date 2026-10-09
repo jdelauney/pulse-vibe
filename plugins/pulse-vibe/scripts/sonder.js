@@ -14,9 +14,10 @@
 const USAGE = 'Usage : pulse-aidd sonder <adresse> [--texte "<texte attendu>"] [--essais 5] [--delai 6000] [--entetes]';
 
 function lireArguments(argv) {
-  const opts = { adresse: null, texte: null, essais: 5, delai: 6000, entetes: false };
+  const opts = { adresse: null, texte: null, essais: 5, delai: 6000, entetes: false, donnees: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
+    if (["--texte", "--essais", "--delai"].includes(a)) opts.donnees.push(a);
     if (a === "--texte") opts.texte = argv[++i];
     else if (a === "--essais") opts.essais = Number(argv[++i]);
     else if (a === "--delai") opts.delai = Number(argv[++i]);
@@ -80,6 +81,7 @@ async function principal() {
     process.exit(1);
   }
   if (opts.entetes) {
+    if (opts.donnees.length) console.error(`⚠️ --entetes lit seulement les en-têtes, en une requête : ${opts.donnees.join(", ")} laissé${opts.donnees.length > 1 ? "s" : ""} de côté.`);
     try {
       const { statut, lignes } = await lireEntetes(opts.adresse);
       console.log(`HTTP ${statut} – ${opts.adresse}`);

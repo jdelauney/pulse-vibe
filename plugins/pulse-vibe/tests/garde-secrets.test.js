@@ -615,6 +615,8 @@ test("écrire dans le contrôle avant commit : accord demandé ; avec une clé :
     ["Write", { file_path: "/p/scripts/verifier.js", content: "// adapté\n" }],
     ["Edit", { file_path: "/p/.git/hooks/pre-commit", old_string: "x", new_string: "exit 0" }],
     ["Write", { file_path: "C:\\p\\scripts\\verifier.js", content: "x" }],
+    ["Write", { file_path: "/p/.git/pulse/verifier.js", content: "// vide\n" }],
+    ["Edit", { file_path: "C:\\p\\.git\\config", old_string: "[core]", new_string: "[core]\n\thooksPath = /dev/null" }],
   ]) {
     const s = lancerHook({ tool_name: outil, tool_input: ti });
     assert.strictEqual(s && s.permissionDecision, "ask", `${outil} ${ti.file_path}`);
