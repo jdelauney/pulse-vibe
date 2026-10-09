@@ -52,7 +52,7 @@ entree="$(cat)"
 printf '%s' "$entree" > "$J/stdin-$n"
 case "$1 $2" in
   "secrets regles")
-    printf '%s' '{"variables":{"STRIPE_SECRET_KEY":{"secret":true,"fournisseur":"Stripe","prefixes":["sk_live_","sk_test_"],"modes":{"sk_live_":"mode live","sk_test_":"mode test"}},"DATABASE_URL":{"secret":true,"groupe":["DATABASE_URL","DATABASE_URL_DIRECT"],"besoins":["DATABASE_URL_DIRECT"]},"APP_URL":{"secret":false}},"code":["CODE_SEUL_TOKEN"]}' ;;
+    printf '%s' '{"variables":{"STRIPE_SECRET_KEY":{"secret":true,"fournisseur":"Stripe","prefixes":["sk_live_","sk_test_"],"modes":{"sk_live_":"mode live","sk_test_":"mode test"}},"DATABASE_URL":{"secret":true,"parEnvironnement":true,"groupe":["DATABASE_URL","DATABASE_URL_DIRECT"],"besoins":["DATABASE_URL_DIRECT"]},"APP_URL":{"secret":false}},"code":["CODE_SEUL_TOKEN"]}' ;;
   "secrets tester")
     echo "sonde : $entree"
     echo "$FAUX_TEST_MESSAGE"
@@ -309,8 +309,8 @@ test("verifier : préfixe attendu du pack, test réel par le pack, valeur masqu�
 
 test("envoyer : la valeur passe par l'entrée standard de l'adaptateur, jamais en argument ni à l'écran", () => {
   const p = projet();
-  ecrire(p, ".env", `DATABASE_URL="${ADRESSE_BASE}"\n`);
-  const r = lancer(p, ["envoyer", "DATABASE_URL"], { FAUX_BAVARD: "1" });
+  ecrire(p, ".env.envoi", `DATABASE_URL="${ADRESSE_BASE}"\n`);
+  const r = lancer(p, ["envoyer", "DATABASE_URL", "--depuis", ".env.envoi"], { FAUX_BAVARD: "1" });
   assert.strictEqual(r.code, 0, r.sortie);
   sansValeur(r.sortie, ADRESSE_BASE, MOT_DE_PASSE_BASE);
   assert.match(r.sortie, /«valeur masquée»/, "le faux pack bavard a été masqué");
@@ -323,6 +323,24 @@ test("envoyer : la valeur passe par l'entrée standard de l'adaptateur, jamais e
   assert.ok(envois.every((a) => a.stdin === ADRESSE_BASE), "valeur sans guillemets sur l'entrée standard");
   assert.match(r.sortie, /À envoyer aussi : DATABASE_URL_DIRECT/);
   assert.match(r.sortie, /redeployer --env production,preview/);
+});
+
+test("envoyer : une variable propre à chaque environnement ne part pas de .env vers la production", () => {
+  const p = projet();
+  ecrire(p, ".env", `DATABASE_URL="${ADRESSE_BASE}"\n`);
+  const refus = lancer(p, ["envoyer", "DATABASE_URL"]);
+  assert.strictEqual(refus.code, 1);
+  assert.match(refus.sortie, /propre à chaque environnement/);
+  assert.match(refus.sortie, /--fichier \.env\.envoi/);
+  assert.match(refus.sortie, /--meme-valeur/);
+  sansValeur(refus.sortie, ADRESSE_BASE, MOT_DE_PASSE_BASE);
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "hebergeur"), [], "rien envoyé");
+
+  const apercu = lancer(p, ["envoyer", "DATABASE_URL", "--env", "preview"]);
+  assert.strictEqual(apercu.code, 0, apercu.sortie);
+  const confirme = lancer(p, ["envoyer", "DATABASE_URL", "--env", "production", "--meme-valeur"]);
+  assert.strictEqual(confirme.code, 0, confirme.sortie);
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "hebergeur").map((a) => a.argv[3]), ["preview", "production"]);
 });
 
 test("envoyer : échec partiel → code 1 et rotation déclarée incomplète ; vide refusé ; --vider après succès", () => {
