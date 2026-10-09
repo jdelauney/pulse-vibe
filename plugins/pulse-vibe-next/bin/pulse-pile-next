@@ -11,7 +11,7 @@
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
 #   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
 #   pulse-pile-next seo-code [--pages] [--json] [--dossier <projet>]   contrôles du code pour le référencement
-#   pulse-pile-next secrets regles|tester <NOM>|fiche <NOM>   règles, test réel (valeurs en JSON sur l'entrée standard) et fiche d'une variable (pour pulse-aidd secrets)
+#   pulse-pile-next secrets regles|tester <NOM>|suites <NOM>|fiche <NOM>   règles, test réel et variables déduites (valeurs en JSON sur l'entrée standard), fiche d'une variable (pour pulse-aidd secrets)
 #   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur Vercel de pulse-aidd secrets (valeur sur l'entrée standard)
 #
 # Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
