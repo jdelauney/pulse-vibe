@@ -126,6 +126,8 @@ test("le squelette type ses variables avec t3 env et nomme son client Drizzle", 
   assert.ok(paquet.dependencies["@t3-oss/env-nextjs"], "dépendance @t3-oss/env-nextjs");
   const env = fs.readFileSync(path.join(S, "src", "config", "env.ts"), "utf8");
   for (const attendu of ["createEnv", 'import "server-only"', "extends: [envPublic]", "...optionsCommunes", "export const env"]) assert.ok(env.includes(attendu), attendu);
+  for (const attendu of ["const verificationsCroisees: VerificationCroisee[] = [];", "createFinalSchema: (forme) =>", "for (const verifier of verificationsCroisees) verifier(valeurs, ctx);"])
+    assert.ok(env.includes(attendu), `env.ts : ${attendu}`);
   const envPublic = fs.readFileSync(path.join(S, "src", "config", "env-public.ts"), "utf8");
   assert.ok(!envPublic.includes("server-only"), "env-public.ts lisible par un composant client");
   assert.ok(envPublic.includes("experimental__runtimeEnv"), "variables publiques lues en entier");
