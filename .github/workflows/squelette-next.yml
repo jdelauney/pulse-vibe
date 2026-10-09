@@ -40,7 +40,6 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
-          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers,suivi-erreurs
 
   dernieres-versions:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -62,7 +61,6 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
-          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers,suivi-erreurs
       - name: Proposer la mise à jour
         uses: peter-evans/create-pull-request@v8.1.1
         with:
@@ -71,7 +69,7 @@ jobs:
           title: "chore(next): squelette aux dernières versions"
           body: |
             Mise à jour automatique des dépendances du squelette de pulse-vibe-next, hors versions majeures.
-            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; les recettes balisées (connexion, liste, fichiers, paiement, suivi-erreurs) aussi.
+            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; les recettes balisées (connexion, liste, fichiers, paiement) aussi.
             Avant de fusionner : monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (correctif).
           add-paths: plugins/pulse-vibe-next/templates/squelette
 
@@ -95,7 +93,6 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
-          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers,suivi-erreurs
       - name: Proposer la mise à jour majeure
         uses: peter-evans/create-pull-request@v8.1.1
         with:

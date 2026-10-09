@@ -28,7 +28,6 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 | `formulaire-public` | Protection des formulaires ouverts à tous : champ piège, délai signé, limite, Turnstile en option |
 | `seo` | Référencement : adresse du site, métadonnées complètes par page, robots.txt selon la politique IA, sitemap aux vraies dates, image de partage, données structurées typées (`schema-dts`), pages connectées hors de Google, vrai 404 |
 | `mesure-reelle` | Vitesse vécue par les vrais visiteurs : Speed Insights de Vercel, ou mesures envoyées au site (table Neon, 75e centile par page) |
-| `suivi-erreurs` | Être prévenu d'une erreur en production (facultatif) : Sentry en région UE, sans donnée personnelle, relié à la référence affichée à la personne |
 
 **Secrets** : `/pulse:secrets` reçoit la fiche de chaque variable du squelette et des recettes (où la renouveler, effet, délai de grâce, test). Avec le Vercel CLI connecté (`vercel login`, `vercel link`), les valeurs partent vers Vercel par l'entrée standard, sans passer par la conversation.
 

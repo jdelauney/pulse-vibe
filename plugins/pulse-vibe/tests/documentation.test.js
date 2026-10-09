@@ -24,7 +24,7 @@ const texte = (f) => lire(DEPOT, f);
 
 // Ce que chaque document doit citer, parce qu'un plan du refactoring l'a ajouté.
 const MENTIONS_COEUR = ["pulse-aidd installer-hook", "pulse-aidd etat", "pulse-aidd contraste", "S1 à S13", "Node.js 22.19", "PowerShell", "--sans-communes", "references/fichiers-projet.md", "references/cycle.md"];
-const MENTIONS_PACK = ["suivi-erreurs", "verifier-recettes", "migrations", "Node.js 22.19", "pulse-pile-next recette", "decouper-recette"];
+const MENTIONS_PACK = ["verifier-recettes", "migrations", "Node.js 22.19", "pulse-pile-next recette", "decouper-recette"];
 const MENTIONS_DEPOT = ["verifier-recettes", "budget-contexte", "pulse--v", "pulse-next--v", "documentation.test.js"];
 
 test("installation : noms du catalogue égaux aux noms de manifeste, et seuls cités", options, () => {

@@ -26,7 +26,7 @@ const SECTIONS_RECETTE = [
   "## Points de sécurité",
   "## Pièges connus",
 ];
-const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle", "suivi-erreurs"];
+const RECETTES = ["connexion", "liste", "email", "fichiers", "paiement", "langues", "limite", "formulaire-public", "seo", "mesure-reelle"];
 
 test("info : les quatre lignes du contrat, avec la version du manifeste", () => {
   const r = lancer("info");
@@ -455,7 +455,7 @@ test("toutes les recettes sont découpées : un dossier avec index.md, plus aucu
   assert.match(limite.stdout, /^### Option : Redis/);
   assert.strictEqual(lancer("recette", "mesure-reelle", "etape", "option-a").status, 0);
   assert.strictEqual(lancer("recette", "formulaire-public", "etape", "option-turnstile").status, 0);
-  assert.strictEqual(lancer("recette", "suivi-erreurs", "etape", "2").status, 0);
+  assert.strictEqual(lancer("recette", "connexion", "etape", "2").status, 0);
 });
 
 test("recette <nom> tests sans tests.md : message clair et code 1", () => {
