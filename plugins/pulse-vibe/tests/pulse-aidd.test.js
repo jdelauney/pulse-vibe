@@ -442,18 +442,64 @@ test("pulse-aidd.cmd fonctionne depuis cmd.exe (Windows)", { skip: process.platf
   assert.ok(r.stdout.length > 0);
 });
 
-test("installer-hook : sans scripts/verifier.js (nouveau worktree), le commit n'est pas bloqué", () => {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hook-absent-"));
+function depotHook(prefixe) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), prefixe));
   const git = (...a) => spawnSync("git", a, { cwd: d, encoding: "utf8" });
   git("init", "-q", "-b", "main");
   git("config", "user.email", "t@example.com");
   git("config", "user.name", "T");
+  return { d, git };
+}
+const cleHook = () => `const k = "${["sk", "live", "4eC39HqLyjWDarjtT1zdp7dc"].join("_")}";\n`;
+
+test("installer-hook : sans scripts/verifier.js (nouveau worktree), la copie gardée par Git contrôle le commit", () => {
+  const { d, git } = depotHook("pulse-hook-absent-");
   assert.strictEqual(dans(d, "installer-hook").status, 0);
+  assert.ok(fs.existsSync(path.join(d, ".git", "pulse", "verifier.js")), "copie de secours");
   fs.rmSync(path.join(d, "scripts", "verifier.js"));
   fs.writeFileSync(path.join(d, "a.txt"), "bonjour\n");
   git("add", "a.txt");
+  const sain = git("commit", "-q", "-m", "x");
+  assert.strictEqual(sain.status, 0, sain.stderr + sain.stdout);
+  fs.writeFileSync(path.join(d, "app.js"), cleHook());
+  git("add", "app.js");
+  const r = git("commit", "-m", "y");
+  assert.notStrictEqual(r.status, 0);
+  assert.match(r.stderr + r.stdout, /Commit annulé/);
+});
+
+test("installer-hook : contrôle introuvable (ni scripts/verifier.js, ni copie) : commit refusé, avec ce qui s'est passé et comment réparer", () => {
+  const { d, git } = depotHook("pulse-hook-perdu-");
+  assert.strictEqual(dans(d, "installer-hook").status, 0);
+  fs.rmSync(path.join(d, "scripts", "verifier.js"));
+  fs.rmSync(path.join(d, ".git", "pulse", "verifier.js"));
+  fs.writeFileSync(path.join(d, "a.txt"), "bonjour\n");
+  git("add", "a.txt");
   const r = git("commit", "-q", "-m", "x");
-  assert.strictEqual(r.status, 0, r.stderr + r.stdout);
+  assert.notStrictEqual(r.status, 0);
+  const message = r.stderr + r.stdout;
+  // Ce qui s'est passé, en mots simples.
+  assert.match(message, /Commit annulé/);
+  assert.match(message, /contrôle des secrets/);
+  assert.match(message, /introuvable/);
+  assert.match(message, /restent en place/, "la personne sait que son travail attend");
+  // La solution : la commande Pulse, ou l'outil, puis refaire le commit.
+  assert.match(message, /\/pulse:cicd/);
+  assert.match(message, /pulse-aidd installer-hook/);
+  assert.match(message, /refaites le commit/);
+  // Les fichiers restent prêts : rien n'a été retiré de l'index.
+  assert.match(git("diff", "--cached", "--name-only").stdout, /a\.txt/);
+});
+
+test("installer-hook : un hooksPath réglé pour tous les projets n'est jamais modifié", () => {
+  const { d } = depotHook("pulse-hook-global-");
+  const globaux = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hooks-globaux-"));
+  const config = path.join(globaux, "gitconfig");
+  fs.writeFileSync(config, `[core]\n\thooksPath = ${globaux.split(path.sep).join("/")}\n`);
+  const r = spawnSync("bash", [OUTIL, "installer-hook"], { cwd: d, encoding: "utf8", env: { ...process.env, GIT_CONFIG_GLOBAL: config } });
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /node scripts\/verifier\.js --index/);
+  assert.deepStrictEqual(fs.readdirSync(globaux), ["gitconfig"]);
 });
 
 test("contexte review et spirc : la référence « Examiner une tâche »", () => {

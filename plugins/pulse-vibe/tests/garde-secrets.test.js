@@ -109,6 +109,13 @@ test("git add d'un fichier précis sain : autorisé même si un autre fichier po
   assert.ok(refuse(lancerHook(bash("git add brouillon.js", d.dir))));
 });
 
+test("git add d'un fichier précis écrit avec une autre casse (Windows, macOS) : bloqué", { skip: process.platform === "linux" }, () => {
+  const d = depotTemporaire();
+  d.ecrire("brouillon.js", `const k = "${FAUX.stripe}";
+`);
+  assert.ok(refuse(lancerHook(bash("git add BROUILLON.JS", d.dir))));
+});
+
 test("git add d'un fichier précis : bloqué aussi quand le dossier courant passe par un lien (ou un nom court Windows)", () => {
   const d = depotTemporaire();
   d.ecrire("brouillon.js", `const k = "${FAUX.stripe}";\n`);
@@ -244,7 +251,7 @@ test("reconnaît les jetons GitHub classiques et sans état (format JWT, environ
   const b64 = (n) => require("crypto").randomBytes(n).toString("base64url");
   assert.deepStrictEqual(trouverSecrets("ghp" + "_" + b64(27)), ["jeton GitHub"]);
   const sansEtat = "ghs" + "_" + ["eyJh-" + b64(30), "eyJ" + b64(300), b64(170)].join(".");
-  assert.deepStrictEqual(trouverSecrets(`GH_TOKEN=${sansEtat}`), ["jeton GitHub"]);
+  assert.ok(trouverSecrets(`GH_TOKEN=${sansEtat}`).includes("jeton GitHub"));
   assert.deepStrictEqual(trouverSecrets("ghs_ ghp_court"), []);
 });
 
@@ -444,4 +451,184 @@ test("secret en clair : noms en majuscules, identifiants UUID et clés de traduc
   const hex = "ab12".repeat(16);
   const base64url = "Qx7" + "kR2mZp9" + "Lw4Tn8vB" + "c5Yd" + "Zq1Xe3HaVn";
   for (const c of [`API_SECRET="${hex}"`, `API_SECRET="${base64url}"`, `API_SECRET="${base64url}.${hex}"`]) assert.deepStrictEqual(trouverSecrets(c), ["secret en clair"], c);
+});
+
+// ------------------------------------------------------------ Revue 2 : chemins déguisés et motifs
+
+test("fichiers d'environnement : chemins déguisés reconnus, fichiers de code exclus", () => {
+  const { estFichierEnv } = require("../scripts/motifs");
+  for (const f of [".env/", ".env/.", "./.env/.", ".env.", ".env ", ".env::$DATA", "C:\\p\\.env::$DATA", "/p/.env:flux", "E:/p/./.env/."]) assert.ok(estFichierEnv(f), f);
+  for (const f of [".env.ts", "src/.env.js", ".env.d.ts", ".env.mjs", "src/env.ts", ".env.example/"]) assert.ok(!estFichierEnv(f), f);
+});
+
+test("Read d'un .env par un chemin déguisé : refusé", () => {
+  for (const p of ["/p/.env/", "/p/.env::$DATA", "/p/./.env/.", "/p/.env.", "/p/.env ", "C:\\p\\.env::$DATA"])
+    assert.ok(refuse(lancerHook({ tool_name: "Read", tool_input: { file_path: p } })), p);
+});
+
+test("secret en clair : camelCase, sans guillemets, DB_PASS ; adresse avec hôte sans point et vrai mot de passe", () => {
+  const v = "Qz8x" + "K2mP9vL4" + "nR7tW1yB5cD3";
+  for (const c of [`const apiKey = "${v}";`, `const config = { secret: "${v}" };`, `AUTH_SECRET=${v}`, `password: '${v}'`, `const DB_PASS = "${v}";`, `export CLIENT_SECRET=${v}`, `"apiKey": "${v}"`])
+    assert.deepStrictEqual(motifs(c), ["secret en clair"], c);
+  assert.deepStrictEqual(motifs("postgres" + "://u:" + "Zx9Kq2" + "Lm8Np4" + "@db/app"), ["mot de passe dans une adresse de base de données"]);
+});
+
+test("écrire une clé dans src/.env.ts : refusé (c'est du code, pas un fichier de secrets)", () => {
+  const k = ["sk", "live", "4eC39HqLyjWDarjtT1zdp7dc"].join("_");
+  assert.ok(refuse(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/src/.env.ts", content: `export const k = "${k}";` } })));
+});
+
+test("code ordinaire qui porte un nom de secret : jamais signalé", () => {
+  for (const c of [
+    "const password = input.value;",
+    "  apiKey: string;",
+    "SECRET_REF=process.env.R2_SECRET_2",
+    "const secret = process.env.R2_SECRET_ACCESS_KEY2;",
+    "passwordHint: 'auth.passwordHint.label2'",
+    'const TOKEN_NAME = "STRIPE_WEBHOOK_SECRET_V2"',
+    "NPM_TOKEN: ${{ secrets.NPM_TOKEN }}",
+    "--token-color: #123456789abcdef0;",
+    "if (token === previousTokenValue2024) {}",
+    'const tokenStorageKey = "myApp_authToken_v2";',
+    'tokenCookieName: "__Host-AuthToken2",',
+    'resetTokenRoute: "/api/auth/resetToken2",',
+    'secretsPath: "src/lib/secretsManager2.ts",',
+    'const passwordInputId = "passwordInput2FA";',
+    'const apiKeyRef = "projects/abc123/Secrets/Key";',
+    'data-token="tokenValuePlaceholder1"',
+    "token = generateToken2FA",
+    "password = getPasswordFromVault2",
+    "secret: SecretManagerClient2024",
+    "PASSWORD_HASH_ALGO=Argon2idDefaultParams",
+    "TOKEN_TTL=PT15M30S_Default2",
+  ])
+    assert.deepStrictEqual(motifs(c), [], c);
+});
+
+test("faux positifs de la revue (F1 à F16) : aucun refus", () => {
+  const ecrire = (fichier, contenu) => lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/" + fichier, content: contenu } });
+  for (const [fichier, contenu] of [
+    [".env.example", "DATABASE_URL=" + "postgres" + "://user:password@localhost:5432/app"],
+    ["README.md", "DATABASE_URL=" + "postgres" + "ql://postgres:postgres@localhost:5432/mydb"],
+    ["README.md", "DATABASE_URL=" + "postgres" + "://monuser:monmotdepasse@localhost:5432/app"],
+    [".env.example", "DATABASE_URL=" + "postgres" + "ql://neondb_owner:VOTRE_MOT_DE_PASSE@ep-xxx.eu-central-1.aws.neon.tech/neondb"],
+    ["README.md", "STRIPE_SECRET_KEY=" + ["sk", "test", "VOTRE_CLE_ICI"].join("_")],
+    ["src/a.ts", 'const WEBHOOK_SECRET_NAME = "STRIPE_WEBHOOK_SECRET_V2";'],
+    ["docker-compose.yml", "DATABASE_URL: " + "postgres" + "://app:app@db:5432/app"],
+    ["README.md", "Exemple : " + "https" + "://user:pass@example.com/"],
+    ["src/i18n.ts", "password: 'auth.passwordHint.label2'"],
+    [".env.example", 'BETTER_AUTH_SECRET="genere-par-openssl-rand-base64-32"'],
+    ["README.md", "DATABASE_URL=" + "postgres" + "://user:secret123@localhost/app"],
+    ["src/a.ts", "const uuid = \"123e4567-e89b-12d3-a456-426614174000\"; const SECRET_KEY_NAME = 'CLERK_SECRET_KEY';"],
+    ["package-lock.json", '"integrity": "sha512-' + "Qz8xK2mP9vL4nR7tW1yB5cD3".repeat(2) + '=="'],
+    ["src/a.ts", 'const TOKEN_KEY = "Authorization";'],
+    ["README.md", "Collez votre clé " + ["sk", "live", "..."].join("_") + " dans .env"],
+  ])
+    assert.strictEqual(ecrire(fichier, contenu), null, `${fichier} : ${contenu}`);
+});
+
+test("valeurs tirées au hasard : toujours signalées malgré le filtre de texte lisible", () => {
+  for (const v of ["Qz8x" + "K2mP9vL4nR7tW1yB5cD3", "Qx7kR2mZp9Lw4Tn8" + "vBc5YdZq1Xe3HaVn"]) assert.deepStrictEqual(motifs(`const apiKey = "${v}";`), ["secret en clair"], v);
+});
+
+test("refus de lecture d'un .env déguisé : le nom affiché est celui du fichier", () => {
+  const r = lancerHook({ tool_name: "Read", tool_input: { file_path: "E:/p/.env/." } });
+  assert.ok(refuse(r));
+  assert.ok(r.permissionDecisionReason.includes("« .env »"), r.permissionDecisionReason);
+});
+
+test("Grep avec un filtre qui couvre un .env : refusé, même ignoré par Git ; filtres ordinaires permis", () => {
+  const { dir, ecrire } = depotTemporaire();
+  ecrire(".env", "STRIPE=1\n");
+  ecrire(".gitignore", ".env\n");
+  const grep = (glob) => lancerHook({ tool_name: "Grep", tool_input: { pattern: "STRIPE", path: dir, glob, output_mode: "content" }, cwd: dir });
+  for (const g of ["*", ".e?v", ".e*", "{.env,x}", "**/.[e]nv"]) {
+    const s = grep(g);
+    assert.ok(refuse(s), g);
+    assert.match(s.permissionDecisionReason, /pulse-aidd secrets inventaire/);
+  }
+  // Filtre d'exclusion seul : ripgrep garde .gitignore, le .env ignoré n'est pas lu (Ruling de la relecture).
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}", "src/**/*.js", ".env.example", "!*.js", "!node_modules/**", ".*rc"]) assert.strictEqual(grep(g), null, g);
+});
+
+test("Grep avec un filtre d'exclusion seul : traité comme sans filtre (.env non ignoré refusé)", () => {
+  const { dir, ecrire } = depotTemporaire();
+  ecrire(".env", "STRIPE=1\n");
+  assert.ok(refuse(lancerHook({ tool_name: "Grep", tool_input: { pattern: "STRIPE", path: dir, glob: "!*.js" }, cwd: dir })));
+});
+
+test("liste de chemins inconnue au moment du contrôle : -f refusé, sinon accord demandé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire(".env", "STRIPE=1\n");
+  ecrire(".gitignore", ".env\n");
+  ecrire("config.js", "const a = 1;\n");
+  git("add", "config.js", ".gitignore");
+  git("commit", "-q", "-m", "c");
+  ecrire("config.js", `const k = "${FAUX.stripe}";\n`);
+  for (const c of ["echo .env | git add -f --pathspec-from-file=-", "echo .env > l.txt && git add -f --pathspec-from-file=l.txt", "git add -f --pathspec-from-file=absent.txt", "echo config.js > l2.txt && git commit --pathspec-from-file=l2.txt -m x"])
+    assert.ok(refuse(lancerHook(bash(c, dir))), c);
+  ecrire("config.js", "const a = 2;\n");
+  for (const c of ["echo config.js > l3.txt && git add --pathspec-from-file=l3.txt", "git commit --pathspec-from-file=absent.txt -m x"]) {
+    const s = lancerHook(bash(c, dir));
+    assert.ok(s && s.permissionDecision === "ask", c);
+  }
+});
+
+test("Grep avec un filtre large dans un dossier sans .env : permis", () => {
+  const { dir } = depotTemporaire();
+  for (const g of ["*", "!*.js"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
+});
+
+test("git stage, update-index --add et --pathspec-from-file : contrôlés comme git add et git commit", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("config.js", "const a = 1;\n");
+  git("add", "config.js");
+  git("commit", "-q", "-m", "c");
+  ecrire("config.js", `const k = "${FAUX.stripe}";\n`);
+  ecrire("liste.txt", "config.js\n");
+  for (const c of [
+    "git stage config.js",
+    "git update-index --add config.js",
+    "git commit --pathspec-from-file=liste.txt -m x",
+    "git add --pathspec-from-file=liste.txt",
+    "git add --pathspec-from-file liste.txt",
+    "git commit --pathspec-from-file liste.txt -m x",
+  ])
+    assert.ok(refuse(lancerHook(bash(c, dir))), c);
+  assert.strictEqual(lancerHook(bash("git stage public/index.html", dir)), null);
+  // Ruling F7 : le nom du fichier-liste (forme avec espace) n'est pas lu comme un chemin à indexer.
+  ecrire("sain.txt", "public/index.html\n");
+  assert.strictEqual(lancerHook(bash("git add --pathspec-from-file sain.txt", dir)), null);
+});
+
+test("--pathspec-from-file : le fichier-liste n'est pas pris pour un chemin (forme avec espace)", () => {
+  const { dir, ecrire } = depotTemporaire();
+  // Le fichier-liste porte lui-même un secret : seul son contenu (la liste) compte, pas le fichier.
+  ecrire("liste.txt", `public/index.html\n# ${FAUX.stripe}\n`);
+  assert.strictEqual(lancerHook(bash("git add --pathspec-from-file liste.txt", dir)), null);
+  assert.ok(refuse(lancerHook(bash("git add liste.txt", dir))));
+});
+
+test("Review Focus 2 : Grep avec *.ts, **/*.tsx, *.{ts,tsx} permis ; * permis sans .env", () => {
+  const { dir, ecrire } = depotTemporaire();
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
+  assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: "*" }, cwd: dir }), null);
+  ecrire(".env", "A=1\n");
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}"]) assert.strictEqual(lancerHook({ tool_name: "Grep", tool_input: { pattern: "x", path: dir, glob: g }, cwd: dir }), null, g);
+});
+
+test("écrire dans le contrôle avant commit : accord demandé ; avec une clé : refus", () => {
+  for (const [outil, ti] of [
+    ["Write", { file_path: "/p/scripts/verifier.js", content: "// adapté\n" }],
+    ["Edit", { file_path: "/p/.git/hooks/pre-commit", old_string: "x", new_string: "exit 0" }],
+    ["Write", { file_path: "C:\\p\\scripts\\verifier.js", content: "x" }],
+    ["Write", { file_path: "/p/.git/pulse/verifier.js", content: "// vide\n" }],
+    ["Edit", { file_path: "C:\\p\\.git\\config", old_string: "[core]", new_string: "[core]\n\thooksPath = /dev/null" }],
+  ]) {
+    const s = lancerHook({ tool_name: outil, tool_input: ti });
+    assert.strictEqual(s && s.permissionDecision, "ask", `${outil} ${ti.file_path}`);
+    assert.match(s.permissionDecisionReason, /pulse-aidd installer-hook/);
+  }
+  assert.ok(refuse(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/scripts/verifier.js", content: `const k = "${FAUX.stripe}";` } })));
+  assert.strictEqual(lancerHook({ tool_name: "Write", tool_input: { file_path: "/p/scripts/autre.js", content: "x" } }), null);
 });

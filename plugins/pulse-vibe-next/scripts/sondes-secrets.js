@@ -44,6 +44,18 @@ const VARIABLES = {
   TURNSTILE_SECRET_KEY: { secret: true, fournisseur: "Cloudflare Turnstile" },
 };
 
+// Serveurs auxquels un test envoie un mot de passe ou un jeton : fournisseurs connus, machine locale (Mailpit),
+// et ceux de PULSE_SONDES_HOTES_ACCEPTES (tests). Un SMTP_HOST ou une adresse Upstash changés dans .env
+// ne détournent donc pas le secret vers un autre serveur.
+const SMTP_CONNUS = /^(localhost|127\.0\.0\.1|smtp-relay\.brevo\.com|smtp-relay\.sendinblue\.com|smtp\.resend\.com|smtp\.gmail\.com|smtp\.office365\.com|smtp-mail\.outlook\.com|smtp\.sendgrid\.net|smtp(\.eu)?\.mailgun\.org|smtp\.postmarkapp\.com|in-v3\.mailjet\.com|smtp\.tem\.scw\.cloud|ssl0\.ovh\.net|smtp\.ionos\.(fr|com|de)|mail\.infomaniak\.com|smtp\.zoho\.(eu|com)|email-smtp\.[a-z0-9-]+\.amazonaws\.com)$/i;
+const UPSTASH_CONNUS = /\.upstash\.io$/i;
+
+function hoteAccepte(hote, connus) {
+  const h = String(hote || "").toLowerCase();
+  const ajoutes = (process.env.PULSE_SONDES_HOTES_ACCEPTES || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
+  return connus.test(h) || ajoutes.includes(h);
+}
+
 // ---------------------------------------------------------------- Sorties
 
 let valeursAMasquer = [];
@@ -162,6 +174,11 @@ async function testerCleNeon(nom, v) {
 
 async function testerSmtp(nom, v) {
   if (!v.SMTP_HOST) mauvais("SMTP_HOST manque : le test a besoin du serveur.");
+  if (!hoteAccepte(v.SMTP_HOST, SMTP_CONNUS))
+    sansTest(
+      `SMTP_HOST vaut « ${v.SMTP_HOST} », un serveur que Pulse ne reconnaît pas : le mot de passe ne lui est pas envoyé. ` +
+        "Vérifiez SMTP_HOST dans .env (le serveur indiqué par votre fournisseur d'e-mail), puis testez l'envoi d'un e-mail depuis le site."
+    );
   const nodemailer = dependance("nodemailer");
   const port = Number(v.SMTP_PORT) || 587;
   const transporteur = nodemailer.createTransport({
@@ -180,6 +197,8 @@ async function testerSmtp(nom, v) {
 
 async function testerR2(nom, v) {
   for (const b of ["R2_ACCOUNT_ID", "R2_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"]) if (!v[b]) mauvais(`${b} manque : le test a besoin des quatre variables R2.`);
+  if (!/^[0-9a-f]{32}$/i.test(v.R2_ACCOUNT_ID))
+    mauvais("R2_ACCOUNT_ID doit être l'identifiant de compte Cloudflare (32 caractères, chiffres et lettres a à f) : la clé n'est envoyée qu'à l'adresse R2 de ce compte.");
   const { S3Client, HeadBucketCommand } = dependance("@aws-sdk/client-s3");
   const client = new S3Client({
     region: "auto",
@@ -198,6 +217,17 @@ async function testerR2(nom, v) {
 async function testerUpstash(nom, v) {
   const url = v.UPSTASH_REDIS_REST_URL;
   if (!url) mauvais("UPSTASH_REDIS_REST_URL manque : le test a besoin de l'adresse.");
+  let protocole = "";
+  let hote = "";
+  try {
+    const adresse = new URL(url);
+    protocole = adresse.protocol;
+    hote = adresse.hostname;
+  } catch (e) {
+    mauvais("UPSTASH_REDIS_REST_URL n'est pas une adresse web valide.");
+  }
+  if (!hoteAccepte(hote, UPSTASH_CONNUS)) sansTest(`UPSTASH_REDIS_REST_URL vise « ${hote} », qui n'est pas une adresse Upstash (….upstash.io) : le jeton ne lui est pas envoyé. Vérifiez la variable dans .env.`);
+  if (UPSTASH_CONNUS.test(hote) && protocole !== "https:") sansTest("UPSTASH_REDIS_REST_URL doit commencer par https:// : le jeton ne part pas par une adresse non chiffrée. Vérifiez la variable dans .env.");
   let reponse;
   try {
     reponse = await fetch(`${url.replace(/\/$/, "")}/ping`, { headers: { Authorization: `Bearer ${v[nom]}` }, signal: AbortSignal.timeout(15000) });

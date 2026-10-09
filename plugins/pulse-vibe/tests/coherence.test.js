@@ -118,7 +118,7 @@ test("allowed-tools des skills : motifs précis, sans suppression, fusion de dem
     for (const [, motif] of ligne.matchAll(/Bash\(([^)]*)\)/g)) {
       const refus =
         /^\*$|^git \*$|^rm\b|push.*(--force|\s-f\b|\+)|branch -D|reset --hard|\bclean\b|(gh pr|glab mr) merge/.test(motif) ||
-        (/\bconfig\b/.test(motif) && !/^git config (--global )?user\.(name|email)( \*)?$/.test(motif));
+        (/(^|\s)config\b/.test(motif) && !/^git config (--global )?user\.(name|email)( \*)?$/.test(motif));
       if (refus) problemes.push(`${skill} : Bash(${motif})`);
     }
   }
@@ -398,7 +398,29 @@ test("mise en ligne : tests, contrôle rapide de sécurité avant la première f
   assert.match(controles, /Un ⛔ bloque la mise en ligne/);
   assert.match(deploy.split("## 6. Clore")[1], /`\/pulse:security audit`/);
   const motifs = motifsBash(fichier);
-  for (const m of ["git ls-files *", "git grep *", "curl -sI *"]) assert.ok(motifs.includes(m), `allowed-tools de deploy : Bash(${m})`);
+  for (const m of ["git ls-files *", "git grep -n *", "pulse-aidd sonder *"]) assert.ok(motifs.includes(m), `allowed-tools de deploy : Bash(${m})`);
+});
+
+test("allowed-tools : ni curl ni wget, gitleaks seulement avec --redact, ni git rm, git grep seulement avec -n ou -l", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    const skill = path.relative(DEPOT, path.dirname(fichier));
+    for (const motif of motifsBash(fichier)) {
+      const refus =
+        /^(curl|wget)\b/.test(motif) || (/^gitleaks\b/.test(motif) && !/ --redact\b/.test(motif)) || /^git rm\b/.test(motif) || (/^git grep\b/.test(motif) && !/^git grep -[nl] \*$/.test(motif));
+      if (refus) problemes.push(`${skill} : Bash(${motif})`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "security", "SKILL.md")).includes("gitleaks detect --config .gitleaks.toml --redact*"));
+});
+
+test("en-têtes servis : vérifiés par pulse-aidd sonder --entetes, plus par curl", () => {
+  for (const ref of ["securite/entetes.md", "securite/rapide.md"]) {
+    const texte = lire(RACINE, "references", ref);
+    assert.ok(texte.includes("pulse-aidd sonder <adresse> --entetes"), ref);
+    assert.doesNotMatch(texte, /curl -sI/, ref);
+  }
 });
 
 test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes paramétrées, redirections, SSRF, sauvegardes ; audit des dépendances exigé", () => {

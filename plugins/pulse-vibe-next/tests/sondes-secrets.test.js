@@ -230,9 +230,9 @@ test("Upstash : PONG accepté, 401 refusé", async () => {
   const { s, url, recues } = await serveur(() => ({ statut, corps: statut === 200 ? { result: "PONG" } : { error: "Unauthorized" } }));
   const jeton = "AX" + hasard(20);
   const entree = JSON.stringify({ UPSTASH_REDIS_REST_TOKEN: jeton, UPSTASH_REDIS_REST_URL: url });
-  const ok = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], entree);
+  const ok = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], entree, { PULSE_SONDES_HOTES_ACCEPTES: "127.0.0.1" });
   statut = 401;
-  const ko = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], entree);
+  const ko = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], entree, { PULSE_SONDES_HOTES_ACCEPTES: "127.0.0.1" });
   s.close();
   assert.strictEqual(ok.code, 0, ok.sortie);
   assert.match(ok.sortie, /PONG/);
@@ -289,7 +289,7 @@ test("SMTP : vérification par nodemailer du projet ; un message d'erreur qui co
       return true; } });`,
   });
   const mdp = "Mdp" + hasard(8);
-  const entree = (pass) => JSON.stringify({ SMTP_PASSWORD: pass, SMTP_HOST: "smtp.exemple.test", SMTP_PORT: "587", SMTP_USER: "projet@exemple.test" });
+  const entree = (pass) => JSON.stringify({ SMTP_PASSWORD: pass, SMTP_HOST: "smtp-relay.brevo.com", SMTP_PORT: "587", SMTP_USER: "projet@exemple.test" });
   const ok = await lancer(d, ["tester", "SMTP_PASSWORD"], entree(mdp), { ATTENDU: mdp });
   assert.strictEqual(ok.code, 0, ok.sortie);
   assert.match(ok.sortie, /accepte l'identifiant/);
@@ -340,4 +340,65 @@ test("R2 : HeadBucket par le client S3 du projet ; dépendance absente : code 3"
   const sansModule = await lancer(projet(), ["tester", "R2_SECRET_ACCESS_KEY"], JSON.stringify(valeurs));
   assert.strictEqual(sansModule.code, 3);
   assert.match(sansModule.sortie, /npm install/);
+});
+
+test("SMTP : serveur inconnu, le mot de passe ne part pas (code 3, serveur nommé)", async () => {
+  const d = projet({ nodemailer: `exports.createTransport = () => { throw new Error("transporteur créé"); };` });
+  const mdp = "Mdp" + hasard(8);
+  const r = await lancer(d, ["tester", "SMTP_PASSWORD"], JSON.stringify({ SMTP_PASSWORD: mdp, SMTP_HOST: "smtp.attaquant.example", SMTP_PORT: "587", SMTP_USER: "projet@exemple.test" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /smtp\.attaquant\.example/);
+  assert.doesNotMatch(r.sortie, /transporteur créé/);
+  sansValeur(r.sortie, mdp);
+});
+
+test("Upstash : adresse hors upstash.io, le jeton ne part pas", async () => {
+  const d = projet();
+  const { s, url, recues } = await serveur(() => ({ statut: 200, corps: { result: "PONG" } }));
+  const jeton = "AX" + hasard(20);
+  const r = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], JSON.stringify({ UPSTASH_REDIS_REST_TOKEN: jeton, UPSTASH_REDIS_REST_URL: url }));
+  s.close();
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(recues.length, 0);
+  sansValeur(r.sortie, jeton);
+});
+
+test("R2 : identifiant de compte invalide, la clé ne part pas", async () => {
+  const d = projet({ "@aws-sdk/client-s3": `class HeadBucketCommand {} class S3Client { async send() { throw new Error("CLIENT_R2_APPELE"); } } module.exports = { S3Client, HeadBucketCommand };` });
+  const secret = hasard(32);
+  const r = await lancer(d, ["tester", "R2_SECRET_ACCESS_KEY"], JSON.stringify({ R2_ACCOUNT_ID: "attaquant.example/#", R2_BUCKET: "fichiers", R2_ACCESS_KEY_ID: hasard(16), R2_SECRET_ACCESS_KEY: secret }));
+  assert.strictEqual(r.code, 1, r.sortie);
+  assert.match(r.sortie, /R2_ACCOUNT_ID/);
+  assert.doesNotMatch(r.sortie, /CLIENT_R2_APPELE/);
+  sansValeur(r.sortie, secret);
+});
+
+test("SMTP : nom qui ressemble à un serveur connu (smtp-relay-brevo.com), le mot de passe ne part pas", async () => {
+  const d = projet({ nodemailer: `exports.createTransport = () => { throw new Error("transporteur créé"); };` });
+  const mdp = "Mdp" + hasard(8);
+  const r = await lancer(d, ["tester", "SMTP_PASSWORD"], JSON.stringify({ SMTP_PASSWORD: mdp, SMTP_HOST: "smtp-relay-brevo.com", SMTP_PORT: "587", SMTP_USER: "projet@exemple.test" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /smtp-relay-brevo\.com/);
+  assert.doesNotMatch(r.sortie, /transporteur créé/);
+  sansValeur(r.sortie, mdp);
+});
+
+test("Upstash : attacker-upstash.io n'est pas une adresse Upstash, le jeton ne part pas", async () => {
+  const d = projet();
+  const jeton = "AX" + hasard(20);
+  const r = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], JSON.stringify({ UPSTASH_REDIS_REST_TOKEN: jeton, UPSTASH_REDIS_REST_URL: "https://attacker-upstash.io" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /attacker-upstash\.io/);
+  assert.doesNotMatch(r.sortie, /PONG|injoignable/);
+  sansValeur(r.sortie, jeton);
+});
+
+test("Upstash : adresse en http://, le jeton ne part pas en clair", async () => {
+  const d = projet();
+  const jeton = "AX" + hasard(20);
+  const r = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], JSON.stringify({ UPSTASH_REDIS_REST_TOKEN: jeton, UPSTASH_REDIS_REST_URL: "http://demo.upstash.io" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /https:\/\//);
+  assert.doesNotMatch(r.sortie, /PONG|injoignable/);
+  sansValeur(r.sortie, jeton);
 });

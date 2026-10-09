@@ -24,12 +24,15 @@ const INTERPRETES = {
   php: ["-r"],
   bun: ["-e", "--eval"],
   deno: ["eval"],
+  tsx: ["-e", "--eval", "-p", "--print"],
+  "ts-node": ["-e", "--eval", "-p", "--print"],
 };
 
 /**
  * Découpe un script en segments ({ mots, entrees, lectures, apresTube }) et en sous-scripts ($(…), `…`).
  * `entrees` : le texte des heredocs et here-strings du segment (lu seulement si le segment est un shell).
  * `lectures` : les fichiers lus par une redirection d'entrée (`< fichier`).
+ * `ecritures` : les fichiers écrits par une redirection de sortie (`> fichier`, `>> fichier`, `&> fichier`).
  */
 function decouper(script, dialecte = "bash") {
   const posix = dialecte === "bash";
@@ -38,6 +41,7 @@ function decouper(script, dialecte = "bash") {
   let mots = [];
   let entrees = [];
   let lectures = [];
+  let ecritures = [];
   let apresTube = false;
   let mot = null;
   let redirection = null; // "entree" ou "sortie" : le prochain mot est une cible de redirection, pas un argument
@@ -50,6 +54,7 @@ function decouper(script, dialecte = "bash") {
     if (mot !== null) {
       if (redirection) {
         if (redirection === "entree") lectures.push(mot);
+        else if (redirection === "sortie") ecritures.push(mot); // « flux » (`>&2`) : renvoi vers un flux, pas un fichier
         redirection = null;
       } else if (texteEnvoye) {
         entrees.push(mot);
@@ -61,12 +66,13 @@ function decouper(script, dialecte = "bash") {
   // Termine le segment courant ; les heredocs ouverts lui appartiennent.
   const finirSegment = () => {
     finirMot();
-    const seg = { mots, entrees, lectures, apresTube };
-    if (mots.length || entrees.length || lectures.length) segments.push(seg);
+    const seg = { mots, entrees, lectures, ecritures, apresTube };
+    if (mots.length || entrees.length || lectures.length || ecritures.length) segments.push(seg);
     for (const h of heredocsEnAttente) if (!h.segment) h.segment = seg;
     mots = [];
     entrees = [];
     lectures = [];
+    ecritures = [];
     apresTube = false;
   };
   const ajouter = (c) => (mot = (mot || "") + c);
@@ -201,11 +207,17 @@ function decouper(script, dialecte = "bash") {
         i++;
       }
       heredocsEnAttente.push({ delim, retirerTabs, segment: null });
+    } else if ((c === "<" || c === ">") && script[i + 1] === "(" && posix) {
+      // Substitution de processus <(…) ou >(…) : ses commandes sont lues ; le mot garde sa forme pour les shells qui l'exécutent.
+      const apres = lireSubstitution(i);
+      ajouter(script.slice(i, apres));
+      i = apres;
     } else if (c === ">" || c === "<") {
-      if (mot !== null && /^\d+$/.test(mot)) mot = null;
+      if (mot !== null && (/^\d+$/.test(mot) || (dialecte === "powershell" && mot === "*"))) mot = null;
       finirMot();
       redirection = c === "<" ? "entree" : "sortie";
       i++;
+      if (c === ">" && script[i] === "&" && /\d|-/.test(script[i + 1] || "")) redirection = "flux";
       if (script[i] === ">" || script[i] === "&" || script[i] === "|") i++;
     } else {
       ajouter(c);
@@ -258,12 +270,13 @@ function optionsGlobalesGit(args) {
   return { k, prefixe, configs };
 }
 
-/** Les commandes simples d'un script, lanceurs dépliés (voir CommandeSimple dans le plan). */
-function commandesSimples(script, dialecte = "bash", profondeur = 0, resultat = []) {
+/** Les commandes simples d'un script, lanceurs dépliés (voir CommandeSimple dans le plan). `extra` : champs ajoutés au contexte de chaque commande. */
+function commandesSimples(script, dialecte = "bash", profondeur = 0, resultat = [], extra = {}) {
   if (profondeur > PROFONDEUR_MAX || !script) return resultat;
   const { segments, sousScripts } = decouper(String(script), dialecte);
-  for (const s of segments) deplier(s.mots, { entrees: s.entrees, lectures: s.lectures, apresTube: s.apresTube, dialecte, affectations: [], viaXargs: false, viaFind: false }, profondeur, resultat);
-  for (const sous of sousScripts) commandesSimples(sous, dialecte, profondeur + 1, resultat);
+  for (const s of segments)
+    deplier(s.mots, { entrees: s.entrees, lectures: s.lectures, ecritures: s.ecritures, apresTube: s.apresTube, dialecte, affectations: [], viaXargs: false, viaFind: false, ...extra }, profondeur, resultat);
+  for (const sous of sousScripts) commandesSimples(sous, dialecte, profondeur + 1, resultat, { ...extra, dansSubstitution: true });
   return resultat;
 }
 
@@ -312,6 +325,10 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
     } else if (cmd === "stdbuf") {
       m.shift();
       retirerOptions(m, ["-i", "-o", "-e"]);
+    } else if (cmd === "wsl") {
+      // wsl [-d distribution] [-u utilisateur] [-e] commande : la commande lancée sous Linux.
+      m.shift();
+      retirerOptions(m, ["-d", "--distribution", "-u", "--user", "--cd", "--shell-type"]);
     } else if (cmd === "xargs") {
       viaXargs = true;
       m.shift();
@@ -321,22 +338,32 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
       retirerOptions(m, ["-p", "--package", "-c", "--call"]);
     } else break;
   }
-  if (!m.length) return;
+  if (!m.length) {
+    // Segment sans commande (`done < .env`, `f=.env`, `> fichier`) : gardé pour ses redirections et affectations.
+    if (ctx.lectures.length || (ctx.ecritures || []).length || affectations.length) resultat.push({ cmd: "", brut: "", args: [], ...ctx, affectations, viaXargs });
+    return;
+  }
 
   const brut = m[0];
   const cmd = nomCommande(brut);
   const args = m.slice(1);
   const base = { ...ctx, affectations, viaXargs };
   const ajouter = (extra = {}) => resultat.push({ cmd, brut, args, ...base, ...extra });
-  const script = (texte, dialecte) => commandesSimples(texte, dialecte, profondeur + 1, resultat);
-  const sousCommande = (mots, extra = {}) => deplier(mots, { ...base, entrees: [], lectures: [], ...extra }, profondeur + 1, resultat);
+  const script = (texte, dialecte) => commandesSimples(texte, dialecte, profondeur + 1, resultat, ctx.dansSubstitution ? { dansSubstitution: true } : {});
+  const sousCommande = (mots, extra = {}) => deplier(mots, { ...base, entrees: [], lectures: [], ecritures: [], ...extra }, profondeur + 1, resultat);
 
   if (SHELLS_POSIX.has(cmd)) {
     const k = args.findIndex((a) => estOption(a) && flagsCourts(a).includes("c"));
     if (k >= 0) return script(args.slice(k + 1).find((a) => !estOption(a)) || "", "bash");
     const fichier = args.find((a) => !estOption(a));
-    if (fichier === undefined) {
+    // « sh - », « bash -s », « bash /dev/stdin » : le script vient de l'entrée standard.
+    // « bash <(curl …) » : le script est le texte produit par une commande.
+    if (/^[<>]\(/.test(fichier || "")) return ajouter({ scriptInconnu: true });
+    const litEntree = fichier === undefined || fichier === "-" || fichier === "/dev/stdin" || args.slice(0, args.indexOf(fichier)).some((a) => estOption(a) && flagsCourts(a).includes("s"));
+    if (litEntree) {
       for (const e of ctx.entrees) script(e, "bash");
+      // Texte reçu par un tube ou un fichier redirigé : Pulse ne le voit pas.
+      if (!ctx.entrees.length && (ctx.apresTube || ctx.lectures.length)) ajouter({ scriptInconnu: true });
       return;
     }
     if (nomCommande(fichier) === "pulse-aidd") return sousCommande(args.slice(args.indexOf(fichier)));
@@ -344,21 +371,33 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
   }
   if (cmd === "powershell" || cmd === "pwsh") {
     const k = args.findIndex((a) => /^-(c|command)$/i.test(a));
-    if (k >= 0) return script(args.slice(k + 1).join(" "), "powershell");
+    if (k >= 0) {
+      const texte = args.slice(k + 1).join(" ").trim();
+      if (texte === "-") return ajouter({ scriptInconnu: true });
+      return script(texte, "powershell");
+    }
     const e = args.findIndex((a) => /^-(e|ec|encodedcommand)$/i.test(a));
     if (e >= 0 && args[e + 1]) return script(Buffer.from(args[e + 1], "base64").toString("utf16le"), "powershell");
     // powershell.exe lit son premier argument libre comme une commande (pwsh, comme un fichier).
     const libre = args.findIndex((a) => !a.startsWith("-"));
     if (cmd === "powershell" && libre >= 0) return script(args.slice(libre).join(" "), "powershell");
-    return ajouter();
+    return ajouter(ctx.apresTube && libre < 0 ? { scriptInconnu: true } : {});
   }
   if (cmd === "cmd") {
     const k = args.findIndex((a) => /^\/{1,2}[ck]$/i.test(a));
     if (k >= 0) return script(args.slice(k + 1).join(" "), "cmd");
-    return ajouter();
+    return ajouter(ctx.apresTube ? { scriptInconnu: true } : {});
   }
+  // « source <(curl …) », « . /dev/stdin » : texte que Pulse ne voit pas.
+  if ((cmd === "source" || cmd === ".") && ctx.dialecte === "bash" && /^([<>]\(|\/dev\/stdin$|-$)/.test(args[0] || "")) return ajouter({ scriptInconnu: true });
   if (cmd === "eval") return script(args.join(" "), "bash");
-  if (cmd === "iex" || cmd === "invoke-expression") return script(args.filter((a) => !/^-command$/i.test(a)).join(" "), "powershell");
+  if (cmd === "iex" || cmd === "invoke-expression") {
+    const texte = args.filter((a) => !/^-command$/i.test(a)).join(" ");
+    // Texte reçu par un tube, calculé entre parenthèses (iex (irm …), iex (Get-Content x -Raw)), contenu d'une variable
+    // ou d'une sous-expression (iex "$(irm …)") : Pulse ne le voit pas.
+    if (!texte || /^\$/.test(texte)) return ajouter({ scriptInconnu: true });
+    return script(texte, "powershell");
+  }
   if (cmd === "start-process" || cmd === "saps") {
     let fichier = null;
     const liste = [];

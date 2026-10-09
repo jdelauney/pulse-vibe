@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// Pulse – garde-fou anti-secrets (hook PreToolUse sur Write, Edit, Read, Grep, Bash et PowerShell).
+// Pulse – garde-fou anti-secrets (hook PreToolUse, appelé par garde.js ; se lance aussi seul).
 //
 // Bloque, avant qu'ils ne se produisent :
 //  - l'écriture d'une clé secrète dans un fichier de code (Write / Edit) ;
-//  - la lecture d'un fichier .env par l'IA (Read, Grep, y compris un .env non ignoré dans le dossier fouillé) ;
-//  - l'ajout d'un fichier .env à Git (git add) ;
+//  - la lecture d'un fichier .env par l'IA (Read, Grep, y compris un .env non ignoré dans le dossier fouillé
+//    et un filtre de Grep qui couvre un .env) ;
+//  - l'ajout d'un fichier .env à Git (git add, git stage, git update-index --add, --pathspec-from-file) ;
 //  - un commit qui contient un fichier .env ou une clé secrète (git commit, y compris par chemin) ;
 //  - un push alors qu'un fichier .env est suivi par Git (git push).
 // La commande est lue par lecture-commande.js, comme pour le garde-fou des commandes.
@@ -18,8 +19,9 @@
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
-const { trouverSecrets, estFichierEnv } = require("./motifs");
+const { trouverSecrets, estFichierEnv, nomReel } = require("./motifs");
 const { commandesSimples, optionsGlobalesGit } = require("./lecture-commande");
+const { globCouvreEnv, estControleAvantCommit, MESSAGE_CONTROLE } = require("./chemins-sensibles");
 
 const TAILLE_MAX = 512 * 1024; // on ne lit pas les gros fichiers
 
@@ -31,19 +33,18 @@ function lireEntree() {
   }
 }
 
+// Décision rendue par un contrôle : refus ("deny") ou demande d'accord ("ask"). Levée, puis rendue par evaluer().
+class Decision {
+  constructor(decision, raison) {
+    this.decision = decision;
+    this.raison = raison;
+  }
+}
 function refuser(raison) {
-  // Écriture synchrone : garantit que la réponse part avant la fin du processus (Windows compris).
-  fs.writeSync(
-    1,
-    JSON.stringify({
-      hookSpecificOutput: {
-        hookEventName: "PreToolUse",
-        permissionDecision: "deny",
-        permissionDecisionReason: raison,
-      },
-    })
-  );
-  process.exit(0);
+  throw new Decision("deny", raison);
+}
+function demander(raison) {
+  throw new Decision("ask", raison);
 }
 
 function git(args, cwd) {
@@ -91,7 +92,10 @@ function verifierEcriture(ti) {
   const morceaux = [ti.content, ti.new_string, ti.new_source];
   if (Array.isArray(ti.edits)) for (const e of ti.edits) morceaux.push(e && e.new_string);
   const secrets = trouverSecrets(morceaux.filter((m) => typeof m === "string").join("\n"));
-  if (!secrets.length) return;
+  if (!secrets.length) {
+    if (estControleAvantCommit(fichier)) demander(`🔒 ${MESSAGE_CONTROLE}`);
+    return;
+  }
 
   refuser(
     `🔒 Pulse a bloqué l'écriture de « ${path.basename(fichier)} » : le contenu ressemble à une ${secrets.join(", ")}.\n` +
@@ -121,8 +125,15 @@ function verifierLecture(outil, ti, cwd) {
   const cibles = [ti.file_path, ti.path, ti.glob].filter((c) => typeof c === "string");
   let visee = cibles.find((c) => estFichierEnv(c) || /(^|[\\/])\.env\*?$/i.test(c) || /(^|[\\/])\.env\.\*$/i.test(c));
   if (!visee && outil === "Grep" && typeof ti.glob === "string" && /(^|[\\/{,])\.env(?!\.(example|sample|template)\b)(?![A-Za-z0-9_-])/i.test(ti.glob)) visee = ti.glob;
+  // Un glob donné à Grep passe outre .gitignore : il ne doit couvrir aucun .env.
+  let parFiltre = false;
+  if (!visee && outil === "Grep" && typeof ti.glob === "string" && globCouvreEnv(ti.glob, path.resolve(cwd, ti.path || "."))) {
+    visee = ti.glob;
+    parFiltre = true;
+  }
   let nonIgnore = false;
-  if (!visee && outil === "Grep" && !ti.glob && !ti.type) {
+  // Sans filtre, ou avec un filtre d'exclusion seul (!*.js), ripgrep lit ce que .gitignore n'écarte pas.
+  if (!visee && outil === "Grep" && (!ti.glob || /^\s*!/.test(String(ti.glob))) && !ti.type) {
     const exposes = envNonIgnores(path.resolve(cwd, ti.path || "."));
     if (exposes.length) {
       visee = exposes[0];
@@ -131,7 +142,10 @@ function verifierLecture(outil, ti, cwd) {
   }
   if (!visee) return;
   refuser(
-    `🔒 Pulse garde le contenu de « ${path.basename(visee)} » hors de la conversation : ce fichier contient les secrets du projet.\n` +
+    (parFiltre
+      ? `🔒 Pulse garde le contenu des fichiers .env hors de la conversation : le filtre « ${visee} » de cette recherche les couvre, même quand .gitignore les écarte.\n` +
+        `À faire : un filtre qui nomme le type de fichier cherché (par exemple « *.ts »).\n`
+      : `🔒 Pulse garde le contenu de « ${nomReel(visee) || visee} » hors de la conversation : ce fichier contient les secrets du projet.\n`) +
       (nonIgnore ? `Cette recherche le lirait, car il ne figure pas dans .gitignore. À faire d'abord : ajouter « .env* » au .gitignore.\n` : "") +
       `À la place : \`pulse-aidd secrets inventaire\` liste les variables (noms, présence, sans aucune valeur) ; ` +
       `.env.example donne les noms attendus. La personne modifie elle-même .env dans son éditeur.`
@@ -159,15 +173,56 @@ function fichiersModifies(racine) {
 // Options de git commit suivies d'une valeur : le mot suivant n'est pas un chemin.
 const AVEC_VALEUR_COMMIT = new Set(["-m", "--message", "-F", "--file", "-C", "--reuse-message", "-c", "--reedit-message", "--author", "--date", "--fixup", "--squash", "-t", "--template", "--trailer", "--cleanup", "--pathspec-from-file"]);
 
-/** Les appels à git d'une commande (lanceurs dépliés, texte cité ignoré). */
+/** Les appels à git d'une commande (lanceurs dépliés, texte cité ignoré). git stage = git add ; git update-index --add indexe aussi. */
 function appelsGit(commande, dialecte) {
-  return commandesSimples(commande, dialecte)
+  const commandes = commandesSimples(commande, dialecte);
+  // Fichiers écrits par la commande elle-même (echo .env > liste.txt && git add --pathspec-from-file=liste.txt) : contenu inconnu au moment du contrôle.
+  const ecrits = commandes.flatMap((c) => [...(c.ecritures || []), ...(["tee", "set-content", "sc", "out-file", "add-content", "ac"].includes(c.cmd) ? c.args.filter((a) => !a.startsWith("-")) : [])]);
+  return commandes
     .filter((c) => c.cmd === "git")
     .map((c) => {
       const { k, prefixe } = optionsGlobalesGit(c.args);
-      return { sous: c.args[k], args: c.args.slice(k + 1), prefixe, viaXargs: c.viaXargs };
+      let sous = c.args[k];
+      let args = c.args.slice(k + 1);
+      if (sous === "stage") sous = "add";
+      if (sous === "update-index" && args.includes("--add")) {
+        sous = "add";
+        args = args.filter((a) => !a.startsWith("-"));
+      }
+      return { sous, args, prefixe, viaXargs: c.viaXargs, ecrits };
     });
 }
+
+/**
+ * Chemins lus dans --pathspec-from-file (un par ligne). null : liste inconnue au moment du contrôle
+ * (entrée standard « - », fichier absent ou illisible, fichier écrit par la même commande).
+ */
+function cheminsDepuisFichier(args, cwd, ecrits = []) {
+  for (let k = 0; k < args.length; k++) {
+    const a = args[k];
+    const valeur = a.startsWith("--pathspec-from-file=") ? a.slice("--pathspec-from-file=".length) : a === "--pathspec-from-file" ? args[k + 1] : undefined;
+    if (valeur === undefined) continue;
+    if (valeur === "-" || !valeur) return null;
+    const chemin = path.resolve(cwd, valeur);
+    if (ecrits.some((e) => path.resolve(cwd, e) === chemin)) return null;
+    try {
+      return fs
+        .readFileSync(chemin, "utf8")
+        .split(/\r?\n|\0/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+    } catch (e) {
+      return null;
+    }
+  }
+  return [];
+}
+
+// git add -f : passe outre .gitignore (un .env ignoré serait indexé).
+const forceAjout = (args) => args.some((t) => t === "--force" || /^-[a-zA-Z]*f[a-zA-Z]*$/.test(t));
+
+/** Les arguments sans --pathspec-from-file ni sa valeur (forme collée ou séparée). */
+const sansFichierDeChemins = (args) => args.filter((t, k) => !t.startsWith("--pathspec-from-file") && args[k - 1] !== "--pathspec-from-file");
 
 /** Chemins nommés dans git commit : Git enregistre leur contenu actuel, sans passer par l'index. */
 function cheminsDuCommit(args) {
@@ -187,6 +242,9 @@ function cheminsDuCommit(args) {
   return chemins;
 }
 
+// Windows et macOS ignorent la casse des noms de fichiers : CONFIG.JS désigne config.js.
+const casse = (x) => (process.platform === "win32" || process.platform === "darwin" ? x.toLowerCase() : x);
+
 function candidatsAdd(listeArgs, racine, cwd) {
   const modifies = fichiersModifies(racine);
   const chemins = listeArgs.filter((t) => !t.startsWith("-") || t === "--");
@@ -202,7 +260,7 @@ function candidatsAdd(listeArgs, racine, cwd) {
   for (const t of chemins) {
     if (t === "--") continue;
     const rel = versSlash(path.relative(racineReelle, path.resolve(cwdReel, t)));
-    for (const f of modifies) if (f === rel || f.startsWith(rel + "/")) resultat.add(f);
+    for (const f of modifies) if (casse(f) === casse(rel) || casse(f).startsWith(casse(rel) + "/")) resultat.add(f);
     if (estFichierEnv(rel)) resultat.add(rel); // même s'il n'apparaît pas (ex. déjà ignoré mais forcé)
   }
   return [...resultat];
@@ -217,7 +275,7 @@ function lignesAjoutees(diff) {
 
 // Contrôle les appels git qui visent un même dépôt ; les constats s'ajoutent à `etat`.
 function controlerAppels(appels, dossier, racine, etat) {
-  const { problemes, fichiersEnv, secretsTrouves } = etat;
+  const { problemes, fichiersEnv, secretsTrouves, listesInconnues } = etat;
   const noter = (fichier, contenu) => {
     const s = trouverSecrets(contenu);
     if (s.length) secretsTrouves.set(fichier, s);
@@ -226,7 +284,19 @@ function controlerAppels(appels, dossier, racine, etat) {
   // git add
   for (const a of appels.filter((x) => x.sous === "add")) {
     if (a.args.some((t) => t === "-n" || t === "--dry-run")) continue;
-    for (const f of candidatsAdd(a.viaXargs ? ["-A"] : a.args, racine, dossier)) {
+    const depuis = cheminsDepuisFichier(a.args, dossier, a.ecrits);
+    const inconnue = a.viaXargs || depuis === null;
+    if (inconnue && forceAjout(a.args)) {
+      problemes.push(
+        `Les fichiers de ce « git add -f » viennent d'une liste que Pulse ne peut pas lire (tube, entrée standard ou fichier écrit par la même commande) ; ` +
+          `avec -f, un .env ignoré partirait dans Git.\nÀ faire : nommer les fichiers dans la commande (« git add <fichier> <fichier> »), sans -f.`
+      );
+      continue;
+    }
+    if (depuis === null) listesInconnues.push("git add");
+    // Liste inconnue : tous les fichiers modifiés sont contrôlés, options gardées.
+    const liste = inconnue ? [...sansFichierDeChemins(a.args).filter((t) => t.startsWith("-")), "-A"] : [...sansFichierDeChemins(a.args), ...depuis];
+    for (const f of candidatsAdd(liste, racine, dossier)) {
       if (estFichierEnv(f)) fichiersEnv.add(f);
       else noter(f, lireFichier(path.join(racine, f)));
     }
@@ -235,8 +305,10 @@ function controlerAppels(appels, dossier, racine, etat) {
   // git commit
   const commits = appels.filter((x) => x.sous === "commit");
   if (commits.length) {
-    const toutAjouter = commits.some((a) => a.args.some((t) => t === "--all" || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(t)));
-    const chemins = commits.flatMap((a) => cheminsDuCommit(a.args));
+    const depuisFichiers = commits.map((a) => cheminsDepuisFichier(a.args, dossier, a.ecrits));
+    if (depuisFichiers.includes(null)) listesInconnues.push("git commit");
+    const toutAjouter = depuisFichiers.includes(null) || commits.some((a) => a.args.some((t) => t === "--all" || /^-[a-zA-Z]*a[a-zA-Z]*$/.test(t)));
+    const chemins = [...commits.flatMap((a) => cheminsDuCommit(sansFichierDeChemins(a.args))), ...depuisFichiers.flatMap((d) => d || [])];
     const indexes = (git(["diff", "--cached", "--name-only", "-z"], racine) || "").split("\u0000").filter(Boolean);
     const suivis = toutAjouter ? (git(["diff", "--name-only", "-z"], racine) || "").split("\u0000").filter(Boolean) : [];
     const parChemin = chemins.length ? (git(["diff", "HEAD", "--name-only", "-z", "--", ...chemins], dossier) || "").split("\u0000").filter(Boolean) : [];
@@ -271,7 +343,7 @@ function verifierGit(commande, cwd, dialecte) {
   if (!appels.length) return;
 
   // Chaque appel vise son propre dépôt (option -C), à contrôler séparément.
-  const etat = { problemes: [], fichiersEnv: new Set(), secretsTrouves: new Map() };
+  const etat = { problemes: [], fichiersEnv: new Set(), secretsTrouves: new Map(), listesInconnues: [] };
   const parDossier = new Map();
   for (const a of appels) {
     const dossier = a.prefixe[0] === "-C" ? path.resolve(cwd, a.prefixe[1]) : cwd;
@@ -306,13 +378,18 @@ function verifierGit(commande, cwd, dialecte) {
         `\n\nExpliquez simplement le problème à la personne, corrigez-le, puis relancez la commande.`
     );
   }
+  if (etat.listesInconnues.length) {
+    demander(
+      `🔒 Pulse demande votre accord : la liste des fichiers de ce « ${etat.listesInconnues[0]} » est lue ailleurs (entrée standard, fichier absent ou écrit par la même commande), ` +
+        `Pulse ne peut donc pas vérifier qu'elle ne contient ni .env ni secret. Préférez nommer les fichiers dans la commande.`
+    );
+  }
 }
 
 // ---------------------------------------------------------------- Point d'entrée
 
-function principal() {
+function verifier(entree) {
   if (process.env.PULSE_GARDE_OFF === "1") return;
-  const entree = lireEntree();
   if (!entree || !entree.tool_input) return;
   const outil = entree.tool_name;
   const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
@@ -326,9 +403,22 @@ function principal() {
   }
 }
 
-try {
-  principal();
-} catch (e) {
-  // Ne jamais bloquer une séance à cause d'une erreur du garde-fou lui-même.
+/** Décision du garde-fou anti-secrets pour une entrée de hook : { decision, raison }, ou null pour laisser passer. */
+function evaluer(entree) {
+  try {
+    verifier(entree);
+  } catch (e) {
+    if (e instanceof Decision) return { decision: e.decision, raison: e.raison };
+    // Ne jamais bloquer une séance à cause d'une erreur du garde-fou lui-même.
+  }
+  return null;
 }
-process.exit(0);
+
+module.exports = { evaluer };
+
+if (require.main === module) {
+  const r = evaluer(lireEntree());
+  // Écriture synchrone : garantit que la réponse part avant la fin du processus (Windows compris).
+  if (r) fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: r.decision, permissionDecisionReason: r.raison } }));
+  process.exit(0);
+}

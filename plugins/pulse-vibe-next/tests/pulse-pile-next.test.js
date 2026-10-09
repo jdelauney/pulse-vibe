@@ -221,7 +221,7 @@ test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue �
 
 test("contexte security : en-têtes dans next.config.ts, sans nonce, preload décidé par la personne", () => {
   const texte = lire(REF, "contexte", "security.md");
-  for (const attendu of ["next.config.ts", "`sources`", "nonce", "cacheComponents", "preload", "proxy.ts", "curl -sI", "un seul `headers()`"])
+  for (const attendu of ["next.config.ts", "`sources`", "nonce", "cacheComponents", "preload", "proxy.ts", "pulse-aidd sonder http://localhost:3000 --entetes", "un seul `headers()`"])
     assert.ok(texte.includes(attendu), attendu);
 });
 

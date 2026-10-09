@@ -390,7 +390,10 @@ test("modèle à mettre à niveau : une ligne « aussi », jamais un blocage du 
   assert.ok(!a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }));
   const crochet = { "scripts/verifier.js": "x", ".git/hooks/pre-commit": "#!/bin/sh\nexit 0\n" };
   assert.ok(a(crochet));
-  assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\n" }));
+  assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\nexec node \"$secours/pulse/verifier.js\" --index\n" }), "crochet à jour");
+  assert.ok(a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\n[ -f scripts/verifier.js ] || exit 0\n" }), "ancien crochet, sans copie de secours");
+  // /pulse:init remplace aussi cet ancien crochet (installer-hook réécrit un crochet de Pulse).
+  assert.match(fs.readFileSync(path.join(RACINE, "skills", "init", "SKILL.md"), "utf8"), /ou crochet de Pulse sans `pulse\/verifier\.js` \(ancien modèle[^)]*\) → `pulse-aidd installer-hook`/);
   assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "#!/bin/sh\nnode scripts/verifier.js --index\n" }), "ligne ajoutée à la main");
   assert.ok(a({ "scripts/verifier.js": "x", ".git/hooks": "<dossier>" }), "crochet absent");
   assert.ok(!a({ ...crochet, ".git/config": "[core]\n\thooksPath = .husky\n" }), "Husky range ses contrôles ailleurs");

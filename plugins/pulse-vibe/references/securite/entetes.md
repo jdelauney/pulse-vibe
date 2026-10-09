@@ -73,7 +73,7 @@ Les directives sont séparées par `; ` dans la valeur de l'en-tête.
 ## 4. Vérifier
 
 1. Lancer l'appli avec la commande « lancer en local » de « Commandes du projet ». Si les en-têtes sont configurés chez l'hébergeur et que l'outil local les ignore, vérifier après la mise en ligne.
-2. `curl -sI <adresse>` : les en-têtes apparaissent dans la réponse.
+2. `pulse-aidd sonder <adresse> --entetes` : les en-têtes apparaissent dans la réponse.
 3. Ouvrir l'appli, parcourir les écrans principaux avec la console du navigateur ouverte (F12) : la console doit rester exempte d'erreur « Content Security Policy ». Sinon, ajouter précisément la source légitime bloquée, jamais `*`.
 4. Après la mise en ligne : https://securityheaders.com et https://csp-evaluator.withgoogle.com.
 5. Si « Commandes du projet » prévoit des tests de bout en bout : écrire un test qui demande la page d'accueil, une adresse inconnue et un fichier comme `robots.txt`, puis vérifie la présence de chaque en-tête du tableau et des directives `frame-ancestors`, `object-src`, `base-uri` et `form-action` de la CSP. Il protège les en-têtes réellement servis, à chaque lancement des tests.

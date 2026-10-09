@@ -88,3 +88,50 @@ test("site injoignable : cause expliquée en français, délai invalide remplac�
   assert.strictEqual(r.code, 1);
   assert.match(r.sortie, /refuse la connexion/);
 });
+
+test("--entetes : en-têtes servis, un par ligne, doublons compris, sans le corps", async () => {
+  const methodes = [];
+  const s = http.createServer((req, res) => {
+    methodes.push(req.method);
+    res.setHeader("Strict-Transport-Security", ["max-age=1", "max-age=2"]);
+    res.setHeader("X-Frame-Options", "DENY");
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(req.method === "HEAD" ? "" : "<h1>corps</h1>");
+  });
+  const port = await ecouter(s);
+  const r = await lancer([`http://127.0.0.1:${port}/`, "--entetes"]);
+  s.close();
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.match(r.sortie, /^HTTP 200 – /m);
+  assert.strictEqual((r.sortie.match(/^strict-transport-security: /gm) || []).length, 2);
+  assert.match(r.sortie, /^x-frame-options: DENY$/m);
+  assert.doesNotMatch(r.sortie, /corps/);
+  assert.deepStrictEqual(methodes, ["HEAD"]);
+});
+
+test("--entetes : une redirection est montrée, pas suivie ; --texte signalé comme laissé de côté", async () => {
+  const vues = [];
+  const s = http.createServer((req, res) => {
+    vues.push(`${req.method} ${req.url}`);
+    if (req.url === "/ancien") {
+      res.writeHead(301, { Location: "/nouveau" });
+      return res.end();
+    }
+    res.writeHead(200);
+    res.end();
+  });
+  const port = await ecouter(s);
+  const r = await lancer([`http://127.0.0.1:${port}/ancien`, "--entetes", "--texte", "Bonjour"]);
+  s.close();
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.match(r.sortie, /^HTTP 301 – /m);
+  assert.match(r.sortie, /^location: \/nouveau$/m);
+  assert.match(r.sortie, /--texte laissé de côté/);
+  assert.deepStrictEqual(vues, ["HEAD /ancien"]);
+});
+
+test("--entetes : site injoignable, cause en français et code 1", async () => {
+  const r = await lancer(["http://127.0.0.1:1/", "--entetes"]);
+  assert.strictEqual(r.code, 1);
+  assert.match(r.sortie, /❌/);
+});
