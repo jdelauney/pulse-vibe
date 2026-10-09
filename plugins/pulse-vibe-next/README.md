@@ -38,8 +38,10 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 ```
 .claude-plugin/plugin.json   manifeste ; dépend de pulse
 bin/pulse-pile-next          info | contexte <commande> | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | squelette | seo-code | secrets | hebergeur
+bin/pulse-pile-next.ps1      relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-pile-next.cmd : relais pour l'invite de commandes (cmd)
 references/                  fiche.md (règles de la pile), technical.md (valeurs de docs/technical.md),
-                             theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), contexte/ (consignes par commande), recettes/<nom>/ (index.md, une étape par fichier, tests.md)
+                             theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), contexte/ (consignes par commande), recettes/<nom>/ (index.md, une étape par fichier, tests.md),
+                             migrations.md (mettre à niveau un projet plus ancien), readme.md (section « Tester en local » du README du projet)
 templates/squelette/         le projet de départ
 scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi sur un port libre, mise à jour des versions ; un test instable fait échouer ; dossier temporaire retiré, sauf --garder),
                              seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles et tests réels des secrets, envoyés seulement aux serveurs reconnus),
