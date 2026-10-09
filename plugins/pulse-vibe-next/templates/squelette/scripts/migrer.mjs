@@ -119,8 +119,11 @@ export async function appelNeon(
       const limite = /branch\w*.*limit|limit.*branch/i.test(message)
         ? " — limite de branches Neon atteinte : supprimez des branches inutiles (anciennes prévisualisations preview/…, branches *_old_* laissées par une restauration) dans la console Neon, puis redéployez"
         : "";
-      throw new Error(
-        `l'API Neon répond ${reponse.status}${message ? ` (${message})` : ""}${limite}`,
+      throw Object.assign(
+        new Error(
+          `l'API Neon répond ${reponse.status}${message ? ` (${message})` : ""}${limite}`,
+        ),
+        { status: reponse.status, limiteBranches: limite !== "" },
       );
     }
     return reponse.status === 204 ? {} : await reponse.json().catch(() => ({}));
@@ -167,22 +170,34 @@ export async function nettoyerSauvegardes(
   return supprimees;
 }
 
-/** Branche Neon de sauvegarde, copie de la branche par défaut (production), sans calcul attaché. */
+/** Branche Neon de sauvegarde, copie de la branche par défaut (production), sans calcul attaché. Rend l'expiration réellement posée (null si Neon l'a refusée). */
 export async function creerSauvegarde(
   { cle, projet, nom, expiration },
   options,
   dire = console.log,
 ) {
   await nettoyerSauvegardes({ cle, projet }, options, dire);
-  await appelNeon(
-    {
-      cle,
-      methode: "POST",
-      chemin: `/projects/${projet}/branches`,
-      corps: { branch: { name: nom, expires_at: expiration } },
-    },
-    options,
-  );
+  const requete = (branch) => ({
+    cle,
+    methode: "POST",
+    chemin: `/projects/${projet}/branches`,
+    corps: { branch },
+  });
+  try {
+    await appelNeon(requete({ name: nom, expires_at: expiration }), options);
+  } catch (erreur) {
+    // expires_at est réservé à certains comptes : un refus (400, 403 ou 422) se
+    // rejoue une fois sans expiration. La limite de branches ne se rejoue pas.
+    const refus =
+      [400, 403, 422].includes(erreur?.status) && !erreur.limiteBranches;
+    if (!refus) throw erreur;
+    dire(
+      "Neon refuse l'expiration automatique de la branche : sauvegarde recréée sans expiration ; le nettoyage qui garde les 2 sauvegardes les plus récentes la supprimera plus tard.",
+    );
+    await appelNeon(requete({ name: nom }), options);
+    return { expiration: null };
+  }
+  return { expiration };
 }
 
 function appliquer(adresse) {
@@ -201,7 +216,7 @@ function appliquer(adresse) {
  *   journal?: { tag: string; when: number }[];
  *   maintenant?: Date;
  *   lireDerniere?: (adresse: string) => Promise<string | null>;
- *   sauvegarder?: (sauvegarde: { cle: string; projet: string; nom: string; expiration: string }) => Promise<void>;
+ *   sauvegarder?: (sauvegarde: { cle: string; projet: string; nom: string; expiration: string }) => Promise<{ expiration: string | null } | void>;
  *   appliquerMigrations?: (adresse: string) => void;
  *   dire?: (message: string) => void;
  *   vercel?: boolean;
@@ -229,7 +244,7 @@ export async function migrer({
   }
   if (vercel && !env.VERCEL_ENV) {
     throw new Error(
-      "VERCEL_ENV manque : activez l'accès aux variables système de Vercel (Settings → Environment Variables → Automatically expose System Environment Variables)",
+      "VERCEL_ENV manque : activez l'accès aux variables système de Vercel (Settings → Environment Variables → cochez « Enable access to System Environment Variables »)",
     );
   }
   const adresse = env.DATABASE_URL_UNPOOLED;
@@ -256,14 +271,17 @@ export async function migrer({
       );
     }
     const { nom, expiration } = sauvegardePour(maintenant);
-    await sauvegarder({
-      cle: env.NEON_API_KEY,
-      projet: env.NEON_PROJECT_ID,
-      nom,
-      expiration,
-    });
+    const { expiration: posee = expiration } =
+      (await sauvegarder({
+        cle: env.NEON_API_KEY,
+        projet: env.NEON_PROJECT_ID,
+        nom,
+        expiration,
+      })) ?? {};
     dire(
-      `Sauvegarde créée : branche Neon « ${nom} » (gardée jusqu'au ${expiration}).`,
+      posee
+        ? `Sauvegarde créée : branche Neon « ${nom} » (gardée jusqu'au ${posee}).`
+        : `Sauvegarde créée : branche Neon « ${nom} » (sans date d'expiration : le nettoyage la retire, il garde les 2 plus récentes).`,
     );
   }
   appliquerMigrations(adresse);

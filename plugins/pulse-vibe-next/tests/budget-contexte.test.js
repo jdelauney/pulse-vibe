@@ -14,7 +14,7 @@ const RACINE = path.join(__dirname, "..");
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-pile-next", ...args], { cwd: RACINE, encoding: "utf8" });
 const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 
-// pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l’architecture ; mesure finale : 20 253 (plafond = mesure × 1,05, au 500 supérieur).
+// pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l'architecture ; mesure finale : 20 253 (plafond = mesure × 1,05, au 500 supérieur).
 const PLAFONDS_PACK = { implement: 21500, fix: 21500, spirc: 21500, "auto-fix": 21500 };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures finales : implement 57 423, spirc 48 284 (plafond = mesure × 1,05, au 500 supérieur).
 const PLAFONDS_AVEC_PACK = { implement: 60500, spirc: 51000 };

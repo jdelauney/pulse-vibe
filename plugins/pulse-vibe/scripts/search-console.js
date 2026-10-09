@@ -31,6 +31,7 @@ const http = require("http");
 const zlib = require("zlib");
 const crypto = require("crypto");
 const { spawn } = require("child_process");
+const { ecouter } = require("./port-libre");
 
 const PORTEE = "https://www.googleapis.com/auth/webmasters.readonly";
 const base = () => process.env.PULSE_GSC_API || "https://searchconsole.googleapis.com";
@@ -174,7 +175,7 @@ async function jetonAcces(identifiants) {
 
 // ---------------------------------------------------------------- Connexion (adresse de bouclage)
 
-/** Écoute sur 127.0.0.1 (port libre) et attend le retour de Google. Rend { port, code: Promise<string>, fermer }. */
+/** Écoute sur 127.0.0.1 (port libre, accepté par les navigateurs) et attend le retour de Google. Rend { port, code: Promise<string>, fermer }. */
 function attendreRetour({ etat, delai = 5 * 60 * 1000 }) {
   return new Promise((pret, echec) => {
     let resoudre, rejeter;
@@ -221,7 +222,7 @@ function attendreRetour({ etat, delai = 5 * 60 * 1000 }) {
       suite();
     }
     serveur.on("error", echec);
-    serveur.listen(0, "127.0.0.1", () => pret({ port: serveur.address().port, code, fermer: () => terminer(() => rejeter(new ErreurPulse("Connexion interrompue.", 1))) }));
+    ecouter(serveur).then((port) => pret({ port, code, fermer: () => terminer(() => rejeter(new ErreurPulse("Connexion interrompue.", 1))) }), echec);
   });
 }
 

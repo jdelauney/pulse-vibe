@@ -34,12 +34,12 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 ### `NEON_API_KEY`
 
 - **Rôle** : crée la branche de sauvegarde avant chaque migration de production (`scripts/migrer.mjs`), avec `NEON_PROJECT_ID` (identifiant du projet, pas un secret). En Production seulement.
-- **Préfixe attendu** : `napi_`.
+- **Forme** : commence en général par `napi_` (non garanti par Neon : la sonde n'impose aucun préfixe).
 - **Où renouveler** : console Neon → **Settings** (de l'organisation) → **API keys** → **Create new** → **Project-scoped** → le projet du site (une clé personnelle : **Account settings** → **API keys**). La clé s'affiche une seule fois. Après l'envoi et le redéploiement, révoquer l'ancienne dans la même liste (**Revoke**).
 - **Effet** : la révocation est immédiate. Une clé limitée au projet agit seulement sur lui ; elle peut créer et supprimer ses branches.
 - **Délai de grâce** : oui, tant que l'ancienne clé n'est pas révoquée.
 - **Après une fuite** : révoquer tout de suite, puis vérifier la liste des branches du projet (**Branches**) et l'historique des opérations.
-- **Test** : pas de test direct de la valeur. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.
+- **Test** : `pulse-aidd secrets` demande à Neon le projet `NEON_PROJECT_ID` avec cette clé (lecture seule) : accepté, ou « clé ou identifiant de projet refusés ». Sans `NEON_PROJECT_ID`, pas de test. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.
 - Source : https://neon.com/docs/manage/api-keys.
 
 ### `BETTER_AUTH_SECRET`

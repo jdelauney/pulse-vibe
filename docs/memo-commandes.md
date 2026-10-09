@@ -34,7 +34,7 @@
 |---|---|
 | `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
 | `/pulse:review` | Deux assistants indépendants relisent et essaient la tâche en marche ; **vous testez** ; on corrige |
-| `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne |
+| `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne, après votre accord |
 
 🔁 Recommencez pour chaque tâche. Ou laissez `/pulse:spirc US-001` enchaîner : des assistants réalisent, relisent et vérifient ; il s'arrête pour votre accord et c'est vous qui testez.
 Astuce : `/pulse:spirc US-001 "ajouter un filtre par date"` ajoute une demande précise au plan de l'US (ou crée une nouvelle US si c'est un nouveau besoin) et la traite de bout en bout.
@@ -50,8 +50,8 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque demande de fusion : une croix rouge vous prévient avant que l'erreur n'arrive sur le site |
-| `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul. Chaque fois, Pulse vérifie que le site répond vraiment et reste visible pour Google |
+| `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque demande de fusion : une croix rouge vous prévient avant que l'erreur n'arrive sur le site ; un contrôle des clés secrètes protège aussi chaque enregistrement |
+| `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul. Avant la première fois : tests et contrôle rapide de sécurité. Chaque fois, Pulse vérifie que le site répond vraiment et reste visible pour Google |
 | `/pulse:deploy production` | Prépare le site « pour de vrai » : variables, services connectés, retour arrière (et la CI avec `/pulse:cicd` si elle manque) |
 | `/pulse:search-console relier` | Une fois le site en ligne : prouver à Google (et à Bing) que le site est à vous, déclarer son plan (sitemap). Une seule fois |
 | `/pulse:search-console` | Tous les 28 jours : ce que Google voit de votre site (combien de fois il le montre, les mots tapés, les pages oubliées) et 3 actions. Sans secret : vous exportez un fichier, Pulse le lit |

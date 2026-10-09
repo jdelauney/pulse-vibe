@@ -91,7 +91,7 @@ flowchart LR
 - Dépôt distant : {{…}}
 - Hébergeur : {{…}} ; mise en ligne : {{automatique à chaque envoi / manuelle}}
 - Site en ligne : {{adresse, vérifiée avec `pulse-aidd sonder`, ou « pas encore en ligne »}}
-- Surveillance : {{service de sonde de disponibilité et adresse surveillée ; suivi des erreurs s'il existe ; ou « aucune »}}
+- Surveillance : {{service de sonde de disponibilité et adresse surveillée ; ou « aucune »}}
 - Contrôle automatique avant mise en ligne (CI) : {{outil, ou « à mettre en place avec /pulse:cicd »}}
 
 ## Retour arrière

@@ -25,7 +25,9 @@ function dependances(env: Record<string, string>, derniere: string | null) {
     journal: JOURNAL,
     maintenant: new Date("2026-10-08T14:05:30.123Z"),
     lireDerniere: vi.fn(async () => derniere),
-    sauvegarder: vi.fn(async () => {}),
+    sauvegarder: vi.fn(
+      async (): Promise<{ expiration: string | null } | undefined> => undefined,
+    ),
     appliquerMigrations: vi.fn(),
     dire: vi.fn(),
   };
@@ -83,6 +85,15 @@ describe("Migrations avant construction", () => {
     expect(d.sauvegarder.mock.invocationCallOrder[0]).toBeLessThan(
       d.appliquerMigrations.mock.invocationCallOrder[0],
     );
+  });
+
+  it("production, expiration refusée par Neon : le journal n'annonce pas de date", async () => {
+    const d = dependances(PRODUCTION, "1000");
+    d.sauvegarder.mockResolvedValueOnce({ expiration: null });
+    expect(await migrer(d)).toBe("applique");
+    const messages = d.dire.mock.calls.map(([m]) => String(m)).join(" ");
+    expect(messages).toMatch(/sans date d'expiration.*2 plus récentes/);
+    expect(messages).not.toMatch(/gardée jusqu'au/);
   });
 
   it("production sans clé Neon : la migration attend et la construction s'arrête", async () => {
@@ -200,6 +211,52 @@ describe("API Neon", () => {
         expires_at: "2026-10-15T14:05:30Z",
       },
     });
+  });
+
+  it("création : sans expiration si Neon refuse expires_at (400), une seule fois", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(reponse(200, { branches: [] }))
+      .mockResolvedValueOnce(
+        reponse(400, { message: "expires_at not allowed" }),
+      )
+      .mockResolvedValueOnce(reponse(201, {}));
+    const dire = vi.fn();
+    const posee = await creerSauvegarde(
+      {
+        cle: "k",
+        projet: "p",
+        nom: "sauvegarde-20261008-1405",
+        expiration: "2026-10-15T14:05:30Z",
+      },
+      { fetchFn, ...sansAttente },
+      dire,
+    );
+    expect(posee).toEqual({ expiration: null });
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(JSON.parse(fetchFn.mock.calls[2][1].body)).toEqual({
+      branch: { name: "sauvegarde-20261008-1405" },
+    });
+    expect(dire).toHaveBeenCalledWith(
+      expect.stringContaining("2 sauvegardes les plus récentes"),
+    );
+  });
+
+  it("création : la limite de branches n'est pas rejouée", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(reponse(200, { branches: [] }))
+      .mockResolvedValueOnce(
+        reponse(422, { message: "branches limit exceeded" }),
+      );
+    await expect(
+      creerSauvegarde(
+        { cle: "k", projet: "p", nom: "s", expiration: "2026-10-15T14:05:30Z" },
+        { fetchFn, ...sansAttente },
+        () => {},
+      ),
+    ).rejects.toThrow(/limite de branches/);
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
   it("nettoyage : garde les 2 sauvegardes les plus récentes, jamais la branche par défaut", async () => {

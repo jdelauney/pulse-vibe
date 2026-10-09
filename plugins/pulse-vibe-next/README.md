@@ -13,7 +13,8 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 1. `/pulse:tech` (ou `/pulse:express`) le propose comme option quand le projet a des écrans, des comptes ou des données partagées. La personne choisit.
 2. `docs/technical.md` reçoit la ligne `**Pack de pile Pulse** : next`. Dès lors, chaque commande Pulse et chaque agent reçoivent les consignes du pack.
 3. Le squelette se pose avec `pulse-aidd pile squelette --nom "<nom>" --description "<phrase>"` : page de départ, thème, configuration complète, un test unitaire et un test de bout en bout. Il garde les fichiers déjà présents.
-4. Les specs et les plans s'appuient sur les **recettes** (`pulse-aidd pile recettes`, `pulse-aidd pile recette <nom>`).
+4. Les specs et les plans s'appuient sur les **recettes** (`pulse-aidd pile recettes`, `pulse-aidd pile recette <nom>`). Chaque recette est découpée en étapes : la vue d'ensemble d'abord, puis une étape à la fois (`pulse-aidd pile recette <nom> etape <id>`) et le code de ses tests (`pulse-aidd pile recette <nom> tests`). Le pack répond de la même façon à `pulse-pile-next recette`.
+5. **Deux bases séparées** : la production (branche principale de Neon) et une base de développement (branche `dev`). Les **migrations** (dossier `drizzle/`, générées puis relues) s'appliquent à la base de développement pendant le travail ; en ligne, chaque construction sur Vercel les applique avant de publier, après une sauvegarde de la base. Le retour arrière est écrit dans `docs/technical.md` du projet (section « Retour arrière ») : le site d'abord, puis les données si besoin. Un projet plus ancien se met à niveau avec `/pulse:init`.
 
 | Recette | Ce qu'elle apporte |
 |---|---|
@@ -27,7 +28,6 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 | `formulaire-public` | Protection des formulaires ouverts à tous : champ piège, délai signé, limite, Turnstile en option |
 | `seo` | Référencement : adresse du site, métadonnées complètes par page, robots.txt selon la politique IA, sitemap aux vraies dates, image de partage, données structurées typées (`schema-dts`), pages connectées hors de Google, vrai 404 |
 | `mesure-reelle` | Vitesse vécue par les vrais visiteurs : Speed Insights de Vercel, ou mesures envoyées au site (table Neon, 75e centile par page) |
-| `suivi-erreurs` | Être prévenu d'une erreur en production (facultatif) : Sentry en région UE, sans donnée personnelle, relié à la référence affichée à la personne |
 
 **Secrets** : `/pulse:secrets` reçoit la fiche de chaque variable du squelette et des recettes (où la renouveler, effet, délai de grâce, test). Avec le Vercel CLI connecté (`vercel login`, `vercel link`), les valeurs partent vers Vercel par l'entrée standard, sans passer par la conversation.
 
@@ -62,4 +62,5 @@ L'installation ajoute aussi `pulse` (dépendance). Redémarrer Claude Code ensui
 ## Maintenance
 
 - `node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres] [--ecrire] [--e2e]` : crée un projet avec le squelette (dernières versions avec `--dernieres`), puis installe, contrôle, teste et construit. La CI du dépôt le lance chaque semaine et propose une demande de fusion quand des versions plus récentes passent.
+- `node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste` : pose les recettes balisées dans l'ordre sur le squelette, puis contrôle, teste et construit le projet. La CI du dépôt le lance sur plusieurs chaînes de recettes, chaque semaine et à chaque modification du pack.
 - Un piège découvert à l'usage devient une ligne de `references/fiche.md`, avec sa raison.

@@ -22,7 +22,7 @@ const R2 = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
 const VARIABLES = {
   DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"], parEnvironnement: true },
   DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"], parEnvironnement: true },
-  NEON_API_KEY: { secret: true, fournisseur: "Neon", prefixes: ["napi_"], besoins: ["NEON_PROJECT_ID"] },
+  NEON_API_KEY: { secret: true, fournisseur: "Neon", besoins: ["NEON_PROJECT_ID"] },
   NEON_PROJECT_ID: { secret: false, fournisseur: "Neon" },
   BETTER_AUTH_SECRET: { secret: true, fournisseur: "projet (valeur générée)", longueurMin: 32, genere: { octets: 32 }, versionnee: "BETTER_AUTH_SECRETS" },
   BETTER_AUTH_SECRETS: { secret: true, fournisseur: "projet (valeur générée)", genere: { octets: 32 } },
@@ -145,6 +145,21 @@ async function testerStripe(nom, v) {
   mauvais(`réponse inattendue de Stripe (code ${reponse.status}).`);
 }
 
+async function testerCleNeon(nom, v) {
+  const projet = v.NEON_PROJECT_ID;
+  if (!projet) sansTest("NEON_PROJECT_ID manque : la clé ne se teste qu'avec l'identifiant du projet (console Neon → Settings → Project ID).");
+  const base = process.env.PULSE_SONDES_NEON_API || "https://console.neon.tech/api/v2";
+  let reponse;
+  try {
+    reponse = await fetch(`${base}/projects/${encodeURIComponent(projet)}`, { headers: { Authorization: `Bearer ${v[nom]}` }, signal: AbortSignal.timeout(15000) });
+  } catch (e) {
+    sansTest(`API Neon injoignable (${raison(e.cause || e)}) : réessayez plus tard.`);
+  }
+  if (reponse.status === 200) bon("clé acceptée par Neon pour ce projet.");
+  if ([401, 403, 404].includes(reponse.status)) mauvais(`clé ou identifiant de projet refusés par Neon (code ${reponse.status}) : clé révoquée ou mal copiée, ou NEON_PROJECT_ID d'un autre projet.`);
+  mauvais(`réponse inattendue de Neon (code ${reponse.status}).`);
+}
+
 async function testerSmtp(nom, v) {
   if (!v.SMTP_HOST) mauvais("SMTP_HOST manque : le test a besoin du serveur.");
   const nodemailer = dependance("nodemailer");
@@ -232,6 +247,7 @@ async function testerTurnstile(nom, v) {
 const TESTS = {
   DATABASE_URL: testerNeon,
   DATABASE_URL_DIRECT: testerNeon,
+  NEON_API_KEY: testerCleNeon,
   BETTER_AUTH_SECRET: testerSecretAuth,
   BETTER_AUTH_SECRETS: testerSecretsAuth,
   STRIPE_SECRET_KEY: testerStripe,

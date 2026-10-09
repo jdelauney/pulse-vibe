@@ -31,5 +31,5 @@ Next.js propose aussi des skills d'agent officielles (`next-bundle-optimizer`, `
 
 - Mesurer l'adresse de **production** : les adresses de prévisualisation sont protégées par défaut (Vercel Authentication), PageSpeed Insights reçoit alors une page de connexion.
 - Offre Hobby : 5 000 transformations d'images par mois ; au-delà, les nouvelles images répondent 402 et `next/image` affiche le texte alternatif. L'offre Hobby est réservée à un usage personnel non commercial.
-- Mesure réelle (Speed Insights de Vercel, ou `useReportWebVitals` vers une route du site) : lire la vue d’ensemble avec `pulse-aidd pile recette mesure-reelle`, puis charger chaque étape utile avec `pulse-aidd pile recette mesure-reelle etape <id>` (et `tests` à la demande).
+- Mesure réelle (Speed Insights de Vercel, ou `useReportWebVitals` vers une route du site) : lire la vue d'ensemble avec `pulse-aidd pile recette mesure-reelle`, puis charger chaque étape utile avec `pulse-aidd pile recette mesure-reelle etape <id>` (et `tests` à la demande).
 - CI : la construction locale se sert avec `npm run build` puis `npx next start -p 3000` ; l'image `ubuntu-latest` de GitHub Actions contient Google Chrome.

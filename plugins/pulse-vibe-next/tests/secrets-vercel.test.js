@@ -99,6 +99,15 @@ test("ls : noms, environnements et type, sans aucune valeur (même celles des va
   assert.deepStrictEqual(appels(p)[0].argv, ["env", "ls", "--format", "json"]);
 });
 
+test("envoyer : une variable NEXT_PUBLIC_* est envoyée et annoncée en type Config", () => {
+  const p = projet();
+  const r = lancer(p, ["envoyer", "NEXT_PUBLIC_CLE_SITE", "production"], "Val" + hasard(8), { FAUX_ENVS: ENVS });
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.match(r.sortie, /NEXT_PUBLIC_CLE_SITE ajoutée sur Vercel \(Production, type Config\)/);
+  const ecriture = appels(p).find((a) => a.argv[0] === "env" && a.argv[1] === "add");
+  assert.deepStrictEqual(ecriture.argv, ["env", "add", "NEXT_PUBLIC_CLE_SITE", "production", "--type", "config", "--yes"]);
+});
+
 test("envoyer : variable existante → env update par l'entrée standard ; nouvelle → env add --type secret", () => {
   const p = projet();
   const valeur = "Val" + hasard(16);
@@ -158,7 +167,7 @@ test("redeployer : relance le dernier déploiement prêt de l'environnement", ()
   assert.strictEqual(r.code, 0, r.sortie);
   assert.match(r.sortie, /redéploiement Production terminé : https:\/\/essai-nouveau\.vercel\.app/);
   const [liste, relance] = appels(p);
-  assert.deepStrictEqual(liste.argv, ["ls", "--format", "json", "--prod"]);
+  assert.deepStrictEqual(liste.argv, ["ls", "--format", "json", "--environment", "production"]);
   assert.deepStrictEqual(relance.argv, ["redeploy", "https://essai-recent.vercel.app", "--target", "production"]);
   const aucun = lancer(projet(), ["redeployer", "preview"]);
   assert.strictEqual(aucun.code, 1);

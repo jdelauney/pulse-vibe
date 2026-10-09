@@ -7,6 +7,7 @@ const assert = require("node:assert");
 const http = require("http");
 const path = require("path");
 const { spawn } = require("child_process");
+const { ecouter } = require("../scripts/port-libre");
 
 const SONDER = path.join(__dirname, "..", "scripts", "sonder.js");
 
@@ -29,7 +30,7 @@ function serveur(reponses) {
     res.writeHead(r.statut, { "Content-Type": "text/html; charset=utf-8" });
     res.end(r.corps || "");
   });
-  return new Promise((resoudre) => s.listen(0, "127.0.0.1", () => resoudre({ s, url: `http://127.0.0.1:${s.address().port}/`, appels: () => n })));
+  return ecouter(s).then((port) => ({ s, url: `http://127.0.0.1:${port}/`, appels: () => n }));
 }
 
 test("réponse 200 contenant le texte attendu : succès", async () => {
@@ -81,8 +82,7 @@ test("sans adresse ou avec une adresse invalide : usage et code 1", async () => 
 
 test("site injoignable : cause expliquée en français, délai invalide remplacé", async () => {
   const serveur = http.createServer();
-  await new Promise((ok) => serveur.listen(0, "127.0.0.1", ok));
-  const { port } = serveur.address();
+  const port = await ecouter(serveur);
   await new Promise((ok) => serveur.close(ok));
   const r = await lancer([`http://127.0.0.1:${port}`, "--essais", "1", "--delai", "abc"]);
   assert.strictEqual(r.code, 1);

@@ -94,7 +94,7 @@ function envoyer(nom, env, type) {
 function redeployer(env) {
   if (!["production", "preview"].includes(env)) finir(1, "Usage : hebergeur redeployer <production|preview>");
   exigerProjetRelie();
-  const r = vercel(["ls", "--format", "json", ...(env === "production" ? ["--prod"] : ["--environment", "preview"])]);
+  const r = vercel(["ls", "--format", "json", "--environment", env]);
   if (!r.ok) finir(1, cause(r));
   let deploiements;
   try {
@@ -114,9 +114,10 @@ function redeployer(env) {
 function principal() {
   const args = process.argv.slice(2);
   const i = args.indexOf("--type");
-  const type = i === -1 ? "secret" : args[i + 1];
   const positionnels = args.filter((a, j) => !a.startsWith("--") && (i === -1 || j !== i + 1));
   const [action, a1, a2] = positionnels;
+  // Vercel garde les variables NEXT_PUBLIC_* en type Config (elles finissent dans le navigateur).
+  const type = i === -1 ? (/^NEXT_PUBLIC_/.test(a1 || "") ? "config" : "secret") : args[i + 1];
   if (action === "ls") {
     exigerProjetRelie();
     return finir(0, JSON.stringify({ hebergeur: "Vercel", variables: lister() }));
