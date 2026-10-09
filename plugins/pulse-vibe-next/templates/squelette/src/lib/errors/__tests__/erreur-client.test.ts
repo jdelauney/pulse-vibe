@@ -75,6 +75,22 @@ describe("Erreurs du navigateur", () => {
     );
   });
 
+  it("nettoyage du message : guillemets et parenthèses autour d'une adresse gardés, requête d'un mailto retirée", () => {
+    expect(
+      sansDonneesDAdresse(
+        `échec "https://h/p?token=abc" et ('/reset#code=xyz'). Fin`,
+      ),
+    ).toBe(`échec "https://h/p" et ('/reset'). Fin`);
+    expect(
+      sansDonneesDAdresse(`contact "jean@exemple.fr" (paul@exemple.fr)`),
+    ).toBe(`contact "[e-mail]" ([e-mail])`);
+    expect(
+      sansDonneesDAdresse(
+        "lien mailto:jean@exemple.fr?subject=Facture&body=jeton-3 cassé",
+      ),
+    ).toBe("lien mailto:[e-mail] cassé");
+  });
+
   it("une référence (digest) envoyée par le navigateur n'est pas journalisée", async () => {
     await recevoirErreurClient(
       envoi(JSON.stringify({ digest: "1234", message: "boum", chemin: "/" })),

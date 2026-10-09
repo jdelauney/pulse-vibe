@@ -50,15 +50,19 @@ const limiteParDefaut = creerLimiteur();
 const reponse = (status: number) => new Response(null, { status });
 
 /**
- * Message sans données personnelles visibles : adresses e-mail masquées ; adresses web sans
- * identifiants (moi:secret@), sans chaîne de requête ni ancre (un lien peut y porter un jeton).
+ * Message sans données personnelles visibles : adresses e-mail masquées ; adresses web (et mailto:)
+ * sans identifiants (moi:secret@), sans chaîne de requête ni ancre (un lien peut y porter un jeton).
+ * Les guillemets, parenthèses et la ponctuation qui entourent une adresse restent en place.
  * Les segments du chemin restent lisibles.
  */
 export function sansDonneesDAdresse(texte: string): string {
   return texte
     .replace(/\/\/[^\s/@]+@/g, "//")
-    .replace(/[^\s@]+@[^\s@]+\.[a-z]{2,}/gi, "[e-mail]")
-    .replace(/((?:[a-z][a-z\d+.-]*:\/\/|\/)[^\s?#]*)[?#]\S*/gi, "$1");
+    .replace(/[^\s@"'(<:]+@[^\s@"')>]+\.[a-z]{2,}/gi, "[e-mail]")
+    .replace(
+      /((?:[a-z][a-z\d+.-]*:\/\/|mailto:|\/)[^\s?#]*)[?#]\S*?(?=["')\]>.,;!]*(?:\s|$))/gi,
+      "$1",
+    );
 }
 
 /** Corps de la requête, lu jusqu'à TAILLE_MAX octets ; undefined au-delà (lecture arrêtée). */
