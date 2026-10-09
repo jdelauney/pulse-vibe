@@ -139,6 +139,15 @@ describe("Migrations avant construction", () => {
     expect(d.lireDerniere).toHaveBeenCalledWith("postgresql://production");
   });
 
+  it("projet sans migration : aucun arrêt, même sans VERCEL_ENV avec --vercel", async () => {
+    const d = {
+      ...dependances({ VERCEL: "1" }, null),
+      journal: [],
+      vercel: true,
+    };
+    expect(await migrer(d)).toBe("rien");
+  });
+
   it("--vercel sans VERCEL_ENV : arrêt avec consigne ; sans le drapeau : rien", async () => {
     const d = { ...dependances({ VERCEL: "1" }, null), vercel: true };
     await expect(migrer(d)).rejects.toThrow(/variables système de Vercel/);
@@ -188,17 +197,17 @@ describe("API Neon", () => {
           branches: [
             {
               id: "br-1",
-              name: "sauvegarde-a",
+              name: "sauvegarde-20261001-0900",
               created_at: "2026-10-01T00:00:00Z",
             },
             {
               id: "br-3",
-              name: "sauvegarde-c",
+              name: "sauvegarde-20261003-0900",
               created_at: "2026-10-03T00:00:00Z",
             },
             {
               id: "br-2",
-              name: "sauvegarde-b",
+              name: "sauvegarde-20261002-0900",
               created_at: "2026-10-02T00:00:00Z",
             },
             {
@@ -238,29 +247,98 @@ describe("API Neon", () => {
         { fetchFn, ...sansAttente },
       ),
     ).rejects.toThrow(
-      /422 \(branches limit exceeded\).*limite de branches atteinte/,
+      /422 \(branches limit exceeded\).*limite de branches Neon atteinte.*preview\/….*_old_/,
     );
   });
 
-  it("423 : deux nouveaux essais, puis réussite", async () => {
+  it("423 : attentes de 2, 5 et 10 s, réussite au quatrième appel", async () => {
     const fetchFn = vi
       .fn()
       .mockResolvedValueOnce(reponse(423, { message: "locked" }))
       .mockResolvedValueOnce(reponse(423, { message: "locked" }))
+      .mockResolvedValueOnce(reponse(423, { message: "locked" }))
       .mockResolvedValueOnce(reponse(200, { ok: true }));
+    const attendre = vi.fn(async (_ms: number) => {});
     expect(
-      await appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, ...sansAttente }),
+      await appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, attendre }),
     ).toEqual({ ok: true });
-    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(fetchFn).toHaveBeenCalledTimes(4);
+    expect(attendre.mock.calls.map(([ms]) => ms)).toEqual([2000, 5000, 10000]);
   });
 
-  it("423 persistant : échec après trois appels", async () => {
+  it("423 persistant : échec après quatre appels", async () => {
     const fetchFn = vi
       .fn()
       .mockImplementation(async () => reponse(423, { message: "locked" }));
     await expect(
       appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, ...sansAttente }),
     ).rejects.toThrow(/423/);
-    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(fetchFn).toHaveBeenCalledTimes(4);
+  });
+
+  it("délai dépassé : message en français", async () => {
+    const fetchFn = vi.fn().mockRejectedValue(
+      Object.assign(new Error("aborted due to timeout"), {
+        name: "TimeoutError",
+      }),
+    );
+    await expect(
+      appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, ...sansAttente }),
+    ).rejects.toThrow("Neon n'a pas répondu en 20 secondes");
+  });
+
+  it("limite de débit : pas de consigne sur les branches", async () => {
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValue(reponse(429, { message: "rate limit exceeded" }));
+    await expect(
+      appelNeon({ cle: "k", chemin: "/x" }, { fetchFn, ...sansAttente }),
+    ).rejects.toThrow(/429 \(rate limit exceeded\)$/);
+  });
+
+  it("nettoyage : seules les sauvegardes Pulse sont supprimées, un échec de suppression n'arrête rien", async () => {
+    const branche = (id: string, name: string, created_at: string) => ({
+      id,
+      name,
+      created_at,
+    });
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(
+        reponse(200, {
+          branches: [
+            branche("br-m", "sauvegarde-manuelle", "2026-01-01T00:00:00Z"),
+            branche("br-1", "sauvegarde-20261001-0900", "2026-10-01T00:00:00Z"),
+            branche("br-2", "sauvegarde-20261002-0900", "2026-10-02T00:00:00Z"),
+            branche("br-3", "sauvegarde-20261003-0900", "2026-10-03T00:00:00Z"),
+            branche("br-4", "sauvegarde-20261004-0900", "2026-10-04T00:00:00Z"),
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(reponse(409, { message: "branche occupée" }))
+      .mockResolvedValue(reponse(200, {}));
+    const dire = vi.fn();
+    await creerSauvegarde(
+      {
+        cle: "k",
+        projet: "p",
+        nom: "sauvegarde-20261005-0900",
+        expiration: "2026-10-15T00:00:00Z",
+      },
+      { fetchFn, ...sansAttente },
+      dire,
+    );
+    const appels = fetchFn.mock.calls.map(
+      ([url, init]) => `${init.method} ${String(url).split("/branches")[1]}`,
+    );
+    expect(appels.filter((a) => a.startsWith("DELETE"))).toEqual([
+      "DELETE /br-2",
+      "DELETE /br-1",
+    ]);
+    expect(appels.join(" ")).not.toContain("br-m");
+    expect(appels.at(-1)).toBe("POST ");
+    expect(dire).toHaveBeenCalledWith(
+      "impossible de supprimer l'ancienne sauvegarde sauvegarde-20261002-0900 : l'API Neon répond 409 (branche occupée) ; on continue",
+    );
   });
 });
