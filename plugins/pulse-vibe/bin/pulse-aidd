@@ -160,6 +160,8 @@ contexte() {
   case "$1" in
     init)
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
+      afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
+      afficher "Le cycle Pulse" "$REF/cycle.md"
       afficher "Bannière" "$TPL/banniere.txt"
       afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
     brainstorm)
@@ -300,7 +302,10 @@ contexte() {
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       lexique ;;
-    auto-fix|status|guide) ;;
+    status|guide)
+      afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
+      afficher "Le cycle Pulse" "$REF/cycle.md" ;;
+    auto-fix) ;;
     *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
   esac
   contexte_pack "$1"

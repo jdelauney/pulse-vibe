@@ -130,6 +130,16 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
+test("contexte init, status et guide : fichiers du projet et cycle Pulse", () => {
+  for (const commande of ["init", "status", "guide"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    for (const titre of ["===== Règles communes Pulse =====", "===== Les fichiers du projet =====", "===== Le cycle Pulse ====="])
+      assert.ok(r.stdout.includes(titre), `${commande} : ${titre}`);
+  }
+  assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
+});
+
 test("contexte implement, spirc, fix, learn et explain : modèle du lexique", () => {
   for (const commande of ["implement", "spirc", "fix", "learn", "explain"]) {
     const r = lancer("contexte", commande);

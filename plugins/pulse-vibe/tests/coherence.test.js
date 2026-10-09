@@ -712,3 +712,21 @@ test("mise en production : une sonde de disponibilité est proposée et notée",
   assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
   assert.match(lire(RACINE, "templates", "technical.md"), /^- Surveillance : /m);
 });
+
+test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références", () => {
+  const communes = lire(RACINE, "references", "regles-communes.md");
+  for (const titre of ["## 1. À qui vous parlez", "## 3. Garde-fous de la méthode", "## 4. Format de fin de commande", "## 6. Les constats de relecture"])
+    assert.ok(communes.includes(titre), titre);
+  assert.ok(!communes.includes("| Fichier | Produit par | Contenu |"), "tableau des fichiers sorti des règles communes");
+  assert.ok(!communes.includes("/pulse:init → /pulse:brainstorm"), "cycle sorti des règles communes");
+  assert.ok(communes.includes("pulse-aidd reference fichiers-projet.md"), "renvoi vers les fichiers du projet");
+  assert.ok(communes.includes("pulse-aidd reference cycle.md"), "renvoi vers le cycle");
+  const fichiersProjet = lire(RACINE, "references", "fichiers-projet.md");
+  assert.ok(fichiersProjet.includes("| Fichier | Produit par | Contenu |"));
+  assert.ok(fichiersProjet.split("\n").filter((l) => l.startsWith("| `")).length >= 30, "les lignes du tableau");
+  for (const f of ["`CLAUDE.md`", "`docs/technical.md`", "`aidd_docs/tasks/in-progress.md`", "`docs/lexique.md`", "`aidd_docs/memory/internal/decisions/`"])
+    assert.ok(fichiersProjet.includes(`| ${f} |`), f);
+  const cycle = lire(RACINE, "references", "cycle.md");
+  assert.ok(cycle.includes("/pulse:init → /pulse:brainstorm"));
+  assert.ok(cycle.includes('`/pulse:spirc <US-XXX> [tâche | "demande"]`'));
+});

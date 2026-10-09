@@ -30,40 +30,7 @@ La personne en face est **indépendante, dirigeante ou collaboratrice d'une peti
 
 ## 2. Où se trouvent les choses
 
-Dans le projet de la personne :
-
-| Fichier | Produit par | Contenu |
-|---|---|---|
-| `CLAUDE.md` | `/pulse:init` | Règles du projet, lues à chaque session |
-| `docs/brief.md` | `/pulse:brainstorm` | L'idée racontée simplement (domain storytelling) |
-| `docs/prd.md` | `/pulse:prd` | Le besoin produit, le périmètre MVP (MoSCoW) |
-| `docs/technical.md` | `/pulse:tech` | La pile retenue et ses raisons, l'organisation des fichiers, les commandes du projet, les données et le contrôle d'accès, les secrets, l'hébergement. Source unique pour tout ce qui dépend de la technologie |
-| `docs/design.md` | `/pulse:ui identite` | L'identité visuelle : registre, scène d'usage, personnalité, couleurs, typographie, composants et leurs états. Facultatif ; s'il existe, les specs, le plan et le code s'y conforment |
-| `docs/design/` | `/pulse:ui` | Les planches d'identité et les maquettes d'écrans (`maquettes/US-XXX-<nom>/retenue/` = la maquette choisie pour une US). Référence visuelle, à traduire dans la pile retenue |
-| `docs/user-stories.md` | `/pulse:us` | Le référentiel des user stories : les epics, la vue d'ensemble (priorité, taille, dépendances) et le parcours utilisateur |
-| `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | `/pulse:us` | Une user story : règles métier, exemple, critères d'acceptation |
-| `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | `/pulse:spec` | La spécification d'une user story (une US = une spec) : l'intention seule (écrans, informations, règles, scénarios, « terminé quand »), verrouillée une fois validée |
-| `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | `/pulse:plan` | Le plan d'une spec (une spec = un plan) : les tâches ordonnées, avec leur statut (à faire, en cours, terminé) |
-| `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` | `/pulse:review`, `/pulse:spirc` | Les rapports de relecture des tâches de ce plan, un par tâche : `<Tâche>-<AAAA-MM-JJ>.md` |
-| `docs/revue-projet-<AAAA-MM-JJ>.md` | `/pulse:review tout` | La relecture de l'ensemble du projet |
-| `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
-| `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
-| `docs/secrets.md` | `/pulse:secrets` | L'inventaire des secrets (noms, fournisseur, où les renouveler) et le journal des rotations. Jamais de valeur |
-| `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` | `/pulse:secrets fuite` | Le journal d'un incident de fuite de clé : chronologie, traces cherchées, décision sur les données personnelles. Jamais de valeur |
-| `docs/seo.md` | `/pulse:seo` | La fiche de référencement : adresse officielle, titres et descriptions validés des pages publiques, pages privées, faits clés, politique des robots IA, suivi (Search Console, Bing). Source unique des textes pour le code |
-| `docs/voix.md` | `/pulse:rediger` | La voix du site : vous ou tu, ton, promesse, mots à employer et à éviter, exemples. Lue avant chaque texte |
-| `docs/textes/<page>.md` | `/pulse:rediger` | Le texte d'une page, validé : fiche (objectif, public, action attendue, faits), texte entre `<!-- texte -->` et `<!-- /texte -->`, résultat du contrôle des tics d'écriture IA |
-| `docs/seo/audits/` | `/pulse:seo audit` | Les audits de référencement : `seo-<AAAA-MM-JJ>.md` |
-| `docs/referencement/search-console-<AAAA-MM-JJ>.md` | `/pulse:search-console` | Ce que Google voit du site sur une période : chiffres, requêtes à potentiel, pages sans impression, 3 actions ; `docs/referencement/donnees/<AAAA-MM-JJ>.json` garde l'instantané qui sert à la comparaison suivante |
-| `docs/performance.md`, `docs/performance/mesures/` | `/pulse:perf` | La vitesse du site : pages suivies, dernière mesure (simulation) et vrais visiteurs, priorités, budget, historique ; chaque mesure détaillée dans un fichier JSON daté |
-| `docs/aide/demande-<AAAA-MM-JJ>-<sujet>.md` | `/pulse:get-help` | Une demande d'aide prête à transmettre, sans secret |
-| `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
-| `docs/lexique.md` | toutes les commandes | Les termes techniques déjà expliqués, avec leur image du quotidien et leur statut (vu, maîtrisé) |
-| `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Généré automatiquement, à laisser tel quel |
-| `aidd_docs/tasks/in-progress.md` | `/pulse:express`, `/pulse:brainstorm`, `/pulse:prd`, `/pulse:us`, `/pulse:spirc` | La décision qui attend la personne, pour la retrouver après une fermeture ou un `/clear`. Supprimé dès la décision prise ; non enregistré dans Git |
-| `aidd_docs/memory/project.md`, `technical.md` | `/pulse:init`, `/pulse:memory` | La mémoire durable : vision, choix, conventions, pièges |
-| `aidd_docs/memory/glossary.md` | `/pulse:brainstorm`, `/pulse:memory` | Les mots du métier et leur définition commune |
-| `aidd_docs/memory/internal/decisions/` | `/pulse:brainstorm`, `/pulse:tech`, `/pulse:memory` | Les décisions difficiles à défaire (lues à la demande) |
+Le tableau des fichiers du projet (ce que produit chaque commande, et ce qu'ils contiennent) s'affiche avec `pulse-aidd reference fichiers-projet.md` ; il figure dans le contexte de `/pulse:init`, `/pulse:status` et `/pulse:guide`.
 
 **User stories, specs et plans** :
 - **Rangement** : une US, sa spec, son plan et les rapports de relecture de ses tâches vivent ensemble dans le dossier de leur epic, `aidd_docs/tasks/<epic>/` : `US-XXX-<nom>.md`, `SPEC-US-XXX-<nom>.md`, `PLAN-SPEC-US-XXX-<nom>.md`, et `revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md`. **Une US = une spec = un plan**, et les trois fichiers portent le même `US-XXX-<nom>`. `docs/user-stories.md` est le référentiel qui les recense, epic par epic.
@@ -132,19 +99,9 @@ Contrôles : lint <✅|❌|aucun> · types <✅|❌|aucun> · tests : <n écrits
 
 Une ligne par critère ; une rubrique vide s'écrit « aucun ». Un test écrit mais non lancé, ou un code seulement relu, ne compte jamais comme preuve : il va dans « Non vérifié ».
 
-## 5. Le cycle Pulse en un coup d'œil
+## 5. Le cycle Pulse
 
-```
-/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us
-          → /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
-          → /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
-          → (/pulse:cicd) → /pulse:deploy
-```
-
-Les étapes entre parenthèses sont facultatives. Pour démarrer vite, `/pulse:express` remplace brainstorm, PRD et US par une seule conversation, puis enchaîne les choix techniques et l'identité visuelle. Pour travailler sur une branche : répondre « Une branche pour l'US et une demande de fusion » à la question d'envoi de `/pulse:implement` ou de `/pulse:spirc` (référence « Le dépôt distant et l'envoi du travail », § 2) ; la branche et la demande de fusion se préparent alors d'elles-mêmes, et `/pulse:pr` permet de le faire à la main.
-
-`/pulse:spirc <US-XXX> [tâche | "demande"]` orchestre Implémentation, Revue et Commit du plan d'une US avec des agents indépendants (et crée la spec et le plan s'ils manquent) ; il accepte aussi une demande libre (« ajouter un filtre… »), ajoutée au plan.
-`/pulse:init` (préparer et mettre à niveau), `/pulse:status` (où en suis-je ?), `/pulse:guide` (les prochaines commandes), `/pulse:fix`, `/pulse:annuler` (revenir en arrière sans rien perdre), `/pulse:get-help` (préparer une demande d'aide), `/pulse:refine`, `/pulse:explain`, `/pulse:learn`, `/pulse:pr`, `/pulse:security`, `/pulse:secrets` (les clés du projet, sans jamais afficher leur valeur), `/pulse:seo` (être trouvé sur Google et par les assistants IA), `/pulse:rediger` (les textes des pages, dans la voix du site), `/pulse:perf` (la vitesse vécue par les visiteurs), `/pulse:search-console` (ce que Google voit du site, après la mise en ligne), `/pulse:memory`, `/pulse:auto-fix`, `/pulse:test` et `/pulse:ui` (pour `audit` et `polish`) s'utilisent à tout moment.
+L'ordre des commandes, et celles qui s'utilisent à tout moment, s'affichent avec `pulse-aidd reference cycle.md` ; ils figurent dans le contexte de `/pulse:init`, `/pulse:status` et `/pulse:guide`.
 
 ## 6. Les constats de relecture
 
