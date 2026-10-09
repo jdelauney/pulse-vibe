@@ -40,7 +40,7 @@ const { execFileSync } = require("child_process");
 const path = require("path");
 const { commandesSimples, optionsGlobalesGit, estOption, flagsCourts } = require("./lecture-commande");
 const { estFichierEnv } = require("./motifs");
-const { designeEnv, contientEnv } = require("./chemins-sensibles");
+const { designeEnv, contientEnv, envDuDossier, motifVersRegex, NOMS_ENV_COURANTS } = require("./chemins-sensibles");
 
 const DOSSIERS_RECONSTRUITS = new Set(["node_modules", ".next", "dist", "build", "coverage", ".turbo", ".vercel", "out", ".cache", ".svelte-kit", ".nuxt", ".output", "playwright-report", "test-results"]);
 
@@ -136,6 +136,7 @@ const SANS_LECTURE = new Set(["test", "[", "stat", "touch", "chmod", "icacls", "
 const GIT_SANS_LECTURE = new Set(["add", "stage", "commit", "check-ignore", "check-attr", "ls-files", "status", "rm", "restore", "reset", "update-index"]);
 // Recherche : le premier mot libre est le motif cherché, pas un fichier (sauf -e, -f ou -Pattern).
 const CHERCHEURS = new Set(["grep", "egrep", "fgrep", "rg", "select-string", "sls", "findstr"]);
+const CMDLETS_RECHERCHE = new Set(["select-string", "sls", "findstr"]);
 const GESTIONNAIRES = new Set(["npm", "pnpm", "yarn", "bun"]);
 // Outils qui chargent .env d'eux-mêmes.
 const CHARGEURS_ENV = new Set(["dotenv", "dotenv-cli", "dotenvx", "env-cmd"]);
@@ -145,6 +146,8 @@ const ECRIVAINS_PS = new Set(["add-content", "ac", "set-content", "sc", "out-fil
 // sauf par celles qui montrent seulement les noms et les propriétés.
 const LISTEURS_PS = new Set(["ls", "dir", "get-childitem", "gci"]);
 const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "where-object", "where", "?"]);
+// PowerShell : commandes qui produisent un nom de fichier (lu ensuite s'il est passé entre parenthèses à une autre commande).
+const PRODUCTEURS_PS = new Set(["echo", "write-output", "printf", "ls", "dir", "get-childitem", "gci", "realpath", "basename", "dirname"]);
 // find sans action qui lance une commande : il affiche seulement des noms.
 const ACTIONS_FIND = new Set(["-exec", "-execdir", "-ok", "-okdir"]);
 // git log : options qui affichent le contenu des fichiers (différences).
@@ -171,20 +174,94 @@ function motsLus(c) {
     mots.push(a);
   }
   const chercheur = CHERCHEURS.has(c.cmd) || (git && c.args[git.k] === "grep");
-  if (chercheur && !mots.some((a) => /^(-e|-f|--regexp|--file)$/.test(a) || /^--(regexp|file)=/.test(a) || /^-pattern$/i.test(a))) {
-    const motif = mots.findIndex((a) => !estOption(a));
+  // Motif donné par une option : -e, -f, --regexp, -Pattern, -Pattern:x, ou collé (-eKEY, -e.) pour grep, rg et git grep.
+  const motifDonne = mots.some(
+    (a) => /^(-e|-f|--regexp|--file)$/.test(a) || /^--(regexp|file)=/.test(a) || /^-pattern(:|$)/i.test(a) || (!CMDLETS_RECHERCHE.has(c.cmd) && /^-[a-zA-Z]*[ef]./.test(a))
+  );
+  if (chercheur && !motifDonne) {
+    // La valeur de -Path ou -LiteralPath (Select-String) est un fichier lu, jamais le motif.
+    const motif = mots.findIndex((a, i) => !estOption(a) && !(i > 0 && /^-(path|literalpath)$/i.test(mots[i - 1])));
     if (motif >= 0) mots.splice(motif, 1);
   }
   if (COPIEURS.has(c.cmd)) {
-    const positions = mots.filter((a) => !estOption(a));
-    if (positions.length >= 2) mots.splice(mots.lastIndexOf(positions[positions.length - 1]), 1);
+    const destination = destinationCopie(mots);
+    if (destination) mots.splice(destination.index, 1);
   }
   return mots;
+}
+
+/** Destination d'une copie ou d'un déplacement : valeur de -Destination, -t ou --target-directory, sinon la dernière position. */
+function destinationCopie(args) {
+  for (let j = 0; j < args.length; j++) {
+    if (/^(-destination|-t|--target-directory)$/i.test(args[j])) return args[j + 1] === undefined ? null : { valeur: args[j + 1], index: j + 1 };
+    const collee = /^(?:--target-directory=|-destination:)(.*)$/i.exec(args[j]);
+    if (collee) return { valeur: collee[1], index: j };
+  }
+  const positions = args.map((a, j) => [a, j]).filter(([a]) => !estOption(a));
+  return positions.length >= 2 ? { valeur: positions[positions.length - 1][0], index: positions[positions.length - 1][1] } : null;
+}
+
+/** Valeurs des options nommées (-F x, -Fx, --file=x, --file x). */
+function valeursOption(args, noms) {
+  const valeurs = [];
+  for (let j = 0; j < args.length; j++) {
+    const a = args[j];
+    for (const n of noms) {
+      if (a === n) valeurs.push(args[j + 1] || "");
+      else if (n.startsWith("--") && a.startsWith(n + "=")) valeurs.push(a.slice(n.length + 1));
+      else if (/^-[a-zA-Z]$/.test(n) && a.startsWith(n) && a.length > 2) valeurs.push(a.slice(2));
+    }
+  }
+  return valeurs;
+}
+
+/** Options qui lisent un fichier et peuvent en afficher le contenu (message de commit, liste de chemins dans une erreur). */
+function optionLitEnv(c, cwd) {
+  const designe = (v) => designeEnv(v, cwd, c.dialecte);
+  if (c.cmd === "git") {
+    const { k } = optionsGlobalesGit(c.args);
+    const sous = c.args[k];
+    const noms = ["-F", "--file", "--pathspec-from-file", ...(["commit", "tag", "merge"].includes(sous) ? ["-t", "--template"] : [])];
+    return valeursOption(c.args.slice(k + 1), noms).some(designe);
+  }
+  if (c.cmd === "find") return valeursOption(c.args, ["-files0-from"]).some(designe);
+  return false;
+}
+
+/**
+ * Vrai si une commande qui liste des fichiers (ls, dir, Get-ChildItem, find) en sort un .env :
+ * il est nommé, ou il se trouve dans le dossier listé (fichiers cachés montrés, ou PowerShell), ou plus bas si la liste descend.
+ */
+function listeurCouvreEnv(c, cwd) {
+  const mots = motsLus(c);
+  if (c.cmd === "find") {
+    const racines = [];
+    for (const a of c.args) {
+      if (/^[-(!]/.test(a)) break;
+      racines.push(a);
+    }
+    if (!(racines.length ? racines : ["."]).some((d) => contientEnv(path.resolve(cwd, d)))) return false;
+    const noms = [];
+    const exclus = [];
+    c.args.forEach((a, j) => {
+      if (/^-i?name$/.test(a) && c.args[j + 1] !== undefined) (["!", "-not"].includes(c.args[j - 1]) ? exclus : noms).push(c.args[j + 1]);
+    });
+    const couvre = (n) => [...NOMS_ENV_COURANTS, ...envDuDossier(cwd)].some((e) => motifVersRegex(n).test(e));
+    return noms.length ? noms.some(couvre) : !exclus.some(couvre);
+  }
+  if (mots.some((a) => designeEnv(a, cwd, c.dialecte))) return true;
+  const libres = mots.filter((a) => !estOption(a));
+  const dossiers = libres.length ? libres : ["."];
+  const recursif = c.args.some((a) => /^-r(ecurse)?$/i.test(a) || /^-[a-zA-Z]*R/.test(a) || a === "--recursive");
+  const caches = c.dialecte !== "bash" || c.args.some((a) => /^-[a-zA-Z]*[aA]/.test(a) || a === "--all" || a === "--almost-all");
+  if (!caches) return false;
+  return dossiers.some((d) => (recursif ? contientEnv(path.resolve(cwd, d)) : envDuDossier(path.resolve(cwd, d)).length > 0));
 }
 
 /** Vrai si la commande lit un .env : redirection d'entrée, chargeur de .env, ou un mot (la commande elle-même comprise) qui le désigne. */
 function litEnv(c, cwd) {
   if (c.lectures.some((f) => designeEnv(f, cwd, c.dialecte))) return true;
+  if (optionLitEnv(c, cwd)) return true;
   if (c.cmd === "git") {
     const { k } = optionsGlobalesGit(c.args);
     if (GIT_SANS_LECTURE.has(c.args[k])) return false;
@@ -216,7 +293,7 @@ function ecritEnvExistant(c, cwd) {
     const j = c.args.findIndex((a) => /^-(path|literalpath|filepath)$/i.test(a));
     cibles.push(j >= 0 ? c.args[j + 1] : positions[0]);
   }
-  if (COPIEURS.has(c.cmd) && positions.length >= 2) cibles.push(positions[positions.length - 1]);
+  if (COPIEURS.has(c.cmd)) cibles.push((destinationCopie(c.args) || {}).valeur);
   return cibles.some((f) => f && estFichierEnv(f) && existe(f));
 }
 
@@ -569,12 +646,37 @@ function analyser(commande, cwd, dialecte) {
   for (const m of commande.matchAll(/::ReadAll(?:Text|Lines|Bytes)\s*\(\s*['"]([^'"]+)['"]/gi)) if (designeEnv(m[1], cwd, dialecte)) constats.push([REFUS, MESSAGES.lectureEnv]);
   // Un nom passé à xargs : la commande lancée lit ce que la précédente a nommé (echo .env | xargs cat).
   if (commandes.some((c) => c.viaXargs) && commandes.some((c) => [c.brut, ...c.args].some((a) => designeEnv(a, cwd, dialecte)))) constats.push([REFUS, MESSAGES.lectureEnv]);
+  // Une liste de fichiers qui contient un .env sans le nommer (ls -A | xargs cat ; find . -type f -exec cat {} +), lue par la commande lancée.
+  const lecteur = (c) => !SANS_LECTURE.has(c.cmd) && !COMMANDES_SUPPRESSION.has(c.cmd) && c.cmd !== "git";
+  const listeurs = commandes.filter((c) => ["ls", "dir", "find"].includes(c.cmd) && c.dialecte === "bash");
+  if (commandes.some((c) => c.viaXargs && lecteur(c)) && listeurs.some((c) => listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
+  if (commandes.some((c) => c.viaFind && lecteur(c)) && listeurs.some((c) => c.cmd === "find" && listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   // PowerShell : des fichiers .env listés puis passés par un tube à une commande qui les lit (Get-ChildItem .env | Get-Content).
+  // Un bloc { } ou @{ } dans la commande peut lire chaque fichier : seules les commandes sans bloc montrent les noms seulement.
+  const blocs = /\{/.test(commande);
   commandes.forEach((c, i) => {
-    if (c.dialecte !== "powershell" || !LISTEURS_PS.has(c.cmd) || !motsLus(c).some((a) => designeEnv(a, cwd, c.dialecte))) return;
+    if (c.dialecte !== "powershell" || !LISTEURS_PS.has(c.cmd) || !listeurCouvreEnv(c, cwd)) return;
     for (let j = i + 1; j < commandes.length && commandes[j].apresTube; j++)
-      if (!SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
+      if (blocs || !SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
   });
+  // PowerShell : un nom produit entre parenthèses puis lu (gc (echo .env), (Get-ChildItem .env).OpenText()).
+  if (dialecte === "powershell")
+    for (const c of commandes) {
+      if (!PRODUCTEURS_PS.has(c.cmd) || !(LISTEURS_PS.has(c.cmd) ? listeurCouvreEnv(c, cwd) : motsLus(c).some((a) => designeEnv(a, cwd, c.dialecte)))) continue;
+      const re = new RegExp(`\\(\\s*${c.brut.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=[\\s)])`, "gi");
+      for (const m of commande.matchAll(re)) {
+        const avant = commande.slice(0, m.index).trimEnd();
+        const argument = /[\w'"]$/.test(avant) && !/(^|[\s;|({])(if|elseif|while|until|foreach|for|switch|return|-and|-or|-not)$/i.test(avant);
+        let profondeur = 0;
+        let fin = m.index;
+        for (; fin < commande.length; fin++) {
+          if (commande[fin] === "(") profondeur++;
+          else if (commande[fin] === ")" && --profondeur === 0) break;
+        }
+        const methode = /^\.\w+\s*\(/.test(commande.slice(fin + 1));
+        if (argument || methode) constats.push([REFUS, MESSAGES.lectureEnv]);
+      }
+    }
   // Nom calculé par concaténation de textes cités ('.e'+'nv').
   for (const m of commande.matchAll(/(?:(["'])[^"'\n]*\1\s*\+\s*)+(["'])[^"'\n]*\2/g)) {
     const joint = [...m[0].matchAll(/(["'])([^"'\n]*)\1/g)].map((x) => x[2]).join("");

@@ -3,8 +3,8 @@
 // Un mot désigne un fichier .env quand, débarrassé de son habillage (valeur d'option --x=, @ ou < de curl,
 // référence Git HEAD:, liste a,b), son nom est celui d'un fichier d'environnement (motifs.js),
 // ou quand c'est un motif (*, ?, […], {a,b}) qui couvre un .env présent dans le dossier visé.
-// Un motif qui commence par un caractère littéral (.e*, {.env,x}) vise aussi les noms courants
-// (.env, .env.local…), présents ou non.
+// Un motif qui commence par un point suivi d'une lettre écrite (.e*, {.env,x}) vise aussi les noms courants
+// (.env, .env.local…), présents ou non ; .*rc vise seulement les fichiers présents.
 // Le contrôle avant commit : .git/hooks/… et scripts/verifier.js.
 "use strict";
 
@@ -37,6 +37,13 @@ function candidats(mot) {
 }
 
 const estMotif = (s) => /[*?[]/.test(s) || /\{[^}]*,[^}]*\}/.test(s);
+
+/** Vrai si le motif commence par un point suivi d'une lettre écrite (.e*, {.env,x}) : il vise aussi les noms courants absents. .*rc ou * : non. */
+function viseNomsCourants(motif) {
+  const accolades = /\{([^}]*)\}/.exec(motif);
+  if (accolades) return accolades[1].split(",").some((p) => viseNomsCourants(motif.replace(accolades[0], p)));
+  return /^\.[^*?[{]/.test(motif);
+}
 
 /** Expression régulière d'un motif de nom (bash, PowerShell, ripgrep) : *, ?, [abc], [!a], {a,b}. */
 function motifVersRegex(motif, { pointCache = false } = {}) {
@@ -110,7 +117,7 @@ function designeEnv(mot, cwd = process.cwd(), dialecte = "bash") {
     const morceaux = c.split(/[\\/]/);
     const motifNom = morceaux.pop();
     const re = motifVersRegex(motifNom, { pointCache: dialecte === "bash" });
-    const noms = [...envDuDossier(path.resolve(cwd, morceaux.join("/") || ".")), ...(/^[*?[]/.test(motifNom) ? [] : NOMS_ENV_COURANTS)];
+    const noms = [...envDuDossier(path.resolve(cwd, morceaux.join("/") || ".")), ...(viseNomsCourants(motifNom) ? NOMS_ENV_COURANTS : [])];
     if (noms.some((n) => re.test(n))) return true;
   }
   return false;
@@ -119,11 +126,12 @@ function designeEnv(mot, cwd = process.cwd(), dialecte = "bash") {
 /** Outil Grep de Claude Code : un glob donné passe outre .gitignore. Vrai s'il couvre un .env (sous le dossier fouillé, ou un nom courant). */
 function globCouvreEnv(glob, dossier) {
   const g = String(glob).trim();
+  // Un filtre d'exclusion seul (!*.js) n'ajoute aucun fichier : ripgrep garde alors .gitignore (voir envNonIgnores).
+  if (g.startsWith("!")) return false;
   const presents = envSous(dossier, 3);
-  if (g.startsWith("!")) return presents.length > 0;
   const segments = g.replace(/^(?:\.\/)+/, "").replace(/^\/+/, "").split("/");
   const nom = segments[segments.length - 1];
-  const litteral = !/^[*?[]/.test(nom);
+  const litteral = viseNomsCourants(nom);
   if (segments.length === 1) {
     const re = motifVersRegex(nom);
     const noms = [...presents.map((p) => p.split("/").pop()), ...(litteral ? NOMS_ENV_COURANTS : [])];

@@ -535,12 +535,36 @@ test("Grep avec un filtre qui couvre un .env : refusé, même ignoré par Git ; 
   ecrire(".env", "STRIPE=1\n");
   ecrire(".gitignore", ".env\n");
   const grep = (glob) => lancerHook({ tool_name: "Grep", tool_input: { pattern: "STRIPE", path: dir, glob, output_mode: "content" }, cwd: dir });
-  for (const g of ["*", ".e?v", ".e*", "{.env,x}", "**/.[e]nv", "!*.js"]) {
+  for (const g of ["*", ".e?v", ".e*", "{.env,x}", "**/.[e]nv"]) {
     const s = grep(g);
     assert.ok(refuse(s), g);
     assert.match(s.permissionDecisionReason, /pulse-aidd secrets inventaire/);
   }
-  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}", "src/**/*.js", ".env.example"]) assert.strictEqual(grep(g), null, g);
+  // Filtre d'exclusion seul : ripgrep garde .gitignore, le .env ignoré n'est pas lu (Ruling de la relecture).
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}", "src/**/*.js", ".env.example", "!*.js", "!node_modules/**", ".*rc"]) assert.strictEqual(grep(g), null, g);
+});
+
+test("Grep avec un filtre d'exclusion seul : traité comme sans filtre (.env non ignoré refusé)", () => {
+  const { dir, ecrire } = depotTemporaire();
+  ecrire(".env", "STRIPE=1\n");
+  assert.ok(refuse(lancerHook({ tool_name: "Grep", tool_input: { pattern: "STRIPE", path: dir, glob: "!*.js" }, cwd: dir })));
+});
+
+test("liste de chemins inconnue au moment du contrôle : -f refusé, sinon accord demandé", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire(".env", "STRIPE=1\n");
+  ecrire(".gitignore", ".env\n");
+  ecrire("config.js", "const a = 1;\n");
+  git("add", "config.js", ".gitignore");
+  git("commit", "-q", "-m", "c");
+  ecrire("config.js", `const k = "${FAUX.stripe}";\n`);
+  for (const c of ["echo .env | git add -f --pathspec-from-file=-", "echo .env > l.txt && git add -f --pathspec-from-file=l.txt", "git add -f --pathspec-from-file=absent.txt", "echo config.js > l2.txt && git commit --pathspec-from-file=l2.txt -m x"])
+    assert.ok(refuse(lancerHook(bash(c, dir))), c);
+  ecrire("config.js", "const a = 2;\n");
+  for (const c of ["echo config.js > l3.txt && git add --pathspec-from-file=l3.txt", "git commit --pathspec-from-file=absent.txt -m x"]) {
+    const s = lancerHook(bash(c, dir));
+    assert.ok(s && s.permissionDecision === "ask", c);
+  }
 });
 
 test("Grep avec un filtre large dans un dossier sans .env : permis", () => {

@@ -670,3 +670,66 @@ test("Review Focus 1 à 3 : commandes ordinaires, motifs larges et chemins Windo
   // 3. Chemins Windows et PowerShell.
   for (const c of ["Get-Content .env::$DATA", "gc E:\\x\\.env", "Get-Content -Path .\\.ENV"]) refusPs(c, dir);
 });
+
+// ------------------------------------------------------------ Relecture des tâches 5-6, correction 1
+
+test("recherche avec un motif collé ou nommé : le fichier .env reste vu", () => {
+  const dir = dossierEnv();
+  for (const c of ["grep -eKEY .env", "grep -e. .env", "rg -eKEY .env"]) refus(c, dir);
+  for (const c of ["Select-String -Path .env KEY", "Select-String -Pattern:KEY .env", "sls -Pattern:. -Path .env"]) refusPs(c, dir);
+  passe("grep -eKEY src/a.ts", dir);
+  passePs("Select-String -Path src/a.ts KEY", dir);
+  passePs("Select-String -SimpleMatch KEY src/a.ts", dir);
+});
+
+test("options qui lisent un .env et l'affichent : refus", () => {
+  const dir = dossierEnv();
+  for (const c of [
+    "git commit --allow-empty -F .env",
+    "git commit --file=.env",
+    "git commit -t .env",
+    "git add --pathspec-from-file=.env",
+    "git rm --cached --pathspec-from-file=.env",
+    "git restore --pathspec-from-file=.env",
+    "git reset --pathspec-from-file=.env",
+    "find . -files0-from .env",
+  ])
+    refus(c, dir);
+  passe('git commit -F message.txt', dir);
+  passe("git checkout -t origin/feat", dir);
+});
+
+test("PowerShell : bloc { } après un tube, nom produit entre parenthèses : refus", () => {
+  const dir = dossierEnv();
+  for (const c of [
+    "gci .env | ? { gc $_ | Write-Host }",
+    "Get-ChildItem .env | Format-Table -Property @{e={Get-Content $_}}",
+    "gci .env | sort { gc $_ }",
+    "Get-ChildItem .env | Where-Object { (Get-Content $_) -match 'x' }",
+    "gc (echo .env)",
+    "Get-Content (Write-Output .env)",
+    "gc (ls .env)",
+    "gc (gci .env)",
+    "(Get-ChildItem .env).OpenText().ReadToEnd()",
+  ])
+    refusPs(c, dir);
+  for (const c of ["if (Test-Path .env) { 'oui' }", "(Get-ChildItem .env).Length", "Get-ChildItem .env | Select-Object Name, Length", "if ((gci .env).Length -gt 0) { 'ok' }"]) passePs(c, dir);
+});
+
+test("liste de fichiers qui contient un .env sans le nommer, lue ensuite : refus", () => {
+  const dir = dossierEnv();
+  for (const c of ["Get-ChildItem | Get-Content", "Get-ChildItem -Force | Get-Content", "gci -Force | gc"]) refusPs(c, dir);
+  for (const c of ["ls -A | xargs cat", "find . -type f -exec cat {} +", "find . -type f | xargs cat"]) refus(c, dir);
+  for (const c of ["ls | xargs cat", "find . -name '*.ts' -exec grep -l API {} +", "find . -type f -exec chmod 644 {} +", "find src -type f -exec cat {} +", "ls -A"]) passe(c, dir);
+  for (const c of ["Get-ChildItem src | Get-Content", "Get-ChildItem -Force | Select-Object Name"]) passePs(c, dir);
+  const vide = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-sans-env-"));
+  passePs("Get-ChildItem | Get-Content", vide);
+  passe("find . -type f -exec cat {} +", vide);
+});
+
+test("copie ou déplacement avec -Destination ou -t : la source .env est vue comme lue", () => {
+  const dir = dossierEnv();
+  for (const c of ["Copy-Item -Destination x.txt -Path .env", "Move-Item -Destination x.txt -Path .env"]) assert.match(refusPs(c, dir).raison, /pulse-aidd secrets inventaire/);
+  assert.match(refus("cp -t dist .env", dir).raison, /pulse-aidd secrets inventaire/);
+  confirmationPs("Copy-Item -Path .env.example -Destination .env", dir);
+});

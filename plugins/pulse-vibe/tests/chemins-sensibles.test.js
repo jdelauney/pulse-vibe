@@ -64,13 +64,15 @@ test("designeEnv : nom, chemin déguisé, motif qui couvre un .env présent", ()
   assert.ok(!designeEnv("*", vide, "powershell"));
 });
 
-test("globCouvreEnv (outil Grep) : motifs qui couvrent .env ; négations et * seulement là où un .env existe", () => {
+test("globCouvreEnv (outil Grep) : motifs qui couvrent .env ; * seulement là où un .env existe ; négation seule : aucun fichier ajouté", () => {
   const d = dossier({ ".env": "A=1\n", "app/.env.local": "B=2\n", "src/a.ts": "" });
-  for (const g of ["*", ".e?v", ".e*", "{.env,x}", "**/.[e]nv", "!*.js", ".env.local", "**/.env"]) assert.ok(globCouvreEnv(g, d), g);
-  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}", ".env.example", "src/**/*.js"]) assert.ok(!globCouvreEnv(g, d), g);
+  for (const g of ["*", ".e?v", ".e*", "{.env,x}", "**/.[e]nv", ".env.local", "**/.env"]) assert.ok(globCouvreEnv(g, d), g);
+  for (const g of ["*.ts", "**/*.tsx", "*.{ts,tsx}", ".env.example", "src/**/*.js", "!*.js", "!node_modules/**", ".*rc"]) assert.ok(!globCouvreEnv(g, d), g);
   const vide = dossier({ "src/a.ts": "" });
-  for (const g of ["*", "!*.js", "*.ts"]) assert.ok(!globCouvreEnv(g, vide), g);
+  for (const g of ["*", "!*.js", "*.ts", ".*rc"]) assert.ok(!globCouvreEnv(g, vide), g);
   assert.ok(globCouvreEnv(".env", vide), "nom littéral : visé même sans fichier");
+  assert.ok(globCouvreEnv(".*rc", dossier({ ".envrc": "A=1\n" })), ".envrc présent : couvert");
+  assert.ok(!designeEnv(".*rc", vide), ".*rc sans .envrc : non visé");
 });
 
 test("contientEnv : sur trois niveaux, hors node_modules", () => {
