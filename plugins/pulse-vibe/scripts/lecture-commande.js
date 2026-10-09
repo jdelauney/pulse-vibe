@@ -208,7 +208,7 @@ function decouper(script, dialecte = "bash") {
       }
       heredocsEnAttente.push({ delim, retirerTabs, segment: null });
     } else if (c === ">" || c === "<") {
-      if (mot !== null && /^\d+$/.test(mot)) mot = null;
+      if (mot !== null && /^(\d+|\*)$/.test(mot)) mot = null;
       finirMot();
       redirection = c === "<" ? "entree" : "sortie";
       i++;
@@ -351,7 +351,9 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
     const k = args.findIndex((a) => estOption(a) && flagsCourts(a).includes("c"));
     if (k >= 0) return script(args.slice(k + 1).find((a) => !estOption(a)) || "", "bash");
     const fichier = args.find((a) => !estOption(a));
-    if (fichier === undefined) {
+    // « sh - », « bash -s », « bash /dev/stdin » : le script vient de l'entrée standard.
+    const litEntree = fichier === undefined || fichier === "-" || fichier === "/dev/stdin" || args.some((a) => estOption(a) && flagsCourts(a).includes("s"));
+    if (litEntree) {
       for (const e of ctx.entrees) script(e, "bash");
       // Texte reçu par un tube ou un fichier redirigé : Pulse ne le voit pas.
       if (!ctx.entrees.length && (ctx.apresTube || ctx.lectures.length)) ajouter({ scriptInconnu: true });
@@ -362,7 +364,11 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
   }
   if (cmd === "powershell" || cmd === "pwsh") {
     const k = args.findIndex((a) => /^-(c|command)$/i.test(a));
-    if (k >= 0) return script(args.slice(k + 1).join(" "), "powershell");
+    if (k >= 0) {
+      const texte = args.slice(k + 1).join(" ").trim();
+      if (texte === "-") return ajouter({ scriptInconnu: true });
+      return script(texte, "powershell");
+    }
     const e = args.findIndex((a) => /^-(e|ec|encodedcommand)$/i.test(a));
     if (e >= 0 && args[e + 1]) return script(Buffer.from(args[e + 1], "base64").toString("utf16le"), "powershell");
     // powershell.exe lit son premier argument libre comme une commande (pwsh, comme un fichier).
@@ -373,7 +379,7 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
   if (cmd === "cmd") {
     const k = args.findIndex((a) => /^\/{1,2}[ck]$/i.test(a));
     if (k >= 0) return script(args.slice(k + 1).join(" "), "cmd");
-    return ajouter(ctx.apresTube && !args.length ? { scriptInconnu: true } : {});
+    return ajouter(ctx.apresTube ? { scriptInconnu: true } : {});
   }
   if (cmd === "eval") return script(args.join(" "), "bash");
   if (cmd === "iex" || cmd === "invoke-expression") {

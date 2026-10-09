@@ -84,3 +84,24 @@ test("estControleAvantCommit : .git/hooks et scripts/verifier.js", () => {
   for (const p of [".git/hooks/pre-commit", ".git\\hooks\\pre-commit", "scripts/verifier.js", "/p/scripts/verifier.js", "--output=.git/hooks/pre-commit", ".git/hooks"]) assert.ok(estControleAvantCommit(p), p);
   for (const p of ["scripts/autre.js", "src/verifier.js", ".github/hooks/x", "scripts/verifier.json"]) assert.ok(!estControleAvantCommit(p), p);
 });
+
+test("motifs invalides ([z-a]) : pas d'exception", () => {
+  const d = dossier({ ".env": "A=1\n" });
+  for (const m of ["[z-a]", "x[z-a]", "{[z-a],x}"]) {
+    assert.doesNotThrow(() => designeEnv(m, d), m);
+    assert.doesNotThrow(() => globCouvreEnv(m, d), m);
+  }
+});
+
+test("globCouvreEnv : le dossier du glob compte", () => {
+  const racine = dossier({ ".env": "A=1\n", "src/a.ts": "" });
+  for (const g of ["src/*", "src/**", "src/**/*", "app/*"]) assert.ok(!globCouvreEnv(g, racine), g);
+  for (const g of ["**/*", "**/.env", "./.env"]) assert.ok(globCouvreEnv(g, racine), g);
+  const sous = dossier({ "app/.env.local": "B=2\n", "src/a.ts": "" });
+  for (const g of ["src/*", "src/**/*"]) assert.ok(!globCouvreEnv(g, sous), g);
+  for (const g of ["app/*", "app/**", "**/*", "*/.env.local"]) assert.ok(globCouvreEnv(g, sous), g);
+});
+
+test("estControleAvantCommit : chemins non normalisés", () => {
+  for (const p of [".git//hooks/x", ".git/./hooks/pre-commit", "scripts//verifier.js", "scripts/./verifier.js", "scripts/verifier.js."]) assert.ok(estControleAvantCommit(p), p);
+});

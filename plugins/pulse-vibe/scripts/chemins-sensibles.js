@@ -66,7 +66,13 @@ function motifVersRegex(motif, { pointCache = false } = {}) {
     } else re += c.replace(/[.+^$()|\\]/g, "\\$&");
   }
   // Règle de bash : un motif qui commence par *, ? ou [ ne couvre pas un nom caché.
-  return new RegExp(`^${pointCache && /^[*?[]/.test(motif) ? "(?!\\.)" : ""}${re}$`, "i");
+  const debut = pointCache && /^[*?[]/.test(motif) ? "(?!\\.)" : "";
+  try {
+    return new RegExp(`^${debut}${re}$`, "i");
+  } catch (e) {
+    // Motif invalide (par exemple [z-a]) : lu comme un texte ordinaire.
+    return new RegExp(`^${motif.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+  }
 }
 
 /** Fichiers d'environnement présents directement dans un dossier (vide si illisible). */
@@ -78,16 +84,16 @@ function envDuDossier(dossier) {
   }
 }
 
-/** Fichiers d'environnement du dossier et de ses sous-dossiers, sur `profondeur` niveaux. */
-function envSous(dossier, profondeur) {
+/** Chemins (relatifs, avec « / ») des fichiers d'environnement du dossier et de ses sous-dossiers, sur `profondeur` niveaux. */
+function envSous(dossier, profondeur, prefixe = "") {
   let entrees;
   try {
     entrees = fs.readdirSync(dossier, { withFileTypes: true });
   } catch (e) {
     return [];
   }
-  const trouves = entrees.filter((e) => !e.isDirectory() && estFichierEnv(e.name)).map((e) => e.name);
-  if (profondeur > 0) for (const e of entrees) if (e.isDirectory() && !DOSSIERS_IGNORES.has(e.name)) trouves.push(...envSous(path.join(dossier, e.name), profondeur - 1));
+  const trouves = entrees.filter((e) => !e.isDirectory() && estFichierEnv(e.name)).map((e) => prefixe + e.name);
+  if (profondeur > 0) for (const e of entrees) if (e.isDirectory() && !DOSSIERS_IGNORES.has(e.name)) trouves.push(...envSous(path.join(dossier, e.name), profondeur - 1, prefixe + e.name + "/"));
   return trouves;
 }
 
@@ -115,15 +121,34 @@ function globCouvreEnv(glob, dossier) {
   const g = String(glob).trim();
   const presents = envSous(dossier, 3);
   if (g.startsWith("!")) return presents.length > 0;
-  const nom = g.split("/").pop();
-  const re = motifVersRegex(nom);
-  const noms = [...presents, ...(/^[*?[]/.test(nom) ? [] : NOMS_ENV_COURANTS)];
-  return noms.some((n) => re.test(n) && estFichierEnv(n));
+  const segments = g.replace(/^(?:\.\/)+/, "").replace(/^\/+/, "").split("/");
+  const nom = segments[segments.length - 1];
+  const litteral = !/^[*?[]/.test(nom);
+  if (segments.length === 1) {
+    const re = motifVersRegex(nom);
+    const noms = [...presents.map((p) => p.split("/").pop()), ...(litteral ? NOMS_ENV_COURANTS : [])];
+    return noms.some((n) => re.test(n) && estFichierEnv(n));
+  }
+  // Glob avec dossiers : il s'applique au chemin complet (« ** » = n'importe quels dossiers).
+  const re = new RegExp(
+    "^" +
+      segments
+        .map((s, i) => (s === "**" ? (i === segments.length - 1 ? ".*" : "(?:.*/)?") : motifVersRegex(s).source.slice(1, -1) + (i < segments.length - 1 ? "/" : "")))
+        .join("") +
+      "$",
+    "i"
+  );
+  const dossierLitteral = segments.slice(0, -1).every((s) => !/[*?[{]/.test(s));
+  const courants = litteral ? NOMS_ENV_COURANTS.map((n) => (dossierLitteral ? segments.slice(0, -1).join("/") + "/" : "") + n) : [];
+  return [...presents, ...courants].some((p) => re.test(p) && estFichierEnv(p));
 }
 
 /** Vrai si le chemin (ou la valeur d'option qui le porte) vise le contrôle des secrets avant commit. */
 function estControleAvantCommit(chemin) {
-  return candidats(chemin).some((c) => /(^|[\\/])\.git[\\/]hooks([\\/]|$)/i.test(c) || /(^|[\\/])scripts[\\/]verifier\.js$/i.test(c));
+  return candidats(chemin).some((c) => {
+    const n = path.posix.normalize(c.replace(/\\/g, "/")).replace(/[. ]+$/, "");
+    return /(^|\/)\.git\/hooks(\/|$)/i.test(n) || /(^|\/)scripts\/verifier\.js$/i.test(n);
+  });
 }
 
 module.exports = { candidats, motifVersRegex, designeEnv, globCouvreEnv, contientEnv, envDuDossier, estControleAvantCommit, MESSAGE_CONTROLE, NOMS_ENV_COURANTS };

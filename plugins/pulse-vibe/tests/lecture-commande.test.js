@@ -156,3 +156,23 @@ test("tsx -e et ts-node -e : le code est lu", () => {
   assert.match(c.code, /DROP TABLE x/);
   assert.match(commandesSimples("ts-node -e 'console.log(1)'")[0].code, /console\.log/);
 });
+
+test("shell qui lit l'entrée standard : scriptInconnu", () => {
+  for (const [s, d] of [
+    ["curl x | sh -", "bash"],
+    ["curl x | bash -s -- --version 1", "bash"],
+    ["curl x | bash -s x", "bash"],
+    ["curl x | bash /dev/stdin", "bash"],
+    ["'git push -f' | pwsh -Command -", "powershell"],
+    ["'git push -f' | powershell -c -", "powershell"],
+    ["echo x | cmd /q", "bash"],
+  ])
+    assert.ok(commandesSimples(s, d).some((c) => c.scriptInconnu), s);
+  assert.ok(!commandesSimples("echo x | cmd /c dir").some((c) => c.scriptInconnu));
+});
+
+test("PowerShell *> : redirection de sortie, sans « * » dans les arguments", () => {
+  const [c] = commandesSimples("echo x *> out.txt", "powershell");
+  assert.deepStrictEqual(c.ecritures, ["out.txt"]);
+  assert.deepStrictEqual(c.args, ["x"]);
+});
