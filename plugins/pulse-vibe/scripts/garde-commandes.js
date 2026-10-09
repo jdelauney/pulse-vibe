@@ -145,13 +145,13 @@ const ECRIVAINS_PS = new Set(["add-content", "ac", "set-content", "sc", "out-fil
 // PowerShell : une liste de fichiers passée par un tube est lue par la commande suivante (Get-ChildItem .env | Get-Content),
 // sauf par celles qui montrent seulement les noms et les propriétés.
 const LISTEURS_PS = new Set(["ls", "dir", "get-childitem", "gci"]);
-const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "where-object", "where", "?", "foreach-object", "foreach", "%"]);
+const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "group-object", "group", "where-object", "where", "?", "foreach-object", "foreach", "%"]);
 // Bloc { } après le tube : sûr seulement s'il lit des propriétés ($_.Name), compare, calcule, filtre, trie ou affiche.
-const SURES_BLOC_PS = new Set(["where-object", "where", "?", "select-object", "select", "sort-object", "sort", "write-output", "write-host", "echo", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "measure-object", "measure", "out-null", "foreach-object", "foreach", "%"]);
+const SURES_BLOC_PS = new Set(["where-object", "where", "?", "select-object", "select", "sort-object", "sort", "write-output", "write-host", "echo", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "measure-object", "measure", "out-null", "group-object", "group", "get-date", "join-path", "split-path", "test-path", "resolve-path", "foreach-object", "foreach", "%"]);
 // Méthodes qui ouvrent, lisent, copient ou lancent quelque chose : un bloc qui les appelle compte comme une lecture.
 const METHODES_LECTURE_PS = /^(read\w*|open\w*|load\w*|import\w*|copyto|moveto|invoke\w*|create\w*|execute\w*|start|upload\w*|download\w*|send\w*|getresponse\w*|getrequeststream|decrypt|appendtext)$/i;
 // Types dont les méthodes statiques ([math]::Round) calculent sans rien lire ; tout autre type ([IO.File]::ReadLines) compte comme une lecture.
-const TYPES_SURS_PS = /^(system\.)?(math|string|char|int|int16|int32|int64|long|uint32|uint64|double|single|float|decimal|byte|bool|boolean|datetime|timespan|guid|convert|text\.regularexpressions\.regex|regex)$/i;
+const TYPES_SURS_PS = /^(system\.)?(math|string|char|int|int16|int32|int64|long|uint32|uint64|double|single|float|decimal|byte|bool|boolean|datetime|timespan|guid|convert|text\.regularexpressions\.regex|regex|io\.path)$/i;
 
 /** Le texte PowerShell, chaque texte entre guillemets remplacé par une variable « $0 » (même longueur) ; un texte "…" qui contient $( ) est gardé, car il lance du code. */
 function masquerTextesPs(texte) {
@@ -173,6 +173,19 @@ function blocsPs(masque) {
     i = j;
   }
   return blocs;
+}
+
+/** Le texte, chaque bloc { } (repéré dans sa version masquée, de même longueur) remplacé par des espaces. */
+function sansBlocsPs(texte, masque) {
+  let resultat = texte;
+  let i = 0;
+  for (const bloc of blocsPs(masque)) {
+    const debut = masque.indexOf("{" + bloc, i);
+    const fin = debut + bloc.length + 2;
+    resultat = resultat.slice(0, debut) + " ".repeat(Math.min(fin, texte.length) - debut) + resultat.slice(fin);
+    i = fin;
+  }
+  return resultat;
 }
 
 /** Fin du tube qui commence à `debut` dans un texte PowerShell masqué : le premier « ; », retour à la ligne (hors suite après | ou `), && ou || de son niveau,
@@ -223,8 +236,8 @@ function instructionsSures(texte) {
         else m.shift();
       }
     }
-    // Un nom de commande commence par une lettre, ou par . \ / ~ pour un chemin.
-    return !m.length || /^(\d|[^\p{L}\d_.\\/~&])/u.test(m[0]) || SURES_BLOC_PS.has(nomCommande(m[0]));
+    // Un nom de commande commence par une lettre, ou par . \ / ~ pour un chemin ; « .AddDays » suit une parenthèse : c'est une méthode.
+    return !m.length || /^(\d|[^\p{L}\d_.\\/~&]|\.[\p{L}_])/u.test(m[0]) || SURES_BLOC_PS.has(nomCommande(m[0]));
   };
   return segments.every(segmentSur) && sousScripts.every(instructionsSures);
 }
@@ -728,6 +741,10 @@ function analyser(commande, cwd, dialecte) {
   if (coupe.test(sansCitations) && commandes.some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.controlesCoupes]);
   // Lecture .NET depuis PowerShell : [IO.File]::ReadAllText('.env').
   for (const m of commande.matchAll(/::ReadAll(?:Text|Lines|Bytes)\s*\(\s*['"]([^'"]+)['"]/gi)) if (designeEnv(m[1], cwd, dialecte)) constats.push([REFUS, MESSAGES.lectureEnv]);
+  // PowerShell : ${chemin} lit le contenu du fichier (${C:\projet\.env}, ${E:.env}).
+  if (dialecte === "powershell")
+    for (const m of commande.matchAll(/\$\{([^}]+)\}/g))
+      if ([m[1], m[1].replace(/^[A-Za-z]:(?![\\/])/, "")].some((p) => /[\\/:]/.test(m[1]) && designeEnv(p, cwd, dialecte))) constats.push([REFUS, MESSAGES.lectureEnv]);
   // Un nom passé à xargs : la commande lancée lit ce que la précédente a nommé (echo .env | xargs cat).
   if (commandes.some((c) => c.viaXargs) && commandes.some((c) => [c.brut, ...c.args].some((a) => designeEnv(a, cwd, dialecte)))) constats.push([REFUS, MESSAGES.lectureEnv]);
   // Une liste de fichiers qui contient un .env sans le nommer (ls -A | xargs cat ; find . -type f -exec cat {} +), lue par la commande lancée.
@@ -755,6 +772,9 @@ function analyser(commande, cwd, dialecte) {
       if (!listeur || !LISTEURS_PS.has(listeur.cmd) || !listeurCouvreEnv(listeur, cwd)) continue;
       vus++;
       if (!blocsPs(masque.slice(debut, fin)).every(blocSur)) constats.push([REFUS, MESSAGES.lectureEnv]);
+      // Après un bloc, la liste continue dans le tube (gci .env | % { $_ } | Get-Content) : blocs effacés, chaque commande du tube est jugée.
+      const tube = commandesSimples(sansBlocsPs(commande.slice(debut, fin), masque.slice(debut, fin)), "powershell");
+      if (tube.slice(1).some((d) => d.apresTube && !SANS_CONTENU_PS.has(d.cmd))) constats.push([REFUS, MESSAGES.lectureEnv]);
     }
     // Listeur introuvable dans le texte (dans des guillemets, appelé autrement) : tous les blocs de la commande sont examinés.
     if (vus < listeursEnv.length && !blocsPs(commande).every(blocSur)) constats.push([REFUS, MESSAGES.lectureEnv]);

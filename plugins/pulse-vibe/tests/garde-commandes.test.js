@@ -755,6 +755,11 @@ test("PowerShell ordinaire avec un bloc { } qui ne lit rien : passe, même dans 
     "if ($x) { gci | sort Name } else { npm test }",
     "Get-ChildItem | % { $total += $_.Length }; $total",
     "Get-ChildItem | ForEach-Object { switch ($_.Extension) { '.ts' { 'code' } default { 'autre' } } }",
+    // Commandes de chemin, de date et de regroupement.
+    "gci | Where-Object { $_.LastWriteTime -gt (Get-Date).AddDays(-1) }",
+    "gci | % { [System.IO.Path]::GetExtension($_.Name) }",
+    "gci | % { Join-Path $_.FullName 'package.json' }",
+    "gci -Recurse | Group-Object Extension | Sort-Object Count",
   ])
     passePs(c, dir);
   for (const c of ["Get-ChildItem | ForEach-Object { Get-Content $_ }", "gci | % { $_.OpenText().ReadToEnd() }", "gc @(echo .env)"]) refusPs(c, dir);
@@ -779,6 +784,14 @@ test("PowerShell ordinaire avec un bloc { } qui ne lit rien : passe, même dans 
     "gci .env | % { bash -c \"cat $_\" }",
     "gci .env | % { $x = gc $_; $x }",
     "gci .env | % { $x=Get-Content $_; $x }",
+    // La liste continue dans le tube après un bloc.
+    "gci .env | % { $_ } | Get-Content",
+    "gci .env | ForEach-Object { $_.FullName } | Get-Content",
+    "gci .env | Where-Object { $_ } | gc",
+    "gci .env | Sort-Object { $_.Name } | gc",
+    // ${lecteur:chemin} lit le fichier.
+    "Write-Output ${" + path.join(dir, ".env") + "}",
+    "${E:.env}",
   ])
     refusPs(c, dir);
   passePs("gci .env | % { $_.Name.ToUpper() }", dir);
