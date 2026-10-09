@@ -4,10 +4,11 @@ import { expect, type Page, type TestInfo } from "@playwright/test";
 // Règles WCAG 2.2 niveaux A et AA (étiquettes d'axe-core) : https://github.com/dequelabs/axe-core/blob/develop/doc/API.md#axe-core-tags
 const WCAG_AA = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
-// Cibles mesurées : boutons et champs. Les liens dans le texte en sont exemptés (WCAG 2.5.8),
-// comme les cases à cocher et boutons radio, dont le libellé agrandit la cible.
+// Cibles mesurées : boutons (y compris un lien affiché en bouton, data-slot="button") et champs.
+// Les liens dans le texte en sont exemptés (WCAG 2.5.8), comme les cases à cocher et boutons radio,
+// dont le libellé agrandit la cible.
 const CIBLES =
-  'button, [role="button"], select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"])';
+  'button, [role="button"], a[data-slot="button"], select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"])';
 
 // Outils de développement de Next (bouton « N » en bas de l'écran avec npm run dev) : hors de l'application.
 const OUTILS_NEXT = "nextjs-portal";
