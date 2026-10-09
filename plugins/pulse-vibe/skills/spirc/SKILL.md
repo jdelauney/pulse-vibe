@@ -117,7 +117,7 @@ Puis, si une copie à part est retenue, « 2. Créer le worktree ou y revenir »
 
 ## Boucle par tâche
 
-À chaque lancement, y compris une reprise (`/clear`, `aidd_docs/tasks/in-progress.md`) : si les références de la réalisation ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler » avant la première tâche.
+À chaque lancement, y compris une reprise (`/clear`, `aidd_docs/tasks/in-progress.md`) : avant la première tâche, le test groupé ou la fin (le premier des trois), si les références de la réalisation ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler ». Une reprise sans tâche restante passe donc aussi par là.
 
 Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (un rapport existe déjà dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` : reprendre à l'examen).
 
@@ -176,7 +176,7 @@ Quand toutes les tâches de la portée sont passées (ou que la boucle s'est arr
 3. Demander (AskUserQuestion) : « Les tests sont-ils concluants ? » → « Oui, tout fonctionne » / « Non, sur certaines tâches » (puis lesquelles et ce qui ne va pas).
 4. Pour chaque tâche en échec : constat Critique, corrigé comme à l'étape 3 de [R] (implementer, relecture de contrôle), puis commit `fix(<Tâche>): …` ; refaire tester seulement ces tâches. Deux cycles au plus.
 5. Mettre à jour « Test par la personne » de chaque rapport et ajouter une ligne au journal du plan (« test groupé concluant » ou « test groupé : <problème> corrigé »), enregistrées avec un commit `docs: résultat du test groupé de US-XXX`.
-6. Envoyer le travail selon la ligne « Envoi » du plan (§ 3 de la référence « Le dépôt distant et l'envoi du travail »).
+6. Envoyer le travail selon la ligne « Envoi » du plan (§ 3 de la référence « Le dépôt distant et l'envoi du travail »). Références de la réalisation chargées ; sinon les relancer (voir « Choisir la façon de travailler »).
 7. Proposer en **une seule question** les ajouts à la mémoire repérés pendant les tâches (lignes exactes et destinations ; règles : `pulse-aidd reference memoire.md`).
 
 ## Fin
@@ -191,6 +191,6 @@ Présenter un récapitulatif :
 
 Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi.
 
-**Dans un worktree** : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (fusion, demande de fusion ou worktree gardé).
+**Dans un worktree** : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (fusion, demande de fusion ou worktree gardé), après avoir vérifié que les références de la réalisation sont chargées ; sinon les relancer (voir « Choisir la façon de travailler »).
 
 Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le MVP (toutes les US Indispensables) est terminé et pas encore en ligne (pousser et déployer seulement avec l'accord de la personne), sinon `/pulse:spirc <US-XXX>` pour continuer, ou `/pulse:spirc <US-XXX suivante du parcours>` si ce plan est terminé (elle passera par la spec et le plan), ou `/pulse:security` pour un audit complet.
