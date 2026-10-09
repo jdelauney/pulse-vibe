@@ -321,3 +321,9 @@ test("chaque action des recettes et de l'architecture porte un nom (.metadata), 
   const safeAction = lire(REF, "recettes", "connexion.md").split("// src/lib/safe-action.ts")[1].split("```")[0];
   for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
 });
+
+test("architecture : une facture se paie une seule fois, même avec deux demandes simultanées", () => {
+  const t = lire(REF, "architecture.md");
+  for (const attendu of ["marquerPayee(id: string, utilisateurId: string, le: Date): Promise<boolean>;", "isNull(factures.payeeLe)", ".returning({ id: factures.id })", 'return marquee ? ok(undefined) : echec("facture-deja-payee");'])
+    assert.ok(t.includes(attendu), attendu);
+});
