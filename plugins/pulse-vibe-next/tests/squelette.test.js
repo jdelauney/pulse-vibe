@@ -225,6 +225,6 @@ test("migrations du squelette : construction Vercel précédée de scripts/migre
   assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "node scripts/migrer.mjs --vercel && npm run build" });
   assert.match(fs.readFileSync(path.join(S, "drizzle.config.ts"), "utf8"), /process\.env\.DATABASE_URL_DIRECT \?\? process\.env\.DATABASE_URL_UNPOOLED/);
   const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
-  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations"]) assert.ok(migrer.includes(attendu), attendu);
+  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations", "NEON_ENDPOINT_PRODUCTION", '"ignore-production"']) assert.ok(migrer.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "tests", "migrer.test.ts")));
 });

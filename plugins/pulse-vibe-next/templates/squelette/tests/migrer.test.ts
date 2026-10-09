@@ -4,6 +4,7 @@ import {
   creerSauvegarde,
   migrationsEnAttente,
   migrer,
+  pointDAcces,
   sauvegardePour,
 } from "../scripts/migrer.mjs";
 
@@ -18,6 +19,18 @@ const PRODUCTION = {
   NEON_API_KEY: "cle-de-test",
   NEON_PROJECT_ID: "projet-de-test",
 };
+const ADRESSE_APERCU =
+  "postgresql://ep-apercu-111111.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+const APERCU = {
+  VERCEL: "1",
+  VERCEL_ENV: "preview",
+  DATABASE_URL_UNPOOLED: ADRESSE_APERCU,
+  NEON_ENDPOINT_PRODUCTION: "ep-principale-222222",
+};
+
+/** Tout ce que migrer() a écrit dans le journal de construction. */
+const journalDe = (d: ReturnType<typeof dependances>) =>
+  d.dire.mock.calls.map(([message]) => String(message)).join("\n");
 
 function dependances(env: Record<string, string>, derniere: string | null) {
   return {
@@ -59,18 +72,71 @@ describe("Migrations avant construction", () => {
     expect(d.lireDerniere).not.toHaveBeenCalled();
   });
 
-  it("prévisualisation : applique sur la branche de la prévisualisation, sans sauvegarde", async () => {
+  it("prévisualisation sur sa propre branche : applique, sans sauvegarde", async () => {
+    const d = dependances(APERCU, "1000");
+    expect(await migrer(d)).toBe("applique");
+    expect(d.sauvegarder).not.toHaveBeenCalled();
+    expect(d.appliquerMigrations).toHaveBeenCalledWith(ADRESSE_APERCU);
+  });
+
+  it("prévisualisation sur le point d'accès de la production : migrations sautées, construction poursuivie, explication et solution", async () => {
+    for (const repere of [
+      "ep-apercu-111111",
+      "ep-apercu-111111-pooler.eu-central-1.aws.neon.tech",
+      ADRESSE_APERCU.replace("ep-apercu-111111", "ep-apercu-111111-pooler"),
+    ]) {
+      const d = dependances(
+        { ...APERCU, NEON_ENDPOINT_PRODUCTION: repere },
+        "1000",
+      );
+      // La promesse se résout : le script sort avec le code 0 et Vercel poursuit la construction.
+      expect(await migrer(d)).toBe("ignore-production");
+      expect(d.appliquerMigrations).not.toHaveBeenCalled();
+      expect(d.sauvegarder).not.toHaveBeenCalled();
+      const journal = journalDe(d);
+      expect(journal).toMatch(/utilise la base de production/);
+      expect(journal).toMatch(/la production reste protégée/);
+      expect(journal).toMatch(/peuvent afficher des erreurs/);
+      expect(journal).toMatch(/Integrations → Vercel → Manage/);
+      expect(journal).toMatch(/une branche pour chaque prévisualisation/);
+    }
+  });
+
+  it("prévisualisation sans NEON_ENDPOINT_PRODUCTION : migrations sautées par prudence, construction poursuivie, comment activer la vérification", async () => {
+    const { NEON_ENDPOINT_PRODUCTION: _repere, ...sansRepere } = APERCU;
+    const d = dependances(sansRepere, "1000");
+    expect(await migrer(d)).toBe("ignore-sans-repere");
+    expect(d.appliquerMigrations).not.toHaveBeenCalled();
+    const journal = journalDe(d);
+    expect(journal).toMatch(/NEON_ENDPOINT_PRODUCTION/);
+    expect(journal).toMatch(/construction continue/i);
+    expect(journal).toMatch(/\/pulse:deploy/);
+    expect(journal).toMatch(/\/pulse:init/);
+  });
+
+  it("prévisualisation à jour sans NEON_ENDPOINT_PRODUCTION : rien à dire de plus", async () => {
+    const { NEON_ENDPOINT_PRODUCTION: _repere, ...sansRepere } = APERCU;
+    const d = dependances(sansRepere, "2000");
+    expect(await migrer(d)).toBe("a-jour");
+    expect(journalDe(d)).not.toMatch(/NEON_ENDPOINT_PRODUCTION/);
+  });
+
+  it("production : la garde des prévisualisations ne s'applique pas", async () => {
     const d = dependances(
-      {
-        VERCEL: "1",
-        VERCEL_ENV: "preview",
-        DATABASE_URL_UNPOOLED: "postgresql://apercu",
-      },
+      { ...PRODUCTION, NEON_ENDPOINT_PRODUCTION: "ep-production-1" },
       "1000",
     );
     expect(await migrer(d)).toBe("applique");
-    expect(d.sauvegarder).not.toHaveBeenCalled();
-    expect(d.appliquerMigrations).toHaveBeenCalledWith("postgresql://apercu");
+  });
+
+  it("point d'accès : lu dans une adresse, un nom d'hôte ou un identifiant, sans -pooler", () => {
+    expect(pointDAcces(ADRESSE_APERCU)).toBe("ep-apercu-111111");
+    expect(
+      pointDAcces("ep-apercu-111111-pooler.eu-central-1.aws.neon.tech"),
+    ).toBe("ep-apercu-111111");
+    expect(pointDAcces(" EP-Apercu-111111 ")).toBe("ep-apercu-111111");
+    expect(pointDAcces("postgresql://localhost:5432/x")).toBeNull();
+    expect(pointDAcces(undefined)).toBeNull();
   });
 
   it("production avec migration en attente : sauvegarde d'abord, puis migration", async () => {
