@@ -4,6 +4,11 @@ import type { Instrumentation } from "next";
 
 type Parametres = Parameters<Instrumentation.onRequestError>;
 
+/** Chemin sans sa chaîne de requête ni son ancre : un lien peut y porter un jeton (?token=…). */
+export function cheminSansRequete(chemin: string): string {
+  return chemin.split(/[?#]/)[0];
+}
+
 /** Journalise une erreur captée par Next.js, avec sa référence (digest) et la route, sans en-têtes ni cookies. */
 export function journaliserErreurDeRequete(
   erreur: Parametres[0],
@@ -21,7 +26,7 @@ export function journaliserErreurDeRequete(
       digest,
       requete: Array.isArray(idVercel) ? idVercel[0] : idVercel,
       methode: requete.method,
-      chemin: requete.path,
+      chemin: cheminSansRequete(requete.path),
       route: contexte.routePath,
       type: contexte.routeType,
     },
