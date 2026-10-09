@@ -8,16 +8,25 @@ export const CLES_MASQUEES = [
   "motDePasse",
   "token",
   "authorization",
+  "Authorization",
   "cookie",
+  "Cookie",
+  "set-cookie",
+  "Set-Cookie",
+  "x-api-key",
+  "X-Api-Key",
+  "apiKey",
+  "secret",
+  "clientSecret",
   "email",
 ];
 
-/** Chemins pino : la clé seule, puis sous un, deux et trois niveaux (`*` couvre aussi les tableaux). */
+/** Chemins pino : la clé seule, puis sous un, deux et trois niveaux */
 export const CHEMINS_MASQUES = CLES_MASQUEES.flatMap((cle) => [
-  cle,
-  `*.${cle}`,
-  `*.*.${cle}`,
-  `*.*.*.${cle}`,
+  `["${cle}"]`,
+  `*["${cle}"]`,
+  `*.*["${cle}"]`,
+  `*.*.*["${cle}"]`,
 ]);
 
 export const optionsJournal: LoggerOptions = {

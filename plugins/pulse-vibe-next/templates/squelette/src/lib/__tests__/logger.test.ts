@@ -45,6 +45,27 @@ describe("Journal du serveur", () => {
     expect(texte).toContain("[masqué]");
   });
 
+  it("masque aussi les en-têtes en majuscules et les clés d'API", () => {
+    const { journal, lignes } = journalDeTest();
+    journal.info(
+      {
+        req: {
+          headers: {
+            Authorization: "Bearer g",
+            Cookie: "h",
+            "set-cookie": "i",
+            "x-api-key": "j",
+          },
+        },
+        service: { apiKey: "k", secret: "l", clientSecret: "m" },
+      },
+      "essai",
+    );
+    const texte = JSON.stringify(lignes[0]);
+    for (const valeur of ["Bearer g", '"h"', '"i"', '"j"', '"k"', '"l"', '"m"'])
+      expect(texte).not.toContain(valeur);
+  });
+
   it("garde les autres champs lisibles", () => {
     const { journal, lignes } = journalDeTest();
     journal.info({ action: "creerFacture", duree: 12 }, "Action terminée");

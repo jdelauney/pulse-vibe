@@ -48,4 +48,9 @@ describe("actionPublique", () => {
       "Erreur dans une action serveur",
     );
   });
+
+  it("une action sans nom est refusée par la vérification des types", () => {
+    // @ts-expect-error .metadata({ nom }) est obligatoire avant .action()
+    actionPublique.action(async () => "sans nom");
+  });
 });
