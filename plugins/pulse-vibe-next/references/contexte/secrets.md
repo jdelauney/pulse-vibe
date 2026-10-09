@@ -39,7 +39,7 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 - **Effet** : la révocation est immédiate. Une clé limitée au projet agit seulement sur lui ; elle peut créer et supprimer ses branches.
 - **Délai de grâce** : oui, tant que l'ancienne clé n'est pas révoquée.
 - **Après une fuite** : révoquer tout de suite, puis vérifier la liste des branches du projet (**Branches**) et l'historique des opérations.
-- **Test** : pas de test direct de la valeur. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.
+- **Test** : `pulse-aidd secrets` demande à Neon le projet `NEON_PROJECT_ID` avec cette clé (lecture seule) : accepté, ou « clé ou identifiant de projet refusés ». Sans `NEON_PROJECT_ID`, pas de test. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.
 - Source : https://neon.com/docs/manage/api-keys.
 
 ### `BETTER_AUTH_SECRET`

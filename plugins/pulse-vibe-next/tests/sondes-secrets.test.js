@@ -185,6 +185,45 @@ test("Stripe : 200 accepté, 403 clé restreinte valide, 401 refusée ; la clé 
   sansValeur(ok.sortie + restreinte.sortie + refusee.sortie, cle);
 });
 
+test("clé Neon : projet lu (200) accepté, 401/403/404 refusés, sans identifiant de projet : code 3 ; la clé part dans l'en-tête, jamais à l'écran", async () => {
+  const d = projet();
+  let statut = 200;
+  const { s, url, recues } = await serveur(() => ({ statut }));
+  const cle = "napi_" + hasard(16);
+  const env = { PULSE_SONDES_NEON_API: url };
+  const entree = JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "projet-essai" });
+  const ok = await lancer(d, ["tester", "NEON_API_KEY"], entree, env);
+  const refus = [];
+  for (const code of [401, 403, 404]) {
+    statut = code;
+    refus.push(await lancer(d, ["tester", "NEON_API_KEY"], entree, env));
+  }
+  const sansProjet = await lancer(d, ["tester", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle }), env);
+  s.close();
+  assert.strictEqual(ok.code, 0, ok.sortie);
+  assert.match(ok.sortie, /acceptée par Neon/);
+  for (const r of refus) {
+    assert.strictEqual(r.code, 1);
+    assert.match(r.sortie, /clé ou identifiant de projet refusés/);
+  }
+  assert.strictEqual(sansProjet.code, 3);
+  assert.strictEqual(recues[0].url, "/projects/projet-essai");
+  assert.strictEqual(recues[0].autorisation, `Bearer ${cle}`);
+  assert.strictEqual(recues.length, 4);
+  sansValeur(ok.sortie + refus.map((r) => r.sortie).join("") + sansProjet.sortie, cle);
+});
+
+test("clé Neon : API injoignable = test impossible (code 3), pas un échec", async () => {
+  const d = projet();
+  const s = http.createServer();
+  const port = await ecouter(s);
+  await new Promise((ok) => s.close(ok));
+  const cle = "napi_" + hasard(16);
+  const r = await lancer(d, ["tester", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "p" }), { PULSE_SONDES_NEON_API: `http://127.0.0.1:${port}` });
+  assert.strictEqual(r.code, 3, r.sortie);
+  sansValeur(r.sortie, cle);
+});
+
 test("Upstash : PONG accepté, 401 refusé", async () => {
   const d = projet();
   let statut = 200;
