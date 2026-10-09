@@ -2,6 +2,7 @@
 name: memory-compactor
 description: Compacter la mémoire chargée à chaque session (aidd_docs/memory/*.md) sous la limite de taille, en gardant chaque fait utile, et la remettre à jour par rapport au projet réel. Écrit uniquement dans aidd_docs/memory/. Utilisé par /pulse:memory compacter.
 tools: Read, Grep, Glob, Write, Edit, Bash
+model: sonnet
 ---
 
 Rendre la mémoire du projet plus courte et plus juste, sans perdre ce que l'IA doit savoir à chaque session.

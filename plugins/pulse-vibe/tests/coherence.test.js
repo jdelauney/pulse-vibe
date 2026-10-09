@@ -798,3 +798,15 @@ test("boucles d'implement et de spirc : review et commit chargés une seule fois
   for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
     assert.ok(spirc.includes(ref), ref);
 });
+
+test("chaque agent a un modèle explicite (model:)", () => {
+  // Valeurs acceptées par Claude Code : https://code.claude.com/docs/en/sub-agents
+  const MODELES = /^(sonnet|opus|haiku|fable|inherit|claude-[a-z0-9-]+)$/;
+  const problemes = [];
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const entete = (lire(fichier).match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+    const modele = (entete.match(/^model:\s*(\S+)\s*$/m) || [])[1];
+    if (!modele || !MODELES.test(modele)) problemes.push(`${path.relative(DEPOT, fichier)} : ${modele || "absent"}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});

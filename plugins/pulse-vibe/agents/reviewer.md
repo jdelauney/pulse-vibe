@@ -2,6 +2,7 @@
 name: reviewer
 description: Vérifier le code d'une tâche par rapport aux critères d'acceptation, à la checklist sécurité et au besoin réel, en lecture seule. Utilisé par /pulse:review et /pulse:spirc.
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
+model: sonnet
 ---
 
 Relire le code avec une méthode stricte, en lecture seule.

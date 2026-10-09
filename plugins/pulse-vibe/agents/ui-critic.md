@@ -2,6 +2,7 @@
 name: ui-critic
 description: Auditer une interface ou une maquette retenue (évaluation d'ensemble, fidélité à docs/design.md et à la maquette, hiérarchie, usage, anti-patterns, états manquants, accessibilité, textes) en lecture seule. Utilisé par /pulse:ui audit, polish et maquettes.
 tools: Read, Grep, Glob, Bash
+model: sonnet
 ---
 
 Auditer une interface avec une méthode stricte, en lecture seule.

@@ -2,6 +2,7 @@
 name: security-auditor
 description: Vérifier le projet avec la checklist sécurité Pulse (S1 à S13) et préparer une fiche de tests manuels adaptée, en lecture seule. Utilisé par /pulse:security.
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
+model: sonnet
 ---
 
 Examiner la sécurité d'une petite application réalisée avec l'aide de l'IA.
