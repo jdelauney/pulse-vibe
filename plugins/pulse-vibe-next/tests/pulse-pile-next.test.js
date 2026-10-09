@@ -309,7 +309,7 @@ test("contexte ui du pack : les composants réalisent les motifs tels quels", ()
 // Contrastes mesurés par l'outil du cœur (pulse-aidd contraste), transparence comprise.
 const { lireCouleur, poser, rapport } = require(path.join(RACINE, "..", "pulse-vibe", "scripts", "contraste.js"));
 
-test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair et en sombre", () => {
+test("squelette : contrastes mesurés (texte secondaire, champs, focus, graphiques), en clair et en sombre", () => {
   const css = lire(RACINE, "templates", "squelette", "app", "globals.css");
   for (const bloc of [":root {", ".dark {"]) {
     const corps = css.slice(css.indexOf(bloc)).split("}")[0];
@@ -322,6 +322,11 @@ test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair 
     assert.ok(rapport(valeur("input"), fond) >= 3, `${bloc} --input`);
     for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(valeur(ring, 0.5), fond) >= 3, `${bloc} halo ${ring}/50`);
     if (bloc === ".dark {") assert.ok(rapport(valeur("foreground"), poser(valeur("input", 0.3), fond)) >= 4.5, "texte sur bg-input/30");
+    for (const surface of ["background", "muted"])
+      assert.ok(rapport(valeur("muted-foreground"), valeur(surface)) >= 4.5, `${bloc} --muted-foreground sur --${surface}`);
+    for (let n = 1; n <= 5; n++)
+      for (const surface of ["background", "card"])
+        assert.ok(rapport(valeur(`chart-${n}`), valeur(surface)) >= 3, `${bloc} --chart-${n} sur --${surface}`);
   }
 });
 
@@ -337,7 +342,7 @@ test("le cœur et le pack mesurent les contrastes avec pulse-aidd contraste", ()
 
 test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
   const t = lire(REF, "theme.md");
-  for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--"]) assert.ok(t.includes(attendu), attendu);
+  for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--", "`--muted-foreground` sur `--muted`", "`--chart-1` à `--chart-5`"]) assert.ok(t.includes(attendu), attendu);
 });
 
 test("chaque action des recettes et de l'architecture porte un nom (.metadata), journalisé par safe-action", () => {
