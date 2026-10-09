@@ -12,20 +12,23 @@
 //  - la lecture d'un fichier .env : toute commande dont un mot le désigne (nom, motif, option, référence Git),
 //    sauf celles qui le nomment sans le lire (test, touch, ls, echo, git rm…) ; git grep et git diff hors dépôt ;
 //  - la suppression de tout le disque, du dossier personnel ou du projet ;
-//  - la suppression d'un dépôt distant, ou son passage en public.
+//  - la suppression d'un dépôt distant, ou son passage en public (gh repo edit, gh api … private=false) ;
+//  - gitleaks sans --redact (les secrets trouvés s'afficheraient).
 // Demande confirmation pour :
 //  - ce qui jette ou déplace du travail (reset --hard, checkout/restore/switch -f, clean -f, stash drop,
 //    branch -D / -f, update-ref, filter-branch, reflog expire, gc --prune=now) ;
 //  - git config au-delà de user.name / user.email ;
-//  - une suppression récursive ou par motif (rm, Remove-Item, rd /s, del /s, find -exec rm, xargs rm, code) ;
+//  - une suppression récursive ou par motif (rm, Remove-Item, rd /s, del /s, find -exec rm, xargs rm, git rm -rf,
+//    rsync --delete, shred, ::Delete, code), ou d'un fichier .env ;
 //  - une commande dont le nom est calculé à l'exécution ($x, $(…), & $g, git $x, alias, Set-Alias) ;
 //  - un texte exécuté par un shell sans être visible (curl … | sh, iex (irm …), bash <(curl …)) ;
 //  - une commande de base de données qui écrase ou supprime (drizzle-kit push, db:push, prisma db push,
-//    supabase db reset, DROP / TRUNCATE / DELETE sans WHERE par -c, -f, < ou un tube, neonctl delete) ;
+//    supabase db reset, pg_restore, DROP / TRUNCATE / DELETE sans WHERE par -c, -f, < , un tube ou du code, neonctl delete) ;
 //  - une mise en production directe, un envoi sur main ou master quand le site est publié depuis ce dépôt
 //    (--all, push.default=matching, refspec à motif ou calculé compris),
 //    une variable changée chez l'hébergeur, un secret envoyé par pulse-aidd secrets, une fusion (gh pr merge),
-//    une suppression par gh api ;
+//    une suppression par gh api, vercel … rm, gh repo archive|rename, gh secret set|delete, gh release delete,
+//    les scripts de Pulse appelés directement (node …/secrets.js envoyer), une variable PULSE_SONDES_… ;
 //  - la modification (git commit --amend) d'un commit déjà envoyé ;
 //  - le nom d'un .env rangé dans une variable, l'écriture dans un .env existant, vercel env pull.
 //
@@ -101,6 +104,19 @@ const MESSAGES = {
   scriptInconnu:
     "Pulse demande votre accord : cette commande fait exécuter par un shell un texte que Pulse ne voit pas (tube vers sh, bash, pwsh ou Invoke-Expression). " +
     "Écrivez plutôt la commande en clair.",
+  suppressionEnv:
+    "Pulse demande votre accord : cette commande supprime un fichier .env ; ses secrets ne sont enregistrés nulle part ailleurs. " +
+    "Pour retirer .env de Git en le gardant sur le poste : `git rm --cached .env`.",
+  depotModifie: "Pulse demande votre accord : cette commande archive, renomme ou transfère le dépôt sur son site ; les liens et les envois en cours peuvent cesser de fonctionner.",
+  secretsDepot:
+    "Pulse demande votre accord : cette commande crée, change ou supprime un secret du dépôt, utilisé par les vérifications automatiques (CI). " +
+    "La valeur reste hors de la conversation : la personne la saisit elle-même sur le site du dépôt.",
+  gitleaksSansMasque:
+    "Pulse refuse gitleaks sans --redact : les secrets trouvés s'afficheraient en clair dans la conversation. " +
+    "À la place : `gitleaks detect --config .gitleaks.toml --redact`.",
+  sondeDetournee:
+    "Pulse demande votre accord : cette commande change l'adresse à laquelle les tests de secrets envoient une clé (PULSE_SONDES_…). " +
+    "Lancez plutôt la commande sans cette variable.",
   baseDeDonnees:
     "Pulse demande votre accord : cette commande peut écraser ou supprimer des données de la base, qui est peut-être celle du site en ligne. " +
     "Préférez une migration relue et testée en local.",
@@ -568,6 +584,11 @@ function reglesGit(c, cwd, constats) {
     case "config":
       if (configEcrit(reste)) constats.push([ACCORD, MESSAGES.config]);
       break;
+    case "rm":
+      if (options.includes("--cached")) break;
+      if ((court("r") || aLongue("--recursive")) && (court("f") || aLongue("--force"))) constats.push([ACCORD, MESSAGES.suppression]);
+      if (positions.some((p) => designeEnv(p, cwd, c.dialecte))) constats.push([ACCORD, MESSAGES.suppressionEnv]);
+      break;
     default:
       break;
   }
@@ -598,9 +619,9 @@ function configEcrit(reste) {
   return !(cle === "user.name" || cle === "user.email");
 }
 
-const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME|\$\{HOME\}|\$HOME\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\\/]?|[A-Za-z]:[\\/]\*|\/[a-zA-Z]\/?|\/[a-zA-Z]\/\*|\/mnt\/[a-zA-Z]\/?|\/mnt\/[a-zA-Z]\/\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
+const CIBLES_TOTALES = /^(\/|\/\*|~|~\/|~\/\*|\$HOME\/?|\$\{HOME\}\/?|\$HOME\/\*|\$\{HOME\}\/\*|\.|\.\/|\.\.|\.\.\/|\*|\.\/\*|[A-Za-z]:[\\/]?|[A-Za-z]:[\\/]\*|\/[a-zA-Z]\/?|\/[a-zA-Z]\/\*|\/mnt\/[a-zA-Z]\/?|\/mnt\/[a-zA-Z]\/\*|%USERPROFILE%|\$env:USERPROFILE)$/i;
 const COMMANDES_SUPPRESSION = new Set(["rm", "remove-item", "ri", "del", "erase", "rd", "rmdir", "unlink"]);
-const estRecursif = (a) => a === "--recursive" || (/^-[a-zA-Z]{1,4}$/.test(a) && /[rR]/.test(a)) || /^-r(e(c(u(r(s(e)?)?)?)?)?)?$/i.test(a) || /^\/s$/i.test(a);
+const estRecursif = (a) => a === "--recursive" || (/^-[a-zA-Z]{1,4}$/.test(a) && /[rR]/.test(a)) || /^-r(e(c(u(r(s(e)?)?)?)?)?)?(:\$?true)?$/i.test(a) || /^\/s$/i.test(a);
 
 function suppressionRecursive(cibles, constats) {
   if (cibles.some((c) => CIBLES_TOTALES.test(c))) return constats.push([REFUS, MESSAGES.suppressionTotale]);
@@ -608,14 +629,18 @@ function suppressionRecursive(cibles, constats) {
   if (aRisque.length) constats.push([ACCORD, MESSAGES.suppression]);
 }
 
-function reglesSuppression(c, constats) {
+function reglesSuppression(c, cwd, constats) {
   const cibles = c.args.filter((a) => !estOption(a) && a !== "--" && !(c.dialecte !== "bash" && ["del", "erase", "rd", "rmdir"].includes(c.cmd) && /^\/[a-zA-Z]$/.test(a)));
+  if (cibles.some((a) => designeEnv(a, cwd, c.dialecte))) constats.push([ACCORD, MESSAGES.suppressionEnv]);
   const recursif = c.args.some(estRecursif);
   const motif = cibles.some((a) => /[*?]/.test(a));
   if ((recursif || motif) && cibles.some((a) => CIBLES_TOTALES.test(a))) constats.push([REFUS, MESSAGES.suppressionTotale]);
   else if (c.viaFind || c.viaXargs || (c.apresTube && !cibles.length)) constats.push([ACCORD, MESSAGES.suppression]);
   else if (recursif || motif) suppressionRecursive(cibles, constats);
 }
+
+// Début d'une requête qui supprime ou réécrit des données (dans un texte cité d'un code).
+const SQL_DESTRUCTEUR = /^\s*(drop\s+(table|schema|database|view|index|materialized|type|sequence)\b|truncate(\s+table)?\s+[\w".]+\s*(,|$|\s+(cascade|restrict|restart|continue)\b)|delete\s+from\s+[\w".]+\s*($|\s+(where|using|returning)\b)|update\s+[\w".]+\s+set\s|alter\s+table\s)/i;
 
 function reglesSql(texte, constats) {
   const sql = String(texte || "");
@@ -638,6 +663,14 @@ function reglesSqlFichier(fichier, cwd, constats) {
   }
 }
 
+// pulse-aidd : ce qui change la production, crée ou retire un secret, ou coupe un accès.
+function reglesOutil(args, constats) {
+  const [a0, a1, a2] = args.map((a) => String(a || "").toLowerCase());
+  if (a0 === "secrets" && ["generer", "envoyer", "elaguer", "redeployer"].includes(a1)) constats.push([ACCORD, MESSAGES.secretsHebergeur]);
+  if (a0 === "search-console" && a1 === "deconnecter") constats.push([ACCORD, MESSAGES.deconnexion]);
+  if (a0 === "pile" && a1 === "hebergeur" && ["envoyer", "redeployer"].includes(a2)) constats.push([ACCORD, MESSAGES.secretsHebergeur]);
+}
+
 // ---------------------------------------------------------------- Analyse
 
 function appliquerRegles(c, cwd, constats) {
@@ -647,9 +680,10 @@ function appliquerRegles(c, cwd, constats) {
   if (c.dialecte === "powershell" && /^\$[\w:{}]+$/.test(c.brut) && args.length && !/^([-+*\/%]?=|-|in$)/i.test(args[0])) constats.push([ACCORD, MESSAGES.commandeMasquee]);
   if (c.dialecte === "powershell" && c.brut === "." && /^\$/.test(args[0] || "")) constats.push([ACCORD, MESSAGES.commandeMasquee]);
   if (c.scriptInconnu) constats.push([ACCORD, MESSAGES.scriptInconnu]);
-  if (COMMANDES_SUPPRESSION.has(cmd)) reglesSuppression(c, constats);
-  if (c.code !== undefined && /\b(rmSync|rmdirSync|unlinkSync|rimraf|rmtree|remove_tree|rm_rf|os\.remove|os\.unlink|unlink|rmdir)\b/.test(c.code))
+  if (COMMANDES_SUPPRESSION.has(cmd)) reglesSuppression(c, cwd, constats);
+  if (c.code !== undefined && /\b(rmSync|rmdirSync|unlinkSync|rimraf|rmtree|remove_tree|rm_rf|os\.remove|os\.unlink|unlink|rmdir)\b|\.rm\s*\(|\brm\s*\(/.test(c.code))
     constats.push([ACCORD, MESSAGES.suppression]);
+  if (c.affectations.some((a) => /^PULSE_SONDES_/i.test(a))) constats.push([ACCORD, MESSAGES.sondeDetournee]);
   if (litEnv(c, cwd)) constats.push([REFUS, MESSAGES.lectureEnv]);
   // Une variable qui contient le nom d'un .env (f=.env ; cat $f).
   if (c.affectations.some((a) => designeEnv(a.slice(a.indexOf("=") + 1), cwd, c.dialecte))) constats.push([ACCORD, MESSAGES.envDansVariable]);
@@ -667,6 +701,8 @@ function appliquerRegles(c, cwd, constats) {
   if (c.code !== undefined) {
     const cites = [...c.code.matchAll(TEXTES_CITES)].map((t) => t[2]);
     if (cites.some((t) => designeEnv(t, cwd, c.dialecte)) || (/\b(dotenv|load_dotenv)\b/.test(c.code) && /\b(console\.log|print|puts|echo)\b/.test(c.code))) constats.push([REFUS, MESSAGES.lectureEnv]);
+    // SQL écrit dans du code (node -e, tsx -e) : mêmes règles que psql -c. Un texte ordinaire (« delete from cache done ») n'a pas la forme d'une requête.
+    for (const t of cites) if (t.split(";").some((i) => SQL_DESTRUCTEUR.test(i))) reglesSql(t, constats);
   }
 
   switch (cmd) {
@@ -687,7 +723,7 @@ function appliquerRegles(c, cwd, constats) {
       if (args.includes("-delete")) constats.push([ACCORD, MESSAGES.suppression]);
       break;
     case "drizzle-kit":
-      if (args[0] === "push" || args[0] === "drop") constats.push([ACCORD, MESSAGES.baseDeDonnees]);
+      if (/^(push|drop)(:|$)/.test(args[0] || "")) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
       break;
     case "prisma":
       if ((args[0] === "db" && args[1] === "push") || (args[0] === "migrate" && args[1] === "reset")) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
@@ -700,6 +736,12 @@ function appliquerRegles(c, cwd, constats) {
       for (let k = 0; k < args.length; k++) {
         if (args[k] === "-c" || args[k] === "--command") {
           reglesSql(args[k + 1], constats);
+          sqlConnu = true;
+        } else if (args[k].startsWith("--command=")) {
+          reglesSql(args[k].slice("--command=".length), constats);
+          sqlConnu = true;
+        } else if (/^-c./.test(args[k])) {
+          reglesSql(args[k].slice(2), constats);
           sqlConnu = true;
         } else if (args[k] === "-f" || args[k] === "--file") {
           reglesSqlFichier(args[k + 1], cwd, constats);
@@ -725,11 +767,25 @@ function appliquerRegles(c, cwd, constats) {
       if (args.some((a) => ["delete", "reset", "restore"].includes(a))) constats.push([ACCORD, MESSAGES.baseDeDonnees]);
       break;
     case "vercel": {
-      const prod = args.some((a) => a === "--prod" || a === "--production" || a === "--target=production") || args.join(" ").includes("--target production");
+      const prod = args.some((a) => a === "--prod" || a === "--production" || a === "--target=production" || /^--prod(uction)?=(?!false$)/i.test(a)) || args.join(" ").includes("--target production");
       if ((prod && args[0] !== "build" && args[0] !== "env") || ["promote", "rollback", "remove", "rm"].includes(args[0])) constats.push([ACCORD, MESSAGES.production]);
       if (args[0] === "env" && ["add", "update", "rm", "remove"].includes(args[1])) constats.push([ACCORD, MESSAGES.variablesHebergeur]);
+      // vercel project rm, vercel domains rm, vercel alias rm… (la suppression d'une variable a sa règle ci-dessus).
+      if (["rm", "remove"].includes(args[1]) && args[0] !== "env") constats.push([ACCORD, MESSAGES.production]);
       break;
     }
+    case "pg_restore":
+      constats.push([ACCORD, MESSAGES.baseDeDonnees]);
+      break;
+    case "shred":
+      constats.push([ACCORD, MESSAGES.suppression]);
+      break;
+    case "rsync":
+      if (args.some((a) => /^--(delete|remove-source-files)/.test(a))) constats.push([ACCORD, MESSAGES.suppression]);
+      break;
+    case "gitleaks":
+      if (args.some((a) => ["detect", "dir", "git", "protect", "stdin"].includes(a)) && !args.some((a) => a === "--redact" || a.startsWith("--redact="))) constats.push([REFUS, MESSAGES.gitleaksSansMasque]);
+      break;
     case "netlify":
       if (args[0] === "deploy" && args.includes("--prod")) constats.push([ACCORD, MESSAGES.production]);
       break;
@@ -739,13 +795,25 @@ function appliquerRegles(c, cwd, constats) {
       break;
     case "gh":
     case "glab": {
-      const [a0, a1] = args;
+      // Options globales -R / --repo retirées : gh -R o/r repo delete reste une suppression.
+      const g = [];
+      for (let j = 0; j < args.length; j++) {
+        if (args[j] === "-R" || args[j] === "--repo") j++;
+        else if (!/^--repo=/.test(args[j])) g.push(args[j]);
+      }
+      const [a0, a1] = g;
+      const texte = g.join(" ");
       if ((cmd === "gh" && a0 === "pr" && a1 === "merge") || (cmd === "glab" && a0 === "mr" && a1 === "merge")) constats.push([ACCORD, MESSAGES.fusion]);
       if (a0 === "repo" && a1 === "delete") constats.push([REFUS, MESSAGES.depotSupprime]);
-      const publicDemande = args.includes("--public") || args.some((a, j) => (a === "--visibility" && /^public$/i.test(args[j + 1] || "")) || /^--visibility=public$/i.test(a));
+      const publicDemande = g.includes("--public") || g.some((a, j) => (a === "--visibility" && /^public$/i.test(g[j + 1] || "")) || /^--visibility=public$/i.test(a));
       if (a0 === "repo" && ["create", "edit"].includes(a1) && publicDemande) constats.push([REFUS, MESSAGES.depotPublic]);
-      if (cmd === "gh" && a0 === "api" && args.some((a, j) => (["-X", "--method"].includes(a) && /^delete$/i.test(args[j + 1] || "")) || /^(-X|--method=)delete$/i.test(a)))
+      if (a0 === "api" && (/\bprivate=false\b|\bvisibility=public\b/i.test(texte) || /visibility\s*:\s*PUBLIC/i.test(texte))) constats.push([REFUS, MESSAGES.depotPublic]);
+      if (cmd === "gh" && a0 === "api" && g.some((a, j) => (["-X", "--method"].includes(a) && /^delete$/i.test(g[j + 1] || "")) || /^(-X|--method=)delete$/i.test(a)))
         constats.push([ACCORD, MESSAGES.apiSuppression]);
+      if (a0 === "api" && a1 === "graphql" && /mutation/i.test(texte) && /delete|archive|transfer/i.test(texte)) constats.push([ACCORD, MESSAGES.apiSuppression]);
+      if (a0 === "repo" && ["archive", "rename", "transfer"].includes(a1)) constats.push([ACCORD, MESSAGES.depotModifie]);
+      if (a0 === "secret" && ["set", "delete", "remove"].includes(a1)) constats.push([ACCORD, MESSAGES.secretsDepot]);
+      if (a0 === "release" && a1 === "delete") constats.push([ACCORD, MESSAGES.apiSuppression]);
       break;
     }
     case "alias":
@@ -756,9 +824,20 @@ function appliquerRegles(c, cwd, constats) {
       if (args.length) constats.push([ACCORD, MESSAGES.commandeMasquee]);
       break;
     case "pulse-aidd":
-      if (args[0] === "secrets" && ["generer", "envoyer", "elaguer", "redeployer"].includes(args[1])) constats.push([ACCORD, MESSAGES.secretsHebergeur]);
-      if (args[0] === "search-console" && args[1] === "deconnecter") constats.push([ACCORD, MESSAGES.deconnexion]);
+      reglesOutil(args, constats);
       break;
+    case "pulse-pile-next":
+      reglesOutil(["pile", ...args], constats);
+      break;
+    case "node": {
+      // Appel direct d'un script de Pulse : mêmes règles que par pulse-aidd.
+      const [script, ...suite] = args.filter((a) => !estOption(a));
+      const nom = script ? String(script).split(/[\\/]/).pop() : "";
+      if (nom === "secrets.js") reglesOutil(["secrets", ...suite], constats);
+      if (nom === "search-console.js") reglesOutil(["search-console", ...suite], constats);
+      if (nom === "secrets-vercel.js") reglesOutil(["pile", "hebergeur", ...suite], constats);
+      break;
+    }
     default:
       break;
   }
@@ -778,6 +857,10 @@ function analyser(commande, cwd, dialecte) {
     /env:\\?GIT_CONFIG/i.test(sansCitations) ||
     /SetEnvironmentVariable\s*\(\s*['"]GIT_CONFIG/i.test(commande);
   if (configParVariable && commandes.some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.configMasquee]);
+  if (/(^|[\s;&|(])((export|declare\s+-x|typeset\s+-x)(\s+-\w+)*\s+(\w+(=\S*)?\s+)*|\$env:)PULSE_SONDES_\w*\s*=/i.test(sansCitations) || /env:\\?PULSE_SONDES_/i.test(sansCitations))
+    constats.push([ACCORD, MESSAGES.sondeDetournee]);
+  // Suppression .NET depuis PowerShell : [IO.Directory]::Delete('src', $true), [IO.File]::Delete(…).
+  if (/::Delete\s*\(/i.test(sansCitations)) constats.push([ACCORD, MESSAGES.suppression]);
   // Lecture .NET depuis PowerShell : [IO.File]::ReadAllText('.env').
   for (const m of commande.matchAll(/::ReadAll(?:Text|Lines|Bytes)\s*\(\s*['"]([^'"]+)['"]/gi)) if (designeEnv(m[1], cwd, dialecte)) constats.push([REFUS, MESSAGES.lectureEnv]);
   // PowerShell : ${chemin} lit le contenu du fichier (${C:\projet\.env}, ${E:.env}).

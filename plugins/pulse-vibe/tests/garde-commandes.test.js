@@ -870,3 +870,85 @@ test("configuration -c remote.<nom>.mirror ou .push : accord demandé", () => {
   execFileSync("git", ["switch", "-q", "-c", "feat/x"], { cwd: dir });
   confirmation("git -c remote.origin.push=refs/heads/feat/x:refs/heads/main push", dir);
 });
+
+// ------------------------------------------------------------ Revue 2 : suppressions, services, outils
+
+test("suppressions non vues jusqu'ici : accord demandé", () => {
+  for (const c of [
+    "git rm -rf src",
+    "git rm -r -f docs/",
+    "rm -f .env",
+    "git rm .env",
+    `node -e "require('fs').promises.rm('src',{recursive:true})"`,
+    "rsync -a --delete vide/ src/",
+    "shred -u src/app.ts",
+    "vercel project rm x",
+    "vercel domains rm x.fr",
+  ])
+    confirmation(c);
+  confirmationPs("Remove-Item -Path src -Recurse:$true");
+  confirmationPs("[IO.Directory]::Delete('src', $true)");
+  for (const c of ["git rm --cached .env", "git rm -r --cached .", "git rm notes.txt", "rsync -a src/ dist/", "rm notes.txt"]) passe(c);
+  for (const c of ["rm -rf ${HOME}/", "rm -rf $HOME/"]) refus(c);
+});
+
+test("bases de données : SQL par --command=, -c collé, code de node -e ou tsx -e, pg_restore, drizzle-kit push:pg", () => {
+  for (const c of [
+    "psql --command='DROP TABLE users'",
+    "psql -cDROP\ TABLE\ users",
+    `node -e "new (require('pg').Client)(process.env.DATABASE_URL).query('DROP TABLE users')"`,
+    'npx tsx -e "await db.execute(sql`DROP TABLE users`)"',
+    "pg_restore --clean -d $DATABASE_URL dump",
+    "pnpm drizzle-kit push:pg",
+  ])
+    confirmation(c);
+  for (const c of [`node -e "console.log('update done')"`, "pg_dump $DATABASE_URL > sauvegarde.sql", "pnpm drizzle-kit migrate"]) passe(c);
+});
+
+test("gh : dépôt rendu public par l'API refusé ; archive, secret, publication supprimée, mutation de suppression : accord", () => {
+  for (const c of ["gh api -X PATCH repos/o/r -f private=false", "gh api -X PATCH repos/o/r -f visibility=public", "gh -R o/r repo delete --yes", "gh --repo o/r repo edit --visibility public"]) refus(c);
+  for (const c of ["gh api graphql -f query='mutation{deleteRepository}'", "gh repo archive -y", "gh repo rename y", "gh secret set X --body y", "gh release delete v1 -y"]) confirmation(c);
+  for (const c of ["gh api repos/o/r", "gh pr view 3", "gh repo view"]) passe(c);
+});
+
+test("gitleaks sans --redact : refus avec la commande à utiliser", () => {
+  for (const c of ["gitleaks dir . -v", "gitleaks detect"]) {
+    const d = refus(c);
+    assert.match(d.raison, /--redact/);
+  }
+  for (const c of ["gitleaks detect --config .gitleaks.toml --redact", "gitleaks version"]) passe(c);
+});
+
+test("scripts de Pulse appelés directement, envoi par le pack, sonde détournée : accord", () => {
+  for (const c of [
+    "node $CLAUDE_PLUGIN_ROOT/scripts/secrets.js envoyer",
+    "node scripts/secrets.js redeployer --env production",
+    "node scripts/search-console.js deconnecter",
+    "pulse-pile-next hebergeur envoyer STRIPE_KEY production",
+    "pulse-aidd pile hebergeur redeployer production",
+    "PULSE_SONDES_NEON_API=https://x.example pulse-aidd secrets verifier NEON_API_KEY",
+    "export PULSE_SONDES_HOTES_ACCEPTES=x.example; pulse-aidd secrets verifier SMTP_PASSWORD",
+  ])
+    confirmation(c);
+  for (const c of ["node scripts/secrets.js inventaire", "pulse-pile-next hebergeur ls", "pulse-aidd secrets verifier SMTP_PASSWORD"]) passe(c);
+});
+
+test("commandes ordinaires voisines des nouvelles règles : passent", () => {
+  for (const c of [
+    "rm -rf dist node_modules .next",
+    "psql $DATABASE_URL -c 'SELECT count(*) FROM users'",
+    "psql --command='SELECT 1'",
+    `node -e "console.log(require('./package.json').version)"`,
+    "npx tsx -e \"console.log('delete from cache done')\"",
+    "gh pr create --fill",
+    "gh secret list",
+    "gh release create v1.0.0 --generate-notes",
+    "vercel env ls",
+    "vercel ls",
+    "rsync -a --exclude node_modules src/ dist/",
+    "pnpm test",
+    "git rm -r --cached dist",
+  ])
+    passe(c);
+  passePs("Remove-Item -Path dist -Recurse:$true");
+});
