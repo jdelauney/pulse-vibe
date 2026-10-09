@@ -176,3 +176,16 @@ test("PowerShell *> : redirection de sortie, sans « * » dans les arguments", (
   assert.deepStrictEqual(c.ecritures, ["out.txt"]);
   assert.deepStrictEqual(c.args, ["x"]);
 });
+
+test("« * » collé à > : conservé en bash, retiré en PowerShell", () => {
+  assert.deepStrictEqual(commandesSimples("rm -rf *> /dev/null")[0].args, ["-rf", "*"]);
+  assert.deepStrictEqual(commandesSimples("rm -rf *> /dev/null")[0].ecritures, ["/dev/null"]);
+});
+
+test("-s après le nom du script : option du script, la commande reste lue", () => {
+  for (const s of ["bash scripts/x.sh -s", "sh ./install.sh -s --force", "bash scripts/deploy.sh -vs"]) {
+    const [c] = commandesSimples(s);
+    assert.ok(c && ["bash", "sh"].includes(c.cmd), s);
+    assert.ok(!c.scriptInconnu, s);
+  }
+});

@@ -208,7 +208,7 @@ function decouper(script, dialecte = "bash") {
       }
       heredocsEnAttente.push({ delim, retirerTabs, segment: null });
     } else if (c === ">" || c === "<") {
-      if (mot !== null && /^(\d+|\*)$/.test(mot)) mot = null;
+      if (mot !== null && (/^\d+$/.test(mot) || (dialecte === "powershell" && mot === "*"))) mot = null;
       finirMot();
       redirection = c === "<" ? "entree" : "sortie";
       i++;
@@ -352,7 +352,7 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
     if (k >= 0) return script(args.slice(k + 1).find((a) => !estOption(a)) || "", "bash");
     const fichier = args.find((a) => !estOption(a));
     // « sh - », « bash -s », « bash /dev/stdin » : le script vient de l'entrée standard.
-    const litEntree = fichier === undefined || fichier === "-" || fichier === "/dev/stdin" || args.some((a) => estOption(a) && flagsCourts(a).includes("s"));
+    const litEntree = fichier === undefined || fichier === "-" || fichier === "/dev/stdin" || args.slice(0, args.indexOf(fichier)).some((a) => estOption(a) && flagsCourts(a).includes("s"));
     if (litEntree) {
       for (const e of ctx.entrees) script(e, "bash");
       // Texte reçu par un tube ou un fichier redirigé : Pulse ne le voit pas.

@@ -344,7 +344,7 @@ test("chemins à crochets, texte cité et options courtes groupées", () => {
 // ------------------------------------------------------------ Suppressions
 
 test("suppression de tout le disque, du dossier personnel ou du projet : refus", () => {
-  for (const c of ["rm -rf /", "rm -rf ~", 'rm -rf "$HOME"', "rm -rf .", "rm -rf *", "rm -f *"]) {
+  for (const c of ["rm -rf /", "rm -rf ~", 'rm -rf "$HOME"', "rm -rf .", "rm -rf *", "rm -f *", "rm -rf *> /dev/null"]) {
     const d = refus(c);
     assert.match(d.raison, /nommez précisément/);
   }
