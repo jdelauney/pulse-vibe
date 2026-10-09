@@ -7,7 +7,10 @@ const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
 
-const { changementMajeur, monterLesVersions, lireArguments } = require(path.join(__dirname, "..", "scripts", "verifier-squelette.js"));
+const net = require("net");
+const os = require("os");
+const SCRIPT = path.join(__dirname, "..", "scripts", "verifier-squelette.js");
+const { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, rangerDossier } = require(SCRIPT);
 
 test("changement majeur au sens de npm : le premier nombre non nul", () => {
   assert.strictEqual(changementMajeur("1.4.0", "2.0.0"), true);
@@ -52,3 +55,70 @@ test("CI hebdomadaire : mineures et majeures en demandes de fusion séparées, r
   assert.match(ci, /verifier-recettes\.js --recettes connexion,fichiers/);
   assert.match(ci, /verifier-recettes\.js --recettes connexion,paiement/);
 });
+
+test("--garder et --tolerer-instables", () => {
+  assert.deepStrictEqual(
+    [lireArguments([]).garder, lireArguments([]).tolererInstables, lireArguments(["--garder"]).garder, lireArguments(["--tolerer-instables"]).tolererInstables],
+    [false, false, true, true],
+  );
+});
+
+test("dossier temporaire : retiré à la fin ; gardé avec --garder ou après un échec ; un dossier donné n'est jamais retiré", () => {
+  const nouveau = () => {
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-squelette-essai-"));
+    fs.mkdirSync(path.join(d, "node_modules", "x"), { recursive: true });
+    fs.writeFileSync(path.join(d, "node_modules", "x", "index.js"), "");
+    return d;
+  };
+  const a = nouveau();
+  assert.strictEqual(rangerDossier({ dossier: a, temporaire: true, garder: false, echec: false }), null);
+  assert.ok(!fs.existsSync(a), "retiré");
+  const b = nouveau();
+  assert.match(rangerDossier({ dossier: b, temporaire: true, garder: true, echec: false }), /Dossier gardé : /);
+  assert.ok(fs.existsSync(b));
+  const c = nouveau();
+  assert.match(rangerDossier({ dossier: c, temporaire: true, garder: false, echec: true }), /pour regarder l'échec/);
+  assert.ok(fs.existsSync(c));
+  const d = nouveau();
+  assert.strictEqual(rangerDossier({ dossier: d, temporaire: false, garder: false, echec: false }), null);
+  assert.ok(fs.existsSync(d));
+  for (const x of [b, c, d]) fs.rmSync(x, { recursive: true, force: true });
+});
+
+test("port de l'audit : un port libre, accepté par le navigateur, plus de port fixe", async () => {
+  const { PORTS_BLOQUES } = require(path.join(__dirname, "..", "..", "pulse-vibe", "scripts", "port-libre.js"));
+  const port = await portLibre();
+  assert.ok(Number.isInteger(port) && port > 0 && !PORTS_BLOQUES.has(port), String(port));
+  const s = net.createServer();
+  await new Promise((ok, ko) => {
+    s.once("error", ko);
+    s.listen(port, "127.0.0.1", ok);
+  });
+  await new Promise((ok) => s.close(ok));
+  assert.doesNotMatch(fs.readFileSync(SCRIPT, "utf8"), /\b3123\b/);
+});
+
+test("tests instables : relevés dans le rapport JSON de Playwright, à toute profondeur", () => {
+  const rapport = {
+    suites: [
+      {
+        title: "accueil.spec.ts",
+        specs: [
+          { title: "la page répond", file: "accueil.spec.ts", line: 8, tests: [{ projectName: "ordinateur", status: "expected" }, { projectName: "telephone", status: "flaky" }] },
+        ],
+        suites: [{ title: "groupe", specs: [{ title: "axe", file: "accueil.spec.ts", line: 20, tests: [{ projectName: "ordinateur", status: "flaky" }] }] }],
+      },
+    ],
+  };
+  assert.deepStrictEqual(testsInstables(rapport), ["[telephone] accueil.spec.ts:8 la page répond", "[ordinateur] accueil.spec.ts:20 axe"]);
+  assert.deepStrictEqual(testsInstables({ suites: [] }), []);
+  assert.deepStrictEqual(testsInstables(null), []);
+});
+
+test("bout en bout : rapport JSON demandé à Playwright, navigateur avec ses dépendances système seulement sous Linux", () => {
+  const source = fs.readFileSync(SCRIPT, "utf8");
+  assert.match(source, /npm run test:e2e -- --reporter=list,json/);
+  assert.match(source, /PLAYWRIGHT_JSON_OUTPUT_NAME/);
+  assert.match(source, /process\.platform === "linux"/);
+});
+

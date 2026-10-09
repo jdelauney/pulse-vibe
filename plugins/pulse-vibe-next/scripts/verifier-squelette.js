@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Pulse Next.js – vérification du squelette (outil du dépôt : CI hebdomadaire et maintenance).
 //
-//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres [--majeures]] [--ecrire] [--e2e] [--dossier <chemin>]
+//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres [--majeures]] [--ecrire] [--e2e [--tolerer-instables]] [--dossier <chemin>] [--garder]
 //
 //   --dernieres   passe chaque dépendance à sa dernière version publiée (npm view) avant de vérifier,
 //                 sauf un changement de version majeure, signalé et laissé tel quel
@@ -9,6 +9,10 @@
 //   --ecrire      si tout passe, reporte ces versions dans templates/squelette/package.json (et biome.json)
 //   --e2e         lance aussi les tests de bout en bout (Chromium doit être installé) et l'audit de
 //                 référencement du site servi (scripts/seo.js du cœur)
+//   --tolerer-instables  avec --e2e : un test qui passe seulement après une relance est signalé sans faire
+//                 échouer (par défaut : échec, une relance masque le problème, references/tests/strategie.md §4)
+//   --garder      garde le dossier temporaire et l'indique (il est gardé aussi après un échec) ;
+//                 sans --garder, il est retiré à la fin. Un dossier donné par --dossier n'est jamais retiré.
 //
 // Crée un projet avec le squelette dans un dossier temporaire, puis : npm install, npm run check,
 // npm run typecheck, npm test, npm run build, contrôles du code pour le référencement (seo-code.js)
@@ -18,11 +22,65 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const net = require("net");
 const { spawn, spawnSync } = require("child_process");
 const { creerSquelette } = require("./squelette");
 
 const MODELE = path.join(__dirname, "..", "templates", "squelette");
-const AUDIT_SEO = path.join(__dirname, "..", "..", "pulse-vibe", "scripts", "seo.js");
+const COEUR = path.join(__dirname, "..", "..", "pulse-vibe", "scripts");
+const AUDIT_SEO = path.join(COEUR, "seo.js");
+const PORT_LIBRE = path.join(COEUR, "port-libre.js");
+// Les fichiers du cœur que ce script lance ou charge : la CI du squelette se déclenche aussi sur eux.
+const FICHIERS_DU_COEUR = [AUDIT_SEO, PORT_LIBRE];
+
+/** Un port local libre, accepté par fetch et les navigateurs (port-libre.js du cœur). */
+async function portLibre() {
+  const { ecouter } = require(PORT_LIBRE);
+  const serveur = net.createServer();
+  const port = await ecouter(serveur);
+  await new Promise((ok) => serveur.close(ok));
+  return port;
+}
+
+/** Tests que Playwright a dû relancer pour qu'ils passent (statut « flaky » du rapport JSON), à toute profondeur. */
+function testsInstables(rapport) {
+  const trouves = [];
+  const parcourir = (suite) => {
+    for (const spec of suite.specs || []) for (const t of spec.tests || []) if (t.status === "flaky") trouves.push(`[${t.projectName}] ${spec.file}:${spec.line} ${spec.title}`);
+    for (const s of suite.suites || []) parcourir(s);
+  };
+  for (const s of (rapport && rapport.suites) || []) parcourir(s);
+  return trouves;
+}
+
+/** Après le bout en bout : un test instable fait échouer, sauf --tolerer-instables (signalé seulement). */
+function controlerInstables(fichier, tolerer) {
+  if (!fs.existsSync(fichier)) {
+    console.error(`\n❌ Échec : rapport JSON de Playwright introuvable (${fichier})`);
+    process.exit(1);
+  }
+  const instables = testsInstables(JSON.parse(fs.readFileSync(fichier, "utf8")));
+  if (!instables.length) return;
+  const liste = instables.map((x) => `  - ${x}`).join("\n");
+  if (tolerer) {
+    console.log(`\n⚠️ ${instables.length} test(s) instable(s), passé(s) seulement après une relance :\n${liste}`);
+    return;
+  }
+  console.error(`\n❌ Échec : ${instables.length} test(s) instable(s), passé(s) seulement après une relance (une relance masque le problème : references/tests/strategie.md §4) :\n${liste}\n   Pour les signaler sans échouer : --tolerer-instables`);
+  process.exit(1);
+}
+
+/** Fin du script : retire le dossier temporaire, sauf --garder ou échec ; un dossier donné (--dossier) reste. Rend le message à afficher, ou null. */
+function rangerDossier({ dossier, temporaire, garder, echec }) {
+  if (!temporaire) return null;
+  if (garder || echec) return `Dossier gardé : ${dossier}${garder ? "" : " (pour regarder l'échec ; à supprimer ensuite)"}`;
+  try {
+    fs.rmSync(dossier, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  } catch (e) {
+    return `Dossier temporaire non retiré (${e.message}) : ${dossier}`;
+  }
+  return null;
+}
 
 /** Contrôles du code pour le référencement : aucun constat Critique ni Haute attendu sur le squelette. */
 function controlerCodeSeo(dossier) {
@@ -43,14 +101,20 @@ async function auditerSiteServi(dossier) {
     console.log("\n(audit de référencement sauté : plugin pulse absent à côté du pack, dans plugins/pulse-vibe/)");
     return;
   }
-  const port = 3123;
+  const port = await portLibre();
   const adresse = `http://localhost:${port}`;
   console.log(`\n▶ audit de référencement du site servi (${adresse})`);
   const serveur = spawn(process.execPath, [path.join(dossier, "node_modules", "next", "dist", "bin", "next"), "start", "-p", String(port)], { cwd: dossier, stdio: "ignore" });
+  let arret = null;
+  serveur.on("exit", (code, signal) => {
+    arret = code ?? signal;
+  });
   try {
     let pret = false;
     for (let i = 0; i < 60 && !pret; i++) {
       await new Promise((r) => setTimeout(r, 1000));
+      // Un serveur arrêté : le port a été pris entre-temps ; ne pas auditer un autre site qui y répondrait.
+      if (arret !== null) throw new Error(`le serveur s'est arrêté (${arret}) : port ${port} pris par un autre programme ?`);
       pret = await fetch(adresse).then((x) => x.status === 200, () => false);
     }
     if (!pret) throw new Error("le serveur ne répond pas sur " + adresse);
@@ -68,7 +132,7 @@ async function auditerSiteServi(dossier) {
 }
 
 function lireArguments(argv) {
-  const opts = { dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null };
+  const opts = { dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null, garder: false, tolererInstables: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dernieres") opts.dernieres = true;
@@ -76,6 +140,8 @@ function lireArguments(argv) {
     else if (a === "--ecrire") opts.ecrire = true;
     else if (a === "--e2e") opts.e2e = true;
     else if (a === "--dossier") opts.dossier = path.resolve(argv[++i]);
+    else if (a === "--garder") opts.garder = true;
+    else if (a === "--tolerer-instables") opts.tolererInstables = true;
     else throw new Error(`Option inconnue : ${a}`);
   }
   return opts;
@@ -223,7 +289,14 @@ function accorderBiome(fichier, versionBiome) {
 
 async function principal() {
   const opts = lireArguments(process.argv.slice(2));
+  const temporaire = !opts.dossier;
   const dossier = opts.dossier || fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-squelette-"));
+  // Chaque vérification laissait environ 800 Mo dans le dossier temporaire du système.
+  process.on("exit", (code) => {
+    const message = rangerDossier({ dossier, temporaire, garder: opts.garder, echec: code !== 0 });
+    if (message) console.log(message);
+  });
+  process.on("SIGINT", () => process.exit(130));
   creerSquelette({ nom: "Projet de vérification", description: "Vérification automatique du squelette.", dossier });
   console.log(`Squelette créé dans ${dossier}`);
 
@@ -254,9 +327,12 @@ async function principal() {
   lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1" });
   controlerCodeSeo(dossier);
   if (opts.e2e) {
-    // En CI (Linux), --with-deps installe aussi les bibliothèques système du navigateur.
-    lancer(`npx playwright install ${process.env.CI ? "--with-deps " : ""}chromium`, dossier);
-    lancer("npm run test:e2e", dossier, { CI: "true", SKIP_ENV_VALIDATION: "1" });
+    // En CI sous Linux, --with-deps installe aussi les bibliothèques système du navigateur.
+    lancer(`npx playwright install ${process.env.CI && process.platform === "linux" ? "--with-deps " : ""}chromium`, dossier);
+    // Rapport JSON en plus de la liste : les relances (retries de la configuration en CI) y laissent le statut « flaky ».
+    const rapportE2e = path.join(dossier, "rapport-e2e.json");
+    lancer("npm run test:e2e -- --reporter=list,json", dossier, { CI: "true", SKIP_ENV_VALIDATION: "1", PLAYWRIGHT_JSON_OUTPUT_NAME: rapportE2e, PLAYWRIGHT_JSON_OUTPUT_FILE: rapportE2e });
+    controlerInstables(rapportE2e, opts.tolererInstables);
     await auditerSiteServi(dossier);
     if (process.exitCode) process.exit(1);
   }
@@ -273,4 +349,4 @@ async function principal() {
 
 if (require.main === module) principal();
 
-module.exports = { changementMajeur, monterLesVersions, lireArguments };
+module.exports = { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, rangerDossier, FICHIERS_DU_COEUR };
