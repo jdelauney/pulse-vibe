@@ -46,7 +46,7 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 - **Mode** : sans `-s` ni `-d`, question « Comment réaliser la tâche ? » : « Je code en coulisse (Recommandé) » (un assistant spécialisé code à part : la conversation reste légère) / « Je code devant vous » (vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
 - **Tests** : sans `-t`, « 2. Choisir au démarrage » de la référence « Tests automatiques ».
 - **Copie à part** : sans `-w`, « 1. Faut-il un worktree ? » de la référence worktree, si la question se pose.
-- **Envoi** : lancer `pulse-aidd reference depot-distant.md`, puis appliquer « 2. Choisir comment envoyer le travail d'un plan », seulement si un dépôt distant existe et que la ligne « Envoi » du plan vaut « à choisir » ; puis préparer la branche si le mode est PR.
+- **Envoi** : dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant.md` (à chaque lancement, reprise comprise) ; appliquer « 2. Choisir comment envoyer le travail d'un plan » si la ligne « Envoi » du plan vaut « à choisir » ; en mode PR, préparer la branche de l'US ou y revenir (§ 2, « À chaque reprise du plan… vérifier qu'on est bien sur cette branche »).
 
 **Avec une copie à part** : la créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans cette copie.
 
@@ -70,7 +70,7 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 
 **Tests d'abord** : appliquer d'abord « Rouge : écrire les tests » (§ 4 de la référence « Tests automatiques »), dans les deux modes ; puis réaliser comme ci-dessous, en ajoutant à la délégation (ou à vos propres consignes en mode direct) ce que prévoit son étape 4 : fichiers de test, interface attendue, tests figés.
 
-**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec et de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (qualité avec `pulse-aidd qualite`, documentation officielle, s'appuyer sur le code réel, sécurité, contrôles automatiques). Le sous-agent travaille sans les fichiers du plugin : tout recopier. À son retour :
+**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec et de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (qualité avec `pulse-aidd qualite`, documentation officielle, s'appuyer sur le code réel, sécurité, contrôles automatiques). Le sous-agent charge lui-même les références du plugin : ne recopier que les éléments propres à la tâche. À son retour :
 - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse ;
 - **Bloqué** sur une action manuelle (schéma à appliquer dans une console, compte à créer, variable à saisir chez l'hébergeur, clé secrète à écrire dans le fichier local) : guider la personne pas à pas, puis relancer ;
 - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
@@ -114,7 +114,7 @@ Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `
 
 ### 6. Boucle sur tout le plan (sans tâche)
 
-**Avant la première tâche**, charger une seule fois les deux étapes qui servent à chaque tâche : `pulse-aidd etape review --sans-communes` et `pulse-aidd etape commit --sans-communes`. Si elles ne figurent plus dans la conversation (après un résumé automatique), les relancer.
+**Avant la première tâche**, y compris à une reprise (`/clear`, résumé automatique) quand ces étapes ne figurent plus dans la conversation, charger une seule fois les deux étapes qui servent à chaque tâche : `pulse-aidd etape review --sans-communes` et `pulse-aidd etape commit --sans-communes`. Si elles ne figurent plus dans la conversation (après un résumé automatique), les relancer.
 
 Pour chaque tâche, dans l'ordre du plan :
 

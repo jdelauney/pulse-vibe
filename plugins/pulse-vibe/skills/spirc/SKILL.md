@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) B
 
 !`pulse-aidd contexte spirc`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation (section « Choisir la façon de travailler ») ; les règles de la mémoire projet, à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation (le contexte ci-dessus contient aussi « Examiner une tâche », le modèle de rapport de revue et le lexique) (section « Choisir la façon de travailler ») ; les règles de la mémoire projet, à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS`
 
@@ -117,6 +117,8 @@ Puis, si une copie à part est retenue, « 2. Créer le worktree ou y revenir »
 
 ## Boucle par tâche
 
+À chaque lancement, y compris une reprise (`/clear`, `aidd_docs/tasks/in-progress.md`) : si les références de la réalisation ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler » avant la première tâche.
+
 Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était (un rapport existe déjà dans `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` : reprendre à l'examen).
 
 **Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a` (en mode autonome, elle passe après le test groupé). Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy --sans-communes`).
@@ -175,7 +177,7 @@ Quand toutes les tâches de la portée sont passées (ou que la boucle s'est arr
 4. Pour chaque tâche en échec : constat Critique, corrigé comme à l'étape 3 de [R] (implementer, relecture de contrôle), puis commit `fix(<Tâche>): …` ; refaire tester seulement ces tâches. Deux cycles au plus.
 5. Mettre à jour « Test par la personne » de chaque rapport et ajouter une ligne au journal du plan (« test groupé concluant » ou « test groupé : <problème> corrigé »), enregistrées avec un commit `docs: résultat du test groupé de US-XXX`.
 6. Envoyer le travail selon la ligne « Envoi » du plan (§ 3 de la référence « Le dépôt distant et l'envoi du travail »).
-7. Proposer en **une seule question** les ajouts à la mémoire repérés pendant les tâches (lignes exactes et destinations).
+7. Proposer en **une seule question** les ajouts à la mémoire repérés pendant les tâches (lignes exactes et destinations ; règles : `pulse-aidd reference memoire.md`).
 
 ## Fin
 

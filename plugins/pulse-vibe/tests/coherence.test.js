@@ -810,3 +810,11 @@ test("chaque agent a un modèle explicite (model:)", () => {
   }
   assert.deepStrictEqual(problemes, []);
 });
+
+test("reprise : spirc et implement rechargent les références de la réalisation, implement vérifie le dépôt distant", () => {
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  assert.match(spirc, /y compris une reprise[^\n]*ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler »/);
+  const implement = lire(RACINE, "skills", "implement", "SKILL.md");
+  assert.match(implement, /y compris à une reprise/);
+  assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
+});

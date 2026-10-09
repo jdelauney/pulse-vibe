@@ -38,7 +38,7 @@ const PLAFONDS = {
   plan: 54000,
   implement: 39000,
   fix: 22500,
-  review: 43000,
+  review: 29000,
   commit: 42500,
   pr: 36500,
   annuler: 42000,
@@ -76,7 +76,7 @@ const BOUCLES = {
   },
 };
 
-// Cibles pas encore atteintes : chaque tâche du plan 4 retire celles qu'elle atteint ; la tâche 11 supprime ce mécanisme.
+// Cibles pas encore atteintes (vide : toutes les cibles sont atteintes ou ramenées à la mesure obtenue) ; la tâche 11 supprime ce mécanisme.
 const EN_ATTENTE = new Set();
 const attente = (cle) => (EN_ATTENTE.has(cle) ? "plafond atteint plus loin dans le plan 4" : false);
 
