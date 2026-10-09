@@ -163,3 +163,17 @@ test("dépendances du squelette : WebSocket natif, outils en développement, Nod
   const theme = fs.readFileSync(path.join(__dirname, "..", "references", "theme.md"), "utf8");
   for (const attendu of ["npm install next-themes", "<ThemeProvider attribute=\"class\"", "suppressHydrationWarning", "useTheme()"]) assert.ok(theme.includes(attendu), `theme.md : ${attendu}`);
 });
+
+test("accessibilité du squelette : lien d'évitement, axe sur l'accueil", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const lireS = (...p) => fs.readFileSync(path.join(S, ...p), "utf8");
+  const layout = lireS("app", "layout.tsx");
+  assert.match(layout, /<a\s+href="#contenu"/);
+  assert.match(layout, /id="contenu"/);
+  assert.ok(layout.indexOf('href="#contenu"') < layout.indexOf("<NuqsAdapter>"), "premier élément du corps");
+  const paquet = JSON.parse(lireS("package.json"));
+  assert.ok(paquet.devDependencies["@axe-core/playwright"], "@axe-core/playwright");
+  const accueil = lireS("e2e", "accueil.spec.ts");
+  assert.match(accueil, /new AxeBuilder\(\{ page \}\)\.withTags\(WCAG_AA\)/);
+  assert.match(accueil, /"wcag22aa"/);
+});
