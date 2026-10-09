@@ -279,6 +279,22 @@ test("suites de la clé Neon : sans branche principale, sans point d'accès en �
   s.close();
 });
 
+test("suites de la clé Neon : réponse illisible (pas du JSON) : échec, avec la solution, la clé jamais à l'écran", async () => {
+  const d = projet();
+  const s = http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end("<html>Maintenance</html>");
+  });
+  const port = await ecouter(s);
+  const cle = "napi_" + hasard(16);
+  const r = await lancer(d, ["suites", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "projet-essai" }), { PULSE_SONDES_NEON_API: `http://127.0.0.1:${port}` });
+  s.close();
+  assert.strictEqual(r.code, 1, r.sortie);
+  assert.match(r.sortie, /réponse de Neon illisible/);
+  assert.match(r.sortie, /console Neon → Branches/);
+  sansValeur(r.sortie, cle);
+});
+
 test("Upstash : PONG accepté, 401 refusé", async () => {
   const d = projet();
   let statut = 200;
