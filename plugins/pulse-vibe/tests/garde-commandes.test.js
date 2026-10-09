@@ -952,3 +952,86 @@ test("commandes ordinaires voisines des nouvelles règles : passent", () => {
     passe(c);
   passePs("Remove-Item -Path dist -Recurse:$true");
 });
+
+// ------------------------------------------------------------ Revue des tâches 7-8, correction 1
+
+test("SQL de Drizzle dans tsx -e (table ${users}), psql à options groupées ou abrégées : accord", () => {
+  for (const c of [
+    "npx tsx -e 'await db.execute(sql`DELETE FROM ${users}`)'",
+    "npx tsx -e 'await db.execute(sql`TRUNCATE ${users}`)'",
+    "npx tsx -e 'await db.execute(sql`UPDATE ${users} SET role = 1`)'",
+    `node -e "q('DELETE FROM \\"users\\"')"`,
+    "psql $DATABASE_URL -tAc 'DROP TABLE users'",
+    "psql $DATABASE_URL -Atc 'DELETE FROM users'",
+    "psql -1c 'DROP TABLE users'",
+    "psql --comm='DROP TABLE users'",
+    "psql -tAc'TRUNCATE users'",
+  ])
+    confirmation(c);
+  confirmationPs('npx tsx -e "await db.execute(sql`DELETE FROM users`)"');
+  for (const c of [
+    `node -e "console.log('delete from cache done')"`,
+    `node -e "console.log('Truncate the log')"`,
+    `node -e "q('DELETE FROM users WHERE id=1')"`,
+    "npx tsx -e 'await db.execute(sql`DELETE FROM ${users} WHERE id = ${id}`)'",
+    "psql $DATABASE_URL -tAc 'SELECT 1'",
+  ])
+    passe(c);
+});
+
+test("PowerShell : & sur un nom calculé suivi d'une option, ou sur une expression : accord", () => {
+  for (const c of [
+    "$g='git'; & $g -C . push --force",
+    "$g = 'git'; & $g -C . push origin main --force",
+    "$g='git'; & $g --no-pager push --force",
+    "$g='git'; & $g -c core.hooksPath=NUL commit -m x",
+    "& ('gi'+'t') push --force",
+    "& (Get-Command git) push --force",
+    "& ([scriptblock]::Create('git push --force'))",
+  ])
+    confirmationPs(c);
+  for (const c of ["& $PSScriptRoot/x.ps1", "$x ??= 2", "pnpm build && $ok = $true"]) passePs(c);
+});
+
+test("variables GIT_CONFIG_… et PULSE_SONDES_… posées entre guillemets, par Set-Item, New-Item ou cmd set", () => {
+  for (const c of [
+    'export "GIT_CONFIG_COUNT=1" "GIT_CONFIG_KEY_0=core.hooksPath" "GIT_CONFIG_VALUE_0=/dev/null"; git commit -m x',
+    "declare -x GIT_CONFIG_COUNT=1; git commit -m x",
+    "typeset -x GIT_CONFIG_COUNT=1; git commit -m x",
+    'cmd /c "set GIT_CONFIG_COUNT=1&& git commit -m x"',
+  ])
+    refus(c);
+  for (const c of ["Set-Item 'env:GIT_CONFIG_COUNT' 1; git commit -m x", "New-Item -Path Env: -Name GIT_CONFIG_COUNT -Value 1; git commit -m x", "${env:GIT_CONFIG_COUNT}=1; git commit -m x"]) refusPs(c);
+  for (const c of ['export "PULSE_SONDES_NEON_API=https://x.example"; pulse-aidd secrets verifier NEON_API_KEY', 'cmd /c "set PULSE_SONDES_NEON_API=https://x.example&& pulse-aidd secrets verifier NEON_API_KEY"'])
+    confirmation(c);
+  confirmationPs("Set-Item 'env:PULSE_SONDES_NEON_API' https://x.example; pulse-aidd secrets verifier NEON_API_KEY");
+  for (const c of ["echo GIT_CONFIG_COUNT=1 && git status", "git commit -m 'retire export GIT_CONFIG_COUNT'"]) passe(c);
+  for (const c of ["Get-ChildItem env:", "$env:NODE_ENV = 'test'; pnpm test"]) passePs(c);
+});
+
+test("envoi vers main : @, heads/main, push.default=upstream, --bran, --config-env ; vercel, rsync, PowerShell, gitleaks, gh, scripts", () => {
+  const dir = depotAvecDistant();
+  fs.writeFileSync(path.join(dir, "vercel.json"), "{}\n");
+  confirmation("git push origin @", dir);
+  execFileSync("git", ["switch", "-q", "-c", "feat/x"], { cwd: dir });
+  for (const c of ["git push origin feat/x:heads/main", "git -c push.default=upstream push", "git push --bran origin", "git --config-env=push.default=PD push"]) confirmation(c, dir);
+  for (const c of ["git push origin feat/x", "git push origin @", "git push origin --tags"]) passe(c, dir);
+  for (const c of [
+    "vercel --scope t project rm x",
+    "vercel -S t domains rm x.fr",
+    "rsync -a --del vide/ src/",
+    "echo '{}' | gh api -X PATCH repos/o/r --input -",
+    "node scripts/secrets envoyer",
+    "bun scripts/secrets.js envoyer",
+    "npx tsx scripts/secrets.js envoyer",
+    "deno run scripts/secrets.js envoyer",
+    "node $CLAUDE_PLUGIN_ROOT/bin/pulse-aidd secrets envoyer",
+    "node --no-warnings scripts/secrets.js ENVOYER",
+  ])
+    confirmation(c);
+  for (const c of ["Remove-Item -Path src -Recurse:1", "(Get-Item src).Delete($true)", "[Microsoft.VisualBasic.FileIO.FileSystem]::DeleteDirectory('src','DeleteAllContents')"]) confirmationPs(c);
+  for (const c of ["gitleaks detect --redact=0", "gitleaks detect --redact=50", "gitleaks --config x.toml detect"]) refus(c);
+  for (const c of ["gitleaks detect --redact=100", "gh api 'user/repos?visibility=public'", "gh repo list --visibility=public", "gh api repos/o/r", "node scripts/seed.js", "npx tsx scripts/seed.ts", "vercel --scope t ls"]) passe(c);
+  refus("gh api -X PATCH repos/o/r -F private=false");
+  refus("gh api repos/o/r --raw-field visibility=public -X PATCH");
+});
