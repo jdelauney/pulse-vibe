@@ -44,7 +44,7 @@ references/                  fiche.md (règles de la pile), technical.md (valeur
                              migrations.md (mettre à niveau un projet plus ancien), readme.md (section « Tester en local » du README du projet)
 templates/squelette/         le projet de départ
 scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi sur un port libre, mise à jour des versions ; un test instable fait échouer ; dossier temporaire retiré, sauf --garder),
-                             seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles et tests réels des secrets, envoyés seulement aux serveurs reconnus),
+                             seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles, tests réels des secrets envoyés seulement aux serveurs reconnus, et variables déduites : « suites »),
                              secrets-vercel.js (adaptateur Vercel de pulse-aidd secrets),
                              decouper-recette.js (découpe une recette rédigée d'un seul tenant en index, étapes et tests ; vérifie la recomposition exacte)
 tests/                       tests du pack
