@@ -5,7 +5,7 @@
 ## Prérequis
 
 - Le squelette du pack est en place (`pulse-aidd pile squelette`) : `src/db/db-client.ts` (`getDb()`, type `Db`), `src/config/env.ts` (objet `env`, t3 env), `src/core/shared/result.ts` (`Result`, `ok()`, `echec()`), `src/lib/errors/{erreur-service,reponse-erreur}.ts`, `tests/helpers/base-de-test.ts` (`creerBaseDeTest()`).
-- `next.config.ts` avec la CSP et son objet `sources` (squelette de pulse-vibe-next 0.9.0 ou plus). Projet créé avec une version plus ancienne : lancez d'abord `/pulse:security entetes`, qui pose les en-têtes du squelette.
+- `next.config.ts` avec la CSP et son objet `sources` (squelette de pulse-next 0.9.0 ou plus). Projet créé avec une version plus ancienne : lancez d'abord `/pulse:security entetes`, qui pose les en-têtes du squelette.
 - La recette `connexion` est faite (`pulse-aidd pile recette connexion`). Elle fournit :
   - `utilisateurConnecte()` dans `src/features/compte/queries/utilisateur-connecte.query.ts` (renvoie `{ id, nom }`, ou redirige vers `/connexion` sans session) ;
   - `actionConnectee` dans `src/lib/safe-action.ts` (`ctx.utilisateur` = `{ id, nom }`) ;

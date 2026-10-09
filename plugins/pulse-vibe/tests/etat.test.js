@@ -420,3 +420,22 @@ test("état illisible (R0) : demander de l'aide, sans reboucler sur /pulse:statu
   assert.match(lignes[1], /n'a pas pu être lu \(EACCES\)/);
   assert.strictEqual(lignes[2], "regle: R0");
 });
+
+test("etat signale une option inconnue, avec la liste des options", () => {
+  const r = spawnSync(process.execPath, [ETAT, "--sans-gti"], { cwd: os.tmpdir(), encoding: "utf8" });
+  assert.strictEqual(r.status, 2);
+  assert.match(r.stdout, /option inconnue « --sans-gti »/);
+  assert.match(r.stdout, /--sans-git, --aujourdhui AAAA-MM-JJ/);
+});
+
+test("lireOptions : --sans-git et --aujourdhui", () => {
+  const { lireOptions } = require(ETAT);
+  assert.deepStrictEqual(lireOptions(["--sans-git", "--aujourdhui", "2026-10-08"]), { git: false, aujourdhui: Date.parse("2026-10-08T00:00:00Z") });
+  assert.strictEqual(lireOptions([]).git, true);
+  assert.throws(() => lireOptions(["--aujourdhui", "demain"]), /« --aujourdhui » attend une date AAAA-MM-JJ, reçu « demain »/);
+  assert.throws(() => lireOptions(["--aujourdhui"]), /« --aujourdhui » attend une date AAAA-MM-JJ/);
+  for (const jour of ["2026-02-31", "2026-13-01", "2025-02-29"]) assert.throws(() => lireOptions(["--aujourdhui", jour]), new RegExp(`attend une date AAAA-MM-JJ, reçu « ${jour} »`), jour);
+  assert.strictEqual(lireOptions(["--aujourdhui", "2028-02-29"]).aujourdhui, Date.parse("2028-02-29T00:00:00Z"));
+  const r = spawnSync(process.execPath, [ETAT, "--aujourdhui", "2026-02-31"], { cwd: os.tmpdir(), encoding: "utf8" });
+  assert.strictEqual(r.status, 2);
+});

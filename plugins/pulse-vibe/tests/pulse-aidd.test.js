@@ -290,6 +290,7 @@ function projetAvecPack({ declare, installe }) {
         `  info) printf 'id: ${installe}\nnom: Pile ${installe}\nresume: Une pile de test.\nversion: 0.1.0\n' ;;\n` +
         '  contexte) echo "Consignes du pack pour $2" ;;\n' +
         '  echo) shift; printf "[%s]" "$@" ;;\n' +
+        '  relais) printf "%s" "${PULSE_RELAIS_ARGC:-absent}"; env | grep -q "^PULSE_RELAIS_" && printf " (variables restantes)" ;;\n' +
         "  echec) exit 3 ;;\n" +
         "esac\n"
     );
@@ -298,7 +299,7 @@ function projetAvecPack({ declare, installe }) {
   const binBash = bin.split(path.sep).join("/");
   const lancerIci = (...args) =>
     spawnSync("bash", ["-c", `PATH="$(cd "${binBash}" && pwd):$PATH" exec bash "${OUTIL}" "$@"`, "pulse-aidd", ...args], { cwd: d, encoding: "utf8" });
-  return { d, lancerIci };
+  return { d, lancerIci, bin: binBash };
 }
 
 test("piles : liste les packs installés, ou le dit s'il n'y en a aucun", () => {
@@ -540,4 +541,200 @@ test("contexte spirc : règles communes, modèle de revue et lexique ; référen
     assert.ok(r.stdout.includes(titre), titre);
   for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques : tests d'abord =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
+});
+
+// ------------------------------------------------------------ Relais PowerShell et cmd
+
+// Environnement d'un processus enfant : chaque clé donnée remplace celle du même nom, quelle que soit la casse (Path, PATH).
+function environnement(remplacements) {
+  const env = {};
+  const cles = Object.keys(remplacements).map((k) => k.toLowerCase());
+  for (const [k, v] of Object.entries(process.env)) if (!cles.includes(k.toLowerCase())) env[k] = v;
+  return { ...env, ...remplacements };
+}
+
+const litteral = (texte) => `'${String(texte).replace(/'/g, "''")}'`;
+
+// Lance un relais .ps1 depuis PowerShell, comme l'outil PowerShell de Claude Code ; le script passe en
+// -EncodedCommand, pour que ses guillemets ne dépendent pas de la ligne de commande de ce test.
+function viaPowerShell(exe, relais, args, options = {}) {
+  const script = `& ${litteral(relais)} ${args.map(litteral).join(" ")}; if ($null -eq $LASTEXITCODE) { exit 1 }; exit $LASTEXITCODE`;
+  const encode = Buffer.from(script, "utf16le").toString("base64");
+  return spawnSync(exe, ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-EncodedCommand", encode], { encoding: "utf8", ...options });
+}
+
+// Windows PowerShell 5.1 (toujours présent sous Windows) et PowerShell 7 s'il est installé.
+const POWERSHELLS =
+  process.platform !== "win32"
+    ? []
+    : [
+        path.join(process.env.SystemRoot || "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe"),
+        ...(spawnSync("where", ["pwsh.exe"], { encoding: "utf8" }).stdout || "").split(/\r?\n/).filter(Boolean).slice(0, 1),
+      ].filter((f) => fsP.existsSync(f));
+const sansPowerShell = POWERSHELLS.length === 0 && "PowerShell absent (hors Windows)";
+const RELAIS_PS1 = path.join(RACINE, "bin", "pulse-aidd.ps1");
+
+test("relais .ps1 : bash relit les arguments dans l'environnement, tels quels, puis les efface", () => {
+  // Ce que fait le relais .ps1, rejoué sur toutes les plateformes.
+  const arg = 'a&b "c" d|e>f';
+  const r = spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8", env: environnement({ PULSE_RELAIS_ARGC: "2", PULSE_RELAIS_ARG_0: "reference", PULSE_RELAIS_ARG_1: arg }) });
+  assert.strictEqual(r.status, 1, r.stderr);
+  assert.ok(r.stdout.includes(`Référence introuvable : ${arg}.`), r.stdout);
+  // pulse-aidd pile <…> relance l'outil du pack : il ne doit plus voir ces variables.
+  const pack = projetAvecPack({ declare: "essai", installe: "essai" });
+  const p = spawnSync("bash", ["-c", `PATH="$(cd "${pack.bin}" && pwd):$PATH" exec bash "${OUTIL}"`], {
+    cwd: pack.d,
+    encoding: "utf8",
+    env: environnement({ PULSE_RELAIS_ARGC: "2", PULSE_RELAIS_ARG_0: "pile", PULSE_RELAIS_ARG_1: "relais" }),
+  });
+  assert.strictEqual(p.stdout, "absent", p.stdout + p.stderr);
+});
+
+test("relais .ps1 : un nombre d'arguments non numérique ou démesuré ne s'exécute pas, et vaut zéro", () => {
+  const d = fsP.mkdtempSync(path.join(osP.tmpdir(), "pulse-argc-"));
+  const temoin = path.join(d, "execute").split(path.sep).join("/");
+  for (const argc of [`a[$(touch "${temoin}")]`, `x[$(touch "${temoin}")]+1`, "99999999", "-1", "2+3"]) {
+    const r = spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8", timeout: 20000, env: environnement({ PULSE_RELAIS_ARGC: argc, PULSE_RELAIS_ARG_0: "reference" }) });
+    assert.strictEqual(r.status, 0, `${argc} : ${r.stderr}`);
+    assert.match(r.stdout, /pulse-aidd contexte <commande>/, `${argc} : sans argument, l'aide`);
+    assert.ok(!fsP.existsSync(path.join(d, "execute")), `${argc} : expression exécutée`);
+  }
+});
+
+test("relais .ps1 : avec des arguments sur la ligne de commande, l'environnement est ignoré puis effacé", () => {
+  const r = spawnSync("bash", ["bin/pulse-aidd", "reference", "x"], {
+    cwd: RACINE,
+    encoding: "utf8",
+    env: environnement({ PULSE_RELAIS_ARGC: "2", PULSE_RELAIS_ARG_0: "secrets", PULSE_RELAIS_ARG_1: "envoyer" }),
+  });
+  assert.strictEqual(r.status, 1, r.stderr);
+  assert.ok(r.stdout.includes("Référence introuvable : x."), r.stdout);
+  const pack = projetAvecPack({ declare: "essai", installe: "essai" });
+  const p = spawnSync("bash", ["-c", `PATH="$(cd "${pack.bin}" && pwd):$PATH" exec bash "${OUTIL}" pile relais`], {
+    cwd: pack.d,
+    encoding: "utf8",
+    env: environnement({ PULSE_RELAIS_ARGC: "1", PULSE_RELAIS_ARG_0: "secrets", PULSE_RELAIS_ARG_7: "reste" }),
+  });
+  assert.strictEqual(p.stdout, "absent", p.stdout + p.stderr);
+});
+
+test("piles : les relais .ps1 et .cmd d'un pack ne comptent pas comme d'autres packs", () => {
+  const avec = projetAvecPack({ installe: "essai" });
+  for (const ext of ["ps1", "cmd"]) {
+    const f = path.join(avec.d, "faux-bin", `pulse-pile-essai.${ext}`);
+    fsP.writeFileSync(f, "#!/bin/sh\n");
+    fsP.chmodSync(f, 0o755);
+  }
+  const r = avec.lancerIci("piles");
+  assert.strictEqual((r.stdout.match(/^- essai /gm) || []).length, 1, r.stdout);
+  assert.doesNotMatch(r.stdout, /essai\.(ps1|cmd)/);
+});
+
+test("relais .ps1 (Windows) : « & », espaces, guillemets et accents arrivent tels quels, sans rien exécuter", { skip: sansPowerShell }, () => {
+  for (const exe of POWERSHELLS) {
+    const d = fsP.mkdtempSync(path.join(osP.tmpdir(), "pulse-ps1-"));
+    const arg = 'x&type>inj.txt c "d" é';
+    const r = viaPowerShell(exe, RELAIS_PS1, ["reference", arg], { cwd: d });
+    assert.strictEqual(r.status, 1, `${exe} : ${r.stdout}${r.stderr}`);
+    assert.ok(r.stdout.includes(`Référence introuvable : ${arg}.`), `${exe} : ${r.stdout}`);
+    assert.ok(!fsP.existsSync(path.join(d, "inj.txt")), `${exe} : la suite de « & » a été exécutée`);
+    const v = viaPowerShell(exe, RELAIS_PS1, ["modele", "lexique.md"], { cwd: d });
+    assert.strictEqual(v.status, 0, `${exe} : ${v.stderr}`);
+    assert.strictEqual(v.stdout.replace(/\r\n/g, "\n"), fsP.readFileSync(path.join(RACINE, "templates", "lexique.md"), "utf8"), exe);
+  }
+});
+
+const PWSH7 = POWERSHELLS.find((f) => /pwsh\.exe$/i.test(f));
+test("relais .ps1 (PowerShell 7) : des appels en parallèle gardent chacun leurs arguments", { skip: !PWSH7 && "PowerShell 7 absent" }, () => {
+  const script =
+    `$r = 1..12 | ForEach-Object -ThrottleLimit 12 -Parallel { $o = (& ${litteral(RELAIS_PS1)} reference "v$_" "w$_") -join ' '; ` +
+    `if ($o -notlike "*introuvable : v$_.*") { "melange $_ : $o" } }; $r; exit 0`;
+  const r = spawnSync(PWSH7, ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-EncodedCommand", Buffer.from(script, "utf16le").toString("base64")], { encoding: "utf8", timeout: 120000 });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(r.stdout.trim(), "", r.stdout);
+});
+
+test("relais .ps1 et .cmd (Windows) : depuis un dossier avec espaces et accents", { skip: sansPowerShell }, () => {
+  const plugin = path.join(fsP.mkdtempSync(path.join(osP.tmpdir(), "pulse-chemin-")), "Jérôme et Cie", "plugin");
+  fsP.mkdirSync(path.join(plugin, "bin"), { recursive: true });
+  fsP.mkdirSync(path.join(plugin, "templates"));
+  for (const f of ["pulse-aidd", "pulse-aidd.ps1", "pulse-aidd.cmd"]) fsP.copyFileSync(path.join(RACINE, "bin", f), path.join(plugin, "bin", f));
+  fsP.copyFileSync(path.join(RACINE, "templates", "lexique.md"), path.join(plugin, "templates", "lexique.md"));
+  const attendu = fsP.readFileSync(path.join(plugin, "templates", "lexique.md"), "utf8");
+  for (const exe of POWERSHELLS) {
+    const r = viaPowerShell(exe, path.join(plugin, "bin", "pulse-aidd.ps1"), ["modele", "lexique.md"]);
+    assert.strictEqual(r.status, 0, `${exe} : ${r.stderr}`);
+    assert.strictEqual(r.stdout.replace(/\r\n/g, "\n"), attendu, exe);
+  }
+  const c = spawnSync("cmd.exe", ["/d", "/c", path.join(plugin, "bin", "pulse-aidd.cmd"), "modele", "lexique.md"], { encoding: "utf8" });
+  assert.strictEqual(c.status, 0, c.stderr);
+  assert.strictEqual(c.stdout.replace(/\r\n/g, "\n"), attendu);
+});
+
+test("relais .ps1 et .cmd (Windows) : sans Git for Windows, un message clair et le code 127", { skip: sansPowerShell }, () => {
+  const vide = fsP.mkdtempSync(path.join(osP.tmpdir(), "pulse-sans-git-"));
+  const sys = process.env.SystemRoot || "C:\\Windows";
+  const sansGit = (exe) =>
+    environnement({
+      Path: [path.join(sys, "System32"), sys, path.dirname(exe)].join(";"),
+      ProgramW6432: vide,
+      ProgramFiles: vide,
+      "ProgramFiles(x86)": vide,
+      LOCALAPPDATA: vide,
+    });
+  for (const exe of POWERSHELLS) {
+    const r = viaPowerShell(exe, RELAIS_PS1, ["modele", "lexique.md"], { env: sansGit(exe) });
+    assert.strictEqual(r.status, 127, `${exe} : ${r.stdout}${r.stderr}`);
+    assert.match(r.stderr, /pulse-aidd : le bash de Git for Windows est introuvable/, exe);
+  }
+  const cmd = path.join(sys, "System32", "cmd.exe");
+  const c = spawnSync(cmd, ["/d", "/c", path.join(RACINE, "bin", "pulse-aidd.cmd"), "modele", "lexique.md"], { encoding: "utf8", env: sansGit(cmd) });
+  assert.strictEqual(c.status, 127, c.stdout + c.stderr);
+  assert.match(c.stderr, /pulse-aidd : le bash de Git for Windows est introuvable/);
+});
+
+test("limite connue (Windows) : sous une stratégie Restricted, PowerShell refuse le relais .ps1 sans se replier sur le .cmd", { skip: sansPowerShell }, () => {
+  // Une stratégie imposée par l'entreprise fait de même : la règle commune renvoie alors à l'outil Bash.
+  const exe = POWERSHELLS[0];
+  const script = `& ${litteral(RELAIS_PS1)} modele lexique.md; if ($null -eq $LASTEXITCODE) { exit 1 }; exit $LASTEXITCODE`;
+  const r = spawnSync(exe, ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Restricted", "-EncodedCommand", Buffer.from(script, "utf16le").toString("base64")], { encoding: "utf8" });
+  assert.notStrictEqual(r.status, 0);
+  assert.match(r.stdout + r.stderr, /about_Execution_Policies/);
+  assert.match(fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8"), /stratégie d'entreprise bloque les scripts PowerShell : outil Bash/);
+});
+
+// ------------------------------------------------------------ Aide et commandes inconnues
+
+// Sous-commandes de premier niveau d'un outil bash : étiquettes « nom) » du dernier « case "$1" in ».
+function sousCommandes(texte) {
+  return [...texte.slice(texte.lastIndexOf('case "$1" in')).matchAll(/^ {2}([a-z][a-z|-]*)\)/gm)].flatMap((m) => m[1].split("|"));
+}
+
+test("aide : pulse-aidd sans argument liste exactement ses sous-commandes, et rien du code", () => {
+  const aide = lancer().stdout;
+  const listees = new Set([...aide.matchAll(/^ {2}pulse-aidd ([a-z][a-z-]*)/gm)].map((m) => m[1]));
+  const code = new Set(sousCommandes(fsP.readFileSync(path.join(RACINE, "bin", "pulse-aidd"), "utf8")));
+  assert.deepStrictEqual([...listees].sort(), [...code].sort());
+  assert.doesNotMatch(aide, /RACINE=|PULSE_RELAIS|^#!/m);
+});
+
+test("aide : la ligne secrets cite chaque action de secrets.js", () => {
+  const ligne = lancer().stdout.split("\n").find((l) => l.startsWith("  pulse-aidd secrets"));
+  const citees = ligne.match(/\(([^;)]*)/)[1].split(",").map((s) => s.trim()).sort();
+  const source = fsP.readFileSync(path.join(RACINE, "scripts", "secrets.js"), "utf8");
+  const actions = [...source.slice(source.indexOf("function principal")).matchAll(/case "([a-z-]+)":/g)].map((m) => m[1]).sort();
+  assert.deepStrictEqual(citees, actions);
+});
+
+test("contexte d'une commande inconnue : un message, sans charger les règles communes", () => {
+  for (const nom of ["inconnue", "", "../hooks"]) {
+    const r = lancer("contexte", nom);
+    assert.strictEqual(r.status, 0, "contexte ne sort jamais en erreur");
+    assert.match(r.stdout, /commande inconnue/, nom);
+    assert.doesNotMatch(r.stdout, /Règles communes Pulse/, nom);
+  }
+});
+
+test("contexte de chaque commande du cœur : reconnue", () => {
+  for (const s of fsP.readdirSync(path.join(RACINE, "skills"))) assert.doesNotMatch(lancer("contexte", s).stdout, /commande inconnue/, s);
 });

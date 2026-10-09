@@ -1,9 +1,14 @@
 {
-  "description": "Pulse – garde-fous réunis dans un seul processus (scripts/garde.js) : anti-secrets (bloque l'écriture d'une clé dans le code, la lecture des fichiers .env par tout outil ou toute commande, et l'envoi de fichiers .env ou de clés dans Git, sous Bash comme sous PowerShell) et commandes (refuse l'envoi forcé, le contournement des contrôles, l'indexation globale, la suppression du disque ou du projet, la suppression ou la publication d'un dépôt ; demande confirmation avant une commande qui jette du travail, supprime, écrase une base, publie en production, envoie un secret ou modifie le contrôle avant commit), synchronisation de la mémoire projet, registre des sessions ouvertes, et régénération du guide de réalisation à chaque modification d'un plan de aidd_docs/tasks/.",
+  "description": "Pulse – garde-fous réunis dans un seul processus (scripts/garde.js) : anti-secrets (bloque l'écriture d'une clé dans le code, la lecture des fichiers .env par tout outil ou toute commande, et l'envoi de fichiers .env ou de clés dans Git, sous Bash comme sous PowerShell) et commandes (refuse l'envoi forcé, le contournement des contrôles, l'indexation globale, la suppression du disque ou du projet, la suppression ou la publication d'un dépôt ; demande confirmation avant une commande qui jette du travail, supprime, écrase une base, publie en production, envoie un secret ou modifie le contrôle avant commit), avertissement au démarrage (Node.js absent ou trop ancien, mise à jour disponible), synchronisation de la mémoire projet, registre des sessions ouvertes, et régénération du guide de réalisation à chaque modification d'un plan de aidd_docs/tasks/.",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/scripts/verifier-node.sh\"",
+            "timeout": 10
+          },
           {
             "type": "command",
             "command": "node",

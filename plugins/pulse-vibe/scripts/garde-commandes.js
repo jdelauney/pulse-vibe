@@ -756,6 +756,8 @@ function appliquerRegles(c, cwd, constats) {
   if (c.code !== undefined && /\b(rmSync|rmdirSync|unlinkSync|rimraf|rmtree|remove_tree|rm_rf|os\.remove|os\.unlink|unlink|rmdir)\b|\.rm\s*\(|\brm\s*\(|\[\s*['"`](rm|rmdir|unlink)\w*['"`]\s*\]/.test(c.code))
     constats.push([ACCORD, MESSAGES.suppression]);
   if (c.affectations.some((a) => /^PULSE_SONDES_/i.test(a))) constats.push([ACCORD, MESSAGES.sondeDetournee]);
+  // Arguments du relais .ps1 posés à la main : ils remplaceraient ceux de la commande vue ici.
+  if (c.affectations.some((a) => /^PULSE_RELAIS_/i.test(a))) constats.push([ACCORD, MESSAGES.commandeMasquee]);
   if (litEnv(c, cwd)) constats.push([REFUS, MESSAGES.lectureEnv]);
   // Une variable qui contient le nom d'un .env (f=.env ; cat $f).
   if (c.affectations.some((a) => designeEnv(a.slice(a.indexOf("=") + 1), cwd, c.dialecte))) constats.push([ACCORD, MESSAGES.envDansVariable]);
@@ -962,6 +964,7 @@ function analyser(commande, cwd, dialecte) {
   const configParVariable = commandes.some((c) => poseVariable(c, /^GIT_CONFIG(_\w+)?\b/i)) || /SetEnvironmentVariable\s*\(\s*['"]?GIT_CONFIG/i.test(commande);
   if (configParVariable && commandes.some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.configMasquee]);
   if (commandes.some((c) => poseVariable(c, /^PULSE_SONDES_/i)) || /SetEnvironmentVariable\s*\(\s*['"]?PULSE_SONDES_/i.test(commande)) constats.push([ACCORD, MESSAGES.sondeDetournee]);
+  if (commandes.some((c) => poseVariable(c, /^PULSE_RELAIS_/i)) || /SetEnvironmentVariable\s*\(\s*['"]?PULSE_RELAIS_/i.test(commande)) constats.push([ACCORD, MESSAGES.commandeMasquee]);
   // Suppression .NET : [IO.Directory]::Delete('src', $true), [IO.File]::Delete(…), ::DeleteDirectory(…), (Get-Item src).Delete($true) en PowerShell.
   if (/::Delete(Directory|File)?\s*\(/i.test(sansCitations) || (dialecte === "powershell" && /\.Delete(Directory)?\s*\(/i.test(sansCitations))) constats.push([ACCORD, MESSAGES.suppression]);
   // PowerShell : opérateur d'appel sur un nom calculé (& $g -C . push, & ('gi'+'t'), & (Get-Command git)) ; & $PSScriptRoot/x.ps1 reste libre.

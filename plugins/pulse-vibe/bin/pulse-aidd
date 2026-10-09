@@ -26,7 +26,7 @@
 #   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
 #   pulse-aidd pile <sous-commande>  relaie vers l'outil du pack déclaré (ex. pulse-aidd pile recette connexion)
 #   pulse-aidd sonder <adresse> [--texte "…"] [--entetes]  vérifie qu'un site en ligne répond (code 200, texte attendu) ; --entetes : les en-têtes servis
-#   pulse-aidd secrets [action]      les secrets du projet, sans jamais afficher une valeur (inventaire, preparer, generer, verifier, envoyer, redeployer, historique, journal ; voir pulse-aidd secrets aide)
+#   pulse-aidd secrets [action]      les secrets du projet, sans jamais afficher une valeur (inventaire, preparer, generer, elaguer, verifier, envoyer, redeployer, historique, journal ; voir pulse-aidd secrets aide)
 #   pulse-aidd seo <adresse> [options]   audit de référencement du site servi (options : pulse-aidd seo) ; pulse-aidd seo robots <A|B|C|D> : robots.txt d'une politique IA
 #   pulse-aidd perf <action> [options]  mesure la vitesse : mesurer, terrain, comparer, budget, cle, installer (sans action : l'aide)
 #   pulse-aidd textes verifier <fichier|-> [--json]   contrôle les tics d'écriture IA d'un texte (/pulse:rediger)
@@ -36,6 +36,19 @@
 #   pulse-aidd search-console <action>  Search Console en lecture seule : connecter, deconnecter, proprietes, lire, suivre, inspecter <adresse>
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
+
+# Relais PowerShell (bin/<outil>.ps1) : il lance ce script sans argument et passe les siens par l'environnement, tels quels.
+# Les relire seulement dans ce cas (sinon les arguments de la ligne de commande comptent), puis toujours les effacer.
+if [ $# -eq 0 ] && [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
+  _n="$PULSE_RELAIS_ARGC"
+  case "$_n" in ''|*[!0-9]*|?????*) _n=0 ;; esac # un nombre de 1 à 4 chiffres, jamais une expression
+  _n=$((10#$_n))
+  _a=()
+  for ((_i = 0; _i < _n; _i++)); do _v="PULSE_RELAIS_ARG_$_i"; _a+=("${!_v}"); done
+  if [ "${#_a[@]}" -gt 0 ]; then set -- "${_a[@]}"; fi # un seul set (pas de reconstruction à chaque tour)
+  unset _n _i _v _a
+fi
+unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
 
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
@@ -101,6 +114,7 @@ piles() {
     for outil in "$dossier"/pulse-pile-*; do
       [ -f "$outil" ] && [ -x "$outil" ] || continue
       id="${outil##*/pulse-pile-}"
+      case "$id" in *.*) continue ;; esac # relais .ps1 et .cmd du même pack
       case "$vus" in *" $id "*) continue ;; esac
       vus="$vus$id "
       printf -- '- %s : %s – %s (version %s)
@@ -156,6 +170,10 @@ contexte_pack() { # contexte_pack <commande>
 }
 
 contexte() { # contexte <commande> [--sans-communes]
+  if ! nom_sur "$1" || [ ! -f "$RACINE/skills/$1/SKILL.md" ]; then
+    printf '\n(pulse-aidd : commande inconnue « %s ». Commandes : %s)\n' "$1" "$(ls "$RACINE/skills" | tr '\n' ' ')"
+    return 0
+  fi
   [ "$2" = "--sans-communes" ] || afficher "Règles communes Pulse" "$REF/regles-communes.md"
   case "$1" in
     init)
@@ -298,7 +316,7 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;
     auto-fix) ;;
-    *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
+    *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
   contexte_pack "$1"
 }
@@ -423,5 +441,5 @@ CROCHET
     chmod +x "$crochet"
     echo "Installé : contrôle des secrets avant chaque commit, y compris ceux faits hors de Claude Code ($crochet)." ;;
   *)
-    sed -n '2,38p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed -n 's/^# \{0,1\}//p' ;;
 esac

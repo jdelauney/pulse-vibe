@@ -1010,6 +1010,27 @@ test("variables GIT_CONFIG_… et PULSE_SONDES_… posées entre guillemets, par
   for (const c of ["Get-ChildItem env:", "$env:NODE_ENV = 'test'; pnpm test"]) passePs(c);
 });
 
+test("variables PULSE_RELAIS_… posées avant la commande : la commande réelle est masquée, accord demandé", () => {
+  // Le relais .ps1 pose ces variables lui-même ; posées à la main, elles remplaceraient les arguments vus par Pulse.
+  const masquee = /n'est connu qu'au moment de l'exécution/;
+  for (const c of [
+    "PULSE_RELAIS_ARGC=2 PULSE_RELAIS_ARG_0=secrets PULSE_RELAIS_ARG_1=envoyer pulse-aidd contexte init",
+    "export PULSE_RELAIS_ARGC=2 PULSE_RELAIS_ARG_0=secrets PULSE_RELAIS_ARG_1=envoyer; pulse-aidd contexte init",
+    'export "PULSE_RELAIS_ARGC=2"; pulse-aidd',
+    "env PULSE_RELAIS_ARGC=2 PULSE_RELAIS_ARG_0=secrets PULSE_RELAIS_ARG_1=envoyer pulse-aidd",
+    'cmd /c "set PULSE_RELAIS_ARGC=1&& set PULSE_RELAIS_ARG_0=secrets&& pulse-aidd.cmd"',
+  ])
+    assert.match(confirmation(c).raison, masquee, c);
+  for (const c of [
+    "$env:PULSE_RELAIS_ARGC=2; $env:PULSE_RELAIS_ARG_0='secrets'; $env:PULSE_RELAIS_ARG_1='envoyer'; pulse-aidd.cmd contexte init",
+    "Set-Item 'env:PULSE_RELAIS_ARGC' 1; pulse-aidd",
+    "[Environment]::SetEnvironmentVariable('PULSE_RELAIS_ARGC', '1'); pulse-aidd",
+  ])
+    assert.match(confirmationPs(c).raison, masquee, c);
+  passe("pulse-aidd contexte init");
+  passePs("pulse-aidd contexte init");
+});
+
 test("envoi vers main : @, heads/main, push.default=upstream, --bran, --config-env ; vercel, rsync, PowerShell, gitleaks, gh, scripts", () => {
   const dir = depotAvecDistant();
   fs.writeFileSync(path.join(dir, "vercel.json"), "{}\n");

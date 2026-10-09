@@ -16,6 +16,19 @@
 #
 # Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
 
+# Relais PowerShell (bin/<outil>.ps1) : il lance ce script sans argument et passe les siens par l'environnement, tels quels.
+# Les relire seulement dans ce cas (sinon les arguments de la ligne de commande comptent), puis toujours les effacer.
+if [ $# -eq 0 ] && [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
+  _n="$PULSE_RELAIS_ARGC"
+  case "$_n" in ''|*[!0-9]*|?????*) _n=0 ;; esac # un nombre de 1 à 4 chiffres, jamais une expression
+  _n=$((10#$_n))
+  _a=()
+  for ((_i = 0; _i < _n; _i++)); do _v="PULSE_RELAIS_ARG_$_i"; _a+=("${!_v}"); done
+  if [ "${#_a[@]}" -gt 0 ]; then set -- "${_a[@]}"; fi # un seul set (pas de reconstruction à chaque tour)
+  unset _n _i _v _a
+fi
+unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
+
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
 
@@ -144,5 +157,5 @@ case "$1" in
   hebergeur)
     shift; exec node "$RACINE/scripts/secrets-vercel.js" "$@" ;;
   *)
-    sed -n '2,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed -n 's/^# \{0,1\}//p' ;;
 esac

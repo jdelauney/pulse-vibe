@@ -412,16 +412,38 @@ function sortieIllisible(message) {
   return `prochaine: /pulse:get-help\nraison: l'état du projet n'a pas pu être lu (${message}) : décrivez le problème à /pulse:get-help\nregle: R0`;
 }
 
+const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ";
+
+/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests). Toute autre option est une erreur de la consigne qui appelle l'outil. */
+function lireOptions(args) {
+  const options = { git: true, aujourdhui: Date.now() };
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--sans-git") options.git = false;
+    else if (args[i] === "--aujourdhui") {
+      const jour = args[++i];
+      const date = /^\d{4}-\d{2}-\d{2}$/.test(jour || "") ? Date.parse(`${jour}T00:00:00Z`) : NaN;
+      // Une date relue différemment n'existe pas au calendrier (2026-02-31 deviendrait le 3 mars).
+      if (Number.isNaN(date) || new Date(date).toISOString().slice(0, 10) !== jour) throw new Error(`« --aujourdhui » attend une date AAAA-MM-JJ, reçu « ${jour ?? ""} » (${OPTIONS})`);
+      options.aujourdhui = date;
+    } else throw new Error(`option inconnue « ${args[i]} » (${OPTIONS})`);
+  }
+  return options;
+}
+
 if (require.main === module) {
+  let options;
   try {
-    const args = process.argv.slice(2);
-    const i = args.indexOf("--aujourdhui");
-    const jour = i !== -1 && /^\d{4}-\d{2}-\d{2}$/.test(args[i + 1] || "") ? Date.parse(`${args[i + 1]}T00:00:00Z`) : Date.now();
-    const faits = lireFaits(process.cwd(), { git: !args.includes("--sans-git"), aujourdhui: jour });
+    options = lireOptions(process.argv.slice(2));
+  } catch (e) {
+    console.log(`erreur: ${e.message}`);
+    process.exit(2);
+  }
+  try {
+    const faits = lireFaits(process.cwd(), options);
     console.log(formater(faits, decider(faits)));
   } catch (e) {
     console.log(sortieIllisible(e.message));
   }
 }
 
-module.exports = { lireFaits, decider, formater, sortieIllisible };
+module.exports = { lireFaits, decider, formater, sortieIllisible, lireOptions };

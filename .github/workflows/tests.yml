@@ -12,12 +12,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        # La version minimale annoncée (MINIMUM de plugins/pulse-vibe/scripts/verifier-node.sh) et la LTS active.
+        node: ["22.19.0", "lts/*"]
+    name: Tests (${{ matrix.os }}, Node ${{ matrix.node }})
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.0.0
         with:
-          node-version: lts/*
+          node-version: ${{ matrix.node }}
       - name: Tests
         shell: bash
         run: node --test plugins/*/tests/*.test.js

@@ -162,15 +162,32 @@ test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit 
   for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de securite/rapide.md`);
 });
 
-test("chaque outil de bin/ a son relais .cmd pour PowerShell et cmd", () => {
+test("chaque outil de bin/ a ses relais .ps1 (PowerShell) et .cmd (cmd), identiques d'un plugin à l'autre", () => {
+  const relais = { ps1: new Set(), cmd: new Set() };
   for (const p of PLUGINS) {
     const bin = path.join(p, "bin");
     for (const f of lister(bin).filter((x) => !x.includes("."))) {
-      const relais = path.join(bin, `${f}.cmd`);
-      assert.ok(fs.existsSync(relais), `${path.relative(DEPOT, relais)} manquant`);
-      assert.match(lire(relais), new RegExp(`"%~dp0${f}" %\\*`), `${f}.cmd relaie vers ${f}`);
+      for (const ext of ["ps1", "cmd"]) {
+        const fichier = path.join(bin, `${f}.${ext}`);
+        assert.ok(fs.existsSync(fichier), `${path.relative(DEPOT, fichier)} manquant`);
+        relais[ext].add(lire(fichier));
+      }
+      const script = lire(bin, f);
+      assert.match(script, /\nif \[ \$# -eq 0 \] && \[ -n "\$\{PULSE_RELAIS_ARGC:-\}" \]; then\n/, `${f} relit les arguments du relais .ps1, seulement sans argument`);
+      assert.match(script, /\n {2}case "\$_n" in ''\|\*\[!0-9\]\*\|\?{5}\*\) _n=0 ;; esac/, `${f} vérifie le nombre d'arguments avant tout calcul`);
+      assert.match(script, /\nunset "\$\{!PULSE_RELAIS_ARG@\}" PULSE_RELAIS_ARGC\n/, `${f} efface toujours les variables du relais`);
     }
   }
+  assert.strictEqual(relais.ps1.size, 1, "les relais .ps1 diffèrent d'un outil à l'autre");
+  assert.strictEqual(relais.cmd.size, 1, "les relais .cmd diffèrent d'un outil à l'autre");
+  const [ps1] = relais.ps1;
+  assert.match(ps1, /^[\x00-\x7F]*$/, "relais .ps1 en ASCII seulement (Windows PowerShell 5.1)");
+  assert.match(ps1, /GetFileNameWithoutExtension\(\$PSCommandPath\)/, "le .ps1 lance le script bash de son propre nom");
+  assert.doesNotMatch(ps1, /System32|WindowsApps/i, "jamais le bash de WSL");
+  const [cmd] = relais.cmd;
+  assert.match(cmd, /"%~dpn0" %\*/, "le .cmd lance le script bash de son propre nom");
+  assert.doesNotMatch(cmd, /set "PULSE_BASH=bash"/, "jamais un bash pris au hasard dans le PATH (WSL)");
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /relais `\.ps1`/, "règle commune : le relais .ps1");
 });
 
 // ---------------------------------------------------------------- Autorisations d'avance des skills (allowed-tools)
@@ -842,4 +859,46 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   const implement = lire(RACINE, "skills", "implement", "SKILL.md");
   assert.match(implement, /y compris à une reprise/);
   assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
+});
+
+// ---------------------------------------------------------------- Références atteignables
+
+// Une référence sert si l'outil du plugin l'affiche ($REF/<chemin>), si une consigne la nomme sur une ligne qui
+// charge des références (`pulse-aidd reference …`, `pulse-aidd pile reference …`, ou une liste qui suit), ou si
+// un script la lit. Les recettes du pack sont servies par « recette <nom> » (references-structure.test.js).
+test("chaque référence est atteignable : affichée par l'outil, nommée pour être chargée, ou lue par un script", () => {
+  const citees = new Set();
+  for (const f of PLUGINS.flatMap((p) => ["skills", "agents", "references", "templates"].flatMap((d) => fichiers(path.join(p, d), ".md"))))
+    for (const ligne of lire(f).split("\n"))
+      if (/\breference /.test(ligne)) for (const m of ligne.matchAll(/[\w-]+(?:\/[\w.-]+)*\.(?:md|json)/g)) citees.add(m[0]);
+  const manquantes = [];
+  for (const p of PLUGINS) {
+    const ref = path.join(p, "references");
+    const outils = lister(path.join(p, "bin")).filter((f) => !f.includes(".")).map((f) => lire(p, "bin", f)).join("\n");
+    const scripts = fichiers(path.join(p, "scripts"), ".js").map((f) => lire(f)).join("\n");
+    for (const f of [...fichiers(ref, ".md"), ...fichiers(ref, ".json")]) {
+      const r = path.relative(ref, f).split(path.sep).join("/");
+      if (r.startsWith("recettes/")) continue;
+      if (outils.includes(`$REF/${r}`) || citees.has(r) || scripts.includes(path.basename(r))) continue;
+      manquantes.push(path.relative(DEPOT, f).split(path.sep).join("/"));
+    }
+  }
+  assert.deepStrictEqual(manquantes, []);
+});
+
+test("les textes lus par la personne nomment les plugins pulse et pulse-next (les anciens noms restent dans les chemins)", () => {
+  // Un ancien nom employé comme nom : ni dans un chemin (plugins/pulse-vibe/, jdelauney/pulse-vibe), ni dans un nom d'installation.
+  const ANCIEN = /(?<![\w./@-])pulse-vibe(?:-next)?(?![\w/@.-])/;
+  const trouves = [];
+  for (const p of PLUGINS) {
+    const textes = [
+      ...["skills", "agents", "references", "templates"].flatMap((d) => fichiers(path.join(p, d), ".md")),
+      ...lister(path.join(p, "bin")).filter((f) => !f.includes(".")).map((f) => path.join(p, "bin", f)),
+    ];
+    for (const f of textes)
+      lire(f).split("\n").forEach((ligne, i) => {
+        if (ANCIEN.test(ligne)) trouves.push(`${path.relative(DEPOT, f).split(path.sep).join("/")}:${i + 1}`);
+      });
+  }
+  assert.deepStrictEqual(trouves, []);
 });
