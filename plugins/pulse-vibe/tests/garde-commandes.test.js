@@ -737,6 +737,24 @@ test("PowerShell ordinaire avec un bloc { } qui ne lit rien : passe, même dans 
     "dir | Where-Object { -not $_.PSIsContainer }",
     "Get-ChildItem -Force | Select-Object Name, @{n='Ko';e={$_.Length/1KB}}",
     "Get-ChildItem -File | Where-Object { $_.Extension -eq '.ts' } | Select-Object -ExpandProperty Name",
+    // Bloc d'une autre commande, après « ; » : il ne reçoit pas la liste.
+    "Get-ChildItem | Sort-Object Name; if ($LASTEXITCODE -ne 0) { exit 1 }",
+    "gci | sort Name; if ($x) { npm test }",
+    "Get-ChildItem | Select-Object Name; npm run build; if ($LASTEXITCODE) { exit 1 }",
+    "Get-ChildItem | Format-Table Name, Length; if (-not (Test-Path node_modules)) { npm install }",
+    "dir | Measure-Object; try { pnpm test } catch { exit 1 }",
+    "Get-ChildItem -Name | Sort-Object; foreach ($p in 'a','b') { New-Item -ItemType Directory $p }",
+    // Méthodes de texte et de calcul, texte entre guillemets.
+    "Get-ChildItem | Where-Object { $_.Name.EndsWith('.ts') }",
+    "Get-ChildItem | ForEach-Object { $_.Name.Split('.')[0] }",
+    "Get-ChildItem | ForEach-Object { [math]::Round($_.Length / 1KB, 1) }",
+    "Get-ChildItem | Select-Object Name, @{n='Date';e={$_.LastWriteTime.ToString('yyyy-MM-dd')}}",
+    "Get-ChildItem | ForEach-Object { '{0} {1}' -f $_.Name, $_.Length }",
+    "Get-ChildItem | Where-Object { $_.Name.StartsWith('a') -and $_.Name.Contains('b') }",
+    "Get-ChildItem | ForEach-Object { $_.Name.PadRight(30) + [string]$_.Length }",
+    "if ($x) { gci | sort Name } else { npm test }",
+    "Get-ChildItem | % { $total += $_.Length }; $total",
+    "Get-ChildItem | ForEach-Object { switch ($_.Extension) { '.ts' { 'code' } default { 'autre' } } }",
   ])
     passePs(c, dir);
   for (const c of ["Get-ChildItem | ForEach-Object { Get-Content $_ }", "gci | % { $_.OpenText().ReadToEnd() }", "gc @(echo .env)"]) refusPs(c, dir);
@@ -748,6 +766,19 @@ test("PowerShell ordinaire avec un bloc { } qui ne lit rien : passe, même dans 
     `gci .env | % { node -p "require('fs').readFileSync(process.argv[1],'utf8')" $_ }`,
     "gci .env | % { Copy-Item $_ x.txt }",
     `gci -Force | ForEach-Object { python -c "print(open(r'$_').read())" }`,
+    "gci .env | % { [scriptblock]::Create('gc ' + $_).Invoke() }",
+    "gci .env | % { $_.CopyTo('x.txt') }",
+    "(gci .env) | % { Copy-Item $_ x.txt }",
+    "gci | sort Name; gci .env | % { Copy-Item $_ x.txt }",
+    "gci .env | % { '{0}' -f (Get-Content $_) }",
+    "gci .env | % { & 'gc' $_ }",
+    'gci .env | % { iex "gc $_" }',
+    'pwsh -c "gci .env | % { Copy-Item $_ x.txt }"',
+    "gci .env | % { $c='gc'; & $c $_ }",
+    "gci .env |\n % { Copy-Item $_ x.txt }",
+    "gci .env | % { bash -c \"cat $_\" }",
+    "gci .env | % { $x = gc $_; $x }",
+    "gci .env | % { $x=Get-Content $_; $x }",
   ])
     refusPs(c, dir);
   passePs("gci .env | % { $_.Name.ToUpper() }", dir);

@@ -38,7 +38,7 @@ const fs = require("fs");
 const { execFileSync } = require("child_process");
 
 const path = require("path");
-const { commandesSimples, optionsGlobalesGit, estOption, flagsCourts } = require("./lecture-commande");
+const { commandesSimples, decouper, nomCommande, optionsGlobalesGit, estOption, flagsCourts } = require("./lecture-commande");
 const { estFichierEnv } = require("./motifs");
 const { designeEnv, contientEnv, envDuDossier, motifVersRegex, NOMS_ENV_COURANTS } = require("./chemins-sensibles");
 
@@ -146,31 +146,87 @@ const ECRIVAINS_PS = new Set(["add-content", "ac", "set-content", "sc", "out-fil
 // sauf par celles qui montrent seulement les noms et les propriétés.
 const LISTEURS_PS = new Set(["ls", "dir", "get-childitem", "gci"]);
 const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "where-object", "where", "?", "foreach-object", "foreach", "%"]);
-// Bloc { } après le tube : sûr seulement s'il lit des propriétés ($_.Name), compare, filtre, trie ou affiche.
+// Bloc { } après le tube : sûr seulement s'il lit des propriétés ($_.Name), compare, calcule, filtre, trie ou affiche.
 const SURES_BLOC_PS = new Set(["where-object", "where", "?", "select-object", "select", "sort-object", "sort", "write-output", "write-host", "echo", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "measure-object", "measure", "out-null", "foreach-object", "foreach", "%"]);
-const METHODES_SURES_PS = new Set(["tostring", "replace", "substring", "tolower", "toupper", "trim"]);
+// Méthodes qui ouvrent, lisent, copient ou lancent quelque chose : un bloc qui les appelle compte comme une lecture.
+const METHODES_LECTURE_PS = /^(read\w*|open\w*|load\w*|import\w*|copyto|moveto|invoke\w*|create\w*|execute\w*|start|upload\w*|download\w*|send\w*|getresponse\w*|getrequeststream|decrypt|appendtext)$/i;
+// Types dont les méthodes statiques ([math]::Round) calculent sans rien lire ; tout autre type ([IO.File]::ReadLines) compte comme une lecture.
+const TYPES_SURS_PS = /^(system\.)?(math|string|char|int|int16|int32|int64|long|uint32|uint64|double|single|float|decimal|byte|bool|boolean|datetime|timespan|guid|convert|text\.regularexpressions\.regex|regex)$/i;
 
-/** Les textes des blocs { } d'une commande PowerShell (blocs imbriqués compris dans leur bloc parent). */
-function blocsPs(commande) {
+/** Le texte PowerShell, chaque texte entre guillemets remplacé par une variable « $0 » (même longueur) ; un texte "…" qui contient $( ) est gardé, car il lance du code. */
+function masquerTextesPs(texte) {
+  return texte.replace(/'(?:[^']|'')*'|"(?:[^"`]|`.)*"/gs, (t) => (t.startsWith('"') && t.includes("$(") ? t : "$0".padEnd(t.length)));
+}
+
+/** Les textes des blocs { } d'un texte PowerShell (blocs imbriqués compris dans leur bloc parent) ; dans un texte masqué, les accolades entre guillemets ne comptent pas. */
+function blocsPs(masque) {
   const blocs = [];
-  for (let i = 0; i < commande.length; i++) {
-    if (commande[i] !== "{") continue;
+  for (let i = 0; i < masque.length; i++) {
+    if (masque[i] !== "{") continue;
     let profondeur = 0;
     let j = i;
-    for (; j < commande.length; j++) {
-      if (commande[j] === "{") profondeur++;
-      else if (commande[j] === "}" && --profondeur === 0) break;
+    for (; j < masque.length; j++) {
+      if (masque[j] === "{") profondeur++;
+      else if (masque[j] === "}" && --profondeur === 0) break;
     }
-    blocs.push(commande.slice(i + 1, j));
+    blocs.push(masque.slice(i + 1, j));
     i = j;
   }
   return blocs;
 }
 
-/** Vrai si le bloc ne fait que lire des propriétés, comparer, filtrer, trier ou afficher : aucune autre commande, aucun appel de méthode qui lit. */
+/** Fin du tube qui commence à `debut` dans un texte PowerShell masqué : le premier « ; », retour à la ligne (hors suite après | ou `), && ou || de son niveau,
+ *  ou la fin du bloc { } qui le contient (sauf si ce bloc est lui-même suivi d'un tube). Une parenthèse fermante ne l'arrête pas : sa valeur continue dans le tube. */
+function finTubePs(masque, debut) {
+  let profondeur = 0;
+  for (let i = debut; i < masque.length; i++) {
+    const ch = masque[i];
+    if ("({[".includes(ch)) profondeur++;
+    else if (")]".includes(ch)) profondeur--;
+    else if (ch === "}" && --profondeur < 0 && !/^\s*\|(?!\|)/.test(masque.slice(i + 1))) return i;
+    else if (profondeur <= 0 && (ch === ";" || (ch === "\n" && !/[|`]\s*$/.test(masque.slice(debut, i))) || masque.startsWith("&&", i) || masque.startsWith("||", i))) return i;
+  }
+  return masque.length;
+}
+
+/** Vrai si le bloc (texte masqué) ne fait que lire des propriétés, comparer, calculer, filtrer, trier ou afficher. */
 function blocSur(texte) {
-  for (const m of texte.matchAll(/(::|\.)\s*([A-Za-z_]\w*)\s*\(/g)) if (m[1] === "::" || !METHODES_SURES_PS.has(m[2].toLowerCase())) return false;
-  return commandesSimples(texte, "powershell").every((d) => d.cmd === "" || /^[$-]/.test(d.brut) || SURES_BLOC_PS.has(d.cmd));
+  for (const m of texte.matchAll(/(::|\.)\s*([A-Za-z_]\w*)\s*\(/g)) {
+    if (m[1] === "::") {
+      const type = /\[\s*([\w.]+)\s*\]\s*$/.exec(texte.slice(0, m.index));
+      if (!type || !TYPES_SURS_PS.test(type[1])) return false;
+    } else if (METHODES_LECTURE_PS.test(m[2])) return false;
+  }
+  // Appel d'une commande par son nom (& $c, . $c) : elle peut lire.
+  if (/(^|[;{(|=\n])\s*(&(?!&)|\.\s)/.test(texte)) return false;
+  return instructionsSures(texte);
+}
+
+// Mots qui ouvrent une instruction PowerShell sans être une commande.
+const MOTS_CLES_PS = /^(if|elseif|else|while|until|do|for|foreach|switch|default|try|catch|finally|return|throw|exit|break|continue|in|\{|\})$/i;
+
+/** Vrai si chaque instruction du texte (sous-expressions $( ) comprises) est une affectation, une expression ($_.Name, -not …, + …, [type], nombre)
+ *  ou une commande de SURES_BLOC_PS. Le premier mot est jugé tel qu'il est écrit : bash -c, iex, cmd /c comptent comme des commandes inconnues. */
+function instructionsSures(texte) {
+  const { segments, sousScripts } = decouper(texte, "powershell");
+  const segmentSur = ({ mots }) => {
+    const m = mots.slice();
+    for (let tour = 0; tour < 12 && m.length; tour++) {
+      if (MOTS_CLES_PS.test(m[0])) m.shift();
+      // $x = …, $x += …, [int]$x = … : la valeur affectée est jugée comme une instruction.
+      else if (/^(\[[^\]]*\])*\$\S*$/.test(m[0]) && /^([-+*/%]|\?\?)?=$/.test(m[1] || "")) m.splice(0, 2);
+      else {
+        // Formes collées : $x=gc, n=valeur (table @{ }).
+        const colle = /^(?:(?:\[[^\]]*\])*\$[^=\s]*?|[A-Za-z_]\w*)(?:[-+*/%]|\?\?)?=(?!=)(.*)$/s.exec(m[0]);
+        if (!colle) break;
+        if (colle[1]) m[0] = colle[1];
+        else m.shift();
+      }
+    }
+    // Un nom de commande commence par une lettre, ou par . \ / ~ pour un chemin.
+    return !m.length || /^(\d|[^\p{L}\d_.\\/~&])/u.test(m[0]) || SURES_BLOC_PS.has(nomCommande(m[0]));
+  };
+  return segments.every(segmentSur) && sousScripts.every(instructionsSures);
 }
 // PowerShell : commandes qui produisent un nom de fichier (lu ensuite s'il est passé entre parenthèses à une autre commande).
 const PRODUCTEURS_PS = new Set(["echo", "write-output", "printf", "ls", "dir", "get-childitem", "gci", "realpath", "basename", "dirname"]);
@@ -680,13 +736,29 @@ function analyser(commande, cwd, dialecte) {
   if (commandes.some((c) => c.viaXargs && lecteur(c)) && listeurs.some((c) => listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   if (commandes.some((c) => c.viaFind && lecteur(c)) && listeurs.some((c) => c.cmd === "find" && listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   // PowerShell : des fichiers .env listés puis passés par un tube à une commande qui les lit (Get-ChildItem .env | Get-Content).
-  // Un bloc { } ou @{ } compte comme une lecture, sauf s'il ne fait que lire des propriétés, comparer, filtrer, trier ou afficher (blocSur).
-  const blocLit = dialecte === "powershell" && !blocsPs(commande).every(blocSur);
+  // Les commandes qui suivent le listeur dans le tube montrent seulement noms et propriétés (SANS_CONTENU_PS).
+  const listeursEnv = commandes.filter((c) => c.dialecte === "powershell" && LISTEURS_PS.has(c.cmd) && listeurCouvreEnv(c, cwd));
   commandes.forEach((c, i) => {
-    if (c.dialecte !== "powershell" || !LISTEURS_PS.has(c.cmd) || !listeurCouvreEnv(c, cwd)) return;
+    if (!listeursEnv.includes(c)) return;
     for (let j = i + 1; j < commandes.length && commandes[j].apresTube; j++)
-      if (blocLit || !SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
+      if (!SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
   });
+  // Les blocs { } ou @{ } du tube du listeur (jusqu'au « ; » ou à la ligne suivante) comptent comme une lecture,
+  // sauf s'ils ne font que lire des propriétés, comparer, calculer, filtrer, trier ou afficher (blocSur).
+  if (dialecte === "powershell" && listeursEnv.length) {
+    const masque = masquerTextesPs(commande);
+    let vus = 0;
+    for (const m of masque.matchAll(/(^|[;|({&=\n])(\s*)(?:ls|dir|get-childitem|gci)(?=$|[\s;|)}])/gi)) {
+      const debut = m.index + m[1].length + m[2].length;
+      const fin = finTubePs(masque, debut);
+      const listeur = commandesSimples(commande.slice(debut, fin), "powershell")[0];
+      if (!listeur || !LISTEURS_PS.has(listeur.cmd) || !listeurCouvreEnv(listeur, cwd)) continue;
+      vus++;
+      if (!blocsPs(masque.slice(debut, fin)).every(blocSur)) constats.push([REFUS, MESSAGES.lectureEnv]);
+    }
+    // Listeur introuvable dans le texte (dans des guillemets, appelé autrement) : tous les blocs de la commande sont examinés.
+    if (vus < listeursEnv.length && !blocsPs(commande).every(blocSur)) constats.push([REFUS, MESSAGES.lectureEnv]);
+  }
   // PowerShell : un nom produit entre parenthèses puis lu (gc (echo .env), (Get-ChildItem .env).OpenText()).
   if (dialecte === "powershell")
     for (const c of commandes) {
