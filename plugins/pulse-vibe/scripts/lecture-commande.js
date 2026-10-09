@@ -207,6 +207,11 @@ function decouper(script, dialecte = "bash") {
         i++;
       }
       heredocsEnAttente.push({ delim, retirerTabs, segment: null });
+    } else if ((c === "<" || c === ">") && script[i + 1] === "(" && posix) {
+      // Substitution de processus <(…) ou >(…) : ses commandes sont lues ; le mot garde sa forme pour les shells qui l'exécutent.
+      const apres = lireSubstitution(i);
+      ajouter(script.slice(i, apres));
+      i = apres;
     } else if (c === ">" || c === "<") {
       if (mot !== null && (/^\d+$/.test(mot) || (dialecte === "powershell" && mot === "*"))) mot = null;
       finirMot();
@@ -352,6 +357,8 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
     if (k >= 0) return script(args.slice(k + 1).find((a) => !estOption(a)) || "", "bash");
     const fichier = args.find((a) => !estOption(a));
     // « sh - », « bash -s », « bash /dev/stdin » : le script vient de l'entrée standard.
+    // « bash <(curl …) » : le script est le texte produit par une commande.
+    if (/^[<>]\(/.test(fichier || "")) return ajouter({ scriptInconnu: true });
     const litEntree = fichier === undefined || fichier === "-" || fichier === "/dev/stdin" || args.slice(0, args.indexOf(fichier)).some((a) => estOption(a) && flagsCourts(a).includes("s"));
     if (litEntree) {
       for (const e of ctx.entrees) script(e, "bash");
@@ -381,11 +388,14 @@ function deplier(motsInitiaux, ctx, profondeur, resultat) {
     if (k >= 0) return script(args.slice(k + 1).join(" "), "cmd");
     return ajouter(ctx.apresTube ? { scriptInconnu: true } : {});
   }
+  // « source <(curl …) », « . /dev/stdin » : texte que Pulse ne voit pas.
+  if ((cmd === "source" || cmd === ".") && ctx.dialecte === "bash" && /^([<>]\(|\/dev\/stdin$|-$)/.test(args[0] || "")) return ajouter({ scriptInconnu: true });
   if (cmd === "eval") return script(args.join(" "), "bash");
   if (cmd === "iex" || cmd === "invoke-expression") {
     const texte = args.filter((a) => !/^-command$/i.test(a)).join(" ");
-    // Texte reçu par un tube, ou contenu d'une variable : Pulse ne le voit pas.
-    if ((!texte && ctx.apresTube) || /^\$[\w:{}]+$/.test(texte)) return ajouter({ scriptInconnu: true });
+    // Texte reçu par un tube, calculé entre parenthèses (iex (irm …), iex (Get-Content x -Raw)), contenu d'une variable
+    // ou d'une sous-expression (iex "$(irm …)") : Pulse ne le voit pas.
+    if (!texte || /^\$/.test(texte)) return ajouter({ scriptInconnu: true });
     return script(texte, "powershell");
   }
   if (cmd === "start-process" || cmd === "saps") {

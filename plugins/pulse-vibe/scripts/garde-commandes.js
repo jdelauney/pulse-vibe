@@ -6,7 +6,8 @@
 //
 // Refuse (avec l'alternative) :
 //  - un envoi forcé (git push --force, -f, --force-with-lease, +branche, formes abrégées comprises) ;
-//  - le contournement d'un contrôle (--no-verify, git commit -n, -c core.hooksPath, HUSKY=0…) ;
+//  - le contournement d'un contrôle (--no-verify, git commit -n, -c core.hooksPath, HUSKY=0, variables GIT_CONFIG_…) ;
+//  - un alias Git défini dans la commande (git -c alias.…) ;
 //  - l'indexation globale (git add -A / . / -u / motifs / xargs, git commit -a) dans un dépôt qui a déjà un commit ;
 //  - la lecture d'un fichier .env : toute commande dont un mot le désigne (nom, motif, option, référence Git),
 //    sauf celles qui le nomment sans le lire (test, touch, ls, echo, git rm…) ; git grep et git diff hors dépôt ;
@@ -17,10 +18,12 @@
 //    branch -D / -f, update-ref, filter-branch, reflog expire, gc --prune=now) ;
 //  - git config au-delà de user.name / user.email ;
 //  - une suppression récursive ou par motif (rm, Remove-Item, rd /s, del /s, find -exec rm, xargs rm, code) ;
-//  - une commande dont le nom est calculé à l'exécution ($x, $(…)) ;
+//  - une commande dont le nom est calculé à l'exécution ($x, $(…), & $g, git $x, alias, Set-Alias) ;
+//  - un texte exécuté par un shell sans être visible (curl … | sh, iex (irm …), bash <(curl …)) ;
 //  - une commande de base de données qui écrase ou supprime (drizzle-kit push, db:push, prisma db push,
 //    supabase db reset, DROP / TRUNCATE / DELETE sans WHERE par -c, -f, < ou un tube, neonctl delete) ;
-//  - une mise en production directe, un envoi sur main ou master quand le site est publié depuis ce dépôt,
+//  - une mise en production directe, un envoi sur main ou master quand le site est publié depuis ce dépôt
+//    (--all, push.default=matching, refspec à motif ou calculé compris),
 //    une variable changée chez l'hébergeur, un secret envoyé par pulse-aidd secrets, une fusion (gh pr merge),
 //    une suppression par gh api ;
 //  - la modification (git commit --amend) d'un commit déjà envoyé ;
@@ -88,6 +91,15 @@ const MESSAGES = {
     "À la place : nommez précisément le dossier à supprimer (par exemple `rm -r dist`).",
   commandeMasquee:
     "Pulse demande votre accord : le nom de cette commande n'est connu qu'au moment de l'exécution, Pulse ne peut donc pas vérifier ce qu'elle fait. " +
+    "Écrivez plutôt la commande en clair.",
+  aliasGit:
+    "Pulse refuse un alias Git défini dans la commande (-c alias.…) : il cache la vraie commande. " +
+    "À la place : écrivez la commande Git en clair.",
+  configMasquee:
+    "Pulse refuse de changer la configuration de Git par des variables d'environnement (GIT_CONFIG_…) : elles peuvent couper les contrôles sans le montrer. " +
+    "À la place : lancez la commande Git sans ces variables.",
+  scriptInconnu:
+    "Pulse demande votre accord : cette commande fait exécuter par un shell un texte que Pulse ne voit pas (tube vers sh, bash, pwsh ou Invoke-Expression). " +
     "Écrivez plutôt la commande en clair.",
   baseDeDonnees:
     "Pulse demande votre accord : cette commande peut écraser ou supprimer des données de la base, qui est peut-être celle du site en ligne. " +
@@ -423,10 +435,14 @@ function hebergeurRelie(racine) {
   return ["vercel.json", ".vercel/project.json", "netlify.toml", "wrangler.toml", "wrangler.jsonc", "fly.toml", "render.yaml"].some((f) => fs.existsSync(path.join(racine, f)));
 }
 
-// Vrai si l'envoi vise main ou master (branche courante quand aucune destination n'est écrite).
-function versProduction(positions, cwd, prefixe) {
+// Vrai si l'envoi vise main ou master : destination écrite, branche courante, ou envoi de toutes les branches
+// (--all, --mirror, push.default=matching, -c remote.<nom>.mirror|push), refspec à motif (*) ou calculé ($(…), $x).
+function versProduction(positions, options, configs, cwd, prefixe) {
+  if (options.some((o) => longue(o, "--all", 4) || longue(o, "--mirror", 4) || o === "--branches")) return true;
+  if (configs.some((v) => /^push\.default=matching$/i.test(v) || /^remote\..+\.(mirror=true|push=)/i.test(v))) return true;
   const courante = () => sortieGit([...prefixe, "rev-parse", "--abbrev-ref", "HEAD"], cwd);
   const refspecs = positions.slice(1); // positions[0] : le dépôt distant
+  if (refspecs.some((r) => /[*$`]/.test(r))) return true;
   if (!refspecs.length) return BRANCHES_PRODUCTION.has(courante());
   return refspecs.some((r) => {
     const destination = r.replace(/^\+/, "").split(":").pop().replace(/^refs\/heads\//, "");
@@ -440,11 +456,17 @@ const longue = (o, nom, min = 4) => {
   return base.startsWith("--") && base.length >= min && nom.startsWith(base);
 };
 const COUPE_HOOKS = /^(HUSKY=0|HUSKY_SKIP_HOOKS=1|SKIP_SIMPLE_GIT_HOOKS=1|LEFTHOOK=0)$/;
+// Configuration de Git par l'environnement : GIT_CONFIG_COUNT, _KEY_n, _VALUE_n, _PARAMETERS, et aussi GIT_CONFIG_GLOBAL ou GIT_CONFIG (un autre fichier de configuration).
+const GIT_CONFIG_ENV = /^GIT_CONFIG(_\w+)?=/i;
 
 function reglesGit(c, cwd, constats) {
   const { k, prefixe, configs } = optionsGlobalesGit(c.args);
   if (configs.some((v) => /^core\.hookspath=/i.test(v)) || c.affectations.some((a) => COUPE_HOOKS.test(a))) constats.push([REFUS, MESSAGES.controlesCoupes]);
   const sous = c.args[k];
+  if (configs.some((v) => /^alias\./i.test(v))) constats.push([REFUS, MESSAGES.aliasGit]);
+  if (c.affectations.some((a) => GIT_CONFIG_ENV.test(a))) constats.push([REFUS, MESSAGES.configMasquee]);
+  // Sous-commande calculée : git $x, git $(…), git `…`, git @args (PowerShell).
+  if (sous !== undefined && /^\$|^@\w|\$\(|`/.test(sous)) constats.push([ACCORD, MESSAGES.commandeMasquee]);
   const reste = c.args.slice(k + 1);
   const options = reste.filter(estOption);
   const positions = reste.filter((m) => !estOption(m) && m !== "--");
@@ -457,9 +479,9 @@ function reglesGit(c, cwd, constats) {
       if (aLongue("--force") || aLongue("--force-with-lease") || aLongue("--force-if-includes") || court("f") || positions.some((p) => p.startsWith("+")))
         constats.push([REFUS, MESSAGES.envoiForce]);
       if (noVerify) constats.push([REFUS, MESSAGES.noVerify]);
-      if (aLongue("--delete") || options.includes("-d") || aLongue("--mirror") || positions.some((p) => p.startsWith(":") && p.length > 1))
+      if (aLongue("--delete") || options.includes("-d") || aLongue("--mirror") || configs.some((v) => /^remote\..+\.mirror=true$/i.test(v)) || positions.some((p) => p.startsWith(":") && p.length > 1))
         constats.push([ACCORD, MESSAGES.brancheDistante]);
-      if (hebergeurRelie(sortieGit([...prefixe, "rev-parse", "--show-toplevel"], cwd)) && versProduction(positions, cwd, prefixe))
+      if (hebergeurRelie(sortieGit([...prefixe, "rev-parse", "--show-toplevel"], cwd)) && versProduction(positions, options, configs, cwd, prefixe))
         constats.push([ACCORD, MESSAGES.envoiProduction]);
       break;
     case "commit":
@@ -621,6 +643,10 @@ function reglesSqlFichier(fichier, cwd, constats) {
 function appliquerRegles(c, cwd, constats) {
   const { cmd, args } = c;
   if (c.dialecte !== "powershell" && c.brut.startsWith("$")) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+  // PowerShell : & $g push … ou . $s … (hors affectation $x = …, opérateur $x -eq …, foreach ($x in …), simple lecture $env:X).
+  if (c.dialecte === "powershell" && /^\$[\w:{}]+$/.test(c.brut) && args.length && !/^([-+*\/%]?=|-|in$)/i.test(args[0])) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+  if (c.dialecte === "powershell" && c.brut === "." && /^\$/.test(args[0] || "")) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+  if (c.scriptInconnu) constats.push([ACCORD, MESSAGES.scriptInconnu]);
   if (COMMANDES_SUPPRESSION.has(cmd)) reglesSuppression(c, constats);
   if (c.code !== undefined && /\b(rmSync|rmdirSync|unlinkSync|rimraf|rmtree|remove_tree|rm_rf|os\.remove|os\.unlink|unlink|rmdir)\b/.test(c.code))
     constats.push([ACCORD, MESSAGES.suppression]);
@@ -722,6 +748,13 @@ function appliquerRegles(c, cwd, constats) {
         constats.push([ACCORD, MESSAGES.apiSuppression]);
       break;
     }
+    case "alias":
+    case "set-alias":
+    case "sal":
+    case "new-alias":
+    case "nal":
+      if (args.length) constats.push([ACCORD, MESSAGES.commandeMasquee]);
+      break;
     case "pulse-aidd":
       if (args[0] === "secrets" && ["generer", "envoyer", "elaguer", "redeployer"].includes(args[1])) constats.push([ACCORD, MESSAGES.secretsHebergeur]);
       if (args[0] === "search-console" && args[1] === "deconnecter") constats.push([ACCORD, MESSAGES.deconnexion]);
@@ -739,6 +772,12 @@ function analyser(commande, cwd, dialecte) {
   // Contrôles coupés par une variable posée avant la commande (export HUSKY=0 ; $env:HUSKY = 0).
   const coupe = /(^|[\s;&|(])(export\s+|\$env:)(HUSKY\s*=\s*['"]?0|HUSKY_SKIP_HOOKS\s*=\s*['"]?1|SKIP_SIMPLE_GIT_HOOKS\s*=\s*['"]?1|LEFTHOOK\s*=\s*['"]?0)\b/i;
   if (coupe.test(sansCitations) && commandes.some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.controlesCoupes]);
+  // Configuration de Git par des variables posées à part : GIT_CONFIG_COUNT=1 ; export GIT_CONFIG_COUNT ; $env:GIT_CONFIG_COUNT = 1 ; Set-Item env:GIT_CONFIG_COUNT.
+  const configParVariable =
+    /(^|[\s;&|(])((export|declare\s+-x|typeset\s+-x)(\s+-\w+)*\s+(\w+(=\S*)?\s+)*GIT_CONFIG(_\w+)?\b|GIT_CONFIG(_\w+)?\s*=)/i.test(sansCitations) ||
+    /env:\\?GIT_CONFIG/i.test(sansCitations) ||
+    /SetEnvironmentVariable\s*\(\s*['"]GIT_CONFIG/i.test(commande);
+  if (configParVariable && commandes.some((c) => c.cmd === "git")) constats.push([REFUS, MESSAGES.configMasquee]);
   // Lecture .NET depuis PowerShell : [IO.File]::ReadAllText('.env').
   for (const m of commande.matchAll(/::ReadAll(?:Text|Lines|Bytes)\s*\(\s*['"]([^'"]+)['"]/gi)) if (designeEnv(m[1], cwd, dialecte)) constats.push([REFUS, MESSAGES.lectureEnv]);
   // PowerShell : ${chemin} lit le contenu du fichier (${C:\projet\.env}, ${E:.env}).

