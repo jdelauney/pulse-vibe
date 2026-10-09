@@ -91,6 +91,21 @@ describe("Erreurs du navigateur", () => {
     ).toBe("lien mailto:[e-mail] cassé");
   });
 
+  it("nettoyage du message : partie avant @ masquée en entier, même avec une apostrophe ou deux-points", () => {
+    expect(sansDonneesDAdresse("compte o'brien@exemple.fr")).toBe(
+      "compte [e-mail]",
+    );
+    expect(sansDonneesDAdresse("compte jean:motdepasse@exemple.fr")).toBe(
+      "compte [e-mail]",
+    );
+    expect(sansDonneesDAdresse("compte 'jean'@exemple.fr")).toBe(
+      "compte '[e-mail]",
+    );
+    expect(sansDonneesDAdresse("compte (o'brien@exemple.fr)")).toBe(
+      "compte ([e-mail])",
+    );
+  });
+
   it("une référence (digest) envoyée par le navigateur n'est pas journalisée", async () => {
     await recevoirErreurClient(
       envoi(JSON.stringify({ digest: "1234", message: "boum", chemin: "/" })),

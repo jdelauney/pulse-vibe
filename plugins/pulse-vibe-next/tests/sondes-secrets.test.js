@@ -257,6 +257,28 @@ test("suites de la clé Neon : point d'accès de la branche principale, pour Pre
   sansValeur(ok.sortie + refus.sortie + sansProjet.sortie, cle);
 });
 
+test("suites de la clé Neon : sans branche principale, sans point d'accès en écriture : la solution est donnée", async () => {
+  const d = projet();
+  let cas = "sans-principale";
+  const { s, url } = await serveur((req) => {
+    if (req.url.includes("/branches?")) {
+      return { statut: 200, corps: { branches: cas === "sans-principale" ? [{ id: "br-a", default: false }] : [{ id: "br-principale", default: true }] } };
+    }
+    return { statut: 200, corps: { endpoints: [{ id: "ep-lecture-1", type: "read_only" }] } };
+  });
+  const entree = JSON.stringify({ NEON_API_KEY: "napi_" + hasard(16), NEON_PROJECT_ID: "projet-essai" });
+  const env = { PULSE_SONDES_NEON_API: url };
+  for (const c of ["sans-principale", "sans-ecriture"]) {
+    cas = c;
+    const r = await lancer(d, ["suites", "NEON_API_KEY"], entree, env);
+    assert.strictEqual(r.code, 1, r.sortie);
+    assert.match(r.sortie, /console Neon → Branches/, c);
+    assert.match(r.sortie, /prévisualisations sautent leurs migrations/, c);
+    assert.match(r.sortie, /retirer NEON_API_KEY de \.env\.envoi/, c);
+  }
+  s.close();
+});
+
 test("Upstash : PONG accepté, 401 refusé", async () => {
   const d = projet();
   let statut = 200;

@@ -79,6 +79,7 @@ function finir(code, message) {
 }
 const bon = (m) => finir(0, `✅ ${m}`);
 const mauvais = (m) => finir(1, `❌ ${m}`);
+const SOLUTION_BRANCHE = " Solution : console Neon → Branches ; vérifiez la branche principale (default) et son compute (point d'accès en écriture). D'ici là, les prévisualisations sautent leurs migrations, sans arrêter la construction ; vous pouvez retirer NEON_API_KEY de .env.envoi dès maintenant.";
 const sansTest = (m) => finir(3, `⚪ ${m}`);
 const raison = (e) => masquer((e && (e.code || e.name) ? `${e.code || e.name} : ` : "") + ((e && e.message) || String(e)).split("\n")[0]).slice(0, 200);
 
@@ -192,15 +193,15 @@ async function suitesCleNeon(nom, v) {
     try {
       return await reponse.json();
     } catch (e) {
-      mauvais("réponse de Neon illisible.");
+      mauvais("réponse de Neon illisible." + SOLUTION_BRANCHE);
     }
   };
   const p = encodeURIComponent(projet);
   // limit=100 : une page de 100 branches, comme scripts/migrer.mjs (10 branches au plus sur les offres Free et Launch).
   const principale = ((await lireNeon(`/projects/${p}/branches?limit=100`)).branches || []).find((b) => b.default === true);
-  if (!principale) mauvais("Neon ne signale aucune branche principale dans ce projet.");
+  if (!principale) mauvais("Neon ne signale aucune branche principale dans ce projet." + SOLUTION_BRANCHE);
   const ecriture = ((await lireNeon(`/projects/${p}/branches/${encodeURIComponent(principale.id)}/endpoints`)).endpoints || []).find((e) => e.type === "read_write");
-  if (!ecriture || !/^ep-[a-z0-9-]+$/.test(ecriture.id || "")) mauvais("la branche principale n'a pas de point d'accès en écriture.");
+  if (!ecriture || !/^ep-[a-z0-9-]+$/.test(ecriture.id || "")) mauvais("la branche principale n'a pas de point d'accès en écriture." + SOLUTION_BRANCHE);
   finir(0, JSON.stringify({ variables: [{ nom: "NEON_ENDPOINT_PRODUCTION", environnements: ["preview"], valeur: ecriture.id }] }));
 }
 

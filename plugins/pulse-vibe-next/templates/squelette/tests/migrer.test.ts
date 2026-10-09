@@ -114,6 +114,28 @@ describe("Migrations avant construction", () => {
     expect(journal).toMatch(/\/pulse:init/);
   });
 
+  it("prévisualisation avec un NEON_ENDPOINT_PRODUCTION illisible : message à part, migrations sautées", async () => {
+    const d = dependances(
+      { ...APERCU, NEON_ENDPOINT_PRODUCTION: "pas-un-repere" },
+      "1000",
+    );
+    expect(await migrer(d)).toBe("ignore-repere-illisible");
+    expect(d.appliquerMigrations).not.toHaveBeenCalled();
+    const journal = journalDe(d);
+    expect(journal).toMatch(/n'a pas la forme d'un point d'accès/);
+    expect(journal).not.toMatch(/pas encore enregistré/);
+  });
+
+  it("prévisualisation dont l'adresse n'est pas lisible : migrations sautées par prudence, construction poursuivie", async () => {
+    const d = dependances(
+      { ...APERCU, DATABASE_URL_UNPOOLED: "postgresql://localhost:5432/x" },
+      "1000",
+    );
+    expect(await migrer(d)).toBe("ignore-adresse-illisible");
+    expect(d.appliquerMigrations).not.toHaveBeenCalled();
+    expect(journalDe(d)).toMatch(/par prudence/);
+  });
+
   it("prévisualisation à jour sans NEON_ENDPOINT_PRODUCTION : rien à dire de plus", async () => {
     const { NEON_ENDPOINT_PRODUCTION: _repere, ...sansRepere } = APERCU;
     const d = dependances(sansRepere, "2000");

@@ -82,6 +82,17 @@ const PREVISUALISATION_SANS_REPERE = [
   "Pour activer la vérification : relancez /pulse:deploy (à l'étape de la clé Neon, le repère s'enregistre tout seul), ou /pulse:init pour mettre à niveau un projet plus ancien.",
 ];
 
+const PREVISUALISATION_REPERE_ILLISIBLE = [
+  "Prévisualisation : migrations non appliquées, par prudence. Le repère de la base de production (NEON_ENDPOINT_PRODUCTION) est enregistré dans Vercel, mais sa valeur n'a pas la forme d'un point d'accès Neon (ep-…) : impossible de vérifier que cette prévisualisation a sa propre copie de la base.",
+  "La construction continue ; ses pages qui ont besoin des nouvelles migrations peuvent afficher des erreurs.",
+  "Pour corriger : relancez /pulse:deploy (à l'étape de la clé Neon, le repère s'enregistre de nouveau tout seul).",
+];
+const PREVISUALISATION_ADRESSE_ILLISIBLE = [
+  "Prévisualisation : migrations non appliquées, par prudence. L'adresse de la base de cette prévisualisation n'a pas la forme d'une adresse Neon : impossible de vérifier qu'elle n'est pas celle de la production.",
+  "La construction continue ; ses pages qui ont besoin des nouvelles migrations peuvent afficher des erreurs.",
+  "Pour corriger : console Neon → Integrations → Vercel → Manage ; vérifiez que l'intégration donne bien sa branche à chaque prévisualisation, puis redéployez la prévisualisation.",
+];
+
 /** Date (created_at) de la dernière migration appliquée, ou null (base neuve). */
 async function derniereAppliquee(adresse) {
   const { neon } = await import("@neondatabase/serverless");
@@ -296,10 +307,19 @@ export async function migrer({
     // Dans le doute, on saute les migrations sans arrêter la construction.
     const production = pointDAcces(env.NEON_ENDPOINT_PRODUCTION);
     if (!production) {
-      for (const ligne of PREVISUALISATION_SANS_REPERE) dire(ligne);
-      return "ignore-sans-repere";
+      const present = Boolean(env.NEON_ENDPOINT_PRODUCTION?.trim());
+      for (const ligne of present
+        ? PREVISUALISATION_REPERE_ILLISIBLE
+        : PREVISUALISATION_SANS_REPERE)
+        dire(ligne);
+      return present ? "ignore-repere-illisible" : "ignore-sans-repere";
     }
-    if (pointDAcces(adresse) === production) {
+    const celleDeLApercu = pointDAcces(adresse);
+    if (!celleDeLApercu) {
+      for (const ligne of PREVISUALISATION_ADRESSE_ILLISIBLE) dire(ligne);
+      return "ignore-adresse-illisible";
+    }
+    if (celleDeLApercu === production) {
       for (const ligne of PREVISUALISATION_SUR_PRODUCTION) dire(ligne);
       return "ignore-production";
     }
