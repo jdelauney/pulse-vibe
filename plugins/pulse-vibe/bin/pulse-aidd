@@ -26,7 +26,7 @@
 #   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
 #   pulse-aidd pile <sous-commande>  relaie vers l'outil du pack déclaré (ex. pulse-aidd pile recette connexion)
 #   pulse-aidd sonder <adresse> [--texte "…"] [--entetes]  vérifie qu'un site en ligne répond (code 200, texte attendu) ; --entetes : les en-têtes servis
-#   pulse-aidd secrets [action]      les secrets du projet, sans jamais afficher une valeur (inventaire, preparer, generer, verifier, envoyer, redeployer, historique, journal ; voir pulse-aidd secrets aide)
+#   pulse-aidd secrets [action]      les secrets du projet, sans jamais afficher une valeur (inventaire, preparer, generer, elaguer, verifier, envoyer, redeployer, historique, journal ; voir pulse-aidd secrets aide)
 #   pulse-aidd seo <adresse> [options]   audit de référencement du site servi (options : pulse-aidd seo) ; pulse-aidd seo robots <A|B|C|D> : robots.txt d'une politique IA
 #   pulse-aidd perf <action> [options]  mesure la vitesse : mesurer, terrain, comparer, budget, cle, installer (sans action : l'aide)
 #   pulse-aidd textes verifier <fichier|-> [--json]   contrôle les tics d'écriture IA d'un texte (/pulse:rediger)
@@ -164,6 +164,10 @@ contexte_pack() { # contexte_pack <commande>
 }
 
 contexte() { # contexte <commande> [--sans-communes]
+  if ! nom_sur "$1" || [ ! -f "$RACINE/skills/$1/SKILL.md" ]; then
+    printf '\n(pulse-aidd : commande inconnue « %s ». Commandes : %s)\n' "$1" "$(ls "$RACINE/skills" | tr '\n' ' ')"
+    return 0
+  fi
   [ "$2" = "--sans-communes" ] || afficher "Règles communes Pulse" "$REF/regles-communes.md"
   case "$1" in
     init)
@@ -306,7 +310,7 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;
     auto-fix) ;;
-    *) printf '\n(pulse-aidd : commande inconnue « %s »)\n' "$1" ;;
+    *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
   contexte_pack "$1"
 }
@@ -431,5 +435,5 @@ CROCHET
     chmod +x "$crochet"
     echo "Installé : contrôle des secrets avant chaque commit, y compris ceux faits hors de Claude Code ($crochet)." ;;
   *)
-    sed -n '2,38p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed -n 's/^# \{0,1\}//p' ;;
 esac

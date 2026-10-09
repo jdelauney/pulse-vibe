@@ -481,3 +481,12 @@ test("relais .ps1 : bash relit les arguments dans l'environnement, tels quels", 
   assert.strictEqual(r.status, 1, r.stderr);
   assert.ok(r.stdout.includes(`Référence introuvable : ${arg}.`), r.stdout);
 });
+
+test("aide : pulse-pile-next sans argument liste exactement ses sous-commandes, et rien du code", () => {
+  const texte = lire(RACINE, "bin", "pulse-pile-next");
+  const code = [...texte.slice(texte.lastIndexOf('case "$1" in')).matchAll(/^ {2}([a-z][a-z|-]*)\)/gm)].flatMap((m) => m[1].split("|"));
+  const aide = lancer().stdout;
+  const listees = new Set([...aide.matchAll(/^ {2}pulse-pile-next ([a-z][a-z-]*)/gm)].map((m) => m[1]));
+  assert.deepStrictEqual([...listees].sort(), [...new Set(code)].sort());
+  assert.doesNotMatch(aide, /RACINE=|PULSE_RELAIS|^#!/m);
+});

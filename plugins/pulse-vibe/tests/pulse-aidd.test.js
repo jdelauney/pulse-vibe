@@ -664,3 +664,39 @@ test("limite connue (Windows) : sous une stratégie Restricted, PowerShell refus
   assert.match(r.stdout + r.stderr, /about_Execution_Policies/);
   assert.match(fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8"), /stratégie d'entreprise bloque les scripts PowerShell : outil Bash/);
 });
+
+// ------------------------------------------------------------ Aide et commandes inconnues
+
+// Sous-commandes de premier niveau d'un outil bash : étiquettes « nom) » du dernier « case "$1" in ».
+function sousCommandes(texte) {
+  return [...texte.slice(texte.lastIndexOf('case "$1" in')).matchAll(/^ {2}([a-z][a-z|-]*)\)/gm)].flatMap((m) => m[1].split("|"));
+}
+
+test("aide : pulse-aidd sans argument liste exactement ses sous-commandes, et rien du code", () => {
+  const aide = lancer().stdout;
+  const listees = new Set([...aide.matchAll(/^ {2}pulse-aidd ([a-z][a-z-]*)/gm)].map((m) => m[1]));
+  const code = new Set(sousCommandes(fsP.readFileSync(path.join(RACINE, "bin", "pulse-aidd"), "utf8")));
+  assert.deepStrictEqual([...listees].sort(), [...code].sort());
+  assert.doesNotMatch(aide, /RACINE=|PULSE_RELAIS|^#!/m);
+});
+
+test("aide : la ligne secrets cite chaque action de secrets.js", () => {
+  const ligne = lancer().stdout.split("\n").find((l) => l.startsWith("  pulse-aidd secrets"));
+  const citees = ligne.match(/\(([^;)]*)/)[1].split(",").map((s) => s.trim()).sort();
+  const source = fsP.readFileSync(path.join(RACINE, "scripts", "secrets.js"), "utf8");
+  const actions = [...source.slice(source.indexOf("function principal")).matchAll(/case "([a-z-]+)":/g)].map((m) => m[1]).sort();
+  assert.deepStrictEqual(citees, actions);
+});
+
+test("contexte d'une commande inconnue : un message, sans charger les règles communes", () => {
+  for (const nom of ["inconnue", "", "../hooks"]) {
+    const r = lancer("contexte", nom);
+    assert.strictEqual(r.status, 0, "contexte ne sort jamais en erreur");
+    assert.match(r.stdout, /commande inconnue/, nom);
+    assert.doesNotMatch(r.stdout, /Règles communes Pulse/, nom);
+  }
+});
+
+test("contexte de chaque commande du cœur : reconnue", () => {
+  for (const s of fsP.readdirSync(path.join(RACINE, "skills"))) assert.doesNotMatch(lancer("contexte", s).stdout, /commande inconnue/, s);
+});
