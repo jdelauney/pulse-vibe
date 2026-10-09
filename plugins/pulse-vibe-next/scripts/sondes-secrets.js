@@ -47,8 +47,8 @@ const VARIABLES = {
 // Serveurs auxquels un test envoie un mot de passe ou un jeton : fournisseurs connus, machine locale (Mailpit),
 // et ceux de PULSE_SONDES_HOTES_ACCEPTES (tests). Un SMTP_HOST ou une adresse Upstash changés dans .env
 // ne détournent donc pas le secret vers un autre serveur.
-const SMTP_CONNUS = /^(localhost|127.0.0.1|smtp-relay.brevo.com|smtp-relay.sendinblue.com|smtp.resend.com|smtp.gmail.com|smtp.office365.com|smtp-mail.outlook.com|smtp.sendgrid.net|smtp(.eu)?.mailgun.org|smtp.postmarkapp.com|in-v3.mailjet.com|smtp.tem.scw.cloud|ssl0.ovh.net|smtp.ionos.(fr|com|de)|mail.infomaniak.com|smtp.zoho.(eu|com)|email-smtp.[a-z0-9-]+.amazonaws.com)$/i;
-const UPSTASH_CONNUS = /.upstash.io$/i;
+const SMTP_CONNUS = /^(localhost|127\.0\.0\.1|smtp-relay\.brevo\.com|smtp-relay\.sendinblue\.com|smtp\.resend\.com|smtp\.gmail\.com|smtp\.office365\.com|smtp-mail\.outlook\.com|smtp\.sendgrid\.net|smtp(\.eu)?\.mailgun\.org|smtp\.postmarkapp\.com|in-v3\.mailjet\.com|smtp\.tem\.scw\.cloud|ssl0\.ovh\.net|smtp\.ionos\.(fr|com|de)|mail\.infomaniak\.com|smtp\.zoho\.(eu|com)|email-smtp\.[a-z0-9-]+\.amazonaws\.com)$/i;
+const UPSTASH_CONNUS = /\.upstash\.io$/i;
 
 function hoteAccepte(hote, connus) {
   const h = String(hote || "").toLowerCase();
@@ -217,13 +217,17 @@ async function testerR2(nom, v) {
 async function testerUpstash(nom, v) {
   const url = v.UPSTASH_REDIS_REST_URL;
   if (!url) mauvais("UPSTASH_REDIS_REST_URL manque : le test a besoin de l'adresse.");
+  let protocole = "";
   let hote = "";
   try {
-    hote = new URL(url).hostname;
+    const adresse = new URL(url);
+    protocole = adresse.protocol;
+    hote = adresse.hostname;
   } catch (e) {
     mauvais("UPSTASH_REDIS_REST_URL n'est pas une adresse web valide.");
   }
   if (!hoteAccepte(hote, UPSTASH_CONNUS)) sansTest(`UPSTASH_REDIS_REST_URL vise « ${hote} », qui n'est pas une adresse Upstash (….upstash.io) : le jeton ne lui est pas envoyé. Vérifiez la variable dans .env.`);
+  if (UPSTASH_CONNUS.test(hote) && protocole !== "https:") sansTest("UPSTASH_REDIS_REST_URL doit commencer par https:// : le jeton ne part pas par une adresse non chiffrée. Vérifiez la variable dans .env.");
   let reponse;
   try {
     reponse = await fetch(`${url.replace(/\/$/, "")}/ping`, { headers: { Authorization: `Bearer ${v[nom]}` }, signal: AbortSignal.timeout(15000) });

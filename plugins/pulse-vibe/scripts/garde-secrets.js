@@ -242,6 +242,9 @@ function cheminsDuCommit(args) {
   return chemins;
 }
 
+// Windows et macOS ignorent la casse des noms de fichiers : CONFIG.JS désigne config.js.
+const casse = (x) => (process.platform === "win32" || process.platform === "darwin" ? x.toLowerCase() : x);
+
 function candidatsAdd(listeArgs, racine, cwd) {
   const modifies = fichiersModifies(racine);
   const chemins = listeArgs.filter((t) => !t.startsWith("-") || t === "--");
@@ -257,8 +260,6 @@ function candidatsAdd(listeArgs, racine, cwd) {
   for (const t of chemins) {
     if (t === "--") continue;
     const rel = versSlash(path.relative(racineReelle, path.resolve(cwdReel, t)));
-    // Windows et macOS ignorent la casse des noms de fichiers : CONFIG.JS désigne config.js.
-    const casse = (x) => (process.platform === "win32" || process.platform === "darwin" ? x.toLowerCase() : x);
     for (const f of modifies) if (casse(f) === casse(rel) || casse(f).startsWith(casse(rel) + "/")) resultat.add(f);
     if (estFichierEnv(rel)) resultat.add(rel); // même s'il n'apparaît pas (ex. déjà ignoré mais forcé)
   }

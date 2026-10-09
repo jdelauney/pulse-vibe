@@ -347,7 +347,7 @@ test("SMTP : serveur inconnu, le mot de passe ne part pas (code 3, serveur nomm�
   const mdp = "Mdp" + hasard(8);
   const r = await lancer(d, ["tester", "SMTP_PASSWORD"], JSON.stringify({ SMTP_PASSWORD: mdp, SMTP_HOST: "smtp.attaquant.example", SMTP_PORT: "587", SMTP_USER: "projet@exemple.test" }));
   assert.strictEqual(r.code, 3, r.sortie);
-  assert.match(r.sortie, /smtp.attaquant.example/);
+  assert.match(r.sortie, /smtp\.attaquant\.example/);
   assert.doesNotMatch(r.sortie, /transporteur créé/);
   sansValeur(r.sortie, mdp);
 });
@@ -371,4 +371,34 @@ test("R2 : identifiant de compte invalide, la clé ne part pas", async () => {
   assert.match(r.sortie, /R2_ACCOUNT_ID/);
   assert.doesNotMatch(r.sortie, /CLIENT_R2_APPELE/);
   sansValeur(r.sortie, secret);
+});
+
+test("SMTP : nom qui ressemble à un serveur connu (smtp-relay-brevo.com), le mot de passe ne part pas", async () => {
+  const d = projet({ nodemailer: `exports.createTransport = () => { throw new Error("transporteur créé"); };` });
+  const mdp = "Mdp" + hasard(8);
+  const r = await lancer(d, ["tester", "SMTP_PASSWORD"], JSON.stringify({ SMTP_PASSWORD: mdp, SMTP_HOST: "smtp-relay-brevo.com", SMTP_PORT: "587", SMTP_USER: "projet@exemple.test" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /smtp-relay-brevo\.com/);
+  assert.doesNotMatch(r.sortie, /transporteur créé/);
+  sansValeur(r.sortie, mdp);
+});
+
+test("Upstash : attacker-upstash.io n'est pas une adresse Upstash, le jeton ne part pas", async () => {
+  const d = projet();
+  const jeton = "AX" + hasard(20);
+  const r = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], JSON.stringify({ UPSTASH_REDIS_REST_TOKEN: jeton, UPSTASH_REDIS_REST_URL: "https://attacker-upstash.io" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /attacker-upstash\.io/);
+  assert.doesNotMatch(r.sortie, /PONG|injoignable/);
+  sansValeur(r.sortie, jeton);
+});
+
+test("Upstash : adresse en http://, le jeton ne part pas en clair", async () => {
+  const d = projet();
+  const jeton = "AX" + hasard(20);
+  const r = await lancer(d, ["tester", "UPSTASH_REDIS_REST_TOKEN"], JSON.stringify({ UPSTASH_REDIS_REST_TOKEN: jeton, UPSTASH_REDIS_REST_URL: "http://demo.upstash.io" }));
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.sortie, /https:\/\//);
+  assert.doesNotMatch(r.sortie, /PONG|injoignable/);
+  sansValeur(r.sortie, jeton);
 });
