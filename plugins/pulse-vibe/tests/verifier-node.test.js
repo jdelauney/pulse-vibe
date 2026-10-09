@@ -62,3 +62,10 @@ test("Node.js minimum : le même dans le hook, les README, /pulse:init et le squ
   const squelette = path.join(DEPOT, "plugins", "pulse-vibe-next", "templates", "squelette", "package.json");
   if (fs.existsSync(squelette)) assert.strictEqual(JSON.parse(fs.readFileSync(squelette, "utf8")).engines.node, `>=${MINIMUM}.0`);
 });
+
+test("CI des plugins : la version minimale de Node.js et la LTS active, sous Ubuntu et Windows", { skip: !fs.existsSync(path.join(DEPOT, ".github", "workflows", "tests.yml")) && "hors du dépôt" }, () => {
+  const yml = lire(DEPOT, ".github", "workflows", "tests.yml");
+  assert.ok(yml.includes(`node: ["${MINIMUM}.0", "lts/*"]`), `matrice node : ["${MINIMUM}.0", "lts/*"]`);
+  assert.match(yml, /os: \[ubuntu-latest, windows-latest\]/);
+  assert.match(yml, /node-version: \$\{\{ matrix\.node \}\}/);
+});

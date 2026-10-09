@@ -10,7 +10,9 @@ const path = require("path");
 const net = require("net");
 const os = require("os");
 const SCRIPT = path.join(__dirname, "..", "scripts", "verifier-squelette.js");
-const { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, rangerDossier } = require(SCRIPT);
+const { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, rangerDossier, FICHIERS_DU_COEUR } = require(SCRIPT);
+const DEPOT = path.join(__dirname, "..", "..", "..");
+const CI_SQUELETTE = path.join(DEPOT, ".github", "workflows", "squelette-next.yml");
 
 test("changement majeur au sens de npm : le premier nombre non nul", () => {
   assert.strictEqual(changementMajeur("1.4.0", "2.0.0"), true);
@@ -122,3 +124,51 @@ test("bout en bout : rapport JSON demandé à Playwright, navigateur avec ses d�
   assert.match(source, /process\.platform === "linux"/);
 });
 
+// Motif de chemin de GitHub Actions → expression régulière (** : tout ; * : tout sauf /).
+const motifEnRegExp = (motif) =>
+  new RegExp(`^${motif.split("**").map((morceau) => morceau.split("*").map((x) => x.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[^/]*")).join(".*")}$`);
+
+// Chemins d'un déclencheur (push ou pull_request) de la CI.
+function cheminsDeclencheurs(yml, evenement) {
+  const bloc = yml.split(new RegExp(`^  ${evenement}:\\n`, "m"))[1].split(/^ {2}[a-z_]+:\n/m)[0];
+  return [...bloc.matchAll(/^\s+- "([^"]+)"$/gm)].map((m) => m[1]);
+}
+
+// Fichiers du cœur que lance verifier-squelette, et ceux qu'ils chargent par require("./…"), de proche en proche.
+function fichiersDuCoeur() {
+  const vus = new Set();
+  const aVoir = [...FICHIERS_DU_COEUR];
+  while (aVoir.length) {
+    const f = aVoir.pop();
+    if (vus.has(f)) continue;
+    vus.add(f);
+    for (const m of fs.readFileSync(f, "utf8").matchAll(/require\("\.\/([\w-]+)(?:\.js)?"\)/g)) aVoir.push(path.join(path.dirname(f), `${m[1]}.js`));
+  }
+  return [...vus].map((f) => path.relative(DEPOT, f).split(path.sep).join("/"));
+}
+
+test("CI du squelette : chaque fichier du cœur qu'utilise verifier-squelette la déclenche", { skip: !fs.existsSync(CI_SQUELETTE) && "hors du dépôt" }, () => {
+  const yml = fs.readFileSync(CI_SQUELETTE, "utf8");
+  const coeur = fichiersDuCoeur();
+  assert.ok(coeur.includes("plugins/pulse-vibe/scripts/robots.js"), "require suivis de proche en proche");
+  for (const evenement of ["push", "pull_request"]) {
+    const motifs = cheminsDeclencheurs(yml, evenement).map(motifEnRegExp);
+    for (const f of coeur) assert.ok(motifs.some((m) => m.test(f)), `${evenement} : ${f}`);
+  }
+});
+
+test("CI du squelette : vérification chaque semaine sous Windows", { skip: !fs.existsSync(CI_SQUELETTE) && "hors du dépôt" }, () => {
+  const job = fs.readFileSync(CI_SQUELETTE, "utf8").split(/^ {2}windows:\n/m)[1];
+  assert.ok(job, "job windows");
+  const bloc = job.split(/^ {2}[a-z-]+:\n/m)[0];
+  assert.match(bloc, /if: github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch'/);
+  assert.match(bloc, /runs-on: windows-latest/);
+  assert.match(bloc, /verifier-squelette\.js --e2e\n/);
+});
+
+test("CI du squelette : un test instable avertit à chaque envoi, fait échouer la vérification hebdomadaire", { skip: !fs.existsSync(CI_SQUELETTE) && "hors du dépôt" }, () => {
+  const yml = fs.readFileSync(CI_SQUELETTE, "utf8");
+  const verifier = yml.split(/^ {2}verifier:\n/m)[1].split(/^ {2}[a-z-]+:\n/m)[0];
+  assert.match(verifier, /verifier-squelette\.js --e2e --tolerer-instables\n/);
+  assert.strictEqual(yml.match(/--tolerer-instables/g).length, 1, "seulement dans le job de chaque envoi");
+});

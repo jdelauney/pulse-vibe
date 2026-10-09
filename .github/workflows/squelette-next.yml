@@ -1,6 +1,7 @@
 # Squelette et recettes du pack pulse-vibe-next.
 # - Sur chaque demande de fusion et chaque envoi sur main qui touchent le pack : le squelette (bout en bout compris), puis les
 #   recettes balisées posées sur lui (contrôles, types, tests, construction).
+# - Chaque semaine, sous Windows : le squelette aux versions du dépôt, de bout en bout (la plateforme du public).
 # - Chaque semaine : toutes les dépendances à leur dernière version, sauf les versions majeures ; si tout
 #   passe, une demande de fusion propose la mise à jour. Les versions majeures passent à part, dans leur
 #   propre demande de fusion, pour lire leurs notes de version avant de fusionner.
@@ -12,10 +13,18 @@ on:
     paths:
       - "plugins/pulse-vibe-next/**"
       - ".github/workflows/squelette-next.yml"
+      # Le cœur que verifier-squelette.js utilise (FICHIERS_DU_COEUR et leurs require).
+      - "plugins/pulse-vibe/scripts/seo*.js"
+      - "plugins/pulse-vibe/scripts/robots.js"
+      - "plugins/pulse-vibe/scripts/port-libre.js"
   pull_request:
     paths:
       - "plugins/pulse-vibe-next/**"
       - ".github/workflows/squelette-next.yml"
+      # Le cœur que verifier-squelette.js utilise (FICHIERS_DU_COEUR et leurs require).
+      - "plugins/pulse-vibe/scripts/seo*.js"
+      - "plugins/pulse-vibe/scripts/robots.js"
+      - "plugins/pulse-vibe/scripts/port-libre.js"
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:
@@ -32,7 +41,8 @@ jobs:
         with:
           node-version: lts/*
       - name: Vérifier le squelette
-        run: node plugins/pulse-vibe-next/scripts/verifier-squelette.js --e2e
+        # Un test instable est signalé sans bloquer l'envoi ; les vérifications hebdomadaires échouent dessus.
+        run: node plugins/pulse-vibe-next/scripts/verifier-squelette.js --e2e --tolerer-instables
         env:
           CI: "true"
       - name: Vérifier les recettes balisées
@@ -40,6 +50,21 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
+
+  windows:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: lts/*
+      - name: Vérifier le squelette sous Windows (versions du dépôt)
+        run: node plugins/pulse-vibe-next/scripts/verifier-squelette.js --e2e
+        env:
+          CI: "true"
 
   dernieres-versions:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
