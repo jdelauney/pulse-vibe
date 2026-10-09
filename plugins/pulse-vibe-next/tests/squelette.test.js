@@ -196,3 +196,13 @@ test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé
   for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "safe-action.test.ts")));
 });
+
+test("migrations du squelette : construction Vercel précédée de scripts/migrer.mjs, adresse directe de l'intégration", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const vercel = JSON.parse(fs.readFileSync(path.join(S, "vercel.json"), "utf8"));
+  assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "node scripts/migrer.mjs && npm run build" });
+  assert.match(fs.readFileSync(path.join(S, "drizzle.config.ts"), "utf8"), /process\.env\.DATABASE_URL_DIRECT \?\? process\.env\.DATABASE_URL_UNPOOLED/);
+  const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
+  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations"]) assert.ok(migrer.includes(attendu), attendu);
+  assert.ok(fs.existsSync(path.join(S, "tests", "migrer.test.ts")));
+});
