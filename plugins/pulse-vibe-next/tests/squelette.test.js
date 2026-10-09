@@ -195,7 +195,7 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
 test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const action = fs.readFileSync(path.join(S, "src", "lib", "safe-action.ts"), "utf8");
-  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
+  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata, ctx })", "next({ ctx: { requete } })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "safe-action.test.ts")));
 });
 
