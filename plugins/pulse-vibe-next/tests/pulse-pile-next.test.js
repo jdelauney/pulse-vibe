@@ -387,3 +387,22 @@ test("README du projet : « Tester en local » fourni par le pack, lignes des re
   assert.match(lire(REF, "contexte", "tech.md"), /« Tester en local » par le bloc de base de `pulse-aidd pile reference readme\.md`/);
   assert.match(lire(REF, "contexte", "implement.md"), /pulse-aidd pile reference readme\.md/);
 });
+
+test("recette langues : le layout par langue garde le lien d'évitement et la zone #contenu du squelette", () => {
+  const langues = lire(REF, "recettes", "langues.md");
+  const layout = langues.slice(langues.indexOf("// app/[locale]/layout.tsx"));
+  const code = layout.slice(0, layout.indexOf("```"));
+  assert.ok(code.includes('href="#contenu"'), 'lien href="#contenu"');
+  assert.ok(code.includes('id="contenu"'), 'zone id="contenu"');
+  assert.ok(code.includes('t("allerAuContenu")'), "texte du lien traduit");
+  assert.match(langues, /"allerAuContenu": "Aller au contenu"/);
+  assert.match(langues, /"allerAuContenu": "Skip to content"/);
+});
+
+test("deploy : commande de construction complète, migrations juste avant la construction", () => {
+  const deploy = lire(REF, "contexte", "deploy.md");
+  assert.ok(
+    deploy.includes("node scripts/verifier.js && npm run check && npm run typecheck && npm test && node scripts/migrer.mjs --vercel && npm run build"),
+    "buildCommand complet avec migrer.mjs juste avant npm run build",
+  );
+});

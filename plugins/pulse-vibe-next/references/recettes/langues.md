@@ -262,6 +262,9 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
 
 ```json
 {
+  "Accessibilite": {
+    "allerAuContenu": "Aller au contenu"
+  },
   "ChoixLangue": {
     "libelle": "Langue",
     "fr": "Français",
@@ -280,6 +283,9 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
 
 ```json
 {
+  "Accessibilite": {
+    "allerAuContenu": "Skip to content"
+  },
   "ChoixLangue": {
     "libelle": "Language",
     "fr": "Français",
@@ -304,7 +310,7 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
 
 ### 8. Le layout racine
 
-Version du squelette, complétée : langue validée, `generateStaticParams`, `lang` de la page, fournisseur des messages pour les composants clients, sélecteur de langue.
+Version du squelette, complétée (lien d'évitement traduit et zone `#contenu` conservés) : langue validée, `generateStaticParams`, `lang` de la page, fournisseur des messages pour les composants clients, sélecteur de langue.
 
 ```tsx
 // app/[locale]/layout.tsx
@@ -318,6 +324,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "../globals.css";
 
@@ -355,18 +362,32 @@ export default async function RootLayout({
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
+  const t = await getTranslations({ locale, namespace: "Accessibilite" });
   return (
     <html
       lang={locale}
       className={`${policeTexte.variable} ${policeCode.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        {/* Lien d'évitement du squelette, traduit : le premier arrêt au clavier mène au contenu. */}
+        <a
+          href="#contenu"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:ring-3 focus:ring-ring"
+        >
+          {t("allerAuContenu")}
+        </a>
         <NextIntlClientProvider>
           <NuqsAdapter>
             <header className="flex justify-end px-6 py-3">
               <ChoixLangueContainer />
             </header>
-            {children}
+            <div
+              id="contenu"
+              tabIndex={-1}
+              className="flex flex-1 flex-col outline-none"
+            >
+              {children}
+            </div>
           </NuqsAdapter>
         </NextIntlClientProvider>
         <Toaster />
@@ -628,7 +649,11 @@ Dans `playwright.config.ts`, bloc `use` :
     locale: "fr-FR",
 ```
 
-### 14. Vérifier
+### 14. Adapter le test du lien d'évitement
+
+Le lien d'évitement du squelette porte maintenant le texte des messages. Dans `e2e/accueil.spec.ts`, le test « le lien d'évitement est le premier arrêt au clavier » cherche le lien par son texte : `Aller au contenu` reste juste tant que le navigateur de test est en français (étape 13) ; si vous changez la langue du test ou le texte du message `Accessibilite.allerAuContenu`, le texte cherché suit la traduction.
+
+### 15. Vérifier
 
 `npm run build` liste `/fr/…` et `/en/…` pour chaque page. Puis ouvrir `/`, `/en`, et `/en/compte` sans être connecté : direction `/en/connexion`.
 
