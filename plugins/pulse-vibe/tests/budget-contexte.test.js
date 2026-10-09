@@ -36,8 +36,8 @@ const PLAFONDS = {
   us: 35000,
   spec: 39500,
   plan: 54000,
-  implement: 64500,
-  fix: 103000,
+  implement: 46000,
+  fix: 22500,
   review: 43000,
   commit: 42500,
   pr: 36500,
@@ -78,7 +78,7 @@ const BOUCLES = {
 
 // Cibles pas encore atteintes : chaque tâche du plan 4 retire celles qu'elle atteint ; la tâche 11 supprime ce mécanisme.
 const EN_ATTENTE = new Set([
-  "implement", "spirc",
+  "spirc",
   "etape review", "etape commit", "boucle implement", "boucle spirc",
 ]);
 const attente = (cle) => (EN_ATTENTE.has(cle) ? "plafond atteint plus loin dans le plan 4" : false);

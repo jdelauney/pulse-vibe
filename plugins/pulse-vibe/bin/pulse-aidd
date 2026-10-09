@@ -221,12 +221,11 @@ contexte() {
       afficher "Motifs d'écrans" "$REF/design/motifs.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
-      qualite
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Travailler dans un worktree" "$REF/worktree.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       lexique ;;
-    fix) qualite; lexique ;;
+    fix) lexique ;;
     review)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Examiner une tâche" "$REF/examen.md"

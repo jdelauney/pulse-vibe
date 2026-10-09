@@ -140,6 +140,21 @@ test("contexte init, status et guide : fichiers du projet et cycle Pulse", () =>
   assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
 });
 
+test("contexte implement et fix : règles de qualité chargées à la demande", () => {
+  for (const commande of ["implement", "fix"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(!r.stdout.includes("===== Règles de qualité du code ====="), commande);
+    assert.ok(!r.stdout.includes("===== Clean code ====="), commande);
+  }
+  assert.ok(lancer("qualite").stdout.includes("===== Clean code ====="), "pulse-aidd qualite reste complet");
+  const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
+  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite` une fois/);
+  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite` \(règles de qualité du code\), puis évaluer/);
+  const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
+  assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
+});
+
 test("contexte implement, spirc, fix, learn et explain : modèle du lexique", () => {
   for (const commande of ["implement", "spirc", "fix", "learn", "explain"]) {
     const r = lancer("contexte", commande);
