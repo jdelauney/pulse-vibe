@@ -109,6 +109,13 @@ test("git add d'un fichier précis sain : autorisé même si un autre fichier po
   assert.ok(refuse(lancerHook(bash("git add brouillon.js", d.dir))));
 });
 
+test("git add d'un fichier précis écrit avec une autre casse (Windows, macOS) : bloqué", { skip: process.platform === "linux" }, () => {
+  const d = depotTemporaire();
+  d.ecrire("brouillon.js", `const k = "${FAUX.stripe}";
+`);
+  assert.ok(refuse(lancerHook(bash("git add BROUILLON.JS", d.dir))));
+});
+
 test("git add d'un fichier précis : bloqué aussi quand le dossier courant passe par un lien (ou un nom court Windows)", () => {
   const d = depotTemporaire();
   d.ecrire("brouillon.js", `const k = "${FAUX.stripe}";\n`);
