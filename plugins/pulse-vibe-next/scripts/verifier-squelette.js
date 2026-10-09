@@ -53,21 +53,26 @@ function testsInstables(rapport) {
   return trouves;
 }
 
-/** Après le bout en bout : un test instable fait échouer, sauf --tolerer-instables (signalé seulement). */
+/**
+ * Après le bout en bout : un test instable fait échouer, sauf --tolerer-instables (signalé seulement).
+ * Un rapport absent ou illisible fait toujours échouer. Rend { echec, message } (message : null s'il n'y a rien à dire).
+ */
 function controlerInstables(fichier, tolerer) {
-  if (!fs.existsSync(fichier)) {
-    console.error(`\n❌ Échec : rapport JSON de Playwright introuvable (${fichier})`);
-    process.exit(1);
+  if (!fs.existsSync(fichier)) return { echec: true, message: `\n❌ Échec : rapport JSON de Playwright introuvable (${fichier})` };
+  let rapport;
+  try {
+    rapport = JSON.parse(fs.readFileSync(fichier, "utf8"));
+  } catch (e) {
+    return { echec: true, message: `\n❌ Échec : rapport JSON de Playwright illisible (${fichier} : ${e.message})` };
   }
-  const instables = testsInstables(JSON.parse(fs.readFileSync(fichier, "utf8")));
-  if (!instables.length) return;
+  const instables = testsInstables(rapport);
+  if (!instables.length) return { echec: false, message: null };
   const liste = instables.map((x) => `  - ${x}`).join("\n");
-  if (tolerer) {
-    console.log(`\n⚠️ ${instables.length} test(s) instable(s), passé(s) seulement après une relance :\n${liste}`);
-    return;
-  }
-  console.error(`\n❌ Échec : ${instables.length} test(s) instable(s), passé(s) seulement après une relance (une relance masque le problème : references/tests/strategie.md §4) :\n${liste}\n   Pour les signaler sans échouer : --tolerer-instables`);
-  process.exit(1);
+  if (tolerer) return { echec: false, message: `\n⚠️ ${instables.length} test(s) instable(s), passé(s) seulement après une relance :\n${liste}` };
+  return {
+    echec: true,
+    message: `\n❌ Échec : ${instables.length} test(s) instable(s), passé(s) seulement après une relance (une relance masque le problème : references/tests/strategie.md §4) :\n${liste}\n   Pour les signaler sans échouer : --tolerer-instables`,
+  };
 }
 
 /** Fin du script : retire le dossier temporaire, sauf --garder ou échec ; un dossier donné (--dossier) reste. Rend le message à afficher, ou null. */
@@ -332,7 +337,9 @@ async function principal() {
     // Rapport JSON en plus de la liste : les relances (retries de la configuration en CI) y laissent le statut « flaky ».
     const rapportE2e = path.join(dossier, "rapport-e2e.json");
     lancer("npm run test:e2e -- --reporter=list,json", dossier, { CI: "true", SKIP_ENV_VALIDATION: "1", PLAYWRIGHT_JSON_OUTPUT_NAME: rapportE2e, PLAYWRIGHT_JSON_OUTPUT_FILE: rapportE2e });
-    controlerInstables(rapportE2e, opts.tolererInstables);
+    const controle = controlerInstables(rapportE2e, opts.tolererInstables);
+    if (controle.message) (controle.echec ? console.error : console.log)(controle.message);
+    if (controle.echec) process.exit(1);
     await auditerSiteServi(dossier);
     if (process.exitCode) process.exit(1);
   }
@@ -349,4 +356,4 @@ async function principal() {
 
 if (require.main === module) principal();
 
-module.exports = { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, rangerDossier, FICHIERS_DU_COEUR };
+module.exports = { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, controlerInstables, rangerDossier, FICHIERS_DU_COEUR };

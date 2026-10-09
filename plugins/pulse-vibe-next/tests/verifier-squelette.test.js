@@ -10,7 +10,7 @@ const path = require("path");
 const net = require("net");
 const os = require("os");
 const SCRIPT = path.join(__dirname, "..", "scripts", "verifier-squelette.js");
-const { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, rangerDossier, FICHIERS_DU_COEUR } = require(SCRIPT);
+const { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, controlerInstables, rangerDossier, FICHIERS_DU_COEUR } = require(SCRIPT);
 const DEPOT = path.join(__dirname, "..", "..", "..");
 const CI_SQUELETTE = path.join(DEPOT, ".github", "workflows", "squelette-next.yml");
 
@@ -117,6 +117,57 @@ test("tests instables : relevés dans le rapport JSON de Playwright, à toute pr
   assert.deepStrictEqual(testsInstables(null), []);
 });
 
+// Un rapport JSON de Playwright écrit dans un dossier temporaire (null : aucun fichier ; texte : contenu brut).
+function rapportEcrit(contenu) {
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-rapport-e2e-"));
+  const fichier = path.join(dossier, "rapport-e2e.json");
+  if (contenu !== null) fs.writeFileSync(fichier, typeof contenu === "string" ? contenu : JSON.stringify(contenu));
+  return { fichier, retirer: () => fs.rmSync(dossier, { recursive: true, force: true }) };
+}
+const unTest = (status) => ({ suites: [{ title: "a.spec.ts", specs: [{ title: "la page répond", file: "a.spec.ts", line: 3, tests: [{ projectName: "ordinateur", status }] }] }] });
+
+test("contrôle des tests instables : sans relance, rien ; un test instable fait échouer, ou avertit avec --tolerer-instables", () => {
+  const propre = rapportEcrit(unTest("expected"));
+  const instable = rapportEcrit(unTest("flaky"));
+  try {
+    for (const tolerer of [false, true]) assert.deepStrictEqual(controlerInstables(propre.fichier, tolerer), { echec: false, message: null });
+    const echec = controlerInstables(instable.fichier, false);
+    assert.strictEqual(echec.echec, true);
+    assert.match(echec.message, /^\n❌ Échec : 1 test\(s\) instable\(s\)/);
+    assert.match(echec.message, /\[ordinateur\] a\.spec\.ts:3 la page répond/);
+    assert.match(echec.message, /Pour les signaler sans échouer : --tolerer-instables/);
+    const tolere = controlerInstables(instable.fichier, true);
+    assert.strictEqual(tolere.echec, false);
+    assert.match(tolere.message, /^\n⚠️ 1 test\(s\) instable\(s\)/);
+    assert.match(tolere.message, /\[ordinateur\] a\.spec\.ts:3 la page répond/);
+  } finally {
+    propre.retirer();
+    instable.retirer();
+  }
+});
+
+test("contrôle des tests instables : rapport absent ou illisible, échec avec un message clair, même avec --tolerer-instables", () => {
+  const absent = rapportEcrit(null);
+  const tronque = rapportEcrit('{"suites": [{"title": "a.spec');
+  try {
+    for (const tolerer of [false, true]) {
+      assert.deepStrictEqual(controlerInstables(absent.fichier, tolerer), { echec: true, message: `\n❌ Échec : rapport JSON de Playwright introuvable (${absent.fichier})` });
+      const illisible = controlerInstables(tronque.fichier, tolerer);
+      assert.strictEqual(illisible.echec, true);
+      assert.ok(illisible.message.startsWith(`\n❌ Échec : rapport JSON de Playwright illisible (${tronque.fichier} : `), illisible.message);
+    }
+  } finally {
+    absent.retirer();
+    tronque.retirer();
+  }
+});
+
+test("bout en bout : un échec du contrôle des tests instables arrête le script (dossier gardé par le code de sortie)", () => {
+  const source = fs.readFileSync(SCRIPT, "utf8");
+  assert.match(source, /const controle = controlerInstables\(rapportE2e, opts\.tolererInstables\);/);
+  assert.match(source, /if \(controle\.echec\) process\.exit\(1\);/);
+});
+
 test("bout en bout : rapport JSON demandé à Playwright, navigateur avec ses dépendances système seulement sous Linux", () => {
   const source = fs.readFileSync(SCRIPT, "utf8");
   assert.match(source, /npm run test:e2e -- --reporter=list,json/);
@@ -134,7 +185,9 @@ function cheminsDeclencheurs(yml, evenement) {
   return [...bloc.matchAll(/^\s+- "([^"]+)"$/gm)].map((m) => m[1]);
 }
 
-// Fichiers du cœur que lance verifier-squelette, et ceux qu'ils chargent par require("./…"), de proche en proche.
+// Fichiers du cœur que lance verifier-squelette, ceux qu'ils chargent par require("./…"), de proche en proche,
+// et les fichiers de données qu'ils lisent par un chemin écrit en entier : path.join(__dirname, "…", …).
+// Limite : un chemin calculé (variable, gabarit) n'est pas suivi ; un tel fichier s'ajoute à la main aux déclencheurs de la CI.
 function fichiersDuCoeur() {
   const vus = new Set();
   const aVoir = [...FICHIERS_DU_COEUR];
@@ -142,7 +195,12 @@ function fichiersDuCoeur() {
     const f = aVoir.pop();
     if (vus.has(f)) continue;
     vus.add(f);
-    for (const m of fs.readFileSync(f, "utf8").matchAll(/require\("\.\/([\w-]+)(?:\.js)?"\)/g)) aVoir.push(path.join(path.dirname(f), `${m[1]}.js`));
+    const source = fs.readFileSync(f, "utf8");
+    for (const m of source.matchAll(/require\("\.\/([\w-]+)(?:\.js)?"\)/g)) aVoir.push(path.join(path.dirname(f), `${m[1]}.js`));
+    for (const m of source.matchAll(/path\.join\(__dirname((?:,\s*"[^"]+")+)\)/g)) {
+      const donnee = path.join(path.dirname(f), ...[...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
+      if (fs.existsSync(donnee) && fs.statSync(donnee).isFile()) vus.add(donnee);
+    }
   }
   return [...vus].map((f) => path.relative(DEPOT, f).split(path.sep).join("/"));
 }
@@ -151,6 +209,7 @@ test("CI du squelette : chaque fichier du cœur qu'utilise verifier-squelette la
   const yml = fs.readFileSync(CI_SQUELETTE, "utf8");
   const coeur = fichiersDuCoeur();
   assert.ok(coeur.includes("plugins/pulse-vibe/scripts/robots.js"), "require suivis de proche en proche");
+  assert.ok(coeur.includes("plugins/pulse-vibe/references/seo/robots-ia.json"), "fichiers de données lus par path.join(__dirname, …)");
   for (const evenement of ["push", "pull_request"]) {
     const motifs = cheminsDeclencheurs(yml, evenement).map(motifEnRegExp);
     for (const f of coeur) assert.ok(motifs.some((m) => m.test(f)), `${evenement} : ${f}`);
