@@ -31,12 +31,9 @@ version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin
 
 recettes() {
   local f nom titre
-  for f in "$REF"/recettes/*/index.md "$REF"/recettes/*.md; do
+  for f in "$REF"/recettes/*/index.md; do
     [ -f "$f" ] || continue
-    case "$f" in
-      */index.md) nom="$(basename "$(dirname "$f")")" ;;
-      *) nom="$(basename "$f" .md)" ;;
-    esac
+    nom="$(basename "$(dirname "$f")")"
     titre="$(sed -n 's/^> Quand l.utiliser : //p' "$f" | head -n 1)"
     printf -- '- %s : %s\n' "$nom" "$titre"
   done
@@ -125,10 +122,7 @@ case "$1" in
       ""|*/*|*..*) echo "Indiquez le nom d'une recette. Disponibles :"; recettes; exit 1 ;;
     esac
     dossier="$REF/recettes/$2"
-    if [ ! -f "$dossier/index.md" ]; then
-      if [ -z "$3" ] && [ -f "$REF/recettes/$2.md" ]; then cat "$REF/recettes/$2.md"; exit 0; fi
-      echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1
-    fi
+    if [ ! -f "$dossier/index.md" ]; then echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi
     case "$3" in
       "") cat "$dossier/index.md" ;;
       tests) cat "$dossier/tests.md" ;;

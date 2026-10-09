@@ -95,11 +95,9 @@ function lireDossier(dossier) {
   return fichiers;
 }
 
-// Le texte complet d'une recette, découpée ou non.
+// Le texte complet d'une recette (index, étapes et tests remis dans l'ordre).
 function texteRecette(nom, dossier = DOSSIER) {
-  const d = path.join(dossier, nom);
-  if (fs.existsSync(path.join(d, "index.md"))) return recomposer(lireDossier(d));
-  return fs.readFileSync(path.join(dossier, `${nom}.md`), "utf8");
+  return recomposer(lireDossier(path.join(dossier, nom)));
 }
 
 if (require.main === module) {

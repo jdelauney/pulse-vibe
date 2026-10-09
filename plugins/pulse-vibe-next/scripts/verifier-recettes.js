@@ -145,7 +145,7 @@ function lancer(programme, args, cwd, env = {}) {
 }
 
 function poserRecette(dossier, nom) {
-  if (!fs.existsSync(path.join(RECETTES, nom, "index.md")) && !fs.existsSync(path.join(RECETTES, `${nom}.md`))) throw new Error(`recette introuvable : ${nom}`);
+  if (!fs.existsSync(path.join(RECETTES, nom, "index.md"))) throw new Error(`recette introuvable : ${nom}`);
   const etapes = extraireEtapes(texteRecette(nom));
   if (!etapes.length) throw new Error(`recette ${nom} : aucune balise (voir l'en-tête de ce script)`);
   console.log(`\n■ Recette ${nom} : ${etapes.length} étapes balisées`);

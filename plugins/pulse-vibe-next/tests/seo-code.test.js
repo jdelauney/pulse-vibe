@@ -166,7 +166,7 @@ test("la politique des robots du squelette reprend les rôles de robots-ia.json 
 });
 
 test("la recette seo suit le format commun des recettes", () => {
-  const texte = fs.readFileSync(path.join(RACINE, "references", "recettes", "seo.md"), "utf8");
+  const texte = require("../scripts/decouper-recette.js").texteRecette("seo");
   assert.match(texte, /^# Recette : seo$/m);
   assert.match(texte, /^> Quand l'utiliser : .+$/m);
   for (const section of ["## Prérequis", "## Variables d'environnement", "## Fichiers créés ou modifiés", "## Étapes", "## Scénarios Gherkin à ajouter à la spec", "## Tâches de plan prêtes", "## Tests", "## Points de sécurité", "## Pièges connus"])

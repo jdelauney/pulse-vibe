@@ -128,7 +128,7 @@ test("chaque recette, étape ou référence citée existe", () => {
       else if (e.name.endsWith(".md")) textes.push(chemin);
     }
   })(path.join(REF, "recettes"));
-  const existe = (nom) => fs.existsSync(path.join(REF, "recettes", nom, "index.md")) || fs.existsSync(path.join(REF, "recettes", `${nom}.md`));
+  const existe = (nom) => fs.existsSync(path.join(REF, "recettes", nom, "index.md"));
   const manquantes = [];
   for (const f of textes) {
     const texte = lire(f);
@@ -442,4 +442,18 @@ test("deploy : commande de construction complète, migrations juste avant la con
     deploy.includes("node scripts/verifier.js && npm run check && npm run typecheck && npm test && node scripts/migrer.mjs --vercel && npm run build"),
     "buildCommand complet avec migrer.mjs juste avant npm run build",
   );
+});
+
+test("toutes les recettes sont découpées : un dossier avec index.md, plus aucun recettes/<nom>.md", () => {
+  for (const nom of RECETTES) {
+    assert.ok(fs.existsSync(path.join(REF, "recettes", nom, "index.md")), `${nom}/index.md`);
+    assert.ok(fs.existsSync(path.join(REF, "recettes", nom, "tests.md")), `${nom}/tests.md`);
+    assert.ok(!fs.existsSync(path.join(REF, "recettes", `${nom}.md`)), `${nom}.md retiré`);
+  }
+  const limite = lancer("recette", "limite", "etape", "option-redis");
+  assert.strictEqual(limite.status, 0);
+  assert.match(limite.stdout, /^### Option : Redis/);
+  assert.strictEqual(lancer("recette", "mesure-reelle", "etape", "option-a").status, 0);
+  assert.strictEqual(lancer("recette", "formulaire-public", "etape", "option-turnstile").status, 0);
+  assert.strictEqual(lancer("recette", "suivi-erreurs", "etape", "2").status, 0);
 });
