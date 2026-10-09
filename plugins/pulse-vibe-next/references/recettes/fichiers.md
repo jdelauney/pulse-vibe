@@ -45,6 +45,7 @@ Le bucket reste **privé** : pas d'accès public, pas de domaine public.
 
 Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
 
+<!-- ajout: src/config/env.ts après: server: { -->
 ```ts
     R2_ACCOUNT_ID: z.string().min(1),
     R2_ACCESS_KEY_ID: z.string().min(1),
@@ -54,6 +55,7 @@ Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
 
 Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
 
+<!-- ajout: tests/helpers/env-de-test.ts après: export const VARIABLES_VALIDES: Record<string, string> = { -->
 ```ts
   R2_ACCOUNT_ID: "compte",
   R2_ACCESS_KEY_ID: "cle-acces",
@@ -63,6 +65,7 @@ Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `V
 
 Ajoutez les quatre noms, **sans valeur**, à `.env.example` :
 
+<!-- ajout: .env.example -->
 ```
 R2_ACCOUNT_ID=
 R2_ACCESS_KEY_ID=
@@ -111,6 +114,8 @@ Dans Vercel, saisissez-les pour Production et Preview.
 
 ## Étapes
 
+<!-- commande: npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner -->
+
 Le parcours d'un envoi :
 
 1. Le navigateur demande une adresse d'envoi à l'action `preparerEnvoiAction`, avec le nom, le type et la taille du fichier.
@@ -129,6 +134,7 @@ Faites les réglages Cloudflare (Prérequis), remplissez `.env`, complétez `src
 
 Le métier ne dépend que de `src/core/`. Les deux ports décrivent ce dont les use-cases ont besoin : le repository de l'étape 5 et l'adapter de l'étape 6 les fournissent, et un test passe des doublures en mémoire.
 
+<!-- fichier: src/core/fichiers/fichier.entity.ts -->
 ```ts
 // src/core/fichiers/fichier.entity.ts
 /** Types de fichiers acceptés, avec l'extension donnée à l'objet rangé. */
@@ -160,11 +166,13 @@ export type Fichier = {
 };
 ```
 
+<!-- fichier: src/core/fichiers/fichier.errors.ts -->
 ```ts
 // src/core/fichiers/fichier.errors.ts
 export type ErreurFichier = "fichier-introuvable" | "envoi-incomplet";
 ```
 
+<!-- fichier: src/core/fichiers/fichier.rules.ts -->
 ```ts
 // src/core/fichiers/fichier.rules.ts
 import {
@@ -199,6 +207,7 @@ export function envoiConforme(
 }
 ```
 
+<!-- fichier: src/core/fichiers/fichier-repository.port.ts -->
 ```ts
 // src/core/fichiers/fichier-repository.port.ts
 import type { Fichier, TypeAutorise } from "./fichier.entity";
@@ -220,6 +229,7 @@ export type FichierRepository = {
 };
 ```
 
+<!-- fichier: src/core/fichiers/stockage-fichiers.port.ts -->
 ```ts
 // src/core/fichiers/stockage-fichiers.port.ts
 /** Le stockage des objets (Cloudflare R2). L'adapter `storage` l'implémente ; un test passe une doublure. */
@@ -242,6 +252,7 @@ export type StockageFichiers = {
 
 Chaque écriture combine la base et le stockage (deux ports) : elle passe par un use-case (architecture.md §5, point 2). Les lectures vont directement au repository (étape 8).
 
+<!-- fichier: src/core/fichiers/use-cases/preparer-envoi.use-case.ts -->
 ```ts
 // src/core/fichiers/use-cases/preparer-envoi.use-case.ts
 import type { TypeAutorise } from "../fichier.entity";
@@ -273,6 +284,7 @@ export async function preparerEnvoi(
 
 `confirmerEnvoi` garde la sécurité du parcours : un objet qui diffère de l'annonce (taille, type) ou qui n'est jamais arrivé est effacé, avec sa ligne.
 
+<!-- fichier: src/core/fichiers/use-cases/confirmer-envoi.use-case.ts -->
 ```ts
 // src/core/fichiers/use-cases/confirmer-envoi.use-case.ts
 import { echec, ok, type Result } from "@src/core/shared/result";
@@ -301,6 +313,7 @@ export async function confirmerEnvoi(
 }
 ```
 
+<!-- fichier: src/core/fichiers/use-cases/supprimer-fichier.use-case.ts -->
 ```ts
 // src/core/fichiers/use-cases/supprimer-fichier.use-case.ts
 import { echec, ok, type Result } from "@src/core/shared/result";
@@ -322,6 +335,7 @@ export async function supprimerFichier(
 
 ### 4. La table et sa migration
 
+<!-- fichier: src/db/fichiers/fichier.table.ts -->
 ```ts
 // src/db/fichiers/fichier.table.ts
 import { STATUTS_FICHIER } from "@src/core/fichiers/fichier.entity";
@@ -345,6 +359,7 @@ export const fichiers = pgTable("fichiers", {
 
 `drizzle.config.ts` lit déjà `src/db/*/*.table.ts` : rien à déclarer ailleurs. Générez la migration, relisez le SQL créé dans `drizzle/`, puis appliquez-la :
 
+<!-- commande: npm run db:generate -->
 ```bash
 npm run db:generate
 npm run db:migrate
@@ -354,6 +369,7 @@ npm run db:migrate
 
 Chaque requête commence par la **condition de propriété** (`utilisateurId`, venu de la session). `trouverEnvoye` et `listerEnvoyes` ignorent les lignes `en_attente`. La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests. `satisfies FichierRepository` fait vérifier par TypeScript que le repository remplit le port des use-cases, sans cacher ses lectures propres à l'écran (`listerEnvoyes`, `trouverEnvoye`).
 
+<!-- fichier: src/db/fichiers/fichier.repository.ts -->
 ```ts
 // src/db/fichiers/fichier.repository.ts
 import "server-only";
@@ -446,6 +462,7 @@ export function fichierRepository(db: Db) {
 
 Le client R2 et les adresses signées vivent dans `src/adapters/storage/`. Toute panne du SDK devient une `ErreurService("stockage", …)` : son message est sans secret ni clé d'objet (la clé commence par l'identifiant d'une personne), et sa `cause` garde seulement trois champs techniques (`name`, `Code`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine (architecture.md §8). `safe-action` journalise et affiche un message générique ; le Route Handler de l'étape 9 utilise `reponseErreur()`.
 
+<!-- fichier: src/adapters/storage/storage.adapter.ts -->
 ```ts
 // src/adapters/storage/storage.adapter.ts
 import "server-only";
@@ -583,11 +600,13 @@ Vérifié avec `@aws-sdk/client-s3` 3.1147.0 : sans `requestChecksumCalculation:
 
 `erreur-messages.ts` donne un message à chaque code d'erreur du métier : un code sans message fait échouer `npm run typecheck`.
 
+<!-- fichier: src/features/fichiers/constants/fichiers.ts -->
 ```ts
 // src/features/fichiers/constants/fichiers.ts
 export const MESSAGE_ENVOI_ECHOUE = "L'envoi n'a pas abouti. Réessayez.";
 ```
 
+<!-- fichier: src/features/fichiers/constants/erreur-messages.ts -->
 ```ts
 // src/features/fichiers/constants/erreur-messages.ts
 import type { ErreurFichier } from "@src/core/fichiers/fichier.errors";
@@ -599,6 +618,7 @@ export const MESSAGES_FICHIER: Record<ErreurFichier, string> = {
 };
 ```
 
+<!-- fichier: src/features/fichiers/schemas/fichier.schema.ts -->
 ```ts
 // src/features/fichiers/schemas/fichier.schema.ts
 import {
@@ -634,6 +654,7 @@ export const idFichierSchema = z.object({ id: z.uuid() });
 
 L'identifiant de la propriétaire vient **de la session** (`ctx.utilisateur.id`), jamais de la saisie. Chaque action assemble le use-case avec le repository et l'adapter, traduit un échec en message, puis appelle `refresh()`.
 
+<!-- fichier: src/features/fichiers/actions/preparer-envoi.action.ts -->
 ```ts
 // src/features/fichiers/actions/preparer-envoi.action.ts
 "use server";
@@ -657,6 +678,7 @@ export const preparerEnvoiAction = actionConnectee
   );
 ```
 
+<!-- fichier: src/features/fichiers/actions/confirmer-envoi.action.ts -->
 ```ts
 // src/features/fichiers/actions/confirmer-envoi.action.ts
 "use server";
@@ -685,6 +707,7 @@ export const confirmerEnvoiAction = actionConnectee
   });
 ```
 
+<!-- fichier: src/features/fichiers/actions/supprimer-fichier.action.ts -->
 ```ts
 // src/features/fichiers/actions/supprimer-fichier.action.ts
 "use server";
@@ -714,6 +737,7 @@ export const supprimerFichierAction = actionConnectee
 
 Les lectures passent directement par le repository, sans use-case (architecture.md §6).
 
+<!-- fichier: src/features/fichiers/queries/lister-fichiers.query.ts -->
 ```ts
 // src/features/fichiers/queries/lister-fichiers.query.ts
 import "server-only";
@@ -725,6 +749,7 @@ export async function listerFichiers(utilisateurId: string) {
 }
 ```
 
+<!-- fichier: src/features/fichiers/queries/trouver-fichier.query.ts -->
 ```ts
 // src/features/fichiers/queries/trouver-fichier.query.ts
 import "server-only";
@@ -741,6 +766,7 @@ export async function trouverFichier(id: string, utilisateurId: string) {
 
 Le Route Handler lit la session hors du `try` (sans session, `utilisateurConnecte()` redirige vers `/connexion`, et un `catch` avalerait cette redirection). Seule la signature, qui appelle le service, est protégée par `reponseErreur()`.
 
+<!-- fichier: app/api/fichiers/[id]/route.ts -->
 ```ts
 // app/api/fichiers/[id]/route.ts
 import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
@@ -776,6 +802,7 @@ export async function GET(
 
 La section reçoit tout par props. Le container (client) appelle `useAction` pour les deux actions et envoie le fichier à R2.
 
+<!-- fichier: src/features/fichiers/components/sections/champ-envoi-fichier.tsx -->
 ```tsx
 // src/features/fichiers/components/sections/champ-envoi-fichier.tsx
 "use client";
@@ -825,6 +852,7 @@ export function ChampEnvoiFichier({ quandChoisi, enCours, erreur }: Props) {
 }
 ```
 
+<!-- fichier: src/features/fichiers/components/containers/envoi-fichier.container.tsx -->
 ```tsx
 // src/features/fichiers/components/containers/envoi-fichier.container.tsx
 "use client";
@@ -906,6 +934,7 @@ export function EnvoiFichierContainer() {
 
 La liste suit le même découpage : une section d'affichage et un container serveur qui lit la session et les fichiers.
 
+<!-- fichier: src/features/fichiers/components/sections/liste-fichiers.tsx -->
 ```tsx
 // src/features/fichiers/components/sections/liste-fichiers.tsx
 type Props = {
@@ -935,6 +964,7 @@ export function ListeFichiers({ fichiers }: Props) {
 }
 ```
 
+<!-- fichier: src/features/fichiers/components/containers/liste-fichiers.container.tsx -->
 ```tsx
 // src/features/fichiers/components/containers/liste-fichiers.container.tsx
 import { utilisateurConnecte } from "@src/features/compte/queries/utilisateur-connecte.query";
@@ -950,6 +980,7 @@ export async function ListeFichiersContainer() {
 
 Le container qui lit des données se place sous `<Suspense>` dans la page.
 
+<!-- fichier: app/(connecte)/fichiers/page.tsx -->
 ```tsx
 // app/(connecte)/fichiers/page.tsx
 import { EnvoiFichierContainer } from "@src/features/fichiers/components/containers/envoi-fichier.container";
@@ -976,6 +1007,7 @@ export default function PageFichiers() {
 
 Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` :
 
+<!-- remplacer-ligne: proxy.ts début: matcher: -->
 ```ts
   matcher: ["/compte/:path*", "/fichiers/:path*"],
 ```
@@ -988,6 +1020,7 @@ La page reste protégée par `utilisateurConnecte()`, et le téléchargement par
 
 Le navigateur envoie le fichier directement à R2 (`fetch` avec `PUT`). La CSP bloque tout appel vers une adresse absente de `connect-src` : dans l'objet `sources` de `next.config.ts`, remplacez la ligne `"connect-src": ["'self'"],` par :
 
+<!-- remplacer-ligne: next.config.ts début: "connect-src": -->
 ```ts
   // Envoi direct des fichiers vers R2 (recette fichiers) : l'adresse signée commence par le nom
   // du bucket. Sans juridiction UE, retirer « .eu ».
@@ -1218,6 +1251,7 @@ Fonctionnalité: Fichiers
 
 Les règles et les use-cases s'essaient sans base ni réseau : le repository et le stockage sont remplacés par des doublures en mémoire.
 
+<!-- fichier: src/core/fichiers/__tests__/fichier.rules.test.ts -->
 ```ts
 // src/core/fichiers/__tests__/fichier.rules.test.ts
 import { describe, expect, it } from "vitest";
@@ -1242,6 +1276,7 @@ describe("Fichiers", () => {
 
 Les trois use-cases partagent les mêmes doublures en mémoire, rangées dans un petit fichier d'aide ; chaque use-case a son fichier de tests.
 
+<!-- fichier: src/core/fichiers/use-cases/__tests__/sut-fichiers.ts -->
 ```ts
 // src/core/fichiers/use-cases/__tests__/sut-fichiers.ts
 import type { Fichier } from "../../fichier.entity";
@@ -1324,6 +1359,7 @@ export function creerSut() {
 }
 ```
 
+<!-- fichier: src/core/fichiers/use-cases/__tests__/preparer-envoi.use-case.test.ts -->
 ```ts
 // src/core/fichiers/use-cases/__tests__/preparer-envoi.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -1346,6 +1382,7 @@ describe("Fichiers", () => {
 });
 ```
 
+<!-- fichier: src/core/fichiers/use-cases/__tests__/confirmer-envoi.use-case.test.ts -->
 ```ts
 // src/core/fichiers/use-cases/__tests__/confirmer-envoi.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -1399,6 +1436,7 @@ describe("Fichiers", () => {
 });
 ```
 
+<!-- fichier: src/core/fichiers/use-cases/__tests__/supprimer-fichier.use-case.test.ts -->
 ```ts
 // src/core/fichiers/use-cases/__tests__/supprimer-fichier.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -1433,6 +1471,7 @@ describe("Fichiers", () => {
 });
 ```
 
+<!-- fichier: src/features/fichiers/schemas/__tests__/fichier.schema.test.ts -->
 ```ts
 // src/features/fichiers/schemas/__tests__/fichier.schema.test.ts
 import { TAILLE_MAX } from "@src/core/fichiers/fichier.entity";
@@ -1482,6 +1521,7 @@ describe("Fichiers", () => {
 
 L'adapter se teste avec le SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
 
+<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts -->
 ```ts
 // src/adapters/storage/__tests__/storage.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
@@ -1593,10 +1633,11 @@ describe("Stockage des fichiers", () => {
 
 Le repository reçoit la base de test : aucune doublure de session ni de `getDb()`.
 
+<!-- fichier: src/db/fichiers/__tests__/fichier.repository.test.ts -->
 ```ts
 // src/db/fichiers/__tests__/fichier.repository.test.ts
-import type { Db } from "@src/db/db-client";
 import { user } from "@src/db/compte/auth.table";
+import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import { fichierRepository } from "../fichier.repository";
@@ -1694,6 +1735,7 @@ describe("Fichiers", () => {
 
 Le premier test envoie un vrai fichier vers R2 : en local et en CI, utilisez un bucket de test, distinct de celui de production. Le second coupe l'envoi vers R2 (`page.route`) : il tourne sans compte R2.
 
+<!-- fichier: e2e/fichiers.spec.ts -->
 ```ts
 // e2e/fichiers.spec.ts
 import { expect, test } from "@playwright/test";

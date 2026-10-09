@@ -120,9 +120,9 @@ test("arguments : --recettes sans valeur, option inconnue", () => {
   assert.throws(() => lireArguments(["--x"]), /Option inconnue/);
 });
 
-test("recettes balisées : connexion et liste ; chaque fichier complet porte sa balise", () => {
+test("recettes balisées : connexion, liste, fichiers, paiement ; chaque fichier complet porte sa balise", () => {
   const sansBalise = { liste: "### 12. Quand utiliser TanStack Query ou Zustand" };
-  for (const nom of ["connexion", "liste"]) {
+  for (const nom of ["connexion", "liste", "fichiers", "paiement"]) {
     const texte = fs.readFileSync(path.join(RECETTES, `${nom}.md`), "utf8");
     const etapes = extraireEtapes(texte);
     assert.ok(etapes.some((e) => e.type === "commande" && e.commande === "npm run db:generate"), `${nom} : génération de la migration`);

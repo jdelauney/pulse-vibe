@@ -28,6 +28,7 @@
 
 Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
 
+<!-- ajout: src/config/env.ts après: server: { -->
 ```ts
     STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
     STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
@@ -35,6 +36,7 @@ Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
 
 Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
 
+<!-- ajout: tests/helpers/env-de-test.ts après: export const VARIABLES_VALIDES: Record<string, string> = { -->
 ```ts
   STRIPE_SECRET_KEY: "sk_test_cle-de-test",
   STRIPE_WEBHOOK_SECRET: "whsec_secret-de-test",
@@ -42,6 +44,7 @@ Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `V
 
 Ajoutez les deux noms, **sans valeur**, à `.env.example` :
 
+<!-- ajout: .env.example -->
 ```
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -81,6 +84,8 @@ Le secret de webhook du poste et celui du site en ligne sont **différents** : c
 
 ## Étapes
 
+<!-- commande: npm install stripe -->
+
 Le parcours :
 
 1. La personne clique sur « Payer 19,00 € ». L'action `payerAction` crée une commande `en_attente`, puis une session Stripe Checkout, et redirige vers la page de Stripe.
@@ -99,6 +104,7 @@ Le métier ne dépend que de `src/core/`. Les deux ports décrivent ce dont les 
 
 Le prix vit côté serveur (`OFFRE`, étape 7) : le navigateur ne choisit jamais le montant. L'`EvenementPaiement` décrit un message de Stripe déjà vérifié, sans vocabulaire Stripe : l'adapter décide si l'événement est un paiement encaissé et remplit `confirmation` dans ce cas seulement.
 
+<!-- fichier: src/core/paiement/commande.entity.ts -->
 ```ts
 // src/core/paiement/commande.entity.ts
 /** « en_attente » : paiement demandé ; « payee » : confirmé par le service de paiement. */
@@ -127,11 +133,13 @@ export type EvenementPaiement = {
 export type ResultatConfirmation = "payee" | "deja_traite" | "ignore";
 ```
 
+<!-- fichier: src/core/paiement/paiement.errors.ts -->
 ```ts
 // src/core/paiement/paiement.errors.ts
 export type ErreurPaiement = "signature-invalide";
 ```
 
+<!-- fichier: src/core/paiement/commande-repository.port.ts -->
 ```ts
 // src/core/paiement/commande-repository.port.ts
 import type { Offre, ResultatConfirmation } from "./commande.entity";
@@ -162,6 +170,7 @@ export type CommandeRepository = {
 };
 ```
 
+<!-- fichier: src/core/paiement/passerelle-paiement.port.ts -->
 ```ts
 // src/core/paiement/passerelle-paiement.port.ts
 import type { Result } from "@src/core/shared/result";
@@ -192,6 +201,7 @@ export type PasserellePaiement = {
 
 `ouvrirPaiement` combine la base et Stripe (deux ports), et `confirmerPaiement` garde la règle « seul un paiement encaissé compte » : les deux passent par un use-case (architecture.md §5, point 2). La partie atomique de la confirmation (noter l'événement et passer la commande en `payee` d'un seul bloc) reste dans le repository, car une transaction doit envelopper les deux écritures.
 
+<!-- fichier: src/core/paiement/use-cases/ouvrir-paiement.use-case.ts -->
 ```ts
 // src/core/paiement/use-cases/ouvrir-paiement.use-case.ts
 import type { Offre } from "../commande.entity";
@@ -227,6 +237,7 @@ export async function ouvrirPaiement(
 }
 ```
 
+<!-- fichier: src/core/paiement/use-cases/confirmer-paiement.use-case.ts -->
 ```ts
 // src/core/paiement/use-cases/confirmer-paiement.use-case.ts
 import type {
@@ -251,6 +262,7 @@ export async function confirmerPaiement(
 
 ### 4. Les tables et leur migration
 
+<!-- fichier: src/db/paiement/commande.table.ts -->
 ```ts
 // src/db/paiement/commande.table.ts
 import { STATUTS_COMMANDE } from "@src/core/paiement/commande.entity";
@@ -275,6 +287,7 @@ export const commande = pgTable("commande", {
 });
 ```
 
+<!-- fichier: src/db/paiement/evenement-stripe.table.ts -->
 ```ts
 // src/db/paiement/evenement-stripe.table.ts
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
@@ -289,6 +302,7 @@ export const evenementStripe = pgTable("evenement_stripe", {
 
 `drizzle.config.ts` lit déjà `src/db/*/*.table.ts` : rien à déclarer ailleurs. Générez la migration, relisez le SQL créé dans `drizzle/`, puis appliquez-la :
 
+<!-- commande: npm run db:generate -->
 ```bash
 npm run db:generate
 npm run db:migrate
@@ -298,6 +312,7 @@ npm run db:migrate
 
 Chaque requête qui touche la commande d'une personne commence par la **condition de propriété** (`utilisateurId`, venu de la session). La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests.
 
+<!-- fichier: src/db/paiement/commande.repository.ts -->
 ```ts
 // src/db/paiement/commande.repository.ts
 import "server-only";
@@ -400,6 +415,7 @@ Le client Stripe et la vérification de signature vivent dans `src/adapters/paym
 
 `lireEvenement` reçoit le corps **brut** : la signature porte sur ces octets exacts. Une signature fausse donne `echec("signature-invalide")`, sans lever d'exception.
 
+<!-- fichier: src/adapters/payment/payment.adapter.ts -->
 ```ts
 // src/adapters/payment/payment.adapter.ts
 import "server-only";
@@ -528,6 +544,7 @@ export const passerellePaiement: PasserellePaiement = {
 
 Adaptez le libellé et le prix au projet.
 
+<!-- fichier: src/features/paiement/constants/offre.ts -->
 ```ts
 // src/features/paiement/constants/offre.ts
 import type { Offre } from "@src/core/paiement/commande.entity";
@@ -542,6 +559,7 @@ export const OFFRE: Offre = {
 
 L'action assemble le use-case avec le repository et l'adapter, puis redirige vers la page de Stripe. `{SESSION_ID}` est remplacé par l'adapter avec l'identifiant de la session.
 
+<!-- fichier: src/features/paiement/actions/payer.action.ts -->
 ```ts
 // src/features/paiement/actions/payer.action.ts
 "use server";
@@ -578,6 +596,7 @@ export const payerAction = actionConnectee.action(async ({ ctx }) => {
 
 Dans un Route Handler de Next.js 16, le corps brut s'obtient avec `await requete.text()`, lu **une seule fois**, avant toute autre lecture. Le fichier du webhook vérifie la signature par l'adapter, puis appelle le use-case. Une signature fausse répond 400, sans rien écrire du message dans le journal. Une panne (base, Stripe) répond avec `reponseErreur()` : Stripe renvoie alors le message plus tard.
 
+<!-- fichier: src/features/paiement/webhooks/stripe-paiement.webhook.ts -->
 ```ts
 // src/features/paiement/webhooks/stripe-paiement.webhook.ts
 import { passerellePaiement } from "@src/adapters/payment/payment.adapter";
@@ -622,6 +641,7 @@ export async function recevoirWebhookStripe(
 }
 ```
 
+<!-- fichier: app/api/stripe/webhook/route.ts -->
 ```ts
 // app/api/stripe/webhook/route.ts
 import { recevoirWebhookStripe } from "@src/features/paiement/webhooks/stripe-paiement.webhook";
@@ -635,6 +655,7 @@ export async function POST(requete: Request) {
 
 La lecture de la commande passe par une query. Le statut vient de la base, jamais de l'arrivée sur la page.
 
+<!-- fichier: src/features/paiement/queries/commande-par-session.query.ts -->
 ```ts
 // src/features/paiement/queries/commande-par-session.query.ts
 import "server-only";
@@ -655,6 +676,7 @@ export async function commandeParSession(
 
 Les sections affichent ce qu'elles reçoivent en props. Le container (client) appelle `useAction` pour l'action `payerAction`. En cas de succès, l'action redirige vers la page de paiement de Stripe : `hasNavigated` garde le bouton bloqué pendant le départ.
 
+<!-- fichier: src/features/paiement/components/sections/bouton-payer.tsx -->
 ```tsx
 // src/features/paiement/components/sections/bouton-payer.tsx
 import { Button } from "@src/components/ui/button";
@@ -680,6 +702,7 @@ export function BoutonPayer({ libelle, payer, enCours, erreur }: Props) {
 }
 ```
 
+<!-- fichier: src/features/paiement/components/containers/bouton-payer.container.tsx -->
 ```tsx
 // src/features/paiement/components/containers/bouton-payer.container.tsx
 "use client";
@@ -702,6 +725,7 @@ export function BoutonPayerContainer({ libelle }: { libelle: string }) {
 }
 ```
 
+<!-- fichier: src/features/paiement/components/sections/statut-paiement.tsx -->
 ```tsx
 // src/features/paiement/components/sections/statut-paiement.tsx
 import type { StatutCommande } from "@src/core/paiement/commande.entity";
@@ -735,6 +759,7 @@ export function StatutPaiement({ commande, adresseActualiser }: Props) {
 
 Le container de la page « Merci » lit la session et la commande de la personne connectée.
 
+<!-- fichier: src/features/paiement/components/containers/statut-paiement.container.tsx -->
 ```tsx
 // src/features/paiement/components/containers/statut-paiement.container.tsx
 import { utilisateurConnecte } from "@src/features/compte/queries/utilisateur-connecte.query";
@@ -763,6 +788,7 @@ export async function StatutPaiementContainer({
 
 Les pages restent fines : elles rendent les containers, celui qui lit des données sous `<Suspense>`. `formaterMontant` vient de `src/lib/helpers/format/format.ts` (recette `liste`) ; sans cette recette, créez ce fichier :
 
+<!-- fichier: src/lib/helpers/format/format.ts -->
 ```ts
 // src/lib/helpers/format/format.ts
 const formatEuros = new Intl.NumberFormat("fr-FR", {
@@ -775,6 +801,7 @@ export function formaterMontant(centimes: number): string {
 }
 ```
 
+<!-- fichier: app/(connecte)/paiement/page.tsx -->
 ```tsx
 // app/(connecte)/paiement/page.tsx
 import { BoutonPayerContainer } from "@src/features/paiement/components/containers/bouton-payer.container";
@@ -797,6 +824,7 @@ export default function PagePaiement() {
 }
 ```
 
+<!-- fichier: app/(connecte)/paiement/merci/page.tsx -->
 ```tsx
 // app/(connecte)/paiement/merci/page.tsx
 import { StatutPaiementContainer } from "@src/features/paiement/components/containers/statut-paiement.container";
@@ -821,7 +849,14 @@ export default function PageMerci({
 
 ### 10. Le renvoi vers la connexion
 
-Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` : `"/paiement/:path*"`. `/api/stripe/webhook` reste hors du `matcher` : Stripe n'a pas de cookie de session. Avec la recette `langues` : voir `connexion`, étape 12.
+Dans `proxy.ts` (racine du projet), ajoutez la page au `matcher` (ici à la suite de `/compte`, recette `connexion`) :
+
+<!-- remplacer-ligne: proxy.ts début: matcher: -->
+```ts
+  matcher: ["/compte/:path*", "/paiement/:path*"],
+```
+
+`/api/stripe/webhook` reste hors du `matcher` : Stripe n'a pas de cookie de session. Avec la recette `langues` : voir `connexion`, étape 12.
 
 ### 11. Recevoir les webhooks en local
 
@@ -1053,6 +1088,7 @@ Fonctionnalité: Paiement
 
 Les use-cases s'essaient sans base ni réseau : le repository et la passerelle de paiement sont remplacés par des doublures en mémoire. Un fichier par use-case, créé avec lui.
 
+<!-- fichier: src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts -->
 ```ts
 // src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -1143,6 +1179,7 @@ describe("Paiement", () => {
 });
 ```
 
+<!-- fichier: src/core/paiement/use-cases/__tests__/confirmer-paiement.use-case.test.ts -->
 ```ts
 // src/core/paiement/use-cases/__tests__/confirmer-paiement.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -1213,6 +1250,7 @@ describe("Paiement", () => {
 
 Le SDK de Stripe est doublé pour la création de session : l'erreur du service est choisie par le test. Les messages de webhook sont signés avec `generateTestHeaderString` de la bibliothèque Stripe, donc la vérification de signature est réelle. Le secret de test est une simple phrase, sans rapport avec une vraie clé.
 
+<!-- fichier: src/adapters/payment/__tests__/payment.adapter.test.ts -->
 ```ts
 // src/adapters/payment/__tests__/payment.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
@@ -1448,11 +1486,12 @@ describe("Paiement", () => {
 
 Le repository reçoit la base de test : aucune doublure de session ni de `getDb()`.
 
+<!-- fichier: src/db/paiement/__tests__/commande.repository.test.ts -->
 ```ts
 // src/db/paiement/__tests__/commande.repository.test.ts
 import type { ResultatConfirmation } from "@src/core/paiement/commande.entity";
-import type { Db } from "@src/db/db-client";
 import { user } from "@src/db/compte/auth.table";
+import type { Db } from "@src/db/db-client";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
@@ -1584,6 +1623,7 @@ describe("Paiement", () => {
 
 Le test appelle le webhook de la feature avec de vraies signatures. La base, le journal et le use-case sont doublés : le test vérifie les réponses, et que le journal ne reçoit ni le contenu du message ni sa signature.
 
+<!-- fichier: src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts -->
 ```ts
 // src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts
 import Stripe from "stripe";
