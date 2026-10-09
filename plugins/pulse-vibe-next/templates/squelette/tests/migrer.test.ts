@@ -25,7 +25,9 @@ function dependances(env: Record<string, string>, derniere: string | null) {
     journal: JOURNAL,
     maintenant: new Date("2026-10-08T14:05:30.123Z"),
     lireDerniere: vi.fn(async () => derniere),
-    sauvegarder: vi.fn(async () => {}),
+    sauvegarder: vi.fn(
+      async (): Promise<{ expiration: string | null } | undefined> => undefined,
+    ),
     appliquerMigrations: vi.fn(),
     dire: vi.fn(),
   };
