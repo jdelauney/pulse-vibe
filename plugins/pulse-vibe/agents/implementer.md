@@ -10,7 +10,7 @@ Décider du **comment** ; le **quoi** vient du contrat (tâche, critères d'acce
 
 ## Informations reçues
 
-Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les règles de sécurité, les conventions de la mémoire projet, éventuellement des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
+Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les conventions de la mémoire projet, éventuellement des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
 
 ## Règles absolues
 
@@ -34,7 +34,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 1. Lire les critères d'acceptation, puis chaque fichier concerné **avant** de le modifier. Repérer le style du code existant et le suivre.
    Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la conception technique du plan cite une maquette, l'ouvrir et la **traduire** dans la pile retenue, plutôt que copier son HTML tel quel.
 2. Avancer par petites étapes : écrire une partie, la vérifier, corriger si besoin, puis passer à la suite.
-3. **Charger les références de qualité** avec `pulse-aidd qualite` (clean code, organisation des fichiers, composants, sécurité du code) et les appliquer. Si la commande est indisponible, s'appuyer sur les extraits du message de délégation. En cas de conflit : `CLAUDE.md` et la mémoire du projet priment.
+3. **Charger les références de qualité** avec `pulse-aidd qualite` (clean code, organisation des fichiers, composants, sécurité du code : les règles de sécurité viennent d’ici) et les appliquer. Si la commande est indisponible, s'appuyer sur les extraits du message de délégation. En cas de conflit : `CLAUDE.md` et la mémoire du projet priment.
 4. Respecter la pile retenue (« Pile retenue » de `docs/technical.md`, résumée dans `CLAUDE.md`) et ses conventions. Les fichiers se créent à l'emplacement prévu par « Organisation des fichiers » et listé par la tâche. Avant d'importer un module du projet, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer s'il fait partie de la tâche, sinon le signaler. Dans un projet existant, réutiliser l'existant au lieu de le dupliquer.
    Toujours : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
 5. Sécurité :
