@@ -13,6 +13,7 @@ const http = require("http");
 const zlib = require("zlib");
 const crypto = require("crypto");
 const { spawn } = require("child_process");
+const { ecouter } = require("../scripts/port-libre");
 
 const SCRIPT = path.join(__dirname, "..", "scripts", "search-console.js");
 const FIXTURES = path.join(__dirname, "fixtures", "search-console");
@@ -111,12 +112,10 @@ function fauxGoogle(options = {}) {
       return json(404, { error: { message: "inconnu" } });
     });
   });
-  return new Promise((r) =>
-    serveur.listen(0, "127.0.0.1", () => {
-      const racine = `http://127.0.0.1:${serveur.address().port}`;
-      r({ serveur, etat, site: `${racine}/`, env: { PULSE_GSC_API: racine, PULSE_GSC_JETON: `${racine}/token`, PULSE_GSC_REVOCATION: `${racine}/revoke` } });
-    }),
-  );
+  return ecouter(serveur).then((port) => {
+    const racine = `http://127.0.0.1:${port}`;
+    return { serveur, etat, site: `${racine}/`, env: { PULSE_GSC_API: racine, PULSE_GSC_JETON: `${racine}/token`, PULSE_GSC_REVOCATION: `${racine}/revoke` } };
+  });
 }
 
 function connexionFactice() {

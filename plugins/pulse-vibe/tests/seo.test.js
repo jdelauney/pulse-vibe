@@ -7,6 +7,7 @@ const assert = require("node:assert");
 const http = require("http");
 const path = require("path");
 const { spawn } = require("child_process");
+const { ecouter } = require("../scripts/port-libre");
 
 const SEO = path.join(__dirname, "..", "scripts", "seo.js");
 
@@ -64,7 +65,7 @@ function serveur(routes = () => null) {
     res.writeHead(r.statut, { "content-type": "text/html; charset=utf-8", ...(r.entetes || {}) });
     res.end(req.method === "HEAD" ? undefined : r.corps || "");
   });
-  return new Promise((resoudre) => s.listen(0, "127.0.0.1", () => resoudre({ s, url: `http://127.0.0.1:${s.address().port}/` })));
+  return ecouter(s).then((port) => ({ s, url: `http://127.0.0.1:${port}/` }));
 }
 
 function defaut(origine, chemin) {

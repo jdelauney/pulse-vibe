@@ -19,6 +19,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
+const { ecouter } = require("../scripts/port-libre");
 
 const PERF = path.join(__dirname, "..", "scripts", "perf.js");
 const FIX = path.join(__dirname, "fixtures", "perf");
@@ -59,7 +60,7 @@ function serveur(routes) {
       res.end(JSON.stringify(json));
     });
   });
-  return new Promise((resoudre) => s.listen(0, "127.0.0.1", () => resoudre({ s, base: `http://127.0.0.1:${s.address().port}`, appels })));
+  return ecouter(s).then((port) => ({ s, base: `http://127.0.0.1:${port}`, appels }));
 }
 
 const PSI = "/pagespeedonline/v5/runPagespeed";

@@ -14,6 +14,7 @@ const path = require("path");
 const http = require("http");
 const crypto = require("crypto");
 const { spawn } = require("child_process");
+const { ecouter } = require("../../pulse-vibe/scripts/port-libre");
 
 const SCRIPT = path.join(__dirname, "..", "scripts", "sondes-secrets.js");
 const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets.md");
@@ -51,7 +52,7 @@ function serveur(repondre) {
     res.writeHead(statut, { "Content-Type": "application/json" });
     res.end(JSON.stringify(corps || {}));
   });
-  return new Promise((r) => s.listen(0, "127.0.0.1", () => r({ s, url: `http://127.0.0.1:${s.address().port}`, recues })));
+  return ecouter(s).then((port) => ({ s, url: `http://127.0.0.1:${port}`, recues }));
 }
 
 const sansValeur = (sortie, ...valeurs) => {
@@ -214,8 +215,7 @@ test("Turnstile : clé reconnue (réponse factice refusée), clé refusée ; la 
       res.end(JSON.stringify({ success: false, "error-codes": codes }));
     });
   });
-  await new Promise((r) => s.listen(0, "127.0.0.1", r));
-  const env = { PULSE_SONDES_TURNSTILE_API: `http://127.0.0.1:${s.address().port}` };
+  const env = { PULSE_SONDES_TURNSTILE_API: `http://127.0.0.1:${await ecouter(s)}` };
   const cle = "0x" + hasard(16);
   const entree = JSON.stringify({ TURNSTILE_SECRET_KEY: cle });
   const ok = await lancer(d, ["tester", "TURNSTILE_SECRET_KEY"], entree, env);
