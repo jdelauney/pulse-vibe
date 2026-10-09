@@ -340,3 +340,41 @@ test("production : base dev séparée, intégration Vercel–Neon, migrations sa
   assert.match(secrets, /^### `NEON_API_KEY`$/m);
   assert.ok(secrets.includes("Une valeur par environnement"), "DATABASE_URL : une valeur par environnement");
 });
+
+test("fiche : règles numérotées de 1 à N sans trou, sans note de migration", () => {
+  const fiche = lire(REF, "fiche.md");
+  const numeros = [...fiche.matchAll(/^(\d+)\. /gm)].map((m) => Number(m[1]));
+  assert.deepStrictEqual(numeros, numeros.map((_, i) => i + 1));
+  assert.doesNotMatch(fiche, /créé avant pulse-vibe-next/);
+});
+
+test("renvois « fiche, règle N » : chaque numéro vise la règle annoncée", () => {
+  const fiche = lire(REF, "fiche.md");
+  const regle = (n) => (fiche.match(new RegExp(`^${n}\. (.*)$`, "m")) || [])[1] || "";
+  const sujets = { 5: "use cache", 26: "Types", 32: "Images", 41: "Métadonnées d'une page publique", 47: "Pages d'authentification" };
+  const textes = [];
+  (function parcourir(dossier) {
+    for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = path.join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (/\.(md|js)$/.test(e.name) && chemin !== __filename) textes.push(chemin);
+    }
+  })(RACINE);
+  for (const f of textes) {
+    for (const m of lire(f).matchAll(/fiche, règle (\d+)|règle (\d+) de la fiche/g)) {
+      const n = m[1] || m[2];
+      assert.ok(sujets[n], `${path.relative(RACINE, f)} cite la règle ${n} : ajouter son sujet à ce test`);
+      assert.ok(regle(n).includes(sujets[n]), `${path.relative(RACINE, f)} : la règle ${n} n'est plus « ${sujets[n]} »`);
+    }
+  }
+});
+
+test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", () => {
+  const notes = lire(REF, "migrations.md");
+  for (const version of ["0.9.0", "0.11.0", "0.17.0"]) assert.match(notes, new RegExp(`Projet créé avant pulse-vibe-next ${version.replace(/\./g, "\.")}`));
+  for (const commande of ["tech", "plan", "implement", "review", "security", "deploy", "seo"])
+    assert.ok(!lancer("contexte", commande).stdout.includes("mettre à niveau un projet plus ancien"), commande);
+  assert.strictEqual(lancer("reference", "migrations.md").status, 0);
+  assert.match(lire(RACINE, "..", "pulse-vibe", "skills", "init", "SKILL.md"), /pulse-aidd pile reference migrations\.md/);
+  assert.match(lire(REF, "contexte", "security.md"), /pulse-aidd pile reference migrations\.md/);
+});

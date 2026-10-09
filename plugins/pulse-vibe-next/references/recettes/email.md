@@ -927,7 +927,7 @@ export async function LienMotDePasseContainer({ searchParams }: Props) {
 import { MotDePasseOublieContainer } from "@src/features/compte/components/containers/mot-de-passe-oublie.container";
 import type { Metadata } from "next";
 
-// Page d'authentification : hors de Google (fiche, règle 49).
+// Page d'authentification : hors de Google (fiche, règle 47).
 export const metadata: Metadata = {
   title: "Mot de passe oublié",
   robots: { index: false, follow: false },
@@ -953,7 +953,7 @@ import { LienMotDePasseContainer } from "@src/features/compte/components/contain
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-// Page d'authentification : hors de Google (fiche, règle 49).
+// Page d'authentification : hors de Google (fiche, règle 47).
 export const metadata: Metadata = {
   title: "Nouveau mot de passe",
   robots: { index: false, follow: false },
