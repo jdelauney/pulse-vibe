@@ -727,6 +727,29 @@ test("liste de fichiers qui contient un .env sans le nommer, lue ensuite : refus
   passe("find . -type f -exec cat {} +", vide);
 });
 
+test("PowerShell ordinaire avec un bloc { } qui ne lit rien : passe, même dans un projet qui a un .env", () => {
+  const dir = dossierEnv();
+  for (const c of [
+    "Get-ChildItem | Where-Object { $_.Name -like '*.ts' }",
+    "Get-ChildItem | ForEach-Object { $_.Name }",
+    "Get-ChildItem | Sort-Object { $_.LastWriteTime }",
+    "ls | % { $_.Name }",
+    "dir | Where-Object { -not $_.PSIsContainer }",
+    "Get-ChildItem -Force | Select-Object Name, @{n='Ko';e={$_.Length/1KB}}",
+    "Get-ChildItem -File | Where-Object { $_.Extension -eq '.ts' } | Select-Object -ExpandProperty Name",
+  ])
+    passePs(c, dir);
+  for (const c of ["Get-ChildItem | ForEach-Object { Get-Content $_ }", "gci | % { $_.OpenText().ReadToEnd() }", "gc @(echo .env)"]) refusPs(c, dir);
+});
+
+test("recherche récursive avec un motif collé : les dossiers fouillés sont les bons", () => {
+  const dir = dossierEnv();
+  passe("grep -rn -eTODO src", dir);
+  passe("grep -rn -e TODO src", dir);
+  refus("grep -rn -eTODO .", dir);
+  refus("grep -rn -e TODO", dir);
+});
+
 test("copie ou déplacement avec -Destination ou -t : la source .env est vue comme lue", () => {
   const dir = dossierEnv();
   for (const c of ["Copy-Item -Destination x.txt -Path .env", "Move-Item -Destination x.txt -Path .env"]) assert.match(refusPs(c, dir).raison, /pulse-aidd secrets inventaire/);

@@ -145,7 +145,9 @@ const ECRIVAINS_PS = new Set(["add-content", "ac", "set-content", "sc", "out-fil
 // PowerShell : une liste de fichiers passée par un tube est lue par la commande suivante (Get-ChildItem .env | Get-Content),
 // sauf par celles qui montrent seulement les noms et les propriétés.
 const LISTEURS_PS = new Set(["ls", "dir", "get-childitem", "gci"]);
-const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "where-object", "where", "?"]);
+const SANS_CONTENU_PS = new Set(["select-object", "select", "measure-object", "measure", "format-table", "ft", "format-list", "fl", "format-wide", "fw", "sort-object", "sort", "out-null", "where-object", "where", "?", "foreach-object", "foreach", "%"]);
+// Commandes qui, dans un bloc { } après le tube, liraient chaque fichier listé.
+const LECTEURS_BLOC_PS = new Set(["get-content", "gc", "cat", "type", "more", "select-string", "sls", "import-csv", "ipcsv", "format-hex", "fhx", "import-clixml", "import-powershelldatafile", "get-filehash"]);
 // PowerShell : commandes qui produisent un nom de fichier (lu ensuite s'il est passé entre parenthèses à une autre commande).
 const PRODUCTEURS_PS = new Set(["echo", "write-output", "printf", "ls", "dir", "get-childitem", "gci", "realpath", "basename", "dirname"]);
 // find sans action qui lance une commande : il affiche seulement des noms.
@@ -174,11 +176,7 @@ function motsLus(c) {
     mots.push(a);
   }
   const chercheur = CHERCHEURS.has(c.cmd) || (git && c.args[git.k] === "grep");
-  // Motif donné par une option : -e, -f, --regexp, -Pattern, -Pattern:x, ou collé (-eKEY, -e.) pour grep, rg et git grep.
-  const motifDonne = mots.some(
-    (a) => /^(-e|-f|--regexp|--file)$/.test(a) || /^--(regexp|file)=/.test(a) || /^-pattern(:|$)/i.test(a) || (!CMDLETS_RECHERCHE.has(c.cmd) && /^-[a-zA-Z]*[ef]./.test(a))
-  );
-  if (chercheur && !motifDonne) {
+  if (chercheur && !motifParOption(c.cmd, mots)) {
     // La valeur de -Path ou -LiteralPath (Select-String) est un fichier lu, jamais le motif.
     const motif = mots.findIndex((a, i) => !estOption(a) && !(i > 0 && /^-(path|literalpath)$/i.test(mots[i - 1])));
     if (motif >= 0) mots.splice(motif, 1);
@@ -189,6 +187,10 @@ function motsLus(c) {
   }
   return mots;
 }
+
+/** Motif donné par une option : -e, -f, --regexp, -Pattern, -Pattern:x, ou collé (-eKEY, -e.) pour grep, rg et git grep. */
+const motifParOption = (cmd, mots) =>
+  mots.some((a) => /^(-e|-f|--regexp|--file)$/.test(a) || /^--(regexp|file)=/.test(a) || /^-pattern(:|$)/i.test(a) || (!CMDLETS_RECHERCHE.has(cmd) && /^-[a-zA-Z]*[ef]./.test(a)));
 
 /** Destination d'une copie ou d'un déplacement : valeur de -Destination, -t ou --target-directory, sinon la dernière position. */
 function destinationCopie(args) {
@@ -535,8 +537,10 @@ function appliquerRegles(c, cwd, constats) {
   if (ecritEnvExistant(c, cwd)) constats.push([ACCORD, MESSAGES.envModifie]);
   if (c.cmd === "vercel" && c.args[0] === "env" && c.args[1] === "pull") constats.push([ACCORD, MESSAGES.envEcrase]);
   // Recherche récursive : refusée seulement si un dossier fouillé contient un .env.
-  const positionsRecherche = args.filter((a) => !estOption(a));
-  const fouilles = (positionsRecherche.slice(1).length ? positionsRecherche.slice(1) : ["."]).map((d) => path.resolve(cwd, d));
+  // Les dossiers fouillés : les positions, sans le motif (premier mot libre, ou valeur de -e, -eTODO, --regexp…).
+  const positionsRecherche = args.filter((a, j) => !estOption(a) && !/^(-e|-f|--regexp|--file)$/.test(args[j - 1] || ""));
+  const dossiersRecherche = motifParOption(cmd, args) ? positionsRecherche : positionsRecherche.slice(1);
+  const fouilles = (dossiersRecherche.length ? dossiersRecherche : ["."]).map((d) => path.resolve(cwd, d));
   if (["grep", "egrep", "fgrep"].includes(cmd) && args.some((a) => a === "--recursive" || a === "--dereference-recursive" || (/^-[a-zA-Z]+$/.test(a) && /[rR]/.test(a))) && !/--exclude[= ]['"]?\.env/.test(args.join(" ")))
     if (fouilles.some((d) => contientEnv(d))) constats.push([REFUS, MESSAGES.rechercheEnv]);
   if (cmd === "rg" && (args.some((a) => /^-u{2,}$/.test(a)) || (args.some((a) => a.startsWith("--no-ignore")) && args.includes("--hidden"))) && !/(-g|--glob)[= ]['"]?!\.env/.test(args.join(" ")))
@@ -652,12 +656,13 @@ function analyser(commande, cwd, dialecte) {
   if (commandes.some((c) => c.viaXargs && lecteur(c)) && listeurs.some((c) => listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   if (commandes.some((c) => c.viaFind && lecteur(c)) && listeurs.some((c) => c.cmd === "find" && listeurCouvreEnv(c, cwd))) constats.push([REFUS, MESSAGES.lectureEnv]);
   // PowerShell : des fichiers .env listés puis passés par un tube à une commande qui les lit (Get-ChildItem .env | Get-Content).
-  // Un bloc { } ou @{ } dans la commande peut lire chaque fichier : seules les commandes sans bloc montrent les noms seulement.
-  const blocs = /\{/.test(commande);
+  // Un bloc { } ou @{ } lit chaque fichier quand il contient une commande de lecture (gc $_) ou une méthode de lecture (.OpenText()).
+  const methodeLecture = /\.(OpenText|OpenRead|ReadToEnd)\s*\(|::ReadAll\w*\s*\(/i.test(commande);
   commandes.forEach((c, i) => {
     if (c.dialecte !== "powershell" || !LISTEURS_PS.has(c.cmd) || !listeurCouvreEnv(c, cwd)) return;
+    const blocLit = methodeLecture || commandes.slice(i + 1).some((d) => LECTEURS_BLOC_PS.has(d.cmd));
     for (let j = i + 1; j < commandes.length && commandes[j].apresTube; j++)
-      if (blocs || !SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
+      if (blocLit || !SANS_CONTENU_PS.has(commandes[j].cmd)) return constats.push([REFUS, MESSAGES.lectureEnv]);
   });
   // PowerShell : un nom produit entre parenthèses puis lu (gc (echo .env), (Get-ChildItem .env).OpenText()).
   if (dialecte === "powershell")
@@ -665,7 +670,8 @@ function analyser(commande, cwd, dialecte) {
       if (!PRODUCTEURS_PS.has(c.cmd) || !(LISTEURS_PS.has(c.cmd) ? listeurCouvreEnv(c, cwd) : motsLus(c).some((a) => designeEnv(a, cwd, c.dialecte)))) continue;
       const re = new RegExp(`\\(\\s*${c.brut.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=[\\s)])`, "gi");
       for (const m of commande.matchAll(re)) {
-        const avant = commande.slice(0, m.index).trimEnd();
+        // « @( … ) » (tableau) se lit comme « ( … ) ».
+        const avant = commande.slice(0, m.index).replace(/@$/, "").trimEnd();
         const argument = /[\w'"]$/.test(avant) && !/(^|[\s;|({])(if|elseif|while|until|foreach|for|switch|return|-and|-or|-not)$/i.test(avant);
         let profondeur = 0;
         let fin = m.index;
