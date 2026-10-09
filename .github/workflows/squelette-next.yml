@@ -1,5 +1,5 @@
 # Squelette et recettes du pack pulse-vibe-next.
-# - Sur chaque demande de fusion qui touche le pack : le squelette (bout en bout compris), puis les
+# - Sur chaque demande de fusion et chaque envoi sur main qui touchent le pack : le squelette (bout en bout compris), puis les
 #   recettes balisées posées sur lui (contrôles, types, tests, construction).
 # - Chaque semaine : toutes les dépendances à leur dernière version, sauf les versions majeures ; si tout
 #   passe, une demande de fusion propose la mise à jour. Les versions majeures passent à part, dans leur
@@ -7,6 +7,11 @@
 name: Squelette Next.js
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "plugins/pulse-vibe-next/**"
+      - ".github/workflows/squelette-next.yml"
   pull_request:
     paths:
       - "plugins/pulse-vibe-next/**"
@@ -17,7 +22,7 @@ on:
 
 jobs:
   verifier:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,9 +40,10 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers,suivi-erreurs
 
   dernieres-versions:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -56,6 +62,7 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers,suivi-erreurs
       - name: Proposer la mise à jour
         uses: peter-evans/create-pull-request@v8.1.1
         with:
@@ -64,12 +71,12 @@ jobs:
           title: "chore(next): squelette aux dernières versions"
           body: |
             Mise à jour automatique des dépendances du squelette de pulse-vibe-next, hors versions majeures.
-            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; les recettes balisées (connexion, liste, fichiers, paiement) aussi.
+            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; les recettes balisées (connexion, liste, fichiers, paiement, suivi-erreurs) aussi.
             Avant de fusionner : monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (correctif).
           add-paths: plugins/pulse-vibe-next/templates/squelette
 
   versions-majeures:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -88,6 +95,7 @@ jobs:
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,liste
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers
           node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,paiement
+          node plugins/pulse-vibe-next/scripts/verifier-recettes.js --recettes connexion,fichiers,suivi-erreurs
       - name: Proposer la mise à jour majeure
         uses: peter-evans/create-pull-request@v8.1.1
         with:

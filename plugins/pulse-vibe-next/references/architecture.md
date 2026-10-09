@@ -286,6 +286,7 @@ import { returnServerError } from "next-safe-action";
 import { z } from "zod";
 import { MESSAGES_FACTURE } from "../constants/erreur-messages";
 
+// Le nom (.metadata) se pose avant .action(…) : il identifie l'action dans les journaux d'erreurs.
 export const payerFactureAction = actionConnectee
   .metadata({ nom: "payerFacture" })
   .inputSchema(z.object({ id: z.uuid() }))

@@ -15,6 +15,14 @@
 | `NEXT_PUBLIC_SENTRY_DSN` | `.env`, Vercel (Production, Preview) | non : adresse d'envoi, publique par conception | où le navigateur et le serveur envoient les erreurs |
 | `SENTRY_AUTH_TOKEN` | Vercel seulement (Production, Preview), type Secret | oui | envoie les « source maps » à la construction, pour lire les erreurs dans le code d'origine |
 
+Ajoutez le DSN, **sans valeur**, à `.env.example` (`SENTRY_AUTH_TOKEN` reste chez Vercel seulement) :
+
+<!-- ajout: .env.example -->
+```
+# Suivi des erreurs Sentry (recette suivi-erreurs) : adresse d'envoi du projet, publique par conception.
+NEXT_PUBLIC_SENTRY_DSN=
+```
+
 ## Fichiers créés ou modifiés
 
 - `instrumentation-client.ts` (créé) : erreurs du navigateur.
@@ -120,12 +128,12 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 ```
 
-Ensuite la CSP : l'hôte d'envoi de Sentry est celui du DSN (`https://<clé>@o<id>.ingest.de.sentry.io/<projet>` pour la région UE). Remplacez la ligne `"connect-src": ["'self'"],` par :
+Ensuite la CSP : l'hôte d'envoi de Sentry est celui du DSN (`https://<clé>@o<id>.ingest.de.sentry.io/<projet>` pour la région UE). Ajoutez-le à `connect-src` sans toucher à la ligne existante (elle peut déjà avoir été complétée par une autre recette, comme `fichiers`) : cette ligne, juste après l'objet `sources`, convient dans les deux cas.
 
-<!-- remplacer-ligne: next.config.ts début: "connect-src": -->
+<!-- ajout: next.config.ts après: }; -->
 ```ts
-  // Envoi des erreurs à Sentry (recette suivi-erreurs, région UE).
-  "connect-src": ["'self'", "https://*.ingest.de.sentry.io"],
+// Envoi des erreurs à Sentry (recette suivi-erreurs, région UE).
+sources["connect-src"]?.push("https://*.ingest.de.sentry.io");
 ```
 
 Enfin, remplacez la dernière ligne (`<organisation>` et `<projet>` se lisent dans l'adresse de votre projet Sentry ; ce ne sont pas des secrets) :
