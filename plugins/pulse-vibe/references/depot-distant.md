@@ -41,7 +41,7 @@ Demander (AskUserQuestion) « Comment envoyer le travail de US-XXX sur le dépô
 - « Directement sur la version principale » : chaque tâche enregistrée est envoyée sur `<principale>` ; si le déploiement automatique est en place, **chaque tâche est mise en ligne**. → « **Envoi** : branche principale » ;
 - « Ne rien envoyer pour l'instant » : tout reste local. → « **Envoi** : local ».
 
-En mode découverte (règles communes § 1), la question n'est pas posée : l'envoi prend « Directement sur la version principale », annoncé en une phrase. Chaque tâche y part après le test par la personne (en mode autonome, après le test groupé) ; la personne n'a aucune demande de fusion à accepter elle-même sur le site du dépôt. Chaque envoi passe toujours par la demande d'autorisation de Claude Code : la personne garde l'accord, envoi par envoi.
+En mode découverte (règles communes § 1), la question n'est pas posée (sauf dans la ronde de départ de `/pulse:spirc`, avec cette réponse recommandée) : l'envoi prend « Directement sur la version principale », annoncé en une phrase. Chaque tâche y part après le test par la personne (en mode autonome, après le test groupé) ; la personne n'a aucune demande de fusion à accepter elle-même sur le site du dépôt. Chaque envoi passe toujours par la demande d'autorisation de Claude Code : la personne garde l'accord, envoi par envoi.
 
 Écrire la ligne dans la vue d'ensemble du plan (elle fait partie du commit suivant). Le **mode PR** désigne « **Envoi** : version parallèle » ; un plan plus ancien l'écrit « **Envoi** : PR », qui se lit pareil. Pour changer de mode ensuite : `/pulse:refine US-XXX "changer l'envoi"`.
 
