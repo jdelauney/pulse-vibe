@@ -117,7 +117,9 @@ function derniereRevue(dossier, id) {
   const fichier = path.join(dossier, rapports[rapports.length - 1].nom);
   const texte = (lireSi(fichier) || "").normalize("NFC"); // « é » écrit en deux caractères : relu comme un seul
   const valeur = (re) => ((re.exec(texte) || [])[1] || "").replace(/\{\{.*?\}\}/g, "");
-  if (/get-help|cycles/i.test(valeur(/^\*\*Blocage\*\*\s*:(.*)$/m))) return { etat: "bloquee", fichier };
+  const blocage = valeur(/^\*\*Blocage\*\*\s*:(.*)$/m);
+  // Une ligne encore au modèle (choix séparés par « | ») ne bloque pas.
+  if (!blocage.includes("|") && /get-help|cycles/i.test(blocage)) return { etat: "bloquee", fichier };
   const verdict = valeur(/^\*\*Verdict\*\*\s*:(.*)$/m);
   // Seul le Verdict en tête compte (examen § 3 et § 4 le tiennent à jour) ; « ⚠️ … accepté par la personne » vaut prêt (review § 7).
   const accepte = verdict.includes("⚠") && /accept[ée]/i.test(verdict) && !/[⛔❌]|critique/iu.test(verdict);
@@ -128,7 +130,9 @@ function derniereRevue(dossier, id) {
 /**
  * Le test par la personne : le dernier « Résultat » de la dernière section « ## Test par la personne » (jusqu'au titre suivant).
  * Vide, modèle non rempli (choix séparés par « | ») ou réponse sans repère : a-tester. Un test non concluant suivi d'une
- * « ## Relecture de contrôle » (correction faite) est à refaire : a-tester.
+ * « ## Relecture de contrôle » datée d'un jour plus récent (correction faite après le test) est à refaire : a-tester.
+ * Limite : une relecture de contrôle du même jour que le test ne compte pas (spirc l'écrit avant le test) ; sans date
+ * dans l'une ou l'autre section, toute relecture de contrôle placée après le test compte.
  */
 function etatDuTest(texte) {
   const sections = texte.split(/^##[ \t]+/m).slice(1);
@@ -137,14 +141,24 @@ function etatDuTest(texte) {
   const resultats = [...sections[derniere].matchAll(/^[-*][ \t]+\*\*R[ée]sultat(?:\*\*[ \t  ]*:|[ \t  ]*:\*\*)(.*)$/gim)];
   const test = resultats.length ? resultats[resultats.length - 1][1].replace(/\{\{.*?\}\}/g, "").trim() : "";
   if (test === "" || test.includes("|")) return "a-tester";
-  const accord = /accept[ée]/i.test(test) && !/\bpas\s+accept/i.test(test);
-  const negatif = /❌/u.test(test) || /^non\b/i.test(test) || /\b(non|pas)\s+concluant/i.test(test) || /probl[èe]me|[ée]chec/i.test(test);
+  const accord = /accept[ée]/i.test(test) && !/\bpas\b[^,.;]*accept/i.test(test);
+  const oui = /✅/u.test(test) || /^oui\b/i.test(test);
+  // Négatifs francs : ❌, « Non, … », « non/pas concluant ». « problème » ou « échec » comptent seulement sans ✅ ni « Oui »,
+  // et hors « aucun problème », « sans échec ».
+  const negatif =
+    /❌/u.test(test) || /^non\b/i.test(test) || /\b(non|pas)\s+concluant/i.test(test) || (!oui && /(?<!\b(?:aucun|sans)\s+)(probl[èe]me|[ée]chec)/i.test(test));
   if (negatif) {
     if (accord) return "validee";
-    const corrigee = sections.slice(derniere + 1).some((s) => /^Relecture de contr[ôo]le\b/i.test(s.trim()));
+    const date = (s) => (/^[-*][ \t]+\*\*Date\*\*[ \t  ]*:[ \t]*(\d{4}-\d{2}-\d{2})/m.exec(s) || [])[1];
+    const dateTest = date(sections[derniere]);
+    const corrigee = sections.slice(derniere + 1).some((s) => {
+      if (!/^Relecture de contr[ôo]le\b/i.test(s.trim())) return false;
+      const dateControle = date(s);
+      return !dateTest || !dateControle || dateControle > dateTest;
+    });
     return corrigee ? "a-tester" : "a-corriger";
   }
-  const positif = /[✅⏳]/u.test(test) || /(?<!\b(?:non|pas)\s+)concluant/i.test(test) || /^oui\b/i.test(test) || accord;
+  const positif = oui || /⏳/u.test(test) || /(?<!\b(?:non|pas|peu)\s+)concluant/i.test(test) || accord;
   return positif ? "validee" : "a-tester";
 }
 

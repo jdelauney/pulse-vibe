@@ -514,6 +514,11 @@ test("test par la personne : seules les réponses positives valident ; les répo
     ["concluant", "validee"],
     ["⏳ reporté au test groupé", "validee"],
     ["OK", "a-tester"],
+    ["✅ concluant, aucun problème", "validee"],
+    ["Oui, tout fonctionne, aucun problème", "validee"],
+    ["✅ concluant – sans échec", "validee"],
+    ["❌ non concluant, n'a pas été accepté", "a-corriger"],
+    ["peu concluant", "a-tester"],
   ];
   for (const [test, attendu] of cas) assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test })), attendu, test);
 });
@@ -525,6 +530,15 @@ test("test par la personne : la dernière section « Test par la personne » fai
   assert.strictEqual(etatRapport(RAPPORT("✅ Validé") + SECTION(MODELE_TEST)), "a-tester", "seconde section restée au modèle");
   assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "" }) + "\n## Relecture de contrôle\n\n- **Résultat** : ✅ Validé\n"), "a-tester", "un « Résultat » d'une autre section ne vaut pas test");
   assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE), "a-tester", "test ❌, correction relue : le test est à refaire");
+  // La relecture de contrôle compte seulement datée après le test (spirc l'écrit avant le test, le même jour) ; sans date, elle compte.
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE.replace("2026-10-08", "2026-10-07")), "a-corriger", "relecture du même jour");
+  const sansDates = (RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE).replace(/^- \*\*Date\*\* : .*$/gm, "");
+  assert.strictEqual(etatRapport(sansDates), "a-tester", "sans date : la relecture placée après le test compte");
+});
+
+test("ligne « Blocage » restée au modèle (choix séparés par « | ») : pas de blocage", () => {
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { blocage: "aucun | persiste après 2 cycles : /pulse:get-help" })), "validee");
+  assert.strictEqual(etatRapport(RAPPORT("⛔ Bloquant", { blocage: "persiste après 2 cycles : /pulse:get-help" })), "bloquee");
 });
 
 test("test par la personne : « **Résultat :** », puces « * » et « é » décomposé sont lus", () => {
