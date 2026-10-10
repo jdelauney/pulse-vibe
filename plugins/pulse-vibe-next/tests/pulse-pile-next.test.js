@@ -274,6 +274,8 @@ test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Red
   assert.ok(!base.includes("npm install @upstash"), "aucune installation d'Upstash avant l'option");
   assert.ok(base.includes('z.enum(["base", "memoire"]).default("base")'), "variables de base sans redis");
   assert.ok(option.includes('import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";'), "la garde complète dans l'option");
+  assert.ok(option.includes("verificationsCroisees.push("), "la vérification Upstash s'ajoute à verificationsCroisees");
+  assert.doesNotMatch(texte, /createFinalSchema/, "plus de second createFinalSchema");
 });
 
 test("recette formulaire-public : correctifs de revue (champ neutre, clés Turnstile ensemble, échec du widget)", () => {

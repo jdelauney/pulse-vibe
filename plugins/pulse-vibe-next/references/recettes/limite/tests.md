@@ -1,6 +1,7 @@
 
 Un même jeu de tests vérifie chaque limiteur (`verifierContratLimiteur`) : la mémoire en unitaire, la base sur PGlite avec les vraies migrations.
 
+<!-- fichier: tests/helpers/contrat-limiteur.ts -->
 ```ts
 // tests/helpers/contrat-limiteur.ts
 // Comportement attendu de tout limiteur. À appeler dans un describe, avec une fabrique de limiteur neuf.
@@ -64,6 +65,7 @@ export function verifierContratLimiteur(
 }
 ```
 
+<!-- fichier: src/lib/helpers/limite/__tests__/limiteur-memoire.test.ts -->
 ```ts
 // src/lib/helpers/limite/__tests__/limiteur-memoire.test.ts
 import { describe } from "vitest";
@@ -75,6 +77,7 @@ describe("Limiteur en mémoire", () => {
 });
 ```
 
+<!-- fichier: src/db/limite/__tests__/limite.repository.test.ts -->
 ```ts
 // src/db/limite/__tests__/limite.repository.test.ts
 import type { Db } from "@src/db/db-client";
@@ -123,6 +126,7 @@ describe("Limiteur en base", () => {
 });
 ```
 
+<!-- fichier: src/lib/helpers/limite/__tests__/ip-et-message.test.ts -->
 ```ts
 // src/lib/helpers/limite/__tests__/ip-et-message.test.ts
 import { describe, expect, it } from "vitest";
@@ -151,6 +155,7 @@ describe("Limite de requêtes", () => {
 
 La garde : verdict, choix du limiteur, panne d'un limiteur et contenu du journal.
 
+<!-- fichier: src/lib/__tests__/limite.test.ts -->
 ```ts
 // src/lib/__tests__/limite.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
@@ -230,6 +235,7 @@ describe("Limite de requêtes", () => {
 
 Les variables :
 
+<!-- fichier: src/config/__tests__/env-limite.test.ts -->
 ```ts
 // src/config/__tests__/env-limite.test.ts
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -251,6 +257,7 @@ describe("Variables de la limite", () => {
 
 Option Redis : la panne d'Upstash (l'adresse `http://127.0.0.1:9` ne répond jamais) et un test de plus pour les variables.
 
+<!-- fichier: src/adapters/limite/__tests__/upstash.adapter.test.ts -->
 ```ts
 // src/adapters/limite/__tests__/upstash.adapter.test.ts
 import { describe, expect, it, vi } from "vitest";
@@ -285,14 +292,15 @@ describe("Limite de requêtes, option Redis", () => {
 });
 ```
 
+À ajouter dans `src/config/__tests__/env-limite.test.ts`, en tête du `describe` :
+
+<!-- ajout: src/config/__tests__/env-limite.test.ts après: describe("Variables de la limite", () => { -->
 ```ts
-// à ajouter dans src/config/__tests__/env-limite.test.ts
   it("redis sans les variables Upstash : le message nomme les variables manquantes", async () => {
     await expect(
       chargerEnvValide({ LIMITE_STOCKAGE: "redis" }),
-    ).rejects.toThrow(
-      /UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN/,
-    );
+    ).rejects.toThrow(/UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN/);
   });
+
 ```
 

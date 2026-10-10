@@ -43,6 +43,7 @@ const CHAINES = [
   ["connexion", "fichiers"],
   ["connexion", "paiement"],
   ["connexion", "email"],
+  ["connexion", "limite"],
 ];
 
 // Chemins (relatifs au dépôt) dont dépend chaque chaîne : un changement ici les fait toutes vérifier.
