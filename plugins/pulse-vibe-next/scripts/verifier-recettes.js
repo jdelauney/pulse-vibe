@@ -46,6 +46,7 @@ const CHAINES = [
   ["connexion", "limite", "formulaire-public"],
   ["connexion", "langues"],
   ["connexion", "seo"],
+  ["mesure-reelle"],
 ];
 
 // Chemins (relatifs au dépôt) dont dépend chaque chaîne : un changement ici les fait toutes vérifier.

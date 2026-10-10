@@ -1,6 +1,7 @@
 
 Unitaires (règles, use-case avec doublure en mémoire, schéma, réception avec l'accès à la base remplacé) et intégration (PGlite, vraies migrations). Chaque test vit dans le `__tests__/` de son dossier.
 
+<!-- fichier: src/core/vitesse/__tests__/mesure.rules.test.ts -->
 ```ts
 // src/core/vitesse/__tests__/mesure.rules.test.ts
 import { describe, expect, it } from "vitest";
@@ -53,6 +54,7 @@ describe("Mesure réelle de la vitesse : règles", () => {
 });
 ```
 
+<!-- fichier: src/core/vitesse/__tests__/enregistrer-mesure.use-case.test.ts -->
 ```ts
 // src/core/vitesse/__tests__/enregistrer-mesure.use-case.test.ts
 import { describe, expect, it } from "vitest";
@@ -120,6 +122,7 @@ describe("Use-case : enregistrer une mesure", () => {
 });
 ```
 
+<!-- fichier: src/features/vitesse/schemas/__tests__/mesure.schema.test.ts -->
 ```ts
 // src/features/vitesse/schemas/__tests__/mesure.schema.test.ts
 import { describe, expect, it } from "vitest";
@@ -152,6 +155,7 @@ describe("Mesure réelle de la vitesse : schéma", () => {
 });
 ```
 
+<!-- fichier: src/features/vitesse/webhooks/__tests__/recevoir-mesure.webhook.test.ts -->
 ```ts
 // src/features/vitesse/webhooks/__tests__/recevoir-mesure.webhook.test.ts
 import { NextRequest } from "next/server";
@@ -261,6 +265,7 @@ describe("Réception des mesures", () => {
 });
 ```
 
+<!-- fichier: src/db/vitesse/__tests__/mesure-vitesse.repository.test.ts -->
 ```ts
 // src/db/vitesse/__tests__/mesure-vitesse.repository.test.ts
 import { limiteDeConservation } from "@src/core/vitesse/mesure.rules";
