@@ -12,6 +12,7 @@ type VerificationCroisee = (
 
 // Une recette qui exige plusieurs variables ensemble ajoute sa vérification juste après cette ligne :
 // verificationsCroisees.push((valeurs, ctx) => { … });
+// `valeurs` contient les variables de `server` ; une variable publique se lit dans `envPublic`.
 const verificationsCroisees: VerificationCroisee[] = [];
 
 // Variables d'environnement du serveur, validées au chargement. Importer ce fichier et utiliser `env`
