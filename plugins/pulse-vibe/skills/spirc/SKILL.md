@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) B
 
 !`pulse-aidd contexte spirc`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation (le contexte ci-dessus contient aussi « Examiner une tâche », le modèle de rapport de revue et le lexique) (section « Choisir la façon de travailler ») ; les règles de la mémoire projet, à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Le contexte ci-dessus contient aussi « Examiner une tâche », le modèle de rapport de revue et le lexique. Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation : section « Choisir la façon de travailler ». Les règles de la mémoire projet se chargent à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS`
 
@@ -79,7 +79,7 @@ Pour les étapes Tech, US, Spec, Plan et Commit, **lancer `pulse-aidd etape <com
    - **correction** d'un comportement prévu par une US : garder cette US ; la tâche ira dans le plan de **cette** US (si ce n'est pas l'US désignée, le dire et continuer avec son plan) ;
    - **précision** d'une US déjà planifiée (un critère qui manque) : sa spec est verrouillée et reste telle quelle ; la précision devient une **nouvelle US** qui complète l'ancienne (cas suivant), avec sa spec et son plan ;
    - **nouveau comportement** prévu au PRD : créer une **nouvelle US** (numéro suivant, modèle d'US) dans l'epic qui convient (la demander : AskUserQuestion, l'epic la plus proche avec « (Recommandé) », « Un nouveau groupe »), écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au référentiel `docs/user-stories.md`. Elle aura sa propre spec et son propre plan : passer à § S avec cette US ;
-   - **nouveau comportement hors PRD** : c'est une décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
+   - **nouveau comportement hors PRD** : c'est une décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (Recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
 3. **Clarifier ce qui change ce qui sera construit**, et seulement cela : poser les questions de la frontière en une ronde (AskUserQuestion, 4 questions au plus, réponse recommandée en premier, « (Recommandé) »), deux rondes au maximum. Employer et respecter les mots du glossaire ; signaler un mot employé dans un autre sens.
 4. **Écrire le contrat** (correction ou précision) comme une nouvelle tâche à la fin de la section `## Tâches` du plan de l'US concernée (avant une éventuelle tâche « Mettre en ligne la première version »), numérotée après le plus grand `Tn` de tous les plans de `aidd_docs/tasks/`, au format du plan : objectif vu par l'utilisateur, fichiers, critères d'acceptation **vérifiables**, et une ligne « Hors périmètre » si utile. Si elle touche plus de 3 fichiers ou couvre plus de 3 critères, la découper en plusieurs tâches.
 5. La portée devient cette (ou ces) tâche(s). Passer à ✋ 2.
@@ -121,7 +121,7 @@ Puis, si un dossier à part est retenu, « 2. Créer le worktree ou y revenir »
 
 Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la portée. Une tâche `[~]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>` et suivre sa ligne `reprendre` : `examen` → [R] étape 1 ; `correction` → [R] étape 3 ; `test` → [R] étape 4 (le test par la personne) ; `commit` → [C] ; `aide` → arrêter la boucle, expliquer le blocage et proposer `/pulse:get-help`.
 
-**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a` (en mode autonome, elle passe après le test groupé). Demander : « Mettre en ligne maintenant (recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy --sans-communes`).
+**Tâche « Mettre en ligne… »** : attendre l'accord de la personne, même avec `-a` (en mode autonome, elle passe après le test groupé). Demander : « Mettre en ligne maintenant (Recommandé) » / « Plus tard ». Si oui, appliquer l'étape **deploy** (`pulse-aidd etape deploy --sans-communes`).
 
 ### [T] Tests d'abord (avec `-t`)
 
@@ -156,7 +156,7 @@ En mode autonome : enregistrer en local, et **attendre la fin du test groupé po
 
 ### Mémoire
 
-Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré, une convention apparue, un mot du métier précisé, une décision (avec les 3 conditions pour un fichier de décision). S'il y a quelque chose, lancer `pulse-aidd reference memoire.md` (les règles de la mémoire projet, dont les 3 conditions d'un fichier de décision), puis le proposer **en une seule question** (en mode autonome : le garder pour la fin du test groupé) (lignes exactes et destinations) : « Ajouter à la mémoire (recommandé) » / « Garder la mémoire telle quelle ». Si accepté : écrire, lancer `pulse-aidd memoire`, et inclure ces fichiers au **commit suivant** (ou dans un commit `docs: mémoire …` si c'était la dernière tâche). Réserver la proposition à ce qui est durable.
+Repérer ce qui mérite d'être retenu pendant la tâche : un piège rencontré, une convention apparue, un mot du métier précisé, une décision (avec les 3 conditions pour un fichier de décision). S'il y a quelque chose, lancer `pulse-aidd reference memoire.md` (les règles de la mémoire projet, dont les 3 conditions d'un fichier de décision), puis le proposer **en une seule question** (en mode autonome : le garder pour la fin du test groupé) (lignes exactes et destinations) : « Ajouter à la mémoire (Recommandé) » / « Garder la mémoire telle quelle ». Si accepté : écrire, lancer `pulse-aidd memoire`, et inclure ces fichiers au **commit suivant** (ou dans un commit `docs: mémoire …` si c'était la dernière tâche). Réserver la proposition à ce qui est durable.
 
 ### Entre deux tâches
 

@@ -139,19 +139,7 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 
 ### « M'expliquer la méthode »
 
-En 9 lignes maximum, le chemin complet, l'étape en cours entre crochets :
-
-```
-/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us (epics et US)
-   (ou, pour démarrer vite : /pulse:express, qui fait tout cela en une conversation)
-   → pour chaque US : /pulse:spec <US-XXX> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
-   → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <US-XXX>)
-   → /pulse:deploy   (les étapes entre parenthèses sont facultatives)
-À tout moment : /pulse:init (où j'en suis), /pulse:guide (carnet de route), /pulse:fix (une erreur), /pulse:refine (changer le plan),
-               /pulse:security, /pulse:memory, /pulse:auto-fix, /pulse:test, /pulse:explain, /pulse:learn, /pulse:pr, /pulse:ui (audit, polish)
-```
-
-Puis remontrer l'écran.
+Montrer le chemin de « Le cycle Pulse » ci-dessus (son bloc et la ligne des commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
 
 ## Fin
 

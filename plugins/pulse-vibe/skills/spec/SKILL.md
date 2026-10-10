@@ -42,7 +42,7 @@ Lire l'argument (règles « User stories, specs et plans » ci-dessus) :
   - Une US la couvre et sa spec est encore en brouillon (ou absente) : la spec porte sur cette US (la citer).
   - Une US la couvre et sa spec est **verrouillée** : le changement devient une nouvelle US (cas suivant), qui complète ou remplace l'ancienne.
   - **Nouveau comportement prévu au PRD** : créer une nouvelle US (numéro suivant, format du modèle d'US, prête selon `/pulse:us` : INVEST et Definition of Ready), demander son epic (AskUserQuestion : les epics existantes, l'epic la plus proche en premier avec « (Recommandé) », et « Un nouveau groupe »), la montrer et attendre sa validation, puis écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au tableau de son epic et à l'ordre de réalisation dans `docs/user-stories.md`.
-  - **Nouveau comportement hors PRD** : décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
+  - **Nouveau comportement hors PRD** : décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (Recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
 - **argument vide** : demander (AskUserQuestion) quelle US spécifier, en proposant les US sans spec dans l'ordre de réalisation du référentiel (« La prochaine US à réaliser (Recommandé) »), et « Décrire une demande ».
 
 Si l'US attend encore son fichier (US Optionnelle, seulement dans le référentiel) : l'écrire d'abord au format du modèle d'US, la montrer et la faire valider, puis remplir la colonne « Fichier » du référentiel.

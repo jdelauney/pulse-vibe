@@ -2,9 +2,11 @@
 
 ```
 /pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us
-          → /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
-          → /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
-          → (/pulse:cicd) → /pulse:deploy
+   (ou, pour démarrer vite : /pulse:init → /pulse:express, qui fait tout cela en une conversation)
+   → pour chaque US : /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
+   → pour chaque tâche : /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
+     (ou tout d'un coup : /pulse:spirc <US-XXX>)
+   → (/pulse:cicd) → /pulse:deploy
 ```
 
 Les étapes entre parenthèses sont facultatives. Pour démarrer vite, `/pulse:express` remplace brainstorm, PRD et US par une seule conversation, puis enchaîne les choix techniques et l'identité visuelle. Pour travailler sur une branche : répondre « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt » à la question d'envoi de `/pulse:implement` ou de `/pulse:spirc` (référence « Le dépôt distant et l'envoi du travail », § 2) ; la branche et la demande de fusion se préparent alors d'elles-mêmes, et `/pulse:pr` permet de le faire à la main.
