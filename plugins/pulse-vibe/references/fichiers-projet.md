@@ -14,6 +14,7 @@ Dans le projet de la personne, ce que produit chaque commande :
 | `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | `/pulse:us` | Une user story : règles métier, exemple, critères d'acceptation |
 | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | `/pulse:spec` | La spécification d'une user story (une US = une spec) : l'intention seule (écrans, informations, règles, scénarios, « terminé quand »), verrouillée une fois validée |
 | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | `/pulse:plan` | Le plan d'une spec (une spec = un plan) : les tâches ordonnées, avec leur statut (à faire, en cours, terminé) |
+| `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre>.md` | `/pulse:review`, `/pulse:implement`, `/pulse:spirc` | La fiche de test d'une tâche, faite par la personne : chaque geste dans l'application et ce qu'elle doit voir, sans commande à taper |
 | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` | `/pulse:review`, `/pulse:spirc` | Les rapports de relecture des tâches de ce plan, un par tâche : `<Tâche>-<AAAA-MM-JJ>.md` |
 | `docs/revue-projet-<AAAA-MM-JJ>.md` | `/pulse:review tout` | La relecture de l'ensemble du projet |
 | `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
