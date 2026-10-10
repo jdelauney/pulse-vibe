@@ -491,3 +491,54 @@ test("pulse-aidd revue relaie vers le script et figure dans l'aide", { skip: spa
   assert.match(aide, /pulse-aidd revue <Tn>/);
   assert.match(aide, /Ne sort jamais en erreur/, "la plage du sed suit l'en-tête allongé d'une ligne");
 });
+
+/** L'état de la relecture d'un rapport écrit tel quel (derniereRevue, sans lancer l'outil). */
+function etatRapport(contenu) {
+  const { derniereRevue } = require(ETAT);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-revue-"));
+  fs.writeFileSync(path.join(d, "T2-2026-10-07.md"), contenu);
+  return derniereRevue(d, "T2").etat;
+}
+
+test("test par la personne : seules les réponses positives valident ; les réponses proposées « Non, … » sont à corriger", () => {
+  const cas = [
+    ["Non, il y a un problème : le bouton ne réagit pas", "a-corriger"],
+    ["Non, quelque chose ne va pas", "a-corriger"],
+    ["❌ Non, il y a un problème", "a-corriger"],
+    ["pas concluant", "a-corriger"],
+    ["Non concluant", "a-corriger"],
+    ["échec : le bouton ne marche pas", "a-corriger"],
+    ["❌ non concluant, la personne n'a pas accepté", "a-corriger"],
+    ["non concluant, accepté par la personne", "validee"],
+    ["Oui, tout fonctionne", "validee"],
+    ["concluant", "validee"],
+    ["⏳ reporté au test groupé", "validee"],
+    ["OK", "a-tester"],
+  ];
+  for (const [test, attendu] of cas) assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test })), attendu, test);
+});
+
+test("test par la personne : la dernière section « Test par la personne » fait foi, jusqu'au titre suivant", () => {
+  const SECTION = (resultat) => `\n## Test par la personne\n\n- **Date** : 2026-10-08\n- **Résultat** : ${resultat}\n`;
+  const CONTROLE = "\n## Relecture de contrôle\n\n- **Date** : 2026-10-08\n- **Verdict** : ✅ Validé\n";
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE + SECTION("✅ concluant")), "validee", "deux sections, la seconde ✅");
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé") + SECTION(MODELE_TEST)), "a-tester", "seconde section restée au modèle");
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "" }) + "\n## Relecture de contrôle\n\n- **Résultat** : ✅ Validé\n"), "a-tester", "un « Résultat » d'une autre section ne vaut pas test");
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE), "a-tester", "test ❌, correction relue : le test est à refaire");
+});
+
+test("test par la personne : « **Résultat :** », puces « * » et « é » décomposé sont lus", () => {
+  const avec = (ligne) => etatRapport(RAPPORT("✅ Validé", { test: "x" }).replace("- **Résultat** : x", ligne));
+  assert.strictEqual(avec("- **Résultat :** ✅ concluant"), "validee");
+  assert.strictEqual(avec("* **Résultat** : ✅ concluant"), "validee");
+  assert.strictEqual(avec("- **Résultat** : ❌ non concluant"), "a-corriger");
+});
+
+test("pulse-aidd revue T2 T3 : un bloc par tâche", () => {
+  const r = spawnSync(process.execPath, [ETAT, "--revue", "T2", "T99"], { cwd: projet({ ...EN_COURS }, PILE_CHOISIE), encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stdout);
+  const blocs = r.stdout.trim().split("\n\n");
+  assert.strictEqual(blocs.length, 2);
+  assert.match(blocs[0], /^tache: T2$[\s\S]*^reprendre: examen$/m);
+  assert.match(blocs[1], /^tache: T99$[\s\S]*^etat: inconnue$/m);
+});
