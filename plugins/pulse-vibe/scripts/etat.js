@@ -299,6 +299,7 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     modeleAncien: claude.etat === "pulse" && modeleAncien(racine, texteClaude),
     codeExistant: codeExistant(racine),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
+    gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
     ancienFormat: anciens,
     enAttente: attentes[0] || null,
@@ -334,6 +335,7 @@ function decider(f) {
   const verdict = (regle, prochaine, raison, extra = {}) => ({ regle, prochaine, raison, aussi, ...extra });
   if (f.claude === "pulse") {
     if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
+    else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
     if (f.modeleAncien) aussi.push("/pulse:init — mettre à niveau le projet (modèles et contrôles)");
     if (f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
   }
