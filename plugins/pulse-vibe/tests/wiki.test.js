@@ -96,6 +96,16 @@ test("wiki : chaque lien et chaque ressource locale existent, sans chemin absolu
   assert.deepStrictEqual(problemes, []);
 });
 
+test("wiki : chaque lien externe s'ouvre dans un nouvel onglet, sans accès à la page d'origine", options, () => {
+  const problemes = [];
+  for (const page of PAGES) {
+    for (const [balise] of lire(page).matchAll(/<a\b[^>]*\bhref="https?:\/\/[^"]*"[^>]*>/g)) {
+      if (!/target="_blank"/.test(balise) || !/rel="noopener noreferrer"/.test(balise)) problemes.push(`${relatif(page)} : ${balise}`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
 test("wiki : texte visible sans jargon (hors code, termes définis avec <dfn> et lexique)", options, () => {
   const problemes = [];
   for (const page of PAGES.filter((p) => !p.endsWith("lexique.html"))) {

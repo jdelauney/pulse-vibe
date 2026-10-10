@@ -750,3 +750,6 @@ body.recherche-ouverte { overflow: hidden; }
 /* Sur petit écran, un contenu large (tableau, bloc de commande) défile dans sa boîte au lieu d'élargir la page. */
 .mise-en-page > * { min-width: 0; }
 @media (max-width: 767px) { .typographie table { display: block; overflow-x: auto; } }
+
+/* Lien externe : il s'ouvre dans un nouvel onglet, signalé par une flèche. */
+a[target="_blank"]::after { content: "\00a0↗"; font-size: 0.85em; }
