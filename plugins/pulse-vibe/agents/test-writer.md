@@ -70,6 +70,7 @@ STATUT: <Terminé | Bloqué>
 
 ## À signaler
 - <outil ou bibliothèque manquants, changement souhaité dans docs/ ou le code, ou « rien »>
+- <fichier d'environnement ou variable nouvelle : le fichier (ex. `.env.e2e`), chaque NOM, ce qui le lit, secret ou non ; ce que vous avez déjà écrit (`pulse-aidd secrets preparer <NOM> --fichier <fichier>`, ou `pulse-aidd secrets generer <NOM> --fichier <fichier>` pour un secret à inventer ; `.env.example`) ; pour chaque valeur que seule la personne peut obtenir : où la trouver. L'appelant la guide pas à pas (`pulse-aidd reference gestes.md` § 3)>
 ```
 
 Écrire en français, phrases courtes.

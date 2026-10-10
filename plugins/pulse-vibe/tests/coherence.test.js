@@ -1270,3 +1270,12 @@ test("init propose d'autoriser d'avance git status, diff, log, add et commit dan
   for (const r of ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(git add *)", "Bash(git commit -m *)", "Read(./.env)"]) assert.ok(init.includes(r), r);
   assert.match(init, /\*\*Régler les autorisations\*\*/);
 });
+
+test("gestes de la personne : faire soi-même d'abord, fichier d'environnement expliqué et rempli, gestes courants mot pour mot", () => {
+  const gestes = lire(RACINE, "references", "gestes.md");
+  for (const t of ["## 1. Faire soi-même d'abord", "## 3. Un fichier d'environnement", "`.env.e2e`", "pulse-aidd secrets generer <NOM> --fichier <fichier>", "| Lancer l'application |", "| Navigation privée |", "| Voir en taille téléphone |"]) assert.ok(gestes.includes(t), t);
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /20\. \*\*Une action demandée à la personne se donne pas à pas\.\*\*/);
+  assert.match(lire(RACINE, "references", "tests", "test-manuel.md"), /« Navigation privée » seul ne suffit pas/);
+  assert.match(lire(RACINE, "templates", "smoke-test.md"), /\*\*Si l'application n'est pas ouverte\*\*/);
+  for (const a of ["implementer", "test-writer", "test-runner", "verifier"]) assert.match(lire(RACINE, "agents", `${a}.md`), /pulse-aidd reference gestes\.md/, a);
+});
