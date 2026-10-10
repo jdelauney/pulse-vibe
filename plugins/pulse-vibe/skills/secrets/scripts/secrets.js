@@ -3,7 +3,7 @@
 //
 //   pulse-aidd secrets inventaire [--json] [--sans-hebergeur]
 //   pulse-aidd secrets preparer <NOM> [--fichier .env]
-//   pulse-aidd secrets generer <NOM> [--octets 32] [--versionne [--ancien <NOM>] [--seul]] [--envoyer production,preview] [--sans-local]
+//   pulse-aidd secrets generer <NOM> [--fichier .env] [--octets 32] [--versionne [--ancien <NOM>] [--seul]] [--envoyer production,preview] [--sans-local]
 //   pulse-aidd secrets elaguer <NOM> [--fichier .env]
 //   pulse-aidd secrets verifier <NOM> [--fichier .env] [--sans-test]
 //   pulse-aidd secrets envoyer <NOM> [--env production,preview] [--depuis .env] [--vider] [--meme-valeur]
@@ -446,20 +446,21 @@ function generer(nom, options) {
       "Générez la valeur versionnée en local, puis envoyez-la avec « pulse-aidd secrets envoyer », ou générez une valeur simple par environnement avec --envoyer.");
   }
   const sansLocal = options["--sans-local"] === true;
+  const fichier = options["--fichier"] || ".env";
   if (sansLocal && !envs.length) echec("❌ --sans-local sert avec --envoyer : sinon la valeur générée n'irait nulle part.");
 
   if (!sansLocal) {
-    const arret = protegerFichier(".env");
+    const arret = protegerFichier(fichier);
     if (arret) echec(arret);
     const nouvelle = aleatoire(octets);
     let ecrite = nouvelle;
     let detail = `${octets} octets, ${nouvelle.length} caractères`;
     if (options["--versionne"]) {
-      const actuelle = lireVariable(".env", nom).valeur;
+      const actuelle = lireVariable(fichier, nom).valeur;
       let versions = lireVersions(actuelle);
-      if (versions === null) echec(`❌ ${nom} existe dans .env mais n'a pas la forme « version:valeur,… » : rien changé.`);
+      if (versions === null) echec(`❌ ${nom} existe dans ${fichier} mais n'a pas la forme « version:valeur,… » : rien changé.`);
       if (!versions.length && options["--ancien"]) {
-        const ancien = lireVariable(".env", exigerNom(options["--ancien"], "pulse-aidd secrets generer <NOM> --versionne --ancien <NOM>")).valeur;
+        const ancien = lireVariable(fichier, exigerNom(options["--ancien"], "pulse-aidd secrets generer <NOM> --versionne --ancien <NOM>")).valeur;
         if (ancien) versions = [{ version: 1, valeur: ancien }];
       }
       const suivante = versions.reduce((max, v) => Math.max(max, v.version), 0) + 1;
@@ -468,11 +469,11 @@ function generer(nom, options) {
       detail += `, version ${suivante}${gardees.length ? ` ; versions gardées pour relire l'existant : ${gardees.map((v) => v.version).join(", ")}` : " ; aucune ancienne version gardée"}`;
     }
     try {
-      ecrireVariable(".env", nom, ecrite);
+      ecrireVariable(fichier, nom, ecrite);
     } catch (e) {
-      echec(`❌ Écriture de .env impossible (${e.code || e.message}) : rien changé.`);
+      echec(`❌ Écriture de ${fichier} impossible (${e.code || e.message}) : rien changé.`);
     }
-    dire(`✅ ${nom} : nouvelle valeur aléatoire écrite dans .env (${detail}). Rien n'est affiché.`);
+    dire(`✅ ${nom} : nouvelle valeur aléatoire écrite dans ${fichier} (${detail}). Rien n'est affiché.`);
   }
 
   if (envs.length) {
@@ -485,7 +486,7 @@ function generer(nom, options) {
       ok = ok && r.ok;
       dire(`${r.ok ? "✅" : "❌"} ${LIBELLE_ENV[env]} : ${r.sortie.split("\n").filter(Boolean).pop() || (r.ok ? "envoyée" : "échec")}`);
     }
-    dire(ok ? `Valeurs distinctes pour ${envs.map((e) => LIBELLE_ENV[e]).join(" et ")}${sansLocal ? "" : " et pour .env"}. ➡️ Redéployez : pulse-aidd secrets redeployer --env ${envs.join(",")}` : "⚠️ Envoi incomplet : relancez la commande pour les environnements en échec.");
+    dire(ok ? `Valeurs distinctes pour ${envs.map((e) => LIBELLE_ENV[e]).join(" et ")}${sansLocal ? "" : ` et pour ${fichier}`}. ➡️ Redéployez : pulse-aidd secrets redeployer --env ${envs.join(",")}` : "⚠️ Envoi incomplet : relancez la commande pour les environnements en échec.");
     terminer(ok ? 0 : 1);
   }
   terminer(0);
@@ -752,7 +753,7 @@ const AIDE = `pulse-aidd secrets – les secrets du projet, sans jamais afficher
 
   inventaire [--json] [--sans-hebergeur]   noms, présence (.env.example, .env, hébergeur), type, dernier renouvellement, points d'attention
   preparer <NOM> [--fichier .env]          ajoute la ligne « NOM= » (sans valeur) ; crée le fichier ; le garde hors de Git
-  generer <NOM> [--octets 32]              écrit une valeur aléatoire dans .env, sans l'afficher
+  generer <NOM> [--fichier .env] [--octets 32]  écrit une valeur aléatoire dans .env (ou --fichier), sans l'afficher
            [--versionne [--ancien <NOM>] [--seul]]   forme « version:valeur,… » (rotation douce) ; --seul : sans les anciennes
            [--envoyer production,preview] [--sans-local]   une valeur différente par environnement, envoyée à l'hébergeur
   elaguer <NOM> [--fichier .env]           garde seulement la version la plus récente d'une valeur versionnée
@@ -772,7 +773,7 @@ function principal() {
     case "preparer":
       return preparer(exigerNom(positionnels[0], "pulse-aidd secrets preparer <NOM> [--fichier .env]"), options);
     case "generer":
-      return generer(exigerNom(positionnels[0], "pulse-aidd secrets generer <NOM> [--octets 32] [--versionne] [--envoyer production,preview]"), options);
+      return generer(exigerNom(positionnels[0], "pulse-aidd secrets generer <NOM> [--fichier .env] [--octets 32] [--versionne] [--envoyer production,preview]"), options);
     case "elaguer":
       return elaguer(exigerNom(positionnels[0], "pulse-aidd secrets elaguer <NOM>"), options);
     case "verifier":
