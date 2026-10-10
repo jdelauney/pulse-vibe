@@ -37,7 +37,8 @@ const PLAFONDS = {
   us: 30000,
   spec: 35000,
   plan: 50000,
-  implement: 39000,
+  // implement : mesuré 39281 (lanceur de tests intégré recommandé sans pack, dans tests-automatiques.md) × 1,05, arrondi au 500 supérieur.
+  implement: 41500,
   fix: 22500,
   review: 29000,
   commit: 38000,
@@ -69,7 +70,8 @@ const PLAFONDS_ETAPES = { review: 12500, commit: 28000 };
 // Une boucle de 4 tâches : ce que la conversation principale charge, une seule fois.
 const BOUCLES = {
   implement: {
-    plafond: 85000,
+    // mesuré 85380 (lanceur de tests intégré recommandé sans pack, dans tests-automatiques.md) × 1,05, arrondi au 500 supérieur.
+    plafond: 90000,
     parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"]],
   },
   spirc: {
