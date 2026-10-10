@@ -115,7 +115,7 @@
 <li><code>-w</code> : dans un dossier à part, sur sa propre branche.</li>
 </ul></li>
 </ul>
-<p>Sans raccourci, Pulse vous demande comment avancer : « Pas à pas, avec mes points de validation (Recommandé) », « Pas à pas, avec un contrôle de sécurité à chaque tâche » ou « Autonome ».</p>
+<p>Sans raccourci, Pulse vous pose dès le début une seule série de questions : le rythme (« Rapide » ou « Complet »), les options à cocher (enchaîner les tâches sans arrêt, un contrôle de sécurité à chaque tâche, un dossier à part), les tests si vous prenez « Complet », et la façon d'envoyer le travail.</p>
 <pre class="commande"><code>/pulse:spirc US-001</code></pre>
 <pre class="commande"><code>/pulse:spirc -a US-001</code></pre>
 <pre class="commande"><code>/pulse:spirc US-002 "le bouton Supprimer ne marche pas"</code></pre>
@@ -163,12 +163,15 @@
 <h2>Exemples</h2>
 <div class="conversation" data-titre="Exemple : réaliser une US pas à pas">
 <p data-role="vous">/pulse:spirc US-001</p>
+<p data-role="claude">Comment réaliser cette user story ? → Complet
+Quelles options voulez-vous ? → aucune cochée
+Si vous choisissez Complet, quels tests ? → Tests d'abord (Recommandé)
+Comment envoyer le travail ? → Directement sur la version principale</p>
 <p data-role="claude">Je fais travailler des assistants spécialisés : l'un réalise, d'autres relisent et vérifient sans avoir écrit le code. C'est vous qui testez chaque tâche.
 Plan de US-001 : ✅ T1 · ✅ T2 · ⬜ T3 – Afficher les créneaux libres · ⬜ T4 – Confirmer le rendez-vous.
 Le plan vous convient ? On commence la réalisation ?</p>
 <p data-role="vous">Oui</p>
-<p data-role="claude">Comment avancer ? → Pas à pas, avec mes points de validation (Recommandé)
-T3 – Afficher les créneaux libres. Ce qui va être fait : calculer et afficher les créneaux libres de la journée.</p>
+<p data-role="claude">T3 – Afficher les créneaux libres. Ce qui va être fait : calculer et afficher les créneaux libres de la journée.</p>
 <p data-role="claude">Relecture : ✅ Validé.
 🧪 À vous de tester : votre fiche SMOKE-TEST-US-001-T3-afficher-les-creneaux-libres.md (3 étapes, environ 3 minutes). L'application est ouverte : tapez http://localhost:3000 dans votre navigateur. Étape 1 : cliquez sur « Prendre rendez-vous » ; le créneau de 10 h, déjà réservé, n'apparaît pas.
 Le test est-il concluant ?</p>
