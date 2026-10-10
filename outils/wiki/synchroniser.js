@@ -31,6 +31,8 @@ const NAVIGATION = [
   { titre: "Prérequis", href: "prerequis.html" },
   { titre: "Tutoriels", href: "tutoriels/index.html" },
   { titre: "Commandes", href: "commandes/index.html" },
+  { titre: "Concepts", href: "concepts.html" },
+  { titre: "Je suis bloqué", href: "depannage.html" },
 ];
 
 const echapper = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

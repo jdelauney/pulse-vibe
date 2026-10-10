@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="fr" data-racine="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concepts – Wiki Pulse</title>
+<meta name="description" content="Les idées de la méthode Pulse expliquées simplement : brief, PRD, user story, spec, plan, versions enregistrées, mise en ligne, clés secrètes, mémoire du projet, garde-fous et assistants.">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/animations.css">
+<script src="js/donnees.js" defer></script>
+<script src="js/gabarit.js" defer></script>
+<script src="js/animations.js" defer></script>
+<script src="js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Sur cette page" data-laterale="sommaire"></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<p class="pastille">Comprendre la méthode</p>
+<h1>Concepts</h1>
+<p class="chapo">Les idées de la méthode Pulse, une par une, avec des mots simples. Pour chacune : ce que c'est, un exemple tiré du carnet de réservations du Salon Lila, l'endroit où vous la retrouvez dans votre projet et la commande qui s'en occupe.</p>
+</header>
+
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> un mot vous arrête ? Le <a href="lexique.html">lexique</a> les définit tous, y compris les mots anglais que vous croiserez sur GitHub ou chez votre hébergeur.</p></aside>
+
+<section id="claude-code-et-pulse">
+<h2>Claude Code et Pulse : qui fait quoi</h2>
+<p><strong>Claude Code</strong> est l'assistant de programmation d'Anthropic : vous lui parlez en français, il lit et écrit les fichiers de votre projet. <strong>Pulse</strong> est une méthode qui s'ajoute à Claude Code. Elle lui donne des commandes qui commencent par <code>/pulse:</code>, un ordre de travail, des modèles de documents et des protections.</p>
+<p>Claude Code écrit le code ; Pulse veille à ce qu'il écrive le bon code, dans le bon ordre, en vous demandant votre avis aux moments qui comptent. Vous décidez, Pulse organise, Claude Code exécute.</p>
+<p><strong>Exemple :</strong> vous tapez <code>/pulse:init carnet-reservations</code>. Pulse prépare le dossier du Salon Lila, puis vous indique la prochaine étape conseillée.</p>
+<ul>
+<li><strong>Où l'utiliser :</strong> la façon conseillée est VS Code avec l'extension Claude Code. Le terminal et Claude Desktop fonctionnent aussi (voir les <a href="prerequis.html">prérequis</a>).</li>
+<li><strong>Dans votre projet :</strong> <code>CLAUDE.md</code>, les règles du projet que Claude Code lit à chaque session.</li>
+<li><strong>Commande :</strong> <a href="commandes/init.html"><code>/pulse:init</code></a> pour démarrer, <a href="commandes/status.html"><code>/pulse:status</code></a> pour savoir où vous en êtes.</li>
+</ul>
+</section>
+
+<section id="chemin">
+<h2>De l'idée au code : le chemin</h2>
+<p>Pulse avance du plus général au plus précis. Chaque document s'appuie sur le précédent : l'IA ne devine jamais ce que vous voulez, elle le lit. Vous validez chaque document avant de passer au suivant.</p>
+
+<figure class="anim" data-etapes="8" data-duree="1300">
+<svg viewBox="0 0 740 280" role="img" aria-labelledby="concepts-chemin-titre">
+<title id="concepts-chemin-titre">De l'idée au code : chaque document nourrit le suivant</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="24" width="162" height="68" rx="18"/><rect class="schema-boite" x="20" y="30" width="150" height="56" rx="14"/><text class="schema-texte" x="95" y="56" text-anchor="middle">Brief</text><text class="schema-texte-secondaire" x="95" y="74" text-anchor="middle">l'idée racontée</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 58 H196" marker-end="url(#concepts-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="194" y="24" width="162" height="68" rx="18"/><rect class="schema-boite" x="200" y="30" width="150" height="56" rx="14"/><text class="schema-texte" x="275" y="56" text-anchor="middle">PRD</text><text class="schema-texte-secondaire" x="275" y="74" text-anchor="middle">la première version</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M350 58 H376" marker-end="url(#concepts-pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="374" y="24" width="162" height="68" rx="18"/><rect class="schema-boite" x="380" y="30" width="150" height="56" rx="14"/><text class="schema-texte" x="455" y="56" text-anchor="middle">User stories</text><text class="schema-texte-secondaire" x="455" y="74" text-anchor="middle">les besoins, un par un</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M530 58 H556" marker-end="url(#concepts-pointe-grise)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="554" y="24" width="162" height="68" rx="18"/><rect class="schema-boite" x="560" y="30" width="150" height="56" rx="14"/><text class="schema-texte" x="635" y="56" text-anchor="middle">Spec</text><text class="schema-texte-secondaire" x="635" y="74" text-anchor="middle">ce qu'on obtient</text></g>
+<path class="schema-fleche trace e5" pathLength="1" d="M635 86 V160" marker-end="url(#concepts-pointe-grise)"/>
+<g class="e5" data-etape="5"><rect class="actif-halo schema-halo-primaire" x="554" y="158" width="162" height="68" rx="18"/><rect class="schema-boite" x="560" y="164" width="150" height="56" rx="14"/><text class="schema-texte" x="635" y="190" text-anchor="middle">Plan</text><text class="schema-texte-secondaire" x="635" y="208" text-anchor="middle">comment construire</text></g>
+<path class="schema-fleche trace e6" pathLength="1" d="M560 192 H444" marker-end="url(#concepts-pointe-grise)"/>
+<g class="e6" data-etape="6"><rect class="actif-halo schema-halo-primaire" x="284" y="158" width="162" height="68" rx="18"/><rect class="schema-boite" x="290" y="164" width="150" height="56" rx="14"/><text class="schema-texte" x="365" y="190" text-anchor="middle">Tâches</text><text class="schema-texte-secondaire" x="365" y="208" text-anchor="middle">T1, T2, T3…</text></g>
+<path class="schema-fleche trace e7" pathLength="1" d="M290 192 H174" marker-end="url(#concepts-pointe-grise)"/>
+<g class="e7" data-etape="7"><rect class="actif-halo schema-halo-primaire" x="14" y="158" width="162" height="68" rx="18"/><rect class="schema-boite-active" x="20" y="164" width="150" height="56" rx="14"/><text class="schema-texte" x="95" y="190" text-anchor="middle">Code</text><text class="schema-texte-secondaire" x="95" y="208" text-anchor="middle">l'appli qui fonctionne</text></g>
+<g class="e8" data-etape="8"><text class="schema-texte-secondaire" x="365" y="262" text-anchor="middle">à chaque document, vous validez avant la suite</text></g>
+<defs>
+<marker id="concepts-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+</defs>
+</svg>
+<figcaption>Le chemin de l'idée au code. Le brief raconte l'idée ; le PRD en tire la première version ; les user stories découpent les besoins un par un ; la spec décrit ce qu'une user story doit permettre ; le plan décide comment la construire et la découpe en tâches T1, T2, T3 ; chaque tâche devient du code. À chaque document, vous validez avant la suite.</figcaption>
+</figure>
+
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pressé ? <a href="commandes/express.html"><code>/pulse:express</code></a> écrit le brief, le PRD et les user stories en une seule conversation. Le chemin reste le même, en plus court.</p></aside>
+</section>
+
+<section id="brief">
+<h2>Le brief</h2>
+<p>Le brief raconte votre idée avec des mots simples, comme une histoire : qui a besoin de quoi, et pourquoi. On y note aussi les personnes concernées, ce qui coince aujourd'hui et les questions encore ouvertes. C'est le point de départ de tout le reste.</p>
+<p><strong>Exemple :</strong> « Le Salon Lila a besoin d'un carnet de réservations en ligne pour que ses clientes réservent sans téléphoner. Aujourd'hui, la coiffeuse répond au téléphone entre deux coupes et oublie parfois de noter un rendez-vous. »</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>docs/brief.md</code>, et les mots de votre métier dans <code>aidd_docs/memory/glossary.md</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/brainstorm.html"><code>/pulse:brainstorm</code></a>, un entretien où Pulse vous pose des questions.</li>
+</ul>
+</section>
+
+<section id="prd">
+<h2>Le PRD et la première version</h2>
+<p>Le PRD est le document de besoin produit. Il fixe la vision, les utilisateurs, des objectifs mesurables, et surtout ce que contiendra la <strong>première version</strong> : la plus petite appli réellement utilisable par de vrais utilisateurs. Sur Internet, on l'appelle souvent <dfn>MVP</dfn>.</p>
+<p>Chaque fonctionnalité est rangée dans l'une des quatre catégories :</p>
+<table>
+<thead><tr><th>Catégorie</th><th>Ce qu'elle veut dire</th><th>Pour le Salon Lila</th></tr></thead>
+<tbody>
+<tr><td><strong>Indispensable</strong></td><td>Sans elle, l'outil ne sert à rien. C'est la première version.</td><td>Prendre rendez-vous ; voir les rendez-vous du jour.</td></tr>
+<tr><td><strong>Essentiel</strong></td><td>Une vraie valeur ajoutée, juste après la première version.</td><td>Recevoir un rappel par e-mail la veille.</td></tr>
+<tr><td><strong>Optionnel</strong></td><td>La cerise sur le gâteau, si le temps le permet.</td><td>Verser un acompte en ligne.</td></tr>
+<tr><td><strong>En attente</strong></td><td>Bonne idée, mais pas maintenant.</td><td>Une carte de fidélité.</td></tr>
+</tbody>
+</table>
+<p>Le PRD se termine par une phrase vérifiable : « La première version est prête quand une cliente réserve un créneau libre et que la coiffeuse le voit dans son carnet du jour. »</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>docs/prd.md</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/prd.html"><code>/pulse:prd</code></a>.</li>
+</ul>
+</section>
+
+<section id="user-story">
+<h2>La user story et ses groupes</h2>
+<p>Une <dfn>user story</dfn> décrit un besoin du point de vue de la personne qui utilisera l'appli. Elle suit toujours la même phrase : « <strong>En tant que</strong>… <strong>je souhaite</strong>… <strong>afin de</strong>… ». Chacune porte un numéro : US-001, US-002…</p>
+<p>Ses <strong>critères d'acceptation</strong> disent comment vérifier qu'elle est bien réalisée. Ils s'écrivent en trois temps : <strong>Étant donné</strong> la situation de départ, <strong>lorsque</strong> la personne fait quelque chose, <strong>alors</strong> voici ce qu'elle voit. Il y en a 2 à 4, dont au moins un cas d'erreur ou un cas limite.</p>
+<p><strong>Exemple :</strong> US-001 « En tant que cliente, je souhaite choisir un créneau libre afin de réserver ma coupe sans téléphoner. » Un critère : « Étant donné le créneau de mardi 14 h déjà pris, lorsque Inès le choisit, alors on lui propose les créneaux voisins. »</p>
+<p>Les user stories sont rangées en <strong>groupes</strong>, un par grand besoin : « Gérer les rendez-vous », « Prévenir les clientes ». Sur GitHub ou ailleurs, un groupe s'appelle parfois <dfn>epic</dfn>.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> la liste complète dans <code>docs/user-stories.md</code>, et une fiche par user story dans <code>aidd_docs/tasks/&lt;groupe&gt;/US-001-&lt;nom&gt;.md</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/us.html"><code>/pulse:us</code></a>.</li>
+</ul>
+</section>
+
+<section id="spec">
+<h2>La spec</h2>
+<p>La spec décrit précisément ce qu'<strong>une</strong> user story doit permettre : les écrans, les informations, les règles, et ce qui se passe exemple par exemple. Elle dit ce que vous voulez obtenir, sans parler de la façon de le construire. Une user story a une seule spec.</p>
+<p>Une fois validée, la spec est <strong>verrouillée</strong> : elle ne bouge plus. Un changement de besoin devient une nouvelle user story.</p>
+<p><strong>Exemple :</strong> pour US-001, la spec liste deux écrans (les créneaux libres de la semaine, la confirmation), une règle (« un créneau se réserve une seule fois ») et une phrase de fin : « terminé quand une cliente réserve un créneau libre et le voit confirmé ».</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>aidd_docs/tasks/&lt;groupe&gt;/SPEC-US-001-&lt;nom&gt;.md</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/spec.html"><code>/pulse:spec</code></a>.</li>
+</ul>
+</section>
+
+<section id="plan">
+<h2>Le plan et ses tâches</h2>
+<p>Le plan décide <strong>comment</strong> construire ce que la spec demande. Puis il découpe le travail en petites tâches numérotées : T1, T2, T3… Chaque tâche livre une seule chose que vous pouvez voir et tester en quelques minutes. Les numéros se suivent dans tout le projet.</p>
+<p>Le plan sert aussi de tableau de suivi : <code>[ ]</code> à faire, <code>[~]</code> en cours, <code>[x]</code> terminé.</p>
+<p><strong>Exemple :</strong> le plan d'US-001 contient « T1 – Afficher la page des créneaux, encore vide », « T2 – Réserver un créneau et le voir confirmé », « T3 – Refuser un créneau déjà pris ».</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-001-&lt;nom&gt;.md</code>, et le carnet de route avec les commandes à copier dans <code>docs/guide/</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/plan.html"><code>/pulse:plan</code></a>.</li>
+</ul>
+</section>
+
+<section id="realisation">
+<h2>La réalisation, tâche par tâche</h2>
+<p>Chaque tâche passe par quatre temps, toujours dans le même ordre : <strong>réaliser</strong> (l'IA écrit le code), <strong>relire</strong> (des assistants qui ne l'ont pas écrit l'examinent et l'essaient), <strong>tester</strong> (vous vérifiez vous-même, avec les étapes que Pulse vous donne), <strong>enregistrer</strong> (la tâche devient une version de votre projet). Ensuite seulement, on passe à la tâche suivante.</p>
+<p>Avancer par petites tâches a deux avantages : l'IA se trompe moins, et vous gardez le contrôle. Si une tâche pose problème, on revient sur elle seule.</p>
+<p><strong>Exemple :</strong> T2 est réalisée ; la relecture signale qu'on peut réserver une date passée ; Pulse corrige ; vous réservez mardi 14 h dans votre navigateur et voyez la confirmation ; la tâche est enregistrée.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> le code lui-même, la case de la tâche cochée dans le plan, et un rapport de relecture par tâche dans <code>aidd_docs/tasks/&lt;groupe&gt;/revues/</code>.</li>
+<li><strong>Commandes :</strong> <a href="commandes/implement.html"><code>/pulse:implement</code></a> (réaliser), <a href="commandes/review.html"><code>/pulse:review</code></a> (relire), <a href="commandes/commit.html"><code>/pulse:commit</code></a> (enregistrer), ou tout d'un coup avec <a href="commandes/spirc.html"><code>/pulse:spirc</code></a>.</li>
+</ul>
+</section>
+
+<section id="version-enregistree">
+<h2>La version enregistrée et l'historique</h2>
+<p>Une version enregistrée est une photo datée de votre projet, avec une légende. Toutes ces photos, mises bout à bout, forment l'<strong>historique</strong>. Vous pouvez toujours revenir à une photo précédente sans rien perdre. C'est le logiciel <strong>Git</strong> qui garde cet historique ; une version enregistrée s'appelle un <dfn>commit</dfn>.</p>
+<p>Pulse fait une version par sujet : une tâche du plan, une mise à jour de la mémoire, une correction. Avant chaque enregistrement, il vérifie qu'aucune clé secrète ne part avec.</p>
+<p><strong>Exemple :</strong> « feat(T2): permet de réserver un créneau libre ». Le lendemain, si T3 a cassé quelque chose, vous revenez à la version de T2.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> le dossier caché <code>.git</code>, géré par Git. Vous n'avez pas à l'ouvrir.</li>
+<li><strong>Commandes :</strong> <a href="commandes/commit.html"><code>/pulse:commit</code></a> pour enregistrer, <a href="commandes/annuler.html"><code>/pulse:annuler</code></a> pour revenir en arrière.</li>
+</ul>
+</section>
+
+<section id="depot-en-ligne">
+<h2>Le dépôt en ligne</h2>
+<p>Le dépôt en ligne est une copie de votre projet sur un site comme <strong>GitHub</strong>. Il sert de sauvegarde, et c'est de là que part la mise en ligne de votre appli. Chaque envoi y recopie vos nouvelles versions ; en anglais, on dit <dfn>push</dfn>.</p>
+<p>Pulse le crée toujours <strong>privé</strong> : vous seul y avez accès. Chaque envoi passe par votre accord.</p>
+<p><strong>Exemple :</strong> le projet du Salon Lila est rangé sur GitHub sous le nom <code>carnet-reservations</code>. Si votre ordinateur tombe en panne, rien n'est perdu.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> l'adresse du dépôt, notée dans la section « Adresses » de <code>CLAUDE.md</code>.</li>
+<li><strong>Commandes :</strong> <a href="commandes/init.html"><code>/pulse:init</code></a> le propose après le premier enregistrement ; <a href="commandes/deploy.html"><code>/pulse:deploy</code></a> le crée s'il manque encore.</li>
+</ul>
+</section>
+
+<section id="version-parallele">
+<h2>La version parallèle et le dossier à part</h2>
+<p>Une <strong>version parallèle</strong> est une copie du projet où l'on avance sans toucher à la version principale, celle que le site publie. Git l'appelle une <dfn>branche</dfn>. Quand le travail est prêt, une <strong>proposition</strong> sur le site du dépôt demande de rassembler la version parallèle dans la version principale ; sur GitHub, elle s'appelle <dfn>pull request</dfn>. Vous la relisez, puis vous l'acceptez.</p>
+<p>Le <strong>dossier à part</strong> va plus loin : c'est un deuxième dossier du projet, sur sa propre version parallèle. Deux sessions de Claude Code peuvent ainsi avancer en même temps, chacune sur sa user story, sans se gêner. Son nom anglais : <dfn>worktree</dfn>.</p>
+<p><strong>Exemple :</strong> pendant qu'une session réalise US-001, une deuxième session avance sur US-003 (le rappel par e-mail) dans un dossier à part. Chaque user story est rassemblée dans la version principale une fois terminée.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> les dossiers à part sont rangés dans <code>.claude/worktrees/</code>.</li>
+<li><strong>Commandes :</strong> <a href="commandes/pr.html"><code>/pulse:pr</code></a> pour la version parallèle et sa proposition ; <a href="commandes/implement.html"><code>/pulse:implement</code></a> et <a href="commandes/spirc.html"><code>/pulse:spirc</code></a> proposent le dossier à part quand une autre session travaille déjà sur le projet.</li>
+</ul>
+</section>
+
+<section id="controles-automatiques">
+<h2>Les contrôles automatiques</h2>
+<p>Les contrôles automatiques sont un contrôle qualité qui tourne tout seul sur le site de votre dépôt. À chaque envoi, il vérifie que les clés restent hors du code, que les tests passent et que l'appli se construit. Une coche verte dit que tout va bien ; une croix rouge vous prévient avant que l'erreur n'arrive sur le site. Sur GitHub, on parle de <dfn>CI</dfn>.</p>
+<p>Les <strong>tests automatiques</strong> en font partie : de petits programmes qui vérifient que l'appli fait ce que la spec demande. À chaque changement, ils préviennent si quelque chose casse.</p>
+<p><strong>Exemple :</strong> une modification casse la réservation d'un créneau. Le test « un créneau se réserve une seule fois » échoue, la croix rouge apparaît, et le problème est corrigé avant la mise en ligne.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>scripts/verifier.js</code> et le fichier des contrôles, par exemple dans <code>.github/workflows/</code>.</li>
+<li><strong>Commandes :</strong> <a href="commandes/cicd.html"><code>/pulse:cicd</code></a> pour les contrôles, <a href="commandes/test.html"><code>/pulse:test</code></a> pour les tests.</li>
+</ul>
+</section>
+
+<section id="mise-en-ligne">
+<h2>La mise en ligne et l'hébergeur</h2>
+<p>Mettre en ligne, c'est rendre votre appli accessible à tous, à une adresse web. L'<strong>hébergeur</strong> est le service qui la fait tourner sur ses ordinateurs, jour et nuit (par exemple Vercel). Une fois relié à votre dépôt en ligne, il met le site à jour tout seul à chaque envoi sur la version principale, en quelques minutes.</p>
+<p>Avant chaque envoi, Pulse vérifie que tout est enregistré et que les tests passent. Après la publication, il prouve que le site répond vraiment.</p>
+<p><strong>Exemple :</strong> à la fin d'US-002, la première version est complète. Le carnet du Salon Lila est publié, et la coiffeuse partage l'adresse avec ses clientes.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> l'hébergeur choisi et la façon de revenir en arrière dans <code>docs/technical.md</code> ; l'adresse du site dans <code>CLAUDE.md</code>.</li>
+<li><strong>Commandes :</strong> <a href="commandes/tech.html"><code>/pulse:tech</code></a> choisit l'hébergeur, <a href="commandes/deploy.html"><code>/pulse:deploy</code></a> met en ligne.</li>
+</ul>
+</section>
+
+<section id="secrets">
+<h2>Les clés secrètes et le fichier <code>.env</code></h2>
+<p>Une clé secrète (clé d'accès à un service, mot de passe, adresse de base de données) permet d'agir à votre place. Elle se range dans un fichier à part, nommé <code>.env</code>, qui reste sur votre ordinateur : il n'est jamais enregistré dans l'historique ni envoyé sur le dépôt. Votre hébergeur reçoit sa propre copie des clés.</p>
+<p>Vous collez vous-même chaque valeur dans <code>.env</code>, depuis votre éditeur. L'IA travaille avec les noms des clés, jamais avec leurs valeurs, et Pulse l'empêche de lire ce fichier. Si une clé apparaît dans la conversation, on la change.</p>
+<p><strong>Exemple :</strong> pour envoyer le rappel la veille, l'appli a besoin du mot de passe du service d'e-mails. Il va dans <code>.env</code> sous un nom comme <code>SMTP_PASSWORD</code> ; le modèle <code>.env.example</code> garde le nom, sans la valeur.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>.env</code> (vos valeurs, gardé secret), <code>.env.example</code> (les noms seulement), <code>docs/secrets.md</code> (la liste des clés et leurs dates, jamais leurs valeurs).</li>
+<li><strong>Commande :</strong> <a href="commandes/secrets.html"><code>/pulse:secrets</code></a>.</li>
+</ul>
+</section>
+
+<section id="memoire">
+<h2>La mémoire du projet</h2>
+<p>D'une conversation à l'autre, l'IA oublie tout. La mémoire du projet lui rappelle, à chaque nouvelle session, vos choix, les mots de votre métier et les pièges déjà rencontrés. Ce sont quelques fichiers courts, écrits en français, rangés dans votre projet et enregistrés avec lui.</p>
+<p>Au démarrage de chaque session, Claude Code relit <code>CLAUDE.md</code>, où Pulse a recopié la mémoire. Pulse vous montre chaque ajout avant de l'écrire.</p>
+
+<figure class="anim" data-etapes="5" data-duree="1300">
+<svg viewBox="0 0 720 240" role="img" aria-labelledby="concepts-memoire-titre">
+<title id="concepts-memoire-titre">La mémoire relue à chaque nouvelle session</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="34" width="162" height="68" rx="18"/><rect class="schema-boite" x="10" y="40" width="150" height="56" rx="14"/><text class="schema-texte" x="85" y="66" text-anchor="middle">Nouvelle session</text><text class="schema-texte-secondaire" x="85" y="84" text-anchor="middle">l'IA a tout oublié</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M160 68 H186" marker-end="url(#concepts-memoire-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="184" y="34" width="162" height="68" rx="18"/><rect class="schema-boite" x="190" y="40" width="150" height="56" rx="14"/><text class="schema-texte" x="265" y="66" text-anchor="middle">Lire CLAUDE.md</text><text class="schema-texte-secondaire" x="265" y="84" text-anchor="middle">les règles du projet</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M340 68 H366" marker-end="url(#concepts-memoire-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="364" y="34" width="162" height="68" rx="18"/><rect class="schema-boite" x="370" y="40" width="150" height="56" rx="14"/><text class="schema-texte" x="445" y="66" text-anchor="middle">Lire la mémoire</text><text class="schema-texte-secondaire" x="445" y="84" text-anchor="middle">choix · mots · pièges</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M520 68 H546" marker-end="url(#concepts-memoire-grise)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="544" y="34" width="162" height="68" rx="18"/><rect class="schema-boite-active" x="550" y="40" width="150" height="56" rx="14"/><text class="schema-texte" x="625" y="66" text-anchor="middle">Travailler</text><text class="schema-texte-secondaire" x="625" y="84" text-anchor="middle">sans tout redécouvrir</text></g>
+<g class="e5" data-etape="5"><path class="schema-accompagne trace e5" pathLength="1" d="M625 98 C625 190 445 190 445 102" marker-end="url(#concepts-memoire-mauve)"/><text class="schema-texte-secondaire" x="535" y="212" text-anchor="middle">une leçon apprise rejoint la mémoire,</text><text class="schema-texte-secondaire" x="535" y="230" text-anchor="middle">avec votre accord</text></g>
+<defs>
+<marker id="concepts-memoire-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="concepts-memoire-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>À chaque nouvelle session, l'IA a tout oublié. Claude Code relit d'abord CLAUDE.md, les règles du projet, puis la mémoire : vos choix, les mots de votre métier, les pièges déjà rencontrés. Il travaille ensuite sans tout redécouvrir. Une leçon apprise en chemin rejoint la mémoire, avec votre accord.</figcaption>
+</figure>
+
+<p><strong>Exemple :</strong> la mémoire note que le salon dit « prestation » et jamais « service », et que les rendez-vous durent 30 minutes. La semaine suivante, Claude Code s'en souvient sans que vous le répétiez.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> <code>aidd_docs/memory/</code> (<code>project.md</code> pour la vision et les choix, <code>technical.md</code> pour les outils, <code>glossary.md</code> pour les mots du métier), recopiée dans <code>CLAUDE.md</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/memory.html"><code>/pulse:memory</code></a>.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> la conversation devient longue ? Tapez <code>/clear</code> puis relancez la commande proposée. Vous repartez avec une conversation légère, et la mémoire garde l'essentiel.</p></aside>
+</section>
+
+<section id="garde-fous">
+<h2>Les garde-fous</h2>
+<p>Les garde-fous sont des protections que Pulse ajoute à Claude Code. Avant chaque action, ils regardent ce que l'IA s'apprête à faire. Une action dangereuse est refusée ; une action qui jette du travail ou touche au site en ligne attend votre accord. Dans les deux cas, Pulse vous dit pourquoi et propose une autre façon de faire.</p>
+<p>Ils restent actifs même si vous avez désactivé les demandes d'autorisation de Claude Code.</p>
+
+<figure class="anim" data-etapes="6" data-duree="1300">
+<svg viewBox="0 0 720 300" role="img" aria-labelledby="concepts-garde-titre">
+<title id="concepts-garde-titre">Les garde-fous de Pulse devant une action sensible</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="106" width="182" height="68" rx="18"/><rect class="schema-boite" x="10" y="112" width="170" height="56" rx="14"/><text class="schema-texte" x="95" y="138" text-anchor="middle">Action demandée</text><text class="schema-texte-secondaire" x="95" y="156" text-anchor="middle">une commande, un fichier</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M180 140 H246" marker-end="url(#concepts-garde-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="244" y="106" width="182" height="68" rx="18"/><rect class="schema-boite-active" x="250" y="112" width="170" height="56" rx="14"/><text class="schema-texte" x="335" y="138" text-anchor="middle">Garde-fou Pulse</text><text class="schema-texte-secondaire" x="335" y="156" text-anchor="middle">examine l'action</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M420 130 C470 130 470 48 516 48" marker-end="url(#concepts-garde-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="514" y="14" width="202" height="68" rx="18"/><rect class="schema-boite" x="520" y="20" width="190" height="56" rx="14"/><text class="schema-texte" x="615" y="46" text-anchor="middle">Refusé</text><text class="schema-texte-secondaire" x="615" y="64" text-anchor="middle">lire .env · envoi forcé</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M420 140 H516" marker-end="url(#concepts-garde-grise)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="514" y="106" width="202" height="68" rx="18"/><rect class="schema-boite" x="520" y="112" width="190" height="56" rx="14"/><text class="schema-texte" x="615" y="138" text-anchor="middle">Votre accord</text><text class="schema-texte-secondaire" x="615" y="156" text-anchor="middle">supprimer · envoyer une clé</text></g>
+<path class="schema-fleche trace e5" pathLength="1" d="M420 150 C470 150 470 232 516 232" marker-end="url(#concepts-garde-grise)"/>
+<g class="e5" data-etape="5"><rect class="actif-halo schema-halo-primaire" x="514" y="198" width="202" height="68" rx="18"/><rect class="schema-boite" x="520" y="204" width="190" height="56" rx="14"/><text class="schema-texte" x="615" y="230" text-anchor="middle">Le travail continue</text><text class="schema-texte-secondaire" x="615" y="248" text-anchor="middle">tout le reste</text></g>
+<g class="e6" data-etape="6"><path class="schema-accompagne trace e6" pathLength="1" d="M335 172 V236" marker-end="url(#concepts-garde-mauve)"/><text class="schema-texte-secondaire" x="335" y="258" text-anchor="middle">toujours avec la raison</text><text class="schema-texte-secondaire" x="335" y="276" text-anchor="middle">et une autre façon de faire</text></g>
+<defs>
+<marker id="concepts-garde-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="concepts-garde-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Une action demandée (une commande à lancer, un fichier à lire) passe d'abord par le garde-fou de Pulse. Les actions dangereuses sont refusées, comme lire le fichier de clés .env ou écraser le dépôt en ligne. Les actions sensibles attendent votre accord, comme une suppression de dossier ou l'envoi d'une clé chez l'hébergeur. Tout le reste continue normalement. Pulse donne toujours la raison et une autre façon de faire.</figcaption>
+</figure>
+
+<p><strong>Exemple :</strong> pour vérifier la clé du service d'e-mails, l'IA voudrait ouvrir <code>.env</code>. Le garde-fou refuse et rappelle l'autre chemin : <code>pulse-aidd secrets verifier</code> contrôle la clé sans jamais afficher sa valeur.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> rien à installer, les garde-fous viennent avec Pulse. <a href="commandes/init.html"><code>/pulse:init</code></a> ajoute une seconde protection dans <code>.claude/settings.json</code> et un contrôle des clés avant chaque enregistrement.</li>
+<li><strong>Commande :</strong> aucune ; ils veillent pendant toutes les commandes.</li>
+</ul>
+</section>
+
+<section id="assistants">
+<h2>Les assistants, des relecteurs indépendants</h2>
+<p>Pour certaines étapes, Pulse confie le travail à des <strong>assistants spécialisés</strong> : des IA séparées, chacune avec un seul rôle et ses propres consignes. L'un réalise la tâche, un autre relit le code, un autre lance l'appli et essaie chaque critère, un autre écrit les tests.</p>
+<p>Ceux qui relisent n'ont pas écrit le code : comme un regard extérieur, ils repèrent les oublis que l'auteur ne voit plus. Votre propre test vient ensuite confirmer.</p>
+<p><strong>Exemple :</strong> après T2, un assistant relit le code et signale qu'une date passée est acceptée ; un autre ouvre l'appli et réserve mardi 14 h pour vérifier la confirmation.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> leurs rapports de relecture, dans <code>aidd_docs/tasks/&lt;groupe&gt;/revues/</code>.</li>
+<li><strong>Commandes :</strong> <a href="commandes/review.html"><code>/pulse:review</code></a>, <a href="commandes/spirc.html"><code>/pulse:spirc</code></a>, <a href="commandes/security.html"><code>/pulse:security</code></a>.</li>
+</ul>
+</section>
+
+<section id="pack-next">
+<h2>Le pack Next.js et ses recettes</h2>
+<p>Pulse ne dépend d'aucun outil en particulier. Un <strong>pack</strong> ajoute le savoir-faire d'un ensemble d'outils précis. Le pack Next.js (<code>pulse-next</code>) sert à construire une appli web avec des comptes et des données, hébergée chez Vercel, avec une base de données chez Neon. Il apporte un projet de départ déjà vérifié et des conseils pour écrire un code juste du premier coup.</p>
+<p>Ses <strong>recettes</strong> sont des fonctions courantes prêtes à l'emploi, vérifiées chaque semaine : la connexion, une liste filtrée, l'envoi d'e-mails, le paiement, le référencement… Les specs et les plans s'appuient dessus.</p>
+<p><strong>Exemple :</strong> pour US-002, la coiffeuse doit se connecter pour voir son carnet du jour. Le plan suit la recette <code>connexion</code> ; le rappel la veille suivra la recette <code>email</code>.</p>
+<ul>
+<li><strong>Dans votre projet :</strong> la ligne « Pack de pile Pulse : next » dans <code>docs/technical.md</code>.</li>
+<li><strong>Commande :</strong> <a href="commandes/tech.html"><code>/pulse:tech</code></a> le propose quand il convient à votre projet. Le <a href="tutoriels/production.html">tutoriel « prêt pour de vrais clients »</a> l'utilise de bout en bout.</li>
+</ul>
+</section>
+
+</article>
+</div>
+</main>
+</body>
+</html>
