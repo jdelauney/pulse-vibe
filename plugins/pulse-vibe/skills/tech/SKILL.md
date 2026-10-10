@@ -2,7 +2,7 @@
 description: Choisir la pile technique à partir du besoin (ou documenter celle d'un projet existant), comparer 2 à 3 options vérifiées sur la documentation officielle, et produire docs/technical.md, le bloc Pile technique de CLAUDE.md, la mémoire technique et la mise en place
 argument-hint: "[contrainte ou préférence technique (facultatif)]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd etape cicd --sans-communes) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape deploy --sans-communes) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd verifier) Bash(pulse-aidd guide) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd revue *)
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd etape cicd --sans-communes) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape deploy --sans-communes) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd verifier) Bash(pulse-aidd guide) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd revue *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md)
 ---
 
 # /pulse:tech – Les choix techniques
@@ -72,7 +72,7 @@ Reporter les verdicts dans le tableau « Les options comparées ». Si toutes le
 
 #### 5. Choisir
 
-Présenter le tableau et **recommander** une option en une phrase. Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». La décision appartient à la personne.
+Présenter le tableau et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait. Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». La décision appartient à la personne.
 
 ### 6. Écrire (projet existant ou neuf)
 

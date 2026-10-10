@@ -934,3 +934,20 @@ test("commit : un commit docs:, chore: ou sans rapport avec la tâche n'est jama
   assert.match(verification, /Un commit sans tâche concernée \(`docs:`, `chore:`[^\n]*s'enregistre toujours[^\n]*« T3 attend encore votre test\. »/);
   assert.doesNotMatch(verification, /sur une branche `feat\/us-xxx-<nom>`, seulement/, "le périmètre suit les fichiers du commit, pas la branche");
 });
+
+test("règle 16 : chaque commande qui attend une décision structurante la sauvegarde, et peut l'effacer", () => {
+  const COMMANDES = ["express", "brainstorm", "prd", "us", "spirc", "implement", "tech", "ui", "spec", "plan", "search-console"];
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  const regle16 = regles.split("\n").find((l) => l.startsWith("16. "));
+  const fichiersProjet = lire(RACINE, "references", "fichiers-projet.md").split("\n").find((l) => l.startsWith("| `aidd_docs/tasks/in-progress.md` |"));
+  for (const c of COMMANDES) {
+    assert.ok(regle16.includes(`\`/pulse:${c}\``), `règle 16 : /pulse:${c}`);
+    assert.ok(fichiersProjet.includes(`\`/pulse:${c}\``), `fichiers-projet.md : /pulse:${c}`);
+    const texte = skillTexte(c);
+    assert.match(texte, /aidd_docs\/tasks\/in-progress\.md|règle commune 16/, `${c} : écrit le travail en cours`);
+    const motifs = motifsBash(path.join(RACINE, "skills", c, "SKILL.md"));
+    assert.ok(motifs.some((m) => couvre(m, "pulse-aidd travail-fini")), `${c} : pulse-aidd travail-fini autorisé`);
+    const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    assert.ok(/Write\(aidd_docs\/tasks\/(in-progress\.md|\*\*)\)/.test(ligne), `${c} : écriture du travail en cours autorisée`);
+  }
+});
