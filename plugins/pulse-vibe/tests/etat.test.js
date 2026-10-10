@@ -42,7 +42,9 @@ ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
 const PILE = "- **Pile** : HTML et JavaScript";
 
 /** Un rapport de relecture (modèle « revue ») : verdict, et au besoin résultat du test par la personne et blocage. */
-const RAPPORT = (verdict, { test, blocage, verif = "✅ Prouvé", retest } = {}) => `# Revue – T2 – 2026-10-07
+// Le modèle non rempli liste les trois résultats possibles : MODELE_TEST.
+const MODELE_TEST = "✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)";
+const RAPPORT = (verdict, { test = "✅ concluant", blocage, verif = "✅ Prouvé", retest } = {}) => `# Revue – T2 – 2026-10-07
 
 **Verdict** : ${verdict}
 **Mode** : /pulse:review
@@ -58,7 +60,7 @@ ${blocage ? `**Blocage** : ${blocage}` : ""}
 ## Test par la personne
 
 - **Date** : 2026-10-07
-- **Résultat** : ${test || "✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)"}
+- **Résultat** : ${test}
 ${retest ? `- **Résultat** : ${retest}\n` : ""}`;
 
 const REFERENTIEL = `# User stories – TodoIt
@@ -438,4 +440,54 @@ test("lireOptions : --sans-git et --aujourdhui", () => {
   assert.strictEqual(lireOptions(["--aujourdhui", "2028-02-29"]).aujourdhui, Date.parse("2028-02-29T00:00:00Z"));
   const r = spawnSync(process.execPath, [ETAT, "--aujourdhui", "2026-02-31"], { cwd: os.tmpdir(), encoding: "utf8" });
   assert.strictEqual(r.status, 2);
+});
+
+test("relecture validée sans le test de la personne : relire reprend au test (R14), jamais l'enregistrement", () => {
+  const avec = (opts, verdict = "✅ Validé") => etat(projet({ ...EN_COURS, [`${REVUES}/T2-2026-10-07.md`]: RAPPORT(verdict, opts) }, PILE_CHOISIE));
+  for (const test of [MODELE_TEST, "", "{{✅ concluant | ❌ non concluant}}"]) {
+    const r = avec({ test });
+    assert.deepStrictEqual([r.regle, r.prochaine], ["R14", "/pulse:review T2"], `test « ${test} »`);
+    assert.match(r.raison, /votre test manuel/);
+  }
+  assert.strictEqual(avec({ test: MODELE_TEST }, "⚠️ À corriger, accepté par la personne").prochaine, "/pulse:review T2");
+  assert.strictEqual(avec({ test: "non concluant" }).prochaine, "/pulse:review T2", "« non concluant » sans emoji");
+  assert.strictEqual(avec({ test: "❌ non concluant, accepté par la personne" }).regle, "R13", "test non concluant accepté");
+  assert.strictEqual(avec({ test: "✅ OK" }).regle, "R13");
+});
+
+test("pulse-aidd revue <Tn> : dernière relecture, rapport et où reprendre", () => {
+  const PLAN_T2 = "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md";
+  const revue = (fichiers, id = "T2") => etat(projet({ ...EN_COURS, ...fichiers }, PILE_CHOISIE), "--revue", id);
+  const sans = revue({});
+  assert.deepStrictEqual([sans.tache, sans.statut, sans.plan, sans.etat, sans.rapport, sans.reprendre], ["T2", "en-cours", PLAN_T2, "absente", "aucun", "examen"]);
+  const cas = [
+    [RAPPORT("✅ Validé", { test: MODELE_TEST }), "a-tester", "test"],
+    [RAPPORT("✅ Validé"), "validee", "commit"],
+    [RAPPORT("✅ Validé", { test: "⏳ reporté au test groupé de fin de plan (mode autonome)" }), "validee", "commit"],
+    [RAPPORT("⚠️ À corriger"), "a-corriger", "correction"],
+    [RAPPORT("✅ Validé", { test: "❌ non concluant" }), "a-corriger", "correction"],
+    [RAPPORT("⛔ Bloquant", { blocage: "persiste après 2 cycles : /pulse:get-help" }), "bloquee", "aide"],
+  ];
+  for (const [contenu, etatAttendu, reprendre] of cas) {
+    const r = revue({ [`${REVUES}/T2-2026-10-07.md`]: contenu });
+    assert.deepStrictEqual([r.etat, r.reprendre], [etatAttendu, reprendre], etatAttendu);
+    assert.strictEqual(r.rapport, `${REVUES}/T2-2026-10-07.md`);
+  }
+  // le rapport le plus récent fait foi ; minuscules acceptées
+  const deux = revue({ [`${REVUES}/T2-2026-10-07.md`]: RAPPORT("⚠️ À corriger"), [`${REVUES}/T2-2026-10-07-2.md`]: RAPPORT("✅ Validé", { test: MODELE_TEST }) }, "t2");
+  assert.deepStrictEqual([deux.tache, deux.etat, deux.rapport], ["T2", "a-tester", `${REVUES}/T2-2026-10-07-2.md`]);
+  // tâche inconnue ou absente : une réponse lisible, jamais une erreur
+  const inconnue = revue({}, "T99");
+  assert.deepStrictEqual([inconnue.tache, inconnue.etat, inconnue.reprendre], ["T99", "inconnue", "aucune"]);
+  assert.strictEqual(etat(projet({}), "--revue").etat, "inconnue");
+});
+
+test("pulse-aidd revue relaie vers le script et figure dans l'aide", { skip: spawnSync("bash", ["--version"]).error ? "bash absent" : false }, () => {
+  const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
+  const r = spawnSync("bash", [outil, "revue", "T1"], { cwd: projet(), encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^etat: inconnue$/m);
+  const aide = spawnSync("bash", [outil], { encoding: "utf8" }).stdout;
+  assert.match(aide, /pulse-aidd revue <Tn>/);
+  assert.match(aide, /Ne sort jamais en erreur/, "la plage du sed suit l'en-tête allongé d'une ligne");
 });
