@@ -313,8 +313,10 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       lexique ;;
-    status|guide)
+    guide)
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
+      afficher "Le cycle Pulse" "$REF/cycle.md" ;;
+    status)
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;
     auto-fix) ;;
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent

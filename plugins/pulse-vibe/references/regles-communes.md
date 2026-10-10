@@ -30,7 +30,7 @@ La personne en face est **indépendante, dirigeante ou collaboratrice d'une peti
 
 ## 2. Où se trouvent les choses
 
-Le tableau des fichiers du projet (ce que produit chaque commande, et ce qu'ils contiennent) s'affiche avec `pulse-aidd reference fichiers-projet.md` ; il figure dans le contexte de `/pulse:init`, `/pulse:status` et `/pulse:guide`.
+Le tableau des fichiers du projet (ce que produit chaque commande, et ce qu'ils contiennent) s'affiche avec `pulse-aidd reference fichiers-projet.md` ; il figure dans le contexte de `/pulse:init` et `/pulse:guide`.
 
 Avant d'écrire une spec, un écran ou un texte : appliquer, s'ils existent, `docs/design.md` (identité visuelle), `docs/seo.md` (source unique des titres et descriptions), `docs/textes/<page>.md` (textes validés de la page) et `docs/voix.md` (voix du site).
 
