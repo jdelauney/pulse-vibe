@@ -14,16 +14,16 @@
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
 | `/pulse:brainstorm` | Vous fait réfléchir à votre idée : quelques questions essentielles, auxquelles vous répondez avec vos mots (avec des exemples), puis des questions rapides à choix ; raconte enfin votre outil comme une histoire | `docs/brief.md` et le glossaire |
-| `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **MVP** |
+| `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **première version** |
 | `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options (dont une pile Pulse prête à l'emploi si elle est installée), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
-| `/pulse:us` | Découpe le besoin en epics et écrit les user stories : « En tant que… je souhaite… afin de… », 3 questions au plus par ronde ; chaque US vérifiée (INVEST, prête à spécifier), triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
+| `/pulse:us` | Découpe le besoin en groupes et écrit les user stories : « En tant que… je souhaite… afin de… », 3 questions au plus par ronde ; chaque US vérifiée et prête à spécifier, triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
 ## 3. Préparer la construction
 
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
-| `/pulse:spec US-001` ou `/pulse:spec "…"` | Décrit ce que l'utilisateur obtient pour cette user story (une spec par US) ou pour votre demande : écrans, informations, règles, hors objectifs ; chaque inconnue notée `TBD:` ; verrouillée une fois validée | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
+| `/pulse:spec US-001` ou `/pulse:spec "…"` | Décrit ce que l'utilisateur obtient pour cette user story (une spec par US) ou pour votre demande : écrans, informations, règles, hors objectifs ; chaque inconnue notée comme question ouverte ; verrouillée une fois validée | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` |
 | `/pulse:ui maquettes US-001` | (Facultatif) Dessine 2 à 4 versions de vos écrans, à comparer dans le navigateur | `docs/design/maquettes/US-XXX-<nom>/` |
 | `/pulse:plan US-001` | Décide comment construire la spec (pile, données, sécurité, fichiers), puis la découpe en petites tâches T1, T2… (un plan par spec) | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (votre tableau de tâches) et `docs/guide/` (votre carnet de route) |
 | `/pulse:refine US-001 "…"` | Change le plan selon vos remarques, après vous avoir montré ce qui change | le plan mis à jour |
@@ -42,15 +42,15 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 🧭 Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent les réglages conseillés sans vous poser de questions techniques ; dites-le si vous préférez autre chose.
 
-🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une branche pour l'US et une demande de fusion » : Pulse prépare la copie de travail et la demande de fusion (une demande relisible, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
+🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt » : Pulse prépare la version parallèle et sa proposition (relisible sur le site du dépôt, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
 
-🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose une **copie à part du projet** (un worktree), sur sa propre branche, puis rassemble le travail à la fin.
+🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose un **dossier à part** du projet (un worktree), sur sa propre version parallèle, puis rassemble le travail à la fin.
 
 ## 5. Mettre en ligne
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque demande de fusion : une croix rouge vous prévient avant que l'erreur n'arrive sur le site ; un contrôle des clés secrètes protège aussi chaque enregistrement |
+| `/pulse:cicd` | (Facultatif, conseillé) Un contrôle qualité automatique à chaque envoi et sur chaque proposition de version parallèle : une croix rouge vous prévient avant que l'erreur n'arrive sur le site ; un contrôle des clés secrètes protège aussi chaque enregistrement |
 | `/pulse:deploy` | Première fois : dépôt en ligne + hébergeur choisis avec `/pulse:tech`. Ensuite : chaque envoi met le site à jour tout seul. Avant la première fois : tests et contrôle rapide de sécurité. Chaque fois, Pulse vérifie que le site répond vraiment et reste visible pour Google |
 | `/pulse:deploy production` | Prépare le site « pour de vrai » : variables, services connectés, retour arrière (et la CI avec `/pulse:cicd` si elle manque) |
 | `/pulse:search-console relier` | Une fois le site en ligne : prouver à Google (et à Bing) que le site est à vous, déclarer son plan (sitemap). Une seule fois |

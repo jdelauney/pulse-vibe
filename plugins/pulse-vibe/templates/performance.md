@@ -54,7 +54,7 @@ Limites vérifiées par `pulse-aidd perf budget` (une médiane au-delà fait éc
 ## Mesure réelle et suivi
 
 - Mesure chez les vrais visiteurs : <non installée \| outil, depuis le AAAA-MM-JJ, mention de confidentialité à jour>
-- Vérification automatique : <aucune \| chaque semaine sur le site en ligne \| sur chaque demande de fusion> (<fichier de CI>)
+- Vérification automatique : <aucune \| chaque semaine sur le site en ligne \| sur chaque proposition de version parallèle> (<fichier de CI>)
 
 ## Historique
 

@@ -61,7 +61,7 @@ Un contrôle automatique (garde-fou anti-secrets, lint, format…) peut refuser 
 
 ## 5. Les branches
 
-Une **branche** est une copie de travail du projet : on y avance sans toucher à la version publiée, puis on propose de la fusionner (demande de fusion, ou PR). La **branche principale** (souvent `main`) est celle que l'hébergeur publie.
+Une **branche** est une version parallèle du projet : on y avance sans toucher à la version publiée, puis on propose de la rassembler dans la branche principale (demande de fusion, ou PR). La **branche principale** (souvent `main`) est celle que l'hébergeur publie.
 
 Nom : `<type>/<sujet-court>`, en minuscules, sans accent, mots séparés par des tirets, 40 caractères au plus.
 

@@ -619,16 +619,168 @@ test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () =
   assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
 });
 
+// Mots réservés aux consignes : la personne les voit seulement expliqués (lexique), jamais dans une description, un libellé ou un écran.
+// « MVP », « epic » et « demande de fusion » restent permis dans les consignes destinées à l'IA (décision du 2026-10-09).
+const SIGLES_JARGON = /\b(CI|CD|PR|CSV|INVEST|MoSCoW|TBD|MVP)\b/;
+const MOTS_JARGON = /\b(worktrees?|pull requests?|demandes? de fusion|lint|lighthouse|epics?|squelette|aidd_docs|test-runner|test-writer|kanban|storytelling|sous-agents?|feynman|definition of ready)\b/i;
+const jargon = (texte) => SIGLES_JARGON.exec(texte) || MOTS_JARGON.exec(texte);
+// Dans un libellé ou un écran, les chemins, le code et les emplacements à remplacer (<epic>) restent permis.
+const sansChemins = (texte) => texte.replace(/`[^`]*`/g, " ").replace(/<[^>]*>/g, " ").replace(/\S*\/\S*/g, " ");
+
 test("descriptions des commandes sans jargon", () => {
   const unix = (f) => f.split(path.sep).join("/");
-  const JARGON = /\b(INVEST|Definition of Ready|MoSCoW|kanban|TBD|storytelling|sous-agents?|Feynman)\b/i;
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const description = (lire(fichier).match(/^description:\s*(.*)$/m) || [])[1] || "";
-    const m = JARGON.exec(description);
+    const m = jargon(description);
     if (m) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${m[0]}`);
   }
   assert.deepStrictEqual(problemes, []);
+});
+
+test("libellés des questions sans jargon : la réponse recommandée et ses alternatives", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const problemes = [];
+  for (const { fichier, texte } of TEXTES) {
+    for (const ligne of texte.split("\n")) {
+      for (const m of ligne.matchAll(/« ((?:[^«»]|«[^«»]*»)+) »/g)) {
+        const avant = ligne.slice(0, m.index);
+        const apres = ligne.slice(m.index + m[0].length);
+        const libelle =
+          !/^\d+[a-z]?\. /.test(m[1]) &&
+          (/\([Rr]ecommandé/.test(m[1]) || / \/ ?$/.test(avant) || /^ ?\/ /.test(apres) || (/AskUserQuestion/.test(ligne) && /(, |et )$/.test(avant)));
+        const j = libelle && jargon(sansChemins(m[1]));
+        if (j) problemes.push(`${unix(fichier)} : ${j[0]} dans « ${m[1]} »`);
+      }
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("écrans des commandes sans jargon", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const problemes = [];
+  // Écrans des commandes et des références (bloc de fin de commande, stratégie de tests…).
+  const references = PLUGINS.flatMap((p) => fichiers(path.join(p, "references"), ".md"));
+  for (const fichier of [...SKILLS_PAR_PLUGIN, ...references]) {
+    // Clôtures lues dans l'ordre : seul le contenu d'un bloc ouvert par ``` ou ```text est un écran (un bloc de code est sauté).
+    // Dans readme.md du pack, les blocs ```markdown sont le texte du README du projet de la personne : lus aussi.
+    const ecrans = new Set(["", "text", ...(unix(fichier).endsWith("pulse-vibe-next/references/readme.md") ? ["markdown"] : [])]);
+    let bloc = null;
+    for (const ligne of lire(fichier).split("\n")) {
+      const cloture = /^\s*```\s*(\S*)/.exec(ligne);
+      if (cloture) {
+        bloc = bloc === null ? (ecrans.has(cloture[1]) ? "ecran" : "code") : null;
+        continue;
+      }
+      if (bloc !== "ecran") continue;
+      if (/\/pulse:[a-z-]+ →|→ \/pulse:/.test(ligne)) continue; // chemin de commandes
+      const j = jargon(sansChemins(ligne));
+      if (j) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${j[0]} dans « ${ligne.trim().slice(0, 60)} »`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("documents lus par la personne sans sigles de méthode", () => {
+  for (const f of ["plugins/pulse-vibe/README.md", "docs/memo-commandes.md", "plugins/pulse-vibe/references/fichiers-projet.md", "plugins/pulse-vibe/references/cycle.md"])
+    assert.doesNotMatch(lire(DEPOT, f), /\b(INVEST|MoSCoW|Definition of Ready|storytelling)\b|TBD:/, f);
+  assert.doesNotMatch(lire(RACINE, "templates", "CLAUDE.md"), /\(\{fuseau_horaire\}\)/, "fuseau horaire écrit en mots");
+});
+
+test("README et mémo sans « MVP », « epic » ni « demande de fusion » (hors chemins et code)", () => {
+  const problemes = [];
+  for (const f of ["plugins/pulse-vibe/README.md", "plugins/pulse-vibe-next/README.md", "docs/memo-commandes.md"]) {
+    lire(DEPOT, f).split("\n").forEach((ligne, i) => {
+      const m = /\bMVP\b/.exec(sansChemins(ligne)) || /\b(epics?|demandes? de fusion)\b/i.exec(sansChemins(ligne));
+      if (m) problemes.push(`${f}:${i + 1} : ${m[0]}`);
+    });
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+// Ce que la personne lit hors des commandes : documents de son projet (modèles), tableau des fichiers et cycle des commandes,
+// verdicts de pulse-aidd etat, messages du garde-fou des commandes.
+// Chemins, code, emplacements <…> et commentaires HTML (consignes pour l'IA) exclus.
+const motDeMethode = (texte) => /\bMVP\b/.exec(sansChemins(texte)) || /\b(epics?|demandes? de fusion|worktrees?)\b/i.exec(sansChemins(texte));
+// Chaînes entre guillemets doubles d'un script, et raisons des verdicts écrites entre accents graves (sans les ${…}).
+const chainesDuScript = (source) => [
+  ...[...source.matchAll(/"((?:[^"\\\n]|\\.)*)"/g)].map((m) => m[1]),
+  ...[...source.matchAll(/verdict\("R\d+", "[^"]*", `([^`]*)`/g)].map((m) => m[1].replace(/\$\{[^}]*\}/g, " ")),
+];
+
+test("modèles et sorties des outils lus par la personne sans « MVP », « epic », « demande de fusion » ni « worktree »", () => {
+  const problemes = [];
+  const modeles = path.join(RACINE, "templates");
+  const documents = [
+    ...lister(modeles).filter((f) => f.endsWith(".md")).map((f) => path.join(modeles, f)),
+    path.join(DEPOT, "plugins", "pulse-vibe-next", "references", "technical.md"),
+    path.join(RACINE, "references", "fichiers-projet.md"),
+    path.join(RACINE, "references", "cycle.md"),
+  ];
+  for (const fichier of documents) {
+    // Le lexique explique le mot « worktree » (décision du contrôleur) : seul ce mot y reste permis.
+    const lexique = path.basename(fichier) === "lexique.md";
+    lire(fichier).replace(/<!--[\s\S]*?-->/g, "").split("\n").forEach((ligne, i) => {
+      const m = motDeMethode(lexique ? ligne.replace(/\bworktrees?\b/gi, " ") : ligne);
+      if (m) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")}:${i + 1} : ${m[0]}`);
+    });
+  }
+  for (const script of ["etat.js", "guide.js", "garde-commandes.js"]) {
+    // Une chaîne d'un seul mot (« worktrees », « --worktree ») est du code : un nom de dossier ou une option de Git.
+    // Seul le mot « worktree » y est permis ; les autres mots de méthode restent cherchés.
+    for (const chaine of chainesDuScript(lire(RACINE, "scripts", script))) {
+      const m = motDeMethode(/\s/.test(chaine.trim()) ? chaine : chaine.replace(/\bworktrees?\b/gi, " "));
+      if (m) problemes.push(`scripts/${script} : ${m[0]} dans « ${chaine.slice(0, 60)} »`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("phrases dites à la personne sans « MVP », « worktree » ni « demande de fusion » (commandes du parcours Git et du PRD)", () => {
+  // Permis : un titre de section ou de référence cité (lu par l'IA), et la phrase qui explique le mot « worktree ».
+  const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est /;
+  const problemes = [];
+  const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md")];
+  for (const f of fichiers) {
+    for (const ligne of lire(RACINE, f).split("\n")) {
+      for (const m of ligne.matchAll(/« ((?:[^«»]|«[^«»]*»)+) »/g)) {
+        const j = /\bMVP\b|\bworktrees?\b|\bdemandes? de fusion\b/i.exec(sansChemins(m[1]));
+        if (j && !PERMIS.test(m[1])) problemes.push(`${f.split(path.sep).join("/")} : ${j[0]} dans « ${m[1].slice(0, 60)} »`);
+      }
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("lignes « Prochaine étape : », « Résumé » et « Présenter » de toutes les commandes sans « MVP », « epic », « worktree » ni « demande de fusion »", () => {
+  // Mêmes exceptions que ci-dessus : un titre cité entre guillemets, la phrase qui explique « worktree » ; chemins et code retirés.
+  const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est /;
+  const problemes = [];
+  for (const s of lister(path.join(RACINE, "skills"))) {
+    const f = path.join("skills", s, "SKILL.md");
+    if (!fs.existsSync(path.join(RACINE, f))) continue;
+    lire(RACINE, f).split("\n").forEach((ligne, i) => {
+      if (!/Prochaine étape :|Résumé|Présenter/.test(ligne)) return;
+      const texte = sansChemins(ligne).replace(/« ((?:[^«»]|«[^«»]*»)+) »/g, (tout, cite) => (PERMIS.test(cite) ? " " : tout));
+      const j = /\bMVP\b|\bepics?\b|\bworktrees?\b|\bdemandes? de fusion\b/i.exec(texte);
+      if (j) problemes.push(`${f.split(path.sep).join("/")}:${i + 1} : ${j[0]}`);
+    });
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("messages du garde-fou sur les branches et les secrets du dépôt sans jargon", () => {
+  const source = lire(RACINE, "scripts", "garde-commandes.js");
+  for (const cle of ["brancheForcee", "secretsDepot"]) {
+    // Le message : ses chaînes "…", de « cle: » à la clé suivante du tableau MESSAGES.
+    const bloc = source.split(`\n  ${cle}:`)[1]?.split(/\n  [A-Za-z]+:/)[0];
+    assert.ok(bloc, `message ${cle} trouvé`);
+    const message = [...bloc.matchAll(/"([^"]*)"/g)].map((m) => m[1]).join("");
+    assert.match(message, /^Pulse /, `${cle} : message lu en entier`);
+    const j = jargon(sansChemins(message));
+    assert.strictEqual(j && j[0], null, `${cle} : ${j && j[0]}`);
+  }
 });
 
 test("questions et accueil en clair : les anciens libellés ont disparu", () => {
@@ -702,12 +854,15 @@ test("les commandes qui écrivent des documents, ou enchaînent des étapes qui 
   assert.match(lire(RACINE, "references", "examen.md"), /Claude Code demande alors l'accord de la personne pour démarrer l'application/);
 });
 
-test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/", () => {
+// Un nom de fichier seul (Edit(CLAUDE.md)) vaut à toute profondeur ; ./ l'ancre à la racine du projet. Edit couvre aussi la création.
+test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus ./CLAUDE.md et ./README.md à la racine (écriture autorisée)", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const ligne = (lire(fichier).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
     for (const [, outil, motif] of ligne.matchAll(/\b(Write|Edit|MultiEdit)\(([^)]*)\)/g)) {
-      if (!/^(docs|aidd_docs)\/\S+$/.test(motif)) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
+      const document = /^(docs|aidd_docs)\/\S+$/.test(motif) && !motif.split("/").includes("..");
+      const racine = outil === "Edit" && /^\.\/(CLAUDE|README)\.md$/.test(motif);
+      if (!document && !racine) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
     }
   }
   assert.deepStrictEqual(problemes, []);
@@ -716,7 +871,19 @@ test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et 
 test("tests automatiques : installer un outil de test est recommandé quand la pile en a un", () => {
   const texte = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(texte, /« Installer un outil de test \(Recommandé\) »/);
-  assert.match(texte, /« Sans tests automatiques »/);
+  assert.match(texte, /« Utiliser le lanceur de tests intégré \(Recommandé\) »/);
+  assert.match(texte, /`node --test`/);
+  const sansTests = texte.split("\n").filter((l) => l.includes("« Sans tests automatiques (Recommandé) »"));
+  assert.strictEqual(sansTests.length, 1, "un seul cas recommande de se passer de tests");
+  assert.match(sansTests[0], /aucun code à tester automatiquement/);
+  assert.match(skillTexte("tech"), /sinon le lanceur de tests intégré au langage/);
+  assert.match(texte, /« Utiliser le lanceur de tests intégré \(Recommandé\) » \(l'outil de test fourni avec le langage, rien à installer ;/);
+  assert.match(texte, /ni lanceur intégré au langage : « Installer un outil de test \(Recommandé\) »/, "repli : du code, ni outil documenté ni lanceur intégré");
+  assert.match(texte, /1\. Choisir l'outil recommandé [^\n]*ou le lanceur intégré au langage \(§ 2\)/);
+  // TypeScript : mêmes conditions dans la référence et dans tech.
+  const ts = "pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile";
+  assert.ok(texte.includes(ts), "référence : TypeScript");
+  assert.ok(skillTexte("tech").includes(ts), "tech : TypeScript");
 });
 
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
@@ -901,4 +1068,145 @@ test("les textes lus par la personne nomment les plugins pulse et pulse-next (le
       });
   }
   assert.deepStrictEqual(trouves, []);
+});
+
+test("reprise après une interruption : commit, implement, spirc et review suivent pulse-aidd revue ; commit refuse une tâche sans test", () => {
+  const commit = skillTexte("commit");
+  const verification = commit.slice(commit.indexOf("### 2."), commit.indexOf("### 3."));
+  assert.match(verification, /`pulse-aidd revue <Tn>`/);
+  assert.match(verification, /- `test` : [^\n]*Enregistrer seulement une tâche testée/);
+  assert.match(verification, /- `correction` ou `aide` : [^\n]*S'arrêter/);
+  assert.doesNotMatch(verification, /`test`[^\n]*Enregistrer quand même/, "l'enregistrement sans test n'est pas proposé");
+  const implement = skillTexte("implement");
+  assert.match(implement, /\*\*Reprendre une tâche en cours\*\* : [^\n]*`pulse-aidd revue <Tn>`/);
+  assert.match(implement, /- `test` : au test manuel/);
+  assert.doesNotMatch(implement, /reprend à la correction ou au commit/);
+  const spirc = skillTexte("spirc");
+  assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
+  assert.doesNotMatch(spirc, /reprendre à l'examen\)/);
+  assert.match(skillTexte("review"), /`pulse-aidd revue <Tn>` : `test` → passer directement au § 5/);
+  // Les boucles passent à l'enregistrement sur la réponse du § 2 de commit, pas sur la seule existence d'un rapport.
+  for (const [nom, texte] of [["implement", implement], ["spirc", spirc]]) {
+    assert.match(texte, /Le § 2 de l'étape commit donne `commit`/, nom);
+    assert.doesNotMatch(texte, /Le rapport de revue existe : la relecture est faite/, nom);
+  }
+  // Le résultat du test s'écrit avec les choix du modèle, que pulse-aidd revue sait lire.
+  for (const nom of ["review", "spirc"]) assert.match(skillTexte(nom), /« ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> »/, nom);
+});
+
+test("commit : un commit docs:, chore: ou sans rapport avec la tâche n'est jamais refusé pour un test en attente", () => {
+  const commit = skillTexte("commit");
+  const verification = commit.slice(commit.indexOf("### 2."), commit.indexOf("### 3."));
+  assert.match(verification, /tâches `\[~\]`[^\n]* concernées par ce commit : celles dont les fichiers en font partie/);
+  assert.match(verification, /Un commit sans tâche concernée \(`docs:`, `chore:`[^\n]*s'enregistre toujours[^\n]*« T3 attend encore votre test\. »/);
+  assert.doesNotMatch(verification, /sur une branche `feat\/us-xxx-<nom>`, seulement/, "le périmètre suit les fichiers du commit, pas la branche");
+});
+
+test("règle 16 : chaque commande qui attend une décision structurante la sauvegarde, et peut l'effacer", () => {
+  const COMMANDES = ["express", "brainstorm", "prd", "us", "spirc", "implement", "tech", "ui", "spec", "plan", "search-console"];
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  const regle16 = regles.split("\n").find((l) => l.startsWith("16. "));
+  const fichiersProjet = lire(RACINE, "references", "fichiers-projet.md").split("\n").find((l) => l.startsWith("| `aidd_docs/tasks/in-progress.md` |"));
+  for (const c of COMMANDES) {
+    assert.ok(regle16.includes(`\`/pulse:${c}\``), `règle 16 : /pulse:${c}`);
+    assert.ok(fichiersProjet.includes(`\`/pulse:${c}\``), `fichiers-projet.md : /pulse:${c}`);
+    const texte = skillTexte(c);
+    assert.match(texte, /aidd_docs\/tasks\/in-progress\.md|règle commune 16/, `${c} : écrit le travail en cours`);
+    const motifs = motifsBash(path.join(RACINE, "skills", c, "SKILL.md"));
+    assert.ok(motifs.some((m) => couvre(m, "pulse-aidd travail-fini")), `${c} : pulse-aidd travail-fini autorisé`);
+    const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    assert.ok(/Write\(aidd_docs\/tasks\/(in-progress\.md|\*\*)\)/.test(ligne), `${c} : écriture du travail en cours autorisée`);
+  }
+});
+
+test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
+  const worktree = lire(RACINE, "references", "worktree.md");
+  const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
+  const pr = fin.split("\n").find((l) => l.startsWith("- **Envoi : version parallèle**"));
+  assert.ok(pr, "cas « Envoi : version parallèle »");
+  assert.match(pr, /« Marquer la proposition comme prête à accepter »/);
+  assert.match(pr, /« \(Recommandé\) » va à la première quand toutes les tâches du plan sont terminées, sinon à « Garder le dossier à part »/);
+  assert.match(pr, /marquée prête, sortir du dossier à part \(outil `ExitWorktree`/);
+  assert.match(lire(RACINE, "references", "depot-distant.md"), /Chaque envoi passe toujours par la demande d'autorisation de Claude Code/);
+  for (const skill of ["tech", "ui"]) assert.match(skillTexte(skill), /étape de `\/pulse:express`[^)]*: le réécrire plutôt pour cette commande, à son étape suivante\)/, skill);
+  assert.doesNotMatch(pr, /Rassembler dans/, "pas de fusion locale proposée en mode PR");
+  assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
+  const depot = lire(RACINE, "references", "depot-distant.md");
+  assert.match(depot, /« Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt \(Recommandé\) »/);
+  assert.match(depot, /En mode découverte \(règles communes § 1\)[^\n]*« Directement sur la version principale »/);
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.match(regles, /sauf l'envoi, qui prend « Directement sur la version principale »/);
+});
+
+test("vocabulaire : branche = version parallèle, worktree = dossier à part, écrits une fois dans le lexique", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const lexique = lire(RACINE, "templates", "lexique.md");
+  for (const image of ["une version parallèle du projet", "un dossier à part du projet", "la proposition de rassembler une version parallèle dans la version principale"])
+    assert.ok(lexique.includes(image), `lexique : ${image}`);
+  assert.match(lire(RACINE, "references", "git.md"), /Une \*\*branche\*\* est une version parallèle du projet/);
+  assert.match(skillTexte("pr"), /« Une branche, c'est une version parallèle de votre projet/);
+  assert.match(lire(RACINE, "references", "worktree.md"), /« Un worktree est un dossier à part du projet/);
+  const sources = [...TEXTES, { fichier: path.join("plugins", "pulse-vibe", "scripts", "guide.js"), texte: lire(RACINE, "scripts", "guide.js") }];
+  assert.deepStrictEqual(sources.filter(({ texte }) => /copie (de travail|à part)|copie séparée/i.test(texte)).map(({ fichier }) => unix(fichier)), []);
+});
+
+test("forme : « (Recommandé) » avec majuscule, chemin des commandes dans cycle.md seulement, en-tête de spirc sans parenthèses imbriquées", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /\(recommandé\) »/.test(texte)).map(({ fichier }) => unix(fichier)), []);
+  const chemins = TEXTES.filter(({ texte }) => /\/pulse:prd → \/pulse:tech/.test(texte)).map(({ fichier }) => unix(fichier));
+  assert.deepStrictEqual(chemins, ["plugins/pulse-vibe/references/cycle.md"]);
+  const cycle = lire(RACINE, "references", "cycle.md");
+  assert.ok(cycle.includes("(/pulse:ui maquettes <US-XXX>)") && cycle.includes("/pulse:spirc <US-XXX>"), "cycle complet");
+  assert.match(cycle, /`\/pulse:status` \(où en suis-je \?\)/);
+  assert.doesNotMatch(skillTexte("init"), /\/pulse:init \(où j'en suis\)/);
+  const entete = skillTexte("spirc").split("\n").find((l) => l.startsWith("Appliquer les « Règles communes Pulse »"));
+  assert.doesNotMatch(entete, /\([^()]*\([^()]*\)[^()]*\)|\) \(/, "parenthèses imbriquées ou accolées");
+});
+
+test("chaque commande écrit ses documents sans demande d'autorisation (W13)", () => {
+  const MEMOIRE = ["Write(aidd_docs/memory/**)", "Edit(aidd_docs/memory/**)"];
+  const TECH = ["Write(docs/technical.md)", "Edit(docs/technical.md)", "Edit(./CLAUDE.md)", ...MEMOIRE];
+  const DESIGN = ["Write(docs/design.md)", "Edit(docs/design.md)", "Write(docs/design/**)", "Edit(docs/design/**)"];
+  const PERF = ["Write(docs/performance.md)", "Edit(docs/performance.md)"];
+  const LEXIQUE = ["Write(docs/lexique.md)", "Edit(docs/lexique.md)"];
+  const attendus = {
+    annuler: ["Edit(aidd_docs/tasks/**)"],
+    cicd: ["Edit(docs/technical.md)", ...PERF],
+    deploy: ["Edit(docs/technical.md)", "Edit(./CLAUDE.md)", "Edit(./README.md)", "Edit(aidd_docs/tasks/**)", ...PERF],
+    "get-help": ["Write(docs/aide/**)", "Edit(docs/aide/**)"],
+    guide: ["Edit(aidd_docs/tasks/**)"],
+    memory: [...MEMOIRE, "Edit(./CLAUDE.md)"],
+    perf: [...PERF, "Edit(docs/technical.md)", ...LEXIQUE],
+    rediger: ["Write(docs/voix.md)", "Edit(docs/voix.md)", "Write(docs/textes/**)", "Edit(docs/textes/**)"],
+    "search-console": ["Edit(docs/technical.md)", "Write(docs/referencement/**)", "Edit(docs/referencement/**)", "Write(aidd_docs/tasks/in-progress.md)"],
+    secrets: ["Write(docs/secrets.md)", "Edit(docs/secrets.md)", "Write(docs/incidents/**)", "Edit(docs/incidents/**)", ...LEXIQUE],
+    security: ["Write(docs/securite.md)", "Edit(docs/securite.md)"],
+    seo: ["Write(docs/seo.md)", "Edit(docs/seo.md)", "Write(docs/seo/**)", "Edit(docs/seo/**)"],
+    tech: [...TECH, "Edit(./README.md)", "Write(aidd_docs/tasks/in-progress.md)"],
+    ui: [...DESIGN, "Edit(aidd_docs/tasks/**)", "Write(aidd_docs/tasks/in-progress.md)"],
+    brainstorm: [...MEMOIRE, "Edit(./CLAUDE.md)", ...LEXIQUE],
+    init: [...TECH, ...DESIGN],
+    express: [...TECH, ...DESIGN],
+    spirc: TECH,
+  };
+  const manquants = [];
+  for (const [skill, outils] of Object.entries(attendus)) {
+    const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+    const jetons = ligne.match(/[A-Za-z]+(?:\([^)]*\))?/g) || [];
+    for (const outil of outils) if (!jetons.includes(outil)) manquants.push(`${skill} : ${outil}`);
+  }
+  assert.deepStrictEqual(manquants, []);
+  // pr et status n'écrivent aucun fichier : aucune écriture autorisée d'avance.
+  for (const skill of ["pr", "status"]) assert.doesNotMatch((skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1], /\b(Write|Edit)\(/, skill);
+});
+
+test("tech : une fois le pack choisi, seules ses consignes se chargent ; review dit que le reviewer charge le pack", () => {
+  const tech = skillTexte("tech");
+  assert.match(tech, /puis lancer `pulse-aidd pile contexte tech`/);
+  assert.doesNotMatch(tech, /relancer `pulse-aidd contexte tech`/);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "tech", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte tech")), "tech : pile contexte tech autorisé");
+  assert.match(skillTexte("review"), /le reviewer les charge lui-même \(`pulse-aidd pile contexte review`\)/);
+  // Les corrections de review se codent avec les consignes du pack, chargées si elles manquent.
+  assert.match(skillTexte("review"), /avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation/);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "review", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte implement")), "review : pile contexte implement autorisé");
 });

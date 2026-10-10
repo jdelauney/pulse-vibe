@@ -517,3 +517,25 @@ test("deploy : tests dans la construction, prévisualisations sans vrais destina
   assert.match(lire(REF, "migrations.md"), /Projet créé ou mis à niveau avec pulse-next 0\.22\.0\*\* \(dossier `app\/essai-surveillance\/`.*supprimer ce dossier/);
   assert.doesNotMatch(lire(REF, "migrations.md").split("\n").find((l) => l.includes("Projet créé avant pulse-next 0.22.0")), /essai-surveillance/, "rien à recopier de la page d'essai");
 });
+
+test("deploy : relier Neon à Vercel pas à pas, chaque étape suivie de sa vérification", () => {
+  const deploy = lire(REF, "contexte", "deploy.md");
+  const relier = deploy.slice(deploy.indexOf("- **Relier Neon à Vercel**"), deploy.indexOf("- **Migrations**"));
+  const etapes = relier.split("\n").filter((l) => /^ {2}\d+\. /.test(l));
+  assert.ok(etapes.length >= 6, `${etapes.length} étapes numérotées`);
+  for (const e of etapes) assert.match(e, /Vérifier : /, e.slice(0, 60));
+  assert.match(relier, /Les boutons sont en anglais/);
+  assert.match(relier, /`pulse-aidd secrets inventaire`[^\n]*`DATABASE_URL_UNPOOLED`/);
+  assert.match(relier, /`pulse-aidd secrets envoyer NEON_PROJECT_ID --env production --depuis \.env\.envoi`/);
+  assert.doesNotMatch(relier, /en type Config/, "l'outil choisit le type : plus de saisie à la main");
+  assert.ok(relier.indexOf("NEON_PROJECT_ID --env production") < relier.indexOf("NEON_API_KEY --env production"), "l'identifiant part avant que la clé soit vidée");
+  // Le CLI Vercel connecté et lié avant l'envoi ; sans lui, la saisie à la main reste décrite (plan 3).
+  assert.ok(relier.indexOf("`vercel login`, puis `vercel link`") > -1 && relier.indexOf("`vercel link`") < relier.indexOf("NEON_PROJECT_ID --env production"), "vercel login puis vercel link avant l'envoi");
+  assert.match(relier, /Sans le CLI Vercel[^\n]*`NEON_PROJECT_ID`[^\n]*`NEON_ENDPOINT_PRODUCTION`[^\n]*`ep-…`/);
+  assert.match(relier, /Neon injoignable, `NEON_PROJECT_ID` absent de `\.env\.envoi`/);
+  // Le repère des prévisualisations (plan 3, tâche 7b) : enregistré par l'envoi de la clé, puis vérifié, jamais saisi.
+  assert.match(relier, /`NEON_ENDPOINT_PRODUCTION`[^\n]*tout seul/);
+  assert.match(relier, /`pulse-aidd secrets inventaire`[^\n]*`NEON_ENDPOINT_PRODUCTION` en Preview/);
+  // La phrase N-N10 du plan 3 (tâche 8) reste dans la liaison.
+  assert.match(relier, /réserver une variable à la construction/);
+});

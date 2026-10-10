@@ -13,6 +13,8 @@
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
 // Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests).
+// --revue <Tn> [<Tn>…] (`pulse-aidd revue <Tn>`) : la dernière relecture de chaque tâche et où reprendre (tache, statut, plan,
+// etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide.
 // Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
 "use strict";
 
@@ -101,29 +103,69 @@ function statutSpec(texte) {
 }
 
 /**
- * La dernière relecture d'une tâche (rapport `<Tn>-AAAA-MM-JJ[-n].md`, modèle « revue ») :
- * absente · validee (verdict ✅ seul, test par la personne non marqué ❌) · a-corriger · bloquee (ligne « Blocage » remplie).
+ * La dernière relecture d'une tâche (rapport `<Tn>-AAAA-MM-JJ[-n].md`, modèle « revue ») et son fichier :
+ * absente · bloquee (ligne « Blocage » remplie) · a-corriger (verdict à reprendre, ou test non concluant sans accord) ·
+ * a-tester (verdict validé, test par la personne encore vide) · validee (verdict validé et test concluant, reporté ou accepté).
  */
-function lireRevue(dossier, id) {
+function derniereRevue(dossier, id) {
   const motif = new RegExp(`^${id}-(\\d{4}-\\d{2}-\\d{2})(?:-(\\d+))?\\.md$`, "i");
   const rapports = fichiersDe(dossier)
     .map((nom) => ({ nom, m: motif.exec(nom) }))
     .filter((r) => r.m)
     .sort((a, b) => a.m[1].localeCompare(b.m[1]) || Number(a.m[2] || 1) - Number(b.m[2] || 1));
-  if (rapports.length === 0) return "absente";
-  const texte = lireSi(path.join(dossier, rapports[rapports.length - 1].nom)) || "";
+  if (rapports.length === 0) return { etat: "absente", fichier: null };
+  const fichier = path.join(dossier, rapports[rapports.length - 1].nom);
+  const texte = (lireSi(fichier) || "").normalize("NFC"); // « é » écrit en deux caractères : relu comme un seul
   const valeur = (re) => ((re.exec(texte) || [])[1] || "").replace(/\{\{.*?\}\}/g, "");
-  if (/get-help|cycles/i.test(valeur(/^\*\*Blocage\*\*\s*:(.*)$/m))) return "bloquee";
+  const blocage = valeur(/^\*\*Blocage\*\*\s*:(.*)$/m);
+  // Une ligne encore au modèle (choix séparés par « | ») ne bloque pas.
+  if (!blocage.includes("|") && /get-help|cycles/i.test(blocage)) return { etat: "bloquee", fichier };
   const verdict = valeur(/^\*\*Verdict\*\*\s*:(.*)$/m);
   // Seul le Verdict en tête compte (examen § 3 et § 4 le tiennent à jour) ; « ⚠️ … accepté par la personne » vaut prêt (review § 7).
   const accepte = verdict.includes("⚠") && /accept[ée]/i.test(verdict) && !/[⛔❌]|critique/iu.test(verdict);
-  if (!accepte && (!verdict.includes("✅") || /[⚠⛔❌]|critique/iu.test(verdict))) return "a-corriger";
-  // Le dernier Résultat du test par la personne fait foi ; le modèle non rempli les liste tous (ignoré).
-  const apres = texte.split(/^## Test par la personne\s*$/m)[1] || "";
-  const resultats = [...apres.matchAll(/^- \*\*R[ée]sultat\*\*\s*:(.*)$/gm)];
-  const test = resultats.length ? resultats[resultats.length - 1][1] : "";
-  return test.includes("❌") && !test.includes("✅") ? "a-corriger" : "validee";
+  if (!accepte && (!verdict.includes("✅") || /[⚠⛔❌]|critique/iu.test(verdict))) return { etat: "a-corriger", fichier };
+  return { etat: etatDuTest(texte), fichier };
 }
+
+/**
+ * Le test par la personne : le dernier « Résultat » de la dernière section « ## Test par la personne » (jusqu'au titre suivant).
+ * Vide, modèle non rempli (choix séparés par « | ») ou réponse sans repère : a-tester. Un test non concluant suivi d'une
+ * « ## Relecture de contrôle » datée d'un jour plus récent (correction faite après le test) est à refaire : a-tester.
+ * Limite : une relecture de contrôle du même jour que le test ne compte pas (spirc l'écrit avant le test) ; sans date
+ * dans l'une ou l'autre section, toute relecture de contrôle placée après le test compte.
+ */
+function etatDuTest(texte) {
+  const sections = texte.split(/^##[ \t]+/m).slice(1);
+  const derniere = sections.map((s) => /^Test par la personne\b/i.test(s.trim())).lastIndexOf(true);
+  if (derniere === -1) return "a-tester";
+  const resultats = [...sections[derniere].matchAll(/^[-*][ \t]+\*\*R[ée]sultat(?:\*\*[ \t  ]*:|[ \t  ]*:\*\*)(.*)$/gim)];
+  const test = resultats.length ? resultats[resultats.length - 1][1].replace(/\{\{.*?\}\}/g, "").trim() : "";
+  if (test === "" || test.includes("|")) return "a-tester";
+  // Refus seulement quand « non », « jamais » ou « pas (encore, du tout…) (été) » porte sur « accepté » ;
+  // « non concluant mais accepté » vaut accord.
+  const accord =
+    /accept[ée]/i.test(test) && !/\b(?:non|jamais)\s+accept|\bpas\s+(?:(?:encore|du tout|vraiment|toujours)\s+)?(?:été\s+)?accept/i.test(test);
+  const oui = /✅/u.test(test) || /^oui\b/i.test(test);
+  // Négatifs francs : ❌, « Non, … », « non/pas concluant ». « problème » ou « échec » comptent seulement sans ✅ ni « Oui »,
+  // et hors « aucun problème », « sans échec ».
+  const negatif =
+    /❌/u.test(test) || /^non\b/i.test(test) || /\b(non|pas)\s+concluant/i.test(test) || (!oui && /(?<!\b(?:aucun|sans)\s+)(probl[èe]me|[ée]chec)/i.test(test));
+  if (negatif) {
+    if (accord) return "validee";
+    const date = (s) => (/^[-*][ \t]+\*\*Date\*\*[ \t  ]*:[ \t]*(\d{4}-\d{2}-\d{2})/m.exec(s) || [])[1];
+    const dateTest = date(sections[derniere]);
+    const corrigee = sections.slice(derniere + 1).some((s) => {
+      if (!/^Relecture de contr[ôo]le\b/i.test(s.trim())) return false;
+      const dateControle = date(s);
+      return !dateTest || !dateControle || dateControle > dateTest;
+    });
+    return corrigee ? "a-tester" : "a-corriger";
+  }
+  const positif = oui || /⏳/u.test(test) || /(?<!\b(?:non|pas|peu)\s+)concluant/i.test(test) || accord;
+  return positif ? "validee" : "a-tester";
+}
+
+const lireRevue = (dossier, id) => derniereRevue(dossier, id).etat;
 
 /** Le référentiel docs/user-stories.md : priorité de chaque US (lignes de tableau « | US-001 | … | Indispensable | … »). */
 function lireReferentiel(texte) {
@@ -306,7 +348,7 @@ function decider(f) {
   }
   if (f.claude === "absent") return verdict("R2", "/pulse:init", "le projet n'est pas encore préparé pour Pulse", { fondation: "dossier" });
   if (f.claude === "sans-pulse") return verdict("R3", "/pulse:init", "CLAUDE.md existe sans les règles de Pulse", { fondation: "dossier" });
-  if (f.ancienFormat) return verdict("R4", "/pulse:init", "des documents sont à l'ancien format : ils se rangent maintenant par epic", { fondation: "documents" });
+  if (f.ancienFormat) return verdict("R4", "/pulse:init", "des documents sont à l'ancien format : ils se rangent maintenant par groupe", { fondation: "documents" });
   if (!f.profil || /pr[ée]ciser/i.test(f.profil)) return verdict("R5", "/pulse:init", "votre profil (niveau, explications) reste à préciser", { fondation: "profil" });
   if (!f.memoire) return verdict("R6", "/pulse:memory creer", "la mémoire du projet n'est pas branchée", { fondation: "memoire" });
   if (f.git && (!f.git.depot || !f.git.commits)) {
@@ -325,14 +367,14 @@ function decider(f) {
     aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");
     return verdict("R9", "/pulse:brainstorm", "raconter l'idée est la première étape");
   }
-  if (!d.prd && !d.userStories) return verdict("R10", "/pulse:prd", "il reste à décider du périmètre du MVP");
+  if (!d.prd && !d.userStories) return verdict("R10", "/pulse:prd", "il reste à décider du périmètre de la première version");
   if (!d.technical) return verdict("R11", "/pulse:tech", "choisir les outils vient avant les user stories et le code");
   if (!d.userStories) {
     if (!d.design) {
       aussi.unshift("/pulse:us — passer directement aux user stories");
       return verdict("R12", "/pulse:ui identite", "l'identité visuelle est facultative ; faite maintenant, les user stories, specs et plans s'y conformeront");
     }
-    return verdict("R12", "/pulse:us", "écrire les user stories, epic par epic");
+    return verdict("R12", "/pulse:us", "écrire les user stories, groupe par groupe");
   }
 
   const enCours = f.us.flatMap((u) => (u.plan ? u.plan.taches.filter((t) => t.statut === "en-cours").map((t) => ({ u, t })) : []));
@@ -341,12 +383,13 @@ function decider(f) {
     if (t.miseEnLigne) return verdict("R14", "/pulse:deploy", `${t.id} – ${t.titre} est en cours : la mise en ligne se fait avec /pulse:deploy`);
     if (t.revue === "validee") return verdict("R13", "/pulse:commit", `${t.id} – ${t.titre} est relue : il reste à l'enregistrer`);
     if (t.revue === "bloquee") return verdict("R14", "/pulse:get-help", `${t.id} – ${t.titre} reste bloquée après deux cycles de correction : demander de l'aide`);
+    if (t.revue === "a-tester") return verdict("R14", `/pulse:review ${t.id}`, `${t.id} – ${t.titre} est relue et vérifiée : il reste votre test manuel, avant de l'enregistrer`);
     if (t.revue === "a-corriger") return verdict("R14", `/pulse:review ${t.id}`, `${t.id} – ${t.titre} : la dernière relecture a des points à reprendre ou un test non concluant`);
     return verdict("R14", `/pulse:review ${t.id}`, `${t.id} – ${t.titre} est en cours : la relecture et la vérification viennent ensuite`);
   }
 
   const mvp = bilan(f);
-  if (mvp.pret && !f.enLigne) return verdict("R15", "/pulse:deploy", "toutes les US Indispensables sont terminées : le MVP peut être mis en ligne");
+  if (mvp.pret && !f.enLigne) return verdict("R15", "/pulse:deploy", "toutes les US Indispensables sont terminées : la première version peut être mise en ligne");
   if (f.git && f.git.remote && f.git.avance > 0) {
     return verdict("R16", "/pulse:deploy", `${f.git.avance} version(s) enregistrée(s) pas encore envoyée(s) sur le dépôt distant`);
   }
@@ -370,13 +413,38 @@ function decider(f) {
   }
   const indispensable = f.us.find((u) => u.priorite === 0 && u.spec === "absente");
   if (indispensable) return verdict("R20", `/pulse:spec ${indispensable.id}`, `${indispensable.id} (Indispensable) attend sa spec`);
-  if (mvp.pret && f.enLigne && !f.securite) return verdict("R21", "/pulse:security", "le MVP est en ligne : un audit de sécurité complet est conseillé");
+  if (mvp.pret && f.enLigne && !f.securite) return verdict("R21", "/pulse:security", "la première version est en ligne : un audit de sécurité complet est conseillé");
   if (f.depotDistant === "relie" && !f.ci) aussi.push("/pulse:cicd — un contrôle automatique à chaque envoi (facultatif)");
   const suivante = f.us.find((u) => u.priorite >= 1 && u.priorite <= INCONNUE && u.spec === "absente");
   if (suivante) return verdict("R22", `/pulse:spec ${suivante.id}`, `${suivante.id} (${libelle(suivante)}) attend sa spec`);
   aussi.push("/pulse:security — un audit de sécurité", "/pulse:memory actualiser — relire la mémoire du projet", "/pulse:guide — le carnet de route");
   return verdict("R23", '/pulse:spirc <US-XXX> "une demande"', "tout est à jour : décrivez une nouvelle demande, elle rejoindra le bon plan");
 }
+
+// ---------------------------------------------------------------- pulse-aidd revue <Tn>
+
+const REPRENDRE = { absente: "examen", "a-corriger": "correction", "a-tester": "test", validee: "commit", bloquee: "aide" };
+
+/** `pulse-aidd revue <Tn>` : la tâche dans les plans de aidd_docs/tasks/, sa dernière relecture et l'étape où reprendre. */
+function revueDeTache(racine, id) {
+  const tache = String(id || "").trim().toUpperCase();
+  const rel = (f) => path.relative(racine, f).split(path.sep).join("/");
+  const taches = path.join(racine, "aidd_docs", "tasks");
+  if (/^T\d+$/.test(tache)) {
+    for (const epic of dossiers(taches)) {
+      const dossier = path.join(taches, epic);
+      for (const f of fichiersDe(dossier).filter((x) => /^PLAN-SPEC-US-\d+-.+\.md$/i.test(x))) {
+        const t = lireTaches(lireSi(path.join(dossier, f)) || "").find((x) => x.id.toUpperCase() === tache);
+        if (!t) continue;
+        const { etat, fichier } = derniereRevue(path.join(dossier, "revues", f.replace(/\.md$/i, "")), t.id);
+        return { tache: t.id, statut: t.statut, plan: rel(path.join(dossier, f)), etat, rapport: fichier ? rel(fichier) : "aucun", reprendre: REPRENDRE[etat] };
+      }
+    }
+  }
+  return { tache: tache || "?", etat: "inconnue", reprendre: "aucune" };
+}
+
+const formaterRevue = (r) => Object.entries(r).map(([cle, valeur]) => `${cle}: ${valeur}`).join("\n");
 
 // ---------------------------------------------------------------- affichage
 
@@ -412,13 +480,19 @@ function sortieIllisible(message) {
   return `prochaine: /pulse:get-help\nraison: l'état du projet n'a pas pu être lu (${message}) : décrivez le problème à /pulse:get-help\nregle: R0`;
 }
 
-const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ";
+const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --revue <Tn> [<Tn>…]";
 
-/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests). Toute autre option est une erreur de la consigne qui appelle l'outil. */
+/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --revue <Tn> [<Tn>…]. Toute autre option est une erreur de la consigne qui appelle l'outil. */
 function lireOptions(args) {
   const options = { git: true, aujourdhui: Date.now() };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--sans-git") options.git = false;
+    else if (args[i] === "--revue") {
+      // Les tâches qui suivent, jusqu'à l'option suivante ; aucune tâche : réponse « inconnue », jamais une erreur.
+      options.revue = [];
+      while (i + 1 < args.length && !args[i + 1].startsWith("--")) options.revue.push(args[++i]);
+      if (options.revue.length === 0) options.revue.push("");
+    }
     else if (args[i] === "--aujourdhui") {
       const jour = args[++i];
       const date = /^\d{4}-\d{2}-\d{2}$/.test(jour || "") ? Date.parse(`${jour}T00:00:00Z`) : NaN;
@@ -438,12 +512,23 @@ if (require.main === module) {
     console.log(`erreur: ${e.message}`);
     process.exit(2);
   }
-  try {
-    const faits = lireFaits(process.cwd(), options);
-    console.log(formater(faits, decider(faits)));
-  } catch (e) {
-    console.log(sortieIllisible(e.message));
+  if (options.revue) {
+    const blocs = options.revue.map((id) => {
+      try {
+        return formaterRevue(revueDeTache(process.cwd(), id));
+      } catch (e) {
+        return `tache: ${id || "?"}\netat: inconnue\nreprendre: aucune\nraison: les fichiers n'ont pas pu être lus (${e.message})`;
+      }
+    });
+    console.log(blocs.join("\n\n"));
+  } else {
+    try {
+      const faits = lireFaits(process.cwd(), options);
+      console.log(formater(faits, decider(faits)));
+    } catch (e) {
+      console.log(sortieIllisible(e.message));
+    }
   }
 }
 
-module.exports = { lireFaits, decider, formater, sortieIllisible, lireOptions };
+module.exports = { lireFaits, decider, formater, sortieIllisible, lireOptions, derniereRevue, revueDeTache, formaterRevue };

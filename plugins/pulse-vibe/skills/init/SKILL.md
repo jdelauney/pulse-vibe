@@ -2,7 +2,7 @@
 description: Démarrer ou reprendre un projet Pulse - prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle
 argument-hint: "[nom du projet]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte init) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd contexte memory) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape *) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd guide) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd nouveau *) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Bash(pulse-aidd contraste *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config user.name) Bash(git config user.email) Bash(git config --global user.name *) Bash(git config --global user.email *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git commit -m *) Bash(git rev-parse *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git remote add origin *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -M main) Bash(gh auth status*) Bash(glab auth status*) Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Write(docs/brief.md) Edit(docs/brief.md) Write(docs/prd.md) Edit(docs/prd.md) Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(git diff *) Bash(git fetch origin)
+allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte init) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd contexte memory) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape *) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd guide) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd nouveau *) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Bash(pulse-aidd contraste *) Read Glob Grep Bash(git --version) Bash(node --version) Bash(git config user.name) Bash(git config user.email) Bash(git config --global user.name *) Bash(git config --global user.email *) Bash(git init *) Bash(git status *) Bash(git add *) Bash(git mv *) Bash(git commit -m *) Bash(git rev-parse *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git remote add origin *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git branch -M main) Bash(gh auth status*) Bash(glab auth status*) Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Write(docs/brief.md) Edit(docs/brief.md) Write(docs/prd.md) Edit(docs/prd.md) Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(git diff *) Bash(git fetch origin) Bash(pulse-aidd revue *) Edit(./CLAUDE.md) Write(docs/technical.md) Edit(docs/technical.md) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Write(docs/design.md) Edit(docs/design.md) Write(docs/design/**) Edit(docs/design/**)
 ---
 
 # /pulse:init – Démarrer et se repérer
@@ -95,7 +95,7 @@ Puis demander (AskUserQuestion) : l'action recommandée (`prochaine`) en premier
 CLAUDE.md        → les règles du projet, lues par l'IA à chaque session
 docs/            → les documents de la méthode (brief, PRD, choix techniques, référentiel des user stories)
 aidd_docs/       → la mémoire du projet (choix, glossaire, décisions), relue par l'IA à chaque session,
-                   et tasks/ : un dossier par epic, avec chaque user story, sa spec et son plan
+                   et tasks/ : un dossier par groupe de user stories, avec chaque user story, sa spec et son plan
 README.md        → la présentation du projet
 .gitignore       → la liste de ce que Git doit ignorer (dont vos secrets)
 .env.example     → le modèle des clés secrètes (sans les valeurs)
@@ -123,13 +123,13 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 - Aucun contrôle avant commit (`.git/hooks/pre-commit` absent, ou sans « pulse-aidd: contrôle des secrets »), ou crochet de Pulse sans `pulse/verifier.js` (ancien modèle, qui laissait passer un commit sans scripts/verifier.js) → `pulse-aidd installer-hook`, en expliquant en une phrase que les commits faits hors de Claude Code sont désormais contrôlés eux aussi.
 - Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech --sans-communes` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
 - `docs/technical.md` déclare un pack de pile (`**Pack de pile Pulse** : <id>`) → lire ses notes de mise à niveau : `pulse-aidd pile reference migrations.md` (« Référence introuvable » : le pack n'en a pas, rien à faire). Pour chaque note dont le signe se voit dans le projet : l'expliquer en une phrase, l'appliquer avec l'accord de la personne, puis lancer les contrôles de « Commandes du projet ».
-- **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par epic dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
-  1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.
+- **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par groupe dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
+  1. Proposer les groupes (règles de `/pulse:us`, étape 1) et les faire valider.
   2. Garder les identifiants d'US s'ils suivent déjà le format `US-001` ; sinon, proposer une correspondance (ancien → `US-XXX`) et la faire valider. La noter dans le journal de chaque plan concerné.
   3. Écrire un fichier `US-XXX-<nom>.md` par US détaillée (contenu repris tel quel, au format du modèle d'US), puis réécrire `docs/user-stories.md` en référentiel (modèle du référentiel).
   4. Découper chaque spec et chaque plan par US : `SPEC-US-XXX-<nom>.md` reprend les parties de la spec qui concernent l'US (une partie commune à plusieurs US va dans la spec de la première, et les autres y renvoient) ; `PLAN-SPEC-US-XXX-<nom>.md` reprend ses tâches **avec leurs numéros, leurs statuts et leur journal**, sous `## Tâches`, avec la priorité de l'US dans la vue d'ensemble. Une tâche sans US (mise en place, mise en ligne) va dans le plan de la première, ou de la dernière, US Indispensable du parcours.
   5. Supprimer les anciens fichiers (`git rm`, ou `git mv` quand un fichier passe entier), déplacer `docs/design/maquettes/<ancien nom>/` vers `docs/design/maquettes/US-XXX-<nom>/` si la maquette ne concerne qu'une US, déplacer chaque rapport `docs/revues/Tn-*.md` dans le dossier de relecture du plan qui contient la tâche `Tn` (`aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/`) et chaque audit `docs/revues/ui-*.md` dans `docs/design/audits/`, lancer `pulse-aidd guide`, et montrer le résultat. Les numéros de tâche restent valables.
-  Faire un commit `docs: réorganisation des user stories, specs et plans par epic` une fois la personne d'accord.
+  Faire un commit `docs: réorganisation des user stories, specs et plans par groupe` une fois la personne d'accord.
 
 ### Lancer une étape de la méthode
 
@@ -139,19 +139,7 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 
 ### « M'expliquer la méthode »
 
-En 9 lignes maximum, le chemin complet, l'étape en cours entre crochets :
-
-```
-/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us (epics et US)
-   (ou, pour démarrer vite : /pulse:express, qui fait tout cela en une conversation)
-   → pour chaque US : /pulse:spec <US-XXX> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
-   → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou tout d'un coup : /pulse:spirc <US-XXX>)
-   → /pulse:deploy   (les étapes entre parenthèses sont facultatives)
-À tout moment : /pulse:init (où j'en suis), /pulse:guide (carnet de route), /pulse:fix (une erreur), /pulse:refine (changer le plan),
-               /pulse:security, /pulse:memory, /pulse:auto-fix, /pulse:test, /pulse:explain, /pulse:learn, /pulse:pr, /pulse:ui (audit, polish)
-```
-
-Puis remontrer l'écran.
+Montrer le chemin de « Le cycle Pulse » ci-dessus (son bloc, puis ses deux dernières lignes : `/pulse:spirc` et les commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
 
 ## Fin
 

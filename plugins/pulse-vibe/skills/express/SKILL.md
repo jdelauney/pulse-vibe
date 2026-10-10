@@ -2,7 +2,7 @@
 description: Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser
 argument-hint: "[votre idée en une phrase]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape cicd --sans-communes) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape deploy --sans-communes) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd etape tech --sans-communes) Bash(pulse-aidd etape ui --sans-communes) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Bash(pulse-aidd contraste *) Bash(pulse-aidd guide) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(start "" *.html") Bash(open *.html") Bash(xdg-open *.html") Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Bash(git status *) Write(docs/brief.md) Edit(docs/brief.md) Write(docs/prd.md) Edit(docs/prd.md) Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(git diff *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin)
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape cicd --sans-communes) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape deploy --sans-communes) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd etape tech --sans-communes) Bash(pulse-aidd etape ui --sans-communes) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Bash(pulse-aidd contraste *) Bash(pulse-aidd guide) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(start "" *.html") Bash(open *.html") Bash(xdg-open *.html") Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Bash(git status *) Write(docs/brief.md) Edit(docs/brief.md) Write(docs/prd.md) Edit(docs/prd.md) Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(git diff *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *) Write(docs/technical.md) Edit(docs/technical.md) Edit(./CLAUDE.md) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Write(docs/design.md) Edit(docs/design.md) Write(docs/design/**) Edit(docs/design/**)
 ---
 
 # /pulse:express – Démarrer vite
@@ -57,7 +57,7 @@ Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/t
 À partir des quatre blocs, Pulse déduit lui-même :
 
 - **Le MVP** (MoSCoW) : le parcours le plus court qui règle le problème principal = **Indispensable** ; le reste en Essentiel, Optionnel ou « En attente ».
-- **Les epics et les US** (règles de `/pulse:us` : identifiants, `<epic>`, `<nom>`, critères d'acceptation vérifiables, INVEST et Definition of Ready), avec un **parcours utilisateur** et un **ordre de réalisation**.
+- **Les groupes et les US** (règles de `/pulse:us` : identifiants, `<epic>`, `<nom>`, critères d'acceptation vérifiables, INVEST et Definition of Ready), avec un **parcours utilisateur** et un **ordre de réalisation**.
 - **Les besoins techniques**, à partir des actions notées : comptes ou espace réservé → connexion ; réservation, commande, fiche, contenu géré → données partagées ; paiement → service de paiement, en mode test ; dépôt de fichiers → stockage ; e-mails ou confirmations → service d'e-mail ; plusieurs langues → traduction. Seulement ce que la personne a décrit : une mesure d'audience, par exemple, attend une demande explicite.
 
 Une ambiguïté qui change le périmètre (paiement unique ou abonnement ? une seule personne ou une équipe ?) : poser **une seule** question ciblée.
@@ -69,9 +69,9 @@ Votre projet en un coup d'œil
 
 Pour qui      : …
 Le problème   : …
-Le MVP        : US-001 … · US-002 … · US-003 …   (Indispensables, dans l'ordre du parcours)
+Première version : US-001 … · US-002 … · US-003 …   (Indispensables, dans l'ordre du parcours)
 Ensuite       : US-004 … · US-005 …               (Essentielles, Optionnelles)
-Rangement     : epic « … » (dossier <epic>), …
+Groupes       : « … » (dossier <epic>), …
 Il faudra     : connexion · données partagées · e-mails …   (déduit de vos réponses)
 Proposé par Pulse : …                               (ce que vous n'avez pas dit vous-même)
 ```
@@ -99,6 +99,6 @@ Annoncer : « Dernière étape : l'apparence. Vous allez en voir deux et choisir
 
 ## Fin
 
-Résumé en 4 lignes : le MVP, la pile retenue, l'apparence choisie, ce qui reste à faire par la personne (comptes à créer, mise en ligne).
+Résumé en 4 lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie, ce qui reste à faire par la personne (comptes à créer, mise en ligne).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc <première US Indispensable du parcours>`, qui écrit sa spec, son plan, puis la réalise tâche par tâche ; à défaut, une fois le plan écrit, `/pulse:implement <US-XXX> <tâche>` pour la réaliser pas à pas. Proposer de faire `/clear` avant : la conversation repartira légère.

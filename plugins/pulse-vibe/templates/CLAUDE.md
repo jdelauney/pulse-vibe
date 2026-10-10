@@ -2,7 +2,7 @@
 
 {{Description en une phrase, complétée après /pulse:brainstorm.}}
 
-> Au premier message d'une nouvelle conversation, commencez par : « Bonjour, Pulse est prêt. Nous sommes le {date_du_jour} ({fuseau_horaire}). »
+> Au premier message d'une nouvelle conversation, commencez par : « Bonjour, Pulse est prêt. Nous sommes le {date_du_jour}, {fuseau horaire écrit en mots, par exemple « heure de Paris »}. »
 
 ## Le projet
 
@@ -11,9 +11,9 @@ Ce projet suit la **méthode Pulse** (plugin `pulse`). Les documents de référe
 | Document | Contenu |
 |---|---|
 | `docs/brief.md` | L'idée, racontée simplement |
-| `docs/prd.md` | Le besoin et le périmètre MVP |
+| `docs/prd.md` | Le besoin et le périmètre de la première version |
 | `docs/technical.md` | La pile retenue, l'organisation des fichiers, les commandes du projet, les secrets, l'hébergement |
-| `docs/user-stories.md` | Le référentiel des user stories, découpées par epic, et le parcours utilisateur |
+| `docs/user-stories.md` | Le référentiel des user stories, découpées par groupe, et le parcours utilisateur |
 | `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | Une user story : le comportement attendu et ses critères d'acceptation |
 | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | La spec de cette US (une US = une spec) : ce que l'utilisateur obtient (écrans, informations, règles, scénarios), verrouillée une fois validée |
 | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | Le plan de cette spec (une spec = un plan) : les tâches et leur statut (à faire, en cours, terminé) |

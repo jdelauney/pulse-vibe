@@ -1,7 +1,7 @@
 # Spécification – {{NOM_DU_PROJET}} – US-{{XXX}} {{Titre court}}
 
 > Produit par `/pulse:spec` le {{DATE}} à partir de `US-{{XXX}}-{{nom}}.md` (même dossier) et de `docs/prd.md`.
-> Une spec par user story. Epic : {{Titre de l'epic}} (`aidd_docs/tasks/{{epic}}/`) · Plan associé : `PLAN-SPEC-US-{{XXX}}-{{nom}}.md` (même dossier).
+> Une spec par user story. Groupe : {{Titre du groupe}} (`aidd_docs/tasks/{{epic}}/`) · Plan associé : `PLAN-SPEC-US-{{XXX}}-{{nom}}.md` (même dossier).
 > La spec décrit **ce que** l'outil doit permettre, du point de vue de l'utilisateur. Le **comment** (pile, stockage, fichiers) est décidé dans le plan.
 > Une question sans réponse s'écrit `TBD: <question précise>` à l'endroit concerné. Une spec verrouillée se lit sans se réécrire : un changement passe par une nouvelle US et sa spec.
 

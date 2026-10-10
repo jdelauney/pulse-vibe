@@ -2,7 +2,7 @@
 description: Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections
 argument-hint: "[T3 | <US-XXX> | tout]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(pulse-aidd revue *)
 ---
 
 # /pulse:review – Relire, tester, corriger
@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) 
 
 !`pulse-aidd contexte review`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
 
 Tâche demandée (facultative) : `$ARGUMENTS`
 
@@ -35,6 +35,8 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 Les documents de référence sont ceux du § 1 de la référence « Examiner une tâche ».
 
+Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test` → passer directement au § 5 (l'examen est fait, il manque le test par la personne) ; `commit` → la tâche est prête : le dire et proposer `/pulse:commit` ; `correction` → reprendre au § 6 avec les constats du rapport ; `aide` → la ligne « Blocage » du rapport : proposer `/pulse:get-help` ; `examen` → tout le déroulé ; `aucune` (la tâche n'est dans aucun plan) → le dire et demander de quelle tâche il s'agit.
+
 ### 2. Lancer l'examen
 
 Appliquer le § 2 de la référence « Examiner une tâche » : `pulse:reviewer` et `pulse:verifier` en parallèle, pour chaque tâche. Avec `tout` : seulement `pulse:reviewer`, sur l'ensemble du projet par rapport à toutes les US terminées ; la vérification en marche se fait tâche par tâche.
@@ -51,13 +53,15 @@ Présenter en quelques lignes : le **rapport de réalisation** (règles communes
 
 Donner les étapes du test manuel du rapport, en commençant par les critères ❓ du verifier, puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
 
-Noter la réponse dans la section « Test par la personne » du rapport (date, résultat, remarque).
+Noter dans la section « Test par la personne » du rapport la date, le résultat et la remarque ; le résultat reprend les choix du modèle : « ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> ».
 
 ### 6. Corriger
 
 Traiter les constats selon « Les constats de relecture » des règles communes (§ 6) : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
 
-Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche »). Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer `/pulse:get-help`.
+Avec un pack de pile, avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation (elles y sont dans les boucles de `/pulse:implement` et `/pulse:spirc`), et coder les corrections selon elles.
+
+Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche ») ; après un test de la personne ❌, remettre aussi la ligne « Résultat » de « Test par la personne » à la valeur du modèle, comme le décrit ce § 4. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer `/pulse:get-help`.
 
 ### 7. Conclure
 

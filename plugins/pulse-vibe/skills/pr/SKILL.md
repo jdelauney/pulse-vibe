@@ -1,5 +1,5 @@
 ---
-description: Travailler sur une branche et proposer ses changements - créer la branche de travail, puis ouvrir une demande de fusion (pull request) en brouillon, décrite à partir des commits, du plan et des relectures
+description: Travailler sur une version parallèle et proposer de la rassembler - créer la branche de travail, puis ouvrir sur le site du dépôt la proposition en brouillon, décrite à partir des commits, du plan et des relectures
 argument-hint: "[branche [<US-XXX>] | <branche de base>] (vide : ouvrir la demande pour la branche en cours)"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte pr) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git rev-parse *) Bash(git remote -v) Bash(git remote get-url *) Bash(git symbolic-ref *) Bash(git fetch origin) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh repo view *) Bash(gh pr create --draft *) Bash(gh pr view*) Bash(glab auth status*) Bash(glab repo view *) Bash(glab mr create --draft *) Bash(glab mr view*)
@@ -17,7 +17,7 @@ Argument : `$ARGUMENTS`
 
 ## Objectif
 
-Phrase à dire la première fois : « Une branche, c'est une copie de travail de votre projet : vous y avancez sans toucher au site en ligne. Une demande de fusion (pull request, ou PR) propose ensuite d'intégrer ce travail à la version principale ; on peut la relire, la tester, puis l'accepter sur le site du dépôt. »
+Phrase à dire la première fois : « Une branche, c'est une version parallèle de votre projet : vous y avancez sans toucher au site en ligne. Une proposition, sur le site du dépôt, permet ensuite de rassembler ce travail dans la version principale ; on peut la relire, la tester, puis l'accepter sur le site du dépôt. »
 
 | Argument | Action |
 |---|---|
@@ -30,7 +30,7 @@ Cette commande **laisse toujours la fusion à la personne**, envoie les commits 
 ## Prérequis communs
 
 - Dépôt Git (`git rev-parse --is-inside-work-tree`), sinon proposer `/pulse:init`.
-- Dépôt distant (`git remote get-url origin`), sinon expliquer qu'une demande de fusion se fait sur un dépôt en ligne et proposer `/pulse:deploy` (première mise en ligne).
+- Dépôt distant (`git remote get-url origin`), sinon expliquer qu'une proposition se fait sur un dépôt en ligne et proposer `/pulse:deploy` (première mise en ligne).
 - **Branche principale** : la lire (Conventions Git § 5), après `git fetch origin`, à chaque fois plutôt que la supposer.
 
 ## A. Créer la branche de travail (`branche [<US-XXX>]`)
@@ -40,7 +40,7 @@ Cette commande **laisse toujours la fusion à la personne**, envoie les commits 
 1. Modifications non enregistrées (`git status --short`) : proposer d'abord `/pulse:commit`, sauf si la personne veut les emporter sur la nouvelle branche (elles suivent automatiquement).
 2. **Nom** : à partir du plan désigné (ou de la spec, ou de la demande de la personne ; argument absent : lister les plans de `aidd_docs/tasks/` et demander, règle commune « Argument absent »), selon Conventions Git § 5 : `feat/us-xxx-<nom>` par défaut (l'identifiant de l'US et son nom, en minuscules), `fix/…` pour une correction. Le faire valider (AskUserQuestion, le nom proposé avec « (Recommandé) », « Autre nom »).
 3. Partir de la branche principale à jour (Claude Code va vous demander l'accord pour `git pull` : c'est ce qui récupère la dernière version du dépôt distant) : `git switch <principale>`, `git pull`, puis `git switch -c <nom>`. Si la branche existe déjà : proposer d'y revenir (`git switch <nom>`) plutôt que d'en créer une autre.
-4. Expliquer : « Vous êtes maintenant sur `<nom>`. Vos commits y seront rangés ; le site en ligne change seulement quand la demande de fusion est acceptée. »
+4. Expliquer : « Vous êtes maintenant sur `<nom>`. Vos commits y seront rangés ; le site en ligne change seulement quand sa proposition est acceptée sur le site du dépôt. »
 
 Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travail est prêt.
 
@@ -66,7 +66,7 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 - **Modèle** : celui du dépôt s'il existe (Conventions Git § 6), sinon le modèle Pulse ci-dessus. Remplir chaque section d'après le changement, puis retirer tous les commentaires du modèle.
 - **Titre** : court et parlant, 72 caractères au plus, en français.
 - Une tâche sans rapport de relecture : l'indiquer dans « Relecture et sécurité » et proposer `/pulse:review` avant d'ouvrir la demande.
-- Montrer titre, base et description, puis demander (AskUserQuestion) : « Ouvrir la demande en brouillon (Recommandé) » / « Modifier le texte » / « Annuler ».
+- Montrer titre, base et description, puis demander (AskUserQuestion) : « Ouvrir la proposition en brouillon (Recommandé) » / « Modifier le texte » / « Annuler ».
 
 ### 4. Envoyer et créer
 
@@ -79,11 +79,11 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 ### 5. Expliquer la suite
 
-- L'adresse de la demande, et ce qu'est un **brouillon** : on la passe « prête » (Ready for review) quand on veut la faire relire.
-- Si l'hébergeur le propose, une **adresse de prévisualisation** apparaît souvent dans la demande : tester les « Étapes pour tester » dessus, sans toucher au site en ligne.
-- Pour fusionner : bouton « Merge » sur le site du dépôt. Ensuite, dans Claude Code : `git switch <principale>` puis `git pull` pour récupérer la version fusionnée ; la mise en ligne suit si le déploiement automatique est en place.
-- D'autres commits sur la même branche ? `/pulse:commit push` : la demande se met à jour toute seule.
+- L'adresse de la proposition, et ce qu'est un **brouillon** : on la passe « prête » (Ready for review) quand on veut la faire relire.
+- Si l'hébergeur le propose, une **adresse de prévisualisation** apparaît souvent dans la proposition : tester les « Étapes pour tester » dessus, sans toucher au site en ligne.
+- Pour l'accepter : bouton « Merge » sur le site du dépôt. Ensuite, dans Claude Code : `git switch <principale>` puis `git pull` pour récupérer la version principale à jour ; la mise en ligne suit si le déploiement automatique est en place.
+- D'autres commits sur la même branche ? `/pulse:commit push` : la proposition se met à jour toute seule.
 
 ## Fin
 
-Terminer avec le bloc de fin de commande. Fichiers : « aucun » (seulement Git et le dépôt distant). Prochaine étape : selon le cas, `/pulse:implement <US-XXX>` (après A), tester la prévisualisation puis fusionner (après B).
+Terminer avec le bloc de fin de commande. Fichiers : « aucun » (seulement Git et le dépôt distant). Prochaine étape : selon le cas, `/pulse:implement <US-XXX>` (après A), tester la prévisualisation puis accepter la proposition sur le site du dépôt (après B).
