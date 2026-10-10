@@ -2,6 +2,7 @@
 
 Le navigateur demande le jeton à l'ouverture du formulaire : la page reste statique, et le jeton n'est jamais gardé en cache (`no-store`).
 
+<!-- fichier: app/api/jeton-formulaire/route.ts -->
 ```ts
 // app/api/jeton-formulaire/route.ts
 // Jeton de délai d'un formulaire public, demandé par le navigateur à l'ouverture du formulaire.

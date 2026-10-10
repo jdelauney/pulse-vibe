@@ -2,6 +2,7 @@
 
 Le hook attend aussi la réponse du widget. Après chaque envoi, `apresEnvoi()` relance le widget (sa `key` change) : une réponse ne sert qu'une fois. Si le widget ne peut pas se charger (bloqueur de publicités, réseau d'entreprise, erreur de Cloudflare), la section le dit et propose quoi faire.
 
+<!-- fichier: src/hooks/use-protection-formulaire.ts -->
 ```ts
 // src/hooks/use-protection-formulaire.ts
 "use client";
@@ -103,6 +104,7 @@ export function useProtectionFormulaire(
 }
 ```
 
+<!-- fichier: src/features/contact/components/sections/formulaire-contact.tsx -->
 ```tsx
 // src/features/contact/components/sections/formulaire-contact.tsx
 "use client";
@@ -235,6 +237,7 @@ export function FormulaireContact({
 }
 ```
 
+<!-- fichier: src/features/contact/components/containers/contact.container.tsx -->
 ```tsx
 // src/features/contact/components/containers/contact.container.tsx
 "use client";

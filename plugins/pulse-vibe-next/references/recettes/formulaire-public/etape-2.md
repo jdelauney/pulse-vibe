@@ -2,6 +2,7 @@
 
 Partagés par le navigateur et le serveur.
 
+<!-- fichier: src/lib/helpers/formulaire-public/champs.ts -->
 ```ts
 // src/lib/helpers/formulaire-public/champs.ts
 // Noms des champs de protection d'un formulaire public, communs au navigateur et au serveur.

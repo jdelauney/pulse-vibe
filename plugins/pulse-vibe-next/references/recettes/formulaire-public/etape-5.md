@@ -2,6 +2,7 @@
 
 Appelé par le container. Il demande le jeton, garde la référence du champ piège, et donne `champs()` : les valeurs de protection à ajouter aux données envoyées (`{ ...valeurs, ...protection.champs() }`). Cela fonctionne avec TanStack Form comme avec un formulaire simple.
 
+<!-- fichier: src/hooks/use-protection-formulaire.ts -->
 ```ts
 // src/hooks/use-protection-formulaire.ts
 "use client";
