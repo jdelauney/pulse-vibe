@@ -95,7 +95,7 @@ L'entretien est terminé quand **la frontière est vide** : toutes les branches 
 1. Remplir le modèle `docs/brief.md` et écrire `docs/brief.md` : la phrase de synthèse, le problème, les acteurs, l'histoire validée, les décisions (« Décidé par vous » / « Proposé par Pulse, accepté »), les hypothèses à vérifier, les questions encore ouvertes (cases à cocher), la réussite. Pour le vocabulaire, le brief **renvoie au glossaire**.
 2. Vérifier que `aidd_docs/memory/glossary.md` contient tous les mots tranchés.
 3. Mémoire : compléter la section « Vision » de `aidd_docs/memory/project.md` (résumé, public cible, problème principal) et ajouter une ligne datée par décision structurante dans « Décisions importantes ». Montrer ces lignes avant de les écrire.
-4. Mettre à jour la ligne de description en haut de `CLAUDE.md` si elle contient encore `{{…}}`.
+4. Mettre à jour la description de « Résumé du projet » dans `CLAUDE.md` si elle contient encore `{{…}}`.
 5. Lancer `pulse-aidd memoire` pour que la prochaine session charge le glossaire.
 
 ## Valider

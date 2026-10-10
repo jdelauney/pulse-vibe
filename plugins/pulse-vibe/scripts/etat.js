@@ -260,10 +260,10 @@ function codeExistant(racine) {
   );
 }
 
-/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md, .gitignore sans le travail en cours, contrôle avant commit absent. */
+/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md (dont la trame d'avant « Résumé du projet »), .gitignore sans le travail en cours, contrôle avant commit absent. */
 function modeleAncien(racine, texteClaude) {
   const p = (...x) => path.join(racine, ...x);
-  if (texteClaude !== null && (/AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
+  if (texteClaude !== null && (!/^## Résumé du projet\s*$/m.test(texteClaude) || /AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
   const gitignore = lireSi(p(".gitignore"));
   if (gitignore !== null && !gitignore.includes("aidd_docs/tasks/in-progress.md")) return true;
   if (existe(p("scripts", "verifier.js")) && existe(p(".git", "hooks")) && !/hooksPath/.test(lireSi(p(".git", "config")) || "")) {
@@ -356,7 +356,7 @@ function decider(f) {
     return verdict("R7", "/pulse:init", raison, { fondation: "git" });
   }
   if (f.pile === "sans-marqueurs" || (f.docs.technical && f.pile === "non-choisie")) {
-    return verdict("R8", "/pulse:tech", "le bloc « Pile technique » de CLAUDE.md ne reflète pas docs/technical.md", { fondation: "pile" });
+    return verdict("R8", "/pulse:tech", "le bloc « Stack technique » de CLAUDE.md ne reflète pas docs/technical.md", { fondation: "pile" });
   }
 
   const d = f.docs;

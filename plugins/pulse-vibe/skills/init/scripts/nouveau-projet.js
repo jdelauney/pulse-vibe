@@ -198,7 +198,7 @@ async function principal() {
   if (e.conserves.length) console.log(`\nDéjà présents, conservés tels quels :\n${e.conserves.map((f) => `  = ${f}`).join("\n")}`);
   console.log(`\nMémoire : ${memoireOk ? "branchée dans CLAUDE.md" : "à brancher avec /pulse:memory creer"}`);
   console.log(`Git : ${etatGit}`);
-  console.log("Pile technique : pas encore choisie, elle se décide avec /pulse:tech.");
+  console.log("Stack technique : pas encore choisie, elle se décide avec /pulse:tech.");
 
   if (!opts.ici) {
     console.log("\nProchaines étapes :");
