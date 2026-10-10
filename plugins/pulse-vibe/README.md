@@ -59,7 +59,7 @@ Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se reg
 | `/pulse:spirc` | `-x` | contrôle de sécurité à chaque tâche (agent security-auditor) |
 | `/pulse:implement`, `/pulse:spirc` | `-t` | tests d'abord : les tests de chaque tâche sont écrits avant le code (agent test-writer), puis lancés et triés (agent test-runner) |
 
-Exemple : `/pulse:spirc -axw US-003`. Avec au moins un raccourci, spirc ne pose plus la question du rythme ; la question des tests se pose tant que `-t` est absent.
+Exemple : `/pulse:spirc -axw US-003`. Sans raccourci, spirc pose au début une ronde unique (rythme rapide ou complet, options à cocher, tests, envoi), même en mode découverte ; avec au moins un raccourci, il demande seulement ce qui reste (tests tant que `-t` et `-f` sont absents, envoi, dossier à part).
 
 Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent les réglages conseillés sans poser ces questions, et le disent en une phrase (mode découverte, règles communes § 1).
 
