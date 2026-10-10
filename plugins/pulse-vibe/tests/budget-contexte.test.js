@@ -31,7 +31,7 @@ const PLAFONDS = {
   brainstorm: 34000, // mesure 31 945
   tech: 60500, // mesure 57 222
   memory: 32000, // mesure 30 261
-  spirc: 30500, // mesure 28 886
+  spirc: 32500, // mesure 30 906 (pulse 0.40 : règle commune 19 et fiche de test)
   express: 40500, // mesure 38 394
   prd: 28500, // mesure 26 982
   us: 30500, // mesure 28 742
@@ -39,7 +39,7 @@ const PLAFONDS = {
   plan: 50500, // mesure 47 800
   implement: 42000, // mesure 39 972
   fix: 24000, // mesure 22 408
-  review: 29500, // mesure 27 658
+  review: 31500, // mesure 29 678 (pulse 0.40 : règle commune 19 et fiche de test)
   commit: 39000, // mesure 37 065
   pr: 32000, // mesure 30 391
   annuler: 38500, // mesure 36 358
@@ -65,13 +65,14 @@ const PLAFONDS = {
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
 // Mesures à la fin du plan « Corrections 4 » : review 12 476, commit 26 737 (× 1,05, au 500 supérieur).
 // review relevé à 15 000 (pulse 0.39) : trame des skills (Objectif, Règles, Contexte, Rôle, Processus, Exemples), mesure 13 945.
-const PLAFONDS_ETAPES = { review: 15000, commit: 28500 };
+// review relevé à 16 000 (pulse 0.40) : règle commune 19 et fiche de test, mesure 15 023.
+const PLAFONDS_ETAPES = { review: 16000, commit: 28500 };
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
 const PLAFONDS_COMMANDE = {
   annuler: 48500, // mesure 45 775
-  "auto-fix": 28000, // mesure 26 655
+  "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
   brainstorm: 44000, // mesure 41 756
   cicd: 51000, // mesure 48 229
   commit: 50500, // mesure 47 813
@@ -79,19 +80,19 @@ const PLAFONDS_COMMANDE = {
   explain: 27000, // mesure 25 605
   express: 50500, // mesure 48 062
   fix: 33500, // mesure 31 758
-  "get-help": 28000, // mesure 26 659
+  "get-help": 29500, // mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
   guide: 34500, // mesure 32 577
   implement: 63000, // mesure 59 829
-  init: 65500, // mesure 61 987
+  init: 69500, // mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 41500, // mesure 39 206
   memory: 41000, // mesure 38 661
   perf: 57500, // mesure 54 519
   plan: 65500, // mesure 62 257
   pr: 41000, // mesure 38 807
   prd: 34000, // mesure 32 244
-  rediger: 32500, // mesure 30 828
+  rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 51000, // mesure 48 370
-  review: 35500, // mesure 33 552
+  review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 56000, // mesure 52 989
   secrets: 50000, // mesure 47 290
   security: 46000, // mesure 43 499

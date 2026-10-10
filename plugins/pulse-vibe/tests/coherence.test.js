@@ -1246,3 +1246,27 @@ test("CLAUDE.md des projets : Résumé du projet, Stack technique, Architecture,
   assert.match(claude, /^- Site en ligne : /m, "adresse lue par le garde-fou et l'état du projet");
   assert.match(claude, /\[docs\/technical\.md\]\(docs\/technical\.md\)/, "liens vers les documents du projet");
 });
+
+test("fiche de test de la personne : un fichier SMOKE-TEST par tâche, des gestes sans commande, tests lancés par l'assistant", () => {
+  const modele = lire(RACINE, "templates", "smoke-test.md");
+  for (const t of ["## Avant de commencer", "## Les étapes", "**Vous devez voir**", "- [ ] C'est bien ce que je vois", "vous n'avez aucune commande à taper"]) assert.ok(modele.includes(t), t);
+  const manuel = lire(RACINE, "references", "tests", "test-manuel.md");
+  assert.match(manuel, /SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>\.md/);
+  assert.match(manuel, /ne demande jamais de taper une commande/);
+  assert.match(lire(RACINE, "references", "examen.md"), /## 3 bis\. Écrire la fiche de test de la personne/);
+  assert.match(lire(RACINE, "agents", "verifier.md"), /Les contrôles automatiques que vous avez lancés n'y figurent pas/);
+  for (const s of ["review", "spirc", "implement"]) assert.match(skillTexte(s), /SMOKE-TEST-/, s);
+  assert.match(lire(RACINE, "references", "fichiers-projet.md"), /\| `aidd_docs\/tasks\/<epic>\/SMOKE-TEST-US-XXX-<Tâche>-<titre>\.md` \|/);
+});
+
+test("règle commune 19 : chaque demande d'accord nomme ses fichiers, avec un lien", () => {
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.match(regles, /19\. \*\*Chaque demande d'accord nomme ses fichiers\.\*\*/);
+  assert.match(regles, /lien cliquable/);
+});
+
+test("init propose d'autoriser d'avance git status, diff, log, add et commit dans .claude/settings.json", () => {
+  const init = skillTexte("init");
+  for (const r of ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(git add *)", "Bash(git commit -m *)", "Read(./.env)"]) assert.ok(init.includes(r), r);
+  assert.match(init, /\*\*Régler les autorisations\*\*/);
+});

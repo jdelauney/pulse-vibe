@@ -64,7 +64,7 @@
 
 ## Test manuel à faire par vous
 
-1. …
+Fiche de test : [SMOKE-TEST-US-{{XXX}}-{{Tâche}}-{{titre}}.md](../../SMOKE-TEST-US-{{XXX}}-{{Tâche}}-{{titre}}.md)
 
 ## Test par la personne
 

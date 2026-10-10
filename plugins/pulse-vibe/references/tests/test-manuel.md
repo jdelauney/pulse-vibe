@@ -4,10 +4,14 @@ Le test manuel est fait par la personne, dans l'application, comme un utilisateu
 
 ## 1. Préparer la fiche
 
-- Une fiche **par fonctionnalité**, adaptée à ce qu'elle fait : on garde les rubriques utiles parmi celles du §2, et on retire les autres.
-- Chaque ligne est **une action et ce qu'on doit voir**, en mots simples, sans terme technique : « Cliquez sur Enregistrer sans remplir le titre : un message rouge demande le titre. »
-- Les cas viennent des critères d'acceptation de la tâche, des quatre états (`qualite/composants.md`) et des cas refusés.
-- Une case par ligne ; la personne note ce qui ne correspond pas.
+La personne n'est pas développeuse : la fiche se suit pas à pas, sans rien deviner.
+
+- **Une fiche par tâche**, écrite dans un fichier à côté de la spec : `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>.md` (titre de la tâche en minuscules, sans accent, mots reliés par des tirets ; ex. `SMOKE-TEST-US-003-T4-creer-une-tache.md`), selon le modèle `pulse-aidd modele smoke-test.md`. Un nouveau test après une correction réécrit la même fiche.
+- **Seulement des gestes dans l'application** : ouvrir une page, cliquer, taper, choisir, regarder. Les contrôles automatiques (formatage, règles du code, types, tests automatiques, construction) sont lancés par l'assistant (§ 4) : la fiche donne leur résultat en une ligne, et ne demande jamais de taper une commande.
+- **Chaque geste est précis** : où se trouve l'élément (« en haut à droite », « sous le titre »), son texte exact en gras (**Enregistrer**), ce qu'il faut taper, mot pour mot, avec des données fictives réalistes (« tapez : `Acheter du pain` »). Un terme technique inévitable s'explique en quelques mots.
+- **Chaque étape dit ce qu'on doit voir**, concrètement (texte, couleur, place à l'écran), avec une case à cocher : « Cliquez sur **Enregistrer** sans remplir le titre : un message rouge « Le titre est obligatoire » apparaît sous le champ. »
+- **« Avant de commencer »** dit comment ouvrir l'application : l'assistant la lance lui-même en arrière-plan (commande « lancer en local » de « Commandes du projet ») avant de donner la fiche, et la fiche donne l'adresse exacte à taper dans le navigateur ; il l'arrête après la réponse de la personne. Puis le compte fictif à utiliser, et ce qu'il faut avoir sous la main.
+- Les cas viennent des critères d'acceptation de la tâche (les critères que l'assistant n'a pas pu prouver en premier), des quatre états (`qualite/composants.md`) et des cas refusés ; on garde les rubriques utiles parmi celles du § 2.
 
 ## 2. Exemple de fiche : créer, consulter, modifier, supprimer
 
@@ -73,12 +77,14 @@ Cette passe prépare le test de la personne et ne le remplace pas.
 
 ## 4. Résultat attendu avant de valider
 
+Les contrôles automatiques sont lancés par l'assistant (implementer, verifier, test-runner), qui note leur résultat dans le rapport de relecture et en tête de la fiche. La personne, elle, fait seulement la fiche.
+
 | Contrôle | Attendu |
 |---|---|
 | Formatage | Appliqué automatiquement |
 | Lint | 0 erreur |
 | Types | 0 erreur |
 | Tests automatisés | Tous au vert |
-| Fiche de test manuel | Toutes les cases cochées, ou chaque écart noté et traité |
+| Fiche de test (par la personne) | Toutes les cases cochées, ou chaque écart noté et traité |
 
 Les commandes de ces contrôles sont dans « Commandes du projet » de `docs/technical.md`.

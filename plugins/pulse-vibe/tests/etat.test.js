@@ -127,7 +127,7 @@ function projet(fichiers = {}, options = {}) {
     "aidd_docs/memory/project.md": "# Projet\n",
     "aidd_docs/memory/technical.md": "# Technique\n",
     "aidd_docs/memory/glossary.md": "# Glossaire\n",
-    ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"] } }\n',
+    ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)"] } }\n',
     ...fichiers,
   };
   for (const [chemin, contenu] of Object.entries(tous)) {
@@ -574,4 +574,11 @@ test("pulse-aidd revue T2 T3 : un bloc par tâche", () => {
   assert.strictEqual(blocs.length, 2);
   assert.match(blocs[0], /^tache: T2$[\s\S]*^reprendre: examen$/m);
   assert.match(blocs[1], /^tache: T99$[\s\S]*^etat: inconnue$/m);
+});
+
+test("autorisations : les commandes Git courantes non autorisées d'avance donnent une ligne « aussi » de /pulse:init", () => {
+  const MSG = "/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois";
+  const sansGit = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"] } }\n' }));
+  assert.ok(sansGit.aussi.includes(MSG));
+  assert.ok(!etat(projet({})).aussi.includes(MSG), "règles présentes : rien à proposer");
 });

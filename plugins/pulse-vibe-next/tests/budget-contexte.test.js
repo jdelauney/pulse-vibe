@@ -93,7 +93,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   plan: 106000, // mesure 100 752
   rediger: 34500, // mesure 32 449
   refine: 91500, // mesure 86 865
-  review: 35500, // mesure 33 552
+  review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 60000, // mesure 57 057
   secrets: 70500, // mesure 67 057
   security: 88000, // mesure 83 589

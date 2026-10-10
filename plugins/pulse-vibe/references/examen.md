@@ -31,7 +31,13 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌.
 
-Le **rapport de réalisation** présenté ensuite à la personne (règles communes § 4) se construit à partir du tableau du verifier, et son test manuel commence par les critères ❓ du verifier.
+Le **rapport de réalisation** présenté ensuite à la personne (règles communes § 4) se construit à partir du tableau du verifier.
+
+## 3 bis. Écrire la fiche de test de la personne
+
+À partir de la section « Test manuel » du verifier, écrire la fiche `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>.md` (modèle : `pulse-aidd modele smoke-test.md` ; règles : `pulse-aidd reference tests/test-manuel.md` § 1) : étapes détaillées geste par geste, critères ❓ du verifier en premier, résultat des contrôles automatiques en tête. Dans le rapport, la section « Test manuel à faire par vous » donne seulement le lien vers la fiche.
+
+Au moment du test : lancer l'application en arrière-plan (commande « lancer en local » de « Commandes du projet »), vérifier que l'adresse répond, puis donner à la personne le lien cliquable vers la fiche, sa durée et sa première étape. Les contrôles automatiques restent à l'assistant : la personne n'a aucune commande à taper. Arrêter l'application après sa réponse.
 
 ## 4. Relecture de contrôle, après une correction
 
