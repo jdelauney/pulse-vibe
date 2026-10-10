@@ -605,6 +605,51 @@ Votre projet :
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> la suite, c'est le premier tutoriel. <a href="tutoriels/index.html">Choisissez votre tutoriel</a> : un prototype en un après-midi, ou une appli prête pour de vrais clients.</p></aside>
 </section>
 
+<section id="bonus-terminal" class="etape-tuto">
+<h2><span class="etape-numero">+</span> Bonus : un terminal plus lisible <span class="duree">15 min</span></h2>
+<p><strong>Facultatif.</strong> Pulse fonctionne très bien sans. Ces outils changent seulement l'apparence de la ligne où vous tapez vos commandes dans le terminal : des couleurs, le nom du dossier où vous êtes, et la version parallèle en cours (la branche Git). On s'y repère mieux.</p>
+<div class="onglets">
+<section data-onglet="Windows">
+<h3 class="onglet-titre">Windows : Oh My Posh</h3>
+<p><a href="https://ohmyposh.dev" target="_blank" rel="noopener noreferrer">Oh My Posh</a> décore le terminal PowerShell, celui de VS Code compris.</p>
+<ol>
+<li><strong>Installer Oh My Posh.</strong> Dans le terminal de VS Code (menu <strong>Terminal</strong> → <strong>New Terminal</strong>), tapez :
+<pre class="commande"><code>winget install JanDeDobbeleer.OhMyPosh --source winget</code></pre>
+Puis fermez complètement VS Code et rouvrez-le, pour que la commande <code>oh-my-posh</code> soit reconnue.</li>
+<li><strong>Installer une police avec des icônes.</strong> Oh My Posh affiche de petits symboles ; il lui faut une police qui les contient (une « Nerd Font »). La documentation conseille Meslo :
+<pre class="commande"><code>oh-my-posh font install meslo</code></pre></li>
+<li><strong>Dire à VS Code d'utiliser cette police dans son terminal.</strong> Ouvrez les réglages avec <kbd>Ctrl</kbd> + <kbd>,</kbd>, cherchez <strong>Integrated: Font Family</strong>, et écrivez <code>MesloLGM Nerd Font</code> dans le champ.</li>
+<li><strong>Activer Oh My Posh à chaque ouverture du terminal.</strong> Tapez cette commande : elle ouvre le fichier de démarrage de PowerShell dans le Bloc-notes.
+<pre class="commande"><code>notepad $PROFILE</code></pre>
+Si le Bloc-notes signale que le fichier n'existe pas, créez-le d'abord avec <code>New-Item -Path $PROFILE -Type File -Force</code>, puis relancez <code>notepad $PROFILE</code>. Ajoutez cette ligne à la fin du fichier, enregistrez, fermez le Bloc-notes :
+<pre class="commande"><code>oh-my-posh init pwsh | Invoke-Expression</code></pre></li>
+<li><strong>Recharger.</strong> Tapez <code>. $PROFILE</code>, ou ouvrez simplement un nouveau terminal.</li>
+</ol>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> la ligne de commande devient colorée, avec le nom du dossier et, dans un projet, le nom de la version parallèle en cours.</p></aside>
+<details class="probleme"><summary>Des carrés ou des points d'interrogation s'affichent à la place des icônes</summary><p>La police n'est pas appliquée. Vérifiez le réglage <strong>Integrated: Font Family</strong> (étape 3) : le nom doit être exactement <code>MesloLGM Nerd Font</code>. Puis ouvrez un nouveau terminal. Dans le Terminal Windows, hors de VS Code, la police se règle à part : <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>,</kbd>, profil par défaut, police <code>MesloLGM Nerd Font</code>.</p></details>
+<details class="probleme"><summary>PowerShell affiche une erreur rouge sur l'exécution des scripts</summary><p>Windows bloque les scripts par défaut. Le réglage décrit à l'<a href="#node">étape 5</a> (<code>Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</code>) suffit, puis ouvrez un nouveau terminal.</p></details>
+<p>Pour changer de thème : <a href="https://ohmyposh.dev/docs/installation/customize" target="_blank" rel="noopener noreferrer">la page des thèmes d'Oh My Posh</a>.</p>
+</section>
+<section data-onglet="macOS">
+<h3 class="onglet-titre">macOS : Oh My Zsh</h3>
+<p><a href="https://ohmyz.sh" target="_blank" rel="noopener noreferrer">Oh My Zsh</a> enrichit Zsh, le terminal installé de base sur Mac (et celui que VS Code ouvre). Il lui faut Git, déjà installé à l'<a href="#git">étape 4</a>.</p>
+<ol>
+<li><strong>Installer Oh My Zsh.</strong> Dans le terminal de VS Code (menu <strong>Terminal</strong> → <strong>New Terminal</strong>) ou dans l'app Terminal, collez cette commande, puis <kbd>Entrée</kbd> :
+<pre class="commande"><code>sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"</code></pre>
+L'installation garde votre ancien réglage sous le nom <code>~/.zshrc.pre-oh-my-zsh</code> : rien n'est perdu.</li>
+<li><strong>Ouvrir un nouveau terminal</strong> : Oh My Zsh s'y charge.</li>
+<li><strong>Changer de thème (facultatif).</strong> Ouvrez le fichier de réglages dans VS Code :
+<pre class="commande"><code>code ~/.zshrc</code></pre>
+Repérez la ligne <code>ZSH_THEME="robbyrussell"</code> et remplacez le nom entre guillemets par un autre thème, par exemple <code>ZSH_THEME="agnoster"</code>. Enregistrez, puis ouvrez un nouveau terminal. La liste des thèmes est sur <a href="https://github.com/ohmyzsh/ohmyzsh/wiki/Themes" target="_blank" rel="noopener noreferrer">le wiki d'Oh My Zsh</a>.</li>
+</ol>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> la ligne de commande change d'apparence, avec le nom du dossier et, dans un projet, le nom de la version parallèle en cours.</p></aside>
+<details class="probleme"><summary>La commande <code>code</code> est introuvable</summary><p>Ouvrez le fichier autrement : dans VS Code, menu <strong>File</strong> → <strong>Open File…</strong>, puis <kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>.</kbd> pour voir les fichiers cachés, et choisissez <code>.zshrc</code> dans votre dossier personnel.</p></details>
+<details class="probleme"><summary>Le thème « agnoster » affiche des carrés</summary><p>Ce thème utilise des symboles qui demandent une police spéciale. Revenez à <code>ZSH_THEME="robbyrussell"</code>, qui fonctionne avec toutes les polices.</p></details>
+<p>Pour tout retirer : tapez <code>uninstall_oh_my_zsh</code>, qui remet votre ancien réglage.</p>
+</section>
+</div>
+</section>
+
 </article>
 </div>
 </main>
