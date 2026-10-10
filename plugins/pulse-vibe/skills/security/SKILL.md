@@ -19,7 +19,7 @@ Action demandée : `$ARGUMENTS` (vide = `audit`)
 
 | Action | Quand | Comment |
 |---|---|---|
-| `audit` (par défaut) | Avant une mise en ligne, à la fin du MVP ou d'une epic | Section « Audit complet » ci-dessous |
+| `audit` (par défaut) | Avant une mise en ligne, à la fin de la première version ou d'un groupe | Section « Audit complet » ci-dessous |
 | `rapide` | En 2 minutes, à tout moment : « suis-je dans les clous ? » | Lancer `pulse-aidd reference securite/rapide.md` et l'appliquer à l'identique (lecture seule) |
 | `entetes` | Configurer les en-têtes de sécurité (CSP, HSTS…) | Lancer `pulse-aidd reference securite/entetes.md` et l'appliquer ; montrer la configuration avant de l'écrire |
 | `preparer` | Préparer un audit outillé (développeur, outils d'analyse) | Lancer `pulse-aidd reference securite/preparer.md` et l'appliquer |

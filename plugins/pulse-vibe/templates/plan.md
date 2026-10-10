@@ -12,7 +12,7 @@
 - **US** : US-{{XXX}} – {{titre}} · **Groupe** : {{Titre du groupe}} · **Priorité** : {{Indispensable | Essentiel | Optionnel}}
 - **Tâches** : {{nombre}} ({{Tn}} à {{Tm}})
 - **S'appuie sur** : {{plans d'autres US dont des tâches doivent être terminées avant (US-XXX), ou « aucun »}}
-- **Envoi** : à choisir (au premier commit, s'il existe un dépôt distant : PR, branche principale ou local)
+- **Envoi** : à choisir (au premier commit, s'il existe un dépôt distant : version parallèle, branche principale ou local)
 - **En parallèle avec** : {{US-YYY, US-ZZZ (US non terminées qui peuvent avancer en même temps, dans une autre session et un dossier à part), ou « aucune »}}
 
 ## Ordre des tâches

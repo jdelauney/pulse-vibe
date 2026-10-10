@@ -4,6 +4,7 @@
 "use strict";
 
 const test = require("node:test");
+const { after } = test;
 const assert = require("node:assert");
 const fs = require("fs");
 const os = require("os");
@@ -34,6 +35,9 @@ const PROJET_PACK = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-budget-"));
 fs.mkdirSync(path.join(PROJET_PACK, "docs"));
 fs.writeFileSync(path.join(PROJET_PACK, "docs", "technical.md"), "**Pack de pile Pulse** : next\n");
 const PROJET_SANS_PACK = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-budget-sans-"));
+after(() => {
+  for (const dossier of [PROJET_PACK, PROJET_SANS_PACK]) fs.rmSync(dossier, { recursive: true, force: true });
+});
 function coeur(projet, ...args) {
   const bin = path.join(RACINE, "bin").split(path.sep).join("/");
   const outil = COEUR.split(path.sep).join("/");

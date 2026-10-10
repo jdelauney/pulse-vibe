@@ -62,6 +62,11 @@ ${blocage ? `**Blocage** : ${blocage}` : ""}
 - **Date** : 2026-10-07
 - **Résultat** : ${test}
 ${retest ? `- **Résultat** : ${retest}\n` : ""}`;
+// Relecture de contrôle après un test ❌ (référence « Examiner une tâche », § 4) : la ligne « Résultat » revient au modèle,
+// « Remarque » garde ce qui n'allait pas, et la relecture de contrôle porte la date du premier test.
+const TEST_REMIS_AU_MODELE =
+  RAPPORT("✅ Validé", { test: MODELE_TEST }) +
+  "- **Remarque** : ❌ le bouton Ajouter ne fait rien\n\n## Relecture de contrôle\n\n- **Date** : 2026-10-07\n- **Verdict** : ✅ Validé\n";
 
 const REFERENTIEL = `# User stories – TodoIt
 
@@ -469,6 +474,7 @@ test("pulse-aidd revue <Tn> : dernière relecture, rapport et où reprendre", ()
     [RAPPORT("✅ Validé", { test: "⏳ reporté au test groupé de fin de plan (mode autonome)" }), "validee", "commit"],
     [RAPPORT("⚠️ À corriger"), "a-corriger", "correction"],
     [RAPPORT("✅ Validé", { test: "❌ non concluant" }), "a-corriger", "correction"],
+    [TEST_REMIS_AU_MODELE, "a-tester", "test"],
     [RAPPORT("⛔ Bloquant", { blocage: "persiste après 2 cycles : /pulse:get-help" }), "bloquee", "aide"],
   ];
   for (const [contenu, etatAttendu, reprendre] of cas) {
@@ -542,6 +548,7 @@ test("test par la personne : la dernière section « Test par la personne » fai
   assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE.replace("2026-10-08", "2026-10-07")), "a-corriger", "relecture du même jour");
   const sansDates = (RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE).replace(/^- \*\*Date\*\* : .*$/gm, "");
   assert.strictEqual(etatRapport(sansDates), "a-tester", "sans date : la relecture placée après le test compte");
+  assert.strictEqual(etatRapport(TEST_REMIS_AU_MODELE), "a-tester", "test ❌ remis au modèle après la relecture de contrôle du même jour");
 });
 
 test("ligne « Blocage » restée au modèle (choix séparés par « | ») : pas de blocage", () => {
