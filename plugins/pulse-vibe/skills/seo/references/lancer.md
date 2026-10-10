@@ -10,7 +10,7 @@ Après la mise en ligne sur le **domaine définitif**. La personne agit elle-mê
 
 ## 2. Google Search Console
 
-Vérification minimale ici. Le parcours détaillé (choix du type de propriété, contrôle de la balise, accès aux données) est dans `pulse-aidd reference search-console.md`, § 2 et 4 ; `/pulse:search-console relier` reprend où vous en êtes.
+Vérification minimale ici. Le parcours détaillé (choix du type de propriété, contrôle de la balise, accès aux données) est dans `pulse-aidd reference search-console/search-console.md`, § 2 et 4 ; `/pulse:search-console relier` reprend où vous en êtes.
 
 1. La personne ouvre search.google.com/search-console avec son compte Google.
 2. **Ajouter une propriété** :
@@ -33,7 +33,7 @@ bing.com/webmasters → « Importer depuis Google Search Console » (le plus sim
 
 ## 5. Les assistants IA
 
-- Si la politique choisie est **C** (hors des réponses IA) : réglage des fonctions d'IA générative de la recherche dans Search Console (Paramètres, réglage « Search generative AI » : Exclure), d'après l'aide Google `support.google.com/webmasters/answer/16908024` (détail : `pulse-aidd reference search-console.md`, § 8) ; le libellé peut évoluer : suivre l'aide affichée.
+- Si la politique choisie est **C** (hors des réponses IA) : réglage des fonctions d'IA générative de la recherche dans Search Console (Paramètres, réglage « Search generative AI » : Exclure), d'après l'aide Google `support.google.com/webmasters/answer/16908024` (détail : `pulse-aidd reference search-console/search-console.md`, § 8) ; le libellé peut évoluer : suivre l'aide affichée.
 - Rapports à ouvrir une fois avec la personne : Bing Webmaster Tools → **AI Performance** (citations dans Copilot) ; Search Console → rapport des impressions dans les fonctions d'IA générative.
 - Statistiques du site : les visites venues de ChatGPT portent `utm_source=chatgpt.com`.
 

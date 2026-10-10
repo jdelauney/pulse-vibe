@@ -64,7 +64,8 @@ const PLAFONDS = {
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
 // Mesures à la fin du plan « Corrections 4 » : review 12 476, commit 26 737 (× 1,05, au 500 supérieur).
-const PLAFONDS_ETAPES = { review: 13500, commit: 28500 };
+// review relevé à 15 000 (pulse 0.39) : trame des skills (Objectif, Règles, Contexte, Rôle, Processus, Exemples), mesure 13 945.
+const PLAFONDS_ETAPES = { review: 15000, commit: 28500 };
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.

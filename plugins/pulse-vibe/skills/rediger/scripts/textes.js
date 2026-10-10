@@ -12,7 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const DETECTEUR = path.join(__dirname, "..", "references", "redaction", "detecteur-tics-llm.json");
+const DETECTEUR = path.join(__dirname, "..", "references", "detecteur-tics-llm.json");
 // Règles qui demandent un jugement : la commande les relit (references/redaction/regles.md).
 const A_RELIRE = ["SYN-004", "LIM-003", "PAT-004", "INJ-003", "BIA-003"];
 // Listes du détecteur cherchées telles quelles dans le texte.

@@ -1,4 +1,4 @@
-// Tests des règles du référencement (scripts/seo-regles.js) : fonctions pures, sur des pages construites.
+// Tests des règles du référencement (skills/seo/scripts/seo-regles.js) : fonctions pures, sur des pages construites.
 // Lancer : node --test plugins/pulse-vibe/tests/seo-regles.test.js
 "use strict";
 
@@ -6,9 +6,9 @@ const test = require("node:test");
 const assert = require("node:assert");
 const path = require("path");
 const fs = require("fs");
-const R = require(path.join(__dirname, "..", "scripts", "seo-regles.js"));
-const { analyserHtml } = require(path.join(__dirname, "..", "scripts", "seo-html.js"));
-const LISTE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "references", "seo", "robots-ia.json"), "utf8"));
+const R = require(path.join(__dirname, "..", "skills", "seo", "scripts", "seo-regles.js"));
+const { analyserHtml } = require(path.join(__dirname, "..", "skills", "seo", "scripts", "seo-html.js"));
+const LISTE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "skills", "seo", "references", "robots-ia.json"), "utf8"));
 
 const EN_LIGNE = { origine: "https://www.exemple.fr", local: false, prive: false, previsualisation: false, maintenant: new Date("2026-10-07T10:00:00Z") };
 const LOCAL = { ...EN_LIGNE, origine: "http://localhost:3000", local: true };
@@ -166,7 +166,7 @@ test("robots.txt : Disallow: / pour Google ou pour tous, 5xx, absent, CSS bloqu�
 });
 
 test("sitemap : introuvable, mal formé, adresse relative ou ailleurs, adresse en erreur, canonique ailleurs, dates de génération", () => {
-  const { lireSitemap } = require(path.join(__dirname, "..", "scripts", "seo-html.js"));
+  const { lireSitemap } = require(path.join(__dirname, "..", "skills", "seo", "scripts", "seo-html.js"));
   const xml = (corps) => `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${corps}</urlset>`;
   const sm = (corps) => ({ url: "https://www.exemple.fr/sitemap.xml", statut: 200, lecture: lireSitemap(xml(corps)) });
   assert.deepStrictEqual(codes(R.reglesSitemap({ url: "s", statut: 404 }, [], EN_LIGNE)), ["L6:moyenne"]);
@@ -244,7 +244,7 @@ test("fiche docs/seo.md : bloc pulse-seo lu ; absent = valeurs par défaut", () 
 });
 
 test("le modèle docs/seo.md se lit sans fausse valeur (politique à décider, aucun fait, aucune page privée)", () => {
-  const modele = fs.readFileSync(path.join(__dirname, "..", "templates", "seo.md"), "utf8");
+  const modele = fs.readFileSync(path.join(__dirname, "..", "skills", "seo", "assets", "seo.md"), "utf8");
   const f = R.lireFiche(modele);
   assert.strictEqual(f.trouvee, true);
   assert.strictEqual(f.site, "public");
@@ -261,7 +261,7 @@ test("IA : robots.txt comparé à la politique (IA1, IA8), groupe qui rouvre (IA
   assert.deepStrictEqual(r("User-agent: *\nAllow: /\n", "A"), []);
   const ouvert = r("User-agent: *\nAllow: /\n", "B");
   assert.ok(ouvert.every((x) => x === "IA8:moyenne") && ouvert.length === 6, ouvert.join());
-  const { genererRobots } = require(path.join(__dirname, "..", "scripts", "robots.js"));
+  const { genererRobots } = require(path.join(__dirname, "..", "skills", "seo", "scripts", "robots.js"));
   for (const p of ["A", "B", "C", "D"]) assert.deepStrictEqual(r(genererRobots(p, LISTE.robots), p), [], `politique ${p} générée`);
   assert.ok(r("User-agent: *\nAllow: /\nUser-agent: OAI-SearchBot\nDisallow: /\n", "A").includes("IA1:haute"));
   assert.deepStrictEqual(r("User-agent: *\nDisallow: /admin/\n\nUser-agent: GPTBot\nAllow: /\n", "A"), ["IA2:moyenne"]);

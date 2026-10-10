@@ -13,7 +13,7 @@ Rédiger les textes destinés à la personne (`note.md`, réponse) en français,
 - Écrire **uniquement** dans le dossier de sortie reçu ; laisser intacts tous les autres fichiers, dont `docs/` et le code du projet.
 - Utiliser Bash seulement pour `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui` et `pulse-aidd maquettes verifier …`.
 - Inventer des contenus fictifs **réalistes**, tirés du glossaire, du PRD, du brief, des user stories et de la spec reçus, à la place des données réelles et des textes de remplissage génériques. Prendre chaque nom, écran et contenu dans ces documents.
-- Écarter tous les anti-patterns 🔴 de `design/anti-patterns.md`.
+- Écarter tous les anti-patterns 🔴 de `ui/anti-patterns.md`.
 - Suivre la thèse reçue, même si une autre semblerait meilleure : les autres variantes couvrent les autres pistes.
 - Décrire la page et l'outil comme des objets, par ce qu'ils affichent et permettent : les intentions restent réservées aux personnes (anthropomorphisation exclue).
 
@@ -36,7 +36,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Méthode
 
-1. Charger les références et le modèle : `pulse-aidd reference design/registres.md`, `pulse-aidd reference design/regles-ui.md`, `pulse-aidd reference design/anti-patterns.md`, `pulse-aidd reference design/motifs.md`, `pulse-aidd modele maquette-note.md` ; pour le type `planche`, aussi `pulse-aidd reference design/directions.md` (la famille et le style cités par la thèse).
+1. Charger les références et le modèle : `pulse-aidd reference ui/registres.md`, `pulse-aidd reference ui/regles-ui.md`, `pulse-aidd reference ui/anti-patterns.md`, `pulse-aidd reference ui/motifs.md`, `pulse-aidd modele ui/maquette-note.md` ; pour le type `planche`, aussi `pulse-aidd reference ui/directions.md` (la famille et le style cités par la thèse).
 2. Lire `docs/design.md` (ou la direction provisoire reçue), les documents reçus (PRD, brief, spec, user stories) et le glossaire. Relever les mots du métier à employer dans les contenus fictifs.
 3. Produire les pages selon le type :
    - **planche** : écrire `planche.html`. Elle montre les **nuances** de chaque teinte, puis la palette **par rôle** (chaque couleur avec sa nuance, sa valeur et le contraste affiché), l'échelle typographique, les boutons et les champs dans **tous leurs états** (repos, survol, focus, désactivé, erreur), une liste, un message d'erreur, un état vide et une zone de navigation.

@@ -1,4 +1,4 @@
-// Tests de la liste des robots IA (references/seo/robots-ia.json), source unique de /pulse:seo ia.
+// Tests de la liste des robots IA (skills/seo/references/robots-ia.json), source unique de /pulse:seo ia.
 // Lancer : node --test plugins/pulse-vibe/tests/robots-ia.test.js
 "use strict";
 
@@ -6,9 +6,9 @@ const test = require("node:test");
 const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
-const { ROLES } = require(path.join(__dirname, "..", "scripts", "robots.js"));
+const { ROLES } = require(path.join(__dirname, "..", "skills", "seo", "scripts", "robots.js"));
 
-const FICHIER = path.join(__dirname, "..", "references", "seo", "robots-ia.json");
+const FICHIER = path.join(__dirname, "..", "skills", "seo", "references", "robots-ia.json");
 const liste = JSON.parse(fs.readFileSync(FICHIER, "utf8"));
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 

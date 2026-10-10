@@ -7,7 +7,7 @@ const assert = require("node:assert");
 const fs = require("fs");
 const path = require("path");
 
-const D = path.join(__dirname, "..", "references", "design");
+const D = path.join(__dirname, "..", "skills", "ui", "references");
 const lire = (f) => fs.readFileSync(path.join(D, f), "utf8");
 
 test("règles d'interface : valeurs chiffrées de couleur, typographie, espacement, mouvement, accessibilité", () => {
@@ -71,9 +71,9 @@ test("motifs d'écrans : neuf sections et renvoi aux formulaires", () => {
 test("revue motifs : chargés par le designer, cités par /pulse:ui et /pulse:plan", () => {
   const P = path.join(__dirname, "..");
   const l = (...p) => fs.readFileSync(path.join(P, ...p), "utf8");
-  assert.ok(l("agents", "designer.md").includes("pulse-aidd reference design/motifs.md"));
+  assert.ok(l("agents", "designer.md").includes("pulse-aidd reference ui/motifs.md"));
   assert.ok(l("skills", "ui", "SKILL.md").includes("quatre références de design"));
-  assert.ok(l("skills", "plan", "SKILL.md").includes("design/motifs.md"));
+  assert.ok(l("skills", "plan", "SKILL.md").includes("ui/motifs.md"));
   assert.match(l("references", "tests", "test-manuel.md"), /notifications[^\n]*erreur[^\n]*ferm/i);
 });
 
@@ -102,12 +102,12 @@ test("heuristiques : les 10 heuristiques et les 5 dimensions avec leurs paliers"
 
 test("ui-critic : charge heuristiques et motifs, 7 rubriques, mode maquette, corrections rapides", () => {
   const t = lireP("agents", "ui-critic.md");
-  for (const attendu of ["design/heuristiques.md", "design/motifs.md", "mode maquette", "Corrections rapides", "Évaluation d'ensemble", ...RUBRIQUES.map((r) => "`" + r + "`")])
+  for (const attendu of ["ui/heuristiques.md", "ui/motifs.md", "mode maquette", "Corrections rapides", "Évaluation d'ensemble", ...RUBRIQUES.map((r) => "`" + r + "`")])
     assert.ok(t.includes(attendu), attendu);
 });
 
 test("modèle revue-ui : évaluation d'ensemble, corrections rapides, 7 rubriques", () => {
-  const t = lireP("templates", "revue-ui.md");
+  const t = lireP("skills", "ui", "assets", "revue-ui.md");
   for (const attendu of ["## Évaluation d'ensemble", "## Corrections rapides", "/ 50", RUBRIQUES.join(" / ")]) assert.ok(t.includes(attendu), attendu);
 });
 
@@ -130,7 +130,7 @@ test("revue critique : choix des constats possible au-delà de 4, maquette regar
   const t = lireP("skills", "ui", "SKILL.md");
   assert.strictEqual(t.split("Je donne les numéros").length - 1, 2, "polish et maquettes");
   for (const attendu of ["consignes du pack pour les maquettes", "↪️ laissé", "critique-<k>.md"]) assert.ok(t.includes(attendu), attendu);
-  assert.match(lireP("templates", "revue-ui.md"), /\*\*Verdict\*\*[^\n]*\/ 50/);
+  assert.match(lireP("skills", "ui", "assets", "revue-ui.md"), /\*\*Verdict\*\*[^\n]*\/ 50/);
   assert.match(fs.readFileSync(path.join(P, "README.md"), "utf8"), /ui-critic[^\n]*maquette retenue/);
 });
 
@@ -154,18 +154,18 @@ test("directions : 5 familles, 15 styles, conseil de choix", () => {
 test("trois couches : règle dans regles-ui.md, nuances dans le modèle design.md", () => {
   const r = lire("regles-ui.md");
   assert.ok(r.includes("trois couches") && r.includes("--<teinte>-100"));
-  const d = lireP("templates", "design.md");
+  const d = lireP("skills", "ui", "assets", "design.md");
   assert.ok(d.includes("| Nuance |") && d.includes("var(--"));
 });
 
 test("génération : designer, ui-critic et skill ui emploient directions, extraction et contrôle", () => {
   const d = lireP("agents", "designer.md");
-  for (const attendu of ["pulse-aidd maquettes verifier", "design/directions.md", "var(--"]) assert.ok(d.includes(attendu), `designer : ${attendu}`);
+  for (const attendu of ["pulse-aidd maquettes verifier", "ui/directions.md", "var(--"]) assert.ok(d.includes(attendu), `designer : ${attendu}`);
   const c = lireP("agents", "ui-critic.md");
   assert.ok(c.includes("`pulse-aidd maquettes verifier`"), "ui-critic : commande autorisée");
   assert.match(c, /mode maquette[^\n]*pulse-aidd maquettes verifier/, "ui-critic : lancé en mode maquette");
   const u = lireP("skills", "ui", "SKILL.md");
-  for (const attendu of ["pulse-aidd identite extraire", "design/directions.md", "non trouvée"]) assert.ok(u.includes(attendu), `skill ui : ${attendu}`);
+  for (const attendu of ["pulse-aidd identite extraire", "ui/directions.md", "non trouvée"]) assert.ok(u.includes(attendu), `skill ui : ${attendu}`);
 });
 
 // --- Correctifs de la revue finale du lot 4 ---

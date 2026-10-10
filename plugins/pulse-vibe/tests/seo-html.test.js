@@ -1,11 +1,11 @@
-// Tests du lecteur de HTML du référencement (scripts/seo-html.js).
+// Tests du lecteur de HTML du référencement (skills/seo/scripts/seo-html.js).
 // Lancer : node --test plugins/pulse-vibe/tests/seo-html.test.js
 "use strict";
 
 const test = require("node:test");
 const assert = require("node:assert");
 const path = require("path");
-const { analyserHtml, lireSitemap, decoderEntites } = require(path.join(__dirname, "..", "scripts", "seo-html.js"));
+const { analyserHtml, lireSitemap, decoderEntites } = require(path.join(__dirname, "..", "skills", "seo", "scripts", "seo-html.js"));
 
 test("titre, description, canonique et langue lus dans <head>", () => {
   const h = analyserHtml(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Menuiserie Dupont – Lausanne</title>

@@ -311,7 +311,7 @@ test("contexte ui du pack : les composants réalisent les motifs tels quels", ()
 });
 
 // Contrastes mesurés par l'outil du cœur (pulse-aidd contraste), transparence comprise.
-const { lireCouleur, poser, rapport } = require(path.join(RACINE, "..", "pulse-vibe", "scripts", "contraste.js"));
+const { lireCouleur, poser, rapport } = require(path.join(RACINE, "..", "pulse-vibe", "skills", "ui", "scripts", "contraste.js"));
 
 test("squelette : contrastes mesurés (texte secondaire, champs, focus, graphiques), en clair et en sombre", () => {
   const css = lire(RACINE, "templates", "squelette", "app", "globals.css");
@@ -336,7 +336,7 @@ test("squelette : contrastes mesurés (texte secondaire, champs, focus, graphiqu
 
 test("le cœur et le pack mesurent les contrastes avec pulse-aidd contraste", () => {
   const coeur = path.join(RACINE, "..", "pulse-vibe");
-  for (const f of [["references", "design", "regles-ui.md"], ["agents", "designer.md"], ["agents", "ui-critic.md"], ["skills", "ui", "SKILL.md"]]) {
+  for (const f of [["skills", "ui", "references", "regles-ui.md"], ["agents", "designer.md"], ["agents", "ui-critic.md"], ["skills", "ui", "SKILL.md"]]) {
     const t = lire(coeur, ...f);
     assert.ok(t.includes("pulse-aidd contraste"), f.join("/"));
     assert.doesNotMatch(t, /calculer précisément|\(calculer\)|le calculer quand/, f.join("/"));

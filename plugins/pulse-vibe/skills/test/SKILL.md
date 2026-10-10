@@ -7,14 +7,6 @@ allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd agent test-runner)
 
 # /pulse:test – Les tests automatiques
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte test`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références citées plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
-
-Arguments reçus : `$ARGUMENTS`
-
 ## Objectif
 
 - **`lancer`** (ou sans argument) : lancer toute la suite de tests, expliquer chaque échec en langage simple et proposer qui le corrige.
@@ -22,15 +14,35 @@ Arguments reçus : `$ARGUMENTS`
 
 Phrase à dire : « Les tests sont de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. Un assistant les lance ou les écrit ; un autre, qui n'a pas écrit le code, juge les résultats. »
 
-Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord » ci-dessus).
+Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord », chargée dans « Contexte »).
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte test`
+
+Les références citées dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
+
+Arguments reçus : `$ARGUMENTS`
+
+### Prérequis
 
 - `docs/technical.md` existe. Sinon, proposer `/pulse:tech` et s'arrêter.
 - « Tester » de « Commandes du projet » existe. Sinon (« aucune ») : proposer d'installer un outil de test selon le § 3 de la référence « Tests automatiques » ; sans accord, s'arrêter.
 - Noter les fichiers déjà modifiés (`git status --short`) : à la fin, montrer seulement ce que cette commande a changé.
 
-## Lancer
+## Rôle
+
+La conversation principale orchestre : elle retrouve le contrat, présente les résultats en langage simple et décide avec la personne de la suite. Les agents en sont les moyens :
+- `pulse:test-runner` lance les tests et classe chaque échec (code, test, environnement, instable) ;
+- `pulse:test-writer` écrit les tests d'un code existant (mode « code existant ») ou corrige les tests en cause (mode « corriger »).
+
+## Processus
+
+### Lancer
 
 1. Déléguer à **`pulse:test-runner`**, phase « suite complète » : la commande « tester » (et celle de couverture si elle existe), les plans en cours (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) pour relier un échec à une tâche.
 2. Présenter :
@@ -46,7 +58,7 @@ Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:impleme
    - Échec **dû à l'environnement** : guider la personne pas à pas.
 4. Les constats de qualité des tests suivent « Les constats de relecture » (règles communes § 6).
 
-## Écrire
+### Écrire
 
 1. **Retrouver le contrat** : pour une US ou une tâche, sa spec (section « Scénarios »), le fichier de l'US (critères d'acceptation) et le plan (lignes `Fichiers` et `Tests`). Pour un fichier ou un dossier : la tâche dont la ligne `Fichiers` le cite, sinon demander quel comportement il doit avoir. Une spec sans scénarios (spec plus ancienne) : rédiger les scénarios manquants selon la référence Gherkin, les montrer, les faire valider, puis les ajouter à la spec.
 2. Déléguer à **`pulse:test-writer`**, mode « code existant » : le contrat recopié (scénarios, critères, lignes `Tests`), les fichiers de code concernés, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md`, les mots du glossaire utiles. Plusieurs tâches indépendantes : un test-writer par tâche, en parallèle (plusieurs appels Agent dans le même message).
@@ -58,7 +70,7 @@ Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:impleme
    - les scénarios à préciser : à trancher avec la personne s'ils touchent au besoin, puis mettre à jour la spec.
 5. Ajouter une ligne au journal du plan concerné (date, tâche, commit à venir, « tests ajoutés : <n> ; défauts trouvés : <n> »).
 
-## Fin
+### Fin
 
 ```
 🧪 Tests : <n écrits> écrits · <n réussis> réussis · <n en échec> en échec (dont <n> défauts du code)
@@ -66,3 +78,8 @@ Fichiers : <liste>   (git diff --stat)
 ```
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:fix "<échec>"` s'il reste un défaut du code ; sinon `/pulse:commit` (message `test(<Tâche>): …` ou `test: …`).
+
+## Exemples
+
+- `/pulse:test` : tous les tests sont lancés ; vous voyez combien réussissent, et chaque échec expliqué en une ligne avec la proposition de le corriger.
+- `/pulse:test ecrire US-003` : des tests écrits à partir des scénarios de la spec, lancés aussitôt ; un défaut du code trouvé vous est expliqué simplement.

@@ -17,7 +17,7 @@ const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const TPL = path.join(__dirname, "..", "templates");
+const TPL = path.join(__dirname, "..", "..", "..", "templates");
 const TESTER_EN_LOCAL = "Voir « Commandes du projet » dans `docs/technical.md` (rempli par `/pulse:tech`).";
 
 // ---------------------------------------------------------------- arguments
@@ -140,7 +140,7 @@ function ecrireFichiers(dest, opts) {
 }
 
 function synchroniserMemoire(dest) {
-  const r = spawnSync(process.execPath, [path.join(__dirname, "memoire.js"), "--rapport"], {
+  const r = spawnSync(process.execPath, [path.join(__dirname, "..", "..", "..", "scripts", "memoire.js"), "--rapport"], {
     encoding: "utf8",
     env: { ...process.env, CLAUDE_PROJECT_DIR: dest },
   });
@@ -198,7 +198,7 @@ async function principal() {
   if (e.conserves.length) console.log(`\nDéjà présents, conservés tels quels :\n${e.conserves.map((f) => `  = ${f}`).join("\n")}`);
   console.log(`\nMémoire : ${memoireOk ? "branchée dans CLAUDE.md" : "à brancher avec /pulse:memory creer"}`);
   console.log(`Git : ${etatGit}`);
-  console.log("Pile technique : pas encore choisie, elle se décide avec /pulse:tech.");
+  console.log("Stack technique : pas encore choisie, elle se décide avec /pulse:tech.");
 
   if (!opts.ici) {
     console.log("\nProchaines étapes :");

@@ -152,22 +152,27 @@ Le plugin vit dans `plugins/pulse-vibe/` du dépôt ; le catalogue `.claude-plug
 
 ```
 .claude-plugin/plugin.json        manifeste du plugin
-skills/<commande>/SKILL.md        les commandes
-agents/                           explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, redacteur, fixer, memory-compactor
+skills/<commande>/                une commande = un dossier :
+  SKILL.md                        ses consignes, en six parties : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples
+  references/, assets/, scripts/  ce qui sert à cette commande seule (au besoin) : références (pulse-aidd reference <commande>/<fichier>),
+                                  modèles (pulse-aidd modele <commande>/<fichier>), scripts lancés par pulse-aidd
+                                  ex. ui (références d'interface, modèles design.md et revue-ui.md, contraste.js, identite.js, maquettes.js, comparer.js),
+                                  seo (règles, textes, lancement, assistants IA, robots-ia.json ; seo.js, seo-html.js, seo-regles.js, robots.js),
+                                  rediger (règles et détecteur de tics ; textes.js), security (en-têtes, actions), secrets (fuite ; secrets.js),
+                                  perf (performance.md ; perf.js), search-console (search-console.md ; search-console.js), tech (choix-techniques.md),
+                                  learn (pedagogie.md), init (bannière ; nouveau-projet.js), spec, pr, get-help (leurs modèles)
+agents/                           les moyens de l'orchestration, appelés par les commandes : explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, redacteur, fixer, memory-compactor
 hooks/hooks.json                  garde-fous anti-secrets et des commandes (un seul processus, garde.js), synchronisation de la mémoire, registre des sessions, régénération du guide
-scripts/                          garde.js (point d'entrée unique des garde-fous), garde-secrets.js, garde-commandes.js, lecture-commande.js (lecture des commandes pour les deux garde-fous), motifs.js, chemins-sensibles.js (fichiers .env et contrôle avant commit reconnus par les garde-fous), sonder.js, secrets.js (pulse-aidd secrets), textes.js (pulse-aidd textes), seo.js, seo-html.js, seo-regles.js, robots.js (pulse-aidd seo), perf.js (pulse-aidd perf), search-console.js (pulse-aidd search-console), port-libre.js (port local accepté par le navigateur, pour le retour de connexion), memoire.js, nouveau-projet.js (pulse-aidd nouveau, /pulse:init), etat.js (pulse-aidd etat, /pulse:init et /pulse:status ; pulse-aidd revue, où reprendre une tâche), guide.js, comparer.js, sessions.js, contraste.js (pulse-aidd contraste), identite.js (pulse-aidd identite), maquettes.js (pulse-aidd maquettes), verifier-node.sh (au démarrage, sans Node : Node.js présent et assez récent), version.js (au démarrage, par memoire.js : mise à jour disponible, catalogue pas actualisé depuis 14 jours, ancien nom encore installé)
+scripts/                          partagés : garde.js (point d'entrée unique des garde-fous), garde-secrets.js, garde-commandes.js, lecture-commande.js (lecture des commandes pour les deux garde-fous), motifs.js, chemins-sensibles.js (fichiers .env et contrôle avant commit reconnus par les garde-fous), sonder.js, port-libre.js (port local accepté par le navigateur, pour le retour de connexion), memoire.js, etat.js (pulse-aidd etat, /pulse:init et /pulse:status ; pulse-aidd revue, où reprendre une tâche), guide.js, sessions.js, verifier-node.sh (au démarrage, sans Node : Node.js présent et assez récent), version.js (au démarrage, par memoire.js : mise à jour disponible, catalogue pas actualisé depuis 14 jours, ancien nom encore installé)
 bin/pulse-aidd                    outil interne : contexte | etape <commande> [--sans-communes] | modele | agent | qualite | tests | reference | nouveau | guide | comparer | memoire | sessions | verifier | scenarios | etat | revue | travail-fini | installer-ci | installer-hook | piles | pile | sonder | secrets | textes | contraste | identite | maquettes | seo | perf | search-console (détail : l'aide de l'outil, sans argument)
 bin/pulse-aidd.ps1                relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-aidd.cmd : relais pour l'invite de commandes (cmd)
-references/                       regles-communes.md (le noyau), fichiers-projet.md (les fichiers produits dans le projet), cycle.md (le cycle en un coup d'œil),
-                                  choix-techniques.md (aide au choix technique), checklist-securite.md, memoire.md (mémoire projet), raisonnement.md (penser avant d'écrire),
+references/                       partagées : regles-communes.md (le noyau), fichiers-projet.md (les fichiers produits dans le projet), cycle.md (le cycle en un coup d'œil),
+                                  checklist-securite.md, memoire.md (mémoire projet), raisonnement.md (penser avant d'écrire),
                                   depot-distant.md (dépôt distant et envoi du travail), git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle),
-                                  examen.md (relecture et vérification d'une tâche), tests-automatiques.md (option -t), pedagogie.md (/pulse:learn),
-                                  performance.md (/pulse:perf), search-console.md (/pulse:search-console),
-                                  secrets/ (saisie hors conversation, réaction à une fuite), seo/ (règles, textes, lancement, assistants IA),
-                                  qualite/ (références de qualité du code), securite/ (actions de /pulse:security),
-                                  design/ (références d'interface de /pulse:ui), redaction/ (détecteur de tics d'écriture IA et règles de /pulse:rediger),
+                                  examen.md (relecture et vérification d'une tâche), tests-automatiques.md (option -t),
+                                  secrets/ (saisie hors conversation), qualite/ (références de qualité du code),
                                   tests/ (stratégie de tests, test manuel, Gherkin, TDD)
-templates/                        modèles de documents et de fichiers projet
+templates/                        modèles partagés : CLAUDE.md du projet (Résumé du projet, Stack technique, Architecture, Commandes, Contraintes), documents, .gitignore, .env.example, CI
 tests/                            tests (depuis la racine du dépôt : node --test plugins/*/tests/*.test.js)
 ```
 
