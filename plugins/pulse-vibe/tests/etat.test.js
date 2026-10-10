@@ -509,6 +509,7 @@ test("test par la personne : seules les réponses positives valident ; les répo
     ["Non concluant", "a-corriger"],
     ["échec : le bouton ne marche pas", "a-corriger"],
     ["❌ non concluant, la personne n'a pas accepté", "a-corriger"],
+    ["❌ non concluant, non accepté", "a-corriger"],
     ["non concluant, accepté par la personne", "validee"],
     ["Oui, tout fonctionne", "validee"],
     ["concluant", "validee"],
