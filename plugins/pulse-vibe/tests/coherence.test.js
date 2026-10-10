@@ -603,11 +603,8 @@ test("implement : questions de démarrage en clair et mode découverte", () => {
 test("spirc : une ronde de départ de 4 questions au plus, sans double validation", () => {
   const texte = skillTexte("spirc");
   assert.doesNotMatch(texte, /Point de validation 1|✋ ?1/);
-  assert.match(texte, /« Pas à pas, avec un contrôle de sécurité à chaque tâche »/);
-  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
-  const ronde = texte.split("## Choisir la façon de travailler")[1];
-  assert.ok(ronde, "section « Choisir la façon de travailler »");
-  const questions = ronde.split(/\n## /)[0].split("\n").filter((l) => /^- \*\*[^*]+\*\*/.test(l));
+  const ronde = texte.split("**Ronde de départ**")[1].split("\n\n**Portée**")[0];
+  const questions = ronde.split("\n").filter((l) => /^\d\. \*\*[^*]+\*\*/.test(l));
   assert.ok(questions.length >= 3 && questions.length <= 4, `${questions.length} questions dans la ronde`);
 });
 
@@ -615,7 +612,7 @@ test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () =
   const texte = skillTexte("spirc");
   const puce = texte.split("\n").find((l) => l.startsWith("- `-a`"));
   assert.match(puce, /validation du plan quand il vient d'être créé/);
-  assert.match(texte, /vous testez tout à la fin\) ;/);
+  assert.match(texte, /vous testez tout à la fin\)/);
   assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
 });
 
@@ -1293,4 +1290,12 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme rapide\*\*/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*le parcours principal est `@manuel`/);
+});
+
+test("spirc : une ronde de départ unique (rythme, options à cocher, tests, envoi), posée même en mode découverte", () => {
+  const spirc = skillTexte("spirc");
+  const ronde = spirc.split("**Ronde de départ**")[1].split("\n\n**Portée**")[0];
+  for (const t of ["une seule ronde", "« Comment réaliser cette user story ? »", "`multiSelect`", "« Enchaîner les tâches sans m'arrêter » (`-a`", "« Un contrôle de sécurité à chaque tâche » (`-x`)", "« Travailler dans un dossier à part » (`-w`)", "**Tests**", "**Envoi**", "même en mode découverte"])
+    assert.ok(ronde.includes(t), t);
+  assert.doesNotMatch(spirc, /« Comment avancer \? »/, "plus de question de rythme après le plan");
 });

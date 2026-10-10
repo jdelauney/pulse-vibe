@@ -40,7 +40,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ### Lire les arguments
 
-**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, le rythme se choisit par une question avant la réalisation (section « Choisir la façon de travailler ») ; **avec au moins une option**, le rythme non précisé prend sa valeur par défaut (pas à pas, avec points de validation, sans contrôle de sécurité supplémentaire), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
+**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, tout se choisit dans la ronde de départ (ci-dessous) ; **avec au moins une option**, le rythme non précisé prend sa valeur par défaut (pas à pas, avec points de validation, sans contrôle de sécurité supplémentaire), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
 - `-a` **autonome** : enchaîner les tâches sans s'arrêter : point de validation ✋ 2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles communes § 6). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). S'arrêtent toujours en cours de route : la validation du plan quand il vient d'être créé, les questions de besoin, de priorité ou de périmètre (dont « Bloqué – décision nécessaire » et les écarts de besoin) et les actions manuelles.
 - `-t` **tests d'abord** : avant le code de chaque tâche, `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », chargée au démarrage de la réalisation, § [T]).
 - `-x` **contrôle de sécurité à chaque tâche** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
@@ -49,7 +49,13 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 **US** (premier argument après les options) : l'US dont on réalise le plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), désignée selon les règles « User stories, specs et plans » ci-dessus. Une US qui a une spec sans plan, ou ni spec ni plan : commencer à § S ou § P. Absent ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel, avec en dernière réponse « Spécifier et planifier une autre US » (§ S).
 
-**Rythme rapide ou complet** : sans `-f` ni `-t`, et si le bloc profil de `CLAUDE.md` n'indique pas « Rythme : rapide », poser d'abord, avant toute étape et même en mode découverte (AskUserQuestion) : « Comment réaliser cette user story ? » → « Rapide (Recommandé) » (l'essentiel des tests, les tâches enchaînées, vous testez tout à la fin) / « Complet » (tests détaillés, vous testez chaque tâche). « Rapide » vaut `-f`.
+**Ronde de départ** : sans aucune option, poser avant toute étape, même en mode découverte, **une seule ronde** (un appel AskUserQuestion, la réponse recommandée en premier), après avoir chargé les références de la réalisation (premier paragraphe de « Choisir la façon de travailler ») :
+1. **Rythme** (sauf si le profil de `CLAUDE.md` indique « Rythme : rapide ») : « Comment réaliser cette user story ? » → « Rapide (Recommandé) » (l'essentiel des tests, les tâches enchaînées, vous testez toute l'US à la fin) / « Complet » (tests détaillés, vous testez chaque tâche). « Rapide » vaut `-f`.
+2. **Options**, à cocher (`multiSelect`, aucune cochée possible) : « Quelles options voulez-vous ? » → « Enchaîner les tâches sans m'arrêter » (`-a`, déjà compris dans Rapide : je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main ; vous testez tout à la fin) / « Un contrôle de sécurité à chaque tâche » (`-x`) / « Travailler dans un dossier à part » (`-w`) ; si un signe d'une autre session est trouvé (§ 1 de la référence « Travailler dans un worktree »), le citer dans la description de cette option et la mettre en premier.
+3. **Tests** (seulement si la question 1 est posée) : « Si vous choisissez Complet, quels tests ? » → les réponses de « 2. Choisir au démarrage » de la référence « Tests automatiques » ; « Tests d'abord » vaut `-t`. Avec « Rapide », cette réponse est sans effet.
+4. **Envoi** (dépôt distant présent, ligne « Envoi » du plan à choisir ou plan pas encore écrit) : la question de « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail », avec « Directement sur la version principale » recommandé en mode découverte.
+
+Annoncer ensuite les choix retenus en une ligne (« Rapide · autonome · dossier à part · envoi : version principale »). La réponse « Envoi » s'écrit dans la ligne « Envoi » du plan dès qu'il existe.
 
 **Portée** (le reste des arguments) :
 - **vide** : toutes les tâches `[~]` et `[ ]` du plan, dans l'ordre ;
@@ -109,18 +115,15 @@ La validation de la spec par l'étape **spec** vaut accord pour passer au plan :
 
 **Charger une seule fois les références de la réalisation** : lancer `pulse-aidd etape commit --sans-communes` (conventions Git, envoi du travail), `pulse-aidd reference worktree.md` et `pulse-aidd reference tests-automatiques.md`. Elles servent à cette ronde et à chaque tâche de la boucle. Si elles ne figurent plus dans la conversation (après `/clear` ou un résumé automatique), les relancer.
 
-Avant la boucle par tâche (une fois la spec et le plan écrits et validés), poser **une seule ronde** (AskUserQuestion, 4 questions au plus) qui regroupe, selon le cas :
+Avant la boucle par tâche (une fois la spec et le plan écrits et validés), appliquer les choix de la ronde de départ ou des raccourcis. Avec au moins un raccourci, poser seulement ce qui reste à choisir, en **une seule ronde** :
 
-- **Rythme** (seulement si aucune option n'a été passée), question « Comment avancer ? » : « Pas à pas, avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les tâches) / « Pas à pas, avec un contrôle de sécurité à chaque tâche » (en plus, un assistant vérifie la sécurité de chaque tâche) / « Autonome » (j'enchaîne et je corrige seul ; je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main ; vous testez tout à la fin) ;
-- **Tests** (seulement sans `-t`, même avec d'autres options ou `-a`) : « 2. Choisir au démarrage » de la référence « Tests automatiques » ;
+- **Tests** (seulement sans `-t` ni `-f`, et hors rythme rapide) : « 2. Choisir au démarrage » de la référence « Tests automatiques » ;
 - **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même en autonome : c'est une décision de la personne) ;
 - **Dossier à part** : « 1. Faut-il un worktree ? » de la référence worktree.
 
-« Autonome » vaut `-a`, « Pas à pas, avec un contrôle de sécurité à chaque tâche » vaut `-x`, « Tests d'abord » vaut `-t` ; autonome avec contrôle de sécurité : options `-ax`. Le point ✋ 2 déjà passé ne se rejoue pas.
+« Tests d'abord » vaut `-t`. Le point ✋ 2 déjà passé ne se rejoue pas.
 
-**Mode découverte** (règles communes § 1) : ronde sautée ; chaque choix prend sa réponse recommandée, annoncée en une phrase.
-
-**Rythme rapide** (règles communes § 1) ou option `-f` : rythme « Autonome » et tests essentiels, sans question ; restent l'envoi et le dossier à part (réponse recommandée en mode découverte).
+**Rythme rapide** (règles communes § 1) ou option `-f` : autonome et tests essentiels, sans question sur le rythme ni les tests.
 
 Puis, si un dossier à part est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que ce dossier les contienne. Toute la suite (réalisation, relecture, commits) se fait dans ce dossier. Sans dossier à part, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
