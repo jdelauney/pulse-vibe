@@ -194,6 +194,9 @@ test("bout en bout : la page d'essai de la surveillance et son test, posés avan
     fs.rmSync(dossier, { recursive: true, force: true });
   }
   const source = fs.readFileSync(SCRIPT, "utf8");
+  assert.deepStrictEqual(source.match(/poserPageDEssai\(/g), ["poserPageDEssai(", "poserPageDEssai("], "une définition et un seul appel");
+  assert.match(source, /^function poserPageDEssai\(dossier\) \{$/m);
+  assert.match(source, /^ {4}poserPageDEssai\(dossier\);$/m);
   assert.ok(source.indexOf("poserPageDEssai(dossier);") < source.indexOf("npm run test:e2e -- --reporter"), "posée avant npm run test:e2e");
   assert.ok(source.indexOf('lancer("npm run build"') < source.indexOf("poserPageDEssai(dossier);"), "absente de la construction de vérification");
 });
