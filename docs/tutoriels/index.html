@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr" data-racine="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les tutoriels – Wiki Pulse</title>
+<meta name="description" content="Deux tutoriels pour construire un carnet de réservations avec Pulse : un prototype rapide, puis une appli prête pour de vrais clients.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+</head>
+<body>
+<main id="contenu">
+<section class="section section-premiere conteneur">
+<header class="entete-section">
+<p class="pastille">Deux tutoriels, une même appli</p>
+<h2>Construire un carnet de réservations</h2>
+<p class="sous-titre">Le fil rouge : un salon de coiffure veut que ses clients réservent en ligne. D'abord un prototype en un après-midi, pour voir l'idée prendre forme. Ensuite la vraie appli, prête à accueillir des clients.</p>
+</header>
+
+<ul class="grille-cartes grille-deux">
+<li><a class="carte" href="rapide.html">
+<span class="pastille pastille-etape" data-couleur="1">Tutoriel 1 · Environ 2 heures</span>
+<span class="carte-titre carte-titre-espace">Mode rapide : un prototype</span>
+<span class="carte-texte">Une seule conversation avec <code>/pulse:express</code>, puis Pulse réalise la première fonction et la met en ligne. Idéal pour montrer l'idée, tester, décider.</span>
+</a></li>
+<li><a class="carte" href="production.html">
+<span class="pastille pastille-etape" data-couleur="4">Tutoriel 2 · Plusieurs séances</span>
+<span class="carte-titre carte-titre-espace">Mode complet : prêt pour de vrais clients</span>
+<span class="carte-texte">Chaque étape de la méthode, une fonction après l'autre : relectures, tests, contrôles automatiques, sécurité, clés protégées, Google et vitesse.</span>
+</a></li>
+</ul>
+</section>
+
+<section class="section conteneur-lecture">
+<header class="entete-section revele">
+<p class="pastille">Lequel choisir ?</p>
+<h2>Les deux chemins, côte à côte</h2>
+<p class="sous-titre">Le mode rapide saute volontairement des étapes. Le mode complet les reprend toutes : c'est ce qui rend l'appli fiable.</p>
+</header>
+
+<figure class="anim" data-etapes="6" data-duree="1300">
+<svg viewBox="0 0 760 300" role="img" aria-labelledby="chemins-titre">
+<title id="chemins-titre">Le mode rapide et le mode complet comparés</title>
+<text class="schema-texte" x="20" y="34">Mode rapide</text>
+<text class="schema-texte" x="20" y="184">Mode complet</text>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="50" width="152" height="68" rx="18"/><rect class="schema-boite-active" x="20" y="56" width="140" height="56" rx="14"/><text class="schema-texte" x="90" y="82" text-anchor="middle">init + express</text><text class="schema-texte-secondaire" x="90" y="100" text-anchor="middle">une conversation</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M160 84 H226" marker-end="url(#chemins-pointe)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="230" y="50" width="152" height="68" rx="18"/><rect class="schema-boite" x="236" y="56" width="140" height="56" rx="14"/><text class="schema-texte" x="306" y="82" text-anchor="middle">implement</text><text class="schema-texte-secondaire" x="306" y="100" text-anchor="middle">la première US</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M376 84 H442" marker-end="url(#chemins-pointe)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="446" y="50" width="152" height="68" rx="18"/><rect class="schema-boite" x="452" y="56" width="140" height="56" rx="14"/><text class="schema-texte" x="522" y="82" text-anchor="middle">En ligne</text><text class="schema-texte-secondaire" x="522" y="100" text-anchor="middle">un prototype</text></g>
+<g class="e4" data-etape="4">
+<rect class="schema-boite" x="20" y="200" width="104" height="48" rx="12"/><text class="schema-texte-secondaire" x="72" y="229" text-anchor="middle">brainstorm, prd</text>
+<rect class="schema-boite" x="134" y="200" width="104" height="48" rx="12"/><text class="schema-texte-secondaire" x="186" y="229" text-anchor="middle">tech, ui, us</text>
+<rect class="schema-boite" x="248" y="200" width="104" height="48" rx="12"/><text class="schema-texte-secondaire" x="300" y="229" text-anchor="middle">spirc par US</text>
+<rect class="schema-boite" x="362" y="200" width="104" height="48" rx="12"/><text class="schema-texte-secondaire" x="414" y="229" text-anchor="middle">cicd, deploy</text>
+<rect class="schema-boite" x="476" y="200" width="104" height="48" rx="12"/><text class="schema-texte-secondaire" x="528" y="229" text-anchor="middle">security, secrets</text>
+<rect class="schema-boite-active" x="590" y="200" width="150" height="48" rx="12"/><text class="schema-texte" x="665" y="229" text-anchor="middle">seo, perf : prête</text>
+</g>
+<g class="e5" data-etape="5"><path class="schema-accompagne trace e5" pathLength="1" d="M522 116 C522 160 300 150 300 198" marker-end="url(#chemins-pointe-mauve)"/><text class="schema-texte-secondaire" x="610" y="160" text-anchor="middle">le prototype convainc ?</text><text class="schema-texte-secondaire" x="610" y="176" text-anchor="middle">on reprend en mode complet</text></g>
+<g class="e6" data-etape="6"><text class="schema-texte-secondaire" x="380" y="284" text-anchor="middle">Relectures, tests, contrôles automatiques et sécurité à chaque fonction</text></g>
+<defs>
+<marker id="chemins-pointe" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="chemins-pointe-mauve" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>En haut, le mode rapide : <code>/pulse:init</code> et <code>/pulse:express</code> en une conversation, la première fonction réalisée, puis un prototype en ligne. En bas, le mode complet : chaque étape de la méthode, une fonction après l'autre, avec relectures, tests, contrôles automatiques et sécurité, jusqu'à une appli prête pour de vrais clients. Quand le prototype convainc, on reprend en mode complet.</figcaption>
+</figure>
+
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> avant de commencer, vérifiez que tout est installé avec la page <a href="../prerequis.html">Prérequis</a>.</p></aside>
+</section>
+</main>
+</body>
+</html>

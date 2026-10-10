@@ -1,4 +1,4 @@
-// Produit par wiki/outils/synchroniser.js depuis les SKILL.md du cœur : modifier les SKILL.md, puis relancer l'outil.
+// Produit par outils/wiki/synchroniser.js depuis les SKILL.md du cœur : modifier les SKILL.md, puis relancer l'outil.
 window.PULSE_WIKI = {
   "etapes": [
     {
@@ -95,6 +95,14 @@ window.PULSE_WIKI = {
     {
       "titre": "Accueil",
       "href": "index.html"
+    },
+    {
+      "titre": "Prérequis",
+      "href": "prerequis.html"
+    },
+    {
+      "titre": "Tutoriels",
+      "href": "tutoriels/index.html"
     },
     {
       "titre": "Commandes",

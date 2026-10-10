@@ -21,8 +21,8 @@
 <h1 class="titre-heros">De l'idée à l'appli en ligne, une étape à la fois.</h1>
 <p class="chapo">Vous décrivez ce que vous voulez avec vos mots. Pulse guide Claude Code : il pose les bonnes questions, écrit le code, le fait relire, et vous laisse tester chaque étape. Aucune expérience en programmation n'est nécessaire.</p>
 <div class="heros-actions">
-<a class="cta cta-grand" data-onde href="commandes/index.html">Découvrir les commandes</a>
-<a class="bouton bouton-grand" href="#parcours">Voir le parcours</a>
+<a class="cta cta-grand" data-onde href="tutoriels/rapide.html">Commencer le tutoriel rapide</a>
+<a class="bouton bouton-grand" href="prerequis.html">Ce qu'il faut installer</a>
 </div>
 </div>
 
@@ -153,6 +153,42 @@
 </figure>
 
 <p class="centre"><a class="bouton bouton-grand" href="commandes/index.html">Voir les 33 commandes, étape par étape</a></p>
+</section>
+
+<section class="section conteneur">
+<header class="entete-section revele">
+<p class="pastille">Par où commencer</p>
+<h2>Trois portes d'entrée</h2>
+<p class="sous-titre">Installez d'abord les outils, puis choisissez votre rythme : un prototype en un après-midi, ou l'appli complète, prête pour de vrais clients.</p>
+</header>
+<ul class="grille-cartes">
+<li><a class="carte revele" href="prerequis.html"><span class="pastille">1. Installer</span><span class="carte-titre carte-titre-espace">Prérequis</span><span class="carte-texte">Git, Node.js, Claude Code, un compte GitHub, puis Pulse lui-même. Chaque étape se vérifie.</span></a></li>
+<li><a class="carte revele" href="tutoriels/rapide.html"><span class="pastille pastille-etape" data-couleur="1">2. Essayer</span><span class="carte-titre carte-titre-espace">Tutoriel rapide</span><span class="carte-texte">Un carnet de réservations en ligne en environ 2 heures, avec <code>/pulse:express</code>.</span></a></li>
+<li><a class="carte revele" href="tutoriels/production.html"><span class="pastille pastille-etape" data-couleur="4">3. Construire</span><span class="carte-titre carte-titre-espace">Tutoriel complet</span><span class="carte-texte">La même appli, fiable et protégée : relectures, tests, sécurité, Google et vitesse.</span></a></li>
+</ul>
+</section>
+
+<section class="section conteneur-lecture" id="installer">
+<header class="entete-section revele">
+<p class="pastille">Installer et mettre à jour</p>
+<h2>Pulse en trois commandes</h2>
+<p class="sous-titre">Une fois Claude Code installé (voir les <a href="prerequis.html">prérequis</a>), tapez ces commandes dans Claude Code, une à la fois.</p>
+</header>
+<div class="typographie">
+<h3>Installer</h3>
+<pre class="commande"><code>/plugin marketplace add jdelauney/pulse-vibe</code></pre>
+<pre class="commande"><code>/plugin install pulse@pulseia</code></pre>
+<p>Pour construire avec la pile Next.js prête à l'emploi (celle des tutoriels), ajoutez le pack. Il installe aussi Pulse :</p>
+<pre class="commande"><code>/plugin install pulse-next@pulseia</code></pre>
+<p>Fermez puis relancez Claude Code : les commandes <code>/pulse:…</code> apparaissent.</p>
+<h3>Mettre à jour</h3>
+<p>Au début de chaque semaine de travail, dans un terminal :</p>
+<pre class="commande"><code>claude plugin marketplace update pulseia
+claude plugin update pulse@pulseia
+claude plugin update pulse-next@pulseia</code></pre>
+<p>La dernière ligne sert seulement avec le pack Next.js. Fermez puis relancez Claude Code : la nouvelle version se charge au démarrage.</p>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour ne plus y penser, tapez <code>/plugin</code> dans Claude Code, ouvrez <strong>Marketplaces</strong>, choisissez <code>pulseia</code>, puis <strong>Enable auto-update</strong>. Le détail, écran par écran, est dans les <a href="prerequis.html">prérequis</a>.</p></aside>
+</div>
 </section>
 
 </main>
