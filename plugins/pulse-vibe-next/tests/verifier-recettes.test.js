@@ -11,8 +11,6 @@ const os = require("os");
 const { spawnSync } = require("child_process");
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
-// Recettes à baliser (tâches 11 à 16 du plan « Corrections 3 ») : chaque tâche retire la sienne.
-const EN_ATTENTE = ["mesure-reelle"];
 // Recettes qui créent une table : leur chaîne génère la migration.
 const AVEC_MIGRATION = ["connexion", "liste", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";
@@ -234,7 +232,7 @@ test("chaque recette du pack figure dans une chaîne vérifiée par la CI", () =
   const recettes = fs.readdirSync(DOSSIER_RECETTES, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
   const verifiees = new Set(CHAINES.flat());
   for (const nom of verifiees) assert.ok(recettes.includes(nom), `CHAINES : recette inconnue ${nom}`);
-  assert.deepStrictEqual(recettes.filter((n) => !verifiees.has(n)).sort(), [...EN_ATTENTE].sort());
+  assert.deepStrictEqual(recettes.filter((n) => !verifiees.has(n)), [], "recette sans chaîne : l'ajouter à CHAINES (verifier-recettes.js)");
 });
 
 test("balises supprimer, deplacer et sans-verification : lues dans l'ordre, chemins contrôlés", () => {

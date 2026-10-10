@@ -228,7 +228,8 @@ test("contexte security : en-têtes dans next.config.ts, sans nonce, preload dé
 test("recette mesure-reelle : en développement, la CSP autorise le script de diagnostic de Speed Insights", () => {
   const texte = texteRecette("mesure-reelle");
   assert.ok(texte.includes("| `next.config.ts` (modifié) | A |"), "ligne du tableau des fichiers");
-  assert.ok(texte.includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
+  // Le bloc suit la mise en forme de Biome (sur plusieurs lignes) : espaces et retours à la ligne ignorés.
+  assert.ok(texte.replace(/\s+/g, " ").includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
 });
 
 test("contexte security : sources de toutes les recettes qui touchent la CSP", () => {
