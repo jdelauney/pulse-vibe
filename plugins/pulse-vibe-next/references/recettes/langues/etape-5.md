@@ -2,6 +2,7 @@
 
 Chaque page déclare sa propre adresse et celles de ses traductions, elle-même comprise, plus `x-default` (la version française) : Google ignore des liens qui ne sont pas réciproques.
 
+<!-- fichier: src/lib/i18n/referencement.ts -->
 ```ts
 // src/lib/i18n/referencement.ts
 import { routing } from "@src/config/i18n";
@@ -27,6 +28,7 @@ export function versionsDeLangue(chemin: string): Record<string, string> {
 
 L'accueil du squelette devient la page d'exemple : ses métadonnées dépendent de la langue de l'adresse, donc `generateMetadata` remplace `metadata` et l'`alternates` de `metadonneesDePage()`. Chaque autre page publique suit le même modèle, avec son propre chemin (`"/tarifs"`).
 
+<!-- fichier: app/[locale]/page.tsx -->
 ```tsx
 // app/[locale]/page.tsx
 import { JsonLd } from "@src/components/shared/elements/json-ld";
@@ -75,6 +77,7 @@ export default function Accueil() {
 
 Dans `app/sitemap.ts`, chaque page donne une entrée par langue, et chaque entrée porte les adresses complètes de toutes les versions (construites avec `adresseDuSite()`).
 
+<!-- fichier: app/sitemap.ts -->
 ```ts
 // app/sitemap.ts
 import { type Langue, routing } from "@src/config/i18n";

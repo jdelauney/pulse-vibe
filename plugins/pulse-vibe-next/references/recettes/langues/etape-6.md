@@ -4,6 +4,7 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
 
 `src/lib/i18n/messages/fr.json` :
 
+<!-- fichier: src/lib/i18n/messages/fr.json -->
 ```json
 {
   "Accessibilite": {
@@ -25,6 +26,7 @@ Dictionnaires dans `src/lib/i18n/messages/` ; les mêmes clés dans les deux lan
 
 `src/lib/i18n/messages/en.json` :
 
+<!-- fichier: src/lib/i18n/messages/en.json -->
 ```json
 {
   "Accessibilite": {
