@@ -18,7 +18,7 @@ const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 // pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l'architecture ; mesure à la fin du plan « Corrections 4 » : 20 087 (plafond = mesure × 1,05, au 500 supérieur).
 const PLAFONDS_PACK = { implement: 21500, fix: 21500, spirc: 21500, "auto-fix": 21500 };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
-const PLAFONDS_AVEC_PACK = { implement: 63500, spirc: 51500 };
+const PLAFONDS_AVEC_PACK = { implement: 63500, spirc: 54500 }; // spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
 
 for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   test(`pack : contexte ${commande} ≤ ${plafond} caractères, fiche sans architecture`, () => {
@@ -66,7 +66,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Mesures à la fin du plan « Corrections 4 » : boucle implement 106 755, boucle spirc 98 093, tech 127 898.
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
-  "boucle implement de 4 tâches": { plafond: 112500, parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
+  "boucle implement de 4 tâches": { plafond: 119000, /* mesure 112 943 (pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
   "boucle spirc de 4 tâches": { plafond: 103000, parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
   "tech, pack choisi en cours de commande": { plafond: 134500, parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
@@ -88,10 +88,10 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   deploy: 66000, // mesure 62 576
   express: 51500, // mesure 48 733
   fix: 54500, // mesure 51 889
-  implement: 84000, // mesure 79 960
+  implement: 88500, // mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
   perf: 100500, // mesure 95 315
   plan: 106000, // mesure 100 752
-  rediger: 34500, // mesure 32 449
+  rediger: 36500, // mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
   refine: 91500, // mesure 86 865
   review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 60000, // mesure 57 057
@@ -99,9 +99,9 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   security: 88000, // mesure 83 589
   seo: 102000, // mesure 96 880
   spec: 50000, // mesure 47 426
-  spirc: 80500, // mesure 76 284
+  spirc: 85000, // mesure 80 657 (pulse 0.42 : rythme rapide, option -f, gestes)
   tech: 134500, // mesure 127 942
-  test: 48500, // mesure 46 124
+  test: 52000, // mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 90000, // mesure 85 248
 };
 

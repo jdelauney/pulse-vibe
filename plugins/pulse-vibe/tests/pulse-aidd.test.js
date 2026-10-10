@@ -297,8 +297,10 @@ function projetAvecPack({ declare, installe }) {
     fsP.chmodSync(script, 0o755);
   }
   const binBash = bin.split(path.sep).join("/");
+  // Les packs réellement installés sur la machine (dossiers du PATH qui contiennent un pulse-pile-*) sont retirés : seuls les faux packs comptent.
+  const sansPacks = 'P=""; IFS=:; for x in $PATH; do ls "$x"/pulse-pile-* >/dev/null 2>&1 || P="$P:$x"; done; unset IFS';
   const lancerIci = (...args) =>
-    spawnSync("bash", ["-c", `PATH="$(cd "${binBash}" && pwd):$PATH" exec bash "${OUTIL}" "$@"`, "pulse-aidd", ...args], { cwd: d, encoding: "utf8" });
+    spawnSync("bash", ["-c", `${sansPacks}; PATH="$(cd "${binBash}" && pwd)$P" exec bash "${OUTIL}" "$@"`, "pulse-aidd", ...args], { cwd: d, encoding: "utf8" });
   return { d, lancerIci, bin: binBash };
 }
 
