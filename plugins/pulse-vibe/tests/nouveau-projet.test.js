@@ -93,7 +93,7 @@ test("CLAUDE.md créé contient le bloc profil, à compléter par /pulse:init", 
   const r = lancer(NOUVEAU, ["Profil", "--oui", "--sans-git"], parent);
   assert.strictEqual(r.status, 0, r.stderr);
   const claude = lire(path.join(parent, "profil"), "CLAUDE.md");
-  assert.match(claude, /<!-- pulse_profil:debut -->\r?\n- \*\*Niveau\*\* : à préciser\r?\n- \*\*Explications\*\* : normales\r?\n<!-- pulse_profil:fin -->/);
+  assert.match(claude, /<!-- pulse_profil:debut -->\r?\n- \*\*Niveau\*\* : à préciser\r?\n- \*\*Explications\*\* : normales\r?\n- \*\*Rythme\*\* : complet\r?\n<!-- pulse_profil:fin -->/);
 });
 
 test("prochaines étapes : les commandes d'installation exactes du catalogue pulseia", () => {

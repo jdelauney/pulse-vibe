@@ -55,6 +55,7 @@ Les choix posés au démarrage peuvent se donner d'avance, avant l'US, et se reg
 | `/pulse:implement` | `-s` / `-d` | je code en coulisse (agent implementer) / je code devant vous, dans la conversation |
 | `/pulse:implement`, `/pulse:spirc` | `-w` | dans un dossier à part (worktree) |
 | `/pulse:spirc` | `-a` | autonome : sans les points de validation, constats corrigés seuls (Critique à Moyenne ; Basse confrontés au code), test manuel regroupé à la fin du plan |
+| `/pulse:spirc` | `-f` | rapide : autonome, tests essentiels (unitaires et d'intégration utiles, sans tests d'abord ni de bout en bout), une fiche de test complète de l'US à la fin ; sans `-f` ni `-t`, la question « rapide ou complet » se pose au début (sauf profil « Rythme : rapide », posé par `/pulse:express`) |
 | `/pulse:spirc` | `-x` | contrôle de sécurité à chaque tâche (agent security-auditor) |
 | `/pulse:implement`, `/pulse:spirc` | `-t` | tests d'abord : les tests de chaque tâche sont écrits avant le code (agent test-writer), puis lancés et triés (agent test-runner) |
 
