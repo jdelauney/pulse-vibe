@@ -391,7 +391,9 @@ describe("Variables Turnstile", () => {
 
   it("US-XXX-5 – clé de site sans clé secrète : le message nomme la clé manquante", async () => {
     await expect(
-      chargerEnvValide({ NEXT_PUBLIC_TURNSTILE_SITE_KEY: "cle-de-site-de-test" }),
+      chargerEnvValide({
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "cle-de-site-de-test",
+      }),
     ).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
   });
 
