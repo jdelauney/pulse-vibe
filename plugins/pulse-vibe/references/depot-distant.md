@@ -57,6 +57,7 @@ Appliqué par `/pulse:commit` juste après le commit d'une tâche, selon la lign
 - **Version parallèle** (ou **PR**, dans un plan plus ancien) : `git push -u origin feat/us-xxx-<nom>` (jamais `--force`). Si la demande de fusion de cette branche reste à créer (`gh pr view`, `glab mr view`) : appliquer l'étape **pr** section B (`pulse-aidd etape pr --sans-communes`) pour l'ouvrir en brouillon. Sinon, dire en une ligne que la demande est à jour, avec son adresse.
 - **Branche principale** : `git push`. La première fois, rappeler que, si le déploiement automatique est en place, la tâche est maintenant en ligne.
 - **Local** : tout reste local.
+- **Après l'envoi, passer directement à la suite.** La mise en ligne chez l'hébergeur se fait seule ; son suivi (état, journal, adresse) appartient à `/pulse:deploy` et `/pulse:status`. En rythme rapide (règles communes § 1), l'envoi se résume à une ligne : « Envoyé. »
 - Envoi refusé (le dépôt distant a des changements plus récents) : expliquer, proposer `git pull` puis un nouvel envoi ; jamais d'envoi forcé.
 
 ## 4. Fin du plan, en mode PR
