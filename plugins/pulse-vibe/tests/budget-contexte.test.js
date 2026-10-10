@@ -63,7 +63,8 @@ const PLAFONDS = {
 };
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
-const PLAFONDS_ETAPES = { review: 12500, commit: 26500 };
+// commit : mesuré 26588 (fin d'un dossier à part selon l'envoi, mode découverte sur la version principale) × 1,05, arrondi au 500 supérieur.
+const PLAFONDS_ETAPES = { review: 12500, commit: 28000 };
 
 // Une boucle de 4 tâches : ce que la conversation principale charge, une seule fois.
 const BOUCLES = {

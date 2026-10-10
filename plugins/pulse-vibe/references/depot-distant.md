@@ -37,9 +37,11 @@ Inscrire l'adresse dans « Adresses » de `CLAUDE.md` (« Dépôt distant : <adr
 **Quand** : au démarrage de `/pulse:implement` ou `/pulse:spirc` (dans la même ronde de questions que le mode et le worktree), ou au premier commit d'une tâche du plan, si **un dépôt distant existe** (`git remote -v`) et que la ligne « Envoi » de la vue d'ensemble du plan vaut « à choisir » (ou est absente). Une seule fois par plan : ensuite, la ligne fait foi. Sans dépôt distant : tout reste local, la question est sautée.
 
 Demander (AskUserQuestion) « Comment envoyer le travail de US-XXX sur le dépôt distant ? » :
-- « Une branche pour l'US et une demande de fusion (Recommandé) » : les commits vont sur `feat/us-xxx-<nom>`, chacun est envoyé et met à jour une demande de fusion (PR) en brouillon ; la version principale, et le site en ligne, changent seulement à la fusion, faite par la personne sur le site du dépôt. → ligne « **Envoi** : PR (branche `feat/us-xxx-<nom>`) » ;
-- « Directement sur la branche principale » : chaque tâche enregistrée est envoyée sur `<principale>` ; si le déploiement automatique est en place, **chaque tâche est mise en ligne**. → « **Envoi** : branche principale » ;
+- « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt (Recommandé) » : les commits vont sur `feat/us-xxx-<nom>`, chacun est envoyé et met à jour une demande de fusion (PR) en brouillon ; la version principale, et le site en ligne, changent seulement à la fusion, faite par la personne sur le site du dépôt. → ligne « **Envoi** : PR (branche `feat/us-xxx-<nom>`) » ;
+- « Directement sur la version principale » : chaque tâche enregistrée est envoyée sur `<principale>` ; si le déploiement automatique est en place, **chaque tâche est mise en ligne**. → « **Envoi** : branche principale » ;
 - « Ne rien envoyer pour l'instant » : tout reste local. → « **Envoi** : local ».
+
+En mode découverte (règles communes § 1), la question n'est pas posée : l'envoi prend « Directement sur la version principale », annoncé en une phrase. Chaque tâche y part après le test par la personne (en mode autonome, après le test groupé) ; la personne n'a aucune demande de fusion à accepter elle-même sur le site du dépôt.
 
 Écrire la ligne dans la vue d'ensemble du plan (elle fait partie du commit suivant). Pour changer de mode ensuite : `/pulse:refine US-XXX "changer l'envoi"`.
 
