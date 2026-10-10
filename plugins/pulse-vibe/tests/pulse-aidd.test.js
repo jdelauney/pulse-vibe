@@ -338,6 +338,17 @@ test("contexte : sans pack déclaré, aucune section de pack", () => {
   assert.doesNotMatch(r.stdout, /===== Pack de pile/);
 });
 
+test("contexte review : la conversation principale sans les consignes du pack, que le reviewer charge lui-même", () => {
+  const p = projetAvecPack({ declare: "essai", installe: "essai" });
+  for (const args of [["contexte", "review"], ["etape", "review"], ["etape", "review", "--sans-communes"]]) {
+    const r = p.lancerIci(...args);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stdout, /Consignes du pack pour review|===== Pack de pile/, args.join(" "));
+  }
+  assert.match(p.lancerIci("pile", "contexte", "review").stdout, /Consignes du pack pour review/, "le reviewer les obtient par le relais");
+  assert.match(p.lancerIci("contexte", "implement").stdout, /Consignes du pack pour implement/, "les autres commandes gardent le pack");
+});
+
 test("pile <sous-commande> : relaie vers le pack déclaré, arguments et code de sortie compris", () => {
   const p = projetAvecPack({ declare: "essai", installe: "essai" });
   const r = p.lancerIci("pile", "echo", "recette", "deux mots");

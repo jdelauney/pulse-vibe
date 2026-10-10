@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) 
 
 !`pulse-aidd contexte review`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
 
 Tâche demandée (facultative) : `$ARGUMENTS`
 

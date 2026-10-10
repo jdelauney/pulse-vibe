@@ -19,16 +19,6 @@ const PLAFONDS_PACK = { implement: 21500, fix: 21500, spirc: 21500, "auto-fix": 
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures finales : implement 57 423, spirc 48 284 (plafond = mesure × 1,05, au 500 supérieur).
 const PLAFONDS_AVEC_PACK = { implement: 60500, spirc: 51000 };
 
-// Un projet qui déclare le pack, avec le pack dans le PATH, comme dans Claude Code.
-function avecPack(commande) {
-  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-budget-"));
-  fs.mkdirSync(path.join(d, "docs"));
-  fs.writeFileSync(path.join(d, "docs", "technical.md"), "**Pack de pile Pulse** : next\n");
-  const bin = path.join(RACINE, "bin").split(path.sep).join("/");
-  const coeur = COEUR.split(path.sep).join("/");
-  return spawnSync("bash", ["-c", `PATH="$(cd "${bin}" && pwd):$PATH" exec bash "${coeur}" contexte "$1"`, "budget", commande], { cwd: d, encoding: "utf8" });
-}
-
 for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   test(`pack : contexte ${commande} ≤ ${plafond} caractères, fiche sans architecture`, () => {
     const r = lancer("contexte", commande);
@@ -39,18 +29,56 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   });
 }
 
+// Deux projets d'essai, avec le pack dans le PATH comme dans Claude Code : l'un déclare le pack, l'autre pas encore.
+const PROJET_PACK = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-budget-"));
+fs.mkdirSync(path.join(PROJET_PACK, "docs"));
+fs.writeFileSync(path.join(PROJET_PACK, "docs", "technical.md"), "**Pack de pile Pulse** : next\n");
+const PROJET_SANS_PACK = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-budget-sans-"));
+function coeur(projet, ...args) {
+  const bin = path.join(RACINE, "bin").split(path.sep).join("/");
+  const outil = COEUR.split(path.sep).join("/");
+  return spawnSync("bash", ["-c", `PATH="$(cd "${bin}" && pwd):$PATH" exec bash "${outil}" "$@"`, "budget", ...args], { cwd: projet, encoding: "utf8" });
+}
+const projetAvecPack = (...args) => coeur(PROJET_PACK, ...args);
+const projetSansPack = (...args) => coeur(PROJET_SANS_PACK, ...args);
+const taille = (lanceur, ...args) => {
+  const r = lanceur(...args);
+  assert.strictEqual(r.status, 0, `${args.join(" ")} : ${r.stderr}`);
+  return r.stdout.length;
+};
+
 for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
   test(`cœur et pack : contexte ${commande} ≤ ${plafond} caractères`, { skip: !fs.existsSync(COEUR) }, () => {
-    const r = avecPack(commande);
+    const r = projetAvecPack("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Pack de pile : Pulse Next.js ====="), "section du pack");
     assert.ok(r.stdout.length <= plafond, `${r.stdout.length} > ${plafond}`);
   });
 }
 
+// Ce que la conversation principale charge pour un parcours entier, avec le pack (N-P4, N-P5).
+// Mesures au commit 04697d5 : boucle implement 137 107 (dont 36 369 de consignes du pack pour review) ; boucle spirc 93 552 ;
+// tech, pack choisi en cours de commande : 182 249 en rechargeant `contexte tech`, 125 377 avec `pile contexte tech`.
+// Mesures après la tâche 10 du plan « Corrections 4 » : boucle implement 105 801, boucle spirc 97 402, tech 127 561.
+// Plafond = mesure × 1,05, au 500 supérieur.
+const PARCOURS_AVEC_PACK = {
+  "boucle implement de 4 tâches": { plafond: 111500, parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
+  "boucle spirc de 4 tâches": { plafond: 102500, parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
+  "tech, pack choisi en cours de commande": { plafond: 134000, parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
+};
+
+for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
+  test(`cœur et pack : ${nom} ≤ ${plafond} caractères`, { skip: !fs.existsSync(COEUR) }, () => {
+    const total = parties.reduce((somme, [lanceur, ...args]) => somme + taille(lanceur, ...args), 0);
+    assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
+
 if (process.argv.includes("--tableau")) {
   const lignes = ["| Mesure | Caractères | Plafond |", "|---|---|---|"];
   for (const [c, p] of Object.entries(PLAFONDS_PACK)) lignes.push(`| pulse-pile-next contexte ${c} | ${lancer("contexte", c).stdout.length} | ${p} |`);
-  for (const [c, p] of Object.entries(PLAFONDS_AVEC_PACK)) lignes.push(`| contexte ${c} avec pack | ${avecPack(c).stdout.length} | ${p} |`);
+  for (const [c, p] of Object.entries(PLAFONDS_AVEC_PACK)) lignes.push(`| contexte ${c} avec pack | ${projetAvecPack("contexte", c).stdout.length} | ${p} |`);
+  for (const [n, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK))
+    lignes.push(`| ${n} avec pack | ${parties.reduce((s, [l, ...a]) => s + l(...a).stdout.length, 0)} | ${plafond} |`);
   console.log(lignes.join("\n"));
 }
