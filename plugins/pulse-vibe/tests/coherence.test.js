@@ -660,13 +660,21 @@ test("libellés des questions sans jargon : la réponse recommandée et ses alte
 test("écrans des commandes sans jargon", () => {
   const unix = (f) => f.split(path.sep).join("/");
   const problemes = [];
-  for (const fichier of SKILLS_PAR_PLUGIN) {
-    for (const bloc of lire(fichier).matchAll(/^```(?:text)?\n([\s\S]*?)^```/gm)) {
-      for (const ligne of bloc[1].split("\n")) {
-        if (/\/pulse:[a-z-]+ →|→ \/pulse:/.test(ligne)) continue; // chemin de commandes
-        const j = jargon(sansChemins(ligne));
-        if (j) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${j[0]} dans « ${ligne.trim().slice(0, 60)} »`);
+  // Écrans des commandes et des références (bloc de fin de commande, stratégie de tests…).
+  const references = PLUGINS.flatMap((p) => fichiers(path.join(p, "references"), ".md"));
+  for (const fichier of [...SKILLS_PAR_PLUGIN, ...references]) {
+    // Clôtures lues dans l'ordre : seul le contenu d'un bloc ouvert par ``` ou ```text est un écran (un bloc de code est sauté).
+    let bloc = null;
+    for (const ligne of lire(fichier).split("\n")) {
+      const cloture = /^\s*```\s*(\S*)/.exec(ligne);
+      if (cloture) {
+        bloc = bloc === null ? (cloture[1] === "" || cloture[1] === "text" ? "ecran" : "code") : null;
+        continue;
       }
+      if (bloc !== "ecran") continue;
+      if (/\/pulse:[a-z-]+ →|→ \/pulse:/.test(ligne)) continue; // chemin de commandes
+      const j = jargon(sansChemins(ligne));
+      if (j) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${j[0]} dans « ${ligne.trim().slice(0, 60)} »`);
     }
   }
   assert.deepStrictEqual(problemes, []);

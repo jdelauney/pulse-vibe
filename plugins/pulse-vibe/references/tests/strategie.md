@@ -14,7 +14,7 @@ Un test sert à **prouver qu'un comportement attendu par le métier fonctionne**
       /            \   Unitaires (beaucoup)
      /              \  règles métier, calculs, transformations
     /----------------\
-    Contrôles statiques (toujours) : formatage, lint, types
+    Contrôles statiques (toujours) : formatage, règles d'écriture, types
 ```
 
 - **Beaucoup de tests unitaires** : rapides, précis, ils disent exactement quelle règle est cassée.
