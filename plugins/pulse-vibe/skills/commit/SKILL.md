@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin)
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *)
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -36,9 +36,14 @@ Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explica
 
 Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient un secret. S'il se déclenche, expliquer simplement pourquoi c'est une protection, corriger, puis recommencer.
 
-### 2. Vérifier que la tâche a été relue
+### 2. Vérifier que la tâche a été relue et testée
 
-Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`). Pour chacune, s'il manque le rapport `<Tâche>-*.md` dans le dossier de relecture de son plan (`aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/`), demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
+Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) : sur une branche `feat/us-xxx-<nom>`, seulement celles du plan de cette US. Pour chacune, lancer `pulse-aidd revue <Tn>` et suivre sa ligne `reprendre` :
+
+- `commit` : la tâche est relue, vérifiée et testée par la personne (ou son test est reporté au test groupé du mode autonome) : continuer.
+- `examen` (aucun rapport) : demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (Recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review <Tn>`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
+- `test` : la relecture est faite, le test par la personne manque encore. Enregistrer seulement une tâche testée : s'arrêter, le dire en une phrase (« Votre test de T3 manque encore : c'est lui qui confirme que la tâche fonctionne. ») et proposer `/pulse:review <Tn>`, qui reprend directement au test.
+- `correction` ou `aide` : le dernier rapport n'est pas validé (constats à corriger, ou test non concluant). S'arrêter, le dire en une phrase, et proposer `/pulse:review <Tn>` (`/pulse:get-help` pour `aide`).
 
 ### 3. Trier les modifications par sujet
 

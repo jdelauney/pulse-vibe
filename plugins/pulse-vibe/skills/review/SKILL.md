@@ -2,7 +2,7 @@
 description: Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections
 argument-hint: "[T3 | <US-XXX> | tout]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(pulse-aidd revue *)
 ---
 
 # /pulse:review – Relire, tester, corriger
@@ -34,6 +34,8 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 - vide : la tâche `[~]` ; s'il y en a zéro ou plusieurs, demander.
 
 Les documents de référence sont ceux du § 1 de la référence « Examiner une tâche ».
+
+Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test` → passer directement au § 5 (l'examen est fait, il manque le test par la personne) ; `commit` → la tâche est prête : le dire et proposer `/pulse:commit` ; `correction` → reprendre au § 6 avec les constats du rapport ; `aide` → la ligne « Blocage » du rapport : proposer `/pulse:get-help` ; `examen` → tout le déroulé.
 
 ### 2. Lancer l'examen
 

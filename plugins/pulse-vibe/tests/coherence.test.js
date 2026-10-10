@@ -902,3 +902,20 @@ test("les textes lus par la personne nomment les plugins pulse et pulse-next (le
   }
   assert.deepStrictEqual(trouves, []);
 });
+
+test("reprise après une interruption : commit, implement, spirc et review suivent pulse-aidd revue ; commit refuse une tâche sans test", () => {
+  const commit = skillTexte("commit");
+  const verification = commit.slice(commit.indexOf("### 2."), commit.indexOf("### 3."));
+  assert.match(verification, /`pulse-aidd revue <Tn>`/);
+  assert.match(verification, /- `test` : [^\n]*Enregistrer seulement une tâche testée/);
+  assert.match(verification, /- `correction` ou `aide` : [^\n]*S'arrêter/);
+  assert.doesNotMatch(verification, /`test`[^\n]*Enregistrer quand même/, "l'enregistrement sans test n'est pas proposé");
+  const implement = skillTexte("implement");
+  assert.match(implement, /\*\*Reprendre une tâche en cours\*\* : [^\n]*`pulse-aidd revue <Tn>`/);
+  assert.match(implement, /- `test` : au test manuel/);
+  assert.doesNotMatch(implement, /reprend à la correction ou au commit/);
+  const spirc = skillTexte("spirc");
+  assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
+  assert.doesNotMatch(spirc, /reprendre à l'examen\)/);
+  assert.match(skillTexte("review"), /`pulse-aidd revue <Tn>` : `test` → passer directement au § 5/);
+});

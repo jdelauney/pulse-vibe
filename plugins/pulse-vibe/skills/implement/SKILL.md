@@ -2,7 +2,7 @@
 description: Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans une copie à part du projet ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante)
 argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte pr) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd etape review --sans-communes) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Bash(git fetch origin)
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte pr) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd etape review --sans-communes) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Bash(git fetch origin) Bash(pulse-aidd revue *)
 ---
 
 # /pulse:implement – Réaliser une tâche
@@ -55,6 +55,7 @@ Annoncer le choix en une ligne (« Je code en coulisse · tests d'abord · dans 
 ### 1. Choisir la ou les tâches
 
 - **Tâche donnée** (`T3`) : celle-ci ; elle doit appartenir au plan, sinon indiquer le plan qui la contient et demander.
+  Si elle est déjà `[~]`, lancer `pulse-aidd revue <Tn>` : avec `examen`, `test`, `correction` ou `aide`, proposer `/pulse:review <Tn>` ; avec `commit`, proposer `/pulse:commit`.
 - **Sans tâche** : toutes les tâches `[~]` puis `[ ]` du plan, dans l'ordre du plan. Annoncer la liste en une ligne (« Je vais réaliser T3, T4 et T5, l'une après l'autre : chacune sera relue, corrigée et enregistrée avant de passer à la suivante. »), puis appliquer la boucle du § 6.
 
 Si toutes les tâches du plan sont `[x]` : féliciter la personne et proposer `/pulse:deploy`.
@@ -116,6 +117,13 @@ Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `
 
 **Avant la première tâche**, y compris à une reprise (`/clear`, résumé automatique) quand ces étapes ne figurent plus dans la conversation, charger une seule fois les deux étapes qui servent à chaque tâche : `pulse-aidd etape review --sans-communes` et `pulse-aidd etape commit --sans-communes`. Si elles ne figurent plus dans la conversation (après un résumé automatique), les relancer.
 
+**Reprendre une tâche en cours** : pour une tâche `[~]` (reprise après `/clear`, une pause ou une interruption), lancer `pulse-aidd revue <Tn>` et reprendre à l'étape que donne sa ligne `reprendre` :
+- `examen` (aucun rapport) : à l'étape 2 (relire et vérifier), sur le code déjà écrit ;
+- `correction` : à l'étape 3 (corriger), avec les constats du rapport ;
+- `test` : au test manuel de l'étape review (« Le test manuel par la personne »), avec les étapes du rapport : la personne teste, même après une interruption ;
+- `commit` : à l'étape 4 (commiter) ;
+- `aide` : s'arrêter, expliquer simplement le blocage et proposer `/pulse:get-help`.
+
 Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
@@ -124,7 +132,7 @@ Pour chaque tâche, dans l'ordre du plan :
 4. **Commiter** : appliquer la section « Déroulé » de l'étape **commit** (chargée avant la première tâche) à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le rapport de revue existe : la relecture est faite, passer directement au commit.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 
-S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` qui a déjà un rapport reprend à la correction ou au commit).
+S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` reprend là où l'indique `pulse-aidd revue <Tn>`, test de la personne compris).
 
 À la fin, présenter un récapitulatif :
 
