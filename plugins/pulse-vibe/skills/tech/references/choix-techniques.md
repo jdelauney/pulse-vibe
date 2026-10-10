@@ -75,7 +75,7 @@ Pour chaque option, évaluer :
 
 ## Ce que `/pulse:tech` écrit dans `docs/technical.md`
 
-Suivre le modèle `pulse-aidd modele technical.md`, avec les sections suivantes (noms exacts) :
+Suivre le modèle `pulse-aidd modele tech/technical.md`, avec les sections suivantes (noms exacts) :
 
 - « Les besoins qui guident le choix » : les réponses aux questions, en phrases courtes.
 - « Les options comparées » : les 2-3 options, coût, points forts, risques, sources vérifiées.

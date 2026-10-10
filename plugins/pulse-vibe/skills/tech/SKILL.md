@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) B
 
 !`pulse-aidd contexte tech`
 
-Appliquer les « Règles communes Pulse », les « Règles de la mémoire projet » et la référence `references/choix-techniques.md` ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference choix-techniques.md` si la référence manque).
+Appliquer les « Règles communes Pulse », les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference tech/choix-techniques.md` si la référence manque).
 
 Contrainte ou préférence exprimée (facultative) : `$ARGUMENTS`
 
@@ -57,7 +57,7 @@ Après la dernière ronde, **signaler les contradictions** et faire trancher : p
 
 #### 3. Construire 2 ou 3 options
 
-Suivre `references/choix-techniques.md` pour construire **2 ou 3 options réellement différentes** (approche, nature du stockage, hébergement : trois approches distinctes plutôt que trois variantes du même outil), chacune déduite des besoins seulement, plutôt que d'une habitude ou d'une technologie par défaut. Inclure systématiquement l'option **la plus simple** qui répond au besoin. Pour chaque option : pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), coût mensuel estimé (ordre de grandeur, incertitude signalée), localisation des données si elle compte, points forts, **1 à 3 risques honnêtes** (chaque option en a).
+Suivre `skills/tech/references/choix-techniques.md` pour construire **2 ou 3 options réellement différentes** (approche, nature du stockage, hébergement : trois approches distinctes plutôt que trois variantes du même outil), chacune déduite des besoins seulement, plutôt que d'une habitude ou d'une technologie par défaut. Inclure systématiquement l'option **la plus simple** qui répond au besoin. Pour chaque option : pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), coût mensuel estimé (ordre de grandeur, incertitude signalée), localisation des données si elle compte, points forts, **1 à 3 risques honnêtes** (chaque option en a).
 
 - **Packs de pile** : lancer `pulse-aidd piles`. Un pack installé dont la pile couvre les besoins devient une option à part entière, vérifiée comme les autres à l'étape 4 : « Pile Pulse <nom> : code de départ vérifié, recettes prêtes et pièges connus déjà traités ; c'est l'option qui demande le moins d'essais pour obtenir un code juste. » Quand elle convient au besoin, la recommander ; les autres options restent présentées et la personne choisit. Aucun pack installé et besoin d'une application web avec comptes et données partagées : ajouter une ligne pour dire que le plugin `pulse-next` (pile Next.js prête à l'emploi) existe, installable avec `/plugin install pulse-next@pulseia`.
 - **Services externes** : 1 ou 2 au maximum pour le MVP ; paiement d'abord en **mode test** ; le mode réel est une décision de la personne, au moment de la mise en ligne.

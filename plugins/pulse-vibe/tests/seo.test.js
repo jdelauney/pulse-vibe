@@ -1,4 +1,4 @@
-// Tests de l'audit de référencement (scripts/seo.js) sur un serveur local de fixtures.
+// Tests de l'audit de référencement (skills/seo/scripts/seo.js) sur un serveur local de fixtures.
 // Lancer : node --test plugins/pulse-vibe/tests/seo.test.js
 "use strict";
 
@@ -9,7 +9,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { ecouter } = require("../scripts/port-libre");
 
-const SEO = path.join(__dirname, "..", "scripts", "seo.js");
+const SEO = path.join(__dirname, "..", "skills", "seo", "scripts", "seo.js");
 
 // Lance l'audit sans bloquer la boucle d'événements (le serveur de test doit pouvoir répondre).
 function lancer(args) {

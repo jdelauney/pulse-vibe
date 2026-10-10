@@ -1,4 +1,4 @@
-// Tests de pulse-aidd secrets (scripts/secrets.js) : aucune valeur ne sort jamais.
+// Tests de pulse-aidd secrets (skills/secrets/scripts/secrets.js) : aucune valeur ne sort jamais.
 // Lancer : node --test plugins/pulse-vibe/tests/secrets.test.js (nécessite git et bash dans le PATH)
 //
 // Les valeurs factices sont construites à l'exécution (concaténation, hasard) : ainsi ce fichier
@@ -13,7 +13,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
-const SCRIPT = path.join(__dirname, "..", "scripts", "secrets.js");
+const SCRIPT = path.join(__dirname, "..", "skills", "secrets", "scripts", "secrets.js");
 const hasard = (n = 12) => crypto.randomBytes(n).toString("hex");
 
 // Valeurs factices, différentes à chaque lancement.

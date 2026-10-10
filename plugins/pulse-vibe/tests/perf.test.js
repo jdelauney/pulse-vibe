@@ -21,7 +21,7 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { ecouter } = require("../scripts/port-libre");
 
-const PERF = path.join(__dirname, "..", "scripts", "perf.js");
+const PERF = path.join(__dirname, "..", "skills", "perf", "scripts", "perf.js");
 const FIX = path.join(__dirname, "fixtures", "perf");
 const perf = require(PERF);
 const fixture = (nom) => JSON.parse(fs.readFileSync(path.join(FIX, nom), "utf8"));
@@ -241,7 +241,7 @@ test("lireLimite et lireBudget : unités françaises, sens du score", () => {
 });
 
 test("le modèle docs/performance.md se lit tel quel : pages suivies et budget", () => {
-  const modele = fs.readFileSync(path.join(__dirname, "..", "templates", "performance.md"), "utf8");
+  const modele = fs.readFileSync(path.join(__dirname, "..", "skills", "perf", "assets", "performance.md"), "utf8");
   assert.deepStrictEqual(perf.cheminsSuivis(modele), ["/"]);
   assert.deepStrictEqual(perf.lireBudget(modele).map((r) => r.cle), ["lcp", "cls", "tbt", "score"]);
 });

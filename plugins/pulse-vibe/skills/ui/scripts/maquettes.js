@@ -3,7 +3,7 @@
 //
 //   pulse-aidd maquettes verifier <fichier.html|dossier>
 //
-// Chaque constat renvoie à une entrée de references/design/anti-patterns.md ou à une règle de regles-ui.md.
+// Chaque constat renvoie à une entrée de ui/anti-patterns.md ou à une règle de regles-ui.md.
 // La liste des polices « réflexes » est lue dans regles-ui.md (seule source).
 // Un dossier est parcouru avec ses sous-dossiers ; comparer.html et alternatives/ sont ignorés.
 // Codes de sortie : 0 aucun 🔴 ; 1 au moins un 🔴 ; 2 usage ou chemin introuvable.
@@ -12,7 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const REGLES_UI = path.join(__dirname, "..", "references", "design", "regles-ui.md");
+const REGLES_UI = path.join(__dirname, "..", "references", "regles-ui.md");
 
 const CONSTATS = [
   { id: "degrade", gravite: "🔴", nom: "Texte en dégradé de couleur", source: "anti-patterns.md", cle: "Texte en dégradé de couleur" },

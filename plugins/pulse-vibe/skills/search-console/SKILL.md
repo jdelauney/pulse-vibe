@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pul
 
 !`pulse-aidd contexte search-console`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus (« Search Console : relier, lire, suivre », modèle du rapport, et les consignes du pack de pile s'il y en a un). Si ce contexte est absent, lancer `pulse-aidd contexte search-console`, puis `pulse-aidd reference search-console.md`, et lire leur sortie.
+Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus (« Search Console : relier, lire, suivre », modèle du rapport, et les consignes du pack de pile s'il y en a un). Si ce contexte est absent, lancer `pulse-aidd contexte search-console`, puis `pulse-aidd reference search-console/search-console.md`, et lire leur sortie.
 
 Action demandée (facultative) : `$ARGUMENTS`
 

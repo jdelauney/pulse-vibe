@@ -15,9 +15,9 @@ const crypto = require("crypto");
 const { spawn } = require("child_process");
 const { ecouter } = require("../scripts/port-libre");
 
-const SCRIPT = path.join(__dirname, "..", "scripts", "search-console.js");
+const SCRIPT = path.join(__dirname, "..", "skills", "search-console", "scripts", "search-console.js");
 const FIXTURES = path.join(__dirname, "fixtures", "search-console");
-const MODELE = path.join(__dirname, "..", "templates", "rapport-search-console.md");
+const MODELE = path.join(__dirname, "..", "skills", "search-console", "assets", "rapport-search-console.md");
 const sc = require(SCRIPT);
 
 // Valeurs factices, au format des vrais jetons Google (pour vérifier qu'aucune sortie ne les montre).
@@ -515,7 +515,7 @@ test("export .zip : lu sans dépendance, puis rapport Markdown par la ligne de c
   assert.match(r.stdout, /Filtres de l'export : Type de recherche = Web/);
 });
 
-test("le rapport suit les sections du modèle templates/rapport-search-console.md", () => {
+test("le rapport suit les sections du modèle skills/search-console/assets/rapport-search-console.md", () => {
   const titres = (t) => [...t.matchAll(/^##? .*$/gm)].map((m) => m[0].replace(/ – .*$/, ""));
   const d = { ...sc.lireExport(lireFixture("export-fr")), date: "2026-10-07", site: "https://mon-site.exemple.fr/", sitemap: null, sansImpression: [], inspection: null };
   d.opportunites = sc.opportunites(d.requetes);

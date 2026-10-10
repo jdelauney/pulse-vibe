@@ -35,16 +35,16 @@ Dans les deux modes, si `docs/technical.md` déclare un pack de pile (ligne « *
 
 ## Méthode
 
-1. Charger `pulse-aidd reference design/registres.md`, `design/regles-ui.md`, `design/anti-patterns.md`, `design/motifs.md`, `design/heuristiques.md` et `pulse-aidd modele revue-ui.md`.
+1. Charger `pulse-aidd reference ui/registres.md`, `ui/regles-ui.md`, `ui/anti-patterns.md`, `ui/motifs.md`, `ui/heuristiques.md` et `pulse-aidd modele ui/revue-ui.md`.
 2. Lire `docs/design.md` ; puis la maquette retenue (mode code) ou la spec de l'US (mode maquette), s'ils existent.
 3. Lire chaque fichier de la cible. En mode maquette, lancer aussi `pulse-aidd maquettes verifier <cible>` et reporter chacun de ses constats dans sa rubrique (Anti-pattern, Accessibilité ou Fidélité au design), à sa ligne.
-4. Noter l'**Évaluation d'ensemble** : les 5 dimensions de `design/heuristiques.md`, chacune sur 10, avec une phrase qui cite ce qui se voit ; puis le total sur 50.
+4. Noter l'**Évaluation d'ensemble** : les 5 dimensions de `ui/heuristiques.md`, chacune sur 10, avec une phrase qui cite ce qui se voit ; puis le total sur 50.
 5. Passer les 7 rubriques, dans cet ordre :
    - **Fidélité au design** : fidélité à `docs/design.md` et, en mode code, à la maquette (couleurs, polices, espacements, composants, registre) ; en mode maquette, chaque écran et chaque état demandés par la spec sont montrés, et les couleurs, polices et espacements passent par les variables `:root` du fichier, aux valeurs de `docs/design.md`. En mode code, une valeur de couleur, de police ou d'espacement écrite en dur dans un composant, au lieu de la valeur du fichier du thème (section « Dans le code » de `docs/design.md`), est un constat 🟠.
-   - **Hiérarchie** : poids visuels, action principale et ordre de lecture (`design/regles-ui.md` § 5).
-   - **Usage** : les 10 heuristiques de `design/heuristiques.md` ; citer le numéro et le nom de l'heuristique (« H3 Contrôle et liberté »).
-   - **Anti-pattern** : parcourir chaque entrée de la liste de `design/anti-patterns.md`, puis les motifs de `design/motifs.md` : un écart à un motif se signale avec le motif attendu.
-   - **État manquant** : comparer avec le tableau « Composants et états obligatoires » de `design/regles-ui.md`.
+   - **Hiérarchie** : poids visuels, action principale et ordre de lecture (`ui/regles-ui.md` § 5).
+   - **Usage** : les 10 heuristiques de `ui/heuristiques.md` ; citer le numéro et le nom de l'heuristique (« H3 Contrôle et liberté »).
+   - **Anti-pattern** : parcourir chaque entrée de la liste de `ui/anti-patterns.md`, puis les motifs de `ui/motifs.md` : un écart à un motif se signale avec le motif attendu.
+   - **État manquant** : comparer avec le tableau « Composants et états obligatoires » de `ui/regles-ui.md`.
    - **Accessibilité** : contraste (mesuré avec `pulse-aidd contraste <couleur> <fond>` quand les couleurs sont lisibles dans le code), focus visible, étiquettes des champs, noms accessibles des boutons et icônes, cibles tactiles.
    - **Textes** : textes d'interface (clarté, ton, messages d'erreur, boutons). Si `docs/textes/*.md` existent, lancer `pulse-aidd textes verifier` sur chacun et reporter les erreurs restantes.
 6. Classer chaque constat : 🔴 bloquant, 🟠 important, 🟢 finition.

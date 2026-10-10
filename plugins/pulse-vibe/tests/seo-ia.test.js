@@ -11,9 +11,9 @@ const path = require("path");
 const { spawn } = require("child_process");
 const { ecouter } = require("../scripts/port-libre");
 
-const SEO = path.join(__dirname, "..", "scripts", "seo.js");
-const { genererRobots } = require(path.join(__dirname, "..", "scripts", "robots.js"));
-const LISTE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "references", "seo", "robots-ia.json"), "utf8")).robots;
+const SEO = path.join(__dirname, "..", "skills", "seo", "scripts", "seo.js");
+const { genererRobots } = require(path.join(__dirname, "..", "skills", "seo", "scripts", "robots.js"));
+const LISTE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "skills", "seo", "references", "robots-ia.json"), "utf8")).robots;
 
 function lancer(args, cwd) {
   return new Promise((resoudre) => {

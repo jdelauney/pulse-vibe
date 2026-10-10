@@ -1,4 +1,4 @@
-// Tests de l'extraction d'identité sans invention (scripts/identite.js).
+// Tests de l'extraction d'identité sans invention (skills/ui/scripts/identite.js).
 // Lancer : node --test plugins/pulse-vibe/tests/identite.test.js
 "use strict";
 
@@ -9,7 +9,7 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const SCRIPT = path.join(__dirname, "..", "scripts", "identite.js");
+const SCRIPT = path.join(__dirname, "..", "skills", "ui", "scripts", "identite.js");
 
 const projet = (fichiers) => {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-identite-"));

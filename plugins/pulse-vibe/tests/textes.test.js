@@ -1,4 +1,4 @@
-// Tests du contrôle des tics d'écriture IA (scripts/textes.js).
+// Tests du contrôle des tics d'écriture IA (skills/rediger/scripts/textes.js).
 // Lancer : node --test plugins/pulse-vibe/tests/textes.test.js
 "use strict";
 
@@ -9,8 +9,8 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const SCRIPT = path.join(__dirname, "..", "scripts", "textes.js");
-const DETECTEUR = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "references", "redaction", "detecteur-tics-llm.json"), "utf8"));
+const SCRIPT = path.join(__dirname, "..", "skills", "rediger", "scripts", "textes.js");
+const DETECTEUR = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "skills", "rediger", "references", "detecteur-tics-llm.json"), "utf8"));
 const { verifier, reglesSansDetecteur } = require(SCRIPT);
 
 const regles = (texte) => verifier(texte).constats.map((c) => c.regle);

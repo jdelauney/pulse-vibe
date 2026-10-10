@@ -9,7 +9,7 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const COMPARER = path.join(__dirname, "..", "scripts", "comparer.js");
+const COMPARER = path.join(__dirname, "..", "skills", "ui", "scripts", "comparer.js");
 
 function dossier(variantes) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-comparer-"));
