@@ -43,7 +43,7 @@ Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s
    | `aidd_docs/memory/internal/.gitkeep`, `aidd_docs/memory/external/.gitkeep` | fichiers vides |
 
 3. **Remplir** les fichiers créés à partir de ce qui a été lu, selon les règles de la mémoire : vision et périmètre depuis le brief et le PRD, pile et conventions depuis `docs/technical.md`, la conception technique des plans et le code, mots du métier depuis le brief. Écrire uniquement ce que disent les fichiers et omettre le reste (y compris les `{{…}}`) ; signaler ces manques à la fin.
-4. **Montrer** le contenu proposé, fichier par fichier, en version courte. Demander (AskUserQuestion) : « Écrire tel quel (recommandé) » / « Modifier quelque chose ».
+4. **Montrer** le contenu proposé, fichier par fichier, en version courte. Demander (AskUserQuestion) : « Écrire tel quel (Recommandé) » / « Modifier quelque chose ».
 5. **Brancher la mémoire** : voir « Brancher et synchroniser » ci-dessous.
 
 ## Action `actualiser`
@@ -68,7 +68,7 @@ Modifier seulement après l'accord de la personne.
 2. **Écarter** ce qui sort du rôle de la mémoire : une préférence passagère, une note de travail, une chose que le code montre déjà, un secret. L'expliquer en une phrase.
 3. **Choisir la destination** avec le tableau « Où va chaque information » des règles. Pour une décision, vérifier les **3 conditions** d'un fichier de décision ; sinon, une ligne datée suffit.
 4. **Vérifier les doublons et contradictions** : si la mémoire dit déjà la même chose, la garder telle quelle ; si elle dit le contraire, proposer de **remplacer** l'ancienne ligne.
-5. **Montrer** la ligne exacte (ou le fichier de décision) et sa destination. Demander : « Ajouter (recommandé) » / « Modifier » / « Abandonner ».
+5. **Montrer** la ligne exacte (ou le fichier de décision) et sa destination. Demander : « Ajouter (Recommandé) » / « Modifier » / « Abandonner ».
 6. Écrire, puis « Brancher et synchroniser ».
 
 ## Action `compacter`

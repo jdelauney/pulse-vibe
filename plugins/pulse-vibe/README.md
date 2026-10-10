@@ -44,13 +44,7 @@ Tout est en français. Chaque commande pose ses questions (une à la fois, ou en
 | `/pulse:get-help ["…"]` | Quand Pulse bloque : prépare une demande d'aide claire et sans secret (message court et fiche complète) et indique où la poser | `docs/aide/demande-<date>-<sujet>.md` |
 | `/pulse:memory` | Créer, actualiser, enrichir ou compacter la mémoire du projet (`creer`, `actualiser`, `retenir "…"`, `compacter`) | `aidd_docs/memory/` |
 
-```
-/pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite, facultatif) → /pulse:us (groupes et US)
-   (pour démarrer vite : /pulse:init → /pulse:express, qui fait tout cela en une conversation)
-   → pour chaque US : /pulse:spec <US-XXX> → /pulse:plan <US-XXX>
-   → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → /pulse:commit   (ou : /pulse:spirc <US-XXX>)
-   → /pulse:deploy
-```
+Le chemin des commandes, et celles qui s'utilisent à tout moment : [`references/cycle.md`](references/cycle.md).
 
 ### Raccourcis pour habitués
 

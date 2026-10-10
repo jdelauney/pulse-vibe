@@ -1110,3 +1110,16 @@ test("vocabulaire : branche = version parallèle, worktree = dossier à part, é
   const sources = [...TEXTES, { fichier: path.join("plugins", "pulse-vibe", "scripts", "guide.js"), texte: lire(RACINE, "scripts", "guide.js") }];
   assert.deepStrictEqual(sources.filter(({ texte }) => /copie (de travail|à part)|copie séparée/i.test(texte)).map(({ fichier }) => unix(fichier)), []);
 });
+
+test("forme : « (Recommandé) » avec majuscule, chemin des commandes dans cycle.md seulement, en-tête de spirc sans parenthèses imbriquées", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /\(recommandé\) »/.test(texte)).map(({ fichier }) => unix(fichier)), []);
+  const chemins = TEXTES.filter(({ texte }) => /\/pulse:prd → \/pulse:tech/.test(texte)).map(({ fichier }) => unix(fichier));
+  assert.deepStrictEqual(chemins, ["plugins/pulse-vibe/references/cycle.md"]);
+  const cycle = lire(RACINE, "references", "cycle.md");
+  assert.ok(cycle.includes("(/pulse:ui maquettes <US-XXX>)") && cycle.includes("/pulse:spirc <US-XXX>"), "cycle complet");
+  assert.match(cycle, /`\/pulse:status` \(où en suis-je \?\)/);
+  assert.doesNotMatch(skillTexte("init"), /\/pulse:init \(où j'en suis\)/);
+  const entete = skillTexte("spirc").split("\n").find((l) => l.startsWith("Appliquer les « Règles communes Pulse »"));
+  assert.doesNotMatch(entete, /\([^()]*\([^()]*\)[^()]*\)|\) \(/, "parenthèses imbriquées ou accolées");
+});
