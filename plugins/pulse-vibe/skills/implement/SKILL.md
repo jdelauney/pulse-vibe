@@ -55,7 +55,7 @@ Annoncer le choix en une ligne (« Je code en coulisse · tests d'abord · dans 
 ### 1. Choisir la ou les tâches
 
 - **Tâche donnée** (`T3`) : celle-ci ; elle doit appartenir au plan, sinon indiquer le plan qui la contient et demander.
-  Si elle est déjà `[~]`, lancer `pulse-aidd revue <Tn>` : avec `examen`, `test`, `correction` ou `aide`, proposer `/pulse:review <Tn>` ; avec `commit`, proposer `/pulse:commit`.
+  Si elle est déjà `[~]`, lancer `pulse-aidd revue <Tn>` : avec `examen`, `test`, `correction` ou `aide`, proposer `/pulse:review <Tn>` ; avec `commit`, proposer `/pulse:commit` ; avec `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
 - **Sans tâche** : toutes les tâches `[~]` puis `[ ]` du plan, dans l'ordre du plan. Annoncer la liste en une ligne (« Je vais réaliser T3, T4 et T5, l'une après l'autre : chacune sera relue, corrigée et enregistrée avant de passer à la suivante. »), puis appliquer la boucle du § 6.
 
 Si toutes les tâches du plan sont `[x]` : féliciter la personne et proposer `/pulse:deploy`.
@@ -124,13 +124,14 @@ Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `
 - `correction` : à l'étape 3 (corriger), avec les constats du rapport ;
 - `test` : au test manuel de l'étape review (« Le test manuel par la personne »), avec les étapes du rapport : la personne teste, même après une interruption ;
 - `commit` : à l'étape 4 (commiter) ;
-- `aide` : s'arrêter, expliquer simplement le blocage et proposer `/pulse:get-help`.
+- `aide` : s'arrêter, expliquer simplement le blocage et proposer `/pulse:get-help` ;
+- `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
 
 Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
 2. **Relire et vérifier** : appliquer la section « Déroulé » de l'étape **review** (chargée avant la première tâche) à l'identique pour cette tâche, **hors** son bloc de fin de commande : examen par `pulse:reviewer` et `pulse:verifier` (référence « Examiner une tâche »), rapport, présentation du verdict, **test manuel par la personne**.
-3. **Corriger** : appliquer l'étape « Corriger » de la relecture (constats Critique, Haute et Moyenne, constats Basse confrontés au code, test non concluant : règles communes § 6), avec la relecture de contrôle. En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un constat Critique persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
+3. **Corriger** : appliquer l'étape « Corriger » de la relecture (constats Critique, Haute et Moyenne, constats Basse confrontés au code, test non concluant : règles communes § 6), avec la relecture de contrôle ; après un test de la personne ❌, remettre la ligne « Résultat » de « Test par la personne » à la valeur du modèle (§ 4 de la référence « Examiner une tâche »). En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un constat Critique persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
 4. **Commiter** : appliquer la section « Déroulé » de l'étape **commit** (chargée avant la première tâche) à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le § 2 de l'étape commit donne `commit` (tâche relue, vérifiée et testée, ou test reporté en mode autonome) : passer directement à l'enregistrement.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 

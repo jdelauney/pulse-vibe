@@ -102,4 +102,4 @@ L'entretien est terminé quand **la frontière est vide** : toutes les branches 
 
 Montrer la phrase de synthèse et l'histoire. Demander une validation (AskUserQuestion : « Valider » / « Modifier quelque chose »). Corriger si besoin.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour décider de ce qui entre dans la première version (MVP).
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour décider de ce qui entre dans la première version.

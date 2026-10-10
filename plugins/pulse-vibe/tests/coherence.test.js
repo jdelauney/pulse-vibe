@@ -753,6 +753,23 @@ test("phrases dites à la personne sans « MVP », « worktree » ni « demande 
   assert.deepStrictEqual(problemes, []);
 });
 
+test("lignes « Prochaine étape : », « Résumé » et « Présenter » de toutes les commandes sans « MVP », « epic », « worktree » ni « demande de fusion »", () => {
+  // Mêmes exceptions que ci-dessus : un titre cité entre guillemets, la phrase qui explique « worktree » ; chemins et code retirés.
+  const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est /;
+  const problemes = [];
+  for (const s of lister(path.join(RACINE, "skills"))) {
+    const f = path.join("skills", s, "SKILL.md");
+    if (!fs.existsSync(path.join(RACINE, f))) continue;
+    lire(RACINE, f).split("\n").forEach((ligne, i) => {
+      if (!/Prochaine étape :|Résumé|Présenter/.test(ligne)) return;
+      const texte = sansChemins(ligne).replace(/« ((?:[^«»]|«[^«»]*»)+) »/g, (tout, cite) => (PERMIS.test(cite) ? " " : tout));
+      const j = /\bMVP\b|\bepics?\b|\bworktrees?\b|\bdemandes? de fusion\b/i.exec(texte);
+      if (j) problemes.push(`${f.split(path.sep).join("/")}:${i + 1} : ${j[0]}`);
+    });
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
 test("messages du garde-fou sur les branches et les secrets du dépôt sans jargon", () => {
   const source = lire(RACINE, "scripts", "garde-commandes.js");
   for (const cle of ["brancheForcee", "secretsDepot"]) {
@@ -1105,8 +1122,8 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
   const worktree = lire(RACINE, "references", "worktree.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
-  const pr = fin.split("\n").find((l) => l.startsWith("- **Envoi PR**"));
-  assert.ok(pr, "cas « Envoi PR »");
+  const pr = fin.split("\n").find((l) => l.startsWith("- **Envoi : version parallèle**"));
+  assert.ok(pr, "cas « Envoi : version parallèle »");
   assert.match(pr, /« Marquer la proposition comme prête à accepter »/);
   assert.match(pr, /« \(Recommandé\) » va à la première quand toutes les tâches du plan sont terminées, sinon à « Garder le dossier à part »/);
   assert.match(pr, /marquée prête, sortir du dossier à part \(outil `ExitWorktree`/);

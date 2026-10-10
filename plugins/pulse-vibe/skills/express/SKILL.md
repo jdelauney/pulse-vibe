@@ -99,6 +99,6 @@ Annoncer : « Dernière étape : l'apparence. Vous allez en voir deux et choisir
 
 ## Fin
 
-Résumé en 4 lignes : le MVP, la pile retenue, l'apparence choisie, ce qui reste à faire par la personne (comptes à créer, mise en ligne).
+Résumé en 4 lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie, ce qui reste à faire par la personne (comptes à créer, mise en ligne).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc <première US Indispensable du parcours>`, qui écrit sa spec, son plan, puis la réalise tâche par tâche ; à défaut, une fois le plan écrit, `/pulse:implement <US-XXX> <tâche>` pour la réaliser pas à pas. Proposer de faire `/clear` avant : la conversation repartira légère.

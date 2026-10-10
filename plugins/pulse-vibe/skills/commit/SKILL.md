@@ -44,6 +44,7 @@ Ce contrôle porte sur les tâches `[~]` des plans (`aidd_docs/tasks/*/PLAN-SPEC
 - `examen` (aucun rapport) : demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (Recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review <Tn>`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
 - `test` : la relecture est faite, le test par la personne manque encore. Enregistrer seulement une tâche testée : s'arrêter, le dire en une phrase (« Votre test de T3 manque encore : c'est lui qui confirme que la tâche fonctionne. ») et proposer `/pulse:review <Tn>`, qui reprend directement au test.
 - `correction` ou `aide` : le dernier rapport n'est pas validé (constats à corriger, ou test non concluant). S'arrêter, le dire en une phrase, et proposer `/pulse:review <Tn>` (`/pulse:get-help` pour `aide`).
+- `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
 
 Un commit sans tâche concernée (`docs:`, `chore:`, la mémoire, une correction sans rapport avec la tâche) s'enregistre toujours : une tâche `[~]` qui attend encore son test est seulement signalée en une ligne (« T3 attend encore votre test. »).
 
@@ -89,7 +90,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 ## Suite
 
 - S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
-- Si le plan est terminé et que son « Envoi » est **PR** : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
+- Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
 - Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree.md`).

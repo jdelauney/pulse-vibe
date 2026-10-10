@@ -35,7 +35,7 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 Les documents de référence sont ceux du § 1 de la référence « Examiner une tâche ».
 
-Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test` → passer directement au § 5 (l'examen est fait, il manque le test par la personne) ; `commit` → la tâche est prête : le dire et proposer `/pulse:commit` ; `correction` → reprendre au § 6 avec les constats du rapport ; `aide` → la ligne « Blocage » du rapport : proposer `/pulse:get-help` ; `examen` → tout le déroulé.
+Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test` → passer directement au § 5 (l'examen est fait, il manque le test par la personne) ; `commit` → la tâche est prête : le dire et proposer `/pulse:commit` ; `correction` → reprendre au § 6 avec les constats du rapport ; `aide` → la ligne « Blocage » du rapport : proposer `/pulse:get-help` ; `examen` → tout le déroulé ; `aucune` (la tâche n'est dans aucun plan) → le dire et demander de quelle tâche il s'agit.
 
 ### 2. Lancer l'examen
 
@@ -61,7 +61,7 @@ Traiter les constats selon « Les constats de relecture » des règles communes 
 
 Avec un pack de pile, avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation (elles y sont dans les boucles de `/pulse:implement` et `/pulse:spirc`), et coder les corrections selon elles.
 
-Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche »). Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer `/pulse:get-help`.
+Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche ») ; après un test de la personne ❌, remettre aussi la ligne « Résultat » de « Test par la personne » à la valeur du modèle, comme le décrit ce § 4. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer `/pulse:get-help`.
 
 ### 7. Conclure
 
