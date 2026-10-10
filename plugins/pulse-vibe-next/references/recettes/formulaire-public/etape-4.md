@@ -18,11 +18,7 @@ export async function GET(request: Request) {
   if (!NOM_FORMULAIRE.test(formulaire)) {
     return Response.json({ erreur: "Formulaire inconnu." }, { status: 400 });
   }
-  const jeton = signerJeton(
-    formulaire,
-    Date.now(),
-    env.FORMULAIRE_SECRET,
-  );
+  const jeton = signerJeton(formulaire, Date.now(), env.FORMULAIRE_SECRET);
   return Response.json({ jeton }, { headers: { "Cache-Control": "no-store" } });
 }
 ```
