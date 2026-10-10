@@ -1,5 +1,5 @@
 ---
-description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, copies à part du projet (worktrees) en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les copies déjà rassemblées
+description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
@@ -16,7 +16,7 @@ Cette commande **lit et résume**. Elle modifie seulement deux choses, chaque fo
 
 ## Déroulé
 
-1. **État et prochaine étape** : lancer `pulse-aidd etat`. Ses lignes donnent l'avancement (`etapes`, `mvp`), la prochaine étape (`prochaine`, `raison`, `regle`), ses alternatives (`aussi`) et le travail en cours (`attente`, `ancien`, `dossier`). Relever aussi, epic par epic, pour la ligne « Epics » : chaque US avec sa spec (brouillon ou validée) et son plan, et pour chaque spec `docs/design/maquettes/US-XXX-<nom>/retenue/` (facultatif).
+1. **État et prochaine étape** : lancer `pulse-aidd etat`. Ses lignes donnent l'avancement (`etapes`, `mvp`), la prochaine étape (`prochaine`, `raison`, `regle`), ses alternatives (`aussi`) et le travail en cours (`attente`, `ancien`, `dossier`). Relever aussi, epic par epic, pour la ligne « Groupes » : chaque US avec sa spec (brouillon ou validée) et son plan, et pour chaque spec `docs/design/maquettes/US-XXX-<nom>/retenue/` (facultatif).
 2. **Tâches** : pour chaque plan (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`), lister les tâches `[ ]`, `[~]`, `[x]` pour le tableau des tâches. Relever ses lignes « Envoi » et « En parallèle avec ».
 3. **Git** : `git status --short` (nombre de fichiers modifiés non enregistrés), `git log --oneline -3`, `git remote -v`, `pulse-aidd sessions` (autres sessions ouvertes sur ce dossier).
 4. **Worktrees** : `git worktree list`. Pour chaque worktree de `.claude/worktrees/`, sa branche, son nombre de commits d'avance sur la branche du dossier principal, celle qui reçoit les fusions (`git branch --show-current` ; `git log --oneline <cette branche>..<branche du worktree>`), ses modifications non enregistrées (`git -C <dossier> status --short`), et s'il est **fusionné** (sa branche apparaît dans `git branch --merged <cette branche>`).
@@ -33,21 +33,21 @@ Cette commande **lit et résume**. Elle modifie seulement deux choses, chaque fo
 ⏸️ En attente : <décision en attente> — reprendre avec <commande>   (ligne absente s'il n'y a pas de travail en cours)
 
 Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facultatif) · ⬜ user stories · ⬜ spec · ⬜ plan
-Epics    : <epic 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <epic 2> : US-004 (spec ⬜)
+Groupes  : <groupe 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <groupe 2> : US-004 (spec ⬜)
 
 Tâches – US-XXX <titre>
   À faire  : T4 …, T5 … (n)
   En cours : T3 … 
   Terminé  : T1 …, T2 … (n)
-  MVP (US Indispensables) : 2/6 tâches terminées
+  Première version (US Indispensables) : 2/6 tâches terminées
 
 Git      : 3 fichiers modifiés non enregistrés · dernier commit « feat(T2): … »
-Worktrees: us-003-filtre 🔄 en cours (2 commits, à fusionner) · us-001-creer ✅ fusionné, peut être supprimé (ou « aucun »)
+À part   : us-003-filtre 🔄 en cours (2 versions à rassembler) · us-001-creer ✅ rassemblé, peut être supprimé (ou « aucun »)
 Sessions : 1 autre session ouverte sur ce dossier (ou « aucune autre »)
 Parallèle: US-004 peut avancer en même temps que US-003 (ou ligne absente)
 En ligne : https://… (ou « pas encore »)
 Référencement : relié le … · dernier rapport le … · prochain conseillé le … (ou « à relier : /pulse:search-console relier », ligne absente si le site n'est pas en ligne)
-CI       : ✅ GitHub Actions · dernier passage ✅ (ou ⬜ pas encore · ❌ dernier passage en échec)
+Contrôles: ✅ automatiques à chaque envoi (GitHub) · dernier passage ✅ (ou ⬜ pas encore en place · ❌ dernier passage en échec)
 Revue    : T2 – ✅ Validé (date)
 Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non branchée »)
 
@@ -66,12 +66,12 @@ La prochaine étape conseillée est celle de `pulse-aidd etat` (lignes `prochain
 
 Après l'affichage, seulement si un worktree est dans ce cas :
 
-- **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les worktrees déjà fusionnés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et en rester là). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
-- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le worktree `us-xxx-<nom>` : `/pulse:implement US-XXX` ou `/pulse:spirc US-XXX` (Pulse propose d'y revenir) pour continuer et le rassembler ».
+- **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les dossiers à part déjà rassemblés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et en rester là). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
+- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le dossier à part `us-xxx-<nom>` : `/pulse:implement US-XXX` ou `/pulse:spirc US-XXX` (Pulse propose d'y revenir) pour continuer et le rassembler ».
 - **Fusionné mais avec des modifications non enregistrées** : le garder ; le signaler (« des changements y restent, non enregistrés »).
 
-De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans la branche du dossier principal (`git branch --merged`, après `git pull` si la demande de fusion a été acceptée sur le site) et inutilisée en ce moment : proposer de la supprimer (`git branch -d`, jamais `-D`). Une demande de fusion encore ouverte pour un plan terminé (`gh pr view`, `glab mr view`) : rappeler qu'elle attend d'être fusionnée sur le site du dépôt.
+De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans la branche du dossier principal (`git branch --merged`, après `git pull` si la demande de fusion a été acceptée sur le site) et inutilisée en ce moment : proposer de la supprimer (`git branch -d`, jamais `-D`). Une demande de fusion encore ouverte pour un plan terminé (`gh pr view`, `glab mr view`) : rappeler à la personne que cette proposition attend d'être acceptée sur le site du dépôt.
 
-**Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc US-004` (Pulse proposera un worktree) ». Une proposition seulement : la personne la lance elle-même.
+**Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc US-004` (Pulse proposera un dossier à part) ». Une proposition seulement : la personne la lance elle-même.
 
 Pour cette commande, le format ci-dessus remplace le bloc de fin de commande habituel.

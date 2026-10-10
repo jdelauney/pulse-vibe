@@ -32,9 +32,9 @@ Lire le plan, sa spec et son US (même dossier : `SPEC-US-XXX-<nom>.md`, `US-XXX
 
 | Type | Exemple | Où se fait le changement |
 |---|---|---|
-| **Question** | « Pourquoi le filtre n'est pas dans le MVP ? » | répondre ; le plan reste tel quel |
+| **Question** | « Pourquoi le filtre n'est pas dans la première version ? » | répondre ; le plan reste tel quel |
 | **Ordre ou découpage** | « Je veux voir la liste avant le formulaire » | le plan |
-| **Changement de périmètre** | « Ajoutons l'export PDF au MVP » | `docs/prd.md` (MoSCoW) d'abord, puis une nouvelle US (référentiel et fichier), sa spec et son plan ; ou la priorité d'une US existante dans le référentiel |
+| **Changement de périmètre** | « Ajoutons l'export PDF à la première version » | `docs/prd.md` (MoSCoW) d'abord, puis une nouvelle US (référentiel et fichier), sa spec et son plan ; ou la priorité d'une US existante dans le référentiel |
 | **Souci technique** | « Je ne veux pas créer de compte chez ce fournisseur » | la conception technique du plan, ou `docs/technical.md` → proposer `/pulse:tech` si la pile retenue change |
 | **Exigence manquante** | « Il faut pouvoir annuler une suppression » | une spec en brouillon : le fichier de l'US (critère d'acceptation), la spec, puis le plan ; une spec verrouillée reste telle quelle : l'exigence devient une nouvelle US (`/pulse:spec "…"`), avec sa spec et son plan ; une exigence qui relève d'une autre US va dans celle-ci |
 
@@ -81,7 +81,7 @@ Demander (AskUserQuestion) : « Appliquer ces changements (Recommandé) » / « 
 ### 4. Écrire
 
 - Appliquer **exactement** ce qui a été validé : le plan, puis les autres documents concernés, dans le format de chaque fichier.
-- Une décision durable est apparue (ex. « pas de compte utilisateur dans le MVP ») : proposer de la noter dans la mémoire (`aidd_docs/memory/project.md`, section « Décisions importantes »).
+- Une décision durable est apparue (ex. « pas de compte utilisateur dans la première version ») : proposer de la noter dans la mémoire (`aidd_docs/memory/project.md`, section « Décisions importantes »).
 - Le guide de réalisation (`docs/guide/`) se met à jour automatiquement ; lancer `pulse-aidd guide` pour afficher la prochaine étape.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée par `pulse-aidd guide` (en général `/pulse:spirc <US-XXX>`, ou `/pulse:implement <US-XXX> <tâche>` pour la faire pas à pas), ou `/pulse:tech` si un choix technique est remis en cause.

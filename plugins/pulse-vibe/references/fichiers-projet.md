@@ -5,8 +5,8 @@ Dans le projet de la personne, ce que produit chaque commande :
 | Fichier | Produit par | Contenu |
 |---|---|---|
 | `CLAUDE.md` | `/pulse:init` | Règles du projet, lues à chaque session |
-| `docs/brief.md` | `/pulse:brainstorm` | L'idée racontée simplement (domain storytelling) |
-| `docs/prd.md` | `/pulse:prd` | Le besoin produit, le périmètre MVP (MoSCoW) |
+| `docs/brief.md` | `/pulse:brainstorm` | L'idée racontée simplement, comme une histoire |
+| `docs/prd.md` | `/pulse:prd` | Le besoin produit, le périmètre MVP (Indispensable, Essentiel, Optionnel, En attente) |
 | `docs/technical.md` | `/pulse:tech` | La pile retenue et ses raisons, l'organisation des fichiers, les commandes du projet, les données et le contrôle d'accès, les secrets, l'hébergement. Source unique pour tout ce qui dépend de la technologie |
 | `docs/design.md` | `/pulse:ui identite` | L'identité visuelle : registre, scène d'usage, personnalité, couleurs, typographie, composants et leurs états. Facultatif ; s'il existe, les specs, le plan et le code s'y conforment |
 | `docs/design/` | `/pulse:ui` | Les planches d'identité et les maquettes d'écrans (`maquettes/US-XXX-<nom>/retenue/` = la maquette choisie pour une US). Référence visuelle, à traduire dans la pile retenue |

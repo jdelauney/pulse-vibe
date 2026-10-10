@@ -95,7 +95,7 @@ Présenter le tableau et **recommander** une option en une phrase. Avant la ques
 
 Projet existant : seulement compléter `.gitignore` et `.env.example` si des manques ont été constatés (avec accord), puis passer à l'étape 8.
 
-Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander (AskUserQuestion) : « Mettre en place le squelette maintenant (Recommandé) » / « En faire la tâche T1 du plan ».
+Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander (AskUserQuestion) : « Préparer le code de départ maintenant (Recommandé) » / « Plus tard, avec la première tâche ».
 
 - **Maintenant** :
   1. Initialiser le squelette de la technologie retenue **selon sa documentation officielle** (commande ou procédure d'initialisation, versions fixées). Si l'outil d'initialisation refuse un dossier non vide, ou risque d'écraser un fichier : initialiser dans un **dossier temporaire**, puis rapatrier les fichiers. Conserver `CLAUDE.md`, `README.md` et `.gitignore` (ne **jamais** les écraser) : fusionner ce qu'ils apportent d'utile, puis supprimer le dossier temporaire.
@@ -104,7 +104,7 @@ Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander 
   4. **Le thème** : si `docs/design.md` existe, traduire son identité en valeurs de thème dans le code (section « Dans le code » de `docs/design.md`), avec accord.
   5. Expliquer en quelques lignes ce qui a été ajouté. Les actions qui relèvent de la personne (créer un compte, saisir une clé secrète dans le fichier local) sont guidées pas à pas ; la personne écrit une clé secrète directement dans le fichier local, **jamais** dans la conversation.
   6. **En ligne dès le premier jour** : si l'hébergeur retenu publie depuis un dépôt distant, proposer (AskUserQuestion) « Mettre en ligne la page de départ maintenant (Recommandé) » / « Plus tard ». Expliquer : « Mettre en ligne une page presque vide, c'est découvrir aujourd'hui les réglages de l'hébergeur, plutôt qu'à la fin, avec tout le projet en jeu. » Maintenant : enregistrer le squelette avec la section « Déroulé » de `pulse-aidd etape commit --sans-communes` (message `chore: squelette du projet` ; aucune tâche de plan, donc rien à relire ni à cocher), puis appliquer la section « 3. Première mise en ligne » de `pulse-aidd etape deploy --sans-communes` ; elle se termine par `pulse-aidd sonder`.
-- **Tâche T1** : l'indiquer dans « Mise en place » (« À réaliser en tâche T1 du plan ») : l'installation se fera avec cette tâche.
+- **Plus tard** : l'indiquer dans « Mise en place » (« À réaliser avec la première tâche du premier plan ») : l'installation se fera avec cette tâche.
 
 ### 8. Valider
 

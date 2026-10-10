@@ -111,7 +111,7 @@ Présenter, en expliquant chaque terme technique :
 
 La tâche **reste `[~]`** : elle sera terminée après relecture et commit.
 
-Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche, puis `/pulse:commit`. Dans un worktree, la session y reste : la relecture et le commit s'y font aussi ; une fois le plan terminé, `/pulse:commit` propose de rassembler le travail.
+Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche, puis `/pulse:commit`. Dans un dossier à part, la session y reste : la relecture et le commit s'y font aussi ; une fois le plan terminé, `/pulse:commit` propose de rassembler le travail.
 
 ### 6. Boucle sur tout le plan (sans tâche)
 
@@ -146,7 +146,7 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 
 **Dans un worktree** : quand le plan est terminé, ou si la personne s'arrête, appliquer « 3. Terminer : rassembler le travail » de la référence worktree.
 
-Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (Pulse propose de revenir dans le worktree gardé).
+Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (Pulse propose de revenir dans le dossier à part gardé).
 
 ## Contraintes d'implémentation
 - Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite`.

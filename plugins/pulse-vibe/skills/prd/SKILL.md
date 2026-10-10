@@ -1,5 +1,5 @@
 ---
-description: Produire le PRD - le besoin, les objectifs et le périmètre du MVP, décidés avec vous : ce qui est indispensable, ce qui peut attendre
+description: Produire le PRD - le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/prd.md) Edit(docs/prd.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
@@ -16,7 +16,7 @@ Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. 
 
 Produire `docs/prd.md` : ce que l'outil doit faire, pour qui, et surtout **ce qui entre dans la première version (le MVP)** grâce à la priorisation MoSCoW.
 
-Rappeler en une phrase : « Le MVP est la plus petite version réellement utilisable. On vise petit et fini, plutôt que grand et inachevé. »
+Rappeler en une phrase : « La première version est la plus petite réellement utilisable. On vise petit et fini, plutôt que grand et inachevé. »
 
 ## Prérequis
 
