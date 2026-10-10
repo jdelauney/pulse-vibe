@@ -98,7 +98,7 @@ const PLAFONDS_COMMANDE = {
   security: 46000, // mesure 43 499
   seo: 61000, // mesure 57 741
   spec: 47000, // mesure 44 715
-  spirc: 59000, // mesure 56 153
+  spirc: 62500, // mesure 59 111 (pulse 0.41 : règles communes 19 et 20, gestes de la personne)
   status: 34000, // mesure 32 369
   tech: 79500, // mesure 75 338
   test: 46000, // mesure 43 600

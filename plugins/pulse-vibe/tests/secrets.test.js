@@ -201,6 +201,18 @@ test("generer : écrit une valeur aléatoire sans l'afficher, différente à cha
   assert.strictEqual(lancer(p, ["generer", "SESSION_SECRET", "--octets", "8"]).code, 1);
 });
 
+test("generer --fichier : la valeur va dans le fichier demandé (ex. .env.e2e), .env intact", () => {
+  const p = projet({ pack: false });
+  ecrire(p, ".env", "AUTRE=1\n");
+  const r = lancer(p, ["generer", "E2E_SECRET", "--fichier", ".env.e2e"]);
+  assert.strictEqual(r.code, 0, r.sortie);
+  const v = valeurDans(lire(p, ".env.e2e"), "E2E_SECRET");
+  assert.match(v, /^[A-Za-z0-9_-]{43}$/);
+  sansValeur(r.sortie, v);
+  assert.match(r.sortie, /écrite dans \.env\.e2e/);
+  assert.strictEqual(lire(p, ".env"), "AUTRE=1\n");
+});
+
 test("generer --versionne : nouvelle version en tête, ancienne gardée ; --seul et elaguer retirent les anciennes", () => {
   const p = projet({ pack: false });
   const ancien = "Ancien" + hasard(20);

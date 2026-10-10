@@ -55,6 +55,8 @@ VERDICT: <🔴 Rouge confirmé | ⚠️ Rouge pour une mauvaise raison | ✅ Ver
 | Test | Cause (code / test / environnement / instable) | Ce qui se passe | À corriger par (implementer / test-writer / personne) |
 |---|---|---|---|
 
+Cause « environnement » : nommer précisément ce qui manque (fichier, variable, service à démarrer), pour que l'appelant guide la personne pas à pas (`pulse-aidd reference gestes.md`).
+
 ## Tests contestés
 - <test — le test a raison | le test se trompe — raison ; sinon « aucun »>
 
