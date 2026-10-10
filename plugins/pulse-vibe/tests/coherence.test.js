@@ -699,30 +699,36 @@ test("README et mémo sans « MVP », « epic » ni « demande de fusion » (hor
   assert.deepStrictEqual(problemes, []);
 });
 
-// Ce que la personne lit hors des commandes : documents de son projet (modèles), verdicts de pulse-aidd etat,
-// messages du garde-fou des commandes. Chemins, code, emplacements <…> et commentaires HTML (consignes pour l'IA) exclus.
-const motDeMethode = (texte) => /\bMVP\b/.exec(sansChemins(texte)) || /\b(epics?|demandes? de fusion)\b/i.exec(sansChemins(texte));
+// Ce que la personne lit hors des commandes : documents de son projet (modèles), tableau des fichiers et cycle des commandes,
+// verdicts de pulse-aidd etat, messages du garde-fou des commandes.
+// Chemins, code, emplacements <…> et commentaires HTML (consignes pour l'IA) exclus.
+const motDeMethode = (texte) => /\bMVP\b/.exec(sansChemins(texte)) || /\b(epics?|demandes? de fusion|worktrees?)\b/i.exec(sansChemins(texte));
 // Chaînes entre guillemets doubles d'un script, et raisons des verdicts écrites entre accents graves (sans les ${…}).
 const chainesDuScript = (source) => [
   ...[...source.matchAll(/"((?:[^"\\\n]|\\.)*)"/g)].map((m) => m[1]),
   ...[...source.matchAll(/verdict\("R\d+", "[^"]*", `([^`]*)`/g)].map((m) => m[1].replace(/\$\{[^}]*\}/g, " ")),
 ];
 
-test("modèles et sorties des outils lus par la personne sans « MVP », « epic » ni « demande de fusion »", () => {
+test("modèles et sorties des outils lus par la personne sans « MVP », « epic », « demande de fusion » ni « worktree »", () => {
   const problemes = [];
   const modeles = path.join(RACINE, "templates");
   const documents = [
     ...lister(modeles).filter((f) => f.endsWith(".md")).map((f) => path.join(modeles, f)),
     path.join(DEPOT, "plugins", "pulse-vibe-next", "references", "technical.md"),
+    path.join(RACINE, "references", "fichiers-projet.md"),
+    path.join(RACINE, "references", "cycle.md"),
   ];
   for (const fichier of documents) {
+    // Le lexique explique le mot « worktree » (décision du contrôleur) : seul ce mot y reste permis.
+    const lexique = path.basename(fichier) === "lexique.md";
     lire(fichier).replace(/<!--[\s\S]*?-->/g, "").split("\n").forEach((ligne, i) => {
-      const m = motDeMethode(ligne);
+      const m = motDeMethode(lexique ? ligne.replace(/\bworktrees?\b/gi, " ") : ligne);
       if (m) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")}:${i + 1} : ${m[0]}`);
     });
   }
   for (const script of ["etat.js", "guide.js", "garde-commandes.js"]) {
-    for (const chaine of chainesDuScript(lire(RACINE, "scripts", script))) {
+    // Une chaîne d'un seul mot (« worktrees », « --worktree ») est du code : un nom de dossier ou une option de Git.
+    for (const chaine of chainesDuScript(lire(RACINE, "scripts", script)).filter((c) => /\s/.test(c.trim()))) {
       const m = motDeMethode(chaine);
       if (m) problemes.push(`scripts/${script} : ${m[0]} dans « ${chaine.slice(0, 60)} »`);
     }

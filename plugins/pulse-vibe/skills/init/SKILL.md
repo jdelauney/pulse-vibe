@@ -124,7 +124,7 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 - Marqueurs `pulse_pile` absents → appliquer `pulse-aidd etape tech --sans-communes` (le point 2 de l'étape « Écrire » suffit si `docs/technical.md` existe déjà et contient « Pile retenue » et « Commandes du projet »).
 - `docs/technical.md` déclare un pack de pile (`**Pack de pile Pulse** : <id>`) → lire ses notes de mise à niveau : `pulse-aidd pile reference migrations.md` (« Référence introuvable » : le pack n'en a pas, rien à faire). Pour chaque note dont le signe se voit dans le projet : l'expliquer en une phrase, l'appliquer avec l'accord de la personne, puis lancer les contrôles de « Commandes du projet ».
 - **Documents à l'ancien format** (`docs/spec.md`, `docs/plan.md`, `docs/specs/`, `docs/plans/`, `docs/revues/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) → expliquer en deux phrases la nouvelle organisation (une US = une spec = un plan, rangés par groupe dans `aidd_docs/tasks/<epic>/`), puis, avec l'accord de la personne, réorganiser **en conservant tout le contenu** :
-  1. Proposer les epics (règles de `/pulse:us`, étape 1) et les faire valider.
+  1. Proposer les groupes (règles de `/pulse:us`, étape 1) et les faire valider.
   2. Garder les identifiants d'US s'ils suivent déjà le format `US-001` ; sinon, proposer une correspondance (ancien → `US-XXX`) et la faire valider. La noter dans le journal de chaque plan concerné.
   3. Écrire un fichier `US-XXX-<nom>.md` par US détaillée (contenu repris tel quel, au format du modèle d'US), puis réécrire `docs/user-stories.md` en référentiel (modèle du référentiel).
   4. Découper chaque spec et chaque plan par US : `SPEC-US-XXX-<nom>.md` reprend les parties de la spec qui concernent l'US (une partie commune à plusieurs US va dans la spec de la première, et les autres y renvoient) ; `PLAN-SPEC-US-XXX-<nom>.md` reprend ses tâches **avec leurs numéros, leurs statuts et leur journal**, sous `## Tâches`, avec la priorité de l'US dans la vue d'ensemble. Une tâche sans US (mise en place, mise en ligne) va dans le plan de la première, ou de la dernière, US Indispensable du parcours.
@@ -139,7 +139,7 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 
 ### « M'expliquer la méthode »
 
-Montrer le chemin de « Le cycle Pulse » ci-dessus (son bloc et la ligne des commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
+Montrer le chemin de « Le cycle Pulse » ci-dessus (son bloc, puis ses deux dernières lignes : `/pulse:spirc` et les commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
 
 ## Fin
 

@@ -64,7 +64,7 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
 - **Versions fixées** pour chaque action ou image utilisée, comme pour une bibliothèque (règle commune 8).
 - **Secrets hors du fichier**. Si la construction a besoin d'une variable d'environnement, écrire seulement son **nom** ; la personne saisit elle-même la valeur dans les réglages du dépôt (« secrets » ou « variables » de la CI), guidée pas à pas. La valeur va uniquement dans ces réglages, jamais dans la conversation.
 - Montrer le fichier complet, expliquer chaque bloc en une ligne, puis l'écrire avec accord. Supprimer ensuite `scripts/ci-verifications.exemple.yml`, devenu inutile.
-- **Vitesse** (facultatif) : si `docs/performance.md` contient une section « Budget », proposer la vérification de vitesse de « suivre » de `/pulse:perf` (`pulse-aidd etape perf --sans-communes`, volet 3) : chaque semaine sur le site en ligne (recommandé), ou sur chaque proposition de version parallèle contre la construction locale. Sans budget : la proposer plus tard avec `/pulse:perf suivre`.
+- **Vitesse** (facultatif) : si `docs/performance.md` contient une section « Budget », proposer la vérification de vitesse de « suivre » de `/pulse:perf` (`pulse-aidd etape perf --sans-communes`, volet 3) : chaque semaine sur le site en ligne (Recommandé), ou sur chaque proposition de version parallèle contre la construction locale. Sans budget : la proposer plus tard avec `/pulse:perf suivre`.
 
 ## 4. Essayer en local d'abord
 
