@@ -26,22 +26,22 @@
 
 | Priorité | Signification | Fonctionnalités | Origine |
 |---|---|---|---|
-| **Indispensable** (Must) | Sans ça, l'outil ne sert à rien. Constitue le **MVP**. | | {{vous · Pulse, accepté}} |
-| **Essentiel** (Should) | Vraie valeur ajoutée, juste après le MVP. | | |
+| **Indispensable** (Must) | Sans ça, l'outil ne sert à rien. Constitue la **première version**. | | {{vous · Pulse, accepté}} |
+| **Essentiel** (Should) | Vraie valeur ajoutée, juste après la première version. | | |
 | **Optionnel** (Could) | La cerise sur le gâteau, si le temps le permet. | | |
 | **En attente** (Won't, cette fois) | Bonne idée, mais pas maintenant. | | |
 
-### Définition du MVP
+### Définition de la première version
 
-Le MVP est la plus petite version **réellement utilisable** par de vrais utilisateurs. Il contient toutes les fonctionnalités **Indispensables**, et elles seules.
+La première version est la plus petite **réellement utilisable** par de vrais utilisateurs. Elle contient toutes les fonctionnalités **Indispensables**, et elles seules.
 
-> Le MVP est atteint quand : {{phrase vérifiable}}
+> La première version est prête quand : {{phrase vérifiable}}
 
 ## 6. Contraintes
 
 - **Données personnelles** : {{lesquelles, ou « aucune »}}
 - **Budget mensuel acceptable pour les services** : {{montant et devise, ou 0}}
-- **Délai** : {{ex. MVP en fin de journée}}
+- **Délai** : {{ex. première version en fin de journée}}
 - **Appareils** : {{ordinateur, téléphone…}}
 - **Être trouvé** : {{sur Google et par les assistants IA : par qui, avec quels mots (ceux des clients), quelles pages publiques ; ou « non : outil interne, rien dans Google »}}
 - **Autres** :

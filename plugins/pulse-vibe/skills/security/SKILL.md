@@ -2,7 +2,7 @@
 description: Sécurité du projet - audit complet S1 à S13 et test du cambrioleur, contrôle rapide, en-têtes de sécurité, préparation d'un audit outillé
 argument-hint: "[audit | rapide | entetes | preparer] (par défaut : audit)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte security) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git ls-files *) Bash(git log *) Bash(git grep -n *) Bash(git grep -l *) Bash(pulse-aidd sonder *) Bash(gitleaks detect --config .gitleaks.toml --redact*)
+allowed-tools: Bash(pulse-aidd contexte security) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git ls-files *) Bash(git log *) Bash(git grep -n *) Bash(git grep -l *) Bash(pulse-aidd sonder *) Bash(gitleaks detect --config .gitleaks.toml --redact*) Write(docs/securite.md) Edit(docs/securite.md)
 ---
 
 # /pulse:security – La sécurité du projet
@@ -19,7 +19,7 @@ Action demandée : `$ARGUMENTS` (vide = `audit`)
 
 | Action | Quand | Comment |
 |---|---|---|
-| `audit` (par défaut) | Avant une mise en ligne, à la fin du MVP ou d'une epic | Section « Audit complet » ci-dessous |
+| `audit` (par défaut) | Avant une mise en ligne, à la fin de la première version ou d'un groupe | Section « Audit complet » ci-dessous |
 | `rapide` | En 2 minutes, à tout moment : « suis-je dans les clous ? » | Lancer `pulse-aidd reference securite/rapide.md` et l'appliquer à l'identique (lecture seule) |
 | `entetes` | Configurer les en-têtes de sécurité (CSP, HSTS…) | Lancer `pulse-aidd reference securite/entetes.md` et l'appliquer ; montrer la configuration avant de l'écrire |
 | `preparer` | Préparer un audit outillé (développeur, outils d'analyse) | Lancer `pulse-aidd reference securite/preparer.md` et l'appliquer |
@@ -66,6 +66,6 @@ Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la
 
 #### 5. Corriger
 
-Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée se traite avec `/pulse:secrets fuite` : révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation. Après correction, refaire le test manuel concerné.
+Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (Recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée se traite avec `/pulse:secrets fuite` : révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation. Après correction, refaire le test manuel concerné.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` puis `/pulse:commit` si des corrections ont été faites.

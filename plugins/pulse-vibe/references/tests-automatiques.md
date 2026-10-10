@@ -21,15 +21,17 @@ Si un sous-agent est indisponible : faire son travail soi-même en suivant **str
 - **Sans `-t`** : poser la question avec les autres questions de démarrage (même appel AskUserQuestion) quand la commande pose ses questions (voir la commande), avec la réponse recommandée selon « Tester » de « Commandes du projet » (`docs/technical.md`) :
   - commande présente : « Tests d'abord (Recommandé) » (un assistant écrit les tests avant le code, qui doit les faire passer) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
   - « aucune », et la documentation officielle de la pile retenue recommande un outil de test : « Installer un outil de test (Recommandé) » (§ 3, puis tests d'abord) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
-  - « aucune », sans outil de test connu pour cette pile : « Sans tests automatiques (Recommandé) » / « Installer un outil de test, puis tests d'abord » (§ 3).
+  - « aucune », sans outil recommandé par la documentation de la pile, mais le langage du projet a un lanceur de tests intégré (`unittest` pour Python ; `node --test` pour JavaScript avec Node.js, et pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile) : « Utiliser le lanceur de tests intégré (Recommandé) » (l'outil de test fourni avec le langage, rien à installer ; § 3, puis tests d'abord) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
+  - « aucune », du code à tester, mais ni outil recommandé par la documentation de la pile ni lanceur intégré au langage : « Installer un outil de test (Recommandé) » (§ 3, puis tests d'abord) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
+  - « aucune », aucun code à tester automatiquement (pages HTML et CSS seules, outil sans code) : « Sans tests automatiques (Recommandé) » (le test manuel et la relecture seulement) / « Installer un outil de test, puis tests d'abord » (§ 3).
 - Annoncer le choix dans la ligne de démarrage (« … · tests d'abord »).
 
 ## 3. Si l'outil de test manque
 
 « Tester » vaut « aucune » et la personne veut des tests :
 
-1. Choisir l'outil recommandé par la documentation officielle de la pile retenue (règle commune « La personne décide » : choix technique, l'option la plus simple compatible avec « Pile retenue »), version fixée. L'outil de bout en bout attend que `docs/prd.md` ou `docs/technical.md` en montrent le besoin.
-2. Expliquer en une phrase ce qu'il apporte, et demander l'accord pour l'installer (c'est une bibliothèque : règle commune « Des dépendances réelles et vérifiées »).
+1. Choisir l'outil recommandé par la documentation officielle de la pile retenue, version fixée, ou le lanceur intégré au langage (§ 2) ; à défaut, l'outil de test le plus répandu pour ce langage, version fixée. Règle commune « La personne décide » : choix technique, l'option la plus simple compatible avec « Pile retenue ». L'outil de bout en bout attend que `docs/prd.md` ou `docs/technical.md` en montrent le besoin.
+2. Expliquer en une phrase ce qu'il apporte. Une bibliothèque à installer demande l'accord (règle commune « Des dépendances réelles et vérifiées ») ; un lanceur intégré au langage s'utilise tel quel : passer à l'étape 3.
 3. Installer et configurer selon la documentation officielle, puis vérifier que la commande « tester » tourne (zéro test : réussite ou message « aucun test trouvé »).
 4. Mettre à jour `docs/technical.md` : ligne « Tests automatiques » de « Pile retenue », « Tester » de « Commandes du projet », emplacement des tests dans « Organisation des fichiers » (`qualite/organisation.md` §7) ; puis la ligne correspondante du bloc `pulse_pile` de `CLAUDE.md`.
 5. Enregistrer ce changement à part : `chore: outil de test <nom>`.

@@ -20,6 +20,7 @@
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
+#   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
@@ -312,13 +313,16 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       lexique ;;
-    status|guide)
+    guide)
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
+      afficher "Le cycle Pulse" "$REF/cycle.md" ;;
+    status)
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;
     auto-fix) ;;
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
-  contexte_pack "$1"
+  # review : l'agent reviewer charge lui-même les consignes du pack (pulse-aidd pile contexte review) ; la conversation principale orchestre.
+  [ "$1" = "review" ] || contexte_pack "$1"
 }
 
 case "$1" in
@@ -383,6 +387,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/search-console.js" "$@" ;;
   etat)
     shift; exec node "$RACINE/scripts/etat.js" "$@" ;;
+  revue)
+    shift; exec node "$RACINE/scripts/etat.js" --revue "$@" ;;
   travail-fini)
     dossier="${2:-.}"
     case "/$dossier/" in

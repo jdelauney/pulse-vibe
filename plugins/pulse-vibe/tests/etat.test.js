@@ -42,7 +42,9 @@ ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
 const PILE = "- **Pile** : HTML et JavaScript";
 
 /** Un rapport de relecture (modèle « revue ») : verdict, et au besoin résultat du test par la personne et blocage. */
-const RAPPORT = (verdict, { test, blocage, verif = "✅ Prouvé", retest } = {}) => `# Revue – T2 – 2026-10-07
+// Le modèle non rempli liste les trois résultats possibles : MODELE_TEST.
+const MODELE_TEST = "✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)";
+const RAPPORT = (verdict, { test = "✅ concluant", blocage, verif = "✅ Prouvé", retest } = {}) => `# Revue – T2 – 2026-10-07
 
 **Verdict** : ${verdict}
 **Mode** : /pulse:review
@@ -58,12 +60,17 @@ ${blocage ? `**Blocage** : ${blocage}` : ""}
 ## Test par la personne
 
 - **Date** : 2026-10-07
-- **Résultat** : ${test || "✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)"}
+- **Résultat** : ${test}
 ${retest ? `- **Résultat** : ${retest}\n` : ""}`;
+// Relecture de contrôle après un test ❌ (référence « Examiner une tâche », § 4) : la ligne « Résultat » revient au modèle,
+// « Remarque » garde ce qui n'allait pas, et la relecture de contrôle porte la date du premier test.
+const TEST_REMIS_AU_MODELE =
+  RAPPORT("✅ Validé", { test: MODELE_TEST }) +
+  "- **Remarque** : ❌ le bouton Ajouter ne fait rien\n\n## Relecture de contrôle\n\n- **Date** : 2026-10-07\n- **Verdict** : ✅ Validé\n";
 
 const REFERENTIEL = `# User stories – TodoIt
 
-> Priorités : **Indispensable** (le MVP) · **Essentiel** · **Optionnel** · **En attente**.
+> Priorités : **Indispensable** (la première version) · **Essentiel** · **Optionnel** · **En attente**.
 
 ## Ordre de réalisation
 
@@ -73,7 +80,7 @@ US-002 → US-001 → US-003
 
 ---
 
-## Epic – Gérer les tâches (\`gerer-taches\`)
+## Groupe – Gérer les tâches (\`gerer-taches\`)
 
 | ID | Titre | Acteur | Priorité | Taille | Dépend de | Fichier |
 |---|---|---|---|---|---|---|
@@ -98,7 +105,7 @@ const PLAN = (id, taches) => `# Plan – TodoIt – ${id} Titre
 
 ## Vue d'ensemble
 
-- **US** : ${id} – Titre · **Epic** : Gérer les tâches · **Priorité** : Indispensable
+- **US** : ${id} – Titre · **Groupe** : Gérer les tâches · **Priorité** : Indispensable
 
 ## Tâches
 
@@ -260,7 +267,7 @@ test("spec validée sans plan avant les tâches restantes (R18), puis les tâche
   const plan2 = PLAN("US-002", "- [x] **T1 – Afficher la page** · US-002\n- [ ] **T2 – Voir la liste** · US-002");
   const r = etat(projet({ ...AVANT_US, ...SPECS_VALIDEES, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": plan2 }, PILE_CHOISIE));
   assert.deepStrictEqual([r.regle, r.prochaine], ["R18", "/pulse:plan US-001"]);
-  const plan1 = PLAN("US-001", "- [ ] **T3 – Créer une tâche** · US-001\n- [ ] **T4 – Mettre en ligne le MVP** · —");
+  const plan1 = PLAN("US-001", "- [ ] **T3 – Créer une tâche** · US-001\n- [ ] **T4 – Mettre en ligne la première version** · —");
   const taches = etat(projet({
     ...AVANT_US,
     ...SPECS_VALIDEES,
@@ -273,6 +280,7 @@ test("spec validée sans plan avant les tâches restantes (R18), puis les tâche
   assert.match(taches.etapes, /plan=fait realisation=en-cours en-ligne=non/);
 });
 
+// Plans écrits avant pulse 0.38 : « Mettre en ligne le MVP » reste reconnu (un titre qui commence par « Mettre en ligne »).
 test("MVP terminé : mise en ligne (R15), audit de sécurité une fois en ligne (R21), puis US suivante (R22)", () => {
   const fichiers = {
     ...AVANT_US,
@@ -283,10 +291,12 @@ test("MVP terminé : mise en ligne (R15), audit de sécurité une fois en ligne 
   const horsLigne = etat(projet(fichiers, PILE_CHOISIE));
   assert.deepStrictEqual([horsLigne.regle, horsLigne.prochaine, horsLigne.mvp], ["R15", "/pulse:deploy", "2/3"]);
   assert.match(horsLigne.etapes, /realisation=fait en-ligne=non/);
+  assert.match(horsLigne.raison, /la première version peut être mise en ligne/);
   const enLigne = { ...PILE_CHOISIE, site: "https://todoit.example.org", depot: "https://github.com/exemple/todoit" };
   const fini = { ...fichiers, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-001-creer-tache.md": PLAN("US-001", "- [x] **T2 – Créer une tâche** · US-001\n- [x] **T3 – Mettre en ligne le MVP** · —") };
   const audit = etat(projet(fini, enLigne));
   assert.deepStrictEqual([audit.regle, audit.prochaine], ["R21", "/pulse:security"]);
+  assert.match(audit.raison, /la première version est en ligne/);
   const suivante = etat(projet({ ...fini, "docs/securite.md": "# Sécurité\n" }, enLigne));
   assert.deepStrictEqual([suivante.regle, suivante.prochaine], ["R22", "/pulse:spec US-003"], "US-004 est « En attente » : jamais proposée");
   assert.ok(suivante.aussi.some((a) => a.startsWith("/pulse:cicd — ")), "dépôt relié, aucune CI");
@@ -438,4 +448,126 @@ test("lireOptions : --sans-git et --aujourdhui", () => {
   assert.strictEqual(lireOptions(["--aujourdhui", "2028-02-29"]).aujourdhui, Date.parse("2028-02-29T00:00:00Z"));
   const r = spawnSync(process.execPath, [ETAT, "--aujourdhui", "2026-02-31"], { cwd: os.tmpdir(), encoding: "utf8" });
   assert.strictEqual(r.status, 2);
+});
+
+test("relecture validée sans le test de la personne : relire reprend au test (R14), jamais l'enregistrement", () => {
+  const avec = (opts, verdict = "✅ Validé") => etat(projet({ ...EN_COURS, [`${REVUES}/T2-2026-10-07.md`]: RAPPORT(verdict, opts) }, PILE_CHOISIE));
+  for (const test of [MODELE_TEST, "", "{{✅ concluant | ❌ non concluant}}"]) {
+    const r = avec({ test });
+    assert.deepStrictEqual([r.regle, r.prochaine], ["R14", "/pulse:review T2"], `test « ${test} »`);
+    assert.match(r.raison, /votre test manuel/);
+  }
+  assert.strictEqual(avec({ test: MODELE_TEST }, "⚠️ À corriger, accepté par la personne").prochaine, "/pulse:review T2");
+  assert.strictEqual(avec({ test: "non concluant" }).prochaine, "/pulse:review T2", "« non concluant » sans emoji");
+  assert.strictEqual(avec({ test: "❌ non concluant, accepté par la personne" }).regle, "R13", "test non concluant accepté");
+  assert.strictEqual(avec({ test: "✅ OK" }).regle, "R13");
+});
+
+test("pulse-aidd revue <Tn> : dernière relecture, rapport et où reprendre", () => {
+  const PLAN_T2 = "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md";
+  const revue = (fichiers, id = "T2") => etat(projet({ ...EN_COURS, ...fichiers }, PILE_CHOISIE), "--revue", id);
+  const sans = revue({});
+  assert.deepStrictEqual([sans.tache, sans.statut, sans.plan, sans.etat, sans.rapport, sans.reprendre], ["T2", "en-cours", PLAN_T2, "absente", "aucun", "examen"]);
+  const cas = [
+    [RAPPORT("✅ Validé", { test: MODELE_TEST }), "a-tester", "test"],
+    [RAPPORT("✅ Validé"), "validee", "commit"],
+    [RAPPORT("✅ Validé", { test: "⏳ reporté au test groupé de fin de plan (mode autonome)" }), "validee", "commit"],
+    [RAPPORT("⚠️ À corriger"), "a-corriger", "correction"],
+    [RAPPORT("✅ Validé", { test: "❌ non concluant" }), "a-corriger", "correction"],
+    [TEST_REMIS_AU_MODELE, "a-tester", "test"],
+    [RAPPORT("⛔ Bloquant", { blocage: "persiste après 2 cycles : /pulse:get-help" }), "bloquee", "aide"],
+  ];
+  for (const [contenu, etatAttendu, reprendre] of cas) {
+    const r = revue({ [`${REVUES}/T2-2026-10-07.md`]: contenu });
+    assert.deepStrictEqual([r.etat, r.reprendre], [etatAttendu, reprendre], etatAttendu);
+    assert.strictEqual(r.rapport, `${REVUES}/T2-2026-10-07.md`);
+  }
+  // le rapport le plus récent fait foi ; minuscules acceptées
+  const deux = revue({ [`${REVUES}/T2-2026-10-07.md`]: RAPPORT("⚠️ À corriger"), [`${REVUES}/T2-2026-10-07-2.md`]: RAPPORT("✅ Validé", { test: MODELE_TEST }) }, "t2");
+  assert.deepStrictEqual([deux.tache, deux.etat, deux.rapport], ["T2", "a-tester", `${REVUES}/T2-2026-10-07-2.md`]);
+  // tâche inconnue ou absente : une réponse lisible, jamais une erreur
+  const inconnue = revue({}, "T99");
+  assert.deepStrictEqual([inconnue.tache, inconnue.etat, inconnue.reprendre], ["T99", "inconnue", "aucune"]);
+  assert.strictEqual(etat(projet({}), "--revue").etat, "inconnue");
+});
+
+test("pulse-aidd revue relaie vers le script et figure dans l'aide", { skip: spawnSync("bash", ["--version"]).error ? "bash absent" : false }, () => {
+  const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
+  const r = spawnSync("bash", [outil, "revue", "T1"], { cwd: projet(), encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^etat: inconnue$/m);
+  const aide = spawnSync("bash", [outil], { encoding: "utf8" }).stdout;
+  assert.match(aide, /pulse-aidd revue <Tn>/);
+  assert.match(aide, /Ne sort jamais en erreur/, "la plage du sed suit l'en-tête allongé d'une ligne");
+});
+
+/** L'état de la relecture d'un rapport écrit tel quel (derniereRevue, sans lancer l'outil). */
+function etatRapport(contenu) {
+  const { derniereRevue } = require(ETAT);
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-revue-"));
+  fs.writeFileSync(path.join(d, "T2-2026-10-07.md"), contenu);
+  return derniereRevue(d, "T2").etat;
+}
+
+test("test par la personne : seules les réponses positives valident ; les réponses proposées « Non, … » sont à corriger", () => {
+  const cas = [
+    ["Non, il y a un problème : le bouton ne réagit pas", "a-corriger"],
+    ["Non, quelque chose ne va pas", "a-corriger"],
+    ["❌ Non, il y a un problème", "a-corriger"],
+    ["pas concluant", "a-corriger"],
+    ["Non concluant", "a-corriger"],
+    ["échec : le bouton ne marche pas", "a-corriger"],
+    ["❌ non concluant, la personne n'a pas accepté", "a-corriger"],
+    ["❌ non concluant, non accepté", "a-corriger"],
+    ["non concluant, accepté par la personne", "validee"],
+    ["❌ non concluant mais accepté par la personne", "validee"],
+    ["⚠️ pas parfait, accepté par la personne", "validee"],
+    ["❌ non concluant, pas encore accepté", "a-corriger"],
+    ["❌ non concluant, pas du tout accepté", "a-corriger"],
+    ["Oui, tout fonctionne", "validee"],
+    ["concluant", "validee"],
+    ["⏳ reporté au test groupé", "validee"],
+    ["OK", "a-tester"],
+    ["✅ concluant, aucun problème", "validee"],
+    ["Oui, tout fonctionne, aucun problème", "validee"],
+    ["✅ concluant – sans échec", "validee"],
+    ["❌ non concluant, n'a pas été accepté", "a-corriger"],
+    ["peu concluant", "a-tester"],
+  ];
+  for (const [test, attendu] of cas) assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test })), attendu, test);
+});
+
+test("test par la personne : la dernière section « Test par la personne » fait foi, jusqu'au titre suivant", () => {
+  const SECTION = (resultat) => `\n## Test par la personne\n\n- **Date** : 2026-10-08\n- **Résultat** : ${resultat}\n`;
+  const CONTROLE = "\n## Relecture de contrôle\n\n- **Date** : 2026-10-08\n- **Verdict** : ✅ Validé\n";
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE + SECTION("✅ concluant")), "validee", "deux sections, la seconde ✅");
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé") + SECTION(MODELE_TEST)), "a-tester", "seconde section restée au modèle");
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "" }) + "\n## Relecture de contrôle\n\n- **Résultat** : ✅ Validé\n"), "a-tester", "un « Résultat » d'une autre section ne vaut pas test");
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE), "a-tester", "test ❌, correction relue : le test est à refaire");
+  // La relecture de contrôle compte seulement datée après le test (spirc l'écrit avant le test, le même jour) ; sans date, elle compte.
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE.replace("2026-10-08", "2026-10-07")), "a-corriger", "relecture du même jour");
+  const sansDates = (RAPPORT("✅ Validé", { test: "❌ non concluant" }) + CONTROLE).replace(/^- \*\*Date\*\* : .*$/gm, "");
+  assert.strictEqual(etatRapport(sansDates), "a-tester", "sans date : la relecture placée après le test compte");
+  assert.strictEqual(etatRapport(TEST_REMIS_AU_MODELE), "a-tester", "test ❌ remis au modèle après la relecture de contrôle du même jour");
+});
+
+test("ligne « Blocage » restée au modèle (choix séparés par « | ») : pas de blocage", () => {
+  assert.strictEqual(etatRapport(RAPPORT("✅ Validé", { blocage: "aucun | persiste après 2 cycles : /pulse:get-help" })), "validee");
+  assert.strictEqual(etatRapport(RAPPORT("⛔ Bloquant", { blocage: "persiste après 2 cycles : /pulse:get-help" })), "bloquee");
+});
+
+test("test par la personne : « **Résultat :** », puces « * » et « é » décomposé sont lus", () => {
+  const avec = (ligne) => etatRapport(RAPPORT("✅ Validé", { test: "x" }).replace("- **Résultat** : x", ligne));
+  assert.strictEqual(avec("- **Résultat :** ✅ concluant"), "validee");
+  assert.strictEqual(avec("* **Résultat** : ✅ concluant"), "validee");
+  assert.strictEqual(avec("- **Résultat** : ❌ non concluant"), "a-corriger");
+});
+
+test("pulse-aidd revue T2 T3 : un bloc par tâche", () => {
+  const r = spawnSync(process.execPath, [ETAT, "--revue", "T2", "T99"], { cwd: projet({ ...EN_COURS }, PILE_CHOISIE), encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stdout);
+  const blocs = r.stdout.trim().split("\n\n");
+  assert.strictEqual(blocs.length, 2);
+  assert.match(blocs[0], /^tache: T2$[\s\S]*^reprendre: examen$/m);
+  assert.match(blocs[1], /^tache: T99$[\s\S]*^etat: inconnue$/m);
 });

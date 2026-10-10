@@ -1,5 +1,5 @@
 ---
-description: Écrire les user stories, découpées par epic (un fichier par US dans aidd_docs/tasks/<epic>/, référentiel dans docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), chacune vérifiée avant d'être déclarée prête, triées par ordre de réalisation, sauvegardées après validation
+description: Écrire les user stories, rangées par groupe (un fichier par US, et le référentiel docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), chacune vérifiée avant d'être déclarée prête, triées par ordre de réalisation, sauvegardées après validation
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte us) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
@@ -14,7 +14,7 @@ Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. 
 
 ## Objectif
 
-Produire le **référentiel** `docs/user-stories.md` (les epics, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son epic : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles « User stories, specs et plans » ci-dessus). Expliquer en deux phrases :
+Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles « User stories, specs et plans » ci-dessus). Expliquer en deux phrases :
 « Une user story décrit un besoin du point de vue de l'utilisateur. Ses critères d'acceptation, écrits sous la forme Étant donné… Lorsque… Alors…, sont ce qui permettra de vérifier que l'IA a codé exactement ce que vous vouliez. »
 
 ## Prérequis
@@ -29,15 +29,15 @@ Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées 
 
 **Clarifier le périmètre par rondes** : **3 questions au plus par ronde** (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
 
-### 1. Découper en epics
+### 1. Découper en groupes
 
-Regrouper les fonctionnalités **Indispensables**, **Essentielles** et **Optionnelles** du PRD en **epics** : une epic = un grand besoin de l'utilisateur (« Gérer les demandes », « Suivre les paiements »), qui contient plusieurs US. Viser 2 à 6 epics pour un MVP ; une epic d'une seule US est possible. Les **En attente** restent hors des epics.
+Regrouper les fonctionnalités **Indispensables**, **Essentielles** et **Optionnelles** du PRD en **groupes** : un groupe = un grand besoin de l'utilisateur (« Gérer les demandes », « Suivre les paiements »), qui contient plusieurs US. Viser 2 à 6 groupes pour une première version ; un groupe d'une seule US est possible. Les **En attente** restent hors des groupes.
 
-Pour chaque epic : un titre, un objectif en une phrase et un nom de dossier `<epic>` (règles ci-dessus). Montrer la liste des epics avec leurs dossiers et la faire valider (« Valider » / « Modifier les epics ») avant d'écrire les US.
+Pour chaque groupe : un titre, un objectif en une phrase et un nom de dossier `<epic>` (règles ci-dessus). Montrer la liste des groupes avec leurs dossiers et la faire valider (« Valider » / « Modifier les groupes ») avant d'écrire les US.
 
 ### 2. Écrire les user stories
 
-Pour chaque fonctionnalité **Indispensable** et **Essentielle** du PRD, écrire une ou plusieurs US détaillées, chacune dans **son fichier**. Les **Optionnelles** apparaissent seulement dans le tableau de leur epic, sans fichier (colonne « Fichier » : « — (détaillée lors de sa spec) ») ; leur fichier sera écrit par `/pulse:spec` quand elles seront traitées.
+Pour chaque fonctionnalité **Indispensable** et **Essentielle** du PRD, écrire une ou plusieurs US détaillées, chacune dans **son fichier**. Les **Optionnelles** apparaissent seulement dans le tableau de leur groupe, sans fichier (colonne « Fichier » : « — (détaillée lors de sa spec) ») ; leur fichier sera écrit par `/pulse:spec` quand elles seront traitées.
 
 Chaque US suit le modèle de fichier d'US :
 
@@ -61,7 +61,7 @@ Chaque US suit le modèle de fichier d'US :
 | **Small** (petite) | Un seul acteur, une seule action (une phrase sans « et » ni « ou »), 4 critères et une règle métier au plus. | La découper. |
 | **Testable** | Chaque critère décrit un résultat **visible** par l'utilisateur. | Reformuler le critère en résultat observable. |
 
-Vérifier aussi qu'elle est **bien rangée** : l'US sert l'objectif de son epic ; sinon, la déplacer ou proposer une autre epic.
+Vérifier aussi qu'elle est **bien rangée** : l'US sert l'objectif de son groupe ; sinon, la déplacer ou proposer un autre groupe.
 - Si des données sont partagées entre plusieurs personnes, intégrer des US d'accès : qui voit quoi (ex. « En tant que <acteur>, je vois seulement mes propres <éléments> »). Ce sont elles qui porteront la sécurité.
 
 ### 4. Trancher les questions et trier
@@ -81,12 +81,12 @@ Cocher la section « Prête » du modèle d'US une fois ces conditions vérifié
 
 ### 6. Valider, puis sauvegarder
 
-**Travail en cours** : avant de présenter la validation, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les epics, les décisions prises et la question en attente ; l'effacer (`pulse-aidd travail-fini`) une fois les US sauvegardées.
+**Travail en cours** : avant de présenter la validation, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les groupes, les décisions prises et la question en attente ; l'effacer (`pulse-aidd travail-fini`) une fois les US sauvegardées.
 
-1. **Présenter**, dans la conversation : le tableau des epics, le parcours, l'**ordre de réalisation**, chaque US en résumé (phrase, taille, dépendances, critères), puis **le tableau des règles métier** de toutes les US : `| Règle | US | Origine |`, l'origine valant « Décidé par vous » (brief, PRD, réponse à une question clé) ou « Proposé par Pulse ».
+1. **Présenter**, dans la conversation : le tableau des groupes, le parcours, l'**ordre de réalisation**, chaque US en résumé (phrase, taille, dépendances, critères), puis **le tableau des règles métier** de toutes les US : `| Règle | US | Origine |`, l'origine valant « Décidé par vous » (brief, PRD, réponse à une question clé) ou « Proposé par Pulse ».
 2. **Attendre la validation explicite** (AskUserQuestion) : « Valider et sauvegarder » / « Contester une règle proposée par Pulse » / « Modifier une US ». Une règle contestée se tranche par une question clé, puis l'US est corrigée et présentée à nouveau. Seule la réponse « Valider et sauvegarder » déclenche l'écriture.
 3. **Sauvegarder** vers l'outil de ticketing de la mémoire projet (ligne « Outil de ticketing » de `aidd_docs/memory/project.md`) :
-   - **toujours** les fichiers : le référentiel `docs/user-stories.md` (modèle du référentiel : epics, parcours, ordre de réalisation, puis pour chaque epic son tableau d'US, rangé dans l'ordre de réalisation, avec le lien vers chaque fichier) et les fichiers `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` ;
+   - **toujours** les fichiers : le référentiel `docs/user-stories.md` (modèle du référentiel : groupes, parcours, ordre de réalisation, puis pour chaque groupe son tableau d'US, rangé dans l'ordre de réalisation, avec le lien vers chaque fichier) et les fichiers `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` ;
    - **si un outil est indiqué** (GitHub Issues, Jira, Linear…) : créer aussi un ticket par US détaillée, dans l'ordre de réalisation, avec la phrase, les critères et le lien vers le fichier. GitHub Issues passe par `gh issue create` ; un autre outil, par son connecteur (MCP) s'il est disponible ; sinon, le signaler et garder les fichiers seuls. Reporter le lien de chaque ticket dans la ligne « Ticket » de son US ;
    - **ligne absente** : garder les fichiers, et proposer d'ajouter la ligne « Outil de ticketing » à la mémoire projet (`/pulse:memory`).
 

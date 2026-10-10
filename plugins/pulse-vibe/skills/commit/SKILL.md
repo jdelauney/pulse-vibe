@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin)
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *)
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -36,9 +36,17 @@ Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explica
 
 Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient un secret. S'il se déclenche, expliquer simplement pourquoi c'est une protection, corriger, puis recommencer.
 
-### 2. Vérifier que la tâche a été relue
+### 2. Vérifier que la tâche a été relue et testée
 
-Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`). Pour chacune, s'il manque le rapport `<Tâche>-*.md` dans le dossier de relecture de son plan (`aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/`), demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
+Ce contrôle porte sur les tâches `[~]` des plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) concernées par ce commit : celles dont les fichiers en font partie (sujets triés au § 3 ; appelé par `/pulse:implement` ou `/pulse:spirc` : la tâche en cours). Pour chacune, lancer `pulse-aidd revue <Tn>` (plusieurs tâches : `pulse-aidd revue T3 T4`) et suivre sa ligne `reprendre` :
+
+- `commit` : la tâche est relue, vérifiée et testée par la personne (ou son test est reporté au test groupé du mode autonome) : continuer.
+- `examen` (aucun rapport) : demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (Recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review <Tn>`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
+- `test` : la relecture est faite, le test par la personne manque encore. Enregistrer seulement une tâche testée : s'arrêter, le dire en une phrase (« Votre test de T3 manque encore : c'est lui qui confirme que la tâche fonctionne. ») et proposer `/pulse:review <Tn>`, qui reprend directement au test.
+- `correction` ou `aide` : le dernier rapport n'est pas validé (constats à corriger, ou test non concluant). S'arrêter, le dire en une phrase, et proposer `/pulse:review <Tn>` (`/pulse:get-help` pour `aide`).
+- `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
+
+Un commit sans tâche concernée (`docs:`, `chore:`, la mémoire, une correction sans rapport avec la tâche) s'enregistre toujours : une tâche `[~]` qui attend encore son test est seulement signalée en une ligne (« T3 attend encore votre test. »).
 
 ### 3. Trier les modifications par sujet
 
@@ -82,7 +90,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 ## Suite
 
 - S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
-- Si le plan est terminé et que son « Envoi » est **PR** : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
+- Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
 - Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree.md`).

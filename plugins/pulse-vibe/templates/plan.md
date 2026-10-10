@@ -3,17 +3,17 @@
 > Produit par `/pulse:plan` le {{DATE}} à partir de `SPEC-US-{{XXX}}-{{nom}}.md` (même dossier, verrouillée) et de `docs/technical.md`.
 > La spec dit **ce que** l'utilisateur obtient ; ce plan décide **comment** le construire (« Conception technique »), puis le découpe en tâches.
 > Un plan par spec, donc par user story. Numéros de tâche uniques dans tout le projet : ce plan reprend après le plus grand `Tn` des autres plans de `aidd_docs/tasks/`.
-> La tâche « Mettre en ligne le MVP » figure uniquement dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
+> La tâche « Mettre en ligne la première version » figure uniquement dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
 > Statuts : `[ ]` à faire · `[~]` en cours · `[x]` terminé : c'est le tableau de suivi des tâches.
 > Chaque tâche est petite (une seule chose visible à tester) et livre de la valeur (découpage vertical).
 
 ## Vue d'ensemble
 
-- **US** : US-{{XXX}} – {{titre}} · **Epic** : {{Titre de l'epic}} · **Priorité** : {{Indispensable | Essentiel | Optionnel}}
+- **US** : US-{{XXX}} – {{titre}} · **Groupe** : {{Titre du groupe}} · **Priorité** : {{Indispensable | Essentiel | Optionnel}}
 - **Tâches** : {{nombre}} ({{Tn}} à {{Tm}})
 - **S'appuie sur** : {{plans d'autres US dont des tâches doivent être terminées avant (US-XXX), ou « aucun »}}
-- **Envoi** : à choisir (au premier commit, s'il existe un dépôt distant : PR, branche principale ou local)
-- **En parallèle avec** : {{US-YYY, US-ZZZ (US non terminées qui peuvent avancer en même temps, dans une autre session et un worktree), ou « aucune »}}
+- **Envoi** : à choisir (au premier commit, s'il existe un dépôt distant : version parallèle, branche principale ou local)
+- **En parallèle avec** : {{US-YYY, US-ZZZ (US non terminées qui peuvent avancer en même temps, dans une autre session et un dossier à part), ou « aucune »}}
 
 ## Ordre des tâches
 
@@ -101,7 +101,7 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
   - Action manuelle : {{seulement si la personne doit agir elle-même, ex. appliquer un schéma dans la console du fournisseur, saisir une variable chez l'hébergeur ; sinon supprimer cette ligne}}
 
 <!-- Tâche suivante : seulement dans le plan de la dernière US Indispensable du parcours ; sinon la supprimer, avec ce commentaire. -->
-- [ ] **T2 – Mettre en ligne le MVP** · —
+- [ ] **T2 – Mettre en ligne la première version** · —
   - Objectif : l'outil est accessible à une adresse publique
   - Dépend de : toutes les tâches des US Indispensables
   - Vérification : l'adresse s'ouvre sur un téléphone et le parcours principal fonctionne

@@ -148,10 +148,10 @@ function etapesAvantLePlan(plans) {
   const etapes = [
     ["Préparer le projet", "/pulse:init", "CLAUDE.md"],
     ["Raconter l'idée", "/pulse:brainstorm", "docs/brief.md"],
-    ["Décider du MVP", "/pulse:prd", "docs/prd.md"],
+    ["Décider de la première version", "/pulse:prd", "docs/prd.md"],
     ["Choisir les outils", "/pulse:tech", "docs/technical.md"],
     ["⚪ Définir l'identité visuelle (facultatif, avant les user stories)", "/pulse:ui identite", "docs/design.md"],
-    ["Écrire les user stories, par epic", "/pulse:us", "docs/user-stories.md"],
+    ["Écrire les user stories, par groupe", "/pulse:us", "docs/user-stories.md"],
   ];
   const lignes = etapes.map(([quoi, commande, fichier]) => `- ${coche(fs.existsSync(fichier))} ${quoi} : \`${commande}\` → \`${fichier}\``);
   const sansPlan = specsSansPlan(plans);
@@ -202,20 +202,20 @@ function ecrireIndex(plans, nom) {
   ];
   const mvp = plans.filter((p) => p.priorite.rang === 0).flatMap((p) => p.taches);
   if (mvp.length > 0) {
-    lignes.push(`MVP (US Indispensables planifiées) : ${mvp.filter((t) => t.statut === "terminee").length}/${mvp.length} tâche(s) terminée(s).`, "");
+    lignes.push(`Première version (US Indispensables planifiées) : ${mvp.filter((t) => t.statut === "terminee").length}/${mvp.length} tâche(s) terminée(s).`, "");
   }
   if (suite) {
     lignes.push(`Prochaine étape : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}) :`, "");
     lignes.push("```", commandeSuivante(suite.plan, suite.tache), "```", "");
     const autre = usEnParallele(plans, suite.plan);
     if (autre) {
-      lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera une copie de travail séparée, un worktree).`, "");
+      lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera un dossier à part).`, "");
     }
   } else {
     lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
   }
   lignes.push("## Avant de construire", "", ...etapesAvantLePlan(plans), "");
-  lignes.push("## Les plans", "", "| Epic | US | Priorité | Tâches | Terminées | Guide |", "|---|---|---|---|---|---|");
+  lignes.push("## Les plans", "", "| Groupe | US | Priorité | Tâches | Terminées | Guide |", "|---|---|---|---|---|---|");
   for (const plan of plans) {
     const faites = plan.taches.filter((t) => t.statut === "terminee").length;
     lignes.push(`| ${plan.epic} | ${nomPlan(plan)} | ${plan.priorite.libelle} | ${plan.taches.length} | ${faites}/${plan.taches.length} | [${plan.guide}](${plan.guide}) |`);
@@ -291,7 +291,7 @@ function ecrirePlan(plan, nom) {
     `# ${nomPlan(plan)} – ${nom}`,
     "",
     `> Généré automatiquement à partir de \`${plan.source}\`. Retour au sommaire : [index.md](../index.md).`,
-    `> Epic : ${plan.epic} · Priorité : ${plan.priorite.libelle}${plan.parallele.length ? ` · Peut avancer en parallèle de : ${plan.parallele.join(", ")}` : ""}`,
+    `> Groupe : ${plan.epic} · Priorité : ${plan.priorite.libelle}${plan.parallele.length ? ` · Peut avancer en parallèle de : ${plan.parallele.join(", ")}` : ""}`,
     "",
   ];
   let avant = null;
@@ -303,7 +303,7 @@ function ecrirePlan(plan, nom) {
   lignes.push(
     `## Fin de ${plan.id}`,
     "",
-    ...(dejaEnLigne ? [] : ["- 🔵 Mettre la nouvelle version en ligne (une fois le MVP en ligne) : `/pulse:deploy`"]),
+    ...(dejaEnLigne ? [] : ["- 🔵 Mettre la nouvelle version en ligne (une fois la première version en ligne) : `/pulse:deploy`"]),
     "- ⚪ Contrôle de sécurité rapide : `/pulse:security rapide` (ou l'audit complet : `/pulse:security`)",
     "- ⚪ Erreurs rouges dans le code : `/pulse:auto-fix`",
     "- ⚪ Lancer les tests automatiques (s'il y en a) : `/pulse:test`",

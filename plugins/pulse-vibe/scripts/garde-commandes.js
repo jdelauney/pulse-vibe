@@ -60,7 +60,7 @@ const MESSAGES = {
     "À la place : faites un nouveau commit avec la correction.",
   envoiProduction:
     "Pulse demande votre accord : envoyer sur la branche principale met le site en ligne (déploiement continu). " +
-    "Vérifiez que cette version a été testée, ou passez par une demande de fusion (`/pulse:pr`).",
+    "Vérifiez que cette version a été testée, ou passez par une version parallèle et sa proposition (`/pulse:pr`).",
   envoiForce:
     "Pulse refuse l'envoi forcé : il réécrit l'historique du dépôt distant et peut effacer le travail d'une autre personne. " +
     "À la place : `git pull`, résoudre les différences, puis `git push`. En cas de blocage, `/pulse:get-help`.",
@@ -83,8 +83,8 @@ const MESSAGES = {
     "Pulse demande votre accord : cette commande efface des modifications qui ne sont enregistrées nulle part. " +
     "Pour revenir en arrière sans rien perdre, préférez `/pulse:annuler`.",
   brancheForcee:
-    "Pulse demande votre accord : cette commande supprime une branche ou un worktree même s'il contient du travail non fusionné. " +
-    "Sans risque : `git branch -d` (Git refuse s'il reste du travail à fusionner).",
+    "Pulse demande votre accord : cette commande supprime une version parallèle (une branche) ou un dossier à part, même s'il y reste du travail pas encore rassemblé dans la version principale. " +
+    "Sans risque : `git branch -d` (Git refuse s'il reste du travail à rassembler).",
   brancheDistante: "Pulse demande votre accord : cette commande supprime une branche sur le dépôt distant.",
   config: "Pulse demande votre accord : cette commande change la configuration de Git au-delà du nom et de l'e-mail.",
   suppression: "Pulse demande votre accord : cette commande supprime des fichiers et des dossiers entiers, sans passer par la corbeille.",
@@ -108,7 +108,7 @@ const MESSAGES = {
     "Pour retirer .env de Git en le gardant sur le poste : `git rm --cached .env`.",
   depotModifie: "Pulse demande votre accord : cette commande archive, renomme ou transfère le dépôt sur son site ; les liens et les envois en cours peuvent cesser de fonctionner.",
   secretsDepot:
-    "Pulse demande votre accord : cette commande crée, change ou supprime un secret du dépôt, utilisé par les vérifications automatiques (CI). " +
+    "Pulse demande votre accord : cette commande crée, change ou supprime un secret du dépôt, utilisé par les contrôles automatiques faits à chaque envoi. " +
     "La valeur reste hors de la conversation : la personne la saisit elle-même sur le site du dépôt.",
   gitleaksSansMasque:
     "Pulse refuse gitleaks sans --redact : les secrets trouvés s'afficheraient en clair dans la conversation. " +
@@ -137,7 +137,7 @@ const MESSAGES = {
     "Préférez `/pulse:secrets`, qui ne montre jamais la valeur.",
   secretsHebergeur: "Pulse demande votre accord : cette commande crée, envoie ou retire un secret chez l'hébergeur, ou redéploie le site en ligne.",
   deconnexion: "Pulse demande votre accord : cette commande supprime l'accès Search Console enregistré sur ce poste.",
-  fusion: "Pulse demande votre accord : cette commande fusionne une demande de fusion. D'habitude, la fusion se fait par vous, sur le site du dépôt.",
+  fusion: "Pulse demande votre accord : cette commande accepte une proposition et la rassemble dans la version principale. D'habitude, c'est vous qui l'acceptez, sur le site du dépôt.",
   lectureEnv:
     "Pulse garde le contenu des fichiers .env hors de la conversation : ils contiennent les secrets du projet. " +
     "À la place : `pulse-aidd secrets inventaire` liste les variables (noms, présence, sans aucune valeur) ; `.env.example` donne les noms attendus.",

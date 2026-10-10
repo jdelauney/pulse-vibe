@@ -2,7 +2,7 @@
 description: Produire le guide de réalisation pas à pas (docs/guide/) à partir du plan - pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier et les actions manuelles
 argument-hint: "[expliquer] (facultatif : présenter le guide pas à pas)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte guide) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *)
+allowed-tools: Bash(pulse-aidd contexte guide) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:guide – Le guide de réalisation
@@ -43,7 +43,7 @@ Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une co
 3. **Contrôler la cohérence** avec le projet, en lecture seule :
    - une tâche `[~]` sans modification en cours (`git status`) ou une tâche `[ ]` déjà réalisée dans le code : le signaler, et proposer `/pulse:refine` pour corriger le plan ;
    - une action manuelle qui manque probablement dans le plan (ex. appliquer un schéma dans la console du fournisseur de données, saisir une variable d'environnement chez l'hébergeur, selon `docs/technical.md`) : la signaler de la même façon.
-4. **Présenter** en quelques lignes : la progression (MVP, US en cours, tâches terminées), la **prochaine commande à copier**, et les éventuelles actions manuelles à prévoir.
+4. **Présenter** en quelques lignes : la progression (première version, US en cours, tâches terminées), la **prochaine commande à copier**, et les éventuelles actions manuelles à prévoir.
 5. Avec l'argument `expliquer` : parcourir avec la personne la page du plan en cours, une tâche à la fois : ce que fait chaque commande, et pourquoi cet ordre (réaliser → relire et tester → enregistrer).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée dans « Où en êtes-vous ? » du guide.

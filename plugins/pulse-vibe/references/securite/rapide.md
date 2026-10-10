@@ -67,4 +67,4 @@ Score : <n>/10   (10 − 2 par ⛔ − 1 par ⚠️, minimum 0)
 ⚠️ À améliorer : …
 ```
 
-Puis proposer : corriger les ⛔ maintenant (recommandé), `/pulse:security entetes` si des en-têtes manquent, ou l'audit complet `/pulse:security`.
+Puis proposer : corriger les ⛔ maintenant (Recommandé), `/pulse:security entetes` si des en-têtes manquent, ou l'audit complet `/pulse:security`.

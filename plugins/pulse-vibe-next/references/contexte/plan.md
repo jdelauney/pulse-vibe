@@ -17,4 +17,4 @@ Découpage type d'une US, chaque tâche livrant quelque chose de visible et de t
 
 Une recette apporte ses tâches prêtes (section « Tâches de plan prêtes ») : les reprendre en les numérotant dans la suite du projet, avec la ligne « Recette : <nom> » dans chaque tâche concernée. La recette `connexion` vient avant toute US qui a des données personnelles.
 
-Un écran public : ses métadonnées et son entrée du sitemap font partie de la même tâche. Avant « Mettre en ligne le MVP » d'un site à trouver : la recette `seo` (tâches prêtes).
+Un écran public : ses métadonnées et son entrée du sitemap font partie de la même tâche. Avant « Mettre en ligne la première version » d'un site à trouver : la recette `seo` (tâches prêtes).

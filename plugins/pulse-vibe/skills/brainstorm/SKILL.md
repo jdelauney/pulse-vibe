@@ -2,7 +2,7 @@
 description: Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet
 argument-hint: "[votre idée en une phrase]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd pile contexte *) Read Glob Grep Write(docs/brief.md) Edit(docs/brief.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md)
+allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd pile contexte *) Read Glob Grep Write(docs/brief.md) Edit(docs/brief.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Edit(./CLAUDE.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
 
 # /pulse:brainstorm – Du besoin au brief
@@ -102,4 +102,4 @@ L'entretien est terminé quand **la frontière est vide** : toutes les branches 
 
 Montrer la phrase de synthèse et l'histoire. Demander une validation (AskUserQuestion : « Valider » / « Modifier quelque chose »). Corriger si besoin.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour décider de ce qui entre dans la première version (MVP).
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour décider de ce qui entre dans la première version.
