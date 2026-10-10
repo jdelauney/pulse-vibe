@@ -8,6 +8,7 @@
 - Pour protéger la connexion et l'inscription : recette `connexion` appliquée (actions `inscrire` et `connecter`, `actionPublique` de `src/lib/safe-action.ts`).
 - Pour un formulaire ouvert à tous (contact, devis, avis) : cette recette, puis la recette `formulaire-public` (`pulse-aidd pile recette formulaire-public`).
 - Option Redis (site à fort trafic) : voir « Option : Redis (Upstash) » en fin d'étapes.
+- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `connexion,limite` de `verifier-recettes.js`), option Redis comprise : contrôles, types, tests unitaires et d'intégration (PGlite ; panne d'Upstash simulée par une adresse locale injoignable), construction. Upstash n'est jamais appelé.
 
 ## Variables d'environnement
 

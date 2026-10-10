@@ -2,6 +2,7 @@
 
 `src/lib/limite.ts` assemble la limite (architecture.md §3) : les règles, le choix du limiteur selon `LIMITE_STOCKAGE`, et deux fonctions pour les actions. Un limiteur injoignable est journalisé sous forme d'`ErreurService("limite", …)` dont la `cause` garde seulement des codes techniques (le texte d'une erreur réseau peut citer une adresse) ; la requête passe.
 
+<!-- fichier: src/lib/limite.ts -->
 ```ts
 // src/lib/limite.ts
 // Limite de requêtes : règles, choix du limiteur (LIMITE_STOCKAGE) et garde des actions.

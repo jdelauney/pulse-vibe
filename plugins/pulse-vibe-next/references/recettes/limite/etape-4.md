@@ -2,6 +2,7 @@
 
 Une seule requête compte la tentative : elle crée la ligne, ou l'incrémente, ou la remet à 1 si la fenêtre est écoulée (`onConflictDoUpdate`, c'est-à-dire `INSERT … ON CONFLICT DO UPDATE` de Postgres). Postgres verrouille la ligne pendant la mise à jour : deux envois simultanés sont comptés l'un après l'autre, sans dépasser la limite. Environ une vérification sur cinquante efface au passage des compteurs de plus d'un jour, sans tâche planifiée.
 
+<!-- fichier: src/db/limite/limite.repository.ts -->
 ```ts
 // src/db/limite/limite.repository.ts
 import "server-only";

@@ -12,7 +12,7 @@ const { spawnSync } = require("child_process");
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes à baliser (tâches 11 à 16 du plan « Corrections 3 ») : chaque tâche retire la sienne.
-const EN_ATTENTE = ["formulaire-public", "langues", "limite", "seo", "mesure-reelle"];
+const EN_ATTENTE = ["formulaire-public", "langues", "seo", "mesure-reelle"];
 // Recettes qui créent une table : leur chaîne génère la migration.
 const AVEC_MIGRATION = ["connexion", "liste", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";
@@ -77,6 +77,14 @@ test("pose : ajout après une ligne, ajout en fin de fichier, remplacement d'un 
   assert.strictEqual(appliquerAuTexte(null, { type: "fichier", chemin: "a.ts", contenu: "x\n", ligne: 1 }), "x\n");
   assert.throws(() => appliquerAuTexte(null, { type: "ajout", chemin: "env.ts", ancre: "server: {", contenu: "x\n", ligne: 3 }), /n'existe pas/);
   assert.throws(() => appliquerAuTexte(env, { type: "ajout", chemin: "env.ts", ancre: "client: {", contenu: "x\n", ligne: 3 }), /ancrage introuvable/);
+});
+
+test("pose : deux recettes ajoutent après la même ligne (limite puis formulaire-public) : les deux blocs restent, le dernier juste après l'ancre", () => {
+  const ancre = "const verificationsCroisees: VerificationCroisee[] = [];";
+  const env = `${ancre}\n\nexport const env = createEnv({});\n`;
+  const redis = appliquerAuTexte(env, { type: "ajout", chemin: "env.ts", ancre, contenu: "verificationsCroisees.push(redis);\n", ligne: 1 });
+  const lesDeux = appliquerAuTexte(redis, { type: "ajout", chemin: "env.ts", ancre, contenu: "verificationsCroisees.push(turnstile);\n", ligne: 1 });
+  assert.strictEqual(lesDeux, `${ancre}\nverificationsCroisees.push(turnstile);\nverificationsCroisees.push(redis);\n\nexport const env = createEnv({});\n`);
 });
 
 test("commandes : chaque argument est contrôlé, sans interpréteur", () => {

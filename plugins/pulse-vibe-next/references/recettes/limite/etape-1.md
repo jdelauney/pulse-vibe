@@ -2,6 +2,7 @@
 
 Trois limiteurs savent compter : la base (par défaut), Redis (option) et la mémoire (tests). Ils suivent le même contrat, placé dans `src/core/shared/` : la garde de l'étape 6 les utilise sans savoir lequel est choisi.
 
+<!-- fichier: src/core/shared/limiteur.port.ts -->
 ```ts
 // src/core/shared/limiteur.port.ts
 // Contrat commun des limiteurs de requêtes : base (Neon), Redis (Upstash) ou mémoire.
