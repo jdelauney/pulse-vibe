@@ -27,7 +27,7 @@ Aucune.
 | `src/lib/i18n/__tests__/chemins.test.ts`, `referencement.test.ts` | Tests unitaires des fonctions pures |
 | `next.config.ts` (modifié) | Extension next-intl |
 | `app/layout.tsx` → `app/[locale]/layout.tsx` | Layout racine, avec la langue |
-| `error.tsx`, `not-found.tsx`, `essai-surveillance/`, `(public)/`, `(connecte)/` → sous `app/[locale]/` | Pages déplacées |
+| `error.tsx`, `not-found.tsx`, `(public)/`, `(connecte)/` → sous `app/[locale]/` | Pages déplacées |
 | `app/page.tsx` → `app/[locale]/page.tsx` | Accueil, remplacé par la page d'exemple de l'étape 5 |
 | `app/[locale]/[...reste]/page.tsx` | Adresse inconnue : page « introuvable » du site |
 | `app/api/`, `global-error.tsx`, `globals.css`, `favicon.ico`, `robots.ts`, `sitemap.ts`, `opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx` | Restent dans `app/` |

@@ -385,8 +385,9 @@ test("production : base dev séparée, intégration Vercel–Neon, migrations sa
   for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "NEON_ENDPOINT_PRODUCTION", "package-lock.json"])
     assert.ok(technique.includes(attendu), `technical.md : ${attendu}`);
   const deploy = lire(REF, "contexte", "deploy.md");
-  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables", "/api/sante", "Level", "1 heure", "Erreur dans le navigateur", "100 CU-h", "veille", "app/global-error.tsx", "/essai-surveillance", "NEON_ENDPOINT_PRODUCTION"])
+  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables", "/api/sante", "Level", "1 heure", "Erreur dans le navigateur", "100 CU-h", "veille", "app/global-error.tsx", "NEON_ENDPOINT_PRODUCTION"])
     assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
+  assert.ok(!deploy.includes("essai-surveillance"), "aucune page d'essai dans le site publié");
   assert.ok(!deploy.includes("appliquer `npm run db:migrate` sur la base de production"), "plus de migration à la main en production");
   const secrets = lire(REF, "contexte", "secrets.md");
   assert.match(secrets, /^### `NEON_API_KEY`$/m);
@@ -513,5 +514,6 @@ test("deploy : tests dans la construction, prévisualisations sans vrais destina
   const secrets = lire(REF, "contexte", "secrets.md");
   assert.ok(secrets.includes("lisible par le code du site"), "secrets.md : NEON_API_KEY lisible à l'exécution");
   assert.match(lire(REF, "migrations.md"), /Projet créé avant pulse-next 0\.22\.0/);
-  assert.match(lire(REF, "migrations.md"), /essai-surveillance/);
+  assert.match(lire(REF, "migrations.md"), /Projet créé ou mis à niveau avec pulse-next 0\.22\.0\*\* \(dossier `app\/essai-surveillance\/`.*supprimer ce dossier/);
+  assert.doesNotMatch(lire(REF, "migrations.md").split("\n").find((l) => l.includes("Projet créé avant pulse-next 0.22.0")), /essai-surveillance/, "rien à recopier de la page d'essai");
 });
