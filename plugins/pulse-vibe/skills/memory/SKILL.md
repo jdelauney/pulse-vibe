@@ -2,7 +2,7 @@
 description: Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session
 argument-hint: "[creer | actualiser | compacter | retenir \"leçon ou décision\"]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git restore -- aidd_docs/memory/*) Bash(wc -l aidd_docs/memory/*) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Edit(CLAUDE.md)
+allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git restore -- aidd_docs/memory/*) Bash(wc -l aidd_docs/memory/*) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Edit(./CLAUDE.md)
 ---
 
 # /pulse:memory – La mémoire du projet

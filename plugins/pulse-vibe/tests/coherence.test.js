@@ -837,13 +837,14 @@ test("les commandes qui écrivent des documents, ou enchaînent des étapes qui 
   assert.match(lire(RACINE, "references", "examen.md"), /Claude Code demande alors l'accord de la personne pour démarrer l'application/);
 });
 
-test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus CLAUDE.md et README.md en modification", () => {
+// Un nom de fichier seul (Edit(CLAUDE.md)) vaut à toute profondeur ; ./ l'ancre à la racine du projet. Edit couvre aussi la création.
+test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus ./CLAUDE.md et ./README.md à la racine (écriture autorisée)", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const ligne = (lire(fichier).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
     for (const [, outil, motif] of ligne.matchAll(/\b(Write|Edit|MultiEdit)\(([^)]*)\)/g)) {
-      const document = /^(docs|aidd_docs)\/\S+$/.test(motif);
-      const racine = outil === "Edit" && /^(CLAUDE|README)\.md$/.test(motif);
+      const document = /^(docs|aidd_docs)\/\S+$/.test(motif) && !motif.split("/").includes("..");
+      const racine = outil === "Edit" && /^\.\/(CLAUDE|README)\.md$/.test(motif);
       if (!document && !racine) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
     }
   }
@@ -1140,26 +1141,26 @@ test("forme : « (Recommandé) » avec majuscule, chemin des commandes dans cycl
 
 test("chaque commande écrit ses documents sans demande d'autorisation (W13)", () => {
   const MEMOIRE = ["Write(aidd_docs/memory/**)", "Edit(aidd_docs/memory/**)"];
-  const TECH = ["Write(docs/technical.md)", "Edit(docs/technical.md)", "Edit(CLAUDE.md)", ...MEMOIRE];
+  const TECH = ["Write(docs/technical.md)", "Edit(docs/technical.md)", "Edit(./CLAUDE.md)", ...MEMOIRE];
   const DESIGN = ["Write(docs/design.md)", "Edit(docs/design.md)", "Write(docs/design/**)", "Edit(docs/design/**)"];
   const PERF = ["Write(docs/performance.md)", "Edit(docs/performance.md)"];
   const LEXIQUE = ["Write(docs/lexique.md)", "Edit(docs/lexique.md)"];
   const attendus = {
     annuler: ["Edit(aidd_docs/tasks/**)"],
     cicd: ["Edit(docs/technical.md)", ...PERF],
-    deploy: ["Edit(docs/technical.md)", "Edit(CLAUDE.md)", "Edit(README.md)", "Edit(aidd_docs/tasks/**)", ...PERF],
+    deploy: ["Edit(docs/technical.md)", "Edit(./CLAUDE.md)", "Edit(./README.md)", "Edit(aidd_docs/tasks/**)", ...PERF],
     "get-help": ["Write(docs/aide/**)", "Edit(docs/aide/**)"],
     guide: ["Edit(aidd_docs/tasks/**)"],
-    memory: [...MEMOIRE, "Edit(CLAUDE.md)"],
+    memory: [...MEMOIRE, "Edit(./CLAUDE.md)"],
     perf: [...PERF, "Edit(docs/technical.md)", ...LEXIQUE],
     rediger: ["Write(docs/voix.md)", "Edit(docs/voix.md)", "Write(docs/textes/**)", "Edit(docs/textes/**)"],
     "search-console": ["Edit(docs/technical.md)", "Write(docs/referencement/**)", "Edit(docs/referencement/**)", "Write(aidd_docs/tasks/in-progress.md)"],
     secrets: ["Write(docs/secrets.md)", "Edit(docs/secrets.md)", "Write(docs/incidents/**)", "Edit(docs/incidents/**)", ...LEXIQUE],
     security: ["Write(docs/securite.md)", "Edit(docs/securite.md)"],
     seo: ["Write(docs/seo.md)", "Edit(docs/seo.md)", "Write(docs/seo/**)", "Edit(docs/seo/**)"],
-    tech: [...TECH, "Edit(README.md)", "Write(aidd_docs/tasks/in-progress.md)"],
+    tech: [...TECH, "Edit(./README.md)", "Write(aidd_docs/tasks/in-progress.md)"],
     ui: [...DESIGN, "Edit(aidd_docs/tasks/**)", "Write(aidd_docs/tasks/in-progress.md)"],
-    brainstorm: [...MEMOIRE, "Edit(CLAUDE.md)", ...LEXIQUE],
+    brainstorm: [...MEMOIRE, "Edit(./CLAUDE.md)", ...LEXIQUE],
     init: [...TECH, ...DESIGN],
     express: [...TECH, ...DESIGN],
     spirc: TECH,
