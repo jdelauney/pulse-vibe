@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="fr" data-racine="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mode rapide : un prototype – Wiki Pulse</title>
+<meta name="description" content="Tutoriel 1 : construire en environ 2 heures le prototype en ligne d'un carnet de réservations pour un salon de coiffure, avec Pulse et sa pile Next.js.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large"><div class="mise-en-page">
+<nav class="laterale" aria-label="Sur cette page" data-laterale="sommaire"></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<p class="pastille pastille-etape" data-couleur="1">Tutoriel 1 · Environ 2 heures</p>
+<h1>Mode rapide : un prototype</h1>
+<p class="chapo">Un salon de coiffure veut un carnet de réservations : les clients choisissent une prestation et un créneau libre, puis laissent leur nom et leur e-mail ; la coiffeuse voit les rendez-vous du jour. En un après-midi, vous allez en faire un prototype en ligne, à montrer et à essayer.</p>
+</header>
+
+<p>Le mode rapide va droit au but : une seule conversation pour décrire l'idée, puis Pulse réalise la prise de rendez-vous et la met en ligne. Il saute volontairement des étapes. Vous les retrouverez dans le <a href="production.html">tutoriel complet</a>, qui reprend la même appli pour de vrais clients.</p>
+<p>Vous tapez une commande, Pulse pose des questions, vous répondez avec vos mots. Les réponses montrées ici sont des exemples : donnez les vôtres.</p>
+
+<!-- ===================================================================================================== -->
+<section id="avant" class="etape-tuto">
+<h2><span class="etape-numero">0</span> Avant de commencer <span class="duree">10 minutes</span></h2>
+<p><strong>Objectif :</strong> avoir un dossier vide, ouvert dans Claude Code, avec Pulse et sa pile Next.js installés.</p>
+<ol>
+<li>Vérifiez que tout est installé avec la page <a href="../prerequis.html">Prérequis</a> : Claude Code, Git, Node.js (22.19 ou plus), les plugins <code>pulse</code> et <code>pulse-next</code>, et un compte GitHub.</li>
+<li>Créez un dossier vide, par exemple <code>carnet-reservations</code>, là où vous rangez vos documents.</li>
+<li>Ouvrez Claude Code dans ce dossier.</li>
+</ol>
+<pre class="commande"><code>cd carnet-reservations
+claude</code></pre>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-dossier-vide.png"><div class="capture-cadre">Capture à venir : Claude Code ouvert dans le dossier vide carnet-reservations</div><figcaption>Claude Code ouvert dans un dossier vide : c'est le point de départ.</figcaption></figure>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> gardez une heure devant vous pour les étapes 1 à 4, puis une heure pour les étapes 5 et 6. Entre les deux, vous pouvez faire une pause : Pulse retrouve le fil tout seul.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> Claude Code est ouvert, et la commande <code>/pulse:init</code> apparaît quand vous tapez <code>/pulse</code>.</p></aside>
+<details class="probleme"><summary>Les commandes <code>/pulse:…</code> n'apparaissent pas</summary><p>Les plugins ne sont pas installés, ou Claude Code n'a pas été relancé après l'installation. Suivez la page <a href="../prerequis.html">Prérequis</a>, puis fermez et rouvrez Claude Code.</p></details>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="init" class="etape-tuto">
+<h2><span class="etape-numero">1</span> Créer le projet <span class="duree">5 minutes</span></h2>
+<p><strong>Objectif :</strong> préparer le dossier (règles du projet, mémoire, historique des versions) et choisir le parcours express.</p>
+<pre class="commande"><code>/pulse:init carnet-reservations</code></pre>
+<p>Pulse vous demande une phrase de description, votre niveau et la quantité d'explications voulue. Répondez « Jamais programmé » si c'est votre cas : Pulse prendra alors lui-même les réglages techniques conseillés, sans vous poser de questions de développeur. Il propose ensuite de protéger vos clés et de créer la copie en ligne du projet sur GitHub.</p>
+<div class="conversation" data-titre="Créer le projet">
+<p data-role="vous">/pulse:init carnet-reservations</p>
+<p data-role="claude">👋 Bienvenue ! Ce dossier est vide : je vous propose de préparer le projet.
+Décrivez-le en une phrase (facultatif).</p>
+<p data-role="vous">Un carnet de réservations en ligne pour un salon de coiffure.</p>
+<p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé
+Combien d'explications voulez-vous ? → Normales (Recommandé)</p>
+<p data-role="outil">pulse-aidd nouveau "carnet-reservations" --ici --description "Un carnet de réservations en ligne pour un salon de coiffure." --oui</p>
+<p data-role="claude">C'est prêt : les règles du projet, la mémoire et un premier enregistrement.
+Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Protéger mes clés (Recommandé)
+Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recommandé), privé, sur GitHub.</p>
+<p data-role="claude">Pour la suite : parcours express (démarrer vite) ou parcours complet, étape par étape ?</p>
+<p data-role="vous">Parcours express</p>
+</div>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-accueil-pulse.png"><div class="capture-cadre">Capture à venir : l'écran d'accueil de Pulse, avec la bannière et le tableau « Votre projet »</div><figcaption>L'écran d'accueil de Pulse : l'état du projet et la prochaine étape conseillée.</figcaption></figure>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> la protection des clés et la création du dépôt passent par une demande d'autorisation de Claude Code. Acceptez-les : la première empêche l'IA de lire vos clés, la seconde crée une copie privée de votre projet.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; un dépôt privé <code>carnet-reservations</code> existe sur GitHub ; la conversation enchaîne sur le parcours express.</p></aside>
+<details class="probleme"><summary>« Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Installez l'outil indiqué (page <a href="../prerequis.html">Prérequis</a>), puis <strong>fermez et relancez Claude Code</strong>, et relancez <code>/pulse:init carnet-reservations</code>. Plus de détails sur la page <a href="../commandes/init.html">/pulse:init</a>.</p></details>
+<details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>Chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et l'e-mail de votre compte GitHub. C'est demandé une seule fois sur cet ordinateur.</p></details>
+<details class="probleme"><summary>La création du dépôt GitHub échoue</summary><p>Pulse vous guide alors sur le site de GitHub : nouveau dépôt, nom <code>carnet-reservations</code>, visibilité <strong>privée</strong>, dépôt laissé vide. Collez-lui ensuite l'adresse du dépôt. Vous pouvez aussi répondre « Non, plus tard » : <code>/pulse:deploy</code> reposera la question.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:init</code> dans le dossier. Pour voir où vous en êtes sans rien lancer, tapez <code>/pulse:status</code>.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="express" class="etape-tuto">
+<h2><span class="etape-numero">2</span> Décrire l'idée en une conversation <span class="duree">20 minutes</span></h2>
+<p><strong>Objectif :</strong> transformer votre idée en documents clairs (brief, PRD, user stories) grâce à quatre blocs de questions et un seul écran de validation.</p>
+<p>Vous avez choisi le parcours express : la conversation continue d'elle-même, sans rien taper. La commande ci-dessous sert seulement à le relancer, par exemple après une pause. Le détail est sur la page <a href="../commandes/express.html">/pulse:express</a>.</p>
+<pre class="commande"><code>/pulse:express "un carnet de réservations pour mon salon de coiffure"</code></pre>
+
+<figure class="anim" data-etapes="4" data-duree="1300">
+<svg viewBox="0 0 640 300" role="img" aria-labelledby="rapide-express-titre">
+<title id="rapide-express-titre">Les quatre blocs de la conversation express deviennent les documents du projet, puis la première US prête</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="14" width="162" height="208" rx="18"/>
+<rect class="schema-boite" x="20" y="20" width="150" height="40" rx="12"/><text class="schema-texte" x="95" y="45" text-anchor="middle">L'idée</text>
+<rect class="schema-boite" x="20" y="72" width="150" height="40" rx="12"/><text class="schema-texte" x="95" y="97" text-anchor="middle">Les écrans</text>
+<rect class="schema-boite" x="20" y="124" width="150" height="40" rx="12"/><text class="schema-texte" x="95" y="149" text-anchor="middle">L'apparence</text>
+<rect class="schema-boite" x="20" y="176" width="150" height="40" rx="12"/><text class="schema-texte" x="95" y="201" text-anchor="middle">Les contraintes</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 40 C200 40 200 110 226 116" marker-end="url(#rapide-pointe-grise)"/>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 92 C196 92 200 112 226 118" marker-end="url(#rapide-pointe-grise)"/>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 144 C196 144 200 124 226 120" marker-end="url(#rapide-pointe-grise)"/>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 196 C200 196 200 128 226 122" marker-end="url(#rapide-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="224" y="86" width="172" height="68" rx="18"/><rect class="schema-boite" x="230" y="92" width="160" height="56" rx="14"/><text class="schema-texte" x="310" y="117" text-anchor="middle">Validation</text><text class="schema-texte-secondaire" x="310" y="135" text-anchor="middle">un seul écran</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M390 120 C420 120 420 60 446 60" marker-end="url(#rapide-pointe-grise)"/>
+<path class="schema-fleche trace e3" pathLength="1" d="M390 120 H446" marker-end="url(#rapide-pointe-grise)"/>
+<path class="schema-fleche trace e3" pathLength="1" d="M390 120 C420 120 420 180 446 180" marker-end="url(#rapide-pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="444" y="34" width="182" height="172" rx="18"/>
+<rect class="schema-boite" x="450" y="40" width="170" height="40" rx="12"/><text class="schema-texte" x="535" y="65" text-anchor="middle">Le brief</text>
+<rect class="schema-boite" x="450" y="100" width="170" height="40" rx="12"/><text class="schema-texte" x="535" y="125" text-anchor="middle">Le PRD</text>
+<rect class="schema-boite" x="450" y="160" width="170" height="40" rx="12"/><text class="schema-texte" x="535" y="185" text-anchor="middle">Les user stories</text></g>
+<g class="e4" data-etape="4"><path class="schema-accompagne trace e4" pathLength="1" d="M535 202 C535 262 470 262 412 262" marker-end="url(#rapide-pointe-mauve)"/><rect class="actif-halo schema-halo-primaire" x="224" y="230" width="184" height="64" rx="18"/><rect class="schema-boite-active" x="230" y="236" width="172" height="52" rx="14"/><text class="schema-texte" x="316" y="259" text-anchor="middle">US-001 prête</text><text class="schema-texte-secondaire" x="316" y="276" text-anchor="middle">Prendre rendez-vous</text></g>
+<defs>
+<marker id="rapide-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="rapide-pointe-mauve" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Les quatre blocs de questions (l'idée, les écrans, l'apparence, les contraintes) se rejoignent dans un seul écran de validation. Une fois validé, Pulse écrit le brief, le PRD et les user stories. La première user story, « Prendre rendez-vous », est alors prête à être réalisée.</figcaption>
+</figure>
+
+<h3>Les quatre blocs</h3>
+<p>Pour chaque bloc, Pulse pose ses questions, puis reformule en deux lignes (« ✔ Compris : … ») pour que vous confirmiez. Voici des réponses possibles pour le salon :</p>
+<table>
+<thead><tr><th>Bloc</th><th>Ce que Pulse demande</th><th>Exemple de réponse</th></tr></thead>
+<tbody>
+<tr><td>L'idée</td><td>Pour qui ? Quel problème ? Comment faites-vous aujourd'hui ?</td><td>« Mes clients prennent rendez-vous par téléphone pendant que je coiffe. Je veux qu'ils réservent seuls, et voir ma journée d'un coup d'œil. »</td></tr>
+<tr><td>Les écrans</td><td>La liste des écrans, ce qu'on voit et ce qu'on fait sur chacun ; un espace réservé ?</td><td>« Prise de rendez-vous : choisir une prestation, un créneau libre, laisser son nom et son e-mail. Rendez-vous du jour : réservé à moi. »</td></tr>
+<tr><td>L'apparence</td><td>La personnalité de l'outil en 3 mots ; des sites dont vous aimez l'allure</td><td>« Chaleureux, simple, soigné. J'aime le site de mon fournisseur de produits. »</td></tr>
+<tr><td>Les contraintes</td><td>Données personnelles, budget, technologie imposée, échéance, être trouvé sur Google</td><td>« Nom et e-mail des clients. Budget : gratuit pour l'instant. Rien d'imposé. Pour le prototype, pas besoin d'être trouvé sur Google. »</td></tr>
+</tbody>
+</table>
+
+<div class="conversation" data-titre="La conversation express (extrait)">
+<p data-role="claude">On va droit au but : quatre blocs de questions, un seul écran de validation, puis on choisit les outils et l'apparence. Vous pourrez tout affiner ensuite.
+Pour qui est cet outil ? Par exemple, chez un fleuriste : « mes clients, qui commandent un bouquet ».</p>
+<p data-role="vous">Mes clients, qui réservent une coupe ou une couleur. Et moi, qui veux voir mes rendez-vous du jour.</p>
+<p data-role="claude">✔ Compris : vos clients réservent seuls un créneau libre ; vous consultez votre journée.
+Écrans proposés : prise de rendez-vous · rendez-vous du jour · connexion de la coiffeuse. Vous en ajoutez, en retirez ?</p>
+<p data-role="vous">C'est bien ça.</p>
+<p data-role="claude">L'impression que l'outil doit donner, en 3 mots ? → Chaleureux · Simple · Soigné</p>
+<p data-role="claude">Des données personnelles ? → Nom et e-mail des clients
+Budget mensuel ? → Gratuit pour commencer
+Être trouvé sur Google ? → Pas pour l'instant</p>
+</div>
+
+<h3>L'écran de validation</h3>
+<p>Pulse déduit ensuite lui-même la première version, les user stories et ce qu'il faudra techniquement. Il vous montre tout sur un seul écran :</p>
+<pre class="commande"><code>Votre projet en un coup d'œil
+
+Pour qui      : les clients du salon, et la coiffeuse
+Le problème   : les rendez-vous pris au téléphone pendant les coupes
+Première version : US-001 Prendre rendez-vous · US-002 Voir les rendez-vous du jour
+Ensuite       : US-003 Annuler un rendez-vous · US-004 Recevoir un rappel par e-mail
+Il faudra     : données partagées · connexion (espace de la coiffeuse) · formulaire public protégé contre les robots
+Proposé par Pulse : un message de confirmation après la réservation
+
+→ Valider (Recommandé) / Modifier quelque chose</code></pre>
+<p>Lisez-le calmement. « Modifier quelque chose » permet de corriger avec vos mots, puis Pulse remontre l'écran. Quand il vous convient, choisissez « Valider » : Pulse écrit les documents.</p>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-validation-express.png"><div class="capture-cadre">Capture à venir : l'écran « Votre projet en un coup d'œil » dans Claude Code, avec les deux choix Valider et Modifier</div><figcaption>L'écran de validation unique du parcours express.</figcaption></figure>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> les fichiers <code>docs/brief.md</code>, <code>docs/prd.md</code> et <code>docs/user-stories.md</code> existent, avec un fichier par user story ; Pulse annonce « Maintenant, on choisit les outils. »</p></aside>
+<details class="probleme"><summary>Je ne sais pas quoi répondre à une question</summary><p>Répondez avec vos mots, même de façon approximative : Pulse reformule toujours avant d'écrire. Vous pouvez aussi demander « Donne-moi des exemples ».</p></details>
+<details class="probleme"><summary>Pulse a oublié un écran ou mal compris un point</summary><p>Choisissez « Modifier quelque chose » sur l'écran de validation et dites ce qui ne va pas. Rien n'est écrit tant que vous n'avez pas validé.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:express</code> : Pulse a noté l'étape en cours et vous propose de la reprendre. <code>/pulse:status</code> vous montre où vous en êtes.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="outils" class="etape-tuto">
+<h2><span class="etape-numero">3</span> Choisir les outils <span class="duree">25 minutes</span></h2>
+<p><strong>Objectif :</strong> choisir la pile technique de l'appli, préparer le projet de départ et, si vous le voulez, le mettre en ligne dès aujourd'hui.</p>
+<p>Toujours dans la même conversation, Pulse remplit lui-même ce qu'il sait déjà de vos besoins, pose les questions qui restent, puis compare 2 ou 3 options. Avec le plugin <code>pulse-next</code> installé, la pile Next.js de Pulse en fait partie : c'est l'option recommandée pour une appli web avec des données partagées, car son code de départ est déjà vérifié. Le détail est sur la page <a href="../commandes/tech.html">/pulse:tech</a>.</p>
+<div class="conversation" data-titre="Le choix des outils">
+<p data-role="claude">Maintenant, on choisit les outils.
+Combien de rendez-vous par jour, à peu près ? → Une vingtaine</p>
+<p data-role="claude">Option A : la pile Pulse Next.js (site, base de données à Francfort, hébergement Vercel). Code de départ vérifié, recettes prêtes : c'est l'option qui demande le moins d'essais pour obtenir un code juste. (Recommandé)
+Option B : un formulaire en ligne relié à un tableur. Plus simple, mais sans vraie protection des données ni espace réservé.
+À savoir : l'offre gratuite de Vercel est réservée à un usage non commercial ; pour un vrai salon, il faudra l'offre payante.</p>
+<p data-role="vous">Option A</p>
+<p data-role="claude">Préparer le code de départ maintenant ? (Recommandé)</p>
+<p data-role="outil">npm install
+npm run dev</p>
+<p data-role="claude">La page de départ s'affiche sur http://localhost:3000 avec le nom du projet.
+Mettre en ligne la page de départ maintenant ? (Recommandé)</p>
+</div>
+
+<h3>Ce que vous faites à la main</h3>
+<p>Pulse vous guide pas à pas, un écran à la fois. Trois choses relèvent de vous :</p>
+<ol>
+<li><strong>Un compte Neon</strong> (la base de données) sur <a href="https://console.neon.tech">console.neon.tech</a>, avec un projet en région Francfort et une deuxième base pour le travail (la branche <code>dev</code>). Pulse vous dit quelle adresse copier, et dans quelle ligne de votre fichier <code>.env</code>.</li>
+<li><strong>Un compte Vercel</strong> (l'hébergeur) sur <a href="https://vercel.com">vercel.com</a>, relié à votre compte GitHub.</li>
+<li><strong>Coller les adresses de la base dans <code>.env</code></strong>, vous-même, dans votre éditeur. Ce fichier reste sur votre ordinateur.</li>
+</ol>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> une adresse de base de données contient un mot de passe. Collez-la uniquement dans le fichier <code>.env</code>, jamais dans la conversation : Pulse n'en a pas besoin, et il ne lit pas ce fichier.</p></aside>
+<p>Pulse propose ensuite de mettre en ligne la page de départ, presque vide. Acceptez : vous découvrez aujourd'hui les réglages de l'hébergeur, avec une page simple, plutôt qu'à la fin avec tout le projet en jeu.</p>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-vercel-import.png"><div class="capture-cadre">Capture à venir : la page de Vercel pour importer le dépôt GitHub carnet-reservations</div><figcaption>Chez Vercel : relier le dépôt GitHub au projet, une seule fois.</figcaption></figure>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-page-depart.png"><div class="capture-cadre">Capture à venir : la page de départ du projet dans le navigateur, à l'adresse http://localhost:3000</div><figcaption>La page de départ, sur votre ordinateur : elle affiche le nom du projet.</figcaption></figure>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/technical.md</code> décrit la pile retenue ; la page de départ s'ouvre sur <code>http://localhost:3000</code> ; si vous l'avez accepté, elle est aussi en ligne à une adresse en <code>.vercel.app</code>.</p></aside>
+<details class="probleme"><summary>Neon ou Vercel affichent des boutons en anglais</summary><p>C'est normal. Pulse vous donne le nom exact du bouton à cliquer, avec sa traduction entre parenthèses. Dites-lui ce que vous voyez à l'écran si quelque chose diffère.</p></details>
+<details class="probleme"><summary>La page ne s'ouvre pas sur localhost:3000</summary><p>Le programme qui fait tourner l'appli s'est peut-être arrêté. Demandez à Pulse : « Relance l'appli en local ». S'il signale qu'une adresse manque dans <code>.env</code>, ouvrez ce fichier et vérifiez la ligne indiquée.</p></details>
+<details class="probleme"><summary>La branche <code>dev</code> de Neon a disparu le lendemain</summary><p>La case « Automatically delete branch after » était cochée à la création. Recréez la branche en laissant cette case décochée, puis recopiez ses adresses dans <code>.env</code>.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:express</code> : il reprend à l'étape notée. <code>/pulse:status</code> vous indique la pile choisie et ce qui reste.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="apparence" class="etape-tuto">
+<h2><span class="etape-numero">4</span> Choisir l'apparence <span class="duree">10 minutes</span></h2>
+<p><strong>Objectif :</strong> comparer deux apparences pour le carnet, dans votre navigateur, et en choisir une.</p>
+<p>Pulse part de vos 3 mots (chaleureux, simple, soigné) et pose seulement ce qui manque : où et sur quel écran l'outil sera utilisé, l'intensité des couleurs, un logo éventuel. Il fait dessiner deux apparences différentes, puis ouvre une page qui les montre côte à côte. Le détail est sur la page <a href="../commandes/ui.html">/pulse:ui</a>.</p>
+<div class="conversation" data-titre="L'identité visuelle">
+<p data-role="claude">Dernière étape : l'apparence. Vous allez en voir deux et choisir.
+Où vos clients réservent-ils, le plus souvent ? → Sur leur téléphone</p>
+<p data-role="outil">pulse-aidd comparer docs/design/identite</p>
+<p data-role="claude">La page de comparaison est ouverte dans votre navigateur.
+1. Douceur de salon : tons crème et terre cuite, lettres arrondies, beaucoup d'air.
+2. Net et lumineux : fond blanc, une couleur franche, grands boutons.
+Laquelle préférez-vous ? Vous pouvez aussi mélanger les deux.</p>
+<p data-role="vous">La première, avec les grands boutons de la deuxième.</p>
+<p data-role="claude">J'assemble ce mélange, puis je vérifie que les textes restent lisibles.
+Appliquer cette identité au code maintenant ? (Recommandé)</p>
+</div>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-comparateur.png"><div class="capture-cadre">Capture à venir : la page de comparaison avec les deux apparences proposées, côte à côte</div><figcaption>Le comparateur : deux apparences, avec les mêmes contenus du salon, pour choisir en voyant.</figcaption></figure>
+<p>Pulse termine le parcours express par un résumé en quatre lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie et ce qui reste à faire de votre côté.</p>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/design.md</code> décrit l'apparence choisie ; la page de départ, rechargée dans le navigateur, prend ses couleurs ; Pulse propose comme prochaine étape <code>/pulse:spirc US-001</code>.</p></aside>
+<details class="probleme"><summary>Aucune des deux apparences ne me plaît</summary><p>Dites-le avec vos mots : « aucune, je voudrais plus coloré ». Pulse repart de cette consigne et en propose de nouvelles.</p></details>
+<details class="probleme"><summary>La page de comparaison ne s'ouvre pas</summary><p>Demandez à Pulse le chemin du fichier <code>comparer.html</code>, puis ouvrez-le en double-cliquant dessus dans votre explorateur de fichiers.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:express</code>, ou <code>/pulse:init</code> si le parcours est terminé : l'écran vous donne la prochaine étape. <code>/pulse:status</code> fait le point sans rien lancer.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="realiser" class="etape-tuto">
+<h2><span class="etape-numero">5</span> Réaliser la prise de rendez-vous <span class="duree">35 minutes</span></h2>
+<p><strong>Objectif :</strong> faire construire l'écran de réservation, tâche par tâche, puis l'essayer vous-même.</p>
+<p>Videz d'abord la conversation avec <code>/clear</code> : elle repart légère, et Pulse retrouve tout dans les documents et la mémoire du projet. Puis lancez la réalisation de la première user story :</p>
+<pre class="commande"><code>/clear
+/pulse:spirc -a US-001</code></pre>
+<p><code>/pulse:spirc</code> enchaîne tout le travail d'une user story : il décrit précisément ce qu'elle doit faire (la spec), la découpe en petites tâches (le plan), puis fait réaliser chaque tâche par un assistant, relire et vérifier par deux autres qui n'ont pas écrit le code, et l'enregistre. L'option <code>-a</code> (autonome) enchaîne les tâches sans s'arrêter entre elles : vous testez tout en une fois, à la fin. Le détail est sur la page <a href="../commandes/spirc.html">/pulse:spirc</a>.</p>
+<p>Même en autonome, Pulse s'arrête pour vos décisions : les questions sur le besoin, la validation de la spec et du plan, et les actions à faire à la main.</p>
+<div class="conversation" data-titre="Réaliser US-001">
+<p data-role="vous">/pulse:spirc -a US-001</p>
+<p data-role="claude">Je fais travailler des assistants spécialisés : l'un explore, l'un réalise, d'autres relisent et vérifient sans avoir écrit le code. Vous testerez toutes les tâches ensemble, à la fin.
+Avant le plan, deux questions sur la prise de rendez-vous :
+Combien de temps dure un créneau ? → Selon la prestation : coupe 30 min, couleur 1 h 30
+Si deux clients choisissent le même créneau en même temps ? → Le premier l'obtient, le second voit un message (Recommandé)</p>
+<p data-role="claude">La spec est prête. Valider (la spec ne bougera plus) ?</p>
+<p data-role="vous">Valider</p>
+<p data-role="claude">Le plan : T1 – Les prestations et les horaires du salon · T2 – Afficher les créneaux libres · T3 – Réserver un créneau · T4 – Confirmer la réservation à l'écran.
+Le plan vous convient ?</p>
+<p data-role="vous">Oui</p>
+<p data-role="claude">J'ai pris les réglages conseillés : je code en coulisse · tests selon la pile · envoi : directement sur la version principale. Dites-le si vous préférez autre chose.
+T1 ✅ terminée · US-001 : 1/4 … T4 ✅ terminée · US-001 : 4/4</p>
+<p data-role="claude">🧪 À vous de tester, en un seul parcours : ouvrez http://localhost:3000, choisissez « Coupe », un créneau de demain, saisissez un nom et un e-mail, puis réservez.
+Les tests sont-ils concluants ?</p>
+</div>
+<p>Les numéros et titres des tâches ci-dessus sont un exemple : votre plan peut différer. Pendant la réalisation, Pulse peut vous demander une action à la main, par exemple accepter la création d'une clé secrète pour le formulaire. Claude Code vous demande alors l'autorisation : la clé est créée sans jamais s'afficher.</p>
+
+<h3>Ce que vous testez vous-même</h3>
+<ul>
+<li>Réserver une coupe sur un créneau libre : un message confirme la réservation.</li>
+<li>Revenir à la liste des créneaux : celui que vous venez de prendre n'apparaît plus.</li>
+<li>Envoyer le formulaire sans nom, ou avec un e-mail mal écrit : un message clair explique quoi corriger.</li>
+<li>Recommencer sur votre téléphone, si possible : les boutons restent faciles à toucher.</li>
+</ul>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-prise-rdv.png"><div class="capture-cadre">Capture à venir : l'écran de prise de rendez-vous dans le navigateur, avec les prestations, les créneaux libres et le formulaire nom et e-mail</div><figcaption>L'écran de réservation du prototype, sur votre ordinateur.</figcaption></figure>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-confirmation.png"><div class="capture-cadre">Capture à venir : le message de confirmation affiché après une réservation</div><figcaption>La confirmation, juste après la réservation.</figcaption></figure>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> vous avez réservé un créneau sur <code>http://localhost:3000</code> ; Pulse affiche un tableau récapitulatif où chaque tâche est relue, testée et enregistrée.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> vous préférez voir et tester chaque tâche l'une après l'autre ? Lancez <code>/pulse:spirc US-001</code>, sans <code>-a</code> : c'est plus lent, et plus instructif.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> la vue de la coiffeuse, « Voir les rendez-vous du jour », se construit de la même façon avec <code>/pulse:spirc -a US-002</code>. Elle ajoute la connexion de la coiffeuse : comptez 30 à 45 minutes de plus. Vous pouvez la faire maintenant ou après la mise en ligne.</p></aside>
+<details class="probleme"><summary>Un test n'est pas concluant</summary><p>Répondez « Non, sur certaines tâches », puis décrivez ce que vous avez vu, avec vos mots : « le créneau réservé apparaît encore ». Pulse fait corriger la tâche, puis vous redemande de tester seulement celle-ci.</p></details>
+<details class="probleme"><summary>Pulse s'arrête sur une tâche et propose <code>/pulse:get-help</code></summary><p>Un problème persiste après deux essais de correction. Lancez <code>/pulse:get-help</code> : il prépare une demande d'aide claire, à envoyer à une personne qui s'y connaît.</p></details>
+<details class="probleme"><summary>La conversation devient longue et lente</summary><p>Tapez <code>/clear</code>, puis relancez <code>/pulse:spirc -a US-001</code> : Pulse reprend à la tâche où il s'était arrêté, grâce aux cases cochées du plan.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:spirc -a US-001</code> ; Pulse reprend à la tâche en cours. <code>/pulse:status</code> vous montre les tâches faites et celles qui restent.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="en-ligne" class="etape-tuto">
+<h2><span class="etape-numero">6</span> Mettre en ligne <span class="duree">25 minutes</span></h2>
+<p><strong>Objectif :</strong> publier le prototype sur internet et obtenir son adresse, à partager.</p>
+<p>Chaque tâche a déjà été enregistrée pendant l'étape 5 : il n'y a rien à enregistrer à la main. Si Pulse signale des fichiers non enregistrés, lancez d'abord <a href="../commandes/commit.html"><code>/pulse:commit</code></a>. Puis :</p>
+<pre class="commande"><code>/pulse:deploy</code></pre>
+<p>Pulse lance ses contrôles (tout est enregistré, aucune clé dans le code, tests et construction). Comme votre appli garde des données, il prépare ensuite une mise en ligne « pour de vrai » : un contrôle qualité automatique avant chaque publication, la base de données reliée à l'hébergeur, et les clés enregistrées chez l'hébergeur sans passer par la conversation. Le détail est sur la page <a href="../commandes/deploy.html">/pulse:deploy</a>.</p>
+<p>Si vous n'avez pas mis en ligne la page de départ à l'étape 3, Pulse commence par vous guider chez Vercel pour y relier votre dépôt GitHub.</p>
+<div class="conversation" data-titre="La mise en ligne">
+<p data-role="vous">/pulse:deploy</p>
+<p data-role="claude">Contrôles : ✅ tout est enregistré · ✅ aucune clé dans le code · ✅ tests et construction.
+Votre appli garde des rendez-vous : avant chaque mise en ligne, un contrôle qualité automatique vérifiera le projet. S'il échoue, l'ancienne version reste en ligne.</p>
+<p data-role="claude">Il faut relier la base Neon à Vercel : six étapes courtes, une à la fois. Les boutons sont en anglais, je vous donne leur traduction.
+…
+Console Neon → Integrations (intégrations) → Vercel → Add (ajouter). Dites-moi quand c'est fait.</p>
+<p data-role="vous">C'est fait.</p>
+<p data-role="outil">pulse-aidd secrets inventaire</p>
+<p data-role="claude">✅ La base est reliée. Une clé manque en ligne : FORMULAIRE_SECRET. Je l'envoie chez l'hébergeur sans l'afficher ; Claude Code va vous demander l'accord.
+Claude Code va aussi vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie.</p>
+<p data-role="outil">pulse-aidd sonder https://carnet-reservations-demo.vercel.app --texte "Prendre rendez-vous"</p>
+<p data-role="claude">✅ Le site répond et affiche « Prendre rendez-vous ».
+Votre prototype est en ligne : https://carnet-reservations-demo.vercel.app</p>
+</div>
+<p>Ouvrez l'adresse sur votre téléphone, réservez un créneau, et envoyez le lien à la coiffeuse : c'est le moment de recueillir des avis.</p>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-prototype-en-ligne.png"><div class="capture-cadre">Capture à venir : le prototype en ligne, ouvert sur un téléphone, à son adresse en .vercel.app</div><figcaption>Le prototype en ligne, prêt à être montré.</figcaption></figure>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le prototype répond à une adresse en <code>.vercel.app</code> ; Pulse l'a inscrite dans <code>CLAUDE.md</code> et <code>README.md</code>, avec la preuve que le site répond.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si vous avez aussi réalisé US-002, la dernière user story de la première version, <code>/pulse:spirc</code> vous propose lui-même la mise en ligne à la fin de son plan.</p></aside>
+<details class="probleme"><summary>La construction échoue chez Vercel avec « reliez Neon à Vercel »</summary><p>La base n'est pas encore reliée à l'hébergeur. Suivez les étapes de Pulse pour la relier, puis cliquez sur <strong>Redeploy</strong> (relancer la publication) dans Vercel.</p></details>
+<details class="probleme"><summary>Le site affiche une erreur au moment de réserver</summary><p>Une variable manque sans doute chez l'hébergeur. Dites-le à Pulse : il la repère avec <code>/pulse:secrets</code>, sans jamais afficher de valeur, et vous guide pour la compléter.</p></details>
+<details class="probleme"><summary>Pulse propose de mesurer la vitesse ou un audit de sécurité</summary><p>Ces étapes appartiennent au mode complet. Pour le prototype, vous pouvez répondre « Plus tard » : vous les retrouverez dans le <a href="production.html">tutoriel complet</a>.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:deploy</code> ; il reprend les contrôles et continue là où la mise en ligne s'est arrêtée. <code>/pulse:status</code> affiche l'adresse du site une fois en ligne.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="ensuite" class="etape-tuto">
+<h2><span class="etape-numero">7</span> Et maintenant ? <span class="duree">5 minutes</span></h2>
+<p><strong>Objectif :</strong> savoir ce que le mode rapide a laissé de côté, et quand passer au mode complet.</p>
+<p>Votre prototype fonctionne et il est en ligne. Pour aller vite, le mode rapide a sauté exprès plusieurs étapes :</p>
+<ul>
+<li><strong>Les entretiens approfondis</strong> : l'idée, la première version et chaque user story ont été décrites en une seule conversation, au lieu d'un entretien chacune.</li>
+<li><strong>Les maquettes d'écrans</strong> : plusieurs versions de chaque écran, à comparer avant de construire.</li>
+<li><strong>Le test après chaque tâche</strong> : en autonome, vous avez tout testé en une fois, à la fin.</li>
+<li><strong>Les autres user stories</strong> : l'annulation, le rappel par e-mail et la suite de la liste.</li>
+<li><strong>La sécurité approfondie</strong> : l'audit complet de <a href="../commandes/security.html"><code>/pulse:security</code></a> et le registre des clés de <a href="../commandes/secrets.html"><code>/pulse:secrets</code></a>.</li>
+<li><strong>Google et la vitesse</strong> : être trouvé avec <a href="../commandes/seo.html"><code>/pulse:seo</code></a>, mesurer la vitesse vécue par les visiteurs avec <a href="../commandes/perf.html"><code>/pulse:perf</code></a>.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> un prototype sert à montrer et à décider. Avant d'y recevoir de vrais clients, reprenez-le en mode complet. L'offre gratuite de Vercel est d'ailleurs réservée à un usage non commercial : un vrai salon relève de l'offre payante.</p></aside>
+<p>Passez au mode complet quand le prototype a convaincu : la coiffeuse veut l'utiliser pour de bon, ou des clients vont y laisser leurs coordonnées. Le tutoriel complet reprend la même appli, étape par étape, jusqu'à une version prête pour de vrais clients.</p>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> lancez <code>/pulse:init</code> ou <code>/pulse:status</code> : l'écran vous montre où en est le projet et la prochaine étape conseillée.</p></aside>
+<p class="centre"><a class="cta" data-onde href="production.html">Passer au mode complet</a></p>
+</section>
+
+</article></div></main>
+</body>
+</html>

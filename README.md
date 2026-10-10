@@ -9,7 +9,7 @@ Ce dépôt est le catalogue **`pulseia`** : il contient les plugins de la métho
 
 **Les noms** : le dépôt GitHub s'appelle `jdelauney/pulse-vibe` et le catalogue `pulseia`. Chaque plugin porte le même nom dans le catalogue et dans son manifeste : `pulse` (dossier `plugins/pulse-vibe/`, commandes `/pulse:*`) et `pulse-next` (dossier `plugins/pulse-vibe-next/`). Les anciens noms `pulse-vibe` et `pulse-vibe-next` sont redirigés automatiquement vers ces noms.
 
-**Le guide complet** (présentation, prérequis, chaque commande expliquée, exemples) : le wiki, en ligne sur [jdelauney.github.io/pulse-vibe](https://jdelauney.github.io/pulse-vibe/), ou à ouvrir directement depuis le dépôt (`wiki/index.html`).
+**Le guide complet** (présentation, prérequis, chaque commande expliquée, exemples) : le wiki, en ligne sur [jdelauney.github.io/pulse-vibe](https://jdelauney.github.io/pulse-vibe/), ou à ouvrir directement depuis le dépôt (`docs/index.html`).
 
 Gardez Pulse à jour : voir [Mettre à jour](#mettre-à-jour).
 
@@ -49,9 +49,9 @@ Installé avec les anciens noms (`pulse-vibe@pulseia`, `pulse-vibe-next@pulseia`
 ```
 .claude-plugin/marketplace.json   le catalogue « pulseia » : la liste des plugins
 plugins/<plugin>/                 un dossier par plugin
-docs/                             mémo des commandes
-wiki/                             le guide des personnes qui utilisent Pulse (HTML, CSS, JS), publié sur GitHub Pages
-.github/workflows/                tests des plugins (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine ; publication du wiki
+docs/                             le wiki, guide des personnes qui utilisent Pulse (HTML, CSS, JS), publié par GitHub Pages ; et le mémo des commandes
+outils/wiki/                      les outils du wiki (synchronisation avec les commandes, charte graphique)
+.github/workflows/                tests des plugins (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine
 ```
 
 ## Licence
