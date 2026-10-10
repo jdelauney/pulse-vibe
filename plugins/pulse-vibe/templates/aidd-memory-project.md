@@ -7,7 +7,7 @@
 - Public cible :
 - Problème principal résolu :
 
-## Périmètre MVP actuel
+## Périmètre de la première version
 
 - Inclus :
 - Exclu :

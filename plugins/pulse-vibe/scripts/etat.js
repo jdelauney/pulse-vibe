@@ -348,7 +348,7 @@ function decider(f) {
   }
   if (f.claude === "absent") return verdict("R2", "/pulse:init", "le projet n'est pas encore préparé pour Pulse", { fondation: "dossier" });
   if (f.claude === "sans-pulse") return verdict("R3", "/pulse:init", "CLAUDE.md existe sans les règles de Pulse", { fondation: "dossier" });
-  if (f.ancienFormat) return verdict("R4", "/pulse:init", "des documents sont à l'ancien format : ils se rangent maintenant par epic", { fondation: "documents" });
+  if (f.ancienFormat) return verdict("R4", "/pulse:init", "des documents sont à l'ancien format : ils se rangent maintenant par groupe", { fondation: "documents" });
   if (!f.profil || /pr[ée]ciser/i.test(f.profil)) return verdict("R5", "/pulse:init", "votre profil (niveau, explications) reste à préciser", { fondation: "profil" });
   if (!f.memoire) return verdict("R6", "/pulse:memory creer", "la mémoire du projet n'est pas branchée", { fondation: "memoire" });
   if (f.git && (!f.git.depot || !f.git.commits)) {
@@ -367,14 +367,14 @@ function decider(f) {
     aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");
     return verdict("R9", "/pulse:brainstorm", "raconter l'idée est la première étape");
   }
-  if (!d.prd && !d.userStories) return verdict("R10", "/pulse:prd", "il reste à décider du périmètre du MVP");
+  if (!d.prd && !d.userStories) return verdict("R10", "/pulse:prd", "il reste à décider du périmètre de la première version");
   if (!d.technical) return verdict("R11", "/pulse:tech", "choisir les outils vient avant les user stories et le code");
   if (!d.userStories) {
     if (!d.design) {
       aussi.unshift("/pulse:us — passer directement aux user stories");
       return verdict("R12", "/pulse:ui identite", "l'identité visuelle est facultative ; faite maintenant, les user stories, specs et plans s'y conformeront");
     }
-    return verdict("R12", "/pulse:us", "écrire les user stories, epic par epic");
+    return verdict("R12", "/pulse:us", "écrire les user stories, groupe par groupe");
   }
 
   const enCours = f.us.flatMap((u) => (u.plan ? u.plan.taches.filter((t) => t.statut === "en-cours").map((t) => ({ u, t })) : []));
@@ -389,7 +389,7 @@ function decider(f) {
   }
 
   const mvp = bilan(f);
-  if (mvp.pret && !f.enLigne) return verdict("R15", "/pulse:deploy", "toutes les US Indispensables sont terminées : le MVP peut être mis en ligne");
+  if (mvp.pret && !f.enLigne) return verdict("R15", "/pulse:deploy", "toutes les US Indispensables sont terminées : la première version peut être mise en ligne");
   if (f.git && f.git.remote && f.git.avance > 0) {
     return verdict("R16", "/pulse:deploy", `${f.git.avance} version(s) enregistrée(s) pas encore envoyée(s) sur le dépôt distant`);
   }
@@ -413,7 +413,7 @@ function decider(f) {
   }
   const indispensable = f.us.find((u) => u.priorite === 0 && u.spec === "absente");
   if (indispensable) return verdict("R20", `/pulse:spec ${indispensable.id}`, `${indispensable.id} (Indispensable) attend sa spec`);
-  if (mvp.pret && f.enLigne && !f.securite) return verdict("R21", "/pulse:security", "le MVP est en ligne : un audit de sécurité complet est conseillé");
+  if (mvp.pret && f.enLigne && !f.securite) return verdict("R21", "/pulse:security", "la première version est en ligne : un audit de sécurité complet est conseillé");
   if (f.depotDistant === "relie" && !f.ci) aussi.push("/pulse:cicd — un contrôle automatique à chaque envoi (facultatif)");
   const suivante = f.us.find((u) => u.priorite >= 1 && u.priorite <= INCONNUE && u.spec === "absente");
   if (suivante) return verdict("R22", `/pulse:spec ${suivante.id}`, `${suivante.id} (${libelle(suivante)}) attend sa spec`);

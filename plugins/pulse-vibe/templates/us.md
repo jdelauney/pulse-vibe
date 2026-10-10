@@ -1,6 +1,6 @@
 # US-{{XXX}} – {{Titre court}}
 
-> Produit par `/pulse:us` le {{DATE}} · Epic : {{Titre de l'epic}} (`{{epic}}`) · Référentiel : `docs/user-stories.md`.
+> Produit par `/pulse:us` le {{DATE}} · Groupe : {{Titre du groupe}} (`{{epic}}`) · Référentiel : `docs/user-stories.md`.
 > Spec : `SPEC-US-{{XXX}}-{{nom}}.md` · Plan : `PLAN-SPEC-US-{{XXX}}-{{nom}}.md` (dans ce même dossier, une fois écrits).
 > Ticket : {{lien ou numéro dans l'outil de ticketing de la mémoire projet, ou « — » (fichiers seuls)}}
 

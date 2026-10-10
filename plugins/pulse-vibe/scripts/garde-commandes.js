@@ -60,7 +60,7 @@ const MESSAGES = {
     "À la place : faites un nouveau commit avec la correction.",
   envoiProduction:
     "Pulse demande votre accord : envoyer sur la branche principale met le site en ligne (déploiement continu). " +
-    "Vérifiez que cette version a été testée, ou passez par une demande de fusion (`/pulse:pr`).",
+    "Vérifiez que cette version a été testée, ou passez par une version parallèle et sa proposition (`/pulse:pr`).",
   envoiForce:
     "Pulse refuse l'envoi forcé : il réécrit l'historique du dépôt distant et peut effacer le travail d'une autre personne. " +
     "À la place : `git pull`, résoudre les différences, puis `git push`. En cas de blocage, `/pulse:get-help`.",
@@ -137,7 +137,7 @@ const MESSAGES = {
     "Préférez `/pulse:secrets`, qui ne montre jamais la valeur.",
   secretsHebergeur: "Pulse demande votre accord : cette commande crée, envoie ou retire un secret chez l'hébergeur, ou redéploie le site en ligne.",
   deconnexion: "Pulse demande votre accord : cette commande supprime l'accès Search Console enregistré sur ce poste.",
-  fusion: "Pulse demande votre accord : cette commande fusionne une demande de fusion. D'habitude, la fusion se fait par vous, sur le site du dépôt.",
+  fusion: "Pulse demande votre accord : cette commande accepte une proposition et la rassemble dans la version principale. D'habitude, c'est vous qui l'acceptez, sur le site du dépôt.",
   lectureEnv:
     "Pulse garde le contenu des fichiers .env hors de la conversation : ils contiennent les secrets du projet. " +
     "À la place : `pulse-aidd secrets inventaire` liste les variables (noms, présence, sans aucune valeur) ; `.env.example` donne les noms attendus.",
