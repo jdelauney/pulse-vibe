@@ -57,7 +57,8 @@ const PLAFONDS = {
   "search-console": 42500,
   learn: 35000,
   explain: 23000,
-  test: 38000,
+  // test : mesuré 38159 (repli « Installer un outil de test » et conditions TypeScript dans tests-automatiques.md) × 1,05, arrondi au 500 supérieur.
+  test: 40500,
   "auto-fix": 22000,
   // 27 973 au commit 04697d5, 28 764 avant la tâche 11 ; 23 367 sans le tableau des fichiers du projet, chargé à la demande : plafond abaissé (mesure × 1,05, au 500 supérieur).
   status: 25000,
@@ -76,7 +77,8 @@ const BOUCLES = {
     parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"]],
   },
   spirc: {
-    plafond: 77500,
+    // mesuré 77918 (repli « Installer un outil de test » et conditions TypeScript dans tests-automatiques.md) × 1,05, arrondi au 500 supérieur.
+    plafond: 82000,
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };

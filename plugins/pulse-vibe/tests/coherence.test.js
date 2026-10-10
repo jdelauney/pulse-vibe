@@ -860,6 +860,13 @@ test("tests automatiques : installer un outil de test est recommandé quand la p
   assert.strictEqual(sansTests.length, 1, "un seul cas recommande de se passer de tests");
   assert.match(sansTests[0], /aucun code à tester automatiquement/);
   assert.match(skillTexte("tech"), /sinon le lanceur de tests intégré au langage/);
+  assert.match(texte, /« Utiliser le lanceur de tests intégré \(Recommandé\) » \(l'outil de test fourni avec le langage, rien à installer ;/);
+  assert.match(texte, /ni lanceur intégré au langage : « Installer un outil de test \(Recommandé\) »/, "repli : du code, ni outil documenté ni lanceur intégré");
+  assert.match(texte, /1\. Choisir l'outil recommandé [^\n]*ou le lanceur intégré au langage \(§ 2\)/);
+  // TypeScript : mêmes conditions dans la référence et dans tech.
+  const ts = "pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile";
+  assert.ok(texte.includes(ts), "référence : TypeScript");
+  assert.ok(skillTexte("tech").includes(ts), "tech : TypeScript");
 });
 
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
