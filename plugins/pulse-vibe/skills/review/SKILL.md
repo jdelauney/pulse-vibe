@@ -61,7 +61,7 @@ Présenter en quelques lignes : le **rapport de réalisation** (règles communes
 
 ### 5. Le test manuel par la personne
 
-Donner les étapes du test manuel du rapport, en commençant par les critères ❓ du verifier, puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
+Appliquer « 3 bis. Écrire la fiche de test de la personne » de la référence « Examiner une tâche » : fiche `SMOKE-TEST-…` écrite (ou réécrite après une correction), application lancée, lien vers la fiche donné avec sa première étape ; puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
 
 Noter dans la section « Test par la personne » du rapport la date, le résultat et la remarque ; le résultat reprend les choix du modèle : « ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> ».
 
