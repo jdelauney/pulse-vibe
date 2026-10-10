@@ -38,12 +38,14 @@ Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient 
 
 ### 2. Vérifier que la tâche a été relue et testée
 
-Repérer les tâches `[~]` dans les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) : sur une branche `feat/us-xxx-<nom>`, seulement celles du plan de cette US. Pour chacune, lancer `pulse-aidd revue <Tn>` et suivre sa ligne `reprendre` :
+Ce contrôle porte sur les tâches `[~]` des plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) concernées par ce commit : celles dont les fichiers en font partie (sujets triés au § 3 ; appelé par `/pulse:implement` ou `/pulse:spirc` : la tâche en cours). Pour chacune, lancer `pulse-aidd revue <Tn>` (plusieurs tâches : `pulse-aidd revue T3 T4`) et suivre sa ligne `reprendre` :
 
 - `commit` : la tâche est relue, vérifiée et testée par la personne (ou son test est reporté au test groupé du mode autonome) : continuer.
 - `examen` (aucun rapport) : demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (Recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review <Tn>`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
 - `test` : la relecture est faite, le test par la personne manque encore. Enregistrer seulement une tâche testée : s'arrêter, le dire en une phrase (« Votre test de T3 manque encore : c'est lui qui confirme que la tâche fonctionne. ») et proposer `/pulse:review <Tn>`, qui reprend directement au test.
 - `correction` ou `aide` : le dernier rapport n'est pas validé (constats à corriger, ou test non concluant). S'arrêter, le dire en une phrase, et proposer `/pulse:review <Tn>` (`/pulse:get-help` pour `aide`).
+
+Un commit sans tâche concernée (`docs:`, `chore:`, la mémoire, une correction sans rapport avec la tâche) s'enregistre toujours : une tâche `[~]` qui attend encore son test est seulement signalée en une ligne (« T3 attend encore votre test. »).
 
 ### 3. Trier les modifications par sujet
 

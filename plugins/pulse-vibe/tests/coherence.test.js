@@ -918,4 +918,17 @@ test("reprise après une interruption : commit, implement, spirc et review suive
   assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
   assert.doesNotMatch(spirc, /reprendre à l'examen\)/);
   assert.match(skillTexte("review"), /`pulse-aidd revue <Tn>` : `test` → passer directement au § 5/);
+  // Les boucles passent à l'enregistrement sur la réponse du § 2 de commit, pas sur la seule existence d'un rapport.
+  for (const [nom, texte] of [["implement", implement], ["spirc", spirc]]) {
+    assert.match(texte, /Le § 2 de l'étape commit donne `commit`/, nom);
+    assert.doesNotMatch(texte, /Le rapport de revue existe : la relecture est faite/, nom);
+  }
+});
+
+test("commit : un commit docs:, chore: ou sans rapport avec la tâche n'est jamais refusé pour un test en attente", () => {
+  const commit = skillTexte("commit");
+  const verification = commit.slice(commit.indexOf("### 2."), commit.indexOf("### 3."));
+  assert.match(verification, /tâches `\[~\]`[^\n]* concernées par ce commit : celles dont les fichiers en font partie/);
+  assert.match(verification, /Un commit sans tâche concernée \(`docs:`, `chore:`[^\n]*s'enregistre toujours[^\n]*« T3 attend encore votre test\. »/);
+  assert.doesNotMatch(verification, /sur une branche `feat\/us-xxx-<nom>`, seulement/, "le périmètre suit les fichiers du commit, pas la branche");
 });

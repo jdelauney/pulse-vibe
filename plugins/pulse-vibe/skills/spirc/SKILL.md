@@ -150,7 +150,7 @@ Appliquer « Rouge : écrire les tests » (§ 4 de la référence « Tests autom
 
 ### [C] Commiter
 
-Appliquer l'étape **commit** chargée au démarrage de la réalisation (contrôles de sécurité, message `<type>(<Tâche>): …`, plan mis à jour en `[x]` avec sa ligne de journal, remarque selon les règles communes § 7). Le rapport de revue existe : la relecture est faite, passer directement au commit.
+Appliquer l'étape **commit** chargée au démarrage de la réalisation (contrôles de sécurité, message `<type>(<Tâche>): …`, plan mis à jour en `[x]` avec sa ligne de journal, remarque selon les règles communes § 7). Le § 2 de l'étape commit donne `commit` (tâche relue, vérifiée et testée, ou test reporté en mode autonome) : passer directement à l'enregistrement.
 
 En mode autonome : enregistrer en local, et **attendre la fin du test groupé pour l'envoi** (§ 3 de la référence « Le dépôt distant et l'envoi du travail ») ; la remarque du journal vaut « mode autonome · test reporté ».
 

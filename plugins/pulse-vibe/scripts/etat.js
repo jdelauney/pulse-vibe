@@ -13,7 +13,8 @@
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
 // Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests).
-// --revue <Tn> (`pulse-aidd revue <Tn>`) : la dernière relecture de la tâche et où reprendre (tache, statut, plan, etat, rapport, reprendre).
+// --revue <Tn> [<Tn>…] (`pulse-aidd revue <Tn>`) : la dernière relecture de chaque tâche et où reprendre (tache, statut, plan,
+// etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide.
 // Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
 "use strict";
 
@@ -114,20 +115,37 @@ function derniereRevue(dossier, id) {
     .sort((a, b) => a.m[1].localeCompare(b.m[1]) || Number(a.m[2] || 1) - Number(b.m[2] || 1));
   if (rapports.length === 0) return { etat: "absente", fichier: null };
   const fichier = path.join(dossier, rapports[rapports.length - 1].nom);
-  const texte = lireSi(fichier) || "";
+  const texte = (lireSi(fichier) || "").normalize("NFC"); // « é » écrit en deux caractères : relu comme un seul
   const valeur = (re) => ((re.exec(texte) || [])[1] || "").replace(/\{\{.*?\}\}/g, "");
   if (/get-help|cycles/i.test(valeur(/^\*\*Blocage\*\*\s*:(.*)$/m))) return { etat: "bloquee", fichier };
   const verdict = valeur(/^\*\*Verdict\*\*\s*:(.*)$/m);
   // Seul le Verdict en tête compte (examen § 3 et § 4 le tiennent à jour) ; « ⚠️ … accepté par la personne » vaut prêt (review § 7).
   const accepte = verdict.includes("⚠") && /accept[ée]/i.test(verdict) && !/[⛔❌]|critique/iu.test(verdict);
   if (!accepte && (!verdict.includes("✅") || /[⚠⛔❌]|critique/iu.test(verdict))) return { etat: "a-corriger", fichier };
-  // Le dernier Résultat du test par la personne fait foi. Vide, ou modèle non rempli (choix séparés par « | ») : le test reste à faire.
-  const apres = texte.split(/^## Test par la personne\s*$/m)[1] || "";
-  const resultats = [...apres.matchAll(/^- \*\*R[ée]sultat\*\*\s*:(.*)$/gm)];
+  return { etat: etatDuTest(texte), fichier };
+}
+
+/**
+ * Le test par la personne : le dernier « Résultat » de la dernière section « ## Test par la personne » (jusqu'au titre suivant).
+ * Vide, modèle non rempli (choix séparés par « | ») ou réponse sans repère : a-tester. Un test non concluant suivi d'une
+ * « ## Relecture de contrôle » (correction faite) est à refaire : a-tester.
+ */
+function etatDuTest(texte) {
+  const sections = texte.split(/^##[ \t]+/m).slice(1);
+  const derniere = sections.map((s) => /^Test par la personne\b/i.test(s.trim())).lastIndexOf(true);
+  if (derniere === -1) return "a-tester";
+  const resultats = [...sections[derniere].matchAll(/^[-*][ \t]+\*\*R[ée]sultat(?:\*\*[ \t  ]*:|[ \t  ]*:\*\*)(.*)$/gim)];
   const test = resultats.length ? resultats[resultats.length - 1][1].replace(/\{\{.*?\}\}/g, "").trim() : "";
-  if (test === "" || test.includes("|")) return { etat: "a-tester", fichier };
-  if ((test.includes("❌") || /non concluant/i.test(test)) && !/accept[ée]/i.test(test)) return { etat: "a-corriger", fichier };
-  return { etat: "validee", fichier };
+  if (test === "" || test.includes("|")) return "a-tester";
+  const accord = /accept[ée]/i.test(test) && !/\bpas\s+accept/i.test(test);
+  const negatif = /❌/u.test(test) || /^non\b/i.test(test) || /\b(non|pas)\s+concluant/i.test(test) || /probl[èe]me|[ée]chec/i.test(test);
+  if (negatif) {
+    if (accord) return "validee";
+    const corrigee = sections.slice(derniere + 1).some((s) => /^Relecture de contr[ôo]le\b/i.test(s.trim()));
+    return corrigee ? "a-tester" : "a-corriger";
+  }
+  const positif = /[✅⏳]/u.test(test) || /(?<!\b(?:non|pas)\s+)concluant/i.test(test) || /^oui\b/i.test(test) || accord;
+  return positif ? "validee" : "a-tester";
 }
 
 const lireRevue = (dossier, id) => derniereRevue(dossier, id).etat;
@@ -445,14 +463,19 @@ function sortieIllisible(message) {
   return `prochaine: /pulse:get-help\nraison: l'état du projet n'a pas pu être lu (${message}) : décrivez le problème à /pulse:get-help\nregle: R0`;
 }
 
-const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --revue <Tn>";
+const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --revue <Tn> [<Tn>…]";
 
-/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --revue <Tn>. Toute autre option est une erreur de la consigne qui appelle l'outil. */
+/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --revue <Tn> [<Tn>…]. Toute autre option est une erreur de la consigne qui appelle l'outil. */
 function lireOptions(args) {
   const options = { git: true, aujourdhui: Date.now() };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--sans-git") options.git = false;
-    else if (args[i] === "--revue") options.revue = args[++i] || ""; // tâche absente : réponse « inconnue », jamais une erreur
+    else if (args[i] === "--revue") {
+      // Les tâches qui suivent, jusqu'à l'option suivante ; aucune tâche : réponse « inconnue », jamais une erreur.
+      options.revue = [];
+      while (i + 1 < args.length && !args[i + 1].startsWith("--")) options.revue.push(args[++i]);
+      if (options.revue.length === 0) options.revue.push("");
+    }
     else if (args[i] === "--aujourdhui") {
       const jour = args[++i];
       const date = /^\d{4}-\d{2}-\d{2}$/.test(jour || "") ? Date.parse(`${jour}T00:00:00Z`) : NaN;
@@ -472,15 +495,22 @@ if (require.main === module) {
     console.log(`erreur: ${e.message}`);
     process.exit(2);
   }
-  const revue = options.revue !== undefined;
-  try {
-    if (revue) console.log(formaterRevue(revueDeTache(process.cwd(), options.revue)));
-    else {
+  if (options.revue) {
+    const blocs = options.revue.map((id) => {
+      try {
+        return formaterRevue(revueDeTache(process.cwd(), id));
+      } catch (e) {
+        return `tache: ${id || "?"}\netat: inconnue\nreprendre: aucune\nraison: les fichiers n'ont pas pu être lus (${e.message})`;
+      }
+    });
+    console.log(blocs.join("\n\n"));
+  } else {
+    try {
       const faits = lireFaits(process.cwd(), options);
       console.log(formater(faits, decider(faits)));
+    } catch (e) {
+      console.log(sortieIllisible(e.message));
     }
-  } catch (e) {
-    console.log(revue ? `tache: ${options.revue || "?"}\netat: inconnue\nreprendre: aucune\nraison: les fichiers n'ont pas pu être lus (${e.message})` : sortieIllisible(e.message));
   }
 }
 
