@@ -107,6 +107,14 @@ window.PULSE_WIKI = {
     {
       "titre": "Commandes",
       "href": "commandes/index.html"
+    },
+    {
+      "titre": "Concepts",
+      "href": "concepts.html"
+    },
+    {
+      "titre": "Je suis bloqué",
+      "href": "depannage.html"
     }
   ],
   "commandes": [

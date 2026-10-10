@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Prérequis – Wiki Pulse</title>
-<meta name="description" content="Tout installer pas à pas avant votre premier projet avec Pulse, même sans jamais avoir ouvert un terminal : Git, Node.js, Claude Code, Claude Desktop, VS Code, GitHub, les plugins Pulse, Neon et Vercel.">
-<link rel="preload" href="assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="description" content="Tout installer pas à pas avant votre premier projet avec Pulse, même sans jamais avoir ouvert un terminal : VS Code et l'extension Claude Code, Git, Node.js, GitHub, les plugins Pulse, Neon et Vercel.">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/animations.css">
 <script src="js/donnees.js" defer></script>
@@ -30,84 +29,103 @@
 <h2><span class="etape-numero">1</span> Ce dont vous aurez besoin</h2>
 <p>Pulse fonctionne à l'intérieur de <strong>Claude Code</strong>, l'assistant de programmation d'Anthropic. Il lui faut quelques logiciels sur votre ordinateur et, pour mettre votre appli en ligne, quelques comptes sur des sites web. Vous n'aurez rien à programmer : vous allez télécharger, cliquer sur « Suivant », et copier quelques commandes que cette page vous donne.</p>
 
+<h3>Où travaillerez-vous avec Pulse ?</h3>
+<p>Claude Code s'utilise de trois façons. Elles partagent les mêmes réglages : les plugins Pulse, installés une fois, servent partout.</p>
+<table>
+<thead><tr><th>Façon</th><th>À quoi elle ressemble</th><th>Pour qui</th></tr></thead>
+<tbody>
+<tr><td><strong>VS Code avec l'extension Claude Code</strong><br>La façon conseillée</td><td>Un éditeur qui montre les fichiers de votre projet, avec un panneau de discussion avec Claude sur le côté.</td><td>Vous voyez vos fichiers, vous discutez avec Claude dans un panneau, et vous n'avez pas besoin du terminal au quotidien. C'est la façon suivie sur cette page (étapes 2 à 7).</td></tr>
+<tr><td><strong>Claude Desktop</strong>, onglet Code</td><td>Une application avec des boutons, des panneaux et un aperçu des changements.</td><td>Si vous préférez une application à part (étape 9, facultative).</td></tr>
+<tr><td><strong>Claude Code dans un terminal</strong></td><td>Une fenêtre de texte : vous tapez, Claude répond.</td><td>Pour les personnes à l'aise avec le texte seul. Les tutoriels de ce wiki montrent les commandes sous cette forme ; elles se tapent de la même façon dans le panneau de VS Code.</td></tr>
+</tbody>
+</table>
+
 <h3>Combien de temps ?</h3>
-<p>Comptez environ <strong>une heure et demie</strong> pour les logiciels et les plugins Pulse (étapes 2 à 9), puis <strong>une demi-heure</strong> pour les comptes Neon et Vercel (étapes 10 et 11). C'est une estimation : elle dépend surtout de la vitesse de votre connexion. Vous pouvez vous arrêter entre deux étapes et reprendre plus tard.</p>
+<p>Comptez environ <strong>une heure et demie</strong> pour les logiciels et les plugins Pulse (étapes 2 à 10), puis <strong>une demi-heure</strong> pour les comptes Neon et Vercel (étapes 11 et 12). C'est une estimation : elle dépend surtout de la vitesse de votre connexion. Vous pouvez vous arrêter entre deux étapes et reprendre plus tard.</p>
 
 <h3>Ce qui est gratuit, ce qui est payant</h3>
 <ul>
-<li><strong>Gratuits :</strong> Git, Node.js, VS Code, l'outil GitHub (<code>gh</code>), l'application Claude Desktop, Pulse lui-même, un compte GitHub.</li>
+<li><strong>Gratuits :</strong> VS Code et l'extension Claude Code, Git, Node.js, l'outil GitHub (<code>gh</code>), l'application Claude Desktop, Pulse lui-même, un compte GitHub.</li>
 <li><strong>Payant :</strong> Claude Code demande un abonnement Claude payant (Pro, Max, Team ou Enterprise) ou un compte Console. L'offre gratuite de Claude ne comprend pas Claude Code. Les tarifs à jour sont sur <a href="https://claude.com/pricing">claude.com/pricing</a>.</li>
-<li><strong>Gratuits pour commencer :</strong> Neon (base de données) et Vercel (hébergement) ont une offre gratuite. Attention : celle de Vercel est réservée à un usage <strong>personnel et non commercial</strong> (détails à l'étape 11).</li>
+<li><strong>Gratuits pour commencer :</strong> Neon (base de données) et Vercel (hébergement) ont une offre gratuite. Attention : celle de Vercel est réservée à un usage <strong>personnel et non commercial</strong> (détails à l'étape 12).</li>
 </ul>
 <p>Votre ordinateur doit avoir au moins Windows 10 (version 1809) ou macOS 13, 4 Go de mémoire et une connexion à Internet.</p>
 
-<h3>Où travaillerez-vous avec Pulse ?</h3>
-<p>Claude Code existe sous trois formes. Elles partagent les mêmes réglages : des plugins installés une fois servent partout.</p>
-<table>
-<thead><tr><th>Forme</th><th>À quoi elle ressemble</th><th>Pour Pulse</th></tr></thead>
-<tbody>
-<tr><td><strong>Claude Code dans un terminal</strong> (étape 5)</td><td>Une fenêtre de texte : vous tapez, Claude répond.</td><td><strong>Indispensable :</strong> c'est là qu'on installe et qu'on met à jour Pulse. Les tutoriels de ce wiki l'utilisent.</td></tr>
-<tr><td><strong>Claude Desktop</strong>, onglet Code (étape 6)</td><td>Une application avec des boutons, des panneaux et un aperçu des changements.</td><td>Conseillé pour travailler au quotidien sans terminal, une fois Pulse installé.</td></tr>
-<tr><td><strong>L'extension VS Code</strong> (étape 7)</td><td>Un panneau de discussion à côté des fichiers de votre projet.</td><td>Facultatif, pratique pour voir vos fichiers.</td></tr>
-</tbody>
-</table>
-<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> installez tout dans l'ordre de la page, même ce que vous pensez ne pas utiliser tout de suite. Pulse a besoin de Git et de Node.js quelle que soit la forme de Claude Code choisie.</p></aside>
-
 <p>Cochez au fur et à mesure :</p>
 <ul class="verification">
-<li>J'ouvre un terminal et j'y colle une commande (étape 2).</li>
-<li><code>git --version</code> affiche un numéro de version (étape 3).</li>
-<li><code>node --version</code> affiche v22.19 ou plus (étape 4).</li>
-<li><code>claude --version</code> répond, et je suis connecté à mon compte Claude (étape 5).</li>
-<li>Claude Desktop s'ouvre et son onglet Code est disponible (étape 6).</li>
-<li>VS Code est installé, avec l'extension Claude Code (étape 7, facultatif).</li>
+<li>VS Code est installé et s'ouvre (étape 2).</li>
+<li>J'ouvre le terminal de VS Code et j'y colle une commande (étape 3).</li>
+<li><code>git --version</code> affiche un numéro de version (étape 4).</li>
+<li><code>node --version</code> affiche v22.19 ou plus (étape 5).</li>
+<li>J'ai un abonnement Claude, l'extension Claude Code est installée et je suis connecté (étape 6).</li>
+<li><code>claude --version</code> répond dans le terminal (étape 7).</li>
 <li>J'ai un compte GitHub, et <code>gh auth status</code> dit que je suis connecté (étape 8).</li>
-<li>Les plugins Pulse sont installés : <code>/pulse:</code> affiche la liste des commandes (étape 9).</li>
-<li>J'ai un compte Neon avec un projet en Europe (étape 10).</li>
-<li>J'ai un compte Vercel relié à GitHub (étape 11).</li>
-<li><code>/pulse:init</code> m'accueille dans un dossier d'essai (étape 13).</li>
+<li>Les plugins Pulse sont installés : <code>/pulse:</code> affiche la liste des commandes (étape 10).</li>
+<li>J'ai un compte Neon avec un projet en Europe (étape 11).</li>
+<li>J'ai un compte Vercel relié à GitHub (étape 12).</li>
+<li><code>/pulse:init</code> m'accueille dans un dossier d'essai (étape 14).</li>
 </ul>
 </section>
 
 <!-- ===================================================================================================== -->
-<section id="terminal" class="etape-tuto">
-<h2><span class="etape-numero">2</span> Ouvrir un terminal <span class="duree">5 min</span></h2>
-<p>Un <dfn>terminal</dfn> est une fenêtre où l'on tape des commandes au lieu de cliquer. Vous y vérifierez chaque installation, puis vous y lancerez Claude Code. Rassurez-vous : vous n'aurez qu'à copier et coller les commandes de cette page.</p>
+<section id="vscode" class="etape-tuto">
+<h2><span class="etape-numero">2</span> Installer VS Code <span class="duree">10 min</span></h2>
+<p><dfn>VS Code</dfn> (Visual Studio Code) est un éditeur gratuit de Microsoft : il affiche les fichiers de votre projet, et c'est là que vous discuterez avec Claude. Vous l'installez en premier : toutes les vérifications de cette page se feront dans sa fenêtre.</p>
 <div class="onglets">
 <section data-onglet="Windows">
 <h3 class="onglet-titre">Windows</h3>
 <ol>
-<li>Appuyez en même temps sur les touches <kbd>Windows</kbd> (le logo en bas à gauche du clavier) et <kbd>X</kbd>.</li>
-<li>Un menu s'ouvre en bas à gauche de l'écran. Cliquez sur <strong>Terminal</strong> (ou <strong>Windows PowerShell</strong> sur un ordinateur plus ancien).</li>
-<li>Une fenêtre sombre s'ouvre, avec un curseur qui clignote. Le début de la ligne affiche <code>PS C:\Users\VotreNom&gt;</code> : vous êtes dans <dfn>PowerShell</dfn>, le terminal de Windows.</li>
+<li>Ouvrez <a href="https://code.visualstudio.com/download">code.visualstudio.com/download</a> et cliquez sur le grand bouton <strong>Windows</strong> (Windows 10 ou 11).</li>
+<li>Ouvrez le fichier téléchargé (<code>VSCodeUserSetup-x64-….exe</code>, dans le dossier <strong>Téléchargements</strong>). Puis, dans l'installateur :
+<ul>
+<li>licence : cochez <strong>J'accepte l'accord</strong>, puis <strong>Suivant</strong> ;</li>
+<li>dossier d'installation et dossier du menu Démarrer : gardez tout, <strong>Suivant</strong> ;</li>
+<li><strong>Tâches supplémentaires</strong> : gardez cochée <strong>Ajouter à PATH</strong> (elle permet aux autres logiciels de trouver VS Code). Vous pouvez aussi cocher les deux cases « Ajouter l'action « Ouvrir avec Code » » : un clic droit sur un dossier l'ouvrira dans VS Code ;</li>
+<li><strong>Installer</strong>, puis <strong>Terminer</strong>.</li>
+</ul></li>
 </ol>
-<p><strong>Coller une commande :</strong> copiez-la sur cette page (bouton <strong>Copier</strong> à droite du bloc), cliquez dans le terminal, puis <kbd>Ctrl</kbd> + <kbd>V</kbd> ou un clic droit. Appuyez ensuite sur <kbd>Entrée</kbd>.</p>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-terminal-windows.png"><div class="capture-cadre">Capture à venir : le menu ouvert par Windows + X, avec « Terminal » mis en évidence, puis la fenêtre PowerShell.</div><figcaption>Ouvrir le terminal sous Windows.</figcaption></figure>
+<p><strong>Où le retrouver ensuite :</strong> menu Démarrer, « Visual Studio Code ».</p>
 </section>
 <section data-onglet="macOS">
 <h3 class="onglet-titre">macOS</h3>
 <ol>
-<li>Appuyez en même temps sur <kbd>Cmd</kbd> (la touche ⌘) et la barre d'<kbd>Espace</kbd> : la recherche Spotlight s'ouvre au milieu de l'écran.</li>
-<li>Tapez <code>Terminal</code>, puis appuyez sur <kbd>Entrée</kbd>.</li>
-<li>Une fenêtre s'ouvre, avec un curseur qui clignote : c'est votre terminal.</li>
+<li>Ouvrez <a href="https://code.visualstudio.com/download">code.visualstudio.com/download</a> et cliquez sur le grand bouton <strong>Mac</strong> (version « Universal », pour tous les Mac).</li>
+<li>Ouvrez le fichier téléchargé, puis glissez <strong>Visual Studio Code</strong> dans le dossier <strong>Applications</strong>.</li>
+<li>Ouvrez-le depuis Applications. À la première ouverture, macOS demande confirmation : cliquez sur <strong>Ouvrir</strong>.</li>
 </ol>
-<p><strong>Coller une commande :</strong> copiez-la sur cette page (bouton <strong>Copier</strong> à droite du bloc), cliquez dans le terminal, puis <kbd>Cmd</kbd> + <kbd>V</kbd>. Appuyez ensuite sur <kbd>Entrée</kbd>.</p>
-<p>Pour le retrouver plus tard : dossier <strong>Applications</strong> → <strong>Utilitaires</strong> → <strong>Terminal</strong>.</p>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-terminal-macos.png"><div class="capture-cadre">Capture à venir : la recherche Spotlight avec « Terminal » tapé, puis la fenêtre du Terminal.</div><figcaption>Ouvrir le Terminal sous macOS.</figcaption></figure>
+<p><strong>Où le retrouver ensuite :</strong> dossier Applications, « Visual Studio Code ». Pour le garder dans le Dock : clic droit sur son icône → <strong>Options</strong> → <strong>Garder dans le Dock</strong>.</p>
 </section>
 </div>
+<figure class="capture"><img src="assets/captures/prerequis-vscode-telechargement.png" alt="la page code.visualstudio.com/download, avec les boutons Windows et Mac." loading="lazy" width="1440" height="900"><figcaption>Le bouton à cliquer selon votre ordinateur.</figcaption></figure>
+<p>Les menus de VS Code sont en anglais au départ. Ce n'est pas gênant : cette page donne le nom anglais de chaque menu.</p>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> VS Code s'ouvre sur une page d'accueil (« Welcome »).</p></aside>
+<details class="probleme"><summary>Sous Windows, une fenêtre bleue « Windows a protégé votre ordinateur » s'affiche</summary><p>Vérifiez que le fichier vient bien de code.visualstudio.com, puis cliquez sur <strong>Informations complémentaires</strong> et <strong>Exécuter quand même</strong>.</p></details>
+<details class="probleme"><summary>Je préfère VS Code en français</summary><p>Ouvrez la liste des extensions (<kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>X</kbd>, ou <kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>X</kbd> sur Mac), cherchez « French Language Pack » publié par Microsoft, installez-le, puis redémarrez VS Code. Les menus seront alors en français.</p></details>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="terminal" class="etape-tuto">
+<h2><span class="etape-numero">3</span> Ouvrir le terminal de VS Code <span class="duree">5 min</span></h2>
+<p>Un <dfn>terminal</dfn> est une zone où l'on tape des commandes au lieu de cliquer. Vous en aurez besoin pendant l'installation, pour vérifier chaque logiciel. VS Code en contient un : le <strong>terminal intégré</strong>, qui s'ouvre en bas de sa fenêtre. Rassurez-vous : vous n'aurez qu'à copier et coller les commandes de cette page.</p>
+<ol>
+<li>Dans VS Code, ouvrez le menu <strong>View</strong> (Affichage), puis <strong>Terminal</strong>. Autre chemin : menu <strong>Terminal</strong> → <strong>New Terminal</strong> (Nouveau terminal). Raccourci : <kbd>Ctrl</kbd> + <kbd>`</kbd> (la touche de l'accent grave).</li>
+<li>Une zone s'ouvre en bas de la fenêtre, avec un curseur qui clignote. Sous Windows, la ligne commence en général par <code>PS C:\Users\VotreNom&gt;</code> : c'est <dfn>PowerShell</dfn>, le terminal de Windows.</li>
+</ol>
+<p><strong>Coller une commande :</strong> copiez-la sur cette page (bouton <strong>Copier</strong> à droite du bloc), cliquez dans le terminal, puis <kbd>Ctrl</kbd> + <kbd>V</kbd> (Windows) ou <kbd>Cmd</kbd> + <kbd>V</kbd> (Mac). Appuyez ensuite sur <kbd>Entrée</kbd>.</p>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-vscode-terminal.png"><div class="capture-cadre">Capture à venir : VS Code avec le menu View → Terminal, et le terminal ouvert en bas de la fenêtre.</div><figcaption>Le terminal intégré de VS Code.</figcaption></figure>
 <p>Pour essayer, collez cette commande, puis <kbd>Entrée</kbd> :</p>
 <pre class="commande"><code>echo Bonjour</code></pre>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le terminal affiche <code>Bonjour</code> sur la ligne suivante.</p></aside>
-<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> après chaque installation, <strong>fermez le terminal et ouvrez-en un nouveau</strong> (une nouvelle fenêtre, pas un nouvel onglet). Un terminal déjà ouvert ne voit pas les logiciels installés après lui.</p></aside>
-<details class="probleme"><summary>Sous Windows, la ligne commence par <code>C:\</code> sans <code>PS</code></summary><p>Vous êtes dans l'invite de commandes (CMD), l'ancien terminal de Windows. Fermez-la et ouvrez PowerShell avec <kbd>Windows</kbd> + <kbd>X</kbd> : les commandes de cette page sont écrites pour PowerShell.</p></details>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> après chaque installation des étapes suivantes, <strong>fermez complètement VS Code et rouvrez-le</strong>. Un logiciel installé pendant que VS Code est ouvert n'est souvent visible qu'après son redémarrage : fermer seulement le terminal ne suffit pas.</p></aside>
+<p>Le terminal de votre système marche aussi, si vous préférez : sous Windows, touches <kbd>Windows</kbd> + <kbd>X</kbd> puis <strong>Terminal</strong> ; sous macOS, <kbd>Cmd</kbd> + <kbd>Espace</kbd>, tapez <code>Terminal</code>, puis <kbd>Entrée</kbd>.</p>
+<details class="probleme"><summary>Sous Windows, la ligne commence par <code>C:\</code> sans <code>PS</code></summary><p>C'est l'invite de commandes (CMD), l'ancien terminal de Windows. Les commandes de cette page sont écrites pour PowerShell. Dans le terminal de VS Code, cliquez sur la petite flèche à côté du <strong>+</strong>, en haut à droite du terminal, et choisissez <strong>PowerShell</strong>.</p></details>
 <details class="probleme"><summary>Je ne peux pas cliquer dans le texte du terminal</summary><p>C'est normal : on y écrit, on ne clique pas. Déplacez-vous avec les flèches du clavier, et effacez avec la touche <kbd>Retour arrière</kbd>.</p></details>
 <details class="probleme"><summary>Une commande semble bloquée</summary><p>Certaines installations n'affichent rien pendant plusieurs minutes : patientez. Si rien ne bouge après dix minutes, appuyez sur <kbd>Ctrl</kbd> + <kbd>C</kbd> pour l'arrêter, puis relancez-la.</p></details>
 </section>
 
 <!-- ===================================================================================================== -->
 <section id="git" class="etape-tuto">
-<h2><span class="etape-numero">3</span> Installer Git <span class="duree">10 min</span></h2>
+<h2><span class="etape-numero">4</span> Installer Git <span class="duree">10 min</span></h2>
 <p><dfn>Git</dfn> garde l'historique de toutes les versions de votre projet : vous pouvez revenir en arrière à tout moment. Pulse s'en sert à chaque étape.</p>
 <div class="onglets">
 <section data-onglet="Windows">
@@ -116,7 +134,7 @@
 <ol>
 <li>Ouvrez <a href="https://git-scm.com/install/windows">git-scm.com/install/windows</a>.</li>
 <li>Dans la partie de l'installateur classique (« Standalone Installer »), cliquez sur la version <strong>x64</strong> (fichier <code>Git-2.56.0.2-64-bit.exe</code> le 10 octobre 2026 ; le numéro change avec les mises à jour). Prenez la version <strong>ARM64</strong> seulement si votre ordinateur a un processeur ARM, ce qui est rare.</li>
-<li>Ouvrez le fichier téléchargé (dans le dossier <strong>Téléchargements</strong>, ou en bas de votre navigateur). Windows demande « Voulez-vous autoriser cette application à apporter des modifications ? » : cliquez sur <strong>Oui</strong>.</li>
+<li>Ouvrez le fichier téléchargé. Windows demande « Voulez-vous autoriser cette application à apporter des modifications ? » : cliquez sur <strong>Oui</strong>.</li>
 <li>L'installateur, en anglais, enchaîne une quinzaine d'écrans. <strong>Gardez partout le choix déjà sélectionné et cliquez sur Next</strong>. Les écrans à connaître :
 <ul>
 <li><strong>Information</strong> (la licence) : <strong>Next</strong>.</li>
@@ -126,9 +144,9 @@
 </ul></li>
 <li>Au dernier écran, cliquez sur <strong>Install</strong>, attendez la fin, puis <strong>Finish</strong>.</li>
 </ol>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-git-telechargement.png"><div class="capture-cadre">Capture à venir : la page git-scm.com/install/windows, avec le lien de l'installateur x64 mis en évidence.</div><figcaption>Le fichier à télécharger.</figcaption></figure>
+<figure class="capture"><img src="assets/captures/prerequis-git-telechargement.png" alt="la page git-scm.com/install/windows, avec le lien de l'installateur x64 mis en évidence." loading="lazy" width="1440" height="900"><figcaption>Le fichier à télécharger.</figcaption></figure>
 <figure class="capture capture-a-venir" data-capture="captures/prerequis-git-installateur.png"><div class="capture-cadre">Capture à venir : l'écran « Adjusting your PATH environment » de l'installateur, avec l'option « Recommended » sélectionnée.</div><figcaption>Gardez l'option recommandée à cet écran.</figcaption></figure>
-<p><strong>Autre méthode</strong>, si vous êtes à l'aise : dans PowerShell, cette commande fait la même installation.</p>
+<p><strong>Autre méthode</strong>, si vous êtes à l'aise : dans le terminal, cette commande fait la même installation.</p>
 <pre class="commande"><code>winget install --id Git.Git -e --source winget</code></pre>
 <p><strong>Où le retrouver ensuite :</strong> vous n'avez pas à l'ouvrir. Il apparaît dans le menu Démarrer sous le nom « Git Bash », mais Claude Code s'en sert tout seul.</p>
 </section>
@@ -136,7 +154,7 @@
 <h3 class="onglet-titre">macOS</h3>
 <p>Apple fournit Git avec ses « outils en ligne de commande ».</p>
 <ol>
-<li>Dans le Terminal, collez cette commande, puis <kbd>Entrée</kbd> :
+<li>Dans le terminal, collez cette commande, puis <kbd>Entrée</kbd> :
 <pre class="commande"><code>xcode-select --install</code></pre></li>
 <li>Une fenêtre s'ouvre et propose d'installer les outils : cliquez sur <strong>Installer</strong>, puis <strong>Accepter</strong> la licence.</li>
 <li>Le téléchargement prend de quelques minutes à une demi-heure. Cliquez sur <strong>Terminé</strong> à la fin.</li>
@@ -145,16 +163,16 @@
 <p>Source : <a href="https://git-scm.com/install/mac">git-scm.com/install/mac</a>, qui propose aussi Homebrew (voir l'étape 8).</p>
 </section>
 </div>
-<p>Fermez le terminal, ouvrez-en un nouveau, puis vérifiez :</p>
+<p>Fermez complètement VS Code, rouvrez-le, ouvrez le terminal (<strong>View</strong> → <strong>Terminal</strong>), puis vérifiez :</p>
 <pre class="commande"><code>git --version</code></pre>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> une ligne qui commence par <code>git version</code>, suivie d'un numéro, par exemple <code>git version 2.56.0.windows.2</code> sous Windows. Le numéro exact importe peu.</p></aside>
-<details class="probleme"><summary>« git n'est pas reconnu » ou « command not found: git »</summary><p>Le terminal a été ouvert avant l'installation. Fermez-le, ouvrez-en un nouveau et réessayez. Si le message reste, relancez l'installation en gardant l'option « Recommended » à l'écran « Adjusting your PATH environment ».</p></details>
+<details class="probleme"><summary>« git n'est pas reconnu » ou « command not found: git »</summary><p>VS Code était ouvert pendant l'installation. Fermez-le complètement, rouvrez-le et réessayez. Si le message reste, relancez l'installation en gardant l'option « Recommended » à l'écran « Adjusting your PATH environment ».</p></details>
 <details class="probleme"><summary>J'ai déjà Git, faut-il le réinstaller ?</summary><p>Non : si <code>git --version</code> répond, passez à l'étape suivante. Dans le doute, réinstaller ne pose aucun problème.</p></details>
 </section>
 
 <!-- ===================================================================================================== -->
 <section id="node" class="etape-tuto">
-<h2><span class="etape-numero">4</span> Installer Node.js <span class="duree">10 min</span></h2>
+<h2><span class="etape-numero">5</span> Installer Node.js <span class="duree">10 min</span></h2>
 <p><dfn>Node.js</dfn> fait tourner les garde-fous de Pulse (protection de vos clés secrètes, blocage des commandes risquées) et ses outils de vérification. Il installe aussi <code>npm</code>, qui télécharge les briques de votre appli.</p>
 <p>Pulse demande <strong>Node.js 22.19 ou plus</strong>. Prenez la version marquée <strong>LTS</strong> (« support à long terme », la plus stable) : le 10 octobre 2026, c'est la version <strong>24.21.0</strong>.</p>
 <div class="onglets">
@@ -184,154 +202,91 @@
 </ol>
 </section>
 </div>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-node-telechargement.png"><div class="capture-cadre">Capture à venir : la page de téléchargement de nodejs.org, avec la mention LTS et le bouton de l'installateur mis en évidence.</div><figcaption>Choisissez la version LTS et l'installateur de votre système.</figcaption></figure>
+<figure class="capture"><img src="assets/captures/prerequis-node-telechargement.png" alt="la page de téléchargement de nodejs.org, avec la mention LTS et le bouton de l'installateur mis en évidence." loading="lazy" width="1440" height="900"><figcaption>Choisissez la version LTS et l'installateur de votre système.</figcaption></figure>
 <p><strong>Où le retrouver ensuite :</strong> nulle part, et c'est normal. Node.js n'a pas de fenêtre : il travaille en coulisse pour Pulse.</p>
-<p>Fermez le terminal, ouvrez-en un nouveau, puis vérifiez :</p>
+<p>Fermez complètement VS Code, rouvrez-le, ouvrez le terminal, puis vérifiez :</p>
 <pre class="commande"><code>node --version
 npm --version</code></pre>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>v24.21.0</code> (ou tout numéro supérieur à <code>v22.19</code>) pour Node.js, puis un numéro de version pour npm.</p></aside>
 <details class="probleme"><summary>Sous Windows, <code>npm --version</code> affiche « l'exécution de scripts est désactivée sur ce système »</summary><p>Par défaut, Windows interdit à PowerShell de lancer les petits programmes écrits pour lui, dont celui qui lance npm. Autorisez ceux de votre ordinateur, pour votre compte seulement, avec cette commande (réglage décrit par Microsoft sur <a href="https://learn.microsoft.com/fr-fr/powershell/module/microsoft.powershell.core/about/about_execution_policies">learn.microsoft.com</a>) :</p>
 <pre class="commande"><code>Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser</code></pre>
 <p>Si PowerShell demande une confirmation, acceptez, puis relancez <code>npm --version</code>.</p></details>
-<details class="probleme"><summary>La version affichée est plus ancienne que 22.19</summary><p>Une ancienne version de Node.js est déjà installée. Installez la version LTS par-dessus depuis nodejs.org, puis fermez et rouvrez le terminal.</p></details>
-<details class="probleme"><summary>Plus tard, Pulse dit « Node.js est introuvable » alors qu'il est installé</summary><p>Claude Code lit la liste des logiciels au moment où il démarre. <strong>Fermez et relancez Claude Code</strong> (ou Claude Desktop), pas seulement le terminal.</p></details>
+<details class="probleme"><summary>La version affichée est plus ancienne que 22.19</summary><p>Une ancienne version de Node.js est déjà installée. Installez la version LTS par-dessus depuis nodejs.org, puis fermez et rouvrez VS Code.</p></details>
+<details class="probleme"><summary>Plus tard, Pulse dit « Node.js est introuvable » alors qu'il est installé</summary><p>Claude Code lit la liste des logiciels au moment où il démarre. <strong>Fermez complètement VS Code et rouvrez-le</strong> (ou Claude Desktop, ou le terminal, selon la façon dont vous travaillez).</p></details>
 </section>
 
 <!-- ===================================================================================================== -->
-<section id="claude-code" class="etape-tuto">
-<h2><span class="etape-numero">5</span> Prendre un abonnement et installer Claude Code <span class="duree">15 min</span></h2>
-<p><strong>Claude Code</strong> est l'assistant d'Anthropic qui écrit et modifie le code avec vous. Cette forme-ci s'utilise dans le terminal : elle sert à installer et à mettre à jour Pulse, même si vous travaillez ensuite dans Claude Desktop ou VS Code.</p>
+<section id="extension" class="etape-tuto">
+<h2><span class="etape-numero">6</span> L'abonnement Claude et l'extension Claude Code <span class="duree">15 min</span></h2>
+<p><strong>Claude Code</strong> est l'assistant d'Anthropic qui écrit et modifie le code avec vous. L'extension l'ajoute à VS Code, dans un panneau de discussion. Elle contient sa propre copie de Claude Code : rien d'autre à installer pour discuter avec lui.</p>
 
 <h3>Prendre un abonnement</h3>
 <p>Claude Code demande un compte Claude <strong>Pro, Max, Team ou Enterprise</strong>, ou un compte <strong>Console</strong> (paiement à l'usage). L'offre gratuite ne suffit pas. Pour débuter seul, l'abonnement Pro est le plus simple.</p>
 <ol>
 <li>Ouvrez <a href="https://claude.com/pricing">claude.com/pricing</a>.</li>
 <li>Choisissez une offre et cliquez sur son bouton. Créez votre compte (ou connectez-vous), puis réglez l'abonnement.</li>
-<li>Notez l'adresse e-mail utilisée : c'est avec elle que vous vous connecterez partout (terminal, Claude Desktop, VS Code).</li>
+<li>Notez l'adresse e-mail utilisée : c'est avec elle que vous vous connecterez dans VS Code.</li>
 </ol>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-claude-abonnement.png"><div class="capture-cadre">Capture à venir : la page des offres de Claude, avec les offres qui comprennent Claude Code.</div><figcaption>Les offres payantes comprennent Claude Code.</figcaption></figure>
+<figure class="capture"><img src="assets/captures/prerequis-claude-abonnement.png" alt="la page des offres de Claude, avec les offres qui comprennent Claude Code." loading="lazy" width="1440" height="900"><figcaption>Les offres payantes comprennent Claude Code.</figcaption></figure>
 
-<h3>Installer Claude Code</h3>
-<div class="onglets">
-<section data-onglet="Windows">
-<h3 class="onglet-titre">Windows</h3>
-<p>Dans PowerShell (la ligne commence par <code>PS</code>), collez cette commande, puis <kbd>Entrée</kbd> :</p>
-<pre class="commande"><code>irm https://claude.ai/install.ps1 | iex</code></pre>
-<p>Rien ne s'affiche pendant le téléchargement : laissez la fenêtre ouverte et patientez. À la fin, le message <code>Claude Code successfully installed!</code> apparaît. Inutile d'ouvrir PowerShell en administrateur.</p>
-</section>
-<section data-onglet="macOS">
-<h3 class="onglet-titre">macOS</h3>
-<p>Dans le Terminal, collez cette commande, puis <kbd>Entrée</kbd> :</p>
-<pre class="commande"><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
-<p>Rien ne s'affiche pendant le téléchargement : laissez la fenêtre ouverte et patientez. À la fin, le message <code>Claude Code successfully installed!</code> apparaît.</p>
-</section>
-</div>
-<p>Cette installation se met à jour toute seule, en arrière-plan. Sources : <a href="https://code.claude.com/docs/fr/setup">la documentation officielle de Claude Code</a> et son <a href="https://code.claude.com/docs/fr/terminal-guide">guide du terminal pour débuter</a>.</p>
-<p>Ouvrez un nouveau terminal, puis vérifiez :</p>
-<pre class="commande"><code>claude --version</code></pre>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> un numéro de version suivi de <code>(Claude Code)</code>, par exemple <code>2.1.211 (Claude Code)</code>.</p></aside>
-
-<h3>Se connecter la première fois</h3>
+<h3>Installer l'extension</h3>
 <ol>
-<li>Dans le terminal, tapez <code>claude</code>, puis <kbd>Entrée</kbd>.</li>
-<li>Claude Code vous propose de vous connecter : suivez les instructions à l'écran (choix avec les flèches, validation avec <kbd>Entrée</kbd>). Votre navigateur s'ouvre.</li>
-<li>Connectez-vous avec le compte de votre abonnement et acceptez.</li>
-<li>De retour dans le terminal, l'écran d'accueil de Claude Code s'affiche.</li>
-</ol>
-<p>Pour quitter Claude Code, tapez <code>exit</code>, ou appuyez deux fois sur <kbd>Ctrl</kbd> + <kbd>D</kbd>. Pour interrompre une réponse en cours, appuyez sur <kbd>Échap</kbd>.</p>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-claude-connexion.png"><div class="capture-cadre">Capture à venir : l'écran d'accueil de Claude Code dans le terminal, juste après la première connexion.</div><figcaption>Claude Code est prêt.</figcaption></figure>
-<details class="probleme"><summary>« claude n'est pas reconnu » ou « command not found: claude »</summary><p>Fermez le terminal et ouvrez-en un nouveau. Si le message reste, le dossier de Claude Code n'est pas encore connu du terminal. Sous macOS, l'installateur affiche la commande qui corrige cela sous « Setup notes », à la fin de l'installation : copiez-la et lancez-la. Sous Windows comme sous macOS, la marche à suivre exacte est dans <a href="https://code.claude.com/docs/fr/terminal-guide">le guide du terminal</a>, partie « Dépannage ».</p></details>
-<details class="probleme"><summary>Sous Windows : « irm n'est pas reconnu »</summary><p>Vous êtes dans l'invite de commandes (CMD), pas dans PowerShell. Ouvrez PowerShell avec <kbd>Windows</kbd> + <kbd>X</kbd>, puis relancez la commande.</p></details>
-<details class="probleme"><summary>Sous Windows : « Claude Code does not support 32-bit Windows »</summary><p>Vous avez ouvert « Windows PowerShell (x86) ». Fermez-le et ouvrez, depuis le menu Démarrer, l'entrée « Windows PowerShell » sans « (x86) » dans son nom.</p></details>
-</section>
-
-<!-- ===================================================================================================== -->
-<section id="claude-desktop" class="etape-tuto">
-<h2><span class="etape-numero">6</span> Installer Claude Desktop <span class="duree">10 min</span></h2>
-<p><strong>Claude Desktop</strong> est l'application de bureau d'Anthropic. Son onglet <strong>Code</strong> donne accès à Claude Code avec des boutons et des panneaux, sans terminal : c'est la façon la plus confortable de travailler au quotidien avec Pulse.</p>
-<div class="onglets">
-<section data-onglet="Windows">
-<h3 class="onglet-titre">Windows</h3>
-<ol>
-<li>Ouvrez <a href="https://claude.com/download">claude.com/download</a>.</li>
-<li>Dans la ligne <strong>Windows</strong>, cliquez sur <strong>Download</strong>. (La ligne « Windows (arm 64) » sert seulement aux rares ordinateurs à processeur ARM.)</li>
-<li>Ouvrez le fichier téléchargé et laissez l'installation se faire.</li>
-<li>Ouvrez <strong>Claude</strong> depuis le menu Démarrer.</li>
-</ol>
-</section>
-<section data-onglet="macOS">
-<h3 class="onglet-titre">macOS</h3>
-<ol>
-<li>Ouvrez <a href="https://claude.com/download">claude.com/download</a>.</li>
-<li>Cliquez sur <strong>Download for macOS</strong>.</li>
-<li>Ouvrez le fichier téléchargé (un fichier <code>.dmg</code>) et suivez la fenêtre qui s'ouvre : en général, il suffit de glisser l'icône de Claude dans le dossier <strong>Applications</strong>.</li>
-<li>Ouvrez <strong>Claude</strong> depuis le dossier Applications.</li>
-</ol>
-</section>
-</div>
-<h3>Se connecter et ouvrir l'onglet Code</h3>
-<ol>
-<li>Connectez-vous avec le compte de votre abonnement Claude.</li>
-<li>Cliquez sur l'onglet <strong>Code</strong>, en haut au centre. S'il vous propose de passer à une offre payante, votre compte n'a pas encore d'abonnement (étape 5).</li>
-<li>Pour travailler sur un projet : choisissez <strong>Local</strong> (votre ordinateur), puis <strong>Select folder</strong> et le dossier du projet.</li>
-<li>Dans la zone de saisie, tapez <code>/</code> pour voir les commandes disponibles, dont celles de Pulse une fois installé.</li>
-</ol>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-desktop-code.png"><div class="capture-cadre">Capture à venir : Claude Desktop sur l'onglet Code, avec le choix « Local » et le bouton « Select folder ».</div><figcaption>L'onglet Code de Claude Desktop.</figcaption></figure>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> l'onglet Code s'ouvre et propose de choisir un dossier.</p></aside>
-<h3>Ce que vous devez savoir pour Pulse</h3>
-<ul>
-<li><strong>Installez Pulse depuis le terminal</strong> (étape 9). D'après la documentation d'Anthropic, le terminal, Claude Desktop et VS Code lisent les mêmes réglages : des plugins installés « pour vous » dans le terminal sont disponibles dans Claude Desktop. Claude Desktop sait aussi installer des plugins (bouton <strong>+</strong> à côté de la zone de saisie, puis <strong>Plugins</strong>), mais sa documentation ne dit pas comment y ajouter un nouveau catalogue comme celui de Pulse : passez par le terminal.</li>
-<li><strong>Choisissez toujours « Local ».</strong> Les plugins ne sont pas disponibles dans les sessions « Cloud » ni dans les sessions WSL.</li>
-<li>Claude Desktop contient son propre Claude Code : il ne remplace pas Git et Node.js, dont Pulse a besoin.</li>
-</ul>
-<p>Sources : <a href="https://code.claude.com/docs/fr/desktop-quickstart">démarrer avec l'application de bureau</a> et <a href="https://code.claude.com/docs/fr/desktop">la page de référence de Claude Desktop</a>.</p>
-<details class="probleme"><summary>L'onglet Code demande de se reconnecter, ou affiche une erreur 403</summary><p>Terminez la connexion en ligne qui vous est proposée, puis fermez et relancez Claude Desktop. Si l'erreur reste, la partie « Troubleshooting » de <a href="https://code.claude.com/docs/fr/desktop">la page de référence</a> détaille les causes.</p></details>
-<details class="probleme"><summary>Les commandes <code>/pulse:</code> n'apparaissent pas dans Claude Desktop</summary><p>Vérifiez que la session est en <strong>Local</strong>, que Pulse est installé (étape 9), puis fermez et relancez Claude Desktop.</p></details>
-</section>
-
-<!-- ===================================================================================================== -->
-<section id="vscode" class="etape-tuto">
-<h2><span class="etape-numero">7</span> VS Code et l'extension Claude Code <span class="duree">10 min</span></h2>
-<p><strong>Facultatif, mais pratique.</strong> <dfn>VS Code</dfn> est un éditeur gratuit de Microsoft : il affiche les fichiers de votre projet. Avec l'extension Claude Code, vous discutez avec Claude dans un panneau, à côté de vos fichiers.</p>
-<h3>Installer VS Code</h3>
-<div class="onglets">
-<section data-onglet="Windows">
-<h3 class="onglet-titre">Windows</h3>
-<ol>
-<li>Ouvrez <a href="https://code.visualstudio.com/download">code.visualstudio.com/download</a> et cliquez sur le grand bouton <strong>Windows</strong> (Windows 10 ou 11).</li>
-<li>Ouvrez le fichier téléchargé (<code>VSCodeUserSetup-x64-….exe</code>). Puis :
-<ul>
-<li>licence : cochez <strong>J'accepte l'accord</strong>, puis <strong>Suivant</strong> ;</li>
-<li>dossier et menu Démarrer : gardez tout, <strong>Suivant</strong> ;</li>
-<li><strong>Tâches supplémentaires</strong> : gardez cochée <strong>Ajouter à PATH</strong> (elle permet d'ouvrir VS Code depuis le terminal). Vous pouvez aussi cocher les deux cases « Ajouter l'action « Ouvrir avec Code » » : un clic droit sur un dossier l'ouvrira dans VS Code ;</li>
-<li><strong>Installer</strong>, puis <strong>Terminer</strong>.</li>
-</ul></li>
-</ol>
-<p><strong>Où le retrouver ensuite :</strong> menu Démarrer, « Visual Studio Code ».</p>
-</section>
-<section data-onglet="macOS">
-<h3 class="onglet-titre">macOS</h3>
-<ol>
-<li>Ouvrez <a href="https://code.visualstudio.com/download">code.visualstudio.com/download</a> et cliquez sur le grand bouton <strong>Mac</strong> (version « Universal », pour tous les Mac).</li>
-<li>Ouvrez le fichier téléchargé, puis glissez <strong>Visual Studio Code</strong> dans le dossier <strong>Applications</strong>.</li>
-<li>Ouvrez-le depuis Applications. À la première ouverture, macOS demande confirmation : cliquez sur <strong>Ouvrir</strong>.</li>
-</ol>
-<p><strong>Où le retrouver ensuite :</strong> dossier Applications, « Visual Studio Code ».</p>
-</section>
-</div>
-<p>Les menus de VS Code sont en anglais au départ. Ce n'est pas gênant pour la suite.</p>
-<h3>Ajouter l'extension Claude Code</h3>
-<ol>
-<li>Dans VS Code, appuyez sur <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>X</kbd> (Windows) ou <kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>X</kbd> (macOS) : la liste des extensions s'ouvre à gauche.</li>
-<li>Dans le champ de recherche, tapez <strong>Claude Code</strong>. Choisissez celle éditée par <strong>Anthropic</strong>, puis cliquez sur <strong>Install</strong>. Page officielle : <a href="https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code">l'extension sur le site de Microsoft</a>.</li>
-<li>Ouvrez le panneau Claude : cliquez sur l'icône en forme d'étincelle dans la barre de gauche, ou sur <strong>✻ Claude Code</strong> en bas à droite de la fenêtre.</li>
-<li>La première fois, cliquez sur <strong>Sign in</strong> et connectez-vous dans votre navigateur, avec le compte de votre abonnement.</li>
+<li>Dans VS Code, appuyez sur <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>X</kbd> (Windows) ou <kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>X</kbd> (macOS) : la liste des extensions s'ouvre à gauche. Vous pouvez aussi cliquer sur l'icône des quatre carrés, dans la barre verticale tout à gauche.</li>
+<li>Dans le champ de recherche, tapez <strong>Claude Code</strong>.</li>
+<li>Choisissez celle éditée par <strong>Anthropic</strong>, puis cliquez sur <strong>Install</strong>. Page officielle : <a href="https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code">l'extension sur le site de Microsoft</a>.</li>
 </ol>
 <figure class="capture capture-a-venir" data-capture="captures/prerequis-vscode-extension.png"><div class="capture-cadre">Capture à venir : la liste des extensions de VS Code avec « Claude Code » d'Anthropic et son bouton Install.</div><figcaption>L'extension Claude Code dans VS Code.</figcaption></figure>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> l'icône en forme d'étincelle apparaît dans la barre de gauche, et le panneau Claude s'ouvre sur une zone de saisie.</p></aside>
+
+<h3>Ouvrir un dossier</h3>
+<p>Claude travaille sur les fichiers d'un dossier : le dossier de votre projet. Pour l'instant, créez un dossier d'essai.</p>
+<ol>
+<li>Dans votre dossier personnel (ou dans Documents), créez un dossier vide nommé <code>essai-pulse</code>, comme vous créez d'habitude un dossier.</li>
+<li>Dans VS Code, menu <strong>File</strong> (Fichier) → <strong>Open Folder…</strong> (Ouvrir le dossier), choisissez <code>essai-pulse</code>, puis validez.</li>
+<li>VS Code peut vous demander si vous faites confiance aux auteurs des fichiers de ce dossier, ou afficher un bandeau « Restricted Mode » : c'est votre dossier, faites-lui confiance.</li>
+</ol>
+
+<h3>Ouvrir le panneau Claude Code et se connecter</h3>
+<ol>
+<li>Cliquez sur l'icône en forme d'étincelle dans la barre verticale de gauche, ou sur <strong>✻ Claude Code</strong> en bas à droite de la fenêtre.</li>
+<li>La première fois, un écran de connexion apparaît : cliquez sur <strong>Sign in</strong>, connectez-vous dans votre navigateur avec le compte de votre abonnement, et acceptez.</li>
+<li>Revenez dans VS Code : le panneau Claude affiche une zone de saisie. Une liste « Learn Claude Code » peut apparaître : suivez-la ou fermez-la avec la croix.</li>
+</ol>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-vscode-panneau.png"><div class="capture-cadre">Capture à venir : VS Code avec le dossier essai-pulse ouvert, l'icône en forme d'étincelle et le panneau Claude Code avec sa zone de saisie.</div><figcaption>Le panneau Claude Code, prêt à recevoir vos demandes.</figcaption></figure>
+
+<h3>Taper une commande</h3>
+<p>Dans la zone de saisie du panneau, tapez <code>/</code> : la liste des commandes disponibles s'ouvre. C'est ainsi que vous lancerez les commandes de Pulse, comme <code>/pulse:init</code>, une fois les plugins installés (étape 10). Pour envoyer un message, tapez-le puis <kbd>Entrée</kbd>.</p>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> en tapant <code>/</code>, une liste de commandes s'affiche au-dessus de la zone de saisie.</p></aside>
 <p>Source : <a href="https://code.claude.com/docs/fr/vs-code">utiliser Claude Code dans VS Code</a>.</p>
 <details class="probleme"><summary>L'extension refuse de s'installer</summary><p>Elle demande VS Code 1.94 ou plus récent. Mettez VS Code à jour : menu <strong>Help</strong> (Aide), ou <strong>Code</strong> sur Mac, puis <strong>Check for Updates</strong> (rechercher les mises à jour).</p></details>
-<details class="probleme"><summary>La commande <code>claude</code> ne marche pas dans le terminal de VS Code</summary><p>L'extension a sa propre copie de Claude pour le panneau. Pour taper <code>claude</code> dans le terminal intégré, il faut aussi l'installation de l'étape 5. Faites-la, puis redémarrez VS Code.</p></details>
+<details class="probleme"><summary>L'icône en forme d'étincelle n'apparaît pas</summary><p>Redémarrez VS Code. Ou ouvrez la palette de commandes (<kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>P</kbd>, ou <kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>P</kbd> sur Mac), tapez <code>Developer: Reload Window</code> et validez.</p></details>
+<details class="probleme"><summary>Le panneau me propose de passer à une offre payante</summary><p>Le compte utilisé n'a pas d'abonnement compatible. Vérifiez l'adresse e-mail avec laquelle vous vous êtes connecté.</p></details>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="claude-code" class="etape-tuto">
+<h2><span class="etape-numero">7</span> Installer Claude Code pour le terminal <span class="duree">10 min</span></h2>
+<p>La copie de Claude Code fournie avec l'extension sert à son panneau seulement : elle n'ajoute pas la commande <code>claude</code> au terminal. Or les commandes officielles de <strong>mise à jour de Pulse</strong> (étape 10) se tapent dans le terminal. Installez donc aussi Claude Code pour le terminal : une seule fois, puis il se met à jour tout seul.</p>
+<p>Dans le terminal de VS Code (<strong>View</strong> → <strong>Terminal</strong>) :</p>
+<div class="onglets">
+<section data-onglet="Windows">
+<h3 class="onglet-titre">Windows</h3>
+<p>La ligne doit commencer par <code>PS</code> (PowerShell). Collez cette commande, puis <kbd>Entrée</kbd> :</p>
+<pre class="commande"><code>irm https://claude.ai/install.ps1 | iex</code></pre>
+</section>
+<section data-onglet="macOS">
+<h3 class="onglet-titre">macOS</h3>
+<p>Collez cette commande, puis <kbd>Entrée</kbd> :</p>
+<pre class="commande"><code>curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+</section>
+</div>
+<p>Rien ne s'affiche pendant le téléchargement : patientez. À la fin, le message <code>Claude Code successfully installed!</code> apparaît. Sources : <a href="https://code.claude.com/docs/fr/setup">la documentation officielle de Claude Code</a> et son <a href="https://code.claude.com/docs/fr/terminal-guide">guide du terminal pour débuter</a>.</p>
+<p>Fermez complètement VS Code, rouvrez-le, ouvrez le terminal, puis vérifiez :</p>
+<pre class="commande"><code>claude --version</code></pre>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> un numéro de version suivi de <code>(Claude Code)</code>, par exemple <code>2.1.211 (Claude Code)</code>.</p></aside>
+<p>La première fois que vous taperez <code>claude</code> seul dans un terminal, il vous proposera de vous connecter avec votre navigateur, comme l'extension. Pour quitter Claude Code dans le terminal, tapez <code>exit</code>.</p>
+<details class="probleme"><summary>« claude n'est pas reconnu » ou « command not found: claude »</summary><p>Fermez complètement VS Code et rouvrez-le. Si le message reste, le dossier de Claude Code n'est pas encore connu du terminal. Sous macOS, l'installateur affiche la commande qui corrige cela sous « Setup notes », à la fin de l'installation : copiez-la et lancez-la. Sous Windows comme sous macOS, la marche à suivre exacte est dans <a href="https://code.claude.com/docs/fr/terminal-guide">le guide du terminal</a>, partie « Dépannage ».</p></details>
+<details class="probleme"><summary>Sous Windows : « irm n'est pas reconnu »</summary><p>Le terminal est l'invite de commandes (CMD), pas PowerShell. Ouvrez un terminal PowerShell (étape 3), puis relancez la commande.</p></details>
+<details class="probleme"><summary>Sous Windows : « Claude Code does not support 32-bit Windows »</summary><p>Vous avez ouvert « Windows PowerShell (x86) ». Utilisez le terminal de VS Code, ou l'entrée « Windows PowerShell » du menu Démarrer sans « (x86) » dans son nom.</p></details>
 </section>
 
 <!-- ===================================================================================================== -->
@@ -354,24 +309,23 @@ npm --version</code></pre>
 <div class="onglets">
 <section data-onglet="Windows">
 <h3 class="onglet-titre">Windows</h3>
-<p>Dans PowerShell, collez cette commande, puis <kbd>Entrée</kbd>. Acceptez si Windows demande l'autorisation.</p>
+<p>Dans le terminal de VS Code, collez cette commande, puis <kbd>Entrée</kbd>. Acceptez si Windows demande l'autorisation.</p>
 <pre class="commande"><code>winget install --id GitHub.cli --source winget</code></pre>
-<p>Fermez ensuite la fenêtre du terminal et ouvrez-en une <strong>nouvelle</strong> : un nouvel onglet ne suffit pas.</p>
 <p>Si <code>winget</code> n'est pas reconnu : sur <a href="https://cli.github.com">cli.github.com</a>, téléchargez l'installateur pour Windows, ouvrez-le et gardez les choix proposés.</p>
 </section>
 <section data-onglet="macOS">
 <h3 class="onglet-titre">macOS</h3>
 <p>Sur Mac, la méthode officielle passe par <a href="https://brew.sh">Homebrew</a>, un installateur de logiciels gratuit.</p>
 <ol>
-<li>Si vous n'avez pas encore Homebrew, collez cette commande (tirée de brew.sh) dans le Terminal, puis <kbd>Entrée</kbd>. Elle explique ce qu'elle va faire, demande votre mot de passe de session (rien ne s'affiche quand vous le tapez : c'est normal), puis attend votre accord avec <kbd>Entrée</kbd>.
+<li>Si vous n'avez pas encore Homebrew, collez cette commande (tirée de brew.sh) dans le terminal, puis <kbd>Entrée</kbd>. Elle explique ce qu'elle va faire, demande votre mot de passe de session (rien ne s'affiche quand vous le tapez : c'est normal), puis attend votre accord avec <kbd>Entrée</kbd>.
 <pre class="commande"><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
-À la fin, Homebrew affiche une partie « Next steps » avec des commandes à copier : lancez-les, elles permettent au Terminal de trouver Homebrew.</li>
+À la fin, Homebrew affiche une partie « Next steps » avec des commandes à copier : lancez-les, elles permettent au terminal de trouver Homebrew.</li>
 <li>Puis installez <code>gh</code> :
 <pre class="commande"><code>brew install gh</code></pre></li>
 </ol>
 </section>
 </div>
-<p>Vérifiez l'installation dans un nouveau terminal :</p>
+<p>Fermez complètement VS Code, rouvrez-le, puis vérifiez dans le terminal :</p>
 <pre class="commande"><code>gh --version</code></pre>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> une ligne qui commence par <code>gh version</code>, suivie d'un numéro (2.102.0 le 10 octobre 2026).</p></aside>
 
@@ -400,81 +354,121 @@ git config --global user.email "camille@exemple.fr"</code></pre>
 <p>Sources : <a href="https://docs.github.com/fr/github-cli/github-cli/quickstart">démarrage rapide de l'outil GitHub</a> et <a href="https://docs.github.com/fr/get-started/git-basics/caching-your-github-credentials-in-git">garder ses identifiants GitHub dans Git</a>.</p>
 <aside class="encadre encadre-conseil"><p><strong>Sans l'outil <code>gh</code></strong> : sous Windows, le gestionnaire de connexion installé avec Git for Windows (Git Credential Manager) ouvre une fenêtre de connexion à GitHub au premier envoi. Acceptez-la et connectez-vous avec votre navigateur : la connexion est ensuite gardée.</p></aside>
 
-<h3>Relier VS Code à votre compte (facultatif)</h3>
-<p>Si vous utilisez VS Code, il peut aussi se connecter à GitHub, pour envoyer vos versions et voir votre dépôt depuis l'éditeur. Le plus simple : laissez-le vous le proposer. La première fois que VS Code envoie vos versions vers GitHub, il vous demande de vous connecter ; suivez les étapes dans le navigateur (cliquez sur le bouton d'autorisation), puis revenez dans VS Code. Vous pouvez aussi le faire d'avance avec l'icône des comptes (une silhouette), en bas de la barre de gauche, qui propose de se connecter avec GitHub.</p>
+<h3>Relier VS Code à votre compte</h3>
+<p>VS Code peut aussi se connecter à GitHub, pour envoyer vos versions et voir votre dépôt depuis l'éditeur. Le plus simple : laissez-le vous le proposer. La première fois que VS Code envoie vos versions vers GitHub, il vous demande de vous connecter ; suivez les étapes dans le navigateur (cliquez sur le bouton d'autorisation), puis revenez dans VS Code. Vous pouvez aussi le faire d'avance avec l'icône des comptes (une silhouette), en bas de la barre de gauche, qui propose de se connecter avec GitHub.</p>
 <p>Source : <a href="https://code.visualstudio.com/docs/sourcecontrol/github">travailler avec GitHub dans VS Code</a>.</p>
 <details class="probleme"><summary>VS Code reste bloqué sur « Signing in to github.com… »</summary><p>Si le navigateur ne vous ramène pas dans VS Code : copiez le code d'autorisation affiché dans le navigateur, cliquez dans VS Code sur « Signing in to github.com… » dans la barre du bas, collez le code et appuyez sur <kbd>Entrée</kbd>.</p></details>
 
 <h3>Ce que Pulse fera avec ce lien</h3>
 <p>Vous n'avez rien d'autre à préparer sur GitHub : ne créez pas de dépôt vous-même. Pendant <a href="commandes/init.html"><code>/pulse:init</code></a> (ou plus tard, à la mise en ligne avec <a href="commandes/deploy.html"><code>/pulse:deploy</code></a>), Pulse vous propose de relier le projet à GitHub. Si <code>gh</code> est connecté, il vous montre la commande qui crée un dépôt <strong>privé</strong> au nom du projet et y envoie la première version, et vous demande votre accord avant de la lancer. Ensuite, il envoie vos nouvelles versions sur GitHub au fil du travail, toujours avec votre accord.</p>
-<details class="probleme"><summary>« gh n'est pas reconnu » ou « command not found: gh »</summary><p>Fermez la fenêtre du terminal et ouvrez-en une nouvelle. Sur Mac, vérifiez que vous avez bien lancé les commandes « Next steps » affichées à la fin de l'installation de Homebrew.</p></details>
+<details class="probleme"><summary>« gh n'est pas reconnu » ou « command not found: gh »</summary><p>Fermez complètement VS Code et rouvrez-le. Sur Mac, vérifiez que vous avez bien lancé les commandes « Next steps » affichées à la fin de l'installation de Homebrew.</p></details>
 <details class="probleme"><summary><code>gh auth status</code> dit « You are not logged into any GitHub hosts »</summary><p>La connexion n'a pas abouti. Relancez <code>gh auth login</code> et allez jusqu'au message de confirmation dans le terminal.</p></details>
 <details class="probleme"><summary>Git demande encore un mot de passe pour envoyer</summary><p>Lancez une fois cette commande : elle confie à l'outil <code>gh</code> la connexion de Git à GitHub.</p>
 <pre class="commande"><code>gh auth setup-git</code></pre></details>
 </section>
 
 <!-- ===================================================================================================== -->
+<section id="claude-desktop" class="etape-tuto">
+<h2><span class="etape-numero">9</span> Facultatif : Claude Desktop, si vous préférez une application <span class="duree">10 min</span></h2>
+<p><strong>Claude Desktop</strong> est l'application de bureau d'Anthropic. Son onglet <strong>Code</strong> donne accès à Claude Code avec des boutons et des panneaux, en dehors de VS Code. Si VS Code vous convient, passez cette étape.</p>
+<div class="onglets">
+<section data-onglet="Windows">
+<h3 class="onglet-titre">Windows</h3>
+<ol>
+<li>Ouvrez <a href="https://claude.com/download">claude.com/download</a>.</li>
+<li>Dans la ligne <strong>Windows</strong>, cliquez sur <strong>Download</strong>. (La ligne « Windows (arm 64) » sert seulement aux rares ordinateurs à processeur ARM.)</li>
+<li>Ouvrez le fichier téléchargé et laissez l'installation se faire.</li>
+<li>Ouvrez <strong>Claude</strong> depuis le menu Démarrer.</li>
+</ol>
+</section>
+<section data-onglet="macOS">
+<h3 class="onglet-titre">macOS</h3>
+<ol>
+<li>Ouvrez <a href="https://claude.com/download">claude.com/download</a>.</li>
+<li>Cliquez sur <strong>Download for macOS</strong>.</li>
+<li>Ouvrez le fichier téléchargé (un fichier <code>.dmg</code>) et suivez la fenêtre qui s'ouvre : en général, il suffit de glisser l'icône de Claude dans le dossier <strong>Applications</strong>.</li>
+<li>Ouvrez <strong>Claude</strong> depuis le dossier Applications.</li>
+</ol>
+</section>
+</div>
+<ol>
+<li>Connectez-vous avec le compte de votre abonnement Claude.</li>
+<li>Cliquez sur l'onglet <strong>Code</strong>, en haut au centre.</li>
+<li>Choisissez <strong>Local</strong> (votre ordinateur), puis <strong>Select folder</strong> et le dossier du projet.</li>
+<li>Dans la zone de saisie, tapez <code>/</code> pour voir les commandes, dont celles de Pulse une fois installé.</li>
+</ol>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-desktop-code.png"><div class="capture-cadre">Capture à venir : Claude Desktop sur l'onglet Code, avec le choix « Local » et le bouton « Select folder ».</div><figcaption>L'onglet Code de Claude Desktop.</figcaption></figure>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> l'onglet Code s'ouvre et propose de choisir un dossier.</p></aside>
+<ul>
+<li>Les plugins Pulse installés « pour vous » dans VS Code ou dans le terminal y sont disponibles : tous lisent les mêmes réglages.</li>
+<li><strong>Choisissez toujours « Local ».</strong> Les plugins ne sont pas disponibles dans les sessions « Cloud » ni dans les sessions WSL.</li>
+<li>Claude Desktop contient son propre Claude Code : il ne remplace pas Git et Node.js, dont Pulse a besoin.</li>
+</ul>
+<p>Sources : <a href="https://code.claude.com/docs/fr/desktop-quickstart">démarrer avec l'application de bureau</a> et <a href="https://code.claude.com/docs/fr/desktop">la page de référence de Claude Desktop</a>.</p>
+<details class="probleme"><summary>L'onglet Code demande de se reconnecter, ou affiche une erreur 403</summary><p>Terminez la connexion en ligne qui vous est proposée, puis fermez et relancez Claude Desktop. Si l'erreur reste, la partie « Troubleshooting » de <a href="https://code.claude.com/docs/fr/desktop">la page de référence</a> détaille les causes.</p></details>
+</section>
+
+<!-- ===================================================================================================== -->
 <section id="pulse" class="etape-tuto">
-<h2><span class="etape-numero">9</span> Installer les plugins Pulse et les tenir à jour <span class="duree">10 min</span></h2>
+<h2><span class="etape-numero">10</span> Installer les plugins Pulse et les tenir à jour <span class="duree">10 min</span></h2>
 <p>Pulse se présente sous forme de <dfn>plugins</dfn> (des modules qui s'ajoutent à Claude Code), rangés dans un catalogue nommé <code>pulseia</code>. On ajoute d'abord le catalogue, puis les plugins :</p>
 <ul>
 <li><code>pulse</code> : la méthode Pulse, du brief à la mise en ligne. Ses commandes commencent par <code>/pulse:</code>.</li>
 <li><code>pulse-next</code> : le pack pour construire une appli web avec Next.js (celle des tutoriels). Il installe aussi <code>pulse</code>.</li>
 </ul>
 
-<h3>Installer, dans Claude Code</h3>
+<h3>Installer, dans VS Code</h3>
+<p>L'extension a un gestionnaire de plugins, avec deux onglets : <strong>Plugins</strong> et <strong>Marketplaces</strong> (les catalogues).</p>
 <ol>
-<li>Dans un terminal, lancez Claude Code :
-<pre class="commande"><code>claude</code></pre></li>
-<li>Ajoutez le catalogue : tapez cette ligne dans Claude Code, puis <kbd>Entrée</kbd>.
-<pre class="commande"><code>/plugin marketplace add jdelauney/pulse-vibe</code></pre>
-Claude Code répond <code>Successfully added marketplace: pulseia</code>.</li>
-<li>Installez Pulse :
-<pre class="commande"><code>/plugin install pulse@pulseia</code></pre>
-Un panneau s'ouvre sur la présentation du plugin, avec ce qu'il ajoute. Choisissez <strong>Install for you (user scope)</strong> avec les flèches, puis <kbd>Entrée</kbd> : Pulse sera disponible dans tous vos projets, et aussi dans Claude Desktop et VS Code.</li>
-<li>Pour une appli web avec Next.js, installez aussi le pack, de la même façon (même choix « Install for you ») :
-<pre class="commande"><code>/plugin install pulse-next@pulseia</code></pre></li>
-<li>Quittez Claude Code (tapez <code>exit</code>), puis relancez-le avec <code>claude</code> : les plugins se chargent au démarrage. Si Claude Desktop est ouvert, fermez-le et rouvrez-le aussi.</li>
+<li>Dans le panneau Claude Code, tapez <code>/plugins</code>, puis <kbd>Entrée</kbd> : la fenêtre <strong>Manage plugins</strong> s'ouvre.</li>
+<li>Cliquez sur l'onglet <strong>Marketplaces</strong>. Dans le champ prévu pour ajouter un catalogue, saisissez <code>jdelauney/pulse-vibe</code> et validez. Le catalogue <code>pulseia</code> apparaît dans la liste.</li>
+<li>Revenez à l'onglet <strong>Plugins</strong>. Cherchez <code>pulse</code>, puis cliquez sur <strong>Install</strong>. Choisissez <strong>Install for you</strong> : Pulse sera disponible dans tous vos projets, et aussi dans le terminal et Claude Desktop.</li>
+<li>Pour une appli web avec Next.js, installez aussi <code>pulse-next</code>, de la même façon (même choix « Install for you »).</li>
+<li>Si la fenêtre affiche <strong>Restart Claude to apply plugin changes</strong>, suivez ce conseil. Dans le doute, fermez complètement VS Code et rouvrez-le.</li>
 </ol>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-pulse-catalogue.png"><div class="capture-cadre">Capture à venir : Claude Code après l'ajout du catalogue, avec le message « Successfully added marketplace: pulseia ».</div><figcaption>Le catalogue pulseia est ajouté.</figcaption></figure>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-pulse-installation.png"><div class="capture-cadre">Capture à venir : le panneau d'installation du plugin pulse, avec le choix « Install for you (user scope) » sélectionné.</div><figcaption>Choisir « Install for you » pour avoir Pulse dans tous vos projets.</figcaption></figure>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-vscode-plugins-catalogue.png"><div class="capture-cadre">Capture à venir : la fenêtre « Manage plugins » de VS Code, onglet Marketplaces, avec jdelauney/pulse-vibe saisi.</div><figcaption>Ajouter le catalogue de Pulse dans VS Code.</figcaption></figure>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-vscode-plugins-installer.png"><div class="capture-cadre">Capture à venir : l'onglet Plugins de « Manage plugins », avec pulse et pulse-next, le bouton Install et le choix « Install for you ».</div><figcaption>Installer Pulse « pour vous ».</figcaption></figure>
 
-<h3>Ou bien : installer depuis le terminal, sans ouvrir Claude Code</h3>
-<p>Les mêmes opérations existent sous forme de commandes à taper directement dans le terminal. Elles installent « pour vous », comme ci-dessus :</p>
+<h3>Ou bien : installer depuis le terminal de VS Code</h3>
+<p>Les mêmes opérations existent sous forme de commandes. Elles demandent Claude Code pour le terminal (étape 7). Ouvrez le terminal (menu <strong>Terminal</strong> → <strong>New Terminal</strong>), puis collez :</p>
 <pre class="commande"><code>claude plugin marketplace add jdelauney/pulse-vibe
 claude plugin install pulse@pulseia
 claude plugin install pulse-next@pulseia</code></pre>
-<p>La dernière ligne sert seulement pour le pack Next.js. Les plugins se chargent au prochain démarrage de Claude Code.</p>
+<p>La dernière ligne sert seulement pour le pack Next.js. Ces commandes installent « pour vous ». Les plugins se chargent au prochain démarrage : fermez complètement VS Code et rouvrez-le.</p>
+<p>Dans Claude Code lancé dans un terminal (commande <code>claude</code>), on peut aussi taper <code>/plugin marketplace add jdelauney/pulse-vibe</code>, puis <code>/plugin install pulse@pulseia</code> et <code>/plugin install pulse-next@pulseia</code>, et choisir <strong>Install for you (user scope)</strong> dans le panneau qui s'ouvre.</p>
 
 <h3>Vérifier</h3>
-<p>Dans Claude Code, tapez <code>/pulse:</code> (sans appuyer sur <kbd>Entrée</kbd>). Dans le terminal, hors de Claude Code :</p>
+<p>Dans le panneau Claude Code, tapez <code>/pulse:</code> (sans appuyer sur <kbd>Entrée</kbd>). Dans le terminal :</p>
 <pre class="commande"><code>claude plugin list</code></pre>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> dans Claude Code, la liste des commandes de Pulse s'affiche : <code>/pulse:init</code>, <code>/pulse:express</code>, <code>/pulse:brainstorm</code>… Dans le terminal, <code>claude plugin list</code> affiche <code>pulse@pulseia</code> (et <code>pulse-next@pulseia</code> si vous avez installé le pack), chacun avec sa version et son état.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> dans le panneau, la liste des commandes de Pulse s'affiche : <code>/pulse:init</code>, <code>/pulse:express</code>, <code>/pulse:brainstorm</code>… Dans le terminal, <code>claude plugin list</code> affiche <code>pulse@pulseia</code> (et <code>pulse-next@pulseia</code> si vous avez installé le pack), chacun avec sa version et son état.</p></aside>
 
 <h3>Mettre à jour Pulse</h3>
-<p>Les corrections de Pulse arrivent chez vous seulement après une mise à jour. Faites-la <strong>au début de chaque semaine de travail</strong>, et dès qu'un message de Pulse semble dépassé. Dans un terminal :</p>
+<p>Les corrections de Pulse arrivent chez vous seulement après une mise à jour. Faites-la <strong>au début de chaque semaine de travail</strong>, et dès qu'un message de Pulse semble dépassé. Dans le terminal de VS Code :</p>
 <pre class="commande"><code>claude plugin marketplace update pulseia
 claude plugin update pulse@pulseia
 claude plugin update pulse-next@pulseia</code></pre>
-<p>La dernière ligne sert seulement si vous avez installé le pack Next.js. Puis <strong>fermez et relancez Claude Code</strong> (et Claude Desktop) : la nouvelle version se charge au démarrage.</p>
+<p>La dernière ligne sert seulement si vous avez installé le pack Next.js. Puis <strong>fermez complètement VS Code et rouvrez-le</strong> (et Claude Desktop, si vous l'utilisez) : la nouvelle version se charge au démarrage.</p>
 
 <h3>Ne plus y penser : la mise à jour automatique</h3>
+<p>Ce réglage se fait dans Claude Code lancé dans un terminal :</p>
 <ol>
-<li>Dans Claude Code, tapez <code>/plugin</code>, puis <kbd>Entrée</kbd>.</li>
+<li>Dans le terminal de VS Code, tapez <code>claude</code>, puis <kbd>Entrée</kbd>. La première fois, connectez-vous avec votre navigateur.</li>
+<li>Tapez <code>/plugin</code>, puis <kbd>Entrée</kbd>.</li>
 <li>Ouvrez l'onglet <strong>Marketplaces</strong> (touche <kbd>Tab</kbd> pour passer d'un onglet à l'autre).</li>
 <li>Choisissez <code>pulseia</code>, puis <strong>Enable auto-update</strong>.</li>
+<li>Quittez avec <code>exit</code>.</li>
 </ol>
-<p>Elle est désactivée au départ : Claude Code ne l'active d'office que pour les catalogues d'Anthropic. Une fois activée, Pulse se met à jour en arrière-plan ; le message « Plugin updated » vous invite alors à relancer Claude Code.</p>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-pulse-mise-a-jour-auto.png"><div class="capture-cadre">Capture à venir : l'onglet Marketplaces de /plugin, avec pulseia sélectionné et l'option « Enable auto-update ».</div><figcaption>Activer la mise à jour automatique du catalogue pulseia.</figcaption></figure>
-<p>Sources : le <a href="https://github.com/jdelauney/pulse-vibe">README du dépôt Pulse</a> et <a href="https://code.claude.com/docs/fr/discover-plugins">installer et gérer les plugins</a>.</p>
-<details class="probleme"><summary>Les commandes <code>/pulse:</code> n'apparaissent pas</summary><p>Quittez Claude Code et relancez-le. Si elles manquent toujours, tapez <code>/plugin</code> et regardez l'onglet <strong>Installed</strong> : Pulse doit y figurer, activé. L'onglet <strong>Errors</strong> donne la raison d'un échec.</p></details>
-<details class="probleme"><summary>Claude Code signale « not cached » après une mise à jour</summary><p>Pulse s'appelait autrefois <code>pulse-vibe</code> (et le pack <code>pulse-vibe-next</code>). La mise à jour passe aux nouveaux noms toute seule ; si ce message apparaît, tapez une fois <code>/plugin install pulse@pulseia</code> (et <code>/plugin install pulse-next@pulseia</code> si vous aviez le pack), puis relancez Claude Code.</p></details>
-<details class="probleme"><summary>L'ajout du catalogue échoue</summary><p>Vérifiez votre connexion à Internet et l'orthographe exacte : <code>jdelauney/pulse-vibe</code>. Puis relancez la commande.</p></details>
+<p>La mise à jour automatique est désactivée au départ : Claude Code ne l'active d'office que pour les catalogues d'Anthropic. Une fois activée, Pulse se met à jour en arrière-plan, et un message vous invite à relancer.</p>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-pulse-mise-a-jour-auto.png"><div class="capture-cadre">Capture à venir : l'onglet Marketplaces de /plugin dans le terminal, avec pulseia sélectionné et l'option « Enable auto-update ».</div><figcaption>Activer la mise à jour automatique du catalogue pulseia.</figcaption></figure>
+<p>Sources : le <a href="https://github.com/jdelauney/pulse-vibe">README du dépôt Pulse</a>, <a href="https://code.claude.com/docs/fr/discover-plugins">installer et gérer les plugins</a> et <a href="https://code.claude.com/docs/fr/vs-code">Claude Code dans VS Code</a> (partie sur les plugins).</p>
+<details class="probleme"><summary>Les commandes <code>/pulse:</code> n'apparaissent pas</summary><p>Fermez complètement VS Code et rouvrez-le. Si elles manquent toujours, tapez <code>/plugins</code> : Pulse doit figurer en haut de l'onglet <strong>Plugins</strong>, avec son interrupteur activé. Un plugin qui n'a pas pu se charger affiche la raison sur sa ligne.</p></details>
+<details class="probleme"><summary>Claude Code signale « not cached » après une mise à jour</summary><p>Pulse s'appelait autrefois <code>pulse-vibe</code> (et le pack <code>pulse-vibe-next</code>). La mise à jour passe aux nouveaux noms toute seule ; si ce message apparaît, réinstallez une fois <code>pulse</code> (et <code>pulse-next</code> si vous aviez le pack) : dans VS Code avec <code>/plugins</code>, ou dans Claude Code avec <code>/plugin install pulse@pulseia</code>. Puis relancez.</p></details>
+<details class="probleme"><summary>L'ajout du catalogue échoue</summary><p>Vérifiez votre connexion à Internet et l'orthographe exacte : <code>jdelauney/pulse-vibe</code>. Puis recommencez.</p></details>
 </section>
 
 <!-- ===================================================================================================== -->
 <section id="neon" class="etape-tuto">
-<h2><span class="etape-numero">10</span> Neon : la base de données <span class="duree">15 min</span></h2>
+<h2><span class="etape-numero">11</span> Neon : la base de données <span class="duree">15 min</span></h2>
 <p><strong>Neon</strong> garde les données de votre appli : les comptes de vos clients, leurs réservations… Le pack <code>pulse-next</code> s'en sert. Son offre gratuite est permanente et ne demande pas de carte bancaire.</p>
 <aside class="encadre encadre-risque"><p><strong>Risque :</strong> Neon vous montrera des adresses de connexion qui contiennent un mot de passe. Ne les collez jamais dans la conversation avec Claude. Pulse vous indiquera le fichier où les coller vous-même (le fichier <code>.env</code> de votre projet), un fichier que l'IA a pour consigne de ne pas lire.</p></aside>
 
@@ -519,9 +513,9 @@ claude plugin update pulse-next@pulseia</code></pre>
 
 <!-- ===================================================================================================== -->
 <section id="vercel" class="etape-tuto">
-<h2><span class="etape-numero">11</span> Vercel : l'hébergement <span class="duree">10 min</span></h2>
+<h2><span class="etape-numero">12</span> Vercel : l'hébergement <span class="duree">10 min</span></h2>
 <p><strong>Vercel</strong> met votre appli en ligne, à une adresse que vous pouvez partager. Chaque nouvelle version envoyée sur GitHub y est publiée automatiquement.</p>
-<aside class="encadre encadre-attention"><p><strong>Attention :</strong> l'offre gratuite de Vercel (Hobby) est réservée à un usage <strong>personnel et non commercial</strong>. Pour un site qui vend ou qui fait connaître une activité, il faut l'offre Pro, payante. Pour un prototype personnel ou une formation, l'offre gratuite suffit. Comparez sur <a href="https://vercel.com/pricing">vercel.com/pricing</a>.</p></aside>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> l'offre gratuite de Vercel (Hobby) est réservée à un usage <strong>personnel et non commercial</strong>. Pour un site qui vend ou qui fait connaître une activité, il faut l'offre Pro, payante. Pour un prototype personnel, l'offre gratuite suffit. Comparez sur <a href="https://vercel.com/pricing">vercel.com/pricing</a>.</p></aside>
 
 <h3>Créer le compte, avec GitHub</h3>
 <ol>
@@ -531,12 +525,12 @@ claude plugin update pulse-next@pulseia</code></pre>
 <li>Si Vercel vous demande le type d'usage, choisissez l'offre <strong>Hobby</strong> (projets personnels) et donnez un nom.</li>
 <li>Vercel vous propose ensuite d'importer un dépôt ou un modèle : <strong>pas maintenant</strong>. Votre projet n'existe pas encore ; Pulse vous guidera le moment venu. Vous pouvez fermer la page.</li>
 </ol>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-vercel-inscription.png"><div class="capture-cadre">Capture à venir : la page d'inscription de Vercel, avec le bouton « Continue with GitHub ».</div><figcaption>S'inscrire chez Vercel avec son compte GitHub.</figcaption></figure>
+<figure class="capture"><img src="assets/captures/prerequis-vercel-inscription.png" alt="la page d'inscription de Vercel, avec le bouton « Continue with GitHub »." loading="lazy" width="1440" height="900"><figcaption>S'inscrire chez Vercel avec son compte GitHub.</figcaption></figure>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> vous arrivez sur le tableau de bord de Vercel, connecté avec votre compte GitHub.</p></aside>
 <p>Source : <a href="https://vercel.com/docs/accounts">la gestion des comptes Vercel</a>.</p>
 
 <h3>Facultatif : l'outil Vercel dans le terminal</h3>
-<p>Il permet à Pulse d'envoyer vos clés secrètes chez Vercel sans qu'elles passent par la conversation, et de vérifier ce qui y est enregistré. Pulse vous le proposera à la mise en ligne ; pour l'installer dès maintenant :</p>
+<p>Il permet à Pulse d'envoyer vos clés secrètes chez Vercel sans qu'elles passent par la conversation, et de vérifier ce qui y est enregistré. Pulse vous le proposera à la mise en ligne ; pour l'installer dès maintenant, dans le terminal de VS Code :</p>
 <pre class="commande"><code>npm i -g vercel
 vercel login</code></pre>
 <p><code>vercel login</code> vous demande comment vous connecter : choisissez GitHub, puis confirmez dans le navigateur. Vérifiez :</p>
@@ -562,7 +556,7 @@ vercel login</code></pre>
 
 <!-- ===================================================================================================== -->
 <section id="autres-services" class="etape-tuto">
-<h2><span class="etape-numero">12</span> Les autres services, seulement si besoin</h2>
+<h2><span class="etape-numero">13</span> Les autres services, seulement si besoin</h2>
 <p>Ces comptes ne servent qu'à certaines fonctions. Créez-les le jour où vous ajoutez la fonction correspondante : Pulse vous le dira, et vous guidera écran par écran. D'ici là, rien à faire.</p>
 <table>
 <thead><tr><th>Fonction de votre appli</th><th>Service</th><th>Ce qu'il faut</th></tr></thead>
@@ -581,25 +575,15 @@ vercel login</code></pre>
 
 <!-- ===================================================================================================== -->
 <section id="verification" class="etape-tuto">
-<h2><span class="etape-numero">13</span> Vérification finale <span class="duree">5 min</span></h2>
-<p>Dernier contrôle : lancer Pulse dans un dossier d'essai, vide. Vous le supprimerez ensuite.</p>
-<p>Ouvrez un nouveau terminal, créez le dossier et entrez dedans :</p>
-<div class="onglets">
-<section data-onglet="Windows">
-<h3 class="onglet-titre">Windows</h3>
-<pre class="commande"><code>mkdir $HOME\essai-pulse
-cd $HOME\essai-pulse</code></pre>
-</section>
-<section data-onglet="macOS">
-<h3 class="onglet-titre">macOS</h3>
-<pre class="commande"><code>mkdir ~/essai-pulse
-cd ~/essai-pulse</code></pre>
-</section>
-</div>
-<p>Lancez Claude Code dans ce dossier :</p>
-<pre class="commande"><code>claude</code></pre>
-<p>Claude Code peut vous demander si vous faites confiance aux fichiers de ce dossier : c'est votre dossier d'essai, acceptez. Puis tapez :</p>
-<pre class="commande"><code>/pulse:init</code></pre>
+<h2><span class="etape-numero">14</span> Vérification finale <span class="duree">5 min</span></h2>
+<p>Dernier contrôle : lancer Pulse dans le dossier d'essai <code>essai-pulse</code>, encore vide (créé à l'étape 6). Vous le supprimerez ensuite.</p>
+<h3>Dans VS Code</h3>
+<ol>
+<li>Ouvrez VS Code. Si le dossier <code>essai-pulse</code> n'est pas déjà ouvert : menu <strong>File</strong> → <strong>Open Folder…</strong>, et choisissez-le.</li>
+<li>Ouvrez le panneau Claude Code (icône en forme d'étincelle).</li>
+<li>Tapez cette commande dans la zone de saisie, puis <kbd>Entrée</kbd> :
+<pre class="commande"><code>/pulse:init</code></pre></li>
+</ol>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> la bannière de Pulse, puis « 👋 Bienvenue ! » et l'écran « Votre projet », qui propose de préparer un nouveau projet. Aucun message sur Git ou Node.js.</p></aside>
 <pre class="commande"><code>👋 Bienvenue !
 
@@ -607,11 +591,15 @@ Votre projet :
   Dossier      ❌ à préparer
   …</code></pre>
 <p class="legende">Le début de l'écran d'accueil de <code>/pulse:init</code> dans un dossier vide.</p>
-<figure class="capture capture-a-venir" data-capture="captures/prerequis-init-accueil.png"><div class="capture-cadre">Capture à venir : l'écran d'accueil de /pulse:init dans le dossier d'essai, avec la bannière et l'écran « Votre projet ».</div><figcaption>Tout est prêt : Pulse vous accueille.</figcaption></figure>
-<p><strong>Avec Claude Desktop</strong>, le même essai : onglet <strong>Code</strong>, <strong>Local</strong>, <strong>Select folder</strong>, choisissez le dossier <code>essai-pulse</code> (dans votre dossier personnel), puis tapez <code>/pulse:init</code> dans la zone de saisie.</p>
-<p>Tout est en place. Vous pouvez quitter Claude Code (tapez <code>exit</code>) et supprimer le dossier <code>essai-pulse</code> depuis l'Explorateur de fichiers ou le Finder. Ou bien continuer : Pulse vous guide pas à pas. La page de la commande <a href="commandes/init.html"><code>/pulse:init</code></a> détaille la suite.</p>
-<details class="probleme"><summary>Pulse dit « Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Reprenez l'étape <a href="#git">3</a> ou <a href="#node">4</a>. Puis <strong>fermez et relancez Claude Code</strong> : il lit la liste des logiciels installés à son démarrage.</p></details>
-<details class="probleme"><summary>Claude Code ne reconnaît pas <code>/pulse:init</code></summary><p>Pulse n'est pas chargé. Reprenez l'<a href="#pulse">étape 9</a>, puis quittez et relancez Claude Code.</p></details>
+<figure class="capture capture-a-venir" data-capture="captures/prerequis-init-accueil.png"><div class="capture-cadre">Capture à venir : VS Code avec le dossier essai-pulse ouvert et le panneau Claude Code affichant l'accueil de /pulse:init.</div><figcaption>Tout est prêt : Pulse vous accueille dans VS Code.</figcaption></figure>
+<h3>Ou dans les autres façons</h3>
+<ul>
+<li><strong>Claude Desktop</strong> : onglet <strong>Code</strong>, <strong>Local</strong>, <strong>Select folder</strong>, choisissez <code>essai-pulse</code>, puis tapez <code>/pulse:init</code>.</li>
+<li><strong>Terminal</strong> : placez-vous dans le dossier (<code>cd</code> suivi de son emplacement), tapez <code>claude</code>, acceptez de faire confiance au dossier si Claude Code le demande, puis tapez <code>/pulse:init</code>.</li>
+</ul>
+<p>Tout est en place. Vous pouvez supprimer le dossier <code>essai-pulse</code> depuis l'Explorateur de fichiers ou le Finder. Ou bien continuer : Pulse vous guide pas à pas. La page de la commande <a href="commandes/init.html"><code>/pulse:init</code></a> détaille la suite.</p>
+<details class="probleme"><summary>Pulse dit « Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Reprenez l'étape <a href="#git">4</a> ou <a href="#node">5</a>. Puis <strong>fermez complètement VS Code et rouvrez-le</strong> : Claude Code lit la liste des logiciels installés à son démarrage.</p></details>
+<details class="probleme"><summary><code>/pulse:init</code> n'apparaît pas dans la liste des commandes</summary><p>Pulse n'est pas chargé. Reprenez l'<a href="#pulse">étape 10</a>, puis fermez complètement VS Code et rouvrez-le.</p></details>
 <details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>C'est le réglage de l'étape 8, s'il a été sauté : chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et un e-mail (celui de votre compte GitHub convient).</p></details>
 
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> la suite, c'est le premier tutoriel. <a href="tutoriels/index.html">Choisissez votre tutoriel</a> : un prototype en un après-midi, ou une appli prête pour de vrais clients.</p></aside>

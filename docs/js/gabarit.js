@@ -184,8 +184,11 @@
   }
 
   function pied() {
-    var liens = el("p", {}, [
+    var liens = el("p", { class: "pied-liens" }, [
       el("a", { href: racine + "commandes/index.html", texte: "Toutes les commandes" }),
+      el("a", { href: racine + "quelle-commande.html", texte: "Quelle commande pour… ?" }),
+      el("a", { href: racine + "depannage.html", texte: "Je suis bloqué" }),
+      el("a", { href: racine + "lexique.html", texte: "Lexique" }),
     ]);
     var texte = el("p", { texte: "Wiki de la méthode Pulse pour Claude Code. Les commandes se tapent dans Claude Code, puis on se laisse guider." });
     document.body.appendChild(el("footer", { class: "pied-site" }, [el("div", { class: "conteneur" }, [texte, liens])]));
@@ -200,4 +203,9 @@
   boutonsCopier();
   lettresCta();
   pied();
+
+  // La recherche (js/recherche.js) s'ajoute à chaque page sans la déclarer page par page.
+  var recherche = document.createElement("script");
+  recherche.src = racine + "js/recherche.js";
+  document.body.appendChild(recherche);
 })();

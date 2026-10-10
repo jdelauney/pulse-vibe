@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr" data-racine="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quelle commande pour… ? – Wiki Pulse</title>
+<meta name="description" content="Répondez à deux ou trois questions : l'assistant vous propose la commande Pulse qui convient à votre situation, et vous dit pourquoi.">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/animations.css">
+<script src="js/donnees.js" defer></script>
+<script src="js/gabarit.js" defer></script>
+<script src="js/animations.js" defer></script>
+<script src="js/console.js" defer></script>
+<script src="js/quelle-commande.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-lecture">
+<article class="typographie">
+
+<header class="entete-page">
+<p class="pastille">Assistant</p>
+<h1>Quelle commande pour… ?</h1>
+<p class="chapo">Vous ne savez pas quelle commande taper ? Répondez à deux ou trois questions : l'assistant vous propose la commande qui convient, vous dit pourquoi, et vous mène à sa page.</p>
+</header>
+
+<!-- L'assistant : rempli par js/quelle-commande.js, qui masque alors le tableau ci-dessous. -->
+<div class="assistant" data-assistant hidden>
+<ol class="assistant-fil" data-fil aria-label="Vos réponses"></ol>
+<div class="assistant-question" data-question></div>
+<div class="assistant-resultat" data-resultat aria-live="polite"></div>
+<div class="heros-actions" data-actions hidden>
+<button type="button" class="bouton bouton-fantome" data-retour>Question précédente</button>
+<button type="button" class="bouton" data-recommencer>Recommencer</button>
+</div>
+</div>
+
+<!-- Version sans JavaScript : toutes les situations et leur commande. -->
+<div data-statique>
+<h2 id="tableau">Votre situation, votre commande</h2>
+<p>Trouvez la ligne qui ressemble à votre situation, puis tapez la commande dans Claude Code. Le lien mène à sa page.</p>
+<table>
+<thead><tr><th>Votre situation</th><th>La commande</th></tr></thead>
+<tbody>
+<tr><th colspan="2">Je démarre</th></tr>
+<tr><td>Je pars de zéro et je veux voir une première version vite</td><td><a href="commandes/init.html"><code>/pulse:init</code></a> puis <a href="commandes/express.html"><code>/pulse:express</code></a></td></tr>
+<tr><td>Je pars de zéro et je veux avancer pas à pas</td><td><a href="commandes/init.html"><code>/pulse:init</code></a> puis <a href="commandes/brainstorm.html"><code>/pulse:brainstorm</code></a></td></tr>
+<tr><td>J'ai déjà un projet avec du code</td><td><a href="commandes/init.html"><code>/pulse:init</code></a> puis <a href="commandes/memory.html"><code>/pulse:memory creer</code></a></td></tr>
+<tr><td>Je reprends mon projet après une pause</td><td><a href="commandes/init.html"><code>/pulse:init</code></a></td></tr>
+<tr><th colspan="2">J'ai une idée à décrire</th></tr>
+<tr><td>Je veux transformer mon idée en documents, vite</td><td><a href="commandes/express.html"><code>/pulse:express</code></a></td></tr>
+<tr><td>Je veux creuser mon idée en prenant le temps</td><td><a href="commandes/brainstorm.html"><code>/pulse:brainstorm</code></a></td></tr>
+<tr><td>Je veux fixer ce qui est indispensable pour la première version</td><td><a href="commandes/prd.html"><code>/pulse:prd</code></a></td></tr>
+<tr><td>Je veux choisir les outils de mon appli</td><td><a href="commandes/tech.html"><code>/pulse:tech</code></a></td></tr>
+<tr><td>Je veux choisir l'apparence de mon appli</td><td><a href="commandes/ui.html"><code>/pulse:ui identite</code></a></td></tr>
+<tr><td>Je veux découper mon appli en fonctionnalités</td><td><a href="commandes/us.html"><code>/pulse:us</code></a></td></tr>
+<tr><th colspan="2">Je construis mon appli</th></tr>
+<tr><td>Je veux qu'une fonctionnalité soit réalisée de bout en bout</td><td><a href="commandes/spirc.html"><code>/pulse:spirc</code></a></td></tr>
+<tr><td>Je veux réaliser une tâche à la fois, en suivant de près</td><td><a href="commandes/implement.html"><code>/pulse:implement</code></a></td></tr>
+<tr><td>Je veux un guide écrit, à suivre pas à pas</td><td><a href="commandes/guide.html"><code>/pulse:guide</code></a></td></tr>
+<tr><td>Je veux préparer une fonctionnalité avant de la réaliser</td><td><a href="commandes/spec.html"><code>/pulse:spec</code></a> puis <a href="commandes/plan.html"><code>/pulse:plan</code></a></td></tr>
+<tr><td>Je veux faire vérifier le travail fait</td><td><a href="commandes/review.html"><code>/pulse:review</code></a></td></tr>
+<tr><td>Je veux enregistrer une version</td><td><a href="commandes/commit.html"><code>/pulse:commit</code></a></td></tr>
+<tr><td>Je veux soigner l'apparence d'un écran</td><td><a href="commandes/ui.html"><code>/pulse:ui polish</code></a></td></tr>
+<tr><th colspan="2">Mon site est en ligne, ou presque</th></tr>
+<tr><td>Je veux le mettre en ligne pour la première fois</td><td><a href="commandes/deploy.html"><code>/pulse:deploy premiere</code></a></td></tr>
+<tr><td>Je veux publier une nouvelle version</td><td><a href="commandes/commit.html"><code>/pulse:commit</code></a> puis <a href="commandes/deploy.html"><code>/pulse:deploy</code></a></td></tr>
+<tr><td>Je veux accueillir de vrais clients</td><td><a href="commandes/deploy.html"><code>/pulse:deploy production</code></a></td></tr>
+<tr><td>Je veux être trouvé sur Google</td><td><a href="commandes/seo.html"><code>/pulse:seo</code></a></td></tr>
+<tr><td>Je veux écrire les textes de mes pages</td><td><a href="commandes/rediger.html"><code>/pulse:rediger</code></a></td></tr>
+<tr><td>Je veux un site plus rapide</td><td><a href="commandes/perf.html"><code>/pulse:perf</code></a></td></tr>
+<tr><td>Je veux vérifier la sécurité</td><td><a href="commandes/security.html"><code>/pulse:security</code></a></td></tr>
+<tr><th colspan="2">J'ai un problème</th></tr>
+<tr><td>Un message d'erreur, un bouton qui ne marche pas</td><td><a href="commandes/fix.html"><code>/pulse:fix</code></a></td></tr>
+<tr><td>Des erreurs rouges partout dans le code</td><td><a href="commandes/auto-fix.html"><code>/pulse:auto-fix</code></a></td></tr>
+<tr><td>Les tests automatiques échouent</td><td><a href="commandes/test.html"><code>/pulse:test</code></a></td></tr>
+<tr><td>J'ai tout cassé, je veux revenir en arrière</td><td><a href="commandes/annuler.html"><code>/pulse:annuler</code></a></td></tr>
+<tr><td>Une clé secrète a été vue</td><td><a href="commandes/secrets.html"><code>/pulse:secrets fuite</code></a></td></tr>
+<tr><td>Le site en ligne ne marche plus</td><td><a href="commandes/fix.html"><code>/pulse:fix</code></a> ou <a href="commandes/annuler.html"><code>/pulse:annuler</code></a></td></tr>
+<tr><td>Je suis perdu, je ne sais plus quoi faire</td><td><a href="commandes/status.html"><code>/pulse:status</code></a></td></tr>
+<tr><td>Pulse n'y arrive pas, j'ai besoin d'une personne</td><td><a href="commandes/get-help.html"><code>/pulse:get-help</code></a></td></tr>
+<tr><th colspan="2">Je veux comprendre ou apprendre</th></tr>
+<tr><td>Je veux comprendre un morceau de code</td><td><a href="commandes/explain.html"><code>/pulse:explain</code></a></td></tr>
+<tr><td>Je veux apprendre une notion de programmation</td><td><a href="commandes/learn.html"><code>/pulse:learn</code></a></td></tr>
+<tr><td>Je veux que l'IA se souvienne de quelque chose</td><td><a href="commandes/memory.html"><code>/pulse:memory retenir</code></a></td></tr>
+<tr><td>Je veux savoir où j'en suis dans la méthode</td><td><a href="commandes/status.html"><code>/pulse:status</code></a></td></tr>
+</tbody>
+</table>
+</div>
+
+<section id="plus-loin">
+<h2>Pour aller plus loin</h2>
+<ul>
+<li><a href="depannage.html">Je suis bloqué</a> : les problèmes courants, classés par symptôme.</li>
+<li><a href="commandes/index.html">Toutes les commandes</a>, rangées dans l'ordre du parcours.</li>
+<li>Vous pouvez aussi décrire votre situation à Claude Code avec vos mots : il vous orientera vers la bonne commande.</li>
+</ul>
+</section>
+
+</article>
+</main>
+</body>
+</html>
