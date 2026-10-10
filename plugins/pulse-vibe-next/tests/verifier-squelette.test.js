@@ -10,7 +10,7 @@ const path = require("path");
 const net = require("net");
 const os = require("os");
 const SCRIPT = path.join(__dirname, "..", "scripts", "verifier-squelette.js");
-const { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, controlerInstables, rangerDossier, FICHIERS_DU_COEUR } = require(SCRIPT);
+const { poserPageDEssai, changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, controlerInstables, rangerDossier, FICHIERS_DU_COEUR } = require(SCRIPT);
 const DEPOT = path.join(__dirname, "..", "..", "..");
 const CI_SQUELETTE = path.join(DEPOT, ".github", "workflows", "squelette-next.yml");
 
@@ -178,6 +178,24 @@ test("bout en bout : rapport JSON demandé à Playwright, navigateur avec ses d�
   assert.match(source, /npm run test:e2e -- --reporter=list,json/);
   assert.match(source, /PLAYWRIGHT_JSON_OUTPUT_NAME/);
   assert.match(source, /process\.platform === "linux"/);
+});
+
+test("bout en bout : la page d'essai de la surveillance et son test, posés avant les tests de bout en bout, seulement dans le projet de vérification", () => {
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-page-essai-"));
+  try {
+    poserPageDEssai(dossier);
+    const page = fs.readFileSync(path.join(dossier, "app", "essai-surveillance", "page.tsx"), "utf8");
+    assert.match(page, /^"use client";/);
+    assert.match(page, /throw new Error\("Erreur d'essai de la surveillance"\)/);
+    const essai = fs.readFileSync(path.join(dossier, "e2e", "essai-surveillance.spec.ts"), "utf8");
+    assert.match(essai, /r\.url\(\)\.endsWith\("\/api\/erreur-client"\)/);
+    assert.match(essai, /name: "Un problème est survenu"/);
+  } finally {
+    fs.rmSync(dossier, { recursive: true, force: true });
+  }
+  const source = fs.readFileSync(SCRIPT, "utf8");
+  assert.ok(source.indexOf("poserPageDEssai(dossier);") < source.indexOf("npm run test:e2e -- --reporter"), "posée avant npm run test:e2e");
+  assert.ok(source.indexOf('lancer("npm run build"') < source.indexOf("poserPageDEssai(dossier);"), "absente de la construction de vérification");
 });
 
 // Motif de chemin de GitHub Actions → expression régulière (** : tout ; * : tout sauf /).

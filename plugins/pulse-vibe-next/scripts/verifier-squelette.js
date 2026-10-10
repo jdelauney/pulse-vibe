@@ -8,7 +8,8 @@
 //   --majeures    avec --dernieres : monte aussi les versions majeures (demande de fusion à part)
 //   --ecrire      si tout passe, reporte ces versions dans templates/squelette/package.json (et biome.json)
 //   --e2e         lance aussi les tests de bout en bout (Chromium doit être installé) et l'audit de
-//                 référencement du site servi (scripts/seo.js du cœur)
+//                 référencement du site servi (scripts/seo.js du cœur) ; pose d'abord, dans le dossier
+//                 temporaire seulement, une page d'essai qui provoque une erreur dans le navigateur et son test
 //   --tolerer-instables  avec --e2e : un test qui passe seulement après une relance est signalé sans faire
 //                 échouer (par défaut : échec, une relance masque le problème, references/tests/strategie.md §4)
 //   --garder      garde le dossier temporaire et l'indique (il est gardé aussi après un échec) ;
@@ -32,6 +33,50 @@ const AUDIT_SEO = path.join(COEUR, "seo.js");
 const PORT_LIBRE = path.join(COEUR, "port-libre.js");
 // Les fichiers du cœur que ce script lance ou charge : la CI du squelette se déclenche aussi sur eux.
 const FICHIERS_DU_COEUR = [AUDIT_SEO, PORT_LIBRE];
+
+// Page d'essai et son test, posés par --e2e dans le dossier temporaire seulement : le squelette publié n'a
+// pas cette page. Le test suit le vrai chemin d'une erreur du navigateur : la page plante, app/error.tsx
+// l'affiche et l'envoie à /api/erreur-client.
+const PAGE_D_ESSAI = {
+  [path.join("app", "essai-surveillance", "page.tsx")]: `"use client";
+
+import { useState } from "react";
+
+export default function EssaiSurveillance() {
+  const [declenche, setDeclenche] = useState(false);
+  if (declenche) throw new Error("Erreur d'essai de la surveillance");
+  return (
+    <main>
+      <button type="button" onClick={() => setDeclenche(true)}>
+        Déclencher une erreur d'essai
+      </button>
+    </main>
+  );
+}
+`,
+  [path.join("e2e", "essai-surveillance.spec.ts")]: `import { expect, test } from "@playwright/test";
+
+test("une erreur dans la page est affichée puis signalée au serveur", async ({ page }) => {
+  await page.goto("/essai-surveillance");
+  const envoi = page.waitForRequest((r) => r.method() === "POST" && r.url().endsWith("/api/erreur-client"));
+  await page.getByRole("button", { name: "Déclencher une erreur d'essai" }).click();
+  const requete = await envoi;
+  expect(JSON.parse(requete.postData() ?? "{}")).toEqual({
+    message: "Erreur d'essai de la surveillance",
+    chemin: "/essai-surveillance",
+  });
+  await expect(page.getByRole("heading", { name: "Un problème est survenu" })).toBeVisible();
+});
+`,
+};
+
+/** Pose la page d'essai de la surveillance et son test dans le projet de vérification. */
+function poserPageDEssai(dossier) {
+  for (const [fichier, contenu] of Object.entries(PAGE_D_ESSAI)) {
+    fs.mkdirSync(path.dirname(path.join(dossier, fichier)), { recursive: true });
+    fs.writeFileSync(path.join(dossier, fichier), contenu);
+  }
+}
 
 /** Un port local libre, accepté par fetch et les navigateurs (port-libre.js du cœur). */
 async function portLibre() {
@@ -332,6 +377,8 @@ async function principal() {
   lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1" });
   controlerCodeSeo(dossier);
   if (opts.e2e) {
+    // La construction de bout en bout (npm run build du webServer de Playwright, en CI) inclut la page d'essai.
+    poserPageDEssai(dossier);
     // En CI sous Linux, --with-deps installe aussi les bibliothèques système du navigateur.
     lancer(`npx playwright install ${process.env.CI && process.platform === "linux" ? "--with-deps " : ""}chromium`, dossier);
     // Rapport JSON en plus de la liste : les relances (retries de la configuration en CI) y laissent le statut « flaky ».
@@ -357,4 +404,4 @@ async function principal() {
 
 if (require.main === module) principal();
 
-module.exports = { changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, controlerInstables, rangerDossier, FICHIERS_DU_COEUR };
+module.exports = { poserPageDEssai, changementMajeur, monterLesVersions, lireArguments, portLibre, testsInstables, controlerInstables, rangerDossier, FICHIERS_DU_COEUR };
