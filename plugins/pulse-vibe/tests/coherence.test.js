@@ -850,7 +850,12 @@ test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et 
 test("tests automatiques : installer un outil de test est recommandé quand la pile en a un", () => {
   const texte = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(texte, /« Installer un outil de test \(Recommandé\) »/);
-  assert.match(texte, /« Sans tests automatiques »/);
+  assert.match(texte, /« Utiliser le lanceur de tests intégré \(Recommandé\) »/);
+  assert.match(texte, /`node --test`/);
+  const sansTests = texte.split("\n").filter((l) => l.includes("« Sans tests automatiques (Recommandé) »"));
+  assert.strictEqual(sansTests.length, 1, "un seul cas recommande de se passer de tests");
+  assert.match(sansTests[0], /aucun code à tester automatiquement/);
+  assert.match(skillTexte("tech"), /sinon le lanceur de tests intégré au langage/);
 });
 
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
