@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="seo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:seo – Wiki Pulse</title>
+<meta name="description" content="Être trouvé sur Google et par les assistants IA : audit du site servi, fondations (adresse, titres, sitemap, robots, carte de partage), textes choisis par vous, politique des robots IA, lancement (Search Console, Bing).">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 6 · Être trouvé</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:seo</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Être trouvé sur Google et par les assistants IA : audit du site servi, fondations (adresse, titres, sitemap, robots, carte de partage), textes choisis par vous, politique des robots IA, lancement (Search Console, Bing).</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Cette commande aide les personnes qui cherchent ce que vous proposez à trouver votre site. Elle lit votre site comme le ferait un robot de Google, puis range ce qu'elle voit sous quatre questions, dans l'ordre : Google peut-il <strong>venir</strong> ? peut-il <strong>garder</strong> la page ? comment la page <strong>se présente</strong>-t-elle ? mérite-t-elle d'être <strong>choisie</strong> ? Les assistants IA (ChatGPT, Claude, Perplexity…) forment une cinquième rubrique.</p>
+<p>Elle pose aussi les fondations une fois pour toutes (adresse du site, plan du site, fichier des robots, image de partage), vous aide à choisir les titres et descriptions de chaque page, vous fait décider ce que les robots des assistants IA peuvent faire de votre site, puis vous guide pour déclarer le site à Google et à Bing. Les textes sont <strong>choisis par vous</strong> et gardés dans <code>docs/seo.md</code>.</p>
+<pre class="commande"><code>Référencement – carnet-reservations
+  1. Google peut-il venir ?         ✅ accueil, plan du site, robots
+  2. Peut-il garder la page ?       ✅ aucune page bloquée par erreur
+  3. Comment elle se présente ?     ⚠️ 2 pages sans description
+  4. Mérite-t-elle d'être choisie ? à discuter ensemble
+  Assistants IA                     ⚠️ politique à décider</code></pre>
+<p class="legende">Le bilan d'un audit, rangé par les quatre questions.</p>
+<p>Ce qui est sûr : remplir les exigences techniques rend une page éligible, sans garantie d'apparaître. L'indexation prend des jours ; le classement, des semaines à des mois.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous savez si Google peut lire votre site.</strong> Un blocage grave (page marquée « à ne pas indexer », robots refusés) est trouvé avant qu'il vous coûte des visites.</li>
+<li><strong>Vos pages se présentent avec vos mots.</strong> Deux titres et deux descriptions proposés par page, dans les mots de vos clients ; vous choisissez ou réécrivez.</li>
+<li><strong>Vous décidez pour les assistants IA.</strong> Quatre choix clairs, leurs conséquences honnêtes, sans recommandation imposée.</li>
+<li><strong>Aucune promesse magique.</strong> Chaque conseil dit d'où il vient : « Google l'écrit », « une étude l'a mesuré », ou « c'est du bon sens, non prouvé ».</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Avant la première mise en ligne publique</strong> : <code>bases</code>, une fois.</li>
+<li><strong>Pour chaque page publique dont le contenu est stable</strong> : <code>textes</code>.</li>
+<li><strong>Après la mise en ligne sur l'adresse définitive</strong> : <code>lancer</code>, que <a href="deploy.html"><code>/pulse:deploy</code></a> vous propose.</li>
+<li><strong>Après une refonte, et à chaque rendez-vous de suivi</strong> (dans 1 mois, puis dans 3 mois) : <code>audit</code>.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour un outil interne, réservé à votre équipe, le référencement se résume à rester hors de Google. Pulse vous propose alors directement le choix « site privé ».</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:seo [audit | bases | textes [page] | ia | lancer]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Par défaut : audit.</p>
+<!-- /auto:forme -->
+<ul>
+<li><code>audit</code> (par défaut) : lit le site en ligne, ou à défaut le site construit pour la production sur votre ordinateur, puis enregistre un rapport rangé par les quatre questions. En lecture seule.</li>
+<li><code>bases</code> : les fondations : adresse du site, modèle de titre, description par défaut, fichier des robots, plan du site, image de partage, icône, nom du site, vraie page « introuvable », pages privées hors de Google.</li>
+<li><code>textes</code>, avec ou sans page : un court entretien (qui arrive sur la page, avec quels mots, quelle promesse), puis deux titres et deux descriptions à choisir. Sans page, Pulse liste celles qui n'ont pas encore de texte validé.</li>
+<li><code>ia</code> : une question à quatre réponses sur les robots des assistants IA (A : visible partout, entraînement accepté ; B : visible dans les réponses IA, sans entraînement, le plus courant pour un site vitrine ; C : hors des réponses IA ; D : site privé).</li>
+<li><code>lancer</code> : une seule adresse officielle pour le site, puis Google Search Console, Bing, la carte de partage, une étape à la fois.</li>
+</ul>
+<pre class="commande"><code>/pulse:seo</code></pre>
+<pre class="commande"><code>/pulse:seo textes /tarifs</code></pre>
+<pre class="commande"><code>/pulse:seo ia</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/seo.md</code></td><td>La source unique de vos textes : titre et description de chaque page, faits clés (qui, quoi, où, pour qui, combien, comment joindre), politique des robots IA avec sa date, suivi des étapes de lancement.</td></tr>
+<tr><td><code>docs/seo/audits/seo-&lt;date&gt;.md</code></td><td>Le rapport de chaque audit, avec un « avant / après » une fois les corrections faites.</td></tr>
+<tr><td>Le code du site</td><td>Les fondations de <code>bases</code> et les textes de <code>textes</code>, avec la liste des fichiers montrée avant l'écriture.</td></tr>
+<tr><td><code>robots.txt</code></td><td>Le fichier qui dit aux robots ce qu'ils peuvent lire, écrit selon votre politique et montré avant.</td></tr>
+<tr><td><code>docs/technical.md</code></td><td>Après <code>lancer</code> : la section « Référencement » (propriété Search Console, méthode de vérification, plan du site).</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>L'audit ne change rien.</strong> Il lit le site comme un robot.</li>
+<li><strong>Rien ne s'écrit sans vous.</strong> La liste des fichiers, le fichier des robots et les textes vous sont montrés avant.</li>
+<li><strong>Les textes proposés sont des brouillons.</strong> Relisez et vérifiez chaque fait (prix, horaires, adresse) avant la publication. Les avis de clientes sont réels, avec leur accord, jamais inventés.</li>
+<li><strong>Le lancement se fait avec vos comptes.</strong> Vous agissez vous-même sur Search Console et Bing ; Pulse vous guide et note chaque résultat.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> le fichier des robots est une demande publique, pas une protection. Seuls les robots honnêtes lui obéissent. Une page privée se protège par la connexion : voyez <a href="security.html"><code>/pulse:security</code></a>.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> le projet de départ pose déjà l'adresse du site, les titres et descriptions, le fichier des robots, le plan du site, l'image de partage et les icônes. <code>bases</code> suit la recette <code>seo</code> du pack, étape par étape ; votre politique des robots IA se règle dans un seul fichier, <code>src/lib/seo/politique-robots.ts</code>. Au lancement, l'adresse officielle va dans la variable <code>SITE_URL</code> de Vercel (Production), et les autres variantes du domaine sont redirigées dans les réglages de domaine de Vercel.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Mon site n'apparaît pas encore sur Google</summary><p>C'est normal au début : l'indexation prend quelques jours, le classement des semaines à des mois. Search Console est la seule source fiable ; au rendez-vous d'un mois, Pulse vous aide à lire les pages indexées et les premiers mots tapés par vos clients.</p></details>
+<details class="probleme"><summary>L'audit signale « Google ne peut pas ouvrir cette adresse »</summary><p>C'est un constat critique, à corriger en premier. Pulse vous explique la conséquence, propose la correction (souvent dans <code>bases</code>), puis relance l'audit pour le prouver.</p></details>
+<details class="probleme"><summary>Faut-il un fichier llms.txt pour être cité par les IA ?</summary><p>Non. Google ne l'utilise pas, et une étude l'a trouvé rarement lu. Soignez plutôt les bases : un site trouvable par Google et Bing, lisible sans JavaScript, avec vos informations essentielles écrites clairement.</p></details>
+<details class="probleme"><summary>Si je refuse l'entraînement, est-ce que je disparais de ChatGPT ?</summary><p>Non. Le robot qui apprend et celui qui cherche sont différents. Le choix B bloque ceux qui apprennent et laisse ceux qui cherchent : vous restez visible dans les réponses.</p></details>
+<details class="probleme"><summary>Search Console me demande de prouver que le site est à moi</summary><p>Pour un domaine à vous, un enregistrement se pose chez le fournisseur du domaine. Pour l'adresse fournie par l'hébergeur, une balise va dans l'accueil : ce jeton n'est pas un secret. Pulse vous guide pas à pas.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : choisir le texte de la page des tarifs">
+<p data-role="vous">/pulse:seo textes /tarifs</p>
+<p data-role="claude">Qui arrive sur cette page, et que cherche-t-il ? Et avec quels mots vos clientes en parlent-elles au téléphone ?</p>
+<p data-role="vous">Des clientes du quartier qui veulent connaître le prix d'une coupe ou d'une couleur avant de réserver. La coupe femme est à 35 €, la couleur sur devis.</p>
+<p data-role="claude">Titre 1 : Tarifs coupe et couleur – Salon Lila (Recommandé)
+Titre 2 : Prix des coupes, couleurs et brushings
+Description 1 : Coupe femme dès 35 €, couleur sur devis. Réservez votre créneau en ligne en deux clics.
+Description 2 : Tous nos prix, sans surprise. Prenez rendez-vous en ligne, à l'heure qui vous arrange.
+Ce sont des brouillons : vérifiez chaque prix avant la publication.</p>
+<p data-role="vous">Titre 1 et description 1.</p>
+<p data-role="outil">pulse-aidd seo http://localhost:3000 --chemins /tarifs</p>
+<p data-role="claude">✅ Titre et description présents et uniques sur la page des tarifs. Noté dans docs/seo.md.</p>
+</div>
+<div class="conversation" data-titre="Exemple : décider pour les assistants IA">
+<p data-role="vous">/pulse:seo ia</p>
+<p data-role="claude">Politique actuelle : à décider. Trois familles de robots : ceux qui apprennent (entraînement), ceux qui cherchent (réponses des assistants), ceux qui viennent pour quelqu'un, comme un coursier envoyé par un client.
+A. Visible partout, entraînement accepté
+B. Visible dans les réponses IA, sans entraînement (le plus courant pour un site vitrine)
+C. Hors des réponses IA
+D. Site privé ou outil interne</p>
+<p data-role="vous">B</p>
+<p data-role="claude">Voici le fichier des robots qui correspond. Je l'écris ? Votre choix est noté avec sa date dans docs/seo.md.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="rediger.html"><code>/pulse:rediger</code></a> : écrire le texte complet d'une page, dans la voix du site.</li>
+<li><a href="search-console.html"><code>/pulse:search-console</code></a> : relier le site à Google, puis lire ce que Google voit tous les 28 jours.</li>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre le site sur son adresse définitive.</li>
+<li><a href="perf.html"><code>/pulse:perf</code></a> : la vitesse vécue par vos visiteurs.</li>
+<li><a href="security.html"><code>/pulse:security</code></a> : protéger une page privée par la connexion.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : l'accessibilité, signalée par l'audit.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

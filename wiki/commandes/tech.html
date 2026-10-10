@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="tech">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:tech – Wiki Pulse</title>
+<meta name="description" content="Choisir la pile technique à partir du besoin (ou documenter celle d'un projet existant), comparer 2 à 3 options vérifiées sur la documentation officielle, et produire docs/technical.md, le bloc Pile technique de CLAUDE.md, la mémoire technique et la mise en place.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 2 · Décrire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:tech</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Choisir la pile technique à partir du besoin (ou documenter celle d'un projet existant), comparer 2 à 3 options vérifiées sur la documentation officielle, et produire docs/technical.md, le bloc Pile technique de CLAUDE.md, la mémoire technique et la mise en place.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Cette commande choisit avec vous les outils de votre appli : le langage, l'endroit où sont gardées les données, la connexion des utilisateurs, l'hébergement. On appelle cet ensemble la <dfn>pile technique</dfn>. Pulse joue le rôle d'un architecte qui parle simplement : « On comprend d'abord le besoin, et on choisit les outils <strong>après</strong>. Le plus simple qui répond au besoin est le meilleur choix. »</p>
+<p>Dans un projet neuf, Pulse lit votre brief et votre PRD, pose seulement les questions qui restent, puis construit 2 ou 3 options vraiment différentes. Des assistants vérifient chacune en parallèle sur la documentation officielle et les pages de prix. Vous voyez un tableau, une recommandation, et vous choisissez.</p>
+<p>Dans un projet qui a déjà du code, Pulse décrit simplement les outils déjà utilisés, avec les manques constatés, et vous demande de confirmer. Dans les deux cas, il peut ensuite préparer le code de départ, et même mettre en ligne une première page dès aujourd'hui.</p>
+<pre class="commande"><code>Les options comparées
+A · Pile Pulse next   ✅ code de départ vérifié, recettes prêtes
+B · Service géré      ⚠️ offre gratuite limitée
+C · Serveur à soi     ✅ plus de pièces à comprendre
+
+➡️ Je recommande A : c'est l'option qui demande le moins d'essais.
+→ Option A (Recommandé) / Option B / Option C / Revoir un besoin</code></pre>
+<p class="legende">Un exemple de comparaison, avec le verdict de vérification de chaque option.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Des outils adaptés à votre besoin.</strong> Chaque proposition part de votre projet, plutôt que d'une habitude ou d'une mode.</li>
+<li><strong>Des faits vérifiés.</strong> Une offre gratuite, un prix ou une limite sont affirmés seulement après vérification sur la source officielle ; ce qui reste invérifiable est signalé.</li>
+<li><strong>Une seule référence pour la suite.</strong> <code>docs/technical.md</code> guide ensuite la spec, le plan et le code.</li>
+<li><strong>En ligne dès le premier jour.</strong> Mettre en ligne une page presque vide, c'est découvrir aujourd'hui les réglages de l'hébergeur, plutôt qu'à la fin, avec tout le projet en jeu.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="prd.html"><code>/pulse:prd</code></a></strong> : la première version guide le choix.</li>
+<li><strong>Avant <a href="ui.html"><code>/pulse:ui identite</code></a> et <a href="us.html"><code>/pulse:us</code></a></strong>.</li>
+<li><strong>Dans un projet qui a déjà du code</strong>, pour décrire les outils en place.</li>
+<li><strong>Quand un besoin a changé</strong> : Pulse vous propose de revoir ou de garder vos choix.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> si le pack <code>pulse-next</code> est installé, sa pile devient une option du tableau : « code de départ vérifié, recettes prêtes et pièges connus déjà traités ». Pulse la recommande quand votre projet a des écrans, des comptes ou des données partagées ; pour une simple page vitrine, il vous dit qu'elle est trop lourde. Une fois choisie, le projet de départ se pose d'une seule commande, et les recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite, référencement) seront reprises par la spec et le plan. Sans le pack, Pulse vous signale qu'il s'installe avec <code>/plugin install pulse-next@pulseia</code>.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:tech [contrainte ou préférence technique (facultatif)]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Sans rien</strong> : Pulse part de votre brief et de votre PRD.</li>
+<li><strong>Une contrainte ou une préférence</strong> (facultative) : elle guide les options proposées, par exemple un hébergement en France ou une technologie que vous connaissez déjà.</li>
+</ul>
+<pre class="commande"><code>/pulse:tech</code></pre>
+<pre class="commande"><code>/pulse:tech "données hébergées en France"</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/technical.md</code></td><td>La référence technique : vos besoins, les options comparées, la pile retenue, l'organisation des fichiers, les commandes du projet, qui peut voir quelles données, les noms des clés secrètes, l'hébergement, la mise en place et ce qu'on a écarté.</td></tr>
+<tr><td><code>CLAUDE.md</code></td><td>Sa section « Stack technique » reçoit un résumé de la pile et les commandes du projet.</td></tr>
+<tr><td><code>aidd_docs/memory/technical.md</code></td><td>Le résumé des choix techniques et une ligne datée par décision.</td></tr>
+<tr><td><code>.gitignore</code>, <code>.env.example</code></td><td>Complétés selon la pile : ce que Git doit ignorer, et les noms de vos clés secrètes, sans leur valeur.</td></tr>
+</tbody>
+</table>
+<p>Si vous acceptez « Préparer le code de départ maintenant », Pulse installe les fichiers de départ de la pile, vérifie que l'appli se lance sur votre ordinateur et applique votre apparence si <code>docs/design.md</code> existe. Une décision difficile à défaire (où sont gardées les données, comment on se connecte) peut aussi devenir un fichier de décision.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Le choix vous appartient.</strong> Pulse recommande, en donnant sa raison ; vous choisissez parmi les options, ou demandez à revoir un besoin.</li>
+<li><strong>Vos fichiers sont gardés.</strong> Pendant la préparation du code de départ, <code>CLAUDE.md</code>, <code>README.md</code> et <code>.gitignore</code> sont complétés, jamais écrasés.</li>
+<li><strong>La mise en ligne attend votre accord</strong>, puis Claude Code vous demande d'autoriser l'enregistrement et l'envoi vers votre dépôt en ligne.</li>
+<li><strong>Un paiement reste en mode test</strong> : cartes de test, transactions fictives. Le passage en mode réel est votre décision, au moment de la mise en ligne.</li>
+</ul>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> une clé secrète écrite dans la conversation peut être lue et recopiée. Pulse vous guide pour la saisir vous-même, directement dans le fichier local <code>.env</code>. Gardez-la toujours hors de la conversation.</p></aside>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> une offre gratuite a ses limites. Avec le pack Next.js, Pulse vous prévient que l'offre gratuite de Vercel est réservée à un usage non commercial : un site qui vend ou fait la promotion d'une activité demande l'offre payante.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me dit qu'il manque le PRD</summary><p>Le PRD décrit la première version, qui guide le choix. Lancez <a href="prd.html"><code>/pulse:prd</code></a> ; vous pouvez aussi continuer sans, Pulse le signalera dans ses choix.</p></details>
+<details class="probleme"><summary>Pulse me signale une contradiction</summary><p>Deux de vos réponses ne vont pas ensemble, par exemple « paiement en ligne » avec « budget 0 € et aucun compte ». Tranchez : Pulse construit ensuite les options sur votre réponse.</p></details>
+<details class="probleme"><summary>Aucune option ne passe la vérification</summary><p>Pulse vous explique le blocage commun et revient aux besoins. Assouplir une contrainte (budget, hébergement) ouvre souvent de nouvelles options.</p></details>
+<details class="probleme"><summary>J'avais déjà fait mes choix techniques</summary><p>Pulse vous demande s'il faut les <strong>revoir</strong> (un besoin a changé) ou les <strong>garder</strong>. Gardez-les si rien n'a bougé.</p></details>
+<details class="probleme"><summary>Je préfère installer le code de départ plus tard</summary><p>Choisissez « Plus tard, avec la première tâche » : la mise en place se fera alors comme première tâche du premier plan.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : choisir les outils du carnet de réservations">
+<p data-role="vous">/pulse:tech</p>
+<p data-role="claude">On comprend d'abord le besoin, et on choisit les outils après.
+D'après votre PRD : vos clientes réservent, vous consultez, les données sont partagées. Il me manque deux réponses.
+Combien de rendez-vous par semaine ? → Une centaine (Recommandé) / Quelques-uns / Plusieurs centaines
+Quel budget par mois acceptez-vous ? → 0 à 10 € (Recommandé) / 10 à 50 € / Plus</p>
+<p data-role="vous">Une centaine · 0 à 10 €</p>
+<p data-role="outil">pulse-aidd piles</p>
+<p data-role="claude">Trois options vérifiées sur leur documentation officielle. Je recommande la pile Pulse next : c'est l'option qui demande le moins d'essais pour obtenir un code juste.
+→ Option A (Recommandé) / Option B / Option C / Revoir un besoin</p>
+<p data-role="vous">Option A</p>
+<p data-role="claude">docs/technical.md est écrit.
+→ Préparer le code de départ maintenant (Recommandé) / Plus tard, avec la première tâche</p>
+</div>
+<div class="conversation" data-titre="Exemple : un projet qui a déjà du code">
+<p data-role="vous">/pulse:tech</p>
+<p data-role="claude">Voici les outils que j'observe dans votre projet, chacun avec le fichier où je l'ai vu.
+Manque constaté : aucun test automatique.
+→ C'est bien ça / Corriger quelque chose</p>
+<p data-role="vous">C'est bien ça</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="prd.html"><code>/pulse:prd</code></a> : décider de la première version, qui guide le choix.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : l'étape suivante, facultative, pour choisir l'apparence.</li>
+<li><a href="us.html"><code>/pulse:us</code></a> : écrire les user stories.</li>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre le site en ligne et le tenir à jour.</li>
+<li><a href="cicd.html"><code>/pulse:cicd</code></a> : un contrôle automatique à chaque envoi, une fois le dépôt en ligne relié.</li>
+<li><a href="secrets.html"><code>/pulse:secrets</code></a> : savoir où sont vos clés et les renouveler.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

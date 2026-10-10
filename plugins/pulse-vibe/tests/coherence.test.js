@@ -619,11 +619,8 @@ test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () =
   assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
 });
 
-// Mots réservés aux consignes : la personne les voit seulement expliqués (lexique), jamais dans une description, un libellé ou un écran.
-// « MVP », « epic » et « demande de fusion » restent permis dans les consignes destinées à l'IA (décision du 2026-10-09).
-const SIGLES_JARGON = /\b(CI|CD|PR|CSV|INVEST|MoSCoW|TBD|MVP)\b/;
-const MOTS_JARGON = /\b(worktrees?|pull requests?|demandes? de fusion|lint|lighthouse|epics?|squelette|aidd_docs|test-runner|test-writer|kanban|storytelling|sous-agents?|feynman|definition of ready)\b/i;
-const jargon = (texte) => SIGLES_JARGON.exec(texte) || MOTS_JARGON.exec(texte);
+// Mots réservés aux consignes (liste partagée avec wiki.test.js).
+const { jargon } = require("./jargon");
 // Dans un libellé ou un écran, les chemins, le code et les emplacements à remplacer (<epic>) restent permis.
 const sansChemins = (texte) => texte.replace(/`[^`]*`/g, " ").replace(/<[^>]*>/g, " ").replace(/\S*\/\S*/g, " ");
 

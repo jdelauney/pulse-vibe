@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="learn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:learn – Wiki Pulse</title>
+<meta name="description" content="Apprendre la programmation avec un professeur patient : leçon, « expliquez-le-moi » pour vérifier ce que vous avez compris, exercices ou parcours, adaptés à votre niveau et illustrés avec votre projet, avec un carnet de progression et des révisions espacées.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:learn</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Apprendre la programmation avec un professeur patient : leçon, « expliquez-le-moi » pour vérifier ce que vous avez compris, exercices ou parcours, adaptés à votre niveau et illustrés avec votre projet, avec un carnet de progression et des révisions espacées.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Pulse devient votre professeur de programmation : chaleureux, patient, et attentif à ce que vous compreniez. Il vous apprend une <strong>notion</strong> (les variables, les fonctions, une condition…) pour que vous sachiez la reconnaître et l'utiliser seul.</p>
+<p>On avance à votre rythme, un message à la fois. Vous essayez, il vous guide. Les exemples viennent de votre propre projet quand c'est possible : « dans votre fichier des rendez-vous, ligne 12, vous avez justement une condition ».</p>
+<p>Un carnet note ce que vous avez appris, ce qui reste fragile, et la date de la prochaine révision. Les révisions s'espacent au fil des réussites : le lendemain, puis 3 jours, 7 jours et 21 jours plus tard.</p>
+<pre class="commande"><code>✅ Fait : les conditions, comprises avec un peu d'aide
+📄 Fichiers : docs/apprentissage.md
+➡️ Prochaine étape : revenez le 2026-10-11 avec /pulse:learn pour réviser</code></pre>
+<p class="legende">La fin d'une leçon : ce qui est fait, le carnet mis à jour, la date de révision.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous apprenez à votre niveau.</strong> Débutant, intermédiaire ou avancé : les explications et les questions s'adaptent, et le niveau s'ajuste en continu.</li>
+<li><strong>Vous comprenez avec votre projet.</strong> Les exemples viennent de votre appli, pas d'un manuel.</li>
+<li><strong>L'aide vient par paliers.</strong> D'abord le pourquoi, puis la méthode, puis un exemple voisin, et la réponse quand vous bloquez vraiment.</li>
+<li><strong>Vous retenez sur la durée.</strong> Le carnet vous fait réviser chaque notion au bon moment.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Un mot revient sans cesse</strong> dans les explications de Pulse, et vous voulez enfin le comprendre.</li>
+<li><strong>Vous voulez progresser</strong> pour relire vous-même le code de votre appli.</li>
+<li><strong>Vous avez un quart d'heure devant vous</strong> : une leçon dure 10 à 15 minutes.</li>
+<li><strong>Une révision est due</strong> : lancez la commande sans rien, elle vous la propose.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> votre lexique (<code>docs/lexique.md</code>) liste les mots déjà croisés. Ceux qui ne sont pas encore maîtrisés font de bonnes notions à travailler.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:learn [&lt;notion&gt; | feynman &lt;notion&gt; | exercice &lt;notion&gt; | parcours &quot;&lt;objectif&gt;&quot;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Vide : réviser ou reprendre.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Une notion</strong> (ou une question comme « c'est quoi une API ? ») : une <strong>leçon</strong> en quatre temps. Pulse réveille ce que vous savez, explique, vous fait pratiquer, puis conclut.</li>
+<li><strong><code>feynman</code> suivi d'une notion</strong> : le mode « expliquez-le-moi ». Vous expliquez la notion avec vos mots, comme à un collègue qui n'a jamais codé. Le professeur repère le point qui coince et vous aide, par des questions, à le compléter vous-même.</li>
+<li><strong><code>exercice</code> suivi d'une notion</strong> : trois exercices de plus en plus difficiles, un à la fois. Vous écrivez la réponse dans votre éditeur, hors du code du projet, puis vous la collez.</li>
+<li><strong><code>parcours</code> suivi d'un objectif entre guillemets</strong> : 4 à 8 notions dans l'ordre, que vous validez avant de commencer.</li>
+<li><strong>Rien</strong> : les révisions du jour si elles sont dues, sinon la suite de votre parcours ou 2 à 3 notions conseillées.</li>
+</ul>
+<pre class="commande"><code>/pulse:learn les conditions</code></pre>
+<pre class="commande"><code>/pulse:learn feynman les fonctions</code></pre>
+<pre class="commande"><code>/pulse:learn parcours "comprendre comment mon appli enregistre les rendez-vous"</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>Votre code et vos documents restent intacts. Seuls deux fichiers d'apprentissage peuvent changer :</p>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/apprentissage.md</code></td><td>Votre carnet : niveau, objectif, parcours en cours, notions travaillées avec leur maîtrise (découverte, en cours, acquise), points fragiles, date du prochain rappel, et une ligne par séance. Créé après votre accord, la première fois.</td></tr>
+<tr><td><code>docs/lexique.md</code></td><td>Une notion travaillée avec succès y passe à « maîtrisé ».</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Le carnet est créé seulement avec votre accord.</strong> Si vous refusez, vous apprenez quand même, sans suivi.</li>
+<li><strong>Le carnet garde seulement votre niveau et votre objectif</strong> comme informations personnelles. Vous pouvez le lire et le corriger à la main.</li>
+<li><strong>Les exercices s'écrivent hors du projet</strong> : dans votre éditeur, un fichier d'essai à part, ou la console du navigateur. Votre appli reste telle quelle.</li>
+<li><strong>Le professeur enseigne la programmation, et seulement elle.</strong> Pour un autre sujet, il propose une notion de code proche.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Je bloque sur un exercice et le professeur ne me donne pas la réponse</summary><p>L'aide vient par paliers, pour que vous trouviez vous-même. Dites-le franchement : « donnez-moi la réponse ». Après un vrai blocage, il vous la donne directement, avec son pourquoi, puis vous fait refaire un cas voisin.</p></details>
+<details class="probleme"><summary>J'ai demandé « apprendre JavaScript » et il me propose autre chose</summary><p>Une notion trop large ne tient pas dans une leçon. Choisissez l'une des notions plus précises proposées, ou lancez un parcours : <code>/pulse:learn parcours "…"</code>.</p></details>
+<details class="probleme"><summary>Les explications sont trop simples, ou trop rapides</summary><p>Dites-le : le niveau s'ajuste en continu. Vous pouvez aussi corriger la ligne « Niveau » de votre carnet, <code>docs/apprentissage.md</code>.</p></details>
+<details class="probleme"><summary>Il refuse de m'aider sur un sujet sans rapport avec le code</summary><p>C'est voulu : le professeur enseigne seulement la programmation. Il vous propose une notion de code proche, par exemple comment une appli calcule et affiche un prix.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : une leçon sur les conditions">
+<p data-role="vous">/pulse:learn les conditions</p>
+<p data-role="claude">Je suis votre professeur de programmation. On avance à votre rythme : vous essayez, je vous guide, et je note dans votre carnet ce que vous avez appris.
+Je crée votre carnet ? → Oui, créer mon carnet (Recommandé)</p>
+<p data-role="vous">Oui, créer mon carnet</p>
+<p data-role="claude">Bonne idée : les conditions, c'est ce qui permet à votre appli de décider. Avant que je vous montre : selon vous, comment le carnet sait-il qu'un créneau est déjà pris ?</p>
+<p data-role="vous">Il regarde s'il y a déjà un rendez-vous à cette heure ?</p>
+<p data-role="claude">C'est exactement le bon réflexe. Une condition, c'est un aiguillage : si le créneau est pris, on affiche « complet » ; sinon, on propose de réserver. Dans votre fichier des rendez-vous, ligne 12, vous en avez justement une.</p>
+</div>
+<div class="conversation" data-titre="Exemple : expliquez-le-moi">
+<p data-role="vous"><code>/pulse:learn feynman les fonctions</code></p>
+<p data-role="claude">Expliquez-moi ce qu'est une fonction, avec vos mots, comme à un collègue qui n'a jamais codé.</p>
+<p data-role="vous">C'est un bout de code qui fait quelque chose, par exemple envoyer le rappel par e-mail.</p>
+<p data-role="claude">Bon début. Un point manque : comment la fonction sait-elle à qui envoyer le rappel ?</p>
+<p data-role="vous">On lui donne l'adresse du client ?</p>
+<p data-role="claude">Oui : ce qu'on lui donne s'appelle ses paramètres. Réexpliquez-moi maintenant la fonction en entier, avec cette idée.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="explain.html"><code>/pulse:explain</code></a> : comprendre un morceau de code précis de votre appli.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : corriger un bug repéré pendant une leçon, avec une notion du jour à la clé.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : faire relire un problème de sécurité repéré au passage.</li>
+<li><a href="status.html"><code>/pulse:status</code></a> : retrouver où en est votre projet après une séance.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

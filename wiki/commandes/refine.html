@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="refine">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:refine – Wiki Pulse</title>
+<meta name="description" content="Ajuster le plan à partir des questions ou remarques de la personne : répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="2">Étape 3 · Préparer</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:refine</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Ajuster le plan à partir des questions ou remarques de la personne : répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Votre plan est prêt, mais une tâche vous paraît floue, l'ordre ne vous convient pas, ou vous avez simplement une question. <code>/pulse:refine</code> répond à chacune de vos remarques, puis ajuste le plan en gardant ses règles : des tâches petites, visibles et testables en moins de 2 minutes.</p>
+<p>Chaque remarque est d'abord classée : une simple question (le plan reste tel quel), un changement d'ordre ou de découpage, un ajout au périmètre, un souci technique ou une exigence oubliée. Selon le cas, le changement se fait dans le plan, ou d'abord dans le PRD, le fichier de l'US ou les choix techniques.</p>
+<p>Rien n'est écrit avant votre accord. Pulse vous montre un tableau de vos remarques, puis la liste de ce qui change (✏️ modifié, ➕ ajouté, ➖ déplacé). Sa règle : « Le plan est à vous : on peut le changer, à condition de savoir ce que ça change. »</p>
+<pre class="commande"><code>## Ajustement du plan
+
+| Remarque                  | Réponse                      | Changement        |
+|---------------------------|------------------------------|-------------------|
+| Voir les créneaux d'abord | Oui : T3 ne dépend pas de T2 | T3 passe avant T2 |
+
+### Ce qui change dans PLAN-SPEC-US-001-prise-de-rendez-vous.md
+- ✏️ T3 – Afficher les créneaux libres → placée avant T2
+
+### Ailleurs
+- docs/prd.md : rien
+- US-001-prise-de-rendez-vous.md : rien
+- docs/user-stories.md : rien
+
+Questions restantes : aucune</code></pre>
+<p class="legende">La proposition que <code>/pulse:refine</code> vous montre avant de toucher au plan.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vos questions ont une vraie réponse.</strong> Chaque réponse donne sa raison : la priorité, l'ordre imposé entre deux tâches, la sécurité.</li>
+<li><strong>Vous voyez avant d'accepter.</strong> Le tableau des changements s'affiche avant toute écriture. Vous pouvez appliquer, modifier la proposition ou garder le plan actuel.</li>
+<li><strong>Le plan reste solide.</strong> Une tâche nouvelle ou modifiée suit les règles du plan : testable en moins de 2 minutes, 3 fichiers et 3 critères au plus.</li>
+<li><strong>Le travail déjà fait est protégé.</strong> Une tâche terminée reste telle quelle : un changement devient une nouvelle tâche.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2" aria-current="step"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Juste après <a href="plan.html"><code>/pulse:plan</code></a></strong>, quand une tâche vous paraît floue, de trop, mal placée, ou qu'il en manque une.</li>
+<li><strong>Pendant la réalisation</strong>, si vous changez d'avis. La tâche en cours se modifie seulement avec votre accord explicite.</li>
+<li><strong>Pour comprendre un choix du plan</strong> : posez votre question, le plan reste tel quel.</li>
+<li><strong>Pour changer la façon d'envoyer le travail</strong> : la ligne « Envoi » du plan (version parallèle, branche principale ou en local) se change ici, à votre demande.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pendant <a href="spirc.html"><code>/pulse:spirc</code></a>, inutile de lancer cette commande. Quand Pulse vous demande si le plan vous convient, dites ce que vous voulez changer : il applique le même ajustement.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:refine [&lt;US-XXX&gt;] &quot;vos questions ou remarques sur le plan&quot;</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>L'US</strong> (facultative) : celle dont vous ajustez le plan, par exemple <code>US-001</code>. Sans elle, Pulse vous demande quel plan, en proposant d'abord celui qui a une tâche en cours. S'il n'y a aucun plan, il vous propose <a href="plan.html"><code>/pulse:plan</code></a>.</li>
+<li><strong>Vos remarques</strong>, entre guillemets : des questions ou des changements, plusieurs à la fois si vous voulez. Sans remarque, Pulse demande « Qu'aimeriez-vous changer dans le plan ? », avec des réponses types : une tâche est floue, changer l'ordre, ajouter quelque chose, une tâche est de trop.</li>
+</ul>
+<pre class="commande"><code>/pulse:refine US-001 "Je veux voir les créneaux libres avant le formulaire"</code></pre>
+<pre class="commande"><code>/pulse:refine US-001 "Pourquoi le rappel par e-mail n'est pas dans ce plan ?"</code></pre>
+<pre class="commande"><code>/pulse:refine</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>Seuls les fichiers concernés par vos remarques changent, après votre accord :</p>
+<table>
+<thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan : tâches modifiées, ajoutées ou déplacées, et une ligne « plan modifié » dans son journal.</td></tr>
+<tr><td><code>docs/prd.md</code></td><td>Seulement pour un changement de périmètre : une fonctionnalité ajoutée à la première version, ou reportée.</td></tr>
+<tr><td><code>US-XXX-&lt;nom&gt;.md</code></td><td>Un critère d'acceptation ajouté, pour une exigence oubliée, tant que la spec est encore en brouillon.</td></tr>
+<tr><td><code>docs/user-stories.md</code></td><td>Une US ajoutée ou une priorité changée.</td></tr>
+<tr><td><code>aidd_docs/memory/project.md</code></td><td>Une décision durable (par exemple « pas de compte client dans la première version »), si vous acceptez de la noter.</td></tr>
+<tr><td><code>docs/guide/</code></td><td>Votre carnet de route, mis à jour tout seul.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien n'est écrit sans votre accord.</strong> Trois choix vous sont proposés : « Appliquer ces changements », « Modifier la proposition » ou « Garder le plan actuel ».</li>
+<li><strong>Le travail fait reste en place.</strong> Une tâche terminée ne change pas. La tâche en cours se modifie seulement avec votre accord, et Pulse vous signale le code déjà écrit.</li>
+<li><strong>Une spec validée reste telle quelle.</strong> Une exigence oubliée devient alors une nouvelle US, avec sa spec et son plan.</li>
+<li><strong>Les numéros des tâches ne changent jamais.</strong> Une nouvelle tâche prend le numéro qui suit, même si elle se place plus tôt dans l'ordre.</li>
+<li>Seuls les fichiers des tâches s'écrivent sans demande. Pour modifier le PRD ou la liste des user stories, Claude Code vous demande votre autorisation.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> un plan de plus de 4 tâches (hors mise en place et mise en ligne) devient lourd à suivre. Pulse vous le signale et vous propose de découper l'US en deux avec <a href="us.html"><code>/pulse:us</code></a>.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Aucun plan trouvé »</summary><p>Il faut un plan à ajuster. Lancez d'abord <a href="plan.html"><code>/pulse:plan US-001</code></a>, puis revenez avec vos remarques.</p></details>
+<details class="probleme"><summary>J'ai oublié une exigence, mais la spec est « verrouillée »</summary><p>Une spec validée ne bouge plus : c'est elle qui fixe ce qui est construit. Votre exigence devient une nouvelle US, lancée avec <a href="spec.html"><code>/pulse:spec "…"</code></a>, avec sa propre spec et son propre plan.</p></details>
+<details class="probleme"><summary>Pulse refuse de modifier une tâche terminée</summary><p>Elle est déjà enregistrée dans l'historique. Le changement que vous voulez devient une nouvelle tâche, ajoutée au plan.</p></details>
+<details class="probleme"><summary>La nouvelle tâche porte un numéro inattendu (T9, placée en troisième)</summary><p>C'est normal : chaque numéro est unique sur tous vos plans. Seule la position dans la liste compte pour l'ordre de réalisation.</p></details>
+<details class="probleme"><summary>Ma remarque remet en cause un outil choisi</summary><p>Si le changement touche la pile retenue, Pulse vous propose <a href="tech.html"><code>/pulse:tech</code></a> pour revoir ce choix, avant de modifier le plan.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : changer l'ordre des tâches">
+<p data-role="vous">/pulse:refine US-001 "Je veux voir les créneaux libres avant le formulaire"</p>
+<p data-role="claude">C'est possible : l'affichage des créneaux (T3) ne dépend pas du formulaire (T2).
+Ce qui change dans le plan : ✏️ T3 – Afficher les créneaux libres → placée avant T2.
+Ailleurs : rien.
+Appliquer ces changements (Recommandé) / Modifier la proposition / Garder le plan actuel ?</p>
+<p data-role="vous">Appliquer ces changements</p>
+<p data-role="outil">pulse-aidd guide</p>
+<p data-role="claude">Le plan est à jour, et son journal note « plan modifié ».
+➡️ Prochaine étape : /pulse:spirc US-001, pour réaliser les tâches dans le nouvel ordre.</p>
+</div>
+<div class="conversation" data-titre="Exemple : poser une question">
+<p data-role="vous">/pulse:refine US-001 "Pourquoi le rappel par e-mail n'est pas dans ce plan ?"</p>
+<p data-role="claude">Le rappel par e-mail est une autre user story, US-003. Un plan couvre une seule US : le rappel aura son propre plan.
+Dans le PRD, il est classé « Essentiel » : il viendra après la première version.
+Le plan reste tel quel. Si vous voulez le rappel dès la première version, c'est un changement de périmètre : je modifierai d'abord le PRD, après votre accord.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="plan.html"><code>/pulse:plan</code></a> : écrit le plan que cette commande ajuste.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : réalise le plan ajusté, tâche par tâche.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réalise une tâche précise du plan, pas à pas.</li>
+<li><a href="spec.html"><code>/pulse:spec</code></a> : décrit une exigence oubliée comme une nouvelle US.</li>
+<li><a href="guide.html"><code>/pulse:guide</code></a> : votre carnet de route, mis à jour à chaque changement du plan.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

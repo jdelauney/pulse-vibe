@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="spec">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:spec – Wiki Pulse</title>
+<meta name="description" content="Rédiger la spécification d'une user story (une US = une spec, rangée à côté de son US) : l'intention seule, la solution étant laissée au plan : périmètre, hors objectifs, écrans, informations, règles, scénarios, « terminé quand » ; les points encore ouverts notés comme questions ; figée une fois validée.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="2">Étape 3 · Préparer</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:spec</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Rédiger la spécification d'une user story (une US = une spec, rangée à côté de son US) : l'intention seule, la solution étant laissée au plan : périmètre, hors objectifs, écrans, informations, règles, scénarios, « terminé quand » ; les points encore ouverts notés comme questions ; figée une fois validée.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>La <dfn>spec</dfn> décrit précisément ce que l'outil doit permettre pour <strong>une</strong> user story, du point de vue de l'utilisateur : les écrans, les informations, les règles, et ce qui doit se passer exemple par exemple. « La spec fixe ce que vous voulez obtenir ; le plan choisira comment le construire. »</p>
+<p>Pulse rédige d'abord un brouillon, sans rien inventer : chaque information vient de vos documents ou de vos réponses. Ce qu'il ne sait pas devient une question en suspens, notée à sa place. Il vous montre aussi ce qu'il propose d'ajouter (un message, une confirmation) : vous gardez ou vous retirez.</p>
+<p>Une fois validée, la spec est <strong>verrouillée</strong> : elle ne bougera plus. Un changement de besoin passera par une nouvelle user story et sa propre spec.</p>
+<pre class="commande"><code>US-001 · Prendre rendez-vous
+Écrans      : les créneaux libres de la semaine · la confirmation
+Informations: le rendez-vous (cliente, prestation, date et heure)
+Hors objectifs : le paiement en ligne, le rappel par e-mail (US-003)
+Terminé quand : une cliente réserve un créneau libre et le voit confirmé
+
+Règle : un créneau se réserve une seule fois
+  · Camille réserve mardi 14 h, libre
+  · Inès essaie mardi 14 h, déjà pris</code></pre>
+<p class="legende">Le résumé présenté avant la validation, suivi des titres des scénarios groupés par règle.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>L'IA construit ce que vous voulez, pas ce qu'elle imagine.</strong> Rien n'est inventé : un trou devient une question qui vous est posée.</li>
+<li><strong>Les limites sont claires.</strong> Les hors objectifs disent ce que la user story laisse de côté.</li>
+<li><strong>Chaque critère est illustré.</strong> Des exemples concrets, avec des noms fictifs, couvrent le cas normal, les limites et les refus.</li>
+<li><strong>Vos données personnelles sont pensées dès le départ.</strong> Vous validez celles qui sont vraiment nécessaires, et qui a le droit de voir quoi.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2" aria-current="step"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="us.html"><code>/pulse:us</code></a></strong>, pour la première user story de l'ordre de réalisation, puis pour les suivantes.</li>
+<li><strong>Avant <a href="plan.html"><code>/pulse:plan</code></a></strong>, qui a besoin d'une spec verrouillée.</li>
+<li><strong>Pour une nouvelle demande</strong> (« ajouter un filtre par date ») : Pulse cherche la user story qui la couvre, ou en propose une nouvelle.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si la spec décrit des écrans, vous pouvez les voir avant de construire avec <a href="ui.html"><code>/pulse:ui maquettes US-001</code></a>.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> quand la user story demande une connexion, une liste, des e-mails, des fichiers, un paiement, plusieurs langues, une limite ou la protection d'un formulaire ouvert à tous, la spec reprend les exemples prêts de la recette correspondante, reformulés avec vos mots.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:spec &lt;US-XXX [US-YYY…] | &quot;description de la demande&quot;&gt;</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Un numéro de user story</strong> (<code>US-001</code>) : la spec de cette user story.</li>
+<li><strong>Plusieurs numéros</strong> : une spec par user story, l'une après l'autre, chacune validée avant la suivante.</li>
+<li><strong>Une description entre guillemets</strong> : Pulse cherche la user story qui la couvre. Sinon, il en crée une nouvelle si votre PRD la prévoit ; hors PRD, il vous demande de la noter « En attente » ou de l'ajouter maintenant.</li>
+<li><strong>Sans rien</strong> : Pulse liste les user stories sans spec, la prochaine à réaliser en premier.</li>
+</ul>
+<pre class="commande"><code>/pulse:spec US-001</code></pre>
+<pre class="commande"><code>/pulse:spec US-001 US-002</code></pre>
+<pre class="commande"><code>/pulse:spec "ajouter un filtre par date"</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>La spec, à côté de la fiche de sa user story : intention, périmètre et hors objectifs, écrans, informations et qui peut les voir ou les modifier, règles, scénarios, données personnelles, ajouts acceptés, « terminé quand » et questions en suspens.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/US-XXX-&lt;nom&gt;.md</code></td><td>Créée seulement pour une nouvelle user story, ou une user story optionnelle qui n'avait pas encore sa fiche, après votre validation.</td></tr>
+<tr><td><code>docs/user-stories.md</code></td><td>Complété quand une nouvelle user story est créée.</td></tr>
+<tr><td><code>docs/prd.md</code></td><td>Reçoit les idées notées « En attente » : une demande hors PRD, ou un ajout refusé qui reste une bonne idée.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Cette commande écrit seulement des documents.</strong> Elle ne touche ni au code ni à votre site.</li>
+<li><strong>Chaque ajout de Pulse se tranche.</strong> Vous choisissez lesquels garder ; un ajout refusé sort de la spec.</li>
+<li><strong>La validation n'est proposée que sans question en suspens.</strong> Sinon, Pulse vous dit lesquelles restent et propose de garder la spec en brouillon.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> « Valider (la spec ne bougera plus) » verrouille la spec. Relisez les scénarios avant de répondre. Plus tard, un changement passera par une nouvelle user story, qui complète ou remplace l'ancienne.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me demande une demande plus précise</summary><p>Votre description ne dit pas qui agit, quoi faire ou quel résultat obtenir. Reformulez avec ces trois éléments, par exemple : « la coiffeuse filtre les rendez-vous par date pour voir sa semaine ».</p></details>
+<details class="probleme"><summary>Je veux changer une spec déjà validée</summary><p>Elle est verrouillée. Pulse propose « Créer une nouvelle US qui la fait évoluer » : la nouvelle spec cite l'ancienne, et l'ancienne reçoit seulement la mention « remplacée par » si elle est remplacée.</p></details>
+<details class="probleme"><summary>Je ne sais pas encore répondre à une question</summary><p>Gardez-la ouverte : elle reste notée dans la spec, qui reste en brouillon. Relancez <code>/pulse:spec US-001</code> quand vous avez la réponse ; Pulse reprend par les questions en suspens.</p></details>
+<details class="probleme"><summary>Pulse me propose de découper la user story</summary><p>Elle est de grande taille. Une spec couvre une user story de taille raisonnable : découpez-la avec <a href="us.html"><code>/pulse:us</code></a>, puis faites une spec pour chaque morceau.</p></details>
+<details class="probleme"><summary>Pulse me renvoie vers <code>/pulse:init</code></summary><p>Vos documents sont à l'ancien format. <a href="init.html"><code>/pulse:init</code></a> les range au nouveau format, puis relancez la spec.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : la spec de la prise de rendez-vous">
+<p data-role="vous">/pulse:spec US-001</p>
+<p data-role="claude">Voici le brouillon. Deux choix vous reviennent.
+Ces données sont-elles toutes nécessaires : prénom, téléphone, prestation ?
+Qui a le droit de voir quoi ? Je propose : une cliente voit seulement ses propres rendez-vous.</p>
+<p data-role="vous">Oui pour les deux.</p>
+<p data-role="claude">Ajouts proposés par Pulse. Lesquels gardez-vous ?
+☐ Un message de confirmation après la réservation : la cliente sait que c'est enregistré.
+☐ Les créneaux voisins quand un créneau est pris : elle trouve vite une autre heure.
+Question en suspens : un rendez-vous annulé reste-t-il visible dans l'historique ?</p>
+<p data-role="vous">Je garde les deux ajouts. Non, il disparaît.</p>
+<p data-role="claude">→ Valider (la spec ne bougera plus) / Corriger un scénario ou un point</p>
+<p data-role="vous">Valider</p>
+<p data-role="claude">Spec verrouillée. Prochaine étape : /pulse:plan US-001.</p>
+</div>
+<div class="conversation" data-titre="Exemple : une nouvelle demande">
+<p data-role="vous">/pulse:spec "pouvoir annuler mon rendez-vous"</p>
+<p data-role="claude">Aucune user story ne couvre cette demande, et votre PRD ne la prévoit pas.
+→ La noter « En attente » dans le PRD (Recommandé) / L'ajouter au périmètre maintenant</p>
+<p data-role="vous">La noter « En attente »</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="us.html"><code>/pulse:us</code></a> : écrire ou découper les user stories que la spec détaille.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : voir les écrans de la spec en maquettes, avant de construire.</li>
+<li><a href="plan.html"><code>/pulse:plan</code></a> : l'étape suivante, pour décider comment construire la spec.</li>
+<li><a href="refine.html"><code>/pulse:refine</code></a> : changer le plan selon vos remarques.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : enchaîner spec, plan et réalisation.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

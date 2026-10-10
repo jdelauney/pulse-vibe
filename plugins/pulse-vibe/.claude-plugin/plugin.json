@@ -1,6 +1,6 @@
 {
   "name": "pulse",
-  "version": "0.39.1",
+  "version": "0.39.2",
   "description": "Méthode Pulse (PulseIA) : du brief à la mise en ligne avec l'IA, étape par étape. Brief, PRD, choix techniques, identité visuelle et maquettes d'interface, user stories, spec, plan, implémentation, revue, commit et déploiement, référencement, vitesse, Search Console et secrets, avec garde-fous de sécurité, agents indépendants et mémoire projet. En français.",
   "author": {
     "name": "PulseIA"

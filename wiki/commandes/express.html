@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="express">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:express – Wiki Pulse</title>
+<meta name="description" content="Démarrer vite : en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 1 · Démarrer</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:express</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Démarrer vite : en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>C'est le chemin court de Pulse. En une seule conversation, vous parlez de votre idée, de vos écrans, de l'apparence souhaitée et de vos contraintes. Pulse en tire les <strong>mêmes documents</strong> que le parcours complet : le brief, le PRD et les user stories.</p>
+<p>Ensuite, sans changer de commande, Pulse choisit avec vous les outils de votre appli, puis vous montre deux apparences à comparer. À la fin, la première user story est prête à réaliser.</p>
+<p>La rapidité vient de deux choses : les questions sont regroupées en quatre blocs, et Pulse déduit seul ce qui peut l'être. Les décisions restent les vôtres : tout passe par un seul écran de validation.</p>
+<pre class="commande"><code>⬜ L'idée          pour qui, quel problème, comment on fait aujourd'hui
+⬜ Les écrans      ce qu'on voit et ce qu'on fait sur chaque écran
+⬜ L'apparence     l'impression que l'outil doit donner
+⬜ Les contraintes données personnelles, budget, technologie imposée, échéance, être trouvé
+⬜ Validation      un seul écran récapitulatif
+⬜ Outils          les choix techniques
+⬜ Identité        2 apparences à comparer, vous choisissez</code></pre>
+<p class="legende">Le parcours annoncé au début. Chaque case passe à ✅ à la fin de son bloc.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous allez droit au but.</strong> Quatre blocs de questions et un seul écran de validation, au lieu de cinq commandes à enchaîner.</li>
+<li><strong>Vous obtenez les mêmes documents.</strong> Brief, PRD, user stories, choix techniques et identité visuelle : vous pourrez tout affiner ensuite avec les commandes du parcours complet.</li>
+<li><strong>Pulse fait les déductions à votre place.</strong> Si vous parlez de « réserver » ou d'« envoyer une confirmation », il en déduit qu'il faudra des données partagées ou des e-mails.</li>
+<li><strong>Vous voyez ce que Pulse a ajouté.</strong> L'écran de validation sépare ce que vous avez dit de ce que Pulse propose.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Juste après <a href="init.html"><code>/pulse:init</code></a></strong>, dans un projet neuf, quand vous voulez démarrer vite.</li>
+<li><strong>Quand votre idée est déjà assez claire</strong> et que vous préférez répondre une fois à tout, plutôt qu'étape par étape.</li>
+<li><strong>À la place des commandes de l'étape « Décrire »</strong> : elle remplace <code>/pulse:brainstorm</code>, <code>/pulse:prd</code>, <code>/pulse:tech</code>, <code>/pulse:ui identite</code> et <code>/pulse:us</code>.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si votre idée est encore floue, préférez <a href="brainstorm.html"><code>/pulse:brainstorm</code></a>. Son entretien prend plus de temps pour vous aider à préciser votre besoin.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:express [votre idée en une phrase]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Votre idée en une phrase</strong> (facultative) : Pulse s'en sert pour le premier bloc et ne vous repose pas ce qu'elle dit déjà.</li>
+<li><strong>Sans rien</strong> : Pulse commence par vous demander votre idée.</li>
+</ul>
+<pre class="commande"><code>/pulse:express "un carnet de réservations pour mon salon de coiffure"</code></pre>
+<pre class="commande"><code>/pulse:express</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier ou dossier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/brief.md</code></td><td>Votre idée et vos écrans, avec l'apparence souhaitée notée dans les décisions.</td></tr>
+<tr><td><code>aidd_docs/memory/glossary.md</code></td><td>Les mots de votre métier, tels que vous les employez.</td></tr>
+<tr><td><code>docs/prd.md</code></td><td>Les objectifs, la première version (ce qui est indispensable), vos contraintes et les questions ouvertes.</td></tr>
+<tr><td><code>docs/user-stories.md</code></td><td>La liste de vos user stories, rangées par groupe et dans l'ordre de réalisation.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/US-XXX-&lt;nom&gt;.md</code></td><td>Une fiche par user story, avec ses critères d'acceptation.</td></tr>
+<tr><td><code>docs/technical.md</code></td><td>Les outils choisis et leur mise en place, comme avec <a href="tech.html"><code>/pulse:tech</code></a>.</td></tr>
+<tr><td><code>docs/design.md</code></td><td>L'apparence choisie, comme avec <a href="ui.html"><code>/pulse:ui identite</code></a> ; les planches comparées restent dans <code>docs/design/identite/</code>.</td></tr>
+</tbody>
+</table>
+<p>S'y ajoutent la section des outils dans <code>CLAUDE.md</code> et la mémoire du projet. Si vous l'acceptez pendant l'étape des outils, le code de départ est préparé, et la page de départ peut même être mise en ligne dès aujourd'hui.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien n'est écrit avant votre validation.</strong> L'écran récapitulatif attend « Valider » ; « Modifier quelque chose » vous laisse corriger autant de fois que nécessaire.</li>
+<li><strong>Le code de départ et la mise en ligne attendent votre accord.</strong> Pour la mise en ligne, Claude Code vous demande aussi d'autoriser l'envoi vers votre dépôt en ligne.</li>
+<li><strong>Vos clés secrètes restent hors de la conversation.</strong> Pulse vous guide pour les écrire vous-même dans le fichier local.</li>
+<li>Un paiement prévu dans votre appli reste en <strong>mode test</strong> : le passage en mode réel est votre décision, au moment de la mise en ligne.</li>
+</ul>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> dans un projet déjà commencé, « Repartir de zéro en express » remplace vos documents existants (brief, PRD, user stories). Choisissez cette réponse seulement si vous voulez vraiment recommencer ; sinon, reprenez avec <a href="init.html"><code>/pulse:init</code></a>.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me propose de lancer <code>/pulse:init</code> d'abord</summary><p>Le fichier <code>CLAUDE.md</code> de Pulse manque : le projet n'est pas encore préparé. Lancez <a href="init.html"><code>/pulse:init</code></a>, puis relancez <code>/pulse:express</code>.</p></details>
+<details class="probleme"><summary>Pulse me demande si je veux reprendre ou repartir de zéro</summary><p>Votre projet a déjà un brief, un PRD ou des user stories. La réponse recommandée, « Reprendre là où en est le projet », vous ramène à <code>/pulse:init</code>, qui vous montre la suite. Repartir de zéro remplace les documents existants.</p></details>
+<details class="probleme"><summary>La conversation s'est arrêtée au milieu</summary><p>Pulse note où vous en êtes avant chaque question. Relancez <code>/pulse:express</code> : il vous propose de reprendre à l'étape notée.</p></details>
+<details class="probleme"><summary>L'écran de validation contient une chose que je n'ai pas demandée</summary><p>Regardez la ligne « Proposé par Pulse » : elle liste ce que vous n'avez pas dit vous-même. Choisissez « Modifier quelque chose » et dites ce qu'il faut retirer ; Pulse vous remontre l'écran corrigé.</p></details>
+<details class="probleme"><summary>La page qui compare les deux apparences ne s'ouvre pas</summary><p>Pulse affiche alors le chemin complet du fichier. Double-cliquez dessus : il s'ouvre dans votre navigateur.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : démarrer le carnet de réservations">
+<p data-role="vous">/pulse:express "un carnet de réservations pour mon salon de coiffure"</p>
+<p data-role="claude">On va droit au but : quatre blocs de questions, un seul écran de validation, puis on choisit les outils et l'apparence. Vous pourrez tout affiner ensuite.
+Pour qui est cet outil ? Par exemple, chez un fleuriste : « mes clients, qui commandent un bouquet ».</p>
+<p data-role="vous">Mes clientes prennent rendez-vous, et moi je vois mes rendez-vous du jour.</p>
+<p data-role="claude">✔ Compris : vos clientes réservent un créneau, vous consultez la journée.
+Écrans proposés : prise de rendez-vous · rendez-vous du jour · mon compte. Vous en ajoutez, en retirez ?</p>
+<p data-role="vous">Ajoutez un rappel par e-mail la veille.</p>
+<p data-role="claude">Votre projet en un coup d'œil
+Première version : US-001 Prendre rendez-vous · US-002 Voir les rendez-vous du jour
+Ensuite : US-003 Recevoir un rappel par e-mail
+Il faudra : données partagées · e-mails (déduit de vos réponses)
+→ Valider (Recommandé) / Modifier quelque chose</p>
+<p data-role="vous">Valider</p>
+<p data-role="claude">Documents écrits. Maintenant, on choisit les outils.</p>
+</div>
+<div class="conversation" data-titre="Exemple : un projet déjà commencé">
+<p data-role="vous">/pulse:express</p>
+<p data-role="claude">Votre projet a déjà un brief et un PRD.
+→ Reprendre là où en est le projet avec /pulse:init (Recommandé)
+→ Repartir de zéro en express (les documents existants sont remplacés)</p>
+<p data-role="vous">Reprendre là où en est le projet</p>
+<p data-role="claude">Lancez /pulse:init : il vous montre ce qui est fait et la prochaine étape.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="init.html"><code>/pulse:init</code></a> : préparer le projet avant de lancer <code>/pulse:express</code>.</li>
+<li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : le parcours complet, pour une idée encore floue.</li>
+<li><a href="tech.html"><code>/pulse:tech</code></a> : revoir plus tard les outils choisis.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : revoir l'apparence, ou dessiner les écrans d'une user story.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : l'étape suivante, qui écrit la spec et le plan de la première user story, puis la réalise.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réaliser une tâche à la fois, une fois le plan écrit.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>
