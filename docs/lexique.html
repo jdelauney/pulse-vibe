@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr" data-racine="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lexique – Wiki Pulse</title>
+<meta name="description" content="Les mots que vous croiserez avec Pulse, dans Claude Code, sur GitHub ou chez votre hébergeur, expliqués simplement, avec leur équivalent dans les mots du wiki.">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/animations.css">
+<script src="js/donnees.js" defer></script>
+<script src="js/gabarit.js" defer></script>
+<script src="js/animations.js" defer></script>
+<script src="js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Sur cette page" data-laterale="sommaire"></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<p class="pastille">Comprendre les mots</p>
+<h1>Lexique</h1>
+<p class="chapo">Les mots que vous croiserez avec Pulse, dans Claude Code, sur GitHub ou chez votre hébergeur. Chaque mot anglais est suivi de son équivalent dans les mots de ce wiki. Pour les idées de la méthode expliquées en détail, voyez les <a href="concepts.html">concepts</a>.</p>
+</header>
+
+<nav aria-label="Aller à la lettre">
+<ul class="sommaire">
+<li><a href="#lettre-a">A</a></li>
+<li><a href="#lettre-b">B</a></li>
+<li><a href="#lettre-c">C</a></li>
+<li><a href="#lettre-d">D</a></li>
+<li><a href="#lettre-e">E</a></li>
+<li><a href="#lettre-f">F</a></li>
+<li><a href="#lettre-g">G</a></li>
+<li><a href="#lettre-h">H</a></li>
+<li><a href="#lettre-j">J</a></li>
+<li><a href="#lettre-l">L</a></li>
+<li><a href="#lettre-m">M</a></li>
+<li><a href="#lettre-n">N</a></li>
+<li><a href="#lettre-p">P</a></li>
+<li><a href="#lettre-r">R</a></li>
+<li><a href="#lettre-s">S</a></li>
+<li><a href="#lettre-t">T</a></li>
+<li><a href="#lettre-u">U</a></li>
+<li><a href="#lettre-v">V</a></li>
+<li><a href="#lettre-w">W</a></li>
+</ul>
+</nav>
+
+<section id="lettre-a">
+<h2>A</h2>
+<dl>
+<dt id="api"><dfn>API</dfn></dt>
+<dd>La porte d'entrée qu'un service ouvre aux autres programmes. Votre appli s'en sert pour envoyer un e-mail ou encaisser un paiement. Voir : <a href="#cle-api">clé d'API</a>.</dd>
+<dt id="assistant"><dfn>assistant</dfn> (en anglais : <dfn>sous-agent</dfn>, <dfn>subagent</dfn>)</dt>
+<dd>Une IA séparée à qui Pulse confie un seul rôle : réaliser une tâche, relire le code, essayer l'appli, écrire les tests. Ceux qui relisent n'ont pas écrit le code. Voir : <a href="concepts.html#assistants">les assistants</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-b">
+<h2>B</h2>
+<dl>
+<dt id="base-de-donnees"><dfn>base de données</dfn> (en anglais : <dfn>database</dfn>)</dt>
+<dd>L'endroit où l'appli range ses informations pour les retrouver plus tard : les rendez-vous, les clientes, les comptes. Avec le pack Next.js, elle est chez Neon. Voir : <a href="#neon">Neon</a>.</dd>
+<dt id="bibliotheque"><dfn>bibliothèque</dfn> (en anglais : <dfn>library</dfn>, <dfn>package</dfn>)</dt>
+<dd>Un morceau de code écrit par d'autres, qu'on ajoute à son projet au lieu de tout réécrire. On dit aussi « dépendance ». Voir : <a href="#npm">npm</a>.</dd>
+<dt id="branche"><dfn>branche</dfn> (en anglais : <dfn>branch</dfn>)</dt>
+<dd>Dans ce wiki : une <strong>version parallèle</strong>. Une copie du projet où l'on avance sans toucher à la version principale, celle que le site publie. Voir : <a href="concepts.html#version-parallele">la version parallèle</a>.</dd>
+<dt id="brief"><dfn>brief</dfn></dt>
+<dd>Le premier document du projet : votre idée racontée simplement, comme une histoire. Voir : <a href="concepts.html#brief">le brief</a>, <a href="commandes/brainstorm.html"><code>/pulse:brainstorm</code></a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-c">
+<h2>C</h2>
+<dl>
+<dt id="cd"><dfn>CD</dfn> (de l'anglais <dfn>continuous deployment</dfn>)</dt>
+<dd>Dans ce wiki : la <strong>mise en ligne automatique</strong>. Le site se met à jour tout seul à chaque envoi sur la version principale. Voir : <a href="commandes/deploy.html"><code>/pulse:deploy</code></a>.</dd>
+<dt id="ci"><dfn>CI</dfn> (de l'anglais <dfn>continuous integration</dfn>)</dt>
+<dd>Dans ce wiki : les <strong>contrôles automatiques</strong>. Le site du dépôt vérifie votre projet à chaque envoi : clés, tests, construction. Voir : <a href="concepts.html#controles-automatiques">les contrôles automatiques</a>.</dd>
+<dt id="claude-code"><dfn>Claude Code</dfn></dt>
+<dd>L'assistant de programmation d'Anthropic : vous lui parlez en français, il lit et écrit les fichiers de votre projet. Pulse s'y ajoute. La façon conseillée de l'utiliser est VS Code avec l'extension. Voir : <a href="concepts.html#claude-code-et-pulse">Claude Code et Pulse</a>.</dd>
+<dt id="claude-desktop"><dfn>Claude Desktop</dfn></dt>
+<dd>L'application de bureau de Claude. Son onglet Code donne accès à Claude Code avec des boutons, sans terminal. Voir : <a href="prerequis.html#claude-desktop">les prérequis</a>.</dd>
+<dt id="claude-md"><dfn>CLAUDE.md</dfn></dt>
+<dd>Le fichier des règles de votre projet. Claude Code le relit au début de chaque session ; Pulse y recopie la mémoire du projet. Voir : <a href="concepts.html#memoire">la mémoire du projet</a>.</dd>
+<dt id="cle-api"><dfn>clé d'API</dfn> (en anglais : <dfn>API key</dfn>)</dt>
+<dd>Un code secret qui permet à votre appli d'utiliser un service en votre nom. Elle se range dans le fichier <code>.env</code>, jamais dans le code. Voir : <a href="concepts.html#secrets">les clés secrètes</a>.</dd>
+<dt id="commande"><dfn>commande</dfn> (en anglais : <dfn>slash command</dfn>)</dt>
+<dd>Un ordre qui commence par une barre oblique et qu'on tape dans Claude Code, comme <code>/pulse:init</code>. Voir : <a href="commandes/index.html">toutes les commandes</a>.</dd>
+<dt id="commit"><dfn>commit</dfn></dt>
+<dd>Dans ce wiki : une <strong>version enregistrée</strong>. Une photo datée de votre projet, avec une légende, à laquelle on peut toujours revenir. Voir : <a href="concepts.html#version-enregistree">la version enregistrée</a>, <a href="commandes/commit.html"><code>/pulse:commit</code></a>.</dd>
+<dt id="construction"><dfn>construction</dfn> (en anglais : <dfn>build</dfn>)</dt>
+<dd>L'étape qui transforme le code en une appli prête à être mise en ligne. Si elle échoue, rien n'est publié.</dd>
+<dt id="controles-automatiques"><dfn>contrôles automatiques</dfn></dt>
+<dd>Un contrôle qualité qui tourne tout seul sur le site du dépôt, à chaque envoi. Une coche verte : tout va bien ; une croix rouge : à corriger. En anglais : <a href="#ci">CI</a>. Voir : <a href="commandes/cicd.html"><code>/pulse:cicd</code></a>.</dd>
+<dt id="critere-acceptation"><dfn>critère d'acceptation</dfn> (en anglais : <dfn>acceptance criteria</dfn>)</dt>
+<dd>Une phrase qui dit comment vérifier qu'une user story est bien réalisée : « Étant donné… lorsque… alors… ». Voir : <a href="concepts.html#user-story">la user story</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-d">
+<h2>D</h2>
+<dl>
+<dt id="demande-de-fusion"><dfn>demande de fusion</dfn> (en anglais : <dfn>merge request</dfn>)</dt>
+<dd>Le nom donné sur GitLab à la <strong>proposition de version parallèle</strong>. Sur GitHub, on dit <a href="#pull-request">pull request</a>.</dd>
+<dt id="dependance"><dfn>dépendance</dfn> (en anglais : <dfn>dependency</dfn>)</dt>
+<dd>Une bibliothèque dont votre projet a besoin pour fonctionner. Voir : <a href="#bibliotheque">bibliothèque</a>.</dd>
+<dt id="deploiement"><dfn>déploiement</dfn> (en anglais : <dfn>deployment</dfn>)</dt>
+<dd>Dans ce wiki : la <strong>mise en ligne</strong>. Publier une nouvelle version du site chez l'hébergeur. Voir : <a href="concepts.html#mise-en-ligne">la mise en ligne</a>, <a href="commandes/deploy.html"><code>/pulse:deploy</code></a>.</dd>
+<dt id="depot"><dfn>dépôt</dfn> (en anglais : <dfn>repository</dfn>, <dfn>repo</dfn>)</dt>
+<dd>Le projet avec tout son historique de versions. Le <strong>dépôt en ligne</strong> en est la copie sur un site comme GitHub : une sauvegarde et le point de départ de la mise en ligne. Voir : <a href="concepts.html#depot-en-ligne">le dépôt en ligne</a>.</dd>
+<dt id="dossier-a-part"><dfn>dossier à part</dfn></dt>
+<dd>Un deuxième dossier du projet, sur sa propre version parallèle, pour qu'une deuxième session de Claude Code avance sans gêner la première. En anglais : <a href="#worktree">worktree</a>. Voir : <a href="concepts.html#version-parallele">la version parallèle et le dossier à part</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-e">
+<h2>E</h2>
+<dl>
+<dt id="env"><dfn>.env</dfn> (fichier)</dt>
+<dd>Le fichier où vous rangez vos clés secrètes, sur votre ordinateur seulement. Il n'est jamais enregistré dans l'historique, et Pulse empêche l'IA de le lire. Son modèle sans valeurs s'appelle <code>.env.example</code>. Voir : <a href="concepts.html#secrets">les clés secrètes</a>.</dd>
+<dt id="epic"><dfn>epic</dfn></dt>
+<dd>Dans ce wiki : un <strong>groupe de user stories</strong>, qui réunit celles d'un même grand besoin, comme « Gérer les rendez-vous ». Voir : <a href="concepts.html#user-story">la user story et ses groupes</a>.</dd>
+<dt id="extension"><dfn>extension</dfn></dt>
+<dd>Un module qu'on ajoute à un logiciel. L'extension Claude Code ajoute un panneau de discussion à VS Code. Voir : <a href="prerequis.html#vscode">les prérequis</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-f">
+<h2>F</h2>
+<dl>
+<dt id="fusion"><dfn>fusion</dfn> (en anglais : <dfn>merge</dfn>)</dt>
+<dd>Rassembler le travail d'une version parallèle dans la version principale. C'est ce qui se passe quand vous acceptez une proposition sur le site du dépôt.</dd>
+</dl>
+</section>
+
+<section id="lettre-g">
+<h2>G</h2>
+<dl>
+<dt id="garde-fou"><dfn>garde-fou</dfn></dt>
+<dd>Une protection de Pulse qui examine chaque action de l'IA. Elle refuse ce qui est dangereux et demande votre accord pour ce qui est sensible, toujours avec la raison. Voir : <a href="concepts.html#garde-fous">les garde-fous</a>.</dd>
+<dt id="git"><dfn>Git</dfn></dt>
+<dd>Le logiciel qui garde l'historique des versions de votre projet, sur votre ordinateur. Voir : <a href="concepts.html#version-enregistree">la version enregistrée</a>.</dd>
+<dt id="github"><dfn>GitHub</dfn></dt>
+<dd>Le site le plus répandu pour ranger un dépôt en ligne. GitLab en est un autre. Voir : <a href="concepts.html#depot-en-ligne">le dépôt en ligne</a>.</dd>
+<dt id="glossaire"><dfn>glossaire</dfn></dt>
+<dd>La liste des mots du métier de votre projet, avec leur définition commune (« prestation », « créneau »). Il fait partie de la mémoire du projet. À ne pas confondre avec ce lexique, qui explique les mots techniques.</dd>
+</dl>
+</section>
+
+<section id="lettre-h">
+<h2>H</h2>
+<dl>
+<dt id="hebergeur"><dfn>hébergeur</dfn> (en anglais : <dfn>hosting</dfn>)</dt>
+<dd>Le service qui fait tourner votre appli sur ses ordinateurs, jour et nuit, à une adresse web. Par exemple Vercel. Voir : <a href="concepts.html#mise-en-ligne">la mise en ligne</a>.</dd>
+<dt id="historique"><dfn>historique</dfn> (en anglais : <dfn>history</dfn>, <dfn>log</dfn>)</dt>
+<dd>Toutes les versions enregistrées de votre projet, mises bout à bout, de la plus ancienne à la plus récente.</dd>
+<dt id="hook"><dfn>hook</dfn></dt>
+<dd>Un petit programme que Claude Code lance tout seul à certains moments : à l'ouverture d'une session, avant une action. Les garde-fous et le chargement de la mémoire de Pulse en sont.</dd>
+</dl>
+</section>
+
+<section id="lettre-j">
+<h2>J</h2>
+<dl>
+<dt id="jeton"><dfn>jeton</dfn> (en anglais : <dfn>token</dfn>)</dt>
+<dd>Un code secret qui prouve votre identité auprès d'un service, comme une clé d'API. Il se range dans <code>.env</code>. Voir : <a href="#cle-api">clé d'API</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-l">
+<h2>L</h2>
+<dl>
+<dt id="lint"><dfn>lint</dfn>, <dfn>linter</dfn></dt>
+<dd>Un outil qui relit le code automatiquement et signale les erreurs de forme et les oublis courants, comme un correcteur d'orthographe pour le code. Il fait souvent partie des contrôles automatiques.</dd>
+<dt id="localhost"><dfn>localhost</dfn></dt>
+<dd>L'adresse de votre propre ordinateur, par exemple <code>http://localhost:3000</code>. Vous y voyez votre appli pendant le travail, avant la mise en ligne. Vous seul y avez accès.</dd>
+</dl>
+</section>
+
+<section id="lettre-m">
+<h2>M</h2>
+<dl>
+<dt id="main"><dfn>main</dfn></dt>
+<dd>Le nom habituel de la <strong>version principale</strong> du projet, celle que le site publie. Voir : <a href="#version-principale">version principale</a>.</dd>
+<dt id="markdown"><dfn>Markdown</dfn></dt>
+<dd>Une façon simple d'écrire du texte mis en forme, avec des signes comme <code>#</code> pour un titre. Les documents de Pulse (brief, PRD, spec…) sont écrits ainsi, dans des fichiers qui finissent par <code>.md</code>.</dd>
+<dt id="memoire"><dfn>mémoire du projet</dfn></dt>
+<dd>Quelques fichiers courts qui rappellent à l'IA, à chaque session, vos choix, les mots de votre métier et les pièges déjà rencontrés. Voir : <a href="concepts.html#memoire">la mémoire du projet</a>, <a href="commandes/memory.html"><code>/pulse:memory</code></a>.</dd>
+<dt id="merge"><dfn>merge</dfn></dt>
+<dd>Voir : <a href="#fusion">fusion</a>.</dd>
+<dt id="migration"><dfn>migration</dfn></dt>
+<dd>Un changement de la forme de la base de données, écrit dans un fichier : une nouvelle information à garder, un nouveau tableau. Il s'applique d'abord à la base de travail, puis à celle du site en ligne.</dd>
+<dt id="moscow"><dfn>MoSCoW</dfn></dt>
+<dd>La méthode qui range les fonctionnalités en quatre catégories. Dans ce wiki : Indispensable, Essentiel, Optionnel, En attente. Voir : <a href="concepts.html#prd">le PRD</a>.</dd>
+<dt id="mvp"><dfn>MVP</dfn> (de l'anglais <dfn>minimum viable product</dfn>)</dt>
+<dd>Dans ce wiki : la <strong>première version</strong>. La plus petite appli réellement utilisable par de vrais utilisateurs : toutes les fonctionnalités Indispensables, et elles seules. Voir : <a href="concepts.html#prd">le PRD et la première version</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-n">
+<h2>N</h2>
+<dl>
+<dt id="neon"><dfn>Neon</dfn></dt>
+<dd>Un service qui héberge votre base de données en ligne. Le pack Next.js l'utilise, avec une base pour le travail et une autre pour le site en ligne. Voir : <a href="prerequis.html#neon">les prérequis</a>.</dd>
+<dt id="nextjs"><dfn>Next.js</dfn></dt>
+<dd>Un ensemble d'outils pour construire des sites et des applis web. C'est la base du pack Next.js de Pulse. Voir : <a href="concepts.html#pack-next">le pack Next.js</a>.</dd>
+<dt id="nodejs"><dfn>Node.js</dfn></dt>
+<dd>Un logiciel qui fait tourner des programmes écrits en JavaScript sur votre ordinateur. Pulse en a besoin pour ses garde-fous. Voir : <a href="prerequis.html#node">les prérequis</a>.</dd>
+<dt id="npm"><dfn>npm</dfn></dt>
+<dd>L'outil, livré avec Node.js, qui installe les bibliothèques d'un projet. Une commande comme <code>npm install</code> les télécharge.</dd>
+</dl>
+</section>
+
+<section id="lettre-p">
+<h2>P</h2>
+<dl>
+<dt id="pack"><dfn>pack de pile</dfn></dt>
+<dd>Un complément de Pulse qui apporte le savoir-faire d'un ensemble d'outils précis : un projet de départ, des conseils, des recettes. Le pack Next.js s'appelle <code>pulse-next</code>. Voir : <a href="concepts.html#pack-next">le pack Next.js</a>.</dd>
+<dt id="pile"><dfn>pile technique</dfn> (en anglais : <dfn>stack</dfn>)</dt>
+<dd>L'ensemble des outils choisis pour votre appli : le langage, la base de données, la connexion des utilisateurs, l'hébergeur. Voir : <a href="commandes/tech.html"><code>/pulse:tech</code></a>.</dd>
+<dt id="plan"><dfn>plan</dfn></dt>
+<dd>Le document qui décide comment construire ce qu'une spec demande, découpé en tâches numérotées. Voir : <a href="concepts.html#plan">le plan</a>, <a href="commandes/plan.html"><code>/pulse:plan</code></a>.</dd>
+<dt id="plugin"><dfn>plugin</dfn></dt>
+<dd>Un module qu'on installe dans Claude Code pour lui ajouter des commandes et des protections. Pulse est un plugin. Voir : <a href="prerequis.html#pulse">les prérequis</a>.</dd>
+<dt id="pr"><dfn>PR</dfn></dt>
+<dd>L'abréviation de <a href="#pull-request">pull request</a>.</dd>
+<dt id="prd"><dfn>PRD</dfn> (de l'anglais <dfn>product requirements document</dfn>)</dt>
+<dd>Le document de besoin produit : la vision, les utilisateurs, les objectifs et le contenu de la première version. Voir : <a href="concepts.html#prd">le PRD</a>, <a href="commandes/prd.html"><code>/pulse:prd</code></a>.</dd>
+<dt id="premiere-version"><dfn>première version</dfn></dt>
+<dd>La plus petite appli réellement utilisable par de vrais utilisateurs. En anglais : <a href="#mvp">MVP</a>.</dd>
+<dt id="previsualisation"><dfn>prévisualisation</dfn> (en anglais : <dfn>preview</dfn>)</dt>
+<dd>Une copie de votre site, publiée par l'hébergeur à une adresse provisoire, pour essayer une version parallèle avant de l'accepter. Le site principal n'est pas touché.</dd>
+<dt id="projet-de-depart"><dfn>projet de départ</dfn> (en anglais : <dfn>starter</dfn>, <dfn>boilerplate</dfn> ; dans les fichiers de Pulse : <dfn>squelette</dfn>)</dt>
+<dd>Le code de base, déjà vérifié, posé au début du projet : une page d'accueil, le thème, la configuration, les premiers tests. Le pack Next.js le fournit.</dd>
+<dt id="proposition"><dfn>proposition</dfn></dt>
+<dd>La demande, sur le site du dépôt, de rassembler une version parallèle dans la version principale. Vous la relisez puis vous l'acceptez. Voir : <a href="#pull-request">pull request</a>, <a href="commandes/pr.html"><code>/pulse:pr</code></a>.</dd>
+<dt id="pull-request"><dfn>pull request</dfn></dt>
+<dd>Dans ce wiki : la <strong>proposition de version parallèle</strong>, sur GitHub. Sur GitLab : <a href="#demande-de-fusion">demande de fusion</a>. Voir : <a href="concepts.html#version-parallele">la version parallèle</a>.</dd>
+<dt id="push"><dfn>push</dfn></dt>
+<dd>Dans ce wiki : l'<strong>envoi</strong>. Recopier vos nouvelles versions enregistrées sur le dépôt en ligne. Chaque envoi passe par votre accord. Voir : <a href="concepts.html#depot-en-ligne">le dépôt en ligne</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-r">
+<h2>R</h2>
+<dl>
+<dt id="recette"><dfn>recette</dfn></dt>
+<dd>Dans le pack Next.js : une fonction courante prête à l'emploi et vérifiée chaque semaine, comme la connexion, l'envoi d'e-mails ou le paiement. Voir : <a href="concepts.html#pack-next">le pack Next.js et ses recettes</a>.</dd>
+<dt id="relecture"><dfn>relecture</dfn> (en anglais : <dfn>review</dfn>)</dt>
+<dd>L'examen d'une tâche par des assistants qui ne l'ont pas écrite : ils relisent le code et essaient l'appli. Voir : <a href="commandes/review.html"><code>/pulse:review</code></a>.</dd>
+<dt id="retour-arriere"><dfn>retour arrière</dfn> (en anglais : <dfn>rollback</dfn>)</dt>
+<dd>Remettre en ligne la version précédente du site quand la nouvelle pose problème. La marche à suivre est notée dans <code>docs/technical.md</code>.</dd>
+</dl>
+</section>
+
+<section id="lettre-s">
+<h2>S</h2>
+<dl>
+<dt id="scenario"><dfn>scénario</dfn></dt>
+<dd>Dans une spec : un exemple précis de ce qui doit se passer, écrit en « Étant donné… lorsque… alors… ». Les tests automatiques vérifient ces scénarios.</dd>
+<dt id="secret"><dfn>secret</dfn></dt>
+<dd>Toute information qui permet d'agir à votre place : clé d'API, mot de passe, jeton. Le test : quelqu'un qui la lit peut-il se faire passer pour vous ? Voir : <a href="concepts.html#secrets">les clés secrètes</a>, <a href="commandes/secrets.html"><code>/pulse:secrets</code></a>.</dd>
+<dt id="session"><dfn>session</dfn></dt>
+<dd>Une conversation avec Claude Code, de son ouverture à sa fermeture (ou à <code>/clear</code>). À chaque nouvelle session, l'IA relit les règles et la mémoire du projet.</dd>
+<dt id="sous-agent"><dfn>sous-agent</dfn></dt>
+<dd>Voir : <a href="#assistant">assistant</a>.</dd>
+<dt id="spec"><dfn>spec</dfn> (de « spécification »)</dt>
+<dd>Le document qui décrit précisément ce qu'une user story doit permettre : écrans, informations, règles, scénarios. Verrouillée une fois validée. Voir : <a href="concepts.html#spec">la spec</a>, <a href="commandes/spec.html"><code>/pulse:spec</code></a>.</dd>
+<dt id="squelette"><dfn>squelette</dfn></dt>
+<dd>Voir : <a href="#projet-de-depart">projet de départ</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-t">
+<h2>T</h2>
+<dl>
+<dt id="tache"><dfn>tâche</dfn></dt>
+<dd>Une petite étape d'un plan, numérotée T1, T2, T3…, qui livre une seule chose que vous pouvez voir et tester. Voir : <a href="concepts.html#realisation">la réalisation, tâche par tâche</a>.</dd>
+<dt id="terminal"><dfn>terminal</dfn></dt>
+<dd>Une fenêtre où l'on tape des commandes en texte au lieu de cliquer. Sous Windows, on y trouve PowerShell. Voir : <a href="prerequis.html#terminal">ouvrir un terminal</a>.</dd>
+<dt id="test-automatique"><dfn>test automatique</dfn></dt>
+<dd>Un petit programme qui vérifie tout seul que l'appli fait ce que la spec demande. À chaque changement, il prévient si quelque chose casse. Voir : <a href="commandes/test.html"><code>/pulse:test</code></a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-u">
+<h2>U</h2>
+<dl>
+<dt id="user-story"><dfn>user story</dfn> (en abrégé : US)</dt>
+<dd>Un besoin décrit du point de vue de l'utilisateur : « En tant que… je souhaite… afin de… », avec ses critères d'acceptation. Voir : <a href="concepts.html#user-story">la user story</a>, <a href="commandes/us.html"><code>/pulse:us</code></a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-v">
+<h2>V</h2>
+<dl>
+<dt id="variable-environnement"><dfn>variable d'environnement</dfn> (en anglais : <dfn>environment variable</dfn>)</dt>
+<dd>Un réglage nommé, comme <code>SMTP_PASSWORD</code>, que l'appli lit au démarrage. Sur votre ordinateur, ces réglages sont dans <code>.env</code> ; en ligne, chez l'hébergeur. Les secrets en font partie.</dd>
+<dt id="vercel"><dfn>Vercel</dfn></dt>
+<dd>Un hébergeur de sites et d'applis web, utilisé par le pack Next.js. Il publie le site à chaque envoi sur la version principale. Voir : <a href="prerequis.html#vercel">les prérequis</a>.</dd>
+<dt id="version-enregistree"><dfn>version enregistrée</dfn></dt>
+<dd>Une photo datée de votre projet, avec une légende. En anglais : <a href="#commit">commit</a>.</dd>
+<dt id="version-parallele"><dfn>version parallèle</dfn></dt>
+<dd>Une copie du projet où l'on avance sans toucher à la version principale. En anglais : <a href="#branche">branch</a>.</dd>
+<dt id="version-principale"><dfn>version principale</dfn></dt>
+<dd>La version du projet que le site publie. Le travail des versions parallèles la rejoint quand vous l'acceptez. Souvent nommée <a href="#main">main</a>.</dd>
+<dt id="vs-code"><dfn>VS Code</dfn> (Visual Studio Code)</dt>
+<dd>Un éditeur gratuit pour ouvrir et modifier les fichiers d'un projet. Avec l'extension Claude Code, c'est la façon conseillée de travailler avec Pulse. Voir : <a href="prerequis.html#vscode">les prérequis</a>.</dd>
+</dl>
+</section>
+
+<section id="lettre-w">
+<h2>W</h2>
+<dl>
+<dt id="worktree"><dfn>worktree</dfn></dt>
+<dd>Dans ce wiki : le <strong>dossier à part</strong>. Un deuxième dossier du projet, sur sa propre version parallèle. Voir : <a href="concepts.html#version-parallele">la version parallèle et le dossier à part</a>.</dd>
+</dl>
+</section>
+
+</article>
+</div>
+</main>
+</body>
+</html>

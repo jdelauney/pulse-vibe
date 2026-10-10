@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="fr" data-racine="">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Je suis bloqué – Wiki Pulse</title>
+<meta name="description" content="Un message d'erreur, un site cassé, une clé vue, une conversation qui tourne en rond : trouvez votre situation et la commande Pulse qui vous débloque.">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/animations.css">
+<script src="js/donnees.js" defer></script>
+<script src="js/gabarit.js" defer></script>
+<script src="js/animations.js" defer></script>
+<script src="js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Sur cette page" data-laterale="sommaire"></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<p class="pastille">À tout moment</p>
+<h1>Je suis bloqué</h1>
+<p class="chapo">Une erreur, un site qui ne répond plus, une conversation qui tourne en rond : c'est normal, et presque tout se répare. Cherchez votre situation ci-dessous, avec vos mots. Chaque réponse vous donne la commande à taper et le lien vers sa page.</p>
+</header>
+
+<aside class="encadre encadre-conseil">
+<p><strong>Les 4 réflexes</strong> qui évitent la plupart des blocages :</p>
+<ol>
+<li><strong>Une tâche à la fois.</strong> Petit, testé, enregistré.</li>
+<li><strong>C'est vous qui testez.</strong> L'IA propose, vous validez.</li>
+<li><strong>Jamais de vraie donnée ni de vraie clé</strong> dans la conversation ou dans le code.</li>
+<li><strong>« Si ce n'est pas interdit côté serveur, c'est autorisé. »</strong> Une protection qui existe seulement à l'écran ne protège rien : l'appli doit la vérifier de son côté, sur le serveur.</li>
+</ol>
+</aside>
+
+<p>Gardez aussi ce repère : si vous ne savez pas quelle commande taper, décrivez simplement votre problème à Claude Code, avec vos mots. Il vous orientera vers la bonne commande Pulse.</p>
+
+<section id="erreur">
+<h2>Quelque chose ne marche pas</h2>
+<details class="probleme"><summary>J'ai un message d'erreur</summary>
+<p>Copiez le message tel quel, même s'il est long et en anglais, et donnez-le à <code>/pulse:fix</code>. Pulse cherche la vraie cause avant de toucher au code, corrige, puis vous demande de refaire l'action qui échouait pour le prouver.</p>
+<pre class="commande"><code>/pulse:fix "TypeError: Cannot read properties of null"</code></pre>
+<p>Page de la commande : <a href="commandes/fix.html"><code>/pulse:fix</code></a>.</p>
+</details>
+<details class="probleme"><summary>Un bouton ne fait rien, une page reste vide</summary>
+<p>Pas besoin de message d'erreur : décrivez ce que vous faisiez et ce qui s'est passé, avec vos mots.</p>
+<pre class="commande"><code>/pulse:fix "le bouton Réserver ne fait rien"</code></pre>
+<p>Sans rien après la commande, Pulse vous pose trois questions : que faisiez-vous, qu'attendiez-vous, y a-t-il un message en rouge ? Page de la commande : <a href="commandes/fix.html"><code>/pulse:fix</code></a>.</p>
+</details>
+<details class="probleme"><summary>Tout marche sur mon ordinateur, mais pas en ligne</summary>
+<p>C'est aussi un travail pour <code>/pulse:fix</code>. La cause est souvent une clé ou un réglage absent chez l'hébergeur.</p>
+<pre class="commande"><code>/pulse:fix "la page de réservation marche chez moi mais pas en ligne"</code></pre>
+<p>Si le site entier ne répond plus, voyez plutôt la section <a href="#en-ligne">Mon site en ligne ne marche plus</a>.</p>
+</details>
+<details class="probleme"><summary>Je voulais autre chose que ce que l'appli fait</summary>
+<p>Si rien n'est cassé mais que vous voulez un comportement nouveau, c'est une demande, pas une erreur. Décrivez-la à <code>/pulse:spirc</code>, qui la prépare, la réalise et vous la fait tester.</p>
+<pre class="commande"><code>/pulse:spirc US-001 "afficher le prix à côté de chaque prestation"</code></pre>
+<p>Page de la commande : <a href="commandes/spirc.html"><code>/pulse:spirc</code></a>.</p>
+</details>
+</section>
+
+<section id="controles">
+<h2>Des erreurs rouges ou des contrôles en échec</h2>
+<details class="probleme"><summary>Mon éditeur affiche des erreurs rouges partout dans le code</summary>
+<p>Ces erreurs viennent des contrôles automatiques, qui relisent le code comme un correcteur d'orthographe. <code>/pulse:auto-fix</code> les corrige toutes d'un coup, sans changer ce que fait votre appli.</p>
+<pre class="commande"><code>/pulse:auto-fix</code></pre>
+<p>Page de la commande : <a href="commandes/auto-fix.html"><code>/pulse:auto-fix</code></a>.</p>
+</details>
+<details class="probleme"><summary>Les tests automatiques échouent</summary>
+<p><code>/pulse:test</code> lance tous les tests et explique chaque échec en une ligne simple : ce qui ne marche pas, la cause, la tâche concernée. Puis il propose la bonne suite.</p>
+<pre class="commande"><code>/pulse:test</code></pre>
+<p>Page de la commande : <a href="commandes/test.html"><code>/pulse:test</code></a>.</p>
+</details>
+<details class="probleme"><summary>Les contrôles automatiques ont échoué après un envoi</summary>
+<p>Lancez <code>/pulse:status</code> : l'échec passe en tête de ses conseils, avec la commande à lancer, le plus souvent <code>/pulse:fix</code>.</p>
+<pre class="commande"><code>/pulse:status</code></pre>
+<p>Pages des commandes : <a href="commandes/status.html"><code>/pulse:status</code></a>, <a href="commandes/fix.html"><code>/pulse:fix</code></a>.</p>
+</details>
+</section>
+
+<section id="annuler">
+<h2>J'ai tout cassé, je veux revenir en arrière</h2>
+<details class="probleme"><summary>Les derniers changements ont tout cassé</summary>
+<p><code>/pulse:annuler</code> vous ramène en arrière sans rien perdre. Il vous montre d'abord ce qui sera défait, puis attend votre accord. Vous pourrez toujours récupérer ce qui a été annulé.</p>
+<pre class="commande"><code>/pulse:annuler</code></pre>
+<p>Sans rien après la commande, Pulse vous propose les choix : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui avait été annulé. Page de la commande : <a href="commandes/annuler.html"><code>/pulse:annuler</code></a>.</p>
+</details>
+<details class="probleme"><summary>Une tâche précise a cassé quelque chose</summary>
+<p>Donnez le numéro de la tâche (ou de la user story entière). Vous l'annulez, puis vous la refaites autrement.</p>
+<pre class="commande"><code>/pulse:annuler T3</code></pre>
+<p>Si un seul petit détail ne va pas, une correction est souvent plus simple : essayez d'abord <a href="commandes/fix.html"><code>/pulse:fix</code></a>.</p>
+</details>
+<details class="probleme"><summary>Je regrette une annulation</summary>
+<p>Relancez la commande et choisissez « Récupérer » : ce qui avait été annulé revient.</p>
+<pre class="commande"><code>/pulse:annuler</code></pre>
+</details>
+</section>
+
+<section id="perdu">
+<h2>Je ne sais plus où j'en suis</h2>
+<details class="probleme"><summary>Je reprends après une pause et j'ai perdu le fil</summary>
+<p><code>/pulse:status</code> résume votre projet sur un seul écran : ce qui est fait, ce qui reste, et la prochaine étape conseillée avec sa raison. Il ne change rien.</p>
+<pre class="commande"><code>/pulse:status</code></pre>
+<p>Page de la commande : <a href="commandes/status.html"><code>/pulse:status</code></a>.</p>
+</details>
+<details class="probleme"><summary>Je ne sais pas quoi faire ensuite</summary>
+<p><code>/pulse:init</code> affiche le même état, puis lance l'action que vous choisissez, et recommence. C'est la façon la plus simple d'avancer étape par étape.</p>
+<pre class="commande"><code>/pulse:init</code></pre>
+<p>Page de la commande : <a href="commandes/init.html"><code>/pulse:init</code></a>. Vous pouvez aussi répondre à quelques questions dans l'assistant <a href="quelle-commande.html">Quelle commande pour… ?</a></p>
+</details>
+</section>
+
+<section id="conversation">
+<h2>L'IA tourne en rond, la conversation est trop longue</h2>
+<details class="probleme"><summary>L'IA répète les mêmes erreurs ou devient lente</summary>
+<p>Une conversation trop longue fatigue l'IA : elle mélange les sujets et oublie le début. Repartez d'une conversation neuve. Rien n'est perdu : vos fichiers, vos documents et la mémoire du projet restent là, et Pulse les relit.</p>
+<ul>
+<li><strong>Dans VS Code</strong> (la façon conseillée) : tapez <code>/clear</code> dans le panneau Claude Code. Si cette commande n'apparaît pas, ouvrez une nouvelle conversation avec <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>Échap</kbd> (<kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>Échap</kbd> sur Mac).</li>
+<li><strong>Dans le terminal</strong> ou dans Claude Desktop : tapez <code>/clear</code>.</li>
+</ul>
+<pre class="commande"><code>/clear</code></pre>
+<p>Puis relancez la commande en cours, ou <code>/pulse:status</code> pour retrouver le fil.</p>
+</details>
+<details class="probleme"><summary>Je dois répéter les mêmes choses à chaque conversation</summary>
+<p>Notez-les dans la mémoire du projet : l'IA la relit au début de chaque session. Pulse vous montre la ligne avant de l'écrire.</p>
+<pre class="commande"><code>/pulse:memory retenir "les prix s'affichent toujours TTC"</code></pre>
+<p>Page de la commande : <a href="commandes/memory.html"><code>/pulse:memory</code></a>.</p>
+</details>
+<details class="probleme"><summary>Pulse me dit que la mémoire est presque pleine</summary>
+<p>La mémoire a une limite de 200 lignes. Resserrez-la : elle repasse autour de 140 lignes, sans perdre l'essentiel.</p>
+<pre class="commande"><code>/pulse:memory compacter</code></pre>
+</details>
+</section>
+
+<section id="secret">
+<h2>Une clé secrète a été vue</h2>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> une clé vue ailleurs que dans votre fichier <code>.env</code> (dans le dépôt, dans la conversation avec l'IA, sur un écran partagé, dans une capture ou un e-mail) peut servir à quelqu'un d'autre. Agissez tout de suite : on rend d'abord l'ancienne clé inutilisable, puis on la remplace.</p></aside>
+<details class="probleme" open><summary>J'ai collé une clé dans la conversation, ou elle est partie en ligne</summary>
+<p><code>/pulse:secrets fuite</code> vous guide calmement, dans le bon ordre : 1. révoquer l'ancienne clé chez le fournisseur, 2. en créer une nouvelle, 3. la mettre partout, 4. vérifier que le site marche. La valeur de la clé ne passe jamais par la conversation.</p>
+<pre class="commande"><code>/pulse:secrets fuite</code></pre>
+<p>Vous ne savez pas quelle clé ? Pulse vous montre la liste, avec « Je ne sais pas laquelle ». En cas de doute, choisissez toujours <code>fuite</code>. Page de la commande : <a href="commandes/secrets.html"><code>/pulse:secrets</code></a>.</p>
+</details>
+<details class="probleme"><summary>Le garde-fou a bloqué un enregistrement à cause d'une clé</summary>
+<p>C'est une protection : la clé était dans les changements. Pulse la retire du code, puis recommence. Si cette clé avait déjà été envoyée en ligne, lancez <code>/pulse:secrets fuite</code>.</p>
+</details>
+</section>
+
+<section id="en-ligne">
+<h2>Mon site en ligne ne marche plus</h2>
+<details class="probleme"><summary>Le site affiche une erreur depuis la dernière mise à jour</summary>
+<p>Commencez par décrire ce que vous voyez à <code>/pulse:fix</code> : il cherche la cause et corrige.</p>
+<pre class="commande"><code>/pulse:fix "le site en ligne affiche une erreur depuis la dernière mise à jour"</code></pre>
+<p>Pour remettre vite le site d'avant, annulez la dernière version avec <code>/pulse:annuler</code>, puis envoyez-la : le site se met à jour tout seul.</p>
+<pre class="commande"><code>/pulse:annuler</code></pre>
+<p>Pages des commandes : <a href="commandes/fix.html"><code>/pulse:fix</code></a>, <a href="commandes/annuler.html"><code>/pulse:annuler</code></a>.</p>
+</details>
+<details class="probleme"><summary>Je veux remettre en ligne la version précédente, tout de suite</summary>
+<p>L'hébergeur sait remettre en ligne la version précédente en quelques clics. Le chemin exact est écrit dans la section « Retour arrière » de <code>docs/technical.md</code>, pour le site puis pour les données. Si elle manque, <code>/pulse:deploy production</code> l'écrit pour vous et vous la montre.</p>
+<pre class="commande"><code>/pulse:deploy production</code></pre>
+<p>Page de la commande : <a href="commandes/deploy.html"><code>/pulse:deploy</code></a>.</p>
+</details>
+<details class="probleme"><summary>La mise en ligne s'arrête avant l'envoi</summary>
+<p>L'envoi attend que les tests et la construction passent. Corrigez avec <code>/pulse:fix</code> ou <code>/pulse:auto-fix</code>, puis relancez :</p>
+<pre class="commande"><code>/pulse:deploy</code></pre>
+</details>
+</section>
+
+<section id="autorisation">
+<h2>Pulse me demande une autorisation</h2>
+<details class="probleme"><summary>Une demande d'accord que je ne comprends pas</summary>
+<p>Claude Code vous demande votre accord avant les actions importantes : envoyer votre travail en ligne, supprimer, changer un réglage. Pulse a aussi un garde-fou, qui protège votre travail, vos données et votre site. Quand il intervient, il affiche sa raison, par exemple « Pulse demande votre accord… ».</p>
+<ul>
+<li>Lisez la raison affichée.</li>
+<li>Acceptez seulement si vous comprenez ce qui va se passer.</li>
+<li>Dans le doute, refusez et demandez à Claude : « Explique-moi simplement ce que fait cette action. » Vous pourrez accepter ensuite.</li>
+</ul>
+</details>
+<details class="probleme"><summary>Pulse refuse de faire une action</summary>
+<p>Le garde-fou bloque ce qui pourrait abîmer votre projet ou exposer vos clés, par exemple lire votre fichier <code>.env</code>. Lisez la raison : Pulse propose en général une autre façon d'arriver au même résultat.</p>
+</details>
+</section>
+
+<section id="installation">
+<h2>Une commande Pulse n'apparaît pas</h2>
+<details class="probleme"><summary>Quand je tape <code>/pulse:</code>, rien ne s'affiche</summary>
+<p>Les plugins Pulse ne sont pas chargés. Quittez Claude Code et relancez-le. S'ils manquent toujours, tapez <code>/plugin</code> et regardez l'onglet <strong>Installed</strong> : Pulse doit y figurer, activé. Sinon, reprenez l’installation pas à pas : <a href="prerequis.html#pulse">Prérequis, étape « Installer les plugins Pulse »</a>.</p>
+</details>
+<details class="probleme"><summary>Une commande citée dans ce wiki n'existe pas chez moi</summary>
+<p>Votre version de Pulse est sans doute ancienne. Mettez-la à jour depuis un terminal, puis fermez et relancez Claude Code :</p>
+<pre class="commande"><code>claude plugin marketplace update pulseia
+claude plugin update pulse@pulseia</code></pre>
+<p>Le détail, avec la mise à jour automatique : <a href="prerequis.html#pulse">Prérequis, étape « Installer les plugins Pulse »</a>.</p>
+</details>
+</section>
+
+<section id="aide">
+<h2>Je n'y arrive vraiment pas</h2>
+<details class="probleme"><summary>Pulse a essayé plusieurs fois, rien ne marche</summary>
+<p>Faites appel à une personne qui programme. <code>/pulse:get-help</code> prépare une demande d'aide claire qu'elle comprendra en deux minutes : ce que vous construisez, l'erreur exacte, ce qui a déjà été essayé, et une question précise. Vos clés et vos vraies données sont remplacées par des valeurs fictives. Pulse ne publie rien : c'est vous qui envoyez.</p>
+<pre class="commande"><code>/pulse:get-help "le rappel par e-mail ne part pas"</code></pre>
+<p>Page de la commande : <a href="commandes/get-help.html"><code>/pulse:get-help</code></a>.</p>
+</details>
+</section>
+
+<section id="autre">
+<h2>Ma situation n'est pas dans la liste</h2>
+<p>Répondez à deux ou trois questions dans l'assistant <a href="quelle-commande.html">Quelle commande pour… ?</a> : il vous propose la commande qui convient. La liste complète est dans l'<a href="commandes/index.html">index des commandes</a>.</p>
+</section>
+
+</article>
+</div>
+</main>
+</body>
+</html>

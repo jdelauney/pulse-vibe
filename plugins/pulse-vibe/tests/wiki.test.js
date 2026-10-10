@@ -50,6 +50,19 @@ test("wiki : synchronisé avec les SKILL.md (node outils/wiki/synchroniser.js)",
   assert.strictEqual(r.status, 0, r.stderr);
 });
 
+test("wiki : index de recherche à jour (node outils/wiki/indexer.js)", options, () => {
+  const r = spawnSync(process.execPath, [path.join(DEPOT, "outils", "wiki", "indexer.js"), "--verifier"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+});
+
+test("wiki : chaque capture prise par script est attendue par une page", options, () => {
+  const { attendues, AUTOMATIQUES } = require(path.join(DEPOT, "outils", "wiki", "captures.js"));
+  const fichiers = new Set(attendues().map((c) => c.fichier));
+  // Une capture intégrée n'est plus « attendue » : son image existe alors dans docs/assets/.
+  const orphelines = Object.keys(AUTOMATIQUES).filter((f) => !fichiers.has(f) && !fs.existsSync(path.join(WIKI, "assets", f)));
+  assert.deepStrictEqual(orphelines, []);
+});
+
 test("wiki : une page par commande du cœur, chacune avec les sections du gabarit, aucune page orpheline", options, () => {
   const problemes = [];
   for (const nom of SKILLS) {
@@ -121,5 +134,5 @@ test("wiki : publié tel quel par GitHub Pages depuis docs/ (accueil index.html,
   assert.ok(fs.existsSync(path.join(WIKI, "index.html")), "docs/index.html");
   assert.ok(fs.existsSync(path.join(WIKI, ".nojekyll")), "docs/.nojekyll");
   // Les outils, la charte et le modèle de page restent hors du site publié.
-  for (const f of ["synchroniser.js", "CHARTE.md", "modele-commande.html"]) assert.ok(fs.existsSync(path.join(DEPOT, "outils", "wiki", f)), `outils/wiki/${f}`);
+  for (const f of ["synchroniser.js", "indexer.js", "captures.js", "CHARTE.md", "modele-commande.html"]) assert.ok(fs.existsSync(path.join(DEPOT, "outils", "wiki", f)), `outils/wiki/${f}`);
 });
