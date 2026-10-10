@@ -7,17 +7,31 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte impleme
 
 # /pulse:implement – Réaliser une tâche
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
+
+- **Avec une tâche** : réaliser **cette tâche** d'un plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), expliquer ce qui a été fait et comment le tester. La relecture et le commit se font ensuite avec `/pulse:review` et `/pulse:commit`.
+- **Sans tâche** : réaliser **tout le plan**, en bouclant sur chaque tâche restante, dans l'ordre : réaliser → relire → corriger → commiter → tâche suivante (§ 6). Chaque tâche a son propre commit.
+
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+### Contraintes d'implémentation
+
+- Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite`.
+- Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
+
+## Contexte
 
 !`pulse-aidd contexte implement`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
+Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS` (les options, l'US dont on réalise le plan, puis la tâche, facultative)
 
 Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions`).
 
-## Raccourcis (facultatifs)
+### Raccourcis (facultatifs)
 
 Les choix de la façon de travailler se font par une question au démarrage (§ 0). Les habitués peuvent les donner d'avance, avant l'US, regroupables (`-sw` = `-s -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
 - `-s` **en coulisse** (mode sous-agent) : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
@@ -25,19 +39,21 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 - `-w` **dossier à part (worktree)** : travailler dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
 - `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord » ci-dessus).
 
-## Objectif
-
-- **Avec une tâche** : réaliser **cette tâche** d'un plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), expliquer ce qui a été fait et comment le tester. La relecture et le commit se font ensuite avec `/pulse:review` et `/pulse:commit`.
-- **Sans tâche** : réaliser **tout le plan**, en bouclant sur chaque tâche restante, dans l'ordre : réaliser → relire → corriger → commiter → tâche suivante (§ 6). Chaque tâche a son propre commit.
-
-## Prérequis
+### Prérequis
 
 - **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
 - La spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : proposer `/pulse:tech`, et attendre le choix de la pile pour installer ou coder.
 - Si des modifications non enregistrées concernent **une autre tâche** (`git status`), proposer d'abord `/pulse:review` puis `/pulse:commit` pour celle-ci. Un commit = une seule tâche.
 - Mode « tout le plan » : le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.
 
-## Déroulé
+## Rôle
+
+Cette commande prépare, contrôle, explique et parle à la personne ; en mode direct, elle réalise elle-même. Les agents sont ses moyens :
+- `pulse:implementer` : réalise la tâche en coulisse (mode sous-agent), puis corrige les constats qu'on lui transmet ;
+- `pulse:test-writer` et `pulse:test-runner` (tests d'abord) : l'un écrit les tests de la tâche, l'autre les lance et trie les échecs ;
+- `pulse:reviewer` et `pulse:verifier` (boucle sur tout le plan) : relisent la tâche et l'essaient en marche, sans avoir écrit le code.
+
+## Processus
 
 ### 0. Choisir la façon de travailler
 
@@ -130,9 +146,9 @@ Avec une tâche : terminer avec le bloc de fin de commande. Prochaine étape : `
 Pour chaque tâche, dans l'ordre du plan :
 
 1. **Réaliser** : étapes 2 à 5 ci-dessus (l'explication reste courte : ce qui a changé et la notion du jour ; le test manuel est donné à l'étape suivante).
-2. **Relire et vérifier** : appliquer la section « Déroulé » de l'étape **review** (chargée avant la première tâche) à l'identique pour cette tâche, **hors** son bloc de fin de commande : examen par `pulse:reviewer` et `pulse:verifier` (référence « Examiner une tâche »), rapport, présentation du verdict, **test manuel par la personne**.
+2. **Relire et vérifier** : appliquer la section « Processus » de l'étape **review** (chargée avant la première tâche) à l'identique pour cette tâche, **hors** son bloc de fin de commande : examen par `pulse:reviewer` et `pulse:verifier` (référence « Examiner une tâche »), rapport, présentation du verdict, **test manuel par la personne**.
 3. **Corriger** : appliquer l'étape « Corriger » de la relecture (constats Critique, Haute et Moyenne, constats Basse confrontés au code, test non concluant : règles communes § 6), avec la relecture de contrôle ; après un test de la personne ❌, remettre la ligne « Résultat » de « Test par la personne » à la valeur du modèle (§ 4 de la référence « Examiner une tâche »). En mode sous-agent, relancer `pulse:implementer` **avec la liste des constats** à corriger. **Deux cycles au maximum** : si un constat Critique persiste, arrêter la boucle, laisser la tâche `[~]`, expliquer simplement le blocage et proposer `/pulse:get-help`.
-4. **Commiter** : appliquer la section « Déroulé » de l'étape **commit** (chargée avant la première tâche) à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le § 2 de l'étape commit donne `commit` (tâche relue, vérifiée et testée, ou test reporté en mode autonome) : passer directement à l'enregistrement.
+4. **Commiter** : appliquer la section « Processus » de l'étape **commit** (chargée avant la première tâche) à l'identique, **hors** son bloc de fin de commande : contrôles de sécurité, message `<type>(<Tâche>): …`, tâche passée à `[x]` avec sa ligne de journal. Le § 2 de l'étape commit donne `commit` (tâche relue, vérifiée et testée, ou test reporté en mode autonome) : passer directement à l'enregistrement.
 5. **Passer à la suivante** : annoncer l'avancement en une ligne (`T3 ✅ enregistrée · US-XXX : 3/6 · suite : T4 – <titre>`), puis enchaîner directement. Si la personne demande une pause, s'arrêter : relancer `/pulse:implement <US-XXX>` reprendra à la tâche suivante.
 
 S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` reprend là où l'indique `pulse-aidd revue <Tn>`, test de la personne compris).
@@ -149,6 +165,8 @@ S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/
 
 Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si le plan est terminé et que la nouvelle version reste à mettre en ligne, sinon `/pulse:implement <US-XXX>` pour reprendre (Pulse propose de revenir dans le dossier à part gardé).
 
-## Contraintes d'implémentation
-- Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite`.
-- Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
+## Exemples
+
+- `/pulse:implement US-003 T3` : la tâche T3 est réalisée, puis expliquée : ce qui a changé, la notion du jour et les étapes pour la tester vous-même.
+- `/pulse:implement US-003` : toutes les tâches restantes, l'une après l'autre ; chacune est relue, testée par vous, puis enregistrée avant la suivante.
+- `/pulse:implement -d US-003 T3` : le même travail, fait devant vous étape par étape, pour apprendre en regardant.

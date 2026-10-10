@@ -7,21 +7,29 @@ allowed-tools: Bash(pulse-aidd contexte seo) Bash(pulse-aidd textes *) Bash(puls
 
 # /pulse:seo – Être trouvé
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte seo`
-
-Appliquer les « Règles communes Pulse », « Référencement : les règles » et « Référencement : assistants IA » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
-
-Action demandée : `$ARGUMENTS` (vide = `audit`)
-
 ## Objectif
 
 Aider la personne à être trouvée par ceux qui cherchent ce qu'elle offre, avec quatre questions, dans l'ordre : Google peut-il **venir** ? peut-il **garder** la page ? comment la page **se présente** ? mérite-t-elle d'être **choisie** ? Phrase à dire : « On vérifie d'abord que Google peut entrer et lire ; ensuite, comment vous vous présentez ; le reste, c'est votre contenu. »
 
 Le script `pulse-aidd seo` lit le site **servi**, comme un robot. Les textes sont **choisis par la personne** et gardés dans `docs/seo.md` (modèle `seo.md`), source unique pour le code.
 
-## Choisir l'action
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+Appliquer aussi « Référencement : les règles » et « Référencement : assistants IA » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte seo`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
+
+Action demandée : `$ARGUMENTS` (vide = `audit`)
+
+Fichiers de cette commande : [references/regles.md](references/regles.md), [references/ia.md](references/ia.md), [references/textes.md](references/textes.md), [references/lancer.md](references/lancer.md), [references/robots-ia.json](references/robots-ia.json), [assets/seo.md](assets/seo.md), [assets/seo-audit.md](assets/seo-audit.md), [scripts/seo.js](scripts/seo.js), [scripts/seo-html.js](scripts/seo-html.js), [scripts/seo-regles.js](scripts/seo-regles.js), [scripts/robots.js](scripts/robots.js).
+
+### Choisir l'action
 
 | Action | Quand | Section |
 |---|---|---|
@@ -31,13 +39,15 @@ Le script `pulse-aidd seo` lit le site **servi**, comme un robot. Les textes son
 | `ia` | Décider ce que les robots des assistants IA peuvent faire, ou changer d'avis | « ia » |
 | `lancer` | Après la mise en ligne sur le domaine définitif | « lancer » |
 
-## Avant toute action
+### Avant toute action
 
 1. Lire `docs/technical.md` (pile, « Commandes du projet », « Hébergement et mise en ligne »), « Être trouvé » de `docs/prd.md` et `docs/seo.md` s'ils existent. Sans `docs/technical.md`, proposer `/pulse:tech`.
 2. **Outil interne** (« Être trouvé » répond non, ou bloc `pulse-seo` avec `site: privé`) : le référencement se résume à rester hors de Google. Proposer `ia` avec le choix D, puis `audit` avec `--prive`.
 3. **L'adresse à lire** : l'adresse en ligne (« Hébergement et mise en ligne ») ; sinon le serveur local **de production** : lancer la construction, puis le démarrage (« Commandes du projet »), en arrière-plan, et attendre que l'accueil réponde. À la fin, arrêter ce serveur seulement (son numéro de processus), en laissant les autres processus tels quels. Le serveur de développement donne des résultats différents de la production : l'éviter pour l'audit.
 
-## audit
+## Processus
+
+### audit
 
 1. **Pages à lire.** Avec un pack de pile : `pulse-aidd pile seo-code --pages` donne les pages publiques fixes. Pages privées : lignes `privee:` de `docs/seo.md`, sinon pages de la connexion d'après les specs.
 2. **Lancer** `pulse-aidd seo <adresse> --ia [--chemins <pages>] [--privees <pages privées>] [--previsualisation]`, puis, avec un pack, `pulse-aidd pile seo-code` (contrôles du code). Expliquer en une phrase que les deux sont en lecture seule.
@@ -47,7 +57,7 @@ Le script `pulse-aidd seo` lit le site **servi**, comme un robot. Les textes son
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la première action de traitement, sinon `/pulse:seo lancer` si le site est en ligne sur son domaine définitif.
 
-## bases
+### bases
 
 Les fondations, posées une fois : adresse du site (variable de production), modèle de titre, description par défaut, robots.txt, sitemap, image de partage, icône, nom du site (`WebSite` sur l'accueil), organisation (`Organization`, ou `LocalBusiness` pour un commerce avec adresse), `noindex` des pages privées, vraie page 404.
 
@@ -58,7 +68,7 @@ Les fondations, posées une fois : adresse du site (variable de production), mod
 
 Terminer avec le rapport de réalisation et le bloc de fin de commande. Prochaine étape : `/pulse:seo textes`, puis `/pulse:seo ia`.
 
-## textes
+### textes
 
 Suivre la référence « textes » (`pulse-aidd reference seo/textes.md`), page par page (argument : une adresse ou un nom de page ; vide : les pages publiques sans texte validé dans `docs/seo.md`, la personne choisit l'ordre).
 
@@ -69,7 +79,7 @@ Suivre la référence « textes » (`pulse-aidd reference seo/textes.md`), page 
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la page suivante, ou `/pulse:seo ia`.
 
-## ia
+### ia
 
 Suivre « Référencement : assistants IA » ci-dessus.
 
@@ -80,10 +90,16 @@ Suivre « Référencement : assistants IA » ci-dessus.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:seo audit`, ou `/pulse:seo lancer` si le site est en ligne.
 
-## lancer
+### lancer
 
 Prérequis : le site est en ligne sur son domaine définitif (sinon proposer `/pulse:deploy`) et `pulse-aidd seo <adresse> --essentiel` ne relève aucun Critique.
 
 Suivre `pulse-aidd reference seo/lancer.md`, une étape à la fois : la personne agit sur chaque site ; demander le résultat de chaque étape (AskUserQuestion : « Fait ✅ » / « Bloqué » / « Plus tard ») et le noter dans « Suivi » de `docs/seo.md`. Ajouter le prochain rendez-vous (1 mois, puis 3 mois). Search Console : vérification minimale ici (propriété, balise ou DNS, sitemap déclaré) ; pour les données, le suivi et l'accès en lecture, `/pulse:search-console relier` reprend où vous en êtes (il relit la section « Référencement » de `docs/technical.md`).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:search-console relier` (données et suivi), puis le rendez-vous noté et `/pulse:seo audit`.
+
+## Exemples
+
+- `/pulse:seo` : votre site lu comme le ferait Google, un rapport rangé par les quatre questions, et la première correction à faire.
+- `/pulse:seo textes /tarifs` : deux titres et deux descriptions proposés pour la page des tarifs ; vous choisissez ou réécrivez.
+- `/pulse:seo ia` : une question à quatre réponses sur ce que les assistants IA peuvent faire de votre site, puis votre choix noté dans `docs/seo.md`.

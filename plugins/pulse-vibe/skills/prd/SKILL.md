@@ -6,24 +6,28 @@ allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(p
 
 # /pulse:prd – Le besoin produit et le périmètre du MVP
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte prd`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.
-
 ## Objectif
 
 Produire `docs/prd.md` : ce que l'outil doit faire, pour qui, et surtout **ce qui entre dans la première version (le MVP)** grâce à la priorisation MoSCoW.
 
 Rappeler en une phrase : « La première version est la plus petite réellement utilisable. On vise petit et fini, plutôt que grand et inachevé. »
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte prd`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.
+
+### Prérequis
 
 - `docs/brief.md` est nécessaire. S'il manque, proposer `/pulse:brainstorm`. Si la personne veut aller vite, proposer un **mode express** : 3 questions clés (l'idée et les utilisateurs ; le problème actuel ; les 5 choses que l'outil doit permettre), posées une à une avec des exemples, puis continuer.
 - Si `docs/prd.md` existe : demander s'il faut le compléter ou le refaire.
 
-## Déroulé
+## Processus
 
 Appliquer « Penser avant d'écrire » ci-dessus : la coupe du MVP et la définition « La première version est prête quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
 
@@ -68,3 +72,8 @@ Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'êt
 Écrire `docs/prd.md` à partir du modèle `docs/prd.md`. Montrer le tableau MoSCoW et la définition du MVP, demander validation.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour choisir les outils adaptés au besoin (puis, facultatif, `/pulse:ui identite`, et `/pulse:us`), ou `/pulse:spirc` pour enchaîner choix techniques, user stories, spec, plan et réalisation avec des points de validation.
+
+## Exemples
+
+- `/pulse:prd` : la liste de ce que l'outil doit permettre, puis la question « si vous ne pouviez livrer que 3 choses dans quinze jours, lesquelles ? » ; votre choix devient la première version.
+- `/pulse:prd` sans `docs/brief.md` : la proposition de `/pulse:brainstorm`, ou d'un mode express en 3 questions.

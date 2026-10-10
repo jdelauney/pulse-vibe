@@ -7,27 +7,33 @@ allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) B
 
 # /pulse:express – Démarrer vite
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte express`
-
-Appliquer les « Règles communes Pulse », « Penser avant d'écrire » et les « Règles de la mémoire projet » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte express` et lire sa sortie.
-
-Idée de départ (facultative) : `$ARGUMENTS`
-
 ## Objectif
 
 Amener la personne, dans une seule conversation, d'une idée à une première user story prête à réaliser, avec les **mêmes documents** que le parcours complet (brief, PRD, user stories, choix techniques, identité visuelle). Phrase à dire : « On va droit au but : quatre blocs de questions, un seul écran de validation, puis on choisit les outils et l'apparence. Vous pourrez tout affiner ensuite. »
 
 La rapidité vient du regroupement des questions et des déductions que Pulse fait lui-même ; les décisions restent celles de la personne.
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte express`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte express` et lire sa sortie.
+
+Idée de départ (facultative) : `$ARGUMENTS`
+
+### Prérequis
 
 - `CLAUDE.md` Pulse présent : sinon, proposer `/pulse:init` et s'arrêter.
 - `docs/brief.md`, `docs/prd.md` ou `docs/user-stories.md` existent déjà : le projet a commencé. Proposer (AskUserQuestion) « Reprendre là où en est le projet avec `/pulse:init` (Recommandé) » / « Repartir de zéro en express (les documents existants sont remplacés) ». Remplacer seulement avec cet accord explicite.
 - `aidd_docs/tasks/in-progress.md` concerne `/pulse:express` : proposer de reprendre à l'étape notée.
 
-## 1. Annoncer le parcours
+## Processus
+
+### 1. Annoncer le parcours
 
 Afficher la liste, puis la mettre à jour (⬜ → ✅) à la fin de chaque bloc :
 
@@ -41,7 +47,7 @@ Afficher la liste, puis la mettre à jour (⬜ → ✅) à la fin de chaque bloc
 ⬜ Identité        2 apparences à comparer, vous choisissez
 ```
 
-## 2. Les quatre blocs
+### 2. Les quatre blocs
 
 Pour chaque bloc : poser ses questions, puis reformuler en 2 lignes (« ✔ Compris : … ») et faire confirmer. Les questions clés suivent « Penser avant d'écrire » (réponse libre, exemples d'autres métiers) ; les autres passent par AskUserQuestion, en rondes de 4 au plus. Une question déjà tranchée par l'argument ou par une réponse précédente se cite au lieu de se reposer.
 
@@ -52,7 +58,7 @@ Pour chaque bloc : poser ses questions, puis reformuler en 2 lignes (« ✔ Comp
 
 Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16).
 
-## 3. Déduire (sans rien afficher)
+### 3. Déduire (sans rien afficher)
 
 À partir des quatre blocs, Pulse déduit lui-même :
 
@@ -62,7 +68,7 @@ Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/t
 
 Une ambiguïté qui change le périmètre (paiement unique ou abonnement ? une seule personne ou une équipe ?) : poser **une seule** question ciblée.
 
-## 4. Un seul écran de validation
+### 4. Un seul écran de validation
 
 ```
 Votre projet en un coup d'œil
@@ -78,7 +84,7 @@ Proposé par Pulse : …                               (ce que vous n'avez pas d
 
 Demander (AskUserQuestion) : « Valider (Recommandé) » / « Modifier quelque chose ». Modifier : appliquer la demande, puis remontrer l'écran.
 
-## 5. Écrire les documents
+### 5. Écrire les documents
 
 Avec les modèles ci-dessus, en appliquant « Qui a décidé quoi » (`raisonnement.md` § 5) :
 
@@ -89,16 +95,21 @@ Avec les modèles ci-dessus, en appliquant « Qui a décidé quoi » (`raisonnem
 
 Lancer `pulse-aidd memoire`, puis `pulse-aidd travail-fini`.
 
-## 6. Les outils (choix techniques)
+### 6. Les outils (choix techniques)
 
-Annoncer : « Maintenant, on choisit les outils. » Lancer `pulse-aidd etape tech --sans-communes` et appliquer sa section « Déroulé » à l'identique, hors son bloc de fin de commande. Les besoins de l'étape 3 remplissent d'office le tableau « Les besoins qui guident le choix » : poser seulement les questions restantes.
+Annoncer : « Maintenant, on choisit les outils. » Lancer `pulse-aidd etape tech --sans-communes` et appliquer sa section « Processus » à l'identique, hors son bloc de fin de commande. Les besoins de l'étape 3 remplissent d'office le tableau « Les besoins qui guident le choix » : poser seulement les questions restantes.
 
-## 7. L'identité visuelle
+### 7. L'identité visuelle
 
 Annoncer : « Dernière étape : l'apparence. Vous allez en voir deux et choisir. » Lancer `pulse-aidd etape ui --sans-communes`, puis appliquer la section « identite » avec **2 directions** (au lieu de 2 ou 3) ; l'entretien de l'étape 2 de « identite » part des réponses du bloc 3 et pose seulement ce qui manque.
 
-## Fin
+### Fin
 
 Résumé en 4 lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie, ce qui reste à faire par la personne (comptes à créer, mise en ligne).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc <première US Indispensable du parcours>`, qui écrit sa spec, son plan, puis la réalise tâche par tâche ; à défaut, une fois le plan écrit, `/pulse:implement <US-XXX> <tâche>` pour la réaliser pas à pas. Proposer de faire `/clear` avant : la conversation repartira légère.
+
+## Exemples
+
+- `/pulse:express "un carnet de commandes pour ma boulangerie"` : quatre séries de questions, un seul écran récapitulatif à valider, puis le choix des outils et de l'apparence.
+- `/pulse:express` dans un projet déjà commencé : la proposition de reprendre là où il en est avec `/pulse:init`, ou de repartir de zéro avec votre accord.

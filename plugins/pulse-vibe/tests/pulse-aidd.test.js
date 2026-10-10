@@ -531,7 +531,7 @@ test("etape --sans-communes : les consignes du pack restent", () => {
 
 test("etape --sans-communes : une ligne rappelle que les règles communes sont déjà chargées", () => {
   const sans = lancer("etape", "commit", "--sans-communes").stdout;
-  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Déroulé ci-dessous.)"));
+  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Processus ci-dessous.)"));
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
 

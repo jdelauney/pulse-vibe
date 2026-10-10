@@ -7,24 +7,28 @@ allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bas
 
 # /pulse:refine – Ajuster le plan
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte refine`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
-
-Arguments reçus : `$ARGUMENTS` (l'US dont on ajuste le plan, facultative, puis les remarques)
-
 ## Objectif
 
 Quand la personne a des questions ou veut des changements sur un plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), **répondre à chaque point**, mettre à jour le plan (et seulement ce qu'il faut ailleurs), **montrer ce qui change**, et faire valider avant d'écrire. Phrase à dire : « Le plan est à vous : on peut le changer, à condition de savoir ce que ça change. »
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte refine`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
+
+Arguments reçus : `$ARGUMENTS` (l'US dont on ajuste le plan, facultative, puis les remarques)
+
+### Prérequis
 
 - **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Absent : demander lequel, en premier celui qui a une tâche `[~]`. Aucun plan : proposer `/pulse:plan`.
 - Remarques vides : demander (AskUserQuestion) « Qu'aimeriez-vous changer dans le plan ? » avec des réponses types : « Une tâche est floue » / « Je veux changer l'ordre » / « Je veux ajouter quelque chose » / « Une tâche est de trop ».
 
-## Déroulé
+## Processus
 
 ### 1. Classer chaque remarque
 
@@ -85,3 +89,9 @@ Demander (AskUserQuestion) : « Appliquer ces changements (Recommandé) » / « 
 - Le guide de réalisation (`docs/guide/`) se met à jour automatiquement ; lancer `pulse-aidd guide` pour afficher la prochaine étape.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée par `pulse-aidd guide` (en général `/pulse:spirc <US-XXX>`, ou `/pulse:implement <US-XXX> <tâche>` pour la faire pas à pas), ou `/pulse:tech` si un choix technique est remis en cause.
+
+## Exemples
+
+- `/pulse:refine US-003 "Je veux voir la liste avant le formulaire"` : la réponse, le nouvel ordre des tâches montré avant tout changement ; après votre accord, le plan est mis à jour.
+- `/pulse:refine US-003 "Pourquoi le filtre n'est pas dans la première version ?"` : une réponse avec sa raison ; le plan reste tel quel.
+- `/pulse:refine` sans remarque : la question « Qu'aimeriez-vous changer dans le plan ? », avec quelques réponses types.

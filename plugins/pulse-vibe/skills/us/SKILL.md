@@ -6,24 +6,28 @@ allowed-tools: Bash(pulse-aidd contexte us) Bash(pulse-aidd reference *) Bash(pu
 
 # /pulse:us – Les user stories
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
+
+Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles « User stories, specs et plans » chargées dans « Contexte »). Expliquer en deux phrases :
+« Une user story décrit un besoin du point de vue de l'utilisateur. Ses critères d'acceptation, écrits sous la forme Étant donné… Lorsque… Alors…, sont ce qui permettra de vérifier que l'IA a codé exactement ce que vous vouliez. »
+
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
 
 !`pulse-aidd contexte us`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.
 
-## Objectif
-
-Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles « User stories, specs et plans » ci-dessus). Expliquer en deux phrases :
-« Une user story décrit un besoin du point de vue de l'utilisateur. Ses critères d'acceptation, écrits sous la forme Étant donné… Lorsque… Alors…, sont ce qui permettra de vérifier que l'IA a codé exactement ce que vous vouliez. »
-
-## Prérequis
+### Prérequis
 
 - `docs/prd.md` est nécessaire (à défaut `docs/brief.md`, en le signalant). Sinon, proposer `/pulse:prd`.
 - Si `docs/user-stories.md` existe : demander s'il faut le compléter ou le refaire. Le compléter garde les numéros des US existantes. Le refaire conserve les fichiers de `aidd_docs/tasks/` qui ont déjà une spec ou un plan : le signaler et demander.
 - Si `docs/user-stories.md` contient encore le détail des US (ancien format, sans fichiers dans `aidd_docs/tasks/`) : proposer `/pulse:init`, qui réorganise les documents.
 
-## Déroulé
+## Processus
 
 Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
 
@@ -91,3 +95,8 @@ Cocher la section « Prête » du modèle d'US une fois ces conditions vérifié
    - **ligne absente** : garder les fichiers, et proposer d'ajouter la ligne « Outil de ticketing » à la mémoire projet (`/pulse:memory`).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XXX>` (la première US de l'ordre de réalisation).
+
+## Exemples
+
+- `/pulse:us` : les groupes proposés à valider, puis chaque user story résumée avec ses critères ; après « Valider et sauvegarder », un fichier par user story et le référentiel `docs/user-stories.md`.
+- `/pulse:us` quand `docs/user-stories.md` existe déjà : la question « le compléter ou le refaire ? » ; le compléter garde les numéros existants.
