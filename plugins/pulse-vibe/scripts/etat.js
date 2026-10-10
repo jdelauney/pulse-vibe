@@ -141,7 +141,7 @@ function etatDuTest(texte) {
   const resultats = [...sections[derniere].matchAll(/^[-*][ \t]+\*\*R[ée]sultat(?:\*\*[ \t  ]*:|[ \t  ]*:\*\*)(.*)$/gim)];
   const test = resultats.length ? resultats[resultats.length - 1][1].replace(/\{\{.*?\}\}/g, "").trim() : "";
   if (test === "" || test.includes("|")) return "a-tester";
-  const accord = /accept[ée]/i.test(test) && !/\bpas\b[^,.;]*accept/i.test(test);
+  const accord = /accept[ée]/i.test(test) && !/\b(?:pas|non)\b[^,.;]*accept/i.test(test);
   const oui = /✅/u.test(test) || /^oui\b/i.test(test);
   // Négatifs francs : ❌, « Non, … », « non/pas concluant ». « problème » ou « échec » comptent seulement sans ✅ ni « Oui »,
   // et hors « aucun problème », « sans échec ».
