@@ -42,7 +42,7 @@ Tâches – US-XXX <titre>
   Première version (US Indispensables) : 2/6 tâches terminées
 
 Git      : 3 fichiers modifiés non enregistrés · dernier commit « feat(T2): … »
-À part   : us-003-filtre 🔄 en cours (2 versions à rassembler) · us-001-creer ✅ rassemblé, peut être supprimé (ou « aucun »)
+Dossiers à part : us-003-filtre 🔄 en cours (2 enregistrements à rassembler) · us-001-creer ✅ rassemblé, peut être supprimé (ou « aucun »)
 Sessions : 1 autre session ouverte sur ce dossier (ou « aucune autre »)
 Parallèle: US-004 peut avancer en même temps que US-003 (ou ligne absente)
 En ligne : https://… (ou « pas encore »)

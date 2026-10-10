@@ -513,6 +513,8 @@ test("test par la personne : seules les réponses positives valident ; les répo
     ["non concluant, accepté par la personne", "validee"],
     ["❌ non concluant mais accepté par la personne", "validee"],
     ["⚠️ pas parfait, accepté par la personne", "validee"],
+    ["❌ non concluant, pas encore accepté", "a-corriger"],
+    ["❌ non concluant, pas du tout accepté", "a-corriger"],
     ["Oui, tout fonctionne", "validee"],
     ["concluant", "validee"],
     ["⏳ reporté au test groupé", "validee"],

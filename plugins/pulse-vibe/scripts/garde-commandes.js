@@ -83,7 +83,7 @@ const MESSAGES = {
     "Pulse demande votre accord : cette commande efface des modifications qui ne sont enregistrées nulle part. " +
     "Pour revenir en arrière sans rien perdre, préférez `/pulse:annuler`.",
   brancheForcee:
-    "Pulse demande votre accord : cette commande supprime une version parallèle (une branche) ou un dossier à part, même s'il reste du travail pas encore rassemblé dans la version principale. " +
+    "Pulse demande votre accord : cette commande supprime une version parallèle (une branche) ou un dossier à part, même s'il y reste du travail pas encore rassemblé dans la version principale. " +
     "Sans risque : `git branch -d` (Git refuse s'il reste du travail à rassembler).",
   brancheDistante: "Pulse demande votre accord : cette commande supprime une branche sur le dépôt distant.",
   config: "Pulse demande votre accord : cette commande change la configuration de Git au-delà du nom et de l'e-mail.",
