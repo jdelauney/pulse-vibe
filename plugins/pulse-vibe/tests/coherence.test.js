@@ -1292,6 +1292,10 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*le parcours principal est `@manuel`/);
 });
 
+test("envoi : sans suivi de la mise en ligne chez l'hébergeur, laissé à deploy et status", () => {
+  assert.match(lire(RACINE, "references", "depot-distant.md"), /\*\*Après l'envoi, passer directement à la suite\.\*\*[^\n]*`\/pulse:deploy` et `\/pulse:status`[^\n]*rythme rapide/);
+});
+
 test("spirc : une ronde de départ unique (rythme, options à cocher, tests, envoi), posée même en mode découverte", () => {
   const spirc = skillTexte("spirc");
   const ronde = spirc.split("**Ronde de départ**")[1].split("\n\n**Portée**")[0];
