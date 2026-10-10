@@ -18,7 +18,7 @@
 
 - Option B : `DATABASE_URL` et `DATABASE_URL_DIRECT` remplies (`.env` et Vercel), comme pour toute table.
 - Paquets : option A, `npm install @vercel/speed-insights` (dernière version ; recette vérifiée avec 2.0.0). Option B : aucun paquet ; `useReportWebVitals` est fourni par Next.js 16.4.
-- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `mesure-reelle` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration (PGlite), construction. Les deux options sont posées ensemble pour cette vérification ; un projet n'en garde qu'une. La réception réelle des mesures (Speed Insights, ou lignes dans Neon) se constate en ligne, après quelques visites.
+- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `mesure-reelle` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration (PGlite), construction. Les deux options sont posées ensemble pour cette vérification ; un projet n'en garde qu'une. La réception réelle des mesures (Speed Insights, ou lignes dans Neon) se constate en ligne, après quelques visites.
 
 ## Variables d'environnement
 

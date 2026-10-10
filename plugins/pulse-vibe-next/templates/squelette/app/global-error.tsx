@@ -32,7 +32,7 @@ export default function ErreurGlobale({
         <button
           type="button"
           onClick={() => retry()}
-          className="rounded-md border px-4 py-2"
+          className="min-h-11 min-w-11 rounded-md border px-4 py-2"
         >
           Réessayer
         </button>

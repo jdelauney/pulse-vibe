@@ -1,6 +1,6 @@
 ### 1. Le layout racine
 
-`metadataBase` complète les adresses relatives (adresse officielle, image de partage) ; le modèle de titre ajoute le nom du site aux pages enfants.
+`metadataBase` complète les adresses relatives (adresse officielle, image de partage) ; le modèle de titre ajoute le nom du site aux pages enfants (déjà dans le squelette).
 
 ```tsx
 // app/layout.tsx (extrait : imports et metadata)

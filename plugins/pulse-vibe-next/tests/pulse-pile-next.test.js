@@ -513,4 +513,5 @@ test("deploy : tests dans la construction, prévisualisations sans vrais destina
   const secrets = lire(REF, "contexte", "secrets.md");
   assert.ok(secrets.includes("lisible par le code du site"), "secrets.md : NEON_API_KEY lisible à l'exécution");
   assert.match(lire(REF, "migrations.md"), /Projet créé avant pulse-next 0\.22\.0/);
+  assert.match(lire(REF, "migrations.md"), /essai-surveillance/);
 });

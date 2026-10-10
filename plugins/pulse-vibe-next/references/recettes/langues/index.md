@@ -8,7 +8,7 @@
 - Paquet à installer : `npm install next-intl` (dernière version ; recette vérifiée avec 4.14.9).
 - Next.js 16.3 ou plus récent : `next/root-params` y est actif sans réglage.
 - À appliquer **tôt** dans le projet : la recette déplace toutes les pages sous `app/[locale]/`.
-- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `connexion,langues` de `verifier-recettes.js`, déplacements de l'étape 7 compris) : contrôles, types, tests unitaires, construction. Le parcours de bout en bout (`e2e/langues.spec.ts`) se lance à la main ; la justesse des traductions (`en.json`) se relit à la main.
+- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,langues` de `verifier-recettes.js`, déplacements de l'étape 7 compris) : contrôles, types, tests unitaires, construction. Le parcours de bout en bout (`e2e/langues.spec.ts`) se lance à la main ; la justesse des traductions (`en.json`) se relit à la main.
 
 ## Variables d'environnement
 

@@ -7,6 +7,7 @@
 
 Mini-exemple TanStack Query : le total impayé, rafraîchi toutes les 30 secondes. Installez d'abord le paquet : `npm install @tanstack/react-query` (dernière version ; vérifié avec 5.104.1). Le fournisseur va dans `src/providers/`.
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```tsx
 // src/providers/tanstack-query.tsx
 "use client";
@@ -32,6 +33,7 @@ export function TanstackQueryProvider({ children }: { children: ReactNode }) {
 }
 ```
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```tsx
 // app/(connecte)/factures/layout.tsx
 import { TanstackQueryProvider } from "@src/providers/tanstack-query";
@@ -43,6 +45,7 @@ export default function Layout({ children }: LayoutProps<"/factures">) {
 
 Ajoutez cette méthode à l'objet renvoyé par `factureRepository` (`src/db/factures/facture.repository.ts`), et `ne`, `sql` à son import de `"drizzle-orm"` :
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```ts
     async totalImpaye(utilisateurId: string): Promise<number> {
       const [ligne] = await db
@@ -63,6 +66,7 @@ Ajoutez cette méthode à l'objet renvoyé par `factureRepository` (`src/db/fact
     },
 ```
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```ts
 // src/features/factures/queries/total-impaye.query.ts
 import "server-only";
@@ -74,6 +78,7 @@ export async function totalImpaye(utilisateurId: string): Promise<number> {
 }
 ```
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```ts
 // app/api/factures/total-impaye/route.ts
 import { getAuth } from "@src/adapters/auth/auth.adapter";
@@ -90,6 +95,7 @@ export async function GET(request: Request) {
 }
 ```
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```tsx
 // src/features/factures/components/containers/total-impaye.container.tsx
 "use client";
@@ -120,6 +126,7 @@ Dans la page, placez `<TotalImpayeContainer />` dans son propre `<Suspense fallb
 
 Mini-exemple Zustand : un panneau d'aide ouvert depuis l'en-tête et fermé depuis le panneau. Le magasin se crée **dans un fournisseur**, une fois par rendu, jamais en variable globale. Installez d'abord le paquet : `npm install zustand` (dernière version ; vérifié avec 5.0.15). Le magasin va dans `src/stores/`, son fournisseur dans `src/providers/`.
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```ts
 // src/stores/panneau.store.ts
 import { createStore } from "zustand/vanilla";
@@ -138,6 +145,7 @@ export const creerPanneauStore = () =>
   }));
 ```
 
+<!-- sans-verification: exemple facultatif, hors chaîne -->
 ```tsx
 // src/providers/panneau.tsx
 "use client";
