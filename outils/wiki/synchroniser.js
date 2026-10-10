@@ -1,17 +1,18 @@
 #!/usr/bin/env node
-// Synchronise le wiki avec les commandes du cœur : la description et les arguments de chaque commande sont lus
-// dans son SKILL.md, puis écrits dans wiki/js/donnees.js et dans les blocs marqués des pages
+// Synchronise le wiki (le site de docs/, publié par GitHub Pages) avec les commandes du cœur : la description et les
+// arguments de chaque commande sont lus dans son SKILL.md, puis écrits dans docs/js/donnees.js et dans les blocs marqués des pages
 // (<!-- auto:nom --> … <!-- /auto:nom -->). Un fait, un seul endroit : on modifie le SKILL.md, puis on relance.
-// Lancer : node wiki/outils/synchroniser.js [--creer] [--verifier]
-//   --creer     crée la page d'une commande qui n'en a pas encore, à partir de commandes/_modele.html
+// Lancer : node outils/wiki/synchroniser.js [--creer] [--verifier]
+//   --creer     crée la page d'une commande qui n'en a pas encore, à partir de outils/wiki/modele-commande.html
 //   --verifier  n'écrit rien ; code de sortie 1 et liste des fichiers à mettre à jour si le wiki ne suit plus
 "use strict";
 
 const fs = require("fs");
 const path = require("path");
 
-const WIKI = path.join(__dirname, "..");
-const SKILLS = path.join(WIKI, "..", "plugins", "pulse-vibe", "skills");
+const DEPOT = path.join(__dirname, "..", "..");
+const WIKI = path.join(DEPOT, "docs");
+const SKILLS = path.join(DEPOT, "plugins", "pulse-vibe", "skills");
 
 // Les étapes du parcours, dans l'ordre. `couleur` : pas de l'échelle de maturité (1 à 4), 0 hors parcours.
 const ETAPES = [
@@ -24,9 +25,11 @@ const ETAPES = [
   { id: "toujours", numero: 7, nom: "À tout moment", couleur: 0, commandes: ["status", "explain", "learn", "fix", "annuler", "get-help", "memory"] },
 ];
 
-// Les pages de la navigation principale (chemins depuis wiki/). Chaque page citée doit exister.
+// Les pages de la navigation principale (chemins depuis docs/). Chaque page citée doit exister.
 const NAVIGATION = [
   { titre: "Accueil", href: "index.html" },
+  { titre: "Prérequis", href: "prerequis.html" },
+  { titre: "Tutoriels", href: "tutoriels/index.html" },
   { titre: "Commandes", href: "commandes/index.html" },
 ];
 
@@ -120,7 +123,7 @@ function blocCartes(liste) {
 
 function donneesJs(liste) {
   const donnees = { etapes: ETAPES, navigation: NAVIGATION, commandes: liste };
-  return "// Produit par wiki/outils/synchroniser.js depuis les SKILL.md du cœur : modifier les SKILL.md, puis relancer l'outil.\n"
+  return "// Produit par outils/wiki/synchroniser.js depuis les SKILL.md du cœur : modifier les SKILL.md, puis relancer l'outil.\n"
     + "window.PULSE_WIKI = " + JSON.stringify(donnees, null, 2) + ";\n";
 }
 
@@ -147,7 +150,7 @@ function principal(arguments_) {
 
   ecrits.set(path.join(WIKI, "js", "donnees.js"), donneesJs(liste));
 
-  const modele = path.join(WIKI, "commandes", "_modele.html");
+  const modele = path.join(__dirname, "modele-commande.html");
   for (const c of liste) {
     const page = path.join(WIKI, "commandes", `${c.nom}.html`);
     let html;
@@ -174,7 +177,7 @@ if (require.main === module) {
   const { problemes, ecrits } = principal(process.argv.slice(2));
   for (const [fichier, contenu] of ecrits) fs.writeFileSync(fichier, contenu);
   if (problemes.length) {
-    console.error(problemes.join("\n") + "\nRelancez : node wiki/outils/synchroniser.js");
+    console.error(problemes.join("\n") + "\nRelancez : node outils/wiki/synchroniser.js");
     process.exit(1);
   }
   console.log(ecrits.size ? `Wiki synchronisé (${ecrits.size} fichiers).` : "Wiki à jour.");
