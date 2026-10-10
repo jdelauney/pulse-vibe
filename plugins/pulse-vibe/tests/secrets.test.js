@@ -52,11 +52,15 @@ entree="$(cat)"
 printf '%s' "$entree" > "$J/stdin-$n"
 case "$1 $2" in
   "secrets regles")
-    printf '%s' '{"variables":{"STRIPE_SECRET_KEY":{"secret":true,"fournisseur":"Stripe","prefixes":["sk_live_","sk_test_"],"modes":{"sk_live_":"mode live","sk_test_":"mode test"}},"DATABASE_URL":{"secret":true,"parEnvironnement":true,"groupe":["DATABASE_URL","DATABASE_URL_DIRECT"],"besoins":["DATABASE_URL_DIRECT"]},"APP_URL":{"secret":false}},"code":["CODE_SEUL_TOKEN"]}' ;;
+    printf '%s' '{"variables":{"STRIPE_SECRET_KEY":{"secret":true,"fournisseur":"Stripe","prefixes":["sk_live_","sk_test_"],"modes":{"sk_live_":"mode live","sk_test_":"mode test"}},"DATABASE_URL":{"secret":true,"parEnvironnement":true,"groupe":["DATABASE_URL","DATABASE_URL_DIRECT"],"besoins":["DATABASE_URL_DIRECT"]},"APP_URL":{"secret":false},"CLE_API_TEST":{"secret":true,"besoins":["PROJET_TEST"],"suites":["REPERE_PUBLIC"]},"PROJET_TEST":{"secret":false},"REPERE_PUBLIC":{"secret":false}},"code":["CODE_SEUL_TOKEN"]}' ;;
   "secrets tester")
     echo "sonde : $entree"
     echo "$FAUX_TEST_MESSAGE"
     exit "\${FAUX_TEST:-0}" ;;
+  "secrets suites")
+    if [ -n "$FAUX_SUITES_ECHEC" ]; then echo "⚪ $FAUX_SUITES_ECHEC"; exit 3; fi
+    if [ -n "$FAUX_SUITES_HORS_REGLES" ]; then printf '%s' '{"variables":[{"nom":"CLE_API_TEST","environnements":["preview"],"valeur":"autre"}]}'; exit 0; fi
+    printf '%s' '{"variables":[{"nom":"REPERE_PUBLIC","environnements":["preview"],"valeur":"ep-essai-123"}]}' ;;
   "hebergeur ls")
     printf '%s' '{"hebergeur":"Hébergeur test","variables":[{"nom":"STRIPE_SECRET_KEY","environnements":["production"],"type":"config"},{"nom":"DATABASE_URL","environnements":["production","preview"],"type":"secret"}]}' ;;
   "hebergeur envoyer")
@@ -323,6 +327,54 @@ test("envoyer : la valeur passe par l'entrée standard de l'adaptateur, jamais e
   assert.ok(envois.every((a) => a.stdin === ADRESSE_BASE), "valeur sans guillemets sur l'entrée standard");
   assert.match(r.sortie, /À envoyer aussi : DATABASE_URL_DIRECT/);
   assert.match(r.sortie, /redeployer --env production,preview/);
+});
+
+test("envoyer en production : les suites annoncées par le pack partent aussi, en type Config, sans rien à saisir", () => {
+  const p = projet();
+  const cle = "cle" + hasard(12);
+  ecrire(p, ".env.envoi", `CLE_API_TEST=${cle}\nPROJET_TEST=projet-essai\n`);
+  const r = lancer(p, ["envoyer", "CLE_API_TEST", "--env", "production", "--depuis", ".env.envoi", "--vider"]);
+  assert.strictEqual(r.code, 0, r.sortie);
+  sansValeur(r.sortie, cle);
+  const suites = appels(p).filter((a) => a.argv[0] === "secrets" && a.argv[1] === "suites");
+  assert.deepStrictEqual(suites.map((a) => a.argv), [["secrets", "suites", "CLE_API_TEST"]]);
+  assert.deepStrictEqual(JSON.parse(suites[0].stdin), { CLE_API_TEST: cle, PROJET_TEST: "projet-essai" }, "la clé et ses besoins, lus dans le même fichier");
+  const envois = appels(p).filter((a) => a.argv[0] === "hebergeur");
+  assert.deepStrictEqual(envois.map((a) => a.argv), [
+    ["hebergeur", "envoyer", "CLE_API_TEST", "production", "--type", "secret"],
+    ["hebergeur", "envoyer", "REPERE_PUBLIC", "preview", "--type", "config"],
+  ]);
+  assert.strictEqual(envois[1].stdin, "ep-essai-123");
+  assert.match(r.sortie, /✅ Preview : REPERE_PUBLIC/);
+  const fichier = lire(p, ".env.envoi");
+  assert.strictEqual(valeurDans(fichier, "CLE_API_TEST"), "", "clé retirée une fois les suites envoyées");
+  assert.strictEqual(valeurDans(fichier, "PROJET_TEST"), "projet-essai");
+});
+
+test("envoyer : suite impossible pour l'instant : la clé part quand même, reste dans le fichier, et le message dit comment finir", () => {
+  const p = projet();
+  const cle = "cle" + hasard(12);
+  ecrire(p, ".env.envoi", `CLE_API_TEST=${cle}\n`);
+  const r = lancer(p, ["envoyer", "CLE_API_TEST", "--env", "production", "--depuis", ".env.envoi", "--vider"], { FAUX_SUITES_ECHEC: "PROJET_TEST manque" });
+  assert.strictEqual(r.code, 0, r.sortie);
+  sansValeur(r.sortie, cle);
+  assert.match(r.sortie, /⚠️ REPERE_PUBLIC non enregistrée : PROJET_TEST manque/);
+  assert.match(r.sortie, /CLE_API_TEST reste dans \.env\.envoi : relancez la même commande/);
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "hebergeur").map((a) => a.argv[2]), ["CLE_API_TEST"]);
+  assert.strictEqual(valeurDans(lire(p, ".env.envoi"), "CLE_API_TEST"), cle, "valeur gardée pour relancer");
+});
+
+test("envoyer : pas de suites sans la production ; une suite hors des règles (nom non annoncé, secret) est ignorée", () => {
+  const p = projet();
+  const cle = "cle" + hasard(12);
+  ecrire(p, ".env.envoi", `CLE_API_TEST=${cle}\nPROJET_TEST=projet-essai\n`);
+  const apercu = lancer(p, ["envoyer", "CLE_API_TEST", "--env", "preview", "--depuis", ".env.envoi"]);
+  assert.strictEqual(apercu.code, 0, apercu.sortie);
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "secrets" && a.argv[1] === "suites"), [], "pas de suites pour la prévisualisation");
+  const hors = lancer(p, ["envoyer", "CLE_API_TEST", "--env", "production", "--depuis", ".env.envoi"], { FAUX_SUITES_HORS_REGLES: "1" });
+  assert.strictEqual(hors.code, 0, hors.sortie);
+  assert.match(hors.sortie, /CLE_API_TEST ignorée : hors des règles du pack/);
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[0] === "hebergeur").map((a) => `${a.argv[2]} ${a.argv[3]}`), ["CLE_API_TEST preview", "CLE_API_TEST production"]);
 });
 
 test("envoyer : une variable propre à chaque environnement ne part pas de .env vers la production", () => {

@@ -78,6 +78,8 @@ test("regles : variables propres à chaque environnement et clé de sauvegarde N
   assert.deepStrictEqual(propres.sort(), ["BETTER_AUTH_URL", "DATABASE_URL", "DATABASE_URL_DIRECT", "STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]);
   assert.strictEqual(VARIABLES.NEON_API_KEY.prefixes, undefined);
   assert.strictEqual(VARIABLES.NEON_PROJECT_ID.secret, false);
+  assert.deepStrictEqual(VARIABLES.NEON_API_KEY.suites, ["NEON_ENDPOINT_PRODUCTION"]);
+  assert.strictEqual(VARIABLES.NEON_ENDPOINT_PRODUCTION.secret, false);
 });
 
 test("regles : lit src/config/env.ts (structure actuelle) avant src/lib/env.ts", async () => {
@@ -106,7 +108,7 @@ test("regles : lit les noms des blocs server et client d'un env.ts t3", async ()
 test("la fiche décrit chaque variable des règles, avec ses préfixes attendus", () => {
   const texte = fs.readFileSync(FICHE, "utf8");
   for (const [nom, regle] of Object.entries(VARIABLES)) {
-    if (/^(SMTP_HOST|SMTP_PORT|SMTP_USER|MAIL_FROM|R2_ACCOUNT_ID|R2_BUCKET|UPSTASH_REDIS_REST_URL|NEON_PROJECT_ID)$/.test(nom)) {
+    if (/^(SMTP_HOST|SMTP_PORT|SMTP_USER|MAIL_FROM|R2_ACCOUNT_ID|R2_BUCKET|UPSTASH_REDIS_REST_URL|NEON_PROJECT_ID|NEON_ENDPOINT_PRODUCTION)$/.test(nom)) {
       assert.ok(texte.includes(`\`${nom}\``), `${nom} cité dans la fiche`);
       continue;
     }
@@ -221,6 +223,75 @@ test("clé Neon : API injoignable = test impossible (code 3), pas un échec", as
   const cle = "napi_" + hasard(16);
   const r = await lancer(d, ["tester", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "p" }), { PULSE_SONDES_NEON_API: `http://127.0.0.1:${port}` });
   assert.strictEqual(r.code, 3, r.sortie);
+  sansValeur(r.sortie, cle);
+});
+
+test("suites de la clé Neon : point d'accès de la branche principale, pour Preview ; la clé part dans l'en-tête, jamais à l'écran", async () => {
+  const d = projet();
+  let statut = 200;
+  const { s, url, recues } = await serveur((req) => {
+    if (statut !== 200) return { statut };
+    if (req.url === "/projects/projet-essai/branches?limit=100")
+      return { statut: 200, corps: { branches: [{ id: "br-apercu", default: false }, { id: "br-principale", default: true }] } };
+    if (req.url === "/projects/projet-essai/branches/br-principale/endpoints")
+      return { statut: 200, corps: { endpoints: [{ id: "ep-lecture-1", type: "read_only" }, { id: "ep-principale-123", type: "read_write" }] } };
+    return { statut: 404 };
+  });
+  const cle = "napi_" + hasard(16);
+  const env = { PULSE_SONDES_NEON_API: url };
+  const ok = await lancer(d, ["suites", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "projet-essai" }), env);
+  statut = 401;
+  const refus = await lancer(d, ["suites", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "projet-essai" }), env);
+  const sansProjet = await lancer(d, ["suites", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle }), env);
+  const autre = await lancer(d, ["suites", "STRIPE_SECRET_KEY"], JSON.stringify({ STRIPE_SECRET_KEY: "x" }), env);
+  s.close();
+  assert.strictEqual(ok.code, 0, ok.sortie);
+  assert.deepStrictEqual(JSON.parse(ok.sortie), { variables: [{ nom: "NEON_ENDPOINT_PRODUCTION", environnements: ["preview"], valeur: "ep-principale-123" }] });
+  assert.deepStrictEqual(recues.slice(0, 2).map((r) => r.url), ["/projects/projet-essai/branches?limit=100", "/projects/projet-essai/branches/br-principale/endpoints"]);
+  assert.ok(recues.every((r) => r.autorisation === `Bearer ${cle}`));
+  assert.strictEqual(refus.code, 1);
+  assert.match(refus.sortie, /Neon refuse la lecture \(code 401\)/);
+  assert.strictEqual(sansProjet.code, 3);
+  assert.match(sansProjet.sortie, /NEON_PROJECT_ID manque/);
+  assert.strictEqual(autre.code, 3);
+  sansValeur(ok.sortie + refus.sortie + sansProjet.sortie, cle);
+});
+
+test("suites de la clé Neon : sans branche principale, sans point d'accès en écriture : la solution est donnée", async () => {
+  const d = projet();
+  let cas = "sans-principale";
+  const { s, url } = await serveur((req) => {
+    if (req.url.includes("/branches?")) {
+      return { statut: 200, corps: { branches: cas === "sans-principale" ? [{ id: "br-a", default: false }] : [{ id: "br-principale", default: true }] } };
+    }
+    return { statut: 200, corps: { endpoints: [{ id: "ep-lecture-1", type: "read_only" }] } };
+  });
+  const entree = JSON.stringify({ NEON_API_KEY: "napi_" + hasard(16), NEON_PROJECT_ID: "projet-essai" });
+  const env = { PULSE_SONDES_NEON_API: url };
+  for (const c of ["sans-principale", "sans-ecriture"]) {
+    cas = c;
+    const r = await lancer(d, ["suites", "NEON_API_KEY"], entree, env);
+    assert.strictEqual(r.code, 1, r.sortie);
+    assert.match(r.sortie, /console Neon → Branches/, c);
+    assert.match(r.sortie, /prévisualisations sautent leurs migrations/, c);
+    assert.match(r.sortie, /retirer NEON_API_KEY de \.env\.envoi/, c);
+  }
+  s.close();
+});
+
+test("suites de la clé Neon : réponse illisible (pas du JSON) : échec, avec la solution, la clé jamais à l'écran", async () => {
+  const d = projet();
+  const s = http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end("<html>Maintenance</html>");
+  });
+  const port = await ecouter(s);
+  const cle = "napi_" + hasard(16);
+  const r = await lancer(d, ["suites", "NEON_API_KEY"], JSON.stringify({ NEON_API_KEY: cle, NEON_PROJECT_ID: "projet-essai" }), { PULSE_SONDES_NEON_API: `http://127.0.0.1:${port}` });
+  s.close();
+  assert.strictEqual(r.code, 1, r.sortie);
+  assert.match(r.sortie, /réponse de Neon illisible/);
+  assert.match(r.sortie, /console Neon → Branches/);
   sansValeur(r.sortie, cle);
 });
 

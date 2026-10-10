@@ -336,7 +336,8 @@ async function principal() {
     lancer(`npx playwright install ${process.env.CI && process.platform === "linux" ? "--with-deps " : ""}chromium`, dossier);
     // Rapport JSON en plus de la liste : les relances (retries de la configuration en CI) y laissent le statut « flaky ».
     const rapportE2e = path.join(dossier, "rapport-e2e.json");
-    lancer("npm run test:e2e -- --reporter=list,json", dossier, { CI: "true", SKIP_ENV_VALIDATION: "1", PLAYWRIGHT_JSON_OUTPUT_NAME: rapportE2e, PLAYWRIGHT_JSON_OUTPUT_FILE: rapportE2e });
+    // Port libre (lu par playwright.config.ts et next start) : le port 3000 peut être pris par un autre projet.
+    lancer("npm run test:e2e -- --reporter=list,json", dossier, { CI: "true", SKIP_ENV_VALIDATION: "1", PORT: String(await portLibre()), PLAYWRIGHT_JSON_OUTPUT_NAME: rapportE2e, PLAYWRIGHT_JSON_OUTPUT_FILE: rapportE2e });
     const controle = controlerInstables(rapportE2e, opts.tolererInstables);
     if (controle.message) (controle.echec ? console.error : console.log)(controle.message);
     if (controle.echec) process.exit(1);

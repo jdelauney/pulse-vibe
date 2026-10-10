@@ -4,7 +4,7 @@
 //   pulse-aidd pile seo-code [--dossier <projet>] [--json]
 //   pulse-aidd pile seo-code --pages [--dossier <projet>]
 //
-//   --pages   affiche les pages publiques fixes, séparées par des virgules, pour : pulse-aidd seo <adresse> --chemins <liste>
+//   --pages   affiche les pages publiques fixes (sans les pages en noindex), séparées par des virgules, pour : pulse-aidd seo <adresse> --chemins <liste>
 //
 // Lit les fichiers du projet (app/ ou src/app/, src/, next.config.ts, public/) sans rien modifier. Contrôles C1 à C13
 // (métadonnées, robots, sitemap, image de partage, données structurées, vrai 404, langues) et NC1 à NC3
@@ -104,14 +104,14 @@ function cheminDuCode(dossier, nouveau, ancien) {
   return !fs.existsSync(path.join(dossier, nouveau)) && fs.existsSync(path.join(dossier, ancien)) ? ancien : nouveau;
 }
 
-/** Les pages publiques fixes (hors groupe connecté, api, segments dynamiques). */
+/** Les pages publiques fixes (hors groupe connecté, api, segments dynamiques, pages en noindex volontaire). */
 function pagesPubliques(dossier) {
   const app = trouverApp(dossier);
   if (!app) return [];
   return fichiers(app)
     .filter((f) => /[\\/]page\.(tsx|ts|jsx|js|mdx)$/.test(f))
     .map((f) => decrirePage(f, app))
-    .filter((p) => !p.connectee && !p.api && !p.privee && !p.dynamique)
+    .filter((p) => !p.connectee && !p.api && !p.privee && !p.dynamique && !estNoindex(lire(p.fichier)))
     .map((p) => p.route)
     .sort();
 }

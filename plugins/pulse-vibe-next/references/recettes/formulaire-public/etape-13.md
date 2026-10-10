@@ -2,6 +2,7 @@
 
 `src/lib/formulaire-public.ts` devient (Turnstile ne s'active que si `TURNSTILE_SECRET_KEY` est définie) :
 
+<!-- fichier: src/lib/formulaire-public.ts -->
 ```ts
 // src/lib/formulaire-public.ts
 // Client d'action des formulaires publics : champ piège, jeton de délai, limite par adresse IP,

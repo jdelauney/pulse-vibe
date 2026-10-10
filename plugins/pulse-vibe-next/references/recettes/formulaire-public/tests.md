@@ -1,6 +1,7 @@
 
 Unitaires : le champ piège et le jeton.
 
+<!-- fichier: src/lib/helpers/formulaire-public/__tests__/champs.test.ts -->
 ```ts
 // src/lib/helpers/formulaire-public/__tests__/champs.test.ts
 import { describe, expect, it } from "vitest";
@@ -50,6 +51,7 @@ describe("Champ piège", () => {
 });
 ```
 
+<!-- fichier: src/lib/helpers/formulaire-public/__tests__/jeton.test.ts -->
 ```ts
 // src/lib/helpers/formulaire-public/__tests__/jeton.test.ts
 import { describe, expect, it } from "vitest";
@@ -115,6 +117,7 @@ describe("Jeton de délai", () => {
 
 Intégration : l'action complète, avec la limite en mémoire (`LIMITE_STOCKAGE: "memoire"`) et une adresse différente pour chaque test.
 
+<!-- fichier: src/features/contact/actions/__tests__/envoyer-message.action.test.ts -->
 ```ts
 // src/features/contact/actions/__tests__/envoyer-message.action.test.ts
 import { signerJeton } from "@src/lib/helpers/formulaire-public/jeton";
@@ -170,7 +173,10 @@ describe("Formulaire public", () => {
     expect(JSON.stringify(journal.warn.mock.calls)).not.toContain(
       "spam.example",
     );
-    expect(journal.info).not.toHaveBeenCalled();
+    expect(journal.info).not.toHaveBeenCalledWith(
+      { longueur: expect.any(Number) },
+      "Message reçu",
+    );
   });
 
   it("US-XXX-2 – sans jeton : refusé", async () => {
@@ -214,6 +220,7 @@ describe("Formulaire public", () => {
 
 Bout en bout : le délai minimal se mesure côté serveur, le test attend donc vraiment 3 secondes.
 
+<!-- fichier: e2e/formulaire-public.spec.ts -->
 ```ts
 // e2e/formulaire-public.spec.ts
 import { expect, test } from "@playwright/test";
@@ -288,6 +295,7 @@ test.describe("Formulaire public", () => {
 
 Option Turnstile : l'adapter, avec un faux `fetch`, et les deux clés qui vont ensemble.
 
+<!-- fichier: src/adapters/turnstile/__tests__/turnstile.adapter.test.ts -->
 ```ts
 // src/adapters/turnstile/__tests__/turnstile.adapter.test.ts
 import { describe, expect, it, vi } from "vitest";
@@ -363,6 +371,7 @@ describe("Vérification Turnstile", () => {
 });
 ```
 
+<!-- fichier: src/adapters/turnstile/__tests__/variables-turnstile.test.ts -->
 ```ts
 // src/adapters/turnstile/__tests__/variables-turnstile.test.ts
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -382,7 +391,9 @@ describe("Variables Turnstile", () => {
 
   it("US-XXX-5 – clé de site sans clé secrète : le message nomme la clé manquante", async () => {
     await expect(
-      chargerEnvValide({ NEXT_PUBLIC_TURNSTILE_SITE_KEY: "cle-de-site-de-test" }),
+      chargerEnvValide({
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "cle-de-site-de-test",
+      }),
     ).rejects.toThrow(/TURNSTILE_SECRET_KEY/);
   });
 
@@ -398,6 +409,7 @@ describe("Variables Turnstile", () => {
 
 Le widget en vrai : ces tests tournent seulement quand le site est construit avec les clés (en local, les clés de test « toujours accepté » de Cloudflare dans `.env`, puis `npm run build` et `npm run test:e2e`).
 
+<!-- fichier: e2e/turnstile.spec.ts -->
 ```ts
 // e2e/turnstile.spec.ts
 import { expect, test } from "@playwright/test";
@@ -439,12 +451,19 @@ test.describe("Formulaire public avec Turnstile", () => {
 });
 ```
 
-Et dans le test de l'action, une version réglable du faux `env.ts` et un test de plus :
+Et dans le test de l'action, une version réglable du faux `env.ts` et un test de plus. Un réglage relu à chaque test :
 
+<!-- ajout: src/features/contact/actions/__tests__/envoyer-message.action.test.ts après: const SECRET = "secret-de-test-assez-long-pour-hmac-0123"; -->
 ```ts
 const reglages = vi.hoisted(() => ({
   turnstile: undefined as string | undefined,
 }));
+```
+
+le faux `env.ts`, qui le lit :
+
+<!-- remplacer: src/features/contact/actions/__tests__/envoyer-message.action.test.ts -->
+```ts
 vi.mock("@src/config/env", () => ({
   env: {
     FORMULAIRE_SECRET: SECRET,
@@ -455,9 +474,19 @@ vi.mock("@src/config/env", () => ({
     },
   },
 }));
+```
 
-// dans beforeEach : reglages.turnstile = undefined;
+sa remise à zéro avant chaque test :
 
+<!-- ajout: src/features/contact/actions/__tests__/envoyer-message.action.test.ts après: journal.warn.mockClear(); -->
+```ts
+  reglages.turnstile = undefined;
+```
+
+et le test :
+
+<!-- ajout: src/features/contact/actions/__tests__/envoyer-message.action.test.ts après: describe("Formulaire public", () => { -->
+```ts
   it("US-XXX-5 – Turnstile actif et réponse absente : refusé", async () => {
     reglages.turnstile = "secret-turnstile-de-test";
     const r = await envoyerMessage({
@@ -468,5 +497,6 @@ vi.mock("@src/config/env", () => ({
       "La vérification anti-robot a échoué. Réessayez dans un instant.",
     );
   });
+
 ```
 

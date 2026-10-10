@@ -2,6 +2,7 @@
 
 Des fonctions pures dans `src/core/compte/` : elles ne dépendent ni de Next ni de Nodemailer.
 
+<!-- fichier: src/core/compte/emails-compte.rules.ts -->
 ```ts
 // src/core/compte/emails-compte.rules.ts
 // Contenus des e-mails du compte : fonctions pures, testées en unitaire.

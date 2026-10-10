@@ -2,6 +2,7 @@
 
 Le nom du formulaire est une constante du schéma : le container l'utilise pour demander le jeton, l'action pour le vérifier.
 
+<!-- fichier: src/features/contact/schemas/contact.schema.ts -->
 ```ts
 // src/features/contact/schemas/contact.schema.ts
 import { z } from "zod";
@@ -20,6 +21,7 @@ export const schemaMessage = z.object({
 export type MessageContact = z.infer<typeof schemaMessage>;
 ```
 
+<!-- fichier: src/features/contact/actions/envoyer-message.action.ts -->
 ```ts
 // src/features/contact/actions/envoyer-message.action.ts
 "use server";
@@ -40,6 +42,7 @@ export const envoyerMessage = actionFormulairePublic(FORMULAIRE_CONTACT)
 
 La section affiche le champ piège et désactive le bouton tant que le jeton n'est pas arrivé :
 
+<!-- fichier: src/features/contact/components/sections/formulaire-contact.tsx -->
 ```tsx
 // src/features/contact/components/sections/formulaire-contact.tsx
 "use client";
@@ -146,6 +149,7 @@ export function FormulaireContact({
 
 Le container appelle le hook et ajoute les champs de protection aux valeurs envoyées :
 
+<!-- fichier: src/features/contact/components/containers/contact.container.tsx -->
 ```tsx
 // src/features/contact/components/containers/contact.container.tsx
 "use client";
@@ -183,6 +187,7 @@ export function ContactContainer() {
 }
 ```
 
+<!-- fichier: app/(public)/contact/page.tsx -->
 ```tsx
 // app/(public)/contact/page.tsx
 import { ContactContainer } from "@src/features/contact/components/containers/contact.container";

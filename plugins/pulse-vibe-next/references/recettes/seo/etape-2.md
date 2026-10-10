@@ -2,6 +2,7 @@
 
 Titre affiché tel quel (le modèle ne s'applique pas au segment qui le définit), nom du site pour Google.
 
+<!-- sans-verification: modèle d'accueil, le contenu de la page reste celui du projet (le squelette a déjà ces métadonnées) -->
 ```tsx
 // app/page.tsx
 import { JsonLd } from "@src/components/shared/elements/json-ld";

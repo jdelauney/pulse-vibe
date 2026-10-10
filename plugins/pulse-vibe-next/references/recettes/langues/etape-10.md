@@ -2,6 +2,7 @@
 
 Remplacer `proxy.ts` (à la racine). Le `matcher` couvre désormais toutes les pages (next-intl en a besoin) ; la liste `PAGES_CONNECTEES` reprend les lignes de l'ancien `matcher`, sans `/:path*` (ajouter `"/factures"`, `"/fichiers"`, `"/paiement"` quand ces recettes sont appliquées). La redirection vers la connexion passe en premier, dans la langue de l'adresse ; elle ne vaut que pour l'ouverture d'une page (GET), comme avant. next-intl gère ensuite le préfixe, la détection de la langue et la réécriture vers `/[locale]/…`.
 
+<!-- fichier: proxy.ts -->
 ```ts
 // proxy.ts
 import { routing } from "@src/config/i18n";

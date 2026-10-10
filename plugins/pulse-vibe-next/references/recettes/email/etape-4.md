@@ -2,6 +2,7 @@
 
 Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerAuth` reçoit maintenant l'envoi dans ses options (`envoyerEmail`) : l'adapter d'authentification ne connaît pas Nodemailer, et `getAuth()` lui passe l'adapter `email`.
 
+<!-- fichier: src/adapters/auth/auth.adapter.ts -->
 ```ts
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
@@ -13,13 +14,13 @@ import {
   emailMotDePasseOublie,
   emailVerificationAdresse,
 } from "@src/core/compte/emails-compte.rules";
-import { type Db, getDb } from "@src/db/db-client";
 import {
   account,
   session,
   user,
   verification,
 } from "@src/db/compte/auth.table";
+import { type Db, getDb } from "@src/db/db-client";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";

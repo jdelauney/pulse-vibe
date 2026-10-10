@@ -3,6 +3,7 @@
 
 Les tests du squelette couvrent `metadonneesDePage()`, `adresseDuSite()`, `reglesRobots()` et les fonctions de données structurées (`src/lib/seo/__tests__/*.test.ts`, `src/config/__tests__/`). Pour une page :
 
+<!-- fichier: app/(public)/tarifs/__tests__/metadonnees.test.ts -->
 ```ts
 // app/(public)/tarifs/__tests__/metadonnees.test.ts
 import { describe, expect, it } from "vitest";
@@ -23,6 +24,7 @@ describe("Référencement des pages publiques", () => {
 
 Le repository est testé sur une base en mémoire (`creerBaseDeTest()`) : une réalisation publiée est trouvée avec sa date, un brouillon et un `slug` inconnu n'existent pas pour le public, la liste ne contient que les publiées, la plus récente d'abord.
 
+<!-- fichier: src/db/realisations/__tests__/realisation.repository.test.ts -->
 ```ts
 // src/db/realisations/__tests__/realisation.repository.test.ts
 import type { Db } from "@src/db/db-client";
@@ -99,6 +101,7 @@ describe("realisationRepository", () => {
 
 `e2e/realisations.spec.ts` (étapes 5 et 6) prouve le vrai 404 d'un `slug` inconnu, avec le `User-Agent` de Googlebot aussi, et la date `lastmod` du sitemap. Prérequis : une base qui contient les migrations et **une réalisation publiée** (`publiee = true`) de slug `table-en-chene` (insertion SQL ou écran d'administration du projet ; changer `SLUG_PUBLIE` pour un autre slug), avec `DATABASE_URL` renseignée. Cette base est une base de test ou une branche Neon : jamais la production. Le test cible la version construite, celle que reçoivent les robots : `CI=1 npx playwright test e2e/realisations.spec.ts` construit le site, le démarre, puis lance les tests.
 
+<!-- fichier: e2e/realisations.spec.ts -->
 ```ts
 // e2e/realisations.spec.ts
 import { expect, test } from "@playwright/test";

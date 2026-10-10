@@ -233,6 +233,7 @@ export async function connecterNouvelUtilisateur(
 ```ts
 // e2e/compte.spec.ts
 import { expect, test } from "@playwright/test";
+import { verifierAccessibilite } from "./aides/accessibilite";
 import { champ, connecterNouvelUtilisateur } from "./aides/connexion";
 
 test.describe("Compte", () => {
@@ -282,6 +283,17 @@ test.describe("Compte", () => {
     await expect(page).toHaveURL(/\/connexion$/);
     await page.goto("/compte");
     await expect(page).toHaveURL(/\/connexion$/);
+  });
+
+  test("US-XXX-6 – inscription, connexion et « Mon compte » : accessibles", async ({
+    page,
+  }, testInfo) => {
+    for (const chemin of ["/inscription", "/connexion"]) {
+      await page.goto(chemin);
+      await verifierAccessibilite(page, testInfo);
+    }
+    await connecterNouvelUtilisateur(page);
+    await verifierAccessibilite(page, testInfo);
   });
 });
 ```

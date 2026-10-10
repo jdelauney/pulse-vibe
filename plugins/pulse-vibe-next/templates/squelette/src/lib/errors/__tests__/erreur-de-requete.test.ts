@@ -1,6 +1,9 @@
 import { logger } from "@src/lib/logger";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { journaliserErreurDeRequete } from "../erreur-de-requete";
+import {
+  cheminSansRequete,
+  journaliserErreurDeRequete,
+} from "../erreur-de-requete";
 
 vi.mock("@src/lib/logger", () => ({ logger: { error: vi.fn() } }));
 
@@ -52,5 +55,26 @@ describe("journaliserErreurDeRequete", () => {
       digest: undefined,
       requete: undefined,
     });
+  });
+
+  it("le chemin journalisé perd sa chaîne de requête (jeton de réinitialisation)", () => {
+    journaliserErreurDeRequete(
+      new Error("boum"),
+      {
+        path: "/nouveau-mot-de-passe?token=jeton-secret&x=1",
+        method: "GET",
+        headers: {},
+      },
+      contexte,
+    );
+    const [champs] = vi.mocked(logger.error).mock.calls[0];
+    expect(champs).toMatchObject({ chemin: "/nouveau-mot-de-passe" });
+    expect(JSON.stringify(champs)).not.toContain("jeton-secret");
+  });
+
+  it("cheminSansRequete : coupe à « ? » et à « # »", () => {
+    expect(cheminSansRequete("/a?b=1")).toBe("/a");
+    expect(cheminSansRequete("/a#b")).toBe("/a");
+    expect(cheminSansRequete("/a")).toBe("/a");
   });
 });

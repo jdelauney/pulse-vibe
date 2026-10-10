@@ -3,6 +3,7 @@
 
 Les contenus d'e-mails sont des fonctions pures : aucun double nécessaire.
 
+<!-- fichier: src/core/compte/__tests__/emails-compte.rules.test.ts -->
 ```ts
 // src/core/compte/__tests__/emails-compte.rules.test.ts
 import { describe, expect, it } from "vitest";
@@ -43,6 +44,7 @@ describe("E-mails de compte", () => {
 
 Nodemailer est doublé et refuse l'envoi, comme un serveur qui rejette le destinataire. L'erreur levée garde ses codes techniques, sans le texte du refus ni l'adresse.
 
+<!-- fichier: src/adapters/email/__tests__/email.adapter.test.ts -->
 ```ts
 // src/adapters/email/__tests__/email.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
@@ -101,6 +103,7 @@ describe("Envoi d'e-mails", () => {
 
 better-auth tourne sur une base PGlite neuve ; `creerAuth` reçoit une doublure de l'envoi qui garde les messages au lieu de les envoyer. Les liens et jetons viennent des e-mails gardés, comme pour une vraie personne.
 
+<!-- fichier: src/adapters/auth/__tests__/auth-email.test.ts -->
 ```ts
 // src/adapters/auth/__tests__/auth-email.test.ts
 import type { MessageEmail } from "@src/core/compte/email.port";
@@ -271,6 +274,7 @@ Mailpit doit tourner, et le serveur lancé par Playwright doit utiliser `SMTP_HO
 
 L'aide lit l'API REST de Mailpit (`GET /api/v1/search?query=to:"…"`, résultats du plus récent au plus ancien ; `GET /api/v1/message/{ID}`, champs `Subject`, `Text`, `HTML`) :
 
+<!-- fichier: e2e/aides/mailpit.ts -->
 ```ts
 // e2e/aides/mailpit.ts
 // Lecture des e-mails capturés par Mailpit (API REST, http://localhost:8025 par défaut).
@@ -312,6 +316,7 @@ export function premierLien(texte: string): string {
 
 `e2e/aides/connexion.ts` remplace celui de la recette `connexion` : un nouveau compte confirme son adresse avant d'arriver sur « Mon compte ». Les tests qui appellent `connecterNouvelUtilisateur` continuent de fonctionner.
 
+<!-- fichier: e2e/aides/connexion.ts -->
 ```ts
 // e2e/aides/connexion.ts
 import { expect, type Page } from "@playwright/test";
@@ -358,6 +363,7 @@ export async function connecterNouvelUtilisateur(
 }
 ```
 
+<!-- fichier: e2e/email.spec.ts -->
 ```ts
 // e2e/email.spec.ts
 import { expect, test } from "@playwright/test";

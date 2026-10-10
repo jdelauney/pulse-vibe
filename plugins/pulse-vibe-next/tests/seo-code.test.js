@@ -149,7 +149,7 @@ test("page publique en noindex volontaire : pas de constat C3", () => {
 });
 
 test("--pages : liste des pages publiques fixes, séparées par des virgules ; option inconnue : code 2", () => {
-  const d = projet({ ...BASE, "src/app/(public)/a-propos/page.tsx": "x", "src/app/api/x/page.ts": "x", "src/app/blog/[slug]/page.tsx": "x" });
+  const d = projet({ ...BASE, "src/app/(public)/a-propos/page.tsx": "x", "src/app/api/x/page.ts": "x", "src/app/blog/[slug]/page.tsx": "x", "src/app/essai/page.tsx": "export const metadata = { robots: { index: false, follow: false } };" });
   const r = lancer("--pages", "--dossier", d);
   assert.strictEqual(r.status, 0);
   assert.strictEqual(r.stdout.trim(), "/,/a-propos");

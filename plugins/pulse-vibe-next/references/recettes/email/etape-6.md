@@ -2,6 +2,7 @@
 
 Une action par fichier. `inscrire` renvoie un message au lieu de rediriger, et passe `callbackURL` ; `connecter` traduit `EMAIL_NOT_VERIFIED` ; deux actions nouvelles. Si la recette `limite` est déjà appliquée, gardez ses lignes `await exigerLimite(…)` en tête de `inscrire` et `connecter`, et ajoutez `await exigerLimite("motDePasseOublie");` en tête de `demanderNouveauMotDePasse`.
 
+<!-- fichier: src/features/compte/actions/inscrire.action.ts -->
 ```ts
 // src/features/compte/actions/inscrire.action.ts
 "use server";
@@ -32,6 +33,7 @@ export const inscrire = actionPublique
   });
 ```
 
+<!-- fichier: src/features/compte/actions/connecter.action.ts -->
 ```ts
 // src/features/compte/actions/connecter.action.ts
 "use server";
@@ -75,6 +77,7 @@ export const connecter = actionPublique
   });
 ```
 
+<!-- fichier: src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts -->
 ```ts
 // src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts
 "use server";
@@ -100,6 +103,7 @@ export const demanderNouveauMotDePasse = actionPublique
   });
 ```
 
+<!-- fichier: src/features/compte/actions/choisir-nouveau-mot-de-passe.action.ts -->
 ```ts
 // src/features/compte/actions/choisir-nouveau-mot-de-passe.action.ts
 "use server";

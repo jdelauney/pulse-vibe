@@ -17,6 +17,8 @@
 // Contrat du pack (outil pulse-pile-<id>) utilisé ici :
 //   secrets regles                       JSON : règles par variable (préfixes, groupes, tests, parEnvironnement) et noms lus dans le code
 //   secrets tester <NOM>                 test réel ; reçoit sur l'entrée standard un JSON { NOM: valeur, … } ; code 0 bon, 1 mauvais, 3 sans test
+//   secrets suites <NOM>                 variables non secrètes déduites de NOM (règle « suites » : liste de noms) ; même entrée que tester ;
+//                                        JSON { variables: [{ nom, environnements, valeur }] } ; envoyées en type Config après l'envoi de NOM en production
 //   hebergeur ls                         JSON : { hebergeur, variables: [{ nom, environnements, type }] }, sans valeur
 //   hebergeur envoyer <NOM> <env> [--type secret|config]   valeur sur l'entrée standard
 //   hebergeur redeployer <env>           relance le dernier déploiement de cet environnement
@@ -559,6 +561,45 @@ function verifier(nom, options) {
 
 // ---------------------------------------------------------------- envoyer, redeployer
 
+/**
+ * Suites d'une variable envoyée en production (règle « suites » du pack) : le pack les déduit (ex. l'identifiant
+ * public d'une ressource, lu chez le fournisseur avec la clé envoyée), le cœur les envoie en type Config, sans rien
+ * demander à la personne. Seuls les noms annoncés par la règle, non secrets, vers des environnements connus.
+ * Rend false si l'une n'a pas pu partir.
+ */
+function envoyerSuites(nom, regle, source, valeur) {
+  const valeurs = { [nom]: valeur };
+  for (const b of regle.besoins || []) valeurs[b] = lireVariable(source, b).valeur;
+  const aMasquer = Object.entries(valeurs).filter(([n]) => n === nom || estSecret(n)).map(([, x]) => x);
+  const rep = appelerPack(["secrets", "suites", nom], JSON.stringify(valeurs), aMasquer);
+  const message = ((rep && rep.sortie.split("\n").filter(Boolean).pop()) || "").replace(/^[⚪❌]\s*/, "");
+  if (!rep || !rep.ok) {
+    dire(`⚠️ ${regle.suites.join(", ")} non enregistrée : ${message || "le pack n'a pas répondu"}`);
+    return false;
+  }
+  let suites;
+  try {
+    suites = JSON.parse(rep.stdout).variables || [];
+  } catch (e) {
+    dire(`⚠️ ${regle.suites.join(", ")} non enregistrée : réponse du pack illisible.`);
+    return false;
+  }
+  let ok = true;
+  for (const s of suites) {
+    const envsSuite = Array.isArray(s.environnements) ? s.environnements : [];
+    if (!regle.suites.includes(s.nom) || estSecret(s.nom) || !s.valeur || !envsSuite.length || !envsSuite.every((e) => ENVIRONNEMENTS.includes(e))) {
+      dire(`⚠️ ${s.nom || "variable sans nom"} ignorée : hors des règles du pack.`);
+      continue;
+    }
+    for (const env of envsSuite) {
+      const r = appelerPack(["hebergeur", "envoyer", s.nom, env, "--type", "config"], s.valeur, aMasquer);
+      ok = ok && r.ok;
+      dire(`${r.ok ? "✅" : "❌"} ${LIBELLE_ENV[env]} : ${r.sortie.split("\n").filter(Boolean).pop() || (r.ok ? `${s.nom} envoyée` : "échec")}`);
+    }
+  }
+  return ok;
+}
+
 function envoyer(nom, options) {
   const source = options["--depuis"] || ".env";
   const envs = listeEnvironnements(options["--env"], "production,preview");
@@ -598,7 +639,12 @@ function envoyer(nom, options) {
     dire("⚠️ Envoi incomplet : la rotation n'est pas terminée. Relancez pour les environnements en échec avant de révoquer quoi que ce soit.");
     terminer(1);
   }
-  if (options["--vider"]) {
+  const suitesFaites = r && Array.isArray(r.suites) && r.suites.length && envs.includes("production") ? envoyerSuites(nom, r, source, v.valeur) : true;
+  if (options["--vider"] && !suitesFaites) {
+    dire(`ℹ️ ${nom} reste dans ${source} : relancez la même commande une fois le point ci-dessus réglé (la valeur est renvoyée, puis retirée du fichier).`);
+  } else if (!suitesFaites) {
+    dire(`ℹ️ ${nom} est bien envoyée : relancez la même commande une fois le point ci-dessus réglé pour finir.`);
+  } else if (options["--vider"]) {
     ecrireVariable(source, nom, "");
     dire(`🧹 Valeur retirée de ${source} (elle vit maintenant chez le fournisseur et l'hébergeur).`);
   }
