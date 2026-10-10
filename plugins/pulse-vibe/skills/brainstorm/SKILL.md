@@ -7,14 +7,6 @@ allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd reference *)
 
 # /pulse:brainstorm – Du besoin au brief
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte brainstorm`
-
-Appliquer les « Règles communes Pulse » et les « Règles de la mémoire projet » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.
-
-Idée reçue en argument (facultative) : `$ARGUMENTS`
-
 ## Objectif
 
 Arriver à une **compréhension partagée** de l'idée, où tout est dit explicitement, puis l'écrire :
@@ -25,16 +17,15 @@ Arriver à une **compréhension partagée** de l'idée, où tout est dit explici
 
 On parle du **métier** : la technique (base de données, framework, écrans détaillés) viendra plus tard.
 
-## Prérequis
+## Règles
 
-- Si `CLAUDE.md` n'existe pas : proposer `/pulse:init` d'abord, mais accepter de continuer si la personne le souhaite (créer alors `aidd_docs/memory/glossary.md` avec son modèle quand le premier mot est tranché).
-- Si `docs/brief.md` existe : demander s'il faut le **compléter** ou **repartir de zéro**. Pour compléter, partir des « Questions ouvertes » du brief existant.
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées dans « Contexte ») pendant toute la commande.
 
-## Les principes de l'entretien
+### Les principes de l'entretien
 
-Appliquer « Penser avant d'écrire » ci-dessus : les branches marquées **clé** ci-dessous se posent en question clé (réponse libre, exemples, reformuler et confronter) ; les autres en rondes à choix.
+Appliquer « Penser avant d'écrire » (chargé dans « Contexte ») : les branches marquées **clé** ci-dessous se posent en question clé (réponse libre, exemples, reformuler et confronter) ; les autres en rondes à choix.
 
-### 1. Un arbre de décisions, parcouru par rondes
+#### 1. Un arbre de décisions, parcouru par rondes
 
 Chaque sujet à trancher est une **branche** ; certaines dépendent d'autres (les règles d'annulation se discutent une fois qu'on sait qui réserve). À chaque instant, la **frontière** regroupe les questions dont tous les prérequis sont déjà tranchés : on peut les poser maintenant en s'appuyant uniquement sur des réponses déjà entendues.
 
@@ -54,43 +45,64 @@ Branches de départ habituelles (à adapter aux réponses) :
 
 **Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. L'effacer (`pulse-aidd travail-fini`) après l'écriture du brief.
 
-### 2. Les faits, c'est vous ; les décisions, c'est la personne
+#### 2. Les faits, c'est vous ; les décisions, c'est la personne
 
 - **Chercher d'abord dans les fichiers ; demander à la personne le reste.** Avant chaque ronde, consulter ce qui existe : `docs/`, `aidd_docs/memory/` (surtout `glossary.md` et `project.md`), et le code s'il y en a. Dans un projet qui contient déjà du code, confier la recherche au sous-agent **`pulse:explorer`** et continuer pendant sa recherche : seules les questions qui dépendent de sa réponse sont reportées.
 - **Les décisions appartiennent à la personne** : besoin, priorités, règles métier, périmètre. Les poser, attendre la réponse, la laisser trancher.
 - **S'en tenir à la complexité qu'elle a mentionnée.** Si elle n'a jamais parlé de comptes utilisateurs, l'histoire n'en contient pas. On peut poser la question ; la décision lui revient.
 
-### 3. L'histoire (domain storytelling)
+#### 3. L'histoire (domain storytelling)
 
 Dès que l'idée, les acteurs et la situation actuelle sont connus, **rédiger un premier jet** (5 à 12 lignes) :
 `Il était une fois **{{Nom}}**, {{ce que c'est}}…` puis des puces `L'acteur → action → objet`, avec des sous-puces pour les précisions. Utiliser des exemples réalistes et fictifs (noms, objets et situations du métier de la personne, inventés mais plausibles).
 
 La validation de l'histoire est une question de la ronde suivante : « Est-ce bien ça ? » → « Oui, c'est ça (Recommandé) » / « Il manque quelque chose » / « Quelque chose est faux ». Relever ensuite dans l'histoire les **zones d'ombre** qui changent le comportement de l'outil : ce sont les branches des rondes suivantes.
 
-### 4. Les mots du métier (glossaire vivant)
+#### 4. Les mots du métier (glossaire vivant)
 
 - **Confronter au glossaire** : si la personne emploie un mot dans un autre sens que celui de `glossary.md`, le signaler aussitôt. « Votre glossaire définit "<mot>" comme X, mais vous semblez parler de Y. Lequel est le bon ? »
 - **Préciser les mots flous** : quand un mot est vague ou sert à deux choses, proposer un terme précis. « Vous dites "<mot>" : <sens A>, ou <sens B> ? »
 - **Tester avec des scénarios concrets** : inventer des cas limites réalistes qui obligent à préciser les frontières. « <Un acteur> fait <une action>, puis l'annule juste avant <l'échéance> : que se passe-t-il ? »
 - **Écrire au fil de l'eau** : dès qu'un mot est tranché, l'ajouter ou le corriger dans `aidd_docs/memory/glossary.md` (format des règles de la mémoire), tout de suite. Le dire en une ligne : « 📖 Ajouté au glossaire : **<mot>**. »
 
-### 5. Les décisions
+#### 5. Les décisions
 
 Quand une réponse tranche une question structurante, la noter dans la liste des décisions (§ « Fin de l'entretien »). Proposer un **fichier de décision** (modèle « décision (ADR) », dans `aidd_docs/memory/internal/decisions/`) **seulement** si les 3 conditions sont réunies : difficile à défaire, surprenante sans contexte, fruit d'un vrai choix entre plusieurs options.
 
-### 6. Garder la personne à l'aise
+#### 6. Garder la personne à l'aise
 
 - Employer des mots simples. Une question technique qui surgit est notée pour `/pulse:spec`, qui la posera.
 - **Après la 4ᵉ ronde**, ajouter à la ronde une question : « On continue d'approfondir ? » → « Continuer (Recommandé) » s'il reste des branches structurantes, ou « Rédiger le brief maintenant » ; les sujets restants deviennent alors des **questions ouvertes** du brief.
 
-## Fin de l'entretien
+## Contexte
+
+!`pulse-aidd contexte brainstorm`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.
+
+Idée reçue en argument (facultative) : `$ARGUMENTS`
+
+### Prérequis
+
+- Si `CLAUDE.md` n'existe pas : proposer `/pulse:init` d'abord, mais accepter de continuer si la personne le souhaite (créer alors `aidd_docs/memory/glossary.md` avec son modèle quand le premier mot est tranché).
+- Si `docs/brief.md` existe : demander s'il faut le **compléter** ou **repartir de zéro**. Pour compléter, partir des « Questions ouvertes » du brief existant.
+
+## Rôle
+
+La conversation principale mène l'entretien et écrit le brief, le glossaire et la mémoire ; les décisions appartiennent à la personne.
+
+- `pulse:explorer` : dans un projet qui contient déjà du code, cherche dans les fichiers pendant que l'entretien continue (voir « 2. Les faits, c'est vous ; les décisions, c'est la personne »).
+
+## Processus
+
+### Fin de l'entretien
 
 L'entretien est terminé quand **la frontière est vide** : toutes les branches visitées, tout dit explicitement (ou quand la personne choisit de s'arrêter).
 
 1. Présenter un **récapitulatif** court : la phrase de synthèse, l'histoire, les décisions prises (« ✔ … »), les mots ajoutés au glossaire, les questions restées ouvertes.
 2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief. Si elle s'écarte de l'histoire validée (un acteur ou un besoin absent, un autre centre de gravité), le dire et en parler avant de rédiger. Puis demander (AskUserQuestion) : « Rédiger le brief (Recommandé) » / « Je veux corriger quelque chose ».
 
-## Rédiger
+### Rédiger
 
 1. Remplir le modèle `docs/brief.md` et écrire `docs/brief.md` : la phrase de synthèse, le problème, les acteurs, l'histoire validée, les décisions (« Décidé par vous » / « Proposé par Pulse, accepté »), les hypothèses à vérifier, les questions encore ouvertes (cases à cocher), la réussite. Pour le vocabulaire, le brief **renvoie au glossaire**.
 2. Vérifier que `aidd_docs/memory/glossary.md` contient tous les mots tranchés.
@@ -98,8 +110,13 @@ L'entretien est terminé quand **la frontière est vide** : toutes les branches 
 4. Mettre à jour la description de « Résumé du projet » dans `CLAUDE.md` si elle contient encore `{{…}}`.
 5. Lancer `pulse-aidd memoire` pour que la prochaine session charge le glossaire.
 
-## Valider
+### Valider
 
 Montrer la phrase de synthèse et l'histoire. Demander une validation (AskUserQuestion : « Valider » / « Modifier quelque chose »). Corriger si besoin.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour décider de ce qui entre dans la première version.
+
+## Exemples
+
+- `/pulse:brainstorm "réserver un créneau chez mon coiffeur"` : des questions par petites séries, une première histoire de votre idée à valider, puis `docs/brief.md` écrit avec votre accord.
+- `/pulse:brainstorm` alors que `docs/brief.md` existe : la question « compléter ou repartir de zéro ? », puis l'entretien reprend sur les questions restées ouvertes.

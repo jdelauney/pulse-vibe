@@ -408,12 +408,12 @@ test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale,
 test("mise en ligne : tests, contrôle rapide de sécurité avant la première fois, audit complet proposé en clôture", () => {
   const fichier = path.join(RACINE, "skills", "deploy", "SKILL.md");
   const deploy = lire(fichier);
-  const controles = deploy.split("## 1. Contrôles avant envoi")[1].split("\n## 2.")[0];
+  const controles = deploy.split("### 1. Contrôles avant envoi")[1].split("\n### 2.")[0];
   assert.match(controles, /la commande « Tester »/);
   assert.match(controles, /avant la \*\*première\*\* mise en ligne/);
   assert.match(controles, /`pulse-aidd reference security\/rapide\.md`/);
   assert.match(controles, /Un ⛔ bloque la mise en ligne/);
-  assert.match(deploy.split("## 6. Clore")[1], /`\/pulse:security audit`/);
+  assert.match(deploy.split("### 6. Clore")[1], /`\/pulse:security audit`/);
   const motifs = motifsBash(fichier);
   for (const m of ["git ls-files *", "git grep -n *", "pulse-aidd sonder *"]) assert.ok(motifs.includes(m), `allowed-tools de deploy : Bash(${m})`);
 });
@@ -469,7 +469,7 @@ test("checklist sécurité : sauvegarde dans le modèle technique, audit dans l'
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /- Sauvegarde et restauration : \{\{/);
   assert.match(lire(RACINE, "..", "pulse-vibe-next", "references", "technical.md"), /- Sauvegarde et restauration : /);
   const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
-  assert.match(cicd.split("## 4. Essayer en local")[1].split("\n## ")[0], /audit des dépendances/);
+  assert.match(cicd.split("### 4. Essayer en local")[1].split(/\n##+ /)[0], /audit des dépendances/);
   assert.match(cicd.split("## Objectif")[1].split("\n## ")[0], /dépendances/);
   assert.match(lire(RACINE, "README.md"), /\/pulse:cicd[^\n]*dépendances/);
   assert.match(lire(RACINE, "agents", "security-auditor.md"), /aucun fichier de dépendances[^\n]*S8 vaut « — »/);
@@ -573,7 +573,7 @@ test("examen d'une tâche : chaque agent nommé par la référence est repliable
 });
 
 test("plan : montré et validé avant d'être écrit, avec la ligne « plan validé » du journal", () => {
-  const deroule = skillTexte("plan").split("## Déroulé")[1];
+  const deroule = skillTexte("plan").split(/^## Processuss*$/m)[1];
   const valider = deroule.indexOf("« Valider le plan (Recommandé) »");
   const ecrire = deroule.indexOf("Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`");
   assert.ok(valider !== -1 && ecrire !== -1, "validation et écriture présentes");
@@ -808,7 +808,7 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
 });
 
 test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section", () => {
-  const sections = lire(RACINE, "skills", "deploy", "SKILL.md").split(/^## /m).filter((s) => /git push/.test(s));
+  const sections = lire(RACINE, "skills", "deploy", "SKILL.md").split(/^###? /m).filter((s) => /git push/.test(s));
   assert.ok(sections.length >= 4, "sections avec envoi");
   for (const s of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord|accord annoncé au § 3/, s.slice(0, 30));
 });
@@ -1209,4 +1209,43 @@ test("tech : une fois le pack choisi, seules ses consignes se chargent ; review 
   // Les corrections de review se codent avec les consignes du pack, chargées si elles manquent.
   assert.match(skillTexte("review"), /avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "review", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte implement")), "review : pile contexte implement autorisé");
+});
+
+// Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
+const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples"];
+const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
+
+test("une skill = un dossier : SKILL.md, et seulement assets/, references/, scripts/ à côté", () => {
+  const ecarts = [];
+  for (const p of PLUGINS) for (const skill of lister(path.join(p, "skills"))) {
+    const dossier = path.join(p, "skills", skill);
+    if (!fs.statSync(dossier).isDirectory()) { ecarts.push(`${skill} : un fichier, pas un dossier`); continue; }
+    const contenu = lister(dossier);
+    if (!contenu.includes("SKILL.md")) ecarts.push(`${skill} : SKILL.md absent (nom sensible à la casse)`);
+    for (const e of contenu) if (!["SKILL.md", "assets", "references", "scripts"].includes(e)) ecarts.push(`${skill} : ${e}`);
+  }
+  assert.deepStrictEqual(ecarts, []);
+});
+
+test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples", () => {
+  const ecarts = [];
+  for (const p of PLUGINS) for (const skill of lister(path.join(p, "skills"))) {
+    const texte = lire(p, "skills", skill, "SKILL.md");
+    const t = titres2(texte);
+    const attendu = TRAME_SKILL.filter((x) => x !== "Rôle" || t.includes("Rôle"));
+    if (JSON.stringify(t) !== JSON.stringify(attendu)) ecarts.push(`${skill} : ${t.join(", ")}`);
+    const regles = texte.split(/^## Règles\s*$/m)[1] || "";
+    if (!/^\s*Appliquer les « Règles communes Pulse »/.test(regles)) ecarts.push(`${skill} : Règles commence par les règles communes`);
+    const contexte = (texte.split(/^## Contexte\s*$/m)[1] || "").split(/^## /m)[0];
+    if (!contexte.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Contexte »`);
+  }
+  assert.deepStrictEqual(ecarts, []);
+});
+
+test("CLAUDE.md des projets : Résumé du projet, Stack technique, Architecture, Commandes, Contraintes, dans cet ordre", () => {
+  const claude = lire(RACINE, "templates", "CLAUDE.md");
+  assert.deepStrictEqual(titres2(claude), ["Résumé du projet", "Stack technique", "Architecture", "Commandes", "Contraintes"]);
+  for (const bloc of ["pulse_profil", "pulse_pile", "pulse_memoire"]) assert.ok(claude.includes(`<!-- ${bloc}:debut -->`), bloc);
+  assert.match(claude, /^- Site en ligne : /m, "adresse lue par le garde-fou et l'état du projet");
+  assert.match(claude, /\[docs\/technical\.md\]\(docs\/technical\.md\)/, "liens vers les documents du projet");
 });

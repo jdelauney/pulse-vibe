@@ -7,21 +7,31 @@ allowed-tools: Bash(pulse-aidd contexte get-help) Bash(pulse-aidd reference *) B
 
 # /pulse:get-help – Préparer une demande d'aide
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte get-help`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Le modèle cité plus bas figure ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.
-
-Description reçue (facultative) : `$ARGUMENTS`
-
 ## Objectif
 
 Quand Pulse n'arrive pas à débloquer une situation, préparer une **demande d'aide** qu'une personne qui programme pourra comprendre en deux minutes : le contexte, l'erreur exacte, ce qui a déjà été essayé, une question précise. Une phrase d'explication : « Une bonne demande d'aide obtient une réponse rapide : je rassemble pour vous tout ce qu'un développeur aurait besoin de savoir, sans vos secrets. »
 
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
 Cette commande écrit seulement la fiche `docs/aide/demande-<AAAA-MM-JJ>-<sujet>.md`. Elle ne publie rien : c'est la personne qui choisit où l'envoyer.
 
-## Déroulé
+## Contexte
+
+!`pulse-aidd contexte get-help`
+
+Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.
+
+Description reçue (facultative) : `$ARGUMENTS`
+
+Fichiers de cette commande : [assets/demande-aide.md](assets/demande-aide.md).
+
+## Rôle
+
+La conversation principale orchestre : elle comprend le blocage, nettoie les secrets, écrit la fiche et aide la personne à choisir où l'envoyer. S'il y a du code, l'agent `pulse:explorer` apporte la recherche dans le projet (pile, tâche concernée, erreur exacte, essais déjà faits, fichiers concernés) ; sans code, la conversation principale la fait elle-même.
+
+## Processus
 
 ### 1. Comprendre
 
@@ -55,3 +65,8 @@ Proposer (AskUserQuestion) où l'envoyer, la personne choisit :
 Expliquer en une ligne comment l'envoyer (copier le message court, joindre ou coller la fiche complète). Rappeler que la fiche est sans secret, mais que la personne garde la main sur ce qu'elle partage.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : une fois la réponse reçue, `/pulse:fix "<la piste proposée>"` pour l'appliquer avec Pulse.
+
+## Exemples
+
+- `/pulse:get-help "la page de connexion reste blanche"` : quelques questions si besoin, puis une fiche prête à envoyer, sans vos mots de passe ni vos clés, et le choix de l'endroit où demander.
+- `/pulse:get-help` sans argument : le dernier blocage de la conversation sert de point de départ.

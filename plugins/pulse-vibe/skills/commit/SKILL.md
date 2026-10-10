@@ -7,26 +7,32 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte pr) Bas
 
 # /pulse:commit – Enregistrer une version
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
+
+Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explication : « Un commit est une photo datée de votre projet, avec une légende. On peut toujours revenir à une photo précédente, avec `/pulse:annuler`. »
+
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+Appliquer aussi les « Conventions Git » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
 
 !`pulse-aidd contexte commit`
 
-Appliquer les « Règles communes Pulse » et les « Conventions Git » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
 
 Arguments : `$ARGUMENTS` — si le **premier mot** est `push`, envoyer la branche après le commit ; le reste, s'il y en a, est le message proposé par la personne. Placé ailleurs, le mot `push` fait partie du message : `/pulse:commit "ajoute le bouton push"` enregistre sans envoyer.
 
 Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions` si l'on sort d'un worktree).
 
-## Objectif
-
-Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explication : « Un commit est une photo datée de votre projet, avec une légende. On peut toujours revenir à une photo précédente, avec `/pulse:annuler`. »
-
-## Prérequis
+### Prérequis
 
 - Le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.
 - Il doit y avoir des modifications (`git status --short`). Sinon, dire que tout est déjà enregistré (avec `push` : proposer d'envoyer seulement, si des commits restent à envoyer).
 
-## Déroulé
+## Processus
 
 ### 1. Contrôles de sécurité
 
@@ -87,7 +93,7 @@ Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dan
 
 En deux lignes : identifiant court et message de chaque commit, nombre de fichiers, corrections faites après un refus, résultat de l'envoi (« envoyé sur `<branche>` » ou « resté en local »).
 
-## Suite
+### Suite
 
 - S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
 - Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
@@ -97,3 +103,9 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 - Si le site est déjà en ligne et que cette version reste en local : rappeler que `/pulse:commit push` (ou `git push`) mettra cette version en ligne.
 
 Terminer avec le bloc de fin de commande.
+
+## Exemples
+
+- `/pulse:commit` : vos modifications triées par sujet et le message proposé ; la version enregistrée apparaît ensuite avec son identifiant court.
+- `/pulse:commit push` : la même chose, puis l'envoi sur le dépôt distant, après votre accord.
+- `/pulse:commit` pour une tâche que vous n'avez pas encore testée : la commande s'arrête et propose `/pulse:review T3`, qui reprend à votre test.

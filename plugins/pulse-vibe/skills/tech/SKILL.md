@@ -7,14 +7,6 @@ allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) B
 
 # /pulse:tech – Les choix techniques
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte tech`
-
-Appliquer les « Règles communes Pulse », les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference tech/choix-techniques.md` si la référence manque).
-
-Contrainte ou préférence exprimée (facultative) : `$ARGUMENTS`
-
 ## Objectif
 
 Jouer le rôle d'architecte technique, en langage simple. Chaque technologie proposée découle du besoin : la pile se construit **à partir du besoin** (brief, PRD), ou s'**observe** dans le code d'un projet existant. La décision appartient à la personne. Puis écrire :
@@ -26,14 +18,35 @@ Jouer le rôle d'architecte technique, en langage simple. Chaque technologie pro
 
 Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **après**. Le plus simple qui répond au besoin est le meilleur choix. »
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte tech`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference tech/choix-techniques.md` si la référence manque).
+
+Contrainte ou préférence exprimée (facultative) : `$ARGUMENTS`
+
+Fichiers de cette commande : [references/choix-techniques.md](references/choix-techniques.md), [assets/technical.md](assets/technical.md).
+
+### Prérequis
 
 - `CLAUDE.md` est nécessaire. Sinon, proposer `/pulse:init`.
 - `docs/prd.md` est fortement conseillé (le périmètre MVP guide le choix). S'il manque : proposer `/pulse:prd` ; accepter de continuer si la personne le souhaite, en le signalant.
 - Si `docs/technical.md` existe : demander s'il faut le **revoir** (un besoin a changé) ou le **garder**.
 - **Du code existe déjà** (fichiers source, manifeste de dépendances, configuration d'outils, quel que soit le langage) : c'est un **projet existant**, suivre le chemin A. Sinon, **projet neuf** : chemin B.
 
-## Déroulé
+## Rôle
+
+La conversation principale joue le rôle d'architecte technique et orchestre : elle pose les questions, construit les options, écrit les documents et prépare la mise en place.
+
+- Agents `general-purpose` (étape 4) : un par option, lancés en parallèle ; chacun vérifie son option sur la documentation officielle et les pages de tarifs, et rend un verdict ✅ / ⚠️ / ❌ avec ses sources.
+- La décision appartient à la personne.
+
+## Processus
 
 ### 1. Ce que l'on sait déjà
 
@@ -103,7 +116,7 @@ Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander 
   3. Vérifier que la commande « lancer en local » de « Commandes du projet » fonctionne ; corriger « Commandes du projet » et le bloc `pulse_pile` si le squelette en fournit d'autres.
   4. **Le thème** : si `docs/design.md` existe, traduire son identité en valeurs de thème dans le code (section « Dans le code » de `docs/design.md`), avec accord.
   5. Expliquer en quelques lignes ce qui a été ajouté. Les actions qui relèvent de la personne (créer un compte, saisir une clé secrète dans le fichier local) sont guidées pas à pas ; la personne écrit une clé secrète directement dans le fichier local, **jamais** dans la conversation.
-  6. **En ligne dès le premier jour** : si l'hébergeur retenu publie depuis un dépôt distant, proposer (AskUserQuestion) « Mettre en ligne la page de départ maintenant (Recommandé) » / « Plus tard ». Expliquer : « Mettre en ligne une page presque vide, c'est découvrir aujourd'hui les réglages de l'hébergeur, plutôt qu'à la fin, avec tout le projet en jeu. » Maintenant : enregistrer le squelette avec la section « Déroulé » de `pulse-aidd etape commit --sans-communes` (message `chore: squelette du projet` ; aucune tâche de plan, donc rien à relire ni à cocher), puis appliquer la section « 3. Première mise en ligne » de `pulse-aidd etape deploy --sans-communes` ; elle se termine par `pulse-aidd sonder`.
+  6. **En ligne dès le premier jour** : si l'hébergeur retenu publie depuis un dépôt distant, proposer (AskUserQuestion) « Mettre en ligne la page de départ maintenant (Recommandé) » / « Plus tard ». Expliquer : « Mettre en ligne une page presque vide, c'est découvrir aujourd'hui les réglages de l'hébergeur, plutôt qu'à la fin, avec tout le projet en jeu. » Maintenant : enregistrer le squelette avec la section « Processus » de `pulse-aidd etape commit --sans-communes` (message `chore: squelette du projet` ; aucune tâche de plan, donc rien à relire ni à cocher), puis appliquer la section « 3. Première mise en ligne » de `pulse-aidd etape deploy --sans-communes` ; elle se termine par `pulse-aidd sonder`.
 - **Plus tard** : l'indiquer dans « Mise en place » (« À réaliser avec la première tâche du premier plan ») : l'installation se fera avec cette tâche.
 
 ### 8. Valider
@@ -111,3 +124,9 @@ Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander 
 Résumé en 5 lignes : pile retenue (et pack de pile éventuel), hébergement, services, coût estimé, mise en place faite ou restant à faire par la personne (avec l'adresse du site s'il est déjà en ligne). Demander « Valider » / « Modifier quelque chose ».
 
 Terminer avec le bloc de fin de commande. Prochaine étape : si `docs/design.md` n'existe pas, proposer `/pulse:ui identite` en précisant qu'elle est **facultative** (« Définir l'apparence de votre outil maintenant permet aux user stories, specs et plans de s'y conformer ») ; sinon, ou si la personne préfère s'en passer, `/pulse:us` (puis `/pulse:spec`, qui s'appuie sur ces choix), ou `/pulse:spirc` pour enchaîner. Si un dépôt distant est relié (`git remote -v`), que le squelette est en place et qu'aucune CI n'existe : mentionner aussi `/pulse:cicd` (facultatif) pour vérifier automatiquement chaque envoi.
+
+## Exemples
+
+- `/pulse:tech` dans un projet neuf : quelques questions sur votre besoin, puis 2 ou 3 options comparées avec une recommandation ; vous choisissez, et `docs/technical.md` est écrit.
+- `/pulse:tech` dans un projet qui a déjà du code : les outils utilisés, résumés en quelques lignes, à confirmer ou à corriger avant l'écriture.
+- `/pulse:tech "données hébergées en France"` : cette contrainte guide les options proposées.

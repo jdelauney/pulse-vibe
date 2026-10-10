@@ -6,15 +6,23 @@ allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse
 
 # /pulse:status – Où en suis-je ?
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
 
-!`pulse-aidd contexte status`
+Répondre à « Où en suis-je ? » : les étapes faites, les tâches à faire, en cours et terminées, l'état Git, les dossiers à part en cours, et la prochaine étape conseillée, la même que `/pulse:init`.
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
 
 Cette commande **lit et résume**. Elle modifie seulement deux choses, chaque fois avec l'accord de la personne : elle efface un travail en cours devenu sans objet (ligne `ancien: oui` de `pulse-aidd etat`) et supprime les worktrees dont le travail est déjà fusionné (§ Worktrees).
 
-## Déroulé
+## Contexte
+
+!`pulse-aidd contexte status`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
+
+## Processus
 
 1. **État et prochaine étape** : lancer `pulse-aidd etat`. Ses lignes donnent l'avancement (`etapes`, `mvp`), la prochaine étape (`prochaine`, `raison`, `regle`), ses alternatives (`aussi`) et le travail en cours (`attente`, `ancien`, `dossier`). Relever aussi, epic par epic, pour la ligne « Groupes » : chaque US avec sa spec (brouillon ou validée) et son plan, et pour chaque spec `docs/design/maquettes/US-XXX-<nom>/retenue/` (facultatif).
 2. **Tâches** : pour chaque plan (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`), lister les tâches `[ ]`, `[~]`, `[x]` pour le tableau des tâches. Relever ses lignes « Envoi » et « En parallèle avec ».
@@ -26,7 +34,7 @@ Cette commande **lit et résume**. Elle modifie seulement deux choses, chaque fo
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
 9. **Travail en cours** : `pulse-aidd etat` signale la décision en attente (clé `attente`).
 
-## Format de réponse
+### Format de réponse
 
 ```
 📍 Projet : <nom> (pile : <résumé de « Pile retenue » de docs/technical.md, ou « non choisie »>)
@@ -62,7 +70,7 @@ La prochaine étape conseillée est celle de `pulse-aidd etat` (lignes `prochain
   2. site en ligne sur son domaine définitif et « Être trouvé » de `docs/prd.md` à oui : section « Suivi » de `docs/seo.md` absente ou vide → `/pulse:seo lancer` ; sinon, section « Référencement » de `docs/technical.md` absente → `/pulse:search-console relier` ;
   3. rendez-vous dépassé : date de « Suivi » de `docs/seo.md` → `/pulse:seo audit` ; prochain rapport Search Console conseillé → `/pulse:search-console suivre`.
 
-## Worktrees
+### Worktrees
 
 Après l'affichage, seulement si un worktree est dans ce cas :
 
@@ -75,3 +83,8 @@ De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans
 **Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc US-004` (Pulse proposera un dossier à part) ». Une proposition seulement : la personne la lance elle-même.
 
 Pour cette commande, le format ci-dessus remplace le bloc de fin de commande habituel.
+
+## Exemples
+
+- `/pulse:status` : un tableau de bord en quelques lignes (méthode, tâches, enregistrements, site en ligne) et la prochaine étape conseillée.
+- Un dossier à part déjà rassemblé : la commande vous propose de le supprimer, et attend votre accord.

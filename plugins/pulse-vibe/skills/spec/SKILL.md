@@ -7,31 +7,37 @@ allowed-tools: Bash(pulse-aidd contexte spec) Bash(pulse-aidd reference *) Bash(
 
 # /pulse:spec – La spécification
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte spec`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
-
-Sujet de la spec : `$ARGUMENTS`
-
 ## Objectif
 
 Produire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, à côté du fichier de l'US (`US-XXX-<nom>.md`) : **ce que** l'outil doit permettre pour **une** user story, du point de vue de l'utilisateur. **Une US = une spec.** Le **comment** (pile, stockage, fichiers, services) se décide ensuite dans le plan. Expliquer en une phrase : « La spec fixe ce que vous voulez obtenir ; le plan choisira comment le construire. »
 
-## Les quatre règles de la spec
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+### Les quatre règles de la spec
 
 1. **L'intention seulement.** La spec reste valable quelle que soit la solution technique : elle décrit des écrans, des informations, des règles et des résultats visibles, avec les mots du métier. Les fichiers, composants, routes, tables, bibliothèques, motifs de code et la manière de faire vont dans le plan (`/pulse:plan`). « Terminé quand » énonce des **résultats** observables par l'utilisateur, plutôt que des étapes de travail ; 2 à 4 suffisent.
 2. **Rien d'inventé.** Chaque information de la spec vient de l'US, du PRD, du brief, du glossaire, d'une spec déjà écrite ou d'une réponse de la personne. Un trou s'écrit à sa place `TBD: <question précise>` (« TBD: un rendez-vous annulé reste-t-il visible dans l'historique ? ») et se reprend dans « Questions en suspens ». Si la demande est trop vague pour écrire une spec utile (aucun acteur, aucune action ou aucun résultat identifiable), s'arrêter et demander une demande plus précise, avec un exemple de formulation.
 3. **Lisible d'un coup d'œil.** Des titres clairs, les critères en puces, et des **hors objectifs** explicites.
 4. **Verrouillée une fois validée.** La validation de la personne verrouille la spec (`Statut : verrouillée le AAAA-MM-JJ`). Une spec verrouillée se lit sans se réécrire ; un changement de besoin passe par une **nouvelle US** et sa spec (étape 0).
 
-## Prérequis
+## Contexte
+
+!`pulse-aidd contexte spec`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
+
+Sujet de la spec : `$ARGUMENTS`
+
+Fichiers de cette commande : [assets/spec.md](assets/spec.md).
+
+### Prérequis
 
 - `docs/user-stories.md` (le référentiel) et `docs/prd.md` sont nécessaires. Sinon, proposer `/pulse:us`.
 - Ancien format (`docs/specs/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) : proposer `/pulse:init`, qui réorganise les documents, et s'arrêter.
 
-## Déroulé
+## Processus
 
 ### 0. Identifier l'US
 
@@ -86,3 +92,9 @@ La troisième (ce que vit l'utilisateur qui remplit mal un formulaire) se dédui
 4. **Validation** (AskUserQuestion ; avant la question, et avant chaque ronde de `TBD:`, écrire `aidd_docs/tasks/in-progress.md`, règle commune 16, effacé avec `pulse-aidd travail-fini` après la réponse) : « Valider (la spec ne bougera plus) » / « Corriger un scénario ou un point ». « Valider (la spec ne bougera plus) » est proposé seulement quand il ne reste aucun `TBD:` ; sinon, dire lesquels restent et proposer « La garder en brouillon ». À la validation, écrire `Statut : verrouillée le <date du jour>`. Plusieurs US demandées : passer à la suivante seulement après cette validation.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan US-XXX` pour une spec verrouillée (ou `/pulse:ui maquettes US-XXX` d'abord, si la spec a des écrans et que la personne veut les voir avant de construire) ; `/pulse:spec US-XXX` pour une spec restée en brouillon.
+
+## Exemples
+
+- `/pulse:spec US-003` : un brouillon de la spec, les ajouts proposés à trancher et les questions restantes ; après votre validation, la spec est verrouillée.
+- `/pulse:spec "ajouter un filtre par date"` : la commande cherche l'histoire qui couvre déjà cette demande, ou vous en propose une nouvelle.
+- `/pulse:spec` sans argument : la liste des histoires sans spec, la prochaine à réaliser en premier.

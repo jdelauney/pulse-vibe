@@ -7,27 +7,15 @@ allowed-tools: Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte refine) B
 
 # /pulse:plan – Le plan de réalisation
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte plan`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.
-
-US (ou spec) à traiter : `$ARGUMENTS`
-
 ## Objectif
 
 Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spec `SPEC-US-XXX-<nom>.md` : la **conception technique** (comment réaliser ce que la spec demande) et la liste ordonnée des tâches qui réalisent cette spec (**une spec = un plan**), qui sert aussi de **tableau de suivi des tâches** (`[ ]` à faire, `[~]` en cours, `[x]` terminé). Expliquer en une phrase : « On avance par petites tâches que vous pouvez tester une par une : l'IA se trompe moins, et vous gardez le contrôle. »
 
-## Prérequis
+## Règles
 
-- **La spec** : celle de l'US désignée en argument (règles « User stories, specs et plans » ci-dessus), `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Plusieurs US : un plan par US, traités l'un après l'autre dans l'ordre du parcours. Argument vide ou introuvable : lister les specs, en premier celles qui attendent encore leur plan (dans l'ordre du parcours), et demander laquelle traiter. Spec absente pour cette US, ou encore en brouillon (`Statut : brouillon`, ou des `TBD:` restants) : proposer `/pulse:spec US-XXX` et s'arrêter. Le plan s'appuie sur une spec **verrouillée**, qu'il lit sans la modifier. Une spec plus ancienne, sans ligne « Statut » : la traiter comme validée ; ses sections techniques (pile, stockage, fichiers) se reprennent dans la conception technique du plan.
-- `docs/user-stories.md` (le référentiel : priorité de l'US, parcours) et le fichier de l'US sont nécessaires. Sinon, proposer `/pulse:us`.
-- `docs/technical.md` est nécessaire (organisation des fichiers, commandes, mise en place). Sinon, proposer `/pulse:tech`.
-- Si `PLAN-SPEC-US-XXX-<nom>.md` existe avec des tâches terminées : le conserver, et proposer d'ajouter ou de réordonner les tâches restantes.
-- Relire les autres plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) : ce qui y est déjà prévu ou fait reste dans son plan (y renvoyer), et le plus grand numéro de tâche de tous ces plans donne le premier numéro de ce plan.
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
 
-## Conception technique
+### Conception technique
 
 Avant le découpage, remplir la section « Conception technique » du modèle de plan : c'est ici que se décide le **comment** de la spec. Appliquer la règle commune 4 (les choix purement techniques suivent ce qui est déjà en place, sinon le plus simple compatible avec « Pile retenue », expliqué en une phrase) :
 
@@ -41,7 +29,7 @@ Avant le découpage, remplir la section « Conception technique » du modèle de
 
 Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses « Qui peut », sans ajouter de comportement visible. Un comportement que la spec ne prévoit pas va dans « Ajouts proposés par Pulse ».
 
-## Règles de découpage
+### Règles de découpage
 
 1. **Découpage vertical** : chaque tâche livre quelque chose que l'utilisateur peut **voir et tester** en moins de 2 minutes (« Créer une tâche et la voir dans la liste »), plutôt qu'une couche technique isolée (« Écrire toutes les fonctions »).
 2. **Petite** : une tâche = une partie de l'user story du plan. Si une tâche touche plus de 3 fichiers ou couvre plus de 3 critères d'acceptation, la découper.
@@ -52,7 +40,7 @@ Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses 
    - enfin, **seulement** dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`) : si « Être trouvé » de `docs/prd.md` répond oui, une tâche **« Fondations du référencement »** (`/pulse:seo bases` ; recette `seo` d'un pack de pile), puis la tâche **« Mettre en ligne la première version »** · — (elle dépend de toutes les tâches des US Indispensables). Pour les autres plans, la mise en ligne se fait avec `/pulse:deploy` une fois le plan terminé.
 4. **Données** : la création du stockage et de son contrôle d'accès (selon « Données et contrôle d'accès » de `docs/technical.md`) fait partie de la **première tranche qui en a besoin** (ex. « Créer une demande et la voir dans ma liste, enregistrée »), plutôt que d'une tâche « base de données » séparée.
 5. **Actions manuelles** : les tâches qui demandent une action de la personne, selon la pile retenue (appliquer un schéma dans la console du fournisseur de données, créer un compte de service, saisir une variable d'environnement chez l'hébergeur, écrire une clé secrète dans le fichier local), le précisent dans une ligne `- Action manuelle : …` (le guide de réalisation la met en évidence).
-6. Chaque tâche porte l'identifiant de l'US (`- [ ] **Tn – Titre** · US-XXX`) et indique : l'**objectif** du point de vue de l'utilisateur, la tâche dont elle **dépend** (dans ce plan ou dans le plan d'une autre US), les **fichiers** concernés (à créer / à modifier, repris de « Fichiers » de la conception technique), la **vérification** (le ou les critères d'acceptation à tester à la main, par identifiant d'US et numéro de critère), les **tests** automatiques (ligne `- Tests : …` : les scénarios de la spec que la tâche réalise, désignés par leur titre ou leur étiquette de critère, avec leur niveau selon la référence « Stratégie de tests » ci-dessus ; « aucun » pour une tâche sans décision à tester, comme la mise en place ou une mise en page) et, si besoin, une ligne `- Attention : …` pour un point délicat repris des « Points d'attention » du plan (une action de la personne va, elle, dans `Action manuelle`).
+6. Chaque tâche porte l'identifiant de l'US (`- [ ] **Tn – Titre** · US-XXX`) et indique : l'**objectif** du point de vue de l'utilisateur, la tâche dont elle **dépend** (dans ce plan ou dans le plan d'une autre US), les **fichiers** concernés (à créer / à modifier, repris de « Fichiers » de la conception technique), la **vérification** (le ou les critères d'acceptation à tester à la main, par identifiant d'US et numéro de critère), les **tests** automatiques (ligne `- Tests : …` : les scénarios de la spec que la tâche réalise, désignés par leur titre ou leur étiquette de critère, avec leur niveau selon la référence « Stratégie de tests » (chargée dans « Contexte ») ; « aucun » pour une tâche sans décision à tester, comme la mise en place ou une mise en page) et, si besoin, une ligne `- Attention : …` pour un point délicat repris des « Points d'attention » du plan (une action de la personne va, elle, dans `Action manuelle`).
 7. Si la conception cite une maquette, une tâche qui réalise un écran maquetté cite la maquette dans sa ligne « Vérification » (« conforme à `docs/design/maquettes/US-XXX-<nom>/retenue/` »).
 8. **Autour des tâches** : la vue d'ensemble (US, epic, **priorité** reprise du référentiel : le guide de réalisation s'en sert pour ordonner les plans ; **Envoi** : « à choisir », il se décide au démarrage de la réalisation), le schéma « Ordre des tâches » (une flèche par dépendance ; seulement pour un plan de plusieurs tâches), « Avant de commencer » (comptes ou accès à obtenir), la phrase « US terminée quand : … » sous `## Tâches`, et les « Points d'attention » rattachés à leurs tâches. Ces éléments restent hors de la liste des tâches : le guide de réalisation lit seulement les lignes `- [ ] **Tn – …**` de `## Tâches` et leurs détails.
 9. **En parallèle avec** : la liste des US dont le plan est encore en cours (au moins une tâche `[ ]` ou `[~]`) et qui peuvent avancer **en même temps** que celle-ci, chacune dans sa session et son worktree. Deux US sont **indépendantes** quand toutes ces conditions sont réunies :
@@ -62,12 +50,34 @@ Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses 
    - toutes deux sont exemptes de tâche de mise en place du squelette et de tâche « Mettre en ligne la première version ».
    Dans le doute, les traiter comme dépendantes : un conflit de fusion coûte plus cher que le temps gagné. La relation vaut dans les deux sens : mettre à jour aussi la ligne « En parallèle avec » des plans concernés (seulement cette ligne, avec l'accord donné à l'étape 3).
 
-## Déroulé
+## Contexte
 
-1. Remplir la conception technique, puis construire les tâches selon ces règles, avec le modèle de plan. Numéroter à la suite des autres plans (T1, T2… pour le premier ; Tn+1, Tn+2… si le plus grand numéro existant est Tn).
+!`pulse-aidd contexte plan`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.
+
+US (ou spec) à traiter : `$ARGUMENTS`
+
+### Prérequis
+
+- **La spec** : celle de l'US désignée en argument (règles « User stories, specs et plans » ci-dessus), `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Plusieurs US : un plan par US, traités l'un après l'autre dans l'ordre du parcours. Argument vide ou introuvable : lister les specs, en premier celles qui attendent encore leur plan (dans l'ordre du parcours), et demander laquelle traiter. Spec absente pour cette US, ou encore en brouillon (`Statut : brouillon`, ou des `TBD:` restants) : proposer `/pulse:spec US-XXX` et s'arrêter. Le plan s'appuie sur une spec **verrouillée**, qu'il lit sans la modifier. Une spec plus ancienne, sans ligne « Statut » : la traiter comme validée ; ses sections techniques (pile, stockage, fichiers) se reprennent dans la conception technique du plan.
+- `docs/user-stories.md` (le référentiel : priorité de l'US, parcours) et le fichier de l'US sont nécessaires. Sinon, proposer `/pulse:us`.
+- `docs/technical.md` est nécessaire (organisation des fichiers, commandes, mise en place). Sinon, proposer `/pulse:tech`.
+- Si `PLAN-SPEC-US-XXX-<nom>.md` existe avec des tâches terminées : le conserver, et proposer d'ajouter ou de réordonner les tâches restantes.
+- Relire les autres plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) : ce qui y est déjà prévu ou fait reste dans son plan (y renvoyer), et le plus grand numéro de tâche de tous ces plans donne le premier numéro de ce plan.
+
+## Processus
+
+1. Remplir la conception technique, puis construire les tâches selon les « Règles de découpage », avec le modèle de plan. Numéroter à la suite des autres plans (T1, T2… pour le premier ; Tn+1, Tn+2… si le plus grand numéro existant est Tn).
 2. Compter les tâches : viser **1 à 4** pour une US (hors mise en place et mise en ligne). Au-delà, le signaler et proposer de découper l'US en deux (`/pulse:us`, puis une spec et un plan pour chacune).
 3. **Montrer, puis faire valider.** Présenter la conception technique en 5 lignes au plus (pile et services, stockage et contrôle d'accès, secrets, points de sécurité, fichiers principaux), puis la liste résumée des tâches (titres), avec la ligne « En parallèle avec » et, si d'autres plans sont mis à jour en conséquence, lesquels. **Ajouts proposés par Pulse** : un élément absent de la spec et de « Pile retenue » (bibliothèque, écran, règle, réglage), ou exigé par la checklist sécurité, se présente aussi, et se valide avec le plan. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16 : le plan présenté y est résumé, il n'est pas encore écrit) ; l'effacer avec `pulse-aidd travail-fini` une fois le plan validé. Demander (AskUserQuestion) : « Valider le plan (Recommandé) » / « Je veux changer quelque chose ». Si la personne veut des changements : les appliquer au plan présenté en respectant les règles ci-dessus, montrer ce qui change, puis redemander. Un changement de périmètre (une fonctionnalité en plus) se note « En attente » dans `docs/prd.md` ; il se traitera avec `/pulse:refine` une fois le plan écrit.
 4. Plan validé. Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` (section « Ajouts proposés par Pulse » seulement s'il y en a), avec la ligne « plan validé » dans son journal (règles communes § 7), et les lignes « En parallèle avec » des autres plans concernés.
 5. Lancer `pulse-aidd guide` : il produit le guide de réalisation `docs/guide/` (les commandes à copier, tâche par tâche). Le présenter en une phrase : « Votre carnet de route est dans `docs/guide/index.md` ; il se met à jour tout seul. »
 
 Terminer avec le bloc de fin de commande. Prochaine étape recommandée : `/pulse:spirc US-XXX`, qui enchaîne réalisation, relecture et commit tâche par tâche ; ou, pour réaliser seulement la première tâche, `/pulse:implement US-XXX <première tâche>`.
+
+## Exemples
+
+- `/pulse:plan US-003` : la conception et 3 tâches présentées en quelques lignes ; après votre accord, le plan est écrit à côté de la spec.
+- `/pulse:plan` sans argument : la liste des specs qui attendent leur plan, et la question « laquelle traiter ? ».
+- `/pulse:plan US-005` alors que sa spec est encore en brouillon : la commande vous propose de la terminer d'abord avec `/pulse:spec US-005`.

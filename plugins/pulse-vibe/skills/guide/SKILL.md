@@ -7,14 +7,6 @@ allowed-tools: Bash(pulse-aidd contexte guide) Bash(pulse-aidd reference *) Bash
 
 # /pulse:guide – Le guide de réalisation
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte guide`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Si ce contexte est absent, lancer `pulse-aidd contexte guide` et lire sa sortie.
-
-Argument : `$ARGUMENTS`
-
 ## Objectif
 
 Donner à la personne une **feuille de route** qu'elle suit seule, dans l'ordre :
@@ -24,18 +16,30 @@ Donner à la personne une **feuille de route** qu'elle suit seule, dans l'ordre 
 
 Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une commande à copier dans Claude Code. Il se met à jour tout seul chaque fois que le plan change. »
 
-## Principes
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+### Principes
 
 - **Le plan est la seule source** : le guide est produit par un script à partir des plans de `aidd_docs/tasks/<epic>/`, entièrement, à chaque fois. Il reprend exactement les tâches et les statuts du plan.
 - **Mise à jour automatique** : un hook du plugin régénère le guide dès qu'un plan de `aidd_docs/tasks/` est modifié (par `/pulse:plan`, `/pulse:commit`, `/pulse:refine`…), en silence.
 - **Lecture seule** sur le plan, les documents et le code ; écriture uniquement dans `docs/guide/`.
 - **La personne lance elle-même chaque commande** : le guide se copie-colle.
 
-## Prérequis
+## Contexte
+
+!`pulse-aidd contexte guide`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte guide` et lire sa sortie.
+
+Argument : `$ARGUMENTS`
+
+### Prérequis
 
 - Au moins un plan dans `aidd_docs/tasks/` est nécessaire. Sinon, proposer `/pulse:plan` (ou `/pulse:init` pour retrouver la bonne étape).
 
-## Déroulé
+## Processus
 
 1. Lancer `pulse-aidd guide`.
    - **Plan absent ou non reconnu** : la sortie l'explique. Vérifier dans le plan signalé que les tâches suivent le format du modèle (`- [ ] **Tn – Titre** · US-XXX` sous `## Tâches`, et la ligne « **Priorité** : … » dans la vue d'ensemble) ; sinon, proposer de remettre le plan au format (avec accord, en gardant intact le contenu des tâches), puis relancer.
@@ -47,3 +51,8 @@ Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une co
 5. Avec l'argument `expliquer` : parcourir avec la personne la page du plan en cours, une tâche à la fois : ce que fait chaque commande, et pourquoi cet ordre (réaliser → relire et tester → enregistrer).
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée dans « Où en êtes-vous ? » du guide.
+
+## Exemples
+
+- `/pulse:guide` : le guide est mis à jour à partir du plan, puis vous voyez où en est le projet et la prochaine commande à copier.
+- `/pulse:guide expliquer` : la page du plan en cours, parcourue avec vous une tâche à la fois, avec le rôle de chaque commande.

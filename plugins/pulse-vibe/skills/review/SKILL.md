@@ -7,24 +7,34 @@ allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) 
 
 # /pulse:review – Relire, tester, corriger
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte review`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
-
-Tâche demandée (facultative) : `$ARGUMENTS`
-
 ## Objectif
 
 Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un relit le code, l'autre essaie l'application en marche), faire tester la personne elle-même, puis corriger. Expliquer en une phrase : « Un regard extérieur repère les oublis, et un essai en marche prouve que ça fonctionne ; votre test manuel le confirme ensuite. »
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte review`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
+
+Tâche demandée (facultative) : `$ARGUMENTS`
+
+### Prérequis
 
 - Au moins un plan dans `aidd_docs/tasks/` et `docs/user-stories.md` sont nécessaires.
 - Vérifier qu'il y a quelque chose à relire : des modifications (`git status`, `git diff`) ou une tâche `[~]`. Sinon, l'indiquer et proposer `/pulse:implement <US-XXX>`.
 
-## Déroulé
+## Rôle
+
+La conversation principale orchestre : elle choisit la tâche, enregistre le rapport, le présente, fait tester la personne et corrige. Deux agents, qui n'ont pas écrit la tâche, apportent le regard extérieur :
+- `pulse:reviewer` relit le code (avec `tout` : l'ensemble du projet par rapport à toutes les US terminées) ;
+- `pulse:verifier` essaie l'application en marche, tâche par tâche.
+
+## Processus
 
 ### 1. Identifier la tâche
 
@@ -35,7 +45,7 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 Les documents de référence sont ceux du § 1 de la référence « Examiner une tâche ».
 
-Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test` → passer directement au § 5 (l'examen est fait, il manque le test par la personne) ; `commit` → la tâche est prête : le dire et proposer `/pulse:commit` ; `correction` → reprendre au § 6 avec les constats du rapport ; `aide` → la ligne « Blocage » du rapport : proposer `/pulse:get-help` ; `examen` → tout le déroulé ; `aucune` (la tâche n'est dans aucun plan) → le dire et demander de quelle tâche il s'agit.
+Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test` → passer directement au § 5 (l'examen est fait, il manque le test par la personne) ; `commit` → la tâche est prête : le dire et proposer `/pulse:commit` ; `correction` → reprendre au § 6 avec les constats du rapport ; `aide` → la ligne « Blocage » du rapport : proposer `/pulse:get-help` ; `examen` → tout le processus ; `aucune` (la tâche n'est dans aucun plan) → le dire et demander de quelle tâche il s'agit.
 
 ### 2. Lancer l'examen
 
@@ -68,3 +78,9 @@ Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer
 Après un nouveau test manuel (suite à une correction), réécrire « Test par la personne » avec son dernier résultat. Quand la personne accepte un ⚠️, le noter dans « Suite donnée aux constats » et écrire la ligne **Verdict** en tête du rapport « ⚠️ … accepté par la personne » (ou ✅). Quand le verdict est ✅ (ou ⚠️ accepté par la personne, noté dans « Suite donnée aux constats ») **et** que le test manuel est concluant, considérer la tâche comme prête à être enregistrée.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
+
+## Exemples
+
+- `/pulse:review T3` : deux assistants relisent et essaient la tâche 3 ; vous recevez le verdict, les points importants en langage simple, puis les étapes de votre test.
+- `/pulse:review US-003` : chaque tâche en cours de l'US est examinée, puis vous la testez une par une.
+- `/pulse:review` sans argument : la tâche en cours est reprise ; s'il y en a plusieurs, la question « laquelle relire ? ».
