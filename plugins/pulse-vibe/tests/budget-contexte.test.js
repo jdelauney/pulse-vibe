@@ -59,7 +59,8 @@ const PLAFONDS = {
   explain: 23000,
   test: 38000,
   "auto-fix": 22000,
-  status: 29500,
+  // 27 973 au commit 04697d5, 28 764 avant la tâche 11 ; 23 367 sans le tableau des fichiers du projet, chargé à la demande : plafond abaissé (mesure × 1,05, au 500 supérieur).
+  status: 25000,
   guide: 29500,
 };
 
