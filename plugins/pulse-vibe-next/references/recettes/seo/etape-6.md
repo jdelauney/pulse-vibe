@@ -2,6 +2,7 @@
 
 Avec Cache Components, une adresse inconnue de ce segment répond **200 avec `noindex`** à Googlebot et aux robots IA (la coquille prérendue part avant `notFound()`) ; Google l'écarte des résultats, mais la compte comme « soft 404 ». Pour un vrai 404, vérifier l'existence dans `proxy.ts` (à la racine), qui agit avant le rendu. Le proxy appelle `existePubliee` du repository : c'est la seule lecture de base permise dans le proxy, une requête légère (colonne indexée), jamais le contenu entier. Si la base est indisponible, le proxy journalise un message fixe (`logger.warn`, sans donnée de la requête) et laisse la page répondre : un « soft 404 » vaut mieux qu'une erreur 500 pour tout le segment.
 
+<!-- fichier: proxy.ts -->
 ```ts
 // proxy.ts (à fusionner avec le proxy existant de la recette connexion)
 import { getDb } from "@src/db/db-client";

@@ -4,6 +4,7 @@ Adresse lisible par un `slug` (« /realisations/table-en-chene »), lecture part
 
 Le type et la table (les contenus non publiés restent hors du public) :
 
+<!-- fichier: src/core/realisations/realisation.entity.ts -->
 ```ts
 // src/core/realisations/realisation.entity.ts
 export type Realisation = {
@@ -15,6 +16,7 @@ export type Realisation = {
 };
 ```
 
+<!-- fichier: src/db/realisations/realisation.table.ts -->
 ```ts
 // src/db/realisations/realisation.table.ts
 import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -32,10 +34,13 @@ export const realisations = pgTable("realisations", {
 });
 ```
 
+<!-- commande: npm run db:generate -->
+
 Puis `npm run db:generate` (migration dans `drizzle/`) et `npm run db:migrate`.
 
 Le repository porte la condition « publiée » dans chaque requête ; `existePubliee` ne lit qu'une colonne indexée (elle sert au proxy de l'étape 6) :
 
+<!-- fichier: src/db/realisations/realisation.repository.ts -->
 ```ts
 // src/db/realisations/realisation.repository.ts
 import "server-only";
@@ -85,11 +90,13 @@ export function realisationRepository(db: Db) {
 
 Les lectures commencent par `"use cache"` avec `cacheLife("hours")` et `cacheTag("realisations")` (fiche, règle 5). Elles renvoient `null` quand le contenu manque : le `notFound()` reste dans le container, hors du cache.
 
+<!-- fichier: src/features/realisations/constants/cache-tags.ts -->
 ```ts
 // src/features/realisations/constants/cache-tags.ts
 export const TAG_REALISATIONS = "realisations";
 ```
 
+<!-- fichier: src/features/realisations/queries/lire-realisation.query.ts -->
 ```ts
 // src/features/realisations/queries/lire-realisation.query.ts
 import "server-only";
@@ -107,6 +114,7 @@ export async function lireRealisation(slug: string) {
 }
 ```
 
+<!-- fichier: src/features/realisations/queries/lister-realisations.query.ts -->
 ```ts
 // src/features/realisations/queries/lister-realisations.query.ts
 import "server-only";
@@ -126,6 +134,7 @@ export async function listerRealisations() {
 
 L'affichage (section) et la lecture (container) :
 
+<!-- fichier: src/features/realisations/components/sections/detail-realisation.tsx -->
 ```tsx
 // src/features/realisations/components/sections/detail-realisation.tsx
 export function DetailRealisation({
@@ -144,6 +153,7 @@ export function DetailRealisation({
 }
 ```
 
+<!-- fichier: src/features/realisations/components/containers/detail-realisation.container.tsx -->
 ```tsx
 // src/features/realisations/components/containers/detail-realisation.container.tsx
 import { notFound } from "next/navigation";
@@ -161,6 +171,7 @@ export async function DetailRealisationContainer({ slug }: { slug: string }) {
 
 La page ne met aucun `<Suspense>` autour du container : `notFound()` s'exécute au premier niveau. `generateMetadata` lit la même réalisation (le cache évite une seconde lecture) :
 
+<!-- sans-verification: lit la base pendant la construction (generateStaticParams) ; essayée à la main sur une version construite avec une base, voir « Sources » -->
 ```tsx
 // app/(public)/realisations/[slug]/page.tsx
 import { DetailRealisationContainer } from "@src/features/realisations/components/containers/detail-realisation.container";
@@ -197,6 +208,7 @@ export default async function Realisation({
 
 Le sitemap ajoute ces adresses avec leur vraie date (`misAJourLe` = colonne de mise à jour) : `sitemap()` devient asynchrone et appelle la lecture en `"use cache"`.
 
+<!-- sans-verification: plan du site prérendu, lit la base pendant la construction ; essayé à la main sur une version construite avec une base, voir « Sources » -->
 ```ts
 // app/sitemap.ts
 import { adresseDuSite } from "@src/config/site";
