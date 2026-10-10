@@ -93,6 +93,8 @@ Avec les modèles ci-dessus, en appliquant « Qui a décidé quoi » (`raisonnem
 - `docs/user-stories.md` (référentiel) et un fichier `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` par US ; si la mémoire projet indique un outil de ticketing, les tickets aussi (étape 6 de `/pulse:us`) ;
 - les réponses du bloc 3 dans la section « Décisions prises » du brief, sur une ligne « Apparence souhaitée : <3 mots> ; références : … », pour l'étape 7.
 
+Dans le bloc `pulse_profil` de `CLAUDE.md`, écrire « - **Rythme** : rapide » (ajouter la ligne si elle manque), et le dire en une phrase : « J'ai réglé la réalisation sur le rythme rapide : l'essentiel des tests, et un seul test complet par vous à la fin de chaque user story. Dites « rythme complet » si vous voulez tout le détail. »
+
 Lancer `pulse-aidd memoire`, puis `pulse-aidd travail-fini`.
 
 ### 6. Les outils (choix techniques)

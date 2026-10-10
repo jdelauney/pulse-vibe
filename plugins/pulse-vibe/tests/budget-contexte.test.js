@@ -27,7 +27,7 @@ function taille(...args) {
 // Plafond = mesure à la fin du plan « Corrections 4 – parcours et coût » × 1,05, arrondie au 500 supérieur.
 // Une commande qui grossit doit dépasser 5 % avant d’échouer : relever son plafond est alors un choix explicite, avec la mesure et la raison.
 const PLAFONDS = {
-  init: 45000, // mesure 42 542
+  init: 48000, // mesure 45 347 (pulse 0.42 : rythme rapide, option -f, gestes)
   brainstorm: 34000, // mesure 31 945
   tech: 60500, // mesure 57 222
   memory: 32000, // mesure 30 261
@@ -37,7 +37,7 @@ const PLAFONDS = {
   us: 30500, // mesure 28 742
   spec: 35500, // mesure 33 492
   plan: 50500, // mesure 47 800
-  implement: 42000, // mesure 39 972
+  implement: 44500, // mesure 42 344 (pulse 0.42 : rythme rapide, option -f, gestes)
   fix: 24000, // mesure 22 408
   review: 31500, // mesure 29 678 (pulse 0.40 : règle commune 19 et fiche de test)
   commit: 39000, // mesure 37 065
@@ -56,7 +56,7 @@ const PLAFONDS = {
   "search-console": 43500, // mesure 41 273
   learn: 36000, // mesure 34 226
   explain: 24000, // mesure 22 408
-  test: 40500, // mesure 38 159
+  test: 43000, // mesure 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
   "auto-fix": 22500, // mesure 21 180
   status: 25000, // mesure 23 367 (28 764 avant la tâche 11 : le tableau des fichiers du projet se charge à la demande)
   guide: 30500, // mesure 28 747
@@ -77,12 +77,12 @@ const PLAFONDS_COMMANDE = {
   cicd: 51000, // mesure 48 229
   commit: 50500, // mesure 47 813
   deploy: 52000, // mesure 49 125
-  explain: 27000, // mesure 25 605
+  explain: 29000, // mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 50500, // mesure 48 062
-  fix: 33500, // mesure 31 758
+  fix: 35500, // mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 29500, // mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
   guide: 34500, // mesure 32 577
-  implement: 63000, // mesure 59 829
+  implement: 67500, // mesure 63 903 (pulse 0.42 : rythme rapide, option -f, gestes)
   init: 69500, // mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 41500, // mesure 39 206
   memory: 41000, // mesure 38 661
@@ -101,7 +101,7 @@ const PLAFONDS_COMMANDE = {
   spirc: 62500, // mesure 59 111 (pulse 0.41 : règles communes 19 et 20, gestes de la personne)
   status: 34000, // mesure 32 369
   tech: 79500, // mesure 75 338
-  test: 46000, // mesure 43 600
+  test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 81500, // mesure 77 215
   us: 41000, // mesure 38 722
 };
@@ -110,12 +110,12 @@ const PLAFONDS_COMMANDE = {
 const BOUCLES = {
   implement: {
     // mesure 86 580 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 91000,
+    plafond: 97500, // mesure 92 768 (pulse 0.42 : rythme rapide, option -f, gestes)
     parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"]],
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 82000,
+    plafond: 87000, // mesure 82 698 (pulse 0.42 : rythme rapide, option -f, gestes)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };

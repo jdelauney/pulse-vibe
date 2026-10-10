@@ -39,6 +39,8 @@ Le **rapport de réalisation** présenté ensuite à la personne (règles commun
 
 Au moment du test : lancer l'application en arrière-plan (commande « lancer en local » de « Commandes du projet »), vérifier que l'adresse répond, puis donner à la personne le lien cliquable vers la fiche, sa durée et sa première étape. Les contrôles automatiques restent à l'assistant : la personne n'a aucune commande à taper. Arrêter l'application après sa réponse.
 
+**Test groupé** (mode autonome, rythme rapide) : une seule fiche, complète, pour toute l'US : `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui reprend dans l'ordre du plan les étapes de chaque tâche, gardées dans leurs rapports.
+
 ## 4. Relecture de contrôle, après une correction
 
 Relancer un examen court, limité aux constats corrigés : reviewer et verifier en parallèle (avec les tests d'abord, le test-runner en phase « vert attendu » ; avec le contrôle de sécurité, l'auditeur). Ajouter son résultat à la fin du même rapport, dans `## Relecture de contrôle` (date, verdict, points restants), puis mettre à jour la ligne **Verdict**. Quand la correction suit un test par la personne « ❌ non concluant » : remettre la ligne **Résultat** de `## Test par la personne` à la valeur du modèle (`✅ concluant | ❌ non concluant | ⏳ reporté au test groupé de fin de plan (mode autonome)`), et garder dans **Remarque** ce qui n'allait pas. `pulse-aidd revue <Tn>` donne alors `test`, même le jour du premier test : la personne refait le test.

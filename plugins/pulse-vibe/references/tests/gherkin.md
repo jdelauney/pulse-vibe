@@ -46,7 +46,7 @@ Chaque exemple porte, sur la ligne du dessus, des étiquettes qui le relient au 
 | Étiquette | Sens |
 |---|---|
 | `@US-003-1` | Illustre le critère d'acceptation n° 1 de l'US-003 (au moins une par exemple) |
-| `@unitaire`, `@integration`, `@bout-en-bout` | Niveau de test automatique prévu, selon `tests/strategie.md` §2 |
+| `@unitaire`, `@integration`, `@bout-en-bout` | Niveau de test automatique prévu, selon `tests/strategie.md` §2 ; en rythme rapide (profil de `CLAUDE.md`), pas de `@bout-en-bout` : le parcours principal est `@manuel` |
 | `@manuel` | Vérifié par le test manuel seulement (rendu visuel, confort, parcours non automatisé) |
 | `@securite` | Règle d'accès ou de protection (checklist S1 à S13) |
 

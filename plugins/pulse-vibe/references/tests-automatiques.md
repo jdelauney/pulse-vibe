@@ -18,6 +18,7 @@ Si un sous-agent est indisponible : faire son travail soi-même en suivant **str
 ## 2. Choisir au démarrage
 
 - **Option `-t`** : tests d'abord, sans question.
+- **Rythme rapide** (profil de `CLAUDE.md`, ou option `-f` de `/pulse:spirc` ; sans `-t`) : tests essentiels (§ 2 bis), sans question.
 - **Sans `-t`** : poser la question avec les autres questions de démarrage (même appel AskUserQuestion) quand la commande pose ses questions (voir la commande), avec la réponse recommandée selon « Tester » de « Commandes du projet » (`docs/technical.md`) :
   - commande présente : « Tests d'abord (Recommandé) » (un assistant écrit les tests avant le code, qui doit les faire passer) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
   - « aucune », et la documentation officielle de la pile retenue recommande un outil de test : « Installer un outil de test (Recommandé) » (§ 3, puis tests d'abord) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
@@ -25,6 +26,15 @@ Si un sous-agent est indisponible : faire son travail soi-même en suivant **str
   - « aucune », du code à tester, mais ni outil recommandé par la documentation de la pile ni lanceur intégré au langage : « Installer un outil de test (Recommandé) » (§ 3, puis tests d'abord) / « Sans tests automatiques » (le test manuel et la relecture seulement) ;
   - « aucune », aucun code à tester automatiquement (pages HTML et CSS seules, outil sans code) : « Sans tests automatiques (Recommandé) » (le test manuel et la relecture seulement) / « Installer un outil de test, puis tests d'abord » (§ 3).
 - Annoncer le choix dans la ligne de démarrage (« … · tests d'abord »).
+
+## 2 bis. Tests essentiels (rythme rapide)
+
+Le rythme rapide va à l'essentiel : tests essentiels (ci-dessous), tâches enchaînées en autonome par `/pulse:spirc` (`-a`), puis une fiche de test complète de l'US, faite par la personne à la fin ; le parcours principal de la spec est `@manuel`. Annoncé en une phrase ; les questions de besoin et les validations restent les mêmes.
+
+- **Pas de tests d'abord** : l'implementer (ou la conversation en mode direct) écrit les tests avec le code, dans le même passage, les lance et donne leur résultat réel. Ni test-writer ni test-runner.
+- **Seulement là où ils servent** : une règle métier ou un calcul (unitaire), une lecture ou une écriture d'informations et chaque règle d'accès `@securite` (intégration). Pas de test de mise en page.
+- **Aucun test de bout en bout** : les parcours se vérifient dans la fiche de test complète de l'US, faite par la personne à la fin.
+- Chaque scénario `@unitaire` ou `@integration` de la spec a son test (titre qui commence par son étiquette). Pendant une tâche, lancer seulement ses tests ; la suite complète tourne avant le commit de la dernière tâche de l'US.
 
 ## 3. Si l'outil de test manque
 
