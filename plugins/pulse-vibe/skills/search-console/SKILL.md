@@ -2,7 +2,7 @@
 description: Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours
 argument-hint: "[relier | lire [28j|3m] | suivre | inspecter <adresse>] (détecté si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Edit(docs/technical.md) Write(docs/referencement/**) Edit(docs/referencement/**)
 ---
 
 # /pulse:search-console – Ce que Google voit de votre site
