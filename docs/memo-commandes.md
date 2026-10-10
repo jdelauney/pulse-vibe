@@ -42,9 +42,9 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 🧭 Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent les réglages conseillés sans vous poser de questions techniques ; dites-le si vous préférez autre chose.
 
-🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une branche pour l'US et une demande de fusion » : Pulse prépare la copie de travail et la demande de fusion (une demande relisible, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
+🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt » : Pulse prépare la version parallèle et sa proposition (relisible sur le site du dépôt, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
 
-🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose une **copie à part du projet** (un worktree), sur sa propre branche, puis rassemble le travail à la fin.
+🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose un **dossier à part** du projet (un worktree), sur sa propre version parallèle, puis rassemble le travail à la fin.
 
 ## 5. Mettre en ligne
 

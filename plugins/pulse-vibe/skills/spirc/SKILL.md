@@ -23,7 +23,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 - `-a` **autonome** : enchaîner les tâches sans s'arrêter : point de validation ✋ 2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles communes § 6). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). S'arrêtent toujours en cours de route : la validation du plan quand il vient d'être créé, les questions de besoin, de priorité ou de périmètre (dont « Bloqué – décision nécessaire » et les écarts de besoin) et les actions manuelles.
 - `-t` **tests d'abord** : avant le code de chaque tâche, `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », chargée au démarrage de la réalisation, § [T]).
 - `-x` **contrôle de sécurité à chaque tâche** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
-- `-w` **copie à part du projet (worktree)** : réaliser le plan dans une copie de travail séparée, sur sa propre branche (référence « Travailler dans un worktree », chargée au démarrage de la réalisation). Sans `-w`, si une autre session semble travailler sur ce dossier, la copie à part est proposée (même avec `-a` : c'est une décision de la personne).
+- `-w` **dossier à part (worktree)** : réaliser le plan dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree », chargée au démarrage de la réalisation). Sans `-w`, si une autre session semble travailler sur ce dossier, le dossier à part est proposé (même avec `-a` : c'est une décision de la personne).
 
 **US** (premier argument après les options) : l'US dont on réalise le plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`), désignée selon les règles « User stories, specs et plans » ci-dessus. Une US qui a une spec sans plan, ou ni spec ni plan : commencer à § S ou § P. Absent ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel, avec en dernière réponse « Spécifier et planifier une autre US » (§ S).
 
@@ -101,13 +101,13 @@ Avant la boucle par tâche (une fois la spec et le plan écrits et validés), po
 - **Rythme** (seulement si aucune option n'a été passée), question « Comment avancer ? » : « Pas à pas, avec mes points de validation (Recommandé) » (je m'arrête pour votre accord entre les tâches) / « Pas à pas, avec un contrôle de sécurité à chaque tâche » (en plus, un assistant vérifie la sécurité de chaque tâche) / « Autonome » (j'enchaîne et je corrige seul ; je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main ; vous testez tout à la fin) ;
 - **Tests** (seulement sans `-t`, même avec d'autres options ou `-a`) : « 2. Choisir au démarrage » de la référence « Tests automatiques » ;
 - **Envoi** : « 2. Choisir comment envoyer le travail d'un plan » de la référence « Le dépôt distant et l'envoi du travail » (même en autonome : c'est une décision de la personne) ;
-- **Copie à part** : « 1. Faut-il un worktree ? » de la référence worktree.
+- **Dossier à part** : « 1. Faut-il un worktree ? » de la référence worktree.
 
 « Autonome » vaut `-a`, « Pas à pas, avec un contrôle de sécurité à chaque tâche » vaut `-x`, « Tests d'abord » vaut `-t` ; autonome avec contrôle de sécurité : options `-ax`. Le point ✋ 2 déjà passé ne se rejoue pas.
 
 **Mode découverte** (règles communes § 1) : ronde sautée ; chaque choix prend sa réponse recommandée, annoncée en une phrase.
 
-Puis, si une copie à part est retenue, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que la copie les contienne. Toute la suite (réalisation, relecture, commits) se fait dans la copie. Sans copie à part, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+Puis, si un dossier à part est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que ce dossier les contienne. Toute la suite (réalisation, relecture, commits) se fait dans ce dossier. Sans dossier à part, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ## [P] Planifier
 

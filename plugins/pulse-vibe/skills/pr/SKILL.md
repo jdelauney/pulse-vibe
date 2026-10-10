@@ -17,7 +17,7 @@ Argument : `$ARGUMENTS`
 
 ## Objectif
 
-Phrase à dire la première fois : « Une branche, c'est une copie de travail de votre projet : vous y avancez sans toucher au site en ligne. Une demande de fusion (pull request, ou PR) propose ensuite d'intégrer ce travail à la version principale ; on peut la relire, la tester, puis l'accepter sur le site du dépôt. »
+Phrase à dire la première fois : « Une branche, c'est une version parallèle de votre projet : vous y avancez sans toucher au site en ligne. Une proposition, sur le site du dépôt, permet ensuite de rassembler ce travail dans la version principale ; on peut la relire, la tester, puis l'accepter sur le site du dépôt. »
 
 | Argument | Action |
 |---|---|

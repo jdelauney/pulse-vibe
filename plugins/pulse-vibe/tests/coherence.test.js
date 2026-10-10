@@ -966,3 +966,15 @@ test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; 
   const regles = lire(RACINE, "references", "regles-communes.md");
   assert.match(regles, /sauf l'envoi, qui prend « Directement sur la version principale »/);
 });
+
+test("vocabulaire : branche = version parallèle, worktree = dossier à part, écrits une fois dans le lexique", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const lexique = lire(RACINE, "templates", "lexique.md");
+  for (const image of ["une version parallèle du projet", "un dossier à part du projet", "la proposition de rassembler une version parallèle dans la version principale"])
+    assert.ok(lexique.includes(image), `lexique : ${image}`);
+  assert.match(lire(RACINE, "references", "git.md"), /Une \*\*branche\*\* est une version parallèle du projet/);
+  assert.match(skillTexte("pr"), /« Une branche, c'est une version parallèle de votre projet/);
+  assert.match(lire(RACINE, "references", "worktree.md"), /« Un worktree est un dossier à part du projet/);
+  const sources = [...TEXTES, { fichier: path.join("plugins", "pulse-vibe", "scripts", "guide.js"), texte: lire(RACINE, "scripts", "guide.js") }];
+  assert.deepStrictEqual(sources.filter(({ texte }) => /copie (de travail|à part)|copie séparée/i.test(texte)).map(({ fichier }) => unix(fichier)), []);
+});
