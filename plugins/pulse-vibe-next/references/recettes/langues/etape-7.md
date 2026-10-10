@@ -26,7 +26,5 @@
 
 <!-- remplacer-ligne: app/[locale]/(connecte)/layout.tsx début: export default function LayoutConnecte( -->
 ```tsx
-export default function LayoutConnecte({
-  children,
-}: LayoutProps<"/[locale]">) {
+export default function LayoutConnecte({ children }: LayoutProps<"/[locale]">) {
 ```

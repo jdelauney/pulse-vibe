@@ -8,7 +8,7 @@
 - Paquets du squelette : `next-safe-action`, `zod`, `@tanstack/react-form`, `sonner`. Si l'un manque, l'installer à sa dernière version : `npm install <paquet>`.
 - Pour l'exemple de contact : la zone de texte de shadcn, `npx shadcn@latest add textarea`.
 - Option Turnstile : un compte Cloudflare (offre gratuite) et un widget créé dans **Turnstile**, pour le domaine du site et `localhost`.
-- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `connexion,limite,formulaire-public` de `verifier-recettes.js`), option Turnstile comprise : contrôles, types, tests unitaires, construction. Sans clés, l'option est inactive : la version vérifiée se comporte comme la base. Les tests de bout en bout (`e2e/formulaire-public.spec.ts`, et `e2e/turnstile.spec.ts` avec les clés de test de Cloudflare) se lancent à la main.
+- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `connexion,limite,formulaire-public` de `verifier-recettes.js`), option Turnstile comprise : contrôles, types, tests unitaires et d'intégration, construction. Sans clés, l'option est inactive : la version vérifiée se comporte comme la base. Les tests de bout en bout (`e2e/formulaire-public.spec.ts`, et `e2e/turnstile.spec.ts` avec les clés de test de Cloudflare) se lancent à la main.
 
 ## Variables d'environnement
 

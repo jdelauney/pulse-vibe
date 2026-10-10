@@ -1,15 +1,16 @@
-import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 import { VARIABLES_VALIDES } from "../../../tests/helpers/env-de-test";
 
 // Les recettes complètent env.ts et env-public.ts : une variable dans `server` ou `client`, une
 // vérification juste après la déclaration de `verificationsCroisees`. Ce test fait de même sur des
-// copies, posées à côté de ce fichier le temps d'un test (un nom par copie : un module chargé
-// n'est pas relu).
-const ICI = dirname(fileURLToPath(import.meta.url));
-const copies: string[] = [];
+// copies, posées dans un dossier temporaire du système : le projet reste propre, même si le test
+// est interrompu (un nom par copie : un module chargé n'est pas relu).
+const CONFIG = join(dirname(fileURLToPath(import.meta.url)), "..");
+const DOSSIER = mkdtempSync(join(tmpdir(), "verifications-env-"));
 let numero = 0;
 
 // Variables d'essai, ajoutées dans `server`.
@@ -50,13 +51,16 @@ function ajouterApres(texte: string, ancre: string, bloc: string): string {
 function copier(fichier: string, transformer: (source: string) => string) {
   numero += 1;
   const nom = `copie-${process.pid}-${numero}`;
-  const chemin = join(ICI, `${nom}.ts`);
-  copies.push(chemin);
-  const source = readFileSync(join(ICI, "..", fichier), "utf8").replaceAll(
-    'from "./',
-    'from "../',
+  const chemin = join(DOSSIER, `${nom}.ts`);
+  const copie = transformer(readFileSync(join(CONFIG, fichier), "utf8"));
+  // Les autres imports relatifs visent les fichiers de src/config, par leur chemin complet.
+  writeFileSync(
+    chemin,
+    copie.replaceAll(
+      /from "\.\/(?!copie-)/g,
+      `from "${CONFIG.replaceAll("\\", "/")}/`,
+    ),
   );
-  writeFileSync(chemin, transformer(source));
   return nom;
 }
 
@@ -84,7 +88,7 @@ async function chargerCopies(
       ajouterApres(source, "server: {", VARIABLES),
       "const verificationsCroisees: VerificationCroisee[] = [];",
       verifications,
-    ).replace('from "../env-public"', `from "./${envPublic}"`),
+    ).replace('from "./env-public"', `from "./${envPublic}"`),
   );
   vi.stubEnv("SKIP_ENV_VALIDATION", "");
   for (const [nom, valeur] of Object.entries({
@@ -93,14 +97,17 @@ async function chargerCopies(
   })) {
     vi.stubEnv(nom, valeur);
   }
-  const chemin = pathToFileURL(join(ICI, `${env}.ts`)).href;
+  const chemin = pathToFileURL(join(DOSSIER, `${env}.ts`)).href;
   return (await import(/* @vite-ignore */ chemin)).env;
 }
 
 afterEach(() => {
-  for (const copie of copies.splice(0)) rmSync(copie, { force: true });
   vi.unstubAllEnvs();
   vi.resetModules();
+});
+
+afterAll(() => {
+  rmSync(DOSSIER, { recursive: true, force: true });
 });
 
 describe("Vérifications croisées des variables", () => {
