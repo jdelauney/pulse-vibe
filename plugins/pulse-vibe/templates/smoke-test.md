@@ -10,6 +10,7 @@
 ## Avant de commencer
 
 - **Ouvrir l'application** : {{l'assistant l'a lancée pour vous. Ouvrez votre navigateur (Chrome, Edge, Firefox ou Safari), cliquez dans la barre d'adresse tout en haut, tapez `http://localhost:3000` puis appuyez sur Entrée. La page « … » s'affiche.}}
+- **Si l'application n'est pas ouverte** (vous relisez la fiche plus tard) : {{gestes de `gestes.md` § 4 : dans VS Code, menu **Terminal** puis **Nouveau terminal** ; tapez `npm run dev` puis **Entrée** ; attendez l'adresse `http://localhost:3000`. Pour l'arrêter à la fin : cliquez dans le terminal, puis **Ctrl + C**.}}
 - **Compte à utiliser** : {{adresse e-mail et mot de passe fictifs, ou « aucun »}}
 - **Ce qu'il vous faut** : {{par exemple « une image sur votre ordinateur », ou « rien d'autre »}}
 

@@ -168,6 +168,7 @@ bin/pulse-aidd                    outil interne : contexte | etape <commande> [-
 bin/pulse-aidd.ps1                relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-aidd.cmd : relais pour l'invite de commandes (cmd)
 references/                       partagées : regles-communes.md (le noyau), fichiers-projet.md (les fichiers produits dans le projet), cycle.md (le cycle en un coup d'œil),
                                   checklist-securite.md, memoire.md (mémoire projet), raisonnement.md (penser avant d'écrire),
+                                  gestes.md (les actions demandées à la personne, pas à pas : fichiers d'environnement, lancer l'application, gestes du navigateur),
                                   depot-distant.md (dépôt distant et envoi du travail), git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle),
                                   examen.md (relecture et vérification d'une tâche), tests-automatiques.md (option -t),
                                   secrets/ (saisie hors conversation), qualite/ (références de qualité du code),
