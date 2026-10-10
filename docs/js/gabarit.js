@@ -23,7 +23,7 @@
   // Une page est « la page actuelle » quand l'adresse se termine par son chemin depuis la racine du wiki.
   function estIci(href) {
     var cible = href.replace(/^\.\//, "");
-    return ici.slice(-cible.length) === cible || (cible === "index.html" && /\/wiki\/?$/.test(ici));
+    return ici.slice(-cible.length) === cible || (cible === "index.html" && racine === "" && /\/$/.test(ici));
   }
 
   // Logo : une onde de pouls dans un cercle, aux couleurs de la traînée.
@@ -41,7 +41,9 @@
     var liste = el("ul", { id: "menu-principal" });
     donnees.navigation.forEach(function (p) {
       var a = el("a", { href: racine + p.href, texte: p.titre });
-      if (estIci(p.href) || (p.href === "commandes/index.html" && commande)) a.setAttribute("aria-current", "page");
+      // Une rubrique (commandes/, tutoriels/) reste active sur toutes ses pages.
+      var rubrique = /\/index\.html$/.test(p.href) && ici.indexOf("/" + p.href.split("/")[0] + "/") >= 0;
+      if (estIci(p.href) || rubrique) a.setAttribute("aria-current", "page");
       liste.appendChild(el("li", {}, [a]));
     });
     var nav = el("nav", { class: "navigation", "aria-label": "Navigation principale" }, [liste]);
@@ -60,7 +62,7 @@
 
   // Navigation latérale des pages de commandes : les commandes groupées par étape.
   function laterale() {
-    var cible = document.querySelector("[data-laterale]");
+    var cible = document.querySelector("[data-laterale=\"\"]");
     if (!cible) return;
     donnees.etapes.forEach(function (etape) {
       cible.appendChild(el("h2", { texte: etape.numero + ". " + etape.nom }));
@@ -71,6 +73,61 @@
         ul.appendChild(el("li", {}, [a]));
       });
       cible.appendChild(ul);
+    });
+  }
+
+  // Navigation latérale d'une page longue (tutoriel, prérequis) : ses titres h2, dans l'ordre.
+  function lateraleSommaire() {
+    var cible = document.querySelector('[data-laterale="sommaire"]');
+    if (!cible) return;
+    cible.appendChild(el("h2", { texte: "Sur cette page" }));
+    var ul = el("ul");
+    document.querySelectorAll(".typographie h2").forEach(function (h) {
+      var section = h.closest("section[id]");
+      var id = h.id || (section && section.id);
+      // Le titre seul : sans la durée (.duree) ni le numéro d'étape répété en double.
+      var copie = h.cloneNode(true);
+      copie.querySelectorAll(".duree").forEach(function (d) { d.remove(); });
+      if (id) ul.appendChild(el("li", {}, [el("a", { href: "#" + id, texte: copie.textContent.replace(/\s+/g, " ").trim() })]));
+    });
+    cible.appendChild(ul);
+  }
+
+  // Onglets : <div class="onglets"><section data-onglet="Windows"><h3 class="onglet-titre">Windows</h3>…</section>…</div>
+  function onglets() {
+    document.querySelectorAll(".onglets").forEach(function (bloc, n) {
+      var panneaux = Array.prototype.slice.call(bloc.querySelectorAll(":scope > [data-onglet]"));
+      if (panneaux.length < 2) return;
+      var liste = el("div", { class: "onglets-liste", role: "tablist" });
+      var choisir = function (i) {
+        panneaux.forEach(function (p, j) {
+          p.hidden = i !== j;
+          liste.children[j].setAttribute("aria-selected", i === j ? "true" : "false");
+          liste.children[j].tabIndex = i === j ? 0 : -1;
+        });
+      };
+      panneaux.forEach(function (p, i) {
+        var id = "onglet-" + n + "-" + i;
+        p.id = p.id || id + "-panneau";
+        p.setAttribute("role", "tabpanel");
+        var b = el("button", { type: "button", role: "tab", id: id, "aria-controls": p.id, texte: p.getAttribute("data-onglet") });
+        p.setAttribute("aria-labelledby", id);
+        b.addEventListener("click", function () { choisir(i); });
+        b.addEventListener("keydown", function (e) {
+          if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+            var k = (i + (e.key === "ArrowRight" ? 1 : panneaux.length - 1)) % panneaux.length;
+            choisir(k);
+            liste.children[k].focus();
+          }
+        });
+        liste.appendChild(b);
+      });
+      bloc.insertBefore(liste, bloc.firstChild);
+      bloc.classList.add("onglets-pret");
+      // macOS par défaut sur un Mac, Windows sinon.
+      var mac = /Mac/i.test(navigator.platform || navigator.userAgent);
+      var defaut = panneaux.findIndex(function (p) { return /mac/i.test(p.getAttribute("data-onglet")) === mac; });
+      choisir(defaut < 0 ? 0 : defaut);
     });
   }
 
@@ -136,6 +193,8 @@
 
   entete();
   laterale();
+  lateraleSommaire();
+  onglets();
   sommaire();
   suite();
   boutonsCopier();

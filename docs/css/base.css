@@ -595,3 +595,67 @@ details.probleme > :not(summary) { margin: 0 18px 16px; }
 .centre { text-align: center; }
 .typographie .sommaire, .typographie .parcours { padding-left: 0; }
 .typographie .sommaire li, .typographie .parcours li { margin-bottom: 0; }
+
+/* --- Tutoriels et prérequis ---------------------------------------------------------------------------- */
+
+/* Une étape de tutoriel : numéro en pastille, titre, contenu. */
+.etape-tuto h2 { display: flex; align-items: center; gap: 14px; }
+.etape-numero {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--rayon-pilule);
+  background: var(--primaire-eteint);
+  border: 1px solid oklch(0.68 0.2 30 / 45%);
+  color: var(--primaire);
+  font-size: var(--texte-base);
+  font-weight: 700;
+}
+.duree { color: var(--texte-secondaire); font-size: var(--texte-sm); font-weight: 500; margin-left: auto; }
+
+/* Repère pour reprendre plus tard. */
+.encadre-repere { border-style: dashed; }
+.encadre-repere strong:first-child { color: var(--texte-secondaire); }
+
+/* Emplacement d'une capture d'écran à fournir (remplacé par <img> quand elle existe). */
+.capture { margin: 0 0 24px; }
+.capture img { display: block; width: 100%; border-radius: var(--rayon-xl); border: 1px solid var(--lisere); box-shadow: var(--ombre-surface); }
+.capture-cadre {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  padding: 24px;
+  border: 1px dashed var(--lisere);
+  border-radius: var(--rayon-xl);
+  background: var(--surface);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+  text-align: center;
+}
+.capture figcaption { margin-top: 8px; color: var(--texte-secondaire); font-size: var(--texte-sm); }
+
+/* Onglets (Windows / macOS) : sans JS, chaque panneau s'affiche avec son titre. */
+.onglets { margin: 0 0 24px; }
+.onglets-liste { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.onglets-liste button {
+  height: 2rem;
+  padding: 0 16px;
+  border-radius: var(--rayon-pilule);
+  border: 1px solid var(--lisere);
+  background: transparent;
+  color: var(--texte);
+  font: 500 var(--texte-sm) / 1 var(--police);
+  cursor: pointer;
+}
+.onglets-liste button[aria-selected="true"] { background: var(--primaire-eteint); border-color: var(--primaire); }
+.onglets-liste button:focus-visible { outline: none; border-color: var(--primaire); box-shadow: 0 0 0 3px var(--anneau); }
+.onglets-pret .onglet-titre { display: none; }
+
+/* Liste de vérification des prérequis. */
+.verification { list-style: none; padding-left: 0 !important; }
+.verification li { position: relative; padding-left: 2rem; }
+.verification li::before { content: "☐"; position: absolute; left: 0.25rem; color: var(--accompagne); }
+@media (min-width: 640px) { .grille-deux { grid-template-columns: repeat(2, 1fr) !important; } }
+.carte-titre-espace { margin-top: 16px; }
