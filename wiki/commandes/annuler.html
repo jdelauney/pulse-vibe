@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="annuler">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:annuler – Wiki Pulse</title>
+<meta name="description" content="Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:annuler</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une tâche a tout cassé ? Vous voulez repartir de la version d'hier ? Cette commande vous ramène en arrière, <strong>sans rien perdre</strong>. Annuler ne gomme rien : Pulse ajoute une nouvelle version qui défait l'ancienne, ou met vos changements de côté. Vous pourrez toujours récupérer ce qui a été annulé.</p>
+<p>Elle sait faire quatre choses : abandonner les changements pas encore enregistrés, annuler une tâche enregistrée (ou toute une user story), revenir à une version précédente, et récupérer ce qui avait été annulé.</p>
+<p>Avant toute opération, Pulse vous montre un aperçu : ce qui sera défait, ce que cela apportait à l'appli, et ce qu'annuler ne défait pas. Rien ne se passe sans votre accord.</p>
+
+<figure class="anim" data-etapes="4" data-duree="1300">
+<svg viewBox="0 0 640 250" role="img" aria-labelledby="annuler-schema-titre">
+<title id="annuler-schema-titre">Revenir en arrière avec /pulse:annuler, sans rien perdre</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="36" y="86" width="348" height="48" rx="24"/><text class="schema-texte" x="210" y="44" text-anchor="middle">Vos versions enregistrées</text><path class="schema-fleche" d="M70 110 H350"/><circle class="schema-boite" cx="60" cy="110" r="10"/><circle class="schema-boite" cx="160" cy="110" r="10"/><circle class="schema-boite" cx="260" cy="110" r="10"/><circle class="schema-boite" cx="360" cy="110" r="10"/><text class="schema-texte-secondaire" x="60" y="144" text-anchor="middle">T1</text><text class="schema-texte-secondaire" x="160" y="144" text-anchor="middle">T2</text><text class="schema-texte-secondaire" x="260" y="144" text-anchor="middle">T3</text><text class="schema-texte-secondaire" x="360" y="144" text-anchor="middle">T4 · maintenant</text></g>
+<g class="e2" data-etape="2"><circle class="actif-halo schema-halo-primaire" cx="160" cy="110" r="18"/><text class="schema-texte-secondaire" x="160" y="80" text-anchor="middle">revenir à T2 ?</text><rect class="schema-boite-active" x="40" y="176" width="220" height="56" rx="14"/><text class="schema-texte" x="150" y="200" text-anchor="middle">Aperçu, puis accord</text><text class="schema-texte-secondaire" x="150" y="218" text-anchor="middle">rien ne bouge sans vous</text></g>
+<circle class="schema-boite-toujours e3" cx="260" cy="110" r="16"/>
+<circle class="schema-boite-toujours e3" cx="360" cy="110" r="16"/>
+<path class="schema-fleche trace e3" pathLength="1" d="M378 110 H464" marker-end="url(#annuler-pointe-grise)"/>
+<g class="e3" data-etape="3"><circle class="actif-halo schema-halo-primaire" cx="480" cy="110" r="18"/><circle class="schema-boite-active" cx="480" cy="110" r="10"/><text class="schema-texte-secondaire" x="310" y="80" text-anchor="middle">gardées de côté</text><text class="schema-texte-secondaire" x="480" y="144" text-anchor="middle">nouvelle version</text><text class="schema-texte-secondaire" x="480" y="162" text-anchor="middle">défait T3 et T4</text></g>
+<g class="e4" data-etape="4"><circle class="actif-halo schema-halo-primaire" cx="590" cy="110" r="18"/><path class="schema-accompagne trace e4" pathLength="1" d="M310 66 C360 14 540 14 586 92" marker-end="url(#annuler-pointe-mauve)"/><circle class="schema-boite" cx="590" cy="110" r="10"/><text class="schema-texte-secondaire" x="450" y="22" text-anchor="middle">toujours récupérables</text><text class="schema-texte-secondaire" x="590" y="196" text-anchor="middle">récupérer :</text><text class="schema-texte-secondaire" x="590" y="214" text-anchor="middle">T3 et T4 reviennent</text></g>
+<defs>
+<marker id="annuler-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="annuler-pointe-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Vos versions enregistrées forment une ligne : T1, T2, T3, puis T4, la version actuelle. Vous choisissez de revenir à T2 ; Pulse vous montre un aperçu et attend votre accord. Il ajoute alors une nouvelle version qui défait T3 et T4, sans les effacer : elles restent dans l'historique, en pointillé. Plus tard, vous pouvez les récupérer, et elles reviennent.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous ne perdez rien.</strong> Chaque annulation est elle-même réversible : relancez la commande et choisissez « Récupérer ».</li>
+<li><strong>Vous voyez avant d'agir.</strong> L'aperçu liste les tâches défaites, ce qu'elles apportaient et leurs fichiers.</li>
+<li><strong>Vos plans restent à jour.</strong> Une tâche annulée repasse à « à faire » dans son plan, avec une ligne de journal.</li>
+<li><strong>Pas besoin de connaître Git.</strong> Pulse vous présente vos versions en langage simple : « hier 17 h – T4 : permet de cocher un rendez-vous honoré ».</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Les derniers changements ne vous plaisent pas</strong> et vous voulez repartir de la dernière version enregistrée.</li>
+<li><strong>Une tâche enregistrée a cassé quelque chose</strong> : vous l'annulez, puis vous la refaites autrement.</li>
+<li><strong>Vous voulez retrouver l'appli telle qu'elle était hier.</strong></li>
+<li><strong>Vous regrettez une annulation</strong> : vous récupérez ce qui avait été annulé.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si un seul petit détail ne va pas, une correction est souvent plus simple qu'une annulation : essayez d'abord <a href="fix.html"><code>/pulse:fix</code></a>.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:annuler [T3 | US-003]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Facultatif : la tâche ou l'US à annuler.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Une tâche</strong>, par exemple <code>T3</code> : Pulse annule cette tâche enregistrée.</li>
+<li><strong>Une user story</strong>, par exemple <code>US-003</code> : Pulse annule toutes ses tâches enregistrées, en une seule fois (un aperçu, un accord, une nouvelle version).</li>
+<li><strong>Rien</strong> : Pulse demande « Que voulez-vous annuler ? » et vous propose les choix possibles : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer quelque chose que vous avez annulé.</li>
+</ul>
+<pre class="commande"><code>/pulse:annuler T3</code></pre>
+<pre class="commande"><code>/pulse:annuler US-003</code></pre>
+<pre class="commande"><code>/pulse:annuler</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Cas</th><th>Ce qui est créé ou modifié</th></tr></thead>
+<tbody>
+<tr><td>Abandonner les changements en cours</td><td>Les changements sont mis de côté dans Git, sous un nom qui commence par <code>pulse-annuler</code>, avec la date. Une tâche en cours dont tout est mis de côté repasse à « à faire ».</td></tr>
+<tr><td>Annuler une tâche ou une user story</td><td>Une nouvelle version qui défait la tâche (<code>revert(T3): …</code>). Dans le plan, la tâche repasse à « à faire », avec une ligne de journal.</td></tr>
+<tr><td>Revenir à une version précédente</td><td>Une copie de l'état actuel, sous le nom <code>sauvegarde/</code> suivi de la date, puis une nouvelle version qui revient à la version choisie. Les plans sont mis à jour.</td></tr>
+<tr><td>Récupérer</td><td>Ce qui avait été mis de côté revient, ou une nouvelle version rétablit les tâches annulées.</td></tr>
+</tbody>
+</table>
+<p>Les rapports de relecture restent en place. Pour une tâche ou une version, le travail est ensuite envoyé vers votre dépôt en ligne, comme après chaque tâche.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien ne se fait sans votre accord.</strong> Une réponse floue vaut « Ne rien faire » : Pulse le dit et s'arrête.</li>
+<li><strong>Les tâches plus récentes sont signalées.</strong> Si elles touchent les mêmes fichiers, elles pourraient ne plus fonctionner : Pulse propose de les annuler aussi, ou de s'arrêter.</li>
+<li><strong>L'envoi n'écrase jamais le dépôt en ligne.</strong> C'est toujours un envoi simple, jamais forcé. Claude Code vous demande l'autorisation pour cet envoi.</li>
+<li><strong>Si votre site est en ligne</strong> et se met à jour automatiquement, l'envoi le remet dans l'état choisi. Pulse vous le rappelle.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> annuler ne défait que le code et les documents du projet. Un schéma appliqué dans la console de la base, des rendez-vous saisis sur le site en ligne, des variables saisies chez l'hébergeur ou un compte créé sur un service restent tels quels. Pulse les nomme dans l'aperçu et explique comment les défaire à la main.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse dit qu'une opération est déjà en cours</summary><p>Une annulation ou une fusion précédente s'est arrêtée en route. Pulse vous l'explique et propose de l'interrompre proprement avant toute chose. Si une autre session de Claude Code travaille sur ce projet, l'opération est peut-être la sienne : terminez-la dans cette session.</p></details>
+<details class="probleme"><summary>« Une tâche plus récente a modifié les mêmes lignes de code »</summary><p>Pulse ne peut pas défaire cette tâche toute seule. Il remet tout dans l'état d'avant, sans rien perdre, et propose <a href="get-help.html"><code>/pulse:get-help</code></a> pour préparer une demande d'aide.</p></details>
+<details class="probleme"><summary>Je veux récupérer ce que j'ai annulé</summary><p>Relancez <code>/pulse:annuler</code> et choisissez « Récupérer quelque chose que j'ai annulé ». Pulse vous montre ce qui peut revenir. Pour repartir d'une copie <code>sauvegarde/</code>, l'opération est délicate : Pulse propose <a href="get-help.html"><code>/pulse:get-help</code></a>.</p></details>
+<details class="probleme"><summary>Pulse ne me propose que certains fichiers à abandonner</summary><p>Une autre session de Claude Code travaille sur ce projet : certains changements sont peut-être les siens. Nommez seulement les fichiers que vous voulez mettre de côté.</p></details>
+<details class="probleme"><summary>Pulse me renvoie vers <code>/pulse:init</code></summary><p>Votre dossier n'a pas encore d'historique de versions. Il n'y a donc rien à annuler : lancez <a href="init.html"><code>/pulse:init</code></a> pour le créer.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : annuler une tâche">
+<p data-role="vous">/pulse:annuler T3</p>
+<p data-role="claude">Annuler ne gomme rien : j'ajoute une nouvelle version qui défait l'ancienne. Vous pourrez toujours récupérer ce que nous annulons.
+T3 – Choix du créneau (US-001) : permettait au client de choisir l'heure de son rendez-vous.
+Fichiers : src/creneaux.js, src/reservation.js
+Déjà envoyé : oui. Le site n'est pas encore en ligne.</p>
+<p data-role="claude">→ Annuler
+→ Ne rien faire</p>
+<p data-role="vous">Annuler</p>
+<p data-role="outil">git revert --no-commit 4f2a9c1</p>
+<p data-role="claude">C'est fait : T3 est annulée par la version « revert(T3): annule le choix du créneau ». Elle repasse à « à faire » dans le plan.
+Pour la récupérer : relancez /pulse:annuler et choisissez « Récupérer ».
+➡️ Prochaine étape : /pulse:implement US-001 T3 pour la refaire autrement.</p>
+</div>
+<div class="conversation" data-titre="Exemple : abandonner les changements en cours">
+<p data-role="vous">/pulse:annuler</p>
+<p data-role="claude">Que voulez-vous annuler ?
+→ Abandonner les changements en cours (Recommandé)
+→ Annuler une tâche enregistrée
+→ Revenir à une version précédente</p>
+<p data-role="vous">Abandonner les changements en cours</p>
+<p data-role="claude">Fichiers modifiés :
+- src/liste-du-jour.js : la liste des rendez-vous du jour
+- src/styles.css : les couleurs du carnet
+→ Tout abandonner · Seulement certains fichiers</p>
+<p data-role="vous">Tout abandonner</p>
+<p data-role="claude">C'est fait : vos changements sont mis de côté sous « pulse-annuler 2026-10-10 14:32 liste du jour ». Ils peuvent revenir à tout moment avec « Récupérer ».</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="status.html"><code>/pulse:status</code></a> : voir où en est le projet après une annulation.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : refaire autrement une tâche annulée.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : corriger une erreur précise, plutôt que tout annuler.</li>
+<li><a href="get-help.html"><code>/pulse:get-help</code></a> : demander de l'aide quand l'annulation bloque.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer une version, pour pouvoir y revenir plus tard.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

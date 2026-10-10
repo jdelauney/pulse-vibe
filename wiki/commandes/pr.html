@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="pr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:pr – Wiki Pulse</title>
+<meta name="description" content="Travailler sur une version parallèle et proposer de la rassembler : créer la branche de travail, puis ouvrir sur le site du dépôt la proposition en brouillon, décrite à partir des commits, du plan et des relectures.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="3">Étape 4 · Construire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:pr</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Travailler sur une version parallèle et proposer de la rassembler : créer la branche de travail, puis ouvrir sur le site du dépôt la proposition en brouillon, décrite à partir des commits, du plan et des relectures.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une <dfn>branche</dfn>, c'est une version parallèle de votre projet : vous y avancez sans toucher au site en ligne. Cette commande crée cette version parallèle avant que vous commenciez une user story, avec un nom clair, tiré du plan.</p>
+<p>Quand le travail est prêt, elle prépare la proposition de version parallèle sur le site du dépôt (GitHub ou GitLab). Elle rédige le titre et la description à partir de vos enregistrements, du plan et des rapports de relecture, vous les montre, puis ouvre la proposition en brouillon après votre accord. Vous pouvez la relire, la tester, puis l'accepter : votre travail rejoint alors la version principale.</p>
+<pre class="commande"><code>Proposition prête :
+  Titre        Choisir un créneau libre dans le carnet
+  Base         main, la version principale du dépôt
+  Tâches       T1 à T4 du plan US-003
+  Relecture    ✅ 4 tâches relues · secrets contrôlés
+
+➡️ Ouvrir la proposition en brouillon (Recommandé) · Modifier le texte · Annuler</code></pre>
+<p class="legende">Ce que <code>/pulse:pr</code> vous montre avant d'ouvrir la proposition.</p>
+
+<figure class="anim" data-etapes="5" data-duree="1300">
+<svg viewBox="0 0 640 230" role="img" aria-labelledby="schema-pr-titre">
+<title id="schema-pr-titre">Le chemin d'une version parallèle avec /pulse:pr</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="18" width="172" height="68" rx="18"/><rect class="schema-boite" x="20" y="24" width="160" height="56" rx="14"/><text class="schema-texte" x="100" y="50" text-anchor="middle">Version principale</text><text class="schema-texte-secondaire" x="100" y="68" text-anchor="middle">le site en ligne</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M100 80 V146" marker-end="url(#pointe-grise-pr)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="14" y="144" width="172" height="68" rx="18"/><rect class="schema-boite" x="20" y="150" width="160" height="56" rx="14"/><text class="schema-texte" x="100" y="176" text-anchor="middle">Version parallèle</text><text class="schema-texte-secondaire" x="100" y="194" text-anchor="middle">elle s'en détache</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M180 178 H226" marker-end="url(#pointe-grise-pr)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="224" y="144" width="172" height="68" rx="18"/><rect class="schema-boite" x="230" y="150" width="160" height="56" rx="14"/><text class="schema-texte" x="310" y="176" text-anchor="middle">Votre travail</text><text class="schema-texte-secondaire" x="310" y="194" text-anchor="middle">et ses enregistrements</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M390 178 H436" marker-end="url(#pointe-grise-pr)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="434" y="144" width="196" height="68" rx="18"/><rect class="schema-boite" x="440" y="150" width="184" height="56" rx="14"/><text class="schema-texte" x="532" y="176" text-anchor="middle">Proposition</text><text class="schema-texte-secondaire" x="532" y="194" text-anchor="middle">en brouillon, avec aperçu</text></g>
+<g class="e5" data-etape="5"><path class="schema-accompagne trace e5" pathLength="1" d="M532 150 V88" marker-end="url(#pointe-mauve-pr)"/><rect class="actif-halo schema-halo-primaire" x="434" y="18" width="196" height="68" rx="18"/><rect class="schema-boite-active" x="440" y="24" width="184" height="56" rx="14"/><text class="schema-texte" x="532" y="50" text-anchor="middle">Vous acceptez</text><text class="schema-texte-secondaire" x="532" y="68" text-anchor="middle">elle rejoint la principale</text><path class="schema-accompagne trace e5" pathLength="1" d="M180 52 H436" marker-end="url(#pointe-mauve-pr)"/></g>
+<defs>
+<marker id="pointe-grise-pr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="pointe-mauve-pr" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Une version parallèle se détache de la version principale. Vous y travaillez et y enregistrez vos changements. Pulse ouvre ensuite la proposition en brouillon sur le site du dépôt, souvent avec une adresse de prévisualisation si l'hébergeur en donne une. Quand vous l'acceptez, votre travail rejoint la version principale.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Le site en ligne reste intact pendant le travail.</strong> Il change seulement quand vous acceptez la proposition.</li>
+<li><strong>La description est écrite pour vous.</strong> Ce qui change à l'usage, les tâches du plan, les étapes pour tester et l'état des relectures, en français.</li>
+<li><strong>Vous testez avant de publier.</strong> Si l'hébergeur le propose, une adresse de prévisualisation montre la nouvelle version, à part du site de vos clients.</li>
+<li><strong>Vous gardez la décision.</strong> Pulse ouvre la proposition en brouillon ; c'est vous qui l'acceptez, sur le site du dépôt.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3" aria-current="step"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Avant de coder une user story</strong> : <code>/pulse:pr branche US-003</code>, puis <a href="implement.html"><code>/pulse:implement US-003</code></a>.</li>
+<li><strong>Quand le travail est prêt</strong>, relu et enregistré : <code>/pulse:pr</code> ouvre la proposition.</li>
+<li><strong>En équipe, ou pour tester avant de publier</strong> : chaque user story a sa version parallèle et sa proposition.</li>
+<li><strong>Si vous avez enregistré sur la version principale par erreur</strong> : Pulse propose de ranger ces enregistrements sur une nouvelle version parallèle.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> au démarrage de <a href="implement.html"><code>/pulse:implement</code></a> ou de <a href="spirc.html"><code>/pulse:spirc</code></a>, choisissez « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt » : Pulse prépare alors la version parallèle et sa proposition pour vous. <code>/pulse:pr</code> sert à le faire à la main.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:pr [branche [&lt;US-XXX&gt;] | &lt;branche de base&gt;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Vide : ouvrir la demande pour la branche en cours.</p>
+<!-- /auto:forme -->
+<ul>
+<li><code>branche</code> suivi d'une user story : crée la version parallèle avant de coder. Pulse propose un nom tiré du plan, par exemple <code>feat/us-003-choisir-creneau</code> (<code>fix/…</code> pour une correction), et vous le faites valider. Sans user story, Pulse vous montre les plans existants et vous demande lequel choisir.</li>
+<li><strong>Sans argument</strong> : ouvre la proposition pour la version parallèle sur laquelle vous êtes.</li>
+<li><strong>Un nom de branche</strong> : ouvre la proposition vers cette version-là, au lieu de la version principale.</li>
+</ul>
+<pre class="commande"><code>/pulse:pr branche US-003</code></pre>
+<pre class="commande"><code>/pulse:pr</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>Aucun fichier de votre projet ne change. Tout se passe dans l'historique Git et sur le dépôt distant :</p>
+<table>
+<thead><tr><th>Élément</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td>La version parallèle, par exemple <code>feat/us-003-choisir-creneau</code></td><td>Ranger vos enregistrements à part, partie de la version principale à jour.</td></tr>
+<tr><td>La proposition en brouillon, sur le site du dépôt</td><td>Relire, tester et accepter le travail. Sa description suit le modèle Pulse : type de changement, description, ce qui change à l'usage, tâches et user stories, étapes pour tester, relecture et sécurité.</td></tr>
+</tbody>
+</table>
+<p>Si le dépôt a déjà son propre modèle de description, Pulse le reprend à la place du sien.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Vous seul acceptez la proposition.</strong> Pulse l'ouvre en brouillon et vous laisse le bouton « Merge » du site du dépôt.</li>
+<li><strong>Chaque envoi passe par votre accord.</strong> Claude Code vous demande d'autoriser <code>git push</code> (l'envoi vers le dépôt distant) et <code>git pull</code> (la récupération de la dernière version). Pulse envoie toujours normalement, sans forcer.</li>
+<li><strong>Les secrets sont contrôlés avant l'envoi</strong>, comme avec <a href="commit.html"><code>/pulse:commit</code></a> : fichiers de clés hors de Git, aucune clé dans les changements.</li>
+<li><strong>Rien ne se perd</strong> quand Pulse range vos enregistrements sur une nouvelle version parallèle : il vous l'explique, attend votre accord, puis vérifie qu'ils y sont bien.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> accepter la proposition met votre travail dans la version principale. Si la mise en ligne automatique est en place, le site change quelques minutes plus tard. Testez d'abord les « Étapes pour tester » sur l'adresse de prévisualisation.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Des modifications ne sont pas enregistrées »</summary><p>Pulse vous propose <a href="commit.html"><code>/pulse:commit</code></a> d'abord. Avant de créer une version parallèle, vous pouvez aussi choisir d'emporter ces modifications : elles suivent automatiquement.</p></details>
+<details class="probleme"><summary>J'ai travaillé directement sur la version principale</summary><p>Si vos enregistrements ne sont pas encore envoyés, Pulse propose de les ranger sur une nouvelle version parallèle ; la version principale revient à l'état du dépôt en ligne. Tout est conservé. S'ils sont déjà envoyés, pensez à <code>/pulse:pr branche</code> la prochaine fois.</p></details>
+<details class="probleme"><summary>L'outil du dépôt n'est pas installé ou pas connecté</summary><p>Pulse vous donne le lien à ouvrir sur le site du dépôt, puis le titre et la description à coller. Cochez « brouillon » (Draft) avant de valider. L'installation de l'outil reste à votre choix.</p></details>
+<details class="probleme"><summary>L'envoi est refusé</summary><p>Le dépôt distant contient une version plus récente. Pulse vous l'explique, propose <code>git pull</code> pour la récupérer, puis réessaie l'envoi.</p></details>
+<details class="probleme"><summary>Une proposition existe déjà pour cette version parallèle</summary><p>Pulse vous donne son adresse et garde une seule proposition. Pour la compléter, envoyez simplement vos nouveaux enregistrements avec <code>/pulse:commit push</code> : elle se met à jour toute seule.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : créer la version parallèle avant de coder">
+<p data-role="vous">/pulse:pr branche US-003</p>
+<p data-role="claude">Une branche, c'est une version parallèle de votre projet : vous y avancez sans toucher au site en ligne.
+Nom proposé : feat/us-003-choisir-creneau (Recommandé) · Autre nom</p>
+<p data-role="vous">feat/us-003-choisir-creneau</p>
+<p data-role="claude">Claude Code va vous demander l'accord pour git pull : c'est ce qui récupère la dernière version du dépôt distant.</p>
+<p data-role="outil">git switch main · git pull · git switch -c feat/us-003-choisir-creneau</p>
+<p data-role="claude">Vous êtes maintenant sur feat/us-003-choisir-creneau. Vos enregistrements y seront rangés ; le site en ligne change seulement quand sa proposition est acceptée.
+➡️ Prochaine étape : /pulse:implement US-003</p>
+</div>
+<div class="conversation" data-titre="Exemple : ouvrir la proposition quand le travail est prêt">
+<p data-role="vous">/pulse:pr</p>
+<p data-role="claude">Vers main, la branche principale du dépôt. 4 enregistrements, tâches T1 à T4 du plan US-003, toutes relues.
+Titre : Choisir un créneau libre dans le carnet
+Ce qui change à l'usage : la cliente voit les créneaux libres de la semaine et réserve en deux clics.
+→ Ouvrir la proposition en brouillon (Recommandé) · Modifier le texte · Annuler</p>
+<p data-role="vous">Ouvrir la proposition en brouillon</p>
+<p data-role="claude">Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant.</p>
+<p data-role="outil">git push -u origin feat/us-003-choisir-creneau · gh pr create --draft --base main</p>
+<p data-role="claude">La proposition est ouverte en brouillon. Une adresse de prévisualisation apparaît dans la proposition : testez-y les « Étapes pour tester ». Quand tout va bien, cliquez sur « Merge » sur le site du dépôt.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réaliser les tâches sur la version parallèle.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : faire relire chaque tâche avant d'ouvrir la proposition.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer, et envoyer de nouveaux enregistrements sur une proposition ouverte.</li>
+<li><a href="cicd.html"><code>/pulse:cicd</code></a> : des contrôles automatiques sur chaque proposition, et la protection de la version principale.</li>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : relier le projet à un dépôt en ligne, s'il n'en a pas encore.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

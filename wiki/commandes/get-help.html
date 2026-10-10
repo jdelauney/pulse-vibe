@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="get-help">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:get-help – Wiki Pulse</title>
+<meta name="description" content="Préparer une demande d'aide claire et sans secret, à transmettre à une personne qui programme (forum, communauté de la technologie, freelance) quand Pulse n'arrive pas à débloquer la situation.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:get-help</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Préparer une demande d'aide claire et sans secret, à transmettre à une personne qui programme (forum, communauté de la technologie, freelance) quand Pulse n'arrive pas à débloquer la situation.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Parfois, Pulse n'arrive pas à débloquer une situation. Cette commande prépare alors une <strong>demande d'aide</strong> qu'une personne qui programme comprendra en deux minutes : ce que vous construisez, l'erreur exacte, ce qui a déjà été essayé, et une question précise.</p>
+<p>Une bonne demande d'aide obtient une réponse rapide. Pulse rassemble tout ce qu'un développeur aurait besoin de savoir, et retire vos secrets : clés, mots de passe, adresses de base de données et données réelles sont remplacés par des valeurs fictives.</p>
+<p>Il écrit le tout dans une fiche, avec un message court à coller en tête. Puis il vous aide à choisir où l'envoyer. Pulse ne publie rien : c'est vous qui envoyez.</p>
+<pre class="commande"><code>## Message court (à coller dans un forum ou un message)
+
+Je construis un carnet de réservations pour un salon de coiffure (Next.js, base Neon).
+Je voulais envoyer un rappel par e-mail la veille du rendez-vous.
+Aucun e-mail ne part. Le journal affiche : « 403 Forbidden: domain not verified ».
+J'ai déjà vérifié la clé (fictive ici : sk_test_XXXX) et l'adresse d'envoi.
+Ma question : quelle étape manque pour envoyer depuis mon propre domaine ?</code></pre>
+<p class="legende">Le début d'une fiche préparée par <code>/pulse:get-help</code> : un message court qui se suffit à lui-même.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous obtenez une réponse plus vite.</strong> La personne qui vous aide a tout sous les yeux, sans vous poser dix questions.</li>
+<li><strong>Vos secrets restent chez vous.</strong> Chaque clé ou donnée réelle est remplacée par une valeur fictive, et le garde-fou de Pulse vérifie la fiche.</li>
+<li><strong>Vous n'avez rien à rédiger.</strong> Pulse retrouve lui-même l'erreur exacte, les essais déjà faits et les fichiers concernés.</li>
+<li><strong>Vous savez où demander.</strong> Pulse vous propose les bons endroits, avec un lien vérifié.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Vous êtes bloqué</strong> et <a href="fix.html"><code>/pulse:fix</code></a> a essayé deux fois sans succès : il vous propose alors cette commande.</li>
+<li><strong>Une annulation ne passe pas</strong>, ou une relecture signale un problème que Pulse ne sait pas régler.</li>
+<li><strong>Vous voulez l'avis d'une personne</strong> de votre entourage qui programme.</li>
+<li><strong>Vous envisagez une aide payante</strong> et voulez un dossier clair à transmettre.</li>
+</ul>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:get-help [&quot;ce qui bloque&quot;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Facultatif.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Ce qui bloque</strong>, entre guillemets : une phrase qui décrit le problème.</li>
+<li><strong>Rien</strong> : le dernier blocage de la conversation sert de point de départ.</li>
+</ul>
+<p>Dans les deux cas, Pulse pose seulement ce qui lui manque, en trois questions au plus : ce que vous vouliez faire, ce qui se passe à la place, et si vous acceptez de partager l'adresse de votre dépôt.</p>
+<pre class="commande"><code>/pulse:get-help "le rappel par e-mail ne part pas"</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/aide/demande-&lt;date&gt;-&lt;sujet&gt;.md</code></td><td>La fiche de demande d'aide : un message court de 10 lignes au plus, puis le projet, ce que vous vouliez faire, ce qui se passe, comment reproduire le problème, ce qui a déjà été essayé, les fichiers concernés et votre question.</td></tr>
+</tbody>
+</table>
+<p>Rien d'autre n'est modifié, et rien n'est publié.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Vous gardez la main sur ce que vous partagez.</strong> Relisez la fiche avant de l'envoyer.</li>
+<li><strong>L'adresse de votre dépôt</strong> n'apparaît que si vous acceptez de la partager ; sinon, la fiche indique « privé ».</li>
+<li><strong>Les étapes pour reproduire</strong> utilisent des données fictives, jamais celles de vrais clients.</li>
+</ul>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> une demande d'aide se publie souvent sur un forum public. Rien de secret ne doit y figurer : ni clé, ni mot de passe, ni adresse de base de données, ni nom ou e-mail d'un vrai client. Si vous avez collé une vraie clé pendant l'échange, ou si le garde-fou bloque l'écriture de la fiche, cette clé est exposée : lancez <a href="secrets.html"><code>/pulse:secrets fuite</code></a> avant d'envoyer la demande.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Le garde-fou de Pulse bloque l'écriture de la fiche</summary><p>Il a repéré un secret dans le texte. Considérez cette valeur comme exposée : lancez <a href="secrets.html"><code>/pulse:secrets fuite</code></a> pour la remplacer, puis relancez la demande d'aide.</p></details>
+<details class="probleme"><summary>Je ne sais pas où poster ma demande</summary><p>Pulse vous propose trois pistes : la communauté officielle de la technologie utilisée (forum ou espace de discussion, avec un lien vérifié), une plateforme de freelances pour une aide payante, ou une personne de votre entourage qui programme.</p></details>
+<details class="probleme"><summary>Mon message est trop long pour un forum</summary><p>Copiez seulement le message court en tête de la fiche : il tient en 10 lignes et se suffit à lui-même. Joignez ou collez la fiche complète si l'on vous demande plus de détails.</p></details>
+<details class="probleme"><summary>J'ai reçu une réponse, et maintenant ?</summary><p>Appliquez la piste proposée avec Pulse : <code>/pulse:fix "la piste proposée"</code>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : le rappel par e-mail ne part pas">
+<p data-role="vous">/pulse:get-help "le rappel par e-mail ne part pas"</p>
+<p data-role="claude">Une bonne demande d'aide obtient une réponse rapide : je rassemble pour vous tout ce qu'un développeur aurait besoin de savoir, sans vos secrets.
+Acceptez-vous de partager l'adresse de votre dépôt ? → Non, le garder privé</p>
+<p data-role="claude">J'ai retrouvé la tâche (US-003, T2 : envoyer le rappel la veille), l'erreur exacte du journal et les deux corrections déjà tentées.
+J'ai remplacé la clé du service d'e-mail par sk_test_XXXX et l'adresse de la cliente par client@example.com.</p>
+<p data-role="claude">Fiche prête : docs/aide/demande-2026-10-10-rappel-email.md
+Où voulez-vous l'envoyer ?
+→ La communauté officielle de la technologie
+→ Une plateforme de freelances
+→ Une personne de votre entourage qui programme</p>
+<p data-role="vous">La communauté officielle de la technologie</p>
+<p data-role="claude">Copiez le message court en tête de la fiche et collez-le dans le forum officiel (lien vérifié ci-dessous). La fiche est sans secret, mais vous gardez la main sur ce que vous partagez.
+➡️ Prochaine étape : une fois la réponse reçue, /pulse:fix "la piste proposée".</p>
+</div>
+<div class="conversation" data-titre="Exemple : juste après un blocage">
+<p data-role="claude">Deux tentatives n'ont pas suffi : la liste du jour reste vide pour le compte du salon. Je vous propose /pulse:get-help.</p>
+<p data-role="vous">/pulse:get-help</p>
+<p data-role="claude">Je pars du blocage que nous venons d'expliquer. La fiche contiendra la règle d'accès en cause, les deux essais et la ligne décisive du message.
+À qui l'envoyer ? → Une personne de votre entourage qui programme</p>
+<p data-role="claude">Transmettez-lui la fiche complète : docs/aide/demande-2026-10-10-liste-du-jour-vide.md</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : essayer d'abord de corriger, puis appliquer la piste reçue.</li>
+<li><a href="secrets.html"><code>/pulse:secrets</code></a> : réagir si une clé a été exposée.</li>
+<li><a href="annuler.html"><code>/pulse:annuler</code></a> : revenir à une version qui marchait, en attendant l'aide.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : faire relire le code concerné.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="brainstorm">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:brainstorm – Wiki Pulse</title>
+<meta name="description" content="Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 2 · Décrire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:brainstorm</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>C'est la première étape du parcours complet. Pulse mène un entretien pour comprendre votre idée, avec vos mots. On parle de votre métier : qui utilise l'outil, comment ça se passe aujourd'hui, ce qui coince. La technique viendra plus tard.</p>
+<p>Les questions arrivent par petites séries, appelées « rondes ». Les plus importantes se posent une par une, en réponse libre, avec des exemples tirés d'autres métiers. Les autres se posent en questions à choix, la réponse conseillée en premier. Après chaque ronde, Pulse résume ce qui est décidé.</p>
+<p>Très vite, Pulse raconte votre outil comme une petite histoire, à valider ou à corriger. Les mots de votre métier sont notés au fil de l'eau dans un glossaire. À la fin, tout cela devient votre brief.</p>
+<pre class="commande"><code>Il était une fois **Le Carnet de Léa**, le carnet de réservations du salon Léa Coiffure…
+- La cliente → choisit → un créneau libre
+  - par exemple : mardi 14 h, coupe et brushing
+- Léa → consulte → les rendez-vous du jour
+
+Ronde 2 · encore environ 3 sujets à éclaircir</code></pre>
+<p class="legende">Un premier jet de l'histoire, avec la ligne qui montre la progression de l'entretien.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous clarifiez votre idée avant de construire.</strong> Les questions font apparaître ce que vous n'aviez pas encore décidé.</li>
+<li><strong>L'IA comprend vraiment votre métier.</strong> Le glossaire fixe le sens de chaque mot ; Pulse vous signale quand un mot change de sens.</li>
+<li><strong>Vous gardez la main.</strong> Pulse cherche les faits dans vos fichiers ; les décisions (besoin, priorités, règles) restent les vôtres.</li>
+<li><strong>Rien de technique.</strong> Une question technique qui surgit est notée pour plus tard.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Juste après <a href="init.html"><code>/pulse:init</code></a></strong>, au début du parcours complet.</li>
+<li><strong>Quand votre idée est encore floue</strong> et que vous voulez prendre le temps d'y réfléchir.</li>
+<li><strong>Pour compléter un brief existant</strong> : l'entretien reprend sur les questions restées ouvertes.</li>
+<li><strong>Avant <a href="prd.html"><code>/pulse:prd</code></a></strong>, qui s'appuie sur le brief pour décider de la première version.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si votre idée est déjà claire et que vous voulez aller vite, <a href="express.html"><code>/pulse:express</code></a> remplace toute l'étape « Décrire » en une seule conversation.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:brainstorm [votre idée en une phrase]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Votre idée en une phrase</strong> (facultative) : l'entretien part de là.</li>
+<li><strong>Sans rien</strong> : la première question vous demande votre idée en une phrase.</li>
+</ul>
+<pre class="commande"><code>/pulse:brainstorm "réserver un créneau chez mon coiffeur"</code></pre>
+<pre class="commande"><code>/pulse:brainstorm</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/brief.md</code></td><td>Votre idée en mots simples : la phrase de synthèse, le problème, les personnes concernées, l'histoire, les décisions, les hypothèses à vérifier, les questions encore ouvertes.</td></tr>
+<tr><td><code>aidd_docs/memory/glossary.md</code></td><td>Les mots de votre métier, tranchés et définis, ajoutés au fil de l'entretien.</td></tr>
+<tr><td><code>aidd_docs/memory/project.md</code></td><td>La vision du projet et une ligne datée par décision importante.</td></tr>
+</tbody>
+</table>
+<p>Pulse complète aussi le résumé du projet dans <code>CLAUDE.md</code> s'il est encore vide. Une décision difficile à défaire peut devenir un fichier de décision, seulement si vous l'acceptez.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Cette commande écrit seulement des documents.</strong> Elle ne touche ni au code ni à votre site.</li>
+<li><strong>Le brief est écrit après votre accord.</strong> Pulse vous montre aussi les lignes de mémoire avant de les écrire.</li>
+<li><strong>Le glossaire, lui, s'écrit pendant l'entretien.</strong> Pulse vous le dit à chaque mot ajouté (« 📖 Ajouté au glossaire »).</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> pour vos exemples, inventez des noms et des situations plausibles. Gardez les vraies données de vos clientes hors de la conversation.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me demande s'il faut compléter ou repartir de zéro</summary><p>Un brief existe déjà. « Compléter » reprend l'entretien sur ses questions restées ouvertes ; « repartir de zéro » recommence l'entretien depuis le début.</p></details>
+<details class="probleme"><summary>L'entretien me semble long</summary><p>Après la quatrième ronde, Pulse vous demande « On continue d'approfondir ? ». Choisissez « Rédiger le brief maintenant » : les sujets restants deviennent des questions ouvertes du brief.</p></details>
+<details class="probleme"><summary>Pulse me dit que j'emploie un mot dans un autre sens</summary><p>Votre glossaire définit déjà ce mot autrement. Dites lequel est le bon : Pulse corrige le glossaire tout de suite, et l'IA l'emploiera dans ce sens.</p></details>
+<details class="probleme"><summary>Je ne sais pas répondre à une question technique</summary><p>Ce n'est pas le moment. Pulse note la question : <a href="spec.html"><code>/pulse:spec</code></a> la posera plus tard, au bon endroit.</p></details>
+<details class="probleme"><summary>Ma phrase de présentation ne correspond pas à l'histoire</summary><p>À la fin, Pulse vous demande de présenter votre outil en une phrase. S'il manque une personne ou un besoin par rapport à l'histoire validée, il vous le dit. Parlez-en, puis choisissez « Rédiger le brief » ou « Je veux corriger quelque chose ».</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : raconter le carnet de réservations">
+<p data-role="vous">/pulse:brainstorm "un carnet de réservations pour mon salon de coiffure"</p>
+<p data-role="claude">Qui va utiliser votre outil ? Par exemple, pour un club de tennis : les adhérents qui réservent un court, et le gérant qui ouvre les créneaux.</p>
+<p data-role="vous">Mes clientes, et moi. Aujourd'hui, elles m'appellent pendant que je coiffe.</p>
+<p data-role="claude">✔ Décidé : deux personnes, la cliente qui réserve et vous qui consultez.
+📖 Ajouté au glossaire : **rendez-vous**.
+Voici un premier jet de l'histoire. Est-ce bien ça ?
+→ Oui, c'est ça (Recommandé) / Il manque quelque chose / Quelque chose est faux</p>
+<p data-role="vous">Oui, c'est ça</p>
+<p data-role="claude">Une cliente annule une heure avant son rendez-vous : que se passe-t-il ?</p>
+</div>
+<div class="conversation" data-titre="Exemple : terminer l'entretien">
+<p data-role="claude">Présentez votre outil en une phrase, comme vous le feriez à une cliente.</p>
+<p data-role="vous">Vous réservez votre coupe en ligne, quand vous voulez, et vous recevez un rappel la veille.</p>
+<p data-role="claude">→ Rédiger le brief (Recommandé) / Je veux corriger quelque chose</p>
+<p data-role="vous">Rédiger le brief</p>
+<p data-role="claude">docs/brief.md est écrit. Prochaine étape : /pulse:prd, pour décider de ce qui entre dans la première version.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="init.html"><code>/pulse:init</code></a> : préparer le projet avant l'entretien.</li>
+<li><a href="prd.html"><code>/pulse:prd</code></a> : l'étape suivante, pour décider de la première version.</li>
+<li><a href="express.html"><code>/pulse:express</code></a> : démarrer vite, en une seule conversation.</li>
+<li><a href="memory.html"><code>/pulse:memory</code></a> : retenir une décision ou un mot pour les prochaines sessions.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

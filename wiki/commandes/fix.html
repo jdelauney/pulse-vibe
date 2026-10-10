@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="fix">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:fix – Wiki Pulse</title>
+<meta name="description" content="Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:fix</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une erreur est une étape normale. Avec cette commande, Pulse commence par comprendre <strong>pourquoi</strong> elle arrive, avant de toucher au code. Il relie le message au bon fichier, cherche la vraie cause et la dit en une phrase.</p>
+<p>Il choisit ensuite la plus petite correction qui règle la cause, sans casser ce qui fonctionne. Puis il le prouve : les contrôles automatiques repassent, et vous refaites vous-même l'action qui échouait.</p>
+<p>Pour finir, il vous explique ce qui s'est passé, comment l'éviter, et une notion de programmation liée à l'erreur.</p>
+<pre class="commande"><code>🩺 Correction
+Problème : le bouton « Réserver » ne faisait rien
+Cause    : le code du bouton se lançait avant que le bouton existe dans la page
+Correction : le code attend que la page soit prête — src/reservation.js:14
+Preuve   : ✅ contrôles sans erreur · 🧪 réservation refaite par vous
+Pour l'éviter : chercher un élément de la page seulement une fois la page chargée</code></pre>
+<p class="legende">Le compte rendu de <code>/pulse:fix</code> après une correction.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>La vraie cause est réglée.</strong> Pulse distingue le symptôme de la cause, et cherche si le même oubli se répète ailleurs.</li>
+<li><strong>La correction est prouvée.</strong> Vous refaites l'action avec les mêmes données fictives, et vous confirmez que tout fonctionne.</li>
+<li><strong>La sécurité reste intacte.</strong> Une « correction » qui ouvrirait l'accès à tous ou désactiverait un contrôle est écartée.</li>
+<li><strong>Vous apprenez à chaque erreur.</strong> Le réflexe à retenir et la notion du jour vous sont expliqués.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Vous avez un message d'erreur</strong> dans le terminal ou dans la console du navigateur.</li>
+<li><strong>Un bouton ne fait rien</strong>, une liste reste vide alors que les données existent.</li>
+<li><strong>Tout marche chez vous, mais pas en ligne.</strong></li>
+<li><strong>Les contrôles automatiques ont échoué</strong> après un envoi : <a href="status.html"><code>/pulse:status</code></a> vous propose alors cette commande.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour une longue liste d'erreurs rouges sur tout le projet, utilisez plutôt <a href="auto-fix.html"><code>/pulse:auto-fix</code></a>. Et si vous voulez un comportement nouveau, c'est une demande, pas une erreur : passez par <a href="spirc.html"><code>/pulse:spirc</code></a>.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:fix &lt;message d'erreur ou description du problème&gt; [fichier]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Le message d'erreur ou la description</strong> : collez le message tel quel, la ligne rouge de la console, ou décrivez ce qui se passe avec vos mots.</li>
+<li><strong>Le fichier</strong>, facultatif : si vous savez où chercher.</li>
+<li><strong>Rien</strong> : Pulse pose une seule série de questions. Que faisiez-vous ? Qu'attendiez-vous ? Y a-t-il un message en rouge ?</li>
+</ul>
+<pre class="commande"><code>/pulse:fix "le bouton Réserver ne fait rien"</code></pre>
+<pre class="commande"><code>/pulse:fix "TypeError: Cannot read properties of null" src/reservation.js</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td>Les fichiers de code en cause</td><td>La plus petite correction possible, dans le style du code existant.</td></tr>
+<tr><td><code>docs/lexique.md</code></td><td>La notion du jour, si elle est nouvelle pour vous.</td></tr>
+<tr><td>Le plan de la tâche, dans <code>aidd_docs/tasks/</code></td><td>Une ligne de journal, si la correction touche une tâche d'un plan.</td></tr>
+<tr><td><code>aidd_docs/memory/technical.md</code></td><td>Un piège qui peut revenir, seulement si vous acceptez la ligne proposée.</td></tr>
+</tbody>
+</table>
+<p>La correction n'est pas encore enregistrée : la prochaine étape est <a href="review.html"><code>/pulse:review</code></a> si elle touche une tâche en cours ou plusieurs fichiers, sinon <a href="commit.html"><code>/pulse:commit</code></a>.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Si la correction change le comportement attendu</strong> (une règle du salon, un écran), Pulse vous pose la question avant. C'est une décision, pas une simple correction.</li>
+<li><strong>Deux tentatives au plus.</strong> Si l'erreur résiste, Pulse s'arrête, explique où il en est et propose <a href="get-help.html"><code>/pulse:get-help</code></a>.</li>
+<li><strong>Une action manuelle est parfois nécessaire</strong> (une variable à saisir chez l'hébergeur, une règle d'accès dans la console de la base) : Pulse vous guide pas à pas.</li>
+</ul>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> ne collez jamais une vraie clé, un vrai mot de passe ni les données d'un vrai client. Utilisez des données fictives. Si vous en collez une par erreur, Pulse le signale et vous la fait remplacer.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Je ne trouve pas de message d'erreur</summary><p>Dans le navigateur, appuyez sur la touche F12, ouvrez l'onglet « Console » et copiez la ligne rouge. Pour le serveur en local, regardez le terminal où l'appli tourne ; en ligne, les journaux de votre hébergeur.</p></details>
+<details class="probleme"><summary>Ça marche chez moi, mais pas sur le site en ligne</summary><p>Souvent, une variable n'a pas été saisie chez l'hébergeur, ou un fichier n'a pas été publié. Donnez le symptôme à <code>/pulse:fix</code> : il vérifie ces pistes et vous guide pour saisir la variable.</p></details>
+<details class="probleme"><summary>La liste des rendez-vous reste vide alors qu'il y en a</summary><p>Une règle d'accès en lecture manque souvent pour cet utilisateur, ou un filtre est faux. Pulse corrige la règle sans l'ouvrir à tout le monde.</p></details>
+<details class="probleme"><summary>Toujours le même problème après la correction</summary><p>Répondez « Toujours le même problème » : Pulse reprend la recherche avec ce nouvel élément. Après deux essais, il prépare la suite avec <a href="get-help.html"><code>/pulse:get-help</code></a>.</p></details>
+<details class="probleme"><summary>Pulse dit qu'aucun contrôle automatique n'existe</summary><p>Votre projet n'a pas encore de commande pour repérer les erreurs. Pulse propose d'en ajouter avec <a href="tech.html"><code>/pulse:tech</code></a>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : un bouton qui ne fait rien">
+<p data-role="vous">/pulse:fix "le bouton Réserver ne fait rien"</p>
+<p data-role="claude">Une erreur est une étape normale. On va d'abord comprendre pourquoi, avant de toucher au code.
+Y a-t-il un message en rouge ? Appuyez sur F12, onglet « Console », et copiez la ligne rouge.</p>
+<p data-role="vous">Cannot read properties of null (reading 'addEventListener')</p>
+<p data-role="outil">pulse-aidd verifier</p>
+<p data-role="claude">Cause : le code du bouton se lance avant que le bouton existe dans la page. Je corrige src/reservation.js, ligne 14.
+Refaites une réservation pour Camille Test, demain à 10 h. Est-ce que ça fonctionne maintenant ?</p>
+<p data-role="vous">Oui</p>
+<p data-role="claude">🩺 Correction : le code attend maintenant que la page soit prête.
+💡 La notion du jour : l'ordre de chargement. Une page se construit de haut en bas ; un code placé trop tôt cherche un bouton qui n'existe pas encore.
+➡️ Prochaine étape : /pulse:commit</p>
+</div>
+<div class="conversation" data-titre="Exemple : sans rien préciser">
+<p data-role="vous">/pulse:fix</p>
+<p data-role="claude">Que faisiez-vous ? → J'ouvrais la liste du jour
+Qu'attendiez-vous, et que s'est-il passé à la place ? → Les rendez-vous d'aujourd'hui, mais la liste est vide
+Y a-t-il un message en rouge ? → Non</p>
+<p data-role="claude">Cause : la règle d'accès laisse lire les rendez-vous seulement à la personne qui les a pris, pas au salon. Je l'ajuste pour le compte du salon, sans l'ouvrir à tous.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="auto-fix.html"><code>/pulse:auto-fix</code></a> : corriger d'un coup les erreurs rouges de tout le projet.</li>
+<li><a href="get-help.html"><code>/pulse:get-help</code></a> : préparer une demande d'aide quand l'erreur résiste.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : relire une correction qui touche une tâche en cours.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer la correction.</li>
+<li><a href="annuler.html"><code>/pulse:annuler</code></a> : revenir en arrière si une tâche a tout cassé.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

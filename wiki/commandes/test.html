@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="test">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:test – Wiki Pulse</title>
+<meta name="description" content="Lancer les tests automatiques du projet et expliquer chaque échec (lancer), ou écrire les tests d'un code existant à partir des scénarios de la spec (ecrire), par des assistants spécialisés.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="3">Étape 4 · Construire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:test</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Lancer les tests automatiques du projet et expliquer chaque échec (lancer), ou écrire les tests d'un code existant à partir des scénarios de la spec (ecrire), par des assistants spécialisés.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Les tests automatiques sont de petits programmes qui vérifient, tout seuls, que votre outil fait ce que la spec demande. <code>/pulse:test</code> les lance tous, puis explique chaque échec en une ligne simple : ce qui ne marche pas, la cause, et la tâche concernée quand on la trouve.</p>
+<p>Avec <code>ecrire</code>, la commande écrit les tests d'un code déjà fait mais encore sans tests. Elle part des scénarios de la spec et des critères d'acceptation de l'US. Un assistant écrit ou lance les tests ; un autre, qui n'a pas écrit le code, juge les résultats.</p>
+<p>Chaque échec a une cause : le code lui-même, le test, l'environnement (un outil manquant sur votre ordinateur, par exemple), ou un test instable, qui réussit puis échoue sans raison. Pulse propose la bonne suite pour chacune.</p>
+<pre class="commande"><code>🧪 Tests : 14 réussis · 1 en échec · 0 instables
+
+❌ Un rendez-vous peut être pris à une date passée
+   Cause : le code · Tâche : T4 – Confirmer le rendez-vous</code></pre>
+<p class="legende">Le résultat de <code>/pulse:test</code>, avec chaque échec expliqué.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Tout vérifier en une fois.</strong> Une seule commande contrôle que ce qui marchait hier marche encore aujourd'hui.</li>
+<li><strong>Comprendre chaque échec.</strong> Chaque échec est expliqué en langage simple, avec sa cause.</li>
+<li><strong>Trouver les défauts cachés.</strong> Un test fidèle au scénario qui échoue révèle un défaut du code : Pulse vous l'explique et propose de le corriger.</li>
+<li><strong>Protéger votre travail.</strong> Les tests écrits restent dans le projet et vérifient chaque changement à venir.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3" aria-current="step"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après plusieurs tâches</strong>, pour vérifier que tout passe encore.</li>
+<li><strong>Avant <a href="commit.html"><code>/pulse:commit</code></a></strong>, pour enregistrer une version qui fonctionne.</li>
+<li><strong>Sur du code fait sans tests</strong>, avec <code>ecrire</code>, pour le protéger.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour écrire les tests <em>avant</em> le code d'une nouvelle tâche, utilisez plutôt l'option <code>-t</code> de <a href="implement.html"><code>/pulse:implement</code></a> ou de <a href="spirc.html"><code>/pulse:spirc</code></a>.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:test [lancer | ecrire &lt;US-XXX | Tn | chemin&gt;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Rien</strong>, ou <strong><code>lancer</code></strong> : toute la suite de tests est lancée, et chaque échec expliqué.</li>
+<li><strong><code>ecrire</code></strong> (ou <code>écrire</code>), suivi de la cible :
+<ul>
+<li>une US (<code>US-002</code>) : toutes ses tâches terminées ;</li>
+<li>une tâche (<code>T7</code>) ;</li>
+<li>un fichier ou un dossier de votre code.</li>
+</ul></li>
+</ul>
+<pre class="commande"><code>/pulse:test</code></pre>
+<pre class="commande"><code>/pulse:test ecrire US-002</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td>Les fichiers de test</td><td>Avec <code>ecrire</code> : les nouveaux tests, rangés selon l'organisation de votre projet.</td></tr>
+<tr><td><code>SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Pour une spec ancienne sans scénarios : les scénarios manquants, ajoutés après votre accord.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Une ligne au journal du plan : nombre de tests ajoutés et de défauts trouvés.</td></tr>
+<tr><td>Les tests en cause</td><td>Avec <code>lancer</code> : un test faux ou instable, corrigé si vous le demandez.</td></tr>
+</tbody>
+</table>
+<p>À la fin, Pulse montre seulement les fichiers que cette commande a changés.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien n'est corrigé sans votre accord.</strong> En cas d'échec, Pulse demande : « Corriger maintenant (Recommandé) » ou « Seulement noter les échecs ».</li>
+<li><strong>Un outil de test s'installe seulement avec votre accord.</strong> Sans outil ni accord, la commande s'arrête.</li>
+<li><strong>Un test qui révèle un défaut reste dans le projet.</strong> Le défaut se corrige avec <a href="fix.html"><code>/pulse:fix</code></a>, pas en supprimant le test.</li>
+<li><strong>Votre besoin reste à vous.</strong> Un scénario à préciser qui touche à votre besoin se décide avec vous, puis la spec est mise à jour.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Aucune commande pour tester »</summary><p>Votre projet n'a pas encore d'outil de test. Pulse vous propose d'en installer un ; acceptez pour continuer.</p></details>
+<details class="probleme"><summary>« Les choix techniques manquent »</summary><p>La commande a besoin de <code>docs/technical.md</code> pour savoir comment lancer les tests. Lancez <a href="tech.html"><code>/pulse:tech</code></a>.</p></details>
+<details class="probleme"><summary>Un test réussit puis échoue sans raison</summary><p>C'est un test instable. Un assistant le corrige, puis Pulse relance les tests concernés ; deux essais au plus.</p></details>
+<details class="probleme"><summary>L'échec vient de mon ordinateur</summary><p>Un outil manque ou n'est pas configuré. Pulse vous guide pas à pas pour le régler.</p></details>
+<details class="probleme"><summary>Ma spec n'a pas de scénarios</summary><p>Elle date d'une version plus ancienne de Pulse. Pulse rédige les scénarios manquants, vous les montre, puis les ajoute à la spec après votre accord.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : lancer les tests">
+<p data-role="vous">/pulse:test</p>
+<p data-role="claude">🧪 Tests : 14 réussis · 1 en échec · 0 instables
+❌ Un rendez-vous peut être pris à une date passée. Cause : le code (T4 – Confirmer le rendez-vous).
+Corriger maintenant (Recommandé) / Seulement noter les échecs ?</p>
+<p data-role="vous">Corriger maintenant</p>
+<p data-role="claude">Je passe par /pulse:fix : d'abord la cause, puis la plus petite correction, puis la preuve que le test passe.</p>
+</div>
+<div class="conversation" data-titre="Exemple : écrire les tests d'une US">
+<p data-role="vous">/pulse:test ecrire US-002</p>
+<p data-role="claude">Je pars des scénarios de la spec de US-002 (liste des rendez-vous du jour) et de ses critères d'acceptation. Un assistant écrit les tests, un autre les lance.</p>
+<p data-role="claude">🧪 Tests : 6 écrits · 5 réussis · 1 en échec (dont 1 défaut du code)
+Défaut probable : deux rendez-vous à la même heure n'apparaissent qu'une fois dans la liste. Le test reste dans le projet.
+➡️ Prochaine étape : /pulse:fix "deux rendez-vous à la même heure n'apparaissent qu'une fois"</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : corrige un défaut du code trouvé par un test.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : avec <code>-t</code>, écrire les tests avant le code.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : la relecture et votre test, tâche par tâche.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer les nouveaux tests.</li>
+<li><a href="tech.html"><code>/pulse:tech</code></a> : déclarer comment lancer les tests du projet.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

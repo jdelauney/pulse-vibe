@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="explain">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:explain – Wiki Pulse</title>
+<meta name="description" content="Expliquer simplement un fichier, une fonction ou une ligne de code, avec une question pour vérifier.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:explain</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Expliquer simplement un fichier, une fonction ou une ligne de code, avec une question pour vérifier.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Vous ne comprenez pas un morceau du code de votre appli ? Pulse vous l'explique simplement. D'abord en une phrase : à quoi il sert, vu par la personne qui utilise l'appli. Puis bloc par bloc, avec un court extrait et des mots de tous les jours.</p>
+<p>Au passage, Pulse relie le code aux notions de base, avec une image : une variable est une boîte avec une étiquette, une condition est un aiguillage, une fonction est une recette qu'on peut réutiliser. À la fin, une question à choix vérifie que vous avez compris.</p>
+<p>Le but : apprendre à <strong>lire</strong> le code. C'est la compétence clé pour relire ce que l'IA écrit pour vous.</p>
+<pre class="commande"><code>Ce fichier sert à afficher la liste des rendez-vous du jour pour le salon.
+
+Bloc 1 – Lire la date du jour
+  const aujourdhui = new Date();
+  → Une boîte nommée « aujourdhui » qui garde la date d'aujourd'hui.
+
+Bloc 2 – Garder seulement les rendez-vous du jour
+  ...
+📘 Ajouté au lexique : constante</code></pre>
+<p class="legende">Le début d'une explication par <code>/pulse:explain</code> : une phrase, puis bloc par bloc.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous comprenez votre propre appli.</strong> Chaque bloc est traduit en langage courant, avec un exemple pris dans votre code.</li>
+<li><strong>Vous vérifiez ce que vous avez retenu.</strong> Une question à choix termine l'explication, avec une correction bienveillante.</li>
+<li><strong>Votre lexique grandit tout seul.</strong> Chaque mot nouveau y est ajouté, et passe à « maîtrisé » quand vous répondez juste.</li>
+<li><strong>Votre code reste intact.</strong> Un problème repéré au passage vous est signalé en une ligne, sans rien toucher.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>L'IA vient d'écrire du code</strong> et vous voulez savoir ce qu'il fait avant de l'enregistrer.</li>
+<li><strong>Une ligne vous intrigue</strong> dans un fichier.</li>
+<li><strong>Vous vous posez une question précise</strong> : « pourquoi ce bouton attend avant d'afficher la liste ? ».</li>
+<li><strong>Vous relisez une tâche terminée</strong>, pour la comprendre avant de passer à la suivante.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> <code>/pulse:explain</code> explique un morceau de code précis. Pour apprendre une notion en général (les fonctions, les conditions), utilisez plutôt <a href="learn.html"><code>/pulse:learn</code></a>.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:explain [fichier | fichier:ligne | nom de fonction | question]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Un fichier</strong> : Pulse explique tout le fichier, en 10 blocs au plus.</li>
+<li><strong>Un fichier suivi de deux-points et d'un numéro de ligne</strong> : Pulse explique cette ligne précise.</li>
+<li><strong>Le nom d'une fonction</strong> : Pulse la trouve et l'explique ligne par ligne.</li>
+<li><strong>Une question</strong>, entre guillemets : Pulse y répond à partir de votre code.</li>
+<li><strong>Rien</strong> : Pulse vous propose le dernier fichier modifié, ou vous demande quoi expliquer.</li>
+</ul>
+<pre class="commande"><code>/pulse:explain src/rendez-vous.js</code></pre>
+<pre class="commande"><code>/pulse:explain src/rendez-vous.js:42</code></pre>
+<pre class="commande"><code>/pulse:explain "pourquoi la liste du jour met une seconde à s'afficher ?"</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>Une explication à l'écran. Votre code n'est pas modifié. Un seul fichier peut changer :</p>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/lexique.md</code></td><td>Votre lexique personnel. Chaque mot nouveau y est ajouté, et Pulse le signale en une ligne (« 📘 Ajouté au lexique : … »). Un mot bien compris passe à « maîtrisé ».</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Votre code reste tel quel.</strong> La commande lit seulement.</li>
+<li><strong>Le lexique se met à jour sans question.</strong> Chaque ajout est annoncé : vous pouvez le relire et le corriger à la main.</li>
+<li><strong>Un bug ou un problème de sécurité repéré au passage</strong> vous est signalé, sans correction. Pulse propose <a href="review.html"><code>/pulse:review</code></a> pour s'en occuper.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse m'explique un autre fichier que celui que je voulais</summary><p>Sans précision, Pulse propose le dernier fichier modifié. Relancez la commande avec le nom du fichier, ou avec le fichier et la ligne : <code>/pulse:explain src/rendez-vous.js:42</code>.</p></details>
+<details class="probleme"><summary>L'explication est trop longue</summary><p>Un long fichier est découpé en 10 blocs au plus. Pour aller droit au but, donnez une ligne précise ou le nom d'une fonction.</p></details>
+<details class="probleme"><summary>J'ai répondu faux à la question de fin</summary><p>C'est normal, et utile. Pulse vous explique pourquoi la bonne réponse est juste. Demandez-lui de réexpliquer le passage, ou travaillez la notion avec <a href="learn.html"><code>/pulse:learn</code></a>.</p></details>
+<details class="probleme"><summary>Pulse signale un problème dans le code</summary><p>Il le dit en une ligne sans rien changer. Lancez <a href="review.html"><code>/pulse:review</code></a> pour une relecture complète, ou <a href="fix.html"><code>/pulse:fix</code></a> si vous voyez déjà une erreur.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : comprendre un fichier">
+<p data-role="vous">/pulse:explain src/liste-du-jour.js</p>
+<p data-role="claude">Ce fichier sert à afficher les rendez-vous du jour, pour que le salon voie qui arrive et à quelle heure.
+Bloc 1 : il lit la date du jour et la range dans une boîte nommée « aujourdhui » (une constante).
+Bloc 2 : il garde seulement les rendez-vous de cette date. C'est un filtre : on passe chaque rendez-vous dans un tamis.
+Bloc 3 : il trie les rendez-vous par heure, puis les affiche.
+📘 Ajouté au lexique : filtre</p>
+<p data-role="claude">Question : que se passe-t-il s'il n'y a aucun rendez-vous aujourd'hui ?
+→ La page affiche une erreur
+→ La page affiche une liste vide
+→ La page montre les rendez-vous de demain</p>
+<p data-role="vous">La page affiche une liste vide</p>
+<p data-role="claude">C'est exactement ça : le filtre ne garde rien, la liste est vide. Voulez-vous que j'explique autre chose ?</p>
+</div>
+<div class="conversation" data-titre="Exemple : poser une question">
+<p data-role="vous">/pulse:explain "pourquoi la liste du jour met une seconde à s'afficher ?"</p>
+<p data-role="claude">Votre page demande les rendez-vous au serveur, puis attend sa réponse. C'est comme commander au comptoir : vous attendez que le plat arrive avant de le servir.
+Dans src/liste-du-jour.js, ligne 8, le mot « await » veut dire justement « attendre la réponse ».
+📘 Ajouté au lexique : requête</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="learn.html"><code>/pulse:learn</code></a> : apprendre une notion en profondeur, avec exercices et révisions.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : faire relire le code quand un problème est repéré.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : corriger une erreur précise.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : la commande qui écrit le code que vous relisez.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

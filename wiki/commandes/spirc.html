@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="spirc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:spirc – Wiki Pulse</title>
+<meta name="description" content="Enchaîner tout le travail d'une user story (spirc = Spécifier, Planifier, Implémenter, Relire, Commiter) : des assistants indépendants explorent, codent, relisent et vérifient ; je m'arrête pour votre accord et vous testez chaque tâche ; la spec et le plan s'écrivent d'abord s'ils manquent.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="3">Étape 4 · Construire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:spirc</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Enchaîner tout le travail d'une user story (spirc = Spécifier, Planifier, Implémenter, Relire, Commiter) : des assistants indépendants explorent, codent, relisent et vérifient ; je m'arrête pour votre accord et vous testez chaque tâche ; la spec et le plan s'écrivent d'abord s'ils manquent.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>« spirc » veut dire Spécifier, Planifier, Implémenter (réaliser), Relire, Commiter (enregistrer). Une seule commande mène une user story de bout en bout. S'il manque la spec ou le plan, elle les écrit d'abord, avec vous ; puis elle réalise les tâches une à une.</p>
+<p>Pulse fait travailler des assistants spécialisés, chacun dans son rôle : l'un explore, l'un réalise, d'autres relisent et vérifient sans avoir écrit le code. Pulse s'arrête pour votre accord sur le plan, et c'est vous qui testez chaque tâche avant qu'elle soit enregistrée. En mode autonome, vous testez toutes les tâches ensemble, à la fin.</p>
+<p>Vous pouvez aussi lui confier une demande précise : « ajouter un filtre par date », « le bouton Supprimer ne marche pas ». Elle devient une nouvelle tâche du plan, montrée pour votre accord avant d'être réalisée, ou une nouvelle US si c'est un nouveau besoin.</p>
+
+<figure class="anim" data-etapes="8" data-duree="1300">
+<svg viewBox="0 0 760 270" role="img" aria-labelledby="spirc-cycle-titre">
+<title id="spirc-cycle-titre">Le déroulé de /pulse:spirc et ses arrêts pour vous</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="98" width="136" height="68" rx="18"/><rect class="schema-boite" x="10" y="104" width="124" height="56" rx="14"/><text class="schema-texte" x="72" y="128" text-anchor="middle">Spécifier</text><text class="schema-texte-secondaire" x="72" y="146" text-anchor="middle">si elle manque</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M134 132 H160" marker-end="url(#spirc-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="158" y="98" width="136" height="68" rx="18"/><rect class="schema-boite" x="164" y="104" width="124" height="56" rx="14"/><text class="schema-texte" x="226" y="128" text-anchor="middle">Planifier</text><text class="schema-texte-secondaire" x="226" y="146" text-anchor="middle">en petites tâches</text></g>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="220" y="6" width="162" height="62" rx="18"/><rect class="schema-boite-active" x="226" y="12" width="150" height="50" rx="14"/><text class="schema-texte" x="301" y="34" text-anchor="middle">Votre accord</text><text class="schema-texte-secondaire" x="301" y="52" text-anchor="middle">sur le plan</text><path class="schema-accompagne trace e3" pathLength="1" d="M301 62 V122" marker-end="url(#spirc-pointe-mauve)"/></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M288 132 H314" marker-end="url(#spirc-pointe-grise)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="312" y="98" width="136" height="68" rx="18"/><rect class="schema-boite" x="318" y="104" width="124" height="56" rx="14"/><text class="schema-texte" x="380" y="128" text-anchor="middle">Implémenter</text><text class="schema-texte-secondaire" x="380" y="146" text-anchor="middle">un assistant code</text></g>
+<path class="schema-fleche trace e5" pathLength="1" d="M442 132 H468" marker-end="url(#spirc-pointe-grise)"/>
+<g class="e5" data-etape="5"><rect class="actif-halo schema-halo-primaire" x="466" y="98" width="136" height="68" rx="18"/><rect class="schema-boite" x="472" y="104" width="124" height="56" rx="14"/><text class="schema-texte" x="534" y="128" text-anchor="middle">Relire</text><text class="schema-texte-secondaire" x="534" y="146" text-anchor="middle">deux assistants</text></g>
+<g class="e6" data-etape="6"><rect class="actif-halo schema-halo-primaire" x="528" y="6" width="162" height="62" rx="18"/><rect class="schema-boite-active" x="534" y="12" width="150" height="50" rx="14"/><text class="schema-texte" x="609" y="34" text-anchor="middle">Vous testez</text><text class="schema-texte-secondaire" x="609" y="52" text-anchor="middle">chaque tâche</text><path class="schema-accompagne trace e6" pathLength="1" d="M609 62 V122" marker-end="url(#spirc-pointe-mauve)"/></g>
+<path class="schema-fleche trace e7" pathLength="1" d="M596 132 H622" marker-end="url(#spirc-pointe-grise)"/>
+<g class="e7" data-etape="7"><rect class="actif-halo schema-halo-primaire" x="620" y="98" width="136" height="68" rx="18"/><rect class="schema-boite" x="626" y="104" width="124" height="56" rx="14"/><text class="schema-texte" x="688" y="128" text-anchor="middle">Commiter</text><text class="schema-texte-secondaire" x="688" y="146" text-anchor="middle">une version</text></g>
+<g class="e8" data-etape="8"><path class="schema-accompagne trace e8" pathLength="1" d="M688 162 C688 236 380 236 380 164" marker-end="url(#spirc-pointe-mauve)"/><text class="schema-texte-secondaire" x="534" y="256" text-anchor="middle">tâche suivante, jusqu'à la fin du plan</text></g>
+<defs>
+<marker id="spirc-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="spirc-pointe-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Pulse écrit la spec puis le plan, seulement s'ils manquent, et s'arrête pour votre accord sur le plan. Puis, pour chaque tâche : un assistant la réalise, deux autres la relisent et la vérifient, vous la testez, et elle est enregistrée (commitée). Pulse passe ensuite à la tâche suivante, jusqu'à la fin du plan. En mode autonome, vos tests sont regroupés à la fin.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Une US de bout en bout, en une commande.</strong> Spec, plan, réalisation, relecture et enregistrement s'enchaînent ; vous n'avez pas à retenir l'ordre.</li>
+<li><strong>Un regard extérieur à chaque tâche.</strong> Ceux qui relisent et vérifient n'ont pas écrit le code : ils repèrent les oublis.</li>
+<li><strong>Vous gardez la main.</strong> Le plan, les questions sur votre besoin, les actions à la main et les tests restent à vous, même en mode autonome (vos tests sont alors regroupés à la fin).</li>
+<li><strong>Une demande précise trouve sa place.</strong> Correction, nouvelle tâche, nouvelle US ou idée notée pour plus tard : Pulse la range au bon endroit.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3" aria-current="step"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="us.html"><code>/pulse:us</code></a></strong> : la spec et le plan s'écrivent en chemin. Ou <strong>après <a href="plan.html"><code>/pulse:plan</code></a></strong> : la réalisation commence tout de suite.</li>
+<li><strong>Après un enregistrement</strong>, quand il reste des tâches : c'est l'étape que Pulse propose le plus souvent.</li>
+<li><strong>Pour une demande ponctuelle</strong> sur une US : une correction ou un petit ajout.</li>
+<li><strong>Pour reprendre</strong> après une pause ou un <code>/clear</code> : relancez <code>/pulse:spirc US-001</code>, la commande reprend à l'étape où elle s'était arrêtée.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour suivre une tâche de près, étape par étape, préférez <a href="implement.html"><code>/pulse:implement US-001 T3</code></a>.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:spirc &lt;US-XXX&gt; [T3 | &quot;une demande&quot;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Sans tâche ni demande : tout le plan de l'US.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>L'US</strong> : celle dont vous réalisez le plan, par exemple <code>US-001</code>. Absente, Pulse liste les plans et propose aussi « Spécifier et planifier une autre US ».</li>
+<li><strong>La portée</strong> (facultative) :
+<ul>
+<li>rien : toutes les tâches restantes du plan, dans l'ordre ;</li>
+<li><code>T3</code> : seulement cette tâche ;</li>
+<li><code>"une demande"</code> entre guillemets : un seul changement, cadré puis ajouté au plan.</li>
+</ul></li>
+<li><strong>Les raccourcis</strong> (facultatifs), placés avant l'US et regroupables (<code>-axw</code>) :
+<ul>
+<li><code>-a</code> : autonome. Les tâches s'enchaînent, les corrections se font seules, et vous testez tout à la fin, en un seul parcours.</li>
+<li><code>-t</code> : tests d'abord. Les tests de chaque tâche sont écrits avant son code.</li>
+<li><code>-x</code> : un contrôle de sécurité en plus, à chaque tâche.</li>
+<li><code>-w</code> : dans un dossier à part, sur sa propre branche.</li>
+</ul></li>
+</ul>
+<p>Sans raccourci, Pulse vous demande comment avancer : « Pas à pas, avec mes points de validation (Recommandé) », « Pas à pas, avec un contrôle de sécurité à chaque tâche » ou « Autonome ».</p>
+<pre class="commande"><code>/pulse:spirc US-001</code></pre>
+<pre class="commande"><code>/pulse:spirc -a US-001</code></pre>
+<pre class="commande"><code>/pulse:spirc US-002 "le bouton Supprimer ne marche pas"</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>La spec, si elle manquait.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan, s'il manquait ; puis les tâches cochées une à une, et le journal (plan validé, chaque enregistrement).</td></tr>
+<tr><td>Les fichiers de chaque tâche</td><td>Le code de l'appli.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/…</code></td><td>Un rapport de relecture par tâche.</td></tr>
+<tr><td><code>docs/user-stories.md</code>, <code>US-XXX-&lt;nom&gt;.md</code></td><td>Pour une demande qui est un nouveau besoin : la nouvelle US.</td></tr>
+<tr><td><code>docs/prd.md</code></td><td>Une idée hors du périmètre, notée « En attente ».</td></tr>
+<tr><td><code>docs/technical.md</code></td><td>Les choix techniques, s'ils n'étaient pas encore faits.</td></tr>
+<tr><td><code>docs/lexique.md</code>, <code>aidd_docs/memory/</code></td><td>La notion du jour, et ce que la mémoire doit retenir (après votre accord).</td></tr>
+</tbody>
+</table>
+<p>S'y ajoute une version enregistrée dans Git par tâche, envoyée selon le choix noté dans le plan.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Certains arrêts restent, même en mode autonome</strong> : la validation d'un plan qui vient d'être écrit, les questions sur votre besoin ou le périmètre, les actions à faire à la main, le choix de l'envoi et la mise en ligne.</li>
+<li><strong>En mode autonome, l'envoi attend votre test.</strong> Les versions restent sur votre ordinateur jusqu'à la fin du test groupé.</li>
+<li>Claude Code vous demande votre accord pour lancer l'application et l'essayer, et pour envoyer le travail sur le dépôt en ligne.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> en mode autonome, vous testez tout à la fin, en un seul parcours. Gardez du temps pour ce test : c'est lui qui déclenche l'envoi du travail.</p></aside>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> la tâche « Mettre en ligne… » publie votre site. Pulse attend toujours votre réponse (« Mettre en ligne maintenant » ou « Plus tard »), même en mode autonome.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse attend mes réponses avant d'écrire le plan</summary><p>La spec a encore des questions ouvertes. Le plan attend vos réponses, même en mode autonome : c'est votre besoin qui fixe ce qui sera construit.</p></details>
+<details class="probleme"><summary>Pulse me demande de choisir les outils</summary><p>Les choix techniques ne sont pas encore faits. Pulse applique d'abord l'étape de <a href="tech.html"><code>/pulse:tech</code></a>, même en mode autonome : ce choix vous appartient.</p></details>
+<details class="probleme"><summary>« Il manque le PRD »</summary><p>La commande a besoin de savoir ce qui fait partie de la première version. Lancez <a href="prd.html"><code>/pulse:prd</code></a>, ou <a href="brainstorm.html"><code>/pulse:brainstorm</code></a> si vous n'avez pas encore de brief.</p></details>
+<details class="probleme"><summary>La boucle s'arrête et propose <code>/pulse:get-help</code></summary><p>Un problème grave persiste après deux corrections. La tâche reste en cours ; <a href="get-help.html"><code>/pulse:get-help</code></a> prépare une demande d'aide prête à envoyer, sans vos secrets.</p></details>
+<details class="probleme"><summary>Le garde-fou contre les clés secrètes s'est déclenché</summary><p>C'est une protection : une clé allait finir dans le code ou dans une version. Pulse vous explique, corrige, puis reprend l'étape en cours.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : réaliser une US pas à pas">
+<p data-role="vous">/pulse:spirc US-001</p>
+<p data-role="claude">Je fais travailler des assistants spécialisés : l'un réalise, d'autres relisent et vérifient sans avoir écrit le code. C'est vous qui testez chaque tâche.
+Plan de US-001 : ✅ T1 · ✅ T2 · ⬜ T3 – Afficher les créneaux libres · ⬜ T4 – Confirmer le rendez-vous.
+Le plan vous convient ? On commence la réalisation ?</p>
+<p data-role="vous">Oui</p>
+<p data-role="claude">Comment avancer ? → Pas à pas, avec mes points de validation (Recommandé)
+T3 – Afficher les créneaux libres. Ce qui va être fait : calculer et afficher les créneaux libres de la journée.</p>
+<p data-role="claude">Relecture : ✅ Validé.
+🧪 À vous de tester : ouvrez « Prendre rendez-vous » ; un créneau déjà réservé n'apparaît pas.
+Le test est-il concluant ?</p>
+<p data-role="vous">Oui, tout fonctionne</p>
+<p data-role="outil">git commit -m "feat(T3): affiche les créneaux libres de la journée"</p>
+<p data-role="claude">T3 ✅ terminée · US-001 : 3/4
+Continuer avec T4 – Confirmer le rendez-vous ?</p>
+</div>
+<div class="conversation" data-titre="Exemple : une demande précise">
+<p data-role="vous">/pulse:spirc US-002 "le bouton Supprimer ne marche pas"</p>
+<p data-role="claude">J'ai fait rassembler les faits : la suppression d'un rendez-vous est prévue par US-002. C'est une correction.
+Tâche ajoutée au plan : T9 – Supprimer un rendez-vous de la liste du jour.
+Critères : le rendez-vous disparaît de la liste ; le créneau redevient libre.
+Le plan vous convient ? On commence la réalisation ?</p>
+<p data-role="vous">Oui</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="spec.html"><code>/pulse:spec</code></a> et <a href="plan.html"><code>/pulse:plan</code></a> : les deux premières étapes, appliquées pour vous si elles manquent.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réaliser une tâche précise, pas à pas.</li>
+<li><a href="refine.html"><code>/pulse:refine</code></a> : ajuster le plan avant la réalisation.</li>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre en ligne une fois la première version terminée.</li>
+<li><a href="security.html"><code>/pulse:security</code></a> : un contrôle complet de la sécurité de votre appli.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="review">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:review – Wiki Pulse</title>
+<meta name="description" content="Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="3">Étape 4 · Construire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:review</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p><code>/pulse:review</code> fait examiner une tâche par deux assistants qui ne l'ont pas écrite. L'un relit le code : critères d'acceptation, sécurité, qualité. L'autre lance l'application et essaie chaque critère. « Un regard extérieur repère les oublis, et un essai en marche prouve que ça fonctionne ; votre test manuel le confirme ensuite. »</p>
+<p>Vous recevez un verdict, le nombre de remarques par gravité (Critique, Haute, Moyenne, Basse) et les trois plus importantes, traduites en langage simple : ce que ça change pour vos clients. Puis c'est à vous : Pulse vous donne les étapes du test et vous demande s'il est concluant.</p>
+<p>Enfin, Pulse corrige les remarques Critique, Haute et Moyenne, et les remarques Basse qui se confirment dans le code. Après chaque correction, une relecture de contrôle vérifie le résultat ; deux cycles de correction au plus.</p>
+<pre class="commande"><code>Verdict : ⚠️ À corriger
+Remarques : 0 Critique · 1 Haute · 1 Moyenne · 1 Basse
+
+✅ Prouvé              Le rendez-vous choisi s'enregistre
+🧪 À vérifier par vous  Le message de confirmation est lisible sur téléphone
+
+Le plus important : un rendez-vous peut être pris à une date passée.</code></pre>
+<p class="legende">Le résumé présenté après l'examen d'une tâche.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Un regard neuf.</strong> Ceux qui examinent n'ont pas écrit le code : ils voient ce que l'auteur ne voit plus.</li>
+<li><strong>La preuve que ça marche.</strong> L'application est lancée et chaque critère essayé, au-delà d'une simple lecture.</li>
+<li><strong>Votre test compte.</strong> Une tâche est prête seulement quand vous l'avez testée vous-même.</li>
+<li><strong>Des corrections ciblées.</strong> Les remarques sont triées par gravité, et chaque décision est notée dans le rapport.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3" aria-current="step"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="implement.html"><code>/pulse:implement US-001 T3</code></a></strong>, avant <a href="commit.html"><code>/pulse:commit</code></a>.</li>
+<li><strong>Pour toute une US</strong> : chaque tâche en cours est examinée, puis vous la testez, une par une.</li>
+<li><strong>Pour tout le projet</strong>, avec <code>tout</code> : une relecture de l'ensemble par rapport à toutes les US terminées.</li>
+<li><strong>Pour reprendre</strong> : si la tâche a déjà un rapport, Pulse reprend là où vous en étiez (votre test, ou les corrections).</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> avec <a href="spirc.html"><code>/pulse:spirc</code></a>, ou <code>/pulse:implement</code> sans numéro de tâche, inutile de lancer cette commande : la relecture et votre test font partie de leur boucle.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:review [T3 | &lt;US-XXX&gt; | tout]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong><code>T3</code></strong> : cette tâche, cherchée dans tous les plans (chaque numéro est unique).</li>
+<li><strong>Une US</strong> (<code>US-003</code>) : toutes ses tâches en cours, examinées en même temps, avec un rapport et un test par tâche.</li>
+<li><strong><code>tout</code></strong> : l'ensemble du projet, par rapport à toutes les US terminées. Seule la relecture du code se fait ici ; l'essai en marche se fait tâche par tâche.</li>
+<li><strong>Rien</strong> : la tâche en cours. S'il n'y en a aucune, ou plusieurs, Pulse vous demande laquelle.</li>
+</ul>
+<pre class="commande"><code>/pulse:review T3</code></pre>
+<pre class="commande"><code>/pulse:review US-001</code></pre>
+<pre class="commande"><code>/pulse:review tout</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/PLAN-SPEC-US-XXX-&lt;nom&gt;/T3-&lt;date&gt;.md</code></td><td>Le rapport de la tâche : verdict, remarques, résultat de l'essai en marche, votre test, et la suite donnée à chaque remarque.</td></tr>
+<tr><td><code>docs/revue-projet-&lt;date&gt;.md</code></td><td>Avec <code>tout</code> : le rapport sur l'ensemble du projet.</td></tr>
+<tr><td>Les fichiers de la tâche</td><td>Les corrections, chacune expliquée en une ligne.</td></tr>
+</tbody>
+</table>
+<p>La tâche n'est pas enregistrée ici : une fois le verdict validé et votre test concluant, elle est prête pour <a href="commit.html"><code>/pulse:commit</code></a>.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li>Pour essayer l'application, un assistant la démarre puis l'arrête. Claude Code vous demande votre accord : Pulse vous l'annonce d'avance.</li>
+<li><strong>Vous choisissez quoi corriger.</strong> Pulse propose « Corriger Critique, Haute, Moyenne et les Basses retenues (Recommandé) », « Seulement les Critiques » ou « Je regarde d'abord ».</li>
+<li><strong>Accepter une réserve est possible.</strong> Si vous acceptez un point ⚠️ sans correction, c'est noté dans le rapport.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> un test « non concluant » compte comme une remarque Critique. Pulse corrige, puis vous refaites le test.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Il n'y a rien à relire »</summary><p>Aucun changement ni tâche en cours. Réalisez d'abord une tâche avec <a href="implement.html"><code>/pulse:implement US-001</code></a>.</p></details>
+<details class="probleme"><summary>Je ne sais pas comment tester</summary><p>Suivez les étapes données par Pulse : elles commencent par ce que l'assistant n'a pas pu prouver seul, et indiquent comment ouvrir l'appli sur votre ordinateur.</p></details>
+<details class="probleme"><summary>Mon test ne marche pas</summary><p>Répondez « Non, il y a un problème », puis décrivez ce que vous voyez, avec vos mots. Pulse le traite comme une remarque Critique, corrige, puis vous redonne le test.</p></details>
+<details class="probleme"><summary>Le problème persiste après deux corrections</summary><p>Pulse s'arrête, l'explique simplement et le note dans le rapport. Lancez <a href="get-help.html"><code>/pulse:get-help</code></a> : vous obtenez une demande d'aide prête à envoyer.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : relire et corriger une tâche">
+<p data-role="vous">/pulse:review T4</p>
+<p data-role="claude">Deux assistants qui n'ont pas écrit le code vont l'examiner : l'un le relit, l'autre lance l'application et essaie chaque critère.
+Claude Code va vous demander l'accord pour lancer l'application et l'essayer : c'est ainsi que je prouve que chaque critère fonctionne.</p>
+<p data-role="claude">Verdict : ⚠️ À corriger · 1 remarque Haute.
+En clair : une cliente peut prendre rendez-vous à une date déjà passée.
+🧪 À vous de tester : choisissez un créneau demain à 10 h, saisissez « Léa Martin », validez ; le message de confirmation s'affiche.
+Le test est-il concluant ?</p>
+<p data-role="vous">Oui, tout fonctionne</p>
+<p data-role="claude">Corriger Critique, Haute, Moyenne et les Basses retenues (Recommandé) / Seulement les Critiques / Je regarde d'abord ?</p>
+<p data-role="vous">Corriger (Recommandé)</p>
+<p data-role="claude">Corrigé : la date est maintenant vérifiée côté serveur. Relecture de contrôle : ✅ Validé.
+Refaites le test rapidement : une date passée est refusée. Concluant ?</p>
+<p data-role="vous">Oui, tout fonctionne</p>
+<p data-role="claude">T4 est prête. ➡️ Prochaine étape : /pulse:commit</p>
+</div>
+<div class="conversation" data-titre="Exemple : un test non concluant">
+<p data-role="vous">/pulse:review</p>
+<p data-role="claude">Je reprends la tâche en cours : T7 – Afficher les rendez-vous du jour. Verdict : ✅ Validé.
+🧪 À vous de tester : ouvrez « Aujourd'hui » ; tous les rendez-vous du jour s'affichent, du plus tôt au plus tard.
+Le test est-il concluant ?</p>
+<p data-role="vous">Non, il y a un problème</p>
+<p data-role="claude">Lequel ?</p>
+<p data-role="vous">Les rendez-vous de l'après-midi n'apparaissent pas.</p>
+<p data-role="claude">Je le traite comme une remarque Critique et je corrige. Relecture de contrôle : ✅ Validé.
+Refaites le test : les rendez-vous de l'après-midi apparaissent-ils ?</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réalise la tâche à relire.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistre la tâche relue et testée.</li>
+<li><a href="get-help.html"><code>/pulse:get-help</code></a> : demander de l'aide quand un problème persiste.</li>
+<li><a href="security.html"><code>/pulse:security</code></a> : un contrôle complet de la sécurité, au-delà d'une tâche.</li>
+<li><a href="test.html"><code>/pulse:test</code></a> : lancer tous les tests automatiques du projet.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

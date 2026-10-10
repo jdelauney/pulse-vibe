@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="ui">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:ui – Wiki Pulse</title>
+<meta name="description" content="Définir et soigner l'interface : identité visuelle (docs/design.md), maquettes d'écrans à comparer pour la spec d'une US, audit et finitions d'une interface existante.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 2 · Décrire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:ui</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Définir et soigner l'interface : identité visuelle (docs/design.md), maquettes d'écrans à comparer pour la spec d'une US, audit et finitions d'une interface existante.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Cette commande vous aide à <strong>voir</strong> l'apparence de votre outil, à la choisir, puis à la soigner. Sa devise : « On choisit une apparence en la regardant, plutôt qu'en lisant des codes couleur. » Vous décrivez avec vos mots ; Pulse traduit en couleurs et en polices.</p>
+<p>Elle a quatre actions. <strong>identite</strong> vous montre 2 ou 3 apparences possibles, dans votre navigateur, et vous choisissez. <strong>maquettes</strong> dessine plusieurs versions des écrans d'une user story, à comparer côte à côte. <strong>audit</strong> relève ce qui cloche dans une interface déjà construite, sans rien modifier. <strong>polish</strong> applique ensuite les corrections que vous choisissez.</p>
+<p>Chaque proposition est préparée par un assistant spécialisé, en parallèle des autres. Une page de comparaison les réunit, et vous pouvez même demander un mélange de deux propositions.</p>
+<pre class="commande"><code>Trois apparences à comparer (ouvertes dans votre navigateur) :
+d1 · Chaleureuse et claire    fond crème, accent corail, formes arrondies
+d2 · Moderne et nette         blanc dominant, un seul accent, grille stricte
+d3 · Élégante et sombre       fond sombre, accent doré, titres à empattements
+
+Laquelle gardez-vous ? Vous pouvez aussi mélanger : « d1 avec les titres de d3 ».</code></pre>
+<p class="legende">Un exemple de choix d'identité visuelle, chaque direction résumée par sa thèse.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous choisissez en regardant.</strong> De vraies pages à comparer, avec des contenus tirés de votre projet.</li>
+<li><strong>Une apparence cohérente partout.</strong> <code>docs/design.md</code> guide ensuite les user stories, les specs, les plans et le code.</li>
+<li><strong>Corriger une maquette coûte moins que corriger le code.</strong> Vous ajustez vos écrans avant de les construire.</li>
+<li><strong>Une interface lisible par tous.</strong> Les contrastes sont mesurés, et un texte trop pâle est corrigé.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong><code>identite</code>, juste après <a href="tech.html"><code>/pulse:tech</code></a></strong> et avant <a href="us.html"><code>/pulse:us</code></a> : les specs et les plans s'y conformeront. C'est facultatif.</li>
+<li><strong><code>maquettes</code>, après <a href="spec.html"><code>/pulse:spec</code></a></strong>, quand la spec décrit des écrans et que vous voulez les voir avant <a href="plan.html"><code>/pulse:plan</code></a>.</li>
+<li><strong><code>audit</code> puis <code>polish</code>, à tout moment</strong>, dès qu'une interface existe.</li>
+<li><strong>Sans rien</strong>, si vous hésitez : Pulse regarde votre projet et vous recommande une action.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> l'apparence choisie est appliquée au thème du projet dès que le code de départ est en place. Les maquettes emploient les couleurs du thème et les composants courants de la pile (bouton, champ, carte, liste, message) : elles se traduisent alors directement en code. <code>polish</code> ajoute un composant manquant ou remplace une couleur écrite en dur par son rôle, et <code>audit</code> signale toute couleur écrite en dur dans un composant.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:ui [identite | maquettes &lt;US-XXX&gt; | audit [cible] | polish [cible]]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong><code>identite</code></strong> : créer l'identité visuelle, ou la revoir. Demande <code>docs/prd.md</code>.</li>
+<li><strong><code>maquettes US-XXX</code></strong> : 3 versions des écrans de cette user story (de 2 à 4 sur demande), 3 écrans au plus par passage, en format ordinateur et téléphone. Demande la spec de l'US.</li>
+<li><strong><code>audit [cible]</code></strong> : un écran, un fichier, un dossier, ou toute l'interface si vous ne précisez rien. Lecture seule.</li>
+<li><strong><code>polish [cible]</code></strong> : appliquer les corrections visuelles et de texte du dernier audit.</li>
+<li><strong>Sans rien</strong> : Pulse recommande l'action qui convient à votre projet.</li>
+</ul>
+<pre class="commande"><code>/pulse:ui identite</code></pre>
+<pre class="commande"><code>/pulse:ui maquettes US-001</code></pre>
+<pre class="commande"><code>/pulse:ui audit</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier ou dossier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/design.md</code></td><td>Votre identité visuelle : couleurs par rôle, polices, formes, et la façon de l'appliquer au code.</td></tr>
+<tr><td><code>docs/design/identite/</code></td><td>Les planches comparées (<code>d1-…</code>, <code>d2-…</code>), la page <code>comparer.html</code> et la planche choisie dans <code>retenue/</code>.</td></tr>
+<tr><td><code>docs/design/maquettes/US-XXX-&lt;nom&gt;/</code></td><td>Les versions d'écrans (<code>desktop.html</code>, <code>mobile.html</code>, <code>note.md</code>), la version choisie dans <code>retenue/</code> avec sa <code>critique.md</code>, les autres dans <code>alternatives/</code>.</td></tr>
+<tr><td><code>docs/design/audits/ui-AAAA-MM-JJ.md</code></td><td>Le rapport d'audit : une note sur 50, les constats classés par gravité, ce qui va bien et 3 corrections rapides.</td></tr>
+</tbody>
+</table>
+<p>Seule l'action <code>polish</code> modifie le code de votre interface. L'action <code>identite</code> peut aussi appliquer votre apparence au code, si le code de départ est en place et que vous l'acceptez.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Vous choisissez dans la conversation.</strong> Une direction, une version, un mélange, ou « aucune » avec une nouvelle consigne : rien n'est retenu sans votre choix.</li>
+<li><strong><code>audit</code> ne touche à rien.</strong> Il lit votre interface et écrit seulement son rapport.</li>
+<li><strong><code>polish</code> modifie votre code</strong>, par petits lots, puis lance les contrôles automatiques et vous demande de vérifier dans votre navigateur.</li>
+<li>Pour ouvrir la page de comparaison, Pulse lance votre navigateur sur un fichier de votre projet.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> <code>polish</code> corrige seulement l'apparence et les textes. Un constat qui change le parcours va vers <a href="refine.html"><code>/pulse:refine</code></a>, et un bouton qui ne marche pas vers <a href="fix.html"><code>/pulse:fix</code></a> : Pulse vous le dit.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>La page de comparaison ne s'ouvre pas</summary><p>Pulse affiche le chemin complet du fichier. Double-cliquez dessus : il s'ouvre dans votre navigateur.</p></details>
+<details class="probleme"><summary>Aucune apparence ne me plaît</summary><p>Répondez « aucune », suivi de ce qui vous manque (« plus chaleureux », « moins chargé »). Pulse prépare de nouvelles propositions avec cette consigne ; les anciennes sont rangées dans <code>alternatives/</code>.</p></details>
+<details class="probleme"><summary>Deux maquettes se ressemblent trop</summary><p>Pulse le repère lui-même et propose de régénérer l'une d'elles avec une autre idée directrice. Acceptez : chaque version doit changer l'organisation de l'écran, pas seulement les couleurs.</p></details>
+<details class="probleme"><summary>Pulse me demande de définir l'identité avant les maquettes</summary><p>Sans <code>docs/design.md</code>, les maquettes n'ont pas de base commune. Choisissez « Définir l'identité d'abord », ou continuez avec une direction provisoire, signalée dans chaque maquette.</p></details>
+<details class="probleme"><summary>Pulse me dit qu'il manque le PRD</summary><p>L'identité visuelle s'appuie sur votre projet. Lancez <a href="prd.html"><code>/pulse:prd</code></a>, puis relancez <code>/pulse:ui identite</code>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : choisir l'apparence du carnet de réservations">
+<p data-role="vous">/pulse:ui identite</p>
+<p data-role="claude">Votre outil sert à utiliser, pas à convaincre : je pars sur le registre outil, d'accord ?
+Votre outil en 3 mots ? → Chaleureux, simple, soigné (Recommandé) / Moderne, net, rapide / Élégant, calme, haut de gamme
+Un site dont vous aimez l'allure ?</p>
+<p data-role="vous">Chaleureux, simple, soigné. J'aime l'allure de mon fleuriste en ligne.</p>
+<p data-role="outil">pulse-aidd comparer docs/design/identite</p>
+<p data-role="claude">La page de comparaison est ouverte dans votre navigateur. Laquelle gardez-vous ?</p>
+<p data-role="vous">La première, avec les titres de la troisième.</p>
+<p data-role="claude">Je prépare la planche mélangée. Un texte gris était trop pâle sur le fond crème : je l'ai foncé pour qu'il reste lisible.
+→ Valider / Modifier quelque chose</p>
+</div>
+<div class="conversation" data-titre="Exemple : les maquettes de la prise de rendez-vous">
+<p data-role="vous">/pulse:ui maquettes US-001</p>
+<p data-role="claude">Quels écrans maquetter ? → Choisir un créneau (Recommandé) · Confirmer le rendez-vous</p>
+<p data-role="vous">Les deux.</p>
+<p data-role="claude">3 versions : v1 calendrier de la semaine · v2 liste des prochains créneaux libres · v3 étapes une par une.
+Page de comparaison ouverte. Laquelle gardez-vous ?</p>
+<p data-role="vous">v2 sur ordinateur, v3 sur téléphone.</p>
+<p data-role="claude">C'est noté dans retenue/. → Critiquer la maquette retenue (Recommandé) / Passer au plan</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="tech.html"><code>/pulse:tech</code></a> : choisir les outils, juste avant l'identité visuelle.</li>
+<li><a href="us.html"><code>/pulse:us</code></a> : écrire les user stories, une fois l'apparence choisie.</li>
+<li><a href="spec.html"><code>/pulse:spec</code></a> : décrire les écrans, avant de les maquetter.</li>
+<li><a href="plan.html"><code>/pulse:plan</code></a> : il cite la maquette retenue dans sa conception.</li>
+<li><a href="refine.html"><code>/pulse:refine</code></a> : traiter un constat qui change le parcours.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer la version après <code>polish</code>.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

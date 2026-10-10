@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="init">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:init – Wiki Pulse</title>
+<meta name="description" content="Démarrer ou reprendre un projet Pulse : prépare le dossier, montre où en est le projet et guide vers la prochaine étape.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 1 · Démarrer</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:init</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Démarrer ou reprendre un projet Pulse : prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>C'est la porte d'entrée de Pulse. Lancée dans un dossier vide, elle prépare votre projet : les règles que l'IA lira à chaque session (<code>CLAUDE.md</code>), la mémoire du projet, l'historique des versions (Git) et une protection pour vos clés secrètes.</p>
+<p>Lancée plus tard, dans un projet en cours, elle fait le point : ce qui est fait, ce qui reste, et la prochaine étape conseillée. Elle tourne en boucle : vous choisissez une action, elle l'exécute, relit l'état du projet, puis vous montre l'écran suivant.</p>
+<pre class="commande"><code>Votre projet :
+  Dossier      ✅ CLAUDE.md Pulse
+  Mémoire      ✅ branchée · 3 fichiers
+  Pile         ⚠️ à choisir avec /pulse:tech
+  Git          ✅ 4 versions enregistrées
+  En ligne     ⬜ aucun pour l'instant
+
+➡️ Prochaine étape : /pulse:tech — choisir les outils de votre appli</code></pre>
+<p class="legende">L'écran « Votre projet », tel que <code>/pulse:init</code> l'affiche au milieu du travail.</p>
+
+<figure class="anim" data-etapes="4" data-duree="1300">
+<svg viewBox="0 0 640 220" role="img" aria-labelledby="boucle-init-titre">
+<title id="boucle-init-titre">La boucle de /pulse:init</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="76" width="152" height="68" rx="18"/><rect class="schema-boite" x="20" y="82" width="140" height="56" rx="14"/><text class="schema-texte" x="90" y="108" text-anchor="middle">Lire l'état</text><text class="schema-texte-secondaire" x="90" y="126" text-anchor="middle">fichiers et Git</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M162 110 H230" marker-end="url(#pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="234" y="76" width="172" height="68" rx="18"/><rect class="schema-boite" x="240" y="82" width="160" height="56" rx="14"/><text class="schema-texte" x="320" y="108" text-anchor="middle">Montrer l'écran</text><text class="schema-texte-secondaire" x="320" y="126" text-anchor="middle">une action conseillée</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M402 110 H470" marker-end="url(#pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="474" y="76" width="152" height="68" rx="18"/><rect class="schema-boite-active" x="480" y="82" width="140" height="56" rx="14"/><text class="schema-texte" x="550" y="108" text-anchor="middle">Vous choisissez</text><text class="schema-texte-secondaire" x="550" y="126" text-anchor="middle">puis Pulse agit</text></g>
+<g class="e4" data-etape="4"><path class="schema-accompagne trace e4" pathLength="1" d="M550 140 C550 205 90 205 90 142" marker-end="url(#pointe-mauve-init)"/><text class="schema-texte-secondaire" x="320" y="212" text-anchor="middle">et on recommence, sur un état à jour</text></g>
+<defs>
+<marker id="pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="pointe-mauve-init" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>La boucle : Pulse lit l'état du projet, vous montre l'écran avec une action conseillée, attend votre choix, agit, puis recommence sur un état à jour.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous partez sur de bonnes bases.</strong> Les fichiers dont la méthode a besoin sont créés d'un coup, sans rien installer de technique.</li>
+<li><strong>Vous savez toujours quoi faire ensuite.</strong> Une seule action recommandée, avec sa raison en une phrase.</li>
+<li><strong>Vos secrets sont protégés dès le départ.</strong> Un contrôle s'exécute avant chaque enregistrement, et l'IA ne lit pas votre fichier de clés.</li>
+<li><strong>Un projet existant est accueilli tel quel.</strong> Pulse ajoute ses règles et sa mémoire en gardant tout ce qui existe.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Tout au début</strong>, dans un dossier vide, pour créer le projet.</li>
+<li><strong>À chaque reprise</strong>, après une pause ou le lendemain, pour retrouver le fil.</li>
+<li><strong>Dans un projet qui a déjà du code</strong>, pour y ajouter Pulse.</li>
+<li><strong>Après une mise à jour de Pulse</strong> : elle repère ce qui a changé et propose de mettre votre projet à niveau.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour savoir où vous en êtes sans rien lancer, <a href="status.html"><code>/pulse:status</code></a> fait le même calcul, en lecture seule.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:init [nom du projet]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<p>Le nom du projet est facultatif : sans lui, Pulse vous le demande.</p>
+<pre class="commande"><code>/pulse:init carnet-reservations</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>Dans un nouveau projet, seuls les fichiers absents sont créés :</p>
+<table>
+<thead><tr><th>Fichier ou dossier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>CLAUDE.md</code></td><td>Les règles du projet, lues par l'IA à chaque session, avec votre profil (niveau, quantité d'explications).</td></tr>
+<tr><td><code>docs/</code></td><td>Les documents de la méthode : brief, PRD, choix techniques, user stories.</td></tr>
+<tr><td><code>aidd_docs/</code></td><td>La mémoire du projet (choix, mots du métier, décisions) et le dossier des tâches.</td></tr>
+<tr><td><code>README.md</code></td><td>La présentation du projet.</td></tr>
+<tr><td><code>.gitignore</code></td><td>Ce que Git doit ignorer, dont vos secrets.</td></tr>
+<tr><td><code>.env.example</code></td><td>Le modèle de vos clés secrètes, sans les valeurs.</td></tr>
+</tbody>
+</table>
+<p>S'y ajoutent un premier enregistrement Git et un contrôle des secrets avant chaque enregistrement. Le code viendra plus tard, après le choix des outils avec <a href="tech.html"><code>/pulse:tech</code></a>.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien ne se lance sans votre réponse.</strong> Chaque action est proposée, puis attend votre choix.</li>
+<li><strong>Vos fichiers existants sont gardés.</strong> Un <code>CLAUDE.md</code> déjà présent est complété, après vous avoir montré les ajouts.</li>
+<li>La protection des clés modifie la configuration de Claude Code, qui vous demande donc votre autorisation. Acceptez-la : c'est elle qui empêche l'IA de lire votre fichier <code>.env</code>.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> si votre dossier se trouve à l'intérieur d'un autre projet Git, Pulse vous le signale. Choisissez « Créer un historique propre à ce projet » : sinon, vos fichiers finiraient dans l'autre projet.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Git n'est pas installé »</summary><p>Git enregistre l'historique de vos versions. Installez-le depuis <a href="https://git-scm.com/downloads">git-scm.com/downloads</a>, fermez puis relancez Claude Code, et relancez <code>/pulse:init</code>.</p></details>
+<details class="probleme"><summary>« Node.js est absent ou trop ancien »</summary><p>Node.js fait tourner les garde-fous de Pulse. Installez la version LTS (22.19 ou plus) depuis <a href="https://nodejs.org">nodejs.org</a>. Puis <strong>fermez et relancez Claude Code</strong>, pas seulement le terminal : Claude Code lit la liste des programmes installés à son démarrage.</p></details>
+<details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>Chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et un e-mail (celui de votre compte GitHub convient). C'est demandé une seule fois sur cet ordinateur.</p></details>
+<details class="probleme"><summary>Pulse propose de « mettre à niveau » mon projet</summary><p>Votre projet a été créé avec une version plus ancienne de Pulse. La mise à niveau range les fichiers au nouveau format sans rien perdre ; elle vous montre ce qui change et attend votre accord.</p></details>
+<details class="probleme"><summary>La conversation devient longue et lente</summary><p>Après une étape longue, tapez <code>/clear</code>, puis relancez la commande proposée : vous repartez avec une conversation légère, et Pulse retrouve tout grâce à la mémoire du projet.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : créer un nouveau projet">
+<p data-role="vous">/pulse:init carnet-reservations</p>
+<p data-role="claude">👋 Bienvenue ! Ce dossier est vide : je vous propose de préparer le projet.
+Décrivez-le en une phrase (facultatif).</p>
+<p data-role="vous">Un carnet de réservations pour mon salon de coiffure.</p>
+<p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé
+Combien d'explications voulez-vous ? → Normales (Recommandé)</p>
+<p data-role="outil">pulse-aidd nouveau "carnet-reservations" --ici --oui</p>
+<p data-role="claude">C'est prêt : les règles du projet, la mémoire et un premier enregistrement Git.
+Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Protéger mes clés (Recommandé)
+Pour la suite : parcours express (démarrer vite) ou parcours complet, étape par étape ?</p>
+</div>
+<div class="conversation" data-titre="Exemple : reprendre le lendemain">
+<p data-role="vous">/pulse:init</p>
+<p data-role="claude">Bon retour sur carnet-reservations.
+Méthode : ✅ brief · ✅ PRD · ✅ choix techniques · ✅ US · [spec] · ⬜ plan · ⬜ réalisation
+➡️ Prochaine étape : /pulse:spec US-001 — décrire précisément la prise de rendez-vous.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="express.html"><code>/pulse:express</code></a> : démarrer vite, en une seule conversation, juste après <code>/pulse:init</code>.</li>
+<li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : la première étape du parcours complet.</li>
+<li><a href="status.html"><code>/pulse:status</code></a> : savoir où vous en êtes, sans rien lancer.</li>
+<li><a href="memory.html"><code>/pulse:memory</code></a> : remplir la mémoire d'un projet qui a déjà du code.</li>
+<li><a href="tech.html"><code>/pulse:tech</code></a> : choisir les outils de votre appli.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

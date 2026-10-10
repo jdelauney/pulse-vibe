@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="perf">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:perf – Wiki Pulse</title>
+<meta name="description" content="Mesurer et améliorer la vitesse vécue par les visiteurs : chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 6 · Être trouvé</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:perf</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Mesurer et améliorer la vitesse vécue par les visiteurs : chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>« Imaginons un visiteur sur téléphone, en 4G moyenne. Voici ce qu'il vit en ouvrant votre site. » Cette commande mesure 3 à 5 pages de votre site, une par type de page (accueil, liste, détail, formulaire), comme sur un téléphone moyen. Chaque page est chargée plusieurs fois et Pulse garde la valeur du milieu, la <dfn>médiane</dfn>, pour éviter de conclure sur un passage chanceux.</p>
+<p>Trois mesures comptent pour vos visiteurs : l'affichage du contenu principal (le plat principal arrive sur la table), la stabilité de la page (elle ne saute pas au moment de cliquer) et la réaction aux clics. Pulse sépare toujours deux sources : la simulation, qui trouve les causes, et vos vrais visiteurs, quand Google a assez de données. Il retient au plus 3 priorités, chacune avec ce que vit le visiteur, la cause en mots simples, le gain attendu et qui décide. Après correction, il compare l'avant et l'après, chiffres à l'appui.</p>
+<pre class="commande"><code>Simulation de Google, téléphone moyen en 4G lente, médiane de 3 passages
+  Accueil      🟠 contenu principal 3,1 s · stabilité 🟢 · blocages 🟢
+  Réserver     🟢 contenu principal 1,9 s · stabilité 🟢 · blocages 🟢
+
+Priorité 1 : la grande photo de l'accueil arrive tard.
+  Gain attendu : environ 1 s · Pulse peut le corriger seul</code></pre>
+<p class="legende">Le verdict de <code>/pulse:perf</code> : une phrase par page, la source, puis les priorités.</p>
+<p>Ce qui est juste sur Google : il tient compte de l'expérience des vrais visiteurs, parmi beaucoup d'autres signaux ; la pertinence du contenu passe avant. Le score de la simulation n'est pas utilisé pour le classement.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous voyez ce que vit votre visiteur.</strong> Des feux 🟢 🟠 🔴 et une phrase par page, en mots simples.</li>
+<li><strong>Des chiffres fiables.</strong> Une médiane de plusieurs passages, avec sa source ; une mesure instable se refait avant de conclure.</li>
+<li><strong>Trois priorités, pas cinquante.</strong> Le plus grand gain d'abord ; ce qui relève d'un choix (police, vidéo d'accueil, outil tiers) vous est laissé, avec ses conséquences.</li>
+<li><strong>Une amélioration prouvée.</strong> Pulse annonce un progrès seulement quand la comparaison avant/après le montre vraiment.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Juste après la première mise en ligne</strong> : <a href="deploy.html"><code>/pulse:deploy</code></a> propose une première mesure de l'accueil, comme point de départ.</li>
+<li><strong>Quand une nouvelle version change une page suivie</strong> : <code>/pulse:deploy</code> vous propose de remesurer.</li>
+<li><strong>Après une mesure avec des priorités</strong> : <code>corriger</code>.</li>
+<li><strong>Pour garder la vitesse dans le temps</strong> : <code>suivre</code>, avec un budget et une vérification chaque semaine.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> visez le vert, sans courir après le 100. Au-dessus de 90, le gain n'est plus perceptible pour vos visiteurs.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:perf [mesurer | corriger | suivre]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Vide : mesurer.</p>
+<!-- /auto:forme -->
+<ul>
+<li><code>mesurer</code> (par défaut) : « Mon site est-il rapide ? ». Les pages à suivre sont proposées puis validées par vous, mesurées 3 fois chacune (environ 30 secondes par passage), puis notées dans <code>docs/performance.md</code>.</li>
+<li><code>corriger</code> : « Que faut-il changer, et ça a marché ? ». Vous choisissez les priorités ; Pulse mesure l'avant, corrige, mesure l'après en 5 passages, puis compare.</li>
+<li><code>suivre</code> : « Mes vrais visiteurs vivent-ils la même chose ? ». Trois volets facultatifs : une mesure chez les vrais visiteurs, leur tendance dans le temps, et un budget vérifié automatiquement.</li>
+</ul>
+<pre class="commande"><code>/pulse:perf</code></pre>
+<pre class="commande"><code>/pulse:perf corriger</code></pre>
+<pre class="commande"><code>/pulse:perf suivre</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/performance.md</code></td><td>Les pages suivies, la dernière mesure, les vrais visiteurs, les priorités et leur statut, le budget, l'historique avec chaque avant/après.</td></tr>
+<tr><td><code>docs/performance/mesures/&lt;date&gt;.json</code></td><td>Le détail de chaque mesure, pour comparer plus tard.</td></tr>
+<tr><td>Le code du site</td><td>Avec <code>corriger</code> : seulement ce que demande la priorité choisie.</td></tr>
+<tr><td><code>scripts/perf.js</code> et le fichier des contrôles automatiques</td><td>Avec <code>suivre</code>, si vous l'acceptez : la vérification du budget chaque semaine.</td></tr>
+<tr><td>La mention de confidentialité du site</td><td>Avec la mesure chez les vrais visiteurs : l'outil choisi et ce qu'il recueille.</td></tr>
+<tr><td><code>docs/lexique.md</code></td><td>Les mots expliqués en chemin, avec leurs images du quotidien.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Mesurer ne change rien au site.</strong> Pulse lit le site en ligne, ou le construit pour la production sur votre ordinateur, puis arrête le serveur qu'il a lancé, lui seul.</li>
+<li><strong>Une correction passe par vos choix.</strong> Vous choisissez les priorités ; avec la simulation de Google, l'« après » se mesure sur le site en ligne, donc après une mise en ligne faite avec votre accord.</li>
+<li><strong>La vérification automatique se montre avant d'être écrite.</strong> Un budget dépassé fait échouer la tâche de la semaine et le dépôt vous prévient par e-mail ; vos versions parallèles restent libres d'être acceptées.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> la clé Google gratuite (5 minutes à créer, guidées pas à pas) se colle par vous, dans la fenêtre des variables de votre système, jamais dans la conversation. Si elle apparaît dans un message ou un fichier, supprimez-la dans la console Google, créez-en une nouvelle et mettez-la à jour partout. Restreignez-la aux deux services de mesure : si elle fuit, elle ne sert à rien d'autre.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> Pulse construit le site, le sert en mode production sur un port libre, puis le mesure. Sur un projet de départ nu, deux remarques sur le code de Next.js et React sont normales : elles ne deviennent pas des priorités. Chaque priorité a sa correction Next.js documentée (image principale chargée en premier, images au bon format, polices, outils tiers chargés plus tard). Mesurez l'adresse de production : les prévisualisations Vercel sont protégées. La mesure chez les vrais visiteurs suit la recette <code>mesure-reelle</code> : Speed Insights de Vercel, ou des mesures envoyées à votre site.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Une page est marquée « Instable »</summary><p>Ses chiffres varient trop d'un passage à l'autre. Pulse la remesure seule, en 5 passages, avant d'en parler. Si l'instabilité reste, il cherche un contenu qui change à chaque chargement : carrousel, animation, image chargée en différé.</p></details>
+<details class="probleme"><summary>« Pas encore de données » pour les vrais visiteurs</summary><p>C'est normal pour un site récent ou peu visité : Google n'a pas assez de visites. <code>/pulse:perf suivre</code> installe une mesure chez vos visiteurs, qui donne des chiffres dès les premières visites.</p></details>
+<details class="probleme"><summary>La comparaison dit « dans le bruit »</summary><p>L'écart ne suffit pas pour conclure : aucune amélioration n'est annoncée. Pulse propose de remesurer.</p></details>
+<details class="probleme"><summary>Les chiffres changent d'un ordinateur à l'autre</summary><p>Une mesure faite sur votre poste se compare seulement avec une autre mesure du même poste. Pour des chiffres comparables partout, créez la clé Google : la mesure passe alors par les serveurs de Google.</p></details>
+<details class="probleme"><summary>Le site n'est ni en ligne ni prêt à construire</summary><p>Il n'y a encore rien à mesurer. Réalisez la première tâche du plan, ou mettez le site en ligne avec <a href="deploy.html"><code>/pulse:deploy</code></a>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : la première mesure">
+<p data-role="vous">/pulse:perf</p>
+<p data-role="outil">pulse-aidd perf cle</p>
+<p data-role="claude">Pas de clé Google pour l'instant. Mesurer sur ce poste, sans clé (Recommandé pour commencer) · Créer ma clé Google d'abord (5 minutes)</p>
+<p data-role="vous">Mesurer sur ce poste</p>
+<p data-role="claude">Pages proposées, une par type : l'accueil, la liste des prestations, la page de réservation. (Recommandé)
+Les pages réservées aux clientes connectées restent hors de la mesure. Environ 30 secondes par passage, 3 passages par page.</p>
+<p data-role="outil">pulse-aidd perf mesurer http://localhost:3456/,http://localhost:3456/prestations,http://localhost:3456/reserver --source local --passages 3</p>
+<p data-role="claude">Accueil 🟠 : le contenu principal s'affiche en 3,1 s (médiane de 3 passages, écart 0,2 s, mesure sur ce poste).
+Priorité 1 : la grande photo de l'accueil arrive tard ; elle est découverte après le reste. Gain attendu : environ 1 s. Pulse peut le corriger seul.
+➡️ Prochaine étape : /pulse:perf corriger</p>
+</div>
+<div class="conversation" data-titre="Exemple : corriger et prouver">
+<p data-role="vous">/pulse:perf corriger</p>
+<p data-role="claude">Priorités à faire : la grande photo de l'accueil (Recommandé). Je mesure d'abord l'« avant » sur ce poste, en 5 passages.</p>
+<p data-role="outil">pulse-aidd perf comparer docs/performance/mesures/2026-10-10-avant.json docs/performance/mesures/2026-10-10-apres.json</p>
+<p data-role="claude">Contenu principal de l'accueil : 3,1 s → 2,0 s, mieux ✅ (les 5 passages d'après battent tous ceux d'avant).
+Noté dans docs/performance.md. Enregistrer avec /pulse:commit, puis mettre en ligne ?</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre en ligne une correction, et mesurer après la première mise en ligne.</li>
+<li><a href="cicd.html"><code>/pulse:cicd</code></a> : les contrôles automatiques, où se branche la vérification du budget.</li>
+<li><a href="seo.html"><code>/pulse:seo</code></a> : être trouvé, l'autre moitié de l'étape.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : l'accessibilité réelle et l'apparence.</li>
+<li><a href="security.html"><code>/pulse:security</code></a> : les en-têtes de sécurité.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : une lenteur côté serveur, notée dans le rapport.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

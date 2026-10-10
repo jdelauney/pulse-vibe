@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="rediger">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:rediger – Wiki Pulse</title>
+<meta name="description" content="Écrire les textes de vos pages (accueil, à propos, services…) dans la voix du site, sans tics d'écriture IA, puis les intégrer si vous le souhaitez.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 6 · Être trouvé</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:rediger</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Écrire les textes de vos pages (accueil, à propos, services…) dans la voix du site, sans tics d'écriture IA, puis les intégrer si vous le souhaitez.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Cette commande écrit le texte d'une page de votre site : l'accueil, « À propos », vos services. On fixe d'abord la <strong>voix du site</strong> : vous ou tu, trois traits de ton, la promesse du site en une phrase, les mots à éviter. Elle est gardée dans <code>docs/voix.md</code> et sert à toutes les pages.</p>
+<p>Pour chaque page, Pulse vous pose quelques questions, une à la fois : l'objectif de la page, qui la lit, le bouton visé, les faits dont vous disposez (prix, lieux, exemples). Un assistant rédacteur écrit le texte, puis un contrôle vérifie qu'il ne sonne pas écrit par une IA (tournures toutes faites, phrases toutes de la même longueur…). Vous relisez, puis vous choisissez : garder le texte de côté, ou le mettre dans la page.</p>
+<pre class="commande"><code>Texte de la page accueil :
+  Contrôle      ✅ 0 erreur · 1 avertissement gardé (nom du salon)
+  Phrases       14 mots en moyenne · 30 % de phrases courtes
+  À compléter   [à compléter : horaires du samedi]
+
+➡️ Garder le document · Intégrer dans la page</code></pre>
+<p class="legende">Ce que <code>/pulse:rediger</code> vous présente avant votre choix.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Un texte qui vous ressemble.</strong> La même voix d'une page à l'autre, avec les mots de votre métier.</li>
+<li><strong>Des faits vrais, rien d'inventé.</strong> Un chiffre, un avis client ou une référence vient de vous ; ce qui manque est marqué « [à compléter] ».</li>
+<li><strong>Un texte qui ne sonne pas IA.</strong> Le contrôle repère les tics d'écriture des IA et les fait corriger avant de vous montrer le texte.</li>
+<li><strong>Chaque section mène à l'action.</strong> Le texte conduit vers le bouton visé : réserver, appeler, écrire.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Quand une page existe mais attend son vrai texte</strong> : accueil, à propos, services, présentation d'une offre.</li>
+<li><strong>Quand un texte existant sonne faux</strong> ou trop « IA » : <code>--humaniser</code> le réécrit dans la voix du site.</li>
+<li><strong>Avant de travailler le référencement d'une page</strong> : <a href="seo.html"><code>/pulse:seo textes</code></a> choisit ensuite son titre et sa description.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si vous avez déjà choisi une apparence avec <a href="ui.html"><code>/pulse:ui identite</code></a>, ses trois mots de personnalité préremplissent le ton de la voix du site.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:rediger [page] [--humaniser]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>La page</strong> : son nom, par exemple <code>accueil</code> ou <code>a-propos</code>. Sans nom, Pulse vous montre les pages connues du projet et vous demande laquelle choisir.</li>
+<li><code>--humaniser</code> : réécrire le texte actuel de la page, en gardant ses faits et son intention. La nouvelle version garde à peu près la même longueur.</li>
+</ul>
+<pre class="commande"><code>/pulse:rediger accueil</code></pre>
+<pre class="commande"><code>/pulse:rediger a-propos --humaniser</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/voix.md</code></td><td>La voix du site : adresse (vous ou tu), ton, promesse, mots à employer et à éviter, exemples. Modifiable à tout moment.</td></tr>
+<tr><td><code>docs/textes/&lt;page&gt;.md</code></td><td>La fiche de la page (objectif, public, action attendue, faits), le texte, et le résultat du contrôle.</td></tr>
+<tr><td>La page du site</td><td>Seulement si vous choisissez « Intégrer dans la page » : le texte y est recopié tel quel, puis les vérifications du projet sont lancées.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien n'arrive sur le site sans votre choix.</strong> Par défaut, le texte reste dans <code>docs/textes/</code>, prêt pour plus tard.</li>
+<li><strong>La voix du site vous est montrée</strong> avant d'être enregistrée.</li>
+<li><strong>Un fait inconnu reste inconnu.</strong> Il apparaît comme « [à compléter : …] » : remplacez-le avant la publication.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> relisez chaque fait du texte (prix, horaires, adresse, noms) avant de le publier. Un avis de cliente se publie seulement s'il est réel, avec son accord.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Le texte contient « [à compléter] »</summary><p>Il manquait un fait. Donnez-le à Pulse (par exemple vos horaires du samedi) : il complète le texte. Un chiffre ne s'invente jamais.</p></details>
+<details class="probleme"><summary>Le contrôle signale encore des erreurs</summary><p>Après trois tours de correction, Pulse vous montre chaque phrase concernée et sa consigne. Vous choisissez : corriger, ou garder la phrase avec sa raison.</p></details>
+<details class="probleme"><summary>Le contrôle se trompe sur un mot</summary><p>Un nom propre ou un mot pris au sens littéral (« naviguez dans le catalogue », pour un menu) peut être signalé à tort. Le constat se garde avec sa raison, écrite dans le fichier : il sort alors du compte des erreurs.</p></details>
+<details class="probleme"><summary>Je veux changer le ton du site</summary><p>Modifiez <code>docs/voix.md</code>, ou demandez à Pulse de le faire. Les pages suivantes suivront la nouvelle voix ; relancez <code>--humaniser</code> sur celles déjà écrites.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : le texte de l'accueil, la première fois">
+<p data-role="vous">/pulse:rediger accueil</p>
+<p data-role="claude">On fixe d'abord la voix du site, puis on écrit la page avec vos faits ; un contrôle vérifie que le texte ne sonne pas écrit par une IA.
+Vous ou tu, pour parler à vos clientes ? → Vous</p>
+<p data-role="claude">J'ai repris trois traits de ton de votre apparence : chaleureux, précis, simple. La promesse du site en une phrase ?</p>
+<p data-role="vous">Réserver sa coupe en deux minutes, sans appeler.</p>
+<p data-role="claude">Voici docs/voix.md. Je l'enregistre ?
+Maintenant la page : quel bouton voulez-vous qu'on clique ? Et quels faits avez-vous (adresse, prix, horaires) ?</p>
+<p data-role="vous">« Réserver ». Le salon est au 12 rue des Lilas, ouvert du mardi au samedi.</p>
+<p data-role="outil">pulse-aidd textes verifier docs/textes/accueil.md</p>
+<p data-role="claude">Le texte est prêt : 0 erreur au contrôle. Garder le document · Intégrer dans la page</p>
+</div>
+<div class="conversation" data-titre="Exemple : réécrire un texte existant">
+<p data-role="vous">/pulse:rediger a-propos --humaniser</p>
+<p data-role="claude">Je garde vos faits et votre intention, dans la voix du site.</p>
+<p data-role="outil">pulse-aidd textes verifier docs/textes/a-propos.md</p>
+<p data-role="claude">Nouvelle version prête. Le contrôle signalait « au cœur de nos préoccupations » : corrigé.
+1 avertissement gardé : « Lila » est le nom du salon.
+Garder le document · Intégrer dans la page</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="seo.html"><code>/pulse:seo</code></a> : le titre et la description de la page pour Google.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : l'apparence, dont les mots de personnalité nourrissent la voix du site.</li>
+<li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : le brief, d'où vient une partie de la voix.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer les textes et la page.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

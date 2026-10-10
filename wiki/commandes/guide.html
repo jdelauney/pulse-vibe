@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="guide">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:guide – Wiki Pulse</title>
+<meta name="description" content="Produire le guide de réalisation pas à pas (docs/guide/) à partir du plan : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier et les actions manuelles.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="2">Étape 3 · Préparer</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:guide</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Produire le guide de réalisation pas à pas (docs/guide/) à partir du plan : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier et les actions manuelles.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p><code>/pulse:guide</code> vous donne votre carnet de route. Une page d'accueil, <code>docs/guide/index.md</code>, dit où en est le projet, quelle commande lancer ensuite, où en est la première version et quoi faire en cas de blocage. Puis une page par plan liste, pour chaque tâche et dans l'ordre, les commandes à copier-coller dans Claude Code.</p>
+<p>Sur chaque page, les commandes 🔵 sont obligatoires et les ⚪ facultatives. Le signe ⚠️ marque une action à faire vous-même (saisir une clé chez l'hébergeur, par exemple) ou un prérequis. Vous savez aussi ce qu'il faudra vérifier à chaque tâche.</p>
+<p>Le guide se fabrique entièrement à partir de vos plans, et se met à jour tout seul chaque fois qu'un plan change. La commande le refait, vérifie qu'il colle à l'état réel du projet, puis vous présente la prochaine commande à copier.</p>
+<pre class="commande"><code>Première version : 1 US terminée sur 3
+US en cours : US-002 – Liste des rendez-vous du jour (2 tâches sur 4)
+
+➡️ Prochaine commande à copier :
+   /pulse:spirc US-002
+
+⚠️ À prévoir pour US-003 : saisir la clé du service d'e-mails chez l'hébergeur</code></pre>
+<p class="legende">Ce que <code>/pulse:guide</code> vous présente, en quelques lignes.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous avancez seul, dans l'ordre.</strong> Chaque ligne du guide est une commande à copier dans Claude Code.</li>
+<li><strong>Il est toujours à jour.</strong> Dès qu'un plan change (avec <code>/pulse:plan</code>, <code>/pulse:commit</code> ou <code>/pulse:refine</code>), le guide se refait en silence.</li>
+<li><strong>Les actions à la main ne vous surprennent pas.</strong> Elles sont marquées ⚠️ à l'avance, avec la tâche qui en a besoin.</li>
+<li><strong>Les décalages sont repérés.</strong> Une tâche notée « en cours » sans aucun changement, ou une tâche déjà faite mais pas cochée : Pulse vous le signale.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2" aria-current="step"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="plan.html"><code>/pulse:plan</code></a></strong> : le guide existe déjà ; lancez la commande pour le lire et voir la prochaine étape.</li>
+<li><strong>Quand vous ne savez plus quelle commande taper.</strong></li>
+<li><strong>Avant une séance de travail</strong>, pour voir les actions à la main à prévoir.</li>
+<li><strong>La première fois</strong>, avec <code>expliquer</code>, pour comprendre le rôle de chaque commande et l'ordre : réaliser, puis relire et tester, puis enregistrer.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> sans rien lancer, ouvrez <code>docs/guide/index.md</code> dans votre éditeur : c'est le même carnet de route.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:guide [expliquer]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Facultatif : présenter le guide pas à pas.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Sans argument</strong> : Pulse met le guide à jour, puis vous présente la progression, la prochaine commande à copier et les actions à la main à prévoir.</li>
+<li><strong><code>expliquer</code></strong> : Pulse parcourt avec vous la page du plan en cours, une tâche à la fois. Pour chaque commande, il dit ce qu'elle fait et pourquoi elle vient à ce moment.</li>
+</ul>
+<pre class="commande"><code>/pulse:guide</code></pre>
+<pre class="commande"><code>/pulse:guide expliquer</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/guide/index.md</code></td><td>L'accueil du carnet : où en est le projet, la prochaine commande, les étapes avant le plan, les plans par groupe de user stories, l'avancement de la première version, quoi faire en cas de blocage.</td></tr>
+<tr><td><code>docs/guide/&lt;groupe&gt;/US-XXX-&lt;nom&gt;.md</code></td><td>Une page par plan : pour chaque tâche, les commandes à copier (🔵 obligatoires, ⚪ facultatives), les actions à la main et prérequis (⚠️), ce qu'il faudra vérifier.</td></tr>
+</tbody>
+</table>
+<p>La commande lit vos plans, vos documents et votre code sans les modifier. Seule exception : remettre un plan au bon format, avec votre accord.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Votre projet n'est pas modifié.</strong> La commande écrit seulement dans <code>docs/guide/</code>.</li>
+<li><strong>Un plan au mauvais format</strong> se remet au format seulement avec votre accord, en gardant le contenu des tâches intact.</li>
+<li><strong>C'est vous qui lancez chaque commande.</strong> Le guide se copie-colle : rien ne part tout seul.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> n'écrivez pas vos notes dans <code>docs/guide/</code>. Le guide est refait entièrement à chaque changement d'un plan, et vos notes seraient remplacées. Pour que l'IA se souvienne d'une information, utilisez <a href="memory.html"><code>/pulse:memory retenir "…"</code></a>.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Plan absent ou non reconnu »</summary><p>Le plan signalé n'a pas le format attendu : une tâche par ligne, sous le titre « Tâches », et une ligne « Priorité ». Pulse vous propose de le remettre au format, en gardant le contenu des tâches, puis relance le guide.</p></details>
+<details class="probleme"><summary>Pulse dit qu'il n'y a encore aucun plan</summary><p>Le guide part des plans. Lancez <a href="plan.html"><code>/pulse:plan</code></a>, ou <a href="init.html"><code>/pulse:init</code></a> pour retrouver la bonne étape.</p></details>
+<details class="probleme"><summary>Le guide indique une tâche « en cours » à laquelle je n'ai pas touché</summary><p>Le plan ne colle plus à la réalité du projet. Pulse vous le signale : corrigez le plan avec <a href="refine.html"><code>/pulse:refine</code></a>.</p></details>
+<details class="probleme"><summary>Une action à faire moi-même semble manquer</summary><p>Par exemple appliquer la structure des données dans la console du fournisseur, ou saisir une variable chez l'hébergeur. Pulse la signale ; ajoutez-la au plan avec <a href="refine.html"><code>/pulse:refine</code></a>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : savoir quoi faire ensuite">
+<p data-role="vous">/pulse:guide</p>
+<p data-role="outil">pulse-aidd guide</p>
+<p data-role="claude">Votre carnet de route est à jour.
+Première version : US-001 (prise de rendez-vous) terminée · US-002 (liste des rendez-vous du jour) : 2 tâches sur 4.
+➡️ Prochaine commande à copier : /pulse:spirc US-002
+⚠️ À prévoir pour US-003 : créer un compte chez le service d'e-mails et saisir sa clé chez l'hébergeur.</p>
+</div>
+<div class="conversation" data-titre="Exemple : se faire expliquer le guide">
+<p data-role="vous">/pulse:guide expliquer</p>
+<p data-role="claude">Voici la page de US-002, tâche T7 – Afficher les rendez-vous du jour.
+🔵 /pulse:implement US-002 T7 : réalise la tâche et vous l'explique.
+🔵 /pulse:review T7 : deux assistants relisent et essaient la tâche, puis vous la testez.
+🔵 /pulse:commit : enregistre la version.
+Pourquoi cet ordre : on réalise, on vérifie, puis on enregistre seulement ce qui marche.
+On passe à la tâche suivante ?</p>
+<p data-role="vous">Oui</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="plan.html"><code>/pulse:plan</code></a> : écrit les plans dont le guide est tiré.</li>
+<li><a href="refine.html"><code>/pulse:refine</code></a> : corrige un plan qui ne colle plus à la réalité.</li>
+<li><a href="status.html"><code>/pulse:status</code></a> : savoir où vous en êtes sur tout le projet, sans rien lancer.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : la commande la plus souvent proposée pour réaliser un plan.</li>
+<li><a href="init.html"><code>/pulse:init</code></a> : retrouver la bonne étape quand il n'y a pas encore de plan.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

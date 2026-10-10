@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr" data-racine="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les commandes – Wiki Pulse</title>
+<meta name="description" content="Toutes les commandes de la méthode Pulse, rangées par étape du parcours : ce qu'elles font, quand les utiliser.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/commandes.js" defer></script>
+</head>
+<body>
+<main id="contenu">
+<section class="section section-premiere conteneur">
+<header class="entete-section">
+<p class="pastille">33 commandes, 7 étapes</p>
+<h2>Les commandes</h2>
+<p class="sous-titre">Chaque commande se tape dans Claude Code, précédée de <code>/pulse:</code>. Elles sont rangées dans l'ordre du parcours ; celles de l'étape 7 servent à tout moment.</p>
+</header>
+
+<div class="filtres" data-filtres hidden>
+<label class="visuellement-cache" for="filtre-texte">Chercher une commande</label>
+<input class="champ" id="filtre-texte" type="search" placeholder="Chercher : erreur, en ligne, Google…" autocomplete="off">
+<div class="filtres-etapes" role="group" aria-label="Montrer une étape"></div>
+</div>
+
+<!-- auto:cartes -->
+<section class="groupe-etape" id="etape-demarrer" data-etape="demarrer">
+  <h2><span class="pastille pastille-etape" data-couleur="1">Étape 1</span> Démarrer</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="init.html"><span class="carte-titre"><code>/pulse:init</code></span><span class="carte-texte">Démarrer ou reprendre un projet Pulse : prépare le dossier (CLAUDE.md, mémoire, Git), montre où en est le projet et guide vers la prochaine étape, en boucle.</span></a></li>
+    <li><a class="carte carte-commande" href="express.html"><span class="carte-titre"><code>/pulse:express</code></span><span class="carte-texte">Démarrer vite : en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser.</span></a></li>
+  </ul>
+</section>
+<section class="groupe-etape" id="etape-decrire" data-etape="decrire">
+  <h2><span class="pastille pastille-etape" data-couleur="1">Étape 2</span> Décrire</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="brainstorm.html"><span class="carte-titre"><code>/pulse:brainstorm</code></span><span class="carte-texte">Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet.</span></a></li>
+    <li><a class="carte carte-commande" href="prd.html"><span class="carte-titre"><code>/pulse:prd</code></span><span class="carte-texte">Produire le PRD : le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre.</span></a></li>
+    <li><a class="carte carte-commande" href="tech.html"><span class="carte-titre"><code>/pulse:tech</code></span><span class="carte-texte">Choisir la pile technique à partir du besoin (ou documenter celle d'un projet existant), comparer 2 à 3 options vérifiées sur la documentation officielle, et produire docs/technical.md, le bloc Pile technique de CLAUDE.md, la mémoire technique et la mise en place.</span></a></li>
+    <li><a class="carte carte-commande" href="ui.html"><span class="carte-titre"><code>/pulse:ui</code></span><span class="carte-texte">Définir et soigner l'interface : identité visuelle (docs/design.md), maquettes d'écrans à comparer pour la spec d'une US, audit et finitions d'une interface existante.</span></a></li>
+    <li><a class="carte carte-commande" href="us.html"><span class="carte-titre"><code>/pulse:us</code></span><span class="carte-texte">Écrire les user stories, rangées par groupe (un fichier par US, et le référentiel docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), chacune vérifiée avant d'être déclarée prête, triées par ordre de réalisation, sauvegardées après validation.</span></a></li>
+  </ul>
+</section>
+<section class="groupe-etape" id="etape-preparer" data-etape="preparer">
+  <h2><span class="pastille pastille-etape" data-couleur="2">Étape 3</span> Préparer</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="spec.html"><span class="carte-titre"><code>/pulse:spec</code></span><span class="carte-texte">Rédiger la spécification d'une user story (une US = une spec, rangée à côté de son US) : l'intention seule, la solution étant laissée au plan : périmètre, hors objectifs, écrans, informations, règles, scénarios, « terminé quand » ; les points encore ouverts notés comme questions ; figée une fois validée.</span></a></li>
+    <li><a class="carte carte-commande" href="plan.html"><span class="carte-titre"><code>/pulse:plan</code></span><span class="carte-texte">Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté de sa spec), écrit une fois validé avec vous.</span></a></li>
+    <li><a class="carte carte-commande" href="refine.html"><span class="carte-titre"><code>/pulse:refine</code></span><span class="carte-texte">Ajuster le plan à partir des questions ou remarques de la personne : répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider.</span></a></li>
+    <li><a class="carte carte-commande" href="guide.html"><span class="carte-titre"><code>/pulse:guide</code></span><span class="carte-texte">Produire le guide de réalisation pas à pas (docs/guide/) à partir du plan : pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier et les actions manuelles.</span></a></li>
+  </ul>
+</section>
+<section class="groupe-etape" id="etape-construire" data-etape="construire">
+  <h2><span class="pastille pastille-etape" data-couleur="3">Étape 4</span> Construire</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="implement.html"><span class="carte-titre"><code>/pulse:implement</code></span><span class="carte-texte">Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante).</span></a></li>
+    <li><a class="carte carte-commande" href="spirc.html"><span class="carte-titre"><code>/pulse:spirc</code></span><span class="carte-texte">Enchaîner tout le travail d'une user story (spirc = Spécifier, Planifier, Implémenter, Relire, Commiter) : des assistants indépendants explorent, codent, relisent et vérifient ; je m'arrête pour votre accord et vous testez chaque tâche ; la spec et le plan s'écrivent d'abord s'ils manquent.</span></a></li>
+    <li><a class="carte carte-commande" href="review.html"><span class="carte-titre"><code>/pulse:review</code></span><span class="carte-texte">Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections.</span></a></li>
+    <li><a class="carte carte-commande" href="test.html"><span class="carte-titre"><code>/pulse:test</code></span><span class="carte-texte">Lancer les tests automatiques du projet et expliquer chaque échec (lancer), ou écrire les tests d'un code existant à partir des scénarios de la spec (ecrire), par des assistants spécialisés.</span></a></li>
+    <li><a class="carte carte-commande" href="auto-fix.html"><span class="carte-titre"><code>/pulse:auto-fix</code></span><span class="carte-texte">Faire passer au vert tous les contrôles automatiques du code (syntaxe, règles d'écriture, types, formatage), en confiant les corrections à des agents en parallèle.</span></a></li>
+    <li><a class="carte carte-commande" href="commit.html"><span class="carte-titre"><code>/pulse:commit</code></span><span class="carte-texte">Enregistrer une version dans Git : un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer.</span></a></li>
+    <li><a class="carte carte-commande" href="pr.html"><span class="carte-titre"><code>/pulse:pr</code></span><span class="carte-texte">Travailler sur une version parallèle et proposer de la rassembler : créer la branche de travail, puis ouvrir sur le site du dépôt la proposition en brouillon, décrite à partir des commits, du plan et des relectures.</span></a></li>
+  </ul>
+</section>
+<section class="groupe-etape" id="etape-en-ligne" data-etape="en-ligne">
+  <h2><span class="pastille pastille-etape" data-couleur="4">Étape 5</span> Mettre en ligne</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="cicd.html"><span class="carte-titre"><code>/pulse:cicd</code></span><span class="carte-texte">Mettre en place les contrôles automatiques : secrets, règles du code, tests et construction vérifiés à chaque envoi et sur chaque proposition de version parallèle, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale.</span></a></li>
+    <li><a class="carte carte-commande" href="deploy.html"><span class="carte-titre"><code>/pulse:deploy</code></span><span class="carte-texte">Mettre l'appli en ligne et la mettre à jour automatiquement à chaque envoi, puis passer en mode production (variables, services, retour arrière ; les contrôles automatiques se mettent en place avec /pulse:cicd).</span></a></li>
+    <li><a class="carte carte-commande" href="security.html"><span class="carte-titre"><code>/pulse:security</code></span><span class="carte-texte">Sécurité du projet : audit complet S1 à S13 et test du cambrioleur, contrôle rapide, en-têtes de sécurité, préparation d'un audit outillé.</span></a></li>
+    <li><a class="carte carte-commande" href="secrets.html"><span class="carte-titre"><code>/pulse:secrets</code></span><span class="carte-texte">Les secrets du projet : inventaire sans aucune valeur, renouvellement sans coupure, réaction à une fuite de clé (révoquer d'abord) ; la valeur ne passe jamais par la conversation.</span></a></li>
+  </ul>
+</section>
+<section class="groupe-etape" id="etape-visible" data-etape="visible">
+  <h2><span class="pastille pastille-etape" data-couleur="4">Étape 6</span> Être trouvé</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="seo.html"><span class="carte-titre"><code>/pulse:seo</code></span><span class="carte-texte">Être trouvé sur Google et par les assistants IA : audit du site servi, fondations (adresse, titres, sitemap, robots, carte de partage), textes choisis par vous, politique des robots IA, lancement (Search Console, Bing).</span></a></li>
+    <li><a class="carte carte-commande" href="rediger.html"><span class="carte-titre"><code>/pulse:rediger</code></span><span class="carte-texte">Écrire les textes de vos pages (accueil, à propos, services…) dans la voix du site, sans tics d'écriture IA, puis les intégrer si vous le souhaitez.</span></a></li>
+    <li><a class="carte carte-commande" href="perf.html"><span class="carte-titre"><code>/pulse:perf</code></span><span class="carte-texte">Mesurer et améliorer la vitesse vécue par les visiteurs : chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique.</span></a></li>
+    <li><a class="carte carte-commande" href="search-console.html"><span class="carte-titre"><code>/pulse:search-console</code></span><span class="carte-texte">Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours.</span></a></li>
+  </ul>
+</section>
+<section class="groupe-etape" id="etape-toujours" data-etape="toujours">
+  <h2><span class="pastille pastille-etape" data-couleur="0">Étape 7</span> À tout moment</h2>
+  <ul class="grille-cartes">
+    <li><a class="carte carte-commande" href="status.html"><span class="carte-titre"><code>/pulse:status</code></span><span class="carte-texte">Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés.</span></a></li>
+    <li><a class="carte carte-commande" href="explain.html"><span class="carte-titre"><code>/pulse:explain</code></span><span class="carte-texte">Expliquer simplement un fichier, une fonction ou une ligne de code, avec une question pour vérifier.</span></a></li>
+    <li><a class="carte carte-commande" href="learn.html"><span class="carte-titre"><code>/pulse:learn</code></span><span class="carte-texte">Apprendre la programmation avec un professeur patient : leçon, « expliquez-le-moi » pour vérifier ce que vous avez compris, exercices ou parcours, adaptés à votre niveau et illustrés avec votre projet, avec un carnet de progression et des révisions espacées.</span></a></li>
+    <li><a class="carte carte-commande" href="fix.html"><span class="carte-titre"><code>/pulse:fix</code></span><span class="carte-texte">Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter.</span></a></li>
+    <li><a class="carte carte-commande" href="annuler.html"><span class="carte-titre"><code>/pulse:annuler</code></span><span class="carte-texte">Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération.</span></a></li>
+    <li><a class="carte carte-commande" href="get-help.html"><span class="carte-titre"><code>/pulse:get-help</code></span><span class="carte-texte">Préparer une demande d'aide claire et sans secret, à transmettre à une personne qui programme (forum, communauté de la technologie, freelance) quand Pulse n'arrive pas à débloquer la situation.</span></a></li>
+    <li><a class="carte carte-commande" href="memory.html"><span class="carte-titre"><code>/pulse:memory</code></span><span class="carte-texte">Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session.</span></a></li>
+  </ul>
+</section>
+<!-- /auto:cartes -->
+<p class="legende" data-aucun hidden>Aucune commande ne correspond. Essayez un autre mot, ou ouvrez <a href="status.html"><code>/pulse:status</code></a> : elle vous dit quoi faire maintenant.</p>
+</section>
+</main>
+</body>
+</html>
