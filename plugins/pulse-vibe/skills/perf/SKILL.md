@@ -11,12 +11,6 @@ allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse
 
 Faire vivre à la personne ce que vit son visiteur, puis l'améliorer, chiffres à l'appui. Phrase d'ouverture : « Imaginons un visiteur sur téléphone, en 4G moyenne. Voici ce qu'il vit en ouvrant votre site. »
 
-| Action | Question de la personne | Section |
-|---|---|---|
-| `mesurer` (défaut) | « Mon site est-il rapide ? » | « mesurer » |
-| `corriger` | « Que faut-il changer, et ça a marché ? » | « corriger » |
-| `suivre` | « Mes vrais visiteurs vivent-ils la même chose, et comment le garder ? » | « suivre » |
-
 ## Règles
 
 Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
@@ -39,6 +33,14 @@ Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est
 Action demandée : `$ARGUMENTS`
 
 Fichiers de cette commande : [references/performance.md](references/performance.md), [assets/performance.md](assets/performance.md), [scripts/perf.js](scripts/perf.js).
+
+### Choisir l'action
+
+| Action | Question de la personne | Section |
+|---|---|---|
+| `mesurer` (défaut) | « Mon site est-il rapide ? » | « mesurer » |
+| `corriger` | « Que faut-il changer, et ça a marché ? » | « corriger » |
+| `suivre` | « Mes vrais visiteurs vivent-ils la même chose, et comment le garder ? » | « suivre » |
 
 ### Prérequis (toutes les actions)
 
