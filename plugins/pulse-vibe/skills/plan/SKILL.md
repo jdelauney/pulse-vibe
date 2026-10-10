@@ -1,5 +1,5 @@
 ---
-description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté dans aidd_docs/tasks/<epic>/), écrit une fois validé avec vous
+description: Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté de sa spec), écrit une fois validé avec vous
 argument-hint: "<US-XXX [US-YYY…] | chemin de la spec>"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte plan) Bash(pulse-aidd contexte refine) Bash(pulse-aidd etape refine --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Edit(docs/prd.md) Bash(pulse-aidd travail-fini)

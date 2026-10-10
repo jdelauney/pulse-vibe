@@ -95,7 +95,7 @@ Puis demander (AskUserQuestion) : l'action recommandée (`prochaine`) en premier
 CLAUDE.md        → les règles du projet, lues par l'IA à chaque session
 docs/            → les documents de la méthode (brief, PRD, choix techniques, référentiel des user stories)
 aidd_docs/       → la mémoire du projet (choix, glossaire, décisions), relue par l'IA à chaque session,
-                   et tasks/ : un dossier par epic, avec chaque user story, sa spec et son plan
+                   et tasks/ : un dossier par groupe de user stories, avec chaque user story, sa spec et son plan
 README.md        → la présentation du projet
 .gitignore       → la liste de ce que Git doit ignorer (dont vos secrets)
 .env.example     → le modèle des clés secrètes (sans les valeurs)

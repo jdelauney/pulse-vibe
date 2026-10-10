@@ -70,7 +70,7 @@ Proposer l'import dans Bing Webmaster Tools (deux minutes) : bing.com/webmasters
 
 Présenter les deux façons (AskUserQuestion) :
 
-- « Export CSV, quand vous voulez un rapport (Recommandé pour commencer) » : aucun secret, rien à installer ;
+- « Un fichier exporté de Search Console, quand vous voulez un rapport (Recommandé pour commencer) » : aucun secret, rien à installer ;
 - « Connexion Google en lecture seule » : rapport sans export manuel, avec sitemap et inspection ; demande une configuration d'environ 15 minutes dans la console Google Cloud ;
 - « Plus tard ».
 

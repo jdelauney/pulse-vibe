@@ -619,16 +619,104 @@ test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () =
   assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
 });
 
+// Mots réservés aux consignes : la personne les voit seulement expliqués (lexique), jamais dans une description, un libellé ou un écran.
+// « MVP », « epic » et « demande de fusion » restent permis dans les consignes destinées à l'IA (décision du 2026-10-09).
+const SIGLES_JARGON = /\b(CI|CD|PR|CSV|INVEST|MoSCoW|TBD|MVP)\b/;
+const MOTS_JARGON = /\b(worktrees?|pull requests?|demandes? de fusion|lint|lighthouse|epics?|squelette|aidd_docs|test-runner|test-writer|kanban|storytelling|sous-agents?|feynman|definition of ready)\b/i;
+const jargon = (texte) => SIGLES_JARGON.exec(texte) || MOTS_JARGON.exec(texte);
+// Dans un libellé ou un écran, les chemins, le code et les emplacements à remplacer (<epic>) restent permis.
+const sansChemins = (texte) => texte.replace(/`[^`]*`/g, " ").replace(/<[^>]*>/g, " ").replace(/\S*\/\S*/g, " ");
+
 test("descriptions des commandes sans jargon", () => {
   const unix = (f) => f.split(path.sep).join("/");
-  const JARGON = /\b(INVEST|Definition of Ready|MoSCoW|kanban|TBD|storytelling|sous-agents?|Feynman)\b/i;
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const description = (lire(fichier).match(/^description:\s*(.*)$/m) || [])[1] || "";
-    const m = JARGON.exec(description);
+    const m = jargon(description);
     if (m) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${m[0]}`);
   }
   assert.deepStrictEqual(problemes, []);
+});
+
+test("libellés des questions sans jargon : la réponse recommandée et ses alternatives", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const problemes = [];
+  for (const { fichier, texte } of TEXTES) {
+    for (const ligne of texte.split("\n")) {
+      for (const m of ligne.matchAll(/« ((?:[^«»]|«[^«»]*»)+) »/g)) {
+        const avant = ligne.slice(0, m.index);
+        const apres = ligne.slice(m.index + m[0].length);
+        const libelle =
+          !/^\d+[a-z]?\. /.test(m[1]) &&
+          (/\([Rr]ecommandé/.test(m[1]) || / \/ ?$/.test(avant) || /^ ?\/ /.test(apres) || (/AskUserQuestion/.test(ligne) && /(, |et )$/.test(avant)));
+        const j = libelle && jargon(sansChemins(m[1]));
+        if (j) problemes.push(`${unix(fichier)} : ${j[0]} dans « ${m[1]} »`);
+      }
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("écrans des commandes sans jargon", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    for (const bloc of lire(fichier).matchAll(/^```(?:text)?\n([\s\S]*?)^```/gm)) {
+      for (const ligne of bloc[1].split("\n")) {
+        if (/\/pulse:[a-z-]+ →|→ \/pulse:/.test(ligne)) continue; // chemin de commandes
+        const j = jargon(sansChemins(ligne));
+        if (j) problemes.push(`${unix(path.relative(DEPOT, fichier))} : ${j[0]} dans « ${ligne.trim().slice(0, 60)} »`);
+      }
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("documents lus par la personne sans sigles de méthode", () => {
+  for (const f of ["plugins/pulse-vibe/README.md", "docs/memo-commandes.md", "plugins/pulse-vibe/references/fichiers-projet.md", "plugins/pulse-vibe/references/cycle.md"])
+    assert.doesNotMatch(lire(DEPOT, f), /\b(INVEST|MoSCoW|Definition of Ready|storytelling)\b|TBD:/, f);
+  assert.doesNotMatch(lire(RACINE, "templates", "CLAUDE.md"), /\(\{fuseau_horaire\}\)/, "fuseau horaire écrit en mots");
+});
+
+test("README et mémo sans « MVP », « epic » ni « demande de fusion » (hors chemins et code)", () => {
+  const problemes = [];
+  for (const f of ["plugins/pulse-vibe/README.md", "plugins/pulse-vibe-next/README.md", "docs/memo-commandes.md"]) {
+    lire(DEPOT, f).split("\n").forEach((ligne, i) => {
+      const m = /\bMVP\b/.exec(sansChemins(ligne)) || /\b(epics?|demandes? de fusion)\b/i.exec(sansChemins(ligne));
+      if (m) problemes.push(`${f}:${i + 1} : ${m[0]}`);
+    });
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("phrases dites à la personne sans « MVP », « worktree » ni « demande de fusion » (commandes du parcours Git et du PRD)", () => {
+  // Permis : un titre de section ou de référence cité (lu par l'IA), et la phrase qui explique le mot « worktree ».
+  // « Mettre en ligne le MVP » et « Le MVP est atteint quand… » : titres recopiés dans les documents du projet, traités par la tâche 6b.
+  const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est |^Mettre en ligne le MVP$|^Le MVP est atteint quand…$/;
+  const problemes = [];
+  const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md")];
+  for (const f of fichiers) {
+    for (const ligne of lire(RACINE, f).split("\n")) {
+      for (const m of ligne.matchAll(/« ((?:[^«»]|«[^«»]*»)+) »/g)) {
+        const j = /\bMVP\b|\bworktrees?\b|\bdemandes? de fusion\b/i.exec(sansChemins(m[1]));
+        if (j && !PERMIS.test(m[1])) problemes.push(`${f.split(path.sep).join("/")} : ${j[0]} dans « ${m[1].slice(0, 60)} »`);
+      }
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("messages du garde-fou sur les branches et les secrets du dépôt sans jargon", () => {
+  const source = lire(RACINE, "scripts", "garde-commandes.js");
+  for (const cle of ["brancheForcee", "secretsDepot"]) {
+    // Le message : ses chaînes "…", de « cle: » à la clé suivante du tableau MESSAGES.
+    const bloc = source.split(`\n  ${cle}:`)[1]?.split(/\n  [A-Za-z]+:/)[0];
+    assert.ok(bloc, `message ${cle} trouvé`);
+    const message = [...bloc.matchAll(/"([^"]*)"/g)].map((m) => m[1]).join("");
+    assert.match(message, /^Pulse /, `${cle} : message lu en entier`);
+    const j = jargon(sansChemins(message));
+    assert.strictEqual(j && j[0], null, `${cle} : ${j && j[0]}`);
+  }
 });
 
 test("questions et accueil en clair : les anciens libellés ont disparu", () => {

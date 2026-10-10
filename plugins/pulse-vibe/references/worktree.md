@@ -29,7 +29,7 @@ Un worktree par user story. Noms : dossier `.claude/worktrees/us-xxx-<nom>`, bra
 6. **Préparer le dossier** : un worktree contient seulement les fichiers suivis par Git.
    - Copier les fichiers d'environnement locaux du dossier principal (`.env`, `.env.local`, `.env.*` sauf `.env.example`) dans le worktree, en gardant leur contenu confidentiel (jamais affiché ni lu à voix haute) : ils restent locaux et ignorés par Git.
    - Lancer la commande « installer » de « Commandes du projet » (`docs/technical.md`) dans le worktree, si elle existe.
-7. **Entrer** : outil `EnterWorktree` avec `path` = le dossier du worktree, puis `pulse-aidd sessions --ici <session>`. Annoncer en une ligne : « Je travaille dans le worktree `us-xxx-<nom>` (branche `feat/us-xxx-<nom>`). »
+7. **Entrer** : outil `EnterWorktree` avec `path` = le dossier du worktree, puis `pulse-aidd sessions --ici <session>`. Annoncer en une ligne : « Je travaille dans le dossier à part `us-xxx-<nom>` (version parallèle `feat/us-xxx-<nom>`). »
 8. Si `EnterWorktree` manque : travailler dans le dossier du worktree en préfixant chaque commande par `cd .claude/worktrees/us-xxx-<nom> &&` et en écrivant les fichiers sous ce chemin ; le dire à la personne.
 
 **Pendant le travail** : tout se passe dans le worktree (code, plan, commits). Pour tester l'appli, la lancer depuis le worktree ; si une autre session la fait déjà tourner, le port peut être pris : utiliser le port proposé par l'outil, et le dire.
@@ -60,7 +60,7 @@ Une seule fois par commande, au démarrage (après le choix du mode et du worktr
 1. Lire la ligne « En parallèle avec » du plan de l'US en cours.
 2. Garder les US citées dont le plan a encore des tâches `[ ]`, aucune tâche `[~]`, et pas de worktree en cours (`git worktree list` : pas de `.claude/worktrees/us-xxx-…` pour elles) : elles sont libres.
 3. S'il en reste, l'indiquer en deux lignes, la première dans l'ordre du parcours :
-   « 💡 US-004 – <titre> peut avancer en même temps que celle-ci, sans toucher aux mêmes fichiers. Si vous le souhaitez, ouvrez une deuxième session Claude Code dans ce projet et lancez-y `/pulse:spirc US-004` : Pulse lui proposera son propre worktree. »
+   « 💡 US-004 – <titre> peut avancer en même temps que celle-ci, sans toucher aux mêmes fichiers. Si vous le souhaitez, ouvrez une deuxième session Claude Code dans ce projet et lancez-y `/pulse:spirc US-004` : Pulse lui proposera son propre dossier à part. »
 4. Sinon, passer directement à la suite. Laisser la personne lancer elle-même la deuxième session (plutôt qu'une session ou un sous-agent lancé à sa place) : c'est elle qui décide de travailler à deux sessions.
 
 Les tâches d'**un même plan** se mènent l'une après l'autre : elles touchent souvent les mêmes fichiers, et chacune est testée à la main avant la suivante.
