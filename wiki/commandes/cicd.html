@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="cicd">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:cicd – Wiki Pulse</title>
+<meta name="description" content="Mettre en place les contrôles automatiques : secrets, règles du code, tests et construction vérifiés à chaque envoi et sur chaque proposition de version parallèle, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 5 · Mettre en ligne</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:cicd</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Mettre en place les contrôles automatiques : secrets, règles du code, tests et construction vérifiés à chaque envoi et sur chaque proposition de version parallèle, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Les contrôles automatiques, c'est un contrôle qualité qui tourne tout seul. À chaque envoi et sur chaque proposition de version parallèle, le site de votre dépôt (GitHub, GitLab…) vérifie que les secrets restent hors du code, que chaque scénario prévu a son test, que les bibliothèques n'ont pas de faille grave connue, que le code respecte les règles et que l'appli se construit.</p>
+<p>Une coche verte dit que tout va bien. Une croix rouge vous prévient avant que l'erreur n'arrive sur le site. Pulse écrit ces contrôles pour votre dépôt, les essaie d'abord sur votre ordinateur, puis les envoie. Il vous propose ensuite deux protections facultatives : n'accepter une version parallèle que si ses contrôles sont verts, et recevoir chaque semaine les nouvelles versions des bibliothèques.</p>
+<pre class="commande"><code>Contrôles à chaque envoi :
+  1. Récupérer le code
+  2. Installer l'environnement et les bibliothèques
+  3. Secrets et scénarios     node scripts/verifier.js
+  4. Failles connues          bibliothèques
+  5. Règles du code
+  6. Tests
+  7. Construction
+
+✅ Essayés sur votre ordinateur · prêts à envoyer</code></pre>
+<p class="legende">Les étapes que <code>/pulse:cicd</code> met en place, dans l'ordre. Celles qui valent « aucune » dans votre projet sont sautées.</p>
+<p>La mise en ligne automatique à chaque envoi, elle, se règle avec <a href="deploy.html"><code>/pulse:deploy</code></a>. Les deux se complètent.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Une erreur est vue avant vos clients.</strong> La croix rouge apparaît sur le dépôt, pas sur le site.</li>
+<li><strong>Vos clés restent protégées.</strong> Le même contrôle des secrets s'exécute aussi avant chaque enregistrement, même fait hors de Claude Code.</li>
+<li><strong>Rien de nouveau à apprendre.</strong> Pulse utilise l'outil intégré à votre dépôt, déjà prêt et gratuit pour un petit projet.</li>
+<li><strong>Les failles connues sont corrigées plus tôt.</strong> Avec les mises à jour hebdomadaires, un robot propose les nouvelles versions, vérifiées par les contrôles avant que vous les acceptiez.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après le choix des outils</strong> (<a href="tech.html"><code>/pulse:tech</code></a>) et une fois le projet de départ en place : les contrôles ont alors du code à vérifier.</li>
+<li><strong>Avant ou après la première mise en ligne</strong> : facultatif, mais conseillé dès que le site sert de vrais clients.</li>
+<li><strong>Quand vous publiez par versions parallèles</strong> (<a href="pr.html"><code>/pulse:pr</code></a>) : chaque proposition reçoit sa coche ou sa croix.</li>
+<li><strong>Pour compléter des contrôles qui existent déjà</strong> : Pulse les lit et propose de les compléter, en gardant l'existant.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> s'il n'y a encore rien à construire, Pulse vous propose d'installer seulement le contrôle des secrets maintenant, puis d'attendre la première tâche du plan pour le reste.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:cicd [proteger]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Vide : installer ou mettre à jour les contrôles automatiques.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Sans argument</strong> : installe les contrôles, ou les met à jour s'ils existent. Pulse propose ensuite la protection de la version principale et les mises à jour hebdomadaires des bibliothèques.</li>
+<li><code>proteger</code> : seulement la protection de la version principale. Les contrôles doivent déjà exister.</li>
+</ul>
+<pre class="commande"><code>/pulse:cicd</code></pre>
+<pre class="commande"><code>/pulse:cicd proteger</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>scripts/verifier.js</code></td><td>Le contrôle des secrets et des scénarios sans test, lancé par les contrôles automatiques et avant chaque enregistrement.</td></tr>
+<tr><td>Le fichier des contrôles, à l'emplacement imposé par votre dépôt (par exemple <code>.github/workflows/…</code> ou <code>.gitlab-ci.yml</code>)</td><td>La liste des étapes, lancées à chaque envoi sur la version principale et sur chaque proposition vers elle.</td></tr>
+<tr><td><code>.github/dependabot.yml</code> (ou la configuration de Renovate)</td><td>Facultatif : les propositions hebdomadaires de nouvelles versions des bibliothèques.</td></tr>
+<tr><td><code>docs/technical.md</code></td><td>La ligne « Contrôle automatique avant mise en ligne » : l'outil, le fichier, ce qu'il vérifie.</td></tr>
+</tbody>
+</table>
+<p>S'y ajoutent un enregistrement dédié aux contrôles et, si vous avez un budget de vitesse dans <code>docs/performance.md</code>, une vérification de vitesse facultative.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Vous voyez tout avant l'écriture.</strong> Pulse montre le fichier complet, explique chaque bloc en une ligne, puis l'écrit avec votre accord.</li>
+<li><strong>L'envoi passe par votre accord.</strong> Claude Code vous demande d'autoriser l'envoi : les contrôles tournent seulement une fois le fichier sur le dépôt distant.</li>
+<li><strong>Les valeurs secrètes restent hors du fichier.</strong> Si la construction a besoin d'une variable, le fichier contient seulement son nom. Vous saisissez la valeur vous-même dans les réglages du dépôt, guidé pas à pas, jamais dans la conversation.</li>
+<li><strong>La protection se règle sur le site du dépôt, par vous.</strong> Pulse vous guide écran par écran.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> avec la protection de la version principale, un envoi direct sur elle peut être refusé. Si un plan prévoit « Envoi : branche principale », Pulse vous le rappelle et propose de passer aux versions parallèles avec <a href="refine.html"><code>/pulse:refine</code></a>.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Une croix rouge apparaît sur le dépôt</summary><p>Pulse lit le journal de l'étape en échec, vous l'explique simplement, corrige, enregistre et renvoie. Après deux essais sans succès, il s'arrête et propose <a href="get-help.html"><code>/pulse:get-help</code></a>.</p></details>
+<details class="probleme"><summary>L'essai sur mon ordinateur échoue</summary><p>Une erreur ici serait une croix rouge là-bas. Corrigez-la d'abord avec <a href="fix.html"><code>/pulse:fix</code></a> ou <a href="auto-fix.html"><code>/pulse:auto-fix</code></a>, puis relancez <code>/pulse:cicd</code>.</p></details>
+<details class="probleme"><summary>« Aucun dépôt distant n'est relié »</summary><p>Les contrôles tournent chez le fournisseur du dépôt. Pulse vous guide pour relier votre projet à un dépôt en ligne, puis reprend.</p></details>
+<details class="probleme"><summary>La protection est indisponible pour mon dépôt privé</summary><p>Selon l'offre du fournisseur, un dépôt privé gratuit peut ne pas y avoir droit. Les contrôles restent utiles : la croix rouge reste visible sur chaque proposition.</p></details>
+<details class="probleme"><summary>J'utilise déjà un autre outil avant chaque enregistrement</summary><p>Pulse affiche un message qui indique la ligne à ajouter à votre outil existant, pour que le contrôle des secrets s'y exécute aussi.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : installer les contrôles">
+<p data-role="vous">/pulse:cicd</p>
+<p data-role="claude">Votre dépôt est sur GitHub : je vous propose GitHub Actions, l'outil intégré à votre dépôt, déjà prêt et gratuit pour un petit projet. (Recommandé) · Autre outil</p>
+<p data-role="outil">pulse-aidd installer-ci · pulse-aidd installer-hook</p>
+<p data-role="claude">Voici le fichier des contrôles, bloc par bloc : récupérer le code, installer Node.js, installer les bibliothèques, contrôler les secrets, chercher les failles connues, vérifier les règles du code, tester, construire.
+J'essaie d'abord tout sur votre ordinateur… ✅
+Claude Code va vous demander l'accord pour envoyer : c'est ce qui met le fichier sur le dépôt distant.</p>
+<p data-role="claude">✅ Coche verte sur le carnet de réservations. Elle apparaîtra désormais à chaque envoi et sur chaque proposition de version parallèle.
+Accepter une version parallèle seulement si ses contrôles sont verts ? → Plus tard</p>
+</div>
+<div class="conversation" data-titre="Exemple : protéger la version principale">
+<p data-role="vous">/pulse:cicd proteger</p>
+<p data-role="claude">La branche principale est celle qui part en ligne : avec cette protection, une version parallèle y est rassemblée seulement si ses contrôles automatiques sont verts.
+Je vous guide d'après la documentation de GitHub, un écran à la fois. Ouvrez d'abord les réglages de votre dépôt (Settings). Dites-moi quand vous y êtes.</p>
+<p data-role="vous">C'est bon, j'y suis.</p>
+<p data-role="claude">Parfait. Passons aux règles de protection de la branche main : je vous indique chaque case à cocher, puis vous enregistrez.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : la mise en ligne automatique, qui complète les contrôles.</li>
+<li><a href="pr.html"><code>/pulse:pr</code></a> : chaque proposition de version parallèle reçoit sa coche ou sa croix.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer d'abord les modifications en cours.</li>
+<li><a href="perf.html"><code>/pulse:perf</code></a> : ajouter une vérification de vitesse chaque semaine.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : corriger ce qui fait échouer un contrôle.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

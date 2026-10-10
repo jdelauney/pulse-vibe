@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="commit">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:commit – Wiki Pulse</title>
+<meta name="description" content="Enregistrer une version dans Git : un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="3">Étape 4 · Construire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:commit</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Enregistrer une version dans Git : un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>« Un commit est une photo datée de votre projet, avec une légende. » <code>/pulse:commit</code> enregistre l'état actuel de votre projet dans l'historique Git, avec un message clair. Vous pouvez toujours revenir à une photo précédente, avec <a href="annuler.html"><code>/pulse:annuler</code></a>.</p>
+<p>Avant d'enregistrer, Pulse vérifie qu'aucune clé secrète ne part avec la version, et que la tâche a bien été relue et testée par vous. Il trie ensuite vos changements par sujet : une photo par sujet.</p>
+<p>Avec <code>push</code>, la version est aussi envoyée sur le dépôt en ligne, après votre accord. Pour la tâche d'un plan, l'envoi suit le choix noté dans le plan.</p>
+<pre class="commande"><code>Fichiers : creneaux.js, prise-rdv.html, PLAN-SPEC-US-001-prise-de-rendez-vous.md
+Message :  feat(T3): affiche les créneaux libres de la journée
+           Réf. : US-001
+
+a1b2c3d feat(T3): affiche les créneaux libres de la journée</code></pre>
+<p class="legende">Les fichiers et le message montrés avant l'enregistrement, puis la version enregistrée : son identifiant court et sa légende.</p>
+
+<figure class="anim" data-etapes="5" data-duree="1300">
+<svg viewBox="0 0 800 270" role="img" aria-labelledby="commit-garde-titre">
+<title id="commit-garde-titre">Le garde-fou de /pulse:commit</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="104" width="162" height="68" rx="18"/><rect class="schema-boite" x="10" y="110" width="150" height="56" rx="14"/><text class="schema-texte" x="85" y="134" text-anchor="middle">Vos changements</text><text class="schema-texte-secondaire" x="85" y="152" text-anchor="middle">triés par sujet</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M160 138 H198" marker-end="url(#commit-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="198" y="104" width="162" height="68" rx="18"/><rect class="schema-boite" x="204" y="110" width="150" height="56" rx="14"/><text class="schema-texte" x="279" y="134" text-anchor="middle">Contrôle</text><text class="schema-texte-secondaire" x="279" y="152" text-anchor="middle">des clés secrètes</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M354 126 C392 126 386 42 420 42" marker-end="url(#commit-pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="418" y="8" width="182" height="68" rx="18"/><rect class="schema-boite" x="424" y="14" width="170" height="56" rx="14"/><text class="schema-texte" x="509" y="38" text-anchor="middle">Clé trouvée : arrêt</text><text class="schema-texte-secondaire" x="509" y="56" text-anchor="middle">on la retire du code</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M354 150 C392 150 386 224 420 224" marker-end="url(#commit-pointe-grise)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="418" y="190" width="182" height="68" rx="18"/><rect class="schema-boite" x="424" y="196" width="170" height="56" rx="14"/><text class="schema-texte" x="509" y="220" text-anchor="middle">Version enregistrée</text><text class="schema-texte-secondaire" x="509" y="238" text-anchor="middle">rien de trouvé</text></g>
+<g class="e5" data-etape="5"><path class="schema-accompagne trace e5" pathLength="1" d="M594 224 H630" marker-end="url(#commit-pointe-mauve)"/><rect class="actif-halo schema-halo-primaire" x="628" y="190" width="162" height="68" rx="18"/><rect class="schema-boite-active" x="634" y="196" width="150" height="56" rx="14"/><text class="schema-texte" x="709" y="220" text-anchor="middle">Envoyée en ligne</text><text class="schema-texte-secondaire" x="709" y="238" text-anchor="middle">avec push, après accord</text></g>
+<defs>
+<marker id="commit-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="commit-pointe-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Vos changements, triés par sujet, passent d'abord par le contrôle des clés secrètes. Si une clé est trouvée, l'enregistrement s'arrête : on retire la clé du code, puis on recommence. Si rien n'est trouvé, la version est enregistrée. Avec l'option push, elle est ensuite envoyée en ligne, après votre accord.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Un retour en arrière toujours possible.</strong> Chaque version est une photo à laquelle vous pouvez revenir.</li>
+<li><strong>Vos clés restent protégées.</strong> Un garde-fou automatique bloque toute version qui contient un secret.</li>
+<li><strong>Un historique lisible.</strong> Un sujet par photo, et un message qui dit ce qui change.</li>
+<li><strong>Seulement du travail vérifié.</strong> Une tâche s'enregistre une fois relue et testée par vous.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3" aria-current="step"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="review.html"><code>/pulse:review</code></a></strong>, quand le verdict est validé et votre test concluant.</li>
+<li><strong>Après un changement hors tâche</strong> (documents, mémoire du projet) : il s'enregistre toujours.</li>
+<li><strong>Avec <code>push</code></strong>, quand vous voulez aussi envoyer la version sur le dépôt en ligne.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> avec <a href="spirc.html"><code>/pulse:spirc</code></a>, ou <code>/pulse:implement</code> sans numéro de tâche, chaque tâche s'enregistre dans la boucle : inutile de lancer cette commande.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:commit [push] [&quot;message&quot;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Facultatifs.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Rien</strong> : Pulse trie vos changements, propose le message, puis enregistre.</li>
+<li><strong><code>push</code></strong>, en premier mot : enregistre, puis envoie la version sur le dépôt en ligne, après votre accord. Placé ailleurs, le mot fait partie du message.</li>
+<li><strong>Un message</strong>, entre guillemets : Pulse part du vôtre et l'ajuste à la convention, en vous le disant.</li>
+</ul>
+<pre class="commande"><code>/pulse:commit</code></pre>
+<pre class="commande"><code>/pulse:commit push</code></pre>
+<pre class="commande"><code>/pulse:commit "ajoute le bouton push"</code></pre>
+<p class="legende">Le dernier exemple enregistre sans envoyer : « push » n'est pas le premier mot.</p>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Quoi</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td>L'historique Git</td><td>Une version par sujet, avec un message comme <code>feat(T3): affiche les créneaux libres de la journée</code>. Le premier mot dit le type de changement : <code>feat</code> une nouvelle fonctionnalité visible, <code>fix</code> une correction, <code>style</code> la présentation, <code>refactor</code> une réorganisation sans changement visible, <code>chore</code> l'entretien.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>La tâche passe « terminée », avec une ligne dans le journal du plan. Le plan fait partie de la même version.</td></tr>
+<tr><td><code>.gitignore</code></td><td>Complété si votre fichier de clés n'y était pas exclu.</td></tr>
+<tr><td>Le dépôt en ligne</td><td>Avec <code>push</code>, ou selon le choix d'envoi du plan : la version y est envoyée.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>L'envoi demande votre accord.</strong> Pulse l'annonce : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. »</li>
+<li><strong>Jamais d'envoi forcé.</strong> Si le dépôt en ligne a des changements plus récents, Pulse vous l'explique et propose de les récupérer d'abord (<code>git pull</code>), puis d'envoyer à nouveau.</li>
+<li><strong>Un contrôle qui refuse l'enregistrement n'est jamais contourné.</strong> Pulse corrige les fichiers concernés, 3 essais au plus, sinon il s'arrête et vous explique.</li>
+<li><strong>Un fichier modifié sans explication est laissé de côté</strong> par défaut, et vous est signalé.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> vous pouvez choisir « Enregistrer quand même » une tâche pas encore relue. Le journal du plan le note : « enregistrée sans relecture, à la demande de la personne ». Une tâche relue mais pas encore testée par vous, elle, attend votre test.</p></aside>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> sur la branche principale, l'envoi met votre site en ligne à jour, si le déploiement automatique est en place. Pulse vous le rappelle avant d'envoyer.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Votre test de T3 manque encore »</summary><p>C'est votre test qui confirme que la tâche fonctionne. Lancez <a href="review.html"><code>/pulse:review T3</code></a> : la commande reprend directement à votre test.</p></details>
+<details class="probleme"><summary>Le garde-fou a bloqué l'enregistrement</summary><p>Une clé ou un mot de passe se trouvait dans les changements. C'est une protection : Pulse retire la clé du code, puis recommence. Si cette clé a déjà été envoyée en ligne, lancez <a href="secrets.html"><code>/pulse:secrets fuite</code></a>.</p></details>
+<details class="probleme"><summary>L'envoi est refusé</summary><p>Le dépôt en ligne a des changements plus récents que les vôtres. Pulse propose de les récupérer d'abord, puis d'envoyer à nouveau ; il ne force jamais l'envoi.</p></details>
+<details class="probleme"><summary>« Tout est déjà enregistré »</summary><p>Il n'y a aucun changement depuis la dernière version. Avec <code>push</code>, Pulse propose d'envoyer seulement les versions qui ne sont pas encore en ligne.</p></details>
+<details class="probleme"><summary>La version reste « en local »</summary><p>Votre projet n'est relié à aucun dépôt en ligne. Pulse vous propose <a href="init.html"><code>/pulse:init</code></a> pour en relier un, ou <a href="deploy.html"><code>/pulse:deploy</code></a>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : enregistrer et envoyer une tâche">
+<p data-role="vous">/pulse:commit push</p>
+<p data-role="outil">pulse-aidd revue T3</p>
+<p data-role="claude">T3 est relue, vérifiée et testée par vous : je l'enregistre.
+Fichiers : creneaux.js, prise-rdv.html et le plan de US-001.
+Message : feat(T3): affiche les créneaux libres de la journée (Réf. : US-001). « feat » signale une nouvelle fonctionnalité visible.</p>
+<p data-role="outil">git commit -m "feat(T3): affiche les créneaux libres de la journée" -m "Réf. : US-001"</p>
+<p data-role="claude">a1b2c3d feat(T3): affiche les créneaux libres de la journée : l'identifiant court de la photo, puis sa légende.
+Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant.</p>
+<p data-role="outil">git push</p>
+<p data-role="claude">Envoyée sur main. ➡️ Prochaine étape : /pulse:spirc US-001, pour la suite du plan.</p>
+</div>
+<div class="conversation" data-titre="Exemple : une tâche pas encore testée">
+<p data-role="vous">/pulse:commit</p>
+<p data-role="outil">pulse-aidd revue T4</p>
+<p data-role="claude">Votre test de T4 manque encore : c'est lui qui confirme que la tâche fonctionne.
+➡️ Lancez /pulse:review T4 : la commande reprend directement à votre test.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="review.html"><code>/pulse:review</code></a> : la relecture et votre test, avant l'enregistrement.</li>
+<li><a href="annuler.html"><code>/pulse:annuler</code></a> : revenir à une version précédente.</li>
+<li><a href="pr.html"><code>/pulse:pr</code></a> : proposer une version parallèle, une fois le plan terminé sur une branche de travail.</li>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre en ligne quand la première version est terminée.</li>
+<li><a href="secrets.html"><code>/pulse:secrets</code></a> : réagir si une clé a été vue ou envoyée.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

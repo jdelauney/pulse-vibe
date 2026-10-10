@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="security">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:security – Wiki Pulse</title>
+<meta name="description" content="Sécurité du projet : audit complet S1 à S13 et test du cambrioleur, contrôle rapide, en-têtes de sécurité, préparation d'un audit outillé.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 5 · Mettre en ligne</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:security</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Sécurité du projet : audit complet S1 à S13 et test du cambrioleur, contrôle rapide, en-têtes de sécurité, préparation d'un audit outillé.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Cette commande vérifie que votre appli est bien protégée. L'audit complet passe tout le projet au crible de la liste de sécurité Pulse, en 13 points (S1 à S13) : les clés secrètes, l'accès aux données, les pages réservées, les saisies, les fichiers déposés, les bibliothèques, les données personnelles, les abus, les messages d'erreur, les protections du navigateur et les sessions. Un assistant spécialisé fait ce travail en lecture seule : vos fichiers restent intacts.</p>
+<p>Vient ensuite le <strong>test du cambrioleur</strong> : une liste de tests à faire vous-même, adaptée à votre appli, un test à la fois. Par exemple : connectée comme une cliente, puis-je voir les rendez-vous d'une autre ? La règle à retenir : « Seul ce que le serveur bloque est vraiment interdit. » Pulse propose enfin de corriger, par ordre de priorité.</p>
+<pre class="commande"><code>🛡️ Contrôle rapide – carnet-reservations
+Score : 7/10
+
+  Dépendances            ✅
+  Fichiers sensibles     ✅
+  Secrets dans le code   ✅
+  Validation des saisies ⚠️ formulaire de réservation
+  En-têtes de sécurité   ⚠️ 2 en-têtes manquants
+  Connexion et droits    ✅
+  Limitation des appels  ⚠️ envoi d'e-mail sans limite</code></pre>
+<p class="legende">Le résultat de <code>/pulse:security rapide</code> : un aperçu en 2 minutes, sans rien modifier.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous trouvez les failles avant les autres.</strong> C'est exactement le but : chaque point bloquant est expliqué en une phrase, avec ce qu'un inconnu pourrait faire.</li>
+<li><strong>Vous vérifiez par vous-même.</strong> Le test du cambrioleur vous fait essayer, dans votre appli, ce qu'un visiteur malintentionné tenterait.</li>
+<li><strong>Un bilan rapide à tout moment.</strong> <code>rapide</code> répond en 2 minutes à « suis-je dans les clous ? ».</li>
+<li><strong>Les protections du navigateur sont posées pour vous.</strong> <code>entetes</code> écrit la configuration, commentée en français, après vous l'avoir montrée.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Avant une mise en ligne</strong>, à la fin de la première version ou d'un groupe de user stories : l'audit complet.</li>
+<li><strong>Juste après la première mise en ligne</strong> : <a href="deploy.html"><code>/pulse:deploy</code></a> vous le propose, car le site est désormais ouvert à tous.</li>
+<li><strong>À tout moment</strong>, pour un aperçu : <code>/pulse:security rapide</code>. <code>/pulse:deploy</code> le lance aussi avant la première mise en ligne.</li>
+<li><strong>Quand des en-têtes manquent</strong>, ou avant de confier le projet à un développeur pour un audit plus poussé.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> faites l'audit une fois vos specs écrites. Elles décrivent qui a le droit de voir quoi ; sans elles, l'audit se fait quand même, en le signalant.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:security [audit | rapide | entetes | preparer]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Par défaut : audit.</p>
+<!-- /auto:forme -->
+<ul>
+<li><code>audit</code> (par défaut) : l'audit complet en 13 points, enregistré dans <code>docs/securite.md</code>, puis le test du cambrioleur et les corrections.</li>
+<li><code>rapide</code> : 7 contrôles en 2 minutes, en lecture seule, avec un score sur 10. Rien n'est écrit.</li>
+<li><code>entetes</code> : les en-têtes de sécurité, des consignes envoyées au navigateur avec chaque page (« n'affiche pas ce site dans un cadre », « charge les scripts seulement depuis ces adresses »). Pulse repère les services que votre appli utilise, puis montre la configuration avant de l'écrire.</li>
+<li><code>preparer</code> : deux fichiers pour un audit outillé : la liste des points d'entrée de votre appli et la configuration d'un outil qui cherche les clés dans tout l'historique Git.</li>
+</ul>
+<pre class="commande"><code>/pulse:security</code></pre>
+<pre class="commande"><code>/pulse:security rapide</code></pre>
+<pre class="commande"><code>/pulse:security entetes</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>Action</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/securite.md</code></td><td><code>audit</code></td><td>Le niveau global (🟢, 🟠 ou 🔴), les 13 points avec constat et correction, la fiche du cambrioleur avec vos résultats, le plan de correction. Il remplace l'audit précédent, gardé dans l'historique Git.</td></tr>
+<tr><td>La configuration des en-têtes (serveur, hébergeur ou framework)</td><td><code>entetes</code></td><td>Les 7 en-têtes attendus, un commentaire en français au-dessus de chacun.</td></tr>
+<tr><td><code>endpoints.txt</code></td><td><code>preparer</code></td><td>Les points d'entrée réellement trouvés, avec des valeurs de test fictives.</td></tr>
+<tr><td><code>.gitleaks.toml</code> (ou l'équivalent)</td><td><code>preparer</code></td><td>La configuration de la recherche de clés dans l'historique, si l'outil est disponible.</td></tr>
+</tbody>
+</table>
+<p><code>rapide</code> affiche son rapport sans écrire de fichier.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>L'audit et le contrôle rapide ne modifient rien.</strong> Ils lisent seulement.</li>
+<li><strong>Chaque correction attend votre choix</strong> : les points bloquants maintenant, tout corriger, ou plus tard. Une mise à jour qui change de version majeure d'une bibliothèque se fait seulement avec votre accord : elle peut casser l'appli.</li>
+<li><strong>Une clé trouvée dans le code passe en premier</strong>, avec <a href="secrets.html"><code>/pulse:secrets fuite</code></a> : révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation.</li>
+<li><strong>Certaines corrections se font à la main</strong>, dans la base ou chez un fournisseur : Pulse vous guide pas à pas, d'après la documentation officielle.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> faites le test du cambrioleur avec des comptes et des données de test seulement, jamais avec les vraies données de vos clientes.</p></aside>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> l'option <code>preload</code> de l'en-tête qui impose le HTTPS inscrit votre domaine dans les navigateurs, pour tous ses sous-domaines, et se retire difficilement. Pulse l'ajoute seulement si vous le décidez, après vous avoir expliqué cette conséquence.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> le projet de départ envoie déjà les 7 en-têtes de sécurité, réglés dans <code>next.config.ts</code>. Un nouveau service s'ajoute à la liste des sources autorisées, à son adresse exacte. Le pack garde <code>'unsafe-inline'</code> pour les scripts, car Next.js insère des scripts dans chaque page ; la protection reste solide sur le reste. Sur une prévisualisation Vercel, la console signale la barre d'outils de Vercel bloquée : c'est attendu. Un test de bout en bout vérifie les en-têtes réellement servis.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« L'audit attendra les premiers fichiers de code »</summary><p>Le projet ne contient pas encore de code à vérifier. Réalisez une première tâche avec <a href="implement.html"><code>/pulse:implement</code></a>, puis relancez l'audit.</p></details>
+<details class="probleme"><summary>Un test du cambrioleur me paraît trop technique</summary><p>Répondez « J'ai besoin d'aide pour ce test » : Pulse vous le décrit pas à pas. Les tests se font un à la fois, et chaque résultat est noté dans <code>docs/securite.md</code>.</p></details>
+<details class="probleme"><summary>Après <code>entetes</code>, une partie de la page ne s'affiche plus</summary><p>Ouvrez la console du navigateur (touche F12) : une erreur « Content Security Policy » nomme la source bloquée. Pulse ajoute précisément cette source légitime à la liste autorisée, jamais un passe-partout.</p></details>
+<details class="probleme"><summary>L'audit signale une clé dans le code ou dans l'historique</summary><p>Traitez-la en premier avec <a href="secrets.html"><code>/pulse:secrets fuite</code></a>. Une clé passée un jour dans Git reste lisible dans l'historique : seule la révocation la rend inutile.</p></details>
+<details class="probleme"><summary>L'outil de recherche de clés n'est pas installé</summary><p><code>preparer</code> écrit quand même sa configuration. En attendant, le contrôle de Pulse couvre les fichiers actuels, sans l'historique.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : l'audit complet et le test du cambrioleur">
+<p data-role="vous">/pulse:security</p>
+<p data-role="claude">L'audit se fait en lecture seule : vos fichiers restent intacts.</p>
+<p data-role="outil">pulse-aidd secrets historique · pulse-aidd secrets inventaire --sans-hebergeur</p>
+<p data-role="claude">Niveau global : 🟠 À améliorer · 1 point bloquant.
+⛔ S3 Contrôle d'accès : une cliente connectée peut ouvrir le rendez-vous d'une autre en changeant le numéro dans l'adresse. Correction proposée : vérifier côté serveur que le rendez-vous lui appartient.
+Faisons le test du cambrioleur ensemble, un test à la fois.
+Test 1 : connectez-vous avec le compte de test « Léa », ouvrez un de ses rendez-vous, puis remplacez le numéro à la fin de l'adresse par celui d'un rendez-vous de « Sam ».</p>
+<p data-role="vous">Faille ❌</p>
+<p data-role="claude">C'est noté dans docs/securite.md. Corriger les points bloquants maintenant ? (Recommandé) · Tout corriger · Plus tard</p>
+</div>
+<div class="conversation" data-titre="Exemple : poser les en-têtes de sécurité">
+<p data-role="vous">/pulse:security entetes</p>
+<p data-role="claude">Voici les services que votre appli utilise : une police de caractères et le service d'envoi d'e-mails. Ils seront autorisés, tout le reste sera bloqué.
+Voici la configuration, un commentaire en français au-dessus de chaque en-tête. Je l'écris ?</p>
+<p data-role="vous">Oui.</p>
+<p data-role="outil">pulse-aidd sonder http://localhost:3000 --entetes</p>
+<p data-role="claude">🛡️ En-têtes : ✅ les 7 sont envoyés. Parcourez maintenant vos écrans avec la console ouverte (F12) : elle doit rester sans erreur « Content Security Policy ».</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="secrets.html"><code>/pulse:secrets</code></a> : traiter une clé exposée, en la révoquant d'abord.</li>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : il lance le contrôle rapide avant la première mise en ligne.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : faire relire les corrections.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer les corrections et <code>docs/securite.md</code>.</li></ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

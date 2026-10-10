@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="memory">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:memory – Wiki Pulse</title>
+<meta name="description" content="Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:memory</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>L'IA oublie tout d'une conversation à l'autre. La mémoire du projet lui rappelle, à chaque session, vos choix, les mots de votre métier et les pièges déjà rencontrés. Elle se compose de quelques fichiers courts, rangés dans votre projet et enregistrés avec lui.</p>
+<p>Cette commande s'occupe de cette mémoire. Elle la <strong>crée</strong> à partir de vos documents et de votre code, l'<strong>actualise</strong> quand le projet a changé, y <strong>retient</strong> une leçon ou une décision, et la <strong>compacte</strong> quand elle devient trop longue.</p>
+<p>Pulse vous montre chaque ajout avant de l'écrire. La mémoire est écrite en français, avec des mots que vous pouvez relire.</p>
+
+<figure class="anim" data-etapes="5" data-duree="1300">
+<svg viewBox="0 0 640 270" role="img" aria-labelledby="memory-schema-titre">
+<title id="memory-schema-titre">La mémoire du projet avec /pulse:memory</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="34" width="152" height="68" rx="18"/><rect class="schema-boite" x="20" y="40" width="140" height="56" rx="14"/><text class="schema-texte" x="90" y="66" text-anchor="middle">Nouvelle session</text><text class="schema-texte-secondaire" x="90" y="84" text-anchor="middle">l'IA a tout oublié</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M162 68 H226" marker-end="url(#memory-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="224" y="34" width="192" height="68" rx="18"/><rect class="schema-boite" x="230" y="40" width="180" height="56" rx="14"/><text class="schema-texte" x="320" y="66" text-anchor="middle">Relire la mémoire</text><text class="schema-texte-secondaire" x="320" y="84" text-anchor="middle">choix · mots · pièges</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M412 68 H476" marker-end="url(#memory-pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="474" y="34" width="152" height="68" rx="18"/><rect class="schema-boite-active" x="480" y="40" width="140" height="56" rx="14"/><text class="schema-texte" x="550" y="66" text-anchor="middle">Au travail</text><text class="schema-texte-secondaire" x="550" y="84" text-anchor="middle">sans tout redécouvrir</text></g>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="84" y="184" width="192" height="68" rx="18"/><rect class="schema-boite" x="90" y="190" width="180" height="56" rx="14"/><text class="schema-texte" x="180" y="216" text-anchor="middle">retenir</text><text class="schema-texte-secondaire" x="180" y="234" text-anchor="middle">vous ajoutez une leçon</text><path class="schema-fleche trace e4" pathLength="1" d="M200 188 C210 140 270 130 290 102" marker-end="url(#memory-pointe-grise)"/></g>
+<g class="e5" data-etape="5"><rect class="actif-halo schema-halo-primaire" x="364" y="184" width="192" height="68" rx="18"/><rect class="schema-boite" x="370" y="190" width="180" height="56" rx="14"/><text class="schema-texte" x="460" y="216" text-anchor="middle">compacter</text><text class="schema-texte-secondaire" x="460" y="234" text-anchor="middle">presque pleine : resserrée</text><path class="schema-accompagne trace e5" pathLength="1" d="M440 188 C430 140 370 130 350 102" marker-end="url(#memory-pointe-mauve)"/><text class="schema-texte-secondaire" x="320" y="150" text-anchor="middle">190 → 140 lignes</text></g>
+<defs>
+<marker id="memory-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="memory-pointe-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>À chaque nouvelle session, l'IA a tout oublié : elle relit d'abord la mémoire du projet (vos choix, les mots du métier, les pièges), puis se met au travail sans tout redécouvrir. Vous y ajoutez une leçon avec <code>retenir</code>. Quand la mémoire est presque pleine (190 lignes sur 200), <code>compacter</code> la resserre autour de 140 lignes.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous ne répétez plus les mêmes choses.</strong> Une règle dite une fois (« les prix s'affichent toujours TTC ») est rappelée à l'IA à chaque session.</li>
+<li><strong>L'IA parle votre langue.</strong> Le glossaire fixe les mots de votre métier : « prestation » plutôt que « service », par exemple.</li>
+<li><strong>Les erreurs ne reviennent pas.</strong> Un piège déjà rencontré est noté, et l'IA l'évite la fois suivante.</li>
+<li><strong>Vous gardez le contrôle.</strong> Chaque ligne vous est montrée avant d'être écrite.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Vous ajoutez Pulse à un projet qui a déjà du code</strong> : <code>creer</code> remplit la mémoire à partir de ce qui existe.</li>
+<li><strong>Vous voulez que l'IA se souvienne de quelque chose</strong> la prochaine fois : <code>retenir</code>.</li>
+<li><strong>Le projet a beaucoup changé</strong> depuis des semaines : <code>actualiser</code> repère ce qui est devenu faux.</li>
+<li><strong>Pulse vous dit que la mémoire est presque pleine</strong> : <code>compacter</code>.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> après une erreur corrigée, <a href="fix.html"><code>/pulse:fix</code></a> vous propose parfois de noter le piège dans la mémoire. Acceptez : c'est le meilleur moyen de ne pas le revivre.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:memory [creer | actualiser | compacter | retenir &quot;leçon ou décision&quot;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong><code>creer</code></strong> : la mémoire est absente ou incomplète. Pulse lit vos documents, votre code et l'historique, crée les fichiers qui manquent et les remplit avec ce qu'il a appris. L'existant est gardé tel quel.</li>
+<li><strong><code>actualiser</code></strong> : Pulse compare la mémoire au projet réel et liste ce qui est faux, manquant ou en double. Vous choisissez les corrections à appliquer.</li>
+<li><strong><code>retenir</code> suivi d'une phrase entre guillemets</strong> : une leçon, une habitude, un mot du métier ou une décision. Pulse choisit le bon fichier et vous montre la ligne exacte.</li>
+<li><strong><code>compacter</code></strong> : la mémoire approche de sa limite de 200 lignes. Un assistant la resserre autour de 140 lignes et la remet à jour.</li>
+<li><strong>Rien</strong> : sans mémoire, Pulse la crée. Sinon, il vous demande ce que vous voulez faire.</li>
+</ul>
+<pre class="commande"><code>/pulse:memory retenir "un rendez-vous dure 30 minutes par défaut"</code></pre>
+<pre class="commande"><code>/pulse:memory actualiser</code></pre>
+<pre class="commande"><code>/pulse:memory compacter</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>La mémoire vit dans le dossier <code>aidd_docs/memory/</code> de votre projet :</p>
+<table>
+<thead><tr><th>Fichier ou dossier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>project.md</code></td><td>Ce que fait l'appli, pour qui, ce qu'elle contient, et les décisions importantes. Relu à chaque session.</td></tr>
+<tr><td><code>technical.md</code></td><td>Les outils choisis, les habitudes d'écriture du code, les pièges et leçons. Relu à chaque session.</td></tr>
+<tr><td><code>glossary.md</code></td><td>Les mots de votre métier et leur définition commune. Relu à chaque session.</td></tr>
+<tr><td><code>README.md</code></td><td>La présentation de la mémoire.</td></tr>
+<tr><td><code>internal/</code>, <code>external/</code></td><td>Le détail rarement utile et les documents extérieurs, lus seulement quand une tâche en a besoin. Une décision difficile à défaire y a son propre fichier, dans <code>internal/decisions/</code>.</td></tr>
+</tbody>
+</table>
+<p>À la fin de chaque action, Pulse vérifie aussi que <code>CLAUDE.md</code> contient le bloc qui charge la mémoire, et l'ajoute s'il manque. À la prochaine session, l'IA chargera automatiquement ces fichiers.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien n'est écrit sans votre accord.</strong> Chaque ajout ou correction vous est montré, avec sa destination.</li>
+<li><strong>Vos secrets restent hors de la mémoire.</strong> Une clé, un mot de passe, le nom ou l'e-mail d'un vrai client ne s'y écrivent pas ; s'il en reste un, Pulse propose de le retirer en priorité.</li>
+<li><strong>Le compactage est réversible.</strong> Pulse vous montre les lignes avant et après, puis vous propose de garder la mémoire compactée ou de revenir à la version d'avant.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> avant de compacter, la mémoire doit être enregistrée, pour pouvoir revenir en arrière. Si des changements de la mémoire ne le sont pas encore, Pulse vous propose d'abord <a href="commit.html"><code>/pulse:commit</code></a> et s'arrête.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me dit que la mémoire est presque pleine</summary><p>Elle approche de 200 lignes, et l'alerte arrive à 190. Lancez <code>/pulse:memory compacter</code> : le détail rare part dans des fichiers lus seulement au besoin, et l'essentiel reste chargé.</p></details>
+<details class="probleme"><summary>Le compactage refuse de démarrer</summary><p>Des changements de la mémoire ne sont pas encore enregistrés. Lancez <a href="commit.html"><code>/pulse:commit</code></a>, puis relancez <code>/pulse:memory compacter</code>.</p></details>
+<details class="probleme"><summary>Pulse refuse de retenir ce que je lui donne</summary><p>La mémoire garde ce que le code ne montre pas : un choix et son pourquoi, une habitude, un piège. Une préférence passagère, une note de travail, une chose déjà visible dans le code ou un secret n'y ont pas leur place. Pulse vous explique pourquoi en une phrase.</p></details>
+<details class="probleme"><summary>Pulse me propose <code>/pulse:init</code></summary><p>Le fichier <code>CLAUDE.md</code> manque : c'est lui qui charge la mémoire. Lancez <a href="init.html"><code>/pulse:init</code></a> d'abord, puis revenez.</p></details>
+<details class="probleme"><summary>Ma nouvelle règle contredit une ancienne</summary><p>Pulse le repère et propose de <strong>remplacer</strong> l'ancienne ligne. La mémoire décrit seulement l'état actuel du projet.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : retenir une règle du salon">
+<p data-role="vous">/pulse:memory retenir "un rendez-vous dure 30 minutes par défaut"</p>
+<p data-role="claude">C'est une règle de l'appli qui ne change pas : elle va dans la mémoire du projet, fichier project.md.
+Ligne proposée : « Un rendez-vous dure 30 minutes par défaut (2026-10-10). »
+→ Ajouter (Recommandé)
+→ Modifier
+→ Abandonner</p>
+<p data-role="vous">Ajouter</p>
+<p data-role="outil">pulse-aidd memoire</p>
+<p data-role="claude">C'est noté. À la prochaine session, l'IA chargera automatiquement ces fichiers.
+➡️ Prochaine étape : la commande où vous en étiez (/pulse:status pour la retrouver).</p>
+</div>
+<div class="conversation" data-titre="Exemple : compacter une mémoire presque pleine">
+<p data-role="vous">/pulse:memory compacter</p>
+<p data-role="outil">pulse-aidd agent memory-compactor</p>
+<p data-role="claude">Mémoire : 192 lignes → 138 lignes.
+Retiré : 2 notes sur des tâches terminées.
+Déplacé : la procédure d'envoi des rappels, vers un fichier lu seulement au besoin.
+Resserré : la description des écrans.
+→ Garder la mémoire compactée (Recommandé)
+→ Voir le détail d'abord
+→ Revenir à la version d'avant</p>
+<p data-role="vous">Garder la mémoire compactée</p>
+<p data-role="claude">➡️ Prochaine étape : /pulse:commit pour enregistrer la mémoire compactée.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="init.html"><code>/pulse:init</code></a> : crée la mémoire au démarrage du projet.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : propose de noter un piège après une correction.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer la mémoire, avant et après un compactage.</li>
+<li><a href="status.html"><code>/pulse:status</code></a> : voir si la mémoire est branchée, et retrouver où vous en étiez.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

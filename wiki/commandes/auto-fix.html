@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="auto-fix">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:auto-fix – Wiki Pulse</title>
+<meta name="description" content="Faire passer au vert tous les contrôles automatiques du code (syntaxe, règles d'écriture, types, formatage), en confiant les corrections à des agents en parallèle.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="3">Étape 4 · Construire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:auto-fix</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Faire passer au vert tous les contrôles automatiques du code (syntaxe, règles d'écriture, types, formatage), en confiant les corrections à des agents en parallèle.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Votre projet a des contrôles automatiques : ils relisent le code comme un correcteur d'orthographe (syntaxe, règles d'écriture, types, mise en forme). <code>/pulse:auto-fix</code> les lance, rassemble toutes les erreurs, puis confie les corrections à plusieurs assistants qui travaillent en même temps.</p>
+<p>Chaque assistant reçoit au plus 5 fichiers, et chaque fichier va à un seul assistant. Les corrections faites, Pulse relance les contrôles et recommence avec les erreurs restantes, 3 cycles au plus. Le comportement de votre appli reste le même.</p>
+<p>La commande cherche aussi les clés secrètes écrites par erreur dans le code. Celles-là ne sont pas confiées à un assistant : vous les mettez à l'abri ensemble.</p>
+<pre class="commande"><code>🔧 Correction automatique
+Erreurs corrigées : 12 · restantes : 0 · cycles : 1/3
+Fichiers modifiés : creneaux.js, prise-rdv.html, liste-du-jour.js</code></pre>
+<p class="legende">Le rapport de fin de <code>/pulse:auto-fix</code>.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Plus d'erreurs rouges, sans effort.</strong> Toutes les erreurs que les contrôles repèrent seuls sont corrigées d'un coup.</li>
+<li><strong>Rapide.</strong> Plusieurs assistants corrigent en même temps, chacun sur ses fichiers.</li>
+<li><strong>La sécurité est préservée.</strong> Une correction ne désactive jamais un contrôle, n'ouvre pas l'accès à tous et ne supprime pas le code qui pose problème.</li>
+<li><strong>Les erreurs restantes sont expliquées.</strong> En langage simple, avec l'action proposée.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3" aria-current="step"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Quand votre éditeur affiche des erreurs rouges</strong> dans le code.</li>
+<li><strong>Après <a href="implement.html"><code>/pulse:implement</code></a></strong>, s'il reste beaucoup d'erreurs : Pulse vous la propose.</li>
+<li><strong>Avant <a href="review.html"><code>/pulse:review</code></a> ou <a href="commit.html"><code>/pulse:commit</code></a></strong>, pour partir d'un code propre.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> cette commande complète la relecture et votre test, sans les remplacer. Un code sans erreur rouge peut encore faire autre chose que ce que vous voulez.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:auto-fix [--detail]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Rien</strong> : les contrôles, les corrections, puis le rapport résumé.</li>
+<li><strong><code>--detail</code></strong> : le même travail, avec la liste de chaque correction dans le rapport.</li>
+</ul>
+<pre class="commande"><code>/pulse:auto-fix</code></pre>
+<pre class="commande"><code>/pulse:auto-fix --detail</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td>Les fichiers en erreur</td><td>Corrigés, sans changer ce que fait l'appli.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Si les fichiers corrigés appartiennent à une tâche : une ligne au journal du plan (nombre d'erreurs corrigées).</td></tr>
+</tbody>
+</table>
+<p>Le rapport indique les erreurs corrigées, celles qui restent, le nombre de cycles et les fichiers modifiés par cette commande seulement. L'enregistrement se fait ensuite avec <a href="commit.html"><code>/pulse:commit</code></a>.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Pulse s'en tient aux contrôles déclarés</strong> dans <code>docs/technical.md</code>, section « Commandes du projet ».</li>
+<li><strong>Un outil manquant s'installe seulement avec votre accord.</strong></li>
+<li><strong>Une correction qui changerait le comportement de l'appli se décide avec vous.</strong> Par exemple : une fonction attend un nombre et reçoit un texte.</li>
+</ul>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> une clé secrète trouvée dans le code doit être mise à l'abri dans le fichier local de vos clés. Si elle a déjà été envoyée sur le dépôt en ligne, elle doit aussi être révoquée chez le fournisseur : <a href="secrets.html"><code>/pulse:secrets fuite</code></a> vous guide.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Aucune commande de contrôle n'est déclarée »</summary><p>Seul le contrôle des clés secrètes a pu tourner. Ajoutez des contrôles à votre projet avec <a href="tech.html"><code>/pulse:tech</code></a>.</p></details>
+<details class="probleme"><summary>« Les choix techniques manquent »</summary><p>La commande lit la liste des contrôles dans <code>docs/technical.md</code>. Lancez d'abord <a href="tech.html"><code>/pulse:tech</code></a>.</p></details>
+<details class="probleme"><summary>Un contrôle échoue parce que l'outil n'est pas installé</summary><p>Pulse vous le signale et propose la commande d'installation du projet. Acceptez, puis il relance les contrôles.</p></details>
+<details class="probleme"><summary>Il reste des erreurs après 3 cycles</summary><p>Pulse s'arrête et explique chaque erreur restante en langage simple, avec l'action proposée. Souvent, la corriger changerait le comportement : décidez avec lui.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : corriger les erreurs rouges">
+<p data-role="vous">/pulse:auto-fix</p>
+<p data-role="claude">Ces outils relisent le code comme un correcteur d'orthographe. Je fais corriger chaque erreur par un assistant, puis je revérifie.
+12 erreurs dans 7 fichiers : je les confie à 2 assistants, qui travaillent en même temps.</p>
+<p data-role="outil">pulse-aidd verifier</p>
+<p data-role="claude">🔧 Correction automatique
+Erreurs corrigées : 12 · restantes : 0 · cycles : 1/3
+➡️ Prochaine étape : /pulse:review, pour une relecture de la tâche en cours.</p>
+</div>
+<div class="conversation" data-titre="Exemple : une clé secrète dans le code">
+<p data-role="vous">/pulse:auto-fix</p>
+<p data-role="claude">J'ai trouvé une clé du service d'e-mails écrite dans rappel.js. Je ne la confie pas à un assistant : on la met à l'abri ensemble.
+Écrivez-la vous-même dans votre fichier .env : le code la lira depuis ce fichier, sans la contenir.
+A-t-elle déjà été envoyée sur le dépôt en ligne ?</p>
+<p data-role="vous">Non</p>
+<p data-role="claude">Parfait : la retirer du code suffit. Je passe aux autres erreurs.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="review.html"><code>/pulse:review</code></a> : la relecture de la tâche et votre test, après les corrections.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer les corrections.</li>
+<li><a href="fix.html"><code>/pulse:fix</code></a> : pour une erreur qui se voit à l'usage, comme un bouton qui ne marche pas.</li>
+<li><a href="secrets.html"><code>/pulse:secrets</code></a> : savoir où sont vos clés, ou réagir à une fuite.</li>
+<li><a href="tech.html"><code>/pulse:tech</code></a> : déclarer les contrôles automatiques du projet.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

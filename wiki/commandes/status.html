@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="status">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:status – Wiki Pulse</title>
+<meta name="description" content="Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:status</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>C'est votre tableau de bord. Pulse lit votre projet et vous résume, en quelques lignes, tout ce qui compte : les étapes de la méthode déjà faites, les tâches à faire, en cours et terminées, les changements pas encore enregistrés, le site en ligne, la mémoire du projet.</p>
+<p>La dernière ligne donne la prochaine étape conseillée, avec sa raison. C'est le même calcul que <a href="init.html"><code>/pulse:init</code></a> : les deux commandes vous conseillent toujours la même chose.</p>
+<p>Cette commande lit et résume. Elle ne lance aucune étape à votre place.</p>
+<pre class="commande"><code>📍 Projet : carnet-reservations (pile : Next.js et Neon)
+
+Méthode : ✅ init · ✅ brief · ✅ PRD · ✅ technique · ⬜ design (facultatif) · ✅ user stories · ✅ spec · ✅ plan
+
+Tâches – US-001 Prise de rendez-vous
+  À faire  : T4 message de confirmation (1)
+  En cours : T3 choix du créneau
+  Terminé  : T1 liste des prestations, T2 formulaire client (2)
+  Première version (US Indispensables) : 2/9 tâches terminées
+
+Git      : 2 fichiers modifiés non enregistrés · dernier commit « feat(T2): formulaire client »
+Dossiers à part : aucun
+En ligne : pas encore
+Mémoire  : ✅ branchée · glossaire 6 mots · 0 décision
+
+➡️ Prochaine étape conseillée : /pulse:implement US-001 T3 : terminer le choix du créneau</code></pre>
+<p class="legende">Le tableau de bord de <code>/pulse:status</code>, au milieu de la construction du carnet de réservations.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous retrouvez le fil en un coup d'œil.</strong> Tout l'avancement tient sur un seul écran, en mots simples.</li>
+<li><strong>Vous savez quoi faire ensuite.</strong> Une étape conseillée, avec sa raison en une phrase, et parfois d'autres possibilités.</li>
+<li><strong>Rien ne bouge sans vous.</strong> La commande lit seulement. Les deux seules modifications possibles attendent votre accord.</li>
+<li><strong>Les alertes ne restent pas cachées.</strong> Une fois le site en ligne, un contrôle automatique en échec ou un rendez-vous de suivi dépassé passe en tête des conseils.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Vous reprenez après une pause</strong> et vous ne savez plus où vous en étiez.</li>
+<li><strong>Vous venez de finir une tâche</strong> et vous voulez voir ce qui reste.</li>
+<li><strong>Vous hésitez entre deux commandes</strong> : le conseil tranche pour vous.</li>
+<li><strong>Vous travaillez dans plusieurs fenêtres de Claude Code</strong> : le tableau signale les autres sessions ouvertes et les dossiers à part.</li>
+<li><strong>Votre site est en ligne</strong> : le tableau rappelle les contrôles automatiques et le suivi du référencement.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour agir directement depuis le tableau de bord, lancez plutôt <a href="init.html"><code>/pulse:init</code></a> : il affiche le même état, puis exécute l'action que vous choisissez.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:status</code></pre>
+<p class="legende">Cette commande se lance sans rien après son nom.</p>
+<!-- /auto:forme -->
+<p>Tapez simplement la commande. Pulse trouve seul tout ce qu'il lui faut dans le projet.</p>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<p>Un résumé à l'écran. Rien n'est modifié dans votre projet, sauf dans deux cas, et toujours après votre accord :</p>
+<table>
+<thead><tr><th>Cas</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td>Un travail en cours ancien, devenu sans objet</td><td>Pulse vous demande s'il est toujours d'actualité. Sinon, il efface la note de travail en cours, dans <code>aidd_docs/tasks/</code>.</td></tr>
+<tr><td>Un dossier à part déjà rassemblé avec le projet principal</td><td>Pulse propose de supprimer ce dossier dans <code>.claude/worktrees/</code>, et sa branche.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Un dossier à part est supprimé seulement s'il est rassemblé</strong> et sans changement non enregistré. Un dossier encore en cours est gardé, avec la façon de reprendre.</li>
+<li><strong>Pulse s'arrête si Git refuse une suppression.</strong> Il ne force jamais : il vous le dit et en reste là.</li>
+<li>La suppression d'un dossier à part passe par la demande d'autorisation de Claude Code. Acceptez-la seulement si vous avez choisi de supprimer.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> si une autre session de Claude Code est ouverte sur ce projet, Pulse vous le rappelle dans la question. Elle travaille peut-être encore dans ce dossier à part : vérifiez avant de répondre « Supprimer ».</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>La prochaine étape est <code>/pulse:fix</code>, alors que j'étais en train de construire</summary><p>Le dernier passage des contrôles automatiques a échoué. Pulse place toujours cet échec en premier, pour qu'il ne reste pas caché. Lancez la commande proposée : elle reçoit le message de l'étape en échec.</p></details>
+<details class="probleme"><summary>Une ligne « En attente » s'affiche en haut</summary><p>Une commande précédente attend une décision de votre part. Relancez la commande indiquée sur cette ligne pour reprendre là où vous étiez. Si ce travail est ancien, Pulse vous demande s'il est toujours d'actualité, et l'efface si vous répondez non.</p></details>
+<details class="probleme"><summary>Un dossier à part est marqué « en cours »</summary><p>Du travail y attend d'être rassemblé avec le projet principal. Pour le continuer, lancez <a href="implement.html"><code>/pulse:implement US-XXX</code></a> ou <a href="spirc.html"><code>/pulse:spirc US-XXX</code></a> : Pulse propose d'y revenir.</p></details>
+<details class="probleme"><summary>La ligne Mémoire indique « non branchée »</summary><p>L'IA ne charge pas encore la mémoire du projet à chaque session. Lancez <a href="memory.html"><code>/pulse:memory</code></a> : il la crée ou la rebranche.</p></details>
+<details class="probleme"><summary>La ligne Référencement indique « à relier »</summary><p>Votre site est en ligne, mais Google ne sait pas encore qu'il est à vous. Lancez <a href="search-console.html"><code>/pulse:search-console relier</code></a>.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : reprendre après le week-end">
+<p data-role="vous">/pulse:status</p>
+<p data-role="outil">pulse-aidd etat</p>
+<p data-role="claude">📍 Projet : carnet-reservations
+Méthode : ✅ brief · ✅ PRD · ✅ technique · ✅ user stories · ✅ spec · ✅ plan
+Tâches – US-001 Prise de rendez-vous
+  En cours : T3 choix du créneau
+  Terminé : T1, T2 (2)
+Git : 2 fichiers modifiés non enregistrés
+➡️ Prochaine étape conseillée : /pulse:implement US-001 T3 : terminer le choix du créneau
+   Aussi : /pulse:commit pour enregistrer les 2 fichiers modifiés</p>
+</div>
+<div class="conversation" data-titre="Exemple : faire le ménage dans les dossiers à part">
+<p data-role="vous">/pulse:status</p>
+<p data-role="claude">…
+Dossiers à part : us-002-liste-du-jour ✅ rassemblé, peut être supprimé
+➡️ Prochaine étape conseillée : /pulse:spec US-003 : décrire le rappel par e-mail</p>
+<p data-role="claude">Le dossier à part « us-002-liste-du-jour » est déjà rassemblé avec le projet principal.
+→ Supprimer les dossiers à part déjà rassemblés (Recommandé)
+→ Les garder</p>
+<p data-role="vous">Supprimer les dossiers à part déjà rassemblés</p>
+<p data-role="claude">C'est fait : le dossier et sa branche sont supprimés. Votre travail reste dans le projet principal.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="init.html"><code>/pulse:init</code></a> : le même conseil, puis l'action que vous choisissez, en boucle.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réaliser la tâche conseillée.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer les fichiers modifiés signalés.</li>
+<li><a href="memory.html"><code>/pulse:memory</code></a> : brancher ou mettre à jour la mémoire du projet.</li>
+<li><a href="search-console.html"><code>/pulse:search-console</code></a> : relier le site à Google et suivre ce qu'il en voit.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

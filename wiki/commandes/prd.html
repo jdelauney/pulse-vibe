@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="prd">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:prd – Wiki Pulse</title>
+<meta name="description" content="Produire le PRD : le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 2 · Décrire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:prd</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Produire le PRD : le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Le <dfn>PRD</dfn> est le document qui dit ce que votre outil doit faire, pour qui, et surtout ce qui entre dans la <strong>première version</strong>. Pulse le rédige avec vous, à partir de votre brief.</p>
+<p>Le cœur de l'étape, c'est le tri. Pulse liste les fonctionnalités, chacune en une phrase du point de vue de l'utilisateur. Puis vous les rangez dans quatre catégories. C'est vous qui faites la première coupe ; Pulse la confronte ensuite au brief pour repérer un oubli.</p>
+<p>La règle à retenir : « La première version est la plus petite réellement utilisable. On vise petit et fini, plutôt que grand et inachevé. »</p>
+<pre class="commande"><code>Indispensable  l'outil en a besoin pour être utile : c'est la première version
+Essentiel      vraie valeur ajoutée, juste après
+Optionnel      la cerise sur le gâteau
+En attente     bonne idée, pour plus tard</code></pre>
+<p class="legende">Les quatre catégories du tri, expliquées au début de l'étape.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous livrez vite quelque chose d'utile.</strong> Une première version petite et finie, plutôt qu'un grand projet qui n'aboutit pas.</li>
+<li><strong>Vous décidez des priorités.</strong> La coupe est la vôtre ; Pulse signale seulement les oublis bloquants.</li>
+<li><strong>Vous savez quand c'est prêt.</strong> La phrase « La première version est prête quand… » se vérifie par un constat simple.</li>
+<li><strong>Les bonnes idées ne se perdent pas.</strong> Ce qui attend est noté « En attente », pour plus tard.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="brainstorm.html"><code>/pulse:brainstorm</code></a></strong>, une fois le brief écrit.</li>
+<li><strong>Avant <a href="tech.html"><code>/pulse:tech</code></a></strong> : la première version guide le choix des outils.</li>
+<li><strong>Quand le besoin a changé</strong> : Pulse vous propose de compléter ou de refaire le PRD existant.</li>
+</ul>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:prd</code></pre>
+<p class="legende">Cette commande se lance sans rien après son nom.</p>
+<!-- /auto:forme -->
+<p>Pulse lit votre brief et vous pose les questions qui restent. Sans brief, il vous propose d'abord <a href="brainstorm.html"><code>/pulse:brainstorm</code></a>, ou un mode rapide en trois questions.</p>
+<pre class="commande"><code>/pulse:prd</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/prd.md</code></td><td>La vision, le problème principal, les utilisateurs, 1 à 3 objectifs mesurables, le tableau des quatre catégories, la phrase « La première version est prête quand… », les contraintes, le besoin d'être trouvé sur Google, ce qui reste hors de l'outil, les risques et les hypothèses à vérifier.</td></tr>
+</tbody>
+</table>
+<p>Le tableau des fonctionnalités indique pour chacune son origine : vous, ou Pulse.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Cette commande écrit seulement <code>docs/prd.md</code>.</strong> Elle ne touche ni au code ni à votre site.</li>
+<li><strong>Le classement est validé par vous</strong> avant l'écriture. Pulse vous montre le tableau et la définition de la première version, puis demande votre accord.</li>
+<li><strong>Pulse vous parle franchement.</strong> Si trop de fonctionnalités sont « Indispensables » pour une première version réalisable en une journée, il le dit et propose lesquelles passer en « Essentiel ». La décision reste la vôtre.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me dit qu'il manque le brief</summary><p>Le PRD s'appuie sur <code>docs/brief.md</code>. Lancez <a href="brainstorm.html"><code>/pulse:brainstorm</code></a>, ou acceptez le mode rapide : trois questions (l'idée et les utilisateurs, le problème actuel, les cinq choses que l'outil doit permettre), puis Pulse continue.</p></details>
+<details class="probleme"><summary>Pulse signale un « oubli bloquant » dans ma coupe</summary><p>Une de vos fonctionnalités ne peut pas marcher sans une autre. Par exemple, sans « se connecter », « voir mes réservations » ne marche pas. Ajoutez-la aux indispensables, ou revoyez la coupe.</p></details>
+<details class="probleme"><summary>J'ai trop de choses indispensables</summary><p>Posez-vous la question que Pulse vous pose : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? » Si oui, passez-la en « Essentiel » : elle viendra juste après.</p></details>
+<details class="probleme"><summary>Mon outil sert seulement en interne</summary><p>À la question « Votre outil doit-il être trouvé sur Google ? », répondez non. Le référencement se limitera alors à rester hors de Google.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : choisir la première version">
+<p data-role="vous">/pulse:prd</p>
+<p data-role="claude">La première version est la plus petite réellement utilisable. On vise petit et fini, plutôt que grand et inachevé.
+Si vous ne pouviez livrer que 3 choses dans quinze jours, lesquelles ? Un traiteur, par exemple, choisirait : voir le menu, commander, recevoir la confirmation.</p>
+<p data-role="vous">Prendre rendez-vous, voir mes rendez-vous du jour, le rappel par e-mail.</p>
+<p data-role="claude">Sans le rappel, l'outil serait-il quand même utile ? Je propose de le passer en Essentiel.
+| Fonctionnalité | Catégorie | Origine |
+| Prendre rendez-vous | Indispensable | vous |
+| Voir les rendez-vous du jour | Indispensable | vous |
+| Recevoir un rappel par e-mail | Essentiel | Pulse |
+→ Valider / Modifier</p>
+<p data-role="vous">Valider</p>
+</div>
+<div class="conversation" data-titre="Exemple : sans brief">
+<p data-role="vous">/pulse:prd</p>
+<p data-role="claude">Je ne trouve pas de brief. Je vous propose /pulse:brainstorm, ou un mode rapide en 3 questions. Première question : quelle est votre idée, et pour qui ?</p>
+<p data-role="vous">Un carnet de réservations pour mon salon, pour mes clientes et moi.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : écrire le brief, sur lequel s'appuie le PRD.</li>
+<li><a href="tech.html"><code>/pulse:tech</code></a> : l'étape suivante, pour choisir les outils adaptés.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : définir l'apparence (facultatif), avant les user stories.</li>
+<li><a href="us.html"><code>/pulse:us</code></a> : découper la première version en user stories.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : enchaîner outils, user stories, spec, plan et réalisation, avec des points de validation.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>
