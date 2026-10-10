@@ -1,12 +1,12 @@
 {
   "name": "pulse-next",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Pack de pile Pulse pour Next.js : code de départ vérifié, conventions, pièges connus et recettes (connexion, listes, e-mail, fichiers, paiement, langues, limite de requêtes, référencement et mesure réelle de la vitesse) pour une application web avec comptes et données. Next.js 16, Drizzle + Neon, better-auth, next-safe-action, shadcn/ui. S'utilise avec la méthode Pulse (plugin pulse). En français.",
   "author": {
     "name": "PulseIA"
   },
   "keywords": ["pulse", "pack-de-pile", "nextjs", "drizzle", "neon", "better-auth", "shadcn", "francais"],
   "dependencies": [
-    { "name": "pulse", "version": "^0.36" }
+    { "name": "pulse", "version": "^0.37" }
   ]
 }

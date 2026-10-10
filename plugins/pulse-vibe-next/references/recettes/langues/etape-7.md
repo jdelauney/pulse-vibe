@@ -1,7 +1,7 @@
 ### 7. Déplacer les pages
 
 1. Créer le dossier `app/[locale]/` (l'étape 5 y a déjà mis `page.tsx`).
-2. Y déplacer `error.tsx`, `not-found.tsx`, `essai-surveillance/`, `(public)/` et `(connecte)/` :
+2. Y déplacer `error.tsx`, `not-found.tsx`, `essai-surveillance/` (s'il existe), `(public)/` et `(connecte)/` :
 
 <!-- deplacer: app/error.tsx vers: app/[locale]/error.tsx -->
 
