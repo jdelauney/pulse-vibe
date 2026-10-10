@@ -366,5 +366,5 @@ group by page, mesure
 order by page, mesure;
 ```
 
-Lecture : LCP, FCP, TTFB et INP en millisecondes, CLS sans unité ; seuils de `pulse-aidd reference performance.md`. Une ligne avec moins d'une cinquantaine de mesures se lit comme une indication. `p75ParPage` du repository fait le même calcul, pour une future page d'administration.
+Lecture : LCP, FCP, TTFB et INP en millisecondes, CLS sans unité ; seuils de `pulse-aidd reference perf/performance.md`. Une ligne avec moins d'une cinquantaine de mesures se lit comme une indication. `p75ParPage` du repository fait le même calcul, pour une future page d'administration.
 

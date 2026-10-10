@@ -1,4 +1,4 @@
-// Tests du rapport de contraste WCAG (scripts/contraste.js, pulse-aidd contraste).
+// Tests du rapport de contraste WCAG (skills/ui/scripts/contraste.js, pulse-aidd contraste).
 // Lancer : node --test plugins/pulse-vibe/tests/contraste.test.js (nécessite bash dans le PATH)
 "use strict";
 
@@ -8,7 +8,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const RACINE = path.join(__dirname, "..");
-const { lireCouleur, poser, rapport, analyser, tronquer } = require(path.join(RACINE, "scripts", "contraste.js"));
+const { lireCouleur, poser, rapport, analyser, tronquer } = require(path.join(RACINE, "skills", "ui", "scripts", "contraste.js"));
 const mesure = (a, b) => rapport(lireCouleur(a), lireCouleur(b));
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-aidd", "contraste", ...args], { cwd: RACINE, encoding: "utf8" });
 

@@ -93,7 +93,7 @@ Police de secours : {{police système}} · Longueur de ligne : 65 à 75 caractè
 
 - ✅ {{…}}
 - ❌ {{…}}
-- Voir aussi la liste des anti-patterns de Pulse (`pulse-aidd reference design/anti-patterns.md`). Une exception volontaire est écrite ici avec sa raison.
+- Voir aussi la liste des anti-patterns de Pulse (`pulse-aidd reference ui/anti-patterns.md`). Une exception volontaire est écrite ici avec sa raison.
 
 ## 12. Dans le code
 

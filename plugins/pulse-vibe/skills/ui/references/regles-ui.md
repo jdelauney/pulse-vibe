@@ -112,7 +112,7 @@ Niveau visé : **WCAG 2.2 AA** (le référentiel international d'accessibilité 
 - **Messages d'erreur** : ils disent ce qui s'est passé et comment s'en sortir.
 - **Des mots précis** qui disent ce que fait l'outil, plutôt que du **jargon marketing**.
 - **L'introduction ne répète pas le titre** : elle apporte l'information suivante.
-- **Textes de plus d'une phrase** (accroches, présentations) : contrôle des tics d'écriture IA, `pulse-aidd textes verifier` (règles : `references/redaction/regles.md` ; ponctuation, lexique, rythme).
+- **Textes de plus d'une phrase** (accroches, présentations) : contrôle des tics d'écriture IA, `pulse-aidd textes verifier` (règles : `skills/rediger/references/regles.md` ; ponctuation, lexique, rythme).
 - **Vocabulaire du glossaire** du projet (`aidd_docs/memory/glossary.md`) : les mêmes mots partout.
 
 ## Sources

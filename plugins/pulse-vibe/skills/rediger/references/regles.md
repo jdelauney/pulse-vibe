@@ -17,7 +17,7 @@ Le texte emploie seulement les faits fournis par la personne ou présents dans l
 
 ## Le contrôle
 
-`pulse-aidd textes verifier docs/textes/<page>.md` applique les règles mesurables du détecteur de tics d'écriture IA (`references/redaction/detecteur-tics-llm.json`, seule source des listes). Seul le texte entre `<!-- texte -->` et `<!-- /texte -->` est contrôlé.
+`pulse-aidd textes verifier docs/textes/<page>.md` applique les règles mesurables du détecteur de tics d'écriture IA (`skills/rediger/references/detecteur-tics-llm.json`, seule source des listes). Seul le texte entre `<!-- texte -->` et `<!-- /texte -->` est contrôlé.
 
 - **Erreurs** : corrigées avant de présenter le texte, en suivant la consigne affichée.
 - **Avertissements** : jugés un par un ; corrigés, ou gardés avec une raison (un nom propre après deux-points, un mot employé dans son sens précis).

@@ -27,7 +27,7 @@ Dans tous ces cas : on révoque et on remplace. En cas de doute, on traite comme
 5. **Chercher des traces d'utilisation** : les journaux du fournisseur sur toute la période d'exposition (requêtes, envois, connexions, dépenses), l'activité de l'hébergeur. Noter ce qui a été regardé et le résultat.
 6. **Nettoyer la source** : retirer la clé du fichier (commit normal), supprimer le message ou la capture. L'historique Git : une clé révoquée ne sert plus à rien, donc on le laisse tel quel. Une réécriture d'historique reste un choix de la personne, à faire avec une personne compétente (elle casse les copies existantes et ne protège rien sans révocation).
 7. **Données personnelles** : trois questions fermées, une à la fois (section suivante). Pulse informe ; la personne décide.
-8. **Écrire le journal d'incident** `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` (`pulse-aidd modele incident.md`) et la ligne du journal des rotations : `pulse-aidd secrets journal <NOM> fuite --revoquee <date> --production oui`.
+8. **Écrire le journal d'incident** `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` (`pulse-aidd modele secrets/incident.md`) et la ligne du journal des rotations : `pulse-aidd secrets journal <NOM> fuite --revoquee <date> --production oui`.
 9. **Prévenir la récidive** : une phrase sur la cause, puis les protections qui manquent (règle `deny` sur `.env`, type Secret chez l'hébergeur, clé à droits restreints, double authentification sur le compte du fournisseur).
 
 ## Données personnelles : informer, sans décider à la place de la personne

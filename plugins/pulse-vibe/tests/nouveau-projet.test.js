@@ -10,7 +10,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const RACINE = path.join(__dirname, "..");
-const NOUVEAU = path.join(RACINE, "scripts", "nouveau-projet.js");
+const NOUVEAU = path.join(RACINE, "skills", "init", "scripts", "nouveau-projet.js");
 const VERIFIER = path.join(RACINE, "templates", "verifier.js");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "pulse-nouveau-"));

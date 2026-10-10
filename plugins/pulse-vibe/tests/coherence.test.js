@@ -81,8 +81,8 @@ test("pulse-aidd contexte / etape : chaque commande citée est connue", () => {
 });
 
 test("pulse-aidd modele / reference / agent : chaque fichier cité existe", () => {
-  assert.deepStrictEqual(absentes(citations(/pulse-aidd modele ([\w.-]+[\w])/g), (v) => fs.existsSync(path.join(RACINE, "templates", v))), []);
-  assert.deepStrictEqual(absentes(citations(/pulse-aidd reference ([\w./-]+\.md)/g), (v) => fs.existsSync(path.join(RACINE, "references", v))), []);
+  assert.deepStrictEqual(absentes(citations(/pulse-aidd modele ([\w.-]+[\w])/g), (v) => fs.existsSync(path.join(RACINE, "templates", v)) || fs.existsSync(path.join(RACINE, "skills", v.split("/")[0], "assets", v.split("/").slice(1).join("/")))), []);
+  assert.deepStrictEqual(absentes(citations(/pulse-aidd reference ([\w./-]+\.md)/g), (v) => fs.existsSync(path.join(RACINE, "references", v)) || fs.existsSync(path.join(RACINE, "skills", v.split("/")[0], "references", v.split("/").slice(1).join("/")))), []);
   assert.deepStrictEqual(absentes(citations(/pulse-aidd agent ([a-z][a-z-]*)/g), (v) => AGENTS.has(v)), []);
 });
 
@@ -149,17 +149,17 @@ test("fins de ligne LF dans bin/, scripts/ et hooks/ de chaque plugin", () => {
   assert.deepStrictEqual(crlf, []);
 });
 
-test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit dans securite/entetes.md", () => {
+test("en-têtes de sécurité : chaque en-tête de la checklist S12 est décrit dans security/entetes.md", () => {
   const s12 = lire(RACINE, "references", "checklist-securite.md").split("## S12")[1].split(/\n## S13|\n---/)[0];
-  const entetes = lire(RACINE, "references", "securite", "entetes.md");
+  const entetes = lire(RACINE, "skills", "security", "references", "entetes.md");
   const noms = [...s12.matchAll(/\b[A-Z][a-zA-Z]*(?:-[A-Z][a-zA-Z]*)+\b/g)].map((m) => m[0]);
   assert.ok(noms.includes("Cross-Origin-Opener-Policy"), "S12 cite Cross-Origin-Opener-Policy");
   for (const nom of noms) assert.ok(entetes.includes(`| \`${nom}\` |`), `${nom} absent du tableau de entetes.md`);
   assert.ok(entetes.includes("browsing-topics=()"), "Permissions-Policy avec browsing-topics");
   assert.match(entetes, /prérend/, "règle nonce et pages prérendues");
   assert.match(entetes, /`preload`/, "règle preload");
-  const rapide = lire(RACINE, "references", "securite", "rapide.md");
-  for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de securite/rapide.md`);
+  const rapide = lire(RACINE, "skills", "security", "references", "rapide.md");
+  for (const nom of noms) assert.ok(rapide.includes(nom), `${nom} absent de security/rapide.md`);
 });
 
 test("chaque outil de bin/ a ses relais .ps1 (PowerShell) et .cmd (cmd), identiques d'un plugin à l'autre", () => {
@@ -411,7 +411,7 @@ test("mise en ligne : tests, contrôle rapide de sécurité avant la première f
   const controles = deploy.split("## 1. Contrôles avant envoi")[1].split("\n## 2.")[0];
   assert.match(controles, /la commande « Tester »/);
   assert.match(controles, /avant la \*\*première\*\* mise en ligne/);
-  assert.match(controles, /`pulse-aidd reference securite\/rapide\.md`/);
+  assert.match(controles, /`pulse-aidd reference security\/rapide\.md`/);
   assert.match(controles, /Un ⛔ bloque la mise en ligne/);
   assert.match(deploy.split("## 6. Clore")[1], /`\/pulse:security audit`/);
   const motifs = motifsBash(fichier);
@@ -433,8 +433,8 @@ test("allowed-tools : ni curl ni wget, gitleaks seulement avec --redact, ni git 
 });
 
 test("en-têtes servis : vérifiés par pulse-aidd sonder --entetes, plus par curl", () => {
-  for (const ref of ["securite/entetes.md", "securite/rapide.md"]) {
-    const texte = lire(RACINE, "references", ref);
+  for (const ref of ["entetes.md", "rapide.md"]) {
+    const texte = lire(RACINE, "skills", "security", "references", ref);
     assert.ok(texte.includes("pulse-aidd sonder <adresse> --entetes"), ref);
     assert.doesNotMatch(texte, /curl -sI/, ref);
   }
@@ -453,8 +453,8 @@ test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes 
   const auditeur = lire(RACINE, "agents", "security-auditor.md");
   assert.match(auditeur, /S8 vaut ✅ seulement avec cette sortie/);
   assert.match(auditeur, /\*\*S13\*\*/);
-  assert.match(lire(RACINE, "templates", "securite.md"), /\| S13 CSRF, sessions et cookies \|/);
-  assert.match(lire(RACINE, "templates", "technical.md"), /\| Auditer les dépendances \|/);
+  assert.match(lire(RACINE, "skills", "security", "assets", "securite.md"), /\| S13 CSRF, sessions et cookies \|/);
+  assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /\| Auditer les dépendances \|/);
   assert.match(lire(RACINE, "templates", "ci-verifications.yml.template"), /\{\{Auditer les dépendances\}\}/);
   const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
   assert.match(cicd, /auditer les dépendances \(« Auditer les dépendances »/);
@@ -466,7 +466,7 @@ test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes 
 });
 
 test("checklist sécurité : sauvegarde dans le modèle technique, audit dans l'essai local, S8 non concerné sans dépendance, S13 relié", () => {
-  assert.match(lire(RACINE, "templates", "technical.md"), /- Sauvegarde et restauration : \{\{/);
+  assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /- Sauvegarde et restauration : \{\{/);
   assert.match(lire(RACINE, "..", "pulse-vibe-next", "references", "technical.md"), /- Sauvegarde et restauration : /);
   const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
   assert.match(cicd.split("## 4. Essayer en local")[1].split("\n## ")[0], /audit des dépendances/);
@@ -787,7 +787,7 @@ test("questions et accueil en clair : les anciens libellés ont disparu", () => 
   const unix = (f) => f.split(path.sep).join("/");
   const ANCIENS = /Implémentation via sous-agent|Implémentation directe|Valider et verrouiller|[Ee]xamen renforcé|« Renforcé »|« Travailler dans un worktree \(|« Reprendre dans le worktree|AI-Driven Development/;
   assert.deepStrictEqual(TEXTES.filter(({ texte }) => ANCIENS.test(texte)).map(({ fichier }) => unix(fichier)), []);
-  for (const f of ["CLAUDE.md", "banniere.txt"]) assert.doesNotMatch(lire(RACINE, "templates", f), /AI-Driven/, f);
+  for (const f of [["templates", "CLAUDE.md"], ["skills", "init", "assets", "banniere.txt"]]) assert.doesNotMatch(lire(RACINE, ...f), /AI-Driven/, f.join("/"));
   assert.doesNotMatch(lire(RACINE, "templates", "plan.md"), /kanban/i);
   assert.doesNotMatch(lire(RACINE, "templates", "CLAUDE.md"), /kanban/i);
 });
@@ -905,7 +905,7 @@ test("la règle deny se propose en clair : le bloc JSON se montre seulement sur 
 });
 
 test("production : retour arrière dans le modèle technical.md et dans deploy ; variables propres à chaque environnement", () => {
-  const modele = lire(RACINE, "templates", "technical.md");
+  const modele = lire(RACINE, "skills", "tech", "assets", "technical.md");
   assert.match(modele, /\n## Retour arrière\n/);
   assert.ok(modele.indexOf("## Retour arrière") < modele.indexOf("## Référencement"), "après « Hébergement et mise en ligne »");
   const deploy = lire(RACINE, "skills", "deploy", "SKILL.md");
@@ -916,7 +916,7 @@ test("production : retour arrière dans le modèle technical.md et dans deploy ;
 
 test("mise en production : une sonde de disponibilité est proposée et notée", () => {
   assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
-  assert.match(lire(RACINE, "templates", "technical.md"), /^- Surveillance : /m);
+  assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /^- Surveillance : /m);
 });
 
 test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références", () => {

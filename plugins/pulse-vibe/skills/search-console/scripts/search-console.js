@@ -31,7 +31,7 @@ const http = require("http");
 const zlib = require("zlib");
 const crypto = require("crypto");
 const { spawn } = require("child_process");
-const { ecouter } = require("./port-libre");
+const { ecouter } = require("../../../scripts/port-libre");
 
 const PORTEE = "https://www.googleapis.com/auth/webmasters.readonly";
 const base = () => process.env.PULSE_GSC_API || "https://searchconsole.googleapis.com";
@@ -831,7 +831,7 @@ function enBref(d) {
   return l;
 }
 
-/** Rapport Markdown daté (modèle : templates/rapport-search-console.md). */
+/** Rapport Markdown daté (modèle : skills/search-console/assets/rapport-search-console.md). */
 function rapport(d) {
   const s = [];
   const periode = d.periode ? `${d.periode.debut} → ${d.periode.fin} (${d.periode.jours} jours, heure du Pacifique)` : "non indiquée dans l'export (fichier « Dates » absent)";
