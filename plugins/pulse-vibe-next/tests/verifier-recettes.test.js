@@ -12,7 +12,7 @@ const { spawnSync } = require("child_process");
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes à baliser (tâches 11 à 16 du plan « Corrections 3 ») : chaque tâche retire la sienne.
-const EN_ATTENTE = ["seo", "mesure-reelle"];
+const EN_ATTENTE = ["mesure-reelle"];
 // Recettes qui créent une table : leur chaîne génère la migration.
 const AVEC_MIGRATION = ["connexion", "liste", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";

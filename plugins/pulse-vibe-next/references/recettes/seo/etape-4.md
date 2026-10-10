@@ -1,5 +1,6 @@
 ### 4. Les pages connectées hors de Google
 
+<!-- fichier: app/(connecte)/layout.tsx -->
 ```tsx
 // app/(connecte)/layout.tsx
 import type { Metadata } from "next";

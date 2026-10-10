@@ -2,6 +2,7 @@
 
 Les pages publiques vivent dans `app/(public)/` ; les métadonnées de chaque page passent par `metadonneesDePage()`. Les pages d'authentification font exception : fiche, règle 47.
 
+<!-- fichier: app/(public)/tarifs/page.tsx -->
 ```tsx
 // app/(public)/tarifs/page.tsx
 import { metadonneesDePage } from "@src/lib/seo/seo";
