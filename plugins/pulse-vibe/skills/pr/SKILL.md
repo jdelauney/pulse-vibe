@@ -11,12 +11,6 @@ allowed-tools: Bash(pulse-aidd contexte pr) Bash(pulse-aidd reference *) Bash(pu
 
 Phrase à dire la première fois : « Une branche, c'est une version parallèle de votre projet : vous y avancez sans toucher au site en ligne. Une proposition, sur le site du dépôt, permet ensuite de rassembler ce travail dans la version principale ; on peut la relire, la tester, puis l'accepter sur le site du dépôt. »
 
-| Argument | Action |
-|---|---|
-| `branche [<US-XXX>]` | **A. Créer la branche de travail** |
-| vide | **B. Ouvrir la demande de fusion** pour la branche en cours |
-| un nom de branche | **B**, avec cette branche comme base |
-
 ## Règles
 
 Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
@@ -34,6 +28,14 @@ Si ce contexte est absent, lancer `pulse-aidd contexte pr` et lire sa sortie.
 Argument : `$ARGUMENTS`
 
 Fichiers de cette commande : [assets/pull-request.md](assets/pull-request.md).
+
+### Choisir l'action
+
+| Argument | Action |
+|---|---|
+| `branche [<US-XXX>]` | **A. Créer la branche de travail** |
+| vide | **B. Ouvrir la demande de fusion** pour la branche en cours |
+| un nom de branche | **B**, avec cette branche comme base |
 
 ### Prérequis communs
 
