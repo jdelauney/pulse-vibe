@@ -8,6 +8,7 @@
 - Paquet à installer : `npm install next-intl` (dernière version ; recette vérifiée avec 4.14.9).
 - Next.js 16.3 ou plus récent : `next/root-params` y est actif sans réglage.
 - À appliquer **tôt** dans le projet : la recette déplace toutes les pages sous `app/[locale]/`.
+- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,langues` de `verifier-recettes.js`, déplacements de l'étape 7 compris) : contrôles, types, tests unitaires, construction. Le parcours de bout en bout (`e2e/langues.spec.ts`) se lance à la main ; la justesse des traductions (`en.json`) se relit à la main.
 
 ## Variables d'environnement
 
@@ -26,7 +27,8 @@ Aucune.
 | `src/lib/i18n/__tests__/chemins.test.ts`, `referencement.test.ts` | Tests unitaires des fonctions pures |
 | `next.config.ts` (modifié) | Extension next-intl |
 | `app/layout.tsx` → `app/[locale]/layout.tsx` | Layout racine, avec la langue |
-| `app/page.tsx`, `error.tsx`, `not-found.tsx`, `(public)/`, `(connecte)/` → sous `app/[locale]/` | Pages déplacées |
+| `error.tsx`, `not-found.tsx`, `essai-surveillance/`, `(public)/`, `(connecte)/` → sous `app/[locale]/` | Pages déplacées |
+| `app/page.tsx` → `app/[locale]/page.tsx` | Accueil, remplacé par la page d'exemple de l'étape 5 |
 | `app/[locale]/[...reste]/page.tsx` | Adresse inconnue : page « introuvable » du site |
 | `app/api/`, `global-error.tsx`, `globals.css`, `favicon.ico`, `robots.ts`, `sitemap.ts`, `opengraph-image.tsx`, `icon.tsx`, `apple-icon.tsx` | Restent dans `app/` |
 | `app/[locale]/page.tsx` (modifié) | Exemple d'une page publique qui déclare ses versions de langue |
@@ -40,6 +42,8 @@ Aucune.
 | `e2e/langues.spec.ts` | Parcours de bout en bout |
 
 ## Étapes
+
+<!-- commande: npm install next-intl -->
 
 - Étape 1 – Le routage : `pulse-aidd pile recette langues etape 1`
 - Étape 2 – La langue de chaque requête : `pulse-aidd pile recette langues etape 2`

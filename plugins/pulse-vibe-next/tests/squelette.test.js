@@ -3,6 +3,7 @@
 "use strict";
 
 const test = require("node:test");
+const { after } = test;
 const assert = require("node:assert");
 const fs = require("fs");
 const os = require("os");
@@ -12,7 +13,15 @@ const { spawnSync } = require("child_process");
 const SCRIPT = path.join(__dirname, "..", "scripts", "squelette.js");
 const { nomDePaquet } = require(SCRIPT);
 
-const dossierVide = () => fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-"));
+const crees = [];
+const dossierVide = () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-"));
+  crees.push(d);
+  return d;
+};
+after(() => {
+  for (const d of crees) fs.rmSync(d, { recursive: true, force: true });
+});
 const lancer = (...args) => spawnSync("node", [SCRIPT, ...args], { encoding: "utf8" });
 const lire = (d, f) => fs.readFileSync(path.join(d, f), "utf8");
 
@@ -126,6 +135,8 @@ test("le squelette type ses variables avec t3 env et nomme son client Drizzle", 
   assert.ok(paquet.dependencies["@t3-oss/env-nextjs"], "dépendance @t3-oss/env-nextjs");
   const env = fs.readFileSync(path.join(S, "src", "config", "env.ts"), "utf8");
   for (const attendu of ["createEnv", 'import "server-only"', "extends: [envPublic]", "...optionsCommunes", "export const env"]) assert.ok(env.includes(attendu), attendu);
+  for (const attendu of ["const verificationsCroisees: VerificationCroisee[] = [];", "createFinalSchema: (forme) =>", "for (const verifier of verificationsCroisees) verifier(valeurs, ctx);"])
+    assert.ok(env.includes(attendu), `env.ts : ${attendu}`);
   const envPublic = fs.readFileSync(path.join(S, "src", "config", "env-public.ts"), "utf8");
   assert.ok(!envPublic.includes("server-only"), "env-public.ts lisible par un composant client");
   assert.ok(envPublic.includes("experimental__runtimeEnv"), "variables publiques lues en entier");
@@ -164,7 +175,7 @@ test("dépendances du squelette : WebSocket natif, outils en développement, Nod
   for (const attendu of ["npm install next-themes", "<ThemeProvider attribute=\"class\"", "suppressHydrationWarning", "useTheme()"]) assert.ok(theme.includes(attendu), `theme.md : ${attendu}`);
 });
 
-test("accessibilité du squelette : lien d'évitement, axe sur l'accueil", () => {
+test("accessibilité du squelette : lien d'évitement, axe et cibles sur chaque page", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const lireS = (...p) => fs.readFileSync(path.join(S, ...p), "utf8");
   const layout = lireS("app", "layout.tsx");
@@ -173,9 +184,24 @@ test("accessibilité du squelette : lien d'évitement, axe sur l'accueil", () =>
   assert.ok(layout.indexOf('href="#contenu"') < layout.indexOf("<NuqsAdapter>"), "premier élément du corps");
   const paquet = JSON.parse(lireS("package.json"));
   assert.ok(paquet.devDependencies["@axe-core/playwright"], "@axe-core/playwright");
-  const accueil = lireS("e2e", "accueil.spec.ts");
-  assert.match(accueil, /new AxeBuilder\(\{ page \}\)\.withTags\(WCAG_AA\)/);
-  assert.match(accueil, /"wcag22aa"/);
+  const aide = lireS("e2e", "aides", "accessibilite.ts");
+  assert.match(aide, /new AxeBuilder\(\{ page \}\)\s*\.withTags\(WCAG_AA\)/);
+  assert.match(aide, /\.exclude\(OUTILS_NEXT\)/, "outils de développement de Next ignorés");
+  assert.match(aide, /"nextjs-portal"/);
+  assert.match(aide, /"wcag22aa"/);
+  assert.match(aide, /projet === "telephone" \? 44 : 24/);
+  assert.ok(aide.includes('a[data-slot="button"]'), "lien affiché en bouton mesuré");
+  assert.match(lireS("e2e", "accessibilite.spec.ts"), /verifierAccessibilite\(page, testInfo\)/);
+  assert.ok(fs.existsSync(path.join(S, "src", "components", "ui", "__tests__", "cibles-tactiles.test.ts")));
+  assert.match(fs.readFileSync(path.join(__dirname, "..", "references", "contexte", "test.md"), "utf8"), /verifierAccessibilite/);
+});
+
+test("Playwright du squelette : port réglable, verifier-squelette.js prend un port libre", () => {
+  const config = fs.readFileSync(path.join(__dirname, "..", "templates", "squelette", "playwright.config.ts"), "utf8");
+  assert.match(config, /const port = process\.env\.PORT \?\? "3000";/);
+  assert.equal((config.match(/`http:\/\/localhost:\$\{port\}`/g) || []).length, 2, "baseURL et webServer.url suivent le port");
+  assert.match(config, /trace: "on-first-retry",/);
+  assert.match(fs.readFileSync(path.join(__dirname, "..", "scripts", "verifier-squelette.js"), "utf8"), /PORT: String\(await portLibre\(\)\)/);
 });
 
 test("journaux et erreurs du squelette : onRequestError, masquage profond, référence affichée", () => {
@@ -184,25 +210,35 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
   assert.match(lireS("instrumentation.ts"), /export const onRequestError: Instrumentation\.onRequestError/);
   assert.match(lireS("instrumentation.ts"), /process\.env\.NEXT_RUNTIME !== "nodejs"/);
   assert.match(lireS("src", "lib", "logger.ts"), /`\*\.\*\.\*\["\$\{cle\}"\]`/);
+  for (const attendu of ["serializers: { err: serialiserErreur }", '"params"', "pino.multistream", "dedupe: true", "process.stderr"])
+    assert.ok(lireS("src", "lib", "logger.ts").includes(attendu), `logger.ts : ${attendu}`);
   for (const cle of ["password", "motDePasse", "token", "authorization", "Authorization", "Cookie", "set-cookie", "x-api-key", "apiKey", "secret", "clientSecret", "cookie", "email"]) assert.ok(lireS("src", "lib", "logger.ts").includes(`"${cle}"`), cle);
   for (const f of ["error.tsx", "global-error.tsx"]) assert.match(lireS("app", f), /Référence à nous transmettre : <code>\{error\.digest\}<\/code>/, f);
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "errors", "__tests__", "erreur-de-requete.test.ts")));
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "logger.test.ts")));
+  for (const f of ["error.tsx", "global-error.tsx"]) assert.match(lireS("app", f), /signalerErreurClient\(error\)/, f);
+  assert.match(lireS("app", "api", "erreur-client", "route.ts"), /export async function POST/);
+  assert.match(lireS("app", "api", "sante", "route.ts"), /await connection\(\)/);
+  assert.match(lireS("src", "lib", "sante.ts"), /"public, s-maxage=900"/, "sonde gardée 15 minutes par le CDN");
+  assert.match(lireS("app", "essai-surveillance", "page.tsx"), /robots: \{ index: false, follow: false \}/);
 });
 
 test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const action = fs.readFileSync(path.join(S, "src", "lib", "safe-action.ts"), "utf8");
-  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
+  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata, ctx })", "next({ ctx: { requete } })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "safe-action.test.ts")));
 });
 
 test("migrations du squelette : construction Vercel précédée de scripts/migrer.mjs, adresse directe de l'intégration", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const vercel = JSON.parse(fs.readFileSync(path.join(S, "vercel.json"), "utf8"));
-  assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "node scripts/migrer.mjs --vercel && npm run build" });
+  // Les tests passent avant les migrations : une version refusée ne migre jamais la base de production.
+  assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "npm test && node scripts/migrer.mjs --vercel && npm run build" });
+  const etapes = vercel.buildCommand.split(" && ");
+  assert.ok(etapes.indexOf("npm test") < etapes.indexOf("node scripts/migrer.mjs --vercel"), "tests avant migrations");
   assert.match(fs.readFileSync(path.join(S, "drizzle.config.ts"), "utf8"), /process\.env\.DATABASE_URL_DIRECT \?\? process\.env\.DATABASE_URL_UNPOOLED/);
   const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
-  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations"]) assert.ok(migrer.includes(attendu), attendu);
+  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations", "NEON_ENDPOINT_PRODUCTION", '"ignore-production"']) assert.ok(migrer.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "tests", "migrer.test.ts")));
 });

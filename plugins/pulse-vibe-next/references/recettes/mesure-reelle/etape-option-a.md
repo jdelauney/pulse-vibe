@@ -2,12 +2,17 @@
 
 1. Dans Vercel : le projet → onglet **Speed Insights** → **Enable** (libellés à vérifier à l'écran).
 2. `npm install @vercel/speed-insights`.
+
+<!-- commande: npm install @vercel/speed-insights -->
+
 3. Dans `app/layout.tsx`, importer le composant et le placer dans `<body>`, après `<Toaster />` :
 
+<!-- ajout: app/layout.tsx après: import { partageCommun } from "@src/lib/seo/seo"; -->
 ```tsx
 import { SpeedInsights } from "@vercel/speed-insights/next";
 ```
 
+<!-- remplacer-ligne: app/layout.tsx début: <Toaster /> -->
 ```tsx
         <Toaster />
         <SpeedInsights />
@@ -15,12 +20,15 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 4. Dans `next.config.ts`, objet `sources` : en développement, le composant charge sa version de diagnostic depuis `https://va.vercel-scripts.com`. Remplacer le bloc `"script-src"` par :
 
+<!-- remplacer: next.config.ts -->
 ```ts
   "script-src": [
     "'self'",
     "'unsafe-inline'",
     // Développement : messages d'erreur de React, et script de diagnostic de Speed Insights.
-    ...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : []),
+    ...(enDeveloppement
+      ? ["'unsafe-eval'", "https://va.vercel-scripts.com"]
+      : []),
   ],
 ```
 

@@ -3,6 +3,8 @@
 //
 //   pulse-pile-next secrets regles          JSON : règles par variable et noms déclarés dans src/config/env.ts (ou src/lib/env.ts)
 //   pulse-pile-next secrets tester <NOM>    test réel d'une valeur ; lit sur l'entrée standard un JSON { NOM: valeur, … }
+//   pulse-pile-next secrets suites <NOM>    variables non secrètes déduites de NOM (règle « suites ») ; même entrée que tester ;
+//                                           écrit { variables: [{ nom, environnements, valeur }] } ; codes 0 rendu, 1 refus, 3 impossible pour l'instant
 //   pulse-pile-next secrets fiche <NOM>     la fiche de la variable (references/contexte/secrets.md)
 //
 // S'exécute dans le dossier du projet et utilise SES dépendances (pilote Neon, nodemailer, client S3).
@@ -22,8 +24,10 @@ const R2 = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
 const VARIABLES = {
   DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"], parEnvironnement: true },
   DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"], parEnvironnement: true },
-  NEON_API_KEY: { secret: true, fournisseur: "Neon", besoins: ["NEON_PROJECT_ID"] },
+  // suites : après l'envoi de la clé en production, le cœur demande « secrets suites » et envoie ce qui est rendu (type Config).
+  NEON_API_KEY: { secret: true, fournisseur: "Neon", besoins: ["NEON_PROJECT_ID"], suites: ["NEON_ENDPOINT_PRODUCTION"] },
   NEON_PROJECT_ID: { secret: false, fournisseur: "Neon" },
+  NEON_ENDPOINT_PRODUCTION: { secret: false, fournisseur: "Neon (déduit par Pulse)" },
   BETTER_AUTH_SECRET: { secret: true, fournisseur: "projet (valeur générée)", longueurMin: 32, genere: { octets: 32 }, versionnee: "BETTER_AUTH_SECRETS" },
   BETTER_AUTH_SECRETS: { secret: true, fournisseur: "projet (valeur générée)", genere: { octets: 32 } },
   BETTER_AUTH_URL: { secret: false, fournisseur: "projet", prefixes: ["http://", "https://"], parEnvironnement: true },
@@ -75,6 +79,7 @@ function finir(code, message) {
 }
 const bon = (m) => finir(0, `✅ ${m}`);
 const mauvais = (m) => finir(1, `❌ ${m}`);
+const SOLUTION_BRANCHE = " Solution : console Neon → Branches ; vérifiez la branche principale (default) et son compute (point d'accès en écriture). D'ici là, les prévisualisations sautent leurs migrations, sans arrêter la construction ; vous pouvez retirer NEON_API_KEY de .env.envoi dès maintenant.";
 const sansTest = (m) => finir(3, `⚪ ${m}`);
 const raison = (e) => masquer((e && (e.code || e.name) ? `${e.code || e.name} : ` : "") + ((e && e.message) || String(e)).split("\n")[0]).slice(0, 200);
 
@@ -170,6 +175,34 @@ async function testerCleNeon(nom, v) {
   if (reponse.status === 200) bon("clé acceptée par Neon pour ce projet.");
   if ([401, 403, 404].includes(reponse.status)) mauvais(`clé ou identifiant de projet refusés par Neon (code ${reponse.status}) : clé révoquée ou mal copiée, ou NEON_PROJECT_ID d'un autre projet.`);
   mauvais(`réponse inattendue de Neon (code ${reponse.status}).`);
+}
+
+/** Suite de NEON_API_KEY : le point d'accès (ep-…) de la branche principale, pour la garde des prévisualisations (scripts/migrer.mjs). */
+async function suitesCleNeon(nom, v) {
+  const projet = v.NEON_PROJECT_ID;
+  if (!projet) sansTest("NEON_PROJECT_ID manque dans le fichier envoyé : ajoutez la ligne NEON_PROJECT_ID=<identifiant> (console Neon → Settings → General → Project ID), puis relancez l'envoi.");
+  const base = process.env.PULSE_SONDES_NEON_API || "https://console.neon.tech/api/v2";
+  const lireNeon = async (chemin) => {
+    let reponse;
+    try {
+      reponse = await fetch(`${base}${chemin}`, { headers: { Accept: "application/json", Authorization: `Bearer ${v[nom]}` }, signal: AbortSignal.timeout(15000) });
+    } catch (e) {
+      sansTest(`API Neon injoignable (${raison(e.cause || e)}) : relancez l'envoi plus tard.`);
+    }
+    if (!reponse.ok) mauvais(`Neon refuse la lecture (code ${reponse.status}) : vérifiez la clé et NEON_PROJECT_ID (pulse-aidd secrets verifier NEON_API_KEY --fichier .env.envoi).`);
+    try {
+      return await reponse.json();
+    } catch (e) {
+      mauvais("réponse de Neon illisible." + SOLUTION_BRANCHE);
+    }
+  };
+  const p = encodeURIComponent(projet);
+  // limit=100 : une page de 100 branches, comme scripts/migrer.mjs (10 branches au plus sur les offres Free et Launch).
+  const principale = ((await lireNeon(`/projects/${p}/branches?limit=100`)).branches || []).find((b) => b.default === true);
+  if (!principale) mauvais("Neon ne signale aucune branche principale dans ce projet." + SOLUTION_BRANCHE);
+  const ecriture = ((await lireNeon(`/projects/${p}/branches/${encodeURIComponent(principale.id)}/endpoints`)).endpoints || []).find((e) => e.type === "read_write");
+  if (!ecriture || !/^ep-[a-z0-9-]+$/.test(ecriture.id || "")) mauvais("la branche principale n'a pas de point d'accès en écriture." + SOLUTION_BRANCHE);
+  finir(0, JSON.stringify({ variables: [{ nom: "NEON_ENDPOINT_PRODUCTION", environnements: ["preview"], valeur: ecriture.id }] }));
 }
 
 async function testerSmtp(nom, v) {
@@ -291,6 +324,8 @@ const TESTS = {
 const SANS_TEST = {
   STRIPE_WEBHOOK_SECRET: "pas de test direct : dans Stripe, envoyez un événement de test à la destination du webhook et vérifiez la réponse 2xx.",
 };
+// Variables déduites d'une variable envoyée en production (règle « suites » de VARIABLES).
+const SUITES = { NEON_API_KEY: suitesCleNeon };
 
 async function tester(nom) {
   let valeurs;
@@ -305,6 +340,19 @@ async function tester(nom) {
   if (!TESTS[nom]) sansTest(`pas de test réel pour ${nom} : testez la fonction qui l'utilise, sur le site.`);
   if (!valeurs[nom]) mauvais(`${nom} est vide.`);
   await TESTS[nom](nom, valeurs);
+}
+
+async function suites(nom) {
+  let valeurs;
+  try {
+    valeurs = JSON.parse(fs.readFileSync(0, "utf8") || "{}");
+  } catch (e) {
+    mauvais("entrée illisible : les suites attendent les valeurs sur l'entrée standard, en JSON.");
+  }
+  valeursAMasquer = Object.entries(valeurs).filter(([n, x]) => typeof x === "string" && !(VARIABLES[n] && VARIABLES[n].secret === false)).map(([, x]) => x);
+  if (!SUITES[nom]) sansTest(`aucune variable à déduire de ${nom}.`);
+  if (!valeurs[nom]) mauvais(`${nom} est vide.`);
+  await SUITES[nom](nom, valeurs);
 }
 
 // ---------------------------------------------------------------- Règles et fiche
@@ -336,12 +384,13 @@ async function principal() {
     return;
   }
   if (action === "tester" && /^[A-Z_][A-Z0-9_]*$/.test(nom || "")) return tester(nom);
+  if (action === "suites" && /^[A-Z_][A-Z0-9_]*$/.test(nom || "")) return suites(nom);
   if (action === "fiche" && nom) {
     const section = sectionFiche(nom);
     if (section) return finir(0, section);
     finir(1, `Pas de fiche pour ${nom} dans le pack. Variables décrites : ${Object.keys(VARIABLES).join(", ")}. Pour une autre variable : la documentation officielle de son fournisseur.`);
   }
-  finir(1, "Usage : pulse-pile-next secrets regles | tester <NOM> (valeurs en JSON sur l'entrée standard) | fiche <NOM>");
+  finir(1, "Usage : pulse-pile-next secrets regles | tester <NOM> | suites <NOM> (valeurs en JSON sur l'entrée standard) | fiche <NOM>");
 }
 
 if (require.main === module) principal().catch((e) => finir(1, `❌ test interrompu : ${raison(e)}`));

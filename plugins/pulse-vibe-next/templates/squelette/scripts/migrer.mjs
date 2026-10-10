@@ -6,7 +6,10 @@
 //   (posé par vercel.json) rend l'absence de VERCEL_ENV bloquante dès qu'une migration existe.
 // - Sur Vercel, seule DATABASE_URL_UNPOOLED (intégration Vercel–Neon) désigne la base : une adresse
 //   laissée à la main ne peut pas envoyer une prévisualisation vers la production.
-// - Prévisualisation : applique les migrations sur la branche Neon de la prévisualisation.
+// - Prévisualisation : applique les migrations sur la branche Neon de la prévisualisation, après avoir
+//   vérifié qu'elle n'est pas la production (NEON_ENDPOINT_PRODUCTION : point d'accès ep-… de la branche
+//   principale, enregistré par pulse-aidd secrets envoyer NEON_API_KEY). Même point d'accès, ou repère
+//   absent : migrations sautées avec un message, la construction continue (jamais d'arrêt en Preview).
 // - Production : si au moins une migration reste à appliquer, crée d'abord une branche Neon de
 //   sauvegarde (expire au bout de 7 jours ; NEON_API_KEY et NEON_PROJECT_ID), puis applique.
 //   Base jamais migrée (première mise en ligne) : rien à sauvegarder, la sauvegarde est ignorée.
@@ -53,6 +56,42 @@ export function sauvegardePour(maintenant) {
     expiration: `${expiration.toISOString().slice(0, 19)}Z`,
   };
 }
+
+/** Identifiant du point d'accès Neon (« ep-… », sans -pooler) d'une adresse, d'un nom d'hôte ou d'un identifiant ; null sinon. */
+export function pointDAcces(texte) {
+  if (!texte) return null;
+  let hote = texte.trim().toLowerCase();
+  try {
+    hote = new URL(hote).hostname;
+  } catch {
+    // Déjà un nom d'hôte ou un identifiant.
+  }
+  const trouve = /^(ep-[a-z0-9-]+?)(?:-pooler)?(?:\.|$)/.exec(hote);
+  return trouve ? trouve[1] : null;
+}
+
+/** Messages de la garde des prévisualisations : ce qui se passe, ce que cela change, comment y remédier. */
+const PREVISUALISATION_SUR_PRODUCTION = [
+  "Prévisualisation : migrations non appliquées. Cette prévisualisation utilise la base de production (même point d'accès Neon que NEON_ENDPOINT_PRODUCTION) : la production reste protégée et la construction continue.",
+  "Tant que la prévisualisation n'a pas sa propre copie de la base, ses pages qui ont besoin des nouvelles migrations peuvent afficher des erreurs.",
+  "Pour lui donner sa copie : console Neon → Integrations → Vercel → Manage ; vérifiez que l'intégration crée bien une branche pour chaque prévisualisation (projet Vercel relié, rôle présent, limite de branches non atteinte), puis redéployez la prévisualisation.",
+];
+const PREVISUALISATION_SANS_REPERE = [
+  "Prévisualisation : migrations non appliquées, par prudence. Le repère de la base de production (NEON_ENDPOINT_PRODUCTION) n'est pas encore enregistré dans Vercel : sans lui, impossible de vérifier que cette prévisualisation a sa propre copie de la base.",
+  "La construction continue ; ses pages qui ont besoin des nouvelles migrations peuvent afficher des erreurs.",
+  "Pour activer la vérification : relancez /pulse:deploy (à l'étape de la clé Neon, le repère s'enregistre tout seul), ou /pulse:init pour mettre à niveau un projet plus ancien.",
+];
+
+const PREVISUALISATION_REPERE_ILLISIBLE = [
+  "Prévisualisation : migrations non appliquées, par prudence. Le repère de la base de production (NEON_ENDPOINT_PRODUCTION) est enregistré dans Vercel, mais sa valeur n'a pas la forme d'un point d'accès Neon (ep-…) : impossible de vérifier que cette prévisualisation a sa propre copie de la base.",
+  "La construction continue ; ses pages qui ont besoin des nouvelles migrations peuvent afficher des erreurs.",
+  "Pour corriger : relancez /pulse:deploy (à l'étape de la clé Neon, le repère s'enregistre de nouveau tout seul).",
+];
+const PREVISUALISATION_ADRESSE_ILLISIBLE = [
+  "Prévisualisation : migrations non appliquées, par prudence. L'adresse de la base de cette prévisualisation n'a pas la forme d'une adresse Neon : impossible de vérifier qu'elle n'est pas celle de la production.",
+  "La construction continue ; ses pages qui ont besoin des nouvelles migrations peuvent afficher des erreurs.",
+  "Pour corriger : console Neon → Integrations → Vercel → Manage ; vérifiez que l'intégration donne bien sa branche à chaque prévisualisation, puis redéployez la prévisualisation.",
+];
 
 /** Date (created_at) de la dernière migration appliquée, ou null (base neuve). */
 async function derniereAppliquee(adresse) {
@@ -262,6 +301,29 @@ export async function migrer({
     return "a-jour";
   }
   dire(`Migrations à appliquer : ${enAttente.map((m) => m.tag).join(", ")}`);
+  if (env.VERCEL_ENV === "preview") {
+    // L'intégration Vercel–Neon donne sa branche à chaque prévisualisation ; si elle n'a pas pu la
+    // créer, l'adresse peut désigner la production : on compare son point d'accès à celui de la production.
+    // Dans le doute, on saute les migrations sans arrêter la construction.
+    const production = pointDAcces(env.NEON_ENDPOINT_PRODUCTION);
+    if (!production) {
+      const present = Boolean(env.NEON_ENDPOINT_PRODUCTION?.trim());
+      for (const ligne of present
+        ? PREVISUALISATION_REPERE_ILLISIBLE
+        : PREVISUALISATION_SANS_REPERE)
+        dire(ligne);
+      return present ? "ignore-repere-illisible" : "ignore-sans-repere";
+    }
+    const celleDeLApercu = pointDAcces(adresse);
+    if (!celleDeLApercu) {
+      for (const ligne of PREVISUALISATION_ADRESSE_ILLISIBLE) dire(ligne);
+      return "ignore-adresse-illisible";
+    }
+    if (celleDeLApercu === production) {
+      for (const ligne of PREVISUALISATION_SUR_PRODUCTION) dire(ligne);
+      return "ignore-production";
+    }
+  }
   if (env.VERCEL_ENV === "production" && derniere === null) {
     dire("Base jamais migrée : rien à sauvegarder, sauvegarde ignorée.");
   } else if (env.VERCEL_ENV === "production") {

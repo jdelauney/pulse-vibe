@@ -6,6 +6,7 @@ Le domaine `vitesse` a ses trois dossiers miroirs : `src/core/vitesse/` (les rè
 
 Les adresses passent par `normaliserChemin` : un segment qui ressemble à un identifiant devient `[id]`. Les mesures se regroupent ainsi par gabarit, et aucune adresse enregistrée ne désigne une personne ou un document. Le métier ne dépend de rien d'autre que `src/core/`.
 
+<!-- fichier: src/core/vitesse/mesure.entity.ts -->
 ```ts
 // src/core/vitesse/mesure.entity.ts
 export const MESURES = ["LCP", "INP", "CLS", "FCP", "TTFB"] as const;
@@ -36,6 +37,7 @@ export type LigneP75 = {
 };
 ```
 
+<!-- fichier: src/core/vitesse/mesure.rules.ts -->
 ```ts
 // src/core/vitesse/mesure.rules.ts
 import { DUREE_CONSERVATION_JOURS, INTERVALLE_PURGE_MS } from "./mesure.entity";
@@ -72,6 +74,7 @@ export function limiteDeConservation(maintenant: Date): Date {
 
 Enregistrer une mesure applique une règle métier (le chemin sans identifiant) : l'écriture passe donc par un use-case (architecture.md §5, point 2). L'effacement au plus une fois par heure est un réglage d'exploitation, pas une règle métier : la durée de conservation (90 jours) reste la seule promesse faite aux visiteurs. Le port décrit seulement ce dont le use-case a besoin ; le repository de l'étape 3 le fournit.
 
+<!-- fichier: src/core/vitesse/mesure-repository.port.ts -->
 ```ts
 // src/core/vitesse/mesure-repository.port.ts
 import type { MesureVitesse } from "./mesure.entity";
@@ -83,6 +86,7 @@ export type MesureVitesseRepository = {
 };
 ```
 
+<!-- fichier: src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts -->
 ```ts
 // src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts
 import type { MesureVitesse } from "../mesure.entity";
@@ -122,6 +126,7 @@ export async function enregistrerMesure(
 
 `drizzle.config.ts` lit déjà `src/db/*/*.table.ts` : rien à déclarer ailleurs.
 
+<!-- fichier: src/db/vitesse/mesure-vitesse.table.ts -->
 ```ts
 // src/db/vitesse/mesure-vitesse.table.ts
 import {
@@ -151,6 +156,8 @@ export const mesuresVitesse = pgTable(
 
 Générez la migration, relisez le fichier SQL créé dans `drizzle/`, puis appliquez-la :
 
+<!-- commande: npm run db:generate -->
+
 ```bash
 npm run db:generate
 npm run db:migrate
@@ -160,6 +167,7 @@ npm run db:migrate
 
 La base arrive en paramètre : `getDb()` dans l'application, PGlite dans les tests. `p75ParPage` n'est pas dans le port (le use-case n'en a pas besoin) : il sert à une future page d'administration.
 
+<!-- fichier: src/db/vitesse/mesure-vitesse.repository.ts -->
 ```ts
 // src/db/vitesse/mesure-vitesse.repository.ts
 import "server-only";
@@ -205,6 +213,7 @@ export function mesureVitesseRepository(db: Db): MesureVitesseRepository & {
 
 Le schéma Zod décrit ce que le navigateur envoie.
 
+<!-- fichier: src/features/vitesse/schemas/mesure.schema.ts -->
 ```ts
 // src/features/vitesse/schemas/mesure.schema.ts
 import { MESURES, NOTES } from "@src/core/vitesse/mesure.entity";
@@ -222,6 +231,7 @@ export const mesureVitesseSchema = z.object({
 
 Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (fonction pure `purgeNecessaire`, testable sans horloge réelle). Un effacement à chaque mesure ajouterait une requête `DELETE` à chaque visite. Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
 
+<!-- fichier: src/features/vitesse/webhooks/recevoir-mesure.webhook.ts -->
 ```ts
 // src/features/vitesse/webhooks/recevoir-mesure.webhook.ts
 import { enregistrerMesure } from "@src/core/vitesse/use-cases/enregistrer-mesure.use-case";
@@ -274,6 +284,7 @@ export async function recevoirMesure(request: NextRequest): Promise<Response> {
 
 La route reste fine : elle délègue (architecture.md §7).
 
+<!-- fichier: app/api/vitesse/route.ts -->
 ```ts
 // app/api/vitesse/route.ts
 import { recevoirMesure } from "@src/features/vitesse/webhooks/recevoir-mesure.webhook";
@@ -288,6 +299,7 @@ export function POST(request: NextRequest) {
 
 `useReportWebVitals` donne les mesures du navigateur ; `navigator.sendBeacon` les envoie même quand le visiteur quitte la page. Rien n'est envoyé en développement. Le composant ne lit aucune donnée et n'appelle aucune action : c'est un élément partagé.
 
+<!-- fichier: src/components/shared/elements/mesure-vitesse.tsx -->
 ```tsx
 // src/components/shared/elements/mesure-vitesse.tsx
 "use client";
@@ -328,10 +340,13 @@ export function MesureVitesse() {
 
 Dans `app/layout.tsx` :
 
+<!-- remplacer-ligne: app/layout.tsx début: import { Toaster } from "@src/components/ui/sonner"; -->
 ```tsx
 import { MesureVitesse } from "@src/components/shared/elements/mesure-vitesse";
+import { Toaster } from "@src/components/ui/sonner";
 ```
 
+<!-- remplacer-ligne: app/layout.tsx début: <Toaster /> -->
 ```tsx
         <Toaster />
         <MesureVitesse />

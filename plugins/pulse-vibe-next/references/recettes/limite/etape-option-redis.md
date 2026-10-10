@@ -5,6 +5,9 @@ La base suffit à la plupart des sites. Redis répond plus vite sous une forte c
 1. Créer un compte Upstash (https://console.upstash.com). Offre gratuite : une base, 500 000 commandes par mois, 256 Mo de données, 10 Go de trafic par mois.
 2. Dans la console Upstash : créer une base Redis **régionale**, région **eu-central-1 (Francfort)**, proche de Vercel `fra1` et de Neon, offre gratuite. Sur la page de la base, section **REST API**, copier l'adresse et le jeton dans `.env`.
 3. Installer les paquets : `npm install @upstash/ratelimit @upstash/redis` (dernières versions ; recette vérifiée avec 2.2.0 et 1.39.0).
+
+<!-- commande: npm install @upstash/ratelimit @upstash/redis -->
+
 4. Dans `.env` :
 
    ```
@@ -14,40 +17,49 @@ La base suffit à la plupart des sites. Redis répond plus vite sous une forte c
    ```
 
    et dans `.env.example`, les trois noms.
+
+<!-- ajout: .env.example -->
+```
+LIMITE_STOCKAGE=
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
 5. Dans `src/config/env.ts`, dans `server: { … }` : `LIMITE_STOCKAGE` accepte `redis` et les deux variables Upstash s'ajoutent :
 
+<!-- remplacer-ligne: src/config/env.ts début: LIMITE_STOCKAGE: -->
 ```ts
-    // Recette limite : où ranger les compteurs (base par défaut ; redis ; memoire pour les tests).
     LIMITE_STOCKAGE: z.enum(["base", "redis", "memoire"]).default("base"),
     UPSTASH_REDIS_REST_URL: z.url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 ```
 
-   puis, dans `createEnv({ … })`, une vérification qui les exige ensemble avec `redis`. S'il existe déjà un `createFinalSchema` (autre recette), ajouter seulement le `.superRefine(…)` à la suite du premier :
+   puis une vérification qui les exige ensemble avec `redis`, ajoutée à la liste `verificationsCroisees` du squelette, juste après sa déclaration (d'autres recettes y ajoutent la leur) :
 
+<!-- ajout: src/config/env.ts après: const verificationsCroisees: VerificationCroisee[] = []; -->
 ```ts
-  // Recette limite, option Redis : les deux variables Upstash sont requises.
-  createFinalSchema: (forme) =>
-    z.object(forme).superRefine((valeurs, ctx) => {
-      if (valeurs.LIMITE_STOCKAGE !== "redis") return;
-      for (const nom of [
-        "UPSTASH_REDIS_REST_URL",
-        "UPSTASH_REDIS_REST_TOKEN",
-      ] as const) {
-        if (!valeurs[nom]) {
-          ctx.addIssue({
-            code: "custom",
-            path: [nom],
-            message: "requise avec LIMITE_STOCKAGE=redis",
-          });
-        }
-      }
-    }),
+// Recette limite, option Redis : les deux variables Upstash sont requises avec LIMITE_STOCKAGE=redis.
+verificationsCroisees.push((valeurs, ctx) => {
+  if (valeurs.LIMITE_STOCKAGE !== "redis") return;
+  for (const nom of [
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN",
+  ] as const) {
+    if (!valeurs[nom]) {
+      ctx.addIssue({
+        code: "custom",
+        path: [nom],
+        message: "requise avec LIMITE_STOCKAGE=redis",
+      });
+    }
+  }
+});
 ```
 
    Avec `LIMITE_STOCKAGE=redis` sans les deux variables Upstash, le site s'arrête au chargement avec un message qui les nomme.
 6. Créer l'adapter :
 
+<!-- fichier: src/adapters/limite/upstash.adapter.ts -->
 ```ts
 // src/adapters/limite/upstash.adapter.ts
 import "server-only";
@@ -91,6 +103,7 @@ export function limiteurUpstash(acces: {
 
 7. La garde complète : `src/lib/limite.ts` choisit aussi Upstash quand `LIMITE_STOCKAGE` vaut `redis`.
 
+<!-- fichier: src/lib/limite.ts -->
 ```ts
 // src/lib/limite.ts
 // Limite de requêtes : règles, choix du limiteur (LIMITE_STOCKAGE) et garde des actions.

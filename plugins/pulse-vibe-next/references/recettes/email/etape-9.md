@@ -1,5 +1,6 @@
 ### 9. Les deux nouvelles pages
 
+<!-- fichier: app/(public)/mot-de-passe-oublie/page.tsx -->
 ```tsx
 // app/(public)/mot-de-passe-oublie/page.tsx
 import { MotDePasseOublieContainer } from "@src/features/compte/components/containers/mot-de-passe-oublie.container";
@@ -25,6 +26,7 @@ export default function PageMotDePasseOublie() {
 }
 ```
 
+<!-- fichier: app/(public)/nouveau-mot-de-passe/page.tsx -->
 ```tsx
 // app/(public)/nouveau-mot-de-passe/page.tsx
 import { LienMotDePasseContainer } from "@src/features/compte/components/containers/lien-mot-de-passe.container";

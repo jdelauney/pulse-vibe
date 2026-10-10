@@ -68,6 +68,7 @@ drizzle/                  migrations
 - `SITE_URL` (non secrète, Production) : l'adresse officielle du site, une fois le domaine définitif.
 - Une base par environnement : `.env` porte les adresses de la branche `dev` de Neon ; Production et chaque prévisualisation reçoivent les leurs de l'intégration Vercel–Neon (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`) ; les adresses de `.env` restent sur le poste.
 - `NEON_API_KEY` (clé d'API limitée au projet, secret) et `NEON_PROJECT_ID` (identifiant du projet Neon), en Production seulement : la sauvegarde avant chaque migration.
+- `NEON_ENDPOINT_PRODUCTION` (point d'accès `ep-…` de la branche principale, pas un secret), en Preview seulement, enregistré tout seul par `pulse-aidd secrets envoyer NEON_API_KEY` : `scripts/migrer.mjs` saute les migrations d'une prévisualisation qui désignerait la production, sans arrêter la construction.
 - En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview, ou `pulse-aidd secrets envoyer` (Vercel CLI relié). Une variable propre à chaque environnement (adresse du site, clés Stripe) part en production depuis `.env.envoi`. L'inventaire et le journal des rotations : `docs/secrets.md` (`/pulse:secrets`).
 
 ## Hébergement et mise en ligne

@@ -2,6 +2,7 @@
 
 Une ligne par règle et par adresse IP. `drizzle.config.ts` lit déjà `src/db/*/*.table.ts`.
 
+<!-- fichier: src/db/limite/limite.table.ts -->
 ```ts
 // src/db/limite/limite.table.ts
 import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
@@ -24,4 +25,6 @@ Générez la migration, relisez le fichier SQL créé dans `drizzle/`, puis appl
 npm run db:generate
 npm run db:migrate
 ```
+
+<!-- commande: npm run db:generate -->
 

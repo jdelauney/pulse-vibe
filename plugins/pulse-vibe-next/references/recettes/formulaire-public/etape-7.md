@@ -2,6 +2,7 @@
 
 `actionFormulairePublic(formulaire)` remplace `actionPublique` pour un formulaire public. Ses contrôles lisent les données brutes (`clientInput`), avant le schéma Zod : le champ piège, puis le jeton, puis la limite. Le schéma de l'action retire ensuite les champs de protection, et l'action reçoit des données propres.
 
+<!-- fichier: src/lib/formulaire-public.ts -->
 ```ts
 // src/lib/formulaire-public.ts
 // Client d'action des formulaires publics : champ piège, jeton de délai, puis limite par adresse IP.

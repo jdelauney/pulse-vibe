@@ -44,7 +44,7 @@ describe("actionPublique", () => {
     const resultat = await casser();
     expect(resultat.serverError).toBe(MESSAGE_ERREUR_ACTION);
     expect(logger.error).toHaveBeenCalledWith(
-      { err: erreur, action: "casser" },
+      { err: erreur, action: "casser", requete: "fra1::essai" },
       "Erreur dans une action serveur",
     );
   });

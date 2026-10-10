@@ -2,6 +2,7 @@
 
 Techniques et sans service : elles vivent dans `src/lib/helpers/limite/`. Le limiteur en mémoire sert aux tests et au développement local.
 
+<!-- fichier: src/lib/helpers/limite/ip-et-message.ts -->
 ```ts
 // src/lib/helpers/limite/ip-et-message.ts
 // Fonctions pures de la limite de requêtes, testées en unitaire.
@@ -18,6 +19,7 @@ export function messageLimite(reset: number, maintenant: number): string {
 }
 ```
 
+<!-- fichier: src/lib/helpers/limite/limiteur-memoire.ts -->
 ```ts
 // src/lib/helpers/limite/limiteur-memoire.ts
 // Limiteur en mémoire, pour les tests et le développement local. Sur Vercel, chaque instance

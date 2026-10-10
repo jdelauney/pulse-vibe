@@ -2,6 +2,7 @@
 
 La langue se lit dans le segment `[locale]` avec `next/root-params`, sans en-tête de requête : les pages restent prérendues avec Cache Components. `setRequestLocale` devient inutile (next-intl le présente comme une API ancienne).
 
+<!-- fichier: src/lib/i18n/request.ts -->
 ```ts
 // src/lib/i18n/request.ts
 import { routing } from "@src/config/i18n";

@@ -33,10 +33,10 @@ Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/
 
 ### `NEON_API_KEY`
 
-- **Rôle** : crée la branche de sauvegarde avant chaque migration de production (`scripts/migrer.mjs`), avec `NEON_PROJECT_ID` (identifiant du projet, pas un secret). En Production seulement.
+- **Rôle** : crée la branche de sauvegarde avant chaque migration de production (`scripts/migrer.mjs`), avec `NEON_PROJECT_ID` (identifiant du projet, pas un secret). En Production seulement. À chaque envoi en production, l'outil en déduit aussi `NEON_ENDPOINT_PRODUCTION` (point d'accès de la branche principale, pas un secret), envoyé pour Preview : la garde des prévisualisations de `scripts/migrer.mjs`. Une rotation de la clé le remet à jour.
 - **Forme** : commence en général par `napi_` (non garanti par Neon : la sonde n'impose aucun préfixe).
 - **Où renouveler** : console Neon → **Settings** (de l'organisation) → **API keys** → **Create new** → **Project-scoped** → le projet du site (une clé personnelle : **Account settings** → **API keys**). La clé s'affiche une seule fois. Après l'envoi et le redéploiement, révoquer l'ancienne dans la même liste (**Revoke**).
-- **Effet** : la révocation est immédiate. Une clé limitée au projet agit seulement sur lui ; elle peut créer et supprimer ses branches.
+- **Effet** : la révocation est immédiate. Une clé limitée au projet agit seulement sur lui ; elle peut créer et supprimer ses branches. Vercel ne réserve pas une variable à la construction : en Production, la clé est lisible par le code du site à l'exécution ; d'où une clé dédiée, limitée au projet, renouvelée chaque année.
 - **Délai de grâce** : oui, tant que l'ancienne clé n'est pas révoquée.
 - **Après une fuite** : révoquer tout de suite, puis vérifier la liste des branches du projet (**Branches**) et l'historique des opérations.
 - **Test** : `pulse-aidd secrets` demande à Neon le projet `NEON_PROJECT_ID` avec cette clé (lecture seule) : accepté, ou « clé ou identifiant de projet refusés ». Sans `NEON_PROJECT_ID`, pas de test. Après le redéploiement, la prochaine migration de production affiche « Sauvegarde créée » dans le journal de construction de Vercel.

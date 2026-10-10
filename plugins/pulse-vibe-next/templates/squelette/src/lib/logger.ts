@@ -1,5 +1,5 @@
 import "server-only";
-import pino, { type LoggerOptions } from "pino";
+import pino, { type DestinationStream, type LoggerOptions } from "pino";
 
 // Clés masquées dans les journaux, à toute profondeur jusqu'à quatre niveaux (objet, tableau,
 // en-têtes de requête : req.headers.cookie est couvert par *.*.cookie).
@@ -29,14 +29,125 @@ export const CHEMINS_MASQUES = CLES_MASQUEES.flatMap((cle) => [
   `*.*.*["${cle}"]`,
 ]);
 
+// Une erreur se journalise toujours sous la clé err : ce nettoyage ne s'applique qu'à la clé err.
+// Champs d'erreur qui portent des valeurs saisies : paramètres d'une requête Drizzle, détail et
+// contexte d'une erreur de Postgres (« Key (email)=(…) already exists »).
+const CHAMPS_ERREUR_RETIRES = [
+  "params",
+  "detail",
+  "where",
+  "internalQuery",
+  "hint",
+];
+
+/** Message d'une requête Drizzle qui échoue (« Failed query: … params: … ») → la requête seule, pour l'erreur et ses causes. */
+function messagesSansValeurs(erreur: unknown): Map<string, string> {
+  const remplacements = new Map<string, string>();
+  const vues = new Set<unknown>();
+  let courante = erreur;
+  while (courante instanceof Error && !vues.has(courante)) {
+    vues.add(courante);
+    const requete = (courante as { query?: unknown }).query;
+    if ("params" in courante && typeof requete === "string") {
+      remplacements.set(courante.message, `Failed query: ${requete}`);
+    }
+    courante = courante.cause;
+  }
+  return remplacements;
+}
+
+/** Erreur prête pour le journal : celle de pino, sans les valeurs des requêtes SQL. */
+export function serialiserErreur(erreur: unknown): unknown {
+  return serialiser(erreur, new Set());
+}
+
+function serialiser(erreur: unknown, vues: Set<unknown>): unknown {
+  if (!(erreur instanceof Error)) return erreur;
+  // Une erreur déjà rencontrée (référence circulaire, ou deux fois la même) : un résumé sans aucune valeur.
+  if (vues.has(erreur)) {
+    return { type: erreur.name, message: "[erreur déjà journalisée]" };
+  }
+  vues.add(erreur);
+  const sortie = pino.stdSerializers.err(erreur) as unknown as Record<
+    string,
+    unknown
+  >;
+  for (const [avant, apres] of messagesSansValeurs(erreur)) {
+    for (const champ of ["message", "stack"]) {
+      const texte = sortie[champ];
+      if (typeof texte === "string") {
+        sortie[champ] = texte.split(avant).join(apres);
+      }
+    }
+  }
+  for (const champ of CHAMPS_ERREUR_RETIRES) delete sortie[champ];
+  // Le code et la contrainte de la cause (Postgres) aident à comprendre la panne, sans valeurs :
+  // la première cause qui porte un code, le long de la chaîne (Drizzle enveloppe l'erreur de Postgres).
+  const cause = causeAvecCode(erreur);
+  if (cause) {
+    sortie.causeCode = cause.code;
+    if (typeof cause.constraint === "string") {
+      sortie.causeConstraint = cause.constraint;
+    }
+  }
+  if (erreur instanceof AggregateError) {
+    sortie.aggregateErrors = erreur.errors.map((e) => serialiser(e, vues));
+  }
+  for (const [cle, valeur] of Object.entries(erreur)) {
+    if (cle !== "cause" && valeur instanceof Error) {
+      sortie[cle] = serialiser(valeur, vues);
+    }
+  }
+  return sortie;
+}
+
+/** Première cause de la chaîne qui porte un code (texte), ou null. */
+function causeAvecCode(
+  erreur: Error,
+): { code: string; constraint?: unknown } | null {
+  const vues = new Set<unknown>([erreur]);
+  let cause = erreur.cause;
+  while (cause instanceof Object && !vues.has(cause)) {
+    vues.add(cause);
+    const { code, constraint } = cause as {
+      code?: unknown;
+      constraint?: unknown;
+    };
+    if (typeof code === "string") return { code, constraint };
+    cause = (cause as { cause?: unknown }).cause;
+  }
+  return null;
+}
+
 export const optionsJournal: LoggerOptions = {
   level:
     process.env.LOG_LEVEL ??
     (process.env.NODE_ENV === "production" ? "info" : "debug"),
   redact: { paths: CHEMINS_MASQUES, censor: "[masqué]" },
+  serializers: { err: serialiserErreur },
 };
 
+/**
+ * Sorties du journal en production : les erreurs sur la sortie d'erreur, que Vercel → Logs classe
+ * au niveau « Error » ; le reste sur la sortie standard (niveau « Info »).
+ */
+export function sortiesDuJournal(
+  sortie: DestinationStream = process.stdout,
+  erreurs: DestinationStream = process.stderr,
+) {
+  return pino.multistream(
+    [
+      { level: "trace", stream: sortie },
+      { level: "error", stream: erreurs },
+    ],
+    { dedupe: true },
+  );
+}
+
 // Journal du serveur. Jamais de secret ni de donnée personnelle dans un message : les clés
-// ci-dessus sont masquées en plus, par sécurité.
-// En local, la sortie est lisible avec : npm run dev | npx pino-pretty
-export const logger = pino(optionsJournal);
+// ci-dessus sont masquées en plus, par sécurité, et les valeurs des requêtes SQL retirées des erreurs.
+// En local, une seule sortie, lisible avec : npm run dev | npx pino-pretty
+export const logger =
+  process.env.NODE_ENV === "production"
+    ? pino(optionsJournal, sortiesDuJournal())
+    : pino(optionsJournal);

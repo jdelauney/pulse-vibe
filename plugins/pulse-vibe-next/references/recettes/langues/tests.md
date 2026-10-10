@@ -1,6 +1,7 @@
 
 ### Unitaires
 
+<!-- fichier: src/lib/i18n/__tests__/chemins.test.ts -->
 ```ts
 // src/lib/i18n/__tests__/chemins.test.ts
 import { describe, expect, it } from "vitest";
@@ -40,6 +41,7 @@ describe("Langues", () => {
 });
 ```
 
+<!-- fichier: src/lib/i18n/__tests__/referencement.test.ts -->
 ```ts
 // src/lib/i18n/__tests__/referencement.test.ts
 import { describe, expect, it } from "vitest";
@@ -69,6 +71,7 @@ describe("Référencement des langues", () => {
 
 ### Bout en bout (Playwright)
 
+<!-- fichier: e2e/langues.spec.ts -->
 ```ts
 // e2e/langues.spec.ts
 import { expect, test } from "@playwright/test";

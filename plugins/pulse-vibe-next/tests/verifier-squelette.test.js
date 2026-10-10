@@ -53,9 +53,14 @@ test("CI hebdomadaire : mineures et majeures en demandes de fusion séparées, r
   assert.match(ci, /verifier-squelette\.js --dernieres --majeures --ecrire --e2e/);
   assert.match(ci, /branch: chore\/squelette-next-dernieres-versions/);
   assert.match(ci, /branch: chore\/squelette-next-versions-majeures/);
-  assert.match(ci, /verifier-recettes\.js --recettes connexion,liste/);
-  assert.match(ci, /verifier-recettes\.js --recettes connexion,fichiers/);
-  assert.match(ci, /verifier-recettes\.js --recettes connexion,paiement/);
+  // À chaque envoi : seulement les chaînes touchées, comparées à la base de l'envoi (historique complet).
+  const verifier = ci.split(/^ {2}verifier:\n/m)[1].split(/^ {2}[a-z-]+:\n/m)[0];
+  assert.match(verifier, /fetch-depth: 0/, "historique complet pour --depuis");
+  assert.match(verifier, /verifier-recettes\.js --depuis "\$BASE"\n/);
+  assert.ok(verifier.includes("BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}"), "base : la branche visée, ou le commit d'avant l'envoi");
+  // Chaque semaine et à la demande : toutes les chaînes, avec les mineures puis avec les majeures.
+  assert.strictEqual((ci.match(/verifier-recettes\.js --toutes\n/g) || []).length, 2, "dernieres-versions et versions-majeures vérifient toutes les chaînes");
+  assert.doesNotMatch(ci, /verifier-recettes\.js --recettes/, "les chaînes vivent dans CHAINES (verifier-recettes.js)");
 });
 
 test("--garder et --tolerer-instables", () => {

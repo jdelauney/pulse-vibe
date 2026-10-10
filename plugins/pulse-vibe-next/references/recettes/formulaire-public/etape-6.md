@@ -2,6 +2,7 @@
 
 Placé hors de l'écran, ignoré au clavier (`tabIndex={-1}`) et par les lecteurs d'écran (`aria-hidden`). Son nom n'est celui d'aucun vrai champ : c'est le seul que le serveur contrôle.
 
+<!-- fichier: src/components/shared/elements/champ-piege.tsx -->
 ```tsx
 // src/components/shared/elements/champ-piege.tsx
 import { CHAMP_PIEGE } from "@src/lib/helpers/formulaire-public/champs";

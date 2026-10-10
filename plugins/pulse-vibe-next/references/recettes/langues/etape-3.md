@@ -1,5 +1,6 @@
 ### 3. Les liens et redirections qui gardent la langue
 
+<!-- fichier: src/lib/i18n/navigation.ts -->
 ```ts
 // src/lib/i18n/navigation.ts
 import { routing } from "@src/config/i18n";
@@ -10,6 +11,7 @@ export const { Link, redirect, usePathname, useRouter, getPathname } =
   createNavigation(routing);
 ```
 
+<!-- fichier: src/lib/i18n/chemins.ts -->
 ```ts
 // src/lib/i18n/chemins.ts
 import { type Langue, routing } from "@src/config/i18n";

@@ -2,6 +2,7 @@
 
 Le port décrit ce que le métier attend d'un envoi ; l'adapter `email` l'implémente avec Nodemailer. Un test passe à la place une doublure qui garde les messages.
 
+<!-- fichier: src/core/compte/email.port.ts -->
 ```ts
 // src/core/compte/email.port.ts
 export type MessageEmail = {
@@ -15,6 +16,7 @@ export type MessageEmail = {
 export type EnvoyeurEmail = (message: MessageEmail) => Promise<void>;
 ```
 
+<!-- fichier: src/adapters/email/email.adapter.ts -->
 ```ts
 // src/adapters/email/email.adapter.ts
 import "server-only";

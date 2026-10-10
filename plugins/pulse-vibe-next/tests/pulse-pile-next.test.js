@@ -228,7 +228,8 @@ test("contexte security : en-têtes dans next.config.ts, sans nonce, preload dé
 test("recette mesure-reelle : en développement, la CSP autorise le script de diagnostic de Speed Insights", () => {
   const texte = texteRecette("mesure-reelle");
   assert.ok(texte.includes("| `next.config.ts` (modifié) | A |"), "ligne du tableau des fichiers");
-  assert.ok(texte.includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
+  // Le bloc suit la mise en forme de Biome (sur plusieurs lignes) : espaces et retours à la ligne ignorés.
+  assert.ok(texte.replace(/\s+/g, " ").includes(`...(enDeveloppement ? ["'unsafe-eval'", "https://va.vercel-scripts.com"] : [])`), "source de développement");
 });
 
 test("contexte security : sources de toutes les recettes qui touchent la CSP", () => {
@@ -274,13 +275,16 @@ test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Red
   assert.ok(!base.includes("npm install @upstash"), "aucune installation d'Upstash avant l'option");
   assert.ok(base.includes('z.enum(["base", "memoire"]).default("base")'), "variables de base sans redis");
   assert.ok(option.includes('import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";'), "la garde complète dans l'option");
+  assert.ok(option.includes("verificationsCroisees.push("), "la vérification Upstash s'ajoute à verificationsCroisees");
+  assert.doesNotMatch(texte, /createFinalSchema/, "plus de second createFinalSchema");
 });
 
 test("recette formulaire-public : correctifs de revue (champ neutre, clés Turnstile ensemble, échec du widget)", () => {
   const texte = texteRecette("formulaire-public");
   assert.ok(!texte.includes("site_web_societe"), "ancien nom du champ piège");
-  for (const attendu of ["data-1p-ignore", "n'a pas pu se charger", "NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional()", "les deux clés Turnstile vont ensemble", "VARIABLES_VALIDES", "e2e/turnstile.spec.ts"])
+  for (const attendu of ["data-1p-ignore", "n'a pas pu se charger", "NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1).optional()", "les deux clés Turnstile vont ensemble", "VARIABLES_VALIDES", "e2e/turnstile.spec.ts", "verificationsCroisees.push("])
     assert.ok(texte.includes(attendu), attendu);
+  assert.doesNotMatch(texte, /createFinalSchema/, "la vérification des clés s'ajoute à verificationsCroisees");
   assert.ok(!/@e2e\b/.test(texte), "étiquette @bout-en-bout, comme les autres recettes");
 });
 
@@ -309,7 +313,7 @@ test("contexte ui du pack : les composants réalisent les motifs tels quels", ()
 // Contrastes mesurés par l'outil du cœur (pulse-aidd contraste), transparence comprise.
 const { lireCouleur, poser, rapport } = require(path.join(RACINE, "..", "pulse-vibe", "scripts", "contraste.js"));
 
-test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair et en sombre", () => {
+test("squelette : contrastes mesurés (texte secondaire, champs, focus, graphiques), en clair et en sombre", () => {
   const css = lire(RACINE, "templates", "squelette", "app", "globals.css");
   for (const bloc of [":root {", ".dark {"]) {
     const corps = css.slice(css.indexOf(bloc)).split("}")[0];
@@ -322,6 +326,11 @@ test("squelette : contour des champs et halo de focus à 3:1 au moins, en clair 
     assert.ok(rapport(valeur("input"), fond) >= 3, `${bloc} --input`);
     for (const ring of ["ring", "sidebar-ring"]) assert.ok(rapport(valeur(ring, 0.5), fond) >= 3, `${bloc} halo ${ring}/50`);
     if (bloc === ".dark {") assert.ok(rapport(valeur("foreground"), poser(valeur("input", 0.3), fond)) >= 4.5, "texte sur bg-input/30");
+    for (const surface of ["background", "muted"])
+      assert.ok(rapport(valeur("muted-foreground"), valeur(surface)) >= 4.5, `${bloc} --muted-foreground sur --${surface}`);
+    for (let n = 1; n <= 5; n++)
+      for (const surface of ["background", "card"])
+        assert.ok(rapport(valeur(`chart-${n}`), valeur(surface)) >= 3, `${bloc} --chart-${n} sur --${surface}`);
   }
 });
 
@@ -337,7 +346,7 @@ test("le cœur et le pack mesurent les contrastes avec pulse-aidd contraste", ()
 
 test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
   const t = lire(REF, "theme.md");
-  for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--"]) assert.ok(t.includes(attendu), attendu);
+  for (const attendu of ["ring-ring/50", "hors de `@theme inline`", "var(--", "`--muted-foreground` sur `--muted`", "`--chart-1` à `--chart-5`"]) assert.ok(t.includes(attendu), attendu);
 });
 
 test("chaque action des recettes et de l'architecture porte un nom (.metadata), journalisé par safe-action", () => {
@@ -356,7 +365,13 @@ test("chaque action des recettes et de l'architecture porte un nom (.metadata), 
   }
   assert.deepStrictEqual(sansNom, []);
   const safeAction = texteRecette("connexion").split("// src/lib/safe-action.ts")[1].split("```")[0];
-  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata, ctx })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+  // Le client public de la recette est celui du squelette, à l'identique : un seul modèle à tenir.
+  const squelette = lire(RACINE, "templates", "squelette", "src", "lib", "safe-action.ts");
+  for (const t of [safeAction, squelette]) assert.ok(t.includes("export const actionPublique"), "actionPublique présent");
+  const clientPublic = (t) => t.slice(t.indexOf("export const MESSAGE_ERREUR_ACTION"), t.indexOf("\n});\n", t.indexOf("export const actionPublique")) + 5);
+  const commentaires = (t) => t.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+  assert.strictEqual(commentaires(clientPublic(safeAction)), commentaires(clientPublic(squelette)), "connexion etape-5 : actionPublique identique au squelette");
 });
 
 test("architecture : une facture se paie une seule fois, même avec deux demandes simultanées", () => {
@@ -367,10 +382,10 @@ test("architecture : une facture se paie une seule fois, même avec deux demande
 
 test("production : base dev séparée, intégration Vercel–Neon, migrations sauvegardées, retour arrière", () => {
   const technique = lire(REF, "technical.md");
-  for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "package-lock.json"])
+  for (const attendu of ["nom `dev`", "Automatically delete branch after", "\n## Retour arrière\n", "Instant Rollback", "Undo Rollback", "Restore from history", "DATABASE_URL_UNPOOLED", "NEON_API_KEY", "NEON_ENDPOINT_PRODUCTION", "package-lock.json"])
     assert.ok(technique.includes(attendu), `technical.md : ${attendu}`);
   const deploy = lire(REF, "contexte", "deploy.md");
-  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables"])
+  for (const attendu of ["Link Existing Neon Account", "preview/<branche Git>", "node scripts/migrer.mjs --vercel && npm run build", "sauvegarde-AAAAMMJJ-HHMM", "Project-scoped", "en deux mises en ligne", "Failed to set environment variables", "/api/sante", "Level", "1 heure", "Erreur dans le navigateur", "100 CU-h", "veille", "app/global-error.tsx", "/essai-surveillance", "NEON_ENDPOINT_PRODUCTION"])
     assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
   assert.ok(!deploy.includes("appliquer `npm run db:migrate` sur la base de production"), "plus de migration à la main en production");
   const secrets = lire(REF, "contexte", "secrets.md");
@@ -489,4 +504,14 @@ test("aide : pulse-pile-next sans argument liste exactement ses sous-commandes, 
   const listees = new Set([...aide.matchAll(/^ {2}pulse-pile-next ([a-z][a-z-]*)/gm)].map((m) => m[1]));
   assert.deepStrictEqual([...listees].sort(), [...new Set(code)].sort());
   assert.doesNotMatch(aide, /RACINE=|PULSE_RELAIS|^#!/m);
+});
+
+test("deploy : tests dans la construction, prévisualisations sans vrais destinataires, clé Neon exposée", () => {
+  const deploy = lire(REF, "contexte", "deploy.md");
+  for (const attendu of ["npm test && node scripts/migrer.mjs --vercel && npm run build", "copie des données réelles", "Deployment Protection", "SMTP de test", "clés de test", "réserver une variable à la construction"])
+    assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
+  const secrets = lire(REF, "contexte", "secrets.md");
+  assert.ok(secrets.includes("lisible par le code du site"), "secrets.md : NEON_API_KEY lisible à l'exécution");
+  assert.match(lire(REF, "migrations.md"), /Projet créé avant pulse-next 0\.22\.0/);
+  assert.match(lire(REF, "migrations.md"), /essai-surveillance/);
 });

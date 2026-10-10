@@ -8,6 +8,7 @@
 
 Exemple avec l'écran « Mon compte » : le container serveur lit la traduction, la page lit son titre et son texte de chargement, et `generateMetadata` traduit le titre de l'onglet (la langue vient de `params`).
 
+<!-- fichier: src/features/compte/components/containers/compte.container.tsx -->
 ```tsx
 // src/features/compte/components/containers/compte.container.tsx
 import { getTranslations } from "next-intl/server";
@@ -33,6 +34,7 @@ export async function CompteContainer() {
 }
 ```
 
+<!-- fichier: app/[locale]/(connecte)/compte/page.tsx -->
 ```tsx
 // app/[locale]/(connecte)/compte/page.tsx
 import { CompteContainer } from "@src/features/compte/components/containers/compte.container";
