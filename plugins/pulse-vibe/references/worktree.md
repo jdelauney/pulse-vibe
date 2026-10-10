@@ -36,10 +36,9 @@ Un worktree par user story. Noms : dossier `.claude/worktrees/us-xxx-<nom>`, bra
 
 ## 3. Terminer : rassembler le travail
 
-Quand le plan de l'US est terminé, ou quand la personne s'arrête, demander (AskUserQuestion) :
-- « Fusionner dans `<branche de départ>` maintenant (Recommandé) » (seulement si toutes les tâches traitées sont enregistrées) ;
-- « Proposer une demande de fusion (`/pulse:pr`) » ;
-- « Garder le worktree pour continuer plus tard ».
+Quand le plan de l'US est terminé, ou quand la personne s'arrête, lire la ligne « Envoi » du plan, puis demander (AskUserQuestion) :
+- **Envoi PR** (chaque tâche part déjà sur la demande de fusion de l'US) : « Marquer la proposition comme prête à accepter (Recommandé) » (plan terminé : § 4 « Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ») / « Garder le dossier à part pour continuer plus tard ». La fusion se fait ensuite par la personne, sur le site du dépôt ; le dossier à part reste en place jusque-là, puis `/pulse:status` propose de le supprimer.
+- **Autre envoi** (branche principale ou local) : « Rassembler dans `<branche de départ>` maintenant (Recommandé) » (seulement si toutes les tâches traitées sont enregistrées : **Fusionner** ci-dessous) / « Proposer de rassembler sur le site du dépôt (`/pulse:pr`) » / « Garder le dossier à part pour continuer plus tard ».
 
 **Fusionner** :
 1. Vérifier que toutes les modifications du worktree sont enregistrées (`git status`). Sinon, s'arrêter : relire et enregistrer d'abord.

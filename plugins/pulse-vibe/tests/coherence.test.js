@@ -951,3 +951,18 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
     assert.ok(/Write\(aidd_docs\/tasks\/(in-progress\.md|\*\*)\)/.test(ligne), `${c} : écriture du travail en cours autorisée`);
   }
 });
+
+test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
+  const worktree = lire(RACINE, "references", "worktree.md");
+  const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
+  const pr = fin.split("\n").find((l) => l.startsWith("- **Envoi PR**"));
+  assert.ok(pr, "cas « Envoi PR »");
+  assert.match(pr, /« Marquer la proposition comme prête à accepter \(Recommandé\) »/);
+  assert.doesNotMatch(pr, /Rassembler dans/, "pas de fusion locale proposée en mode PR");
+  assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
+  const depot = lire(RACINE, "references", "depot-distant.md");
+  assert.match(depot, /« Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt \(Recommandé\) »/);
+  assert.match(depot, /En mode découverte \(règles communes § 1\)[^\n]*« Directement sur la version principale »/);
+  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.match(regles, /sauf l'envoi, qui prend « Directement sur la version principale »/);
+});
