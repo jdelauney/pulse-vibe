@@ -85,7 +85,7 @@ La mémoire chargée à chaque session occupe le contexte de chaque conversation
 ## Brancher et synchroniser (fin de chaque action)
 
 1. Lancer `pulse-aidd memoire`.
-2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon ajouter en fin de fichier, avec le « Modèle : bloc mémoire de CLAUDE.md ». Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
+2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon l'ajouter dans la section « Architecture » (sinon en fin de fichier), avec le « Modèle : bloc mémoire de CLAUDE.md ». Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
 3. Si la sortie indique **un seul marqueur** : remettre la paire de marqueurs telle que dans le modèle, puis relancer.
 4. Vérifier que la liste affichée correspond aux fichiers de `aidd_docs/memory/`.
 5. Si la sortie signale la limite de taille (95 %) et que l'action n'était pas `compacter` : proposer `/pulse:memory compacter`.

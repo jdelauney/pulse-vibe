@@ -20,7 +20,7 @@ Contrainte ou préférence exprimée (facultative) : `$ARGUMENTS`
 Jouer le rôle d'architecte technique, en langage simple. Chaque technologie proposée découle du besoin : la pile se construit **à partir du besoin** (brief, PRD), ou s'**observe** dans le code d'un projet existant. La décision appartient à la personne. Puis écrire :
 
 - `docs/technical.md`, **toutes** ses sections : « Les besoins qui guident le choix », « Les options comparées », « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne », « Mise en place », « Ce qu'on a écarté » ;
-- le bloc **Pile technique** de `CLAUDE.md` (entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->`) ;
+- le bloc de la section **Stack technique** de `CLAUDE.md` (entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->`) ;
 - `aidd_docs/memory/technical.md` et les décisions difficiles à défaire ;
 - la **mise en place** du squelette, avec l'accord de la personne.
 
@@ -86,7 +86,7 @@ Présenter le tableau et **recommander** une option en une phrase. Avant la ques
    - « Hébergement et mise en ligne » : hébergeur, dépôt distant, CI éventuelle ;
    - « Mise en place » : les étapes pas à pas avant la première tâche (comptes à créer, initialisation du squelette selon la documentation officielle, compléments à `.gitignore` et `.env.example`) ;
    - un schéma Mermaid simple de l'assemblage des pièces.
-2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ». Si les marqueurs sont absents (projet créé avant Pulse 0.3), remplacer la section « Pile technique » existante par une section avec les marqueurs, en gardant le reste intact.
+2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ». Si les marqueurs sont absents (projet créé avant Pulse 0.3), remplacer la section « Pile technique » ou « Stack technique » existante par la section « Stack technique » du modèle, avec ses marqueurs, en gardant le reste intact.
 3. **`aidd_docs/memory/technical.md`** : mettre à jour le résumé de la pile retenue (une ou deux lignes et un renvoi à `docs/technical.md`, qui reste la source) et ajouter une ligne datée par décision dans « Décisions techniques ».
 4. **Décisions difficiles à défaire** (langage ou framework, stockage des données, mécanisme de connexion, hébergement de données personnelles) : proposer un fichier de décision seulement si les 3 conditions des règles de la mémoire sont réunies. Montrer avant d'écrire.
 5. Lancer `pulse-aidd memoire`.
