@@ -220,7 +220,9 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
   assert.match(lireS("app", "api", "erreur-client", "route.ts"), /export async function POST/);
   assert.match(lireS("app", "api", "sante", "route.ts"), /await connection\(\)/);
   assert.match(lireS("src", "lib", "sante.ts"), /"public, s-maxage=900"/, "sonde gardée 15 minutes par le CDN");
-  assert.match(lireS("app", "essai-surveillance", "page.tsx"), /robots: \{ index: false, follow: false \}/);
+  // Page d'essai de la surveillance : posée par verifier-squelette --e2e seulement, absente du site publié.
+  assert.ok(!fs.existsSync(path.join(S, "app", "essai-surveillance")));
+  for (const f of ["erreur-client.spec.ts", "accessibilite.spec.ts"]) assert.doesNotMatch(lireS("e2e", f), /essai-surveillance/, f);
 });
 
 test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé", () => {
