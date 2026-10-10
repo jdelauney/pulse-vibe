@@ -1279,3 +1279,18 @@ test("gestes de la personne : faire soi-même d'abord, fichier d'environnement e
   assert.match(lire(RACINE, "templates", "smoke-test.md"), /\*\*Si l'application n'est pas ouverte\*\*/);
   for (const a of ["implementer", "test-writer", "test-runner", "verifier"]) assert.match(lire(RACINE, "agents", `${a}.md`), /pulse-aidd reference gestes\.md/, a);
 });
+
+test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en bout, une fiche complète de l'US à la fin", () => {
+  assert.match(lire(RACINE, "templates", "CLAUDE.md"), /- \*\*Rythme\*\* : complet\n<!-- pulse_profil:fin -->/);
+  assert.match(skillTexte("express"), /« - \*\*Rythme\*\* : rapide »/);
+  const spirc = skillTexte("spirc");
+  assert.match(spirc, /^- `-f` \*\*rapide\*\*/m);
+  assert.match(spirc, /« Comment réaliser cette user story \? » → « Rapide \(Recommandé\) »[^\n]*« Rapide » vaut `-f`/, "question au début, sans -f");
+  assert.match(spirc, /SMOKE-TEST-US-XXX-<nom>\.md/);
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  assert.match(auto, /## 2 bis\. Tests essentiels \(rythme rapide\)/);
+  assert.match(auto, /\*\*Aucun test de bout en bout\*\*/);
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme rapide\*\*/);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
+  assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*le parcours principal est `@manuel`/);
+});
