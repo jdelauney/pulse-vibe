@@ -157,7 +157,7 @@ test("--pages : liste des pages publiques fixes, séparées par des virgules ; o
 });
 
 test("la politique des robots du squelette reprend les rôles de robots-ia.json (cœur)", () => {
-  const liste = JSON.parse(fs.readFileSync(path.join(RACINE, "..", "pulse-vibe", "references", "seo", "robots-ia.json"), "utf8")).robots;
+  const liste = JSON.parse(fs.readFileSync(path.join(RACINE, "..", "pulse-vibe", "skills", "seo", "references", "robots-ia.json"), "utf8")).robots;
   const texte = fs.readFileSync(path.join(RACINE, "templates", "squelette", "src", "lib", "seo", "politique-robots.ts"), "utf8");
   const tableau = (nom) => [...texte.match(new RegExp(`export const ${nom} = \\[([\\s\\S]*?)\\];`))[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]).sort();
   const parRoles = (...roles) => liste.filter((r) => roles.includes(r.role)).map((r) => r.jeton).sort();

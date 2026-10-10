@@ -29,9 +29,9 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { spawnSync } = require("child_process");
-const { trouverSecrets, estFichierEnv } = require("./motifs");
+const { trouverSecrets, estFichierEnv } = require("../../../scripts/motifs");
 
-const MODELE_SECRETS = path.join(__dirname, "..", "templates", "secrets.md");
+const MODELE_SECRETS = path.join(__dirname, "..", "assets", "secrets.md");
 const RACINE = process.cwd();
 const NOM_VALIDE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const PREFIXES_PUBLICS = /^(NEXT_PUBLIC_|VITE_|PUBLIC_|EXPO_PUBLIC_|REACT_APP_|NUXT_PUBLIC_|GATSBY_)/;

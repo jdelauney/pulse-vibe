@@ -15,6 +15,8 @@ const { lireFaits, decider, sortieIllisible } = require(ETAT);
 
 const CLAUDE = (options = {}) => `# TodoIt
 
+## Résumé du projet
+
 Ce projet suit la **méthode Pulse** (plugin \`pulse\`).
 
 <!-- pulse_profil:debut -->
@@ -22,7 +24,7 @@ Ce projet suit la **méthode Pulse** (plugin \`pulse\`).
 - **Explications** : normales
 <!-- pulse_profil:fin -->
 
-## Pile technique
+## Stack technique
 
 <!-- pulse_pile:debut -->
 ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
@@ -396,6 +398,8 @@ test("modèle à mettre à niveau : une ligne « aussi », jamais un blocage du 
   const a = (fichiers) => modele(fichiers).aussi.includes(MAJ);
   assert.ok(a({ "CLAUDE.md": CLAUDE() + "\n- Commit et envoi vers le dépôt distant : uniquement sur demande.\n" }));
   assert.ok(a({ "CLAUDE.md": CLAUDE() + "\n- `aidd_docs/tasks/` : traces de travail par session.\n" }));
+  assert.ok(a({ "CLAUDE.md": CLAUDE().replace("## Résumé du projet\n", "## Le projet\n") }), "trame d'avant « Résumé du projet »");
+  assert.ok(!a({ "CLAUDE.md": CLAUDE() }), "trame actuelle : rien à mettre à niveau");
   assert.ok(a({ ".gitignore": ".env\n" }));
   assert.ok(!a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }));
   const crochet = { "scripts/verifier.js": "x", ".git/hooks/pre-commit": "#!/bin/sh\nexit 0\n" };

@@ -1,4 +1,4 @@
-// Tests du contrôle des anti-patterns détectables dans les maquettes (scripts/maquettes.js).
+// Tests du contrôle des anti-patterns détectables dans les maquettes (skills/ui/scripts/maquettes.js).
 // Lancer : node --test plugins/pulse-vibe/tests/maquettes.test.js
 "use strict";
 
@@ -9,8 +9,8 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const SCRIPT = path.join(__dirname, "..", "scripts", "maquettes.js");
-const DESIGN = path.join(__dirname, "..", "references", "design");
+const SCRIPT = path.join(__dirname, "..", "skills", "ui", "scripts", "maquettes.js");
+const DESIGN = path.join(__dirname, "..", "skills", "ui", "references");
 const { verifier, CONSTATS, policesReflexes } = require(SCRIPT);
 
 const STYLE_PROPRE = [

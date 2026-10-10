@@ -10,7 +10,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const RACINE = path.join(__dirname, "..");
-const NOUVEAU = path.join(RACINE, "scripts", "nouveau-projet.js");
+const NOUVEAU = path.join(RACINE, "skills", "init", "scripts", "nouveau-projet.js");
 const VERIFIER = path.join(RACINE, "templates", "verifier.js");
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "pulse-nouveau-"));
@@ -30,7 +30,8 @@ test("crée la structure Pulse, sans aucune technologie, avec la mémoire branch
     assert.ok(!existe(d, f), `${f} ne doit pas être créé`);
   }
   const claude = lire(d, "CLAUDE.md");
-  assert.match(claude, /^# Mon Été\n\nUne todolist\./);
+  assert.match(claude, /^# Mon Été\n/);
+  assert.match(claude, /\n## Résumé du projet\n\nUne todolist\.\n/);
   assert.match(claude, /Pile non choisie : lancer `\/pulse:tech`/);
   assert.match(claude, /@aidd_docs\/memory\/glossary\.md/);
   assert.doesNotMatch(claude + lire(d, "README.md"), /\{\{NOM_DU_PROJET\}\}|\{\{TESTER_EN_LOCAL\}\}/);

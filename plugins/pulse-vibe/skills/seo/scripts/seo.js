@@ -42,7 +42,7 @@ const AGENTS_IA = [
   { jeton: "Claude-SearchBot", agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Claude-SearchBot/1.0; +Claude-SearchBot@anthropic.com)" },
   { jeton: "PerplexityBot", agent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)" },
 ];
-const FICHIER_ROBOTS_IA = path.join(__dirname, "..", "references", "seo", "robots-ia.json");
+const FICHIER_ROBOTS_IA = path.join(__dirname, "..", "references", "robots-ia.json");
 const EXTENSION_FICHIER = /\.(pdf|jpe?g|png|gif|webp|avif|svg|ico|css|js|mjs|json|xml|txt|zip|mp4|mp3|webm|woff2?)$/i;
 
 /**

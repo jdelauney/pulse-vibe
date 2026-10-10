@@ -234,8 +234,8 @@ function fichiersDuCoeur() {
 test("CI du squelette : chaque fichier du cœur qu'utilise verifier-squelette la déclenche", { skip: !fs.existsSync(CI_SQUELETTE) && "hors du dépôt" }, () => {
   const yml = fs.readFileSync(CI_SQUELETTE, "utf8");
   const coeur = fichiersDuCoeur();
-  assert.ok(coeur.includes("plugins/pulse-vibe/scripts/robots.js"), "require suivis de proche en proche");
-  assert.ok(coeur.includes("plugins/pulse-vibe/references/seo/robots-ia.json"), "fichiers de données lus par path.join(__dirname, …)");
+  assert.ok(coeur.includes("plugins/pulse-vibe/skills/seo/scripts/robots.js"), "require suivis de proche en proche");
+  assert.ok(coeur.includes("plugins/pulse-vibe/skills/seo/references/robots-ia.json"), "fichiers de données lus par path.join(__dirname, …)");
   for (const evenement of ["push", "pull_request"]) {
     const motifs = cheminsDeclencheurs(yml, evenement).map(motifEnRegExp);
     for (const f of coeur) assert.ok(motifs.some((m) => m.test(f)), `${evenement} : ${f}`);

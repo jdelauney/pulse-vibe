@@ -16,11 +16,11 @@ Dans un plugin (chemins relatifs à son dossier) :
 
 | Dossier | Contenu |
 |---|---|
-| `skills/<commande>/SKILL.md` | Les commandes ; `allowed-tools` = commandes autorisées sans demande pendant la commande |
-| `agents/` | Les sous-agents ; `tools` ou `disallowedTools` = outils réellement disponibles ; `model` toujours explicite |
-| `references/` | Règles partagées, chargées par `pulse-aidd contexte` ou `pulse-aidd reference` (`regles-communes.md` : le noyau commun à toutes les commandes du cœur) |
-| `templates/` | Modèles des fichiers produits dans les projets |
-| `hooks/hooks.json`, `scripts/` | Hooks et leurs scripts Node ; `garde.js` réunit les deux garde-fous dans un seul processus ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) et `chemins-sensibles.js` reconnaît les fichiers `.env` pour eux |
+| `skills/<commande>/` | Une commande = un dossier. `SKILL.md` (nom sensible à la casse) suit la trame Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples ; `allowed-tools` = commandes autorisées sans demande pendant la commande. À côté, au besoin, ce qui sert à cette commande seule : `references/` (`pulse-aidd reference <commande>/<fichier>`), `assets/` (modèles : `pulse-aidd modele <commande>/<fichier>`), `scripts/` (lancés par `pulse-aidd`) |
+| `agents/` | Les sous-agents, moyens de l'orchestration : une commande les appelle et garde la main ; `tools` ou `disallowedTools` = outils réellement disponibles ; `model` toujours explicite |
+| `references/` | Règles partagées par plusieurs commandes, chargées par `pulse-aidd contexte` ou `pulse-aidd reference` (`regles-communes.md` : le noyau commun à toutes les commandes du cœur) |
+| `templates/` | Modèles partagés des fichiers produits dans les projets ; le `CLAUDE.md` des projets suit la trame Résumé du projet, Stack technique, Architecture, Commandes, Contraintes |
+| `hooks/hooks.json`, `scripts/` | Hooks et scripts Node partagés ; `garde.js` réunit les deux garde-fous dans un seul processus ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) et `chemins-sensibles.js` reconnaît les fichiers `.env` pour eux |
 | `bin/` | Outils placés dans le PATH par Claude Code (`pulse-aidd` pour le cœur), chacun avec ses relais `.ps1` (PowerShell : arguments passés par l'environnement, relus par le prologue du script bash) et `.cmd` (cmd), identiques d'un outil à l'autre |
 | `tests/` | Tests du plugin |
 
@@ -28,7 +28,7 @@ Dans un plugin (chemins relatifs à son dossier) :
 
 - Formuler chaque consigne **positivement** : dire ce qu'il faut faire. Une interdiction reste réservée à la sécurité ou à l'irréversible, avec son alternative.
 - Destinataire final : une personne sans expérience en programmation, vouvoyée, phrases courtes ; questions et descriptions en mots de tous les jours (les termes refusés sont listés dans `tests/coherence.test.js`).
-- Un fait, un seul endroit : une règle partagée va dans `plugins/pulse-vibe/references/`, et les skills y renvoient.
+- Un fait, un seul endroit : une règle partagée va dans `plugins/pulse-vibe/references/`, une règle propre à une commande dans `skills/<commande>/references/`, et les skills y renvoient.
 - Un outil cité dans les consignes d'un agent doit lui être disponible : listé dans `tools`, ou absent de `disallowedTools`.
 - `allowed-tools` d'un skill : seulement des motifs précis (`Bash(pulse-aidd contexte *)`, `Bash(git status *)`). Les envois, suppressions, fusions, envois forcés, changements de configuration et les sous-commandes qui touchent la production (`pulse-aidd secrets generer|envoyer|elaguer|redeployer`) passent par la demande d'autorisation de Claude Code. Le test de couverture de `coherence.test.js` vérifie que chaque `pulse-aidd <sous-commande>` citée est autorisée.
 - Fins de ligne LF partout (`.gitattributes`).

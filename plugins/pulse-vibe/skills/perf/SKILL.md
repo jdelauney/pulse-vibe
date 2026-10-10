@@ -2,27 +2,14 @@
 description: Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique
 argument-hint: "[mesurer | corriger | suivre] (vide : mesurer)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse-aidd reference performance.md) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd modele performance.md) Bash(pulse-aidd modele lexique.md) Bash(pulse-aidd modele confidentialite.md) Bash(pulse-aidd qualite) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(git status *) Bash(git log *) Bash(git branch --show-current) Read Glob Grep Write(docs/performance.md) Edit(docs/performance.md) Edit(docs/technical.md) Write(docs/lexique.md) Edit(docs/lexique.md)
+allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse-aidd reference perf/performance.md) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd modele perf/performance.md) Bash(pulse-aidd modele lexique.md) Bash(pulse-aidd modele confidentialite.md) Bash(pulse-aidd qualite) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(git status *) Bash(git log *) Bash(git branch --show-current) Read Glob Grep Write(docs/performance.md) Edit(docs/performance.md) Edit(docs/technical.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
 
 # /pulse:perf – La vitesse vécue par vos visiteurs
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte perf`
-
-Appliquer les « Règles communes Pulse » et la référence « La vitesse vécue par les visiteurs » ci-dessus pendant toute la commande. Le modèle cité plus bas figure ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
-
-Action demandée : `$ARGUMENTS`
-
 ## Objectif
 
 Faire vivre à la personne ce que vit son visiteur, puis l'améliorer, chiffres à l'appui. Phrase d'ouverture : « Imaginons un visiteur sur téléphone, en 4G moyenne. Voici ce qu'il vit en ouvrant votre site. »
-
-Trois règles tiennent toute la commande (détails dans la référence) :
-- chaque chiffre dit sa **source** : simulation (laboratoire) ou vrais visiteurs (terrain), dans deux tableaux distincts ;
-- chaque chiffre de simulation est une **médiane** de plusieurs passages, avec son écart ; une mesure instable se refait avant de conclure ;
-- **trois priorités au plus**, chacune avec ce que vit le visiteur, la cause en mots simples, le gain attendu et qui décide.
 
 | Action | Question de la personne | Section |
 |---|---|---|
@@ -30,9 +17,30 @@ Trois règles tiennent toute la commande (détails dans la référence) :
 | `corriger` | « Que faut-il changer, et ça a marché ? » | « corriger » |
 | `suivre` | « Mes vrais visiteurs vivent-ils la même chose, et comment le garder ? » | « suivre » |
 
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée dans « Contexte ») pendant toute la commande.
+
+Trois règles tiennent toute la commande (détails dans la référence) :
+- chaque chiffre dit sa **source** : simulation (laboratoire) ou vrais visiteurs (terrain), dans deux tableaux distincts ;
+- chaque chiffre de simulation est une **médiane** de plusieurs passages, avec son écart ; une mesure instable se refait avant de conclure ;
+- **trois priorités au plus**, chacune avec ce que vit le visiteur, la cause en mots simples, le gain attendu et qui décide.
+
 **Frontières**, à dire si la demande en sort : l'accessibilité réelle et l'apparence relèvent de `/pulse:ui audit` (le score d'accessibilité de Lighthouse n'en est qu'un indice) ; les en-têtes de sécurité, de `/pulse:security entetes` ; la lenteur côté serveur (requêtes en base, quotas) devient une ligne « côté serveur » du rapport, puis `/pulse:fix` ou une user story.
 
-## Prérequis (toutes les actions)
+## Contexte
+
+!`pulse-aidd contexte perf`
+
+Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
+
+Action demandée : `$ARGUMENTS`
+
+Fichiers de cette commande : [references/performance.md](references/performance.md), [assets/performance.md](assets/performance.md), [scripts/perf.js](scripts/perf.js).
+
+### Prérequis (toutes les actions)
 
 1. `docs/technical.md` : pile, « Commandes du projet », « Hébergement et mise en ligne » (ligne « Site en ligne »). Absent : proposer `/pulse:tech` et s'arrêter.
 2. Le site à mesurer, construit pour la production :
@@ -45,7 +53,9 @@ Trois règles tiennent toute la commande (détails dans la référence) :
    - Sinon, proposer (AskUserQuestion) : « Mesurer sur ce poste, sans clé (Recommandé pour commencer) » / « Créer ma clé Google d'abord (5 minutes) ». La clé : suivre « La clé Google » de la référence, une étape à la fois. La personne colle la clé elle-même dans la fenêtre de son système ; si une clé apparaît dans la conversation, appliquer « Clé compromise » de la référence.
    - Une mesure sur ce poste se compare seulement avec une autre mesure de ce poste : le dire une fois.
 
-## mesurer
+## Processus
+
+### mesurer
 
 1. **Les pages.** « Pages suivies » de `docs/performance.md` existe : la reprendre telle quelle, et proposer d'ajouter une page seulement si un nouveau gabarit est apparu. Sinon : trouver les pages publiques (plan du site `sitemap.xml`, liens de la page d'accueil, « Organisation des fichiers » de `docs/technical.md`, consignes du pack de pile), proposer 3 à 5 pages, **une par gabarit** (accueil, liste, détail, formulaire public), et faire valider la liste (AskUserQuestion, « Recommandé » sur la proposition). Les pages réservées aux personnes connectées restent hors mesure : le dire en une phrase.
 2. **Annoncer la durée** : environ 30 secondes par passage, 3 passages par page.
@@ -65,7 +75,7 @@ Trois règles tiennent toute la commande (détails dans la référence) :
 
 Prochaine étape : `/pulse:perf corriger` s'il y a une priorité, sinon `/pulse:perf suivre`.
 
-## corriger
+### corriger
 
 **Prérequis** : une mesure avec des priorités (`docs/performance.md`, « Priorités », et son JSON dans `docs/performance/mesures/`). Sinon, faire « mesurer » d'abord.
 
@@ -83,7 +93,7 @@ Prochaine étape : `/pulse:perf corriger` s'il y a une priorité, sinon `/pulse:
 
 Prochaine étape : `/pulse:perf suivre` si la mesure réelle ou le budget manquent.
 
-## suivre
+### suivre
 
 Trois volets, proposés un par un (AskUserQuestion), chacun facultatif.
 
@@ -91,11 +101,17 @@ Trois volets, proposés un par un (AskUserQuestion), chacun facultatif.
 2. **Tendance des vrais visiteurs** (clé présente, site en ligne) : `pulse-aidd perf terrain <adresse du site> --historique`. Résumer en une phrase par mesure (« le contenu principal s'affiche plus vite depuis 6 semaines »).
 3. **Budget et vérification automatique.**
    - Proposer un budget à partir de la dernière mesure (§ « Le budget » de la référence), le faire valider, l'écrire dans « Budget » de `docs/performance.md`, puis le vérifier : `pulse-aidd perf budget <dernière mesure.json> docs/performance.md`.
-   - Proposer la vérification automatique, avec le fournisseur de CI de « Hébergement et mise en ligne » (sa documentation officielle pour la syntaxe). `pulse-aidd perf installer` copie le script de mesure dans `scripts/perf.js` du projet ; la CI l'appelle avec `node scripts/perf.js`.
+   - Proposer la vérification automatique, avec le fournisseur de CI de « Hébergement et mise en ligne » (sa documentation officielle pour la syntaxe). `pulse-aidd perf installer` copie le script de mesure dans `skills/perf/scripts/perf.js` du projet ; la CI l'appelle avec `node scripts/perf.js`.
      - **Chaque semaine, sur le site en ligne (Recommandé)** : tâche planifiée et déclenchable à la main ; Node.js LTS ; `node scripts/perf.js mesurer <adresse du site> --pages docs/performance.md --source psi --passages 3 --json mesure.json`, puis `node scripts/perf.js budget mesure.json docs/performance.md` ; `mesure.json` gardé comme fichier joint du passage. La clé va dans les secrets du dépôt sous le nom `PULSE_PSI_CLE`, saisie par la personne. Un budget dépassé fait échouer la tâche : le fournisseur prévient par e-mail ; les fusions restent libres.
      - **Sur chaque proposition de version parallèle** : installer, construire, servir la construction en mode production en arrière-plan, attendre qu'elle réponde, puis `node scripts/perf.js mesurer http://localhost:<port> --pages docs/performance.md --source local --passages 3 --json mesure.json` et `budget`. La machine de CI diffère du poste : commencer en mode informatif (l'échec de cette étape laisse la CI verte), puis rendre l'étape bloquante quand les chiffres sont stables. PageSpeed Insights ne sert pas ici : les adresses de prévisualisation sont souvent protégées.
    - Montrer le fichier de CI complet, l'écrire avec accord, essayer les deux commandes en local, puis l'enregistrer (`/pulse:commit`) et l'envoyer. Mettre à jour « Mesure réelle et suivi » de `docs/performance.md` et la ligne CI de `docs/technical.md`.
 
-## Fin
+### Fin
 
 Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il y en a un. Terminer avec le bloc de fin de commande, en citant la source et la médiane des mesures présentées (« LCP 2,1 s, médiane de 3 passages, simulation PageSpeed Insights »).
+
+## Exemples
+
+- `/pulse:perf` : 3 à 5 pages de votre site mesurées comme sur un téléphone moyen, une phrase de verdict par page et 3 priorités au plus, notées dans `docs/performance.md`.
+- `/pulse:perf corriger` : vous choisissez les priorités ; après la correction, la comparaison avant/après annonce seulement ce qui va vraiment mieux.
+- `/pulse:perf suivre` : un budget proposé à partir de la dernière mesure, puis, si vous l'acceptez, une vérification automatique chaque semaine.

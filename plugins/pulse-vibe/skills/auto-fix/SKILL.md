@@ -7,26 +7,38 @@ allowed-tools: Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) B
 
 # /pulse:auto-fix – Corriger les erreurs automatiquement détectables
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte auto-fix`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.
-
-Option : `$ARGUMENTS` (`--detail` : afficher chaque erreur dans le rapport final)
-
 ## Objectif
 
 Éliminer **toutes** les erreurs que les contrôles automatiques du projet détectent seuls (syntaxe, lint, types, formatage), en gardant intact le comportement de l'appli. Phrase à dire : « Ces outils relisent le code comme un correcteur d'orthographe. Je fais corriger chaque erreur par un assistant, puis je revérifie. »
 
 Vient en complément de la relecture (`/pulse:review`) et du test par la personne, qui restent nécessaires.
 
-## Prérequis
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte auto-fix`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.
+
+Option : `$ARGUMENTS` (`--detail` : afficher chaque erreur dans le rapport final)
+
+### Prérequis
 
 - `docs/technical.md` existe, avec sa section « Commandes du projet ». Sinon, le signaler et proposer `/pulse:tech`, puis s'arrêter.
 - Noter les fichiers déjà modifiés (`git status --short`) : à la fin, montrer seulement ce que cette commande a changé.
 
-## 1. Diagnostiquer
+## Rôle
+
+- La conversation principale orchestre : elle lance les contrôles, répartit les erreurs, revérifie et rédige le rapport.
+- Les agents **`pulse:fixer`**, lancés en parallèle, apportent les corrections : 5 fichiers au plus chacun, chaque fichier confié à un seul agent.
+- Une erreur de secret se résout avec la personne.
+
+## Processus
+
+### 1. Diagnostiquer
 
 Lancer les contrôles et collecter **toutes** les erreurs (fichier, ligne, code, message) :
 
@@ -38,7 +50,7 @@ Lancer les contrôles et collecter **toutes** les erreurs (fichier, ligne, code,
 - Une **erreur de secret** (`pulse-aidd verifier`) se traite avec la personne, jamais par un agent : l'expliquer et la résoudre ensemble (la clé va dans le fichier d'environnement local décrit par « Secrets et variables d'environnement », puis la révoquer chez le fournisseur si elle a été envoyée sur le dépôt distant).
 - Aucune erreur : le dire, et terminer.
 
-## 2. Répartir
+### 2. Répartir
 
 Grouper les erreurs par fichier, puis les fichiers par dossier ou fonctionnalité :
 
@@ -64,14 +76,14 @@ Rappeler dans chaque message que chaque correction préserve la sécurité et le
 
 **Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler.
 
-## 3. Revérifier
+### 3. Revérifier
 
 Relancer les contrôles de l'étape 1.
 
 - Il reste des erreurs et moins de **3 cycles** ont été faits : recommencer l'étape 2 avec **uniquement** les erreurs restantes (et celles signalées « cause ailleurs », confiées à l'agent du bon fichier).
 - Après 3 cycles : arrêter, et rapporter les erreurs restantes.
 
-## 4. Rapport
+### 4. Rapport
 
 ```
 🔧 Correction automatique
@@ -84,3 +96,9 @@ Si des fichiers corrigés appartiennent à une tâche d'un plan (fichiers listé
 Erreurs restantes : pour chacune, l'expliquer en langage simple et proposer l'action (ex. « une fonction attend un nombre et reçoit un texte : à décider avec vous, car corriger change le comportement »). Avec `--detail` : la liste de toutes les corrections.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pour une relecture indépendante si une tâche est en cours, sinon `/pulse:commit` (message `style:` ou `fix:` selon les corrections).
+
+## Exemples
+
+- `/pulse:auto-fix` : les contrôles du projet relèvent 12 erreurs, plusieurs assistants les corrigent en même temps, puis tout est revérifié ; le rapport donne le nombre d'erreurs corrigées.
+- `/pulse:auto-fix --detail` : le même travail, avec la liste de chaque correction dans le rapport.
+- Une clé secrète écrite dans le code : la commande vous l'explique et vous la mettez à l'abri ensemble.

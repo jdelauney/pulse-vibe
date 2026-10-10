@@ -7,21 +7,33 @@ allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd reference *) Bash(p
 
 # /pulse:fix – Corriger une erreur
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte fix`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les règles de qualité du code se chargent à l'étape 3, avec `pulse-aidd qualite`. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
-
-Problème signalé : `$ARGUMENTS`
-
 ## Objectif
 
 Trouver la **vraie cause** d'un problème précis, la corriger avec le plus petit changement possible, le **prouver**, puis expliquer à la personne ce qui s'est passé et comment l'éviter. Phrase à dire : « Une erreur est une étape normale. On va d'abord comprendre pourquoi, avant de toucher au code. »
 
 Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-fix`. Pour un comportement **nouveau** (c'est une demande, plutôt qu'une erreur) : le noter dans `docs/prd.md` (« En attente ») ou proposer `/pulse:spirc <US-XXX> "<demande>"`.
 
-## 1. Comprendre le problème
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte fix`
+
+Les règles de qualité du code se chargent à l'étape 3, avec `pulse-aidd qualite`. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
+
+Problème signalé : `$ARGUMENTS`
+
+## Rôle
+
+La conversation principale comprend le problème, trouve la cause, choisit la correction et la fait prouver.
+- **`pulse:fixer`** : applique une correction simple (5 fichiers au plus, cause claire) à partir de l'erreur, de la ligne, de la cause et de la solution retenue pour chaque fichier ; s'il est indisponible, la conversation principale corrige en suivant ses consignes.
+- Une correction complexe se fait dans la conversation principale.
+
+## Processus
+
+### 1. Comprendre le problème
 
 Formats acceptés : message d'erreur collé, sortie du terminal, erreur de la console du navigateur, code d'erreur (d'un outil, du serveur ou de la base), chemin de fichier, ou description (« le bouton Ajouter ne fait rien »).
 
@@ -32,7 +44,7 @@ Si l'argument est vide ou flou, poser **une seule ronde** de questions (AskUserQ
 
 **Lire dans les fichiers** ce qu'ils permettent de savoir, plutôt que le demander. **Travailler avec des données fictives** ; ne jamais demander de vraie donnée ni de vraie clé : si la personne en colle une, le signaler et la faire remplacer.
 
-## 2. Trouver la cause (avant toute correction)
+### 2. Trouver la cause (avant toute correction)
 
 1. **Reproduire ou localiser** : relier le message au fichier et à la ligne ; sinon, suivre le parcours de l'action (bouton → gestion de l'événement → fonction → stockage ou appel serveur → contrôle d'accès).
 2. **Diagnostics** : les contrôles automatiques de « Commandes du projet » de `docs/technical.md` (lint, types…), filtrés sur le fichier concerné, et `pulse-aidd verifier` ; la commande « construire » si l'erreur apparaît seulement en ligne ; pour un accès refusé ou des données invisibles, les règles décrites dans « Données et contrôle d'accès » (et le fichier où elles sont écrites). Si aucune commande de contrôle n'existe (toutes à « aucune »), le dire et proposer d'en ajouter avec `/pulse:tech`. Pour le sens exact d'un message ou d'un code d'erreur propre à la technologie retenue : consulter sa documentation officielle et s'appuyer sur elle.
@@ -57,25 +69,25 @@ Repères fréquents :
 | Valeur possiblement absente | cas « absent » non traité : vérification préalable ou valeur par défaut |
 | Rendu différent entre serveur et navigateur | valeur qui change d'un rendu à l'autre (date, nombre aléatoire, élément propre au navigateur) |
 
-## 3. Choisir la correction
+### 3. Choisir la correction
 
 Lancer `pulse-aidd qualite` (règles de qualité du code), puis évaluer 1 à 3 solutions selon : **corrige la cause** (plutôt que le symptôme), **préserve ce qui fonctionne**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
 
 Si la correction **change le comportement attendu** (une règle métier, un écran) : cela devient une décision, au-delà d'une correction. La poser à la personne (AskUserQuestion), et proposer de mettre à jour la user story.
 
-## 4. Corriger
+### 4. Corriger
 
 - **Simple** (5 fichiers au plus, cause claire) : déléguer à l'agent **`pulse:fixer`** avec, par fichier : l'erreur, la ligne, la cause et la solution retenue. S'il est indisponible, corriger soi-même en suivant ses consignes.
 - **Complexe** (plusieurs couches, contexte nécessaire) : corriger soi-même, avec des changements minimes, dans le style du code existant.
 - Une action manuelle est nécessaire (appliquer une règle d'accès dans la console de la base ou du fournisseur, saisir une variable chez l'hébergeur) : guider la personne pas à pas.
 
-## 5. Prouver
+### 5. Prouver
 
 - Relancer les diagnostics de l'étape 2 sur les fichiers touchés : zéro erreur, ancienne ou nouvelle.
 - **La personne refait l'action** qui échouait (même parcours, mêmes données fictives) : « Est-ce que ça fonctionne maintenant ? » → « Oui » / « Toujours le même problème » / « Un autre problème est apparu ».
 - Échec : revenir à l'étape 2 avec ce nouvel élément. **Deux tentatives au maximum** ; ensuite, arrêter, expliquer simplement où l'on en est, et proposer `/pulse:get-help`, qui prépare une demande d'aide à transmettre.
 
-## 6. Expliquer et retenir
+### 6. Expliquer et retenir
 
 ```
 🩺 Correction
@@ -91,3 +103,8 @@ Pour l'éviter : <réflexe à retenir>
 - Si la cause est un **piège qui peut revenir** : proposer de l'ajouter à la mémoire (section « Pièges et leçons » de `aidd_docs/memory/technical.md`) en montrant la ligne exacte.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si la correction touche une tâche en cours ou plusieurs fichiers, sinon `/pulse:commit` (message `fix(<Tâche>): …`, ou `fix: …` hors tâche).
+
+## Exemples
+
+- `/pulse:fix "le bouton Ajouter ne fait rien"` : la cause dite en une phrase, la correction, puis vous refaites l'action pour confirmer que tout fonctionne.
+- `/pulse:fix` sans argument : une seule ronde de questions (« Que faisiez-vous ? », « Y a-t-il un message en rouge ? ») avant toute recherche.

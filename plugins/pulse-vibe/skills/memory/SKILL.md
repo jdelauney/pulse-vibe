@@ -7,19 +7,27 @@ allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-com
 
 # /pulse:memory – La mémoire du projet
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
 
-!`pulse-aidd contexte memory`
-
-Appliquer les « Règles communes Pulse » et les « Règles de la mémoire projet » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.
-
-Action demandée : `$ARGUMENTS`
-
-## Ce que fait cette commande (à dire en 3 lignes)
+### Ce que fait cette commande (à dire en 3 lignes)
 
 « L'IA oublie tout d'une conversation à l'autre. La mémoire du projet lui rappelle à chaque session vos choix, vos mots et les pièges déjà rencontrés. Je vous montre chaque ajout avant de l'écrire. »
 
-## Choisir l'action
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+Appliquer aussi les « Règles de la mémoire projet » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
+
+!`pulse-aidd contexte memory`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.
+
+Action demandée : `$ARGUMENTS`
+
+### Choisir l'action
 
 - `creer` : la mémoire est absente ou incomplète.
 - `actualiser` : vérifier que la mémoire correspond encore au projet, puis corriger.
@@ -29,7 +37,14 @@ Action demandée : `$ARGUMENTS`
 
 Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s'arrêter.
 
-## Action `creer`
+## Rôle
+
+La conversation principale lit le projet, montre chaque ajout ou correction et écrit après l'accord de la personne.
+- **`pulse:memory-compactor`** (action `compacter`) : resserre la mémoire sous la cible (140 lignes) et la remet à jour ; s'il est indisponible, la conversation principale suit **strictement** ses consignes (`pulse-aidd agent memory-compactor`).
+
+## Processus
+
+### Action `creer`
 
 1. **Lire le projet** : `CLAUDE.md`, les documents de `docs/` (brief, PRD, user stories, spec, plan), `docs/technical.md` s'il existe, le code du projet en suivant son « Organisation des fichiers » (ou, à défaut, les dossiers de code observés : sources, schéma des données, code serveur, configuration), `git log --oneline -20`. Tirer de ces fichiers tout ce qu'ils permettent de savoir, plutôt que le demander.
 2. **Créer ce qui manque**, en gardant l'existant tel quel :
@@ -46,7 +61,7 @@ Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s
 4. **Montrer** le contenu proposé, fichier par fichier, en version courte. Demander (AskUserQuestion) : « Écrire tel quel (Recommandé) » / « Modifier quelque chose ».
 5. **Brancher la mémoire** : voir « Brancher et synchroniser » ci-dessous.
 
-## Action `actualiser`
+### Action `actualiser`
 
 Modifier seulement après l'accord de la personne.
 
@@ -62,7 +77,7 @@ Modifier seulement après l'accord de la personne.
    Liste vide : dire que la mémoire est à jour, puis passer à « Brancher et synchroniser ».
 3. **Demander** (AskUserQuestion, choix multiples) quelles corrections appliquer. Appliquer uniquement celles-là, ligne par ligne.
 
-## Action `retenir`
+### Action `retenir`
 
 1. **Comprendre** ce qui est à retenir (l'argument, ou à défaut la conversation en cours). Si c'est flou, poser **une** question.
 2. **Écarter** ce qui sort du rôle de la mémoire : une préférence passagère, une note de travail, une chose que le code montre déjà, un secret. L'expliquer en une phrase.
@@ -71,7 +86,7 @@ Modifier seulement après l'accord de la personne.
 5. **Montrer** la ligne exacte (ou le fichier de décision) et sa destination. Demander : « Ajouter (Recommandé) » / « Modifier » / « Abandonner ».
 6. Écrire, puis « Brancher et synchroniser ».
 
-## Action `compacter`
+### Action `compacter`
 
 La mémoire chargée à chaque session occupe le contexte de chaque conversation : limite de **200 lignes** au total pour `aidd_docs/memory/*.md`, compactage proposé à **95 %** (190 lignes), cible **140 lignes** pour garder de la place.
 
@@ -82,10 +97,10 @@ La mémoire chargée à chaque session occupe le contexte de chaque conversation
 5. **Faire valider** (AskUserQuestion) : « Garder la mémoire compactée (Recommandé) » / « Voir le détail d'abord » / « Revenir à la version d'avant ». Pour revenir : `git restore -- aidd_docs/memory/`, puis supprimer les fichiers créés par l'agent (listés dans sa réponse) en le disant.
 6. « Brancher et synchroniser », puis prochaine étape : `/pulse:commit` (message `docs: mémoire compactée`).
 
-## Brancher et synchroniser (fin de chaque action)
+### Brancher et synchroniser (fin de chaque action)
 
 1. Lancer `pulse-aidd memoire`.
-2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon ajouter en fin de fichier, avec le « Modèle : bloc mémoire de CLAUDE.md ». Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
+2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon l'ajouter dans la section « Architecture » (sinon en fin de fichier), avec le « Modèle : bloc mémoire de CLAUDE.md ». Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
 3. Si la sortie indique **un seul marqueur** : remettre la paire de marqueurs telle que dans le modèle, puis relancer.
 4. Vérifier que la liste affichée correspond aux fichiers de `aidd_docs/memory/`.
 5. Si la sortie signale la limite de taille (95 %) et que l'action n'était pas `compacter` : proposer `/pulse:memory compacter`.
@@ -93,3 +108,9 @@ La mémoire chargée à chaque session occupe le contexte de chaque conversation
 Expliquer en une phrase : « À la prochaine session, l'IA chargera automatiquement ces fichiers. »
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la commande où vous en étiez (`/pulse:status` pour la retrouver).
+
+## Exemples
+
+- `/pulse:memory retenir "les prix s'affichent toujours TTC"` : la ligne exacte et sa destination vous sont montrées ; après « Ajouter », l'IA s'en souviendra à chaque session.
+- `/pulse:memory actualiser` : la liste des points devenus faux ou manquants, et vous choisissez ceux à corriger.
+- `/pulse:memory compacter` : la mémoire resserrée, lignes avant → après ; vous la gardez ou revenez à la version d'avant.

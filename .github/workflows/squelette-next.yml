@@ -17,19 +17,17 @@ on:
       - "plugins/pulse-vibe-next/**"
       - ".github/workflows/squelette-next.yml"
       # Le cœur que verifier-squelette.js utilise (FICHIERS_DU_COEUR, leurs require et les fichiers de données qu'ils lisent).
-      - "plugins/pulse-vibe/scripts/seo*.js"
-      - "plugins/pulse-vibe/scripts/robots.js"
+      - "plugins/pulse-vibe/skills/seo/scripts/*.js"
       - "plugins/pulse-vibe/scripts/port-libre.js"
-      - "plugins/pulse-vibe/references/seo/robots-ia.json"
+      - "plugins/pulse-vibe/skills/seo/references/robots-ia.json"
   pull_request:
     paths:
       - "plugins/pulse-vibe-next/**"
       - ".github/workflows/squelette-next.yml"
       # Le cœur que verifier-squelette.js utilise (FICHIERS_DU_COEUR, leurs require et les fichiers de données qu'ils lisent).
-      - "plugins/pulse-vibe/scripts/seo*.js"
-      - "plugins/pulse-vibe/scripts/robots.js"
+      - "plugins/pulse-vibe/skills/seo/scripts/*.js"
       - "plugins/pulse-vibe/scripts/port-libre.js"
-      - "plugins/pulse-vibe/references/seo/robots-ia.json"
+      - "plugins/pulse-vibe/skills/seo/references/robots-ia.json"
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:

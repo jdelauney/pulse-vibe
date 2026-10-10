@@ -5,12 +5,12 @@
 #
 #   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
 #   pulse-aidd etape <commande> [--sans-communes]   idem, précédé des instructions de la commande ; --sans-communes : sans les règles communes, déjà chargées par la commande qui enchaîne l'étape
-#   pulse-aidd modele <fichier>      affiche un modèle de templates/
+#   pulse-aidd modele <fichier>      affiche un modèle de templates/, ou d'une skill : <skill>/<fichier> (skills/<skill>/assets/)
 #   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
 #   pulse-aidd qualite               affiche les règles de qualité du code
 #   pulse-aidd tests                 affiche la méthode de tests (stratégie, écriture, niveaux, TDD, Gherkin)
-#   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md)
+#   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md), ou d'une skill : <skill>/<fichier> (skills/<skill>/references/, ex. seo/regles.md)
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
 #   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
 #   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
@@ -54,6 +54,8 @@ unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
 TPL="$RACINE/templates"
+SK="$RACINE/skills"
+SK="$RACINE/skills"
 
 nom_sur() { # nom_sur <nom> : vrai si le nom reste dans son dossier (ni .., ni chemin absolu, ni lecteur Windows)
   case "$1" in ""|*..*|/*|\\*|[A-Za-z]:*) return 1 ;; esac
@@ -89,8 +91,23 @@ tests() {
 
 lexique() { afficher "Modèle : docs/lexique.md" "$TPL/lexique.md"; }
 
-lister_references() {
+lister_references() { # partagées (references/), puis propres à une skill : <skill>/<fichier> (skills/<skill>/references/)
   (cd "$REF" && find . -type f | sed 's|^\./||' | sort)
+  (cd "$SK" && find . -path '*/references/*' -type f | sed 's|^\./\([^/]*\)/references/|\1/|' | sort)
+}
+
+lister_modeles() { # partagés (templates/), puis propres à une skill : <skill>/<fichier> (skills/<skill>/assets/)
+  ls "$TPL"
+  (cd "$SK" && find . -path '*/assets/*' -type f | sed 's|^\./\([^/]*\)/assets/|\1/|' | sort)
+}
+
+trouver() { # trouver <references|assets> <nom> : le chemin partagé, sinon celui de la skill (<skill>/<fichier>)
+  local partage="$REF"
+  [ "$1" = "assets" ] && partage="$TPL"
+  if [ -f "$partage/$2" ]; then echo "$partage/$2"
+  elif [ -f "$SK/${2%%/*}/$1/${2#*/}" ]; then echo "$SK/${2%%/*}/$1/${2#*/}"
+  else return 1
+  fi
 }
 
 # ---------------------------------------------------------------- Packs de pile
@@ -181,7 +198,7 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
       afficher "Le cycle Pulse" "$REF/cycle.md"
-      afficher "Bannière" "$TPL/banniere.txt"
+      afficher "Bannière" "$SK/init/assets/banniere.txt"
       afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
     brainstorm)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
@@ -191,9 +208,9 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
     tech)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Aider à choisir la technologie" "$REF/choix-techniques.md"
+      afficher "Aider à choisir la technologie" "$SK/tech/references/choix-techniques.md"
       afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
-      afficher "Modèle : docs/technical.md" "$TPL/technical.md"
+      afficher "Modèle : docs/technical.md" "$SK/tech/assets/technical.md"
       afficher "Modèle : .gitignore" "$TPL/gitignore.template"
       afficher "Modèle : .env.example" "$TPL/env.example.template"
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
@@ -228,11 +245,11 @@ contexte() { # contexte <commande> [--sans-communes]
     spec)
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
-      afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$TPL/spec.md" ;;
+      afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$SK/spec/assets/spec.md" ;;
     plan)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Stratégie de tests" "$REF/tests/strategie.md"
-      afficher "Motifs d'écrans" "$REF/design/motifs.md"
+      afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
       afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
@@ -248,11 +265,11 @@ contexte() { # contexte <commande> [--sans-communes]
       afficher "Modèle : .gitignore" "$TPL/gitignore.template" ;;
     pr)
       afficher "Conventions Git" "$REF/git.md"
-      afficher "Modèle : description de demande de fusion" "$TPL/pull-request.md" ;;
+      afficher "Modèle : description de demande de fusion" "$SK/pr/assets/pull-request.md" ;;
     annuler)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
-    get-help) afficher "Modèle : demande d'aide" "$TPL/demande-aide.md" ;;
+    get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
     cicd)
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template"
@@ -264,49 +281,49 @@ contexte() { # contexte <commande> [--sans-communes]
     security)
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Modèle : docs/securite.md" "$TPL/securite.md"
+      afficher "Modèle : docs/securite.md" "$SK/security/assets/securite.md"
       afficher "Modèle : mention de confidentialité" "$TPL/confidentialite.md" ;;
     secrets)
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Réagir à une fuite de clé" "$REF/secrets/fuite.md"
-      afficher "Modèle : docs/secrets.md" "$TPL/secrets.md"
-      afficher "Modèle : journal d'incident" "$TPL/incident.md"
+      afficher "Réagir à une fuite de clé" "$SK/secrets/references/fuite.md"
+      afficher "Modèle : docs/secrets.md" "$SK/secrets/assets/secrets.md"
+      afficher "Modèle : journal d'incident" "$SK/secrets/assets/incident.md"
       lexique ;;
     refine)
       afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     ui)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Registres d'interface" "$REF/design/registres.md"
-      afficher "Règles d'interface" "$REF/design/regles-ui.md"
-      afficher "Anti-patterns d'interface" "$REF/design/anti-patterns.md"
-      afficher "Motifs d'écrans" "$REF/design/motifs.md"
-      afficher "Modèle : docs/design.md" "$TPL/design.md"
-      afficher "Modèle : note de variante" "$TPL/maquette-note.md"
-      afficher "Modèle : rapport d'audit d'interface" "$TPL/revue-ui.md" ;;
+      afficher "Registres d'interface" "$SK/ui/references/registres.md"
+      afficher "Règles d'interface" "$SK/ui/references/regles-ui.md"
+      afficher "Anti-patterns d'interface" "$SK/ui/references/anti-patterns.md"
+      afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
+      afficher "Modèle : docs/design.md" "$SK/ui/assets/design.md"
+      afficher "Modèle : note de variante" "$SK/ui/assets/maquette-note.md"
+      afficher "Modèle : rapport d'audit d'interface" "$SK/ui/assets/revue-ui.md" ;;
     rediger)
-      afficher "Rédiger les textes des pages" "$REF/redaction/regles.md"
-      afficher "Modèle : docs/voix.md" "$TPL/voix.md"
-      afficher "Modèle : docs/textes/<page>.md" "$TPL/texte-page.md"
+      afficher "Rédiger les textes des pages" "$SK/rediger/references/regles.md"
+      afficher "Modèle : docs/voix.md" "$SK/rediger/assets/voix.md"
+      afficher "Modèle : docs/textes/<page>.md" "$SK/rediger/assets/texte-page.md"
       lexique ;;
     seo)
-      afficher "Référencement : les règles" "$REF/seo/regles.md"
-      afficher "Référencement : assistants IA" "$REF/seo/ia.md"
-      afficher "Modèle : docs/seo.md" "$TPL/seo.md"
-      afficher "Modèle : rapport d'audit de référencement" "$TPL/seo-audit.md"
+      afficher "Référencement : les règles" "$SK/seo/references/regles.md"
+      afficher "Référencement : assistants IA" "$SK/seo/references/ia.md"
+      afficher "Modèle : docs/seo.md" "$SK/seo/assets/seo.md"
+      afficher "Modèle : rapport d'audit de référencement" "$SK/seo/assets/seo-audit.md"
       lexique ;;
     perf)
-      afficher "La vitesse vécue par les visiteurs" "$REF/performance.md"
-      afficher "Modèle : docs/performance.md" "$TPL/performance.md"
+      afficher "La vitesse vécue par les visiteurs" "$SK/perf/references/performance.md"
+      afficher "Modèle : docs/performance.md" "$SK/perf/assets/performance.md"
       lexique ;;
     search-console)
-      afficher "Search Console : relier, lire, suivre" "$REF/search-console.md"
-      afficher "Modèle : docs/referencement/search-console-<date>.md" "$TPL/rapport-search-console.md"
+      afficher "Search Console : relier, lire, suivre" "$SK/search-console/references/search-console.md"
+      afficher "Modèle : docs/referencement/search-console-<date>.md" "$SK/search-console/assets/rapport-search-console.md"
       afficher "Modèle : travail en cours" "$TPL/in-progress.md"
       lexique ;;
     learn)
-      afficher "Pédagogie du professeur" "$REF/pedagogie.md"
-      afficher "Modèle : docs/apprentissage.md" "$TPL/apprentissage.md"
+      afficher "Pédagogie du professeur" "$SK/learn/references/pedagogie.md"
+      afficher "Modèle : docs/apprentissage.md" "$SK/learn/assets/apprentissage.md"
       lexique ;;
     explain) lexique ;;
     test)
@@ -329,11 +346,11 @@ case "$1" in
   contexte) contexte "$2"; exit 0 ;;
   etape)
     if ! nom_sur "$2" || [ ! -f "$RACINE/skills/$2/SKILL.md" ]; then echo "Commande inconnue : $2. Commandes : $(ls "$RACINE/skills" | tr '\n' ' ')"; exit 0; fi
-    [ "$3" = "--sans-communes" ] && echo "(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Déroulé ci-dessous.)"
+    [ "$3" = "--sans-communes" ] && echo "(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Processus ci-dessous.)"
     afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
     contexte "$2" "$3"; exit 0 ;;
   modele)
-    if nom_sur "$2" && [ -f "$TPL/$2" ]; then cat "$TPL/$2"; else echo "Modèle introuvable : $2. Disponibles :"; ls "$TPL"; exit 1; fi ;;
+    if nom_sur "$2" && chemin="$(trouver assets "$2")"; then cat "$chemin"; else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
   agent)
     if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
   qualite) qualite; exit 0 ;;
@@ -342,14 +359,14 @@ case "$1" in
     case "$2" in
       ""|*..*) echo "Indiquez un chemin dans references/, par exemple qualite/code-concepts.md. Disponibles :"; lister_references; exit 1 ;;
     esac
-    if [ -f "$REF/$2" ]; then cat "$REF/$2"; else echo "Référence introuvable : $2. Disponibles :"; lister_references; exit 1; fi ;;
+    if nom_sur "$2" && chemin="$(trouver references "$2")"; then cat "$chemin"; else echo "Référence introuvable : $2. Disponibles :"; lister_references; exit 1; fi ;;
   nouveau)
-    shift; exec node "$RACINE/scripts/nouveau-projet.js" "$@" ;;
+    shift; exec node "$RACINE/skills/init/scripts/nouveau-projet.js" "$@" ;;
   guide)
     exec node "$RACINE/scripts/guide.js" ;;
   comparer)
     if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes>"; exit 1; fi
-    exec node "$RACINE/scripts/comparer.js" "$2" ;;
+    exec node "$RACINE/skills/ui/scripts/comparer.js" "$2" ;;
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
   sessions)
@@ -366,25 +383,25 @@ case "$1" in
   sonder)
     shift; exec node "$RACINE/scripts/sonder.js" "$@" ;;
   secrets)
-    shift; exec node "$RACINE/scripts/secrets.js" "$@" ;;
+    shift; exec node "$RACINE/skills/secrets/scripts/secrets.js" "$@" ;;
   textes)
-    shift; exec node "$RACINE/scripts/textes.js" "$@" ;;
+    shift; exec node "$RACINE/skills/rediger/scripts/textes.js" "$@" ;;
   contraste)
-    shift; exec node "$RACINE/scripts/contraste.js" "$@" ;;
+    shift; exec node "$RACINE/skills/ui/scripts/contraste.js" "$@" ;;
   identite)
-    shift; exec node "$RACINE/scripts/identite.js" "$@" ;;
+    shift; exec node "$RACINE/skills/ui/scripts/identite.js" "$@" ;;
   maquettes)
-    shift; exec node "$RACINE/scripts/maquettes.js" "$@" ;;
+    shift; exec node "$RACINE/skills/ui/scripts/maquettes.js" "$@" ;;
   seo)
     # Git Bash (Windows) transforme « /compte » en « C:/Program Files/Git/compte » avant de lancer Node.
     # Les chemins passés (--chemins /compte) restent tels quels ; le script est donné sous sa forme Windows.
-    shift; script="$RACINE/scripts/seo.js"
+    shift; script="$RACINE/skills/seo/scripts/seo.js"
     command -v cygpath >/dev/null 2>&1 && script="$(cygpath -m "$script")"
     MSYS_NO_PATHCONV=1 exec node "$script" "$@" ;;
   perf)
-    shift; exec node "$RACINE/scripts/perf.js" "$@" ;;
+    shift; exec node "$RACINE/skills/perf/scripts/perf.js" "$@" ;;
   search-console)
-    shift; exec node "$RACINE/scripts/search-console.js" "$@" ;;
+    shift; exec node "$RACINE/skills/search-console/scripts/search-console.js" "$@" ;;
   etat)
     shift; exec node "$RACINE/scripts/etat.js" "$@" ;;
   revue)

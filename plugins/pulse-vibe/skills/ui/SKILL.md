@@ -7,21 +7,33 @@ allowed-tools: Bash(pulse-aidd contexte ui) Bash(pulse-aidd agent designer) Bash
 
 # /pulse:ui – L'interface
 
-## Contexte Pulse (chargé automatiquement)
-
-!`pulse-aidd contexte ui`
-
-Appliquer les « Règles communes Pulse », les « Règles de la mémoire projet » et les références de design ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
-
-Action demandée : `$ARGUMENTS`
-
 ## Objectif
 
 Aider la personne à **voir** et choisir l'apparence de son outil, puis à la soigner. Phrase à dire : « On choisit une apparence en la regardant, plutôt qu'en lisant des codes couleur. »
 
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées dans « Contexte ») pendant toute la commande.
+
 Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les quatre références de design ont pour titres « Registres d'interface », « Règles d'interface », « Anti-patterns d'interface » (la « liste noire ») et « Motifs d'écrans » ; on peut les réafficher avec `pulse-aidd reference design/<fichier>`.
 
-## Choisir l'action
+Les maquettes HTML sont une **référence visuelle**, indépendante de la pile : le code les traduit ensuite dans la technologie de `docs/technical.md`. `/pulse:ui` laisse le code intact ; seule l'action `polish` le modifie.
+
+**Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe réellement dans `aidd_docs/tasks/<epic>/`. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
+
+## Contexte
+
+!`pulse-aidd contexte ui`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
+
+Action demandée : `$ARGUMENTS`
+
+Fichiers de cette commande : [references/anti-patterns.md](references/anti-patterns.md), [references/directions.md](references/directions.md), [references/heuristiques.md](references/heuristiques.md), [references/motifs.md](references/motifs.md), [references/registres.md](references/registres.md), [references/regles-ui.md](references/regles-ui.md), [assets/design.md](assets/design.md), [assets/maquette-note.md](assets/maquette-note.md), [assets/revue-ui.md](assets/revue-ui.md), [scripts/comparer.js](scripts/comparer.js), [scripts/contraste.js](scripts/contraste.js), [scripts/identite.js](scripts/identite.js), [scripts/maquettes.js](scripts/maquettes.js).
+
+### Choisir l'action
 
 | Action | Quand | Section |
 |---|---|---|
@@ -31,15 +43,19 @@ Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses
 | `polish [cible]` | Appliquer les corrections visuelles et de texte d'un audit | « polish » |
 | (vide) | Hésiter sur le point de départ | « Sans argument » |
 
-Les maquettes HTML sont une **référence visuelle**, indépendante de la pile : le code les traduit ensuite dans la technologie de `docs/technical.md`. `/pulse:ui` laisse le code intact ; seule l'action `polish` le modifie.
+## Rôle
 
-**Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe réellement dans `aidd_docs/tasks/<epic>/`. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
+Cette commande mène l'entretien, fait choisir la personne et écrit les documents. Les agents sont ses moyens :
+- `pulse:designer` : génère une direction d'identité (planche) ou une variante de maquette, un agent par proposition, et assemble un hybride ;
+- `pulse:ui-critic` : critique la maquette retenue (mode maquette) ou audite l'interface existante (mode code), en lecture seule.
 
 **Lancer les agents de génération** (`identite` et `maquettes`) : lancer **en parallèle** un sous-agent `pulse:designer` par variante (plusieurs appels Agent dans le même message). Message de délégation : type, thèse, axes de différence, dossier de sortie, écrans à couvrir, chemins de `docs/design.md` (ou direction provisoire), de `docs/prd.md` et `docs/brief.md` (s'ils existent), de la spec et de `docs/user-stories.md` (maquettes ; s'ils existent) et de `aidd_docs/memory/glossary.md`. Si les sous-agents ne sont pas disponibles, lancer `pulse-aidd agent designer`, lire ses consignes et produire les variantes soi-même, une par une. Chaque agent rend 3 lignes (Thèse / Ce qui la distingue / Fichiers) : les garder pour la comparaison.
 
+## Processus
+
 **Comparer** : lancer `pulse-aidd comparer <dossier>`, puis ouvrir le fichier affiché (section « Ouvrir une page »). Si la commande échoue (aucune variante), le dire et relancer la génération manquante.
 
-## Sans argument
+### Sans argument
 
 1. Lire `docs/`, `docs/design.md`, les specs (`aidd_docs/tasks/*/SPEC-US-*.md`), `docs/design/maquettes/`. Chercher du code d'interface à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon dans le code existant (Glob, Grep).
 2. Recommander une action (AskUserQuestion, la recommandée en premier) :
@@ -48,15 +64,15 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
    - du code d'interface → `audit`.
 3. Attendre la réponse avant de lancer quoi que ce soit. Puis suivre la section de l'action choisie.
 
-## identite
+### identite
 
-### Prérequis
+#### Prérequis
 
 - `docs/prd.md` est nécessaire. Sinon, proposer `/pulse:prd` et s'arrêter.
 - Lire `docs/brief.md`, `aidd_docs/memory/` et le glossaire s'ils existent.
 - Si `docs/design.md` existe : demander « Le revoir » / « Le garder ». Le garder termine la commande. Le revoir : appliquer la règle « Noms des dossiers » (anciennes directions déplacées dans `alternatives/`) et déplacer aussi l'ancien `retenue/` dans `docs/design/identite/alternatives/retenue-<AAAA-MM-JJ>/`.
 
-### Déroulé
+#### Déroulé
 
 1. **Ce que l'on sait déjà.** Déduire des documents le public, les écrans probables et l'hypothèse de registre. Affirmer puis faire confirmer, par exemple : « Votre outil sert à *utiliser*, pas à *convaincre* : je pars sur le registre outil, d'accord ? ». Si le projet contient déjà une interface : lancer `pulse-aidd identite extraire <dossier du code d'interface>`, montrer ce qui a été relevé (couleurs, polices, rayons, avec leurs fichiers) et demander s'il faut les **garder comme base** ou **repartir de zéro**. Base gardée : seules les valeurs relevées, ou fournies par la personne (charte, logo), entrent dans les directions ; une valeur « non trouvée » se demande à la personne.
 2. **Entretien**, par rondes de 4 questions au plus, en langage courant. Demander uniquement ce que les documents laissent ouvert. Sujets :
@@ -67,7 +83,7 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
    - un logo, des couleurs ou une police imposés.
 
    Laisser de côté codes couleur et noms de police : la personne décrit, vous traduisez. Après chaque ronde, reformuler en 1 ou 2 lignes (« ✔ Décidé : … »).
-3. **Directions.** Charger `pulse-aidd reference design/directions.md`. D'après l'entretien, recommander une famille et une alternative (« Choisir une famille »), en une phrase chacune. Construire 2 ou 3 directions réellement différentes, chacune tirée d'une famille et d'un style du catalogue, cités dans sa thèse : au moins 2 axes parmi stratégie de couleur, typographie, densité, forme, ambiance claire / sombre. Donner à chacune une thèse en une phrase. Montrer le plan en 3 lignes, puis lancer les agents de génération (type `planche`), un par direction, dossier `docs/design/identite/d<n>-<slug>/`. Chaque agent écrit `planche.html` et `note.md` : palette par rôle avec contrastes, titres et texte, boutons et champs dans leurs états, une liste, un message d'erreur, un état vide, avec des contenus fictifs tirés du projet (glossaire, US).
+3. **Directions.** Charger `pulse-aidd reference ui/directions.md`. D'après l'entretien, recommander une famille et une alternative (« Choisir une famille »), en une phrase chacune. Construire 2 ou 3 directions réellement différentes, chacune tirée d'une famille et d'un style du catalogue, cités dans sa thèse : au moins 2 axes parmi stratégie de couleur, typographie, densité, forme, ambiance claire / sombre. Donner à chacune une thèse en une phrase. Montrer le plan en 3 lignes, puis lancer les agents de génération (type `planche`), un par direction, dossier `docs/design/identite/d<n>-<slug>/`. Chaque agent écrit `planche.html` et `note.md` : palette par rôle avec contrastes, titres et texte, boutons et champs dans leurs états, une liste, un message d'erreur, un état vide, avec des contenus fictifs tirés du projet (glossaire, US).
 4. **Comparer.** Lancer `pulse-aidd comparer docs/design/identite`, ouvrir `comparer.html` (section « Ouvrir une page »), expliquer chaque thèse en une ligne. Avant de demander le choix, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les directions proposées et leurs dossiers ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait (étape de `/pulse:express` : le réécrire plutôt pour cette commande, à son étape suivante).
 5. **Choisir dans le chat** : une direction ; un hybride (un agent `pulse:designer` assemble la planche hybride, dossier `d<n+1>-hybride-<slug>`) ; ou « aucune, … » (retour à l'étape 3 avec la nouvelle consigne). Mesurer les contrastes du choix avec `pulse-aidd contraste <couleur> <fond>`, paire par paire : un texte sous 4,5:1, ou un contour de champ ou de focus sous 3:1, se corrige (`--viser` propose la luminosité qui atteint le seuil), et la correction se dit.
 6. **Écrire.**
@@ -79,14 +95,14 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `docs/user-stories.md` n'existe pas encore (cas habituel : l'identité se définit juste après `/pulse:tech`) ; sinon `/pulse:spec <US-XXX>`, ou `/pulse:ui maquettes <US-XXX>` si une spec avec des écrans existe déjà.
 
-## maquettes
+### maquettes
 
-### Prérequis
+#### Prérequis
 
 - La spec de l'US désignée existe (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`). Argument absent ou introuvable : lister les specs et demander (règle commune).
 - `docs/design.md` est fortement conseillé. S'il manque, demander : « Définir l'identité d'abord (Recommandé) » / « Continuer avec une direction provisoire ». Avec une direction provisoire, la décrire dans le message de délégation et le signaler dans chaque `note.md`.
 
-### Déroulé
+#### Déroulé
 
 1. **Écrans.** Lire la section « Ce que l'utilisateur voit et fait » de la spec (« Écrans » dans une spec plus ancienne). Faire choisir les écrans à maquetter (AskUserQuestion multiSelect, le parcours principal recommandé), **3 écrans au plus** par passage. Si `docs/design/maquettes/<spec>/` existe déjà : « Compléter avec d'autres écrans » / « Refaire » / « Garder ».
    - « Garder » termine la commande : bloc de fin, prochaine étape `/pulse:plan <US-XXX>`.
@@ -112,7 +128,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:us` si `doc
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan <US-XXX>`.
 
-## audit
+### audit
 
 Cible : un écran, un fichier, un dossier, ou toute l'interface (vide = toute l'interface, à l'emplacement indiqué par « Organisation des fichiers » de `docs/technical.md`, sinon le code existant). Vérifier d'abord que le fichier ou l'écran existe (Glob, Grep) ; sinon, lister ce qui existe et demander.
 
@@ -123,7 +139,7 @@ Cible : un écran, un fichier, un dossier, ou toute l'interface (vide = toute l'
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` ; `/pulse:refine` pour un constat qui change le besoin ou le parcours ; `/pulse:fix` pour un comportement cassé.
 
-## polish
+### polish
 
 1. **Partir du rapport** `docs/design/audits/ui-*.md` le plus récent qui couvre la cible. S'il n'y en a pas, faire d'abord l'audit (section « audit »).
 2. **Trier.** Retenir les constats **purement visuels ou de texte** : apparence et libellés seulement, hors logique métier, données et contrôle d'accès. Renvoyer les autres vers `/pulse:refine` (besoin ou parcours) ou `/pulse:fix` (comportement cassé), en le disant.
@@ -133,7 +149,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` 
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
 
-## Ouvrir une page
+### Ouvrir une page
 
 Après `pulse-aidd comparer`, ouvrir le fichier affiché (« Page de comparaison : <chemin> ») avec la commande du système (avec l'outil Bash ; sous PowerShell : `Start-Process "<chemin>"`) :
 - Windows : `start "" "<chemin>"` ;
@@ -141,3 +157,9 @@ Après `pulse-aidd comparer`, ouvrir le fichier affiché (« Page de comparaison
 - Linux : `xdg-open "<chemin>"`.
 
 En cas d'échec, afficher le chemin complet et dire : « Double-cliquez sur ce fichier pour l'ouvrir dans votre navigateur. »
+
+## Exemples
+
+- `/pulse:ui identite` : quelques questions sur votre outil, puis 2 ou 3 apparences à comparer dans votre navigateur ; vous choisissez, et `docs/design.md` est écrit.
+- `/pulse:ui maquettes US-003` : 3 versions des écrans de cette user story, côte à côte ; vous gardez celle qui vous plaît.
+- `/pulse:ui audit` : un rapport de ce qui cloche dans l'interface, sans rien modifier ; `/pulse:ui polish` applique ensuite les corrections que vous choisissez.

@@ -1,4 +1,4 @@
-// Tests de l'analyseur et du générateur de robots.txt (scripts/robots.js, RFC 9309).
+// Tests de l'analyseur et du générateur de robots.txt (skills/seo/scripts/robots.js, RFC 9309).
 // Lancer : node --test plugins/pulse-vibe/tests/robots.test.js
 "use strict";
 
@@ -6,8 +6,8 @@ const test = require("node:test");
 const assert = require("node:assert");
 const path = require("path");
 const fs = require("fs");
-const robots = require(path.join(__dirname, "..", "scripts", "robots.js"));
-const LISTE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "references", "seo", "robots-ia.json"), "utf8")).robots;
+const robots = require(path.join(__dirname, "..", "skills", "seo", "scripts", "robots.js"));
+const LISTE = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "skills", "seo", "references", "robots-ia.json"), "utf8")).robots;
 
 test("le groupe le plus précis l'emporte : un robot nommé ne lit plus le groupe *", () => {
   const a = robots.analyser("User-agent: *\nDisallow: /prive/\n\nUser-agent: GPTBot\nAllow: /\n");
@@ -81,7 +81,7 @@ test("aller-retour pour chaque politique : genererRobots → analyser → autori
 
 test("pulse-aidd seo robots : robots.txt d'une politique, refus d'une politique inconnue", () => {
   const { spawnSync } = require("child_process");
-  const SEO = path.join(__dirname, "..", "scripts", "seo.js");
+  const SEO = path.join(__dirname, "..", "skills", "seo", "scripts", "seo.js");
   const r = spawnSync("node", [SEO, "robots", "b", "--sitemap", "https://x.fr/sitemap.xml", "--fermes", "/api/", "--signal", "search=yes, ai-train=no"], { encoding: "utf8" });
   assert.strictEqual(r.status, 0, r.stderr);
   const a = robots.analyser(r.stdout);

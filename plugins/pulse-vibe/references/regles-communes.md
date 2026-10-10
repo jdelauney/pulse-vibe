@@ -54,8 +54,8 @@ Les conventions Git (commits, branches, demandes de fusion) s'affichent avec `pu
 La checklist sécurité s'affiche avec `pulse-aidd reference checklist-securite.md`.
 La saisie des secrets hors de la conversation s'affiche avec `pulse-aidd reference secrets/sans-conversation.md`, la réaction à une fuite avec `pulse-aidd reference secrets/fuite.md`.
 Les règles du référencement s'affichent avec `pulse-aidd reference seo/regles.md` ; le site servi se contrôle avec `pulse-aidd seo <adresse>`.
-Les règles de mesure de la vitesse (seuils, sources, diagnostics, clé Google) s'affichent avec `pulse-aidd reference performance.md`.
-La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `pulse-aidd reference choix-techniques.md`.
+Les règles de mesure de la vitesse (seuils, sources, diagnostics, clé Google) s'affichent avec `pulse-aidd reference perf/performance.md`.
+La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `pulse-aidd reference tech/choix-techniques.md`.
 
 ## 3. Garde-fous de la méthode
 

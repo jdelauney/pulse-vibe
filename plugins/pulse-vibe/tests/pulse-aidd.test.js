@@ -531,7 +531,7 @@ test("etape --sans-communes : les consignes du pack restent", () => {
 
 test("etape --sans-communes : une ligne rappelle que les règles communes sont déjà chargées", () => {
   const sans = lancer("etape", "commit", "--sans-communes").stdout;
-  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Déroulé ci-dessous.)"));
+  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Processus ci-dessous.)"));
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
 
@@ -732,7 +732,7 @@ test("aide : pulse-aidd sans argument liste exactement ses sous-commandes, et ri
 test("aide : la ligne secrets cite chaque action de secrets.js", () => {
   const ligne = lancer().stdout.split("\n").find((l) => l.startsWith("  pulse-aidd secrets"));
   const citees = ligne.match(/\(([^;)]*)/)[1].split(",").map((s) => s.trim()).sort();
-  const source = fsP.readFileSync(path.join(RACINE, "scripts", "secrets.js"), "utf8");
+  const source = fsP.readFileSync(path.join(RACINE, "skills", "secrets", "scripts", "secrets.js"), "utf8");
   const actions = [...source.slice(source.indexOf("function principal")).matchAll(/case "([a-z-]+)":/g)].map((m) => m[1]).sort();
   assert.deepStrictEqual(citees, actions);
 });

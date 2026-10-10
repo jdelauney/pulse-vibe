@@ -155,7 +155,7 @@ Termes à expliquer selon le profil, avec leur image :
 
 ## 11. Rapports et données personnelles
 
-- `docs/referencement/search-console-<AAAA-MM-JJ>.md` : le rapport (modèle `pulse-aidd modele rapport-search-console.md`).
+- `docs/referencement/search-console-<AAAA-MM-JJ>.md` : le rapport (modèle `pulse-aidd modele search-console/rapport-search-console.md`).
 - `docs/referencement/donnees/<AAAA-MM-JJ>.json` : l'instantané qui sert à `suivre`.
 - Les requêtes tapées par les internautes peuvent contenir des noms de personnes : dans un dépôt public, proposer d'ajouter `docs/referencement/donnees/` au `.gitignore`.
 

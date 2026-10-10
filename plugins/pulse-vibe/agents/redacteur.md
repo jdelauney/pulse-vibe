@@ -13,8 +13,8 @@ La fiche de la page (objectif, public, action attendue, faits disponibles), le c
 
 ## Méthode
 
-1. Lire `docs/voix.md`, le glossaire du projet (`aidd_docs/memory/glossary.md`), puis les règles de rédaction : `pulse-aidd reference redaction/regles.md`.
-2. Écrire le fichier d'après le modèle (`pulse-aidd modele texte-page.md`) : l'en-tête avec la fiche de la page, le texte entre `<!-- texte -->` et `<!-- /texte -->`.
+1. Lire `docs/voix.md`, le glossaire du projet (`aidd_docs/memory/glossary.md`), puis les règles de rédaction : `pulse-aidd reference rediger/regles.md`.
+2. Écrire le fichier d'après le modèle (`pulse-aidd modele rediger/texte-page.md`) : l'en-tête avec la fiche de la page, le texte entre `<!-- texte -->` et `<!-- /texte -->`.
 3. Employer seulement les faits reçus. Un fait manquant s'écrit « [à compléter : …] ».
 4. Lancer `pulse-aidd textes verifier <fichier>`. Corriger chaque erreur en suivant sa consigne ; un constat faux (nom propre, sens littéral) se garde sur sa ligne avec sa raison, comme le décrivent les règles de rédaction. Juger chaque avertissement (le corriger, ou le garder avec une raison). Relancer. Trois tours au plus.
 5. Remplir la section « Contrôle » du fichier avec les mesures du dernier passage.

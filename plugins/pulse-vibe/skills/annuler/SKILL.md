@@ -7,26 +7,32 @@ allowed-tools: Bash(pulse-aidd contexte annuler) Bash(pulse-aidd reference *) Ba
 
 # /pulse:annuler – Revenir en arrière
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
+
+Revenir en arrière **sans rien perdre** : chaque annulation est elle-même réversible. Une phrase d'explication : « Annuler ne gomme rien : j'ajoute une nouvelle version qui défait l'ancienne, ou je mets vos changements de côté. Vous pourrez toujours récupérer ce que nous annulons. »
+
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+Appliquer aussi les « Conventions Git » (en particulier « 7. Annuler ») et « Le dépôt distant et l'envoi du travail » (chargés dans « Contexte ») pendant toute la commande.
+
+## Contexte
 
 !`pulse-aidd contexte annuler`
 
-Appliquer les « Règles communes Pulse », les « Conventions Git » (en particulier « 7. Annuler ») et « Le dépôt distant et l'envoi du travail » ci-dessus pendant toute la commande. Si ce contexte est absent, lancer `pulse-aidd contexte annuler` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte annuler` et lire sa sortie.
 
 Arguments : `$ARGUMENTS` — une tâche (`T3`) ou une US (`US-003` : toutes ses tâches enregistrées), facultatif.
 
 Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions`).
 
-## Objectif
-
-Revenir en arrière **sans rien perdre** : chaque annulation est elle-même réversible. Une phrase d'explication : « Annuler ne gomme rien : j'ajoute une nouvelle version qui défait l'ancienne, ou je mets vos changements de côté. Vous pourrez toujours récupérer ce que nous annulons. »
-
-## Prérequis
+### Prérequis
 
 - Le dossier doit être un dépôt Git avec au moins un commit (`git rev-parse --is-inside-work-tree`, `git log --oneline -1`). Sinon, proposer `/pulse:init`.
 - Une opération Git est en cours (fusion, revert interrompu : `git status` l'indique) : l'expliquer et proposer de l'interrompre proprement (`git revert --abort` ou `git merge --abort`) avant toute chose. Si une autre session travaille sur ce dossier (`pulse-aidd sessions <session>`, `autres` > 0), cette opération est peut-être la sienne : le dire et laisser la personne la terminer dans cette session.
 
-## Déroulé
+## Processus
 
 ### 1. Lire l'état
 
@@ -97,3 +103,9 @@ Pour une tâche ou une version : appliquer « 3. Envoyer après chaque tâche en
 En trois lignes : ce qui a été annulé, l'identifiant du commit (ou le nom de la mise de côté, de la branche de sauvegarde), et comment le récupérer : « relancez `/pulse:annuler` et choisissez *Récupérer* ».
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:status`, ou `/pulse:implement <US-XXX> <Tâche>` pour refaire autrement une tâche annulée.
+
+## Exemples
+
+- `/pulse:annuler T3` : la tâche T3 montrée (son objectif, ses fichiers) ; après votre accord, une nouvelle version la défait, et vous pourrez la récupérer.
+- `/pulse:annuler` sans argument : la question « Que voulez-vous annuler ? » ; vos changements en cours peuvent être mis de côté, sans rien perdre.
+- `/pulse:annuler` puis « Récupérer quelque chose que j'ai annulé » : ce qui avait été mis de côté revient.

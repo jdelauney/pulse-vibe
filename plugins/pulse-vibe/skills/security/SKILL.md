@@ -7,37 +7,52 @@ allowed-tools: Bash(pulse-aidd contexte security) Bash(pulse-aidd agent security
 
 # /pulse:security – La sécurité du projet
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
+
+Vérifier la sécurité du projet : audit complet S1 à S13 avec le test du cambrioleur (résultat dans `docs/securite.md`), contrôle rapide, en-têtes de sécurité, ou préparation d'un audit outillé.
+
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
+## Contexte
 
 !`pulse-aidd contexte security`
 
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les références et modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS` (vide = `audit`)
 
-## Choisir l'action
+Fichiers de cette commande : [references/rapide.md](references/rapide.md), [references/entetes.md](references/entetes.md), [references/preparer.md](references/preparer.md), [assets/securite.md](assets/securite.md).
+
+### Choisir l'action
 
 | Action | Quand | Comment |
 |---|---|---|
 | `audit` (par défaut) | Avant une mise en ligne, à la fin de la première version ou d'un groupe | Section « Audit complet » ci-dessous |
-| `rapide` | En 2 minutes, à tout moment : « suis-je dans les clous ? » | Lancer `pulse-aidd reference securite/rapide.md` et l'appliquer à l'identique (lecture seule) |
-| `entetes` | Configurer les en-têtes de sécurité (CSP, HSTS…) | Lancer `pulse-aidd reference securite/entetes.md` et l'appliquer ; montrer la configuration avant de l'écrire |
-| `preparer` | Préparer un audit outillé (développeur, outils d'analyse) | Lancer `pulse-aidd reference securite/preparer.md` et l'appliquer |
+| `rapide` | En 2 minutes, à tout moment : « suis-je dans les clous ? » | Lancer `pulse-aidd reference security/rapide.md` et l'appliquer à l'identique (lecture seule) |
+| `entetes` | Configurer les en-têtes de sécurité (CSP, HSTS…) | Lancer `pulse-aidd reference security/entetes.md` et l'appliquer ; montrer la configuration avant de l'écrire |
+| `preparer` | Préparer un audit outillé (développeur, outils d'analyse) | Lancer `pulse-aidd reference security/preparer.md` et l'appliquer |
 
 La technologie du projet est décrite dans `docs/technical.md` (« Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne ») ; chaque action s'appuie sur ces sections. Si `docs/technical.md` est absent, le signaler et proposer `/pulse:tech`. Pour la syntaxe ou la configuration propre à la technologie retenue : consulter sa documentation officielle et s'appuyer uniquement sur elle. Pour `rapide`, `entetes` et `preparer`, terminer avec le bloc de fin de commande.
 
-## Audit complet
+## Rôle
 
-### Objectif
+- La conversation principale orchestre : elle choisit l'action, prépare les éléments de l'audit, enregistre `docs/securite.md`, présente les résultats, déroule le test du cambrioleur avec la personne et propose les corrections.
+- L'agent **`pulse:security-auditor`** fait l'audit complet en lecture seule, selon la checklist sécurité.
+
+## Processus
+
+### Audit complet
+
+#### Objectif
 
 Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à la personne une **fiche de tests manuels** (« le test du cambrioleur ») adaptée à son appli. Phrase à rappeler : **« Seul ce que le serveur bloque est vraiment interdit. »**
 
-### Prérequis
+#### Prérequis
 
 - Le projet doit contenir du code (constater avec `git ls-files` et « Organisation des fichiers » de `docs/technical.md`). Sinon, dites que l'audit attendra les premiers fichiers de code.
 - Les specs (`aidd_docs/tasks/*/SPEC-US-*.md`) sont conseillées (elles décrivent qui a le droit de voir quoi). En leur absence, l'audit se fait quand même, en le signalant.
-
-### Déroulé
 
 #### 1. Lancer l'audit de sécurité
 
@@ -69,3 +84,9 @@ Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la
 Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (Recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée se traite avec `/pulse:secrets fuite` : révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation. Après correction, refaire le test manuel concerné.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` puis `/pulse:commit` si des corrections ont été faites.
+
+## Exemples
+
+- `/pulse:security` : un bilan de sécurité de votre appli, les points bloquants expliqués simplement, puis des tests à faire vous-même, un à la fois.
+- `/pulse:security rapide` : un contrôle en 2 minutes, sans rien modifier.
+- `/pulse:security entetes` : la configuration des protections du site vous est montrée avant d'être écrite.

@@ -8,7 +8,7 @@
 //   --majeures    avec --dernieres : monte aussi les versions majeures (demande de fusion à part)
 //   --ecrire      si tout passe, reporte ces versions dans templates/squelette/package.json (et biome.json)
 //   --e2e         lance aussi les tests de bout en bout (Chromium doit être installé) et l'audit de
-//                 référencement du site servi (scripts/seo.js du cœur) ; pose d'abord, dans le dossier
+//                 référencement du site servi (skills/seo/scripts/seo.js du cœur) ; pose d'abord, dans le dossier
 //                 temporaire seulement, une page d'essai qui provoque une erreur dans le navigateur et son test
 //   --tolerer-instables  avec --e2e : un test qui passe seulement après une relance est signalé sans faire
 //                 échouer (par défaut : échec, une relance masque le problème, references/tests/strategie.md §4)
@@ -28,9 +28,9 @@ const { spawn, spawnSync } = require("child_process");
 const { creerSquelette } = require("./squelette");
 
 const MODELE = path.join(__dirname, "..", "templates", "squelette");
-const COEUR = path.join(__dirname, "..", "..", "pulse-vibe", "scripts");
-const AUDIT_SEO = path.join(COEUR, "seo.js");
-const PORT_LIBRE = path.join(COEUR, "port-libre.js");
+const COEUR = path.join(__dirname, "..", "..", "pulse-vibe");
+const AUDIT_SEO = path.join(COEUR, "skills", "seo", "scripts", "seo.js");
+const PORT_LIBRE = path.join(COEUR, "scripts", "port-libre.js");
 // Les fichiers du cœur que ce script lance ou charge : la CI du squelette se déclenche aussi sur eux.
 const FICHIERS_DU_COEUR = [AUDIT_SEO, PORT_LIBRE];
 

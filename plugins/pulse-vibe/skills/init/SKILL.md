@@ -7,15 +7,9 @@ allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd contexte cic
 
 # /pulse:init – Démarrer et se repérer
 
-## Contexte Pulse (chargé automatiquement)
+## Objectif
 
-!`pulse-aidd contexte init`
-
-Appliquer les « Règles communes Pulse » ci-dessus pendant toute la commande. Les modèles cités plus bas figurent ci-dessus. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.
-
-Argument reçu (nom du projet, facultatif) : `$ARGUMENTS`
-
-## Principe
+### Principe
 
 Cette commande est le **point d'entrée** de la méthode, qu'on la lance dans un dossier vide, dans un projet existant ou au milieu du travail. Elle tourne en boucle :
 
@@ -23,13 +17,29 @@ Cette commande est le **point d'entrée** de la méthode, qu'on la lance dans un
 lire l'état → décider la prochaine étape → montrer l'écran → agir sur la réponse → relire l'état …
 ```
 
+## Règles
+
+Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+
 Règles de la boucle :
 - **Guider, en restant bref.** Un écran court, une seule action recommandée.
 - **Citer uniquement de vraies commandes** `/pulse:*`, celles qui existent.
 - **Attendre une réponse explicite** de la personne avant de lancer quoi que ce soit.
 - **Travailler sur un état frais** : relire l'état après chaque action.
 
-## 1. Lire l'état (sans rien afficher)
+## Contexte
+
+!`pulse-aidd contexte init`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.
+
+Argument reçu (nom du projet, facultatif) : `$ARGUMENTS`
+
+Fichiers de cette commande : [assets/banniere.txt](assets/banniere.txt), [scripts/nouveau-projet.js](scripts/nouveau-projet.js).
+
+## Processus
+
+### 1. Lire l'état (sans rien afficher)
 
 **Environnement** : `git --version`, `node --version`, `git config user.name`, `git config user.email`.
 
@@ -37,7 +47,7 @@ Règles de la boucle :
 
 **Projet existant** : du code est présent (fichiers source, manifeste de dépendances, configuration d'outils, dans n'importe quel langage) sans `CLAUDE.md` Pulse. La pile s'observe dans le code, avec `/pulse:tech`, plutôt que de la demander. Une fois le projet préparé, `pulse-aidd etat` reconnaît ce cas (du code, mais ni brief ni choix techniques) et recommande de documenter l'existant : `/pulse:memory creer` (remplir la mémoire à partir du code), puis `/pulse:tech` (Chemin A), avant `/pulse:brainstorm`.
 
-## 2. Décider (la première règle qui s'applique)
+### 2. Décider (la première règle qui s'applique)
 
 1. **Git absent** → s'arrêter : expliquer que Git enregistre l'historique des versions, donner https://git-scm.com/downloads. **Node.js absent, ou en version inférieure à 22.19** (`node --version`) → s'arrêter de la même façon : expliquer que Node.js fait tourner les garde-fous de Pulse (secrets, commandes risquées) et ses outils (vitesse, référencement), donner https://nodejs.org (version LTS, 22.19 ou plus), puis proposer de relancer `/pulse:init` une fois Node.js installé, après avoir **fermé puis relancé Claude Code** (pas seulement le terminal : Claude Code lit la liste des programmes installés à son démarrage).
 2. **Sinon, appliquer le verdict de `pulse-aidd etat`** : la ligne `prochaine` est l'action recommandée, avec sa `raison` ; les lignes `aussi` donnent 1 ou 2 alternatives. Avec `ancien: oui`, demander d'abord si la décision en attente est toujours d'actualité ; sinon, l'effacer (`pulse-aidd travail-fini <dossier>`, avec la valeur de la ligne `dossier` ; sans cette ligne, `pulse-aidd travail-fini`). Quand une ligne `fondation` est présente, l'action se fait ici même (§ 4) :
@@ -54,7 +64,7 @@ Règles de la boucle :
    Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Protéger les secrets » (§ 4, point 5) « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail », ou « Mettre à niveau un projet Pulse plus ancien » (§ 4 : l'ancien `CLAUDE.md`, le `.gitignore` sans le travail en cours, le contrôle avant commit manquant). La personne peut refuser un point, ou garder son propre contrôle avant commit : la suite continue quelle que soit la réponse.
 3. **Après la mise en ligne** (`regle` R21, R22 ou R23) : proposer aussi `/pulse:status`, qui regarde la CI, le référencement et la Search Console.
 
-## 3. Montrer l'écran
+### 3. Montrer l'écran
 
 Afficher la **bannière** (modèle « Bannière ») au premier écran de la session seulement, puis :
 
@@ -78,13 +88,13 @@ Votre projet :
 
 Puis demander (AskUserQuestion) : l'action recommandée (`prochaine`) en premier avec « (Recommandé) », 1 ou 2 alternatives tirées des lignes `aussi`, et « M'expliquer la méthode ». La personne peut aussi répondre librement.
 
-## 4. Agir sur la réponse
+### 4. Agir sur la réponse
 
-### Préparer un nouveau projet (dossier vide ou presque)
+#### Préparer un nouveau projet (dossier vide ou presque)
 
 1. **Git sans nom ou email** : les demander (nom affiché dans l'historique, email, qui peut être celui du compte GitHub), puis `git config --global user.name "…"` et `git config --global user.email "…"`. Expliquer : chaque version enregistrée porte le nom de son auteur.
 2. **Questions** : d'abord le **nom** (si l'argument est vide) et une **description** en une phrase (facultative), demandés en texte dans la conversation (réponse libre) ; puis, en une ronde AskUserQuestion, votre **niveau** en programmation : « Jamais programmé » / « Quelques notions » / « Développeur », et la **quantité d'explications** voulue : « Normales (Recommandé) » / « L'essentiel » / « Détaillées ». Réserver les questions techniques à plus tard : la pile se choisit avec `/pulse:tech`, une fois le besoin compris.
-3. **Créer** : lancer `pulse-aidd nouveau "<nom>" --ici --description "<description>" --oui`. Le script crée **uniquement les fichiers absents** (CLAUDE.md complet, avec un bloc Pile technique qui indique « Pile non choisie », `.gitignore`, `.env.example`, README, dossiers `docs/` et `aidd_docs/`, mémoire branchée) et fait le premier enregistrement Git. Il n'installe aucune technologie. Puis écrire les deux réponses du profil dans le bloc `<!-- pulse_profil:debut -->` de `CLAUDE.md` (lignes « Niveau » et « Explications »).
+3. **Créer** : lancer `pulse-aidd nouveau "<nom>" --ici --description "<description>" --oui`. Le script crée **uniquement les fichiers absents** (CLAUDE.md complet, avec une section « Stack technique » qui indique « Pile non choisie », `.gitignore`, `.env.example`, README, dossiers `docs/` et `aidd_docs/`, mémoire branchée) et fait le premier enregistrement Git. Il n'installe aucune technologie. Puis écrire les deux réponses du profil dans le bloc `<!-- pulse_profil:debut -->` de `CLAUDE.md` (lignes « Niveau » et « Explications »).
 4. **Lire sa sortie** et la traduire simplement. Si elle indique que le dossier fait partie d'un autre dépôt Git : expliquer le risque (les fichiers du projet finiraient dans ce dépôt) et proposer « Créer un historique propre à ce projet (Recommandé) » → `git init -b main`, puis `git add -A -- .` et `git commit -m "chore: initialisation du projet avec Pulse"`.
    Puis lancer `pulse-aidd installer-hook` : un contrôle des secrets s'exécute avant chaque commit, même fait hors de Claude Code ; le dire en une phrase.
 5. **Protéger les secrets** : proposer d'ajouter à `.claude/settings.json` (créé s'il manque) `{ "permissions": { "deny": ["Read(./.env)", "Read(./.env.local)", "Read(./.env.*.local)", "Read(./.env.envoi)"] } }`. Une phrase : « Vos clés seront dans un fichier `.env` ; cette règle empêche l'IA de le lire. » Demander l'accord par une question (« Protéger mes clés (Recommandé) » / « Plus tard »), sans afficher le bloc : il s'affiche sur demande, si la personne veut le détail. Écrire après accord (Claude Code demande l'autorisation : c'est un changement de configuration).
@@ -105,18 +115,19 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
 
 8. **Choisir le parcours** (AskUserQuestion) : « Parcours express (Recommandé pour démarrer vite) » : une seule conversation pour l'idée, les écrans, l'apparence et les contraintes, puis les outils et l'identité visuelle, jusqu'à la première US prête à réaliser ; ou « Parcours complet, étape par étape » : brief, PRD, choix techniques, identité, user stories, chacun avec son entretien approfondi. Express : lancer `pulse-aidd etape express --sans-communes`, puis appliquer à l'identique ses sections « 1. Annoncer le parcours » à « 7. L'identité visuelle », et sa « Fin » hors bloc de fin de commande. Complet : reprendre la boucle (prochaine étape : `/pulse:brainstorm`).
 
-### Reprendre un projet existant (du code sans Pulse)
+#### Reprendre un projet existant (du code sans Pulse)
 
 1. Expliquer : « Votre projet a déjà du code. Je vais lui ajouter les règles et la mémoire de Pulse, en gardant tout ce qui existe. »
-2. Si `CLAUDE.md` existe **sans** Pulse : le garder et le compléter. Montrer les sections à ajouter (Le projet, Comportement, Communication, Action, Pile technique avec ses marqueurs, Qualité du code, Sécurité, Mémoire avec ses marqueurs, Adresses, d'après le « Modèle : CLAUDE.md ») et demander l'accord avant de les ajouter. Garder les règles existantes ; signaler une contradiction et laisser la personne trancher.
+2. Si `CLAUDE.md` existe **sans** Pulse : le garder et le compléter. Montrer les sections à ajouter, d'après le « Modèle : CLAUDE.md » (Résumé du projet avec ses adresses, Stack technique avec ses marqueurs, Architecture avec la mémoire et ses marqueurs, Commandes, Contraintes) et demander l'accord avant de les ajouter. Garder les règles existantes ; signaler une contradiction et laisser la personne trancher.
 3. Lancer `pulse-aidd nouveau "<nom>" --ici --oui --sans-git` pour créer les autres éléments manquants (il garde tous les fichiers existants).
 4. Pas de dépôt distant : appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail ».
 5. Prochaine étape recommandée : `/pulse:memory creer` (remplir la mémoire à partir du code), puis `/pulse:tech` (documenter la pile observée dans le code).
 
-### Mettre à niveau un projet Pulse plus ancien
+#### Mettre à niveau un projet Pulse plus ancien
 
 - Bloc mémoire ou `glossary.md` manquant → appliquer `pulse-aidd etape memory --sans-communes` (action `creer`).
-- Bloc `pulse_profil` absent de `CLAUDE.md`, ou « Niveau : à préciser » → poser les deux questions du profil (niveau, quantité d'explications) en une ronde, puis ajouter ou remplir le bloc dans la section « Communication » (modèle `CLAUDE.md`).
+- Bloc `pulse_profil` absent de `CLAUDE.md`, ou « Niveau : à préciser » → poser les deux questions du profil (niveau, quantité d'explications) en une ronde, puis ajouter ou remplir le bloc dans « Communication » de la section « Contraintes » (modèle `CLAUDE.md`).
+- `CLAUDE.md` sans la section « Résumé du projet » (trame d'avant Pulse 0.39) → le réorganiser selon le modèle `CLAUDE.md` : Résumé du projet, Stack technique, Architecture, Commandes, Contraintes. Reprendre tels quels la description, les adresses, le contenu des blocs `pulse_profil`, `pulse_pile` et `pulse_memoire`, et chaque règle ajoutée par la personne (dans « Contraintes »). Dire en une phrase ce qui change (« les règles du projet sont rangées dans un ordre plus simple, rien n'est perdu »), demander l'accord, puis écrire.
 - `CLAUDE.md` contient l'ancien accueil « AI-Driven », la ligne « Commit et envoi vers le dépôt distant : uniquement sur demande » ou « `aidd_docs/tasks/` : traces de travail par session » → remplacer ces lignes par celles du modèle `CLAUDE.md` (accueil, « Commit et envoi », `aidd_docs/tasks/`), en le disant en une phrase.
 - `.gitignore` sans la ligne `aidd_docs/tasks/in-progress.md` → l'ajouter (avec les deux lignes du modèle `.gitignore`), en expliquant en une phrase : ce fichier note une décision en attente, propre à cette machine.
 - `scripts/verifier.js` présent sans le contrôle des scénarios (le mot « Scénarios » n'y figure pas) ou sans le contrôle avant commit (`--index` n'y figure pas) → montrer la différence (`pulse-aidd modele verifier.js` comparé à la copie du projet), demander l'accord de la personne, puis le mettre à jour avec `pulse-aidd installer-ci --forcer` (puis supprimer `scripts/ci-verifications.exemple.yml`, inutile), en expliquant en une phrase : le contrôle avant mise en ligne vérifie maintenant que chaque scénario prévu en test automatique a son test.
@@ -131,16 +142,22 @@ Ajouter : « Le code et ses dossiers viendront après le choix de la pile techni
   5. Supprimer les anciens fichiers (`git rm`, ou `git mv` quand un fichier passe entier), déplacer `docs/design/maquettes/<ancien nom>/` vers `docs/design/maquettes/US-XXX-<nom>/` si la maquette ne concerne qu'une US, déplacer chaque rapport `docs/revues/Tn-*.md` dans le dossier de relecture du plan qui contient la tâche `Tn` (`aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/`) et chaque audit `docs/revues/ui-*.md` dans `docs/design/audits/`, lancer `pulse-aidd guide`, et montrer le résultat. Les numéros de tâche restent valables.
   Faire un commit `docs: réorganisation des user stories, specs et plans par groupe` une fois la personne d'accord.
 
-### Lancer une étape de la méthode
+#### Lancer une étape de la méthode
 
-Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande> --sans-communes` (ex. `pulse-aidd etape brainstorm --sans-communes`), puis appliquer sa section « Déroulé » à l'identique, **hors** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
+Les commandes Pulse ne peuvent pas s'appeler entre elles directement. Pour lancer l'étape choisie **dans la foulée** : lancer `pulse-aidd etape <commande> --sans-communes` (ex. `pulse-aidd etape brainstorm --sans-communes`), puis appliquer sa section « Processus » à l'identique, **hors** son bloc de fin de commande. Ensuite, **relire l'état** et montrer l'écran suivant.
 
 Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/clear` puis lancez `<commande>` : vous repartirez avec une conversation légère. »
 
-### « M'expliquer la méthode »
+#### « M'expliquer la méthode »
 
 Montrer le chemin de « Le cycle Pulse » ci-dessus (son bloc, puis ses deux dernières lignes : `/pulse:spirc` et les commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
 
-## Fin
+### Fin
 
 Quand la personne arrête la boucle (ou après une étape lancée), terminer avec le bloc de fin de commande ; la prochaine étape est celle de l'écran.
+
+## Exemples
+
+- `/pulse:init` dans un dossier vide : l'écran propose de préparer le projet ; après votre accord, quelques questions (nom, niveau, explications), puis les dossiers et la mémoire sont créés.
+- `/pulse:init` au milieu du travail : l'écran « Votre projet » montre où vous en êtes et propose la prochaine étape ; rien ne se lance sans votre réponse.
+- `/pulse:init` dans un projet qui a déjà du code : les règles et la mémoire de Pulse s'ajoutent, et tout ce qui existe est gardé.
