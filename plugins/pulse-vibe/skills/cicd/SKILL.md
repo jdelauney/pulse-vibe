@@ -13,11 +13,6 @@ Expliquer en deux phrases : « L'intégration continue (CI), c'est un contrôle 
 
 Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, se met en place avec `/pulse:deploy` : cette commande se limite à la CI.
 
-| Argument | Action |
-|---|---|
-| vide | Installer la CI, ou la mettre à jour si elle existe (§ 1 à 6), puis proposer la protection (§ 7) et les mises à jour des dépendances (§ 8) |
-| `proteger` | Seulement protéger la branche principale (§ 7) ; la CI doit déjà exister |
-
 ## Règles
 
 Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
@@ -29,6 +24,13 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
 Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.
 
 Argument : `$ARGUMENTS`
+
+### Choisir l'action
+
+| Argument | Action |
+|---|---|
+| vide | Installer la CI, ou la mettre à jour si elle existe (§ 1 à 6), puis proposer la protection (§ 7) et les mises à jour des dépendances (§ 8) |
+| `proteger` | Seulement protéger la branche principale (§ 7) ; la CI doit déjà exister |
 
 ### Prérequis
 
