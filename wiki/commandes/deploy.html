@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="deploy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:deploy – Wiki Pulse</title>
+<meta name="description" content="Mettre l'appli en ligne et la mettre à jour automatiquement à chaque envoi, puis passer en mode production (variables, services, retour arrière ; les contrôles automatiques se mettent en place avec /pulse:cicd).">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 5 · Mettre en ligne</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:deploy</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Mettre l'appli en ligne et la mettre à jour automatiquement à chaque envoi, puis passer en mode production (variables, services, retour arrière ; les contrôles automatiques se mettent en place avec /pulse:cicd).</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Cette commande met votre appli en ligne, chez l'hébergeur choisi avec <a href="tech.html"><code>/pulse:tech</code></a>. La première fois, elle relie votre projet à un dépôt en ligne, puis vous guide pas à pas chez l'hébergeur. Ensuite, c'est comme un document partagé qui se met à jour tout seul : chaque fois que vous envoyez une nouvelle version, le site se met à jour en quelques minutes.</p>
+<p>Avant chaque envoi, Pulse vérifie que tout est enregistré, que vos clés restent hors du code, et que les tests et la construction passent. Après la publication, il prouve que le site répond vraiment et qu'il reste visible pour Google. Le mode production prépare enfin le site « pour de vrai » : les variables secrètes chez l'hébergeur, les services connectés, une surveillance et un plan de retour arrière.</p>
+<pre class="commande"><code>Mise en ligne :
+  Contrôles    ✅ secrets · tests · construction
+  Envoi        ✅ version envoyée au dépôt distant
+  Site         ✅ https://carnet-coiffure.example répond
+  Google       ✅ le site reste visible
+
+➡️ Votre nouveauté est en ligne : ouvrez l'adresse pour la voir.</code></pre>
+<p class="legende">Les preuves que <code>/pulse:deploy</code> donne à la fin d'une mise à jour.</p>
+
+<figure class="anim" data-etapes="5" data-duree="1300">
+<svg viewBox="0 0 640 240" role="img" aria-labelledby="schema-deploy-titre">
+<title id="schema-deploy-titre">La chaîne de mise en ligne de /pulse:deploy</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="76" width="142" height="68" rx="18"/><rect class="schema-boite" x="10" y="82" width="130" height="56" rx="14"/><text class="schema-texte" x="75" y="108" text-anchor="middle">Envoi</text><text class="schema-texte-secondaire" x="75" y="126" text-anchor="middle">après votre accord</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M140 110 H164" marker-end="url(#pointe-grise-deploy)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="162" y="76" width="142" height="68" rx="18"/><rect class="schema-boite" x="168" y="82" width="130" height="56" rx="14"/><text class="schema-texte" x="233" y="108" text-anchor="middle">Contrôles</text><text class="schema-texte-secondaire" x="233" y="126" text-anchor="middle">automatiques</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M298 110 H322" marker-end="url(#pointe-grise-deploy)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="320" y="76" width="142" height="68" rx="18"/><rect class="schema-boite" x="326" y="82" width="130" height="56" rx="14"/><text class="schema-texte" x="391" y="108" text-anchor="middle">L'hébergeur</text><text class="schema-texte-secondaire" x="391" y="126" text-anchor="middle">construit et publie</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M456 110 H480" marker-end="url(#pointe-grise-deploy)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="478" y="76" width="142" height="68" rx="18"/><rect class="schema-boite-active" x="484" y="82" width="130" height="56" rx="14"/><text class="schema-texte" x="549" y="108" text-anchor="middle">Le site répond</text><text class="schema-texte-secondaire" x="549" y="126" text-anchor="middle">vérifié par Pulse</text></g>
+<g class="e5" data-etape="5"><path class="schema-accompagne trace e5" pathLength="1" d="M549 140 C549 200 391 200 391 146" marker-end="url(#pointe-mauve-deploy)"/><text class="schema-texte-secondaire" x="470" y="222" text-anchor="middle">si besoin : retour à la version précédente</text></g>
+<defs>
+<marker id="pointe-grise-deploy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+<marker id="pointe-mauve-deploy" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
+</defs>
+</svg>
+<figcaption>Vous acceptez l'envoi de votre travail vers le dépôt distant. Les contrôles automatiques vérifient le projet, puis l'hébergeur construit et publie la nouvelle version. Pulse vérifie que le site répond. Si quelque chose ne va pas, l'hébergeur peut remettre en ligne la version précédente.</figcaption>
+</figure>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Votre site est en ligne dès la première fois.</strong> Un guidage écran par écran chez l'hébergeur, une étape à la fois.</li>
+<li><strong>Chaque envoi met le site à jour tout seul.</strong> Vous enregistrez, vous envoyez : quelques minutes plus tard, la nouveauté est visible.</li>
+<li><strong>Une mise en ligne est prouvée, pas supposée.</strong> Pulse vérifie que le site répond et qu'il reste ouvert à Google.</li>
+<li><strong>Tout reste réparable.</strong> Le mode production écrit le chemin du retour arrière, pour le site puis pour les données.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>La première fois</strong>, une fois l'hébergeur choisi avec <a href="tech.html"><code>/pulse:tech</code></a> et le travail enregistré.</li>
+<li><strong>À chaque nouvelle version</strong> à publier, après <a href="commit.html"><code>/pulse:commit</code></a>.</li>
+<li><strong>Quand le site sert de vrais clients</strong>, ou stocke des données, ou utilise des clés : <code>/pulse:deploy production</code>.</li>
+<li><strong>Après la première mise en ligne</strong>, Pulse propose <a href="security.html"><code>/pulse:security</code></a>, puis <a href="seo.html"><code>/pulse:seo lancer</code></a> si le site doit être trouvé sur Google.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> la première fois, acceptez la petite modification de démonstration (le titre de la page, par exemple). Vous verrez la nouvelle version arriver en ligne sans rien faire d'autre qu'envoyer.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:deploy [premiere | production]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Détecté automatiquement si vide.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Sans argument</strong> : Pulse choisit tout seul. Pas encore de dépôt distant : première mise en ligne. Sinon : mise à jour. Un projet avec des données ou des clés mais sans contrôle avant mise en ligne passe aussi par le mode production.</li>
+<li><code>premiere</code> : la première mise en ligne, avec le dépôt distant, le guidage chez l'hébergeur et un contrôle rapide de sécurité avant.</li>
+<li><code>production</code> : le mode « pour de vrai » : contrôle avant chaque mise en ligne, variables chez l'hébergeur, services connectés, surveillance, retour arrière.</li>
+</ul>
+<pre class="commande"><code>/pulse:deploy</code></pre>
+<pre class="commande"><code>/pulse:deploy production</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier ou lieu</th><th>Ce qui change</th></tr></thead>
+<tbody>
+<tr><td>Chez l'hébergeur</td><td>Votre site en ligne, mis à jour à chaque envoi.</td></tr>
+<tr><td><code>CLAUDE.md</code>, <code>README.md</code></td><td>L'adresse du dépôt et celle du site, dans la section « Adresses ».</td></tr>
+<tr><td><code>docs/technical.md</code></td><td>Les lignes « Site en ligne » et « Surveillance », et la section « Retour arrière ».</td></tr>
+<tr><td>Fichier de configuration de l'hébergeur</td><td>Seulement si sa documentation l'exige ; montré avant d'être écrit.</td></tr>
+<tr><td><code>docs/performance.md</code></td><td>Facultatif : la première mesure de vitesse de l'accueil, point de départ.</td></tr>
+<tr><td>Le plan en cours</td><td>La tâche « Mettre en ligne… » cochée, avec une ligne dans son journal.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Chaque envoi passe par votre accord.</strong> Claude Code vous le demande : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie.</li>
+<li><strong>Une erreur bloque l'envoi.</strong> Un test en échec, une clé trouvée dans le code ou une construction ratée arrêtent tout avant la mise en ligne.</li>
+<li><strong>La première mise en ligne passe un contrôle rapide de sécurité.</strong> Un point « à corriger tout de suite » la bloque ; une clé exposée se traite avec <a href="secrets.html"><code>/pulse:secrets fuite</code></a>.</li>
+<li><strong>Vos clés ne passent jamais par la conversation.</strong> Elles vont de votre éditeur à <code>.env</code>, puis à l'hébergeur, ou vous les saisissez vous-même dans ses réglages.</li>
+<li>Les actions chez l'hébergeur et chez le service de surveillance se font par vous, guidé d'après leur documentation officielle.</li>
+</ul>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> l'envoi d'une variable vers l'hébergeur change la production. Claude Code vous demande l'accord à chaque fois : lisez le nom de la variable et l'environnement visé avant d'accepter. Une variable modifiée sert au déploiement suivant : Pulse redéploie ensuite le site.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> l'hébergeur est Vercel, le dépôt GitHub et la base Neon. Chaque construction sur Vercel lance les tests, puis applique les changements de la base après une sauvegarde, puis construit : un test qui échoue arrête tout et la version en ligne reste celle d'avant. Pulse vous guide pour relier Neon à Vercel, une étape à la fois. Chaque prévisualisation reçoit sa propre copie de la base ; utilisez-y des clés de test et un envoi d'e-mails de test, pour ne jamais écrire à de vraies clientes. La sonde de disponibilité vise <code>/api/sante</code>, toutes les 15 à 30 minutes, et les erreurs se lisent dans Vercel → Logs (gardées 1 heure sur l'offre gratuite).</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Il faut d'abord choisir où mettre l'appli en ligne »</summary><p>L'hébergeur ou le dépôt distant ne sont pas encore choisis dans <code>docs/technical.md</code>. Lancez <a href="tech.html"><code>/pulse:tech</code></a>, puis revenez à <code>/pulse:deploy</code>.</p></details>
+<details class="probleme"><summary>Un test ou la construction échoue avant l'envoi</summary><p>L'envoi attend que tout passe. Corrigez avec <a href="fix.html"><code>/pulse:fix</code></a> ou <a href="auto-fix.html"><code>/pulse:auto-fix</code></a>, puis relancez <code>/pulse:deploy</code>.</p></details>
+<details class="probleme"><summary>Le site ne répond pas après la publication</summary><p>Pulse lit la cause donnée par sa vérification et vous l'explique : souvent un réglage de construction chez l'hébergeur, ou une variable manquante. Vous corrigez ensemble, puis il vérifie à nouveau.</p></details>
+<details class="probleme"><summary>« Mise en ligne à corriger : Google ne peut pas voir le site »</summary><p>Le garde-fou de référencement a trouvé un blocage grave, par exemple une page publique marquée « à ne pas indexer » ou une adresse officielle qui pointe vers votre ordinateur. Pulse explique la conséquence, corrige, remet en ligne et vérifie à nouveau.</p></details>
+<details class="probleme"><summary>Ma branche s'appelle <code>master</code></summary><p>Pulse propose de la renommer <code>main</code>, le nom de la version publiée par les hébergeurs.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : la première mise en ligne">
+<p data-role="vous">/pulse:deploy</p>
+<p data-role="claude">Contrôles : ✅ tout est enregistré · ✅ aucune clé dans le code · ✅ tests et construction · ✅ contrôle rapide de sécurité.
+Pas encore de dépôt distant : je vous guide pour en créer un.</p>
+<p data-role="claude">Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie.
+Maintenant, chez l'hébergeur : connectez-vous avec votre compte du dépôt, puis créez un nouveau projet à partir du dépôt carnet-reservations. Dites-moi quand c'est fait.</p>
+<p data-role="vous">C'est en ligne : https://carnet-coiffure.example</p>
+<p data-role="outil">pulse-aidd sonder https://carnet-coiffure.example --texte "Carnet de réservations"
+pulse-aidd seo https://carnet-coiffure.example --essentiel</p>
+<p data-role="claude">✅ Le site répond et affiche « Carnet de réservations ». ✅ Google peut le voir.
+Mesurer la vitesse de la page d'accueil maintenant (2 minutes, point de départ) ? (Recommandé) · Plus tard</p>
+</div>
+<div class="conversation" data-titre="Exemple : passer en mode production">
+<p data-role="vous">/pulse:deploy production</p>
+<p data-role="claude">Avant chaque mise en ligne, un contrôle qualité automatique vérifiera le projet. S'il échoue, l'ancienne version reste en ligne à la place de la nouvelle, défectueuse.</p>
+<p data-role="outil">pulse-aidd secrets inventaire</p>
+<p data-role="claude">Une variable manque en production : SMTP_PASSWORD, le mot de passe d'envoi des e-mails de confirmation. Je prépare la ligne vide dans votre fichier ; collez-y la valeur dans votre éditeur, enregistrez, fermez l'onglet, puis dites-moi « c'est fait ».
+Je ne lirai jamais cette valeur : elle part directement chez l'hébergeur, après votre accord.</p>
+<p data-role="claude">Dernière étape : une sonde de disponibilité, qui vous prévient par e-mail si le site ne répond plus. Puis je vous montre le retour arrière : tout reste réparable.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="cicd.html"><code>/pulse:cicd</code></a> : les contrôles automatiques, qui complètent la mise en ligne automatique.</li>
+<li><a href="secrets.html"><code>/pulse:secrets</code></a> : l'inventaire de vos clés, et que faire si l'une a fuité.</li>
+<li><a href="security.html"><code>/pulse:security</code></a> : l'audit complet, une fois le site ouvert à tous.</li>
+<li><a href="seo.html"><code>/pulse:seo</code></a> : être trouvé sur Google, une fois le site sur son adresse définitive.</li>
+<li><a href="perf.html"><code>/pulse:perf</code></a> : mesurer la vitesse vécue par vos visiteurs.</li>
+<li><a href="pr.html"><code>/pulse:pr</code></a> : tester une nouveauté sur une adresse de prévisualisation avant de la publier.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

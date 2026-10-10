@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="search-console">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:search-console – Wiki Pulse</title>
+<meta name="description" content="Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="4">Étape 6 · Être trouvé</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:search-console</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Search Console, c'est le tableau de bord que Google vous tend : ce qu'il a trouvé sur votre site, et ce que les gens ont tapé pour vous trouver. Cette commande vous y accompagne en trois temps.</p>
+<p><strong>Relier</strong>, une seule fois : vous prouvez à Google que le site est à vous, vous lui donnez le plan du site, puis vous l'importez dans Bing. <strong>Lire</strong> : Pulse transforme les chiffres de Google en un rapport court, avec trois actions prioritaires. <strong>Suivre</strong>, tous les 28 jours : Pulse compare avec la période d'avant et relie les écarts aux changements faits sur le site.</p>
+<p>Tout se fait en lecture seule, avec votre propre compte Google. Pulse ne modifie rien chez Google : c'est vous qui cliquez dans l'interface.</p>
+<table>
+<thead><tr><th>Quand</th><th>Ce qui se passe</th></tr></thead>
+<tbody>
+<tr><td>Jour 0</td><td>Site relié, plan du site déclaré, import dans Bing.</td></tr>
+<tr><td>Jour 2 à 3 (jusqu'à une semaine pour un site neuf)</td><td>Premières données.</td></tr>
+<tr><td>Jour 28</td><td>Premier vrai rapport, avec <code>lire</code>.</td></tr>
+<tr><td>Puis tous les 28 jours</td><td>Comparaison avec la période d'avant, avec <code>suivre</code>.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous voyez ce qui se passe vraiment.</strong> <a href="seo.html"><code>/pulse:seo</code></a> dit ce qui pourrait freiner le site ; Search Console dit combien de gens l'ont vu et sur quels mots.</li>
+<li><strong>Chaque chiffre est expliqué.</strong> Il est suivi de son sens, puis d'une action ou de « rien à faire, c'est normal ».</li>
+<li><strong>Vous savez quoi améliorer.</strong> Trois actions prioritaires par rapport, vérifiées dans le code de votre site.</li>
+<li><strong>Aucun secret à donner.</strong> Par défaut, vous exportez un fichier depuis Search Console et Pulse le lit.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4" aria-current="step"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Votre site vient d'être mis en ligne</strong> sur son adresse définitive : <code>relier</code>.</li>
+<li><strong>28 jours ont passé</strong> depuis que le site est relié : <code>lire</code>.</li>
+<li><strong>Le dernier rapport a 28 jours</strong> : <code>suivre</code>. <a href="status.html"><code>/pulse:status</code></a> vous le rappelle.</li>
+<li><strong>Une page ne semble pas apparaître dans Google</strong> : <code>inspecter</code>.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> si vous prévoyez de changer bientôt de nom de domaine, attendez ce changement pour relier le site. Vous éviterez de tout recommencer.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:search-console [relier | lire [28j|3m] | suivre | inspecter &lt;adresse&gt;]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Détecté si vide.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong><code>relier</code></strong> : une étape à la fois. Ajouter le site dans Search Console, prouver qu'il est à vous (par un code à placer dans la page d'accueil, ou dans les réglages de votre nom de domaine), déclarer le plan du site, l'importer dans Bing, puis choisir comment Pulse lira les données.</li>
+<li><strong><code>lire</code></strong>, avec <code>28j</code> (les 28 derniers jours) ou <code>3m</code> (3 mois) : le rapport, ses chiffres expliqués et les trois actions prioritaires.</li>
+<li><strong><code>suivre</code></strong> : les 28 derniers jours comparés aux 28 jours d'avant, reliés aux changements du site.</li>
+<li><strong><code>inspecter</code> suivi de l'adresse complète d'une page</strong> : ce que Google sait de cette page, et quoi faire.</li>
+<li><strong>Rien</strong> : Pulse choisit pour vous. Pas encore relié, il propose <code>relier</code> ; pas de rapport, <code>lire</code> ; dernier rapport de 28 jours ou plus, <code>suivre</code>.</li>
+</ul>
+<pre class="commande"><code>/pulse:search-console relier</code></pre>
+<pre class="commande"><code>/pulse:search-console lire 3m</code></pre>
+<pre class="commande"><code>/pulse:search-console inspecter https://carnet-salon.fr/reserver</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/technical.md</code></td><td>La section « Référencement » : site relié, méthode de vérification, date, plan du site, Bing, façon de lire les données.</td></tr>
+<tr><td><code>docs/referencement/search-console-&lt;date&gt;.md</code></td><td>Le rapport : « En bref », les chiffres expliqués, les trois actions prioritaires et la date du prochain rapport.</td></tr>
+<tr><td><code>docs/referencement/donnees/&lt;date&gt;.json</code></td><td>Les chiffres bruts de la période, qui servent à la comparaison suivante.</td></tr>
+</tbody>
+</table>
+<p>Pour la vérification par la page d'accueil, Pulse place aussi le code de Google dans le code de votre site. Ce code est public, et il doit rester en place pour toujours.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Vous gardez la main chez Google.</strong> Ajouter le site, cliquer « Vérifier », déclarer le plan du site et importer dans Bing se font dans l'interface, avec votre compte.</li>
+<li><strong>La connexion Google est facultative et en lecture seule.</strong> Pulse demande seulement le chemin du fichier téléchargé, jamais son contenu. L'accès est rangé hors du projet, dans votre dossier personnel.</li>
+<li><strong>Retirer l'accès</strong> plus tard supprime un fichier : Claude Code vous demande alors l'autorisation.</li>
+<li><strong>Les mots tapés par les internautes</strong> peuvent contenir des noms de personnes. Si votre dépôt est public, Pulse propose de garder le dossier des chiffres bruts hors de Git.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> ne retirez jamais le code de vérification de Google de votre site. S'il disparaît, Google considère que le site n'est plus à vous, et la propriété se perd après un délai.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>« Vérifier » échoue après avoir ajouté l'enregistrement de mon nom de domaine</summary><p>La prise en compte peut prendre jusqu'à 24 heures. Pulse note l'étape en cours ; revenez plus tard avec <code>/pulse:search-console relier</code>, et les étapes déjà faites seront sautées.</p></details>
+<details class="probleme"><summary>« Pas encore de données »</summary><p>C'est normal pour un site neuf : les premières données arrivent en 2 à 3 jours, parfois une semaine. Pulse vous donne la date à laquelle revenir.</p></details>
+<details class="probleme"><summary>Les chiffres sont tout petits et Pulse ne conclut rien</summary><p>Avant environ 28 jours et quelques centaines d'apparitions dans Google, les chiffres ne permettent aucune conclusion. Pulse vous le dit plutôt que de commenter du bruit.</p></details>
+<details class="probleme"><summary>La somme des requêtes est bien plus petite que le total</summary><p>Google masque les recherches rares, pour protéger la vie privée. Sur un petit site, l'écart peut dépasser la moitié. C'est normal.</p></details>
+<details class="probleme"><summary>« Connexion expirée ou retirée »</summary><p>Reconnectez-vous en suivant les étapes de <code>relier</code>. Si votre application Google est restée en mode test, publiez-la : sinon, Google coupe l'accès au bout de 7 jours.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : relier le site du salon">
+<p data-role="vous">/pulse:search-console relier</p>
+<p data-role="claude">Search Console, c'est le tableau de bord que Google vous tend : ce qu'il a trouvé sur votre site, et ce que les gens ont tapé pour vous trouver.
+Votre site est sur votre propre domaine, carnet-salon.fr : on le vérifie par un enregistrement dans les réglages du domaine.
+Ouvrez Search Console avec votre compte Google, choisissez « Ajouter une propriété », puis « Domaine ». Copiez ici la valeur qu'il vous montre (elle n'est pas secrète).</p>
+<p data-role="vous">google-site-verification=Ab12Cd34…</p>
+<p data-role="claude">Ajoutez cette valeur chez votre registraire, je vous guide pas à pas. Puis cliquez « Vérifier ».</p>
+<p data-role="outil">pulse-aidd sonder https://carnet-salon.fr/sitemap.xml --texte "&lt;urlset"</p>
+<p data-role="claude">Le plan du site est bien servi. Déclarez-le dans Search Console : Sitemaps, adresse, Envoyer.
+Premières données dans 2 à 3 jours ; premier vrai rapport dans 28 jours, avec /pulse:search-console lire.</p>
+</div>
+<div class="conversation" data-titre="Exemple : lire le premier rapport">
+<p data-role="vous">/pulse:search-console lire</p>
+<p data-role="claude">Exportez les résultats de recherche des 28 derniers jours (Performances, Exporter), puis donnez-moi le chemin de l'archive téléchargée.</p>
+<p data-role="vous">C:\Users\moi\Downloads\carnet-salon.fr-Performance.zip</p>
+<p data-role="outil">pulse-aidd search-console lire --fichier "C:\Users\moi\Downloads\carnet-salon.fr-Performance.zip" --ecrire</p>
+<p data-role="claude">En bref : votre site est apparu 640 fois dans Google et a reçu 31 visites.
+Action 1 : « coiffeur sans rendez-vous lyon » vous place en 12e position. Votre page d'accueil en parle peu : enrichissez-la et ajoutez un lien vers elle.
+Rapport : docs/referencement/search-console-2026-10-10.md
+➡️ Prochaine étape : /pulse:search-console suivre, le 2026-11-07.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre le site en ligne, avant de le relier.</li>
+<li><a href="seo.html"><code>/pulse:seo</code></a> : préparer le plan du site, et revoir le titre d'une page bien placée mais peu cliquée.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : transformer une action du rapport en demande.</li>
+<li><a href="status.html"><code>/pulse:status</code></a> : se faire rappeler la date du prochain rapport.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

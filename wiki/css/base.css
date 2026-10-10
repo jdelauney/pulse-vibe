@@ -1,0 +1,597 @@
+/* Wiki Pulse – styles de base. Charte : wiki/CHARTE.md (« L'Atelier Vivant »).
+   Les pages emploient les variables de rôle (--fond, --primaire…), jamais les valeurs brutes. */
+
+@font-face {
+  font-family: "Figtree";
+  src: url("../assets/polices/figtree-variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Couleurs de la charte */
+  --orange-incandescent: oklch(0.68 0.2 30);
+  --braise-sourde: oklch(0.25 0.03 30);
+  --mauve-remanence: oklch(0.65 0.22 310);
+  --noir-de-chambre: oklch(0.141 0.005 285.823);
+  --ardoise-vive: oklch(0.16 0.02 290);
+  --penombre-mauve: oklch(0.22 0.02 300);
+  --gris-de-veille: oklch(0.7 0.03 300);
+  --blanc-de-trait: oklch(0.96 0 0);
+  --blanc-signal: oklch(0.98 0 0);
+  --lisere-remanent: oklch(0.4 0.08 320 / 30%);
+  --contour-de-champ: oklch(61.479% 0.04075 320.305 / 0.8);
+  --rouge-alerte: oklch(0.65 0.25 25);
+  --trainee-1: #FF6B35;
+  --trainee-2: #FF8C42;
+  --trainee-3: #C56CF0;
+  --trainee-4: #9B59B6;
+  --trainee-5: #8E44AD;
+  --maturite-1: #FD6844;
+  --maturite-2: #FE8C2C;
+  --maturite-3: #E068D8;
+  --maturite-4: #B96AFF;
+
+  /* Rôles */
+  --fond: var(--noir-de-chambre);
+  --surface: var(--ardoise-vive);
+  --surface-attenuee: var(--penombre-mauve);
+  --texte: var(--blanc-de-trait);
+  --texte-secondaire: var(--gris-de-veille);
+  --texte-sur-accent: var(--blanc-signal);
+  --primaire: var(--orange-incandescent);
+  --primaire-eteint: var(--braise-sourde);
+  --accompagne: var(--mauve-remanence);
+  --lisere: var(--lisere-remanent);
+  --contour-champ: var(--contour-de-champ);
+  --alerte: var(--rouge-alerte);
+  --anneau: oklch(0.68 0.2 30 / 50%);
+
+  /* Typographie : quatre pas (13 / 14 / 16 / 18) et les titres */
+  --police: "Figtree", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --police-code: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --texte-xs: 0.8125rem;
+  --texte-sm: 0.875rem;
+  --texte-base: 1rem;
+  --texte-lg: 1.125rem;
+
+  /* Formes */
+  --rayon-sm: 6px;
+  --rayon-md: 8px;
+  --rayon-lg: 10px;
+  --rayon-xl: 14px;
+  --rayon-2xl: 16px;
+  --rayon-3xl: 24px;
+  --rayon-pilule: 9999px;
+
+  /* Profondeur : ombres neutres pour la hiérarchie */
+  --ombre-surface: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ombre-panneau: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --ombre-scene: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* Espacements */
+  --gouttiere: 12px;
+  --section: 64px;
+  --hauteur-entete: 4.5rem;
+
+  color-scheme: dark;
+}
+
+@media (min-width: 640px) { :root { --gouttiere: 16px; --section: 80px; } }
+@media (min-width: 768px) { :root { --gouttiere: 24px; --section: 96px; } }
+@media (min-width: 1024px) { :root { --gouttiere: 32px; --section: 112px; } }
+
+/* --- Base ---------------------------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  overflow-x: clip;
+  scroll-padding-top: 8rem;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--fond);
+  color: var(--texte);
+  font-family: var(--police);
+  font-size: var(--texte-base);
+  font-weight: 400;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+img, svg { max-width: 100%; height: auto; }
+
+a { color: var(--primaire); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--primaire);
+  outline-offset: 2px;
+  border-radius: var(--rayon-sm);
+}
+
+::selection { background: var(--primaire-eteint); color: var(--texte); }
+
+h1, h2, h3, h4 { margin: 0; line-height: 1.25; color: var(--texte); text-wrap: balance; }
+h1 { font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.75rem); font-weight: 900; letter-spacing: -0.025em; }
+h2 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.025em; line-height: 1.33; }
+h3 { font-size: var(--texte-lg); font-weight: 600; }
+p { margin: 0 0 24px; }
+h1 + p, h2 + p, h3 + p { margin-top: 0; }
+
+code {
+  font-family: var(--police-code);
+  font-size: 0.92em;
+  background: var(--surface-attenuee);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-sm);
+  padding: 0.05em 0.35em;
+}
+
+.lien-evitement {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: var(--primaire);
+  color: var(--texte-sur-accent);
+  border-radius: var(--rayon-pilule);
+  font-weight: 600;
+}
+.lien-evitement:focus { top: 1rem; }
+
+.visuellement-cache {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* --- Conteneurs et sections ---------------------------------------------------------------------------- */
+
+.conteneur, .conteneur-large, .conteneur-lecture {
+  margin-inline: auto;
+  padding-inline: var(--gouttiere);
+  width: 100%;
+}
+.conteneur { max-width: calc(1152px + 2 * var(--gouttiere)); }
+.conteneur-large { max-width: calc(1280px + 2 * var(--gouttiere)); }
+.conteneur-lecture { max-width: calc(896px + 2 * var(--gouttiere)); }
+
+.section { padding-block: var(--section); }
+
+.entete-section { text-align: center; margin-bottom: 48px; }
+.entete-section h2 {
+  font-size: clamp(1.875rem, 1.5rem + 1.6vw, 3rem);
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.25;
+  margin-top: 16px;
+}
+.entete-section .sous-titre {
+  color: var(--texte-secondaire);
+  max-width: 896px;
+  margin: 16px auto 0;
+  font-size: var(--texte-lg);
+}
+
+/* --- En-tête flottant (seul usage du flou) ------------------------------------------------------------- */
+
+.entete-site {
+  position: fixed;
+  inset: 16px 0 auto;
+  z-index: 50;
+  pointer-events: none;
+}
+.entete-site .barre {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-inline: auto;
+  width: min(1152px, calc(100% - 2 * var(--gouttiere)));
+  padding: 8px 16px;
+  background: oklch(0.16 0.02 290 / 50%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid oklch(0.4 0.08 320 / 18%);
+  border-radius: var(--rayon-pilule);
+  box-shadow: var(--ombre-panneau);
+}
+.marque {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--texte);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: var(--texte-lg);
+  white-space: nowrap;
+}
+.marque svg { width: 28px; height: 28px; }
+.navigation { margin-left: auto; }
+.navigation ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.navigation a {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: var(--rayon-pilule);
+  color: var(--texte);
+  text-decoration: none;
+  font-size: var(--texte-sm);
+  font-weight: 500;
+}
+.navigation a:hover { background: var(--surface-attenuee); }
+.navigation a[aria-current="page"] { color: var(--primaire); }
+.entete-site .bouton-menu { display: none; }
+
+@media (max-width: 767px) {
+  .entete-site .bouton-menu { display: inline-flex; margin-left: auto; }
+  .navigation { display: none; position: absolute; top: calc(100% + 8px); right: var(--gouttiere); left: var(--gouttiere); }
+  .navigation.ouverte { display: block; }
+  .navigation ul {
+    flex-direction: column;
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--lisere);
+    border-radius: var(--rayon-2xl);
+    box-shadow: var(--ombre-panneau);
+  }
+}
+
+main { padding-top: 8rem; }
+
+/* --- Pastilles, boutons, champs ------------------------------------------------------------------------ */
+
+/* Pastille d'accroche : étiquette inerte, jamais d'action. */
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--rayon-pilule);
+  background: var(--surface-attenuee);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+  font-weight: 500;
+  line-height: 1.25;
+}
+.pastille-etape { --etape: var(--accompagne); background: color-mix(in oklch, var(--etape) 10%, transparent); border: 1px solid color-mix(in oklch, var(--etape) 25%, transparent); color: var(--etape); }
+[data-couleur="0"] { --etape: var(--gris-de-veille); }
+[data-couleur="1"] { --etape: var(--maturite-1); }
+[data-couleur="2"] { --etape: var(--maturite-2); }
+[data-couleur="3"] { --etape: var(--maturite-3); }
+[data-couleur="4"] { --etape: var(--maturite-4); }
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 2rem;
+  padding: 0 0.625rem;
+  border-radius: var(--rayon-lg);
+  border: 1px solid var(--lisere);
+  background: transparent;
+  color: var(--texte);
+  font: 500 var(--texte-sm) / 1 var(--police);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms, opacity 150ms;
+}
+.bouton:hover { background: var(--surface-attenuee); }
+.bouton:focus-visible { outline: none; border-color: var(--primaire); box-shadow: 0 0 0 3px var(--anneau); }
+.bouton-plein { background: var(--primaire); border-color: transparent; color: var(--texte-sur-accent); }
+.bouton-plein:hover { background: var(--primaire); opacity: 0.8; }
+.bouton-fantome { border-color: transparent; }
+.bouton-grand { height: 2.5rem; padding: 0 1rem; font-size: var(--texte-base); }
+
+/* CTA à flamme : un seul par vue. */
+.cta {
+  --hauteur: 3rem;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--hauteur);
+  padding: 0 1.75rem;
+  border-radius: var(--rayon-pilule);
+  border: 0;
+  color: var(--texte-sur-accent);
+  font: 600 var(--texte-base) / 1 var(--police);
+  text-decoration: none;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.35);
+  background-image: linear-gradient(90deg, #880088, #a3166e, #c42d55, #dd6440, #f09f33, #dd6440, #c42d55, #a3166e, #880088);
+  background-size: 300% 100%;
+  background-position: 0% 50%;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -2px 6px rgb(0 0 0 / 0.45), 0 0 36px rgb(204 63 71 / 0.38);
+  transition: background-position 700ms ease, transform 200ms ease, box-shadow 300ms ease;
+}
+.cta:hover {
+  background-position: 100% 50%;
+  transform: scale(1.05);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), inset 0 -2px 6px rgb(0 0 0 / 0.45), 0 0 56px rgb(240 159 51 / 0.48);
+}
+.cta:active { transform: translateY(2px) scale(1); box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.45), inset 0 -1px 0 rgb(255 255 255 / 0.18); }
+.cta:focus-visible { outline: 2px solid var(--primaire); outline-offset: 3px; }
+.cta-grand { --hauteur: 3.5rem; padding: 0 2.25rem; font-size: var(--texte-lg); }
+.cta .lettre { display: inline-block; white-space: pre; }
+.cta:hover .lettre { animation: onde-lettre 500ms ease both; animation-delay: calc(var(--i) * 20ms); }
+@keyframes onde-lettre { 50% { transform: translateY(-3px); } }
+
+.champ {
+  height: 2rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--rayon-lg);
+  border: 1px solid var(--contour-champ);
+  background: transparent;
+  color: var(--texte);
+  font: 400 var(--texte-sm) / 1.25 var(--police);
+}
+.champ::placeholder { color: var(--texte-secondaire); }
+.champ:focus-visible { outline: none; border-color: var(--primaire); box-shadow: 0 0 0 3px var(--anneau); }
+.champ[aria-invalid="true"] { border-color: var(--alerte); box-shadow: 0 0 0 3px oklch(0.65 0.25 25 / 50%); }
+
+/* --- Cartes -------------------------------------------------------------------------------------------- */
+
+.carte {
+  display: block;
+  padding: 24px;
+  background: oklch(0.16 0.02 290 / 80%);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-2xl);
+  box-shadow: var(--ombre-surface);
+  color: var(--texte);
+  text-decoration: none;
+  transition: transform 300ms ease, border-color 300ms ease;
+}
+a.carte:hover { transform: translateY(-8px); border-color: oklch(0.4 0.08 320 / 60%); }
+.carte-titre { display: block; font-size: var(--texte-lg); font-weight: 600; margin-bottom: 8px; }
+.carte-titre code { background: none; border: 0; padding: 0; font-size: 1em; color: var(--texte); }
+.carte-texte { display: block; color: var(--texte-secondaire); font-size: var(--texte-sm); line-height: 1.6; }
+
+.grille-cartes {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 640px) { .grille-cartes { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .grille-cartes { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+.grille-cartes > li { display: flex; }
+.grille-cartes > li > .carte { flex: 1; }
+
+/* --- Contenu rédactionnel ------------------------------------------------------------------------------ */
+
+.typographie { max-width: 95ch; }
+.typographie h2 {
+  margin: 56px 0 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lisere);
+}
+.typographie h3 { margin: 32px 0 8px; }
+.typographie ul, .typographie ol { padding-left: 1.4em; margin: 0 0 24px; }
+.typographie li { margin-bottom: 6px; }
+.typographie li::marker { color: var(--texte-secondaire); }
+.typographie table { width: 100%; border-collapse: collapse; margin: 0 0 24px; font-size: var(--texte-sm); }
+.typographie th, .typographie td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--lisere); vertical-align: top; }
+.typographie th { color: var(--texte-secondaire); font-weight: 500; }
+
+.chapo { font-size: var(--texte-lg); color: var(--texte-secondaire); margin: 16px 0 0; max-width: 70ch; }
+.legende { color: var(--texte-secondaire); font-size: var(--texte-sm); }
+
+/* Blocs de commande à copier : seule exception à la police unique. */
+pre.commande {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  padding-right: 6.5rem;
+  background: var(--surface);
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-xl);
+  overflow-x: auto;
+  font-size: var(--texte-sm);
+  line-height: 1.6;
+}
+pre.commande code { background: none; border: 0; padding: 0; font-size: 1em; color: var(--texte); white-space: pre-wrap; }
+pre.commande .bouton-copier { position: absolute; top: 8px; right: 8px; }
+
+/* Encadrés */
+.encadre {
+  margin: 0 0 24px;
+  padding: 16px 20px;
+  border-radius: var(--rayon-2xl);
+  border: 1px solid var(--lisere);
+  background: var(--surface);
+}
+.encadre > :last-child { margin-bottom: 0; }
+.encadre strong:first-child { font-weight: 600; }
+.encadre-conseil { border-color: oklch(0.65 0.22 310 / 45%); }
+.encadre-conseil strong:first-child { color: var(--accompagne); }
+.encadre-attention { background: var(--primaire-eteint); border-color: oklch(0.68 0.2 30 / 45%); }
+.encadre-attention strong:first-child { color: var(--primaire); }
+.encadre-risque { border-color: oklch(0.65 0.25 25 / 70%); }
+.encadre-risque strong:first-child { color: var(--alerte); }
+.encadre-attendu { border-color: oklch(0.65 0.22 310 / 45%); border-left-width: 4px; }
+.encadre-attendu strong:first-child { color: var(--accompagne); }
+
+/* Problèmes et solutions */
+details.probleme {
+  margin: 0 0 12px;
+  border: 1px solid var(--lisere);
+  border-radius: var(--rayon-xl);
+  background: var(--surface);
+}
+details.probleme summary {
+  cursor: pointer;
+  padding: 14px 18px;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+details.probleme summary::-webkit-details-marker { display: none; }
+details.probleme summary::before { content: "+"; color: var(--primaire); font-weight: 700; width: 1ch; }
+details.probleme[open] summary::before { content: "−"; }
+details.probleme > :not(summary) { margin: 0 18px 16px; }
+
+/* Parcours : sept étapes, chacune doublée de son numéro et de son nom (Ordre Doublé). */
+.parcours {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  counter-reset: none;
+}
+.parcours li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px 6px 6px;
+  border-radius: var(--rayon-pilule);
+  border: 1px solid var(--lisere);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+  font-weight: 500;
+  line-height: 1.25;
+}
+.parcours-numero {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--rayon-pilule);
+  background: color-mix(in oklch, var(--etape) 15%, transparent);
+  color: var(--etape);
+  font-size: var(--texte-xs);
+  font-weight: 600;
+}
+.parcours li[aria-current="step"] {
+  color: var(--texte);
+  border-color: color-mix(in oklch, var(--etape) 60%, transparent);
+  background: color-mix(in oklch, var(--etape) 10%, transparent);
+}
+.parcours li[aria-current="step"] .parcours-numero { background: var(--etape); color: var(--noir-de-chambre); }
+
+/* --- Page d'une commande : navigation latérale et contenu ---------------------------------------------- */
+
+.mise-en-page {
+  display: grid;
+  gap: 48px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 1024px) {
+  .mise-en-page { grid-template-columns: 240px minmax(0, 1fr); gap: 64px; }
+}
+.laterale { display: none; }
+@media (min-width: 1024px) {
+  .laterale {
+    display: block;
+    position: sticky;
+    top: 7rem;
+    align-self: start;
+    max-height: calc(100svh - 8rem);
+    overflow-y: auto;
+    padding-right: 8px;
+    font-size: var(--texte-sm);
+  }
+}
+.laterale h2 { font-size: var(--texte-xs); font-weight: 500; color: var(--texte-secondaire); margin: 20px 0 6px; letter-spacing: normal; line-height: 1.25; }
+.laterale h2:first-child { margin-top: 0; }
+.laterale ul { list-style: none; margin: 0; padding: 0; }
+.laterale a { display: block; padding: 3px 10px; border-radius: var(--rayon-md); color: var(--texte); text-decoration: none; line-height: 1.5; }
+.laterale a:hover { background: var(--surface-attenuee); }
+.laterale a[aria-current="page"] { color: var(--primaire); background: var(--primaire-eteint); }
+
+.entete-page { margin-bottom: 32px; }
+.entete-page h1 { margin-top: 16px; }
+.entete-page h1 code { background: none; border: 0; padding: 0; font-size: 0.85em; color: var(--texte); font-weight: 700; letter-spacing: -0.02em; }
+
+.sommaire {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.sommaire a {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--rayon-pilule);
+  border: 1px solid var(--lisere);
+  color: var(--texte);
+  text-decoration: none;
+  font-size: var(--texte-sm);
+}
+.sommaire a:hover { border-color: var(--primaire); }
+
+.suite { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--lisere); }
+
+/* --- Pied de page -------------------------------------------------------------------------------------- */
+
+.pied-site {
+  margin-top: var(--section);
+  padding-block: 40px;
+  border-top: 1px solid var(--lisere);
+  color: var(--texte-secondaire);
+  font-size: var(--texte-sm);
+}
+.pied-site .conteneur { display: flex; flex-wrap: wrap; gap: 16px 32px; justify-content: space-between; }
+.pied-site a { color: var(--texte); }
+
+/* --- Séparateur en vague ------------------------------------------------------------------------------- */
+
+.vague { display: block; width: 100%; height: 64px; pointer-events: none; }
+.vague path { fill: none; stroke-width: 2; }
+
+/* --- Index des commandes : filtres --------------------------------------------------------------------- */
+
+.section-premiere { padding-top: 0; }
+.filtres { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 40px; }
+.filtres .champ { width: min(100%, 22rem); }
+.filtres-etapes { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Pastilles de filtre : elles s'activent, donc pilule (Règle de la Pilule). */
+.filtre {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 2rem;
+  padding: 0 14px;
+  border-radius: var(--rayon-pilule);
+  border: 1px solid var(--lisere);
+  background: transparent;
+  color: var(--texte);
+  font: 500 var(--texte-sm) / 1 var(--police);
+  cursor: pointer;
+}
+.filtre:hover { background: var(--surface-attenuee); }
+.filtre[aria-pressed="true"] { background: var(--primaire-eteint); border-color: var(--primaire); color: var(--texte); }
+.filtre:focus-visible { outline: none; border-color: var(--primaire); box-shadow: 0 0 0 3px var(--anneau); }
+.groupe-etape { margin-bottom: 56px; }
+.groupe-etape h2 { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+
+/* --- Accueil : héros ----------------------------------------------------------------------------------- */
+
+.heros { display: grid; gap: 40px; align-items: center; grid-template-columns: 1fr; }
+@media (min-width: 1024px) { .heros { grid-template-columns: 1.1fr 0.9fr; gap: 64px; } }
+/* Le héros de l'accueil garde la graisse des titres de section : l'échelle seule les sépare. */
+.titre-heros { font-weight: 700; margin-top: 20px; }
+.heros-actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 32px; }
+.centre { text-align: center; }
+.typographie .sommaire, .typographie .parcours { padding-left: 0; }
+.typographie .sommaire li, .typographie .parcours li { margin-bottom: 0; }

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="us">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:us – Wiki Pulse</title>
+<meta name="description" content="Écrire les user stories, rangées par groupe (un fichier par US, et le référentiel docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), chacune vérifiée avant d'être déclarée prête, triées par ordre de réalisation, sauvegardées après validation.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="1">Étape 2 · Décrire</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:us</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Écrire les user stories, rangées par groupe (un fichier par US, et le référentiel docs/user-stories.md), avec règles métier, exemples et critères d'acceptation (Étant donné / Lorsque / Alors), chacune vérifiée avant d'être déclarée prête, triées par ordre de réalisation, sauvegardées après validation.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une <dfn>user story</dfn> décrit un besoin du point de vue de l'utilisateur : « En tant que… je souhaite… afin de… ». Ses critères d'acceptation, écrits sous la forme <em>Étant donné… Lorsque… Alors…</em>, permettront de vérifier que l'IA a codé exactement ce que vous vouliez.</p>
+<p>Pulse part de votre PRD. Il range d'abord les fonctionnalités en <strong>groupes</strong>, un par grand besoin (« Gérer les rendez-vous »), que vous validez. Puis il écrit chaque user story avec sa règle métier, un exemple concret et 2 à 4 critères, dont au moins un cas d'erreur ou un cas limite.</p>
+<p>Chaque user story est vérifiée avant d'être déclarée prête : elle se réalise seule, elle est petite, chaque critère se voit à l'écran. Les cas limites que rien ne tranche deviennent des questions, 3 au plus par ronde. Enfin, Pulse trie les user stories dans l'ordre de réalisation.</p>
+<pre class="commande"><code>US-001 · Prendre rendez-vous · taille S · dépend de : —
+En tant que cliente, je souhaite choisir un créneau libre
+afin de réserver ma coupe sans téléphoner.
+
+Cas nominal : Étant donné le créneau de mardi 14 h libre,
+lorsque Camille le choisit, alors il apparaît comme réservé.
+Cas limite : Étant donné le créneau de mardi 14 h déjà pris,
+lorsque Inès le choisit, alors on lui propose les créneaux voisins.</code></pre>
+<p class="legende">Une user story résumée, telle que Pulse la présente avant la validation.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>L'IA sait exactement quoi construire.</strong> Chaque critère décrit un résultat visible, que vous pourrez tester vous-même.</li>
+<li><strong>Les cas difficiles sont tranchés avant le code.</strong> Une annulation tardive, un doublon, un accès refusé : vous décidez, l'IA applique.</li>
+<li><strong>Vous avancez dans le bon ordre.</strong> Les user stories sont triées : d'abord celles dont les autres dépendent, puis par priorité.</li>
+<li><strong>Vous voyez qui a décidé quoi.</strong> Le tableau des règles indique « Décidé par vous » ou « Proposé par Pulse ».</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1" aria-current="step"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="tech.html"><code>/pulse:tech</code></a></strong>, et après <a href="ui.html"><code>/pulse:ui identite</code></a> si vous choisissez l'apparence d'abord.</li>
+<li><strong>Avant <a href="spec.html"><code>/pulse:spec</code></a></strong>, qui détaille une user story à la fois.</li>
+<li><strong>Pour compléter vos user stories</strong> quand le PRD s'enrichit : les numéros existants sont gardés.</li>
+</ul>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:us</code></pre>
+<p class="legende">Cette commande se lance sans rien après son nom.</p>
+<!-- /auto:forme -->
+<p>Pulse lit votre PRD (à défaut votre brief, en le signalant), puis vous propose les groupes.</p>
+<pre class="commande"><code>/pulse:us</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/user-stories.md</code></td><td>Le référentiel : les groupes, le parcours de l'utilisateur, l'ordre de réalisation, et pour chaque groupe le tableau de ses user stories avec le lien vers leur fiche.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/US-XXX-&lt;nom&gt;.md</code></td><td>Une fiche par user story indispensable ou essentielle, rangée dans le dossier de son groupe : la phrase, la taille, les dépendances, la règle métier, l'exemple, les critères et ce qu'elle laisse de côté.</td></tr>
+</tbody>
+</table>
+<p>Les user stories optionnelles figurent seulement dans le référentiel ; leur fiche sera écrite par <a href="spec.html"><code>/pulse:spec</code></a> quand vous les traiterez. Si votre mémoire de projet indique un outil de suivi des tickets (GitHub Issues, Jira, Linear…), Pulse y crée aussi un ticket par user story.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Rien n'est enregistré avant « Valider et sauvegarder ».</strong> Vous pouvez aussi contester une règle proposée par Pulse, ou modifier une user story.</li>
+<li><strong>Refaire garde le travail avancé.</strong> Les fiches qui ont déjà une spec ou un plan sont conservées ; Pulse vous le signale et vous demande.</li>
+<li>Avec GitHub Issues, Claude Code vous demande d'autoriser la création des tickets : ils apparaissent en ligne, sur le site de votre dépôt.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me dit qu'il manque le PRD</summary><p>Les user stories découpent la première version décrite dans <code>docs/prd.md</code>. Lancez <a href="prd.html"><code>/pulse:prd</code></a>, puis relancez <code>/pulse:us</code>.</p></details>
+<details class="probleme"><summary>Pulse me demande de compléter ou de refaire</summary><p>Des user stories existent déjà. « Compléter » garde leurs numéros et ajoute les nouvelles à la suite. « Refaire » réécrit tout, sauf les fiches qui ont déjà une spec ou un plan.</p></details>
+<details class="probleme"><summary>Je ne suis pas d'accord avec une règle</summary><p>Choisissez « Contester une règle proposée par Pulse ». Pulse vous pose la question sous forme de scénario concret, corrige la user story et vous la présente à nouveau.</p></details>
+<details class="probleme"><summary>Une de mes idées a été coupée en deux</summary><p>Une user story doit rester petite : une seule personne, une seule action, 4 critères au plus. Pulse découpe celles qui en font trop ; chaque morceau se teste seul.</p></details>
+<details class="probleme"><summary>Pulse me propose de lancer <code>/pulse:init</code></summary><p>Votre fichier <code>docs/user-stories.md</code> est à l'ancien format, avec tout le détail dedans. <a href="init.html"><code>/pulse:init</code></a> range les documents au nouveau format, sans rien perdre.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : les user stories du carnet de réservations">
+<p data-role="vous">/pulse:us</p>
+<p data-role="claude">Je propose deux groupes :
+« Gérer les rendez-vous » : prise de rendez-vous, rendez-vous du jour.
+« Prévenir les clientes » : rappel par e-mail.
+→ Valider / Modifier les groupes</p>
+<p data-role="vous">Valider</p>
+<p data-role="claude">Une cliente annule une heure avant son rendez-vous : que se passe-t-il ? Chez un médecin, par exemple, le créneau redevient libre aussitôt.</p>
+<p data-role="vous">Le créneau redevient libre.</p>
+<p data-role="claude">Ordre de réalisation : US-001 Prendre rendez-vous · US-002 Voir les rendez-vous du jour · US-003 Recevoir un rappel par e-mail.
+| Règle | US | Origine |
+| Un créneau se réserve une seule fois | US-001 | Proposé par Pulse |
+| Une annulation libère le créneau | US-001 | Décidé par vous |
+→ Valider et sauvegarder / Contester une règle proposée par Pulse / Modifier une US</p>
+<p data-role="vous">Valider et sauvegarder</p>
+</div>
+<div class="conversation" data-titre="Exemple : compléter des user stories existantes">
+<p data-role="vous">/pulse:us</p>
+<p data-role="claude">docs/user-stories.md existe déjà. → Le compléter (les numéros sont gardés) / Le refaire</p>
+<p data-role="vous">Le compléter</p>
+<p data-role="claude">Nouvelle user story : US-004 Annuler mon rendez-vous, à la suite de US-003.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="prd.html"><code>/pulse:prd</code></a> : décider de la première version, que les user stories découpent.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : choisir l'apparence avant, pour que tout s'y conforme.</li>
+<li><a href="spec.html"><code>/pulse:spec</code></a> : l'étape suivante, pour la première user story de l'ordre de réalisation.</li>
+<li><a href="memory.html"><code>/pulse:memory</code></a> : indiquer votre outil de suivi des tickets.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : enchaîner spec, plan et réalisation d'une user story.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

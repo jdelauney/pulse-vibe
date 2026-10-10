@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="plan">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:plan – Wiki Pulse</title>
+<meta name="description" content="Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté de sa spec), écrit une fois validé avec vous.">
+<link rel="preload" href="../assets/polices/figtree-variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="2">Étape 3 · Préparer</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:plan</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Concevoir comment réaliser la spec d'une user story (pile, données, écrans, sécurité, fichiers), puis la découper en petites tâches ordonnées, chacune testable à l'écran (une spec = un plan, rangé à côté de sa spec), écrit une fois validé avec vous.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Le plan décide <strong>comment</strong> construire ce que la spec demande, puis le découpe en petites tâches numérotées : T1, T2, T3… « On avance par petites tâches que vous pouvez tester une par une : l'IA se trompe moins, et vous gardez le contrôle. »</p>
+<p>D'abord la conception : les outils utilisés, l'adresse de chaque écran, où sont gardées les informations et où l'on vérifie qui a le droit d'y toucher, les clés secrètes, les points de sécurité, les fichiers à créer. Ensuite les tâches : chacune livre quelque chose que vous pouvez voir et tester en moins de 2 minutes.</p>
+<p>Le plan sert aussi de tableau de suivi : <code>[ ]</code> à faire, <code>[~]</code> en cours, <code>[x]</code> terminé. Une fois validé, Pulse écrit votre carnet de route, avec les commandes à copier tâche par tâche.</p>
+<pre class="commande"><code>Conception : la pile de docs/technical.md · les rendez-vous gardés sur le serveur,
+une cliente voit seulement les siens · aucun secret · fichiers : 4 à créer
+
+- [ ] T1 – Afficher la page des créneaux, encore vide · US-001
+- [ ] T2 – Réserver un créneau et le voir confirmé · US-001
+- [ ] T3 – Refuser un créneau déjà pris · US-001
+
+En parallèle avec : aucune
+→ Valider le plan (Recommandé) / Je veux changer quelque chose</code></pre>
+<p class="legende">Le plan présenté avant validation : la conception en quelques lignes, puis les titres des tâches.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Vous testez à chaque étape.</strong> Chaque tâche livre un résultat visible, du cas normal vers les cas d'erreur et les règles d'accès.</li>
+<li><strong>La sécurité est pensée avant le code.</strong> Chaque règle importante est vérifiée côté serveur ; une protection exigée par la sécurité vous est expliquée.</li>
+<li><strong>Vous savez ce qui vous revient.</strong> Une action à faire vous-même (créer un compte, saisir une clé) est signalée dans sa tâche.</li>
+<li><strong>Un carnet de route toujours à jour.</strong> <code>docs/guide/index.md</code> vous dit quelle commande taper ensuite.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2" aria-current="step"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après <a href="spec.html"><code>/pulse:spec</code></a></strong>, une fois la spec verrouillée.</li>
+<li><strong>Après <a href="ui.html"><code>/pulse:ui maquettes</code></a></strong>, si vous avez maquetté les écrans : le plan cite la maquette retenue.</li>
+<li><strong>Avant <a href="implement.html"><code>/pulse:implement</code></a></strong> ou <a href="spirc.html"><code>/pulse:spirc</code></a>, qui réalisent les tâches.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> le plan donne l'adresse de chaque écran, les colonnes de chaque table et la règle qui vérifie à qui appartient chaque information. Les tâches suivent un découpage type : la table, la règle métier, la lecture, l'écriture, puis le test du parcours complet. Une recette apporte ses tâches prêtes, reprises dans la suite des numéros avec la mention « Recette : connexion » ; la connexion passe avant toute user story qui a des données personnelles, et la recette de référencement avant la mise en ligne d'un site à trouver.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:plan &lt;US-XXX [US-YYY…] | chemin de la spec&gt;</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Un numéro de user story</strong> (<code>US-001</code>) : le plan de sa spec.</li>
+<li><strong>Plusieurs numéros</strong> : un plan par user story, l'un après l'autre, dans l'ordre du parcours.</li>
+<li><strong>Le chemin d'une spec</strong> : le plan de cette spec.</li>
+<li><strong>Sans rien</strong> : Pulse liste les specs, en premier celles qui attendent leur plan, et vous demande laquelle traiter.</li>
+</ul>
+<pre class="commande"><code>/pulse:plan US-001</code></pre>
+<pre class="commande"><code>/pulse:plan</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan, à côté de sa spec : la conception technique, puis les tâches, chacune avec son objectif, ce dont elle dépend, ses fichiers, la vérification à faire à la main et les tests automatiques.</td></tr>
+<tr><td><code>docs/guide/</code></td><td>Votre carnet de route : les commandes à copier, tâche par tâche. Il se met à jour tout seul.</td></tr>
+</tbody>
+</table>
+<p>La ligne « En parallèle avec » des autres plans est mise à jour quand deux user stories peuvent avancer en même temps. Une fonctionnalité en plus, demandée pendant la validation, est notée « En attente » dans <code>docs/prd.md</code>.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Cette commande écrit seulement des documents.</strong> Le code viendra avec la réalisation des tâches.</li>
+<li><strong>Le plan est écrit après votre validation.</strong> Si vous demandez un changement, Pulse vous montre ce qui change, puis redemande.</li>
+<li><strong>La spec reste intacte.</strong> Le plan la lit sans la modifier ; un comportement qu'elle ne prévoit pas vous est présenté comme un ajout proposé.</li>
+<li><strong>Un nouvel outil vous est demandé.</strong> Pulse en introduit un seulement avec votre accord. Un paiement s'intègre d'abord en mode test.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> repérez les lignes « Action manuelle » dans les tâches. Elles vous demandent un geste (créer un compte, saisir une clé chez l'hébergeur) ; écrivez toujours une clé secrète directement dans le fichier local, jamais dans la conversation.</p></aside>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse me propose de terminer la spec d'abord</summary><p>La spec est absente, ou encore en brouillon avec des questions en suspens. Le plan s'appuie sur une spec verrouillée : lancez <a href="spec.html"><code>/pulse:spec US-001</code></a>, puis revenez au plan.</p></details>
+<details class="probleme"><summary>Pulse me dit qu'il manque les choix techniques</summary><p>Le plan a besoin de <code>docs/technical.md</code> pour savoir comment construire. Lancez <a href="tech.html"><code>/pulse:tech</code></a>.</p></details>
+<details class="probleme"><summary>Le plan a trop de tâches</summary><p>Pulse vise 1 à 4 tâches par user story. Au-delà, il le signale et propose de découper la user story en deux avec <a href="us.html"><code>/pulse:us</code></a>, puis une spec et un plan pour chacune.</p></details>
+<details class="probleme"><summary>Je veux ajouter une fonctionnalité au plan</summary><p>C'est un changement de périmètre : Pulse la note « En attente » dans le PRD. Une fois le plan écrit, <a href="refine.html"><code>/pulse:refine</code></a> l'ajoutera.</p></details>
+<details class="probleme"><summary>Un plan existe déjà avec des tâches terminées</summary><p>Pulse le garde tel quel, et vous propose seulement d'ajouter ou de réordonner les tâches restantes.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : le plan de la prise de rendez-vous">
+<p data-role="vous">/pulse:plan US-001</p>
+<p data-role="claude">Conception : les rendez-vous sont gardés sur le serveur ; une cliente voit et modifie seulement les siens, vérifié côté serveur.
+Tâches : T1 Afficher la page des créneaux · T2 Réserver un créneau et le voir confirmé · T3 Refuser un créneau déjà pris.
+Ajout exigé par la sécurité : protéger le formulaire de réservation, ouvert à tous, contre les envois en masse.
+→ Valider le plan (Recommandé) / Je veux changer quelque chose</p>
+<p data-role="vous">Valider le plan</p>
+<p data-role="outil">pulse-aidd guide</p>
+<p data-role="claude">Votre carnet de route est dans docs/guide/index.md ; il se met à jour tout seul.
+Prochaine étape : /pulse:spirc US-001, ou /pulse:implement US-001 T1 pour la première tâche seulement.</p>
+</div>
+<div class="conversation" data-titre="Exemple : une spec encore en brouillon">
+<p data-role="vous">/pulse:plan US-003</p>
+<p data-role="claude">La spec du rappel par e-mail est encore en brouillon : une question reste ouverte. Je vous propose de la terminer d'abord avec /pulse:spec US-003.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="spec.html"><code>/pulse:spec</code></a> : verrouiller la spec sur laquelle s'appuie le plan.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : maquetter les écrans avant le plan.</li>
+<li><a href="refine.html"><code>/pulse:refine</code></a> : changer le plan selon vos remarques.</li>
+<li><a href="implement.html"><code>/pulse:implement</code></a> : réaliser une tâche et comprendre son code.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : enchaîner réalisation, relecture et enregistrement, tâche par tâche.</li>
+<li><a href="guide.html"><code>/pulse:guide</code></a> : savoir quelle commande taper maintenant.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>
