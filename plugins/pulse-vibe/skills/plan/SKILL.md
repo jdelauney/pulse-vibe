@@ -15,20 +15,6 @@ Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spe
 
 Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
 
-### Conception technique
-
-Avant le découpage, remplir la section « Conception technique » du modèle de plan : c'est ici que se décide le **comment** de la spec. Appliquer la règle commune 4 (les choix purement techniques suivent ce qui est déjà en place, sinon le plus simple compatible avec « Pile retenue », expliqué en une phrase) :
-
-1. **Pile et services** : reprendre « Pile retenue » de `docs/technical.md` (y renvoyer plutôt que la recopier en détail), et les services externes de « Pile retenue » utiles à l'US (1 ou 2 au maximum pour le MVP), avec ce que chacun fait ici. Introduire un outil absent de « Pile retenue » seulement après l'avoir demandé ; si un besoin l'exige, proposer `/pulse:tech` pour revoir la pile. Un service de paiement s'intègre d'abord en **mode test** ; le passage en mode réel est une décision de la personne, prise au moment de la mise en ligne.
-2. **Écrans** : pour chaque écran de la spec, son adresse et s'il est public ou réservé. Pour un écran public, la colonne « Référencement » (adresse lisible, titre, description, indexé ou non) d'après `docs/seo.md` et « Être trouvé » du PRD. Si `docs/design/maquettes/US-XXX-<nom>/retenue/` existe, la citer sur la ligne « Maquette » ; sinon, signaler en fin de commande que les écrans peuvent être maquettés avec `/pulse:ui maquettes US-XXX`. Pour chaque écran, nommer les motifs de `ui/motifs.md` qu'il emploie (tableau de données, panneau latéral, notification…) ; la tâche qui réalise l'écran les reprend.
-3. **Données** : pour chaque type d'information de la spec, **où il est stocké** et ses champs, selon « Données et contrôle d'accès » de `docs/technical.md` ; **où le contrôle d'accès est vérifié** (côté serveur ou dans la base ; « sans objet » si les données restent sur l'appareil d'une seule personne), pour appliquer « Qui peut » de la spec ; leurs liens (schéma `erDiagram` du modèle, s'il y a plusieurs types).
-4. **Où chaque règle est vérifiée** : toute règle de sécurité ou d'intégrité est vérifiée **dans la base ou côté serveur** ; une vérification dans le navigateur vient seulement en plus.
-5. **Sécurité** : les secrets utilisés (selon « Secrets et variables d'environnement »), les contrôles de formulaire côté serveur qui produisent le résultat décrit par la spec, et les points de la checklist sécurité (S1 à S13) qui s'appliquent. Une protection exigée par la checklist et absente de la spec va dans « Ajouts proposés par Pulse » avec la décision « exigé par la sécurité » : elle s'explique sans se négocier.
-6. **Fichiers** : renvoyer à « Organisation des fichiers » de `docs/technical.md` et lister seulement les fichiers propres à cette US, chacun marqué « à créer » ou « à modifier » après vérification dans le projet. Présenter comme existant seulement un fichier vu dans le projet.
-7. **Points d'attention** : les risques réels de cette conception (donnée partagée, règle délicate, service externe, action manuelle) et ce qu'on prévoit, rattachés à leurs tâches ; sinon « aucun identifié ».
-
-Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses « Qui peut », sans ajouter de comportement visible. Un comportement que la spec ne prévoit pas va dans « Ajouts proposés par Pulse ».
-
 ### Règles de découpage
 
 1. **Découpage vertical** : chaque tâche livre quelque chose que l'utilisateur peut **voir et tester** en moins de 2 minutes (« Créer une tâche et la voir dans la liste »), plutôt qu'une couche technique isolée (« Écrire toutes les fonctions »).
@@ -67,6 +53,22 @@ US (ou spec) à traiter : `$ARGUMENTS`
 - Relire les autres plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) : ce qui y est déjà prévu ou fait reste dans son plan (y renvoyer), et le plus grand numéro de tâche de tous ces plans donne le premier numéro de ce plan.
 
 ## Processus
+
+### Conception technique
+
+Avant le découpage, remplir la section « Conception technique » du modèle de plan : c'est ici que se décide le **comment** de la spec. Appliquer la règle commune 4 (les choix purement techniques suivent ce qui est déjà en place, sinon le plus simple compatible avec « Pile retenue », expliqué en une phrase) :
+
+1. **Pile et services** : reprendre « Pile retenue » de `docs/technical.md` (y renvoyer plutôt que la recopier en détail), et les services externes de « Pile retenue » utiles à l'US (1 ou 2 au maximum pour le MVP), avec ce que chacun fait ici. Introduire un outil absent de « Pile retenue » seulement après l'avoir demandé ; si un besoin l'exige, proposer `/pulse:tech` pour revoir la pile. Un service de paiement s'intègre d'abord en **mode test** ; le passage en mode réel est une décision de la personne, prise au moment de la mise en ligne.
+2. **Écrans** : pour chaque écran de la spec, son adresse et s'il est public ou réservé. Pour un écran public, la colonne « Référencement » (adresse lisible, titre, description, indexé ou non) d'après `docs/seo.md` et « Être trouvé » du PRD. Si `docs/design/maquettes/US-XXX-<nom>/retenue/` existe, la citer sur la ligne « Maquette » ; sinon, signaler en fin de commande que les écrans peuvent être maquettés avec `/pulse:ui maquettes US-XXX`. Pour chaque écran, nommer les motifs de `ui/motifs.md` qu'il emploie (tableau de données, panneau latéral, notification…) ; la tâche qui réalise l'écran les reprend.
+3. **Données** : pour chaque type d'information de la spec, **où il est stocké** et ses champs, selon « Données et contrôle d'accès » de `docs/technical.md` ; **où le contrôle d'accès est vérifié** (côté serveur ou dans la base ; « sans objet » si les données restent sur l'appareil d'une seule personne), pour appliquer « Qui peut » de la spec ; leurs liens (schéma `erDiagram` du modèle, s'il y a plusieurs types).
+4. **Où chaque règle est vérifiée** : toute règle de sécurité ou d'intégrité est vérifiée **dans la base ou côté serveur** ; une vérification dans le navigateur vient seulement en plus.
+5. **Sécurité** : les secrets utilisés (selon « Secrets et variables d'environnement »), les contrôles de formulaire côté serveur qui produisent le résultat décrit par la spec, et les points de la checklist sécurité (S1 à S13) qui s'appliquent. Une protection exigée par la checklist et absente de la spec va dans « Ajouts proposés par Pulse » avec la décision « exigé par la sécurité » : elle s'explique sans se négocier.
+6. **Fichiers** : renvoyer à « Organisation des fichiers » de `docs/technical.md` et lister seulement les fichiers propres à cette US, chacun marqué « à créer » ou « à modifier » après vérification dans le projet. Présenter comme existant seulement un fichier vu dans le projet.
+7. **Points d'attention** : les risques réels de cette conception (donnée partagée, règle délicate, service externe, action manuelle) et ce qu'on prévoit, rattachés à leurs tâches ; sinon « aucun identifié ».
+
+Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses « Qui peut », sans ajouter de comportement visible. Un comportement que la spec ne prévoit pas va dans « Ajouts proposés par Pulse ».
+
+### Déroulé
 
 1. Remplir la conception technique, puis construire les tâches selon les « Règles de découpage », avec le modèle de plan. Numéroter à la suite des autres plans (T1, T2… pour le premier ; Tn+1, Tn+2… si le plus grand numéro existant est Tn).
 2. Compter les tâches : viser **1 à 4** pour une US (hors mise en place et mise en ligne). Au-delà, le signaler et proposer de découper l'US en deux (`/pulse:us`, puis une spec et un plan pour chacune).
