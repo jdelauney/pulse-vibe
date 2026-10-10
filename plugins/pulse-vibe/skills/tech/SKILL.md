@@ -72,7 +72,7 @@ Reporter les verdicts dans le tableau « Les options comparées ». Si toutes le
 
 #### 5. Choisir
 
-Présenter le tableau et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait. Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». La décision appartient à la personne.
+Présenter le tableau et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait (étape de `/pulse:express` ou de `/pulse:spirc` : le réécrire plutôt pour cette commande, à son étape suivante). Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». La décision appartient à la personne.
 
 ### 6. Écrire (projet existant ou neuf)
 
