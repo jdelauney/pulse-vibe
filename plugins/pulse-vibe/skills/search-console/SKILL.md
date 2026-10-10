@@ -2,7 +2,7 @@
 description: Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours
 argument-hint: "[relier | lire [28j|3m] | suivre | inspecter <adresse>] (détecté si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md)
 ---
 
 # /pulse:search-console – Ce que Google voit de votre site
@@ -54,7 +54,7 @@ La personne ouvre Search Console (search.google.com/search-console) avec **son**
 
 1. La personne copie la valeur TXT que montre Search Console (elle n'est pas secrète).
 2. DNS chez l'hébergeur : suivre les consignes du pack de pile (tableau de bord, ou commande de l'hébergeur avec l'accord de la personne). DNS chez le registraire : guider pas à pas d'après sa documentation officielle.
-3. La propagation peut prendre jusqu'à 24 heures. Si « Vérifier » échoue, noter l'étape dans `aidd_docs/tasks/in-progress.md` (modèle « travail en cours ») et proposer de reprendre plus tard avec `/pulse:search-console relier`.
+3. La propagation peut prendre jusqu'à 24 heures. Si « Vérifier » échoue, noter l'étape dans `aidd_docs/tasks/in-progress.md` (règle commune 16 ; effacé avec `pulse-aidd travail-fini` une fois la propriété vérifiée) et proposer de reprendre plus tard avec `/pulse:search-console relier`.
 
 ### 1d. Sitemap
 

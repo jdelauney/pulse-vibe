@@ -30,7 +30,7 @@ Dans le projet de la personne, ce que produit chaque commande :
 | `docs/apprentissage.md` | `/pulse:learn` | Le carnet d'apprentissage de la personne : niveau, notions vues, points fragiles, prochains rappels. Facultatif |
 | `docs/lexique.md` | toutes les commandes | Les termes techniques déjà expliqués, avec leur image du quotidien et leur statut (vu, maîtrisé) |
 | `docs/guide/` | `/pulse:guide` (automatique) | Le guide de réalisation : les commandes à copier, tâche par tâche, un sous-dossier par epic et un fichier par plan. Généré automatiquement, à laisser tel quel |
-| `aidd_docs/tasks/in-progress.md` | `/pulse:express`, `/pulse:brainstorm`, `/pulse:prd`, `/pulse:us`, `/pulse:spirc` | La décision qui attend la personne, pour la retrouver après une fermeture ou un `/clear`. Supprimé dès la décision prise ; non enregistré dans Git |
+| `aidd_docs/tasks/in-progress.md` | `/pulse:express`, `/pulse:brainstorm`, `/pulse:prd`, `/pulse:us`, `/pulse:spirc`, `/pulse:implement`, `/pulse:tech`, `/pulse:ui`, `/pulse:spec`, `/pulse:plan`, `/pulse:search-console` | La décision qui attend la personne, pour la retrouver après une fermeture ou un `/clear`. Supprimé dès la décision prise ; non enregistré dans Git |
 | `aidd_docs/memory/project.md`, `technical.md` | `/pulse:init`, `/pulse:memory` | La mémoire durable : vision, choix, conventions, pièges |
 | `aidd_docs/memory/glossary.md` | `/pulse:brainstorm`, `/pulse:memory` | Les mots du métier et leur définition commune |
 | `aidd_docs/memory/internal/decisions/` | `/pulse:brainstorm`, `/pulse:tech`, `/pulse:memory` | Les décisions difficiles à défaire (lues à la demande) |
