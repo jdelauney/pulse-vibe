@@ -2,7 +2,7 @@
 description: Écrire les textes de vos pages (accueil, à propos, services…) dans la voix du site, sans tics d'écriture IA, puis les intégrer si vous le souhaitez
 argument-hint: "[page] [--humaniser]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte rediger) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd agent redacteur) Read Glob Grep
+allowed-tools: Bash(pulse-aidd contexte rediger) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd agent redacteur) Read Glob Grep Write(docs/voix.md) Edit(docs/voix.md) Write(docs/textes/**) Edit(docs/textes/**)
 ---
 
 # /pulse:rediger – Écrire les textes des pages
