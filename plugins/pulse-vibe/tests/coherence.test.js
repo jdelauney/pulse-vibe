@@ -728,8 +728,9 @@ test("modèles et sorties des outils lus par la personne sans « MVP », « epic
   }
   for (const script of ["etat.js", "guide.js", "garde-commandes.js"]) {
     // Une chaîne d'un seul mot (« worktrees », « --worktree ») est du code : un nom de dossier ou une option de Git.
-    for (const chaine of chainesDuScript(lire(RACINE, "scripts", script)).filter((c) => /\s/.test(c.trim()))) {
-      const m = motDeMethode(chaine);
+    // Seul le mot « worktree » y est permis ; les autres mots de méthode restent cherchés.
+    for (const chaine of chainesDuScript(lire(RACINE, "scripts", script))) {
+      const m = motDeMethode(/\s/.test(chaine.trim()) ? chaine : chaine.replace(/\bworktrees?\b/gi, " "));
       if (m) problemes.push(`scripts/${script} : ${m[0]} dans « ${chaine.slice(0, 60)} »`);
     }
   }
