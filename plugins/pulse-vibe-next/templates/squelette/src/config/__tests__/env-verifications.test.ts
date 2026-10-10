@@ -68,7 +68,10 @@ async function chargerCopies(
   const envPublic = copier("env-public.ts", (source) =>
     ajouterApres(
       ajouterApres(
-        `import { z } from "zod";\n${source}`,
+        // Une recette a pu y importer zod déjà.
+        source.includes('from "zod"')
+          ? source
+          : `import { z } from "zod";\n${source}`,
         "client: {",
         "\n    NEXT_PUBLIC_ESSAI: z.string().optional(),\n  ",
       ),
