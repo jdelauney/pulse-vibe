@@ -923,6 +923,8 @@ test("reprise après une interruption : commit, implement, spirc et review suive
     assert.match(texte, /Le § 2 de l'étape commit donne `commit`/, nom);
     assert.doesNotMatch(texte, /Le rapport de revue existe : la relecture est faite/, nom);
   }
+  // Le résultat du test s'écrit avec les choix du modèle, que pulse-aidd revue sait lire.
+  for (const nom of ["review", "spirc"]) assert.match(skillTexte(nom), /« ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> »/, nom);
 });
 
 test("commit : un commit docs:, chore: ou sans rapport avec la tâche n'est jamais refusé pour un test en attente", () => {

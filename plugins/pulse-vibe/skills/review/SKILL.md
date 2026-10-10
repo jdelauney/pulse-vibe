@@ -53,7 +53,7 @@ Présenter en quelques lignes : le **rapport de réalisation** (règles communes
 
 Donner les étapes du test manuel du rapport, en commençant par les critères ❓ du verifier, puis demander (AskUserQuestion) : « Le test est-il concluant ? » → « Oui, tout fonctionne » / « Non, il y a un problème ». Dans ce cas, demander lequel.
 
-Noter la réponse dans la section « Test par la personne » du rapport (date, résultat, remarque).
+Noter dans la section « Test par la personne » du rapport la date, le résultat et la remarque ; le résultat reprend les choix du modèle : « ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> ».
 
 ### 6. Corriger
 
