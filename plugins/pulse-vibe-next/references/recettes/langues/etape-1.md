@@ -2,6 +2,7 @@
 
 Avec `localePrefix: "as-needed"`, les adresses françaises restent celles d'avant (liens des e-mails, retour de Stripe, favoris) ; l'anglais reçoit le préfixe `/en`. Cette configuration est lue au démarrage : elle vit dans `src/config/`.
 
+<!-- fichier: src/config/i18n.ts -->
 ```ts
 // src/config/i18n.ts
 import { defineRouting } from "next-intl/routing";

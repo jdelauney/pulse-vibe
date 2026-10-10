@@ -1,15 +1,29 @@
 ### 12. Traduire les messages d'une action
 
-`next/root-params` ne fonctionne pas dans une Server Action. Le formulaire envoie la langue (`useLocale()` de `next-intl`), et l'action la passe à `getTranslations`. Exemple, avec les clés `Contact.merci` et `Contact.liensRefuses` ajoutées aux deux fichiers de messages :
+`next/root-params` ne fonctionne pas dans une Server Action. Le formulaire envoie la langue (`useLocale()` de `next-intl`), et l'action la passe à `getTranslations`. Exemple, avec les clés `Contact.merci` et `Contact.liensRefuses` ajoutées aux deux fichiers de messages, après `Compte` :
 
+<!-- remplacer: src/lib/i18n/messages/fr.json -->
 ```json
+  "Compte": {
+    "titre": "Mon compte",
+    "connecteEnTantQue": "Connecté en tant que {nom}",
+    "chargement": "Chargement…",
+    "changerMotDePasse": "Changer mon mot de passe"
+  },
   "Contact": {
     "merci": "Merci, votre message est envoyé.",
     "liensRefuses": "Les liens ne sont pas acceptés dans le message."
   }
 ```
 
+<!-- remplacer: src/lib/i18n/messages/en.json -->
 ```json
+  "Compte": {
+    "titre": "My account",
+    "connecteEnTantQue": "Signed in as {nom}",
+    "chargement": "Loading…",
+    "changerMotDePasse": "Change my password"
+  },
   "Contact": {
     "merci": "Thank you, your message is sent.",
     "liensRefuses": "Links are not accepted in the message."
@@ -18,6 +32,7 @@
 
 Le schéma accepte seulement les langues déclarées. Ces messages traduits sont l'exception à la règle « message des erreurs attendues dans `constants/erreur-messages.ts` » : ils dépendent de la langue.
 
+<!-- fichier: src/features/contact/schemas/contact.schema.ts -->
 ```ts
 // src/features/contact/schemas/contact.schema.ts
 import { routing } from "@src/config/i18n";
@@ -29,6 +44,7 @@ export const schemaMessage = z.object({
 });
 ```
 
+<!-- fichier: src/features/contact/actions/envoyer-message.action.ts -->
 ```ts
 // src/features/contact/actions/envoyer-message.action.ts
 "use server";

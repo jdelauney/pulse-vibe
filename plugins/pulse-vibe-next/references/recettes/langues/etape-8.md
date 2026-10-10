@@ -2,6 +2,7 @@
 
 Version du squelette, complétée (lien d'évitement traduit et zone `#contenu` conservés) : langue validée, `generateStaticParams`, `lang` de la page, fournisseur des messages pour les composants clients, sélecteur de langue.
 
+<!-- fichier: app/[locale]/layout.tsx -->
 ```tsx
 // app/[locale]/layout.tsx
 import { Toaster } from "@src/components/ui/sonner";
@@ -89,6 +90,7 @@ export default async function RootLayout({
 
 Le sélecteur se découpe en deux (architecture §4). L'élément d'affichage reçoit tout par props : le nom de chaque langue, la langue courante, l'adresse de la page. Le container client lit la langue (`useLocale`), l'adresse (`usePathname`) et les textes (`useTranslations`) : seul un composant client connaît l'adresse courante, et le layout, qui reste un composant serveur prérendu, ne la connaît pas. Le container se range dans la feature `langues` (le layout est de `app/`, qui peut tout importer) ; l'élément reste dans `src/components/shared/elements/`.
 
+<!-- fichier: src/components/shared/elements/choix-langue.tsx -->
 ```tsx
 // src/components/shared/elements/choix-langue.tsx
 import { Link } from "@src/lib/i18n/navigation";
@@ -124,6 +126,7 @@ export function ChoixLangue({
 }
 ```
 
+<!-- fichier: src/features/langues/components/containers/choix-langue.container.tsx -->
 ```tsx
 // src/features/langues/components/containers/choix-langue.container.tsx
 "use client";
