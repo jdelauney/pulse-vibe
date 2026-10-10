@@ -1,5 +1,6 @@
 ### 14. Le widget
 
+<!-- fichier: src/components/shared/elements/widget-turnstile.tsx -->
 ```tsx
 // src/components/shared/elements/widget-turnstile.tsx
 "use client";

@@ -8,6 +8,7 @@
 - Paquets du squelette : `next-safe-action`, `zod`, `@tanstack/react-form`, `sonner`. Si l'un manque, l'installer à sa dernière version : `npm install <paquet>`.
 - Pour l'exemple de contact : la zone de texte de shadcn, `npx shadcn@latest add textarea`.
 - Option Turnstile : un compte Cloudflare (offre gratuite) et un widget créé dans **Turnstile**, pour le domaine du site et `localhost`.
+- Vérifiée automatiquement par la CI du pack, chaque semaine aux dernières versions (chaîne `connexion,limite,formulaire-public` de `verifier-recettes.js`), option Turnstile comprise : contrôles, types, tests unitaires, construction. Sans clés, l'option est inactive : la version vérifiée se comporte comme la base. Les tests de bout en bout (`e2e/formulaire-public.spec.ts`, et `e2e/turnstile.spec.ts` avec les clés de test de Cloudflare) se lancent à la main.
 
 ## Variables d'environnement
 
@@ -19,14 +20,25 @@
 
 Dans `src/config/env.ts`, ajouter dans `server: { … }` :
 
+<!-- ajout: src/config/env.ts après: server: { -->
 ```ts
     // Recette formulaire-public : signe le jeton de délai des formulaires (32 caractères au moins).
     FORMULAIRE_SECRET: z.string().min(32),
 ```
 
-Dans `.env.example`, ajouter `FORMULAIRE_SECRET=` (sans valeur). Les variables Turnstile vont dans `.env.example` seulement avec l'option.
+Dans `.env.example`, le nom sans valeur (les variables Turnstile s'y ajoutent seulement avec l'option) :
 
-`FORMULAIRE_SECRET` devient obligatoire : ajouter une valeur de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette), `FORMULAIRE_SECRET: "x".repeat(32),`.
+<!-- ajout: .env.example -->
+```
+FORMULAIRE_SECRET=
+```
+
+`FORMULAIRE_SECRET` devient obligatoire : une valeur de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
+
+<!-- ajout: tests/helpers/env-de-test.ts après: export const VARIABLES_VALIDES: Record<string, string> = { -->
+```ts
+  FORMULAIRE_SECRET: "x".repeat(32),
+```
 
 ## Fichiers créés ou modifiés
 
@@ -50,6 +62,8 @@ Dans `.env.example`, ajouter `FORMULAIRE_SECRET=` (sans valeur). Les variables T
 | `next.config.ts` (modifié, option Turnstile) | Le script et le cadre du widget autorisés par la CSP |
 
 ## Étapes
+
+<!-- commande: npx shadcn@latest add textarea -->
 
 Un formulaire public reçoit trois protections, contrôlées sur le serveur avant l'action, de la moins coûteuse à la plus coûteuse :
 

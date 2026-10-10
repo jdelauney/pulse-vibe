@@ -2,6 +2,7 @@
 
 La réponse du widget est vérifiée auprès de Cloudflare (`siteverify`). Une réponse ne sert qu'une fois et vaut 5 minutes. Si Cloudflare ne répond pas dans les 3 secondes, l'envoi est refusé : Turnstile ne sert qu'aux formulaires visés par les robots.
 
+<!-- fichier: src/adapters/turnstile/turnstile.adapter.ts -->
 ```ts
 // src/adapters/turnstile/turnstile.adapter.ts
 import "server-only";

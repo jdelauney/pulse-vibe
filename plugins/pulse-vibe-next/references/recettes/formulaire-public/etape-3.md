@@ -2,6 +2,7 @@
 
 Le jeton vaut `horodatage.formulaire.signature`. La signature (HMAC) est calculée avec `FORMULAIRE_SECRET` : modifier l'heure ou le nom du formulaire la rend fausse. La comparaison se fait en temps constant (`timingSafeEqual`).
 
+<!-- fichier: src/lib/helpers/formulaire-public/jeton.ts -->
 ```ts
 // src/lib/helpers/formulaire-public/jeton.ts
 // Jeton « horodatage.formulaire.signature » : prouve que le formulaire a été ouvert sur le site, et quand.

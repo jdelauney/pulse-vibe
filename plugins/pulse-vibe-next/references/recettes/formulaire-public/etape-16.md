@@ -2,6 +2,7 @@
 
 Le widget charge un script et s'affiche dans un cadre venant de `https://challenges.cloudflare.com`. Dans `next.config.ts`, objet `sources` :
 
+<!-- remplacer: next.config.ts -->
 ```ts
   "script-src": [
     "'self'",
@@ -10,8 +11,12 @@ Le widget charge un script et s'affiche dans un cadre venant de `https://challen
     "https://challenges.cloudflare.com",
     ...(enDeveloppement ? ["'unsafe-eval'"] : []),
   ],
-  // …
-  "connect-src": ["'self'"],
+```
+
+et, après `"connect-src"` :
+
+<!-- ajout: next.config.ts après: "connect-src": ["'self'"], -->
+```ts
   // Recette formulaire-public, option Turnstile : cadre du widget.
   "frame-src": ["https://challenges.cloudflare.com"],
 ```
