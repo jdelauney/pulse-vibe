@@ -209,7 +209,7 @@ function ecrireIndex(plans, nom) {
     lignes.push("```", commandeSuivante(suite.plan, suite.tache), "```", "");
     const autre = usEnParallele(plans, suite.plan);
     if (autre) {
-      lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera une copie de travail séparée, un worktree).`, "");
+      lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera un dossier à part, un worktree).`, "");
     }
   } else {
     lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");

@@ -2,7 +2,7 @@
 
 Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-w`, ou sur proposition quand une autre session est ouverte). `<session>` est l'identifiant de la session, donné par la commande (« Identifiant de cette session »).
 
-À expliquer en deux phrases, la première fois : « Un worktree est une deuxième copie de travail du projet, dans un sous-dossier, sur sa propre branche Git. Deux sessions peuvent ainsi avancer en même temps, chacune sur sa user story, sans se marcher dessus ; on rassemble ensuite le travail dans la branche principale. »
+À expliquer en deux phrases, la première fois : « Un worktree est un dossier à part du projet, sur sa propre version parallèle (une branche Git). Deux sessions peuvent ainsi avancer en même temps, chacune sur sa user story, sans se gêner ; on rassemble ensuite le travail dans la version principale. »
 
 ## 1. Faut-il un worktree ?
 
@@ -11,8 +11,8 @@ Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-w`, ou sur propositi
   1. `pulse-aidd sessions <session>` : la ligne `autres=N` (N > 0 : une autre session Claude Code est ouverte sur ce dossier) ;
   2. une tâche `[~]` dans le plan d'**une autre US** que celle demandée ;
   3. des modifications non enregistrées (`git status`) étrangères à la tâche demandée.
-  4. un worktree existe déjà pour cette US (`git worktree list` montre `.claude/worktrees/us-xxx-<nom>`) : proposer d'y revenir, « Reprendre dans la copie à part du projet (worktree) (Recommandé) » / « Travailler dans le dossier principal ».
-- **Au moins un signe** : proposer le worktree (AskUserQuestion) : « Travailler dans une copie à part du projet (worktree) (Recommandé) » / « Continuer dans le dossier principal », en citant le signe trouvé en une ligne. **Aucun signe** : travailler directement dans le dossier principal.
+  4. un worktree existe déjà pour cette US (`git worktree list` montre `.claude/worktrees/us-xxx-<nom>`) : proposer d'y revenir, « Reprendre dans le dossier à part (Recommandé) » / « Travailler dans le dossier principal ».
+- **Au moins un signe** : proposer le worktree (AskUserQuestion) : « Travailler dans un dossier à part (Recommandé) » / « Continuer dans le dossier principal », en citant le signe trouvé en une ligne. **Aucun signe** : travailler directement dans le dossier principal.
 - La commande est **déjà dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) : y continuer, avec ce worktree.
 
 ## 2. Créer le worktree ou y revenir
@@ -26,7 +26,7 @@ Un worktree par user story. Noms : dossier `.claude/worktrees/us-xxx-<nom>`, bra
 5. **Créer**, à partir du dernier commit local (plutôt que du dépôt distant, qui a peut-être du retard sur le travail) :
    - branche absente : `git worktree add .claude/worktrees/us-xxx-<nom> -b feat/us-xxx-<nom>` ;
    - branche déjà présente : `git worktree add .claude/worktrees/us-xxx-<nom> feat/us-xxx-<nom>`.
-6. **Préparer la copie** : un worktree contient seulement les fichiers suivis par Git.
+6. **Préparer le dossier** : un worktree contient seulement les fichiers suivis par Git.
    - Copier les fichiers d'environnement locaux du dossier principal (`.env`, `.env.local`, `.env.*` sauf `.env.example`) dans le worktree, en gardant leur contenu confidentiel (jamais affiché ni lu à voix haute) : ils restent locaux et ignorés par Git.
    - Lancer la commande « installer » de « Commandes du projet » (`docs/technical.md`) dans le worktree, si elle existe.
 7. **Entrer** : outil `EnterWorktree` avec `path` = le dossier du worktree, puis `pulse-aidd sessions --ici <session>`. Annoncer en une ligne : « Je travaille dans le worktree `us-xxx-<nom>` (branche `feat/us-xxx-<nom>`). »
@@ -44,7 +44,7 @@ Quand le plan de l'US est terminé, ou quand la personne s'arrête, lire la lign
 1. Vérifier que toutes les modifications du worktree sont enregistrées (`git status`). Sinon, s'arrêter : relire et enregistrer d'abord.
 2. Sortir : outil `ExitWorktree`, puis `pulse-aidd sessions --ici <session>`.
 3. Dans le dossier principal, vérifier qu'on est sur la branche de départ et que la voie est libre pour la fusion (`git status`) : laisser intactes les modifications d'une autre session ; si elles portent sur les mêmes fichiers, proposer d'attendre que l'autre session enregistre son travail.
-4. Annoncer en une phrase : « Claude Code va vous demander l'accord pour fusionner : c'est ce qui rassemble le travail de la copie à part dans votre dossier principal. » Puis `git merge --no-ff feat/us-xxx-<nom> -m "merge: US-XXX <titre>"`.
+4. Annoncer en une phrase : « Claude Code va vous demander l'accord pour fusionner : c'est ce qui rassemble le travail du dossier à part dans votre dossier principal. » Puis `git merge --no-ff feat/us-xxx-<nom> -m "merge: US-XXX <titre>"`.
    - **Conflit** : `git merge --abort`, expliquer simplement (« les deux sessions ont modifié les mêmes lignes ») et proposer `/pulse:pr`, qui laisse la fusion se faire sur le site du dépôt, ou `/pulse:get-help`. Préserver le travail de l'autre session : ne jamais résoudre un conflit en l'écrasant.
 5. Nettoyer : `git worktree remove .claude/worktrees/us-xxx-<nom>` puis `git branch -d feat/us-xxx-<nom>` (jamais `-D`, ni `--force` : si Git refuse, il reste du travail à fusionner ; le dire et s'arrêter).
 6. Lancer `pulse-aidd guide`. Rappeler que le travail reste local pour l'instant : `/pulse:deploy` ou `/pulse:commit push`.
