@@ -664,11 +664,13 @@ test("écrans des commandes sans jargon", () => {
   const references = PLUGINS.flatMap((p) => fichiers(path.join(p, "references"), ".md"));
   for (const fichier of [...SKILLS_PAR_PLUGIN, ...references]) {
     // Clôtures lues dans l'ordre : seul le contenu d'un bloc ouvert par ``` ou ```text est un écran (un bloc de code est sauté).
+    // Dans readme.md du pack, les blocs ```markdown sont le texte du README du projet de la personne : lus aussi.
+    const ecrans = new Set(["", "text", ...(unix(fichier).endsWith("pulse-vibe-next/references/readme.md") ? ["markdown"] : [])]);
     let bloc = null;
     for (const ligne of lire(fichier).split("\n")) {
       const cloture = /^\s*```\s*(\S*)/.exec(ligne);
       if (cloture) {
-        bloc = bloc === null ? (cloture[1] === "" || cloture[1] === "text" ? "ecran" : "code") : null;
+        bloc = bloc === null ? (ecrans.has(cloture[1]) ? "ecran" : "code") : null;
         continue;
       }
       if (bloc !== "ecran") continue;
@@ -697,10 +699,40 @@ test("README et mémo sans « MVP », « epic » ni « demande de fusion » (hor
   assert.deepStrictEqual(problemes, []);
 });
 
+// Ce que la personne lit hors des commandes : documents de son projet (modèles), verdicts de pulse-aidd etat,
+// messages du garde-fou des commandes. Chemins, code, emplacements <…> et commentaires HTML (consignes pour l'IA) exclus.
+const motDeMethode = (texte) => /\bMVP\b/.exec(sansChemins(texte)) || /\b(epics?|demandes? de fusion)\b/i.exec(sansChemins(texte));
+// Chaînes entre guillemets doubles d'un script, et raisons des verdicts écrites entre accents graves (sans les ${…}).
+const chainesDuScript = (source) => [
+  ...[...source.matchAll(/"((?:[^"\\\n]|\\.)*)"/g)].map((m) => m[1]),
+  ...[...source.matchAll(/verdict\("R\d+", "[^"]*", `([^`]*)`/g)].map((m) => m[1].replace(/\$\{[^}]*\}/g, " ")),
+];
+
+test("modèles et sorties des outils lus par la personne sans « MVP », « epic » ni « demande de fusion »", () => {
+  const problemes = [];
+  const modeles = path.join(RACINE, "templates");
+  const documents = [
+    ...lister(modeles).filter((f) => f.endsWith(".md")).map((f) => path.join(modeles, f)),
+    path.join(DEPOT, "plugins", "pulse-vibe-next", "references", "technical.md"),
+  ];
+  for (const fichier of documents) {
+    lire(fichier).replace(/<!--[\s\S]*?-->/g, "").split("\n").forEach((ligne, i) => {
+      const m = motDeMethode(ligne);
+      if (m) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")}:${i + 1} : ${m[0]}`);
+    });
+  }
+  for (const script of ["etat.js", "guide.js", "garde-commandes.js"]) {
+    for (const chaine of chainesDuScript(lire(RACINE, "scripts", script))) {
+      const m = motDeMethode(chaine);
+      if (m) problemes.push(`scripts/${script} : ${m[0]} dans « ${chaine.slice(0, 60)} »`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
 test("phrases dites à la personne sans « MVP », « worktree » ni « demande de fusion » (commandes du parcours Git et du PRD)", () => {
   // Permis : un titre de section ou de référence cité (lu par l'IA), et la phrase qui explique le mot « worktree ».
-  // « Mettre en ligne le MVP » et « Le MVP est atteint quand… » : titres recopiés dans les documents du projet, traités par la tâche 6b.
-  const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est |^Mettre en ligne le MVP$|^Le MVP est atteint quand…$/;
+  const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est /;
   const problemes = [];
   const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md")];
   for (const f of fichiers) {

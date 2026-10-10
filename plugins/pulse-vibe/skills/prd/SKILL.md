@@ -25,7 +25,7 @@ Rappeler en une phrase : « La première version est la plus petite réellement 
 
 ## Déroulé
 
-Appliquer « Penser avant d'écrire » ci-dessus : la coupe du MVP et la définition « Le MVP est atteint quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
+Appliquer « Penser avant d'écrire » ci-dessus : la coupe du MVP et la définition « La première version est prête quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
 
 ### 1. Lister les fonctionnalités
 
@@ -48,7 +48,7 @@ Construire ensuite le classement complet à partir de sa coupe, le montrer avec 
 
 **Garde-fou de taille** : si plus de 5 ou 6 fonctionnalités sont « Indispensables » pour un MVP à réaliser en une journée, dites-le franchement et proposer lesquelles passer en « Essentiel ». Poser la question test : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? »
 
-**Travail en cours** : tant que la coupe du MVP ou la définition « Le MVP est atteint quand… » attend la personne, tenir `aidd_docs/tasks/in-progress.md` à jour (règle commune 16). L'effacer (`pulse-aidd travail-fini`) après l'écriture de `docs/prd.md`.
+**Travail en cours** : tant que la coupe du MVP ou la définition « La première version est prête quand… » attend la personne, tenir `aidd_docs/tasks/in-progress.md` à jour (règle commune 16). L'effacer (`pulse-aidd travail-fini`) après l'écriture de `docs/prd.md`.
 
 ### 3. Compléter le reste du PRD
 
@@ -56,7 +56,7 @@ Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'êt
 - la vision (2-3 phrases) et le problème principal ;
 - le tableau des utilisateurs ;
 - 1 à 3 **objectifs mesurables** (les proposer, faire valider) ;
-- la phrase « Le MVP est atteint quand… » : **question clé**, formulée d'abord par la personne, puis rendue vérifiable avec elle (un constat observable, daté si possible) ;
+- la phrase « La première version est prête quand… » : **question clé**, formulée d'abord par la personne, puis rendue vérifiable avec elle (un constat observable, daté si possible) ;
 - les contraintes (données personnelles, budget, délai, appareils) ;
 - **être trouvé** (question à choix) : « Votre outil doit-il être trouvé sur Google ou par les assistants IA ? Par qui, avec quels mots ? » ; un outil interne répond « non » (le référencement se limitera alors à rester hors de Google) ;
 - le hors périmètre (ce qui reste en dehors de l'outil) ;

@@ -65,7 +65,7 @@ ${retest ? `- **Résultat** : ${retest}\n` : ""}`;
 
 const REFERENTIEL = `# User stories – TodoIt
 
-> Priorités : **Indispensable** (le MVP) · **Essentiel** · **Optionnel** · **En attente**.
+> Priorités : **Indispensable** (la première version) · **Essentiel** · **Optionnel** · **En attente**.
 
 ## Ordre de réalisation
 
@@ -75,7 +75,7 @@ US-002 → US-001 → US-003
 
 ---
 
-## Epic – Gérer les tâches (\`gerer-taches\`)
+## Groupe – Gérer les tâches (\`gerer-taches\`)
 
 | ID | Titre | Acteur | Priorité | Taille | Dépend de | Fichier |
 |---|---|---|---|---|---|---|
@@ -100,7 +100,7 @@ const PLAN = (id, taches) => `# Plan – TodoIt – ${id} Titre
 
 ## Vue d'ensemble
 
-- **US** : ${id} – Titre · **Epic** : Gérer les tâches · **Priorité** : Indispensable
+- **US** : ${id} – Titre · **Groupe** : Gérer les tâches · **Priorité** : Indispensable
 
 ## Tâches
 
@@ -262,7 +262,7 @@ test("spec validée sans plan avant les tâches restantes (R18), puis les tâche
   const plan2 = PLAN("US-002", "- [x] **T1 – Afficher la page** · US-002\n- [ ] **T2 – Voir la liste** · US-002");
   const r = etat(projet({ ...AVANT_US, ...SPECS_VALIDEES, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": plan2 }, PILE_CHOISIE));
   assert.deepStrictEqual([r.regle, r.prochaine], ["R18", "/pulse:plan US-001"]);
-  const plan1 = PLAN("US-001", "- [ ] **T3 – Créer une tâche** · US-001\n- [ ] **T4 – Mettre en ligne le MVP** · —");
+  const plan1 = PLAN("US-001", "- [ ] **T3 – Créer une tâche** · US-001\n- [ ] **T4 – Mettre en ligne la première version** · —");
   const taches = etat(projet({
     ...AVANT_US,
     ...SPECS_VALIDEES,
@@ -275,6 +275,7 @@ test("spec validée sans plan avant les tâches restantes (R18), puis les tâche
   assert.match(taches.etapes, /plan=fait realisation=en-cours en-ligne=non/);
 });
 
+// Plans écrits avant pulse 0.38 : « Mettre en ligne le MVP » reste reconnu (un titre qui commence par « Mettre en ligne »).
 test("MVP terminé : mise en ligne (R15), audit de sécurité une fois en ligne (R21), puis US suivante (R22)", () => {
   const fichiers = {
     ...AVANT_US,
@@ -285,10 +286,12 @@ test("MVP terminé : mise en ligne (R15), audit de sécurité une fois en ligne 
   const horsLigne = etat(projet(fichiers, PILE_CHOISIE));
   assert.deepStrictEqual([horsLigne.regle, horsLigne.prochaine, horsLigne.mvp], ["R15", "/pulse:deploy", "2/3"]);
   assert.match(horsLigne.etapes, /realisation=fait en-ligne=non/);
+  assert.match(horsLigne.raison, /la première version peut être mise en ligne/);
   const enLigne = { ...PILE_CHOISIE, site: "https://todoit.example.org", depot: "https://github.com/exemple/todoit" };
   const fini = { ...fichiers, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-001-creer-tache.md": PLAN("US-001", "- [x] **T2 – Créer une tâche** · US-001\n- [x] **T3 – Mettre en ligne le MVP** · —") };
   const audit = etat(projet(fini, enLigne));
   assert.deepStrictEqual([audit.regle, audit.prochaine], ["R21", "/pulse:security"]);
+  assert.match(audit.raison, /la première version est en ligne/);
   const suivante = etat(projet({ ...fini, "docs/securite.md": "# Sécurité\n" }, enLigne));
   assert.deepStrictEqual([suivante.regle, suivante.prochaine], ["R22", "/pulse:spec US-003"], "US-004 est « En attente » : jamais proposée");
   assert.ok(suivante.aussi.some((a) => a.startsWith("/pulse:cicd — ")), "dépôt relié, aucune CI");

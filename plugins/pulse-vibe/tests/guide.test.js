@@ -15,7 +15,7 @@ const PLAN_US1 = `# Plan – TodoIt – US-001 Créer une tâche
 
 ## Vue d'ensemble
 
-- **US** : US-001 – Créer une tâche · **Epic** : Gérer les tâches · **Priorité** : Indispensable
+- **US** : US-001 – Créer une tâche · **Groupe** : Gérer les tâches · **Priorité** : Indispensable
 
 ## Tâches
 
@@ -42,7 +42,7 @@ const PLAN_US2 = `# Plan – TodoIt – US-002 Terminer une tâche
 
 ## Vue d'ensemble
 
-- **US** : US-002 – Terminer une tâche · **Epic** : Gérer les tâches · **Priorité** : Indispensable
+- **US** : US-002 – Terminer une tâche · **Groupe** : Gérer les tâches · **Priorité** : Indispensable
 
 ## Tâches
 
@@ -50,7 +50,7 @@ const PLAN_US2 = `# Plan – TodoIt – US-002 Terminer une tâche
   - Objectif : marquer une tâche comme faite
 
 <!-- Tâche de mise en ligne : dernière US Indispensable du parcours. -->
-- [ ] **T4 – Mettre en ligne le MVP** · —
+- [ ] **T4 – Mettre en ligne la première version** · —
   - Vérification : l'adresse s'ouvre sur un téléphone
 `;
 
@@ -58,7 +58,7 @@ const PLAN_US6 = `# Plan – TodoIt – US-006 Exporter la liste
 
 ## Vue d'ensemble
 
-- **US** : US-006 – Exporter la liste · **Epic** : Partager · **Priorité** : Essentiel
+- **US** : US-006 – Exporter la liste · **Groupe** : Partager · **Priorité** : Essentiel
 
 ## Tâches
 
@@ -106,7 +106,7 @@ test("produit l'index et une page par plan, rangée dans le dossier de son epic,
   assert.match(index, /# Guide de réalisation – TodoIt/);
   assert.match(index, /```\n\/pulse:review T2\n```/, "T2 en cours : la prochaine étape est la relecture");
   assert.match(index, /\| gerer-taches \| US-001 – Créer une tâche \| Indispensable \| 2 \| 1\/2 \|/);
-  assert.match(index, /MVP \(US Indispensables planifiées\) : 1\/2/);
+  assert.match(index, /Première version \(US Indispensables planifiées\) : 1\/2/);
   assert.match(index, /Choisir les outils[^\n]*\n- \[ \] ⚪ Définir l'identité visuelle \(facultatif, avant les user stories\) : `\/pulse:ui identite`[^\n]*\n- \[ \] Écrire les user stories/, "l'identité visuelle, facultative, entre la pile et les user stories");
   assert.doesNotMatch(index + lire(d, US1), /T99/, "le Journal est ignoré");
   assert.doesNotMatch(index, /T98|\| revues \|/, "les rapports de relecture ne sont ni un plan ni une epic");
@@ -124,7 +124,7 @@ test("chaque tâche a ses commandes, avec l'identifiant de l'US, ses prérequis 
   assert.match(p1, /⚠️ Action de votre part : coller supabase\/schema\.sql/);
   assert.match(p1, /## Fin de US-001\n\n- 🔵 Mettre la nouvelle version en ligne/);
   const p2 = lire(d, US2);
-  assert.match(p2, /### T4 – Mettre en ligne le MVP\n\nStatut : ⬜ à faire\n/, "pas de « — » affiché");
+  assert.match(p2, /### T4 – Mettre en ligne la première version\n\nStatut : ⬜ à faire\n/, "pas de « — » affiché");
   assert.match(p2, /⚠️ Avant : terminer et enregistrer T3/);
   assert.match(p2, /⚠️ Avant : terminer les tâches de toutes les US Indispensables/);
   assert.match(p2, /- \[ \] 🔵 Mettre en ligne\n  ```\n  \/pulse:deploy/);
@@ -246,4 +246,20 @@ test("index : « Si vous êtes bloqué » propose /pulse:annuler et /pulse:get-h
   assert.match(index, /\/pulse:annuler/);
   assert.match(index, /\/pulse:get-help/);
   assert.doesNotMatch(index, /personne qui sait programmer/);
+});
+
+test("le guide lu par la personne : ni « MVP », ni « epic », ni « demande de fusion » (hors chemins et commandes)", () => {
+  const d = troisPlans();
+  assert.strictEqual(lancer(d).status, 0);
+  const sansChemins = (t) => t.replace(/`[^`]*`/g, " ").replace(/<[^>]*>/g, " ").replace(/\S*\/\S*/g, " ");
+  const problemes = [];
+  for (const f of ["index.md", US1, US2, US6]) {
+    lire(d, f).split("\n").forEach((ligne, i) => {
+      const m = /\bMVP\b/.exec(sansChemins(ligne)) || /\b(epics?|demandes? de fusion)\b/i.exec(sansChemins(ligne));
+      if (m) problemes.push(`${f}:${i + 1} : ${m[0]}`);
+    });
+  }
+  assert.deepStrictEqual(problemes, []);
+  assert.match(lire(d, "index.md"), /\| Groupe \| US \| Priorité \|/);
+  assert.match(lire(d, US1), /^> Groupe : gerer-taches · Priorité : Indispensable/m);
 });
