@@ -3,6 +3,7 @@
 "use strict";
 
 const test = require("node:test");
+const { after } = test;
 const assert = require("node:assert");
 const fs = require("fs");
 const os = require("os");
@@ -12,7 +13,15 @@ const { spawnSync } = require("child_process");
 const SCRIPT = path.join(__dirname, "..", "scripts", "squelette.js");
 const { nomDePaquet } = require(SCRIPT);
 
-const dossierVide = () => fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-"));
+const crees = [];
+const dossierVide = () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-next-"));
+  crees.push(d);
+  return d;
+};
+after(() => {
+  for (const d of crees) fs.rmSync(d, { recursive: true, force: true });
+});
 const lancer = (...args) => spawnSync("node", [SCRIPT, ...args], { encoding: "utf8" });
 const lire = (d, f) => fs.readFileSync(path.join(d, f), "utf8");
 
