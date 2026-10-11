@@ -271,6 +271,7 @@
 <p><strong>Exemple :</strong> pour vérifier la clé du service d'e-mails, l'IA voudrait ouvrir <code>.env</code>. Le garde-fou refuse et rappelle l'autre chemin : <code>pulse-aidd secrets verifier</code> contrôle la clé sans jamais afficher sa valeur.</p>
 <ul>
 <li><strong>Dans votre projet :</strong> rien à installer, les garde-fous viennent avec Pulse. <a href="commandes/init.html"><code>/pulse:init</code></a> ajoute une seconde protection dans <code>.claude/settings.json</code> et un contrôle des clés avant chaque enregistrement.</li>
+<li><strong>Dans vos autres projets :</strong> les garde-fous restent silencieux. Ils reconnaissent un projet Pulse à son fichier <code>CLAUDE.md</code>, créé par <a href="commandes/init.html"><code>/pulse:init</code></a>.</li>
 <li><strong>Commande :</strong> aucune ; ils veillent pendant toutes les commandes.</li>
 </ul>
 </section>
