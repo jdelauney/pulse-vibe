@@ -21,7 +21,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 - **Ajouter une bibliothèque seulement si elle figure** dans le message de délégation ou dans « Pile retenue », avec sa version.
 - **Vérifier la syntaxe et l'API** de la technologie retenue dans sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), pour la version indiquée dans « Pile retenue ».
 - **Présentation des écrans** : suivre celle que la personne a choisie (colonne « Présentation » de la spec, conception technique du plan, maquette retenue). Une présentation absente de ces documents se signale dans « À signaler », avec la question à poser à la personne ; la tâche se réalise ensuite selon sa réponse.
-- **Tests essentiels** (rythme rapide, indiqué par l'appelant) : écrire avec le code les tests unitaires et d'intégration utiles (règle métier, calcul, enregistrement, règle d'accès), un par scénario `@unitaire` ou `@integration` de la tâche, sans test de bout en bout ; les lancer et donner leur résultat.
+- **Tests essentiels** (rythme rapide, indiqué par l'appelant) : écrire avec le code les seuls tests d'intégration et de sécurité nécessaires (enregistrement qui porte une règle, règle d'accès), un par scénario `@integration` de la tâche ; les lancer une seule fois, à la fin, en limitant la commande « tester » aux fichiers de test de la tâche.
 - **Tests reçus (tests d'abord)** : les faire passer en écrivant le code de production, et laisser les fichiers de test tels quels (ils sont figés et contrôlés). Respecter l'interface attendue. Un test qui semble faux (contraire à un critère, valeur impossible) se conteste dans « Tests contestés », avec la raison ; continuer sur les autres.
 - **Laisser le jugement du travail et la relecture à l'appelant**, qui s'en charge.
 - Si `docs/technical.md` est absent, ou si le contrat est ambigu ou impossible (vraie clé, compte à créer, paiement réel, action dans un tableau de bord), **s'arrêter et le dire**. Rapporter l'avancement réel, tel qu'il est.
@@ -47,7 +47,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - clé secrète seulement dans du code serveur, lue depuis une variable d'environnement listée dans « Secrets et variables d'environnement », jamais dans le code envoyé au navigateur.
 6. Vérifications, à lancer avant de rendre la main :
    - les contrôles automatiques de « Commandes du projet » (lint, types, format…), et la commande « construire » si la tâche touche une route, une page ou la configuration ;
-   - la commande « tester » si elle existe ;
+   - la commande « tester » si elle existe (tests essentiels : seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas) ;
    - `pulse-aidd verifier` (secrets, fichiers d'environnement suivis) ;
    - si toutes les commandes de contrôle sont à « aucune », le signaler dans « À signaler » ;
    - distinguer, dans la réponse, les tests **écrits** des tests **lancés** ; un test non lancé ne prouve rien.
