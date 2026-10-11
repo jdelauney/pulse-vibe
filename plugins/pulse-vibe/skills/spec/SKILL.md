@@ -65,7 +65,7 @@ Suivre le modèle de spec, avec `Statut : brouillon`. Relire les autres specs (`
 
 1. **Intention** : ce que l'utilisateur pourra faire, en une phrase ; l'US couverte (et la demande d'origine si elle vient d'une demande) ; les specs sur lesquelles elle s'appuie ; la spec verrouillée qu'elle fait évoluer, le cas échéant.
 2. **Périmètre** : ce qui est inclus, puis les **hors objectifs**, explicites (repris de « Hors périmètre » de l'US, des autres US de l'epic, des « En attente » du PRD).
-3. **Ce que l'utilisateur voit et fait** : pour chaque écran, qui y accède, ce qu'on y voit, ce qu'on y fait ; les situations à prévoir (en attente, rien à afficher, échec, sur téléphone) décrites par ce que vit l'utilisateur ; le parcours principal (schéma `flowchart` du modèle, 3 à 7 étapes ; le retirer pour un écran unique). Un écran se nomme par ce qu'il montre (« la liste de mes factures »), sans adresse ni composant.
+3. **Ce que l'utilisateur voit et fait** : pour chaque écran, qui y accède, ce qu'on y voit, ce qu'on y fait ; les situations à prévoir (en attente, rien à afficher, échec, sur téléphone) décrites par ce que vit l'utilisateur ; le parcours principal (schéma `flowchart` du modèle, 3 à 7 étapes ; le retirer pour un écran unique). Un écran se nomme par ce qu'il montre (« la liste de mes factures »), sans adresse ni composant. Sa colonne « Présentation » se remplit à l'étape 1 bis.
 4. **Informations manipulées** : pour chaque type d'information, ses informations en mots du métier (obligatoire ou non, règle, exemple réaliste et fictif), et **qui peut consulter, ajouter, modifier, supprimer**, en français (« un client consulte seulement les demandes dont il est l'auteur »). Le lieu de stockage et de vérification est décidé dans le plan.
 5. **Règles métier** : reprises de l'US, chacune en une phrase vraie.
 6. **Scénarios** : selon la référence « Scénarios Gherkin » ci-dessus, une `Règle` par règle métier de l'US, et pour chacune 2 à 5 exemples concrets (cas nominal, limites, cas refusés), écrits en langage métier avec des données fictives et les mots du glossaire. Chaque exemple porte l'étiquette du critère qu'il illustre (`@US-XXX-1`) et son niveau de preuve prévu (`@unitaire`, `@integration`, `@bout-en-bout`, ou `@manuel`, selon `tests/strategie.md` §2, affichable avec `pulse-aidd reference tests/strategie.md`) ; chaque critère d'acceptation est couvert par au moins un exemple.
@@ -75,6 +75,16 @@ Suivre le modèle de spec, avec `Statut : brouillon`. Relire les autres specs (`
 10. **Questions en suspens** : chaque `TBD:` de la spec.
 
 **Relecture « intention »** avant de montrer le brouillon : chercher dans le texte tout nom de fichier, composant, route, table, bibliothèque, service technique ou verbe de construction (« créer une fonction », « stocker dans ») ; le reformuler en résultat pour l'utilisateur, ou le noter pour le plan.
+
+### 1 bis. Choisir la présentation des écrans
+
+Pour chaque écran qui montre des informations ou un formulaire, la présentation est une décision de la personne : la poser, sans la choisir à sa place. Une ronde (AskUserQuestion, 4 questions au plus, réponse recommandée en premier selon les motifs d'écrans `pulse-aidd reference ui/motifs.md`, avec sa raison en quelques mots ; un écran déjà décidé dans une autre spec reprend sa présentation, sans question) :
+
+- **Montrer les informations** : « Comment présenter <les factures> ? » → « Un tableau, une ligne par <facture> » (beaucoup d'éléments ou de colonnes à comparer) / « Des cartes » (peu d'éléments, une image ou un résumé) / « Une liste simple » (un ou deux renseignements par élément).
+- **Créer ou modifier** : « Où créer ou modifier <une facture> ? » → « Sur une page à part » (formulaire long, plus de 5 champs) / « Dans une fenêtre par-dessus la liste » (formulaire court) / « Dans un volet sur le côté » (modifier en gardant la liste sous les yeux) / « Directement dans la liste » (un ou deux champs).
+- **Supprimer**, s'il y a lieu : « Supprimer <une facture> : demander confirmation (Recommandé) » / « Supprimer tout de suite, avec la possibilité d'annuler quelques secondes ».
+
+Noter chaque réponse dans la colonne « Présentation » de « Ce que l'utilisateur voit et fait ». Puis proposer (AskUserQuestion) : « Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) » / « Suivre ces choix, sans maquette » (en rythme rapide, règles communes § 1, la seconde est recommandée). Noter la réponse sur la ligne « Maquettes » de la spec ; « Voir » mène à `/pulse:ui maquettes US-XXX` une fois la spec verrouillée.
 
 ### 2. La section « Données personnelles et accès » (obligatoire)
 
@@ -91,7 +101,7 @@ La troisième (ce que vit l'utilisateur qui remplit mal un formulaire) se dédui
 3. Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`. Présenter un résumé en 5 lignes au plus (US, écrans, informations, hors objectifs, « terminé quand »), puis les **titres des scénarios**, groupés par règle (« Voici ce que l'outil devra faire, exemple par exemple »).
 4. **Validation** (AskUserQuestion ; avant la question, et avant chaque ronde de `TBD:`, écrire `aidd_docs/tasks/in-progress.md`, règle commune 16, effacé avec `pulse-aidd travail-fini` après la réponse) : « Valider (la spec ne bougera plus) » / « Corriger un scénario ou un point ». « Valider (la spec ne bougera plus) » est proposé seulement quand il ne reste aucun `TBD:` ; sinon, dire lesquels restent et proposer « La garder en brouillon ». À la validation, écrire `Statut : verrouillée le <date du jour>`. Plusieurs US demandées : passer à la suivante seulement après cette validation.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:plan US-XXX` pour une spec verrouillée (ou `/pulse:ui maquettes US-XXX` d'abord, si la spec a des écrans et que la personne veut les voir avant de construire) ; `/pulse:spec US-XXX` pour une spec restée en brouillon.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquettes US-XXX` pour une spec verrouillée dont la ligne « Maquettes » vaut « à voir », sinon `/pulse:plan US-XXX` ; `/pulse:spec US-XXX` pour une spec restée en brouillon.
 
 ## Exemples
 
