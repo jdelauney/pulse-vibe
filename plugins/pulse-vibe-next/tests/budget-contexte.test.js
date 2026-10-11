@@ -98,7 +98,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   secrets: 70500, // mesure 67 057
   security: 88000, // mesure 83 589
   seo: 102000, // mesure 96 880
-  spec: 50000, // mesure 47 426
+  spec: 54000, // mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
   spirc: 85000, // mesure 80 657 (pulse 0.42 : rythme rapide, option -f, gestes)
   tech: 134500, // mesure 127 942
   test: 52000, // mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)

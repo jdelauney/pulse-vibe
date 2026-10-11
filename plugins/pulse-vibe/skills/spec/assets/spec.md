@@ -24,9 +24,11 @@
 
 ## 3. Ce que l'utilisateur voit et fait
 
-| Écran | Qui y accède | Ce qu'on y voit | Ce qu'on y fait |
-|---|---|---|---|
-| | | | |
+| Écran | Qui y accède | Ce qu'on y voit | Ce qu'on y fait | Présentation (choisie par la personne) |
+|---|---|---|---|---|
+| | | | | {{ex. « tableau ; création et modification sur une page à part ; suppression avec confirmation »}} |
+
+**Maquettes** : {{à voir (`/pulse:ui maquettes`) | sans maquette, suivre ces choix | retenue : `docs/design/maquettes/US-XXX-<nom>/retenue/`}}
 
 **Situations à prévoir** : en attente {{…}} · rien à afficher {{…}} · échec {{…}} · sur téléphone {{…}}
 
