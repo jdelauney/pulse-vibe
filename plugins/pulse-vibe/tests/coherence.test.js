@@ -1286,7 +1286,7 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(spirc, /SMOKE-TEST-US-XXX-<nom>\.md/);
   const auto = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(auto, /## 2 bis\. Tests essentiels \(rythme rapide\)/);
-  assert.match(auto, /\*\*Aucun test de bout en bout\*\*/);
+  assert.match(auto, /\*\*Aucun test de l'interface par l'assistant\*\*/);
   assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme rapide\*\*/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
@@ -1304,11 +1304,12 @@ test("spirc : une ronde de départ unique (rythme, options à cocher, tests, env
   assert.doesNotMatch(spirc, /« Comment avancer \? »/, "plus de question de rythme après le plan");
 });
 
-test("rythme rapide : la vérification de chaque tâche reste légère, sans navigateur piloté", () => {
-  const verifier = lire(RACINE, "agents", "verifier.md");
-  assert.ok(verifier.includes("**Vérification légère** (rythme rapide"));
-  assert.ok(verifier.includes("Ni navigateur piloté ni script de navigateur écrit pour l'occasion"));
-  assert.ok(lire(RACINE, "references", "examen.md").includes("en rythme rapide (règles communes § 1), la consigne « vérification légère »"));
+test("rythme rapide : aucun test de l'interface par l'assistant, le reviewer seul ; la fiche de fin d'US vérifie l'écran", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  assert.ok(examen.includes("**Rythme rapide** (règles communes § 1) : `pulse:reviewer` seul, sur le code ; ni verifier, ni application lancée ou interrogée"));
+  assert.ok(lire(RACINE, "references", "tests-automatiques.md").includes("**Aucun test de l'interface par l'assistant**"));
+  assert.ok(!lire(RACINE, "agents", "verifier.md").includes("Vérification légère"));
+  assert.ok(skillTexte("spirc").includes("le reviewer seul en rythme rapide"));
 });
 
 test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {
@@ -1328,6 +1329,5 @@ test("tests essentiels : intégration et sécurité nécessaires seulement, ceux
   assert.ok(auto.includes("**Lancés une seule fois par tâche, et seulement les siens**"));
   assert.ok(auto.includes("**Toute la suite tourne une seule fois**"));
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
-  assert.ok(lire(RACINE, "agents", "verifier.md").includes("la commande « tester » reste à l'implementer"));
   assert.ok(skillTexte("spirc").includes("En rythme rapide, d'abord lancer une fois toute la suite de tests"));
 });
