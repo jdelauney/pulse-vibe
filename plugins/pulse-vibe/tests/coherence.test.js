@@ -1304,6 +1304,13 @@ test("spirc : une ronde de départ unique (rythme, options à cocher, tests, env
   assert.doesNotMatch(spirc, /« Comment avancer \? »/, "plus de question de rythme après le plan");
 });
 
+test("rythme rapide : la vérification de chaque tâche reste légère, sans navigateur piloté", () => {
+  const verifier = lire(RACINE, "agents", "verifier.md");
+  assert.ok(verifier.includes("**Vérification légère** (rythme rapide"));
+  assert.ok(verifier.includes("Ni navigateur piloté ni script de navigateur écrit pour l'occasion"));
+  assert.ok(lire(RACINE, "references", "examen.md").includes("en rythme rapide (règles communes § 1), la consigne « vérification légère »"));
+});
+
 test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {
   const spec = skillTexte("spec");
   for (const t of ["### 1 bis. Choisir la présentation des écrans", "« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`"])
