@@ -1328,6 +1328,8 @@ test("tests essentiels : intégration et sécurité nécessaires seulement, ceux
   assert.ok(auto.includes("**Seulement les tests d'intégration et de sécurité nécessaires**"));
   assert.ok(auto.includes("**Lancés une seule fois par tâche, et seulement les siens**"));
   assert.ok(auto.includes("**Toute la suite tourne une seule fois**"));
+  assert.ok(auto.includes("**Seulement les contrôles rapides**") && auto.includes("`next build`"), "pas de construction en rythme rapide");
+  assert.ok(lire(RACINE, "agents", "implementer.md").includes("tests essentiels : jamais de « construire »"));
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
   assert.ok(skillTexte("spirc").includes("En rythme rapide, d'abord lancer une fois toute la suite de tests"));
 });
