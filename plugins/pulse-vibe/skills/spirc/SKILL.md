@@ -157,7 +157,7 @@ Appliquer « Rouge : écrire les tests » (§ 4 de la référence « Tests autom
 
 #### [R] Relire et vérifier (eXaminer)
 
-1. **Examiner** : appliquer le § 2 de la référence « Examiner une tâche » (`pulse:reviewer` et `pulse:verifier` en parallèle ; avec `-t`, le reviewer reçoit aussi les fichiers de test et le dernier rapport du test-runner ; avec `-x`, l'audit de sécurité).
+1. **Examiner** : appliquer le § 2 de la référence « Examiner une tâche » (`pulse:reviewer` et `pulse:verifier` en parallèle, le reviewer seul en rythme rapide ; avec `-t`, le reviewer reçoit aussi les fichiers de test et le dernier rapport du test-runner ; avec `-x`, l'audit de sécurité).
 2. **Écrire le rapport** : § 3 de la même référence (avec `-t`, la section `## Tests automatiques` ; avec `-x`, `## Audit de sécurité`).
 3. **Trier les constats** :
    - **écart de besoin** (la demande elle-même est à revoir) : le présenter simplement et demander à la personne ; si elle change le contrat, mettre à jour la tâche dans le plan (et le fichier de l'US), puis reprendre à [I] ;
