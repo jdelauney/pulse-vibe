@@ -1303,3 +1303,14 @@ test("spirc : une ronde de départ unique (rythme, options à cocher, tests, env
     assert.ok(ronde.includes(t), t);
   assert.doesNotMatch(spirc, /« Comment avancer \? »/, "plus de question de rythme après le plan");
 });
+
+test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {
+  const spec = skillTexte("spec");
+  for (const t of ["### 1 bis. Choisir la présentation des écrans", "« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`"])
+    assert.ok(spec.includes(t), t);
+  assert.match(lire(RACINE, "skills", "spec", "assets", "spec.md"), /\| Présentation \(choisie par la personne\) \|/);
+  assert.match(lire(RACINE, "skills", "spec", "assets", "spec.md"), /\*\*Maquettes\*\* :/);
+  assert.match(skillTexte("plan"), /sa \*\*présentation\*\*, reprise de la colonne « Présentation » de la spec/);
+  assert.match(skillTexte("spirc"), /Si sa ligne « Maquettes » vaut « à voir » : d'abord lancer `pulse-aidd etape ui --sans-communes`/);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Présentation des écrans\*\* : suivre celle que la personne a choisie/);
+});
