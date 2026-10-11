@@ -28,6 +28,8 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Méthode
 
+**Vérification légère** (rythme rapide, indiqué par l'appelant) : à la place du point 3, seulement des requêtes HTTP sur l'application lancée en local (`curl` : statut et textes attendus de chaque page et point d'entrée de la tâche, refus d'une entrée invalide ou d'un accès non autorisé côté serveur). Chaque critère qui demande un clic ou une saisie passe en ❓, reporté à la fiche de test de fin d'US. Ni navigateur piloté ni script de navigateur écrit pour l'occasion : les parcours appartiennent à la personne.
+
 1. **Définir les critères observables** : pour chaque critère d'acceptation, ce qu'on doit voir ou obtenir.
 2. **Contrôles statiques** (ils soutiennent la preuve, en complément de la surface réelle) :
    - les contrôles automatiques de « Commandes du projet » (sauf une commande de formatage qui réécrit les fichiers), la commande « tester » et la commande « construire » si elles existent ;
