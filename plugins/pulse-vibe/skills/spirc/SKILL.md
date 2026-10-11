@@ -189,6 +189,8 @@ Annoncer l'avancement en une ligne : `T3 ✅ terminée · US-XXX : 3/6`.
 
 Quand toutes les tâches de la portée sont passées (ou que la boucle s'est arrêtée sur un blocage), avant la tâche « Mettre en ligne… » :
 
+En rythme rapide, d'abord lancer une fois toute la suite de tests (commande « Tester ») ; un échec se corrige comme à l'étape 4 ci-dessous, avant la fiche.
+
 1. Présenter, tâche par tâche, le **rapport de réalisation** (règles communes § 4) et, en langage simple, les constats corrigés et ceux écartés.
 2. Écrire **une fiche de test complète de l'US**, `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui enchaîne les étapes de toutes les tâches dans l'ordre du plan (« 3 bis » de la référence « Examiner une tâche »), lancer l'application en arrière-plan, puis donner le lien vers la fiche, sa durée et sa première étape.
 3. Demander (AskUserQuestion) : « Les tests sont-ils concluants ? » → « Oui, tout fonctionne » / « Non, sur certaines tâches » (puis lesquelles et ce qui ne va pas).
