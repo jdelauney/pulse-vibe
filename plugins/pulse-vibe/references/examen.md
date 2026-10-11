@@ -13,9 +13,11 @@ Pour la tâche `Tn`, dans le dossier de son epic `aidd_docs/tasks/<epic>/` : le 
 Lancer **en parallèle** (plusieurs appels Agent dans le même message) :
 
 - **`pulse:reviewer`** : la tâche (identifiant et titre) et la racine du projet ; les documents de référence (§ 1), `docs/brief.md` et `aidd_docs/memory/glossary.md` ; la consigne de charger la checklist sécurité avec `pulse-aidd reference checklist-securite.md` ; les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` ; s'ils existent, le chemin de `docs/design.md` et celui de la maquette citée par la spec ou la tâche (`docs/design/maquettes/US-XXX-<nom>/retenue/`) ; la consigne de juger la qualité avec `pulse-aidd qualite`. Avec les tests d'abord : en plus, les fichiers de test et le dernier rapport du test-runner.
-- **`pulse:verifier`** : en rythme rapide (règles communes § 1), la consigne « vérification légère » ; la tâche, la **demande d'origine** (la phrase de la personne, ou l'objectif de la tâche), ses critères d'acceptation complets, les fichiers modifiés (`git status`, `git diff --stat`), la section « Commandes du projet » de `docs/technical.md` (contrôles automatiques, tests, lancer en local).
+- **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne, ou l'objectif de la tâche), ses critères d'acceptation complets, les fichiers modifiés (`git status`, `git diff --stat`), la section « Commandes du projet » de `docs/technical.md` (contrôles automatiques, tests, lancer en local).
   Le verifier démarre lui-même l'application (commande « Lancer en local » de « Commandes du projet »), note l'adresse, puis l'arrête à la fin. Claude Code demande alors l'accord de la personne pour démarrer l'application et l'interroger : l'annoncer d'avance en une phrase (« Claude Code va vous demander l'accord pour lancer l'application et l'essayer : c'est ainsi que je prouve que chaque critère fonctionne. »).
 - Avec le **contrôle de sécurité à chaque tâche** (option `-x` de `/pulse:spirc`) : **`pulse:security-auditor`**, avec la consigne de charger la checklist sécurité (`pulse-aidd reference checklist-securite.md`) et de se limiter aux fichiers modifiés par la tâche.
+
+**Rythme rapide** (règles communes § 1) : `pulse:reviewer` seul, sur le code ; ni verifier, ni application lancée ou interrogée, ni test de l'interface pendant les tâches. Les tests de la tâche sont ceux lancés à la fin de sa réalisation. Chaque critère qui se voit à l'écran passe en ❓, vers la fiche de test de fin d'US ; la section « Vérification » du rapport porte « — (rythme rapide) ».
 
 Un agent indisponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), en lecture seule, et le signaler. La relecture se fait de préférence dans un autre contexte que celui qui a écrit le code ; sinon, le dire à la personne.
 
@@ -39,7 +41,7 @@ Le **rapport de réalisation** présenté ensuite à la personne (règles commun
 
 Au moment du test : lancer l'application en arrière-plan (commande « lancer en local » de « Commandes du projet »), vérifier que l'adresse répond, puis donner à la personne le lien cliquable vers la fiche, sa durée et sa première étape. Les contrôles automatiques restent à l'assistant : la personne n'a aucune commande à taper. Arrêter l'application après sa réponse.
 
-**Test groupé** (mode autonome, rythme rapide) : une seule fiche, complète, pour toute l'US : `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui reprend dans l'ordre du plan les étapes de chaque tâche, gardées dans leurs rapports.
+**Test groupé** (mode autonome, rythme rapide) : une seule fiche, complète, pour toute l'US : `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui reprend dans l'ordre du plan les étapes de chaque tâche, gardées dans leurs rapports (en rythme rapide, tirées des critères d'acceptation des tâches et des scénarios `@manuel` de la spec).
 
 ## 4. Relecture de contrôle, après une correction
 
