@@ -46,7 +46,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - requêtes construites avec des paramètres, jamais par concaténation d'une saisie ;
    - clé secrète seulement dans du code serveur, lue depuis une variable d'environnement listée dans « Secrets et variables d'environnement », jamais dans le code envoyé au navigateur.
 6. Vérifications, à lancer avant de rendre la main :
-   - les contrôles automatiques de « Commandes du projet » (lint, types, format…), et la commande « construire » si la tâche touche une route, une page ou la configuration ;
+   - les contrôles automatiques de « Commandes du projet » (lint, types, format…), et la commande « construire » si la tâche touche une route, une page ou la configuration (tests essentiels : jamais de « construire », ni d'autre contrôle long) ;
    - la commande « tester » si elle existe (tests essentiels : seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas) ;
    - `pulse-aidd verifier` (secrets, fichiers d'environnement suivis) ;
    - si toutes les commandes de contrôle sont à « aucune », le signaler dans « À signaler » ;
