@@ -32,9 +32,10 @@ Si un sous-agent est indisponible : faire son travail soi-même en suivant **str
 Le rythme rapide va à l'essentiel : tests essentiels (ci-dessous), tâches enchaînées en autonome par `/pulse:spirc` (`-a`), puis une fiche de test complète de l'US, faite par la personne à la fin ; le parcours principal de la spec est `@manuel`. Annoncé en une phrase ; les questions de besoin et les validations restent les mêmes.
 
 - **Pas de tests d'abord** : l'implementer (ou la conversation en mode direct) écrit les tests avec le code, dans le même passage, les lance et donne leur résultat réel. Ni test-writer ni test-runner.
-- **Seulement là où ils servent** : une règle métier ou un calcul (unitaire), une lecture ou une écriture d'informations et chaque règle d'accès `@securite` (intégration). Pas de test de mise en page.
+- **Seulement les tests d'intégration et de sécurité nécessaires** : une lecture ou une écriture d'informations qui porte une règle métier, et chaque règle d'accès `@securite`. Une tâche sans ce genre de règle n'a pas de test. Ni test unitaire, ni test de mise en page.
 - **Aucun test de bout en bout**, et la vérification de chaque tâche reste légère (requêtes HTTP, sans navigateur piloté : `pulse:verifier`) : les parcours se vérifient dans la fiche de test complète de l'US, faite par la personne à la fin.
-- Chaque scénario `@unitaire` ou `@integration` de la spec a son test (titre qui commence par son étiquette). Pendant une tâche, lancer seulement ses tests ; la suite complète tourne avant le commit de la dernière tâche de l'US.
+- Chaque scénario `@integration` de la spec a son test (titre qui commence par son étiquette).
+- **Lancés une seule fois par tâche, et seulement les siens** : à la fin de la tâche, la commande « Tester » limitée aux fichiers de test de la tâche (une tâche sans test : rien à lancer). Les contrôles rapides (règles du code, types) restent lancés. **Toute la suite tourne une seule fois**, quand toutes les tâches de l'US sont faites, avant le test groupé.
 
 ## 3. Si l'outil de test manque
 

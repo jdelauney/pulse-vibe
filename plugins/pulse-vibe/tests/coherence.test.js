@@ -1289,7 +1289,7 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(auto, /\*\*Aucun test de bout en bout\*\*/);
   assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme rapide\*\*/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
-  assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*le parcours principal est `@manuel`/);
+  assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
 });
 
 test("envoi : sans suivi de la mise en ligne chez l'hébergeur, laissé à deploy et status", () => {
@@ -1320,4 +1320,14 @@ test("écrans : la présentation se choisit dans la spec, les maquettes se propo
   assert.match(skillTexte("plan"), /sa \*\*présentation\*\*, reprise de la colonne « Présentation » de la spec/);
   assert.match(skillTexte("spirc"), /Si sa ligne « Maquettes » vaut « à voir » : d'abord lancer `pulse-aidd etape ui --sans-communes`/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Présentation des écrans\*\* : suivre celle que la personne a choisie/);
+});
+
+test("tests essentiels : intégration et sécurité nécessaires seulement, ceux de la tâche une fois, toute la suite une fois à la fin de l'US", () => {
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  assert.ok(auto.includes("**Seulement les tests d'intégration et de sécurité nécessaires**"));
+  assert.ok(auto.includes("**Lancés une seule fois par tâche, et seulement les siens**"));
+  assert.ok(auto.includes("**Toute la suite tourne une seule fois**"));
+  assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
+  assert.ok(lire(RACINE, "agents", "verifier.md").includes("la commande « tester » reste à l'implementer"));
+  assert.ok(skillTexte("spirc").includes("En rythme rapide, d'abord lancer une fois toute la suite de tests"));
 });
