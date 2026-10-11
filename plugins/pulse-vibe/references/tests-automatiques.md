@@ -33,7 +33,7 @@ Le rythme rapide va à l'essentiel : tests essentiels (ci-dessous), tâches ench
 
 - **Pas de tests d'abord** : l'implementer (ou la conversation en mode direct) écrit les tests avec le code, dans le même passage, les lance et donne leur résultat réel. Ni test-writer ni test-runner.
 - **Seulement là où ils servent** : une règle métier ou un calcul (unitaire), une lecture ou une écriture d'informations et chaque règle d'accès `@securite` (intégration). Pas de test de mise en page.
-- **Aucun test de bout en bout** : les parcours se vérifient dans la fiche de test complète de l'US, faite par la personne à la fin.
+- **Aucun test de bout en bout**, et la vérification de chaque tâche reste légère (requêtes HTTP, sans navigateur piloté : `pulse:verifier`) : les parcours se vérifient dans la fiche de test complète de l'US, faite par la personne à la fin.
 - Chaque scénario `@unitaire` ou `@integration` de la spec a son test (titre qui commence par son étiquette). Pendant une tâche, lancer seulement ses tests ; la suite complète tourne avant le commit de la dernière tâche de l'US.
 
 ## 3. Si l'outil de test manque
