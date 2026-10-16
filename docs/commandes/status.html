@@ -90,20 +90,26 @@ Mémoire  : ✅ branchée · glossaire 6 mots · 0 décision
 <section id="arguments">
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
-<pre class="commande"><code>/pulse:status</code></pre>
-<p class="legende">Cette commande se lance sans rien après son nom.</p>
+<pre class="commande"><code>/pulse:status [ligne | ligne retirer]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
 <p>Tapez simplement la commande. Pulse trouve seul tout ce qu'il lui faut dans le projet.</p>
+<ul>
+<li><code>ligne</code> : affiche en permanence, en bas de l'écran de Claude Code, une ligne qui dit où vous en êtes : la user story et la tâche en cours, l'avancement, la décision qui vous attend. Pratique pendant une longue réalisation.</li>
+<li><code>ligne retirer</code> : enlève cette ligne.</li>
+</ul>
+<pre class="commande"><code>/pulse:status ligne</code></pre>
 </section>
 
 <section id="produit">
 <h2>Ce qu'elle produit</h2>
-<p>Un résumé à l'écran. Rien n'est modifié dans votre projet, sauf dans deux cas, et toujours après votre accord :</p>
+<p>Un résumé à l'écran. Rien n'est modifié dans votre projet, sauf dans trois cas, et toujours après votre accord :</p>
 <table>
 <thead><tr><th>Cas</th><th>Ce qui change</th></tr></thead>
 <tbody>
 <tr><td>Un travail en cours ancien, devenu sans objet</td><td>Pulse vous demande s'il est toujours d'actualité. Sinon, il efface la note de travail en cours, dans <code>aidd_docs/tasks/</code>.</td></tr>
 <tr><td>Un dossier à part déjà rassemblé avec le projet principal</td><td>Pulse propose de supprimer ce dossier dans <code>.claude/worktrees/</code>, et sa branche.</td></tr>
+<tr><td>Avec <code>ligne</code></td><td>La ligne d'état est réglée dans <code>.claude/settings.local.json</code>, propre à votre ordinateur, avec sa copie <code>.claude/pulse-ligne-etat.js</code> ; les deux sont ajoutés au <code>.gitignore</code>. Claude Code vous demande aussi votre accord.</td></tr>
 </tbody>
 </table>
 </section>

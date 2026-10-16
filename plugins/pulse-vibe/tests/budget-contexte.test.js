@@ -78,7 +78,7 @@ const PLAFONDS_COMMANDE = {
   commit: 50500, // mesure 47 813
   deploy: 52000, // mesure 49 125
   explain: 29000, // mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
-  express: 50500, // mesure 48 062
+  express: 53500, // mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
   fix: 35500, // mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 29500, // mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
   guide: 34500, // mesure 32 577
@@ -99,7 +99,7 @@ const PLAFONDS_COMMANDE = {
   seo: 61000, // mesure 57 741
   spec: 51000, // mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
   spirc: 66000, // mesure 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
-  status: 34000, // mesure 32 369
+  status: 36500, // mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
   tech: 79500, // mesure 75 338
   test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 81500, // mesure 77 215

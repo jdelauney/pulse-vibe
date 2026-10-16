@@ -1,5 +1,6 @@
 ---
 description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés
+argument-hint: "[ligne | ligne retirer]"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
@@ -14,13 +15,15 @@ Répondre à « Où en suis-je ? » : les étapes faites, les tâches à faire, 
 
 Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
 
-Cette commande **lit et résume**. Elle modifie seulement deux choses, chaque fois avec l'accord de la personne : elle efface un travail en cours devenu sans objet (ligne `ancien: oui` de `pulse-aidd etat`) et supprime les worktrees dont le travail est déjà fusionné (§ Worktrees).
+Cette commande **lit et résume**. Elle modifie seulement trois choses, chaque fois avec l'accord de la personne : elle efface un travail en cours devenu sans objet (ligne `ancien: oui` de `pulse-aidd etat`), supprime les worktrees dont le travail est déjà fusionné (§ Worktrees) et, avec l'argument `ligne`, règle la ligne d'état (§ La ligne d'état).
 
 ## Contexte
 
 !`pulse-aidd contexte status`
 
 Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
+
+Argument : `$ARGUMENTS` (vide : le tableau de bord ; `ligne` ou `ligne retirer` : la ligne d'état).
 
 ## Processus
 
@@ -84,7 +87,12 @@ De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans
 
 Pour cette commande, le format ci-dessus remplace le bloc de fin de commande habituel.
 
+### La ligne d'état (argument `ligne`)
+
+Avec `ligne` ou `ligne retirer` : lancer `pulse-aidd reference status/ligne.md` et l'appliquer, au lieu du tableau de bord.
+
 ## Exemples
 
 - `/pulse:status` : un tableau de bord en quelques lignes (méthode, tâches, enregistrements, site en ligne) et la prochaine étape conseillée.
+- `/pulse:status ligne` : l'avancement affiché en permanence en bas de l'écran, après votre accord.
 - Un dossier à part déjà rassemblé : la commande vous propose de le supprimer, et attend votre accord.

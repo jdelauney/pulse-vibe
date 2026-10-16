@@ -63,3 +63,5 @@ Sinon, une ligne dans la section « Décisions » suffit, ou rien du tout.
 Exemples qui méritent une décision : « Les données restent dans le navigateur (pas de compte) », « Pas de paiement en ligne : facture envoyée par email », « Données hébergées dans la région exigée par la loi applicable ».
 
 Numérotation : prendre le plus grand numéro de `internal/decisions/` et ajouter 1 (`0001-…`, `0002-…`). Créer le dossier seulement à la première décision.
+
+Une convention vérifiable dans le code peut porter son contrôle : `pulse-aidd reference regles-controlees.md`.
