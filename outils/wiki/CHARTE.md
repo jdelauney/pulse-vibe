@@ -19,7 +19,7 @@ La charte décrit un site Next.js + Tailwind. Le wiki en garde les règles et le
 | `overflow-x: clip` | Sur `html`. |
 | Cartes | Ardoise Vive, 16 px, liseré 1 px, ombre de surface, survol élévation 8 px en 300 ms. |
 | Pilule = ce qui s'active | Boutons, liens d'action, pastilles de filtre de l'index des commandes (qui s'activent). Les étiquettes inertes : pastille d'accroche, jamais cliquable. |
-| CTA unique (`PulseGlowButton`) | Un par vue au plus : accueil « Commencer le tutoriel rapide », fin de tutoriel rapide « Passer au mode complet ». Ailleurs, boutons applicatifs (plein orange une fois par vue, sinon contour). |
+| CTA unique (`PulseGlowButton`) | Un par vue au plus : accueil « Commencer le tutoriel rapide », fin de tutoriel rapide « Passer du prototype à la production ». Ailleurs, boutons applicatifs (plein orange une fois par vue, sinon contour). |
 | Vert absent | « Résultat attendu », « Réussi » : liseré mauve + icône + mot. Aucun `green`, `emerald`, `lime`. |
 | Rouge d'alerte | Encadré « Risque » seulement, toujours avec le mot « Risque : » ; jamais dans le même bloc qu'un élément orange sans texte. |
 | Ordre doublé | Étapes du parcours : échelle de maturité (4 pas) + numéro + nom ; jamais la couleur seule. Les 7 étapes du wiki passent sur 4 couleurs + numéro. |
