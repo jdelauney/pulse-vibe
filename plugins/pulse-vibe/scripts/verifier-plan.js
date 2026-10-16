@@ -20,6 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 const { lireUs } = require("./etat.js");
+const { formaterConstats, lancerControle, normaliserUs, numero } = require("./constats.js");
 
 const NIVEAUX_AUTOMATISES = ["unitaire", "integration", "bout-en-bout"];
 const STATUTS = { " ": "a-faire", "~": "en-cours", x: "terminee", X: "terminee" };
@@ -31,8 +32,6 @@ const lireSi = (f) => {
     return null;
   }
 };
-const numero = (id) => Number(String(id).replace(/\D/g, ""));
-const normaliserUs = (id) => `US-${String(numero(id)).padStart(3, "0")}`;
 const sansAccent = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 const rel = (racine, f) => path.relative(racine, f).split(path.sep).join("/");
 
@@ -260,26 +259,9 @@ function verifierPlan(racine, idUs) {
 
 function formater(r, us) {
   if (!r) return `us: ${us}\nbilan: introuvable\nraison: aucun plan PLAN-SPEC-${us}-… dans aidd_docs/tasks/`;
-  const n = (g) => r.constats.filter((c) => c.gravite === g).length;
-  const bilan = n("à corriger") ? "à corriger" : n("avertissement") ? "avertissements" : "ok";
-  const lignes = [`plan: ${r.plan}`, `statut: ${r.statut}`, `taches: ${r.taches}`, `a-corriger: ${n("à corriger")}`, `avertissements: ${n("avertissement")}`];
-  for (const c of r.constats) lignes.push(`- ${c.gravite} · ${c.ou} · ${c.message}`);
-  lignes.push(`bilan: ${bilan}`);
-  return lignes.join("\n");
+  return formaterConstats([`plan: ${r.plan}`, `statut: ${r.statut}`, `taches: ${r.taches}`], r.constats);
 }
 
-if (require.main === module) {
-  const id = process.argv[2] || "";
-  if (!/^US-?\d+$/i.test(id)) {
-    console.log("erreur: indiquez l'US du plan, par exemple : pulse-aidd verifier-plan US-003");
-  } else {
-    const us = normaliserUs(id);
-    try {
-      console.log(formater(verifierPlan(process.cwd(), us), us));
-    } catch (e) {
-      console.log(`us: ${us}\nbilan: introuvable\nraison: les fichiers n'ont pas pu être lus (${e.message})`);
-    }
-  }
-}
+if (require.main === module) lancerControle("du plan", "pulse-aidd verifier-plan US-003", verifierPlan, formater);
 
-module.exports = { verifierPlan, formater, lireTachesDetaillees, criteresCites, fichiersDeTache };
+module.exports = { verifierPlan, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs };

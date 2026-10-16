@@ -61,6 +61,6 @@ Une seule fois par commande, au démarrage (après le choix du mode et du worktr
 2. Garder les US citées dont le plan a encore des tâches `[ ]`, aucune tâche `[~]`, et pas de worktree en cours (`git worktree list` : pas de `.claude/worktrees/us-xxx-…` pour elles) : elles sont libres.
 3. S'il en reste, l'indiquer en deux lignes, la première dans l'ordre du parcours :
    « 💡 US-004 – <titre> peut avancer en même temps que celle-ci, sans toucher aux mêmes fichiers. Si vous le souhaitez, ouvrez une deuxième session Claude Code dans ce projet et lancez-y `/pulse:spirc US-004` : Pulse lui proposera son propre dossier à part. »
-4. Sinon, passer directement à la suite. Laisser la personne lancer elle-même la deuxième session (plutôt qu'une session ou un sous-agent lancé à sa place) : c'est elle qui décide de travailler à deux sessions. Exception : une série de `/pulse:spirc`, avec son accord (`spirc/serie.md`).
+4. Sinon, passer directement à la suite. Laisser la personne lancer elle-même la deuxième session (plutôt qu'une session ou un sous-agent lancé à sa place) : c'est elle qui décide de travailler à deux sessions. Sauf dans une série (`spirc/serie.md`), avec son accord.
 
 Les tâches d'**un même plan** se mènent l'une après l'autre : elles touchent souvent les mêmes fichiers, et chacune est testée à la main avant la suivante.

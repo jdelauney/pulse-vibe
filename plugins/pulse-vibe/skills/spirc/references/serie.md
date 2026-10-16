@@ -13,6 +13,7 @@ Utilisé par `/pulse:spirc` quand il reçoit plusieurs US (`/pulse:spirc US-001 
 La ronde de départ de `/pulse:spirc` vaut pour **toute la série** (rythme, options, tests, envoi), posée une seule fois. Une série se construit toujours **en mode autonome** (`-a`) : le dire dans l'annonce des choix.
 
 - **Envoi** : « Directement sur la version principale (Recommandé) » / « Ne rien envoyer pour l'instant ». Les US d'une série s'appuient souvent l'une sur l'autre : une version parallèle par US les séparerait. Pour une proposition à relire sur le site du dépôt, `/pulse:pr` le permet ensuite. Écrire la réponse dans la ligne « Envoi » de chaque plan.
+- **Autorisations** : une série tourne sans vous ; lancer `pulse-aidd reference autorisations.md` et l'appliquer, pour que les contrôles ne s'arrêtent pas sur une demande d'accord.
 - **Dossier à part** : la série se réalise dans le dossier courant (le dossier principal, ou le dossier à part où la session se trouve déjà), sauf deux US menées en même temps (§ 4 bis).
 
 ## 3. Préparer, avec la personne

@@ -221,11 +221,13 @@ const SENSIBLES = [
   "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
   "pulse-aidd ligne-etat --installer", // change les réglages de Claude Code du projet
   "pulse-aidd ligne-etat --retirer",
+  "pulse-aidd autorisations --ecrire", // change les réglages de Claude Code du projet
+  "pulse-aidd copies --mettre-a-jour", // remplace des fichiers du projet
   "pulse-aidd search-console deconnecter",
   "pulse-aidd pile hebergeur envoyer NOM production",
   "pulse-aidd pile hebergeur redeployer production",
 ];
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer))\b/.test(commande);
+const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier))\b/.test(commande);
 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
@@ -525,7 +527,12 @@ test("README : section « Mettre à jour » mise en avant, avec les commandes ex
 
 // ---------------------------------------------------------------- Parcours et langage
 
-const skillTexte = (nom) => lire(RACINE, "skills", nom, "SKILL.md");
+// Les consignes d'une commande : son SKILL.md, puis les références qui ne servent qu'à elle (skills/<nom>/references/).
+const skillTexte = (nom) => {
+  const refs = path.join(RACINE, "skills", nom, "references");
+  const propres = fs.existsSync(refs) ? fs.readdirSync(refs).filter((f) => f.endsWith(".md")).sort().map((f) => lire(RACINE, "skills", nom, "references", f)) : [];
+  return [lire(RACINE, "skills", nom, "SKILL.md"), ...propres].join("\n");
+};
 
 test("init et status appliquent le verdict de pulse-aidd etat, sans règles de décision recopiées", () => {
   for (const skill of ["init", "status"]) {
@@ -893,8 +900,7 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
 });
 
 test("la règle deny se propose en clair : le bloc JSON se montre seulement sur demande", () => {
-  for (const s of ["init", "secrets"]) {
-    const texte = lire(RACINE, "skills", s, "SKILL.md");
+  for (const [s, texte] of [["init", lire(RACINE, "references", "autorisations.md")], ["secrets", lire(RACINE, "skills", "secrets", "SKILL.md")]]) {
     assert.doesNotMatch(texte, /montrer le bloc/i, `${s} : ne plus montrer le bloc d'office`);
     assert.match(texte, /bloc[^.]*sur demande/i, `${s} : le bloc reste disponible sur demande`);
   }
@@ -990,8 +996,8 @@ test("checklist sécurité : chargée par les agents qui relisent, plus recopié
 });
 
 test("boucles d'implement et de spirc : review et commit chargés une seule fois", () => {
-  const implement = lire(RACINE, "skills", "implement", "SKILL.md");
-  const boucle = implement.slice(implement.indexOf("### 6. Boucle sur tout le plan"));
+  const boucle = lire(RACINE, "skills", "implement", "references", "boucle.md");
+  assert.match(lire(RACINE, "skills", "implement", "SKILL.md"), /### 6\. Boucle sur tout le plan \(sans tâche\)\n\nSans tâche donnée : lancer `pulse-aidd reference implement\/boucle\.md`/);
   assert.match(boucle, /\*\*Avant la première tâche\*\*/);
   assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
   assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
@@ -1019,7 +1025,7 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   assert.match(spirc, /avant la première tâche, le test groupé ou la fin/);
   const groupe = spirc.slice(spirc.indexOf("## Test groupé"));
   assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 2, "test groupé et fin rappellent le rechargement");
-  const implement = lire(RACINE, "skills", "implement", "SKILL.md");
+  const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
   assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
 });
@@ -1264,10 +1270,14 @@ test("règle commune 19 : chaque demande d'accord nomme ses fichiers, avec un li
   assert.match(regles, /lien cliquable/);
 });
 
-test("init propose d'autoriser d'avance git status, diff, log, add et commit dans .claude/settings.json", () => {
-  const init = skillTexte("init");
-  for (const r of ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(git add *)", "Bash(git commit -m *)", "Read(./.env)"]) assert.ok(init.includes(r), r);
-  assert.match(init, /\*\*Régler les autorisations\*\*/);
+test("init, tech et spirc proposent les autorisations du projet (pulse-aidd autorisations), écrites après accord", () => {
+  assert.match(skillTexte("init"), /\*\*Régler les autorisations\*\* : lancer `pulse-aidd reference autorisations\.md`/);
+  assert.match(skillTexte("tech"), /`pulse-aidd reference autorisations\.md`/);
+  assert.match(skillTexte("spirc"), /\*\*Mode autonome\*\*[^\n]*`pulse-aidd autorisations`/);
+  const ref = lire(RACINE, "references", "autorisations.md");
+  assert.match(ref, /« Écrire ces règles dans `\.claude\/settings\.json` \(Recommandé\) » \/ « Plus tard »/);
+  assert.match(ref, /`pulse-aidd autorisations --ecrire`/);
+  // Les règles elles-mêmes (Git, lecture des clés interdite) sont celles du script, testées dans autorisations.test.js.
 });
 
 test("gestes de la personne : faire soi-même d'abord, fichier d'environnement expliqué et rempli, gestes courants mot pour mot", () => {
@@ -1280,7 +1290,10 @@ test("gestes de la personne : faire soi-même d'abord, fichier d'environnement e
 });
 
 test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en bout, une fiche complète de l'US à la fin", () => {
-  assert.match(lire(RACINE, "templates", "CLAUDE.md"), /- \*\*Rythme\*\* : complet\n<!-- pulse_profil:fin -->/);
+  assert.match(lire(RACINE, "templates", "CLAUDE.md"), /- \*\*Rythme\*\* : à choisir\n<!-- pulse_profil:fin -->/);
+  // Trois valeurs : « à choisir » (la question est posée), « rapide », « complet » (plus de question sur le rythme).
+  assert.match(skillTexte("spirc"), /1\. \*\*Rythme\*\* \(seulement si la ligne « Rythme » du profil de `CLAUDE\.md` vaut « à choisir » ou manque/);
+  assert.match(lire(RACINE, "templates", "CLAUDE.md"), /« demande-moi le rythme à chaque fois »/);
   assert.match(skillTexte("express"), /« - \*\*Rythme\*\* : rapide »/);
   const spirc = skillTexte("spirc");
   assert.match(spirc, /^- `-f` \*\*rapide\*\*/m);
@@ -1289,7 +1302,7 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   const auto = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(auto, /## 2 bis\. Tests essentiels \(rythme rapide\)/);
   assert.match(auto, /\*\*Aucun test de l'interface pendant les tâches\*\*/);
-  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme rapide\*\*/);
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme\*\* \(profil\) : « à choisir »[^\n]*« rapide »/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
 });
@@ -1356,7 +1369,7 @@ test("série : deux US indépendantes en même temps, avec accord, dossiers à p
   assert.match(bis, /« Dossier de travail : `<chemin absolu du dossier à part>` »/);
   assert.match(bis, /`git merge --abort`[^\n]*sans jamais écraser/);
   assert.match(bis, /L'envoi, lui, attend toujours les tests de la personne/);
-  assert.match(lire(RACINE, "references", "worktree.md"), /Exception : une série de `\/pulse:spirc`, avec son accord \(`spirc\/serie\.md`\)/);
+  assert.match(lire(RACINE, "references", "worktree.md"), /Sauf dans une série \(`spirc\/serie\.md`\), avec son accord\./);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Dossier de travail\*\* : s'il est donné/);
 });
 

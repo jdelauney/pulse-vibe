@@ -82,7 +82,7 @@ const PLAFONDS_COMMANDE = {
   fix: 35500, // mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 29500, // mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
   guide: 34500, // mesure 32 577
-  implement: 67500, // mesure 63 903 (pulse 0.42 : rythme rapide, option -f, gestes)
+  implement: 64000, // mesure 60 878 (pulse 0.47 : la boucle sur tout le plan chargée seulement sans tâche, skills/implement/references/boucle.md)
   init: 69500, // mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 41500, // mesure 39 206
   memory: 41000, // mesure 38 661
@@ -110,8 +110,8 @@ const PLAFONDS_COMMANDE = {
 const BOUCLES = {
   implement: {
     // mesure 86 580 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 97500, // mesure 92 768 (pulse 0.42 : rythme rapide, option -f, gestes)
-    parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"]],
+    plafond: 105000, // mesure 99 888 (pulse 0.47 : boucle.md, sortie du SKILL.md, est désormais comptée dans la boucle)
+    parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"], ["reference", "implement/boucle.md"]],
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.

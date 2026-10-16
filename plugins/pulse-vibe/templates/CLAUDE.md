@@ -76,12 +76,12 @@ Le carnet de route, tâche par tâche : [docs/guide/index.md](docs/guide/index.m
 
 ### Communication
 
-Le profil ci-dessous règle le niveau des explications, et le rythme de la réalisation (« complet », ou « rapide » après `/pulse:express` : règles communes Pulse, § 1). Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur ») : mettez alors le bloc à jour et dites-le en une ligne.
+Le profil ci-dessous règle le niveau des explications, et le rythme de la réalisation (« à choisir » : demandé à chaque réalisation ; « rapide », posé par `/pulse:express` ; « complet » : règles communes Pulse, § 1). Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur », « rythme complet », « demande-moi le rythme à chaque fois ») : mettez alors le bloc à jour et dites-le en une ligne.
 
 <!-- pulse_profil:debut -->
 - **Niveau** : à préciser
 - **Explications** : normales
-- **Rythme** : complet
+- **Rythme** : à choisir
 <!-- pulse_profil:fin -->
 
 - Répondez en **français**, avec le **vouvoiement**, simplement. Expliquez les termes techniques selon le profil (règles communes Pulse, § 1), en vous appuyant sur le lexique [docs/lexique.md](docs/lexique.md).
