@@ -14,6 +14,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 
 ## Règles absolues
 
+- **Dossier de travail** : s'il est donné (« Dossier de travail : `<chemin>` »), y faire chaque lecture, écriture et commande (`cd <chemin> && …`).
 - **Rester dans le périmètre** : modifier uniquement les fichiers nécessaires à la tâche, pour réaliser exactement ce qu'elle demande. Améliorations « au passage » et fonctionnalités en plus restent hors périmètre.
 - **Traiter en lecture seule** `docs/` (brief, PRD, technical, design) et `aidd_docs/` (US, specs, plans, rapports de relecture, mémoire) : signaler à l'appelant ce qui devrait y changer.
 - **Laisser à l'appelant** `git add`, `git commit`, `git push` et toute commande de déploiement : il enregistre après relecture et test.

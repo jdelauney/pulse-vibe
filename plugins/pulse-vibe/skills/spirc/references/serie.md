@@ -13,7 +13,7 @@ Utilisé par `/pulse:spirc` quand il reçoit plusieurs US (`/pulse:spirc US-001 
 La ronde de départ de `/pulse:spirc` vaut pour **toute la série** (rythme, options, tests, envoi), posée une seule fois. Une série se construit toujours **en mode autonome** (`-a`) : le dire dans l'annonce des choix.
 
 - **Envoi** : « Directement sur la version principale (Recommandé) » / « Ne rien envoyer pour l'instant ». Les US d'une série s'appuient souvent l'une sur l'autre : une version parallèle par US les séparerait. Pour une proposition à relire sur le site du dépôt, `/pulse:pr` le permet ensuite. Écrire la réponse dans la ligne « Envoi » de chaque plan.
-- **Dossier à part** : la série se réalise dans le dossier courant (le dossier principal, ou le dossier à part où la session se trouve déjà).
+- **Dossier à part** : la série se réalise dans le dossier courant (le dossier principal, ou le dossier à part où la session se trouve déjà), sauf deux US menées en même temps (§ 4 bis).
 
 ## 3. Préparer, avec la personne
 
@@ -21,7 +21,7 @@ Pour chaque US à préparer, dans l'ordre : § S (spec, puis maquettes si la per
 
 Une US dont la spec reste en brouillon (la personne veut réfléchir) : la noter « en attente : <question> » et passer à la suivante ; les US qui en dépendent attendent aussi.
 
-À la fin de la préparation, annoncer : « Tout est prêt : <n> user stories, <m> tâches. Je les réalise maintenant, à la suite. Laissez cette fenêtre ouverte ; je vous appelle quand c'est fini, ou si une décision vous revient. » Chaque tâche fait travailler plusieurs assistants : le nombre de tâches donne l'ampleur du travail.
+À la fin de la préparation, annoncer : « Tout est prêt : <n> user stories, <m> tâches. Je les réalise maintenant, à la suite. Laissez cette fenêtre ouverte ; je vous appelle quand c'est fini, ou si une décision vous revient. » Chaque tâche fait travailler plusieurs assistants : le nombre de tâches donne l'ampleur du travail. Pour suivre l'avancement en bas de l'écran : `/pulse:status ligne` (à proposer en une ligne, si elle n'est pas déjà réglée).
 
 ## 4. Construire, sans la personne
 
@@ -30,6 +30,15 @@ Pour chaque US prête, dans l'ordre : la boucle par tâche de `/pulse:spirc` en 
 - **Une décision revient à la personne** (question de besoin, « Bloqué – décision nécessaire », action manuelle, écart de besoin) : la noter dans la section « Série » (« US-002 : en attente : <la question exacte, avec ses choix> »), laisser ses tâches restantes, puis **passer à l'US suivante qui n'en dépend pas** (« Dépend de » du référentiel, « S'appuie sur » des plans, « Dépend de » des tâches). Une US qui en dépend attend aussi. Un constat Critique qui persiste après deux cycles : la même chose, « en attente : aide ».
 - **Entre deux US** : relire `in-progress.md` et les documents de l'US suivante (spec, plan, `docs/technical.md`) plutôt que s'appuyer sur la conversation.
 - **Arrêt** avant toute tâche « Mettre en ligne… » : elle se fait au retour, avec l'accord de la personne.
+
+## 4 bis. Deux US en même temps
+
+Deux US prêtes de la série peuvent se construire en même temps quand leurs deux plans se citent l'un l'autre dans « En parallèle avec » (indépendantes : ni dépendance, ni fichier, ni donnée en commun). **Deux à la fois au plus.**
+
+1. **Le proposer une fois**, à la fin de la préparation (AskUserQuestion) : « Faire avancer US-002 et US-004 en même temps, chacune dans un dossier à part (Recommandé) » / « L'une après l'autre ». Dire en une phrase ce que cela coûte : chaque dossier à part installe les outils du projet (place sur le disque, quelques minutes).
+2. **Préparer** chaque dossier à part selon la référence worktree (`pulse-aidd reference worktree.md`), « 2. Créer le worktree ou y revenir », étapes 1 à 6, **sans y entrer** : la session reste dans le dossier principal.
+3. **Construire en parallèle** : à chaque pas de la boucle par tâche, un appel Agent par US dans le même message. Chaque message de délégation commence par « Dossier de travail : `<chemin absolu du dossier à part>` ». Les contrôles, `git status`, `git diff` et les commits de chaque US se lancent dans son dossier (`cd <dossier> && …`), et son plan s'y met à jour. Une US qui s'arrête (décision, blocage) laisse l'autre continuer.
+4. **Rassembler dès la fin de la construction** de chaque US (examen de l'US compris en rythme rapide) : « Fusionner », étapes 3 à 6 de la référence worktree, sans `ExitWorktree` (la session n'y est pas entrée). Les US qui en dépendent se construisent ensuite dans le dossier principal. L'envoi, lui, attend toujours les tests de la personne (§ 5). Conflit : `git merge --abort`, garder le dossier à part et noter l'US « en attente : rassembler » ; au retour, l'expliquer simplement et proposer `/pulse:pr` ou `/pulse:get-help`, sans jamais écraser le travail de l'une ou de l'autre.
 
 ## 5. Au retour de la personne
 

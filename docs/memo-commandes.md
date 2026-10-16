@@ -61,7 +61,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 | Commande | Quand l'utiliser |
 |---|---|
-| `/pulse:status` | « Où en suis-je ? Que faire maintenant ? » (même calcul que `/pulse:init`) |
+| `/pulse:status` | « Où en suis-je ? Que faire maintenant ? » (même calcul que `/pulse:init`) ; `ligne` : l'avancement affiché en bas de l'écran |
 | `/pulse:explain app.js` | « Je ne comprends pas ce code » |
 | `/pulse:learn les fonctions` | « Je veux apprendre une notion de programmation » (aussi : `feynman <notion>`, `exercice <notion>`, `parcours "<objectif>"` ; sans argument : réviser) |
 | `/pulse:security` | « Mon appli est-elle bien protégée ? » (`rapide` pour un contrôle en 2 minutes) |
