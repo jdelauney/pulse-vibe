@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: statut-prochaine-etape
+tags: [lecture]
+context:
+  scaffold_script: projet.sh

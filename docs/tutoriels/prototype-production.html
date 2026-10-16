@@ -79,10 +79,10 @@ En ligne : https://carnet-reservations-demo.vercel.app
 <section id="rythme" class="etape-tuto">
 <h2><span class="etape-numero">1</span> Passer en rythme complet <span class="duree">5 minutes</span></h2>
 <p><strong>Objectif :</strong> que chaque prochaine user story soit construite avec tout le soin du mode complet.</p>
-<p>Le parcours express a réglé le projet sur le <strong>rythme rapide</strong> : chaque réalisation le prend d'office, sans vous demander. Ce réglage est noté dans <code>CLAUDE.md</code>, dans votre profil. Demandez simplement à Pulse de le changer : la question du rythme vous sera de nouveau posée au début de chaque réalisation.</p>
+<p>Le parcours express a réglé le projet sur le <strong>rythme rapide</strong> : chaque réalisation le prend d'office, sans vous demander. Ce réglage est noté dans <code>CLAUDE.md</code>, dans votre profil. Demandez simplement à Pulse de le changer. (Pour qu'il vous demande le rythme à chaque réalisation, dites plutôt « demande-moi le rythme à chaque fois ».)</p>
 <div class="conversation" data-titre="Changer de rythme">
 <p data-role="vous">Passe le projet en rythme complet.</p>
-<p data-role="claude">C'est fait : dans votre profil, « Rythme : complet ». Au début de chaque réalisation, je vous demanderai le rythme ; avec « Complet », chaque tâche est relue et essayée par deux assistants, puis testée par vous, avant d'être enregistrée.</p>
+<p data-role="claude">C'est fait : dans votre profil, « Rythme : complet ». Désormais, chaque tâche est relue et essayée par deux assistants, puis testée par vous, avant d'être enregistrée.</p>
 </div>
 <table>
 <thead><tr><th></th><th>Rythme rapide (le prototype)</th><th>Rythme complet (à partir d'ici)</th></tr></thead>
@@ -153,11 +153,10 @@ C'est un défaut du code, pas du test. Je vous propose de le corriger avec /puls
 <h2><span class="etape-numero">4</span> Construire le carnet du salon en mode complet <span class="duree">2 à 3 h</span></h2>
 <p><strong>Objectif :</strong> la coiffeuse se connecte et voit les rendez-vous du jour, et personne d'autre ne les voit. C'est la dernière user story de la première version.</p>
 <pre class="commande"><code>/pulse:spirc US-002</code></pre>
-<p>Au démarrage, Pulse pose une seule série de questions. Au rythme, répondez « Complet » (Pulse recommande « Rapide », qui reste le plus court) ; aux tests, « Tests d'abord » ; à l'envoi, la version parallèle. Puis il écrit la spec et le plan avec vous, et réalise chaque tâche : les tests d'abord, le code, deux assistants qui relisent et essaient, votre test, l'enregistrement. Le déroulé est animé sur la page <a href="../commandes/spirc.html#description"><code>/pulse:spirc</code></a>.</p>
+<p>Votre profil dit « complet » : Pulse ne vous demande plus le rythme. Au démarrage, il pose seulement les tests (choisissez « Tests d'abord ») et la façon d'envoyer le travail (choisissez la version parallèle). Puis il écrit la spec et le plan avec vous, et réalise chaque tâche : les tests d'abord, le code, deux assistants qui relisent et essaient, votre test, l'enregistrement. Le déroulé est animé sur la page <a href="../commandes/spirc.html#description"><code>/pulse:spirc</code></a>.</p>
 <div class="conversation" data-titre="US-002 en mode complet">
 <p data-role="vous">/pulse:spirc US-002</p>
-<p data-role="claude">Comment réaliser cette user story ? → Complet
-Si vous choisissez Complet, quels tests ? → Tests d'abord (Recommandé)
+<p data-role="claude">Quels tests ? → Tests d'abord (Recommandé)
 Comment envoyer le travail de US-002 ? → Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt</p>
 <p data-role="claude">T6 – Se connecter au carnet du salon. Les tests sont écrits : ils échouent, c'est attendu tant que le code n'existe pas.
 Relecture : ✅ Validé · Vérification : ✅ Prouvé.

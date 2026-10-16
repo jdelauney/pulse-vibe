@@ -618,4 +618,20 @@ test("autorisations : les commandes Git courantes non autorisées d'avance donne
   const sansGit = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"] } }\n' }));
   assert.ok(sansGit.aussi.includes(MSG));
   assert.ok(!etat(projet({})).aussi.includes(MSG), "règles présentes : rien à proposer");
+  const CONTROLES = "/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois";
+  assert.ok(etat(projet({})).aussi.includes(CONTROLES), "Git autorisé, contrôles non autorisés");
+  assert.ok(!sansGit.aussi.includes(CONTROLES), "une seule ligne d'autorisations à la fois");
+  const tout = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite)"] } }\n' }));
+  assert.ok(!tout.aussi.includes(CONTROLES));
+});
+
+test("copie de Pulse ancienne et intacte (contrôle des secrets, ligne d'état) : mise à niveau proposée par /pulse:init", () => {
+  const { empreinte, texteDeCopie } = require(path.join(RACINE, "scripts", "copies.js"));
+  const MAJ = "/pulse:init — mettre à niveau le projet (modèles et contrôles)";
+  const ancien = "#!/usr/bin/env node\nconsole.log('ancien');\n";
+  const ancienne = ancien.replace("\n", `\n// pulse-copie: ${empreinte(ancien)}\n`);
+  assert.ok(etat(projet({ "scripts/verifier.js": ancienne })).aussi.includes(MAJ));
+  assert.ok(etat(projet({ ".claude/pulse-ligne-etat.js": ancienne.replace("verifier", "ligne") })).aussi.includes(MAJ));
+  assert.ok(!etat(projet({ "scripts/verifier.js": texteDeCopie("verifier") })).aussi.includes(MAJ), "copie à jour");
+  assert.ok(!etat(projet({ "scripts/verifier.js": ancienne + "// adaptée\n" })).aussi.includes(MAJ), "copie adaptée : gardée telle quelle");
 });

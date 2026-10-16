@@ -1,0 +1,43 @@
+# Évaluations du cœur : de vrais essais des commandes Pulse (plugins/pulse-vibe/evals/), lancés à la demande seulement,
+# car chaque essai est un appel facturé au modèle. Demande le secret ANTHROPIC_API_KEY dans les réglages du dépôt.
+name: Évaluations
+
+on:
+  workflow_dispatch:
+    inputs:
+      cas:
+        description: "Cas à lancer (motif, vide : tous)"
+        required: false
+        default: ""
+      runs:
+        description: "Essais par cas"
+        required: false
+        default: "1"
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: sudo apt-get update && sudo apt-get install -y bubblewrap socat
+      - run: npm install -g @anthropic-ai/claude-code
+      - name: Lancer les essais
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RUNS: ${{ inputs.runs }}
+          CAS: ${{ inputs.cas }}
+        run: |
+          set -euo pipefail
+          options=(--json resultats.json)
+          [ -n "$CAS" ] && options+=(--case "$CAS")
+          bash outils/evals/lancer.sh "${options[@]}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultats-evaluations
+          path: resultats.json
+          if-no-files-found: ignore

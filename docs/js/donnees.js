@@ -136,7 +136,7 @@ window.PULSE_WIKI = {
       "nom": "brainstorm",
       "etape": "decrire",
       "description": "Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet",
-      "forme": "[votre idée en une phrase | vos documents de départ]",
+      "forme": "[votre idée en une phrase | vos documents]",
       "note": ""
     },
     {
@@ -171,7 +171,7 @@ window.PULSE_WIKI = {
       "nom": "express",
       "etape": "demarrer",
       "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser",
-      "forme": "[votre idée en une phrase | vos documents de départ]",
+      "forme": "[votre idée en une phrase | vos documents]",
       "note": ""
     },
     {

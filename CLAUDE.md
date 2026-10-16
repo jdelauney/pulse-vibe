@@ -9,9 +9,10 @@ Ce dépôt est le catalogue Claude Code `pulseia` (méthode Pulse, en français)
 | `.claude-plugin/marketplace.json` | Le catalogue : un plugin par entrée, au nom identique au `name` de son manifeste (`pulse`, `pulse-next`), `source` = son dossier dans `plugins/` ; `renames` garde la mise à jour des installations faites sous les anciens noms (`pulse-vibe`, `pulse-vibe-next`) |
 | `plugins/pulse-vibe/` | Le cœur, plugin `pulse` : la méthode Pulse, agnostique de la technologie (préfixe `/pulse:*`) |
 | `plugins/pulse-vibe-next/` | Le pack de pile Next.js, plugin `pulse-next` : outil `bin/pulse-pile-next` (contrat des packs : `info`, `contexte <commande>`), fiche, recettes découpées en étapes, squelette ; dépend de `pulse` |
-| `.github/workflows/` | Tests des plugins à chaque envoi (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur qu'il utilise, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine aux dernières versions |
+| `.github/workflows/` | Tests des plugins à chaque envoi (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur qu'il utilise, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine aux dernières versions ; évaluations du cœur (`evals.yml`) lancées à la demande seulement, car facturées |
 | `docs/` | Le wiki, guide des personnes qui utilisent Pulse : pages HTML, CSS et JS sans dépendance, ouvrables en local et publiées telles quelles par GitHub Pages depuis `main` (`docs/.nojekyll`) ; et le mémo des commandes (`docs/superpowers/` : conceptions, revues et plans, gardés en local, hors Git) |
 | `outils/wiki/` | Les outils du wiki, hors du site publié : `synchroniser.js` recopie la description et les arguments de chaque commande depuis son SKILL.md dans `docs/` ; `indexer.js` construit l'index de la recherche ; `captures.js` liste les captures attendues, prend celles des pages publiques et les intègre ; `CHARTE.md` = la charte graphique du wiki ; `modele-commande.html` = le modèle d'une page de commande |
+| `outils/evals/` | `lancer.sh` : lance les évaluations du cœur (`plugins/pulse-vibe/evals/`, `claude plugin eval`) depuis Linux ou WSL2, avec bubblewrap et socat ; chaque essai est un vrai appel au modèle, facturé |
 
 Dans un plugin (chemins relatifs à son dossier) :
 
@@ -24,6 +25,7 @@ Dans un plugin (chemins relatifs à son dossier) :
 | `hooks/hooks.json`, `scripts/` | Hooks et scripts Node partagés ; `garde.js` réunit les deux garde-fous dans un seul processus ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) et `chemins-sensibles.js` reconnaît les fichiers `.env` pour eux |
 | `bin/` | Outils placés dans le PATH par Claude Code (`pulse-aidd` pour le cœur), chacun avec ses relais `.ps1` (PowerShell : arguments passés par l'environnement, relus par le prologue du script bash) et `.cmd` (cmd), identiques d'un outil à l'autre |
 | `tests/` | Tests du plugin |
+| `evals/` | Évaluations du cœur (`claude plugin eval`) : un dossier par cas (`prompt.md`, `case.yaml`, `graders/`), le projet d'essai partagé dans `_communs/projet.sh` |
 
 ## Règles d'écriture des consignes
 
@@ -46,3 +48,4 @@ Dans un plugin (chemins relatifs à son dossier) :
 - Recette modifiée : `node plugins/pulse-vibe-next/scripts/verifier-recettes.js --depuis main` passe (les chaînes de `CHAINES` qui contiennent une recette modifiée ; une chaîne précise : `--recettes connexion,liste` ; toutes : `--toutes`, que la CI lance chaque semaine).
 - `claude plugin validate` passe sur le catalogue et sur chaque plugin.
 - Essayer les plugins ensemble, sans les installer : `claude --plugin-dir ./plugins`.
+- Commande du cœur dont le déroulé change (spec, plan, réalisation, démarrage) : `outils/evals/lancer.sh` (Linux ou WSL2) quand c'est possible ; sinon, le dire en rendant la main.
