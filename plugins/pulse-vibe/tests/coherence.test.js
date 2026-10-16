@@ -219,11 +219,13 @@ const SENSIBLES = [
   "pulse-aidd secrets redeployer",
   "pulse-aidd secrets redeployer --env production",
   "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
+  "pulse-aidd ligne-etat --installer", // change les réglages de Claude Code du projet
+  "pulse-aidd ligne-etat --retirer",
   "pulse-aidd search-console deconnecter",
   "pulse-aidd pile hebergeur envoyer NOM production",
   "pulse-aidd pile hebergeur redeployer production",
 ];
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer)\b/.test(commande);
+const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer))\b/.test(commande);
 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
@@ -1342,4 +1344,26 @@ test("tests essentiels : intégration et sécurité nécessaires seulement, ceux
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("tests essentiels : jamais de « construire »"));
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
   assert.ok(lire(RACINE, "skills", "spirc", "references", "examen-us.md").includes("**Tests** : lancer une fois toute la suite (commande « Tester »)"));
+});
+
+test("série : deux US indépendantes en même temps, avec accord, dossiers à part rassemblés dès la fin de leur construction", () => {
+  const serie = lire(RACINE, "skills", "spirc", "references", "serie.md");
+  const bis = serie.split("## 4 bis. Deux US en même temps")[1] || "";
+  assert.match(bis, /\*\*Deux à la fois au plus\.\*\*/);
+  assert.match(bis, /« En parallèle avec »/);
+  assert.match(bis, /\(Recommandé\) » \/ « L'une après l'autre »/);
+  assert.match(bis, /\*\*sans y entrer\*\*/);
+  assert.match(bis, /« Dossier de travail : `<chemin absolu du dossier à part>` »/);
+  assert.match(bis, /`git merge --abort`[^\n]*sans jamais écraser/);
+  assert.match(bis, /L'envoi, lui, attend toujours les tests de la personne/);
+  assert.match(lire(RACINE, "references", "worktree.md"), /Exception : une série de `\/pulse:spirc`, avec son accord \(`spirc\/serie\.md`\)/);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Dossier de travail\*\* : s'il est donné/);
+});
+
+test("règles contrôlées : décrites une fois, citées par la mémoire et le modèle, appliquées par verifier.js", () => {
+  const regles = lire(RACINE, "references", "regles-controlees.md");
+  assert.match(regles, /— Contrôle : interdit `parseFloat\(` dans `src\/prix\/`/);
+  assert.match(lire(RACINE, "references", "memoire.md"), /`pulse-aidd reference regles-controlees\.md`/);
+  assert.match(lire(RACINE, "templates", "aidd-memory-technical.md"), /« — Contrôle : … »/);
+  assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
 });

@@ -110,7 +110,7 @@ Annoncer : « Dernière étape : l'apparence. Vous allez en voir deux et choisir
 
 Résumé en 4 lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie, ce qui reste à faire par la personne (comptes à créer, mise en ligne).
 
-Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc version`, qui prépare avec la personne les specs et les plans de toutes les US de la première version, puis les réalise à la suite ; ou `/pulse:spirc <première US Indispensable du parcours>` pour une seule US ; à défaut, une fois le plan écrit, `/pulse:implement <US-XXX> <tâche>` pour la réaliser pas à pas. Proposer de faire `/clear` avant : la conversation repartira légère.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc version` (specs et plans de toute la première version préparés ensemble, puis réalisés à la suite), ou `/pulse:spirc <première US Indispensable du parcours>` pour une seule US ; à défaut, une fois le plan écrit, `/pulse:implement <US-XXX> <tâche>` pour la réaliser pas à pas. Proposer de faire `/clear` avant : la conversation repartira légère.
 
 ## Exemples
 

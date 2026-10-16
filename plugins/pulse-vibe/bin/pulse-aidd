@@ -21,6 +21,7 @@
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review ; revue <US-XXX> : la relecture de toute l'US (rythme rapide)
+#   pulse-aidd ligne-etat [--installer [--remplacer] | --retirer]  la ligne d'état de Claude Code (US, tâche, avancement, décision en attente) ; --installer la règle dans .claude/settings.local.json (/pulse:status ligne)
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
@@ -376,6 +377,8 @@ case "$1" in
     exec node "$TPL/verifier.js" ;;
   scenarios)
     exec node "$TPL/verifier.js" --scenarios ;;
+  ligne-etat)
+    shift; exec node "$RACINE/scripts/ligne-etat.js" "$@" ;;
   verifier-plan)
     shift; exec node "$RACINE/scripts/verifier-plan.js" "$@" ;;
   piles) piles; exit 0 ;;

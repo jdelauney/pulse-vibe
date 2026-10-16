@@ -4,7 +4,7 @@ La pile et ses règles générales sont dans la section « Stack technique » de
 
 ## Conventions propres au projet
 
-<!-- Une ligne par convention qui s'ajoute à la pile (ex. « Les dates sont stockées en ISO, affichées au format local »). Supprimer ce commentaire à la première entrée. -->
+<!-- Une ligne par convention qui s'ajoute à la pile (ex. « Les dates sont stockées en ISO, affichées au format local »). Une convention vérifiable porte son contrôle en fin de ligne (« — Contrôle : … »). Supprimer ce commentaire à la première entrée. -->
 
 ## Sécurité propre au projet
 
