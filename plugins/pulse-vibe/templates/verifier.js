@@ -6,12 +6,14 @@
 //  1. aucun fichier d'environnement (.env, .env.*) n'est enregistré dans Git ;
 //  2. aucun fichier ne contient de clé secrète ;
 //  3. (projet Pulse) chaque scénario automatisé (@unitaire, @integration, @bout-en-bout) d'une US
-//     dont le plan est terminé est cité par au moins un test (son étiquette, ex. US-003-1).
+//     dont le plan est terminé est cité par au moins un test (son étiquette, ex. US-003-1) ;
+//  4. (projet Pulse) chaque règle du projet qui porte un contrôle est respectée (aidd_docs/memory/technical.md,
+//     « - <règle> — Contrôle : interdit|obligatoire `motif` dans `portée` »).
 // En cas de problème, le script s'arrête en erreur : la mise en ligne doit être annulée.
 //
-//   node scripts/verifier.js               les trois contrôles
+//   node scripts/verifier.js               les quatre contrôles
 //   node scripts/verifier.js --scenarios   l'état de couverture des scénarios de tous les plans, sans échouer
-//   node scripts/verifier.js --index       les fichiers prêts à être enregistrés (contrôle avant commit), sans les scénarios
+//   node scripts/verifier.js --index       les fichiers prêts à être enregistrés (contrôle avant commit) : secrets et règles, sans les scénarios
 "use strict";
 
 const fs = require("fs");
@@ -298,11 +300,70 @@ function controlerScenarios(erreurs) {
   return sansTest.length ? "" : `✅ Scénarios : ${surveilles.length} scénarios automatisés des US terminées, chacun cité par un test.`;
 }
 
+// ---------------------------------------------------------------- Règles du projet
+
+const echapper = (s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+
+/** Une portée (« src/prix/ », « src/app/**\/page.tsx », « *.ts ») en expression régulière sur un chemin relatif. */
+function porteeEnRegex(portee) {
+  const p = versSlash(portee.trim()).replace(/^\.\//, "");
+  if (p.endsWith("/")) return new RegExp("^" + echapper(p));
+  if (!/[*?]/.test(p)) return new RegExp("^" + echapper(p) + "(?:/|$)");
+  const corps = echapper(p)
+    .replace(/\*\*\//g, "\u0001")
+    .replace(/\*\*/g, "\u0002")
+    .replace(/\*/g, "[^/]*")
+    .replace(/\?/g, "[^/]")
+    .replace(/\u0001/g, "(?:.*/)?")
+    .replace(/\u0002/g, ".*");
+  return new RegExp("^" + (p.includes("/") ? "" : "(?:.*/)?") + corps + "$");
+}
+
+/** Les règles contrôlées de aidd_docs/memory/technical.md : « - <règle> — Contrôle : interdit|obligatoire `motif` dans `portée`[, `portée`] ». */
+function lireRegles() {
+  let texte;
+  try {
+    texte = fs.readFileSync(path.join("aidd_docs", "memory", "technical.md"), "utf8");
+  } catch (e) {
+    return [];
+  }
+  const regles = [];
+  for (const ligne of texte.split(/\r?\n/)) {
+    const m = /^\s*[-*]\s+(.*?)\s+[—–-]\s+Contr[ôo]le\s*:\s*(interdit|obligatoire)\s+`([^`]+)`\s+dans\s+(.+)$/i.exec(ligne);
+    if (!m) continue;
+    const portees = [...m[4].matchAll(/`([^`]+)`/g)].map((x) => porteeEnRegex(x[1]));
+    // Un motif /…/ est une expression régulière ; sinon, un texte à trouver tel quel.
+    const re = /^\/(.+)\/([a-z]*)$/.exec(m[3]);
+    let motif = null;
+    try {
+      if (re) motif = new RegExp(re[1], re[2].replace("g", ""));
+    } catch (e) {
+      continue;
+    }
+    if (portees.length) regles.push({ regle: m[1].trim(), sorte: m[2].toLowerCase(), brut: m[3], motif, portees });
+  }
+  return regles;
+}
+
+/** Contrôle 4 : ajoute aux erreurs chaque fichier lu qui enfreint une règle contrôlée du projet. */
+function controlerRegles(lus, erreurs) {
+  for (const r of lireRegles()) {
+    for (const { fichier, contenu } of lus) {
+      const chemin = versSlash(fichier);
+      if (chemin.startsWith("aidd_docs/") || !r.portees.some((p) => p.test(chemin))) continue;
+      const present = r.motif ? r.motif.test(contenu) : contenu.includes(r.brut);
+      if (r.sorte === "interdit" && present) erreurs.push(`${chemin} : enfreint la règle du projet « ${r.regle} » (${r.brut} est interdit ici).`);
+      if (r.sorte === "obligatoire" && !present) erreurs.push(`${chemin} : la règle du projet « ${r.regle} » demande ${r.brut} dans ce fichier.`);
+    }
+  }
+}
+
 function principal() {
   if (process.argv.includes("--scenarios")) return afficherCouverture();
   const index = process.argv.includes("--index");
   const erreurs = [];
   const fichiers = index ? fichiersIndexes() : listerFichiers();
+  const lus = [];
 
   for (const f of fichiers) {
     if (estFichierEnv(f)) {
@@ -321,16 +382,24 @@ function principal() {
       }
     }
     if (contenu.includes("\u0000")) continue;
+    lus.push({ fichier: f, contenu });
     const secrets = trouverSecrets(contenu);
     if (secrets.length) erreurs.push(`${f} : contient une ${secrets.join(", ")}. Déplacez-la dans les variables d'environnement.`);
   }
 
+  const secretsTrouves = erreurs.length > 0;
   const bilanScenarios = index ? "" : controlerScenarios(erreurs);
+  const avantRegles = erreurs.length;
+  controlerRegles(lus, erreurs);
 
   if (erreurs.length) {
-    console.error(index ? "❌ Commit annulé : un secret allait être enregistré.\n" : "❌ Vérification échouée, la mise en ligne est annulée :\n");
+    const entete = !index
+      ? "❌ Vérification échouée, la mise en ligne est annulée :\n"
+      : secretsTrouves ? "❌ Commit annulé : un secret allait être enregistré.\n" : "❌ Commit annulé : une règle du projet n'est pas respectée.\n";
+    console.error(entete);
     for (const e of erreurs) console.error("  - " + e);
-    console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");
+    if (secretsTrouves) console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");
+    if (erreurs.length > avantRegles) console.error("\nLes règles du projet sont dans aidd_docs/memory/technical.md (lignes « Contrôle : … ») : corrigez le fichier, ou la règle avec /pulse:memory.");
     process.exit(1);
   }
   console.log(`✅ Vérification réussie (${fichiers.length} fichiers contrôlés).`);

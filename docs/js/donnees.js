@@ -318,7 +318,7 @@ window.PULSE_WIKI = {
       "nom": "status",
       "etape": "toujours",
       "description": "Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés",
-      "forme": "",
+      "forme": "[ligne | ligne retirer]",
       "note": ""
     },
     {
