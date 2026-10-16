@@ -59,6 +59,7 @@ Les fichiers ci-dessous sont chargés à chaque session. Ce bloc est rempli auto
 | `/pulse:status` | Où en est le projet, et la prochaine étape |
 | `/pulse:init` | Préparer le projet, puis le mettre à niveau après une mise à jour de Pulse |
 | `/pulse:spirc US-XXX` | Réaliser une user story tâche par tâche : réalisation, relecture, commit |
+| `/pulse:spirc version` | Toute la première version : specs et plans préparés avec vous, puis réalisés à la suite |
 | `/pulse:commit` | Enregistrer le travail |
 | `/pulse:deploy` | Mettre le site en ligne |
 | `/pulse:get-help` | Préparer une demande d'aide |

@@ -126,6 +126,7 @@
 <h2>Le plan et ses tâches</h2>
 <p>Le plan décide <strong>comment</strong> construire ce que la spec demande. Puis il découpe le travail en petites tâches numérotées : T1, T2, T3… Chaque tâche livre une seule chose que vous pouvez voir et tester en quelques minutes. Les numéros se suivent dans tout le projet.</p>
 <p>Le plan sert aussi de tableau de suivi : <code>[ ]</code> à faire, <code>[~]</code> en cours, <code>[x]</code> terminé.</p>
+<p>Avant de vous le montrer, Pulse le fait vérifier par un outil : chaque critère de la user story doit avoir sa tâche, chaque test prévu par la spec sa place, et les tâches doivent s'enchaîner sans boucle. Le plan reste « à valider » jusqu'à votre accord.</p>
 <p><strong>Exemple :</strong> le plan d'US-001 contient « T1 – Afficher la page des créneaux, encore vide », « T2 – Réserver un créneau et le voir confirmé », « T3 – Refuser un créneau déjà pris ».</p>
 <ul>
 <li><strong>Dans votre projet :</strong> <code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-001-&lt;nom&gt;.md</code>, et le carnet de route avec les commandes à copier dans <code>docs/guide/</code>.</li>
@@ -137,9 +138,10 @@
 <h2>La réalisation, tâche par tâche</h2>
 <p>Chaque tâche passe par quatre temps, toujours dans le même ordre : <strong>réaliser</strong> (l'IA écrit le code), <strong>relire</strong> (des assistants qui ne l'ont pas écrit l'examinent et l'essaient), <strong>tester</strong> (vous vérifiez vous-même, avec les étapes que Pulse vous donne), <strong>enregistrer</strong> (la tâche devient une version de votre projet). Ensuite seulement, on passe à la tâche suivante.</p>
 <p>Avancer par petites tâches a deux avantages : l'IA se trompe moins, et vous gardez le contrôle. Si une tâche pose problème, on revient sur elle seule.</p>
+<p>En <strong>rythme rapide</strong> (celui du parcours express), les tâches s'enchaînent sans relecture une à une : toute la user story est relue et essayée en une seule fois, à la fin, puis vous la testez avec une seule fiche. Pour aller plus loin, <code>/pulse:spirc version</code> prépare avec vous les specs et les plans de toute la première version, puis les réalise à la suite : vous revenez pour les questions mises de côté et les tests.</p>
 <p><strong>Exemple :</strong> T2 est réalisée ; la relecture signale qu'on peut réserver une date passée ; Pulse corrige ; vous réservez mardi 14 h dans votre navigateur et voyez la confirmation ; la tâche est enregistrée.</p>
 <ul>
-<li><strong>Dans votre projet :</strong> le code lui-même, la case de la tâche cochée dans le plan, et un rapport de relecture par tâche dans <code>aidd_docs/tasks/&lt;groupe&gt;/revues/</code>.</li>
+<li><strong>Dans votre projet :</strong> le code lui-même, la case de la tâche cochée dans le plan, et un rapport de relecture par tâche (en rythme rapide, un seul pour toute la user story) dans <code>aidd_docs/tasks/&lt;groupe&gt;/revues/</code>.</li>
 <li><strong>Commandes :</strong> <a href="commandes/implement.html"><code>/pulse:implement</code></a> (réaliser), <a href="commandes/review.html"><code>/pulse:review</code></a> (relire), <a href="commandes/commit.html"><code>/pulse:commit</code></a> (enregistrer), ou tout d'un coup avec <a href="commandes/spirc.html"><code>/pulse:spirc</code></a>.</li>
 </ul>
 </section>
@@ -170,7 +172,7 @@
 <h2>La version parallèle et le dossier à part</h2>
 <p>Une <strong>version parallèle</strong> est une copie du projet où l'on avance sans toucher à la version principale, celle que le site publie. Git l'appelle une <dfn>branche</dfn>. Quand le travail est prêt, une <strong>proposition</strong> sur le site du dépôt demande de rassembler la version parallèle dans la version principale ; sur GitHub, elle s'appelle <dfn>pull request</dfn>. Vous la relisez, puis vous l'acceptez.</p>
 <p>Le <strong>dossier à part</strong> va plus loin : c'est un deuxième dossier du projet, sur sa propre version parallèle. Deux sessions de Claude Code peuvent ainsi avancer en même temps, chacune sur sa user story, sans se gêner. Son nom anglais : <dfn>worktree</dfn>.</p>
-<p><strong>Exemple :</strong> pendant qu'une session réalise US-001, une deuxième session avance sur US-003 (le rappel par e-mail) dans un dossier à part. Chaque user story est rassemblée dans la version principale une fois terminée.</p>
+<p><strong>Exemple :</strong> pendant qu'une session réalise US-001, une deuxième session avance sur US-003 (le rappel par e-mail) dans un dossier à part. Chaque user story est rassemblée dans la version principale une fois terminée. Dans une série (<code>/pulse:spirc version</code>), Pulse peut aussi, avec votre accord, faire avancer lui-même deux user stories indépendantes en même temps, chacune dans son dossier à part.</p>
 <ul>
 <li><strong>Dans votre projet :</strong> les dossiers à part sont rangés dans <code>.claude/worktrees/</code>.</li>
 <li><strong>Commandes :</strong> <a href="commandes/pr.html"><code>/pulse:pr</code></a> pour la version parallèle et sa proposition ; <a href="commandes/implement.html"><code>/pulse:implement</code></a> et <a href="commandes/spirc.html"><code>/pulse:spirc</code></a> proposent le dossier à part quand une autre session travaille déjà sur le projet.</li>
@@ -181,6 +183,7 @@
 <h2>Les contrôles automatiques</h2>
 <p>Les contrôles automatiques sont un contrôle qualité qui tourne tout seul sur le site de votre dépôt. À chaque envoi, il vérifie que les clés restent hors du code, que les tests passent et que l'appli se construit. Une coche verte dit que tout va bien ; une croix rouge vous prévient avant que l'erreur n'arrive sur le site. Sur GitHub, on parle de <dfn>CI</dfn>.</p>
 <p>Les <strong>tests automatiques</strong> en font partie : de petits programmes qui vérifient que l'appli fait ce que la spec demande. À chaque changement, ils préviennent si quelque chose casse.</p>
+<p>Les <strong>règles du projet</strong> peuvent en faire partie aussi : une habitude notée dans la mémoire (« les montants s'écrivent en centimes ») peut porter un contrôle ; un enregistrement qui ne la respecte pas est alors refusé, avec la règle citée.</p>
 <p><strong>Exemple :</strong> une modification casse la réservation d'un créneau. Le test « un créneau se réserve une seule fois » échoue, la croix rouge apparaît, et le problème est corrigé avant la mise en ligne.</p>
 <ul>
 <li><strong>Dans votre projet :</strong> <code>scripts/verifier.js</code> et le fichier des contrôles, par exemple dans <code>.github/workflows/</code>.</li>
