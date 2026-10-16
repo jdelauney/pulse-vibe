@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="fr" data-racine="../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Du prototype à la production – Wiki Pulse</title>
+<meta name="description" content="Tutoriel 3 : reprendre le prototype du tutoriel rapide en mode complet, sans repartir de zéro, jusqu'à une appli prête pour de vrais clients : rythme complet, retours, tests, sécurité, mise en ligne pour de vrai, Google.">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large"><div class="mise-en-page">
+<nav class="laterale" aria-label="Sur cette page" data-laterale="sommaire"></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<p class="pastille pastille-etape" data-couleur="3">Tutoriel 3 · Après le prototype, quatre séances</p>
+<h1>Du prototype à la production</h1>
+<p class="chapo">Le prototype du salon a convaincu : la coiffeuse veut l'utiliser pour de bon. Inutile de tout recommencer. Ce tutoriel reprend le projet du <a href="rapide.html">tutoriel rapide</a> là où il s'est arrêté, passe en mode complet, et le mène jusqu'à une appli prête pour de vrais clients.</p>
+</header>
+
+<p>Le mode rapide a sauté volontairement des étapes : les entretiens approfondis, le test après chaque tâche, une partie des tests automatiques, la sécurité approfondie, Google. On les reprend ici, dans le même dossier, sans perdre ce qui marche déjà. Pour vivre chaque étape depuis le début, dans un dossier neuf, suivez plutôt le <a href="production.html">tutoriel complet</a>.</p>
+
+<figure class="anim" data-etapes="7" data-duree="1300">
+<svg viewBox="0 0 760 270" role="img" aria-labelledby="passage-frise-titre">
+<title id="passage-frise-titre">Les étapes du passage du prototype à la production</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="24" width="162" height="72" rx="18"/><rect class="schema-boite" x="20" y="30" width="150" height="60" rx="14"/><text class="schema-texte" x="95" y="56" text-anchor="middle">Le prototype</text><text class="schema-texte-secondaire" x="95" y="74" text-anchor="middle">déjà en ligne</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 60 H206" marker-end="url(#passage-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="204" y="24" width="162" height="72" rx="18"/><rect class="schema-boite" x="210" y="30" width="150" height="60" rx="14"/><text class="schema-texte" x="285" y="56" text-anchor="middle">Rythme complet</text><text class="schema-texte-secondaire" x="285" y="74" text-anchor="middle">et les retours</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M360 60 H396" marker-end="url(#passage-pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="394" y="24" width="162" height="72" rx="18"/><rect class="schema-boite" x="400" y="30" width="150" height="60" rx="14"/><text class="schema-texte" x="475" y="56" text-anchor="middle">Consolider</text><text class="schema-texte-secondaire" x="475" y="74" text-anchor="middle">tests et sécurité</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M550 60 H586" marker-end="url(#passage-pointe-grise)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="584" y="24" width="162" height="72" rx="18"/><rect class="schema-boite" x="590" y="30" width="150" height="60" rx="14"/><text class="schema-texte" x="665" y="56" text-anchor="middle">US-002</text><text class="schema-texte-secondaire" x="665" y="74" text-anchor="middle">en mode complet</text></g>
+<path class="schema-fleche trace e5" pathLength="1" d="M665 90 V156" marker-end="url(#passage-pointe-grise)"/>
+<g class="e5" data-etape="5"><rect class="actif-halo schema-halo-primaire" x="584" y="154" width="162" height="72" rx="18"/><rect class="schema-boite" x="590" y="160" width="150" height="60" rx="14"/><text class="schema-texte" x="665" y="186" text-anchor="middle">Pour de vrai</text><text class="schema-texte-secondaire" x="665" y="204" text-anchor="middle">contrôles, adresse</text></g>
+<path class="schema-fleche trace e6" pathLength="1" d="M590 190 H554" marker-end="url(#passage-pointe-grise)"/>
+<g class="e6" data-etape="6"><rect class="actif-halo schema-halo-primaire" x="394" y="154" width="162" height="72" rx="18"/><rect class="schema-boite" x="400" y="160" width="150" height="60" rx="14"/><text class="schema-texte" x="475" y="186" text-anchor="middle">Être trouvé</text><text class="schema-texte-secondaire" x="475" y="204" text-anchor="middle">Google, vitesse</text></g>
+<path class="schema-fleche trace e7" pathLength="1" d="M400 190 H364" marker-end="url(#passage-pointe-grise)"/>
+<g class="e7" data-etape="7"><rect class="actif-halo schema-halo-primaire" x="204" y="154" width="162" height="72" rx="18"/><rect class="schema-boite-active" x="210" y="160" width="150" height="60" rx="14"/><text class="schema-texte" x="285" y="186" text-anchor="middle">Prête</text><text class="schema-texte-secondaire" x="285" y="204" text-anchor="middle">pour de vrais clients</text></g>
+<defs>
+<marker id="passage-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
+</defs>
+</svg>
+<figcaption>On part du prototype déjà en ligne. On passe le projet en rythme complet et on recueille les retours de la coiffeuse. On consolide la prise de rendez-vous : les tests qui manquent et un contrôle de sécurité. On construit le carnet du salon (US-002) en mode complet. Puis on met en ligne pour de vrai, on se fait trouver sur Google, et l'appli est prête pour de vrais clients.</figcaption>
+</figure>
+
+<!-- ===================================================================================================== -->
+<section id="depart" class="etape-tuto">
+<h2><span class="etape-numero">0</span> Le point de départ <span class="duree">10 minutes</span></h2>
+<p><strong>Objectif :</strong> vérifier ce que le prototype contient déjà, et ce qui reste à faire.</p>
+<p>Ouvrez le dossier du prototype (<code>carnet-reservations</code>) dans VS Code, ouvrez le panneau Claude Code, puis tapez :</p>
+<pre class="commande"><code>/pulse:status</code></pre>
+<p>Vous devez retrouver ce que le tutoriel rapide a construit :</p>
+<table>
+<thead><tr><th>Déjà fait</th><th>Où le voir</th></tr></thead>
+<tbody>
+<tr><td>Le brief, le PRD et les user stories, issus de la conversation express</td><td><code>docs/brief.md</code>, <code>docs/prd.md</code>, <code>docs/user-stories.md</code></td></tr>
+<tr><td>Les outils (Next.js, Neon, Vercel) et l'apparence choisie</td><td><code>docs/technical.md</code>, <code>docs/design.md</code></td></tr>
+<tr><td>US-001, la prise de rendez-vous, réalisée en rythme rapide</td><td>son plan, toutes les cases cochées</td></tr>
+<tr><td>Le prototype en ligne</td><td>l'adresse en <code>.vercel.app</code>, dans <code>CLAUDE.md</code></td></tr>
+</tbody>
+</table>
+<div class="conversation" data-titre="Le point de départ">
+<p data-role="vous">/pulse:status</p>
+<p data-role="claude">📍 Projet : carnet-reservations (pile : Next.js, Neon, Vercel)
+Première version (US Indispensables) : 4/4 tâches terminées
+En ligne : https://carnet-reservations-demo.vercel.app
+➡️ Prochaine étape conseillée : /pulse:spec US-002 : Voir les rendez-vous du jour (Indispensable) attend sa spec.</p>
+</div>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> vous avez déjà réalisé US-002 pendant le tutoriel rapide ? Gardez-la : à l'étape 3, consolidez-la comme US-001, puis passez directement à l'étape 5.</p></aside>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> <code>/pulse:status</code>, à chaque séance. Il donne toujours la prochaine étape conseillée.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="rythme" class="etape-tuto">
+<h2><span class="etape-numero">1</span> Passer en rythme complet <span class="duree">5 minutes</span></h2>
+<p><strong>Objectif :</strong> que chaque prochaine user story soit construite avec tout le soin du mode complet.</p>
+<p>Le parcours express a réglé le projet sur le <strong>rythme rapide</strong> : chaque réalisation le prend d'office, sans vous demander. Ce réglage est noté dans <code>CLAUDE.md</code>, dans votre profil. Demandez simplement à Pulse de le changer : la question du rythme vous sera de nouveau posée au début de chaque réalisation.</p>
+<div class="conversation" data-titre="Changer de rythme">
+<p data-role="vous">Passe le projet en rythme complet.</p>
+<p data-role="claude">C'est fait : dans votre profil, « Rythme : complet ». Au début de chaque réalisation, je vous demanderai le rythme ; avec « Complet », chaque tâche est relue et essayée par deux assistants, puis testée par vous, avant d'être enregistrée.</p>
+</div>
+<table>
+<thead><tr><th></th><th>Rythme rapide (le prototype)</th><th>Rythme complet (à partir d'ici)</th></tr></thead>
+<tbody>
+<tr><td>Tests automatiques</td><td>Les essentiels : enregistrements et règles d'accès</td><td>Écrits avant le code, pour chaque scénario de la spec (avec « Tests d'abord »)</td></tr>
+<tr><td>Relecture</td><td>Une seule, pour toute la user story</td><td>À chaque tâche, par deux assistants</td></tr>
+<tr><td>Votre test</td><td>Un seul parcours, à la fin</td><td>Après chaque tâche</td></tr>
+<tr><td>Construction de l'appli</td><td>À la mise en ligne seulement</td><td>Vérifiée à chaque tâche</td></tr>
+</tbody>
+</table>
+<p>Le site est maintenant en ligne : chaque tâche envoyée sur la version principale y partirait aussitôt. Au démarrage de la prochaine réalisation, choisissez donc la <strong>version parallèle</strong> : vous essaierez le travail sur une adresse de prévisualisation, puis vous l'accepterez vous-même. Le détail est dans le <a href="production.html#s2-parallele">tutoriel complet</a>.</p>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>CLAUDE.md</code> indique « Rythme : complet » dans votre profil.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="retours" class="etape-tuto">
+<h2><span class="etape-numero">2</span> Recueillir les retours, compléter la description <span class="duree">Environ 1 h 30</span></h2>
+<p><strong>Objectif :</strong> que les documents du projet disent ce que le salon veut vraiment, après avoir essayé le prototype.</p>
+
+<h3 id="retours-notes">Noter les retours</h3>
+<p>Créez un dossier <code>docs/depart/</code> et déposez-y les retours de la coiffeuse : un fichier de notes, un e-mail recopié, des captures d'écran annotées. Pulse les lira avant de vous poser ses questions.</p>
+<pre class="commande"><code>docs/depart/retours-coiffeuse.md</code></pre>
+<p class="legende">Exemple de contenu : « Les clientes demandent un rappel la veille. Une coupe homme dure 20 minutes, pas 30. J'aimerais pouvoir bloquer mes jours de congé. »</p>
+
+<h3 id="retours-brief">Approfondir l'idée : <code>/pulse:brainstorm</code></h3>
+<pre class="commande"><code>/pulse:brainstorm docs/depart/</code></pre>
+<p>Votre brief existe déjà : choisissez <strong>Compléter</strong>. Pulse lit vos notes, vous montre ce qu'il en a compris (« ✔ D'après vos documents… »), puis pose seulement les questions qui restent. C'est l'entretien que le parcours express avait résumé en une conversation. Voir <a href="../commandes/brainstorm.html"><code>/pulse:brainstorm</code></a>.</p>
+<div class="conversation" data-titre="Compléter le brief">
+<p data-role="claude">✔ D'après vos documents (retours-coiffeuse.md) : les clientes veulent un rappel la veille, et vous voulez bloquer vos jours de congé. C'est bien ça ?</p>
+<p data-role="vous">Oui. Et les congés, je les connais un mois à l'avance.</p>
+</div>
+
+<h3 id="retours-prd">Retrier la première version : <code>/pulse:prd</code></h3>
+<pre class="commande"><code>/pulse:prd</code></pre>
+<p>Choisissez <strong>Compléter</strong>. Pulse range les nouvelles idées : le rappel la veille, les jours de congé, l'acompte. Pour chacune, vous dites si elle est indispensable à la première version ou si elle peut attendre. Voir <a href="../commandes/prd.html"><code>/pulse:prd</code></a>.</p>
+
+<h3 id="retours-us">Ajouter les user stories : <code>/pulse:us</code></h3>
+<pre class="commande"><code>/pulse:us</code></pre>
+<p>Choisissez <strong>Compléter</strong> : US-001 et US-002 gardent leur numéro, les nouvelles prennent la suite (US-003 le rappel la veille, US-004 l'acompte…). Chaque nouvelle user story est vérifiée et prête à préparer. Voir <a href="../commandes/us.html"><code>/pulse:us</code></a>.</p>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> vous voulez voir le carnet du salon avant qu'il soit codé ? <a href="../commandes/ui.html"><code>/pulse:ui maquettes US-002</code></a> dessine plusieurs versions de l'écran, à comparer dans votre navigateur. Faites-le après la spec d'US-002, avant son plan.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le brief, le PRD et le référentiel des user stories tiennent compte des retours ; les nouvelles user stories ont leur fichier dans leur groupe.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="consolider" class="etape-tuto">
+<h2><span class="etape-numero">3</span> Consolider la prise de rendez-vous <span class="duree">Environ 1 h</span></h2>
+<p><strong>Objectif :</strong> donner à US-001, faite en rythme rapide, le niveau de soin du mode complet, sans la refaire.</p>
+
+<h3 id="consolider-tests">Les tests qui manquent : <code>/pulse:test ecrire US-001</code></h3>
+<pre class="commande"><code>/pulse:test ecrire US-001</code></pre>
+<p>En rythme rapide, seuls les tests essentiels ont été écrits. Un assistant écrit maintenant ceux qui manquent, à partir des scénarios de la spec et des critères d'acceptation, sans toucher au code de l'appli. Un autre les lance et trie chaque échec : un test qui échoue ici révèle souvent un vrai défaut du prototype. Voir <a href="../commandes/test.html"><code>/pulse:test</code></a>.</p>
+<div class="conversation" data-titre="Les tests qui manquent">
+<p data-role="claude">US-001 : 3 scénarios de la spec n'ont pas encore de test. Je les fais écrire.
+✅ 2 réussis · ❌ 1 échoue : « un créneau déjà pris ne se réserve pas deux fois », quand deux clientes valident à la même seconde.
+C'est un défaut du code, pas du test. Je vous propose de le corriger avec /pulse:fix.</p>
+</div>
+<p>Un défaut trouvé se corrige avec <a href="../commandes/fix.html"><code>/pulse:fix</code></a>, puis s'enregistre avec <a href="../commandes/commit.html"><code>/pulse:commit</code></a>.</p>
+
+<h3 id="consolider-securite">Un premier contrôle de sécurité : <code>/pulse:security rapide</code></h3>
+<pre class="commande"><code>/pulse:security rapide</code></pre>
+<p>En deux minutes, Pulse vérifie les points les plus graves : clés hors du code, formulaire contrôlé côté serveur, pages réservées vraiment protégées. L'audit complet viendra à l'étape 5, une fois le carnet du salon construit. Voir <a href="../commandes/security.html"><code>/pulse:security</code></a>.</p>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> le prototype a peut-être déjà reçu de vraies réservations, si vous avez partagé son adresse. Traitez-les comme de vraies données : ne les copiez nulle part, et prévenez les personnes concernées si l'appli change de règle.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> chaque scénario automatisé de la spec d'US-001 a son test, tous réussis ; le contrôle rapide ne montre aucun point bloquant.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="us-002" class="etape-tuto">
+<h2><span class="etape-numero">4</span> Construire le carnet du salon en mode complet <span class="duree">2 à 3 h</span></h2>
+<p><strong>Objectif :</strong> la coiffeuse se connecte et voit les rendez-vous du jour, et personne d'autre ne les voit. C'est la dernière user story de la première version.</p>
+<pre class="commande"><code>/pulse:spirc US-002</code></pre>
+<p>Au démarrage, Pulse pose une seule série de questions. Au rythme, répondez « Complet » (Pulse recommande « Rapide », qui reste le plus court) ; aux tests, « Tests d'abord » ; à l'envoi, la version parallèle. Puis il écrit la spec et le plan avec vous, et réalise chaque tâche : les tests d'abord, le code, deux assistants qui relisent et essaient, votre test, l'enregistrement. Le déroulé est animé sur la page <a href="../commandes/spirc.html#description"><code>/pulse:spirc</code></a>.</p>
+<div class="conversation" data-titre="US-002 en mode complet">
+<p data-role="vous">/pulse:spirc US-002</p>
+<p data-role="claude">Comment réaliser cette user story ? → Complet
+Si vous choisissez Complet, quels tests ? → Tests d'abord (Recommandé)
+Comment envoyer le travail de US-002 ? → Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt</p>
+<p data-role="claude">T6 – Se connecter au carnet du salon. Les tests sont écrits : ils échouent, c'est attendu tant que le code n'existe pas.
+Relecture : ✅ Validé · Vérification : ✅ Prouvé.
+🧪 À vous de tester : votre fiche (4 étapes, environ 3 minutes). Étape 1 : ouvrez une fenêtre de navigation privée, puis l'adresse du carnet du jour ; vous devez arriver sur la page de connexion.
+Le test est-il concluant ?</p>
+<p data-role="vous">Oui, tout fonctionne</p>
+</div>
+<p>Comme US-002 est la dernière user story Indispensable, son plan se termine par les fondations du référencement, puis par « Mettre en ligne la première version ». Avec la version parallèle, c'est vous qui acceptez la proposition sur GitHub, après avoir essayé l'adresse de prévisualisation. Le détail de la connexion et de la mise en ligne est dans le <a href="production.html#seance-3">tutoriel complet, séance 3</a>.</p>
+<aside class="encadre encadre-risque"><p><strong>Risque :</strong> accepter la proposition met la nouvelle version en ligne, sur le site que les clientes utilisent déjà. Essayez d'abord l'adresse de prévisualisation. Pulse ne l'accepte jamais à votre place.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour enchaîner plusieurs user stories, par exemple US-002 et le rappel la veille, <code>/pulse:spirc US-002 US-003</code> prépare d'abord avec vous leurs specs et leurs plans, puis les réalise à la suite. Vous testez alors à la fin, une user story après l'autre. Avec <code>/pulse:status ligne</code>, l'avancement s'affiche en bas de l'écran.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le carnet du jour est en ligne, réservé au salon ; chaque tâche d'US-002 a son rapport de relecture et votre test concluant.</p></aside>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:spirc US-002</code> ; Pulse reprend à la tâche en cours, test compris.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="pour-de-vrai" class="etape-tuto">
+<h2><span class="etape-numero">5</span> Mettre en ligne pour de vrai <span class="duree">2 à 3 h</span></h2>
+<p><strong>Objectif :</strong> passer d'une adresse de démonstration à un site qui se vérifie tout seul, sur son vrai nom de domaine, avec des clés bien rangées.</p>
+<p>Quatre commandes, dans l'ordre. Chacune est décrite en détail dans le <a href="production.html#seance-4">tutoriel complet, séance 4</a> : vous faites exactement la même chose, sur votre projet existant.</p>
+<table>
+<thead><tr><th>Commande</th><th>Ce qu'elle apporte au prototype</th></tr></thead>
+<tbody>
+<tr><td><a href="../commandes/cicd.html"><code>/pulse:cicd</code></a>, puis <code>/pulse:cicd proteger</code></td><td>Un contrôle qualité sur GitHub à chaque envoi et sur chaque proposition : une croix rouge vous prévient avant que l'erreur n'arrive sur le site. La protection empêche une proposition en échec de rejoindre la version principale.</td></tr>
+<tr><td><a href="../commandes/deploy.html"><code>/pulse:deploy production</code></a></td><td>Les variables de production, votre nom de domaine à la place de l'adresse en <code>.vercel.app</code>, une sonde qui vous prévient si le site ne répond plus, et le retour arrière écrit.</td></tr>
+<tr><td><a href="../commandes/security.html"><code>/pulse:security</code></a></td><td>L'audit complet, cette fois, et le test du cambrioleur, fait par vous.</td></tr>
+<tr><td><a href="../commandes/secrets.html"><code>/pulse:secrets</code></a></td><td>L'inventaire de vos clés, sans aucune valeur affichée, et la façon de les changer sans couper le site.</td></tr>
+</tbody>
+</table>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> l'offre gratuite de Vercel, suffisante pour le prototype, est réservée à un usage non commercial. Pour un vrai salon, passez à l'offre payante avant d'annoncer le site.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> une habitude du salon se vérifie dans le code ? Faites-la retenir avec un contrôle : <code>/pulse:memory retenir "les durées des prestations viennent toutes du fichier des prestations"</code>. Pulse peut lui ajouter un contrôle, que chaque enregistrement vérifiera.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> les contrôles automatiques passent au vert, le site répond sur son nom de domaine, l'audit de sécurité ne montre aucun point bloquant, et <code>docs/secrets.md</code> est à jour.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="suite" class="etape-tuto">
+<h2><span class="etape-numero">6</span> Le rappel la veille, puis être trouvé <span class="duree">Environ 4 h, en deux séances</span></h2>
+<p><strong>Objectif :</strong> ajouter une fonction à un site en ligne, avec toute la routine, puis faire connaître le salon.</p>
+<ul>
+<li><strong>Le rappel la veille</strong> : <code>/pulse:spirc US-003</code>, en version parallèle. Les e-mails d'essai restent sur votre ordinateur ; seul le site en production écrit aux vraies clientes. Le détail : <a href="production.html#seance-5">tutoriel complet, séance 5</a>.</li>
+<li><strong>Être trouvé</strong> : <code>/pulse:rediger accueil</code> pour les textes, <code>/pulse:seo</code> pour le référencement, <code>/pulse:perf</code> pour la vitesse, puis <code>/pulse:seo lancer</code> et <code>/pulse:search-console relier</code>, une fois le nom de domaine définitif en place. Le détail : <a href="production.html#seance-6">tutoriel complet, séance 6</a>.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> le prototype a été mis en ligne sans se soucier de Google. Le référencement repart donc de la nouvelle adresse : reliez Search Console seulement quand le nom de domaine du salon est en place.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
+<section id="prete" class="etape-tuto">
+<h2><span class="etape-numero">7</span> Prête pour de vrais clients</h2>
+<p><strong>Objectif :</strong> vérifier qu'il ne reste rien du prototype qui gênerait de vrais clients.</p>
+<ul class="verification">
+<li>Le profil du projet est en rythme complet (<a href="#rythme">étape 1</a>).</li>
+<li>Les retours de la coiffeuse sont dans le brief, le PRD et les user stories (<a href="#retours">étape 2</a>).</li>
+<li>US-001 a tous ses tests, et le défaut éventuel trouvé est corrigé (<a href="#consolider">étape 3</a>).</li>
+<li>US-002 est en ligne, construite et testée tâche par tâche (<a href="#us-002">étape 4</a>).</li>
+<li>Le site vit sur son nom de domaine, avec une offre d'hébergement qui autorise un usage commercial (<a href="#pour-de-vrai">étape 5</a>).</li>
+<li>Toute la liste « prête pour de vrais clients » du tutoriel complet est cochée : <a href="production.html#prete">la voir</a>.</li>
+</ul>
+<p>Ensuite, l'appli vit : quelques gestes réguliers suffisent à la garder à jour, sûre et trouvable. Ils sont décrits dans <a href="production.html#entretien">l'entretien régulier</a>. Et si quelque chose ne va pas, chaque situation a sa commande : <a href="production.html#secours">si quelque chose ne va pas</a>.</p>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> <code>/pulse:status</code> ; une nouvelle idée devient une nouvelle user story, avec <code>/pulse:spirc US-003 "ajouter…"</code> ou <code>/pulse:spec "…"</code>.</p></aside>
+<p>Retrouvez les autres parcours dans <a href="index.html">les tutoriels</a>.</p>
+</section>
+
+</article></div></main>
+</body>
+</html>
