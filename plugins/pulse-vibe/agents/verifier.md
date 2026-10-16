@@ -20,7 +20,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes.
 
 ## Informations reçues
 
-Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés. Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
+Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés. Pour toute une US (rythme rapide) : les critères de toutes ses tâches, le parcours principal en premier ; lancer l'application une seule fois, sans la commande « construire ». Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
 
 ## Pack de pile
 

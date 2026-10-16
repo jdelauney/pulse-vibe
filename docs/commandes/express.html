@@ -79,14 +79,16 @@
 <section id="arguments">
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
-<pre class="commande"><code>/pulse:express [votre idée en une phrase]</code></pre>
+<pre class="commande"><code>/pulse:express [votre idée en une phrase | vos documents de départ]</code></pre>
 <p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
 <ul>
 <li><strong>Votre idée en une phrase</strong> (facultative) : Pulse s'en sert pour le premier bloc et ne vous repose pas ce qu'elle dit déjà.</li>
+<li><strong>Vos documents de départ</strong> (facultatifs) : un cahier des charges, des notes, des maquettes ou des captures d'écran faites ailleurs. Citez-les, ou rangez-les dans un dossier <code>docs/depart/</code> que vous créez vous-même. Pulse les lit d'abord, vous montre ce qu'il en a compris, puis pose seulement les questions qui restent.</li>
 <li><strong>Sans rien</strong> : Pulse commence par vous demander votre idée.</li>
 </ul>
 <pre class="commande"><code>/pulse:express "un carnet de réservations pour mon salon de coiffure"</code></pre>
+<pre class="commande"><code>/pulse:express docs/depart/</code></pre>
 <pre class="commande"><code>/pulse:express</code></pre>
 </section>
 
@@ -162,7 +164,7 @@ Il faudra : données partagées · e-mails (déduit de vos réponses)
 <li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : le parcours complet, pour une idée encore floue.</li>
 <li><a href="tech.html"><code>/pulse:tech</code></a> : revoir plus tard les outils choisis.</li>
 <li><a href="ui.html"><code>/pulse:ui</code></a> : revoir l'apparence, ou dessiner les écrans d'une user story.</li>
-<li><a href="spirc.html"><code>/pulse:spirc</code></a> : l'étape suivante, qui écrit la spec et le plan de la première user story, puis la réalise.</li>
+<li><a href="spirc.html"><code>/pulse:spirc version</code></a> : l'étape suivante, qui prépare avec vous les specs et les plans de toute la première version, puis les réalise à la suite (ou <code>/pulse:spirc US-001</code> pour une seule user story).</li>
 <li><a href="implement.html"><code>/pulse:implement</code></a> : réaliser une tâche à la fois, une fois le plan écrit.</li>
 </ul>
 </section>
