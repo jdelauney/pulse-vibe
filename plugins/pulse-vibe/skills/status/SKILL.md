@@ -2,7 +2,7 @@
 description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés
 argument-hint: "[ligne | ligne retirer]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
+allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd bilan) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
 
 # /pulse:status – Où en suis-je ?
@@ -44,6 +44,7 @@ Argument : `$ARGUMENTS` (vide : le tableau de bord ; `ligne` ou `ligne retirer` 
 ⏸️ En attente : <décision en attente> — reprendre avec <commande>   (ligne absente s'il n'y a pas de travail en cours)
 
 Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facultatif) · ⬜ user stories · ⬜ spec · ⬜ plan
+Rythme   : <ligne « Rythme » du profil de CLAUDE.md> (à changer : « rythme rapide », « rythme complet » ou « demande-moi le rythme à chaque fois »)
 Groupes  : <groupe 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <groupe 2> : US-004 (spec ⬜)
 
 Tâches – US-XXX <titre>
@@ -86,6 +87,8 @@ De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans
 **Travail en parallèle** : quand la prochaine étape conseillée porte sur une US dont la ligne « En parallèle avec » cite une US encore à faire, sans tâche `[~]` ni worktree en cours, ajouter sous la ligne « Prochaine étape » : « 💡 En parallèle, dans une deuxième session Claude Code : `/pulse:spirc US-004` (Pulse proposera un dossier à part) ». Une proposition seulement : la personne la lance elle-même.
 
 Pour cette commande, le format ci-dessus remplace le bloc de fin de commande habituel.
+
+Sur demande (« où perd-on du temps ? », « le bilan des US ») : `pulse-aidd bilan`, présenté en une ligne par US, puis ce qu'il montre (l'US qui a demandé le plus de corrections, les tests non concluants).
 
 ### La ligne d'état (argument `ligne`)
 

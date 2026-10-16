@@ -1,3 +1,6 @@
 # Conceptions, plans et notes de travail : gardés en local, jamais envoyés
 docs/superpowers/
 .superpowers/
+
+# Résultats des évaluations (claude plugin eval) : gardés en local
+plugins/*/evals/results/
