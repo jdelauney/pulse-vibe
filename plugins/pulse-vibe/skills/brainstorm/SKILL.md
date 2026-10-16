@@ -1,6 +1,6 @@
 ---
 description: Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet
-argument-hint: "[votre idée en une phrase | vos documents de départ]"
+argument-hint: "[votre idée en une phrase | vos documents]"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte brainstorm) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd pile contexte *) Read Glob Grep Write(docs/brief.md) Edit(docs/brief.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Edit(./CLAUDE.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
@@ -86,7 +86,7 @@ Idée reçue en argument (facultative) : `$ARGUMENTS`
 
 - Si `CLAUDE.md` n'existe pas : proposer `/pulse:init` d'abord, mais accepter de continuer si la personne le souhaite (créer alors `aidd_docs/memory/glossary.md` avec son modèle quand le premier mot est tranché).
 - Si `docs/brief.md` existe : demander s'il faut le **compléter** ou **repartir de zéro**. Pour compléter, partir des « Questions ouvertes » du brief existant.
-- **Documents de départ** (cités en argument, ou `docs/depart/`) : appliquer `pulse-aidd reference documents-depart.md`, puis poser seulement ce qui manque.
+- **Documents de départ** (en argument, ou `docs/depart/`) : appliquer `pulse-aidd reference documents-depart.md` ; demander seulement le reste.
 
 ## Rôle
 

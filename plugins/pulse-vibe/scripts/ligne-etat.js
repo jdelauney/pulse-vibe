@@ -96,7 +96,7 @@ function installer(racine, remplacer) {
     return "deja: une ligne d'état est déjà réglée dans .claude/settings.local.json (relancer avec --remplacer pour la remplacer)";
   }
   fs.mkdirSync(path.join(racine, ".claude"), { recursive: true });
-  fs.copyFileSync(__filename, path.join(racine, COPIE));
+  require("./copies.js").copier("ligne-etat", path.join(racine, COPIE)); // la copie porte l'empreinte de son modèle
   const chemin = path.resolve(racine, COPIE).split(path.sep).join("/");
   r.statusLine = { type: "command", command: `node "${chemin}"` };
   ecrireReglages(racine, r);

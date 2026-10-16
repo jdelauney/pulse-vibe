@@ -269,6 +269,9 @@ function modeleAncien(racine, texteClaude) {
   if (texteClaude !== null && (!/^## Résumé du projet\s*$/m.test(texteClaude) || /AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
   const gitignore = lireSi(p(".gitignore"));
   if (gitignore !== null && !gitignore.includes("aidd_docs/tasks/in-progress.md")) return true;
+  // Une copie de Pulse (contrôle des secrets, ligne d'état) intacte mais posée par une version plus ancienne.
+  const { etatDe } = require("./copies.js");
+  if (etatDe("verifier", p("scripts", "verifier.js")) === "ancienne" || etatDe("ligne-etat", p(".claude", "pulse-ligne-etat.js")) === "ancienne") return true;
   if (existe(p("scripts", "verifier.js")) && existe(p(".git", "hooks")) && !/hooksPath/.test(lireSi(p(".git", "config")) || "")) {
     const crochet = lireSi(p(".git", "hooks", "pre-commit")) || "";
     // Crochet de Pulse : à jour seulement avec la copie de secours (l'ancien laissait passer sans scripts/verifier.js).
@@ -303,6 +306,7 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     codeExistant: codeExistant(racine),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
+    controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite)"),
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
     ancienFormat: anciens,
     enAttente: attentes[0] || null,
@@ -339,6 +343,7 @@ function decider(f) {
   if (f.claude === "pulse") {
     if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
     else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
+    else if (!f.controlesAutorises) aussi.push("/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois");
     if (f.modeleAncien) aussi.push("/pulse:init — mettre à niveau le projet (modèles et contrôles)");
     if (f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
   }

@@ -21,7 +21,11 @@
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review ; revue <US-XXX> : la relecture de toute l'US (rythme rapide)
+#   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json
+#   pulse-aidd copies [--mettre-a-jour]  l'état des copies de Pulse dans le projet (contrôle des secrets, ligne d'état) : a-jour, ancienne, adaptee ; --mettre-a-jour remplace les anciennes intactes
 #   pulse-aidd ligne-etat [--installer [--remplacer] | --retirer]  la ligne d'état de Claude Code (US, tâche, avancement, décision en attente) ; --installer la règle dans .claude/settings.local.json (/pulse:status ligne)
+#   pulse-aidd bilan                 le bilan chiffré de chaque US (tâches, relectures, corrections, tests non concluants, constats par gravité)
+#   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
@@ -377,8 +381,16 @@ case "$1" in
     exec node "$TPL/verifier.js" ;;
   scenarios)
     exec node "$TPL/verifier.js" --scenarios ;;
+  autorisations)
+    shift; exec node "$RACINE/scripts/autorisations.js" "$@" ;;
+  copies)
+    shift; exec node "$RACINE/scripts/copies.js" "$@" ;;
   ligne-etat)
     shift; exec node "$RACINE/scripts/ligne-etat.js" "$@" ;;
+  bilan)
+    exec node "$RACINE/scripts/bilan.js" ;;
+  verifier-spec)
+    shift; exec node "$RACINE/scripts/verifier-spec.js" "$@" ;;
   verifier-plan)
     shift; exec node "$RACINE/scripts/verifier-plan.js" "$@" ;;
   piles) piles; exit 0 ;;
@@ -422,11 +434,12 @@ case "$1" in
     echo "Travail en cours effacé : aucune décision en attente." ;;
   installer-ci)
     mkdir -p scripts
-    if [ -f scripts/verifier.js ] && ! cmp -s "$TPL/verifier.js" scripts/verifier.js && [ "$2" != "--forcer" ]; then
+    etat="$(node "$RACINE/scripts/copies.js" | grep "· scripts/verifier.js$" | cut -d" " -f2)"
+    if [ -f scripts/verifier.js ] && [ "$etat" = "adaptee" ] && [ "$2" != "--forcer" ]; then
       echo "scripts/verifier.js existe déjà et diffère du modèle de Pulse : rien n'est remplacé. Comparez avec « pulse-aidd modele verifier.js », puis relancez « pulse-aidd installer-ci --forcer » pour le remplacer."
       exit 1
     fi
-    cp "$TPL/verifier.js" scripts/verifier.js
+    node "$RACINE/scripts/copies.js" --copier verifier scripts/verifier.js
     cp "$TPL/ci-verifications.yml.template" scripts/ci-verifications.exemple.yml
     echo "Installé : scripts/verifier.js (contrôle des secrets) et scripts/ci-verifications.exemple.yml (exemple de CI à adapter à l'outil retenu)" ;;
   installer-hook)
@@ -445,11 +458,11 @@ case "$1" in
       echo "scripts/verifier.js est une ancienne version, sans contrôle avant commit : mettez-le à jour d'abord : comparez-le avec « pulse-aidd modele verifier.js », puis lancez « pulse-aidd installer-ci --forcer », puis relancez pulse-aidd installer-hook."
       exit 1
     fi
-    [ -f "$racine/scripts/verifier.js" ] || { mkdir -p "$racine/scripts"; cp "$TPL/verifier.js" "$racine/scripts/verifier.js"; }
+    [ -f "$racine/scripts/verifier.js" ] || node "$RACINE/scripts/copies.js" --copier verifier "$racine/scripts/verifier.js"
     # Copie de secours, partagée par les worktrees (chemin absolu calculé par cd et pwd : --path-format demande Git 2.31) : un worktree créé avant le premier commit de scripts/verifier.js reste contrôlé.
     secours="$(cd "$(git rev-parse --git-common-dir)" && pwd)/pulse/verifier.js"
     mkdir -p "$(dirname "$secours")" "$(dirname "$crochet")"
-    cp "$TPL/verifier.js" "$secours"
+    node "$RACINE/scripts/copies.js" --copier verifier "$secours"
     cat > "$crochet" <<'CROCHET'
 #!/bin/sh
 # pulse-aidd: contrôle des secrets avant chaque commit (installé par /pulse:cicd ou /pulse:init).
