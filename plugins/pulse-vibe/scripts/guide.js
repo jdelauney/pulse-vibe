@@ -82,6 +82,8 @@ const fichiers = (d, motif) => (fs.existsSync(d) ? fs.readdirSync(d).filter((f) 
 const numero = (id) => Number(id.replace(/\D/g, ""));
 const premierNumero = (plan) => Math.min(...plan.taches.map((t) => numero(t.id)));
 
+const A_VALIDER = new Set();
+
 /** Lit tous les plans reconnus : par priorité de leur US, puis dans l'ordre de leurs tâches. */
 function lirePlans() {
   const plans = [];
@@ -92,6 +94,11 @@ function lirePlans() {
       const id = brut.toUpperCase();
       const source = `aidd_docs/tasks/${epic}/${f}`;
       const texte = fs.readFileSync(path.join(TACHES, epic, f), "utf8");
+      // Plan montré à la personne et pas encore accepté (« Statut : à valider ») : hors du guide, signalé avant la construction.
+      if (/\*\*Statut\*\*\s*:\s*[àa] valider/i.test(texte)) {
+        A_VALIDER.add(id);
+        continue;
+      }
       const taches = lireTaches(texte);
       if (taches.length === 0) {
         ignores.push(source);
@@ -157,7 +164,7 @@ function etapesAvantLePlan(plans) {
   const sansPlan = specsSansPlan(plans);
   lignes.push(`- ${coche(plans.length + sansPlan.length > 0)} Spécifier une US : \`/pulse:spec <US-XXX>\` → \`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md\``);
   lignes.push(`- ${coche(plans.length > 0)} Planifier sa spec : \`/pulse:plan <US-XXX>\` → \`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md\``);
-  for (const id of sansPlan) lignes.push(`- ⚠️ Spec sans plan : \`/pulse:plan ${id}\``);
+  for (const id of sansPlan) lignes.push(`- ⚠️ ${A_VALIDER.has(id) ? "Plan à valider" : "Spec sans plan"} : \`/pulse:plan ${id}\``);
   return lignes;
 }
 
@@ -343,6 +350,7 @@ const ancienEmplacement = () =>
 function generer() {
   const { plans, ignores } = lirePlans();
   if (plans.length === 0) {
+    if (A_VALIDER.size > 0) return { erreur: `Le plan de ${[...A_VALIDER].join(", ")} attend votre validation : /pulse:plan ${[...A_VALIDER][0]}.` };
     if (ignores.length > 0) {
       return { erreur: `Aucune tâche reconnue (${ignores.join(", ")}) : format attendu « - [ ] **T1 – Titre** · US-001 » sous « ## Tâches ».` };
     }

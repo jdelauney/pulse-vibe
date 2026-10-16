@@ -572,13 +572,13 @@ test("examen d'une tâche : chaque agent nommé par la référence est repliable
   }
 });
 
-test("plan : montré et validé avant d'être écrit, avec la ligne « plan validé » du journal", () => {
+test("plan : écrit « à valider », contrôlé par verifier-plan, montré, puis validé avec la ligne « plan validé » du journal", () => {
   const deroule = skillTexte("plan").split(/^## Processuss*$/m)[1];
-  const valider = deroule.indexOf("« Valider le plan (Recommandé) »");
-  const ecrire = deroule.indexOf("Écrire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`");
-  assert.ok(valider !== -1 && ecrire !== -1, "validation et écriture présentes");
-  assert.ok(valider < ecrire, "la validation précède l'écriture");
+  const etapes = ["Statut : à valider", "pulse-aidd verifier-plan US-XXX", "« Valider le plan (Recommandé) »", "« validé le AAAA-MM-JJ »"].map((t) => deroule.indexOf(t));
+  assert.ok(etapes.every((i) => i !== -1), "écriture, contrôle, validation et changement de statut présents");
+  assert.deepStrictEqual([...etapes].sort((a, b) => a - b), etapes, "dans cet ordre");
   assert.match(deroule, /« plan validé »/);
+  assert.match(lire(RACINE, "templates", "plan.md"), /^- \*\*Statut\*\* : à valider$/m);
 });
 
 test("règles communes : rondes de 4 questions, réponses libres en texte, mode découverte écrit une fois", () => {
@@ -1286,7 +1286,7 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(spirc, /SMOKE-TEST-US-XXX-<nom>\.md/);
   const auto = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(auto, /## 2 bis\. Tests essentiels \(rythme rapide\)/);
-  assert.match(auto, /\*\*Aucun test de l'interface par l'assistant\*\*/);
+  assert.match(auto, /\*\*Aucun test de l'interface pendant les tâches\*\*/);
   assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme rapide\*\*/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
@@ -1304,12 +1304,22 @@ test("spirc : une ronde de départ unique (rythme, options à cocher, tests, env
   assert.doesNotMatch(spirc, /« Comment avancer \? »/, "plus de question de rythme après le plan");
 });
 
-test("rythme rapide : aucun test de l'interface par l'assistant, le reviewer seul ; la fiche de fin d'US vérifie l'écran", () => {
+test("rythme rapide : aucun test de l'interface pendant les tâches ; avec spirc, une relecture et une vérification de toute l'US, puis la fiche de fin d'US", () => {
   const examen = lire(RACINE, "references", "examen.md");
-  assert.ok(examen.includes("**Rythme rapide** (règles communes § 1) : `pulse:reviewer` seul, sur le code ; ni verifier, ni application lancée ou interrogée"));
-  assert.ok(lire(RACINE, "references", "tests-automatiques.md").includes("**Aucun test de l'interface par l'assistant**"));
+  assert.ok(examen.includes("avec `/pulse:spirc`, aucun examen par tâche : toute l'US s'examine une fois, à la fin (`spirc/examen-us.md`)"));
+  assert.ok(examen.includes("Sinon : `pulse:reviewer` seul, sur le code de la tâche ; ni verifier, ni application lancée ou interrogée"));
+  const us = lire(RACINE, "skills", "spirc", "references", "examen-us.md");
+  assert.match(us, /lancer une fois toute la suite/);
+  assert.match(us, /`pulse:reviewer`[^\n]*`git diff <départ>\.\.HEAD`/);
+  assert.match(us, /`pulse:verifier`[^\n]*\*\*une seule fois\*\*[^\n]*sans la construction/);
+  assert.match(us, /US-<AAAA-MM-JJ>\.md/);
+  assert.match(us, /`pulse-aidd revue US-XXX`/);
+  assert.ok(lire(RACINE, "references", "tests-automatiques.md").includes("**Aucun test de l'interface pendant les tâches**"));
   assert.ok(!lire(RACINE, "agents", "verifier.md").includes("Vérification légère"));
-  assert.ok(skillTexte("spirc").includes("le reviewer seul en rythme rapide"));
+  const spirc = skillTexte("spirc");
+  assert.ok(spirc.includes("**Rythme rapide** : pas de [R] par tâche ; après [I] et ses contrôles, passer à [C]."));
+  assert.ok(spirc.includes("puis lancer `pulse-aidd reference spirc/examen-us.md` et l'appliquer"));
+  assert.match(skillTexte("commit"), /appelé par `\/pulse:spirc` en rythme rapide : continuer/);
 });
 
 test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {
@@ -1331,5 +1341,5 @@ test("tests essentiels : intégration et sécurité nécessaires seulement, ceux
   assert.ok(auto.includes("**Seulement les contrôles rapides**") && auto.includes("`next build`"), "pas de construction en rythme rapide");
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("tests essentiels : jamais de « construire »"));
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
-  assert.ok(skillTexte("spirc").includes("En rythme rapide, d'abord lancer une fois toute la suite de tests"));
+  assert.ok(lire(RACINE, "skills", "spirc", "references", "examen-us.md").includes("**Tests** : lancer une fois toute la suite (commande « Tester »)"));
 });

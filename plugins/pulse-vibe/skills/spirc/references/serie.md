@@ -1,0 +1,44 @@
+# Une série d'US : préparer d'abord, construire ensuite
+
+Utilisé par `/pulse:spirc` quand il reçoit plusieurs US (`/pulse:spirc US-001 US-003`) ou `version` (toutes les US Indispensables encore à faire). À expliquer en deux phrases, la première fois : « On prépare d'abord toutes ces user stories ensemble : leurs specs et leurs plans, que vous validez. Ensuite je les réalise à la suite, sans vous déranger, et vous revenez pour les questions mises de côté et les tests. »
+
+## 1. Composer la série
+
+- **Les US** : celles demandées (`version` : les US Indispensables de `docs/user-stories.md`), dans l'**ordre du parcours** (« Ordre de réalisation » du référentiel). Retirer celles dont le plan est terminé, en le disant en une ligne.
+- **Où en est chacune** : à spécifier, spec en brouillon, à planifier, plan à valider, prête (plan validé), en cours.
+- Annoncer la série en un tableau court (US, titre, ce qui reste), puis écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : Commande `/pulse:spirc <les US de la série>`, et une section « Série » qui donne l'état de chaque US (à préparer, prête, en cours, en attente : <la question exacte>, terminée). Ce fichier se met à jour à chaque changement d'état ; il est la mémoire de la série, à relire plutôt que la conversation.
+
+## 2. La ronde de départ, une seule fois
+
+La ronde de départ de `/pulse:spirc` vaut pour **toute la série** (rythme, options, tests, envoi), posée une seule fois. Une série se construit toujours **en mode autonome** (`-a`) : le dire dans l'annonce des choix.
+
+- **Envoi** : « Directement sur la version principale (Recommandé) » / « Ne rien envoyer pour l'instant ». Les US d'une série s'appuient souvent l'une sur l'autre : une version parallèle par US les séparerait. Pour une proposition à relire sur le site du dépôt, `/pulse:pr` le permet ensuite. Écrire la réponse dans la ligne « Envoi » de chaque plan.
+- **Dossier à part** : la série se réalise dans le dossier courant (le dossier principal, ou le dossier à part où la session se trouve déjà).
+
+## 3. Préparer, avec la personne
+
+Pour chaque US à préparer, dans l'ordre : § S (spec, puis maquettes si la personne le souhaite), puis § P (plan, contrôle `pulse-aidd verifier-plan`, validation). Les validations restent celles d'une US seule ; elles s'enchaînent sans autre question entre deux US. Enregistrer chaque spec et chaque plan validés (`docs: spec et plan de US-XXX`).
+
+Une US dont la spec reste en brouillon (la personne veut réfléchir) : la noter « en attente : <question> » et passer à la suivante ; les US qui en dépendent attendent aussi.
+
+À la fin de la préparation, annoncer : « Tout est prêt : <n> user stories, <m> tâches. Je les réalise maintenant, à la suite. Laissez cette fenêtre ouverte ; je vous appelle quand c'est fini, ou si une décision vous revient. » Chaque tâche fait travailler plusieurs assistants : le nombre de tâches donne l'ampleur du travail.
+
+## 4. Construire, sans la personne
+
+Pour chaque US prête, dans l'ordre : la boucle par tâche de `/pulse:spirc` en mode autonome ; en rythme rapide, puis l'examen de toute l'US (`pulse-aidd reference spirc/examen-us.md`). Le test groupé et l'envoi de chaque US attendent le retour de la personne (§ 5).
+
+- **Une décision revient à la personne** (question de besoin, « Bloqué – décision nécessaire », action manuelle, écart de besoin) : la noter dans la section « Série » (« US-002 : en attente : <la question exacte, avec ses choix> »), laisser ses tâches restantes, puis **passer à l'US suivante qui n'en dépend pas** (« Dépend de » du référentiel, « S'appuie sur » des plans, « Dépend de » des tâches). Une US qui en dépend attend aussi. Un constat Critique qui persiste après deux cycles : la même chose, « en attente : aide ».
+- **Entre deux US** : relire `in-progress.md` et les documents de l'US suivante (spec, plan, `docs/technical.md`) plutôt que s'appuyer sur la conversation.
+- **Arrêt** avant toute tâche « Mettre en ligne… » : elle se fait au retour, avec l'accord de la personne.
+
+## 5. Au retour de la personne
+
+Quand plus aucune US ne peut avancer seule :
+
+1. **Le point**, en une ligne par US : `US-001 ✅ prête à tester · US-002 ⏸ une question · US-003 ✅ prête à tester`.
+2. **Les questions en attente**, en une seule ronde (AskUserQuestion, 4 au plus ; au-delà, plusieurs rondes). Avec les réponses : reprendre la construction des US débloquées (§ 4), puis revenir ici.
+3. **Le test groupé, US par US**, dans l'ordre : le § « Test groupé » de `/pulse:spirc` pour chacune (une fiche par US), corrections comprises.
+4. **L'envoi**, selon la ligne « Envoi » des plans, une fois les tests concluants ; puis les ajouts à la mémoire, en une seule question pour toute la série.
+5. **Le récapitulatif** : celui de la « Fin » de `/pulse:spirc`, une ligne par tâche, groupées par US ; les US restées en attente et pourquoi. Effacer `in-progress.md` (`pulse-aidd travail-fini`) seulement quand toute la série est terminée.
+
+Prochaine étape : `/pulse:deploy` si la première version est terminée et pas encore en ligne, sinon `/pulse:spirc <les US restées en attente>`.

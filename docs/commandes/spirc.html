@@ -87,6 +87,7 @@
 <li><strong>Après <a href="us.html"><code>/pulse:us</code></a></strong> : la spec et le plan s'écrivent en chemin. Ou <strong>après <a href="plan.html"><code>/pulse:plan</code></a></strong> : la réalisation commence tout de suite.</li>
 <li><strong>Après un enregistrement</strong>, quand il reste des tâches : c'est l'étape que Pulse propose le plus souvent.</li>
 <li><strong>Pour une demande ponctuelle</strong> sur une US : une correction ou un petit ajout.</li>
+<li><strong>Pour toute la première version</strong> : <code>/pulse:spirc version</code> prépare avec vous les specs et les plans de toutes les US Indispensables, puis les réalise à la suite, sans vous déranger.</li>
 <li><strong>Pour reprendre</strong> après une pause ou un <code>/clear</code> : relancez <code>/pulse:spirc US-001</code>, la commande reprend à l'étape où elle s'était arrêtée.</li>
 </ul>
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour suivre une tâche de près, étape par étape, préférez <a href="implement.html"><code>/pulse:implement US-001 T3</code></a>.</p></aside>
@@ -95,11 +96,12 @@
 <section id="arguments">
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
-<pre class="commande"><code>/pulse:spirc &lt;US-XXX&gt; [T3 | &quot;une demande&quot;]</code></pre>
-<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Sans tâche ni demande : tout le plan de l'US.</p>
+<pre class="commande"><code>/pulse:spirc &lt;US-XXX&gt; [T3 | &quot;une demande&quot;] (sans tâche ni demande : tout le plan de l'US) | &lt;US-XXX US-YYY…&gt; | version</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
 <ul>
 <li><strong>L'US</strong> : celle dont vous réalisez le plan, par exemple <code>US-001</code>. Absente, Pulse liste les plans et propose aussi « Spécifier et planifier une autre US ».</li>
+<li><strong>Plusieurs US</strong> (<code>US-001 US-003</code>) ou <code>version</code> (toutes les US Indispensables encore à faire) : une série. Pulse prépare d'abord avec vous la spec et le plan de chacune ; puis il les réalise à la suite, en mode autonome. Une question qui vous revient met seulement son US de côté : les autres avancent. À votre retour : les questions mises de côté, en une fois, puis un test par US.</li>
 <li><strong>La portée</strong> (facultative) :
 <ul>
 <li>rien : toutes les tâches restantes du plan, dans l'ordre ;</li>
@@ -109,7 +111,7 @@
 <li><strong>Les raccourcis</strong> (facultatifs), placés avant l'US et regroupables (<code>-axw</code>) :
 <ul>
 <li><code>-a</code> : autonome. Les tâches s'enchaînent, les corrections se font seules, et vous testez tout à la fin, en un seul parcours.</li>
-<li><code>-f</code> : rapide. L'essentiel des tests, les tâches s'enchaînent, et vous testez toute l'US à la fin avec une seule fiche. Sans ce raccourci, la question « rapide ou complet » vous est posée au début (sauf après le parcours express, déjà réglé sur rapide).</li>
+<li><code>-f</code> : rapide. L'essentiel des tests, les tâches s'enchaînent, une seule relecture et une seule vérification pour toute l'US, puis vous testez toute l'US à la fin avec une seule fiche. Sans ce raccourci, la question « rapide ou complet » vous est posée au début (sauf après le parcours express, déjà réglé sur rapide).</li>
 <li><code>-t</code> : tests d'abord. Les tests de chaque tâche sont écrits avant son code.</li>
 <li><code>-x</code> : un contrôle de sécurité en plus, à chaque tâche.</li>
 <li><code>-w</code> : dans un dossier à part, sur sa propre branche.</li>
@@ -119,6 +121,7 @@
 <pre class="commande"><code>/pulse:spirc US-001</code></pre>
 <pre class="commande"><code>/pulse:spirc -a US-001</code></pre>
 <pre class="commande"><code>/pulse:spirc US-002 "le bouton Supprimer ne marche pas"</code></pre>
+<pre class="commande"><code>/pulse:spirc version</code></pre>
 </section>
 
 <section id="produit">
@@ -129,7 +132,7 @@
 <tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>La spec, si elle manquait.</td></tr>
 <tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan, s'il manquait ; puis les tâches cochées une à une, et le journal (plan validé, chaque enregistrement).</td></tr>
 <tr><td>Les fichiers de chaque tâche</td><td>Le code de l'appli.</td></tr>
-<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/…</code></td><td>Un rapport de relecture par tâche.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/…</code></td><td>Un rapport de relecture par tâche ; en rythme rapide, un seul pour toute l'US.</td></tr>
 <tr><td><code>docs/user-stories.md</code>, <code>US-XXX-&lt;nom&gt;.md</code></td><td>Pour une demande qui est un nouveau besoin : la nouvelle US.</td></tr>
 <tr><td><code>docs/prd.md</code></td><td>Une idée hors du périmètre, notée « En attente ».</td></tr>
 <tr><td><code>docs/technical.md</code></td><td>Les choix techniques, s'ils n'étaient pas encore faits.</td></tr>
@@ -179,6 +182,16 @@ Le test est-il concluant ?</p>
 <p data-role="outil">git commit -m "feat(T3): affiche les créneaux libres de la journée"</p>
 <p data-role="claude">T3 ✅ terminée · US-001 : 3/4
 Continuer avec T4 – Confirmer le rendez-vous ?</p>
+</div>
+<div class="conversation" data-titre="Exemple : toute la première version">
+<p data-role="vous">/pulse:spirc version</p>
+<p data-role="claude">On prépare d'abord ces 3 user stories ensemble : leurs specs et leurs plans, que vous validez. Ensuite je les réalise à la suite, sans vous déranger.
+US-001 Prendre rendez-vous · US-002 Voir mes rendez-vous · US-003 Annuler un rendez-vous</p>
+<p data-role="claude">Tout est prêt : 3 user stories, 8 tâches. Je les réalise maintenant, à la suite. Laissez cette fenêtre ouverte ; je vous appelle quand c'est fini, ou si une décision vous revient.</p>
+<p data-role="claude">US-001 ✅ prête à tester · US-002 ✅ prête à tester · US-003 ⏸ une question
+Un rendez-vous annulé la veille doit-il prévenir le client par e-mail ?</p>
+<p data-role="vous">Oui</p>
+<p data-role="claude">US-003 ✅ prête à tester. On passe aux tests : votre fiche pour US-001 (5 étapes, environ 5 minutes).</p>
 </div>
 <div class="conversation" data-titre="Exemple : une demande précise">
 <p data-role="vous">/pulse:spirc US-002 "le bouton Supprimer ne marche pas"</p>

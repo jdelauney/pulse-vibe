@@ -227,6 +227,10 @@ test("documents de cadrage : PRD (R10), outils (R11), identité facultative puis
 test("specs : la première US Indispensable de l'ordre de réalisation (R20), un brouillon d'abord (R17)", () => {
   const r = etat(projet(AVANT_US, PILE_CHOISIE));
   assert.deepStrictEqual([r.regle, r.prochaine], ["R20", "/pulse:spec US-002"], "US-002 vient avant US-001 dans l'ordre de réalisation");
+  assert.match(r.aussi[0], /^\/pulse:spirc version — /, "deux US Indispensables sans spec : la série est proposée");
+  const une = etat(projet({ ...AVANT_US, "aidd_docs/tasks/gerer-taches/SPEC-US-002-voir-liste.md": SPEC("verrouillée le 2026-10-08"), "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": PLAN("US-002", "- [x] **T1 – Voir** · US-002") }, PILE_CHOISIE));
+  assert.deepStrictEqual([une.regle, une.prochaine], ["R20", "/pulse:spec US-001"]);
+  assert.ok(!une.aussi.some((a) => a.startsWith("/pulse:spirc version")), "une seule US restante : pas de série");
   const brouillon = etat(projet({ ...AVANT_US, "aidd_docs/tasks/gerer-taches/SPEC-US-001-creer-tache.md": SPEC("brouillon") }, PILE_CHOISIE));
   assert.deepStrictEqual([brouillon.regle, brouillon.prochaine], ["R17", "/pulse:spec US-001"]);
   const tbd = SPEC("verrouillée le 2026-10-08").replace("créer une tâche", "créer une tâche\n- TBD: combien de caractères au plus ?");
@@ -493,6 +497,39 @@ test("pulse-aidd revue <Tn> : dernière relecture, rapport et où reprendre", ()
   const inconnue = revue({}, "T99");
   assert.deepStrictEqual([inconnue.tache, inconnue.etat, inconnue.reprendre], ["T99", "inconnue", "aucune"]);
   assert.strictEqual(etat(projet({}), "--revue").etat, "inconnue");
+});
+
+test("pulse-aidd revue <US-XXX> : la relecture de toute l'US (rythme rapide), rapport US-AAAA-MM-JJ.md", () => {
+  const PLAN_US = "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md";
+  const revue = (fichiers, id = "US-002") => etat(projet({ ...EN_COURS, ...fichiers }, PILE_CHOISIE), "--revue", id);
+  const sans = revue({});
+  assert.deepStrictEqual([sans.tache, sans.plan, sans.etat, sans.rapport, sans.reprendre], ["US-002", PLAN_US, "absente", "aucun", "examen"]);
+  // Les rapports des tâches (T2-…) ne comptent pas pour l'US.
+  assert.strictEqual(revue({ [`${REVUES}/T2-2026-10-07.md`]: RAPPORT("✅ Validé") }).reprendre, "examen");
+  const aTester = revue({ [`${REVUES}/US-2026-10-07.md`]: RAPPORT("✅ Validé", { test: MODELE_TEST }) }, "us-2");
+  assert.deepStrictEqual([aTester.etat, aTester.reprendre, aTester.rapport], ["a-tester", "test", `${REVUES}/US-2026-10-07.md`]);
+  assert.strictEqual(revue({ [`${REVUES}/US-2026-10-07.md`]: RAPPORT("✅ Validé") }).reprendre, "commit");
+  assert.strictEqual(revue({ [`${REVUES}/US-2026-10-07.md`]: RAPPORT("⚠️ À corriger") }).reprendre, "correction");
+  const inconnue = revue({}, "US-042");
+  assert.deepStrictEqual([inconnue.tache, inconnue.etat, inconnue.reprendre], ["US-042", "inconnue", "aucune"]);
+});
+
+test("plan « à valider » : le valider avant de le réaliser (R18), et le guide le tient à part", () => {
+  const plan = PLAN("US-002", "- [ ] **T1 – Afficher la page** · US-002").replace("## Tâches", "- **Statut** : à valider\n\n## Tâches");
+  const fichiers = { ...AVANT_US, ...SPECS_VALIDEES, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": plan };
+  const r = etat(projet(fichiers, PILE_CHOISIE));
+  assert.deepStrictEqual([r.regle, r.prochaine], ["R18", "/pulse:plan US-002"]);
+  assert.match(r.raison, /attend votre validation/);
+  const valide = etat(projet({ ...fichiers, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md": plan.replace("à valider", "validé le 2026-10-08") }, PILE_CHOISIE));
+  assert.notStrictEqual(valide.prochaine, "/pulse:plan US-002");
+  assert.doesNotMatch(valide.raison, /attend votre validation/);
+  const guide = (d) => spawnSync(process.execPath, [path.join(RACINE, "scripts", "guide.js")], { encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: d } });
+  assert.match(guide(projet(fichiers, PILE_CHOISIE)).stdout + guide(projet(fichiers, PILE_CHOISIE)).stderr, /Le plan de US-002 attend votre validation/);
+  const dossier = projet({ ...fichiers, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-001-creer-tache.md": PLAN("US-001", "- [ ] **T2 – Créer** · US-001") }, PILE_CHOISIE);
+  guide(dossier);
+  const index = fs.readFileSync(path.join(dossier, "docs", "guide", "index.md"), "utf8");
+  assert.match(index, /⚠️ Plan à valider : `\/pulse:plan US-002`/);
+  assert.doesNotMatch(index, /T1 – Afficher la page/);
 });
 
 test("pulse-aidd revue relaie vers le script et figure dans l'aide", { skip: spawnSync("bash", ["--version"]).error ? "bash absent" : false }, () => {

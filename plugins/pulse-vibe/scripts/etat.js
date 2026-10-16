@@ -14,7 +14,8 @@
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
 // Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests).
 // --revue <Tn> [<Tn>…] (`pulse-aidd revue <Tn>`) : la dernière relecture de chaque tâche et où reprendre (tache, statut, plan,
-// etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide.
+// etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide. --revue <US-XXX> : la relecture
+// de toute l'US (rythme rapide), même format sans « statut ».
 // Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
 "use strict";
 
@@ -214,7 +215,9 @@ function lireUs(racine) {
         const u = us(m[1]);
         const texte = lireSi(path.join(dossier, f)) || "";
         const revues = path.join(dossier, "revues", f.replace(/\.md$/i, ""));
-        u.plan = { taches: lireTaches(texte).map((t) => ({ ...t, revue: lireRevue(revues, t.id) })) };
+        // « Statut : à valider » : plan écrit par /pulse:plan, montré à la personne, pas encore accepté.
+        const aValider = /\*\*Statut\*\*\s*:\s*[àa] valider/i.test(texte);
+        u.plan = { aValider, taches: lireTaches(texte).map((t) => ({ ...t, revue: lireRevue(revues, t.id) })) };
         if (u.priorite === INCONNUE) u.priorite = rangPriorite(prioriteDuTexte(texte));
       }
     }
@@ -398,6 +401,8 @@ function decider(f) {
 
   const brouillon = f.us.find((u) => u.spec === "brouillon");
   if (brouillon) return verdict("R17", `/pulse:spec ${brouillon.id}`, `la spec de ${brouillon.id} a encore des questions ouvertes`);
+  const aValider = f.us.find((u) => u.plan && u.plan.aValider);
+  if (aValider) return verdict("R18", `/pulse:plan ${aValider.id}`, `le plan de ${aValider.id} attend votre validation`);
   const sansPlan = f.us.find((u) => u.spec === "verrouillee" && !u.plan);
   if (sansPlan) {
     if (d.design && !sansPlan.maquette) aussi.unshift(`/pulse:ui maquettes ${sansPlan.id} — dessiner ses écrans avant le plan (facultatif)`);
@@ -414,6 +419,9 @@ function decider(f) {
     return verdict("R19", `/pulse:spirc ${u.id}`, `${u.id} a des tâches à réaliser, à commencer par ${t.id} – ${t.titre}`);
   }
   const indispensable = f.us.find((u) => u.priorite === 0 && u.spec === "absente");
+  if (indispensable && f.us.filter((u) => u.priorite === 0 && u.spec === "absente").length > 1) {
+    aussi.unshift("/pulse:spirc version — préparer avec vous les specs et les plans de toute la première version, puis les réaliser à la suite");
+  }
   if (indispensable) return verdict("R20", `/pulse:spec ${indispensable.id}`, `${indispensable.id} (Indispensable) attend sa spec`);
   if (mvp.pret && f.enLigne && !f.securite) return verdict("R21", "/pulse:security", "la première version est en ligne : un audit de sécurité complet est conseillé");
   if (f.depotDistant === "relie" && !f.ci) aussi.push("/pulse:cicd — un contrôle automatique à chaque envoi (facultatif)");
@@ -427,11 +435,27 @@ function decider(f) {
 
 const REPRENDRE = { absente: "examen", "a-corriger": "correction", "a-tester": "test", validee: "commit", bloquee: "aide" };
 
-/** `pulse-aidd revue <Tn>` : la tâche dans les plans de aidd_docs/tasks/, sa dernière relecture et l'étape où reprendre. */
+/**
+ * `pulse-aidd revue <Tn>` : la tâche dans les plans de aidd_docs/tasks/, sa dernière relecture et l'étape où reprendre.
+ * `pulse-aidd revue <US-XXX>` : la relecture de toute l'US (rythme rapide, rapport `US-AAAA-MM-JJ.md`) dans le dossier
+ * des revues de son plan ; `reprendre` vaut alors examen, correction, test (le test groupé), commit (envoi) ou aide.
+ */
 function revueDeTache(racine, id) {
   const tache = String(id || "").trim().toUpperCase();
   const rel = (f) => path.relative(racine, f).split(path.sep).join("/");
   const taches = path.join(racine, "aidd_docs", "tasks");
+  if (/^US-?\d+$/.test(tache)) {
+    const us = normaliserUs(tache);
+    const planDe = (x) => (/^PLAN-SPEC-(US-\d+)-.+\.md$/i.exec(x) || [])[1];
+    for (const epic of dossiers(taches)) {
+      const dossier = path.join(taches, epic);
+      const f = fichiersDe(dossier).find((x) => planDe(x) && normaliserUs(planDe(x)) === us);
+      if (!f) continue;
+      const { etat, fichier } = derniereRevue(path.join(dossier, "revues", f.replace(/\.md$/i, "")), "US");
+      return { tache: us, plan: rel(path.join(dossier, f)), etat, rapport: fichier ? rel(fichier) : "aucun", reprendre: REPRENDRE[etat] };
+    }
+    return { tache: us, etat: "inconnue", reprendre: "aucune" };
+  }
   if (/^T\d+$/.test(tache)) {
     for (const epic of dossiers(taches)) {
       const dossier = path.join(taches, epic);
@@ -533,4 +557,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { lireFaits, decider, formater, sortieIllisible, lireOptions, derniereRevue, revueDeTache, formaterRevue };
+module.exports = { lireFaits, lireUs, decider, formater, sortieIllisible, lireOptions, derniereRevue, revueDeTache, formaterRevue };
