@@ -48,7 +48,7 @@ const PLAFONDS = {
   deploy: 36000, // mesure 33 877
   security: 39500, // mesure 37 291
   secrets: 39000, // mesure 36 989
-  refine: 44000, // mesure 41 433
+  refine: 46500, // mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   ui: 61500, // mesure 58 567
   rediger: 28500, // mesure 26 875
   seo: 52000, // mesure 49 096
@@ -91,7 +91,7 @@ const PLAFONDS_COMMANDE = {
   pr: 41000, // mesure 38 807
   prd: 34000, // mesure 32 244
   rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
-  refine: 51000, // mesure 48 370
+  refine: 54500, // mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 56000, // mesure 52 989
   secrets: 50000, // mesure 47 290

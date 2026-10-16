@@ -17,7 +17,7 @@ Lancer **en parallèle** (plusieurs appels Agent dans le même message) :
   Le verifier démarre lui-même l'application (commande « Lancer en local » de « Commandes du projet »), note l'adresse, puis l'arrête à la fin. Claude Code demande alors l'accord de la personne pour démarrer l'application et l'interroger : l'annoncer d'avance en une phrase (« Claude Code va vous demander l'accord pour lancer l'application et l'essayer : c'est ainsi que je prouve que chaque critère fonctionne. »).
 - Avec le **contrôle de sécurité à chaque tâche** (option `-x` de `/pulse:spirc`) : **`pulse:security-auditor`**, avec la consigne de charger la checklist sécurité (`pulse-aidd reference checklist-securite.md`) et de se limiter aux fichiers modifiés par la tâche.
 
-**Rythme rapide** (règles communes § 1) : `pulse:reviewer` seul, sur le code ; ni verifier, ni application lancée ou interrogée, ni test de l'interface pendant les tâches. Les tests de la tâche sont ceux lancés à la fin de sa réalisation. Chaque critère qui se voit à l'écran passe en ❓, vers la fiche de test de fin d'US ; la section « Vérification » du rapport porte « — (rythme rapide) ».
+**Rythme rapide** (règles communes § 1) : avec `/pulse:spirc`, aucun examen par tâche : toute l'US s'examine une fois, à la fin (`spirc/examen-us.md`). Sinon : `pulse:reviewer` seul, sur le code de la tâche ; ni verifier, ni application lancée ou interrogée, ni test de l'interface pendant les tâches. Les tests de la tâche sont ceux lancés à la fin de sa réalisation. Chaque critère qui se voit à l'écran passe en ❓, vers la fiche de test de fin d'US ; la section « Vérification » du rapport porte « — (rythme rapide) ».
 
 Un agent indisponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), en lecture seule, et le signaler. La relecture se fait de préférence dans un autre contexte que celui qui a écrit le code ; sinon, le dire à la personne.
 
@@ -41,7 +41,7 @@ Le **rapport de réalisation** présenté ensuite à la personne (règles commun
 
 Au moment du test : lancer l'application en arrière-plan (commande « lancer en local » de « Commandes du projet »), vérifier que l'adresse répond, puis donner à la personne le lien cliquable vers la fiche, sa durée et sa première étape. Les contrôles automatiques restent à l'assistant : la personne n'a aucune commande à taper. Arrêter l'application après sa réponse.
 
-**Test groupé** (mode autonome, rythme rapide) : une seule fiche, complète, pour toute l'US : `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui reprend dans l'ordre du plan les étapes de chaque tâche, gardées dans leurs rapports (en rythme rapide, tirées des critères d'acceptation des tâches et des scénarios `@manuel` de la spec).
+**Test groupé** (mode autonome, rythme rapide) : une seule fiche, complète, pour toute l'US : `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui reprend dans l'ordre du plan les étapes de chaque tâche, gardées dans leurs rapports (en rythme rapide, tirées de la section « Test manuel » du verifier de l'US). Les critères prouvés par le verifier y tiennent en une ligne ; les critères ❓ viennent d'abord.
 
 ## 4. Relecture de contrôle, après une correction
 

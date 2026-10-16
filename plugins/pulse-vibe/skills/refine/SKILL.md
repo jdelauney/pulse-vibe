@@ -2,7 +2,7 @@
 description: Ajuster le plan à partir des questions ou remarques de la personne - répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider
 argument-hint: "[<US-XXX>] \"vos questions ou remarques sur le plan\""
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(git status *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd verifier-plan *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(git status *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:refine – Ajuster le plan
@@ -85,6 +85,7 @@ Demander (AskUserQuestion) : « Appliquer ces changements (Recommandé) » / « 
 ### 4. Écrire
 
 - Appliquer **exactement** ce qui a été validé : le plan, puis les autres documents concernés, dans le format de chaque fichier.
+- Lancer `pulse-aidd verifier-plan US-XXX` : un constat « à corriger » né des changements se montre en une ligne, avec sa correction, validée comme à l'étape 3.
 - Une décision durable est apparue (ex. « pas de compte utilisateur dans la première version ») : proposer de la noter dans la mémoire (`aidd_docs/memory/project.md`, section « Décisions importantes »).
 - Le guide de réalisation (`docs/guide/`) se met à jour automatiquement ; lancer `pulse-aidd guide` pour afficher la prochaine étape.
 

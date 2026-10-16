@@ -110,7 +110,8 @@ En parallèle avec : aucune
 <h2>Risques et précautions</h2>
 <ul>
 <li><strong>Cette commande écrit seulement des documents.</strong> Le code viendra avec la réalisation des tâches.</li>
-<li><strong>Le plan est écrit après votre validation.</strong> Si vous demandez un changement, Pulse vous montre ce qui change, puis redemande.</li>
+<li><strong>Le plan compte seulement après votre validation.</strong> Pulse l'écrit d'abord « à valider », le vérifie, puis vous le montre ; il devient « validé » avec votre accord. Si vous demandez un changement, Pulse vous montre ce qui change, puis redemande.</li>
+<li><strong>Pulse vérifie le plan avant de vous le montrer.</strong> Un outil contrôle que chaque critère de votre user story est vérifié par une tâche, que chaque test prévu par la spec a sa tâche, et que les tâches s'enchaînent bien. Ce qui reste à trancher vous est montré en une ligne, avec sa raison.</li>
 <li><strong>La spec reste intacte.</strong> Le plan la lit sans la modifier ; un comportement qu'elle ne prévoit pas vous est présenté comme un ajout proposé.</li>
 <li><strong>Un nouvel outil vous est demandé.</strong> Pulse en introduit un seulement avec votre accord. Un paiement s'intègre d'abord en mode test.</li>
 </ul>
@@ -123,6 +124,7 @@ En parallèle avec : aucune
 <details class="probleme"><summary>Pulse me dit qu'il manque les choix techniques</summary><p>Le plan a besoin de <code>docs/technical.md</code> pour savoir comment construire. Lancez <a href="tech.html"><code>/pulse:tech</code></a>.</p></details>
 <details class="probleme"><summary>Le plan a trop de tâches</summary><p>Pulse vise 1 à 4 tâches par user story. Au-delà, il le signale et propose de découper la user story en deux avec <a href="us.html"><code>/pulse:us</code></a>, puis une spec et un plan pour chacune.</p></details>
 <details class="probleme"><summary>Je veux ajouter une fonctionnalité au plan</summary><p>C'est un changement de périmètre : Pulse la note « En attente » dans le PRD. Une fois le plan écrit, <a href="refine.html"><code>/pulse:refine</code></a> l'ajoutera.</p></details>
+<details class="probleme"><summary>Pulse me dit que le plan attend ma validation</summary><p>Le plan a été écrit et montré, mais pas encore accepté (la conversation s'est peut-être arrêtée). Relancez <code>/pulse:plan US-001</code> : Pulse le vérifie de nouveau et vous le remontre.</p></details>
 <details class="probleme"><summary>Un plan existe déjà avec des tâches terminées</summary><p>Pulse le garde tel quel, et vous propose seulement d'ajouter ou de réordonner les tâches restantes.</p></details>
 </section>
 

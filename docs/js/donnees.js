@@ -136,7 +136,7 @@ window.PULSE_WIKI = {
       "nom": "brainstorm",
       "etape": "decrire",
       "description": "Raconter l'idée par un entretien guidé et approfondi (arbre de décisions), produire le brief et le glossaire du projet",
-      "forme": "[votre idée en une phrase]",
+      "forme": "[votre idée en une phrase | vos documents de départ]",
       "note": ""
     },
     {
@@ -171,7 +171,7 @@ window.PULSE_WIKI = {
       "nom": "express",
       "etape": "demarrer",
       "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser",
-      "forme": "[votre idée en une phrase]",
+      "forme": "[votre idée en une phrase | vos documents de départ]",
       "note": ""
     },
     {
@@ -311,8 +311,8 @@ window.PULSE_WIKI = {
       "nom": "spirc",
       "etape": "construire",
       "description": "Enchaîner tout le travail d'une user story (spirc = Spécifier, Planifier, Implémenter, Relire, Commiter) - des assistants indépendants explorent, codent, relisent et vérifient ; je m'arrête pour votre accord et vous testez chaque tâche ; la spec et le plan s'écrivent d'abord s'ils manquent",
-      "forme": "<US-XXX> [T3 | \"une demande\"]",
-      "note": "sans tâche ni demande : tout le plan de l'US"
+      "forme": "<US-XXX> [T3 | \"une demande\"] (sans tâche ni demande : tout le plan de l'US) | <US-XXX US-YYY…> | version",
+      "note": ""
     },
     {
       "nom": "status",
