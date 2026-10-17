@@ -18,7 +18,7 @@ const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 // pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l'architecture ; mesure à la fin du plan « Corrections 4 » : 20 087 (plafond = mesure × 1,05, au 500 supérieur).
 const PLAFONDS_PACK = { implement: 21500, fix: 21500, spirc: 21500, "auto-fix": 21500 };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
-const PLAFONDS_AVEC_PACK = { implement: 65500, spirc: 54500 }; // implement : mesure 65 093 (pulse 0.48 : petit choix, règles communes § 1 ; avant, 64 704 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
+const PLAFONDS_AVEC_PACK = { implement: 65000, spirc: 54500 }; // implement : mesure 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
 
 for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   test(`pack : contexte ${commande} ≤ ${plafond} caractères, fiche sans architecture`, () => {
@@ -67,7 +67,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
   "boucle implement de 4 tâches": { plafond: 119000, /* mesure 112 943 (pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
-  "boucle spirc de 4 tâches": { plafond: 109000, /* mesure 108 501 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 103 017 (pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
+  "boucle spirc de 4 tâches": { plafond: 108500, /* mesure 103 017 (pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
   "tech, pack choisi en cours de commande": { plafond: 134500, parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
 
@@ -86,22 +86,22 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   "auto-fix": 49500, // mesure 46 786
   cicd: 65000, // mesure 61 680
   deploy: 66000, // mesure 62 576
-  express: 52000, // mesure 51 660 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 48 733
+  express: 51500, // mesure 48 733
   fix: 54500, // mesure 51 889
   implement: 88500, // mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
   perf: 100500, // mesure 95 315
   plan: 106000, // mesure 100 752
   rediger: 36500, // mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
-  refine: 92000, // mesure 91 733 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 86 865
+  refine: 91500, // mesure 86 865
   review: 40000, // mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 60000, // mesure 57 057
   secrets: 70500, // mesure 67 057
   security: 88000, // mesure 83 589
   seo: 102000, // mesure 96 880
   spec: 54000, // mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 90500, // mesure 90 158 (pulse 0.48 : questions en attente, petits choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  spirc: 91000, // mesure 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   tech: 134500, // mesure 127 942
-  test: 52500, // mesure 52 055 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
+  test: 52000, // mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 90000, // mesure 85 248
 };
 
