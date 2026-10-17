@@ -151,6 +151,7 @@ Ce qui a changé
 <li><strong>Une bibliothèque s'ajoute seulement avec votre accord</strong>, avec une version fixée.</li>
 <li><strong>Les décisions vous reviennent.</strong> Dès qu'un choix apparaît, Pulse s'arrête et vous présente les options et leurs conséquences.</li>
 <li>Claude Code vous demande votre accord pour lancer l'application et l'essayer pendant la relecture, et pour envoyer le travail sur le dépôt en ligne.</li>
+<li><strong>Le plan terminé, les tests qui ouvrent le site dans un navigateur tournent une fois.</strong> Un échec se corrige avant le récapitulatif, comme un problème grave.</li>
 </ul>
 <aside class="encadre encadre-attention"><p><strong>Attention :</strong> une tâche « Mettre en ligne… » ne se fait pas ici. Pulse s'arrête avant elle et vous propose <a href="deploy.html"><code>/pulse:deploy</code></a>.</p></aside>
 <aside class="encadre encadre-risque"><p><strong>Risque :</strong> sur la branche principale, chaque envoi peut mettre votre site en ligne à jour, si le déploiement automatique est en place. Pour tester avant de publier, choisissez au démarrage « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt ».</p></aside>
@@ -162,6 +163,7 @@ Ce qui a changé
 <details class="probleme"><summary>La boucle s'arrête sur une tâche</summary><p>Il y a un blocage : une question sur votre besoin, une action à faire vous-même (créer un compte, saisir une variable chez l'hébergeur), ou un contrôle qui reste en échec. Répondez ou suivez les étapes données, puis Pulse reprend. Si un problème grave persiste après deux corrections, il vous propose <a href="get-help.html"><code>/pulse:get-help</code></a>.</p></details>
 <details class="probleme"><summary>Il reste beaucoup d'erreurs rouges après la tâche</summary><p>Lancez <a href="auto-fix.html"><code>/pulse:auto-fix</code></a> : plusieurs assistants corrigent les erreurs des contrôles automatiques en même temps.</p></details>
 <details class="probleme"><summary>Pulse me demande de choisir les outils avant de coder</summary><p>Il faut d'abord savoir avec quoi construire. Lancez <a href="tech.html"><code>/pulse:tech</code></a> ; Pulse attend ce choix pour installer ou coder.</p></details>
+<details class="probleme"><summary>Pulse me renvoie vers <code>/pulse:spirc</code> pour une tâche « en pause »</summary><p>Cette tâche attend votre réponse à une question notée dans la section « Questions en attente » du plan, pendant une réalisation autonome. Lancez <a href="spirc.html"><code>/pulse:spirc US-XXX</code></a> : Pulse vous pose la question, puis reprend la tâche.</p></details>
 <details class="probleme"><summary>J'ai fermé la conversation au milieu du plan</summary><p>Rien n'est perdu. Relancez <code>/pulse:implement US-001</code> : une tâche en cours reprend à la bonne étape (relecture, correction, votre test ou enregistrement).</p></details>
 </section>
 

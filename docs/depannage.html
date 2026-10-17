@@ -72,6 +72,10 @@
 <pre class="commande"><code>/pulse:test</code></pre>
 <p>Page de la commande : <a href="commandes/test.html"><code>/pulse:test</code></a>.</p>
 </details>
+<details class="probleme"><summary>Le contrôle des types échoue dans <code>e2e/aides/accessibilite.ts</code> (projet Next.js plus ancien)</summary>
+<p>Deux versions d'un même outil de test se sont installées côte à côte, et elles ne se reconnaissent plus. Ce n'est pas une erreur de votre code. Copiez cette demande dans Claude Code : il applique la note de mise à niveau du pack Next.js, puis relance les contrôles.</p>
+<pre class="commande"><code>Applique la note « pulse-next 0.30.1 » des mises à niveau du pack (pulse-aidd pile reference migrations.md), puis relance npm run typecheck.</code></pre>
+</details>
 <details class="probleme"><summary>Les contrôles automatiques ont échoué après un envoi</summary>
 <p>Lancez <code>/pulse:status</code> : l'échec passe en tête de ses conseils, avec la commande à lancer, le plus souvent <code>/pulse:fix</code>.</p>
 <pre class="commande"><code>/pulse:status</code></pre>
