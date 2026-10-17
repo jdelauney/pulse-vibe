@@ -114,3 +114,12 @@ test("marqueur illisible : lire renvoie null, sans erreur", () => {
   assert.strictEqual(lire(d), null);
   assert.strictEqual(lancer(d).status, 0);
 });
+
+test("--rappel : la racine vient de CLAUDE_PROJECT_DIR quand elle est donnée", () => {
+  const d = projet();
+  const ailleurs = projet();
+  lancer(d, "debut", "US-009", "--commande", "spirc", "--rythme", "rapide");
+  const r = spawnSync("node", [SCRIPT, "--rappel"], { encoding: "utf8", cwd: ailleurs, env: { ...process.env, CLAUDE_PROJECT_DIR: d } });
+  assert.match(r.stdout, /US-009/);
+  assert.strictEqual(lancer(ailleurs, "--rappel").stdout, "");
+});

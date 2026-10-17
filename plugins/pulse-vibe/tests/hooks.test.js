@@ -66,3 +66,12 @@ test("la description de hooks.json cite le contrôle de fin de tour", () => {
   const description = JSON.parse(fs.readFileSync(path.join(RACINE, "hooks", "hooks.json"), "utf8")).description;
   assert.match(description, /contrôle de fin de tour/);
 });
+
+test("rappel après compactage et notification pendant une réalisation", () => {
+  const compact = (HOOKS.SessionStart || []).find((h) => h.matcher === "compact");
+  assert.ok(compact, "entrée SessionStart compact");
+  assert.ok(compact.hooks.some((x) => x.args && /realisation\.js$/.test(x.args[0]) && x.args.includes("--rappel")));
+  const notif = (HOOKS.Notification || []).find((h) => h.matcher === "idle_prompt|permission_prompt");
+  assert.ok(notif, "entrée Notification");
+  assert.ok(notif.hooks.some((x) => x.args && /notifier\.js$/.test(x.args[0])));
+});
