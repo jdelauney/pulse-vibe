@@ -3,7 +3,7 @@
 //
 // Chaque écriture (Write, Edit, MultiEdit) est notée dans un relevé, rangé dans un dossier
 // temporaire de la machine (jamais dans le projet) : `fin-de-tour.js` le lit en fin de tour
-// pour contrôler seulement ce qui a changé, puis l'efface. Les chemins sont notés relatifs à la
+// pour contrôler seulement ce qui a changé, puis marque contrôlée la part lue. Les chemins sont notés relatifs à la
 // racine Git, avec des `/` sur toutes les plateformes, comme les règles les comparent.
 // Une écriture faite dans un sous-agent est notée sous la clé de l'agent et sous celle de la session.
 "use strict";
@@ -31,31 +31,46 @@ function dossierEtat(racine) {
   return path.join(base, crypto.createHash("sha1").update(nom).digest("hex").slice(0, 16));
 }
 
-// Deux fichiers par clé : les fichiers touchés (une ligne par chemin, ajoutée sans relire : des
-// processus en parallèle ne perdent rien) et les relances (écrites par le seul hook de fin de tour).
+// Trois fichiers par clé : les fichiers touchés (une ligne par chemin, ajoutée sans relire : des
+// processus en parallèle ne perdent rien), les relances et la part déjà contrôlée du relevé (en
+// octets), ces deux-là écrites par le seul hook de fin de tour. Le hook de fin de tour ne réécrit
+// jamais le relevé : il avance la part contrôlée, et une écriture notée entre-temps reste à contrôler.
 const fichiersDe = (racine, k) => path.join(dossierEtat(racine), `${k}.fichiers`);
 const relancesDe = (racine, k) => path.join(dossierEtat(racine), `${k}.relances`);
+const lusDe = (racine, k) => path.join(dossierEtat(racine), `${k}.lus`);
 
-function lire(racine, k) {
-  let fichiers = [];
-  let relances = 0;
+const entier = (fichier) => {
   try {
-    fichiers = [...new Set(fs.readFileSync(fichiersDe(racine, k), "utf8").split("\n").filter(Boolean))];
+    const n = parseInt(fs.readFileSync(fichier, "utf8"), 10);
+    return Number.isInteger(n) && n > 0 ? n : 0;
+  } catch (e) {
+    return 0;
+  }
+};
+
+/** Les fichiers pas encore contrôlés, les relances, et `lu` : la taille du relevé lu, lignes complètes seulement. */
+function lire(racine, k) {
+  let brut = Buffer.alloc(0);
+  try {
+    brut = fs.readFileSync(fichiersDe(racine, k));
   } catch (e) {
     // pas de relevé
   }
-  try {
-    const n = parseInt(fs.readFileSync(relancesDe(racine, k), "utf8"), 10);
-    if (Number.isInteger(n) && n > 0) relances = n;
-  } catch (e) {
-    // aucune relance
-  }
-  return { fichiers, relances };
+  const lu = brut.lastIndexOf(10) + 1;
+  let debut = entier(lusDe(racine, k));
+  if (debut > lu) debut = 0; // relevé recréé depuis
+  const fichiers = [...new Set(brut.subarray(debut, lu).toString("utf8").split("\n").filter(Boolean))];
+  return { fichiers, relances: entier(relancesDe(racine, k)), lu };
 }
 
 function ecrire(racine, k, etat) {
   if (!k) return;
   fs.mkdirSync(dossierEtat(racine), { recursive: true });
+  try {
+    fs.unlinkSync(lusDe(racine, k));
+  } catch (e) {
+    // rien de contrôlé
+  }
   const fichiers = [...new Set(etat.fichiers || [])];
   fs.writeFileSync(fichiersDe(racine, k), fichiers.map((x) => `${x}\n`).join(""));
   fs.writeFileSync(relancesDe(racine, k), String(etat.relances || 0));
@@ -90,10 +105,27 @@ function noter(entree, racine) {
 const lireTour = (entree, racine) => lire(racine, cle(entree));
 const ecrireTour = (entree, racine, etat) => ecrire(racine, cle(entree), etat);
 
+/** Le nombre de blocages de suite, seul : le relevé reste tel quel. */
+function ecrireRelances(entree, racine, n) {
+  const k = cle(entree);
+  if (!k) return;
+  fs.mkdirSync(dossierEtat(racine), { recursive: true });
+  fs.writeFileSync(relancesDe(racine, k), String(n || 0));
+}
+
+/** Marque contrôlée la part du relevé lue (`lu` de lireTour) et remet les relances à zéro ; la suite reste à contrôler. */
+function marquerLus(entree, racine, lu) {
+  const k = cle(entree);
+  if (!k) return;
+  fs.mkdirSync(dossierEtat(racine), { recursive: true });
+  fs.writeFileSync(lusDe(racine, k), String(lu || 0));
+  fs.writeFileSync(relancesDe(racine, k), "0");
+}
+
 function effacerTour(entree, racine) {
   const k = cle(entree);
   if (!k) return;
-  for (const f of [fichiersDe(racine, k), relancesDe(racine, k)]) {
+  for (const f of [fichiersDe(racine, k), relancesDe(racine, k), lusDe(racine, k)]) {
     try {
       fs.unlinkSync(f);
     } catch (e) {
@@ -112,4 +144,4 @@ function racineGit(cwd) {
   }
 }
 
-module.exports = { cle, dossierEtat, noter, lireTour, ecrireTour, effacerTour, racineGit };
+module.exports = { cle, dossierEtat, noter, lireTour, ecrireTour, ecrireRelances, marquerLus, effacerTour, racineGit };

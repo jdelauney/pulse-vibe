@@ -28,7 +28,7 @@ test("cle : session seule, ou session et agent ; valeurs filtrées", () => {
 test("noter : un chemin absolu Windows devient relatif à la racine, avec des /", () => {
   const e = { session_id: "s1", tool_input: { file_path: "E:\\projet\\src\\a.ts" } };
   tour.noter(e, "E:/projet");
-  assert.deepStrictEqual(tour.lireTour(e, "E:/projet"), { fichiers: ["src/a.ts"], relances: 0 });
+  assert.deepStrictEqual(tour.lireTour(e, "E:/projet"), { fichiers: ["src/a.ts"], relances: 0, lu: 9 });
 });
 
 test("noter : lecteur en casse différente accepté ; chemin hors du projet ignoré ; doublon noté une fois", () => {
@@ -65,8 +65,32 @@ test("ecrireTour / effacerTour : les relances sont conservées puis le relevé s
   tour.ecrireTour(e, racine, { fichiers: ["a.ts"], relances: 2 });
   assert.strictEqual(tour.lireTour(e, racine).relances, 2);
   tour.effacerTour(e, racine);
-  assert.deepStrictEqual(tour.lireTour(e, racine), { fichiers: [], relances: 0 });
+  assert.deepStrictEqual(tour.lireTour(e, racine), { fichiers: [], relances: 0, lu: 0 });
   tour.effacerTour(e, racine);
+});
+
+test("ecrireRelances / marquerLus : le relevé n'est jamais réécrit, une écriture notée entre lecture et marque reste à contrôler", () => {
+  const racine = "E:/projet5";
+  const e = (f) => ({ session_id: "s10", tool_input: { file_path: `E:\\projet5\\${f}` } });
+  tour.noter(e("a.ts"), racine);
+  const lu = tour.lireTour(e(""), racine);
+  assert.deepStrictEqual(lu.fichiers, ["a.ts"]);
+  tour.noter(e("b.ts"), racine); // écrit par un autre processus pendant le contrôle
+  tour.ecrireRelances(e(""), racine, 1);
+  assert.deepStrictEqual(tour.lireTour(e(""), racine).fichiers, ["a.ts", "b.ts"]);
+  assert.strictEqual(tour.lireTour(e(""), racine).relances, 1);
+  tour.marquerLus(e(""), racine, lu.lu);
+  assert.deepStrictEqual(tour.lireTour(e(""), racine).fichiers, ["b.ts"]);
+  assert.strictEqual(tour.lireTour(e(""), racine).relances, 0);
+  tour.noter(e("a.ts"), racine);
+  assert.deepStrictEqual(tour.lireTour(e(""), racine).fichiers, ["b.ts", "a.ts"]);
+  // Une ligne en cours d'écriture (sans fin de ligne) n'est pas comptée comme lue.
+  fs.appendFileSync(path.join(tour.dossierEtat(racine), "s10.fichiers"), "c.t");
+  const partiel = tour.lireTour(e(""), racine);
+  tour.marquerLus(e(""), racine, partiel.lu);
+  fs.appendFileSync(path.join(tour.dossierEtat(racine), "s10.fichiers"), "s\n");
+  assert.deepStrictEqual(tour.lireTour(e(""), racine).fichiers, ["c.ts"]);
+  tour.effacerTour(e(""), racine);
 });
 
 test("racineGit : la racine d'un dépôt, null hors dépôt", () => {

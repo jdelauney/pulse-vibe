@@ -11,7 +11,11 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const AGENTS_QUI_ECRIVENT = ["pulse:implementer", "pulse:fixer", "pulse:test-writer"];
+// Agents qui écrivent (avec ou sans préfixe « pulse: ») ; test-writer écrit des tests d'abord, qui
+// échouent par conception : ses fichiers passent les règles et les secrets, pas les contrôles rapides.
+const AGENTS_QUI_ECRIVENT = ["implementer", "fixer", "test-writer"];
+const AGENTS_CONTROLES_RAPIDES = ["implementer", "fixer"];
+const typeAgent = (t) => (typeof t === "string" ? t.split(":").pop() : "");
 const RELANCES_MAX = 2;
 const DELAI_S = 60;
 const TAILLE_MAX = 512 * 1024;
@@ -81,7 +85,13 @@ function tacheEnCours(racine) {
     }
     for (const p of plans) {
       let dans = false;
-      for (const ligne of fs.readFileSync(path.join(taches, d.name, p), "utf8").split(/\r?\n/)) {
+      let texte = "";
+      try {
+        texte = fs.readFileSync(path.join(taches, d.name, p), "utf8");
+      } catch (e) {
+        continue; // plan illisible : les autres comptent
+      }
+      for (const ligne of texte.split(/\r?\n/)) {
         if (/^##\s/.test(ligne)) dans = /^##\s+Tâches\s*$/.test(ligne);
         else if (dans && /^- \[~\]\s+\*\*T\d+/.test(ligne)) return true;
       }
@@ -149,8 +159,9 @@ function lancerControles(racine, commandes) {
       // sortie illisible
     }
     if (r.error || r.signal || r.status === null || r.status === DEPASSE) continue; // délai dépassé ou lancement impossible
-    if (r.status === 0 || r.status === 127 || INTROUVABLE.test(texte)) continue;
-    const lignes = texte.replace(/\s+$/, "").split(/\r?\n/).slice(-LIGNES_SORTIE).join("\n");
+    const lignesSortie = texte.replace(/\s+$/, "").split(/\r?\n/);
+    if (r.status === 0 || r.status === 127 || r.status === 9009 || INTROUVABLE.test(lignesSortie.slice(-5).join("\n"))) continue;
+    const lignes = lignesSortie.slice(-LIGNES_SORTIE).join("\n");
     constats.push(`Le contrôle automatique \`${commande}\` échoue :\n\`\`\`\n${lignes}\n\`\`\``);
   }
   return constats;
@@ -166,7 +177,8 @@ function principal() {
   const entree = JSON.parse(fs.readFileSync(0, "utf8"));
   if (!entree || typeof entree !== "object") return;
   const evenement = entree.hook_event_name === "SubagentStop" ? "SubagentStop" : "Stop";
-  if (evenement === "SubagentStop" && (!AGENTS_QUI_ECRIVENT.includes(entree.agent_type) || !entree.agent_id)) return;
+  const agent = typeAgent(entree.agent_type);
+  if (evenement === "SubagentStop" && (!AGENTS_QUI_ECRIVENT.includes(agent) || !entree.agent_id)) return;
   // Le relevé de la session sert au seul hook Stop ; un sous-agent ne touche que le sien.
   const cleEntree = evenement === "Stop" ? { session_id: entree.session_id } : entree;
   const tour = require("./tour");
@@ -180,20 +192,22 @@ function principal() {
   const etat = tour.lireTour(cleEntree, racine);
   if (!etat.fichiers.length) return;
   const constats = constatsFichiers(racine, etat.fichiers);
-  if (tacheEnCours(racine)) constats.push(...lancerControles(racine, controlesRapides(racine)));
-  if (!constats.length) return tour.effacerTour(cleEntree, racine);
+  const rapides = evenement === "Stop" || AGENTS_CONTROLES_RAPIDES.includes(agent);
+  if (rapides && tacheEnCours(racine)) constats.push(...lancerControles(racine, controlesRapides(racine)));
+  // Le relevé n'est jamais réécrit (des écritures en parallèle s'y ajoutent) : seule la part lue est marquée contrôlée.
+  if (!constats.length) return tour.marquerLus(cleEntree, racine, etat.lu);
 
   // stop_hook_active : seulement un indice, quand le compteur a été perdu.
   const relances = Math.max(etat.relances, entree.stop_hook_active === true ? 1 : 0);
   if (relances >= RELANCES_MAX) {
-    tour.effacerTour(cleEntree, racine);
+    tour.marquerLus(cleEntree, racine, etat.lu);
     const contexte =
       `Pulse a déjà bloqué ${RELANCES_MAX} fois la fin de ce tour. Ces points restent à corriger :\n${liste(constats)}\n` +
       "Dites simplement à la personne ce qui reste à corriger, sans annoncer que le travail est terminé.";
     fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: evenement, additionalContext: contexte } }));
     return;
   }
-  tour.ecrireTour(cleEntree, racine, { fichiers: etat.fichiers, relances: relances + 1 });
+  tour.ecrireRelances(cleEntree, racine, relances + 1);
   const raison =
     `Pulse a contrôlé les fichiers écrits pendant ce tour et trouvé des points à corriger :\n${liste(constats)}\n` +
     "Corrigez ces points, puis relancez `pulse-aidd verifier`. Expliquez ensuite le blocage à la personne en une phrase simple.";
