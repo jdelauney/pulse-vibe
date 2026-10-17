@@ -7,6 +7,8 @@ Pulse propose lui-même quelques contrôles, au moment où la règle devient uti
 - **Oui** : ajouter la ligne du contrôle dans « Conventions propres au projet » de `aidd_docs/memory/technical.md`.
 - **Non** : ajouter dans la même section `- Contrôle écarté : <identifiant> (AAAA-MM-JJ)`. Un contrôle écarté ou déjà présent ne se repropose pas.
 
+**Ligne avec `sauf`** : avant de l'écrire, lancer `pulse-aidd copies`. Avec `verifier: ancienne`, la copie du contrôle avant enregistrement ne connaît pas encore `sauf` : proposer d'abord sa mise à jour, `pulse-aidd copies --mettre-a-jour` (Claude Code demande l'accord de la personne). Avec `verifier: adaptee`, écrire la ligne sans `sauf` seulement si le motif reste sûr sans exception ; sinon, l'expliquer en une phrase et garder la règle comme consigne.
+
 ## `couleurs-variables`
 
 - **Moment** : `/pulse:ui identite`, une fois `docs/design.md` écrit et l'identité traduite dans le code.

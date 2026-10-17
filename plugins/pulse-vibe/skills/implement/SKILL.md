@@ -83,7 +83,7 @@ Si une tâche bloque (question de besoin, action manuelle en attente, contrôle 
 Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 « **T3 – Titre**. Je vais : … (2 à 4 puces). Fichiers concernés : … »
 
-**Marqueur de réalisation** : avant la première tâche, `pulse-aidd realisation debut <US-XXX> --commande implement --rythme complet` ; à chaque étape, `pulse-aidd realisation etape <Tn> <étape>` (`test` pour les tests d'abord, `realisation`, puis dans la boucle `examen` et `commit`) ; avant le bloc de fin de commande, `pulse-aidd realisation fin`.
+**Marqueur de réalisation** : avant la première tâche, `pulse-aidd realisation debut <US-XXX> --commande implement --rythme <complet|rapide>` (le rythme de cette réalisation : celui du profil, ou celui choisi au départ quand le profil dit « à choisir ») ; à chaque étape, `pulse-aidd realisation etape <Tn> <étape>` (`test` pour les tests d'abord, `realisation`, puis dans la boucle `examen` et `commit`) ; avant le bloc de fin de commande, `pulse-aidd realisation fin`.
 
 ### 3. Réaliser
 
