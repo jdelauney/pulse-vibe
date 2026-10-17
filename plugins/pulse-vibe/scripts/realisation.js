@@ -89,7 +89,8 @@ function main(args, racine) {
   } else if (action === "fin") {
     try { fs.rmSync(fichier(racine), { force: true }); } catch { /* déjà absent */ }
   } else if (action === "--rappel") {
-    const t = rappel(racine);
+    // Hook SessionStart (compact) : le dossier du projet vient de Claude Code.
+    const t = rappel(process.env.CLAUDE_PROJECT_DIR || racine);
     if (t) console.log(t);
   } else {
     const e = lire(racine);
