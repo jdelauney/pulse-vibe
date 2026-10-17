@@ -89,3 +89,59 @@ test("avant commit (--index) : seuls les fichiers prêts à être enregistrés, 
   assert.match(r.stderr, /src\/neuf\.js : enfreint/);
   assert.doesNotMatch(r.stderr, /ancien\.js/, "fichier non préparé : hors du contrôle avant commit");
 });
+
+const REGLES = path.join(__dirname, "..", "scripts", "regles.js");
+const COULEURS = (suite) => `- Couleurs en variables. — Contrôle : interdit \`/#[0-9a-fA-F]{3,8}\\b/\` dans ${suite}`;
+
+test("sauf : la portée exclue n'est pas contrôlée", () => {
+  const d = projet({
+    "aidd_docs/memory/technical.md": MEMOIRE([COULEURS("`*.css` sauf `app/globals.css`")]),
+    "app/globals.css": ":root { --c: #fff; }\n",
+    "app/page.css": "p { color: #000; }\n",
+  });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /app\/page\.css : enfreint/);
+  assert.doesNotMatch(r.stderr, /app\/globals\.css/);
+});
+
+test("sauf avec plusieurs portées séparées par des virgules", () => {
+  const d = projet({
+    "aidd_docs/memory/technical.md": MEMOIRE([COULEURS("`*.css` sauf `app/globals.css`, `theme/`")]),
+    "app/globals.css": "a { color: #fff; }\n",
+    "theme/sombre.css": "a { color: #111; }\n",
+    "app/page.css": "p { color: #000; }\n",
+  });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /app\/page\.css : enfreint/);
+  assert.doesNotMatch(r.stderr, /globals\.css|theme\//);
+});
+
+test("verifier.js contient exactement le bloc de regles.js", () => {
+  const extraire = (f) => {
+    const s = fs.readFileSync(f, "utf8");
+    return s.slice(s.indexOf("// DEBUT-REGLES"), s.indexOf("// FIN-REGLES"));
+  };
+  const bloc = extraire(REGLES);
+  assert.ok(bloc.length > 100, "bloc présent");
+  assert.strictEqual(extraire(VERIFIER), bloc);
+});
+
+test("analyserRegles et enfreintes sans lecture de fichier", () => {
+  const { analyserRegles, enfreintes, lireRegles } = require(REGLES);
+  const regles = analyserRegles(MEMOIRE(["- Pas de console.log. — Contrôle : interdit `console.log(` dans `src/` sauf `src/debug/`", "- Une ligne libre."]));
+  assert.strictEqual(regles.length, 1);
+  assert.strictEqual(regles[0].exclusions.length, 1);
+  assert.deepStrictEqual(
+    enfreintes(regles, [
+      { fichier: "src/a.js", contenu: "console.log(1)" },
+      { fichier: "src/debug/b.js", contenu: "console.log(2)" },
+      { fichier: "aidd_docs/c.md", contenu: "console.log(3)" },
+    ]),
+    ["src/a.js : enfreint la règle du projet « Pas de console.log. » (console.log( est interdit ici)."]
+  );
+  assert.deepStrictEqual(lireRegles(path.join(os.tmpdir(), "pulse-regles-absent")), []);
+  const d = projet({ "aidd_docs/memory/technical.md": MEMOIRE(["- R. — Contrôle : interdit `x` dans `src/`"]) });
+  assert.strictEqual(lireRegles(d).length, 1, "racine explicite");
+});

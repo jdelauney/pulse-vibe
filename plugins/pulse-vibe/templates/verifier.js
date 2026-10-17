@@ -302,11 +302,13 @@ function controlerScenarios(erreurs) {
 
 // ---------------------------------------------------------------- Règles du projet
 
+// DEBUT-REGLES
+const enSlash = (p) => p.split(path.sep).join("/");
 const echapper = (s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&");
 
 /** Une portée (« src/prix/ », « src/app/**\/page.tsx », « *.ts ») en expression régulière sur un chemin relatif. */
 function porteeEnRegex(portee) {
-  const p = versSlash(portee.trim()).replace(/^\.\//, "");
+  const p = enSlash(portee.trim()).replace(/^\.\//, "");
   if (p.endsWith("/")) return new RegExp("^" + echapper(p));
   if (!/[*?]/.test(p)) return new RegExp("^" + echapper(p) + "(?:/|$)");
   const corps = echapper(p)
@@ -319,19 +321,16 @@ function porteeEnRegex(portee) {
   return new RegExp("^" + (p.includes("/") ? "" : "(?:.*/)?") + corps + "$");
 }
 
-/** Les règles contrôlées de aidd_docs/memory/technical.md : « - <règle> — Contrôle : interdit|obligatoire `motif` dans `portée`[, `portée`] ». */
-function lireRegles() {
-  let texte;
-  try {
-    texte = fs.readFileSync(path.join("aidd_docs", "memory", "technical.md"), "utf8");
-  } catch (e) {
-    return [];
-  }
+/** Les règles contrôlées d'un texte : « - <règle> — Contrôle : interdit|obligatoire `motif` dans `portée`[, `portée`][ sauf `portée`[, `portée`]] ». */
+function analyserRegles(texte) {
   const regles = [];
   for (const ligne of texte.split(/\r?\n/)) {
     const m = /^\s*[-*]\s+(.*?)\s+[—–-]\s+Contr[ôo]le\s*:\s*(interdit|obligatoire)\s+`([^`]+)`\s+dans\s+(.+)$/i.exec(ligne);
     if (!m) continue;
-    const portees = [...m[4].matchAll(/`([^`]+)`/g)].map((x) => porteeEnRegex(x[1]));
+    const [dans, sauf = ""] = m[4].split(/\s+sauf\s+/i);
+    const enRegex = (s) => [...s.matchAll(/`([^`]+)`/g)].map((x) => porteeEnRegex(x[1]));
+    const portees = enRegex(dans);
+    const exclusions = enRegex(sauf);
     // Un motif /…/ est une expression régulière ; sinon, un texte à trouver tel quel.
     const re = /^\/(.+)\/([a-z]*)$/.exec(m[3]);
     let motif = null;
@@ -340,22 +339,39 @@ function lireRegles() {
     } catch (e) {
       continue;
     }
-    if (portees.length) regles.push({ regle: m[1].trim(), sorte: m[2].toLowerCase(), brut: m[3], motif, portees });
+    if (portees.length) regles.push({ regle: m[1].trim(), sorte: m[2].toLowerCase(), brut: m[3], motif, portees, exclusions });
   }
   return regles;
 }
 
-/** Contrôle 4 : ajoute aux erreurs chaque fichier lu qui enfreint une règle contrôlée du projet. */
-function controlerRegles(lus, erreurs) {
-  for (const r of lireRegles()) {
+/** Les règles contrôlées de aidd_docs/memory/technical.md, sous la racine donnée. */
+function lireRegles(racine = ".") {
+  try {
+    return analyserRegles(fs.readFileSync(path.join(racine, "aidd_docs", "memory", "technical.md"), "utf8"));
+  } catch (e) {
+    return [];
+  }
+}
+
+/** Les messages des fichiers lus ({ fichier, contenu }) qui enfreignent une règle contrôlée. */
+function enfreintes(regles, lus) {
+  const messages = [];
+  for (const r of regles) {
     for (const { fichier, contenu } of lus) {
-      const chemin = versSlash(fichier);
-      if (chemin.startsWith("aidd_docs/") || !r.portees.some((p) => p.test(chemin))) continue;
+      const chemin = enSlash(fichier);
+      if (chemin.startsWith("aidd_docs/") || !r.portees.some((p) => p.test(chemin)) || r.exclusions.some((p) => p.test(chemin))) continue;
       const present = r.motif ? r.motif.test(contenu) : contenu.includes(r.brut);
-      if (r.sorte === "interdit" && present) erreurs.push(`${chemin} : enfreint la règle du projet « ${r.regle} » (${r.brut} est interdit ici).`);
-      if (r.sorte === "obligatoire" && !present) erreurs.push(`${chemin} : la règle du projet « ${r.regle} » demande ${r.brut} dans ce fichier.`);
+      if (r.sorte === "interdit" && present) messages.push(`${chemin} : enfreint la règle du projet « ${r.regle} » (${r.brut} est interdit ici).`);
+      if (r.sorte === "obligatoire" && !present) messages.push(`${chemin} : la règle du projet « ${r.regle} » demande ${r.brut} dans ce fichier.`);
     }
   }
+  return messages;
+}
+// FIN-REGLES
+
+/** Contrôle 4 : ajoute aux erreurs chaque fichier lu qui enfreint une règle contrôlée du projet. */
+function controlerRegles(lus, erreurs) {
+  erreurs.push(...enfreintes(lireRegles(), lus));
 }
 
 function principal() {
