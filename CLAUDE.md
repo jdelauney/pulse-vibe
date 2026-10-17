@@ -12,7 +12,7 @@ Ce dépôt est le catalogue Claude Code `pulseia` (méthode Pulse, en français)
 | `.github/workflows/` | Tests des plugins à chaque envoi (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur qu'il utilise, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine aux dernières versions ; évaluations du cœur (`evals.yml`) lancées à la demande seulement, car facturées |
 | `docs/` | Le wiki, guide des personnes qui utilisent Pulse : pages HTML, CSS et JS sans dépendance, ouvrables en local et publiées telles quelles par GitHub Pages depuis `main` (`docs/.nojekyll`) ; et le mémo des commandes (`docs/superpowers/` : conceptions, revues et plans, gardés en local, hors Git) |
 | `outils/wiki/` | Les outils du wiki, hors du site publié : `synchroniser.js` recopie la description et les arguments de chaque commande depuis son SKILL.md dans `docs/` ; `indexer.js` construit l'index de la recherche ; `captures.js` liste les captures attendues, prend celles des pages publiques et les intègre ; `CHARTE.md` = la charte graphique du wiki ; `modele-commande.html` = le modèle d'une page de commande |
-| `outils/evals/` | `lancer.js` (relais `lancer.sh` pour Linux, macOS et WSL2, `lancer.cmd` pour Windows) : lance les évaluations du cœur (`plugins/pulse-vibe/evals/`, `claude plugin eval`) dans le bac à sable de Claude Code : intégré sous macOS, bubblewrap et socat sous Linux et WSL2 ; sous Windows, relance les essais dans WSL2 ; chaque essai est un vrai appel au modèle, facturé |
+| `outils/evals/` | `lancer.js` (relais `lancer.sh` pour Linux, macOS et WSL2, `lancer.cmd` pour Windows) : lance les évaluations du cœur (`claude plugin eval`) ; `cas/` = un dossier par cas (`prompt.md`, `case.yaml`, `graders/`), le projet d'essai partagé dans `_communs/projet.sh`, hors du plugin publié ; `resultats/` = les rapports, gardés en local ; dans le bac à sable de Claude Code : intégré sous macOS, bubblewrap et socat sous Linux et WSL2 ; sous Windows, relance les essais dans WSL2 ; chaque essai est un vrai appel au modèle, facturé |
 
 Dans un plugin (chemins relatifs à son dossier) :
 
@@ -25,7 +25,6 @@ Dans un plugin (chemins relatifs à son dossier) :
 | `hooks/hooks.json`, `scripts/` | Hooks et scripts Node partagés ; `garde.js` réunit les deux garde-fous dans un seul processus ; `lecture-commande.js` lit les commandes (bash, PowerShell, cmd) et `chemins-sensibles.js` reconnaît les fichiers `.env` pour eux ; `apres-ecriture.js` et `tour.js` relèvent les fichiers écrits pendant le tour, `fin-de-tour.js` les contrôle à la fin du tour (règles, secrets, contrôles rapides), `realisation.js` tient le marqueur de réalisation (rappel après compaction), `notifier.js` envoie la notification du bureau, `captures.js` efface les captures d'une US |
 | `bin/` | Outils placés dans le PATH par Claude Code (`pulse-aidd` pour le cœur), chacun avec ses relais `.ps1` (PowerShell : arguments passés par l'environnement, relus par le prologue du script bash) et `.cmd` (cmd), identiques d'un outil à l'autre |
 | `tests/` | Tests du plugin |
-| `evals/` | Évaluations du cœur (`claude plugin eval`) : un dossier par cas (`prompt.md`, `case.yaml`, `graders/`), le projet d'essai partagé dans `_communs/projet.sh` |
 
 ## Règles d'écriture des consignes
 
