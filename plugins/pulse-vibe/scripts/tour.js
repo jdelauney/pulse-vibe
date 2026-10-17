@@ -31,24 +31,34 @@ function dossierEtat(racine) {
   return path.join(base, crypto.createHash("sha1").update(nom).digest("hex").slice(0, 16));
 }
 
-const fichierEtat = (racine, k) => path.join(dossierEtat(racine), `${k}.json`);
+// Deux fichiers par clé : les fichiers touchés (une ligne par chemin, ajoutée sans relire : des
+// processus en parallèle ne perdent rien) et les relances (écrites par le seul hook de fin de tour).
+const fichiersDe = (racine, k) => path.join(dossierEtat(racine), `${k}.fichiers`);
+const relancesDe = (racine, k) => path.join(dossierEtat(racine), `${k}.relances`);
 
 function lire(racine, k) {
+  let fichiers = [];
+  let relances = 0;
   try {
-    const e = JSON.parse(fs.readFileSync(fichierEtat(racine, k), "utf8"));
-    return {
-      fichiers: Array.isArray(e.fichiers) ? e.fichiers.filter((f) => typeof f === "string") : [],
-      relances: Number.isInteger(e.relances) ? e.relances : 0,
-    };
+    fichiers = [...new Set(fs.readFileSync(fichiersDe(racine, k), "utf8").split("\n").filter(Boolean))];
   } catch (e) {
-    return { fichiers: [], relances: 0 };
+    // pas de relevé
   }
+  try {
+    const n = parseInt(fs.readFileSync(relancesDe(racine, k), "utf8"), 10);
+    if (Number.isInteger(n) && n > 0) relances = n;
+  } catch (e) {
+    // aucune relance
+  }
+  return { fichiers, relances };
 }
 
 function ecrire(racine, k, etat) {
   if (!k) return;
   fs.mkdirSync(dossierEtat(racine), { recursive: true });
-  fs.writeFileSync(fichierEtat(racine, k), JSON.stringify({ fichiers: etat.fichiers || [], relances: etat.relances || 0 }));
+  const fichiers = [...new Set(etat.fichiers || [])];
+  fs.writeFileSync(fichiersDe(racine, k), fichiers.map((x) => `${x}\n`).join(""));
+  fs.writeFileSync(relancesDe(racine, k), String(etat.relances || 0));
 }
 
 /** Le chemin relatif à la racine, avec des `/`, ou null quand le fichier est hors du projet. */
@@ -73,22 +83,22 @@ function noter(entree, racine) {
   const rel = relatif(e.tool_input && e.tool_input.file_path, racine);
   if (!rel) return;
   const cles = [...new Set([cle(e), cle({ session_id: e.session_id })].filter(Boolean))];
-  for (const k of cles) {
-    const etat = lire(racine, k);
-    if (etat.fichiers.includes(rel)) continue;
-    etat.fichiers.push(rel);
-    ecrire(racine, k, etat);
-  }
+  fs.mkdirSync(dossierEtat(racine), { recursive: true });
+  for (const k of cles) fs.appendFileSync(fichiersDe(racine, k), `${rel}\n`);
 }
 
 const lireTour = (entree, racine) => lire(racine, cle(entree));
 const ecrireTour = (entree, racine, etat) => ecrire(racine, cle(entree), etat);
 
 function effacerTour(entree, racine) {
-  try {
-    fs.unlinkSync(fichierEtat(racine, cle(entree)));
-  } catch (e) {
-    // déjà effacé
+  const k = cle(entree);
+  if (!k) return;
+  for (const f of [fichiersDe(racine, k), relancesDe(racine, k)]) {
+    try {
+      fs.unlinkSync(f);
+    } catch (e) {
+      // déjà effacé
+    }
   }
 }
 
