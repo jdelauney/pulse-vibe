@@ -94,8 +94,26 @@ function direct(extra) {
     console.error(`Git ${vGit} est trop ancien pour les évaluations (${GIT_MIN} ou plus).`);
     return 1;
   }
+  const liens = liensDocker(path.join(require("os").homedir(), ".docker"));
+  if (liens.length) {
+    console.error(`Le bac à sable refuse un dossier ~/.docker qui contient des liens symboliques (${liens.join(", ")}) ;`);
+    console.error("Docker Desktop les pose sous WSL2. Les remplacer par des copies, puis relancer :");
+    console.error(`  cd ~/.docker && for f in ${liens.join(" ")}; do cp -rL "$f" "$f.copie" && rm "$f" && mv "$f.copie" "$f"; done`);
+    console.error("(ou décocher cette distribution dans Docker Desktop → Settings → Resources → WSL integration).");
+    return 1;
+  }
   const r = spawnSync("claude", argumentsEval(RACINE, process.env, extra), { stdio: "inherit" });
   return r.status === null ? 1 : r.status;
+}
+
+/** Les entrées de ~/.docker qui sont des liens symboliques (le bac à sable de Claude Code refuse alors les essais). */
+function liensDocker(dossier) {
+  const fs = require("fs");
+  try {
+    return fs.readdirSync(dossier).filter((n) => fs.lstatSync(path.join(dossier, n)).isSymbolicLink());
+  } catch (e) {
+    return [];
+  }
 }
 
 /** Sortie de `wsl.exe -l -q` : UTF-16 sous Windows, avec des caractères nuls entre les lettres. */
@@ -141,4 +159,4 @@ function principal(extra) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { argumentsEval, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };
+module.exports = { argumentsEval, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };

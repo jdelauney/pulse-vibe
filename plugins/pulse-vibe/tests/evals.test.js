@@ -59,6 +59,19 @@ test("le lanceur accorde les commandes dont les cas ont besoin, rien de plus", (
   assert.deepStrictEqual(reglees.slice(reglees.indexOf("--runs"), reglees.indexOf("--runs") + 4), ["--runs", "3", "--max-cost-usd", "2"]);
 });
 
+test("le lanceur repère les liens symboliques de ~/.docker, que le bac à sable refuse", (t) => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-docker-"));
+  fs.writeFileSync(path.join(d, "config.json"), "{}");
+  assert.deepStrictEqual(lanceur.liensDocker(d), []);
+  try {
+    fs.symlinkSync(path.join(d, "config.json"), path.join(d, "features.json"));
+  } catch (e) {
+    return t.skip("liens symboliques non permis ici");
+  }
+  assert.deepStrictEqual(lanceur.liensDocker(d), ["features.json"]);
+  assert.deepStrictEqual(lanceur.liensDocker(path.join(d, "absent")), []);
+});
+
 test("le lanceur : Windows passe par WSL2, macOS et Linux lancent directement, chacun ses outils", () => {
   assert.strictEqual(lanceur.strategie("win32"), "wsl");
   assert.strictEqual(lanceur.strategie("darwin"), "direct");
