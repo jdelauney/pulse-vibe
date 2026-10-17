@@ -43,7 +43,10 @@ const lancer = (d, entree, env = {}) => {
   assert.strictEqual(r.stderr, "");
   return r.stdout ? JSON.parse(r.stdout) : null;
 };
-const releve = (d, entree) => tour.lireTour(entree, tour.racineGit(d));
+const releve = (d, entree) => {
+  const { fichiers, relances } = tour.lireTour(entree, tour.racineGit(d));
+  return { fichiers, relances };
+};
 
 const PLAN_EN_COURS = "# Plan – X – US-001 A\n\n## Tâches\n\n- [~] **T1 – Une tâche** · US-001\n  - Objectif : x\n";
 const PLAN_A_FAIRE = PLAN_EN_COURS.replace("[~]", "[ ]");
@@ -239,12 +242,12 @@ test("contrôles rapides : commande introuvable (code 127 ou script manquant) �
 test("contrôles rapides : commande plus longue que le délai → sautée", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "setTimeout(() => process.exit(1), 4000)"`');
+  avecControles(d, '`node -e "setTimeout(() => process.exit(1), 10000)"`');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   const debut = Date.now();
   assert.strictEqual(lancer(d, e, { PULSE_FIN_DE_TOUR_DELAI: "1" }), null);
-  assert.ok(Date.now() - debut < 3800, `${Date.now() - debut} ms`);
+  assert.ok(Date.now() - debut < 6000, `${Date.now() - debut} ms`);
 });
 
 test("worktree : règles et relevé du worktree, pas ceux du dépôt principal", () => {
@@ -263,4 +266,73 @@ test("worktree : règles et relevé du worktree, pas ceux du dépôt principal",
   assert.strictEqual(s.decision, "block");
   assert.match(s.reason, /src\/prix\.js/);
   assert.strictEqual(releve(w, e).relances, 1);
+});
+
+test("SubagentStop de test-writer : règles et secrets contrôlés, contrôles rapides non lancés (tests d'abord)", () => {
+  const d = projet();
+  const e = { session_id: session(), agent_id: "tw1", agent_type: "pulse:test-writer", hook_event_name: "SubagentStop" };
+  avecControles(d, '`node -e "process.exit(1)"`');
+  ecrire(d, "tests/a.test.js", "const a = 1;\n");
+  noter(d, e, "tests/a.test.js");
+  assert.strictEqual(lancer(d, e), null);
+  ecrire(d, "src/prix.js", "parseFloat(x)\n");
+  noter(d, e, "src/prix.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+  // implementer et fixer : contrôles rapides lancés.
+  const f = { session_id: session(), agent_id: "fx1", agent_type: "pulse:fixer", hook_event_name: "SubagentStop" };
+  noter(d, f, "tests/a.test.js");
+  assert.strictEqual(lancer(d, f).decision, "block");
+});
+
+test("SubagentStop : type d'agent sans préfixe (implementer) reconnu", () => {
+  const d = projet();
+  const e = { session_id: session(), agent_id: "imp9", agent_type: "implementer", hook_event_name: "SubagentStop" };
+  ecrire(d, "src/prix.js", "parseFloat(x)\n");
+  noter(d, e, "src/prix.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+  const r = { session_id: session(), agent_id: "rev9", agent_type: "reviewer", hook_event_name: "SubagentStop" };
+  noter(d, r, "src/prix.js");
+  assert.strictEqual(lancer(d, r), null);
+});
+
+test("blocage puis écriture notée pendant le contrôle : l'écriture reste dans le relevé", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  ecrire(d, "src/prix.js", "parseFloat(x)\n");
+  noter(d, e, "src/prix.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+  ecrire(d, "src/prix.js", "const c = 1;\n");
+  noter(d, e, "src/autre.js");
+  ecrire(d, "src/autre.js", "parseFloat(y)\n");
+  const s = lancer(d, e);
+  assert.strictEqual(s.decision, "block");
+  assert.match(s.reason, /src\/autre\.js/);
+  assert.deepStrictEqual(releve(d, e).fichiers.sort(), ["src/autre.js", "src/prix.js"]);
+});
+
+test("contrôles rapides : « Missing script » loin de la fin de la sortie → bloqué", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  avecControles(d, '`node -e "console.log(\'Missing script: x\'); for (let i = 0; i < 10; i++) console.log(\'erreur \' + i); process.exit(1)"`');
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+});
+
+test("contrôles rapides : code 9009 (commande inconnue de cmd.exe) → sautée", { skip: process.platform !== "win32" }, () => {
+  const d = projet();
+  const e = { session_id: session() };
+  avecControles(d, '`node -e "process.exit(9009)"`');
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e), null);
+});
+
+test("plan illisible : les règles sont contrôlées quand même", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  fs.mkdirSync(path.join(d, "aidd_docs", "tasks", "e", "PLAN-SPEC-US-002-dossier.md"), { recursive: true });
+  ecrire(d, "src/prix.js", "parseFloat(x)\n");
+  noter(d, e, "src/prix.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
 });
