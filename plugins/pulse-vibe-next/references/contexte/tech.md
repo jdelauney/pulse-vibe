@@ -11,3 +11,17 @@ Une fois la pile choisie :
 3. Vérifier que tout passe : `npm run check`, `npm run typecheck`, `npm test`, puis `npm run dev` (la page d'accueil affiche le nom du projet).
 4. Si `docs/design.md` existe : appliquer le thème (référence « Le thème »), puis remplir « Dans le code » de `docs/design.md`.
 5. **En ligne dès le premier jour** (si la personne l'accepte) : la page de départ ne demande aucune variable d'environnement ; la première mise en ligne relie le dépôt GitHub à Vercel, puis `pulse-aidd sonder <adresse> --texte "<nom du projet>"`.
+
+## Contrôles proposés (Next.js)
+
+Proposés selon `pulse-aidd reference controles-proposes.md`, une fois la mise en place faite.
+
+- **`secrets-publics`** : une variable publique ne porte jamais un secret.
+  - Phrase : « Voulez-vous que Pulse refuse qu'un mot de passe ou une clé secrète soit mis dans une variable visible par tous les visiteurs ? »
+  - Ligne :
+
+```
+- Aucun secret dans une variable publique. — Contrôle : interdit `/NEXT_PUBLIC_\w*(SECRET|PRIVATE)/` dans `app/`, `src/`
+```
+
+Les autres motifs étudiés (balises `<img>`, `console.log`, `dangerouslySetInnerHTML`) peuvent viser du code légitime : ils restent des consignes.

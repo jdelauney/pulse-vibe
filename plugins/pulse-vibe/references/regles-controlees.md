@@ -19,3 +19,4 @@ Une convention qu'une simple recherche dans le code peut vérifier porte son **c
 
 - `pulse-aidd verifier`, le contrôle avant chaque commit et la vérification automatique en ligne refusent alors un fichier qui enfreint la règle, en la citant.
 - Proposer un contrôle quand la règle s'y prête, avec la ligne exacte, et seulement si le motif ne peut pas viser du code légitime ; sinon, la règle reste une consigne.
+- Une règle porte une seule clause `sauf` ; ses portées s'écrivent entre accents graves (`` ` ``), comme celles de `dans`.
