@@ -10,6 +10,7 @@
 //   fondation: profil                    R2 à R8 : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile)
 //   attente: … / ancien: oui / dossier: …   R1 : la décision en attente, si elle date de plus de 7 jours, son dossier
 //   questions: 2                         questions ouvertes (« - [ ] Q<n> ») sous « ## Questions en attente » des plans (ligne absente à zéro)
+//   realisation: perimee                le marqueur aidd_docs/tasks/realisation.json n'a pas bougé depuis plus de 6 heures (ligne absente sinon)
 //   aussi: /pulse:… — …                  alternatives utiles (zéro, une ou plusieurs lignes)
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
@@ -530,6 +531,9 @@ function formater(f, v, racine) {
   for (const cle of ["fondation", "attente", "ancien", "dossier"]) if (v[cle]) lignes.push(`${cle}: ${v[cle]}`);
   const questions = compterQuestions(racine);
   if (questions > 0) lignes.push(`questions: ${questions}`); // questions ouvertes des plans : la personne doit répondre
+  const { lireBrut, perime } = require("./realisation");
+  const marqueur = lireBrut(racine);
+  if (marqueur && perime(marqueur)) lignes.push("realisation: perimee"); // réalisation interrompue sans « fin »
   for (const a of v.aussi) lignes.push(`aussi: ${a}`);
   lignes.push(`etapes: ${etapes(f, mvp)}`, `mvp: ${mvp.faites}/${mvp.total}`);
   return lignes.join("\n");

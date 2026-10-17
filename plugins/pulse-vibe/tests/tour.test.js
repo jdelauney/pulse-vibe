@@ -169,3 +169,32 @@ test("apres-ecriture : lancé depuis un sous-dossier du projet", () => {
   assert.strictEqual(r.status, 0);
   assert.deepStrictEqual(tour.lireTour(e, tour.racineGit(d)).fichiers, ["src/lib/a.ts"]);
 });
+
+test("parRacine : un fichier d'un worktree noté depuis la session principale revient relatif à la racine du worktree", () => {
+  const d = projetPulse();
+  const w = path.join(d, ".claude", "worktrees", "essai");
+  fs.mkdirSync(path.join(w, "src"), { recursive: true });
+  fs.writeFileSync(path.join(w, ".git"), "gitdir: ailleurs\n"); // un worktree : un fichier .git
+  const racine = tour.racineGit(d);
+  const e = (f) => ({ session_id: "s11", tool_input: { file_path: f } });
+  tour.noter(e(path.join(w, "src", "a.ts")), racine);
+  tour.noter(e(path.join(d, "src", "b.ts")), racine);
+  tour.noter(e(path.join(w, "src", "parti", "c.ts")), racine); // dossier absent : remonte jusqu'au worktree
+  const groupes = tour.parRacine(racine, tour.lireTour(e(""), racine).fichiers);
+  const vus = groupes.map((g) => [path.relative(racine, g.racine).split(path.sep).join("/"), g.fichiers]);
+  assert.deepStrictEqual(vus, [["", ["src/b.ts"]], [".claude/worktrees/essai", ["src/a.ts", "src/parti/c.ts"]]]);
+});
+
+test("noter : les relevés de plus de 24 h du projet sont retirés, ceux d'une clé récente gardés en entier", () => {
+  const racine = "E:/projet-elague";
+  const dossier = tour.dossierEtat(racine);
+  fs.mkdirSync(dossier, { recursive: true });
+  const vieux = new Date(Date.now() - 25 * 3600 * 1000);
+  for (const x of ["ancien.fichiers", "ancien.relances", "ancien.lus", "recent.lus"]) {
+    fs.writeFileSync(path.join(dossier, x), "1");
+    fs.utimesSync(path.join(dossier, x), vieux, vieux);
+  }
+  fs.writeFileSync(path.join(dossier, "recent.fichiers"), "a.ts\n");
+  tour.noter({ session_id: "s12", tool_input: { file_path: "E:/projet-elague/b.ts" } }, racine);
+  assert.deepStrictEqual(fs.readdirSync(dossier).sort(), ["recent.fichiers", "recent.lus", "s12.fichiers"]);
+});

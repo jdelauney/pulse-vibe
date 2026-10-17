@@ -123,3 +123,77 @@ test("--rappel : la racine vient de CLAUDE_PROJECT_DIR quand elle est donnée", 
   assert.match(r.stdout, /US-009/);
   assert.strictEqual(lancer(ailleurs, "--rappel").stdout, "");
 });
+
+// Marqueur périmé : maj plus vieille que 6 heures (réalisation interrompue sans « fin »).
+function marqueurDate(dossier, maj, extra = {}) {
+  fs.mkdirSync(path.join(dossier, "aidd_docs", "tasks"), { recursive: true });
+  fs.writeFileSync(path.join(dossier, MARQUEUR), JSON.stringify({ us: "US-004", commande: "spirc", rythme: "rapide", questions: 1, debut: maj, maj, ...extra }));
+}
+const ilYa = (heures) => new Date(Date.now() - heures * 3600 * 1000).toISOString();
+
+test("marqueur périmé (maj de plus de 6 h) : lire et rappel l'ignorent, lireBrut et perime le voient", () => {
+  const { lire, rappel, lireBrut, perime, PERIME_H } = require(SCRIPT);
+  assert.strictEqual(PERIME_H, 6);
+  const d = projet();
+  marqueurDate(d, ilYa(7));
+  assert.strictEqual(lire(d), null);
+  assert.strictEqual(rappel(d), "");
+  assert.strictEqual(lireBrut(d).us, "US-004");
+  assert.strictEqual(perime(lireBrut(d)), true);
+  assert.strictEqual(lancer(d, "--rappel").stdout, "");
+  assert.match(lancer(d).stdout, /^perime: oui$/m, "la commande nue le signale");
+  const frais = projet();
+  marqueurDate(frais, ilYa(5));
+  assert.strictEqual(lire(frais).us, "US-004");
+  assert.strictEqual(perime(lireBrut(frais)), false);
+  assert.doesNotMatch(lancer(frais).stdout, /perime/);
+  const sansDate = projet();
+  marqueurDate(sansDate, "pas une date");
+  assert.strictEqual(lire(sansDate), null, "date illisible : périmé");
+});
+
+test("marqueur périmé : etape le rafraîchit, fin le retire", () => {
+  const { lire } = require(SCRIPT);
+  const d = projet();
+  marqueurDate(d, ilYa(8));
+  lancer(d, "etape", "T3", "realisation");
+  assert.strictEqual(lire(d).tache, "T3");
+  marqueurDate(d, ilYa(8));
+  assert.strictEqual(lancer(d, "fin").status, 0);
+  assert.ok(!fs.existsSync(path.join(d, MARQUEUR)));
+});
+
+test("--rappel : le cwd de l'entrée du hook passe avant CLAUDE_PROJECT_DIR et le dossier courant", () => {
+  const racine = projet();
+  spawnSync("git", ["init", "-q"], { cwd: racine });
+  fs.mkdirSync(path.join(racine, "src"), { recursive: true });
+  const autre = projet();
+  marqueurDate(racine, ilYa(0), { us: "US-011" });
+  marqueurDate(autre, ilYa(0), { us: "US-022" });
+  const r = spawnSync("node", [SCRIPT, "--rappel"], { encoding: "utf8", cwd: autre, input: JSON.stringify({ cwd: path.join(racine, "src") }), env: { ...process.env, CLAUDE_PROJECT_DIR: autre } });
+  assert.match(r.stdout, /US-011/);
+  // Sans marqueur sous le cwd : CLAUDE_PROJECT_DIR.
+  const vide = projet();
+  spawnSync("git", ["init", "-q"], { cwd: vide });
+  const r2 = spawnSync("node", [SCRIPT, "--rappel"], { encoding: "utf8", cwd: vide, input: JSON.stringify({ cwd: vide }), env: { ...process.env, CLAUDE_PROJECT_DIR: autre } });
+  assert.match(r2.stdout, /US-022/);
+});
+
+test("trouver : premier marqueur vivant parmi la racine Git du cwd, CLAUDE_PROJECT_DIR, le dossier courant", () => {
+  const { trouver } = require(SCRIPT);
+  const a = projet();
+  spawnSync("git", ["init", "-q"], { cwd: a });
+  marqueurDate(a, ilYa(9), { us: "US-001" }); // périmé : ignoré
+  const b = projet();
+  marqueurDate(b, ilYa(0), { us: "US-002" });
+  const avant = process.env.CLAUDE_PROJECT_DIR;
+  process.env.CLAUDE_PROJECT_DIR = b;
+  try {
+    const t = trouver(a);
+    assert.strictEqual(t.etat.us, "US-002");
+    assert.strictEqual(path.resolve(t.racine), path.resolve(b));
+  } finally {
+    if (avant === undefined) delete process.env.CLAUDE_PROJECT_DIR;
+    else process.env.CLAUDE_PROJECT_DIR = avant;
+  }
+});

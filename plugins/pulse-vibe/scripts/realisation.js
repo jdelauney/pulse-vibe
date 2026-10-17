@@ -2,16 +2,22 @@
 // Pulse – marqueur « réalisation en cours » (`pulse-aidd realisation`).
 //
 // Un petit fichier, aidd_docs/tasks/realisation.json (ignoré par Git), dit qu'une réalisation est en cours :
-// l'US, la commande, le rythme, la tâche et l'étape courantes, les questions en attente. Les hooks s'en servent
-// pour rappeler « où on en est » après un compactage et pour ne pas laisser passer une fin de tour trop tôt.
+// l'US, la commande, le rythme, la tâche et l'étape courantes, les questions en attente. Les hooks s'en servent :
+// rappel de « où on en est » après un compactage (--rappel), notification du bureau (notifier.js), et contrôles
+// automatiques de fin de tour lancés seulement pendant une réalisation (fin-de-tour.js).
+// Un marqueur dont la dernière mise à jour (maj) date de plus de PERIME_H heures est périmé : une réalisation
+// interrompue sans « fin ». Les hooks l'ignorent ; `pulse-aidd etat` le signale (realisation: perimee) et
+// la commande nue affiche « perime: oui » ; etape et questions le rafraîchissent, fin le retire.
 //
 //   pulse-aidd realisation debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome]
 //   pulse-aidd realisation etape <Tn> <etape>   la tâche et l'étape en cours (test, realisation, examen, commit, questions, test-groupe…)
 //   pulse-aidd realisation questions <n>        le nombre de questions qui attendent la personne
 //   pulse-aidd realisation fin                  supprime le marqueur
-//   pulse-aidd realisation [--rappel]           affiche « clé: valeur » (--rappel : le texte « où on en est »), rien si absent
+//   pulse-aidd realisation                      affiche « clé: valeur » (plus « perime: oui » s'il est périmé), rien si absent
+//   pulse-aidd realisation --rappel             hook SessionStart : le texte « où on en est » (marqueur cherché comme trouver())
 //
-// Module : lire(racine) → Etat|null, rappel(racine) → texte (vide si absent).
+// Module : lire(racine) → Etat|null (périmé : null), lireBrut(racine), perime(etat), rappel(racine) → texte (vide si absent),
+// trouver(cwd[, accepte]) → { racine, etat }|null : premier marqueur vivant sous la racine Git de cwd, puis CLAUDE_PROJECT_DIR, puis le dossier courant.
 // Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
 "use strict";
 
@@ -20,16 +26,53 @@ const path = require("path");
 
 const CHEMIN = ["aidd_docs", "tasks", "realisation.json"];
 const CLES = ["us", "commande", "rythme", "autonome", "tache", "etape", "questions", "debut", "maj"];
+const PERIME_H = 6; // au-delà, la réalisation a été interrompue sans « fin » : les hooks se taisent
 
 const fichier = (racine) => path.join(racine, ...CHEMIN);
 
-/** Le marqueur, ou null s'il est absent ou illisible. */
-function lire(racine) {
+/** Le marqueur tel quel, même périmé, ou null s'il est absent ou illisible. */
+function lireBrut(racine) {
   try {
     const m = JSON.parse(fs.readFileSync(fichier(racine), "utf8"));
     return m && typeof m === "object" && !Array.isArray(m) ? m : null;
   } catch {
     return null;
+  }
+}
+
+/** Vrai quand la dernière mise à jour date de plus de PERIME_H heures, ou n'est pas une date. */
+function perime(etat, maintenant = Date.now()) {
+  const t = Date.parse(etat && etat.maj);
+  return Number.isNaN(t) || maintenant - t > PERIME_H * 3600 * 1000;
+}
+
+/** Le marqueur d'une réalisation vivante, ou null (absent, illisible ou périmé). */
+function lire(racine) {
+  const m = lireBrut(racine);
+  return m && !perime(m) ? m : null;
+}
+
+/** Le premier marqueur vivant : racine Git de cwd, puis CLAUDE_PROJECT_DIR, puis le dossier courant (dossiers retenus par `accepte`). */
+function trouver(cwd, accepte = () => true) {
+  const candidats = [];
+  if (cwd && fs.existsSync(cwd)) candidats.push(require("./tour").racineGit(cwd) || cwd);
+  if (process.env.CLAUDE_PROJECT_DIR) candidats.push(process.env.CLAUDE_PROJECT_DIR);
+  candidats.push(process.cwd());
+  for (const racine of candidats) {
+    const etat = lire(racine);
+    if (etat && accepte(racine)) return { racine, etat };
+  }
+  return null;
+}
+
+/** L'entrée JSON d'un hook sur stdin, ou {} (pas d'entrée, terminal, JSON illisible). */
+function entreeHook() {
+  try {
+    if (process.stdin.isTTY) return {};
+    const e = JSON.parse(fs.readFileSync(0, "utf8"));
+    return e && typeof e === "object" ? e : {};
+  } catch {
+    return {};
   }
 }
 
@@ -44,7 +87,7 @@ function ecrire(racine, etat) {
 
 /** Met à jour le marqueur s'il existe ; sinon ne fait rien. */
 function mettreAJour(racine, changements) {
-  const etat = lire(racine);
+  const etat = lireBrut(racine);
   if (!etat) return;
   ecrire(racine, { ...etat, ...changements, maj: new Date().toISOString() });
 }
@@ -89,16 +132,18 @@ function main(args, racine) {
   } else if (action === "fin") {
     try { fs.rmSync(fichier(racine), { force: true }); } catch { /* déjà absent */ }
   } else if (action === "--rappel") {
-    // Hook SessionStart (compact) : le dossier du projet vient de Claude Code.
-    const t = rappel(process.env.CLAUDE_PROJECT_DIR || racine);
+    // Hook SessionStart (compact) : le cwd de l'entrée du hook d'abord, puis le dossier du projet donné par Claude Code.
+    const trouve = trouver(entreeHook().cwd);
+    const t = trouve ? rappel(trouve.racine) : "";
     if (t) console.log(t);
   } else {
-    const e = lire(racine);
+    const e = lireBrut(racine);
     if (e) for (const cle of CLES) if (cle in e) console.log(`${cle}: ${e[cle]}`);
+    if (e && perime(e)) console.log("perime: oui");
   }
 }
 
-module.exports = { lire, rappel };
+module.exports = { lire, lireBrut, perime, trouver, rappel, PERIME_H };
 
 if (require.main === module) {
   try {

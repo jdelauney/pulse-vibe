@@ -12,18 +12,20 @@
 // - OSC 9 : notifications d'iTerm2, ConEmu, Windows Terminal et WezTerm (l'exemple de la page utilise OSC 777).
 // Entrée : JSON avec notification_type, message, cwd, session_id.
 //
+// Marqueur cherché sous la racine Git du cwd de l'entrée, puis CLAUDE_PROJECT_DIR, puis le dossier courant
+// (trouver() de realisation.js) ; un marqueur périmé (plus de 6 heures sans mise à jour) ne compte pas.
 // Silencieux hors projet Pulse ou sans marqueur ; sort toujours avec le code 0.
 "use strict";
 
 const fs = require("fs");
 
-/** Le texte de la notification, ou null sans marqueur. */
+/** Le texte de la notification, ou null sans marqueur ; une demande d'accord passe avant tout le reste. */
 function message(etat, typeNotification) {
   if (!etat) return null;
+  if (typeNotification === "permission_prompt") return "Claude Code attend votre accord";
   const n = Number(etat.questions) || 0;
   if (n > 0) return n === 1 ? "1 question vous attend" : `${n} questions vous attendent`;
   if (etat.etape === "test-groupe") return "La réalisation est terminée : à vous de tester";
-  if (typeNotification === "permission_prompt") return "Claude Code attend votre accord";
   return "Pulse attend votre réponse";
 }
 
@@ -37,10 +39,9 @@ function principal() {
   } catch {
     return;
   }
-  const cwd = entree && entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
-  const racine = process.env.CLAUDE_PROJECT_DIR || cwd;
-  if (!require("./garde").projetPulse(racine)) return;
-  const texte = message(require("./realisation").lire(racine), entree && entree.notification_type);
+  const trouve = require("./realisation").trouver(entree && entree.cwd, require("./garde").projetPulse);
+  if (!trouve) return;
+  const texte = message(trouve.etat, entree && entree.notification_type);
   if (texte) fs.writeSync(1, JSON.stringify({ terminalSequence: sequence(texte) }));
 }
 
