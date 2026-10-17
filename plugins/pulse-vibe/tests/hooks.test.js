@@ -52,3 +52,17 @@ test("PostToolUse : un seul point d'entrée, apres-ecriture.js, pour chaque outi
   for (const outil of ["Write", "Edit", "MultiEdit"])
     assert.deepStrictEqual(scriptsPour("PostToolUse", outil).map((x) => x.script), ["apres-ecriture.js"], outil);
 });
+
+test("Stop et SubagentStop : fin-de-tour.js, sans filtre, délai de 90 s", () => {
+  for (const evenement of ["Stop", "SubagentStop"]) {
+    const liste = HOOKS[evenement] || [];
+    assert.strictEqual(liste.length, 1, evenement);
+    assert.strictEqual(liste[0].matcher, undefined, `${evenement} sans filtre`);
+    assert.deepStrictEqual(liste[0].hooks.map((x) => [x.command, x.args, x.timeout]), [["node", ["${CLAUDE_PLUGIN_ROOT}/scripts/fin-de-tour.js"], 90]], evenement);
+  }
+});
+
+test("la description de hooks.json cite le contrôle de fin de tour", () => {
+  const description = JSON.parse(fs.readFileSync(path.join(RACINE, "hooks", "hooks.json"), "utf8")).description;
+  assert.match(description, /contrôle de fin de tour/);
+});
