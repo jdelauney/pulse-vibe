@@ -263,3 +263,17 @@ test("le guide lu par la personne : ni « MVP », ni « epic », ni « demande d
   assert.match(lire(d, "index.md"), /\| Groupe \| US \| Priorité \|/);
   assert.match(lire(d, US1), /^> Groupe : gerer-taches · Priorité : Indispensable/m);
 });
+
+test("plan avec « Questions en attente », « Choix faits par Pulse » et « En pause » : la tâche compte normalement, Q1 n'est pas une tâche", () => {
+  const plan = PLAN_US1.replace(
+    "## Journal",
+    "## Questions en attente\n\n- [ ] Q1 · T2 · Garder les terminées ? · Options : oui / non · Recommandé : oui\n\n## Choix faits par Pulse\n\n- T2 · tri par date · Autre possibilité : par nom · Raison : simple\n\n## Journal",
+  ).replace("  - Vérification : US-001 critères 1 et 2", "  - Vérification : US-001 critères 1 et 2\n  - En pause : Q1 (votre décision)");
+  const d = projet({ [`${TACHES.epic}/${TACHES.us1}`]: plan });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0, r.stdout);
+  const p1 = lire(d, US1);
+  assert.match(p1, /\/pulse:spirc US-001 T2/);
+  assert.match(lire(d, "index.md"), /\| gerer-taches \| US-001 – Créer une tâche \| Indispensable \| 2 \| 1\/2 \|/);
+  assert.doesNotMatch(p1, /Q1 ·/, "la question n'est pas lue comme une tâche");
+});

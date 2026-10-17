@@ -89,7 +89,7 @@ const PLAFONDS_COMMANDE = {
   learn: 41500, // mesure 39 206
   memory: 41000, // mesure 38 661
   perf: 57500, // mesure 54 519
-  plan: 65500, // mesure 62 257
+  plan: 66500, // mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 41000, // mesure 38 807
   prd: 34000, // mesure 32 244
   rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)

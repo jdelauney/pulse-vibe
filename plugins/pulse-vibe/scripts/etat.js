@@ -9,13 +9,14 @@
 //   regle: R20                           la règle appliquée
 //   fondation: profil                    R2 à R8 : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile)
 //   attente: … / ancien: oui / dossier: …   R1 : la décision en attente, si elle date de plus de 7 jours, son dossier
+//   questions: 2                         questions ouvertes (« - [ ] Q<n> ») sous « ## Questions en attente » des plans (ligne absente à zéro)
 //   aussi: /pulse:… — …                  alternatives utiles (zéro, une ou plusieurs lignes)
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
 // Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests).
 // --revue <Tn> [<Tn>…] (`pulse-aidd revue <Tn>`) : la dernière relecture de chaque tâche et où reprendre (tache, statut, plan,
 // etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide. --revue <US-XXX> : la relecture
-// de toute l'US (rythme rapide), même format sans « statut ».
+// de toute l'US (rythme rapide), même format sans « statut ». `reprendre: decision` : la tâche porte la sous-ligne « En pause : Q<n> ».
 // Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
 "use strict";
 
@@ -85,15 +86,41 @@ function lireAttente(fichier, aujourdhui, dossier) {
 function lireTaches(texte) {
   const taches = [];
   let dansTaches = false;
+  let courante = null;
   for (const ligne of texte.split(/\r?\n/)) {
     if (/^##\s/.test(ligne)) {
       dansTaches = /^##\s+T[âa]ches\s*$/i.test(ligne);
+      courante = null;
       continue;
     }
     const t = dansTaches && /^- \[(.)\]\s+\*\*(T\d+)\s*[–—-]\s*(.+?)\*\*/.exec(ligne);
-    if (t) taches.push({ id: t[2], titre: t[3].trim(), statut: STATUTS[t[1]] || "a-faire", miseEnLigne: /^mettre en ligne/i.test(t[3].trim()) });
+    if (t) {
+      courante = { id: t[2], titre: t[3].trim(), statut: STATUTS[t[1]] || "a-faire", miseEnLigne: /^mettre en ligne/i.test(t[3].trim()), enPause: false };
+      taches.push(courante);
+    } else if (courante && /^\s+- En pause\s*:/i.test(ligne)) courante.enPause = true; // sous-ligne « En pause : Q<n> (votre décision) »
   }
   return taches;
+}
+
+/** Les questions ouvertes (« - [ ] Q<n> … ») sous « ## Questions en attente » d'un plan : elles attendent la personne. */
+function questionsOuvertes(texte) {
+  let dans = false;
+  let n = 0;
+  for (const ligne of texte.split(/\r?\n/)) {
+    if (/^##\s/.test(ligne)) dans = /^##\s+Questions en attente\s*$/i.test(ligne);
+    else if (dans && /^- \[ \]\s+Q\d+\b/.test(ligne)) n++;
+  }
+  return n;
+}
+
+/** Nombre de questions ouvertes de tous les plans de aidd_docs/tasks/. */
+function compterQuestions(racine) {
+  const taches = path.join(racine, "aidd_docs", "tasks");
+  let n = 0;
+  for (const epic of dossiers(taches)) {
+    for (const f of fichiersDe(path.join(taches, epic)).filter((x) => /^PLAN-.+\.md$/i.test(x))) n += questionsOuvertes(lireSi(path.join(taches, epic, f)) || "");
+  }
+  return n;
 }
 
 /** Spec en brouillon : statut « brouillon » ou un `TBD:` hors des lignes de citation (l'en-tête du modèle en cite un). */
@@ -438,7 +465,7 @@ function decider(f) {
 
 // ---------------------------------------------------------------- pulse-aidd revue <Tn>
 
-const REPRENDRE = { absente: "examen", "a-corriger": "correction", "a-tester": "test", validee: "commit", bloquee: "aide" };
+const REPRENDRE = { absente: "examen", "a-corriger": "correction", "a-tester": "test", validee: "commit", bloquee: "aide", "en-pause": "decision" };
 
 /**
  * `pulse-aidd revue <Tn>` : la tâche dans les plans de aidd_docs/tasks/, sa dernière relecture et l'étape où reprendre.
@@ -468,7 +495,7 @@ function revueDeTache(racine, id) {
         const t = lireTaches(lireSi(path.join(dossier, f)) || "").find((x) => x.id.toUpperCase() === tache);
         if (!t) continue;
         const { etat, fichier } = derniereRevue(path.join(dossier, "revues", f.replace(/\.md$/i, "")), t.id);
-        return { tache: t.id, statut: t.statut, plan: rel(path.join(dossier, f)), etat, rapport: fichier ? rel(fichier) : "aucun", reprendre: REPRENDRE[etat] };
+        return { tache: t.id, statut: t.statut, plan: rel(path.join(dossier, f)), etat, rapport: fichier ? rel(fichier) : "aucun", reprendre: REPRENDRE[t.enPause ? "en-pause" : etat] };
       }
     }
   }
@@ -497,10 +524,12 @@ function etapes(f, mvp) {
   ].join(" ");
 }
 
-function formater(f, v) {
+function formater(f, v, racine) {
   const mvp = bilan(f);
   const lignes = [`prochaine: ${v.prochaine}`, `raison: ${v.raison}`, `regle: ${v.regle}`];
   for (const cle of ["fondation", "attente", "ancien", "dossier"]) if (v[cle]) lignes.push(`${cle}: ${v[cle]}`);
+  const questions = compterQuestions(racine);
+  if (questions > 0) lignes.push(`questions: ${questions}`); // questions ouvertes des plans : la personne doit répondre
   for (const a of v.aussi) lignes.push(`aussi: ${a}`);
   lignes.push(`etapes: ${etapes(f, mvp)}`, `mvp: ${mvp.faites}/${mvp.total}`);
   return lignes.join("\n");
@@ -555,7 +584,7 @@ if (require.main === module) {
   } else {
     try {
       const faits = lireFaits(process.cwd(), options);
-      console.log(formater(faits, decider(faits)));
+      console.log(formater(faits, decider(faits), process.cwd()));
     } catch (e) {
       console.log(sortieIllisible(e.message));
     }
