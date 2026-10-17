@@ -14,6 +14,7 @@
 <!-- Verdict et tableau du verifier : chaque critère essayé sur l'application en marche. -->
 
 - **Verdict** : {{✅ Prouvé | ❓ Partiellement prouvé | ❌ Échoue}}
+- **Filet anti-régression** : {{N tests, tous verts | — (rythme rapide : fin d'US)}}
 
 | Critère | Attendu | Obtenu | Résultat | Preuve |
 |---|---|---|---|---|

@@ -37,9 +37,9 @@ const PLAFONDS = {
   us: 30500, // mesure 28 742
   spec: 35500, // mesure 33 492
   plan: 50500, // mesure 47 800
-  implement: 44500, // mesure 42 344 (pulse 0.42 : rythme rapide, option -f, gestes)
+  implement: 45000, // mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 24000, // mesure 22 408
-  review: 31500, // mesure 29 678 (pulse 0.40 : règle commune 19 et fiche de test)
+  review: 32000, // mesure 31 617 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   commit: 39000, // mesure 37 065
   pr: 32000, // mesure 30 391
   annuler: 38500, // mesure 36 358
@@ -67,7 +67,8 @@ const PLAFONDS = {
 // review relevé à 15 000 (pulse 0.39) : trame des skills (Objectif, Règles, Contexte, Rôle, Processus, Exemples), mesure 13 945.
 // review relevé à 16 000 (pulse 0.40) : règle commune 19 et fiche de test, mesure 15 023.
 // review : mesure 16 289 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
-const PLAFONDS_ETAPES = { review: 16500, commit: 28500 };
+// review : mesure 16 526, commit : mesure 28 524 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+const PLAFONDS_ETAPES = { review: 17000, commit: 29000 };
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
@@ -76,7 +77,7 @@ const PLAFONDS_COMMANDE = {
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
   brainstorm: 44000, // mesure 41 756
   cicd: 51000, // mesure 48 229
-  commit: 50500, // mesure 47 813
+  commit: 51000, // mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 52000, // mesure 49 125
   explain: 29000, // mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 53500, // mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
@@ -116,7 +117,7 @@ const BOUCLES = {
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 87000, // mesure 82 698 (pulse 0.42 : rythme rapide, option -f, gestes)
+    plafond: 88000, // mesure 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };
