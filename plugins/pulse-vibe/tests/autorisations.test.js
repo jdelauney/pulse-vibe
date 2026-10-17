@@ -105,3 +105,24 @@ test("la sortie annonce la ligne reprise-auto, sans casser le format des règles
   assert.match(sortie("", "{}"), /^reprise-auto: inconnue$/m);
   assert.match(sortie("2.1.234", "pas du json"), /^reprise-auto: active$/m);
 });
+
+test("réglage à faux : `claude --version` n'est pas lancé", () => {
+  const d = projet({});
+  const faux = path.join(d, "faux-bin");
+  const marque = path.join(d, "appele.txt");
+  fs.mkdirSync(faux);
+  if (process.platform === "win32") fs.writeFileSync(path.join(faux, "claude.cmd"), `@echo off\r\necho x> "${marque}"\r\necho 2.1.300\r\n`);
+  else fs.writeFileSync(path.join(faux, "claude"), `#!/bin/sh\necho x > "${marque}"\necho 2.1.300\n`, { mode: 0o755 });
+  const reglages = path.join(d, "utilisateur.json");
+  const lancer = (contenu) => {
+    fs.rmSync(marque, { force: true });
+    fs.writeFileSync(reglages, contenu);
+    const env = { ...process.env, PULSE_REGLAGES_UTILISATEUR: reglages, PATH: `${faux}${path.delimiter}${process.env.PATH}` };
+    delete env.PULSE_VERSION_CLAUDE;
+    return spawnSync(process.execPath, [SCRIPT], { cwd: d, encoding: "utf8", env }).stdout;
+  };
+  assert.match(lancer("{}"), /^reprise-auto: active$/m);
+  assert.ok(fs.existsSync(marque), "le faux claude est bien lancé quand le réglage n'est pas à faux");
+  assert.match(lancer('{"autoContinueAtUsageLimit":false}'), /^reprise-auto: desactivee$/m);
+  assert.ok(!fs.existsSync(marque), "claude --version n'est pas lancé");
+});

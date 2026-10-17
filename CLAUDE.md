@@ -12,7 +12,7 @@ Ce dépôt est le catalogue Claude Code `pulseia` (méthode Pulse, en français)
 | `.github/workflows/` | Tests des plugins à chaque envoi (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur qu'il utilise, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine aux dernières versions ; évaluations du cœur (`evals.yml`) lancées à la demande seulement, car facturées |
 | `docs/` | Le wiki, guide des personnes qui utilisent Pulse : pages HTML, CSS et JS sans dépendance, ouvrables en local et publiées telles quelles par GitHub Pages depuis `main` (`docs/.nojekyll`) ; et le mémo des commandes (`docs/superpowers/` : conceptions, revues et plans, gardés en local, hors Git) |
 | `outils/wiki/` | Les outils du wiki, hors du site publié : `synchroniser.js` recopie la description et les arguments de chaque commande depuis son SKILL.md dans `docs/` ; `indexer.js` construit l'index de la recherche ; `captures.js` liste les captures attendues, prend celles des pages publiques et les intègre ; `CHARTE.md` = la charte graphique du wiki ; `modele-commande.html` = le modèle d'une page de commande |
-| `outils/evals/` | `lancer.sh` : lance les évaluations du cœur (`plugins/pulse-vibe/evals/`, `claude plugin eval`) depuis Linux ou WSL2, avec bubblewrap et socat ; chaque essai est un vrai appel au modèle, facturé |
+| `outils/evals/` | `lancer.js` (relais `lancer.sh` pour Linux, macOS et WSL2, `lancer.cmd` pour Windows) : lance les évaluations du cœur (`plugins/pulse-vibe/evals/`, `claude plugin eval`) dans le bac à sable de Claude Code : intégré sous macOS, bubblewrap et socat sous Linux et WSL2 ; sous Windows, relance les essais dans WSL2 ; chaque essai est un vrai appel au modèle, facturé |
 
 Dans un plugin (chemins relatifs à son dossier) :
 
@@ -48,4 +48,4 @@ Dans un plugin (chemins relatifs à son dossier) :
 - Recette modifiée : `node plugins/pulse-vibe-next/scripts/verifier-recettes.js --depuis main` passe (les chaînes de `CHAINES` qui contiennent une recette modifiée ; une chaîne précise : `--recettes connexion,liste` ; toutes : `--toutes`, que la CI lance chaque semaine).
 - `claude plugin validate` passe sur le catalogue et sur chaque plugin.
 - Essayer les plugins ensemble, sans les installer : `claude --plugin-dir ./plugins`.
-- Commande du cœur dont le déroulé change (spec, plan, réalisation, démarrage) : `outils/evals/lancer.sh` (Linux ou WSL2) quand c'est possible ; sinon, le dire en rendant la main.
+- Commande du cœur dont le déroulé change (spec, plan, réalisation, démarrage) : `outils/evals/lancer.sh` (Linux, macOS, WSL2) ou `outils\evals\lancer.cmd` (Windows) quand c'est possible ; sinon, le dire en rendant la main.

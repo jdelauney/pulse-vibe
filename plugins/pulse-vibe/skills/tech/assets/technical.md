@@ -67,7 +67,8 @@ flowchart LR
 |---|---|
 | Installer les dépendances | {{commande ou « aucune »}} |
 | Lancer en local | {{commande, et adresse à ouvrir}} |
-| Tester | {{commande ou « aucune », sans les tests qui ouvrent un navigateur ; ceux-ci, sous la mention « bout en bout »}} |
+| Tester | {{commande ou « aucune », sans les tests qui ouvrent un navigateur}} |
+| Tester de bout en bout (navigateur) | {{commande ou « aucune »}} |
 | Contrôles automatiques (lint, format, types) | {{commandes ou « aucune »}} |
 | Auditer les dépendances | {{commande ou « aucune » : l'outil d'audit des vulnérabilités de la pile}} |
 | Construire | {{commande ou « aucune »}} |

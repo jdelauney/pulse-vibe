@@ -79,17 +79,31 @@ function ecrire(racine, k, etat) {
   fs.writeFileSync(relancesDe(racine, k), String(etat.relances || 0));
 }
 
+const sansFinDeChemin = (p) => p.replace(/\\/g, "/").replace(/\/+$/, "");
+
+/** Le fichier (par son dossier parent existant) et la racine, liens symboliques résolus ; null quand l'un des deux ne se résout pas. */
+function resolus(abs, racine) {
+  try {
+    const dossier = sansFinDeChemin(fs.realpathSync(path.posix.dirname(abs)));
+    return { abs: `${dossier}/${path.posix.basename(abs)}`, r: sansFinDeChemin(fs.realpathSync(racine)) };
+  } catch {
+    return null;
+  }
+}
+
 /** Le chemin relatif à la racine, avec des `/`, ou null quand le fichier est hors du projet. */
 function relatif(fichier, racine) {
   if (typeof fichier !== "string" || !fichier) return null;
   const f = fichier.replace(/\\/g, "/");
-  const r = String(racine).replace(/\\/g, "/").replace(/\/+$/, "");
+  let r = sansFinDeChemin(String(racine));
   const lecteur = /^[a-z]:\//i.test(f);
   if (!lecteur && !f.startsWith("/")) {
     const rel = path.posix.normalize(f);
     return rel === ".." || rel.startsWith("../") || rel === "." ? null : rel;
   }
-  const abs = path.posix.normalize(f);
+  let abs = path.posix.normalize(f);
+  const reel = resolus(abs, racine); // un même dossier vu par deux chemins (lien symbolique) : on compare les chemins réels
+  if (reel) ({ abs, r } = reel);
   const [a, b] = lecteur || /^[a-z]:\//i.test(r) ? [abs.toLowerCase(), r.toLowerCase()] : [abs, r];
   if (!a.startsWith(`${b}/`)) return null;
   return abs.slice(r.length + 1);
