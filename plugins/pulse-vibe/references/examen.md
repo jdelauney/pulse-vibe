@@ -29,11 +29,11 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 - la ligne `Mode` (la commande, et « contrôle de sécurité à chaque tâche » s'il y a lieu) ;
 - le rapport du reviewer ;
-- la section `## Vérification` : le verdict et le tableau du verifier ;
+- la section `## Vérification` : le verdict et le tableau du verifier, puis la ligne « Filet anti-régression » (référence « Tests automatiques » § 2 ter) ;
 - avec les tests d'abord, la section `## Tests automatiques` (verdicts et tableaux du test-runner, rouge puis vert) ;
 - avec le contrôle de sécurité, la section `## Audit de sécurité`.
 
-La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌.
+La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌ ; en rythme complet, il demande aussi un filet anti-régression vert.
 
 Le **rapport de réalisation** présenté ensuite à la personne (règles communes § 4) se construit à partir du tableau du verifier.
 

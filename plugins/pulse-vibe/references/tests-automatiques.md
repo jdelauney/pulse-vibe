@@ -38,6 +38,18 @@ Le rythme rapide va à l'essentiel : tests essentiels (ci-dessous), tâches ench
 - Chaque scénario `@integration` de la spec a son test (titre qui commence par son étiquette).
 - **Lancés une seule fois par tâche, et seulement les siens** : à la fin de la tâche, la commande « Tester » limitée aux fichiers de test de la tâche (une tâche sans test : rien à lancer). Les contrôles rapides (règles du code, types) restent lancés. **Toute la suite tourne une seule fois**, quand toutes les tâches de l'US sont faites, avant le test groupé.
 
+## 2 ter. Filet anti-régression (rythme complet)
+
+Le filet attrape ce qu'une tâche casse ailleurs. Il vaut pour le rythme complet (profil `complet`), avec ou sans `-a`.
+
+- **Avant le commit de chaque tâche** : lancer toute la commande « Tester » de « Commandes du projet », pas seulement les tests de la tâche. Un échec se corrige d'abord (§ 4, « Trier les échecs »).
+- **Tests de bout en bout** (ceux qui ouvrent un navigateur, mention « bout en bout » de « Commandes du projet ») : lancés une fois, à la fin de l'US.
+- **Rythme rapide ou express** : inchangé, toute la suite tourne une fois à la fin de l'US (§ 2 bis).
+- **La preuve** : la ligne `Filet anti-régression : N tests, tous verts` vient d'un lancement réel, après la dernière modification de fichier. Absente ou plus ancienne que la dernière modification : relancer avant de dire « terminé ».
+- **Suite trop longue** : au-delà de 2 minutes, le dire une fois à la personne, ne lancer plus que les tests de la tâche pour le reste de l'US, et noter au journal du plan « filet limité aux tests de chaque tâche (suite > 2 min) ».
+
+La ligne figure dans le rapport de revue (section « Vérification »), et dans le rapport de fin d'US en rythme rapide.
+
 ## 3. Si l'outil de test manque
 
 « Tester » vaut « aucune » et la personne veut des tests :
