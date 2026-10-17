@@ -24,7 +24,9 @@
 #   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json
 #   pulse-aidd copies [--mettre-a-jour]  l'état des copies de Pulse dans le projet (contrôle des secrets, ligne d'état) : a-jour, ancienne, adaptee ; --mettre-a-jour remplace les anciennes intactes
 #   pulse-aidd ligne-etat [--installer [--remplacer] | --retirer]  la ligne d'état de Claude Code (US, tâche, avancement, décision en attente) ; --installer la règle dans .claude/settings.local.json (/pulse:status ligne)
+#   pulse-aidd captures effacer <US-XXX>  retire les captures d'écran gardées comme preuves (aidd_docs/captures/<US-XXX>/), une fois l'US envoyée
 #   pulse-aidd bilan                 le bilan chiffré de chaque US (tâches, relectures, corrections, tests non concluants, constats par gravité)
+#   pulse-aidd realisation [debut|etape|questions|fin]  le marqueur « réalisation en cours » (aidd_docs/tasks/realisation.json) : debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] · etape <Tn> <étape> · questions <n> · fin ; sans action : l'état
 #   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
@@ -375,6 +377,8 @@ case "$1" in
     exec node "$RACINE/skills/ui/scripts/comparer.js" "$2" ;;
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
+  realisation)
+    shift; exec node "$RACINE/scripts/realisation.js" "$@" ;;
   sessions)
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   verifier)
@@ -387,6 +391,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/copies.js" "$@" ;;
   ligne-etat)
     shift; exec node "$RACINE/scripts/ligne-etat.js" "$@" ;;
+  captures)
+    shift; exec node "$RACINE/scripts/captures.js" "$@" ;;
   bilan)
     exec node "$RACINE/scripts/bilan.js" ;;
   verifier-spec)

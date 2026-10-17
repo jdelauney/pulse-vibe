@@ -5,6 +5,7 @@
 > Un plan par spec, donc par user story. Numéros de tâche uniques dans tout le projet : ce plan reprend après le plus grand `Tn` des autres plans de `aidd_docs/tasks/`.
 > La tâche « Mettre en ligne la première version » figure uniquement dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`).
 > Statuts : `[ ]` à faire · `[~]` en cours · `[x]` terminé : c'est le tableau de suivi des tâches.
+> Une tâche qui attend une décision de la personne porte la sous-ligne facultative `En pause : Q<n> (votre décision)`.
 > Chaque tâche est petite (une seule chose visible à tester) et livre de la valeur (découpage vertical).
 
 ## Vue d'ensemble
@@ -114,6 +115,18 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 | Détail | Proposition | Pourquoi ça compte | Tâche | Décision |
 |---|---|---|---|---|
 | {{ex. mots de passe}} | {{ex. les enregistrer sous une forme illisible (hachage)}} | {{ex. une fuite de la base ne révélerait aucun mot de passe}} | {{Tn}} | {{accepté · refusé · exigé par la sécurité}} |
+
+## Questions en attente
+
+<!-- Seulement si une décision revient à la personne et que Pulse a continué sans elle ; sinon supprimer cette section, avec ce commentaire. Une ligne par question, la tâche concernée porte « En pause : Q<n> (votre décision) ». Question ouverte : `- [ ] Q1 · T4 · <question> · Options : <a> / <b> · Recommandé : <a>`. Répondue : `- [x] Q1 · T4 · … · Réponse : <a> (AAAA-MM-JJ)`. Travail mis de côté : ajouter `· Mis de côté : pulse: T4 en attente`. -->
+
+- [ ] Q1 · {{Tn}} · {{question en mots de tous les jours}} · Options : {{a}} / {{b}} · Recommandé : {{a}}
+
+## Choix faits par Pulse
+
+<!-- Seulement si Pulse a tranché seul un point mineur pour avancer ; sinon supprimer cette section, avec ce commentaire. Une ligne par choix : `- T4 · <choix retenu> · Autre possibilité : <…> · Raison : <…>`. -->
+
+- {{Tn}} · {{choix retenu}} · Autre possibilité : {{…}} · Raison : {{…}}
 
 ## Points d'attention
 

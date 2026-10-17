@@ -83,3 +83,8 @@ test("installer : copie, réglage local, .gitignore ; une autre ligne d'état re
   assert.match(lancer(casse, "", "--installer").stdout, /^erreur: .*rien n'a été modifié/);
   assert.strictEqual(fs.readFileSync(path.join(casse, ".claude", "settings.local.json"), "utf8"), "{ pas du json");
 });
+
+test("plan avec questions en attente et « En pause » : la tâche en pause compte comme à faire", () => {
+  const plan = "# Plan\n\n## Tâches\n\n- [x] **T3 – C** · US-002\n- [ ] **T4 – D** · US-002\n  - En pause : Q1 (votre décision)\n\n## Questions en attente\n\n- [ ] Q1 · T4 · Garder ? · Options : oui / non · Recommandé : oui\n\n## Choix faits par Pulse\n\n- T4 · tri · Autre possibilité : nom · Raison : simple\n\n## Journal\n";
+  assert.strictEqual(ligne(projet({ "aidd_docs/tasks/g/PLAN-SPEC-US-002-b.md": plan })), "Pulse · US-002 · prochaine : T4 · 1/2 tâches");
+});

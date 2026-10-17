@@ -2,7 +2,7 @@
 description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés
 argument-hint: "[ligne | ligne retirer]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd bilan) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
+allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd bilan) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite) Bash(pulse-aidd tests) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd travail-fini *) Bash(pulse-aidd realisation fin) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git worktree list*) Bash(git -C * status --short) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
 
 # /pulse:status – Où en suis-je ?
@@ -15,7 +15,7 @@ Répondre à « Où en suis-je ? » : les étapes faites, les tâches à faire, 
 
 Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
 
-Cette commande **lit et résume**. Elle modifie seulement trois choses, chaque fois avec l'accord de la personne : elle efface un travail en cours devenu sans objet (ligne `ancien: oui` de `pulse-aidd etat`), supprime les worktrees dont le travail est déjà fusionné (§ Worktrees) et, avec l'argument `ligne`, règle la ligne d'état (§ La ligne d'état).
+Cette commande **lit et résume**. Elle modifie seulement quatre choses, chaque fois avec l'accord de la personne : elle efface un travail en cours devenu sans objet (ligne `ancien: oui` de `pulse-aidd etat`), retire le repère d'une réalisation interrompue (ligne `realisation: perimee`), supprime les worktrees dont le travail est déjà fusionné (§ Worktrees) et, avec l'argument `ligne`, règle la ligne d'état (§ La ligne d'état).
 
 ## Contexte
 
@@ -35,13 +35,14 @@ Argument : `$ARGUMENTS` (vide : le tableau de bord ; `ligne` ou `ligne retirer` 
 6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée. **Référencement** : la section « Référencement » de `docs/technical.md` (propriété reliée et date) et le rapport le plus récent de `docs/referencement/` (sa date, et la date du prochain rapport conseillé écrite à sa fin).
 7. **Dernière relecture** : le rapport de tâche le plus récent dans `aidd_docs/tasks/*/revues/*/` et son verdict ; le dernier audit `docs/securite.md` s'il existe.
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
-9. **Travail en cours** : `pulse-aidd etat` signale la décision en attente (clé `attente`).
+9. **Travail en cours** : `pulse-aidd etat` signale la décision en attente (clé `attente`) et le nombre de questions ouvertes des plans (clé `questions`) ; pour nommer l'US, lire la section « Questions en attente » des plans de `aidd_docs/tasks/*/`. Avec la ligne `realisation: perimee` (une réalisation arrêtée depuis plusieurs heures sans se terminer), le dire en une phrase et demander (AskUserQuestion) « La reprendre (Recommandé) » (`/pulse:spirc US-XXX` ou `/pulse:implement US-XXX`) / « La considérer comme terminée » (`pulse-aidd realisation fin`).
 
 ### Format de réponse
 
 ```
 📍 Projet : <nom> (pile : <résumé de « Pile retenue » de docs/technical.md, ou « non choisie »>)
 ⏸️ En attente : <décision en attente> — reprendre avec <commande>   (ligne absente s'il n'y a pas de travail en cours)
+❓ <N> questions vous attendent — répondre avec /pulse:spirc US-XXX   (ligne absente quand la clé `questions` est absente)
 
 Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facultatif) · ⬜ user stories · ⬜ spec · ⬜ plan
 Rythme   : <ligne « Rythme » du profil de CLAUDE.md> (à changer : « rythme rapide », « rythme complet » ou « demande-moi le rythme à chaque fois »)
