@@ -31,7 +31,7 @@ const PLAFONDS = {
   brainstorm: 34000, // mesure 31 945
   tech: 60500, // mesure 57 222
   memory: 32000, // mesure 30 261
-  spirc: 32500, // mesure 30 906 (pulse 0.40 : règle commune 19 et fiche de test)
+  spirc: 33000, // mesure 32 608 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
   express: 40500, // mesure 38 394
   prd: 28500, // mesure 26 982
   us: 30500, // mesure 28 742
@@ -66,7 +66,8 @@ const PLAFONDS = {
 // Mesures à la fin du plan « Corrections 4 » : review 12 476, commit 26 737 (× 1,05, au 500 supérieur).
 // review relevé à 15 000 (pulse 0.39) : trame des skills (Objectif, Règles, Contexte, Rôle, Processus, Exemples), mesure 13 945.
 // review relevé à 16 000 (pulse 0.40) : règle commune 19 et fiche de test, mesure 15 023.
-const PLAFONDS_ETAPES = { review: 16000, commit: 28500 };
+// review : mesure 16 289 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
+const PLAFONDS_ETAPES = { review: 16500, commit: 28500 };
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.

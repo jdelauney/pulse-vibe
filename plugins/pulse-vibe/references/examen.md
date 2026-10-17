@@ -23,6 +23,8 @@ Un agent indisponible : faire son travail soi-même en suivant **strictement** s
 
 ## 3. Écrire le rapport
 
+Avant d'écrire le rapport, comparer les constats du reviewer à ceux des rapports précédents de la même US. Même remarque sur deux tâches et motif sûr : proposer une règle contrôlée (`pulse-aidd reference controles-proposes.md`) ; en autonome, elle rejoint l'accord sur la mémoire du test groupé.
+
 Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/<Tâche>-<AAAA-MM-JJ>.md` (modèle « rapport de revue » ; créer le dossier au besoin ; suffixe `-2`, `-3` si un rapport du même jour existe). Il contient, dans l'ordre :
 
 - la ligne `Mode` (la commande, et « contrôle de sécurité à chaque tâche » s'il y a lieu) ;
