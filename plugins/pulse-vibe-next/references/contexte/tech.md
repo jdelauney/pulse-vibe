@@ -17,6 +17,7 @@ Une fois la pile choisie :
 Proposés selon `pulse-aidd reference controles-proposes.md`, une fois la mise en place faite.
 
 - **`secrets-publics`** : une variable publique ne porte jamais un secret.
+  - Condition : le dossier `app/` existe.
   - Phrase : « Voulez-vous que Pulse refuse qu'un mot de passe ou une clé secrète soit mis dans une variable visible par tous les visiteurs ? »
   - Ligne :
 
