@@ -47,3 +47,8 @@ test("garde.js passe l'entrée aux deux garde-fous", () => {
   const source = fs.readFileSync(path.join(RACINE, "scripts", "garde.js"), "utf8");
   for (const m of ["./garde-secrets", "./garde-commandes"]) assert.ok(source.includes(`"${m}"`), m);
 });
+
+test("PostToolUse : un seul point d'entrée, apres-ecriture.js, pour chaque outil d'écriture", () => {
+  for (const outil of ["Write", "Edit", "MultiEdit"])
+    assert.deepStrictEqual(scriptsPour("PostToolUse", outil).map((x) => x.script), ["apres-ecriture.js"], outil);
+});
