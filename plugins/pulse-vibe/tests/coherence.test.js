@@ -622,7 +622,28 @@ test("spirc : le mode autonome s'arrête aussi pour la validation du plan", () =
   const puce = texte.split("\n").find((l) => l.startsWith("- `-a`"));
   assert.match(puce, /validation du plan quand il vient d'être créé/);
   assert.match(texte, /vous testez tout à la fin\)/);
-  assert.match(texte, /je m'arrête seulement pour vos décisions : besoin, validation du plan, actions à la main/);
+  assert.match(texte, /je note vos décisions et vous les pose ensemble ; vous testez tout à la fin\)/);
+});
+
+test("spirc : en autonome, une décision arrête seulement sa tâche ; petits choix notés ; travail mis de côté sans suppression", () => {
+  const texte = skillTexte("spirc");
+  const puce = texte.split("\n").find((l) => l.startsWith("- `-a`"));
+  assert.match(puce, /seule sa tâche s'arrête/);
+  assert.doesNotMatch(texte, /interrompt aussi le mode autonome/);
+  const section = texte.split("### Questions en attente (mode autonome)")[1].split("\n### ")[0];
+  assert.match(section, /En pause : Q<n> \(votre décision\)/);
+  assert.match(section, /git stash push -u -m "pulse: T4 en attente" -- <fichiers de T4>/);
+  assert.match(section, /git stash pop stash@\{k\}/);
+  assert.match(section, /retirer la sous-ligne `En pause : Q<n>`/);
+  assert.match(section, /4 par ronde/);
+  assert.doesNotMatch(section, /git stash (drop|clear)/);
+  assert.match(texte, /`decision` → elle attend une réponse/);
+  assert.match(texte, /Vous pouvez faire autre chose : je note mes questions et vous les pose toutes ensemble/);
+  assert.match(texte, /« Garder ce choix \(Recommandé\) » \/ « Changer ce choix »/);
+  assert.match(texte, /\*\*Conversation longue\*\* \(hors mode autonome\)/);
+  for (const etape of ["test", "realisation", "examen", "commit", "questions", "test-groupe"]) assert.match(texte, new RegExp("`" + etape + "`"), etape);
+  assert.match(texte, /pulse-aidd realisation fin/);
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Petit choix\*\*[^\n]*Dans le doute, c'est une question/);
 });
 
 // Mots réservés aux consignes (liste partagée avec wiki.test.js).
