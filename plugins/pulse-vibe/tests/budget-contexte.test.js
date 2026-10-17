@@ -39,11 +39,11 @@ const PLAFONDS = {
   plan: 50500, // mesure 47 800
   implement: 45000, // mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 24000, // mesure 22 408
-  review: 32500, // mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  commit: 39000, // mesure 37 065
+  review: 33000, // mesure 32 689 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  commit: 40000, // mesure 39 262 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 37 065
   pr: 32000, // mesure 30 391
   annuler: 38500, // mesure 36 358
-  "get-help": 23500, // mesure 22 362
+  "get-help": 24500, // mesure 23 875 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 22 362
   cicd: 39500, // mesure 37 332
   deploy: 36000, // mesure 33 877
   security: 39500, // mesure 37 291
@@ -56,10 +56,10 @@ const PLAFONDS = {
   "search-console": 43500, // mesure 41 273
   learn: 36000, // mesure 34 226
   explain: 24000, // mesure 22 408
-  test: 43000, // mesure 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
-  "auto-fix": 22500, // mesure 21 180
+  test: 43500, // mesure 43 219 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
+  "auto-fix": 23000, // mesure 22 693 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 21 180
   status: 25000, // mesure 23 367 (28 764 avant la tâche 11 : le tableau des fichiers du projet se charge à la demande)
-  guide: 30500, // mesure 28 747
+  guide: 31000, // mesure 30 613 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 28 747
 };
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
@@ -75,35 +75,35 @@ const PLAFONDS_ETAPES = { review: 17500, commit: 29000 }; // review : mesure 17 
 const PLAFONDS_COMMANDE = {
   annuler: 48500, // mesure 45 775
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
-  brainstorm: 44000, // mesure 41 756
+  brainstorm: 45000, // mesure 44 387 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 41 756
   cicd: 51000, // mesure 48 229
-  commit: 51000, // mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  commit: 51500, // mesure 51 111 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 52000, // mesure 49 125
   explain: 29000, // mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 53500, // mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
   fix: 35500, // mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 29500, // mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
-  guide: 34500, // mesure 32 577
+  guide: 35000, // mesure 34 735 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 32 577
   implement: 64000, // mesure 60 878 (pulse 0.47 : la boucle sur tout le plan chargée seulement sans tâche, skills/implement/references/boucle.md)
   init: 69500, // mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
-  learn: 41500, // mesure 39 206
-  memory: 41000, // mesure 38 661
+  learn: 42000, // mesure 41 687 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 39 206
+  memory: 42000, // mesure 41 339 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 38 661
   perf: 57500, // mesure 54 519
   plan: 66500, // mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 41000, // mesure 38 807
-  prd: 34000, // mesure 32 244
+  prd: 34500, // mesure 34 101 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 32 244
   rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 54500, // mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 40000, // mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 56000, // mesure 52 989
   secrets: 50000, // mesure 47 290
-  security: 46000, // mesure 43 499
+  security: 46500, // mesure 46 169 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 43 499
   seo: 61000, // mesure 57 741
   spec: 51000, // mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 66000, // mesure 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
+  spirc: 70500, // mesure 70 027 (pulse 0.48 : questions en attente, petits choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
   status: 36500, // mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
   tech: 79500, // mesure 75 338
-  test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
+  test: 50000, // mesure 49 531 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 81500, // mesure 77 215
   us: 41000, // mesure 38 722
 };
@@ -117,7 +117,7 @@ const BOUCLES = {
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 88000, // mesure 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+    plafond: 89000, // mesure 88 326 (pulse 0.48 : petit choix, règles communes § 1) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };
