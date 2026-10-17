@@ -263,12 +263,12 @@ function codeExistant(racine) {
   );
 }
 
-/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md (dont la trame d'avant « Résumé du projet »), .gitignore sans le travail en cours, contrôle avant commit absent. */
+/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md (dont la trame d'avant « Résumé du projet »), .gitignore sans le travail en cours ni les captures, contrôle avant commit absent. */
 function modeleAncien(racine, texteClaude) {
   const p = (...x) => path.join(racine, ...x);
   if (texteClaude !== null && (!/^## Résumé du projet\s*$/m.test(texteClaude) || /AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
   const gitignore = lireSi(p(".gitignore"));
-  if (gitignore !== null && !gitignore.includes("aidd_docs/tasks/in-progress.md")) return true;
+  if (gitignore !== null && (!gitignore.includes("aidd_docs/tasks/in-progress.md") || !gitignore.includes("aidd_docs/captures/"))) return true;
   // Une copie de Pulse (contrôle des secrets, ligne d'état) intacte mais posée par une version plus ancienne.
   const { etatDe } = require("./copies.js");
   if (etatDe("verifier", p("scripts", "verifier.js")) === "ancienne" || etatDe("ligne-etat", p(".claude", "pulse-ligne-etat.js")) === "ancienne") return true;
