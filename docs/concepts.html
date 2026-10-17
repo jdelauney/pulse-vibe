@@ -146,6 +146,25 @@
 </ul>
 </section>
 
+<section id="travailler-seul">
+<h2>Laisser Pulse travailler seul</h2>
+<p>Une réalisation peut durer plusieurs heures. En mode autonome (<code>-a</code>), en rythme rapide ou pour plusieurs user stories à la suite, Pulse enchaîne les tâches sans vous attendre. Au lancement, il vous le dit : vous pouvez faire autre chose et revenir pour décider et tester.</p>
+<ul>
+<li><strong>Les questions en attente.</strong> Une question sur votre besoin, une priorité, le périmètre, la sécurité ou un coût, ou une action à faire à la main, n'arrête que la tâche concernée et celles qui en dépendent. Pulse la note dans le plan (section « Questions en attente »), met la tâche « en pause : votre décision » et continue avec les autres. Quand plus rien ne peut avancer, ou à la fin, il vous pose toutes les questions ensemble, puis reprend les tâches en pause avec vos réponses. Le travail déjà commencé sur la tâche est mis de côté avec Git, sans rien perdre, puis remis en place.</li>
+<li><strong>Les choix faits par Pulse.</strong> Un petit choix qui se défait facilement (un nom, l'ordre de deux boutons, le texte d'un message) est tranché par Pulse, qui l'écrit en une ligne dans le plan (section « Choix faits par Pulse »). Au test groupé, la liste vient en premier : pour chaque choix, vous le gardez ou vous le changez. Dans le doute, Pulse pose la question.</li>
+<li><strong>Où on en est.</strong> <a href="commandes/status.html"><code>/pulse:status</code></a> dit à tout moment où en est la réalisation et combien de questions vous attendent. Après une pause, un redémarrage ou un résumé automatique de la conversation, Pulse relit l'état dans le plan et non dans son souvenir.</li>
+<li><strong>Des vérifications sans vous.</strong> Quand un assistant rend la main, Pulse contrôle les fichiers qu'il vient d'écrire : règles du projet, clés secrètes, contrôles automatiques rapides. Si quelque chose ne va pas, l'assistant corrige avant de continuer, deux fois au plus ; après, Pulse vous dit franchement ce qui reste à corriger. En rythme complet, toute la suite de tests sans navigateur tourne aussi avant l'enregistrement de chaque tâche.</li>
+<li><strong>Des captures comme preuves.</strong> Pour chaque critère visible, la vérification garde une capture d'écran (avant et après une correction), sur votre ordinateur seulement et jamais dans Git. Elles sont effacées quand la user story est terminée et envoyée.</li>
+<li><strong>Une notification.</strong> Pendant une réalisation, Pulse peut afficher une notification du bureau quand il vous attend : des questions, un test à faire, un accord à donner.</li>
+<li><strong>La limite d'utilisation.</strong> Quand votre abonnement atteint sa limite, Claude Code peut reprendre tout seul à la remise à zéro. Avant de partir en autonome, Pulse vérifie que cette reprise automatique est active (réglage « Continuer automatiquement à la limite d'utilisation ») et vous explique comment l'activer sinon.</li>
+</ul>
+<aside class="encadre encadre-attention"><p><strong>Attention :</strong> la notification et la reprise automatique ne sont pas garanties partout. Elles sont prévues pour Claude Code lancé dans un terminal (Windows Terminal, iTerm2, WezTerm…) ; selon le terminal, la notification peut ne pas s'afficher. Dans l'extension VS Code, nous n'avons pas pu confirmer qu'elles fonctionnent. Si vous partez pour longtemps, lancez Claude Code dans un terminal, ou revenez de temps en temps : <code>/pulse:status</code> vous dit où en est le travail. Après une longue veille, une touche Entrée peut être nécessaire pour relancer.</p></aside>
+<ul>
+<li><strong>Dans votre projet :</strong> les sections « Questions en attente » et « Choix faits par Pulse » du plan, les captures dans <code>aidd_docs/captures/</code> (ignorées par Git), et un petit fichier de suivi de la réalisation, <code>aidd_docs/tasks/realisation.json</code>, effacé à la fin.</li>
+<li><strong>Commandes :</strong> <a href="commandes/spirc.html"><code>/pulse:spirc</code></a> avec <code>-a</code>, <code>-f</code> ou plusieurs user stories, <a href="commandes/status.html"><code>/pulse:status</code></a> pour suivre.</li>
+</ul>
+</section>
+
 <section id="version-enregistree">
 <h2>La version enregistrée et l'historique</h2>
 <p>Une version enregistrée est une photo datée de votre projet, avec une légende. Toutes ces photos, mises bout à bout, forment l'<strong>historique</strong>. Vous pouvez toujours revenir à une photo précédente sans rien perdre. C'est le logiciel <strong>Git</strong> qui garde cet historique ; une version enregistrée s'appelle un <dfn>commit</dfn>.</p>
