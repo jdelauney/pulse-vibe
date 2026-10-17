@@ -46,8 +46,7 @@ Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient 
 
 Ce contrôle porte sur les tâches `[~]` des plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) concernées par ce commit : celles dont les fichiers en font partie (sujets triés au § 3 ; appelé par `/pulse:implement` ou `/pulse:spirc` : la tâche en cours). Pour chacune, lancer `pulse-aidd revue <Tn>` (plusieurs tâches : `pulse-aidd revue T3 T4`) et suivre sa ligne `reprendre` :
 
-- `commit` : la tâche est relue, vérifiée et testée par la personne (ou son test est reporté au test groupé du mode autonome) : continuer.
-- En rythme complet, la ligne « Filet anti-régression » du rapport est présente et plus récente que la dernière modification de fichier (référence « Tests automatiques » § 2 ter) ; sinon, relancer toute la commande « Tester » avant de continuer.
+- `commit` : la tâche est relue, vérifiée et testée par la personne (ou son test est reporté au test groupé du mode autonome) : continuer. En rythme complet, d'abord le filet anti-régression : référence « Tests automatiques » § 2 ter.
 - `examen` (aucun rapport), appelé par `/pulse:spirc` en rythme rapide : continuer ; toute l'US sera relue à la fin, la remarque du journal vaut « rythme rapide · relecture de l'US à la fin ».
 - `examen` (aucun rapport), dans les autres cas : demander (AskUserQuestion) : « Cette tâche attend encore sa relecture. » → « Lancer la relecture d'abord (Recommandé) » / « Enregistrer quand même ». Dans le premier cas, s'arrêter et proposer `/pulse:review <Tn>`. Dans le second, la ligne de journal de la tâche porte la remarque « enregistrée sans relecture, à la demande de la personne ».
 - `test` : la relecture est faite, le test par la personne manque encore. Enregistrer seulement une tâche testée : s'arrêter, le dire en une phrase (« Votre test de T3 manque encore : c'est lui qui confirme que la tâche fonctionne. ») et proposer `/pulse:review <Tn>`, qui reprend directement au test.
