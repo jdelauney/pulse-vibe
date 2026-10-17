@@ -38,7 +38,7 @@
 
 🔁 Recommencez pour chaque tâche. Ou laissez `/pulse:spirc US-001` enchaîner : des assistants réalisent, relisent et vérifient ; il s'arrête pour votre accord et c'est vous qui testez.
 Astuce : `/pulse:spirc US-001 "ajouter un filtre par date"` ajoute une demande précise au plan de l'US (ou crée une nouvelle US si c'est un nouveau besoin) et la traite de bout en bout.
-😴 Laisser Pulse travailler seul (`-a`, `-f`, `version`) : une question n'arrête que sa tâche ; Pulse vous les pose toutes ensemble et note ses petits choix pour que vous les relisiez. `/pulse:status` dit combien de questions vous attendent. Une notification du bureau peut vous prévenir (testée pour le terminal, pas confirmée dans VS Code).
+😴 Laisser Pulse travailler seul (`-a`, `-f`, `version`) : une question n'arrête que sa tâche ; Pulse vous les pose toutes ensemble et note ses petits choix pour que vous les relisiez. `/pulse:status` dit combien de questions vous attendent. Une notification du bureau peut vous prévenir (prévue pour le terminal, non confirmée dans l'extension VS Code).
 🚀 Toute la première version d'un coup : `/pulse:spirc version` prépare avec vous les specs et les plans de toutes les US Indispensables, puis les réalise à la suite ; à votre retour, les questions mises de côté, puis un test par US.
 Sans argument, chaque commande vous montre les specs ou les plans existants et vous demande lequel choisir.
 
