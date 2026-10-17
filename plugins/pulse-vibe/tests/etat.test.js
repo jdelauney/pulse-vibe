@@ -405,7 +405,8 @@ test("modèle à mettre à niveau : une ligne « aussi », jamais un blocage du 
   assert.ok(a({ "CLAUDE.md": CLAUDE().replace("## Résumé du projet\n", "## Le projet\n") }), "trame d'avant « Résumé du projet »");
   assert.ok(!a({ "CLAUDE.md": CLAUDE() }), "trame actuelle : rien à mettre à niveau");
   assert.ok(a({ ".gitignore": ".env\n" }));
-  assert.ok(!a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }));
+  assert.ok(a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }), "sans le dossier des captures");
+  assert.ok(!a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\naidd_docs/tasks/realisation.json\naidd_docs/captures/\n" }));
   const crochet = { "scripts/verifier.js": "x", ".git/hooks/pre-commit": "#!/bin/sh\nexit 0\n" };
   assert.ok(a(crochet));
   assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\nexec node \"$secours/pulse/verifier.js\" --index\n" }), "crochet à jour");
