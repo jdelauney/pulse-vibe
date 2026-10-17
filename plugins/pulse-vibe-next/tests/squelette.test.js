@@ -184,6 +184,9 @@ test("accessibilité du squelette : lien d'évitement, axe et cibles sur chaque 
   assert.ok(layout.indexOf('href="#contenu"') < layout.indexOf("<NuqsAdapter>"), "premier élément du corps");
   const paquet = JSON.parse(lireS("package.json"));
   assert.ok(paquet.devDependencies["@axe-core/playwright"], "@axe-core/playwright");
+  // @axe-core/playwright attend playwright-core en dépendance de pair : sans alignement, npm installe la dernière
+  // version publiée à côté de celle de @playwright/test, et les deux types Page ne se reconnaissent plus.
+  assert.strictEqual(paquet.overrides?.["playwright-core"], "$@playwright/test", "playwright-core aligné sur @playwright/test");
   const aide = lireS("e2e", "aides", "accessibilite.ts");
   assert.match(aide, /new AxeBuilder\(\{ page \}\)\s*\.withTags\(WCAG_AA\)/);
   assert.match(aide, /\.exclude\(OUTILS_NEXT\)/, "outils de développement de Next ignorés");

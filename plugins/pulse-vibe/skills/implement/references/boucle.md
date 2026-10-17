@@ -25,6 +25,8 @@ Pour chaque tâche, dans l'ordre du plan :
 
 S'arrêter aussi avant une tâche « Mettre en ligne… » (elle se fait avec `/pulse:deploy`) et à tout blocage (§ 1). Après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:implement <US-XXX>` : la boucle reprend grâce aux statuts du plan et aux rapports de revue (une tâche `[~]` reprend là où l'indique `pulse-aidd revue <Tn>`, test de la personne compris).
 
+Plan terminé : lancer « Tester de bout en bout » (§ 2 ter des tests) ; échec = constat Critique.
+
 À la fin, présenter un récapitulatif :
 
 ```

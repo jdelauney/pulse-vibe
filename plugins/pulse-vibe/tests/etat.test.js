@@ -695,6 +695,27 @@ test("pulse-aidd etat : « questions » = questions ouvertes sous « ## Question
   assert.strictEqual(etat(deux).questions, "3");
 });
 
+test("pulse-aidd etat : « questions » ignore l'exemple du modèle (« {{ ») et les fichiers qui ne sont pas PLAN-SPEC-US-*", () => {
+  const base = { ...AVANT_US, ...SPECS_VALIDEES };
+  const exemple = "- [ ] Q1 · {{tâche}} · {{question}} · Options : {{a}} / {{b}} · Recommandé : {{a}}";
+  assert.strictEqual(etat(projet({ ...base, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(exemple) }, PILE_CHOISIE)).questions, undefined);
+  const autre = projet({ ...base, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(Q_REPONDUE), "aidd_docs/tasks/gerer-taches/PLAN-notes.md": PLAN_EN_PAUSE(Q_OUVERTE) }, PILE_CHOISIE);
+  assert.strictEqual(etat(autre).questions, undefined);
+});
+
+test("formater : la racine par défaut est le dossier courant", () => {
+  const { lireFaits, lireOptions, decider, formater } = require(ETAT);
+  const d = projet({ ...AVANT_US, ...SPECS_VALIDEES, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(Q_OUVERTE) }, PILE_CHOISIE);
+  const avant = process.cwd();
+  process.chdir(d);
+  try {
+    const faits = lireFaits(d, lireOptions(["--sans-git", "--aujourdhui", "2026-10-08"]));
+    assert.match(formater(faits, decider(faits)), /^questions: 1$/m);
+  } finally {
+    process.chdir(avant);
+  }
+});
+
 test("pulse-aidd etat : « realisation: perimee » quand le marqueur n'a pas bougé depuis plus de 6 h, absent sinon", () => {
   const marqueur = (heures) => JSON.stringify({ us: "US-002", commande: "spirc", maj: new Date(Date.now() - heures * 3600 * 1000).toISOString() });
   const base = { ...AVANT_US, ...SPECS_VALIDEES };

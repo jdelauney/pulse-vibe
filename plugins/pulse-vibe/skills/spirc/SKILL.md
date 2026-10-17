@@ -159,7 +159,7 @@ Appliquer « Rouge : écrire les tests » (§ 4 de la référence « Tests autom
    - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse.
    - **Bloqué** sur une action manuelle (appliquer un schéma dans la console du fournisseur, créer un compte, saisir une variable chez l'hébergeur) : guider la personne pas à pas, puis relancer.
    - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
-   - En mode autonome, ces trois cas suivent le § « Questions en attente » (petit choix compris), et la boucle continue avec la tâche suivante.
+   - En mode autonome, ces trois cas suivent le § « Questions en attente » (un petit choix s'y règle seul, sans question), et la boucle continue avec la tâche suivante.
    - **Terminé** : avec `-t`, appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques », jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles ; puis passer à l'examen. Les points « À signaler » sur `docs/` sont traités par vous (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
 
 #### [R] Relire et vérifier (eXaminer)
@@ -207,7 +207,7 @@ Pour une question en attente :
 2. **Mettre de côté le travail commencé** sur T4 (ses fichiers modifiés ou créés, vus avec `git status`) : `git stash push -u -m "pulse: T4 en attente" -- <fichiers de T4>`, puis ajouter `· Mis de côté : pulse: T4 en attente` à la ligne de la question. Le commit d'une autre tâche reste ainsi sans fichier de T4.
 3. **Continuer** avec la tâche suivante qui n'attend rien.
 4. **Arrêt unique**, quand plus aucune tâche ne peut avancer, ou à la fin de la portée : les questions d'abord, puis le test groupé. Écrire `in-progress.md`, puis poser toutes les questions ensemble (AskUserQuestion, 4 par ronde, la recommandation en premier). Pour chaque réponse : cocher la ligne (`- [x] … · Réponse : <a> (AAAA-MM-JJ)`), noter la décision dans « Ajouts proposés par Pulse », retirer la sous-ligne `En pause : Q<n>` de chaque tâche qu'elle bloquait, et mettre à jour `pulse-aidd realisation questions <n>`.
-5. **Remettre le travail en place** avant de reprendre T4 : `git stash list` donne l'entrée « pulse: T4 en attente » (`stash@{k}`) ; comparer `git stash show --name-only stash@{k}` à `git status --porcelain`. Un fichier dans les deux listes : garder le travail de côté, expliquer qu'un fichier de T4 a changé entre-temps et demander à la personne comment continuer (AskUserQuestion : « Demander de l'aide (`/pulse:get-help`) (Recommandé) » / « Laisser T4 pour plus tard »). Sinon, `git stash pop stash@{k}`. En cas de conflit, la boucle s'arrête là (c'est l'arrêt unique) : garder l'entrée mise de côté, expliquer simplement ce qui se passe, proposer `/pulse:get-help` et laisser toutes les tâches en l'état. Puis reprendre les tâches débloquées (boucle par tâche), avant le test groupé.
+5. **Remettre le travail en place** avant de reprendre T4 : `git stash list` donne l'entrée « pulse: T4 en attente » (`stash@{k}`) ; comparer `git stash show --include-untracked --name-only stash@{k}` à `git status --porcelain`. Un fichier dans les deux listes : garder le travail de côté, expliquer qu'un fichier de T4 a changé entre-temps et demander à la personne comment continuer (AskUserQuestion : « Demander de l'aide (`/pulse:get-help`) (Recommandé) » / « Laisser T4 pour plus tard »). Sinon, `git stash pop stash@{k}`. En cas de conflit, la boucle s'arrête là (c'est l'arrêt unique) : garder l'entrée mise de côté, expliquer simplement ce qui se passe, proposer `/pulse:get-help` et laisser toutes les tâches en l'état. Puis reprendre les tâches débloquées (boucle par tâche), avant le test groupé.
 
 ### Test groupé (mode autonome)
 
@@ -226,6 +226,8 @@ En rythme rapide, d'abord écrire `aidd_docs/tasks/in-progress.md` (« Pour repr
 
 ### Fin
 
+Hors autonome, US faite : lancer « Tester de bout en bout » (§ 2 ter des tests) ; échec = constat Critique.
+
 Présenter un récapitulatif :
 
 ```
@@ -234,11 +236,11 @@ Présenter un récapitulatif :
 | T1 – … | 6 ✅ (ou —) | ✅ Validé · ✅ Prouvé | 3 / 1 | ✅ | abc1234 |
 ```
 
-Une fois l'US envoyée, retirer ses captures de preuve : `pulse-aidd captures effacer <US-XXX>` (elle ne supprime que les images du verifier de cette US, dans `aidd_docs/captures/`).
-
 Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi, les questions encore ouvertes, le travail encore mis de côté (`git stash list` : entrées « pulse: T<n> en attente »).
 
 **Dans un worktree** : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (fusion, demande de fusion ou worktree gardé), après avoir vérifié que les références de la réalisation sont chargées ; sinon les relancer (voir « Choisir la façon de travailler »).
+
+Une fois l'US réellement envoyée (travail publié, fusion ou demande de fusion faite), retirer ses captures de preuve : `pulse-aidd captures effacer <US-XXX>` (elle ne supprime que les images du verifier de cette US, dans `aidd_docs/captures/`).
 
 Retirer le marqueur : `pulse-aidd realisation fin`.
 

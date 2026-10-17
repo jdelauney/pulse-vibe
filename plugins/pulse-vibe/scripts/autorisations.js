@@ -133,7 +133,10 @@ if (require.main === module) {
     if (process.argv.includes("--ecrire")) console.log(`fichier: .claude/settings.json\necrites: ${ecrire(racine)}`);
     else {
       const manque = manquantes(racine);
-      console.log([`fichier: .claude/settings.json`, `reprise-auto: ${repriseAuto(lireReglagesUtilisateur(), lireVersionClaude())}`, `manquantes: ${manque.length}`, ...manque.map((x) => `- ${x.sorte} ${x.regle}`)].join("\n"));
+      const reglagesUtilisateur = lireReglagesUtilisateur();
+      // Réglage à faux : la réponse est déjà « desactivee », inutile de lancer `claude --version`.
+      const version = reglagesUtilisateur && reglagesUtilisateur.autoContinueAtUsageLimit === false ? null : lireVersionClaude();
+      console.log([`fichier: .claude/settings.json`, `reprise-auto: ${repriseAuto(reglagesUtilisateur, version)}`, `manquantes: ${manque.length}`, ...manque.map((x) => `- ${x.sorte} ${x.regle}`)].join("\n"));
     }
   } catch (e) {
     console.log(`erreur: ${e.message} (rien n'a été modifié dans .claude/settings.json)`);

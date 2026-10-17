@@ -300,7 +300,7 @@ test("SubagentStop : type d'agent sans préfixe (implementer) reconnu", () => {
   assert.strictEqual(lancer(d, r), null);
 });
 
-test("blocage puis écriture notée pendant le contrôle : l'écriture reste dans le relevé", () => {
+test("blocage, puis écriture faite après ce premier blocage : reprise au Stop suivant, le relevé garde les deux fichiers", () => {
   const d = projet();
   const e = { session_id: session() };
   ecrire(d, "src/prix.js", "parseFloat(x)\n");

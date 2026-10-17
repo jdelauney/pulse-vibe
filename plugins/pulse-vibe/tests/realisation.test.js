@@ -12,8 +12,10 @@ const { spawnSync } = require("child_process");
 const SCRIPT = path.join(__dirname, "..", "scripts", "realisation.js");
 const MARQUEUR = path.join("aidd_docs", "tasks", "realisation.json");
 
-function projet() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), "pulse-realisation-"));
+function projet(pulse = true) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-realisation-"));
+  if (pulse) fs.writeFileSync(path.join(d, "CLAUDE.md"), "# P\n\n<!-- pulse_profil:debut -->\n<!-- pulse_profil:fin -->\n");
+  return d;
 }
 
 function lancer(dossier, ...args) {
@@ -196,4 +198,47 @@ test("trouver : premier marqueur vivant parmi la racine Git du cwd, CLAUDE_PROJE
     if (avant === undefined) delete process.env.CLAUDE_PROJECT_DIR;
     else process.env.CLAUDE_PROJECT_DIR = avant;
   }
+});
+
+test("debut refuse un numéro d'US invalide : une phrase, code 1, rien d'écrit", () => {
+  for (const us of ["", "US-1", "003", "US-00x", "T3"]) {
+    const d = projet();
+    const r = lancer(d, "debut", ...(us ? [us] : []), "--commande", "spirc", "--rythme", "rapide");
+    assert.strictEqual(r.status, 1, `${us}: ${r.stderr}`);
+    assert.match(r.stdout, /US-001/);
+    assert.strictEqual(r.stdout.trim().split("\n").length, 1);
+    assert.ok(!fs.existsSync(path.join(d, MARQUEUR)), "aucun marqueur écrit");
+  }
+  const d = projet();
+  assert.strictEqual(lancer(d, "debut", "US-1234", "--commande", "spirc", "--rythme", "rapide").status, 0);
+});
+
+test("deux debut successifs : le second remplace le marqueur", () => {
+  const d = projet();
+  lancer(d, "debut", "US-001", "--commande", "spirc", "--rythme", "complet");
+  lancer(d, "etape", "T2", "test");
+  lancer(d, "debut", "US-002", "--commande", "implement", "--rythme", "rapide", "--autonome");
+  const m = marqueur(d);
+  assert.strictEqual(m.us, "US-002");
+  assert.strictEqual(m.commande, "implement");
+  assert.strictEqual(m.autonome, true);
+  assert.strictEqual(m.tache, "");
+  assert.deepStrictEqual(fs.readdirSync(path.dirname(path.join(d, MARQUEUR))), ["realisation.json"]);
+});
+
+test("ecrire retire son fichier temporaire quand le renommage échoue", () => {
+  const d = projet();
+  // La cible est un dossier : renameSync échoue.
+  fs.mkdirSync(path.join(d, MARQUEUR), { recursive: true });
+  const r = spawnSync("node", ["-e", `try { require(${JSON.stringify(SCRIPT)}).ecrire(${JSON.stringify(d)}, { us: "US-001" }); } catch { process.stdout.write("erreur"); }`], { encoding: "utf8" });
+  assert.strictEqual(r.stdout, "erreur");
+  assert.deepStrictEqual(fs.readdirSync(path.join(d, "aidd_docs", "tasks")), ["realisation.json"], "pas de .tmp oublié");
+});
+
+test("--rappel : rien hors d'un projet Pulse", () => {
+  const d = projet(false);
+  marqueurDate(d, ilYa(0), { us: "US-031" });
+  assert.strictEqual(lancer(d, "--rappel").stdout, "");
+  fs.writeFileSync(path.join(d, "CLAUDE.md"), "# P\n\n<!-- pulse_profil:debut -->\n");
+  assert.match(lancer(d, "--rappel").stdout, /US-031/);
 });
