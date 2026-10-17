@@ -636,3 +636,61 @@ test("copie de Pulse ancienne et intacte (contrôle des secrets, ligne d'état) 
   assert.ok(!etat(projet({ "scripts/verifier.js": texteDeCopie("verifier") })).aussi.includes(MAJ), "copie à jour");
   assert.ok(!etat(projet({ "scripts/verifier.js": ancienne + "// adaptée\n" })).aussi.includes(MAJ), "copie adaptée : gardée telle quelle");
 });
+
+// Plan avec les sections « Questions en attente » et « Choix faits par Pulse », et T4 mise en pause (tâche 8).
+const SECTIONS_DECISION = (q) => `## Questions en attente
+
+${q}
+
+## Choix faits par Pulse
+
+- T4 · Liste triée par date · Autre possibilité : tri par nom · Raison : la plus simple à lire
+`;
+const Q_OUVERTE = "- [ ] Q1 · T4 · Faut-il garder les tâches terminées ? · Options : oui / non · Recommandé : oui";
+const Q_REPONDUE = "- [x] Q1 · T4 · Faut-il garder les tâches terminées ? · Options : oui / non · Recommandé : oui · Réponse : oui (2026-10-17)";
+const PLAN_EN_PAUSE = (q) => `# Plan – TodoIt – US-002 Titre
+
+## Vue d'ensemble
+
+- **US** : US-002 – Titre · **Groupe** : Gérer les tâches · **Priorité** : Indispensable
+
+## Tâches
+
+- [x] **T1 – Afficher la page** · US-002
+- [ ] **T4 – Voir la liste** · US-002
+  - Objectif : voir la liste
+  - En pause : Q1 (votre décision)
+
+## Ajouts proposés par Pulse
+
+Rien.
+
+${SECTIONS_DECISION(q)}
+## Journal
+
+| Date | Tâche | Commit | Remarque |
+|---|---|---|---|
+`;
+const CHEMIN_PLAN_PAUSE = "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir-liste.md";
+
+test("tâche en pause (sous-ligne « En pause : Qn ») : reprendre = decision, même avec un rapport validé", () => {
+  const d = projet({ ...AVANT_US, ...SPECS_VALIDEES, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(Q_OUVERTE) }, PILE_CHOISIE);
+  const r = etat(d, "--revue", "T4");
+  assert.deepStrictEqual([r.tache, r.statut, r.etat, r.reprendre], ["T4", "a-faire", "absente", "decision"]);
+  assert.strictEqual(etat(d, "--revue", "T1").reprendre, "examen", "une tâche sans pause garde sa reprise");
+  const validee = projet({ ...AVANT_US, ...SPECS_VALIDEES, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(Q_OUVERTE), [`${REVUES}/T4-2026-10-07.md`]: RAPPORT("✅ Validé") }, PILE_CHOISIE);
+  assert.strictEqual(etat(validee, "--revue", "T4").reprendre, "decision", "la pause passe avant l'état du rapport");
+});
+
+test("pulse-aidd etat : « questions » = questions ouvertes sous « ## Questions en attente », absent à zéro", () => {
+  const base = { ...AVANT_US, ...SPECS_VALIDEES };
+  assert.strictEqual(etat(projet({ ...base, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(Q_OUVERTE) }, PILE_CHOISIE)).questions, "1");
+  assert.strictEqual(etat(projet({ ...base, [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(Q_REPONDUE) }, PILE_CHOISIE)).questions, undefined);
+  // plusieurs plans, une question ouverte de plus ; une case « Q » hors de la section ne compte pas
+  const deux = projet({
+    ...base,
+    [CHEMIN_PLAN_PAUSE]: PLAN_EN_PAUSE(`${Q_OUVERTE}\n- [ ] Q2 · T4 · Autre question ? · Options : a / b · Recommandé : a`),
+    "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-003-autre.md": PLAN_EN_PAUSE(Q_OUVERTE).replace(/US-002/g, "US-003").replace("## Journal", "## Journal\n\n- [ ] Q9 · hors section"),
+  }, PILE_CHOISIE);
+  assert.strictEqual(etat(deux).questions, "3");
+});

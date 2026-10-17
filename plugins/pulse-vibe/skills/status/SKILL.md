@@ -35,13 +35,14 @@ Argument : `$ARGUMENTS` (vide : le tableau de bord ; `ligne` ou `ligne retirer` 
 6. **En ligne** : l'adresse du site dans la section « Adresses » de `CLAUDE.md`, si elle est renseignée. **Référencement** : la section « Référencement » de `docs/technical.md` (propriété reliée et date) et le rapport le plus récent de `docs/referencement/` (sa date, et la date du prochain rapport conseillé écrite à sa fin).
 7. **Dernière relecture** : le rapport de tâche le plus récent dans `aidd_docs/tasks/*/revues/*/` et son verdict ; le dernier audit `docs/securite.md` s'il existe.
 8. **Mémoire** : les fichiers de `aidd_docs/memory/` (nombre de mots dans `glossary.md`, nombre de décisions dans `internal/decisions/`) et la présence du bloc mémoire dans `CLAUDE.md` (`<!-- pulse_memoire:debut -->`).
-9. **Travail en cours** : `pulse-aidd etat` signale la décision en attente (clé `attente`).
+9. **Travail en cours** : `pulse-aidd etat` signale la décision en attente (clé `attente`) et le nombre de questions ouvertes des plans (clé `questions`) ; pour nommer l'US, lire la section « Questions en attente » des plans de `aidd_docs/tasks/*/`.
 
 ### Format de réponse
 
 ```
 📍 Projet : <nom> (pile : <résumé de « Pile retenue » de docs/technical.md, ou « non choisie »>)
 ⏸️ En attente : <décision en attente> — reprendre avec <commande>   (ligne absente s'il n'y a pas de travail en cours)
+❓ <N> questions vous attendent — répondre avec /pulse:spirc US-XXX   (ligne absente quand la clé `questions` est absente)
 
 Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facultatif) · ⬜ user stories · ⬜ spec · ⬜ plan
 Rythme   : <ligne « Rythme » du profil de CLAUDE.md> (à changer : « rythme rapide », « rythme complet » ou « demande-moi le rythme à chaque fois »)

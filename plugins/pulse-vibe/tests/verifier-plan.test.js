@@ -216,3 +216,12 @@ test("en ligne de commande : lignes clé: valeur, bilan, plan introuvable, argum
   assert.strictEqual(vide.status, 0);
   assert.match(vide.stdout, /^erreur: indiquez l'US/m);
 });
+
+test("sections « Questions en attente » et « Choix faits par Pulse » et sous-ligne « En pause » : aucun constat nouveau", () => {
+  const pause = TACHE("T2", { titre: "Liste vide", depend: "T1", fichiers: "à modifier : `src/liste.js`", verification: "US-002 critère 2", tests: "aucun" }) + "  - En pause : Q1 (votre décision)\n";
+  const sections = "## Questions en attente\n\n- [ ] Q1 · T2 · Garder les terminées ? · Options : oui / non · Recommandé : oui\n\n## Choix faits par Pulse\n\n- T2 · tri par date · Autre possibilité : par nom · Raison : simple\n\n";
+  const plan = PLAN([TACHE("T1"), pause, MISE_EN_LIGNE]).replace("## Journal", `${sections}## Journal`);
+  const racine = projet({ [planFichier]: plan });
+  assert.deepStrictEqual(constats(racine), []);
+  assert.strictEqual(verifierPlan(racine, "US-002").taches, 3);
+});
