@@ -7,7 +7,7 @@ const assert = require("node:assert");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { spawnSync } = require("child_process");
+const { spawn, spawnSync } = require("child_process");
 
 const BASE = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-tour-"));
 process.env.PULSE_TOURS_DIR = path.join(BASE, "etat");
@@ -119,4 +119,29 @@ test("apres-ecriture : rien hors d'un projet Pulse, silencieux sur une entrée i
     assert.strictEqual(s.status, 0);
     assert.strictEqual(s.stdout + s.stderr, "");
   }
+});
+
+test("apres-ecriture : huit écritures en parallèle sont toutes relevées", async () => {
+  const d = projetPulse();
+  const lancerAsync = (f) =>
+    new Promise((resolve) => {
+      const p = spawn("node", [APRES], { cwd: d, env: { ...process.env, CLAUDE_PROJECT_DIR: d } });
+      p.on("close", resolve);
+      p.stdin.end(JSON.stringify({ session_id: "s8", cwd: d, tool_name: "Write", tool_input: { file_path: path.join(d, "src", f) } }));
+    });
+  const noms = Array.from({ length: 8 }, (_, i) => `f${i}.ts`);
+  const codes = await Promise.all(noms.map(lancerAsync));
+  assert.deepStrictEqual(codes, Array(8).fill(0));
+  const notes = tour.lireTour({ session_id: "s8" }, tour.racineGit(d)).fichiers.sort();
+  assert.deepStrictEqual(notes, noms.map((n) => `src/${n}`));
+});
+
+test("apres-ecriture : lancé depuis un sous-dossier du projet", () => {
+  const d = projetPulse();
+  const sous = path.join(d, "src", "lib");
+  fs.mkdirSync(sous, { recursive: true });
+  const e = { session_id: "s9", cwd: sous, tool_input: { file_path: path.join(sous, "a.ts") } };
+  const r = spawnSync("node", [APRES], { cwd: sous, input: JSON.stringify(e), encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: d } });
+  assert.strictEqual(r.status, 0);
+  assert.deepStrictEqual(tour.lireTour(e, tour.racineGit(d)).fichiers, ["src/lib/a.ts"]);
 });
