@@ -12,10 +12,14 @@
 // Sans option : affiche le fichier, le nombre de règles manquantes et chacune (« - allow Bash(npm test) »).
 // --ecrire : ajoute les règles manquantes à .claude/settings.json (créé s'il manque ; règles existantes gardées).
 // Les règles déjà présentes dans .claude/settings.local.json comptent comme présentes.
+// Affiche aussi « reprise-auto: active|desactivee|inconnue » : Claude Code reprend seul au retour de la limite des
+// 5 heures (depuis la 2.1.234, réglage autoContinueAtUsageLimit de ~/.claude/settings.json, vrai par défaut).
 "use strict";
 
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
+const { spawnSync } = require("child_process");
 
 const DENY = ["Read(./.env)", "Read(./.env.local)", "Read(./.env.*.local)", "Read(./.env.envoi)"];
 const GIT = ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(git add *)", "Bash(git commit -m *)"];
@@ -68,6 +72,38 @@ function lireReglages(f) {
   return JSON.parse(texte); // un fichier illisible arrête tout, sans l'écraser
 }
 
+const VERSION_REPRISE = [2, 1, 234];
+
+/** La reprise automatique à la limite d'utilisation : "active", "desactivee" ou "inconnue" (version illisible). */
+function repriseAuto(reglagesUtilisateur, versionClaude) {
+  if (reglagesUtilisateur && reglagesUtilisateur.autoContinueAtUsageLimit === false) return "desactivee";
+  const m = /(\d+)\.(\d+)\.(\d+)/.exec(versionClaude || "");
+  if (!m) return "inconnue";
+  const v = [m[1], m[2], m[3]].map(Number);
+  for (let i = 0; i < 3; i++) if (v[i] !== VERSION_REPRISE[i]) return v[i] < VERSION_REPRISE[i] ? "desactivee" : "active";
+  return "active";
+}
+
+/** Les réglages de la personne (~/.claude/settings.json ; PULSE_REGLAGES_UTILISATEUR pour les tests), null s'ils ne se lisent pas. */
+function lireReglagesUtilisateur() {
+  try {
+    return JSON.parse(lireSi(process.env.PULSE_REGLAGES_UTILISATEUR || path.join(os.homedir(), ".claude", "settings.json")));
+  } catch {
+    return null;
+  }
+}
+
+/** La version de Claude Code (claude --version ; PULSE_VERSION_CLAUDE pour les tests), null si elle ne se lit pas. */
+function lireVersionClaude() {
+  try {
+    if (process.env.PULSE_VERSION_CLAUDE !== undefined) return process.env.PULSE_VERSION_CLAUDE || null;
+    const r = spawnSync("claude", ["--version"], { encoding: "utf8", timeout: 5000, shell: process.platform === "win32" });
+    return r.error || r.status !== 0 ? null : (/\d+\.\d+\.\d+/.exec(r.stdout) || [null])[0];
+  } catch {
+    return null;
+  }
+}
+
 /** Les règles manquantes : [{ sorte: "allow" | "deny", regle }]. */
 function manquantes(racine) {
   const presentes = [path.join(racine, ".claude", "settings.json"), path.join(racine, ".claude", "settings.local.json")].map(lireReglages);
@@ -97,11 +133,11 @@ if (require.main === module) {
     if (process.argv.includes("--ecrire")) console.log(`fichier: .claude/settings.json\necrites: ${ecrire(racine)}`);
     else {
       const manque = manquantes(racine);
-      console.log([`fichier: .claude/settings.json`, `manquantes: ${manque.length}`, ...manque.map((x) => `- ${x.sorte} ${x.regle}`)].join("\n"));
+      console.log([`fichier: .claude/settings.json`, `reprise-auto: ${repriseAuto(lireReglagesUtilisateur(), lireVersionClaude())}`, `manquantes: ${manque.length}`, ...manque.map((x) => `- ${x.sorte} ${x.regle}`)].join("\n"));
     }
   } catch (e) {
     console.log(`erreur: ${e.message} (rien n'a été modifié dans .claude/settings.json)`);
   }
 }
 
-module.exports = { attendues, manquantes, ecrire, commandesDuProjet };
+module.exports = { attendues, manquantes, ecrire, commandesDuProjet, repriseAuto };

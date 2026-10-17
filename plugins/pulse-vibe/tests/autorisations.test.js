@@ -11,7 +11,7 @@ const { spawnSync } = require("child_process");
 
 const RACINE = path.join(__dirname, "..");
 const SCRIPT = path.join(RACINE, "scripts", "autorisations.js");
-const { attendues, commandesDuProjet } = require(SCRIPT);
+const { attendues, commandesDuProjet, repriseAuto } = require(SCRIPT);
 
 // Les commandes du pack Next.js, telles que sa fiche les écrit dans docs/technical.md.
 const TECHNICAL = fs.readFileSync(path.join(RACINE, "..", "pulse-vibe-next", "references", "technical.md"), "utf8");
@@ -77,4 +77,31 @@ test("en ligne de commande : les manquantes, puis --ecrire les ajoute sans touch
   const casse = projet({ ".claude/settings.json": "{ pas du json" });
   assert.match(lancer(casse, "--ecrire").stdout, /^erreur: .*rien n'a été modifié/);
   assert.strictEqual(fs.readFileSync(path.join(casse, ".claude", "settings.json"), "utf8"), "{ pas du json");
+});
+
+test("reprise automatique : réglage coupé ou version trop ancienne = desactivee, version illisible = inconnue", () => {
+  assert.strictEqual(repriseAuto({ autoContinueAtUsageLimit: false }, "2.1.300"), "desactivee");
+  assert.strictEqual(repriseAuto({}, "2.1.200"), "desactivee");
+  assert.strictEqual(repriseAuto({}, "2.1.234"), "active");
+  assert.strictEqual(repriseAuto(null, "2.2.0"), "active");
+  assert.strictEqual(repriseAuto({ autoContinueAtUsageLimit: true }, "3.0.0"), "active");
+  assert.strictEqual(repriseAuto({}, null), "inconnue");
+  assert.strictEqual(repriseAuto({}, "pas une version"), "inconnue");
+  assert.strictEqual(repriseAuto({ autoContinueAtUsageLimit: false }, null), "desactivee");
+});
+
+test("la sortie annonce la ligne reprise-auto, sans casser le format des règles", () => {
+  const d = projet({});
+  const reglages = path.join(d, "utilisateur.json");
+  const sortie = (version, contenu) => {
+    if (contenu !== undefined) fs.writeFileSync(reglages, contenu);
+    return spawnSync(process.execPath, [SCRIPT], { cwd: d, encoding: "utf8", env: { ...process.env, PULSE_REGLAGES_UTILISATEUR: reglages, PULSE_VERSION_CLAUDE: version } }).stdout;
+  };
+  const a = sortie("2.1.234", "{}");
+  assert.match(a, /^reprise-auto: active$/m);
+  assert.match(a, /^manquantes: \d+$/m);
+  assert.match(sortie("2.1.234", '{"autoContinueAtUsageLimit":false}'), /^reprise-auto: desactivee$/m);
+  assert.match(sortie("2.1.1"), /^reprise-auto: desactivee$/m);
+  assert.match(sortie("", "{}"), /^reprise-auto: inconnue$/m);
+  assert.match(sortie("2.1.234", "pas du json"), /^reprise-auto: active$/m);
 });
