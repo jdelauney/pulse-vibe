@@ -226,6 +226,8 @@ En rythme rapide, d'abord écrire `aidd_docs/tasks/in-progress.md` (« Pour repr
 
 ### Fin
 
+Hors autonome, US faite : lancer « Tester de bout en bout » (§ 2 ter des tests) ; échec = constat Critique.
+
 Présenter un récapitulatif :
 
 ```
