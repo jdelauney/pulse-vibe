@@ -1,4 +1,4 @@
-// Tests de la suite d'évaluations (evals/, lancée par outils/evals/lancer.js) : chaque cas se charge et prépare son projet.
+// Tests de la suite d'évaluations (outils/evals/cas/, hors du plugin publié, lancée par outils/evals/lancer.js) : chaque cas se charge et prépare son projet.
 // Lancer : node --test plugins/pulse-vibe/tests/evals.test.js
 "use strict";
 
@@ -9,7 +9,7 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
-const EVALS = path.join(__dirname, "..", "evals");
+const EVALS = path.join(__dirname, "..", "..", "..", "outils", "evals", "cas");
 const cas = fs.readdirSync(EVALS).filter((d) => fs.existsSync(path.join(EVALS, d, "prompt.md")));
 const bash = spawnSync("bash", ["--version"]).error ? "bash absent" : false;
 
@@ -49,7 +49,8 @@ const OUTILS_EVALS = path.join(__dirname, "..", "..", "..", "outils", "evals");
 const lanceur = require(path.join(OUTILS_EVALS, "lancer.js"));
 
 test("le lanceur accorde les commandes dont les cas ont besoin, rien de plus", () => {
-  const args = lanceur.argumentsEval("/depot", {}, ["--case", "plan-controle"]);
+  const args = lanceur.argumentsEval("/tmp/x/pulse-vibe", {}, ["--case", "plan-controle"]);
+  assert.strictEqual(args[2], "/tmp/x/pulse-vibe");
   const i = args.indexOf("--allow-tools");
   assert.deepStrictEqual(args.slice(i + 1, i + 6), ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"]);
   assert.ok(args.includes("--no-publish"));
@@ -70,6 +71,21 @@ test("le lanceur repère les liens symboliques de ~/.docker, que le bac à sable
   }
   assert.deepStrictEqual(lanceur.liensDocker(d), ["features.json"]);
   assert.deepStrictEqual(lanceur.liensDocker(path.join(d, "absent")), []);
+});
+
+test("le lanceur assemble le cœur et les cas dans un dossier temporaire, puis range les rapports à part", () => {
+  const racine = path.join(__dirname, "..", "..", "..");
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-test-"));
+  const plugin = lanceur.assembler(racine, EVALS, temp);
+  assert.ok(fs.existsSync(path.join(plugin, ".claude-plugin", "plugin.json")));
+  assert.ok(fs.existsSync(path.join(plugin, "evals", "plan-controle", "prompt.md")));
+  assert.ok(!fs.existsSync(path.join(racine, "plugins", "pulse-vibe", "evals")), "les cas ne sont plus dans le plugin publié");
+  fs.mkdirSync(path.join(plugin, "evals", "results", "2026-01-01"), { recursive: true });
+  fs.writeFileSync(path.join(plugin, "evals", "results", "2026-01-01", "report.html"), "ok");
+  const resultats = path.join(temp, "resultats");
+  assert.deepStrictEqual(lanceur.rapatrier(plugin, resultats), ["2026-01-01"]);
+  assert.strictEqual(fs.readFileSync(path.join(resultats, "2026-01-01", "report.html"), "utf8"), "ok");
+  assert.deepStrictEqual(lanceur.rapatrier(path.join(temp, "vide"), resultats), []);
 });
 
 test("le lanceur : Windows passe par WSL2, macOS et Linux lancent directement, chacun ses outils", () => {

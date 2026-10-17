@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Lance la suite d'évaluations du cœur (plugins/pulse-vibe/evals/) avec `claude plugin eval` : de vrais essais des
+// Lance la suite d'évaluations du cœur (cas dans outils/evals/cas/, hors du plugin publié) avec `claude plugin eval` : de vrais essais des
 // commandes Pulse sur un petit projet préparé d'avance, notés par des vérifications (outils appelés, fichiers écrits)
 // et par un juge. Chaque essai est un vrai appel au modèle, facturé sur votre compte.
 //
@@ -13,21 +13,27 @@
 //   - Linux et WSL2 : bubblewrap et socat (sudo apt install bubblewrap socat) ;
 //   - Windows : pas de bac à sable ; le script relance les essais dans WSL2 (Node.js et Claude Code installés dans
 //     la distribution Linux), et s'arrête avec la marche à suivre si WSL2 manque.
-// `claude plugin eval` demande Claude Code 2.1.269 ou plus et Git 2.31 ou plus.
+// `claude plugin eval` demande Claude Code 2.1.269 ou plus et Git 2.31 ou plus, et cherche les cas sous le dossier du
+// plugin : le script assemble une copie temporaire (plugins/pulse-vibe + cas dans evals/), lance les essais sur elle,
+// puis range les rapports dans outils/evals/resultats/ (gardé en local, ignoré par Git).
 "use strict";
 
+const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
 const RACINE = path.resolve(__dirname, "..", "..");
+const CAS = path.join(__dirname, "cas");
+const RESULTATS = path.join(__dirname, "resultats");
 const CLAUDE_MIN = "2.1.269";
 const GIT_MIN = "2.31.0";
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
 
-/** Les arguments de `claude plugin eval` pour le cœur. */
-function argumentsEval(racine, env, extra) {
+/** Les arguments de `claude plugin eval` pour le cœur assemblé dans `dossierPlugin`. */
+function argumentsEval(dossierPlugin, env, extra) {
   return [
-    "plugin", "eval", path.join(racine, "plugins", "pulse-vibe"),
+    "plugin", "eval", dossierPlugin,
     "--scaffold", "--trust-plugin", "--no-publish",
     "--runs", env.RUNS || "1", "--max-cost-usd", env.PLAFOND || "5",
     "--allow-tools", ...OUTILS_ACCORDES,
@@ -94,7 +100,7 @@ function direct(extra) {
     console.error(`Git ${vGit} est trop ancien pour les évaluations (${GIT_MIN} ou plus).`);
     return 1;
   }
-  const liens = liensDocker(path.join(require("os").homedir(), ".docker"));
+  const liens = liensDocker(path.join(os.homedir(), ".docker"));
   if (liens.length) {
     console.error(`Le bac à sable refuse un dossier ~/.docker qui contient des liens symboliques (${liens.join(", ")}) ;`);
     console.error("Docker Desktop les pose sous WSL2. Les remplacer par des copies, puis relancer :");
@@ -102,13 +108,33 @@ function direct(extra) {
     console.error("(ou décocher cette distribution dans Docker Desktop → Settings → Resources → WSL integration).");
     return 1;
   }
-  const r = spawnSync("claude", argumentsEval(RACINE, process.env, extra), { stdio: "inherit" });
+  const dossierPlugin = assembler(RACINE, CAS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-")));
+  const r = spawnSync("claude", argumentsEval(dossierPlugin, process.env, extra), { stdio: "inherit" });
+  const ranges = rapatrier(dossierPlugin, RESULTATS);
+  if (ranges.length) console.log(`Rapports rangés dans ${path.relative(RACINE, RESULTATS)}${path.sep}${ranges.join(", ")}`);
+  fs.rmSync(path.dirname(dossierPlugin), { recursive: true, force: true });
   return r.status === null ? 1 : r.status;
+}
+
+/** Copie le cœur dans `temp`, avec les cas d'essai dans son dossier evals/ ; renvoie le dossier du plugin assemblé. */
+function assembler(racine, cas, temp) {
+  const dossierPlugin = path.join(temp, "pulse-vibe");
+  fs.cpSync(path.join(racine, "plugins", "pulse-vibe"), dossierPlugin, { recursive: true });
+  fs.cpSync(cas, path.join(dossierPlugin, "evals"), { recursive: true });
+  return dossierPlugin;
+}
+
+/** Range les rapports produits dans le plugin assemblé (evals/results/<date>/) dans `resultats` ; renvoie leurs noms. */
+function rapatrier(dossierPlugin, resultats) {
+  const source = path.join(dossierPlugin, "evals", "results");
+  if (!fs.existsSync(source)) return [];
+  const noms = fs.readdirSync(source);
+  for (const n of noms) fs.cpSync(path.join(source, n), path.join(resultats, n), { recursive: true });
+  return noms;
 }
 
 /** Les entrées de ~/.docker qui sont des liens symboliques (le bac à sable de Claude Code refuse alors les essais). */
 function liensDocker(dossier) {
-  const fs = require("fs");
   try {
     return fs.readdirSync(dossier).filter((n) => fs.lstatSync(path.join(dossier, n)).isSymbolicLink());
   } catch (e) {
@@ -159,4 +185,4 @@ function principal(extra) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { argumentsEval, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };
+module.exports = { argumentsEval, assembler, rapatrier, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };
