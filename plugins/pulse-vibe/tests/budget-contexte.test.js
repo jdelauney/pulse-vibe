@@ -31,7 +31,7 @@ const PLAFONDS = {
   brainstorm: 34000, // mesure 31 945
   tech: 60500, // mesure 57 222
   memory: 32000, // mesure 30 261
-  spirc: 33000, // mesure 32 608 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
+  spirc: 34000, // mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
   express: 40500, // mesure 38 394
   prd: 28500, // mesure 26 982
   us: 30500, // mesure 28 742
@@ -39,7 +39,7 @@ const PLAFONDS = {
   plan: 50500, // mesure 47 800
   implement: 45000, // mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 24000, // mesure 22 408
-  review: 32000, // mesure 31 617 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  review: 32500, // mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   commit: 39000, // mesure 37 065
   pr: 32000, // mesure 30 391
   annuler: 38500, // mesure 36 358
@@ -68,7 +68,7 @@ const PLAFONDS = {
 // review relevé à 16 000 (pulse 0.40) : règle commune 19 et fiche de test, mesure 15 023.
 // review : mesure 16 289 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
 // review : mesure 16 526, commit : mesure 28 524 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-const PLAFONDS_ETAPES = { review: 17000, commit: 29000 };
+const PLAFONDS_ETAPES = { review: 17500, commit: 29000 }; // review : mesure 17 209 (pulse 0.48 : captures gardées, examen.md)
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
@@ -94,7 +94,7 @@ const PLAFONDS_COMMANDE = {
   prd: 34000, // mesure 32 244
   rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 54500, // mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
-  review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
+  review: 40000, // mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 56000, // mesure 52 989
   secrets: 50000, // mesure 47 290
   security: 46000, // mesure 43 499

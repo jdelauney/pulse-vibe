@@ -29,7 +29,7 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 - la ligne `Mode` (la commande, et « contrôle de sécurité à chaque tâche » s'il y a lieu) ;
 - le rapport du reviewer ;
-- la section `## Vérification` : le verdict et le tableau du verifier, puis la ligne « Filet anti-régression » (référence « Tests automatiques » § 2 ter) ;
+- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images Markdown au chemin relatif `../../../../captures/US-XXX/<fichier>.png`, suivies de la phrase « Ces images restent sur cet ordinateur. »), puis la ligne « Filet anti-régression » (référence « Tests automatiques » § 2 ter) ;
 - avec les tests d'abord, la section `## Tests automatiques` (verdicts et tableaux du test-runner, rouge puis vert) ;
 - avec le contrôle de sécurité, la section `## Audit de sécurité`.
 
@@ -39,7 +39,7 @@ Le **rapport de réalisation** présenté ensuite à la personne (règles commun
 
 ## 3 bis. Écrire la fiche de test de la personne
 
-À partir de la section « Test manuel » du verifier, écrire la fiche `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>.md` (modèle : `pulse-aidd modele smoke-test.md` ; règles : `pulse-aidd reference tests/test-manuel.md` § 1) : étapes détaillées geste par geste, critères ❓ du verifier en premier, résultat des contrôles automatiques en tête. Dans le rapport, la section « Test manuel à faire par vous » donne seulement le lien vers la fiche.
+À partir de la section « Test manuel » du verifier, écrire la fiche `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>.md` (modèle : `pulse-aidd modele smoke-test.md` ; règles : `pulse-aidd reference tests/test-manuel.md` § 1) : étapes détaillées geste par geste, critères ❓ du verifier en premier, résultat des contrôles automatiques en tête. Quand le verifier a gardé des captures, la fiche les montre en images Markdown au chemin relatif `../../captures/US-XXX/<fichier>.png` (là où l'écran attendu est décrit), avec la phrase « Ces images restent sur cet ordinateur. ». Dans le rapport, la section « Test manuel à faire par vous » donne seulement le lien vers la fiche.
 
 Au moment du test : lancer l'application en arrière-plan (commande « lancer en local » de « Commandes du projet »), vérifier que l'adresse répond, puis donner à la personne le lien cliquable vers la fiche, sa durée et sa première étape. Les contrôles automatiques restent à l'assistant : la personne n'a aucune commande à taper. Arrêter l'application après sa réponse.
 

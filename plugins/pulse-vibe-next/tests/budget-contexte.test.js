@@ -93,13 +93,13 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   plan: 106000, // mesure 100 752
   rediger: 36500, // mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
   refine: 91500, // mesure 86 865
-  review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
+  review: 40000, // mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 60000, // mesure 57 057
   secrets: 70500, // mesure 67 057
   security: 88000, // mesure 83 589
   seo: 102000, // mesure 96 880
   spec: 54000, // mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 85500, // mesure 85 155 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  spirc: 86500, // mesure 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   tech: 134500, // mesure 127 942
   test: 52000, // mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 90000, // mesure 85 248

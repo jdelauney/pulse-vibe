@@ -20,6 +20,8 @@
 |---|---|---|---|---|
 | | | | ✅ / ❌ / ❓ à tester à la main | |
 
+<!-- Avec des captures gardées par le verifier : une image par ligne, ![T1 critère 1, ordinateur](../../../../captures/US-XXX/T1-critere-1-ordinateur.png), puis la phrase « Ces images restent sur cet ordinateur. » ; sinon supprimer ce commentaire. -->
+
 ## Tests automatiques
 
 <!-- Seulement avec les tests d'abord (option -t) ; sinon supprimer cette section, avec ce commentaire. Verdicts et tableaux du test-runner. -->
