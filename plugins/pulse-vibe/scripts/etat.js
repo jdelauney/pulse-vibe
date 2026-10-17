@@ -109,7 +109,7 @@ function questionsOuvertes(texte) {
   let n = 0;
   for (const ligne of texte.split(/\r?\n/)) {
     if (/^##\s/.test(ligne)) dans = /^##\s+Questions en attente\s*$/i.test(ligne);
-    else if (dans && /^- \[ \]\s+Q\d+\b/.test(ligne)) n++;
+    else if (dans && /^- \[ \]\s+Q\d+\b/.test(ligne) && !ligne.includes("{{")) n++; // une ligne « {{ » est l'exemple du modèle, laissé en place
   }
   return n;
 }
@@ -119,7 +119,7 @@ function compterQuestions(racine) {
   const taches = path.join(racine, "aidd_docs", "tasks");
   let n = 0;
   for (const epic of dossiers(taches)) {
-    for (const f of fichiersDe(path.join(taches, epic)).filter((x) => /^PLAN-.+\.md$/i.test(x))) n += questionsOuvertes(lireSi(path.join(taches, epic, f)) || "");
+    for (const f of fichiersDe(path.join(taches, epic)).filter((x) => /^PLAN-SPEC-US-\d+-.+\.md$/i.test(x))) n += questionsOuvertes(lireSi(path.join(taches, epic, f)) || "");
   }
   return n;
 }
@@ -525,7 +525,7 @@ function etapes(f, mvp) {
   ].join(" ");
 }
 
-function formater(f, v, racine) {
+function formater(f, v, racine = process.cwd()) {
   const mvp = bilan(f);
   const lignes = [`prochaine: ${v.prochaine}`, `raison: ${v.raison}`, `regle: ${v.regle}`];
   for (const cle of ["fondation", "attente", "ancien", "dossier"]) if (v[cle]) lignes.push(`${cle}: ${v[cle]}`);
