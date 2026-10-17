@@ -198,3 +198,24 @@ test("noter : les relevés de plus de 24 h du projet sont retirés, ceux d'une c
   tour.noter({ session_id: "s12", tool_input: { file_path: "E:/projet-elague/b.ts" } }, racine);
   assert.deepStrictEqual(fs.readdirSync(dossier).sort(), ["recent.fichiers", "recent.lus", "s12.fichiers"]);
 });
+
+test("noter : un fichier désigné par un lien symbolique vers la racine reste dans le projet", (t) => {
+  const reel = fs.mkdtempSync(path.join(BASE, "reel-"));
+  fs.mkdirSync(path.join(reel, "src"));
+  const lien = path.join(BASE, "lien-" + path.basename(reel));
+  try {
+    fs.symlinkSync(reel, lien, "junction");
+  } catch (e) {
+    t.skip(`lien symbolique impossible ici (${e.code})`);
+    return;
+  }
+  const e = { session_id: "sym", tool_input: { file_path: path.join(lien, "src", "a.ts") } };
+  tour.noter(e, reel);
+  assert.deepStrictEqual(tour.lireTour(e, reel).fichiers, ["src/a.ts"], "fichier par le lien, racine réelle");
+  const e2 = { session_id: "sym2", tool_input: { file_path: path.join(reel, "src", "b.ts") } };
+  tour.noter(e2, lien);
+  assert.deepStrictEqual(tour.lireTour(e2, lien).fichiers, ["src/b.ts"], "fichier réel, racine par le lien");
+  const e3 = { session_id: "sym3", tool_input: { file_path: path.join(BASE, "ailleurs.ts") } };
+  tour.noter(e3, lien);
+  assert.deepStrictEqual(tour.lireTour(e3, lien).fichiers, [], "hors du projet");
+});

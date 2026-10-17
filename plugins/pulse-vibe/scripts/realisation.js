@@ -18,7 +18,7 @@
 //
 // Module : lire(racine) → Etat|null (périmé : null), lireBrut(racine), perime(etat), rappel(racine) → texte (vide si absent),
 // trouver(cwd[, accepte]) → { racine, etat }|null : premier marqueur vivant sous la racine Git de cwd, puis CLAUDE_PROJECT_DIR, puis le dossier courant.
-// Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
+// Sort avec le code 0 (une erreur d'écriture ne doit pas annuler la commande /pulse qui l'appelle), sauf `debut` sans numéro d'US valide : code 1, rien n'est écrit.
 "use strict";
 
 const fs = require("fs");
@@ -81,8 +81,13 @@ function ecrire(racine, etat) {
   const cible = fichier(racine);
   fs.mkdirSync(path.dirname(cible), { recursive: true });
   const temporaire = `${cible}.${process.pid}.tmp`;
-  fs.writeFileSync(temporaire, JSON.stringify(etat, null, 2) + "\n", "utf8");
-  fs.renameSync(temporaire, cible);
+  try {
+    fs.writeFileSync(temporaire, JSON.stringify(etat, null, 2) + "\n", "utf8");
+    fs.renameSync(temporaire, cible);
+  } catch (e) {
+    try { fs.rmSync(temporaire, { force: true }); } catch { /* rien à retirer */ }
+    throw e;
+  }
 }
 
 /** Met à jour le marqueur s'il existe ; sinon ne fait rien. */
@@ -112,9 +117,14 @@ function valeurOption(args, nom) {
 function main(args, racine) {
   const [action, ...reste] = args;
   if (action === "debut") {
+    const us = reste.find((a) => !a.startsWith("--") && a !== valeurOption(reste, "--commande") && a !== valeurOption(reste, "--rythme")) || "";
+    if (!/^US-\d{3,}$/.test(us)) {
+      console.log("Indiquez le numéro de l'US sous la forme US-001 : rien n'a été noté.");
+      return 1;
+    }
     const maintenant = new Date().toISOString();
     ecrire(racine, {
-      us: reste.find((a) => !a.startsWith("--") && a !== valeurOption(reste, "--commande") && a !== valeurOption(reste, "--rythme")) || "",
+      us,
       commande: valeurOption(reste, "--commande") || "",
       rythme: valeurOption(reste, "--rythme") || "",
       autonome: reste.includes("--autonome"),
@@ -133,7 +143,7 @@ function main(args, racine) {
     try { fs.rmSync(fichier(racine), { force: true }); } catch { /* déjà absent */ }
   } else if (action === "--rappel") {
     // Hook SessionStart (compact) : le cwd de l'entrée du hook d'abord, puis le dossier du projet donné par Claude Code.
-    const trouve = trouver(entreeHook().cwd);
+    const trouve = trouver(entreeHook().cwd, require("./garde").projetPulse);
     const t = trouve ? rappel(trouve.racine) : "";
     if (t) console.log(t);
   } else {
@@ -143,13 +153,14 @@ function main(args, racine) {
   }
 }
 
-module.exports = { lire, lireBrut, perime, trouver, rappel, PERIME_H };
+module.exports = { ecrire, lire, lireBrut, perime, trouver, rappel, PERIME_H };
 
 if (require.main === module) {
+  let code = 0;
   try {
-    main(process.argv.slice(2), process.cwd());
+    code = main(process.argv.slice(2), process.cwd()) || 0;
   } catch {
     // jamais d'échec visible
   }
-  process.exitCode = 0;
+  process.exitCode = code;
 }
