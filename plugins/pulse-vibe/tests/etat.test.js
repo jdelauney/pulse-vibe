@@ -694,3 +694,11 @@ test("pulse-aidd etat : « questions » = questions ouvertes sous « ## Question
   }, PILE_CHOISIE);
   assert.strictEqual(etat(deux).questions, "3");
 });
+
+test("pulse-aidd etat : « realisation: perimee » quand le marqueur n'a pas bougé depuis plus de 6 h, absent sinon", () => {
+  const marqueur = (heures) => JSON.stringify({ us: "US-002", commande: "spirc", maj: new Date(Date.now() - heures * 3600 * 1000).toISOString() });
+  const base = { ...AVANT_US, ...SPECS_VALIDEES };
+  assert.strictEqual(etat(projet({ ...base, "aidd_docs/tasks/realisation.json": marqueur(7) }, PILE_CHOISIE)).realisation, "perimee");
+  assert.strictEqual(etat(projet({ ...base, "aidd_docs/tasks/realisation.json": marqueur(1) }, PILE_CHOISIE)).realisation, undefined);
+  assert.strictEqual(etat(projet(base, PILE_CHOISIE)).realisation, undefined);
+});

@@ -52,10 +52,15 @@ const PLAN_EN_COURS = "# Plan – X – US-001 A\n\n## Tâches\n\n- [~] **T1 –
 const PLAN_A_FAIRE = PLAN_EN_COURS.replace("[~]", "[ ]");
 const technique = (commandes) =>
   `# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Lancer en local | \`npm run dev\` |\n| Contrôles automatiques (lint, format, types) | ${commandes} |\n`;
-function avecControles(d, commandes, plan = PLAN_EN_COURS) {
+const MARQUEUR = "aidd_docs/tasks/realisation.json";
+const marqueur = (d, maj = new Date().toISOString()) => ecrire(d, MARQUEUR, JSON.stringify({ us: "US-001", commande: "spirc", rythme: "complet", maj }));
+function avecControles(d, commandes, plan = PLAN_EN_COURS, { realisation = true } = {}) {
   ecrire(d, "aidd_docs/tasks/e/PLAN-SPEC-US-001-x.md", plan);
   ecrire(d, "docs/technical.md", technique(commandes));
+  if (realisation) marqueur(d);
 }
+// Un contrôle qui échoue en nommant un fichier dans sa sortie.
+const echoue = (fichier) => `\`node -e "console.log('${fichier}:1:1 erreur'); process.exit(1)"\``;
 
 test("hors projet Pulse : aucune sortie", () => {
   const d = projet({ pulse: false });
@@ -187,7 +192,7 @@ test("SubagentStop : troisième blocage → contexte de l'agent, son relevé eff
 test("contrôles rapides : tâche en cours et contrôle qui échoue → bloqué avec les 40 dernières lignes", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "for (let i = 1; i <= 60; i++) console.log(\'ligne \' + i); process.exit(1)"` (corriger : `node -e "process.exit(1)"`)');
+  avecControles(d, '`node -e "for (let i = 1; i <= 60; i++) console.log(\'src/ok.js ligne \' + i); process.exit(1)"` (corriger : `node -e "process.exit(1)"`)');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   const s = lancer(d, e);
@@ -271,7 +276,7 @@ test("worktree : règles et relevé du worktree, pas ceux du dépôt principal",
 test("SubagentStop de test-writer : règles et secrets contrôlés, contrôles rapides non lancés (tests d'abord)", () => {
   const d = projet();
   const e = { session_id: session(), agent_id: "tw1", agent_type: "pulse:test-writer", hook_event_name: "SubagentStop" };
-  avecControles(d, '`node -e "process.exit(1)"`');
+  avecControles(d, echoue("tests/a.test.js"));
   ecrire(d, "tests/a.test.js", "const a = 1;\n");
   noter(d, e, "tests/a.test.js");
   assert.strictEqual(lancer(d, e), null);
@@ -313,7 +318,7 @@ test("blocage puis écriture notée pendant le contrôle : l'écriture reste dan
 test("contrôles rapides : « Missing script » loin de la fin de la sortie → bloqué", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "console.log(\'Missing script: x\'); for (let i = 0; i < 10; i++) console.log(\'erreur \' + i); process.exit(1)"`');
+  avecControles(d, '`node -e "console.log(\'Missing script: x\'); for (let i = 0; i < 10; i++) console.log(\'src/ok.js erreur \' + i); process.exit(1)"`');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   assert.strictEqual(lancer(d, e).decision, "block");
@@ -335,4 +340,107 @@ test("plan illisible : les règles sont contrôlées quand même", () => {
   ecrire(d, "src/prix.js", "parseFloat(x)\n");
   noter(d, e, "src/prix.js");
   assert.strictEqual(lancer(d, e).decision, "block");
+});
+
+test("contrôles rapides : échec qui nomme un fichier du tour → bloqué (chemin relatif ou absolu avec \\)", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  // Sous Windows, le chemin absolu avec des \ (doublés dans la chaîne JavaScript) ; ailleurs, tel quel.
+  const brut = path.join(tour.racineGit(d), "src", "ok.js");
+  const absolu = process.platform === "win32" ? brut.split("\\").join("\\\\") : brut;
+  avecControles(d, `\`node -e "console.log('${absolu}'); console.log('  3:5  error  x'); process.exit(1)"\``);
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+  const d2 = projet();
+  const e2 = { session_id: session() };
+  avecControles(d2, echoue("./src/ok.js"));
+  ecrire(d2, "src/ok.js", "const a = 1;\n");
+  noter(d2, e2, "src/ok.js");
+  assert.strictEqual(lancer(d2, e2).decision, "block");
+});
+
+test("contrôles rapides : échec qui nomme seulement un autre fichier → pas de blocage", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  avecControles(d, `${echoue("src/autre.js")} et ${echoue("lib/src/ok.jsx")} et \`node -e "process.exit(1)"\``);
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e), null);
+});
+
+test("contrôles rapides : sans marqueur de réalisation, ou marqueur périmé, rien n'est lancé", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  avecControles(d, echoue("src/ok.js"), PLAN_EN_COURS, { realisation: false });
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e), null);
+  marqueur(d, new Date(Date.now() - 7 * 3600 * 1000).toISOString());
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e), null);
+  marqueur(d);
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+});
+
+test("contrôles rapides : tâche [~] en pause (sous-ligne « En pause ») → rien n'est lancé ; une autre [~] active → lancé", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  const enPause = PLAN_EN_COURS.replace("  - Objectif : x\n", "  - Objectif : x\n  - En pause : Q1 (votre décision)\n");
+  avecControles(d, echoue("src/ok.js"), enPause);
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e), null);
+  ecrire(d, "aidd_docs/tasks/e/PLAN-SPEC-US-001-x.md", enPause + "- [~] **T2 – Une autre** · US-001\n  - Objectif : y\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+});
+
+test("contrôles rapides : titre « ## Taches » sans accent reconnu", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  avecControles(d, echoue("src/ok.js"), PLAN_EN_COURS.replace("## Tâches", "## Taches"));
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e).decision, "block");
+});
+
+test("contrôles rapides : seulement des fichiers sous docs/ ou aidd_docs/ → rien n'est lancé", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  avecControles(d, `${echoue("docs/a.md")} et ${echoue("aidd_docs/b.md")}`);
+  ecrire(d, "docs/a.md", "# A\n");
+  ecrire(d, "aidd_docs/b.md", "# B\n");
+  noter(d, e, "docs/a.md", "aidd_docs/b.md");
+  assert.strictEqual(lancer(d, e), null);
+});
+
+test("contrôles rapides : une commande qui réécrit les fichiers est sautée", () => {
+  const d = projet();
+  const e = { session_id: session() };
+  const trace = path.join(d, "trace.txt").split("\\").join("/");
+  const ecrit = (suite) => `\`node -e "require('fs').appendFileSync('${trace}', 'x')" && echo ${suite}\``;
+  avecControles(d, [ecrit("--write"), ecrit("--fix"), ecrit("format"), ecrit("fmt"), ecrit("lint:fix")].join(" et "));
+  ecrire(d, "src/ok.js", "const a = 1;\n");
+  noter(d, e, "src/ok.js");
+  assert.strictEqual(lancer(d, e), null);
+  assert.ok(!fs.existsSync(trace), "aucune commande qui réécrit n'a été lancée");
+});
+
+test("worktree noté depuis la session principale : règles du worktree, chemin relatif au worktree", () => {
+  const d = projet({ regles: "" });
+  spawnSync("git", ["add", "-A"], { cwd: d });
+  assert.strictEqual(spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init"], { cwd: d }).status, 0);
+  const w = path.join(d, ".claude", "worktrees", "principal");
+  assert.strictEqual(spawnSync("git", ["worktree", "add", "-q", "-b", "principal", w], { cwd: d }).status, 0);
+  ecrire(w, "aidd_docs/memory/technical.md", `# Technique\n\n## Conventions propres au projet\n\n${REGLE}`);
+  ecrire(w, "src/prix.js", "parseFloat(x)\n");
+  const e = { session_id: session() };
+  noter(d, e, ".claude/worktrees/principal/src/prix.js"); // noté avec la racine de la session principale
+  assert.deepStrictEqual(releve(d, e).fichiers, [".claude/worktrees/principal/src/prix.js"]);
+  const s = lancer(d, e);
+  assert.strictEqual(s.decision, "block");
+  assert.match(s.reason, /Les montants/);
+  assert.match(s.reason, /^- src\/prix\.js, ligne 1/m);
 });

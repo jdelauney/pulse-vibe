@@ -61,3 +61,34 @@ test("une action inconnue affiche l'usage et sort en erreur", () => {
   assert.match(r.stderr, /effacer/);
   fs.rmSync(dossier, { recursive: true, force: true });
 });
+
+test("effacer depuis un sous-dossier du projet : la racine vient de Git", () => {
+  const { dossier, captures } = projet();
+  spawnSync("git", ["init", "-q"], { cwd: dossier });
+  const sous = path.join(dossier, "src", "lib");
+  fs.mkdirSync(sous, { recursive: true });
+  const r = lancer(sous, "effacer", "US-001");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!fs.existsSync(path.join(captures, "US-001")));
+  assert.ok(!fs.existsSync(path.join(sous, "aidd_docs")));
+  fs.rmSync(dossier, { recursive: true, force: true });
+});
+
+test("effacer impossible (suppression refusée) : une phrase simple, code 1, sans trace technique", () => {
+  const { effacer } = require(SCRIPT);
+  const { dossier } = projet();
+  const rmSync = fs.rmSync;
+  fs.rmSync = () => {
+    throw Object.assign(new Error("EBUSY: resource busy or locked"), { code: "EBUSY" });
+  };
+  let r;
+  try {
+    r = effacer("US-001", dossier);
+  } finally {
+    fs.rmSync = rmSync;
+  }
+  assert.strictEqual(r.code, 1);
+  assert.match(r.erreur, /US-001/);
+  assert.doesNotMatch(r.erreur, /EBUSY|at /);
+  fs.rmSync(dossier, { recursive: true, force: true });
+});

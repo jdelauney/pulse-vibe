@@ -2,8 +2,10 @@
 // Pulse – point d'entrée des hooks Stop et SubagentStop, actif seulement dans un projet Pulse :
 // quand l'agent rend la main, contrôle les seuls fichiers écrits pendant le tour (relevé de tour.js) :
 // règles contrôlées du projet, clés secrètes, et contrôles automatiques de « Commandes du projet »
-// quand une tâche d'un plan est en cours. Bloque au plus deux fois de suite, puis demande de dire
-// à la personne ce qui reste à corriger. Silencieux en cas d'erreur interne.
+// pendant une réalisation (pendantUneTache) ; un contrôle en échec bloque seulement si sa sortie nomme
+// un fichier du tour. Chaque fichier suit les règles de sa propre racine Git (tour.parRacine).
+// Bloque au plus deux fois de suite, puis demande de dire à la personne ce qui reste à corriger.
+// Silencieux en cas d'erreur interne.
 "use strict";
 
 const fs = require("fs");
@@ -67,7 +69,10 @@ function constatsFichiers(racine, fichiers) {
   return constats;
 }
 
-/** Vrai quand un plan de aidd_docs/tasks/ a une tâche en cours (« - [~] **T… ») dans « ## Tâches ». */
+/**
+ * Vrai quand un plan de aidd_docs/tasks/ a une tâche en cours (« - [~] **T… ») dans « ## Tâches » (ou « ## Taches »)
+ * qui ne porte pas la sous-ligne « En pause : Q<n> » (elle attend une décision : personne n'y travaille).
+ */
 function tacheEnCours(racine) {
   const taches = path.join(racine, "aidd_docs", "tasks");
   let dossiers = [];
@@ -91,13 +96,31 @@ function tacheEnCours(racine) {
       } catch (e) {
         continue; // plan illisible : les autres comptent
       }
+      let enCours = false; // la tâche [~] lue en dernier, tant qu'aucune sous-ligne « En pause » ne la suit
       for (const ligne of texte.split(/\r?\n/)) {
-        if (/^##\s/.test(ligne)) dans = /^##\s+Tâches\s*$/.test(ligne);
-        else if (dans && /^- \[~\]\s+\*\*T\d+/.test(ligne)) return true;
+        if (/^##\s/.test(ligne)) {
+          if (enCours) return true;
+          dans = /^##\s+T[âa]ches\s*$/i.test(ligne);
+        } else if (dans && /^- \[.\]\s+\*\*T\d+/.test(ligne)) {
+          if (enCours) return true;
+          enCours = /^- \[~\]/.test(ligne);
+        } else if (enCours && /^\s+- En pause\s*:/i.test(ligne)) enCours = false;
       }
+      if (enCours) return true;
     }
   }
   return false;
+}
+
+/**
+ * Les contrôles rapides se lancent seulement pendant une réalisation : marqueur vivant (realisation.js, sous la racine
+ * du groupe ou celle de la session), tâche [~] hors pause, et au moins un fichier relevé hors de docs/ et aidd_docs/.
+ */
+function pendantUneTache(groupe, racineSession) {
+  if (!groupe.fichiers.some((f) => !/^(docs|aidd_docs)\//.test(f))) return false;
+  const { lire } = require("./realisation");
+  const racines = [...new Set([groupe.racine, racineSession])];
+  return racines.some((r) => lire(r)) && racines.some((r) => tacheEnCours(r));
 }
 
 /** Les commandes entre accents graves d'une cellule, hors parenthèses (« (corriger le format : `…`) »). */
@@ -134,12 +157,36 @@ function controlesRapides(racine) {
   return [];
 }
 
-/** Lance les contrôles l'un après l'autre dans le délai ; renvoie les constats des échecs. */
-function lancerControles(racine, commandes) {
+const echapper = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Vrai quand la sortie d'un contrôle nomme un des fichiers relevés : chemin relatif à la racine (`src/a.ts`,
+ * `./src/a.ts`, ou à la fin d'un chemin absolu), `\` lus comme `/`. Un échec qui ne nomme aucun fichier du
+ * tour (erreur ailleurs dans le projet, configuration) ne bloque pas : ce tour ne l'a pas causé.
+ */
+function nommeUnFichier(texte, racine, fichiers) {
+  const sortie = texte.replace(/\\/g, "/");
+  const minuscules = process.platform === "win32" || /^[a-z]:\//i.test(sortie);
+  const base = String(racine).replace(/\\/g, "/").replace(/\/+$/, "");
+  return fichiers.some((rel) => {
+    const absolu = `${base}/${rel}`;
+    if (minuscules ? sortie.toLowerCase().includes(absolu.toLowerCase()) : sortie.includes(absolu)) return true;
+    return new RegExp(`(^|[^\\w.-])${echapper(rel)}(?![\\w/-]|\\.\\w)`, minuscules ? "mi" : "m").test(sortie);
+  });
+}
+
+// Un contrôle qui réécrit les fichiers (`prettier --write`, `eslint --fix`, `ruff format`, `npm run format`,
+// `cargo fmt`, `lint:fix`) n'a pas sa place en fin de tour : il modifierait le travail sans que l'agent le voie.
+// Il est sauté ; seules les commandes qui vérifient sans modifier sont lancées.
+const REECRIT = /(^|\s)--(write|fix)(?![\w-])|(^|\s)(format|fmt)(\s|$)|:(fix|format)(?![\w:-])/i;
+
+/** Lance les contrôles l'un après l'autre dans le délai ; renvoie les constats des échecs qui nomment un fichier du tour. */
+function lancerControles(racine, commandes, fichiers) {
   const delai = (Number(process.env.PULSE_FIN_DE_TOUR_DELAI) > 0 ? Number(process.env.PULSE_FIN_DE_TOUR_DELAI) : DELAI_S) * 1000;
   const fin = Date.now() + delai;
   const constats = [];
   for (const commande of commandes) {
+    if (REECRIT.test(commande)) continue;
     const reste = fin - Date.now();
     if (reste <= 0) break;
     // Par le lanceur (arrêt de toute la commande au délai), sortie dans un fichier : rien ne retient le hook.
@@ -161,6 +208,7 @@ function lancerControles(racine, commandes) {
     if (r.error || r.signal || r.status === null || r.status === DEPASSE) continue; // délai dépassé ou lancement impossible
     const lignesSortie = texte.replace(/\s+$/, "").split(/\r?\n/);
     if (r.status === 0 || r.status === 127 || r.status === 9009 || INTROUVABLE.test(lignesSortie.slice(-5).join("\n"))) continue;
+    if (!nommeUnFichier(texte, racine, fichiers)) continue;
     const lignes = lignesSortie.slice(-LIGNES_SORTIE).join("\n");
     constats.push(`Le contrôle automatique \`${commande}\` échoue :\n\`\`\`\n${lignes}\n\`\`\``);
   }
@@ -191,9 +239,13 @@ function principal() {
 
   const etat = tour.lireTour(cleEntree, racine);
   if (!etat.fichiers.length) return;
-  const constats = constatsFichiers(racine, etat.fichiers);
   const rapides = evenement === "Stop" || AGENTS_CONTROLES_RAPIDES.includes(agent);
-  if (rapides && tacheEnCours(racine)) constats.push(...lancerControles(racine, controlesRapides(racine)));
+  const constats = [];
+  // Chaque fichier se contrôle avec les règles de sa propre racine Git (dépôt principal ou dossier à part).
+  for (const groupe of tour.parRacine(racine, etat.fichiers)) {
+    constats.push(...constatsFichiers(groupe.racine, groupe.fichiers));
+    if (rapides && pendantUneTache(groupe, racine)) constats.push(...lancerControles(groupe.racine, controlesRapides(groupe.racine), groupe.fichiers));
+  }
   // Le relevé n'est jamais réécrit (des écritures en parallèle s'y ajoutent) : seule la part lue est marquée contrôlée.
   if (!constats.length) return tour.marquerLus(cleEntree, racine, etat.lu);
 
