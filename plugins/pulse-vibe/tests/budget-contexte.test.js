@@ -31,15 +31,15 @@ const PLAFONDS = {
   brainstorm: 34000, // mesure 31 945
   tech: 60500, // mesure 57 222
   memory: 32000, // mesure 30 261
-  spirc: 32500, // mesure 30 906 (pulse 0.40 : règle commune 19 et fiche de test)
+  spirc: 34000, // mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
   express: 40500, // mesure 38 394
   prd: 28500, // mesure 26 982
   us: 30500, // mesure 28 742
   spec: 35500, // mesure 33 492
   plan: 50500, // mesure 47 800
-  implement: 44500, // mesure 42 344 (pulse 0.42 : rythme rapide, option -f, gestes)
+  implement: 45000, // mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 24000, // mesure 22 408
-  review: 31500, // mesure 29 678 (pulse 0.40 : règle commune 19 et fiche de test)
+  review: 32500, // mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   commit: 39000, // mesure 37 065
   pr: 32000, // mesure 30 391
   annuler: 38500, // mesure 36 358
@@ -66,7 +66,9 @@ const PLAFONDS = {
 // Mesures à la fin du plan « Corrections 4 » : review 12 476, commit 26 737 (× 1,05, au 500 supérieur).
 // review relevé à 15 000 (pulse 0.39) : trame des skills (Objectif, Règles, Contexte, Rôle, Processus, Exemples), mesure 13 945.
 // review relevé à 16 000 (pulse 0.40) : règle commune 19 et fiche de test, mesure 15 023.
-const PLAFONDS_ETAPES = { review: 16000, commit: 28500 };
+// review : mesure 16 289 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
+// review : mesure 16 526, commit : mesure 28 524 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+const PLAFONDS_ETAPES = { review: 17500, commit: 29000 }; // review : mesure 17 209 (pulse 0.48 : captures gardées, examen.md)
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
@@ -75,7 +77,7 @@ const PLAFONDS_COMMANDE = {
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
   brainstorm: 44000, // mesure 41 756
   cicd: 51000, // mesure 48 229
-  commit: 50500, // mesure 47 813
+  commit: 51000, // mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 52000, // mesure 49 125
   explain: 29000, // mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 53500, // mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
@@ -87,18 +89,18 @@ const PLAFONDS_COMMANDE = {
   learn: 41500, // mesure 39 206
   memory: 41000, // mesure 38 661
   perf: 57500, // mesure 54 519
-  plan: 65500, // mesure 62 257
+  plan: 66500, // mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 41000, // mesure 38 807
   prd: 34000, // mesure 32 244
   rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 54500, // mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
-  review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
+  review: 40000, // mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 56000, // mesure 52 989
   secrets: 50000, // mesure 47 290
   security: 46000, // mesure 43 499
   seo: 61000, // mesure 57 741
   spec: 51000, // mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 66000, // mesure 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
+  spirc: 71500, // mesure 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
   status: 36500, // mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
   tech: 79500, // mesure 75 338
   test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -115,7 +117,7 @@ const BOUCLES = {
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 87000, // mesure 82 698 (pulse 0.42 : rythme rapide, option -f, gestes)
+    plafond: 88000, // mesure 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };

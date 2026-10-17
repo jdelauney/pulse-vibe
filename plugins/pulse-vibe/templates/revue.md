@@ -14,10 +14,13 @@
 <!-- Verdict et tableau du verifier : chaque critère essayé sur l'application en marche. -->
 
 - **Verdict** : {{✅ Prouvé | ❓ Partiellement prouvé | ❌ Échoue}}
+- **Filet anti-régression** : {{N tests, tous verts | — (rythme rapide : fin d'US)}}
 
 | Critère | Attendu | Obtenu | Résultat | Preuve |
 |---|---|---|---|---|
 | | | | ✅ / ❌ / ❓ à tester à la main | |
+
+<!-- Avec des captures gardées par le verifier : une image par ligne, ![T1 critère 1, ordinateur](../../../../captures/US-XXX/T1-critere-1-ordinateur.png), puis la phrase « Ces images restent sur cet ordinateur. » ; sinon supprimer ce commentaire. -->
 
 ## Tests automatiques
 

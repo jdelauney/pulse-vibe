@@ -395,25 +395,29 @@ function modifiePlan(entree) {
   }
 }
 
-const projet = process.env.CLAUDE_PROJECT_DIR;
-if (projet && fs.existsSync(projet)) process.chdir(projet);
+if (require.main === module) {
+  const projet = process.env.CLAUDE_PROJECT_DIR;
+  if (projet && fs.existsSync(projet)) process.chdir(projet);
 
-if (process.argv.includes("--hook")) {
-  // Le hook ne doit jamais gêner la session : aucune sortie, aucune erreur.
-  try {
-    if (modifiePlan(fs.readFileSync(0, "utf8"))) generer();
-  } catch (e) {
-    // silencieux
-  }
-} else {
-  const r = generer();
-  if (r.erreur) {
-    console.log(`⚠️ ${r.erreur}`);
-    process.exitCode = 1;
+  if (process.argv.includes("--hook")) {
+    // Le hook ne doit jamais gêner la session : aucune sortie, aucune erreur.
+    try {
+      if (modifiePlan(fs.readFileSync(0, "utf8"))) generer();
+    } catch (e) {
+      // silencieux
+    }
   } else {
-    console.log(`✅ Guide de réalisation à jour : ${r.plans} plan(s), ${r.faites}/${r.taches} tâche(s) terminée(s).`);
-    for (const f of r.ecrits) console.log(`   docs/guide/${f}`);
-    for (const n of r.ignores) console.log(`⚠️ ${n} : aucune tâche reconnue, plan ignoré.`);
-    if (r.suite) console.log(`➡️ Prochaine étape : ${commandeSuivante(r.suite.plan, r.suite.tache)}  (${r.suite.tache.id} – ${r.suite.tache.titre})`);
+    const r = generer();
+    if (r.erreur) {
+      console.log(`⚠️ ${r.erreur}`);
+      process.exitCode = 1;
+    } else {
+      console.log(`✅ Guide de réalisation à jour : ${r.plans} plan(s), ${r.faites}/${r.taches} tâche(s) terminée(s).`);
+      for (const f of r.ecrits) console.log(`   docs/guide/${f}`);
+      for (const n of r.ignores) console.log(`⚠️ ${n} : aucune tâche reconnue, plan ignoré.`);
+      if (r.suite) console.log(`➡️ Prochaine étape : ${commandeSuivante(r.suite.plan, r.suite.tache)}  (${r.suite.tache.id} – ${r.suite.tache.titre})`);
+    }
   }
 }
+
+module.exports = { modifiePlan, generer };

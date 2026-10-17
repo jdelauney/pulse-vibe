@@ -18,7 +18,7 @@ const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 // pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l'architecture ; mesure à la fin du plan « Corrections 4 » : 20 087 (plafond = mesure × 1,05, au 500 supérieur).
 const PLAFONDS_PACK = { implement: 21500, fix: 21500, spirc: 21500, "auto-fix": 21500 };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
-const PLAFONDS_AVEC_PACK = { implement: 63500, spirc: 54500 }; // spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
+const PLAFONDS_AVEC_PACK = { implement: 65000, spirc: 54500 }; // implement : mesure 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
 
 for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   test(`pack : contexte ${commande} ≤ ${plafond} caractères, fiche sans architecture`, () => {
@@ -93,13 +93,13 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   plan: 106000, // mesure 100 752
   rediger: 36500, // mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
   refine: 91500, // mesure 86 865
-  review: 39000, // mesure 36 785 (pulse 0.40 : règle commune 19 et fiche de test)
+  review: 40000, // mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 60000, // mesure 57 057
   secrets: 70500, // mesure 67 057
   security: 88000, // mesure 83 589
   seo: 102000, // mesure 96 880
   spec: 54000, // mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 85000, // mesure 80 657 (pulse 0.42 : rythme rapide, option -f, gestes)
+  spirc: 91500, // mesure 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   tech: 134500, // mesure 127 942
   test: 52000, // mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 90000, // mesure 85 248

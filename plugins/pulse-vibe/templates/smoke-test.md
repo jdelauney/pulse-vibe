@@ -26,6 +26,8 @@
 
 **Vous devez voir** : {{ex. « Un message vert « Tâche créée » apparaît quelques secondes en bas de l'écran, et « Acheter du pain » est en haut de la liste. »}}
 
+<!-- Avec une capture gardée par le verifier : ![Écran attendu](../../captures/US-XXX/T1-critere-1-ordinateur.png) et la phrase « Ces images restent sur cet ordinateur. » ; sinon supprimer ce commentaire. -->
+
 - [ ] C'est bien ce que je vois
 
 ### Étape 2 – {{…}}

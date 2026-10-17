@@ -49,3 +49,9 @@ test("le bilan d'un projet : une ligne par US, puis le total", () => {
   assert.match(sortie, /^total · 2\/4 tâches · 2 relectures · 1 correction · 1 test non concluant · constats 0\/1\/0\/0$/m);
   assert.match(spawnSync(process.execPath, [SCRIPT], { cwd: projet({}), encoding: "utf8" }).stdout, /^bilan: aucun plan/);
 });
+
+test("plan avec questions en attente et « En pause » : T4 compte comme à faire, Q1 n'est pas une tâche", () => {
+  const plan = "# Plan\n\n## Tâches\n\n- [x] **T3 – C** · US-002\n- [ ] **T4 – D** · US-002\n  - En pause : Q1 (votre décision)\n\n## Questions en attente\n\n- [ ] Q1 · T4 · Garder ? · Options : oui / non · Recommandé : oui\n\n## Choix faits par Pulse\n\n- T4 · tri · Autre possibilité : nom · Raison : simple\n";
+  const lignes = bilan(projet({ "aidd_docs/tasks/g/PLAN-SPEC-US-002-b.md": plan }));
+  assert.deepStrictEqual(lignes.map((l) => [l.us, l.faites, l.total]), [["US-002", 1, 2]]);
+});

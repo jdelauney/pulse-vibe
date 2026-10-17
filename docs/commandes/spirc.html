@@ -101,7 +101,7 @@
 <!-- /auto:forme -->
 <ul>
 <li><strong>L'US</strong> : celle dont vous réalisez le plan, par exemple <code>US-001</code>. Absente, Pulse liste les plans et propose aussi « Spécifier et planifier une autre US ».</li>
-<li><strong>Plusieurs US</strong> (<code>US-001 US-003</code>) ou <code>version</code> (toutes les US Indispensables encore à faire) : une série. Pulse prépare d'abord avec vous la spec et le plan de chacune ; puis il les réalise à la suite, en mode autonome. Une question qui vous revient met seulement son US de côté : les autres avancent. Deux US qui ne touchent pas les mêmes fichiers peuvent avancer en même temps, chacune dans un dossier à part, si vous l'acceptez. À votre retour : les questions mises de côté, en une fois, puis un test par US.</li>
+<li><strong>Plusieurs US</strong> (<code>US-001 US-003</code>) ou <code>version</code> (toutes les US Indispensables encore à faire) : une série. Pulse prépare d'abord avec vous la spec et le plan de chacune ; puis il les réalise à la suite, en mode autonome. Une question qui vous revient met seulement sa tâche en pause : les autres tâches avancent, puis les autres US quand celle-ci ne peut plus avancer. Deux US qui ne touchent pas les mêmes fichiers peuvent avancer en même temps, chacune dans un dossier à part, si vous l'acceptez. À votre retour : les questions mises de côté, en une fois, puis un test par US.</li>
 <li><strong>La portée</strong> (facultative) :
 <ul>
 <li>rien : toutes les tâches restantes du plan, dans l'ordre ;</li>
@@ -110,7 +110,7 @@
 </ul></li>
 <li><strong>Les raccourcis</strong> (facultatifs), placés avant l'US et regroupables (<code>-axw</code>) :
 <ul>
-<li><code>-a</code> : autonome. Les tâches s'enchaînent, les corrections se font seules, et vous testez tout à la fin, en un seul parcours.</li>
+<li><code>-a</code> : autonome. Les tâches s'enchaînent, les corrections se font seules, et vous testez tout à la fin, en un seul parcours. Une question sur votre besoin n'arrête que sa tâche : elle est mise « en pause », les autres tâches continuent, et toutes les questions vous sont posées ensemble. Les petits choix sont tranchés par Pulse et notés pour que vous les relisiez. Voir <a href="../concepts.html#travailler-seul">Laisser Pulse travailler seul</a>.</li>
 <li><code>-f</code> : rapide. L'essentiel des tests, les tâches s'enchaînent, une seule relecture et une seule vérification pour toute l'US, puis vous testez toute l'US à la fin avec une seule fiche. Sans ce raccourci, la question « rapide ou complet » vous est posée au début (sauf après le parcours express, déjà réglé sur rapide).</li>
 <li><code>-t</code> : tests d'abord. Les tests de chaque tâche sont écrits avant son code.</li>
 <li><code>-x</code> : un contrôle de sécurité en plus, à chaque tâche.</li>
@@ -133,6 +133,8 @@
 <tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan, s'il manquait ; puis les tâches cochées une à une, et le journal (plan validé, chaque enregistrement).</td></tr>
 <tr><td>Les fichiers de chaque tâche</td><td>Le code de l'appli.</td></tr>
 <tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/…</code></td><td>Un rapport de relecture par tâche ; en rythme rapide, un seul pour toute l'US.</td></tr>
+<tr><td>Le plan, sections « Questions en attente » et « Choix faits par Pulse »</td><td>En mode autonome : les questions qui vous attendent et les petits choix faits par Pulse, à relire au test groupé.</td></tr>
+<tr><td><code>aidd_docs/captures/US-XXX/</code></td><td>Les captures d'écran gardées comme preuves par la vérification, sur votre ordinateur seulement ; effacées quand l'US est envoyée.</td></tr>
 <tr><td><code>docs/user-stories.md</code>, <code>US-XXX-&lt;nom&gt;.md</code></td><td>Pour une demande qui est un nouveau besoin : la nouvelle US.</td></tr>
 <tr><td><code>docs/prd.md</code></td><td>Une idée hors du périmètre, notée « En attente ».</td></tr>
 <tr><td><code>docs/technical.md</code></td><td>Les choix techniques, s'ils n'étaient pas encore faits.</td></tr>
@@ -145,7 +147,9 @@
 <section id="risques">
 <h2>Risques et précautions</h2>
 <ul>
-<li><strong>Certains arrêts restent, même en mode autonome</strong> : la validation d'un plan qui vient d'être écrit, les questions sur votre besoin ou le périmètre, les actions à faire à la main, le choix de l'envoi et la mise en ligne.</li>
+<li><strong>En mode autonome, vos décisions attendent dans le plan.</strong> Une question sur votre besoin ou le périmètre, une action à faire à la main ou un problème qui résiste aux corrections met seulement sa tâche en pause ; les autres avancent. Pulse s'arrête une seule fois, quand plus rien ne peut avancer, et vous pose toutes ses questions ensemble. Restent aussi des arrêts : la validation d'un plan qui vient d'être écrit, le choix de l'envoi et la mise en ligne.</li>
+<li><strong>Chaque tâche est contrôlée sans vous.</strong> Quand un assistant rend la main, Pulse vérifie les règles du projet, les clés secrètes et les contrôles rapides sur ce qu'il vient d'écrire. En rythme complet, toute la suite de tests sans navigateur tourne avant l'enregistrement de chaque tâche, et le rapport porte la ligne « Filet anti-régression : N tests, tous verts ».</li>
+<li><strong>Une longue réalisation se reprend sans perdre le fil.</strong> Après la limite d'utilisation ou un résumé automatique de la conversation, Pulse relit l'état dans le plan. Une notification du bureau peut vous prévenir quand il vous attend ; la notification et la reprise automatique à la limite d'utilisation sont prévues pour Claude Code dans un terminal ; dans l'extension VS Code, elles ne sont pas confirmées (voir <a href="../concepts.html#travailler-seul">Laisser Pulse travailler seul</a>).</li>
 <li><strong>En mode autonome, l'envoi attend votre test.</strong> Les versions restent sur votre ordinateur jusqu'à la fin du test groupé.</li>
 <li>Claude Code vous demande votre accord pour lancer l'application et l'essayer, et pour envoyer le travail sur le dépôt en ligne.</li>
 </ul>
@@ -155,10 +159,11 @@
 
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Une tâche reste « en pause : votre décision »</summary><p>Une question vous attend dans la section « Questions en attente » du plan. Pulse vous la pose quand plus aucune autre tâche ne peut avancer, ou à la fin. Pour voir combien il y en a tout de suite, lancez <a href="status.html"><code>/pulse:status</code></a>.</p></details>
 <details class="probleme"><summary>Pulse attend mes réponses avant d'écrire le plan</summary><p>La spec a encore des questions ouvertes. Le plan attend vos réponses, même en mode autonome : c'est votre besoin qui fixe ce qui sera construit.</p></details>
 <details class="probleme"><summary>Pulse me demande de choisir les outils</summary><p>Les choix techniques ne sont pas encore faits. Pulse applique d'abord l'étape de <a href="tech.html"><code>/pulse:tech</code></a>, même en mode autonome : ce choix vous appartient.</p></details>
 <details class="probleme"><summary>« Il manque le PRD »</summary><p>La commande a besoin de savoir ce qui fait partie de la première version. Lancez <a href="prd.html"><code>/pulse:prd</code></a>, ou <a href="brainstorm.html"><code>/pulse:brainstorm</code></a> si vous n'avez pas encore de brief.</p></details>
-<details class="probleme"><summary>La boucle s'arrête et propose <code>/pulse:get-help</code></summary><p>Un problème grave persiste après deux corrections. La tâche reste en cours ; <a href="get-help.html"><code>/pulse:get-help</code></a> prépare une demande d'aide prête à envoyer, sans vos secrets.</p></details>
+<details class="probleme"><summary>La boucle propose <code>/pulse:get-help</code></summary><p>Un problème grave persiste après deux corrections. Pas à pas, la boucle s'arrête là. En mode autonome, la tâche se met en pause et la question « Demander de l'aide » vous attend avec les autres ; les tâches qui n'en dépendent pas avancent. Pulse s'arrête aussi tout de suite si le travail mis de côté d'une tâche ne se remet pas en place. Dans tous les cas, la tâche reste en cours et <a href="get-help.html"><code>/pulse:get-help</code></a> prépare une demande d'aide prête à envoyer, sans vos secrets.</p></details>
 <details class="probleme"><summary>Le garde-fou contre les clés secrètes s'est déclenché</summary><p>C'est une protection : une clé allait finir dans le code ou dans une version. Pulse vous explique, corrige, puis reprend l'étape en cours.</p></details>
 </section>
 
