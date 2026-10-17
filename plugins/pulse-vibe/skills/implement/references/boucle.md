@@ -11,6 +11,7 @@ Utilisé par `/pulse:implement <US-XXX>` lancé sans tâche : chaque tâche rest
 - `correction` : à l'étape 3 (corriger), avec les constats du rapport ;
 - `test` : au test manuel de l'étape review (« Le test manuel par la personne »), avec les étapes du rapport : la personne teste, même après une interruption ;
 - `commit` : à l'étape 4 (commiter) ;
+- `decision` (une question attend dans « Questions en attente » du plan) : s'arrêter et proposer `/pulse:spirc <US-XXX>`, qui pose la question puis reprend la tâche ;
 - `aide` : s'arrêter, expliquer simplement le blocage et proposer `/pulse:get-help` ;
 - `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
 

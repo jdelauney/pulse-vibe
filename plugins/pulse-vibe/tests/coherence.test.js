@@ -641,9 +641,13 @@ test("spirc : en autonome, une décision arrête seulement sa tâche ; petits ch
   assert.match(texte, /Vous pouvez faire autre chose : je note mes questions et vous les pose toutes ensemble/);
   assert.match(texte, /« Garder ce choix \(Recommandé\) » \/ « Changer ce choix »/);
   assert.match(texte, /\*\*Conversation longue\*\* \(hors mode autonome\)/);
-  for (const etape of ["test", "realisation", "examen", "commit", "questions", "test-groupe"]) assert.match(texte, new RegExp("`" + etape + "`"), etape);
+  const marqueur = texte.split("**Marqueur de réalisation**")[1].split("\n\n")[0];
+  for (const etape of ["test", "realisation", "examen", "commit", "questions", "test-groupe"]) assert.match(marqueur, new RegExp("`" + etape + "`"), etape);
   assert.match(texte, /pulse-aidd realisation fin/);
-  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Petit choix\*\*[^\n]*Dans le doute, c'est une question/);
+  assert.match(section, /\*\*Petit choix\*\*[^\n]*Dans le doute, c'est une question en attente/);
+  assert.match(section, /constat Critique non résolu/);
+  assert.match(section, /les questions d'abord, puis le test groupé/);
+  assert.doesNotMatch(lire(RACINE, "references", "regles-communes.md"), /Petit choix/, "défini une seule fois, dans spirc");
 });
 
 // Mots réservés aux consignes (liste partagée avec wiki.test.js).
