@@ -89,3 +89,34 @@ test("travail-sobre.md : court et positif", () => {
     assert.match(texte, idee);
   }
 });
+
+const TITRES_TESTS = [
+  "Stratégie de tests",
+  "Écrire un test",
+  "Tests unitaires",
+  "Tests d'intégration",
+  "Tests de bout en bout",
+  "Développement piloté par les tests (TDD)",
+  "Scénarios Gherkin",
+];
+
+test("tests sans argument : sortie actuelle, règle sobre en plus", () => {
+  const r = lancer(["tests"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(dansLOrdre(r.stdout, ["Travailler sobrement", "Stratégie de tests : sommaire", ...TITRES_TESTS]), r.stdout.slice(0, 500));
+});
+
+test("tests ecrire tdd gherkin unitaire : le nécessaire du test-writer", () => {
+  const r = lancer(["tests", "ecrire", "tdd", "gherkin", "unitaire"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const t of ["Écrire un test", "Tests unitaires", "Développement piloté par les tests (TDD)", "Scénarios Gherkin"]) {
+    assert.ok(r.stdout.includes(`===== ${t} =====`), t);
+  }
+  for (const t of ["Tests d'intégration", "Tests de bout en bout", "Stratégie de tests"]) assert.ok(!r.stdout.includes(`===== ${t} =====`), t);
+});
+
+test("tests : nom inconnu", () => {
+  const r = lancer(["tests", "unitaires"]);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout + r.stderr, /strategie, ecrire, unitaire, integration, bout-en-bout, tdd, gherkin/);
+});

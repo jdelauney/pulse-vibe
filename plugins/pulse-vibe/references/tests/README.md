@@ -19,6 +19,8 @@ Ces références décrivent **quoi tester, comment écrire un test et dans quel 
 | `tests/tdd.md` | Cycle rouge / vert / remaniement, les 5 étapes pour écrire un exemple, ordre des exemples |
 | `tests/test-manuel.md` | Fiche de test manuel à adapter à chaque fonctionnalité, passe préalable dans le navigateur |
 
+`pulse-aidd tests` affiche toute la méthode (sans le test manuel) ; `pulse-aidd tests <morceau>…` seulement les morceaux nommés : `strategie`, `ecrire`, `unitaire`, `integration`, `bout-en-bout`, `tdd`, `gherkin` (les niveaux portent le nom des étiquettes des scénarios, sans `@`).
+
 ## Vocabulaire
 
 | Terme | Sens |
