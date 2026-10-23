@@ -118,6 +118,25 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_COMMANDE_AVEC_PACK)) {
   });
 }
 
+// Ce que charge chaque agent de la boucle avant de lire le code, pack déclaré : ses consignes, les règles de qualité ou de
+// tests (l'organisation est couverte par le pack) et les consignes du pack (plafond = mesure × 1,05, au 500 supérieur). Avant le chargement par famille (2026-10-23,
+// pulse 0.48.2) : implementer ≈ 107 000, reviewer ≈ 133 000, test-writer et test-runner ≈ 62 000 chacun.
+const AGENTS_AVEC_PACK = {
+  "implementer, tâche d'interface": { plafond: 76000, /* mesure 72 098 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "composants"], ["pile", "contexte", "implement"]] },
+  "implementer, tâche serveur": { plafond: 79000, /* mesure 74 824 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "securite"], ["pile", "contexte", "implement"]] },
+  reviewer: { plafond: 59500, /* mesure 56 335 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"], ["pile", "contexte", "review"]] },
+  "test-writer": { plafond: 48500, /* mesure 45 831 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"], ["pile", "contexte", "test"]] },
+  "test-runner": { plafond: 34000, /* mesure 32 262 */ parties: [["agent", "test-runner"], ["tests", "ecrire", "unitaire"], ["pile", "contexte", "test"]] },
+};
+const chargementAgent = (parties) => parties.reduce((somme, args) => somme + taille(projetAvecPack, ...args), 0);
+
+for (const [agent, { plafond, parties }] of Object.entries(AGENTS_AVEC_PACK)) {
+  test(`cœur et pack : agent ${agent} ≤ ${plafond} caractères chargés avant le code`, { skip: !fs.existsSync(COEUR) }, () => {
+    const total = chargementAgent(parties);
+    assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
+
 if (process.argv.includes("--tableau")) {
   const lignes = ["| Mesure | Caractères | Plafond |", "|---|---|---|"];
   for (const [c, p] of Object.entries(PLAFONDS_PACK)) lignes.push(`| pulse-pile-next contexte ${c} | ${lancer("contexte", c).stdout.length} | ${p} |`);
@@ -125,5 +144,6 @@ if (process.argv.includes("--tableau")) {
   for (const [n, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK))
     lignes.push(`| ${n} avec pack | ${parties.reduce((s, [l, ...a]) => s + l(...a).stdout.length, 0)} | ${plafond} |`);
   for (const [c, p] of Object.entries(PLAFONDS_COMMANDE_AVEC_PACK)) lignes.push(`| commande ${c} avec pack (SKILL.md + contexte) | ${projetAvecPack("etape", c).stdout.length} | ${p} |`);
+  for (const [a, { plafond, parties }] of Object.entries(AGENTS_AVEC_PACK)) lignes.push(`| agent ${a} avec pack | ${chargementAgent(parties)} | ${plafond} |`);
   console.log(lignes.join("\n"));
 }
