@@ -4,7 +4,7 @@
 #   - par pulse-aidd contexte <commande>, quand docs/technical.md déclare « **Pack de pile Pulse** : next » ;
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
-#   pulse-pile-next info                  id, nom, resume, version
+#   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
 #   pulse-pile-next contexte <commande>   consignes du pack pour /pulse:<commande>
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
@@ -119,7 +119,7 @@ contexte() {
 
 case "$1" in
   info)
-    printf 'id: next\nnom: Pulse Next.js\nresume: Next.js 16, Drizzle + Neon, better-auth, next-safe-action, shadcn/ui, Vercel : code de départ vérifié et recettes prêtes.\nversion: %s\n' "$(version)"
+    printf 'id: next\nnom: Pulse Next.js\nresume: Next.js 16, Drizzle + Neon, better-auth, next-safe-action, shadcn/ui, Vercel : code de départ vérifié et recettes prêtes.\nversion: %s\ncouvre: organisation\n' "$(version)"
     exit 0 ;;
   contexte)
     contexte "$2"; exit 0 ;;

@@ -213,3 +213,12 @@ Au palier 1, sans couches, la même idée s'applique au niveau des fichiers : le
 | Le domaine qui importe la base de données ou le framework | Un port dans `application/ports/`, implémenté dans `infrastructure/` |
 | Importer un fichier interne d'une autre feature | Passer par son `index` public, ou, sans index (§6), par les dossiers qu'« Organisation des fichiers » ouvre aux autres features |
 | Renommer ou déplacer des fichiers existants pour suivre ce guide | Suivre l'organisation existante ; proposer une réorganisation comme tâche à part |
+
+## 9. Checklist
+
+- [ ] Chaque nouveau fichier est à l'emplacement prévu par « Organisation des fichiers » de `docs/technical.md`, sinon par le palier en place (§5).
+- [ ] Nom en kebab-case, avec un suffixe du catalogue (§2, §3).
+- [ ] Code rangé par feature, puis par couche (§5) ; aucun dossier créé vide « pour la suite ».
+- [ ] Imports dans le sens permis (§6) : le domaine n'importe ni la base ni le framework ; une feature n'entre pas dans les fichiers internes d'une autre.
+- [ ] Tests au même nom avec `.test`, à l'emplacement choisi par le projet (§7).
+- [ ] Organisation existante suivie, sans fichier déplacé hors de la tâche.
