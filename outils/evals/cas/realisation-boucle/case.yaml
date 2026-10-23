@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: realisation-boucle
+tags: [realisation, mesure]
+context:
+  scaffold_script: projet.sh

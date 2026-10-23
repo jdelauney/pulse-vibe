@@ -1,0 +1,1 @@
+{"type":"assistant","message":{"id":"msg_s1","role":"assistant","content":[{"type":"tool_use","id":"toolu_s1","name":"Read","input":{}},{"type":"tool_use","id":"toolu_s2","name":"Grep","input":{}}],"usage":{"input_tokens":3,"output_tokens":7,"cache_read_input_tokens":0,"cache_creation_input_tokens":2000}}}

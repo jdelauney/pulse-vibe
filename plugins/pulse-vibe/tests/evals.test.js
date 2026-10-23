@@ -32,7 +32,7 @@ test("au moins trois cas, chacun avec un prompt, des vérifications et son scrip
 test("chaque script de préparation crée son projet d'essai dans un dossier vide", { skip: bash }, () => {
   for (const c of cas) {
     const d = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-eval-${c}-`));
-    const r = spawnSync("bash", [path.join(EVALS, c, "projet.sh").split(path.sep).join("/")], { cwd: d, encoding: "utf8" });
+    const r = spawnSync("bash", [path.join(EVALS, c, "projet.sh").split(path.sep).join("/")], { cwd: d, encoding: "utf8", env: { ...process.env, PULSE_EVAL_SANS_INSTALL: "1" } });
     assert.strictEqual(r.status, 0, `${c} : ${r.stderr}`);
     assert.match(fs.readFileSync(path.join(d, "CLAUDE.md"), "utf8"), /méthode Pulse/, c);
   }
@@ -111,4 +111,57 @@ test("le lanceur : versions, distributions WSL et arguments passés à bash", ()
 test("les relais du lanceur renvoient à lancer.js (sh pour Linux, macOS et WSL2 ; cmd pour Windows)", () => {
   assert.match(fs.readFileSync(path.join(OUTILS_EVALS, "lancer.sh"), "utf8"), /exec node "\$\(dirname "\$0"\)\/lancer\.js" "\$@"/);
   assert.match(fs.readFileSync(path.join(OUTILS_EVALS, "lancer.cmd"), "utf8"), /node "%~dp0lancer\.js" %\*/);
+});
+
+test("le lanceur assemble le pack Next quand PACK=next", () => {
+  const racine = path.join(__dirname, "..", "..", "..");
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-pack-"));
+  const plugin = lanceur.assembler(racine, EVALS, temp, { pack: "next" });
+  assert.ok(fs.existsSync(path.join(plugin, "evals-pack", "next", "bin", "pulse-pile-next")));
+  const relais = path.join(plugin, "bin", "pulse-pile-next");
+  assert.ok(fs.existsSync(relais));
+  if (!bash) {
+    const r = spawnSync("bash", [relais.split(path.sep).join("/"), "info"], { encoding: "utf8" });
+    assert.match(r.stdout, /^id: next$/m, r.stderr);
+  }
+  const sansPack = lanceur.assembler(racine, EVALS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-cœur-")));
+  assert.ok(!fs.existsSync(path.join(sansPack, "bin", "pulse-pile-next")));
+});
+
+test("PACK=next accorde npm et npx, et passe dans WSL2", () => {
+  const avec = lanceur.argumentsEval("/x", { PACK: "next" }, []);
+  assert.ok(avec.includes("Bash(npm *)") && avec.includes("Bash(npx *)"));
+  const sans = lanceur.argumentsEval("/x", {}, []);
+  assert.ok(!sans.includes("Bash(npm *)") && !sans.includes("Bash(npx *)"));
+  assert.match(fs.readFileSync(path.join(OUTILS_EVALS, "lancer.js"), "utf8"), /\["RUNS", "PLAFOND", "PACK"/);
+});
+
+const mesure = require(path.join(OUTILS_EVALS, "mesurer.js"));
+const ESSAI = path.join(__dirname, "fixtures", "evals", "essai");
+
+test("mesurer : médiane", () => {
+  assert.strictEqual(mesure.mediane([3, 1, 2]), 2);
+  assert.strictEqual(mesure.mediane([1, 2, 3, 4]), 2.5);
+});
+
+test("mesurer : une transcription et ses sous-agents, chaque message compté une fois", () => {
+  assert.deepStrictEqual(mesure.lireEssai(path.join(ESSAI, "session-1.jsonl")), {
+    entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, sousAgents: 1,
+  });
+});
+
+test("le lanceur garde les transcriptions des essais avec leur rapport", () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-traces-"));
+  const rapport = path.join(temp, "2026-10-23");
+  fs.mkdirSync(rapport);
+  const trace = path.join(ESSAI, "session-1.jsonl");
+  fs.writeFileSync(path.join(rapport, "aggregate-result.json"), JSON.stringify({
+    cases: [{ name: "realisation-boucle", arms: { with: [{ score: 1, durationSeconds: 90, tracePath: trace }] } }],
+  }));
+  lanceur.conserverTraces(rapport);
+  assert.ok(fs.existsSync(path.join(rapport, "traces", "session-1.jsonl")));
+  assert.ok(fs.existsSync(path.join(rapport, "traces", "session-1", "subagents", "agent-x1.jsonl")));
+  assert.deepStrictEqual(mesure.lireResultats(rapport), [{
+    cas: "realisation-boucle", score: 1, duree: 90, entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, sousAgents: 1,
+  }]);
 });
