@@ -150,18 +150,29 @@ test("mesurer : une transcription et ses sous-agents, chaque message compté une
   });
 });
 
+test("mesurer : la trace d'un essai (stream-json), usage de tous les modèles, sous-agents compris", () => {
+  assert.deepStrictEqual(mesure.lireEssai(path.join(ESSAI, "trace.jsonl")), {
+    entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, sousAgents: 1,
+  });
+});
+
 test("le lanceur garde les transcriptions des essais avec leur rapport", () => {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-traces-"));
   const rapport = path.join(temp, "2026-10-23");
   fs.mkdirSync(rapport);
   const trace = path.join(ESSAI, "session-1.jsonl");
   fs.writeFileSync(path.join(rapport, "aggregate-result.json"), JSON.stringify({
-    cases: [{ name: "realisation-boucle", arms: { with: [{ score: 1, durationSeconds: 90, tracePath: trace }] } }],
+    cases: [{ name: "realisation-boucle", arms: { with: [
+      { score: 1, durationSeconds: 90, tracePath: trace },
+      { score: 0.5, durationSeconds: 80, tracePath: path.join(ESSAI, "trace.jsonl") },
+    ] } }],
   }));
   lanceur.conserverTraces(rapport);
-  assert.ok(fs.existsSync(path.join(rapport, "traces", "session-1.jsonl")));
-  assert.ok(fs.existsSync(path.join(rapport, "traces", "session-1", "subagents", "agent-x1.jsonl")));
-  assert.deepStrictEqual(mesure.lireResultats(rapport), [{
-    cas: "realisation-boucle", score: 1, duree: 90, entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, sousAgents: 1,
-  }]);
+  assert.ok(fs.existsSync(path.join(rapport, "traces", "realisation-boucle-with-1.jsonl")));
+  assert.ok(fs.existsSync(path.join(rapport, "traces", "realisation-boucle-with-1", "subagents", "agent-x1.jsonl")));
+  assert.ok(fs.existsSync(path.join(rapport, "traces", "realisation-boucle-with-2.jsonl")));
+  assert.deepStrictEqual(mesure.lireResultats(rapport), [
+    { cas: "realisation-boucle", score: 1, duree: 90, entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, sousAgents: 1 },
+    { cas: "realisation-boucle", score: 0.5, duree: 80, entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, sousAgents: 1 },
+  ]);
 });

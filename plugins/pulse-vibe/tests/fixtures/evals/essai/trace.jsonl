@@ -1,0 +1,4 @@
+{"type":"system","subtype":"init","session_id":"s1"}
+{"type":"assistant","message":{"id":"msg_a","role":"assistant","content":[{"type":"tool_use","id":"toolu_1","name":"Agent","input":{}}],"usage":{"input_tokens":1,"output_tokens":1}},"parent_tool_use_id":null}
+{"type":"assistant","message":{"id":"msg_b","role":"assistant","content":[{"type":"tool_use","id":"toolu_2","name":"Read","input":{}},{"type":"tool_use","id":"toolu_3","name":"Grep","input":{}}],"usage":{"input_tokens":1,"output_tokens":1}},"parent_tool_use_id":"toolu_1"}
+{"type":"result","subtype":"success","num_turns":4,"usage":{"input_tokens":5,"output_tokens":6},"modelUsage":{"claude-opus-5-5":{"inputTokens":10,"outputTokens":20,"cacheReadInputTokens":300,"cacheCreationInputTokens":4000},"claude-sonnet-5-5":{"inputTokens":1,"outputTokens":2,"cacheReadInputTokens":30,"cacheCreationInputTokens":400}},"subagent_stats":{"spawned":1}}
