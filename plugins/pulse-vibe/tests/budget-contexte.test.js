@@ -56,7 +56,7 @@ const PLAFONDS = {
   "search-console": 43500, // mesure 41 273
   learn: 36000, // mesure 34 226
   explain: 24000, // mesure 22 408
-  test: 43000, // mesure 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
+  test: 43500, // mesure 43 019 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
   "auto-fix": 22500, // mesure 21 180
   status: 25000, // mesure 23 367 (28 764 avant la tâche 11 : le tableau des fichiers du projet se charge à la demande)
   guide: 30500, // mesure 28 747
@@ -75,7 +75,7 @@ const PLAFONDS_ETAPES = { review: 17500, commit: 29000 }; // review : mesure 17 
 const PLAFONDS_COMMANDE = {
   annuler: 48500, // mesure 45 775
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
-  brainstorm: 44000, // mesure 41 756
+  brainstorm: 44500, // mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
   cicd: 51000, // mesure 48 229
   commit: 51000, // mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 52000, // mesure 49 125
@@ -100,7 +100,7 @@ const PLAFONDS_COMMANDE = {
   security: 46000, // mesure 43 499
   seo: 61000, // mesure 57 741
   spec: 51000, // mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 71500, // mesure 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
+  spirc: 72000, // mesure 71 538 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
   status: 36500, // mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
   tech: 79500, // mesure 75 338
   test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -117,7 +117,7 @@ const BOUCLES = {
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 88000, // mesure 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+    plafond: 88500, // mesure 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };

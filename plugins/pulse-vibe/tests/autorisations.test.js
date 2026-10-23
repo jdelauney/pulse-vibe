@@ -39,7 +39,7 @@ test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans prod
   const a = attendues(projet({ "docs/technical.md": TECHNICAL }));
   assert.ok(a.deny.includes("Read(./.env)"));
   assert.ok(a.allow.includes("Bash(git commit -m *)"));
-  assert.ok(a.allow.includes("Bash(pulse-aidd qualite)") && a.allow.includes("Bash(pulse-aidd reference *)"));
+  assert.ok(a.allow.includes("Bash(pulse-aidd qualite *)") && a.allow.includes("Bash(pulse-aidd reference *)"));
   assert.ok(a.allow.includes("Bash(npm test)") && a.allow.includes("Bash(npm test *)"));
   const tout = a.allow.join("\n");
   assert.doesNotMatch(tout, /git push|secrets (generer|envoyer|elaguer|redeployer)|installer-|ligne-etat|nouveau|pulse-aidd \*\)/);
@@ -71,8 +71,8 @@ test("en ligne de commande : les manquantes, puis --ecrire les ajoute sans touch
   assert.strictEqual(r.permissions.allow.filter((x) => x === "Bash(git status *)").length, 1);
   assert.match(lancer(d).stdout, /^manquantes: 0$/m);
   // Les règles locales comptent comme présentes.
-  const local = projet({ ".claude/settings.local.json": JSON.stringify({ permissions: { allow: ["Bash(pulse-aidd qualite)"] } }) });
-  assert.doesNotMatch(lancer(local).stdout, /pulse-aidd qualite\)/);
+  const local = projet({ ".claude/settings.local.json": JSON.stringify({ permissions: { allow: ["Bash(pulse-aidd qualite *)"] } }) });
+  assert.doesNotMatch(lancer(local).stdout, /pulse-aidd qualite \*\)/);
   // Un fichier illisible reste intact.
   const casse = projet({ ".claude/settings.json": "{ pas du json" });
   assert.match(lancer(casse, "--ecrire").stdout, /^erreur: .*rien n'a été modifié/);

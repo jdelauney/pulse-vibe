@@ -26,7 +26,7 @@ const GIT = ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(
 // Sous-commandes de pulse-aidd qui lisent, contrôlent ou tiennent les documents de suivi. Les autres (secrets generer,
 // envoyer, elaguer, redeployer, installer-ci, installer-hook, ligne-etat, nouveau…) passent par la demande d'accord.
 const PULSE = [
-  "qualite", "tests", "scenarios", "verifier", "verifier-spec *", "bilan", "memoire", "guide", "travail-fini",
+  "qualite *", "tests *", "scenarios", "verifier", "verifier-spec *", "bilan", "memoire", "guide", "travail-fini",
   "reference *", "modele *", "agent *", "contexte *", "etape *", "etat *", "revue *", "verifier-plan *", "sessions *",
   "pile contexte *", "pile reference *", "pile recette *",
   "maquettes verifier *", "textes verifier *", "contraste *", "comparer *", "seo *", "sonder *",

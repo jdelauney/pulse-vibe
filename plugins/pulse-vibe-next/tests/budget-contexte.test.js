@@ -99,7 +99,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   security: 88000, // mesure 83 589
   seo: 102000, // mesure 96 880
   spec: 54000, // mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 91500, // mesure 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  spirc: 92000, // mesure 91 652 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   tech: 134500, // mesure 127 942
   test: 52000, // mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 90000, // mesure 85 248
