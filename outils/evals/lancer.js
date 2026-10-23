@@ -24,6 +24,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { nomTrace } = require("./mesurer");
 
 const RACINE = path.resolve(__dirname, "..", "..");
 const CAS = path.join(__dirname, "cas");
@@ -143,12 +144,15 @@ function conserverTraces(rapport) {
   if (!fs.existsSync(fichier)) return;
   const traces = path.join(rapport, "traces");
   for (const c of JSON.parse(fs.readFileSync(fichier, "utf8")).cases || []) {
-    for (const r of Object.values(c.arms || {}).flat()) {
-      if (!r || !r.tracePath || !fs.existsSync(r.tracePath)) continue;
-      fs.mkdirSync(traces, { recursive: true });
-      fs.copyFileSync(r.tracePath, path.join(traces, path.basename(r.tracePath)));
-      const sous = r.tracePath.replace(/\.jsonl$/, "");
-      if (fs.existsSync(sous)) fs.cpSync(sous, path.join(traces, path.basename(sous)), { recursive: true });
+    for (const [bras, essais] of Object.entries(c.arms || {})) {
+      for (const [i, r] of (essais || []).entries()) {
+        if (!r || !r.tracePath || !fs.existsSync(r.tracePath)) continue;
+        const nom = nomTrace(c.name, bras, i);
+        fs.mkdirSync(traces, { recursive: true });
+        fs.copyFileSync(r.tracePath, path.join(traces, nom));
+        const sous = r.tracePath.replace(/\.jsonl$/, "");
+        if (fs.existsSync(sous)) fs.cpSync(sous, path.join(traces, nom.replace(/\.jsonl$/, "")), { recursive: true });
+      }
     }
   }
 }

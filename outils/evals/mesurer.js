@@ -5,9 +5,11 @@
 //   node outils/evals/mesurer.js <dossier de résultats>…                       un tableau par essai
 //   node outils/evals/mesurer.js --comparer <avant>… -- <après>…               médianes par cas, avant, après, écart
 //
-// Source : les transcriptions de Claude Code (fichier .jsonl de la session, et <session>/subagents/agent-*.jsonl) que
-// lancer.js garde dans <dossier de résultats>/traces/. Un message de l'assistant s'écrit sur plusieurs lignes (une par
-// bloc de contenu), chacune avec le même usage : il se compte une fois, par son identifiant.
+// Source : la trace de chaque essai (stream-json de claude -p), que lancer.js garde dans <dossier de résultats>/traces/
+// sous le nom <cas>-<bras>-<n>.jsonl : sa ligne finale « result » donne l'usage de chaque modèle, sous-agents compris
+// (modelUsage), et le nombre de sous-agents lancés. Une transcription de session (sans ligne « result ») se lit aussi :
+// chaque message de l'assistant s'écrit sur plusieurs lignes, avec le même usage, et se compte une fois par son
+// identifiant ; ses sous-agents sont dans <session>/subagents/agent-*.jsonl.
 "use strict";
 
 const fs = require("fs");
@@ -46,9 +48,37 @@ function compter(fichier, total) {
   total.outils += outils.size;
 }
 
-/** Ce qu'a consommé une session : sa transcription et celles de ses sous-agents. */
+/** La ligne finale « result » d'une trace stream-json, ou null. */
+function ligneResultat(fichier) {
+  for (const ligne of fs.readFileSync(fichier, "utf8").split("\n").reverse()) {
+    if (!ligne.includes('"type":"result"')) continue;
+    try {
+      return JSON.parse(ligne);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+}
+
+/** Ce qu'a consommé un essai : sa trace, ou sa transcription et celles de ses sous-agents. */
 function lireEssai(transcription) {
   const total = Object.fromEntries(CHAMPS.map((c) => [c, 0]));
+  const resultat = ligneResultat(transcription);
+  if (resultat && resultat.modelUsage) {
+    for (const u of Object.values(resultat.modelUsage)) {
+      total.entree += u.inputTokens || 0;
+      total.sortie += u.outputTokens || 0;
+      total.cacheLu += u.cacheReadInputTokens || 0;
+      total.cacheEcrit += u.cacheCreationInputTokens || 0;
+    }
+    // La trace contient aussi les messages des sous-agents : seuls ses appels d'outils s'y comptent.
+    const lignes = { entree: 0, sortie: 0, cacheLu: 0, cacheEcrit: 0, outils: 0 };
+    compter(transcription, lignes);
+    total.outils = lignes.outils;
+    total.sousAgents = (resultat.subagent_stats && resultat.subagent_stats.spawned) || 0;
+    return total;
+  }
   compter(transcription, total);
   const sous = path.join(transcription.replace(/\.jsonl$/, ""), "subagents");
   const agents = fs.existsSync(sous) ? fs.readdirSync(sous).filter((n) => /^agent-.*\.jsonl$/.test(n)) : [];
@@ -62,14 +92,17 @@ function lireResultats(dossier) {
   const agregat = JSON.parse(fs.readFileSync(path.join(dossier, "aggregate-result.json"), "utf8"));
   const essais = [];
   for (const c of agregat.cases || []) {
-    for (const r of (c.arms && c.arms.with) || []) {
-      const trace = r.tracePath ? path.join(dossier, "traces", path.basename(r.tracePath)) : null;
-      const conso = trace && fs.existsSync(trace) ? lireEssai(trace) : Object.fromEntries(CHAMPS.map((k) => [k, null]));
+    for (const [i, r] of ((c.arms && c.arms.with) || []).entries()) {
+      const trace = path.join(dossier, "traces", nomTrace(c.name, "with", i));
+      const conso = fs.existsSync(trace) ? lireEssai(trace) : Object.fromEntries(CHAMPS.map((k) => [k, null]));
       essais.push({ cas: c.name, score: r.score, duree: r.durationSeconds, ...conso });
     }
   }
   return essais;
 }
+
+/** Nom sous lequel lancer.js garde la trace d'un essai : <cas>-<bras>-<n>.jsonl. */
+const nomTrace = (cas, bras, i) => `${cas}-${bras}-${i + 1}.jsonl`;
 
 const COLONNES = ["score", "duree", ...CHAMPS];
 
@@ -117,4 +150,4 @@ function principal(args) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { mediane, lireEssai, lireResultats, comparer, tableau };
+module.exports = { nomTrace, mediane, lireEssai, lireResultats, comparer, tableau };
