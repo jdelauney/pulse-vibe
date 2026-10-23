@@ -79,7 +79,14 @@ afficher() { # afficher <titre> <chemin>
 }
 
 qualite() { # qualite [famille…] [--checklists] : précédé de la règle de travail sobre (scripts/charger-regles.js)
-  node "$RACINE/scripts/charger-regles.js" qualite "$@"
+  # Un pack déclaré et installé remplace les familles qu'il couvre (ligne « couvre: » de pulse-pile-<id> info).
+  local id couvre="" nom=""
+  id="$(pack_declare)"
+  if [ -n "$id" ] && command -v "pulse-pile-$id" >/dev/null 2>&1; then
+    couvre="$(pack_info "$id" couvre)"
+    nom="$(pack_info "$id" nom)"
+  fi
+  PULSE_PACK_COUVRE="$couvre" PULSE_PACK_NOM="$nom" node "$RACINE/scripts/charger-regles.js" qualite "$@"
 }
 
 tests() { # tests [morceau…] : précédé de la règle de travail sobre (scripts/charger-regles.js)

@@ -351,7 +351,7 @@ test("theme.md : nuances hors de @theme inline, halo de focus à 50 %", () => {
 
 test("chaque action des recettes et de l'architecture porte un nom (.metadata), journalisé par safe-action", () => {
   const sansNom = [];
-  const fichiers = [path.join(REF, "architecture.md")];
+  const fichiers = [path.join(REF, "architecture.md"), path.join(REF, "modeles-code.md")];
   (function parcourir(d) {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) (e.isDirectory() ? parcourir : (c) => fichiers.push(c))(path.join(d, e.name));
   })(path.join(REF, "recettes"));
@@ -374,8 +374,8 @@ test("chaque action des recettes et de l'architecture porte un nom (.metadata), 
   assert.strictEqual(commentaires(clientPublic(safeAction)), commentaires(clientPublic(squelette)), "connexion etape-5 : actionPublique identique au squelette");
 });
 
-test("architecture : une facture se paie une seule fois, même avec deux demandes simultanées", () => {
-  const t = lire(REF, "architecture.md");
+test("modèles de code : une facture se paie une seule fois, même avec deux demandes simultanées", () => {
+  const t = lire(REF, "modeles-code.md");
   for (const attendu of ["marquerPayee(id: string, utilisateurId: string, le: Date): Promise<boolean>;", "isNull(factures.payeeLe)", ".returning({ id: factures.id })", 'return marquee ? ok(undefined) : echec("facture-deja-payee");'])
     assert.ok(t.includes(attendu), attendu);
 });
@@ -538,4 +538,17 @@ test("deploy : relier Neon à Vercel pas à pas, chaque étape suivie de sa vér
   assert.match(relier, /`pulse-aidd secrets inventaire`[^\n]*`NEON_ENDPOINT_PRODUCTION` en Preview/);
   // La phrase N-N10 du plan 3 (tâche 8) reste dans la liaison.
   assert.match(relier, /réserver une variable à la construction/);
+});
+
+test("info : le pack déclare les familles de qualité qu'il couvre (organisation)", () => {
+  assert.match(lancer("info").stdout, /^couvre: organisation$/m);
+});
+
+test("contexte review : l'architecture sans les modèles de code, gardés à la demande", () => {
+  const r = lancer("contexte", "review");
+  assert.match(r.stdout, /## 10\. Tests/);
+  assert.doesNotMatch(r.stdout, /Modèles de code \(domaine/);
+  assert.match(lire(REF, "modeles-code.md"), /^# Modèles de code \(domaine `factures`\)/);
+  assert.match(lire(REF, "architecture.md"), /pulse-aidd pile reference modeles-code\.md/);
+  assert.match(lire(REF, "contexte", "implement.md"), /pulse-aidd pile reference modeles-code\.md/);
 });

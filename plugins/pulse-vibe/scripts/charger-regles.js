@@ -6,6 +6,8 @@
 //
 // Sans nom : toutes les familles, comme avant. Avec des noms : seulement celles-là, dans l'ordre ci-dessus.
 // --checklists : seulement la section « Checklist » de chaque famille retenue (relecture).
+// PULSE_PACK_COUVRE (familles séparées par des espaces) et PULSE_PACK_NOM, posées par pulse-aidd quand le pack de pile
+// déclaré est installé : chaque famille couverte par le pack est remplacée par un renvoi au pack.
 // La règle de travail sobre (references/travail-sobre.md) vient toujours en tête : chaque agent qui écrit, relit
 // ou teste charge ces règles, et la reçoit ainsi sans appel en plus.
 "use strict";
@@ -59,8 +61,8 @@ const bloc = (titre, contenu) => `\n===== ${titre} =====\n\n${contenu}\n`;
 
 const lire = (relatif) => fs.readFileSync(path.join(REF, relatif), "utf8");
 
-/** Le texte à afficher, ou { erreur }. */
-function composer(type, args) {
+/** Le texte à afficher, ou { erreur }. `pack` : { couvre: [noms de familles], nom } du pack déclaré et installé. */
+function composer(type, args, pack = { couvre: [], nom: "" }) {
   const def = TYPES[type];
   if (!def) return { erreur: `Type inconnu : ${type}.` };
   const checklists = args.includes("--checklists");
@@ -74,6 +76,10 @@ function composer(type, args) {
   let sortie = bloc("Travailler sobrement", lire("travail-sobre.md"));
   sortie += bloc(def.sommaire.titre, lire(def.sommaire.fichier));
   for (const f of retenues) {
+    if (pack.couvre.includes(f.nom)) {
+      sortie += bloc(f.titre, `Couverte par le pack ${pack.nom} : appliquer ses consignes et ses références (\`pulse-aidd pile reference <fichier>\`).`);
+      continue;
+    }
     const texte = lire(f.fichier);
     sortie += checklists ? bloc(`${f.titre} : checklist`, checklist(texte) || "") : bloc(f.titre, texte);
   }
@@ -82,7 +88,11 @@ function composer(type, args) {
 
 function principal(argv) {
   const [type, ...args] = argv;
-  const r = composer(type, args);
+  const pack = {
+    couvre: (process.env.PULSE_PACK_COUVRE || "").split(/[\s,]+/).filter(Boolean),
+    nom: process.env.PULSE_PACK_NOM || "de pile",
+  };
+  const r = composer(type, args, pack);
   if (r.erreur) {
     console.error(r.erreur);
     return 1;
