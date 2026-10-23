@@ -2,6 +2,7 @@
 // Affiche les règles de qualité du code ou la méthode de tests, en entier ou par morceaux (pulse-aidd qualite, pulse-aidd tests).
 //
 //   node scripts/charger-regles.js qualite [clean-code|organisation|composants|securite]… [--checklists]
+//   node scripts/charger-regles.js tests [strategie|ecrire|unitaire|integration|bout-en-bout|tdd|gherkin]…
 //
 // Sans nom : toutes les familles, comme avant. Avec des noms : seulement celles-là, dans l'ordre ci-dessus.
 // --checklists : seulement la section « Checklist » de chaque famille retenue (relecture).
@@ -22,6 +23,19 @@ const TYPES = {
       { nom: "organisation", titre: "Organisation des fichiers et nommage", fichier: "qualite/organisation.md" },
       { nom: "composants", titre: "Composants d'interface", fichier: "qualite/composants.md" },
       { nom: "securite", titre: "Sécurité du code", fichier: "qualite/securite-code.md" },
+    ],
+  },
+  // Les niveaux portent le nom des étiquettes des scénarios (@unitaire, @integration, @bout-en-bout), sans @.
+  tests: {
+    sommaire: { titre: "Stratégie de tests : sommaire", fichier: "tests/README.md" },
+    familles: [
+      { nom: "strategie", titre: "Stratégie de tests", fichier: "tests/strategie.md" },
+      { nom: "ecrire", titre: "Écrire un test", fichier: "tests/ecrire-un-test.md" },
+      { nom: "unitaire", titre: "Tests unitaires", fichier: "tests/unitaires.md" },
+      { nom: "integration", titre: "Tests d'intégration", fichier: "tests/integration.md" },
+      { nom: "bout-en-bout", titre: "Tests de bout en bout", fichier: "tests/bout-en-bout.md" },
+      { nom: "tdd", titre: "Développement piloté par les tests (TDD)", fichier: "tests/tdd.md" },
+      { nom: "gherkin", titre: "Scénarios Gherkin", fichier: "tests/gherkin.md" },
     ],
   },
 };
@@ -50,6 +64,7 @@ function composer(type, args) {
   const def = TYPES[type];
   if (!def) return { erreur: `Type inconnu : ${type}.` };
   const checklists = args.includes("--checklists");
+  if (checklists && type !== "qualite") return { erreur: "--checklists vaut seulement pour pulse-aidd qualite." };
   const noms = args.filter((a) => a !== "--checklists");
   const valides = def.familles.map((f) => f.nom);
   const inconnus = noms.filter((n) => !valides.includes(n));
