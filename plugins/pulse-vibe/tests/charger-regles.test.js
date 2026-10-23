@@ -156,3 +156,9 @@ test("contexte tech : organisation chargée même avec un pack", { skip: !fs.exi
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("===== Organisation des fichiers et nommage ====="));
 });
+
+test("un pack remplace seulement l'organisation, jamais la sécurité du code", () => {
+  const r = chargeur.composer("qualite", ["securite", "organisation"], { couvre: ["organisation", "securite", "clean-code"], nom: "Essai" });
+  assert.ok(r.sortie.includes("## 14. Checklist avant de livrer"), "sécurité gardée");
+  assert.ok(r.sortie.includes("Couverte par le pack Essai"), "organisation remplacée");
+});

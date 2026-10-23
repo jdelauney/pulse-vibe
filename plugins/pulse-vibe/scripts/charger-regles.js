@@ -42,6 +42,9 @@ const TYPES = {
   },
 };
 
+// Seules ces familles peuvent être remplacées par un pack : la sécurité du code reste toujours chargée.
+const REMPLACABLES = ["organisation"];
+
 /** Les familles d'un type, avec le chemin complet de leur fichier. */
 function familles(type) {
   return TYPES[type].familles.map((f) => ({ ...f, fichier: path.join(REF, f.fichier) }));
@@ -76,7 +79,7 @@ function composer(type, args, pack = { couvre: [], nom: "" }) {
   let sortie = bloc("Travailler sobrement", lire("travail-sobre.md"));
   sortie += bloc(def.sommaire.titre, lire(def.sommaire.fichier));
   for (const f of retenues) {
-    if (pack.couvre.includes(f.nom)) {
+    if (REMPLACABLES.includes(f.nom) && pack.couvre.includes(f.nom)) {
       sortie += bloc(f.titre, `Couverte par le pack ${pack.nom} : appliquer ses consignes et ses références (\`pulse-aidd pile reference <fichier>\`).`);
       continue;
     }

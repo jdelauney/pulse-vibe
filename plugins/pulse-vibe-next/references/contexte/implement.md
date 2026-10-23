@@ -1,7 +1,7 @@
 # Pack Pulse Next.js – pour réaliser et corriger
 
 - Appliquer la fiche ci-dessous à chaque fichier. En cas de doute sur une API de Next.js, lire `node_modules/next/dist/docs/` (exacte pour la version installée) avant d'écrire.
-- Fichier dans un nouveau dossier : appliquer `pulse-aidd pile reference architecture.md` ; entité, use-case, repository, action ou container : suivre `pulse-aidd pile reference modeles-code.md`.
+- Nouveau fichier ou dossier, entité, use-case, repository, action ou container : appliquer `pulse-aidd pile reference architecture.md` ; pour ces modèles, suivre `pulse-aidd pile reference modeles-code.md`.
 - Une tâche qui cite une recette (« Recette : connexion ») : afficher sa vue d'ensemble avec `pulse-aidd pile recette <nom>` (fichiers, liste des étapes, sécurité, pièges), puis chaque étape utile à la tâche au moment de l'écrire, avec `pulse-aidd pile recette <nom> etape <id>`, et le code de ses tests avec `pulse-aidd pile recette <nom> tests`. Suivre ses étapes dans l'organisation de la fiche.
 - Nouvelle bibliothèque : seulement celles qu'une recette ou la fiche prévoit, à leur dernière version (`npm view <paquet> version`, puis `npm install <paquet>`), avec l'accord de la personne.
 - Recette réalisée qui demande un outil sur le poste (`email`, `paiement`) : ajouter sa ligne à « Tester en local » de `README.md` (`pulse-aidd pile reference readme.md`).
