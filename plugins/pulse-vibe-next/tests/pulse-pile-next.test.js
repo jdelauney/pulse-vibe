@@ -552,3 +552,7 @@ test("contexte review : l'architecture sans les modèles de code, gardés à la 
   assert.match(lire(REF, "architecture.md"), /pulse-aidd pile reference modeles-code\.md/);
   assert.match(lire(REF, "contexte", "implement.md"), /pulse-aidd pile reference modeles-code\.md/);
 });
+
+test("contexte implement : l'architecture (sens des imports) pour tout nouveau fichier, entité ou action", () => {
+  assert.match(lire(REF, "contexte", "implement.md"), /Nouveau fichier ou dossier, entité, use-case, repository, action ou container : appliquer `pulse-aidd pile reference architecture.md`/);
+});

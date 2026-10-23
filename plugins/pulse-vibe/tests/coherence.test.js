@@ -1429,3 +1429,7 @@ test("correction ciblée : l'implementer reçoit les constats et charge leurs fa
   assert.match(lire(RACINE, "references", "examen.md"), /`pulse-aidd qualite --checklists`/);
   for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /familles de qualité de la tâche/, skill);
 });
+
+test("une correction garde clean-code et la sécurité du code dès qu'elle touche le serveur", () => {
+  assert.match(lire(RACINE, "agents", "implementer.md"), /Pour une correction : `clean-code`, les familles des constats reçus, et `securite` dès que la correction touche/);
+});
