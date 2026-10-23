@@ -122,6 +122,24 @@ const BOUCLES = {
   },
 };
 
+// Ce que charge chaque agent de la boucle avant de lire le code : ses consignes, puis les règles que ses consignes lui font
+// charger, dans un cas type, sans pack (plafond = mesure × 1,05, au 500 supérieur). Avant le chargement par famille (2026-10-23, pulse 0.48.2, pack Next compris) : implementer
+// ≈ 107 000, reviewer ≈ 133 000, test-writer et test-runner ≈ 62 000 chacun. Avec le pack : tests du pack.
+const AGENTS = {
+  "implementer, tâche d'interface": { plafond: 55000, /* mesure 52 028 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "composants"]] },
+  "implementer, tâche serveur": { plafond: 57500, /* mesure 54 754 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "securite"]] },
+  reviewer: { plafond: 28000, /* mesure 26 273 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"]] },
+  "test-writer": { plafond: 46000, /* mesure 43 351 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"]] },
+  "test-runner": { plafond: 31500, /* mesure 29 782 */ parties: [["agent", "test-runner"], ["tests", "ecrire", "unitaire"]] },
+};
+
+for (const [agent, { plafond, parties }] of Object.entries(AGENTS)) {
+  test(`agent ${agent} : ${plafond} caractères au plus chargés avant le code`, () => {
+    const total = parties.reduce((somme, args) => somme + taille(...args), 0);
+    assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
+
 test("chaque commande a un plafond de contexte", () => {
   const skills = fs.readdirSync(path.join(RACINE, "skills")).sort();
   assert.deepStrictEqual(Object.keys(PLAFONDS).sort(), skills);
@@ -169,9 +187,11 @@ function tableau() {
   for (const [c, p] of Object.entries(PLAFONDS_COMMANDE)) lignes.push(`| commande ${c} (SKILL.md + contexte) | ${taille("etape", c)} | ${p} |`);
   for (const [c, { plafond, parties }] of Object.entries(BOUCLES))
     lignes.push(`| boucle ${c} (4 tâches) | ${parties.reduce((s, a) => s + taille(...a), 0)} | ${plafond} |`);
+  for (const [a, { plafond, parties }] of Object.entries(AGENTS))
+    lignes.push(`| agent ${a} | ${parties.reduce((s, x) => s + taille(...x), 0)} | ${plafond} |`);
   return lignes.join("\n");
 }
 
 if (process.argv.includes("--tableau")) console.log(tableau());
 
-module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, PLAFONDS_COMMANDE };
+module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, PLAFONDS_COMMANDE, AGENTS };
