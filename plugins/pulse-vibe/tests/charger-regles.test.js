@@ -120,3 +120,39 @@ test("tests : nom inconnu", () => {
   assert.strictEqual(r.status, 1);
   assert.match(r.stdout + r.stderr, /strategie, ecrire, unitaire, integration, bout-en-bout, tdd, gherkin/);
 });
+
+// Projet d'essai qui déclare le pack Next ; le pack est mis dans le PATH, comme dans Claude Code, sauf pour « non installé ».
+const os = require("os");
+const PACK_BIN = path.join(RACINE, "..", "pulse-vibe-next", "bin");
+const PROJET_PACK = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-regles-pack-"));
+fs.mkdirSync(path.join(PROJET_PACK, "docs"));
+fs.writeFileSync(path.join(PROJET_PACK, "docs", "technical.md"), "**Pack de pile Pulse** : next\n");
+function dansLeProjet(args, { avecPack = true } = {}) {
+  const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
+  const bin = PACK_BIN.split(path.sep).join("/");
+  const chemin = avecPack ? `PATH="$(cd "${bin}" && pwd):$PATH" ` : "";
+  return spawnSync("bash", ["-c", `${chemin}exec bash "${outil}" "$@"`, "regles", ...args], { cwd: PROJET_PACK, encoding: "utf8" });
+}
+
+test("pack qui couvre l'organisation : famille remplacée par un renvoi, sécurité gardée", { skip: !fs.existsSync(PACK_BIN) }, () => {
+  const r = dansLeProjet(["qualite"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("Couverte par le pack Pulse Next.js"), r.stdout.slice(0, 300));
+  assert.ok(!r.stdout.includes("## 5. Le code : des paliers progressifs"));
+  assert.ok(r.stdout.includes("===== Sécurité du code ====="));
+  const checklists = dansLeProjet(["qualite", "--checklists"]).stdout;
+  assert.ok(!checklists.includes("Organisation des fichiers et nommage : checklist"));
+  assert.ok(checklists.includes("Sécurité du code : checklist"));
+});
+
+test("pack non installé : organisation gardée", () => {
+  const r = dansLeProjet(["qualite"], { avecPack: false });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("## 5. Le code : des paliers progressifs"));
+});
+
+test("contexte tech : organisation chargée même avec un pack", { skip: !fs.existsSync(PACK_BIN) }, () => {
+  const r = dansLeProjet(["contexte", "tech"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Organisation des fichiers et nommage ====="));
+});
