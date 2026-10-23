@@ -624,6 +624,8 @@ test("autorisations : les commandes Git courantes non autorisées d'avance donne
   assert.ok(!sansGit.aussi.includes(CONTROLES), "une seule ligne d'autorisations à la fois");
   const tout = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite)"] } }\n' }));
   assert.ok(!tout.aussi.includes(CONTROLES));
+  const avecArguments = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite *)"] } }\n' }));
+  assert.ok(!avecArguments.aussi.includes(CONTROLES), "qualite * couvre qualite seul");
 });
 
 test("copie de Pulse ancienne et intacte (contrôle des secrets, ligne d'état) : mise à niveau proposée par /pulse:init", () => {

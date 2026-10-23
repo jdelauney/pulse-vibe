@@ -37,7 +37,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 1. Lire les critères d'acceptation, puis chaque fichier concerné **avant** de le modifier. Repérer le style du code existant et le suivre.
    Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la conception technique du plan cite une maquette, l'ouvrir et la **traduire** dans la pile retenue, plutôt que copier son HTML tel quel.
 2. Avancer par petites étapes : écrire une partie, la vérifier, corriger si besoin, puis passer à la suite.
-3. **Charger les références de qualité** avec `pulse-aidd qualite` (clean code, organisation des fichiers, composants, sécurité du code : les règles de sécurité viennent d'ici) et les appliquer. Si la commande est indisponible, s'appuyer sur les extraits du message de délégation. En cas de conflit : `CLAUDE.md` et la mémoire du projet priment.
+3. **Charger les références de qualité utiles à la tâche**, en une commande, et les appliquer : `pulse-aidd qualite clean-code`, suivi de `composants` si la tâche touche l'interface, de `securite` si elle touche un point d'entrée serveur, une action, une route ou la base (les règles de sécurité viennent d'ici), et de `organisation` si elle crée un fichier ou un dossier (ex. `pulse-aidd qualite clean-code securite`). Le message de délégation nomme ces familles ; sinon, les déduire des fichiers de la tâche. Pour une correction : les familles des constats reçus. Si la commande est indisponible, s'appuyer sur les extraits du message de délégation. En cas de conflit : `CLAUDE.md` et la mémoire du projet priment.
 4. Respecter la pile retenue (« Pile retenue » de `docs/technical.md`, résumée dans `CLAUDE.md`) et ses conventions. Les fichiers se créent à l'emplacement prévu par « Organisation des fichiers » et listé par la tâche. Avant d'importer un module du projet, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer s'il fait partie de la tâche, sinon le signaler. Dans un projet existant, réutiliser l'existant au lieu de le dupliquer.
    Toujours : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
 5. Sécurité :
@@ -81,5 +81,5 @@ STATUT: <Terminé | Bloqué | Bloqué – décision nécessaire>
 ```
 
 ## Contraintes
-- Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite` (étape 3 de la méthode).
+- Toujours appliquer les règles de qualité de code, chargées par famille (étape 3 de la méthode).
 - Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
