@@ -6,7 +6,9 @@
 //   node outils/evals/lancer.js [options de claude plugin eval]     ex. --case plan-controle, --runs 3
 //   outils/evals/lancer.sh …   (Linux, macOS, WSL2)    outils\evals\lancer.cmd …   (Windows)
 //
-// Variables : RUNS (essais par cas, 1 par défaut), PLAFOND (coût maximal en dollars, 5 par défaut).
+// Variables : RUNS (essais par cas, 1 par défaut), PLAFOND (coût maximal en dollars, 5 par défaut),
+// PACK (next : ajoute le pack de pile Next.js à côté du cœur, et accorde npm et npx aux essais).
+// Les transcriptions des essais sont gardées avec leur rapport (traces/), pour outils/evals/mesurer.js.
 // Les essais lancent des commandes, que Claude Code fait tourner dans son bac à sable
 // (https://code.claude.com/docs/en/sandboxing) :
 //   - macOS : bac à sable intégré au système (Seatbelt), rien à installer ;
@@ -22,6 +24,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
+const { nomTrace } = require("./mesurer");
 
 const RACINE = path.resolve(__dirname, "..", "..");
 const CAS = path.join(__dirname, "cas");
@@ -29,6 +32,7 @@ const RESULTATS = path.join(__dirname, "resultats");
 const CLAUDE_MIN = "2.1.269";
 const GIT_MIN = "2.31.0";
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
+const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
 
 /** Les arguments de `claude plugin eval` pour le cœur assemblé dans `dossierPlugin`. */
 function argumentsEval(dossierPlugin, env, extra) {
@@ -36,7 +40,7 @@ function argumentsEval(dossierPlugin, env, extra) {
     "plugin", "eval", dossierPlugin,
     "--scaffold", "--trust-plugin", "--no-publish",
     "--runs", env.RUNS || "1", "--max-cost-usd", env.PLAFOND || "5",
-    "--allow-tools", ...OUTILS_ACCORDES,
+    "--allow-tools", ...OUTILS_ACCORDES, ...(env.PACK === "next" ? OUTILS_PACK : []),
     ...extra,
   ];
 }
@@ -108,20 +112,49 @@ function direct(extra) {
     console.error("(ou décocher cette distribution dans Docker Desktop → Settings → Resources → WSL integration).");
     return 1;
   }
-  const dossierPlugin = assembler(RACINE, CAS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-")));
+  const dossierPlugin = assembler(RACINE, CAS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-")), { pack: process.env.PACK });
   const r = spawnSync("claude", argumentsEval(dossierPlugin, process.env, extra), { stdio: "inherit" });
   const ranges = rapatrier(dossierPlugin, RESULTATS);
+  for (const n of ranges) conserverTraces(path.join(RESULTATS, n));
   if (ranges.length) console.log(`Rapports rangés dans ${path.relative(RACINE, RESULTATS)}${path.sep}${ranges.join(", ")}`);
   fs.rmSync(path.dirname(dossierPlugin), { recursive: true, force: true });
   return r.status === null ? 1 : r.status;
 }
 
-/** Copie le cœur dans `temp`, avec les cas d'essai dans son dossier evals/ ; renvoie le dossier du plugin assemblé. */
-function assembler(racine, cas, temp) {
+/**
+ * Copie le cœur dans `temp`, avec les cas d'essai dans son dossier evals/ ; renvoie le dossier du plugin assemblé.
+ * Avec `pack: "next"`, le pack est copié dans evals-pack/next/ et son outil relayé depuis bin/ : claude plugin eval
+ * charge un seul plugin, et le cœur trouve un pack par son outil pulse-pile-<id> dans le PATH.
+ */
+function assembler(racine, cas, temp, { pack } = {}) {
   const dossierPlugin = path.join(temp, "pulse-vibe");
   fs.cpSync(path.join(racine, "plugins", "pulse-vibe"), dossierPlugin, { recursive: true });
   fs.cpSync(cas, path.join(dossierPlugin, "evals"), { recursive: true });
+  if (pack === "next") {
+    fs.cpSync(path.join(racine, "plugins", "pulse-vibe-next"), path.join(dossierPlugin, "evals-pack", "next"), { recursive: true });
+    const relais = path.join(dossierPlugin, "bin", "pulse-pile-next");
+    fs.writeFileSync(relais, '#!/usr/bin/env bash\nexec "$(dirname "$0")/../evals-pack/next/bin/pulse-pile-next" "$@"\n', { mode: 0o755 });
+  }
   return dossierPlugin;
+}
+
+/** Copie dans <rapport>/traces/ la transcription de chaque essai et celles de ses sous-agents (le dossier temporaire est retiré). */
+function conserverTraces(rapport) {
+  const fichier = path.join(rapport, "aggregate-result.json");
+  if (!fs.existsSync(fichier)) return;
+  const traces = path.join(rapport, "traces");
+  for (const c of JSON.parse(fs.readFileSync(fichier, "utf8")).cases || []) {
+    for (const [bras, essais] of Object.entries(c.arms || {})) {
+      for (const [i, r] of (essais || []).entries()) {
+        if (!r || !r.tracePath || !fs.existsSync(r.tracePath)) continue;
+        const nom = nomTrace(c.name, bras, i);
+        fs.mkdirSync(traces, { recursive: true });
+        fs.copyFileSync(r.tracePath, path.join(traces, nom));
+        const sous = r.tracePath.replace(/\.jsonl$/, "");
+        if (fs.existsSync(sous)) fs.cpSync(sous, path.join(traces, nom.replace(/\.jsonl$/, "")), { recursive: true });
+      }
+    }
+  }
 }
 
 /** Range les rapports produits dans le plugin assemblé (evals/results/<date>/) dans `resultats` ; renvoie leurs noms. */
@@ -173,8 +206,8 @@ function viaWsl(extra) {
   }
   console.log(`Windows n'a pas de bac à sable pour les essais : ils se lancent dans WSL2 (${noms[0]}).`);
   const commande = `cd ${pourBash(racineWsl)} && node outils/evals/lancer.js ${extra.map(pourBash).join(" ")}`;
-  // RUNS et PLAFOND passent dans WSL par WSLENV.
-  const wslenv = ["RUNS", "PLAFOND", process.env.WSLENV].filter(Boolean).join(":");
+  // RUNS, PLAFOND et PACK passent dans WSL par WSLENV.
+  const wslenv = ["RUNS", "PLAFOND", "PACK", process.env.WSLENV].filter(Boolean).join(":");
   const r = spawnSync("wsl.exe", ["--", "bash", "-lc", commande], { stdio: "inherit", env: { ...process.env, WSLENV: wslenv } });
   return r.status === null ? 1 : r.status;
 }
@@ -185,4 +218,4 @@ function principal(extra) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { argumentsEval, assembler, rapatrier, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };
+module.exports = { argumentsEval, assembler, conserverTraces, rapatrier, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };

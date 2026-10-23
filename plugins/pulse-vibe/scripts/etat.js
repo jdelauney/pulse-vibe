@@ -334,7 +334,7 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     codeExistant: codeExistant(racine),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
-    controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite)"),
+    controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite *)"), // la forme sans argument ne couvre pas « qualite <familles> » (pulse 0.49)
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
     ancienFormat: anciens,
     enAttente: attentes[0] || null,

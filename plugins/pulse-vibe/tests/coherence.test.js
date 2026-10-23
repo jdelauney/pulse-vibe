@@ -975,12 +975,12 @@ test("une étape enchaînée par une commande se charge sans les règles commune
   assert.deepStrictEqual(problemes, []);
 });
 
-test("les sous-commandes etape, reference et qualite citées par un skill sont permises par son allowed-tools", () => {
+test("les sous-commandes etape, reference, qualite et tests citées par un skill sont permises par son allowed-tools", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const motifs = motifsBash(fichier);
     const corps = lire(fichier).replace(/^---\n[\s\S]*?\n---\n/, "");
-    for (const [, citation] of corps.matchAll(/`(pulse-aidd (?:etape|reference|qualite)\b[^`]*)`/g)) {
+    for (const [, citation] of corps.matchAll(/`(pulse-aidd (?:etape|reference|qualite|tests)\b[^`]*)`/g)) {
       const commande = essai(citation);
       if (!motifs.some((m) => couvre(m, commande))) problemes.push(`${path.relative(DEPOT, fichier)} : ${commande}`);
     }
@@ -1404,4 +1404,32 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
   assert.match(lire(RACINE, "references", "memoire.md"), /`pulse-aidd reference regles-controlees\.md`/);
   assert.match(lire(RACINE, "templates", "aidd-memory-technical.md"), /« — Contrôle : … »/);
   assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
+});
+
+test("agents de la boucle : chacun charge seulement les règles utiles", () => {
+  const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
+  const implementer = agent("implementer");
+  assert.match(implementer, /`pulse-aidd qualite clean-code`/);
+  for (const famille of ["composants", "securite", "organisation"]) assert.match(implementer, new RegExp(`\`${famille}\``), famille);
+  assert.match(agent("reviewer"), /`pulse-aidd qualite --checklists`/);
+  assert.match(agent("test-writer"), /`pulse-aidd tests ecrire gherkin/);
+  assert.match(agent("test-runner"), /`pulse-aidd tests ecrire/);
+  for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) {
+    assert.doesNotMatch(agent(nom), /`pulse-aidd (?:qualite|tests)`/, `${nom} : chargement complet`);
+  }
+  assert.match(lire(RACINE, "references", "tests-automatiques.md"), /`pulse-aidd tests ecrire gherkin/);
+});
+
+test("correction ciblée : l'implementer reçoit les constats et charge leurs familles de qualité", () => {
+  for (const [nom, texte] of [
+    ["boucle.md", lire(RACINE, "skills", "implement", "references", "boucle.md")],
+    ["examen.md", lire(RACINE, "references", "examen.md")],
+    ["spirc", lire(RACINE, "skills", "spirc", "SKILL.md")],
+  ]) assert.match(texte, /familles de qualité (?:qu'ils|que les constats) concernent/, nom);
+  assert.match(lire(RACINE, "references", "examen.md"), /`pulse-aidd qualite --checklists`/);
+  for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /familles de qualité de la tâche/, skill);
+});
+
+test("une correction garde clean-code et la sécurité du code dès qu'elle touche le serveur", () => {
+  assert.match(lire(RACINE, "agents", "implementer.md"), /Pour une correction : `clean-code`, les familles des constats reçus, et `securite` dès que la correction touche/);
 });

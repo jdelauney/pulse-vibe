@@ -56,7 +56,7 @@ const PLAFONDS = {
   "search-console": 43500, // mesure 41 273
   learn: 36000, // mesure 34 226
   explain: 24000, // mesure 22 408
-  test: 43000, // mesure 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
+  test: 43500, // mesure 43 019 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
   "auto-fix": 22500, // mesure 21 180
   status: 25000, // mesure 23 367 (28 764 avant la tâche 11 : le tableau des fichiers du projet se charge à la demande)
   guide: 30500, // mesure 28 747
@@ -75,7 +75,7 @@ const PLAFONDS_ETAPES = { review: 17500, commit: 29000 }; // review : mesure 17 
 const PLAFONDS_COMMANDE = {
   annuler: 48500, // mesure 45 775
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
-  brainstorm: 44000, // mesure 41 756
+  brainstorm: 44500, // mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
   cicd: 51000, // mesure 48 229
   commit: 51000, // mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 52000, // mesure 49 125
@@ -100,7 +100,7 @@ const PLAFONDS_COMMANDE = {
   security: 46000, // mesure 43 499
   seo: 61000, // mesure 57 741
   spec: 51000, // mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 71500, // mesure 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
+  spirc: 72000, // mesure 71 538 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
   status: 36500, // mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
   tech: 79500, // mesure 75 338
   test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -117,10 +117,28 @@ const BOUCLES = {
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 88000, // mesure 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+    plafond: 88500, // mesure 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };
+
+// Ce que charge chaque agent de la boucle avant de lire le code : ses consignes, puis les règles que ses consignes lui font
+// charger, dans un cas type, sans pack (plafond = mesure × 1,05, au 500 supérieur). Avant le chargement par famille (2026-10-23, pulse 0.48.2, pack Next compris) : implementer
+// ≈ 107 000, reviewer ≈ 133 000, test-writer et test-runner ≈ 62 000 chacun. Avec le pack : tests du pack.
+const AGENTS = {
+  "implementer, tâche d'interface": { plafond: 55000, /* mesure 52 028 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "composants"]] },
+  "implementer, tâche serveur": { plafond: 57500, /* mesure 54 754 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "securite"]] },
+  reviewer: { plafond: 28000, /* mesure 26 273 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"]] },
+  "test-writer": { plafond: 46000, /* mesure 43 351 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"]] },
+  "test-runner": { plafond: 31500, /* mesure 29 782 */ parties: [["agent", "test-runner"], ["tests", "ecrire", "unitaire"]] },
+};
+
+for (const [agent, { plafond, parties }] of Object.entries(AGENTS)) {
+  test(`agent ${agent} : ${plafond} caractères au plus chargés avant le code`, () => {
+    const total = parties.reduce((somme, args) => somme + taille(...args), 0);
+    assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
 
 test("chaque commande a un plafond de contexte", () => {
   const skills = fs.readdirSync(path.join(RACINE, "skills")).sort();
@@ -169,9 +187,11 @@ function tableau() {
   for (const [c, p] of Object.entries(PLAFONDS_COMMANDE)) lignes.push(`| commande ${c} (SKILL.md + contexte) | ${taille("etape", c)} | ${p} |`);
   for (const [c, { plafond, parties }] of Object.entries(BOUCLES))
     lignes.push(`| boucle ${c} (4 tâches) | ${parties.reduce((s, a) => s + taille(...a), 0)} | ${plafond} |`);
+  for (const [a, { plafond, parties }] of Object.entries(AGENTS))
+    lignes.push(`| agent ${a} | ${parties.reduce((s, x) => s + taille(...x), 0)} | ${plafond} |`);
   return lignes.join("\n");
 }
 
 if (process.argv.includes("--tableau")) console.log(tableau());
 
-module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, PLAFONDS_COMMANDE };
+module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, PLAFONDS_COMMANDE, AGENTS };

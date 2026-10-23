@@ -8,8 +8,8 @@
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/, ou d'une skill : <skill>/<fichier> (skills/<skill>/assets/)
 #   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
-#   pulse-aidd qualite               affiche les règles de qualité du code
-#   pulse-aidd tests                 affiche la méthode de tests (stratégie, écriture, niveaux, TDD, Gherkin)
+#   pulse-aidd qualite [famille…] [--checklists]  affiche les règles de qualité du code : toutes, ou les familles nommées (clean-code, organisation, composants, securite) ; --checklists : leurs checklists seules
+#   pulse-aidd tests [morceau…]      affiche la méthode de tests : toute, ou les morceaux nommés (strategie, ecrire, unitaire, integration, bout-en-bout, tdd, gherkin)
 #   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md), ou d'une skill : <skill>/<fichier> (skills/<skill>/references/, ex. seo/regles.md)
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
 #   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
@@ -78,23 +78,19 @@ afficher() { # afficher <titre> <chemin>
   fi
 }
 
-qualite() {
-  afficher "Règles de qualité du code" "$REF/qualite/README.md"
-  afficher "Clean code" "$REF/qualite/clean-code.md"
-  afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
-  afficher "Composants d'interface" "$REF/qualite/composants.md"
-  afficher "Sécurité du code" "$REF/qualite/securite-code.md"
+qualite() { # qualite [famille…] [--checklists] : précédé de la règle de travail sobre (scripts/charger-regles.js)
+  # Un pack déclaré et installé remplace les familles qu'il couvre (ligne « couvre: » de pulse-pile-<id> info).
+  local id couvre="" nom=""
+  id="$(pack_declare)"
+  if [ -n "$id" ] && command -v "pulse-pile-$id" >/dev/null 2>&1; then
+    couvre="$(pack_info "$id" couvre)"
+    nom="$(pack_info "$id" nom)"
+  fi
+  PULSE_PACK_COUVRE="$couvre" PULSE_PACK_NOM="$nom" node "$RACINE/scripts/charger-regles.js" qualite "$@"
 }
 
-tests() {
-  afficher "Stratégie de tests : sommaire" "$REF/tests/README.md"
-  afficher "Stratégie de tests" "$REF/tests/strategie.md"
-  afficher "Écrire un test" "$REF/tests/ecrire-un-test.md"
-  afficher "Tests unitaires" "$REF/tests/unitaires.md"
-  afficher "Tests d'intégration" "$REF/tests/integration.md"
-  afficher "Tests de bout en bout" "$REF/tests/bout-en-bout.md"
-  afficher "Développement piloté par les tests (TDD)" "$REF/tests/tdd.md"
-  afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
+tests() { # tests [morceau…] : précédé de la règle de travail sobre (scripts/charger-regles.js)
+  node "$RACINE/scripts/charger-regles.js" tests "$@"
 }
 
 lexique() { afficher "Modèle : docs/lexique.md" "$TPL/lexique.md"; }
@@ -361,8 +357,8 @@ case "$1" in
     if nom_sur "$2" && chemin="$(trouver assets "$2")"; then cat "$chemin"; else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
   agent)
     if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
-  qualite) qualite; exit 0 ;;
-  tests) tests; exit 0 ;;
+  qualite) shift; qualite "$@"; exit $? ;;
+  tests) shift; tests "$@"; exit $? ;;
   reference)
     case "$2" in
       ""|*..*) echo "Indiquez un chemin dans references/, par exemple qualite/code-concepts.md. Disponibles :"; lister_references; exit 1 ;;
