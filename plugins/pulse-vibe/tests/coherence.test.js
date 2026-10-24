@@ -1564,3 +1564,14 @@ test("agents : aucun ne cite les gestes qui touchent la production comme un gest
 test("pulse-aidd : SK n'est affecté qu'une fois", () => {
   assert.strictEqual((lire(RACINE, "bin", "pulse-aidd").match(/^SK=/gm) || []).length, 1);
 });
+
+test("aucun motif allowed-tools ne finit par un guillemet isolé", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    for (const motif of motifsBash(fichier)) {
+      // Un guillemet en trop (nombre impair dans le motif) : Bash(start "" *.html") ne correspond à rien.
+      if ((motif.match(/"/g) || []).length % 2 === 1) problemes.push(`${path.relative(DEPOT, path.dirname(fichier))} : Bash(${motif})`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
