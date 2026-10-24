@@ -84,7 +84,7 @@ drizzle/                  migrations
 3. Poser le squelette : `pulse-aidd pile squelette --nom "<nom du projet>" --description "<la phrase du brief>"`.
 4. `npm install` (il écrit `package-lock.json`, enregistré avec le code : les versions exactes de toutes les dépendances), puis `npx playwright install chromium`.
 5. Vérifier : `npm run dev` (la page d'accueil affiche le nom du projet), `npm run check`, `npm run typecheck`, `npm test`.
-6. Si `docs/design.md` existe : appliquer le thème (référence « Le thème »).
+6. Si `docs/design.md` existe : appliquer le thème (`pulse-aidd pile reference theme.md`).
 7. Avant la première version qui lit la base en ligne : relier Neon à Vercel et préparer la sauvegarde avant migration (consignes « Pour mettre en ligne » du pack, `pulse-aidd pile reference contexte/deploy.md`).
 
 ## Retour arrière
