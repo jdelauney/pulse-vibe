@@ -106,7 +106,7 @@ function textes(commande, vus = new Set()) {
 
 // Condition de chargement : un moment (étape, avant, au début, au moment) ou un cas (seulement, quand + action).
 // « pour » et « si » seuls ne suffisent pas ; les phrases de repli du contexte (« figurent dans ce contexte »…) ne comptent pas.
-const CONDITION = /(?<![\p{L}])(à l'étape|avant|seulement|au début|au moment|lors(?:que)?|étape \d|quand\s+\S+\s+\S+)/iu;
+const CONDITION = /(?<![\p{L}])(à l'étape|avant|seulement|au début|au moment|lors(?:que)?|étape \d|quand\s+\S+\s+\S+)(?![\p{L}])/iu;
 const REPLI = /figurent dans ce contexte|ce contexte est absent|si la référence manque|si le modèle manque/i;
 
 // Les formes de pointeur qui désignent ce fichier.
@@ -185,5 +185,8 @@ test("le repérage accepte un vrai pointeur et refuse le repli et la condition t
   assert.ok(!phraseValide("Les références figurent dans ce contexte : `pulse-aidd reference ui/regles-ui.md` avant tout.", formes));
   assert.ok(!phraseValide("Les règles pour l'interface : `pulse-aidd reference ui/regles-ui.md`.", formes));
   assert.ok(!phraseValide("Si besoin, voir `pulse-aidd reference ui/regles-ui.md`.", formes));
+  assert.ok(!phraseValide("Un avantage : `pulse-aidd reference ui/regles-ui.md`.", formes));
+  assert.ok(!phraseValide("Lorsqu'on veut, voir `pulse-aidd reference ui/regles-ui.md`.", formes));
+  assert.ok(phraseValide("Lorsque la refonte commence, lancer `pulse-aidd reference ui/regles-ui.md`.", formes));
   assert.ok(!pointeurs("references/git.md").some((f) => f.includes("pile reference")));
 });

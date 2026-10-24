@@ -572,7 +572,14 @@ const INSTANTANE = {
    "## 4. Ordre des exemples : Z.O.M.B.I.E.S",
    "## 5. Règles clés"
   ],
-  "numerotes": [],
+  "numerotes": [
+   "1. **Zéro** : aucune facture à examiner, liste de ",
+   "2. **Un** : une facture en retard, une relance.",
+   "3. **Plusieurs** : plusieurs factures, certaines e",
+   "4. **Limites** : échéance aujourd'hui, échéance hi",
+   "5. **Interface** : forme exacte de la relance renv",
+   "6. **Exceptions** : facture sans date d'échéance, "
+  ],
   "cases": [],
   "balises": [],
   "securitePar": {},

@@ -1609,6 +1609,8 @@ test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 
   for (const [type, noms] of sorties) {
     for (const nom of noms) {
       const r = spawnSync("bash", ["bin/pulse-aidd", type, nom], { cwd: RACINE, encoding: "utf8" });
+      assert.strictEqual(r.status, 0, `${type} ${nom} : échec ${r.stderr}`);
+      assert.ok(r.stdout.length > 0, `${type} ${nom} : sortie vide`);
       assert.ok(r.stdout.length < 30000, `${type} ${nom} : ${r.stdout.length}`);
     }
   }

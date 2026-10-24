@@ -58,7 +58,7 @@ Lancer le sous-agent `pulse:redacteur`. Lui indiquer : la fiche de la page (obje
 
 Demander (AskUserQuestion) :
 - **Garder le document** : le texte reste dans `docs/textes/<page>.md`, prêt pour plus tard.
-- **Intégrer dans la page** : appliquer les consignes de la section « Pack de pile » du contexte ci-dessus ; sans pack de pile, suivre l'organisation des pages décrite dans `docs/technical.md`. Ensuite, lancer les vérifications du projet (« Commandes du projet » de `docs/technical.md`) et montrer la page à la personne.
+- **Intégrer dans la page** : appliquer les consignes de la section « Pack de pile » du contexte (en fin de fichier) ; sans pack de pile, suivre l'organisation des pages décrite dans `docs/technical.md`. Ensuite, lancer les vérifications du projet (« Commandes du projet » de `docs/technical.md`) et montrer la page à la personne.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : une autre page avec `/pulse:rediger <page>`, sinon `/pulse:commit`.
 
