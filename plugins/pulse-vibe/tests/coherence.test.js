@@ -1484,7 +1484,7 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
 test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, --tout ni --checklists", () => {
   const sansNom = /pulse-aidd (qualite|tests)`/;
   const textes = [];
-  for (const plugin of PLUGINS) for (const ext of [".md", ".js"]) textes.push(...fichiers(plugin, ext).filter((f) => !f.includes(`${path.sep}tests${path.sep}`) && !f.includes("node_modules")));
+  for (const plugin of PLUGINS) for (const ext of [".md", ".js"]) textes.push(...fichiers(plugin, ext).filter((f) => !f.endsWith(".test.js") && !f.includes("node_modules")));
   for (const f of textes) assert.doesNotMatch(lire(f), sansNom, `${path.relative(DEPOT, f)} : « pulse-aidd qualite » ou « tests » sans famille`);
 });
 

@@ -4,9 +4,9 @@
 //   node scripts/charger-regles.js qualite [clean-code|organisation|composants|securite]… [--tout] [--checklists]
 //   node scripts/charger-regles.js tests [strategie|ecrire|unitaire|integration|bout-en-bout|tdd|gherkin]… [--tout] [--checklists]
 //
-// Avec des noms : seulement ces familles, dans l'ordre ci-dessus. Sans nom : la règle de travail sobre, le sommaire (qui porte
-// la règle de choix) et « Relancez avec … », code 0 : chaque appel nomme ses familles.
-// --tout : toutes les familles (avec --checklists : toutes les checklists).
+// Avec des noms : seulement ces familles, dans l'ordre ci-dessus, après la règle de travail sobre (sans le sommaire). Sans nom :
+// la règle de travail sobre, le sommaire (qui porte la règle de choix) et « Relancez avec … », code 0 : chaque appel nomme ses familles.
+// --tout : toutes les familles, après le sommaire, même si des noms sont donnés (avec --checklists : toutes les checklists).
 // --checklists : seulement les sections de contrôle (Checklist, Liste de contrôle, Signaux d'alerte) des familles retenues.
 // PULSE_PACK_COUVRE (familles séparées par des espaces) et PULSE_PACK_NOM, posées par pulse-aidd quand le pack de pile
 // déclaré est installé : chaque famille couverte par le pack est remplacée par un renvoi au pack.
@@ -85,16 +85,18 @@ function composer(type, args, pack = { couvre: [], nom: "" }) {
   const inconnus = noms.filter((n) => !valides.includes(n));
   if (inconnus.length) return { erreur: `Inconnu : ${inconnus.join(", ")}. Noms possibles : ${valides.join(", ")}.` };
   let sortie = bloc("Travailler sobrement", lire("travail-sobre.md"));
-  sortie += bloc(def.sommaire.titre, lire(def.sommaire.fichier));
+  // Des familles nommées : la règle sobre suffit ; le sommaire (et sa règle de choix) vient avec l'appel sans nom ou avec --tout.
+  const nomme = noms.length > 0 && !tout;
+  if (!nomme) sortie += bloc(def.sommaire.titre, lire(def.sommaire.fichier));
   if (!noms.length && !tout && !checklists) return { sortie: sortie + "\n" + def.relance + "\n" };
-  const retenues = noms.length ? def.familles.filter((f) => noms.includes(f.nom)) : def.familles;
+  const retenues = nomme ? def.familles.filter((f) => noms.includes(f.nom)) : def.familles;
   for (const f of retenues) {
     if (REMPLACABLES.includes(f.nom) && pack.couvre.includes(f.nom)) {
       sortie += bloc(f.titre, `Couverte par le pack ${pack.nom} : appliquer ses consignes et ses références (\`pulse-aidd pile reference <fichier>\`).`);
       continue;
     }
     const texte = lire(f.fichier);
-    sortie += checklists ? bloc(`${f.titre} : checklist`, checklist(texte) || "") : bloc(f.titre, texte);
+    sortie += checklists ? bloc(`${f.titre} : checklist`, checklist(texte) || "(aucune liste de contrôle)") : bloc(f.titre, texte);
   }
   return { sortie };
 }
