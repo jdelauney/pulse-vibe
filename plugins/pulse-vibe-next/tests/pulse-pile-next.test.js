@@ -259,7 +259,7 @@ test("contexte plan et refine : plan garde l'architecture ; refine la lit à la 
   assert.match(plan.stdout, /----- Architecture du code/);
   assert.doesNotMatch(refine.stdout, /----- Architecture du code/);
   assert.match(refine.stdout, /pulse-aidd pile reference architecture\.md/);
-  assert.match(plan.stdout, /Recette : /);
+  assert.match(plan.stdout, /Découpage mixte. Une tâche tirée d'une recette[^\n]*garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur/);
 });
 
 test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {

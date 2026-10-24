@@ -1392,7 +1392,7 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
 
 test("plan : avec un pack, une tâche « Recette : » garde son découpage, les autres suivent le découpage du cœur", () => {
   const plan = skillTexte("plan");
-  assert.match(plan, /\*\*Avec un pack de pile\*\*, une tâche « Recette : » garde le découpage vérifié de sa recette/);
+  assert.match(plan, /\*\*Avec un pack de pile\*\*, une tâche tirée d'une recette \(titre ou ligne « Recette : <nom> »\) garde le découpage vérifié de sa recette/);
   assert.match(plan, /toute autre tâche suit les règles 1, 2 et 4/);
   assert.match(plan, /Chaque tâche reste vérifiable par la personne/);
 });

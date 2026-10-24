@@ -47,13 +47,13 @@ Exemple: Liste vide
 \`\`\`
 ${extra}`;
 
-const TACHE = (id, { titre = "Voir la liste", depend = "—", fichiers = "à créer : `src/liste.js`", verification = "US-002 critère 1 – ouvrir la liste", tests = "US-002-1 (intégration)", statut = " " } = {}) => `- [${statut}] **${id} – ${titre}** · US-002
+const TACHE = (id, { titre = "Voir la liste", depend = "—", fichiers = "à créer : `src/liste.js`", verification = "US-002 critère 1 – ouvrir la liste", tests = "US-002-1 (intégration)", statut = " ", recette = "" } = {}) => `- [${statut}] **${id} – ${titre}** · US-002
   - Objectif : voir mes tâches
   - Dépend de : ${depend}
   - Fichiers : ${fichiers}
   - Vérification : ${verification}
   - Tests : ${tests}
-`;
+${recette ? `  - Recette : ${recette}\n` : ""}`;
 
 const PLAN = (taches, statut = "validé le 2026-10-11") => `# Plan – TodoIt – US-002 Voir la liste
 
@@ -175,6 +175,15 @@ test("fichiers : une tâche « Recette : » garde son découpage, une tâche ord
   const c = constats(racine);
   assert.ok(!c.some((l) => /^avertissement · T1 · \d+ fichiers/.test(l)), c.join("\n"));
   assert.ok(c.some((l) => /^avertissement · T2 · 4 fichiers/.test(l)), c.join("\n"));
+});
+
+test("fichiers : une tâche au titre descriptif et à la ligne « Recette : <nom> » garde aussi son découpage", () => {
+  const dix = Array.from({ length: 10 }, (_, i) => `\`src/h${i}.js\``).join(", ");
+  const racine = projet({
+    [planFichier]: PLAN([TACHE("T1", { titre: "Règles des factures et aides génériques", verification: "US-002 critère 1", fichiers: `à créer : ${dix}`, recette: "liste" }), MISE_EN_LIGNE]),
+  });
+  const c = constats(racine);
+  assert.ok(!c.some((l) => /^avertissement · T1 · \d+ fichiers/.test(l)), c.join("\n"));
 });
 
 test("un fichier à modifier créé par une autre tâche, dans ce plan ou un autre, ne déclenche rien", () => {
