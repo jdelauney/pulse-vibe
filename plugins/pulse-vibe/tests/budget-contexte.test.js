@@ -131,7 +131,7 @@ const AGENTS = {
   "implementer, tâche d'interface": { plafond: 44500, /* mesure 42 060 (pulse 0.50 : familles de qualité raccourcies) ; avant, 51 188 */ parties: [["agent", "implementer"], ["qualite", "clean-code"], ["qualite", "composants"]] },
   "implementer, tâche serveur": { plafond: 48000, /* mesure 45 439 (pulse 0.50 : familles de qualité raccourcies) ; avant, 53 914 */ parties: [["agent", "implementer"], ["qualite", "clean-code"], ["qualite", "securite"]] },
   reviewer: { plafond: 28000, /* mesure 26 888 (pulse 0.50 : checklists lues en entier, consigne ajoutée) ; avant, 26 273 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"]] },
-  "test-writer": { plafond: 44000, /* mesure 41 707 (pulse 0.50 : références de tests raccourcies) ; avant, 42 709 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin"], ["tests", "unitaire"], ["tests", "tdd"]] },
+  "test-writer": { plafond: 43500, /* mesure 41 094 (pulse 0.50 : références de tests raccourcies) ; avant, 42 709 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin"], ["tests", "unitaire"], ["tests", "tdd"]] },
   "test-runner": { plafond: 29000, /* mesure 27 266 (pulse 0.50 : références de tests raccourcies) ; avant, 28 268 */ parties: [["agent", "test-runner"], ["tests", "ecrire"], ["tests", "unitaire"]] },
 };
 
