@@ -1427,6 +1427,8 @@ test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facult
     if (JSON.stringify(t) !== JSON.stringify(attendu)) ecarts.push(`${skill} : ${t.join(", ")}`);
     const regles = texte.split(/^## Règles\s*$/m)[1] || "";
     if (!/^\s*Appliquer les « Règles communes Pulse »/.test(regles)) ecarts.push(`${skill} : Règles commence par les règles communes`);
+    // Le repli est dans le début conservé après une compaction, pas en fin de fichier avec les règles.
+    if (!regles.includes(`absentes de la conversation : lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier`)) ecarts.push(`${skill} : la ligne des règles donne le repli « pulse-aidd contexte ${skill} »`);
     const references = texte.split(/^## Références de la commande\s*$/m)[1] || "";
     if (!references.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Références de la commande »`);
     if ((texte.match(/!`pulse-aidd contexte /g) || []).length !== 1) ecarts.push(`${skill} : une seule injection du contexte, en fin de fichier`);

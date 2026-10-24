@@ -20,7 +20,7 @@ Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **ap
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
 

@@ -106,7 +106,10 @@ test("rappel : redonne la commande à recharger (une compaction ne garde que le 
   for (const commande of ["spirc", "implement"]) {
     const d = projet();
     lancer(d, "debut", "US-003", "--commande", commande, "--rythme", "rapide");
-    assert.match(rappel(d), new RegExp(`Rechargez les instructions : \`pulse-aidd etape ${commande}\``));
+    const texte = rappel(d);
+    assert.match(texte, new RegExp(`Rechargez vos instructions : lancez \`pulse-aidd etape ${commande}\``));
+    // La sortie dépasse 30 000 caractères : Claude Code l'enregistre dans un fichier, à lire en entier.
+    assert.match(texte, /lisez toute la sortie[^\n]*fichier enregistré/);
   }
   const d = projet();
   lancer(d, "debut", "US-003", "--rythme", "rapide");

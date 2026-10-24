@@ -13,7 +13,7 @@ Faire vivre à la personne ce que vit son visiteur, puis l'améliorer, chiffres 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte perf` et lire sa sortie en entier) pendant toute la commande.
 
 Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 

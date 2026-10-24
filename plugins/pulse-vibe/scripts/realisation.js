@@ -107,7 +107,7 @@ function rappel(racine) {
   const n = Number(e.questions) || 0;
   if (n > 0) lignes.push(n === 1 ? "1 question vous attend." : `${n} questions vous attendent.`);
   // Une compaction ne garde que le début d'un skill : la commande se recharge par son étape.
-  if (e.commande === "spirc" || e.commande === "implement") lignes.push(`Rechargez les instructions : \`pulse-aidd etape ${e.commande}\``);
+  if (e.commande === "spirc" || e.commande === "implement") lignes.push(`Rechargez vos instructions : lancez \`pulse-aidd etape ${e.commande}\` et lisez toute la sortie, y compris dans le fichier enregistré quand Claude Code ne l'affiche pas en entier (elle dépasse 30 000 caractères).`);
   return lignes.join("\n");
 }
 

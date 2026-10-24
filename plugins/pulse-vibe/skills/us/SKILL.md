@@ -13,7 +13,7 @@ Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ense
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte us` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
 

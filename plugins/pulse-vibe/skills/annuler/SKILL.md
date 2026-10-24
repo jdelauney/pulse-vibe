@@ -13,7 +13,7 @@ Revenir en arrière **sans rien perdre** : chaque annulation est elle-même rév
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte annuler` et lire sa sortie en entier) pendant toute la commande.
 
 Appliquer aussi les « Conventions Git » (en particulier « 7. Annuler ») et « Le dépôt distant et l'envoi du travail » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 

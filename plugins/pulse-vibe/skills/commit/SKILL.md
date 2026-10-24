@@ -13,7 +13,7 @@ Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explica
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte commit` et lire sa sortie en entier) pendant toute la commande.
 
 Appliquer aussi les « Conventions Git » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 

@@ -18,7 +18,7 @@ Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:impleme
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte test` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
 

@@ -13,7 +13,7 @@ Donner à chaque page un texte qui parle au public du site, dans la voix du proj
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte rediger` et lire sa sortie en entier) pendant toute la commande.
 
 Appliquer « Rédiger les textes des pages » (chargé en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
