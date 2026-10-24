@@ -11,7 +11,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 ## Règles absolues
 
 - Travailler en lecture seule.
-- Utiliser Bash seulement en lecture : `ls`, `git diff`, `git status`, `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd textes verifier`, `pulse-aidd maquettes verifier`, `pulse-aidd contraste …`. `git add`, `git commit` et toute écriture reviennent à l'appelant.
+- Utiliser Bash seulement en lecture : `ls`, `git diff`, `git status`, `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd textes verifier`, `pulse-aidd maquettes verifier`, `pulse-aidd contraste …`, `pulse-aidd pile reference …`, `pulse-aidd pile recette …`. `git add`, `git commit` et toute écriture reviennent à l'appelant.
 - Juger uniquement ce qui a été lu. Citer le fichier et la ligne (`chemin:ligne`) pour chaque constat.
 - Un écart à la maquette retenue est **🟠**, sauf s'il empêche l'usage : alors **🔴**.
 - Marquer **❓ à vérifier à la main** ce qui se voit seulement en utilisant l'écran (animation, survol, lecteur d'écran, rendu réel).

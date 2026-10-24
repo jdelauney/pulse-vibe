@@ -626,3 +626,24 @@ test("contexte plan : l'architecture sans les modèles de code, gardés à la de
 test("contexte implement : l'architecture (sens des imports) pour tout nouveau fichier, entité ou action", () => {
   assert.match(lire(REF, "contexte", "implement.md"), /Nouveau fichier ou dossier, entité, use-case, repository, action ou container : appliquer `pulse-aidd pile reference architecture.md`/);
 });
+
+// Un outil cité dans les consignes d'un agent lui est disponible : les commandes que le pack cite à un agent (sa sortie `contexte <x>`)
+// figurent dans la liste « Utiliser … seulement » de l'agent, sauf une ligne réservée à la conversation de la commande.
+test("agents qui chargent un contexte du pack : les commandes citées par le pack leur sont permises", () => {
+  const dossier = path.join(RACINE, "..", "pulse-vibe", "agents");
+  const echecs = [];
+  for (const fichier of fs.readdirSync(dossier).filter((f) => f.endsWith(".md"))) {
+    const texte = fs.readFileSync(path.join(dossier, fichier), "utf8");
+    const liste = texte.split("\n").find((l) => /^- Utiliser .*(Bash|commandes en lecture)/.test(l));
+    if (!liste) continue;
+    for (const [, libelle] of texte.matchAll(/pulse-aidd pile contexte ([a-z-]+)/g)) {
+      const sortie = lancer("contexte", libelle).stdout;
+      for (const ligne of sortie.split("\n").filter((l) => !l.includes("dans la conversation de cette commande")))
+        for (const [, mot1, mot2] of ligne.matchAll(/pulse-aidd ([a-z-]+)(?: ([a-z-]+))?/g)) {
+          const permis = liste.includes(`pulse-aidd ${mot1} ${mot2}`) || liste.includes(`pulse-aidd ${mot1} …`) || liste.includes(`pulse-aidd ${mot1}\``);
+          if (!permis) echecs.push(`${fichier} (contexte ${libelle}) : pulse-aidd ${mot1} ${mot2 || ""}`.trim());
+        }
+    }
+  }
+  assert.deepStrictEqual([...new Set(echecs)], []);
+});
