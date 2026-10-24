@@ -403,6 +403,7 @@ test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'é
   assert.match(lireSkill("spirc"), /sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code/);
   assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
   assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier/);
+  for (const agent of ["implementer", "fixer"]) assert.match(fsP.readFileSync(path.join(RACINE, "agents", agent + ".md"), "utf8"), /pack n'est pas installé, le signaler dans « À signaler »/);
   const communes = fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.match(communes, /review, spirc, implement, auto-fix : les agents qui codent ou relisent les chargent eux-mêmes/);
   assert.doesNotMatch(lireSkill("review"), /elles y sont dans les boucles/);
@@ -418,6 +419,18 @@ test("contexte spirc, auto-fix et implement : le pack reste aux agents qui coden
     }
     assert.match(p.lancerIci("pile", "contexte", commande).stdout, new RegExp("Consignes du pack pour " + commande), "les agents l'obtiennent par le relais");
   }
+});
+
+test("contexte spirc, auto-fix et implement : pack déclaré mais absent, l'avertissement d'installation reste affiché", () => {
+  const p = projetAvecPack({ declare: "essai" });
+  for (const commande of ["spirc", "auto-fix", "implement"]) {
+    for (const args of [["contexte", commande], ["etape", commande, "--sans-communes"]]) {
+      const r = p.lancerIci(...args);
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.match(r.stdout, /Pack de pile : essai \(non installé\)[\s\S]*\/plugin install pulse-essai@pulseia/, args.join(" "));
+    }
+  }
+  assert.doesNotMatch(projetAvecPack({}).lancerIci("contexte", "spirc").stdout, /===== Pack de pile/, "sans pack déclaré, rien");
 });
 
 test("pile <sous-commande> : relaie vers le pack déclaré, arguments et code de sortie compris", () => {

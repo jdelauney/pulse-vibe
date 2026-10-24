@@ -30,7 +30,7 @@ Le message de délégation contient : la tâche (identifiant, titre, objectif), 
 
 ## Pack de pile
 
-Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte implement` avant de commencer (lire sa sortie en entier, sans la couper), et appliquer ses consignes en plus des règles ci-dessous.
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte implement` avant de commencer (lire sa sortie en entier, sans la couper), et appliquer ses consignes en plus des règles ci-dessous. Si la commande répond que le pack n'est pas installé, le signaler dans « À signaler » (le code s'écrit sans la fiche).
 
 ## Méthode
 

@@ -189,15 +189,20 @@ contexte_pack() { # contexte_pack <commande>
     printf '
 '
   else
-    printf '
+    pack_absent "$id"
+  fi
+}
+
+pack_absent() { # pack_absent <id> : le bloc « non installé » (le pack déclaré manque sur cette machine)
+  local id="$1"
+  printf '
 ===== Pack de pile : %s (non installé) =====
 
 ' "$id"
-    printf 'Le projet déclare le pack de pile « %s » (docs/technical.md), mais il manque sur cette machine. ' "$id"
-    printf "Proposer à la personne d'installer son plugin : /plugin install pulse-%s@pulseia, puis de redémarrer Claude Code. " "$id"
-    printf 'En attendant, suivre docs/technical.md et la documentation officielle de la pile retenue.
+  printf 'Le projet déclare le pack de pile « %s » (docs/technical.md), mais il manque sur cette machine. ' "$id"
+  printf "Proposer à la personne d'installer son plugin : /plugin install pulse-%s@pulseia, puis de redémarrer Claude Code. " "$id"
+  printf 'En attendant, suivre docs/technical.md et la documentation officielle de la pile retenue.
 '
-  fi
 }
 
 modules() { # modules <commande> : les modules des règles communes que la commande utilise (T tâches, C relecture, R réalisation)
@@ -370,7 +375,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
   # review, spirc, auto-fix, implement : les agents qui relisent ou codent chargent eux-mêmes les consignes du pack (pulse-aidd pile contexte <commande>) ; la conversation principale orchestre.
-  case "$1" in review|spirc|auto-fix|implement) ;; *) contexte_pack "$1" ;; esac
+  # Pack déclaré mais absent : le bloc « non installé » reste affiché, la conversation propose de l'installer.
+  case "$1" in review|spirc|auto-fix|implement) command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { [ -z "$(pack_declare)" ] || pack_absent "$(pack_declare)"; } ;; *) contexte_pack "$1" ;; esac
 }
 
 case "$1" in
