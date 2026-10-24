@@ -71,7 +71,7 @@ Annoncer le choix en une ligne (« Je code en coulisse · tests d'abord · dans 
 ### 1. Choisir la ou les tâches
 
 - **Tâche donnée** (`T3`) : celle-ci ; elle doit appartenir au plan, sinon indiquer le plan qui la contient et demander.
-  Si elle est déjà `[~]`, lancer `pulse-aidd revue <Tn>` : avec `examen`, `test`, `correction` ou `aide`, proposer `/pulse:review <Tn>` ; avec `commit`, proposer `/pulse:commit` ; avec `decision` (une question attend dans le plan), proposer `/pulse:spirc <US-XXX>`, qui la pose puis reprend la tâche ; avec `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
+  Si elle est déjà `[~]`, lancer `pulse-aidd revue <Tn>` : avec `examen`, `test`, `correction` ou `aide`, proposer de taper `/pulse:review <Tn>` ; avec `commit`, proposer de taper `/pulse:commit` ; avec `decision` (une question attend dans le plan), proposer `/pulse:spirc <US-XXX>`, qui la pose puis reprend la tâche ; avec `aucune` (la tâche n'est dans aucun plan) : le dire et demander de quelle tâche il s'agit.
 - **Sans tâche** : toutes les tâches `[~]` puis `[ ]` du plan, dans l'ordre du plan. Annoncer la liste en une ligne (« Je vais réaliser T3, T4 et T5, l'une après l'autre : chacune sera relue, corrigée et enregistrée avant de passer à la suivante. »), puis appliquer la boucle du § 6.
 
 Si toutes les tâches du plan sont `[x]` : féliciter la personne et proposer `/pulse:deploy`.

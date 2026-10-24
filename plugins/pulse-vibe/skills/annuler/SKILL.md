@@ -74,7 +74,7 @@ Demander (AskUserQuestion) : « Annuler » / « Ne rien faire ». Une réponse a
 **Défaire des commits** (utilisé par les trois cas suivants) :
 - Défaire chaque commit, **du plus récent au plus ancien** : `git revert --no-commit <commit>` ; pour un commit de fusion (il a deux parents : `git rev-list --parents -n 1 <commit>` affiche trois identifiants), `git revert --no-commit -m 1 <commit>`.
 - **Conflit sur un plan seulement** (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`, souvent le Journal, mis à jour par une tâche plus récente) : garder la version actuelle du plan (`git checkout --ours -- <plan>`, puis `git add <plan>`) ; la mise à jour du plan se fait ensuite à la main (étape « plan » ci-dessous). Continuer.
-- **Tout autre conflit, ou toute autre erreur** de `git revert` : `git revert --abort` (l'état d'avant revient), expliquer simplement (« une tâche plus récente a modifié les mêmes lignes de code ») et proposer `/pulse:get-help`. S'arrêter.
+- **Tout autre conflit, ou toute autre erreur** de `git revert` : `git revert --abort` (l'état d'avant revient), expliquer simplement (« une tâche plus récente a modifié les mêmes lignes de code ») et proposer de taper `/pulse:get-help`. S'arrêter.
 
 **Tâche enregistrée, ou toute une US** :
 1. Des changements non enregistrés existent : proposer d'abord de les mettre de côté (comme ci-dessus), sinon s'arrêter.
@@ -92,7 +92,7 @@ Demander (AskUserQuestion) : « Annuler » / « Ne rien faire ». Une réponse a
 **Récupérer** :
 - Une mise de côté : `git stash list`, choisir l'entrée `pulse-annuler`, `git stash apply <entrée>`. Après vérification par la personne, proposer de supprimer l'entrée (`git stash drop <entrée>`).
 - Un commit d'annulation : le défaire comme ci-dessus, remettre ses tâches à `[x]` avec une ligne de Journal, puis commit `revert: rétablit <description>`.
-- Une branche `sauvegarde/` : l'expliquer et proposer `/pulse:get-help` si la personne veut repartir de cette branche (opération délicate).
+- Une branche `sauvegarde/` : l'expliquer et proposer de taper `/pulse:get-help` si la personne veut repartir de cette branche (opération délicate).
 
 ### 6. Envoyer
 

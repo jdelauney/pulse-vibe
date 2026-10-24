@@ -37,7 +37,7 @@ Argument : `$ARGUMENTS`
 - `docs/technical.md` est nécessaire (« Commandes du projet », « Hébergement et mise en ligne ») : sinon, proposer `/pulse:tech` et s'arrêter.
 - Un **dépôt distant** relié (`git remote -v`) : sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; s'arrêter tant qu'il manque (la CI tourne chez son fournisseur).
 - Le **squelette** de la pile en place (« Mise en place » de `docs/technical.md` faite, les fichiers qu'elle annonce présents) : sinon, les contrôles attendent encore du code à vérifier. Proposer « Installer seulement le contrôle des secrets maintenant » / « Attendre la première tâche du plan (Recommandé) ».
-- Des modifications non enregistrées : proposer `/pulse:commit` d'abord, pour que le commit de la CI contienne uniquement la CI.
+- Des modifications non enregistrées : proposer de taper `/pulse:commit` d'abord, pour que le commit de la CI contienne uniquement la CI.
 - Pour tout ce qui est propre au fournisseur de CI (emplacement et format du fichier, déclencheurs, étapes, réglages du dépôt) : suivre sa **documentation officielle** (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Tirer de cette documentation chaque syntaxe, nom d'action ou menu.
 
 ## Processus
@@ -88,7 +88,7 @@ Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js
 
 - Montrer où suivre le résultat : l'onglet de la CI sur le site du dépôt, ou en ligne de commande si l'outil est connecté (GitHub : `gh run list --limit 1`, puis `gh run watch` ; GitLab : `glab ci status`).
 - **Coche verte** : expliquer qu'elle apparaîtra désormais à chaque envoi et sur chaque proposition de version parallèle.
-- **Croix rouge** : lire le journal de l'étape en échec (GitHub : `gh run view --log-failed`), l'expliquer simplement, corriger (`pulse-aidd etape fix --sans-communes`), enregistrer et renvoyer. Deux essais au plus, puis s'arrêter et proposer `/pulse:get-help`.
+- **Croix rouge** : lire le journal de l'étape en échec (GitHub : `gh run view --log-failed`), l'expliquer simplement, corriger (`pulse-aidd etape fix --sans-communes`), enregistrer et renvoyer. Deux essais au plus, puis s'arrêter et proposer de taper `/pulse:get-help`.
 
 ### 7. Protéger la branche principale (facultatif)
 

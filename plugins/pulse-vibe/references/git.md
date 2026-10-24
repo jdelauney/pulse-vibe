@@ -100,4 +100,4 @@ Annuler, c'est ajouter une nouvelle version qui défait une ancienne : l'histori
 - Toujours passer par ces opérations réversibles. **Jamais** `git reset --hard`, `git checkout -- .`, `git restore` sans mise de côté préalable, `git clean`, ni `--force`.
 - Les fichiers ignorés (`.env`, fichiers d'environnement locaux) restent en place : `git stash -u` ne les prend pas.
 - Conflit sur un plan seulement (le Journal, mis à jour par une tâche plus récente) : garder la version actuelle du plan (`git checkout --ours -- <plan>`, puis `git add <plan>`) et le mettre à jour à la main. C'est la seule reprise de fichier permise, et elle porte sur ce plan uniquement.
-- Tout autre conflit, ou toute autre erreur pendant un revert : `git revert --abort` remet tout en l'état ; expliquer simplement et proposer `/pulse:get-help`.
+- Tout autre conflit, ou toute autre erreur pendant un revert : `git revert --abort` remet tout en l'état ; expliquer simplement et proposer de taper `/pulse:get-help`.
