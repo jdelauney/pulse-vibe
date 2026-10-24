@@ -4,8 +4,7 @@ Un test de bout en bout prouve qu'**un parcours complet fonctionne comme pour la
 
 ## 1. Caractéristiques
 
-- **Durée** : plusieurs secondes par test ; quelques minutes pour l'ensemble.
-- **Toute la pile** : interface, serveur, base de test, dans un vrai navigateur (ou la vraie interface pour une application non web).
+- **Toute la pile** : interface, serveur, base de test, dans un vrai navigateur (ou la vraie interface pour une application non web). Plusieurs secondes par test ; quelques minutes pour l'ensemble.
 - **Services tiers** : environnement de test du service (« bac à sable ») ou faux serveur ; jamais de paiement ni d'envoi réel.
 - **Coûteux à maintenir** : chaque changement d'écran peut les toucher. Ils complètent les tests unitaires et d'intégration, et ne les remplacent pas.
 
@@ -31,16 +30,12 @@ fonctionnalité "Gestion des factures"
     AVANT CHAQUE TEST : resetTestDatabase() ; user = createTestUser()
 
     exemple "Camille crée une facture de 120 € : elle apparaît dans la liste"
-      // Étant donné
       invoicesPage = loginAs(user).openInvoicesPage()
-      // Quand
       invoicesPage.createInvoice({ customer: "Atelier Dupont", amount: "120,00" })
-      // Alors
       invoicesPage.thenSuccessMessageIsVisible("Facture créée")
       invoicesPage.thenListContains("Atelier Dupont", "120,00 €")
 
-// Objet page : seule la mécanique de l'écran vit ici
-objet InvoicesPage(browser) :
+objet InvoicesPage(browser) :         // seule la mécanique de l'écran vit ici
   createInvoice(data) :
     browser.click(bouton "Nouvelle facture")
     browser.fill(champ "Client", data.customer)
@@ -53,7 +48,7 @@ objet InvoicesPage(browser) :
 ## 4. Stabilité
 
 - Navigateur sans affichage en CI, même configuration à chaque exécution (taille de fenêtre, langue, fuseau horaire).
-- Tests indépendants : aucun test ne compte sur les données d'un autre ; ils peuvent tourner en parallèle quand l'outil le permet.
+- Tests en parallèle quand l'outil le permet, chacun avec ses propres données.
 - En cas d'échec, l'outil conserve capture d'écran, trace et journaux de la console : ce sont les preuves pour diagnostiquer.
 - Un test instable se traite comme indiqué dans `tests/strategie.md` §4.
 
