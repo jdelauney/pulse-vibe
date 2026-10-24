@@ -171,11 +171,14 @@ contexte_pack() { # contexte_pack <commande>
   local id; id="$(pack_declare)"
   [ -n "$id" ] || return 0
   if command -v "pulse-pile-$id" >/dev/null 2>&1; then
+    local sortie; sortie="$("pulse-pile-$id" contexte "$1" 2>/dev/null)"
+    [ -n "$sortie" ] || return 0
     printf '
 ===== Pack de pile : %s =====
 
 ' "$(pack_info "$id" nom)"
-    "pulse-pile-$id" contexte "$1" 2>/dev/null
+    printf '%s
+' "$sortie"
     printf '
 '
   else
@@ -350,7 +353,13 @@ case "$1" in
   etape)
     if ! nom_sur "$2" || [ ! -f "$RACINE/skills/$2/SKILL.md" ]; then echo "Commande inconnue : $2. Commandes : $(ls "$RACINE/skills" | tr '\n' ' ')"; exit 0; fi
     [ "$3" = "--sans-communes" ] && echo "(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Processus ci-dessous.)"
-    afficher "Instructions de l'étape /pulse:$2" "$RACINE/skills/$2/SKILL.md"
+    printf '
+===== Instructions de l'"'"'étape /pulse:%s =====
+
+' "$2"
+    awk 'n<2&&/^---$/{n++;next} n>=2' "$RACINE/skills/$2/SKILL.md" | awk '/^## Exemples/{s=1;next} /^## /{s=0} !s'
+    printf '
+'
     contexte "$2" "$3"; exit 0 ;;
   modele)
     if nom_sur "$2" && chemin="$(trouver assets "$2")"; then cat "$chemin"; else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;

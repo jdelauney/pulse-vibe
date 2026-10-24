@@ -86,21 +86,21 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   "auto-fix": 49500, // mesure 46 786
   cicd: 65500, // mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
   deploy: 66000, // mesure 62 576
-  express: 52000, // mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
+  express: 51500, // mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 54500, // mesure 51 889
-  implement: 88500, // mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
-  perf: 100500, // mesure 95 315
-  plan: 106000, // mesure 100 752
-  rediger: 36500, // mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
-  refine: 91500, // mesure 86 865
+  implement: 85500, // mesure 81 243 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
+  perf: 95000, // mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
+  plan: 103000, // mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
+  rediger: 36000, // mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
+  refine: 89000, // mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
   review: 40000, // mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 60000, // mesure 57 057
   secrets: 70500, // mesure 67 057
-  security: 88000, // mesure 83 589
-  seo: 102000, // mesure 96 880
-  spec: 54000, // mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
+  security: 83500, // mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
+  seo: 97000, // mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
+  spec: 53500, // mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
   spirc: 93000, // mesure 92 604 (refactoring d'optimisation, tâche 1.4 : bout en bout lancé au test groupé en rythme complet, rythme rapide transmis à l'implementer, profil « rapide » = -f) ; avant, mesure 92 234 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 91 652 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  tech: 134500, // mesure 127 942
+  tech: 131000, // mesure 124 591 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 127 942
   test: 52500, // mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 90000, // mesure 85 248
 };

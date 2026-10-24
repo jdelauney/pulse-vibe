@@ -221,6 +221,17 @@ test("etape --sans-communes : instructions et contexte de l'étape, sans les rè
     assert.ok(sans.stdout.includes(titre), titre);
 });
 
+test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
+  for (const args of [["etape", "express", "--sans-communes"], ["etape", "express"]]) {
+    const r = lancer(...args);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Instructions de l'étape /pulse:express ====="));
+    assert.ok(!r.stdout.includes("allowed-tools:"), "sans l'en-tête du fichier");
+    assert.ok(!r.stdout.includes("## Exemples"), "sans la section Exemples");
+    assert.ok(r.stdout.includes("## Processus"), "le Processus reste");
+  }
+});
+
 test("l'aide décrit l'option --sans-communes", () => {
   assert.match(lancer().stdout, /etape <commande> \[--sans-communes\]/);
 });
@@ -288,7 +299,7 @@ function projetAvecPack({ declare, installe }) {
       "#!/usr/bin/env bash\n" +
         'case "$1" in\n' +
         `  info) printf 'id: ${installe}\nnom: Pile ${installe}\nresume: Une pile de test.\nversion: 0.1.0\n' ;;\n` +
-        '  contexte) echo "Consignes du pack pour $2" ;;\n' +
+        '  contexte) [ "$2" = annuler ] || echo "Consignes du pack pour $2" ;;\n' +
         '  echo) shift; printf "[%s]" "$@" ;;\n' +
         '  relais) printf "%s" "${PULSE_RELAIS_ARGC:-absent}"; env | grep -q "^PULSE_RELAIS_" && printf " (variables restantes)" ;;\n' +
         "  echec) exit 3 ;;\n" +
@@ -333,6 +344,12 @@ test("contexte : pack déclaré mais absent, un avertissement et aucune erreur",
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /Pack de pile : essai \(non installé\)/);
   assert.match(r.stdout, /pulse-essai@pulseia/);
+});
+
+test("contexte : l'en-tête du pack seulement quand le pack a du contenu pour la commande", () => {
+  const p = projetAvecPack({ declare: "essai", installe: "essai" });
+  assert.doesNotMatch(p.lancerIci("contexte", "annuler").stdout, /===== Pack de pile/);
+  assert.ok(p.lancerIci("contexte", "implement").stdout.includes("===== Pack de pile : Pile essai ====="));
 });
 
 test("contexte : sans pack déclaré, aucune section de pack", () => {
