@@ -1491,16 +1491,38 @@ test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, 
 test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
   const implementer = agent("implementer");
-  assert.match(implementer, /`pulse-aidd qualite <familles>`, selon la règle de choix du sommaire/);
+  assert.match(implementer, /une commande par famille/);
+  assert.match(implementer, /Lire chaque sortie en entier, sans la couper/);
   const choix = lire(RACINE, "references", "qualite", "README.md");
   for (const famille of ["clean-code", "composants", "securite", "organisation"]) assert.match(choix, new RegExp(`\`${famille}\``), famille);
   assert.match(agent("reviewer"), /`pulse-aidd qualite --checklists`/);
   assert.match(agent("test-writer"), /`pulse-aidd tests ecrire gherkin/);
   assert.match(agent("test-runner"), /`pulse-aidd tests ecrire/);
+  for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) assert.match(agent(nom), /en entier/, `${nom} : règles lues en entier`);
   for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) {
     assert.doesNotMatch(agent(nom), /`pulse-aidd (?:qualite|tests)`/, `${nom} : chargement complet`);
   }
   assert.match(lire(RACINE, "references", "tests-automatiques.md"), /`pulse-aidd tests ecrire gherkin/);
+});
+
+test("règles de Pulse lues en entier : consigne dans travail-sobre.md, aucun agent ne coupe la sortie", () => {
+  assert.match(lire(RACINE, "references", "travail-sobre.md"), /en entier/);
+  for (const f of fichiers(RACINE, ".md").filter((x) => x.includes(`${path.sep}agents${path.sep}`))) {
+    assert.doesNotMatch(lire(f), /pulse-aidd (?:qualite|reference|tests|pile)[^\n]*\|\s*(?:head|grep|tail|sed)\b/, `${path.relative(DEPOT, f)} : sortie de règles coupée`);
+  }
+});
+
+// Chaque sortie d'une famille ou d'un morceau reste lisible en entier (sous la limite d'affichage de 30 000 caractères).
+// Vérifiée après le raccourcissement des familles (tâches 2.3b et 2.3c du refactoring d'optimisation).
+test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 caractères", { todo: "2.3b/2.3c" }, () => {
+  const { spawnSync } = require("child_process");
+  const sorties = [["qualite", ["clean-code", "organisation", "composants", "securite"]], ["tests", ["strategie", "ecrire", "unitaire", "integration", "bout-en-bout", "tdd", "gherkin"]]];
+  for (const [type, noms] of sorties) {
+    for (const nom of noms) {
+      const r = spawnSync("bash", ["bin/pulse-aidd", type, nom], { cwd: RACINE, encoding: "utf8" });
+      assert.ok(r.stdout.length < 30000, `${type} ${nom} : ${r.stdout.length}`);
+    }
+  }
 });
 
 test("correction ciblée : l'implementer reçoit les constats et charge leurs familles de qualité", () => {
