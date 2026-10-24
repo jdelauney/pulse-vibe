@@ -760,8 +760,8 @@ test("spirc : en autonome, une décision arrête seulement sa tâche ; petits ch
   assert.doesNotMatch(texte, /interrompt aussi le mode autonome/);
   const section = texte.split("### Questions en attente (mode autonome)")[1].split("\n### ")[0];
   assert.match(section, /En pause : Q<n> \(votre décision\)/);
-  assert.match(section, /git stash push -u -m "pulse: T4 en attente" -- <fichiers de T4>/);
-  assert.match(section, /git stash pop stash@\{k\}/);
+  assert.match(section, /pulse-aidd attente mettre-de-cote T4 -- <fichiers de T4>/);
+  assert.match(section, /pulse-aidd attente remettre T4/);
   assert.match(section, /retirer la sous-ligne `En pause : Q<n>`/);
   assert.match(section, /4 par ronde/);
   assert.doesNotMatch(section, /git stash (drop|clear)/);
