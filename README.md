@@ -51,6 +51,7 @@ Installé avec les anciens noms (`pulse-vibe@pulseia`, `pulse-vibe-next@pulseia`
 plugins/<plugin>/                 un dossier par plugin
 docs/                             le wiki, guide des personnes qui utilisent Pulse (HTML, CSS, JS), publié par GitHub Pages ; et le mémo des commandes
 outils/wiki/                      les outils du wiki (synchronisation avec les commandes, charte graphique)
+outils/evals/                     les évaluations du cœur : de vrais essais des commandes sur des projets d'essai (lancer.js --direct), et la mesure de ce qu'ils consomment (mesurer.js)
 .github/workflows/                tests des plugins (Ubuntu et Windows, Node 22.19 et LTS) ; squelette Next.js vérifié à chaque envoi qui touche le pack ou le cœur, et chaque semaine sous Windows ; chaînes de recettes vérifiées chaque semaine
 ```
 
