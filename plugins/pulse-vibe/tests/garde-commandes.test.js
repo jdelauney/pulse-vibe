@@ -1136,3 +1136,42 @@ test("dernier tour : git grep -O, filtres de noms, --redact répété, hooksPath
   }
   passePs("Set-Item env:FOO bar", dir);
 });
+
+// ------------------------------------------------------------ Règles de Pulse lues en entier
+
+test("une sortie de règles Pulse coupée par un tube est refusée, avec la commande sans tube", () => {
+  for (const [c, sans] of [
+    ["pulse-aidd qualite clean-code | head -80", "pulse-aidd qualite clean-code"],
+    ["pulse-aidd qualite composants | head -60", "pulse-aidd qualite composants"],
+    ["pulse-aidd pile contexte implement | tail -n +3", "pulse-aidd pile contexte implement"],
+    ["pulse-aidd tests ecrire | grep -i vitest", "pulse-aidd tests ecrire"],
+    ["pulse-aidd reference implement/regles.md | sed -n 1,20p", "pulse-aidd reference implement/regles.md"],
+    ["pulse-aidd pile reference recettes/liste | cut -c1-80", "pulse-aidd pile reference recettes/liste"],
+    ["pulse-aidd agent reviewer | less", "pulse-aidd agent reviewer"],
+    ["pulse-aidd etape implement --sans-communes | awk 'NR<5'", "pulse-aidd etape implement --sans-communes"],
+    ["pulse-aidd contexte implement 2>&1 | head -50", "pulse-aidd contexte implement"],
+  ]) {
+    const d = refus(c);
+    assert.ok(d.raison.includes(sans), `la commande sans tube est donnée : ${c}`);
+    assert.match(d.raison, /règles de Pulse/);
+    assert.match(d.raison, /lisez ce fichier en entier/);
+  }
+});
+
+test("une sortie de règles Pulse coupée est refusée aussi sous PowerShell", () => {
+  const d = refusPs("pulse-aidd qualite clean-code | Select-Object -First 60");
+  assert.match(d.raison, /pulse-aidd qualite clean-code`/);
+  refusPs("pulse-aidd pile contexte implement | Select-Object -Skip 2");
+});
+
+test("les règles de Pulse sans tube, en chaîne ou avec une autre commande passent", () => {
+  passe("pulse-aidd qualite clean-code");
+  passe("pulse-aidd qualite clean-code && git status");
+  passe("pulse-aidd qualite clean-code ; git status | head -5");
+  passe("pulse-aidd tests ecrire 2>&1");
+  passe("pulse-aidd qualite clean-code || echo vide");
+  passe("npm test | tail -20");
+  passe("git status | head -5");
+  passe("pulse-aidd revue | head -5");
+  passePs("pulse-aidd qualite clean-code; Get-Date | Select-Object -First 1");
+});
