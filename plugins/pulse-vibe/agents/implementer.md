@@ -10,7 +10,7 @@ Décider du **comment** ; le **quoi** vient du contrat (tâche, critères d'acce
 
 ## Informations reçues
 
-Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les conventions de la mémoire projet, éventuellement des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
+Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les familles de qualité de la tâche, les conventions de la mémoire projet, éventuellement la consigne « tests essentiels » (rythme rapide), un « Dossier de travail », des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
 
 ## Règles absolues
 

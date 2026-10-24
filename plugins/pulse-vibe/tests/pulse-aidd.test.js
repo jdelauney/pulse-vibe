@@ -258,7 +258,7 @@ test("contexte implement et test : la procédure des tests automatiques", () => 
   for (const commande of ["implement", "test"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes("===== Tests automatiques : tests d'abord ====="), commande);
+    assert.ok(r.stdout.includes("===== Tests automatiques ====="), commande);
     assert.doesNotMatch(r.stdout, /commande inconnue/);
   }
 });
@@ -635,7 +635,7 @@ test("contexte spirc : règles communes, modèle de revue et lexique ; référen
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : rapport de revue =====", "===== Modèle : docs/lexique.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
-  for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques : tests d'abord =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
 });
 

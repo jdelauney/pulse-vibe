@@ -955,7 +955,7 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
     [["skills", "pr", "SKILL.md"], /Claude Code va vous demander l'accord pour \x60git pull\x60[\s\S]*Claude Code va vous demander l'accord pour envoyer/],
     [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. Annoncer : « Claude Code va vous demander/],
     [["skills", "cicd", "SKILL.md"], /Annoncer : « Claude Code va vous demander[^\n]*Puis l'envoyer \(\x60git push\x60/],
-    [["references", "worktree.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
+    [["references", "worktree-dossier.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
   ]) {
     const texte = lire(RACINE, ...fichier);
     assert.match(texte, ANNONCE, fichier.join("/"));
@@ -1191,7 +1191,7 @@ test("boucles d'implement et de spirc : review et commit chargés une seule fois
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
   // Deux emplois : aux prérequis (modifications à enregistrer d'abord) et au démarrage de la réalisation ; le second se saute si le premier a eu lieu.
   assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 2, "spirc : commit chargée une fois par déroulé");
-  for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
+  for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference worktree-dossier.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference tests-dabord.md", "pulse-aidd reference memoire.md"])
     assert.ok(spirc.includes(ref), ref);
 });
 
@@ -1310,7 +1310,7 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
 });
 
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
-  const worktree = lire(RACINE, "references", "worktree.md");
+  const worktree = lire(RACINE, "references", "worktree-dossier.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
   const pr = fin.split("\n").find((l) => l.startsWith("- **Envoi : version parallèle**"));
   assert.ok(pr, "cas « Envoi : version parallèle »");
@@ -1617,7 +1617,7 @@ test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) {
     assert.doesNotMatch(agent(nom), /`pulse-aidd (?:qualite|tests)`/, `${nom} : chargement complet`);
   }
-  assert.match(lire(RACINE, "references", "tests-automatiques.md"), /`pulse-aidd tests ecrire gherkin/);
+  assert.match(lire(RACINE, "references", "tests-dabord.md"), /`pulse-aidd tests ecrire gherkin/);
 });
 
 test("règles de Pulse lues en entier : consigne dans travail-sobre.md, aucun agent ne coupe la sortie", () => {
@@ -1647,9 +1647,12 @@ test("correction ciblée : l'implementer reçoit les constats et charge leurs fa
     ["boucle.md", lire(RACINE, "skills", "implement", "references", "boucle.md")],
     ["examen.md", lire(RACINE, "references", "examen.md")],
     ["spirc", lire(RACINE, "skills", "spirc", "SKILL.md")],
+    ["deleguer.md", lire(RACINE, "references", "deleguer.md")],
   ]) assert.match(texte, /familles de qualité (?:qu'ils|que les constats) concernent/, nom);
   assert.match(lire(RACINE, "references", "examen.md"), /`pulse-aidd qualite --checklists`/);
-  for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /familles de qualité de la tâche/, skill);
+  // Le message de délégation est écrit une fois (deleguer.md) ; les deux commandes y renvoient.
+  assert.match(lire(RACINE, "references", "deleguer.md"), /familles de qualité de la tâche/);
+  for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /selon « Déléguer à l'implementer »/, skill);
 });
 
 // Aucune commande n'en lance une autre : les commandes /pulse:* ont disable-model-invocation: true.
@@ -1694,7 +1697,9 @@ test("spirc : le bout en bout se lance aussi en autonome, le rythme rapide est t
   assert.match(groupe, /\*\*En rythme complet\*\* : lancer d.abord « Tester de bout en bout »/, "Test groupé");
   assert.match(spirc.slice(spirc.indexOf("### Fin")), /Rythme complet hors autonome, US faite : lancer « Tester de bout en bout »/, "Fin");
   assert.doesNotMatch(spirc, /^Hors autonome, US faite/m);
-  assert.match(spirc, /Déléguer à \*\*`pulse:implementer`\*\*[^\n]*rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
+  // Le rythme rapide est transmis à l'implementer par le texte de délégation, écrit une fois.
+  assert.match(spirc, /Déléguer à \*\*`pulse:implementer`\*\* selon « Déléguer à l'implementer »/);
+  assert.match(lire(RACINE, "references", "deleguer.md"), /rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
   assert.match(spirc, /le rythme est celui du profil \(« rapide » vaut `-f`\)/);
 });
 
