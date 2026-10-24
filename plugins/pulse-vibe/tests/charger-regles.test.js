@@ -195,3 +195,34 @@ test("un pack remplace seulement l'organisation, jamais la sécurité du code", 
   assert.ok(r.sortie.includes("## 14. Checklist avant de livrer"), "sécurité gardée");
   assert.ok(r.sortie.includes("Couverte par le pack Essai"), "organisation remplacée");
 });
+
+test("avec des noms : la règle sobre sans le sommaire, qui reste réservé à l'appel sans nom", () => {
+  const r = lancer(["qualite", "clean-code"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Travailler sobrement ====="));
+  assert.ok(!r.stdout.includes("===== Règles de qualité du code ====="), "sommaire absent");
+  assert.ok(r.stdout.includes("===== Clean code ====="));
+  const tests = lancer(["tests", "tdd"]);
+  assert.ok(tests.stdout.includes("===== Travailler sobrement ====="));
+  assert.ok(!tests.stdout.includes("===== Stratégie de tests : sommaire ====="));
+  const tout = lancer(["qualite", "--tout"]);
+  assert.ok(tout.stdout.includes("===== Règles de qualité du code ====="), "--tout garde le sommaire");
+});
+
+test("--tout avec des noms : toutes les familles, les noms sont ignorés", () => {
+  const r = lancer(["qualite", "securite", "--tout"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of ["Clean code", "Organisation des fichiers et nommage", "Composants d'interface", "Sécurité du code"]) assert.ok(r.stdout.includes(`===== ${titre} =====`), titre);
+});
+
+test("un morceau sans liste de contrôle : « (aucune liste de contrôle) » avec --checklists", () => {
+  const r = lancer(["tests", "tdd", "--checklists"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Développement piloté par les tests (TDD) : checklist =====\n\n(aucune liste de contrôle)\n"), r.stdout.slice(-300));
+});
+
+test("l'aide de pulse-aidd montre --tout pour qualite et tests", () => {
+  const aide = fs.readFileSync(path.join(RACINE, "bin", "pulse-aidd"), "utf8");
+  assert.ok(aide.includes("#   pulse-aidd qualite <famille…> [--tout] [--checklists]"));
+  assert.ok(aide.includes("#   pulse-aidd tests <morceau…> [--tout] [--checklists]"));
+});

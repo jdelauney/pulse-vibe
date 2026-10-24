@@ -49,7 +49,7 @@ Avant d'écrire une spec, un écran ou un texte : appliquer, s'ils existent, `do
 
 Les modèles des fichiers du projet sont fournis dans le contexte de chaque commande ; on peut aussi les afficher avec `pulse-aidd modele <fichier>`.
 Les outils `pulse-aidd` et `pulse-pile-<id>` se lancent avec l'outil Bash (Git Bash sous Windows), où s'appliquent les autorisations des commandes ; depuis PowerShell, leur relais `.ps1` les lance aussi, arguments intacts (si une stratégie d'entreprise bloque les scripts PowerShell : outil Bash).
-La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite <familles>`, celles de la règle de choix du sommaire (règle 12).
+La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite <familles>`, celles que nomme la règle de choix (affichée par la commande sans famille ; règle 12).
 L'état des scénarios des specs (testés, sans test, manuels) s'affiche avec `pulse-aidd scenarios`. La méthode de tests (stratégie, écriture, niveaux, TDD, scénarios Gherkin) s'affiche avec `pulse-aidd tests <morceaux>` ; la procédure des tests d'abord (option `-t`) avec `pulse-aidd reference tests-automatiques.md`.
 Les conventions Git (commits, branches, demandes de fusion) s'affichent avec `pulse-aidd reference git.md`.
 La checklist sécurité s'affiche avec `pulse-aidd reference checklist-securite.md`.
