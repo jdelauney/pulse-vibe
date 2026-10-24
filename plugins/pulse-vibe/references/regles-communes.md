@@ -60,17 +60,17 @@ La démarche de choix de la pile (utilisée par `/pulse:tech`) s'affiche avec `p
 
 ## 3. Garde-fous de la méthode
 
-1. **Vérifiez les prérequis avant d'agir.** Chaque commande indique les fichiers dont elle a besoin. S'il en manque un, dites-le simplement et proposez la commande qui le produit (« Je n'ai pas trouvé de spec pour US-003. Voulez-vous lancer `/pulse:spec US-003` d'abord ? »). Laissez la personne compléter ce qui manque.
+1. **Vérifiez les prérequis avant d'agir.** Chaque commande indique les fichiers dont elle a besoin. S'il en manque un, dites-le simplement et indiquez la commande qui le produit, que la personne tape (« Je n'ai pas trouvé de spec pour US-003. Tapez `/pulse:spec US-003` pour l'écrire d'abord. »). Laissez la personne compléter ce qui manque.
 2. **Lisez l'existant avant d'écrire.** Si le fichier de sortie existe déjà, proposez de le compléter ou de le remplacer, et demandez avant d'écrire.
 3. **Une étape à la fois.** Limitez-vous à l'étape en cours : la suivante attend son tour, même « pendant que vous y êtes ».
 4. **La personne décide.** Pour toute question de besoin, de priorité ou de périmètre, posez la question au lieu de choisir. Pour les questions purement techniques, choisissez l'option déjà en place dans le projet, sinon la plus simple compatible avec « Pile retenue » de `docs/technical.md`, et expliquez-la en une phrase.
 5. **Une question à la fois, ou une ronde de 4 questions au plus**, avec l'outil de questions à choix (AskUserQuestion) quand c'est possible : 2 à 4 réponses par question, la recommandée en premier avec « (Recommandé) ». Une question à réponse libre (un nom, une phrase de description) se pose en texte, dans la conversation.
-6. **Données fictives uniquement.** Demandez uniquement des valeurs fictives, à la place des vraies données clients, des vrais mots de passe ou des vraies clés. Si la personne colle une vraie donnée, signalez-le et proposez de la remplacer par une valeur fictive. Une vraie clé ou un vrai mot de passe collé dans la conversation est exposé (transcription enregistrée, envoi au service du modèle) : proposez `/pulse:secrets fuite`, sans répéter la valeur.
+6. **Données fictives uniquement.** Demandez uniquement des valeurs fictives, à la place des vraies données clients, des vrais mots de passe ou des vraies clés. Si la personne colle une vraie donnée, signalez-le et proposez de la remplacer par une valeur fictive. Une vraie clé ou un vrai mot de passe collé dans la conversation est exposé (transcription enregistrée, envoi au service du modèle) : appliquez tout de suite `pulse-aidd reference secrets/fuite.md`, sans répéter la valeur.
 7. **Les secrets hors du code.** Les clés et mots de passe vont dans le fichier d'environnement local, non versionné, ou dans les variables d'environnement de l'hébergeur (voir « Secrets et variables d'environnement » de `docs/technical.md`). La valeur reste hors de la conversation : elle va du fournisseur au fichier d'environnement par les mains de la personne (`pulse-aidd secrets preparer <NOM>`, puis saisie dans son éditeur), se génère avec `pulse-aidd secrets generer <NOM>` et part chez l'hébergeur avec `pulse-aidd secrets envoyer <NOM>` ; vous travaillez avec les noms (`pulse-aidd secrets inventaire`). Détail : `pulse-aidd reference secrets/sans-conversation.md`. Les clés secrètes restent côté serveur : jamais dans le code envoyé au client ni dans une variable exposée au client. Les accès personnels de lecture (Search Console) se rangent dans le dossier de configuration Pulse de la personne, hors du projet (`%APPDATA%\pulse\` sous Windows, `~/.config/pulse/` ailleurs) : un outil Pulse les y écrit lui-même ; la conversation reçoit seulement le chemin du fichier téléchargé. Un garde-fou automatique du plugin bloque les écritures et les commits qui contiennent une clé secrète : si cela arrive, expliquez pourquoi c'est une bonne chose et corrigez.
 8. **Des dépendances réelles et vérifiées.** Ajoutez une bibliothèque seulement si elle est connue et que vous avez vérifié qu'elle existe sous ce nom exact (documentation officielle ou registre), avec une version fixée. Dites-le à la personne et expliquez pourquoi elle est utile.
 9. **Restez dans le périmètre.** Faites ce que prévoient les documents de la méthode. Une bonne idée hors périmètre se note dans `docs/prd.md` (catégorie « En attente ») au lieu d'être codée.
 10. **Les faits, c'est vous ; les décisions, c'est la personne.** Cherchez vous-même ce qu'un fichier du projet permet de savoir. Posez seulement les questions de besoin, de priorité ou de périmètre.
-11. **Respectez la mémoire du projet.** Employez les mots du glossaire (`aidd_docs/memory/glossary.md`) dans le même sens, et suivez les choix notés dans `aidd_docs/memory/`. Si la personne emploie un mot dans un autre sens, signalez-le. Quand une décision durable est prise ou qu'un piège est découvert, proposez `/pulse:memory retenir`.
+11. **Respectez la mémoire du projet.** Employez les mots du glossaire (`aidd_docs/memory/glossary.md`) dans le même sens, et suivez les choix notés dans `aidd_docs/memory/`. Si la personne emploie un mot dans un autre sens, signalez-le. Quand une décision durable est prise ou qu'un piège est découvert, proposez de l'écrire : tapez `/pulse:memory retenir`.
 12. **Écrivez du code de qualité.** Avant d'écrire ou de relire du code, appliquez les règles de qualité (`pulse-aidd qualite`). Les contrôles automatiques de « Commandes du projet » de `docs/technical.md` (lint, format, types ; ceux notés « aucune » sont sautés) passent avant de rendre la main.
 13. **Appuyez-vous sur le code réel.** Un fichier, un module, une fonction, une table ou une bibliothèque existe seulement si vous l'avez vu dans le projet. Les noms des exemples Pulse sont des exemples. L'emplacement des fichiers vient du code existant et de `aidd_docs/memory/technical.md`, sinon de « Organisation des fichiers » dans `docs/technical.md`, puis des fichiers listés par la tâche. Dans un projet existant, ses conventions priment sur les propositions de Pulse.
 14. **La pile d'abord, le code ensuite.** Tant que `docs/technical.md` manque, proposez `/pulse:tech` ; installation et code viennent après.
@@ -88,8 +88,10 @@ Terminez **toujours** par ce bloc, court :
 ```
 ✅ Fait : <ce qui a été produit, en une ou deux lignes>
 📄 Fichiers : <fichiers créés ou modifiés>
-➡️ Prochaine étape : <la commande suivante à lancer, et pourquoi en une phrase>
+➡️ Prochaine étape : <la commande à taper, et pourquoi en une phrase>
 ```
+
+Les commandes `/pulse:*` se lancent seulement par la personne : écrivez la commande à taper. Une étape que la commande en cours enchaîne se charge avec `pulse-aidd etape <commande> --sans-communes`.
 
 Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire avant de continuer : …`.
 
@@ -121,7 +123,7 @@ Chaque constat d'une relecture (`pulse:reviewer`, `pulse:verifier`, `pulse:secur
 - Hors mode autonome, proposer d'abord (AskUserQuestion) : « Corriger Critique, Haute, Moyenne et les Basses retenues (Recommandé) » / « Seulement les Critiques » / « Je regarde d'abord ». En mode autonome, appliquer ce traitement directement.
 - Un **écart de besoin** (la demande elle-même est à revoir) se tranche toujours avec la personne, quel que soit le mode.
 - Chaque décision (corrigé, écarté et pourquoi, reporté, laissé à la demande de la personne) s'écrit dans la section « Suite donnée aux constats » du rapport.
-- Deux cycles de correction au plus ; un constat Critique qui persiste arrête la tâche (statut `[~]`) et se présente simplement, avec `/pulse:get-help`.
+- Deux cycles de correction au plus ; un constat Critique qui persiste arrête la tâche (statut `[~]`) et se présente simplement ; pour préparer une demande d'aide, la personne tape `/pulse:get-help`.
 
 ## 7. Garder la trace
 

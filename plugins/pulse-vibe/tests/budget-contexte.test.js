@@ -31,21 +31,21 @@ const PLAFONDS = {
   brainstorm: 34000, // mesure 31 945
   tech: 60500, // mesure 57 222
   memory: 32000, // mesure 30 261
-  spirc: 34000, // mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
+  spirc: 34500, // mesure 34 020 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
   express: 40500, // mesure 38 394
   prd: 28500, // mesure 26 982
   us: 30500, // mesure 28 742
   spec: 35500, // mesure 33 492
   plan: 50500, // mesure 47 800
-  implement: 45000, // mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  implement: 45500, // mesure 45 116 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 24000, // mesure 22 408
-  review: 32500, // mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  review: 33000, // mesure 32 792 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   commit: 39500, // mesure 39 088 (pulse 0.49+ : annonce de l'accord avant git remote add dans depot-distant.md, envoi forcé refusé dans git.md)
   pr: 32000, // mesure 30 391
-  annuler: 38500, // mesure 36 358
-  "get-help": 23500, // mesure 22 362
-  cicd: 39500, // mesure 37 332
-  deploy: 36000, // mesure 33 877
+  annuler: 39000, // mesure 38 553 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 36 358
+  "get-help": 24000, // mesure 23 797 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 22 362
+  cicd: 40000, // mesure 39 527 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 37 332
+  deploy: 36500, // mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
   security: 39500, // mesure 37 291
   secrets: 39000, // mesure 36 989
   refine: 46500, // mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
@@ -57,9 +57,9 @@ const PLAFONDS = {
   learn: 36000, // mesure 34 226
   explain: 24000, // mesure 22 408
   test: 43500, // mesure 43 019 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
-  "auto-fix": 22500, // mesure 21 180
+  "auto-fix": 23000, // mesure 22 615 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 21 180
   status: 25000, // mesure 23 367 (28 764 avant la tâche 11 : le tableau des fichiers du projet se charge à la demande)
-  guide: 30500, // mesure 28 747
+  guide: 31000, // mesure 30 535 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 28 747
 };
 
 // Étapes enchaînées par les orchestrateurs, sans les règles communes déjà chargées.
@@ -76,34 +76,34 @@ const PLAFONDS_COMMANDE = {
   annuler: 48500, // mesure 45 775
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
   brainstorm: 44500, // mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
-  cicd: 51000, // mesure 48 229
-  commit: 51000, // mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  deploy: 52000, // mesure 49 125
+  cicd: 51500, // mesure 51 031 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 48 229
+  commit: 51500, // mesure 51 100 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  deploy: 52500, // mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
   explain: 29000, // mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 53500, // mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
   fix: 35500, // mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 29500, // mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
-  guide: 34500, // mesure 32 577
+  guide: 35000, // mesure 34 661 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 577
   implement: 64000, // mesure 60 878 (pulse 0.47 : la boucle sur tout le plan chargée seulement sans tâche, skills/implement/references/boucle.md)
   init: 69500, // mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
-  learn: 41500, // mesure 39 206
-  memory: 41000, // mesure 38 661
+  learn: 42000, // mesure 41 613 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 39 206
+  memory: 41500, // mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
   perf: 57500, // mesure 54 519
   plan: 66500, // mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 41000, // mesure 38 807
-  prd: 34000, // mesure 32 244
+  prd: 34500, // mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
   rediger: 34500, // mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 54500, // mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 40000, // mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 56000, // mesure 52 989
   secrets: 50000, // mesure 47 290
-  security: 46000, // mesure 43 499
+  security: 46500, // mesure 46 122 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 43 499
   seo: 61000, // mesure 57 741
   spec: 51000, // mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 72000, // mesure 71 538 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
+  spirc: 72500, // mesure 72 108 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 71 538 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
   status: 36500, // mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
-  tech: 79500, // mesure 75 338
-  test: 49500, // mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
+  tech: 80000, // mesure 79 604 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 75 338
+  test: 50000, // mesure 49 776 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 81500, // mesure 77 215
   us: 41000, // mesure 38 722
 };
@@ -117,7 +117,7 @@ const BOUCLES = {
   },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 88500, // mesure 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+    plafond: 89000, // mesure 88 728 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
 };

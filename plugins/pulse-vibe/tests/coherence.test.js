@@ -1475,6 +1475,36 @@ test("correction ciblée : l'implementer reçoit les constats et charge leurs fa
   for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /familles de qualité de la tâche/, skill);
 });
 
+// Aucune commande n'en lance une autre : les commandes /pulse:* ont disable-model-invocation: true.
+// Une commande enchaîne une étape avec `pulse-aidd etape <commande> --sans-communes`, ou écrit « tapez `/pulse:…` ».
+// Formes interdites (un verbe d'action adressé au modèle devant la commande) ; permis : une ligne qui dit « tapez »/« taper »,
+// et les lignes « Prochaine étape ».
+const LIGNE_PERMISE = /tapez|taper|Prochaine étape/i;
+const RENVOIS_INTERDITS = [
+  [/\b(?:lancer|enchaînez sur)\b[^`\n.]{0,25}`\/pulse:/, "lancer / enchaîner sur une commande", "Voulez-vous lancer `/pulse:spec US-003` d'abord ?"],
+  [/\bavec `\/pulse:(?:fix|auto-fix|get-help)\b/, "corriger ou demander de l'aide « avec /pulse:… »", "un par un, avec `/pulse:fix`"],
+  [/\bcorriger[^`\n]{0,20}\((?:ou )?`\/pulse:(?:fix|auto-fix)\b/, "corriger par /pulse:fix ou /pulse:auto-fix", "corriger (ou `/pulse:fix`)"],
+  [/erreurs : `\/pulse:auto-fix\b/, "beaucoup d'erreurs : /pulse:auto-fix", "s'il reste beaucoup d'erreurs : `/pulse:auto-fix`"],
+  [/\bpuis ?: ?`\/pulse:commit`/, "puis /pulse:commit", "puis : `/pulse:commit`, `git push`"],
+  [/\bpropos(?:er|ez) d'abord `\/pulse:review`/, "proposer d'abord /pulse:review", "proposer d'abord `/pulse:review` puis"],
+  [/« [^»\n]*`\/pulse:[^`\n]*` \(Recommandé\)/, "réponse proposée qui contient la commande", "« Reprendre avec `/pulse:init` (Recommandé) »"],
+  [/Recommandé\) » \(`\/pulse:/, "réponse proposée suivie de la commande", "« La reprendre (Recommandé) » (`/pulse:spirc US-XXX`)"],
+  [/(?:\bproposez|enchaînez sur) `\/pulse:secrets fuite\b|\bpropos(?:er|ez) `\/pulse:memory retenir\b/, "fuite ou mémoire lancée par une commande", "proposez `/pulse:secrets fuite`"],
+  [/\(`\/pulse:memory retenir`\)/, "mémoire lancée par une commande", "fichier de décision (`/pulse:memory retenir`)"],
+];
+test("aucune commande n'en lance une autre : elle enchaîne une étape ou fait taper la suivante", () => {
+  for (const [forme, nom, exemple] of RENVOIS_INTERDITS) assert.match(exemple, forme, `la forme « ${nom} » reconnaît son exemple`);
+  const fautifs = [];
+  for (const { fichier, texte } of TEXTES) {
+    if (!/(^|[\\/])(skills|agents|references)[\\/]/.test(fichier)) continue;
+    texte.split("\n").forEach((ligne, i) => {
+      if (LIGNE_PERMISE.test(ligne)) return;
+      for (const [forme, nom] of RENVOIS_INTERDITS) if (forme.test(ligne)) fautifs.push(`${fichier}:${i + 1} (${nom})`);
+    });
+  }
+  assert.deepStrictEqual(fautifs, []);
+});
+
 test("une correction garde clean-code et la sécurité du code dès qu'elle touche le serveur", () => {
   assert.match(lire(RACINE, "agents", "implementer.md"), /Pour une correction : `clean-code`, les familles des constats reçus, et `securite` dès que la correction touche/);
 });
