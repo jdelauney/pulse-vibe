@@ -41,7 +41,7 @@ Fichiers de cette commande : [assets/spec.md](assets/spec.md).
 
 ### 0. Identifier l'US
 
-Lire l'argument (règles « User stories, specs et plans » ci-dessus) :
+Lire l'argument (règles des tâches) :
 - **un identifiant d'US** (`US-003`) : retrouver l'US dans `docs/user-stories.md` et son fichier `aidd_docs/tasks/<epic>/US-003-<nom>.md`. Introuvable : lister les US proches et demander.
 - **plusieurs identifiants** (une liste ou une plage) : une spec **par US**. Les traiter l'une après l'autre, dans l'ordre de réalisation du référentiel, en appliquant tout le déroulé (brouillon, questions, validation) à chacune.
 - **une description** (« ajouter un filtre par date ») : chercher l'US qui la couvre déjà.

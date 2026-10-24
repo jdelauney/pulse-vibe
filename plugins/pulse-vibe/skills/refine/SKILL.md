@@ -25,7 +25,7 @@ Arguments reçus : `$ARGUMENTS` (l'US dont on ajuste le plan, facultative, puis 
 
 ### Prérequis
 
-- **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Absent : demander lequel, en premier celui qui a une tâche `[~]`. Aucun plan : proposer `/pulse:plan`.
+- **Le plan** : celui de l'US désignée en premier argument (règles des tâches). Absent : demander lequel, en premier celui qui a une tâche `[~]`. Aucun plan : proposer `/pulse:plan`.
 - Remarques vides : demander (AskUserQuestion) « Qu'aimeriez-vous changer dans le plan ? » avec des réponses types : « Une tâche est floue » / « Je veux changer l'ordre » / « Je veux ajouter quelque chose » / « Une tâche est de trop ».
 
 ## Processus

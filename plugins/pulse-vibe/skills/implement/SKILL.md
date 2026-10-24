@@ -41,7 +41,7 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 
 ### Prérequis
 
-- **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
+- **Le plan** : celui de l'US désignée en premier argument (règles des tâches). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
 - La spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : proposer `/pulse:tech`, et attendre le choix de la pile pour installer ou coder.
 - Si des modifications non enregistrées concernent **une autre tâche** (`git status`), avec l'accord de la personne, appliquer d'abord l'étape **review** puis **commit** (`pulse-aidd etape review --sans-communes`, `pulse-aidd etape commit --sans-communes`) pour celle-ci. Un commit = une seule tâche.
 - Mode « tout le plan » : le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.

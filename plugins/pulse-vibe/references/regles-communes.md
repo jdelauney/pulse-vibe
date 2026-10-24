@@ -74,7 +74,7 @@ Terminez **toujours** par ce bloc, court :
 ➡️ Prochaine étape : <la commande à taper, et pourquoi en une phrase>
 ```
 
-Les commandes `/pulse:*` se lancent seulement par la personne : écrivez la commande à taper. Une étape que la commande en cours enchaîne se charge avec `pulse-aidd etape <commande> --sans-communes`.
+Les commandes `/pulse:*` se lancent seulement par la personne : écrivez la commande à taper. Une étape que la commande en cours enchaîne se charge avec `pulse-aidd etape <commande> --sans-communes` (la commande a déjà les modules de l'étape) ou `--sans-noyau` (l'étape garde ses modules).
 
 Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire avant de continuer : …`.
 

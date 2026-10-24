@@ -31,7 +31,7 @@ Sans pack de pile capable d'envoyer à l'hébergeur : la personne colle la valeu
 - Le garde-fou du plugin refuse la lecture de `.env` par les outils de Claude Code et par les commandes qui affichent un fichier (`cat`, `type`, `Get-Content`, `grep`…). `.env.example` reste lisible.
 - La règle de Claude Code `permissions.deny` (« `Read(./.env)` », « `Read(./.env.local)` », « `Read(./.env.*.local)` », « `Read(./.env.envoi)` » dans `.claude/settings.json` ; `.env.example` reste lisible, car les recettes y ajoutent des noms) ajoute une seconde protection : proposez-la quand l'inventaire signale qu'elle manque.
 - Les scripts de Pulse lisent `.env` dans un processus à part et n'affichent que des statuts.
-- Les accès personnels de lecture (Search Console) se rangent dans le dossier de configuration Pulse de la personne, hors du projet (`%APPDATA%pulse` sous Windows, `~/.config/pulse/` ailleurs) : un outil Pulse les y écrit lui-même ; la conversation reçoit seulement le chemin du fichier téléchargé.
+- Les accès personnels de lecture (Search Console) se rangent hors du projet, dans le dossier de configuration Pulse de la personne : `pulse-aidd reference search-console/search-console.md`.
 
 ## Si une valeur arrive quand même dans la conversation
 
