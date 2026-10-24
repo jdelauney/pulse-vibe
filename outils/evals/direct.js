@@ -73,10 +73,15 @@ function lireCas(dossier) {
   };
 }
 
-/** Les appels d'outils de la trace (sous-agents compris), dans l'ordre, et le texte de la dernière réponse. */
+/** Une commande lancée qui a fini en échec (« Exit code N ») a bien tourné : ce n'est pas un refus. */
+const finDeCommande = (contenu) => /^Exit code [0-9]+/.test(typeof contenu === "string" ? contenu : JSON.stringify(contenu || ""));
+
+/** Les appels d'outils de la trace (sous-agents compris), dans l'ordre, et le texte de la dernière réponse.
+ *  Un appel dont le résultat est une erreur (refus d'un garde-fou compris) est marqué refuse : il n'a rien fait. */
 function lireTrace(fichier) {
   const appels = [];
   const vus = new Set();
+  const parId = new Map();
   let reponse = "";
   for (const ligne of fs.readFileSync(fichier, "utf8").split("\n")) {
     let o;
@@ -86,11 +91,21 @@ function lireTrace(fichier) {
       continue;
     }
     if (o.type === "result") reponse = o.result || "";
-    if (o.type !== "assistant" || !o.message) continue;
-    for (const bloc of Array.isArray(o.message.content) ? o.message.content : []) {
+    if (!o.message) continue;
+    const blocs = Array.isArray(o.message.content) ? o.message.content : [];
+    if (o.type === "user") {
+      for (const bloc of blocs) {
+        const appel = bloc.type === "tool_result" && bloc.is_error === true ? parId.get(bloc.tool_use_id) : null;
+        if (appel && !finDeCommande(bloc.content)) appel.refuse = true;
+      }
+    }
+    if (o.type !== "assistant") continue;
+    for (const bloc of blocs) {
       if (bloc.type !== "tool_use" || vus.has(bloc.id)) continue;
       vus.add(bloc.id);
-      appels.push({ outil: bloc.name, entree: JSON.stringify(bloc.input || {}) });
+      const appel = { outil: bloc.name, entree: JSON.stringify(bloc.input || {}), refuse: false };
+      appels.push(appel);
+      parId.set(bloc.id, appel);
     }
   }
   return { appels, reponse };
@@ -100,7 +115,8 @@ const correspond = (appel, { tool, input_match: motif }) => appel.outil === tool
 
 /** Les vérifications notées sur la trace : réussi true/false, ou null (juge IA, non noté) ; score sur les notées. */
 function noter(fichier, verifications, dossierProjet = null) {
-  const { appels, reponse } = lireTrace(fichier);
+  const { appels: tous, reponse } = lireTrace(fichier);
+  const appels = tous.filter((a) => !a.refuse);
   const details = verifications.map((v) => {
     let reussi = null;
     if (v.type === "tool_used") reussi = appels.some((a) => correspond(a, v));
