@@ -101,6 +101,18 @@ test("lire et rappel : où on en est", () => {
   assert.strictEqual(lire(d).questions, 1);
 });
 
+test("rappel : redonne la commande à recharger (une compaction ne garde que le début du skill)", () => {
+  const { rappel } = require(SCRIPT);
+  for (const commande of ["spirc", "implement"]) {
+    const d = projet();
+    lancer(d, "debut", "US-003", "--commande", commande, "--rythme", "rapide");
+    assert.match(rappel(d), new RegExp(`Rechargez les instructions : \`pulse-aidd etape ${commande}\``));
+  }
+  const d = projet();
+  lancer(d, "debut", "US-003", "--rythme", "rapide");
+  assert.ok(!/Rechargez/.test(rappel(d)), "sans commande connue, pas de rechargement");
+});
+
 test("--rappel affiche le rappel", () => {
   const d = projet();
   assert.strictEqual(lancer(d, "--rappel").stdout, "");
