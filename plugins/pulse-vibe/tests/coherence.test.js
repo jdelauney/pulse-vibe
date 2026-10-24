@@ -1212,10 +1212,34 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   assert.match(spirc, /y compris une reprise[^\n]*ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler »/);
   assert.match(spirc, /avant la première tâche, le test groupé ou la fin/);
   const groupe = spirc.slice(spirc.indexOf("## Test groupé"), spirc.indexOf("## Références de la commande"));
-  assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 2, "test groupé et fin rappellent le rechargement");
+  // Une seule règle de rechargement (la boucle par tâche) : ni le test groupé ni la fin ne la répètent.
+  assert.equal((spirc.match(/ne figurent (?:pas|plus) dans la conversation/g) || []).length, 1, "une seule règle de rechargement");
+  assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 0, "ni le test groupé ni la fin ne rappellent le rechargement");
+  assert.doesNotMatch(spirc, /Références de la réalisation chargées ; sinon les relancer/);
   const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
   assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
+});
+
+test("spirc : l'analyse d'une demande libre est une référence, -d est un raccourci, chaque référence de la réalisation se charge par son appel", () => {
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  const analyse = spirc.slice(spirc.indexOf("### [A] Analyser"), spirc.indexOf("### [S] Spécifier"));
+  assert.match(analyse, /pulse-aidd reference spirc\/analyser\.md/);
+  assert.ok(analyse.length < 600, "l'analyse détaillée n'est plus dans le SKILL.md");
+  const analyser = lire(RACINE, "skills", "spirc", "references", "analyser.md");
+  for (const t of ["Situer la demande", "Clarifier ce qui change ce qui sera construit", "Écrire le contrat"]) assert.ok(analyser.includes(t), t);
+  assert.match(analyser, /éléguer la demande à `pulse:explorer`/);
+  // -d : raccourci seulement, absent de la ronde de départ.
+  assert.match(spirc, /^- `-d` \*\*devant vous\*\*/m);
+  const ronde = spirc.split("**Ronde de départ**")[1].split("\n\n**Portée**")[0];
+  assert.doesNotMatch(ronde, /`-d`/, "-d n'est pas une question de la ronde de départ");
+  assert.match(spirc, /coder une tâche soi-même, sauf avec `-d`/);
+  // Chaque référence de la réalisation : son propre appel, pas de chaîne.
+  const charge = spirc.split("**Charger une seule fois les références de la réalisation**")[1].split("\n")[0];
+  for (const ref of ["pulse-aidd etape commit --sans-communes", "pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference tests-dabord.md"])
+    assert.ok(charge.includes("`" + ref + "`"), ref);
+  assert.match(charge, /chacune par son propre appel/);
+  assert.doesNotMatch(charge, /&&|\|/, "aucune chaîne ni tube");
 });
 
 // ---------------------------------------------------------------- Références atteignables
