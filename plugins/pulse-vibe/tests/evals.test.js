@@ -124,7 +124,7 @@ test("le lanceur assemble le pack Next quand PACK=next", () => {
     const r = spawnSync("bash", [relais.split(path.sep).join("/"), "info"], { encoding: "utf8" });
     assert.match(r.stdout, /^id: next$/m, r.stderr);
   }
-  const sansPack = lanceur.assembler(racine, EVALS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-cœur-")));
+  const sansPack = lanceur.assembler(racine, EVALS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-coeur-")));
   assert.ok(!fs.existsSync(path.join(sansPack, "bin", "pulse-pile-next")));
 });
 
