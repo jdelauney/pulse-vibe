@@ -8,18 +8,14 @@ allowed-tools: Bash(pulse-aidd contexte us) Bash(pulse-aidd reference *) Bash(pu
 
 ## Objectif
 
-Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles des tâches chargées dans « Contexte »). Expliquer en deux phrases :
+Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles des tâches chargées en fin de fichier, dans « Références de la commande »). Expliquer en deux phrases :
 « Une user story décrit un besoin du point de vue de l'utilisateur. Ses critères d'acceptation, écrits sous la forme Étant donné… Lorsque… Alors…, sont ce qui permettra de vérifier que l'IA a codé exactement ce que vous vouliez. »
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte us`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.
 
 ### Prérequis
 
@@ -100,3 +96,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XX
 
 - `/pulse:us` : les groupes proposés à valider, puis chaque user story résumée avec ses critères ; après « Valider et sauvegarder », un fichier par user story et le référentiel `docs/user-stories.md`.
 - `/pulse:us` quand `docs/user-stories.md` existe déjà : la question « le compléter ou le refaire ? » ; le compléter garde les numéros existants.
+
+## Références de la commande
+
+!`pulse-aidd contexte us`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.

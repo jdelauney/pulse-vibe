@@ -13,9 +13,9 @@ Aider la personne à **voir** et choisir l'apparence de son outil, puis à la so
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les quatre références de design ont pour titres « Registres d'interface », « Règles d'interface », « Anti-patterns d'interface » (la « liste noire ») et « Motifs d'écrans » ; on peut les réafficher avec `pulse-aidd reference ui/<fichier>`.
 
@@ -24,10 +24,6 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
 **Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe réellement dans `aidd_docs/tasks/<epic>/`. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
 
 ## Contexte
-
-!`pulse-aidd contexte ui`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS`
 
@@ -164,3 +160,9 @@ En cas d'échec, afficher le chemin complet et dire : « Double-cliquez sur ce f
 - `/pulse:ui identite` : quelques questions sur votre outil, puis 2 ou 3 apparences à comparer dans votre navigateur ; vous choisissez, et `docs/design.md` est écrit.
 - `/pulse:ui maquettes US-003` : 3 versions des écrans de cette user story, côte à côte ; vous gardez celle qui vous plaît.
 - `/pulse:ui audit` : un rapport de ce qui cloche dans l'interface, sans rien modifier ; `/pulse:ui polish` applique ensuite les corrections que vous choisissez.
+
+## Références de la commande
+
+!`pulse-aidd contexte ui`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.

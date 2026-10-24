@@ -16,13 +16,9 @@ Analogie à donner : « C'est comme un document partagé qui se met à jour tout
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte deploy`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie.
 
 Mode demandé (facultatif) : `$ARGUMENTS`
 
@@ -119,3 +115,9 @@ Terminer avec le bloc de fin de commande, en indiquant l'adresse du site, le ré
 - `/pulse:deploy` la première fois : les vérifications, puis un guidage pas à pas chez l'hébergeur ; à la fin, l'adresse de votre site et la preuve qu'il répond.
 - `/pulse:deploy` ensuite : votre dernière version est envoyée, l'hébergeur la publie toute seule, et la nouveauté est vérifiée en ligne.
 - `/pulse:deploy production` : un contrôle automatique avant chaque mise en ligne, les clés secrètes et les réglages enregistrés chez l'hébergeur, et une surveillance du site.
+
+## Références de la commande
+
+!`pulse-aidd contexte deploy`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie.

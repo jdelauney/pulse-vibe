@@ -13,7 +13,7 @@ Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spe
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Règles de découpage
 
@@ -26,7 +26,7 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
    - enfin, **seulement** dans le plan de la **dernière US Indispensable du parcours** (`docs/user-stories.md`) : si « Être trouvé » de `docs/prd.md` répond oui, une tâche **« Fondations du référencement »** (`/pulse:seo bases` ; recette `seo` d'un pack de pile), puis la tâche **« Mettre en ligne la première version »** · — (elle dépend de toutes les tâches des US Indispensables). Pour les autres plans, la mise en ligne se fait avec `/pulse:deploy` une fois le plan terminé.
 4. **Données** : la création du stockage et de son contrôle d'accès (selon « Données et contrôle d'accès » de `docs/technical.md`) fait partie de la **première tranche qui en a besoin** (ex. « Créer une demande et la voir dans ma liste, enregistrée »), plutôt que d'une tâche « base de données » séparée.
 5. **Actions manuelles** : les tâches qui demandent une action de la personne, selon la pile retenue (appliquer un schéma dans la console du fournisseur de données, créer un compte de service, saisir une variable d'environnement chez l'hébergeur, écrire une clé secrète dans le fichier local), le précisent dans une ligne `- Action manuelle : …` (le guide de réalisation la met en évidence ; au moment de la tâche, elle se donne pas à pas selon la référence « Les gestes de la personne »).
-6. Chaque tâche porte l'identifiant de l'US (`- [ ] **Tn – Titre** · US-XXX`) et indique : l'**objectif** du point de vue de l'utilisateur, la tâche dont elle **dépend** (dans ce plan ou dans le plan d'une autre US), les **fichiers** concernés (à créer / à modifier, repris de « Fichiers » de la conception technique), la **vérification** (le ou les critères d'acceptation à tester à la main, par identifiant d'US et numéro de critère), les **tests** automatiques (ligne `- Tests : …` : les scénarios de la spec que la tâche réalise, désignés par leur titre ou leur étiquette de critère, avec leur niveau selon la référence « Stratégie de tests » (chargée dans « Contexte ») ; « aucun » pour une tâche sans décision à tester, comme la mise en place ou une mise en page) et, si besoin, une ligne `- Attention : …` pour un point délicat repris des « Points d'attention » du plan (une action de la personne va, elle, dans `Action manuelle`).
+6. Chaque tâche porte l'identifiant de l'US (`- [ ] **Tn – Titre** · US-XXX`) et indique : l'**objectif** du point de vue de l'utilisateur, la tâche dont elle **dépend** (dans ce plan ou dans le plan d'une autre US), les **fichiers** concernés (à créer / à modifier, repris de « Fichiers » de la conception technique), la **vérification** (le ou les critères d'acceptation à tester à la main, par identifiant d'US et numéro de critère), les **tests** automatiques (ligne `- Tests : …` : les scénarios de la spec que la tâche réalise, désignés par leur titre ou leur étiquette de critère, avec leur niveau selon la référence « Stratégie de tests » (chargée en fin de fichier, dans « Références de la commande ») ; « aucun » pour une tâche sans décision à tester, comme la mise en place ou une mise en page) et, si besoin, une ligne `- Attention : …` pour un point délicat repris des « Points d'attention » du plan (une action de la personne va, elle, dans `Action manuelle`).
 7. Si la conception cite une maquette, une tâche qui réalise un écran maquetté cite la maquette dans sa ligne « Vérification » (« conforme à `docs/design/maquettes/US-XXX-<nom>/retenue/` »).
 8. **Autour des tâches** : la vue d'ensemble (US, epic, **priorité** reprise du référentiel : le guide de réalisation s'en sert pour ordonner les plans ; **Envoi** : « à choisir », il se décide au démarrage de la réalisation), le schéma « Ordre des tâches » (une flèche par dépendance ; seulement pour un plan de plusieurs tâches), « Avant de commencer » (comptes ou accès à obtenir), la phrase « US terminée quand : … » sous `## Tâches`, et les « Points d'attention » rattachés à leurs tâches. Ces éléments restent hors de la liste des tâches : le guide de réalisation lit seulement les lignes `- [ ] **Tn – …**` de `## Tâches` et leurs détails.
 9. **En parallèle avec** : la liste des US dont le plan est encore en cours (au moins une tâche `[ ]` ou `[~]`) et qui peuvent avancer **en même temps** que celle-ci, chacune dans sa session et son worktree. Deux US sont **indépendantes** quand toutes ces conditions sont réunies :
@@ -37,10 +37,6 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
    Dans le doute, les traiter comme dépendantes : un conflit de fusion coûte plus cher que le temps gagné. La relation vaut dans les deux sens : mettre à jour aussi la ligne « En parallèle avec » des plans concernés (seulement cette ligne, avec l'accord donné à l'étape 3).
 
 ## Contexte
-
-!`pulse-aidd contexte plan`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.
 
 US (ou spec) à traiter : `$ARGUMENTS`
 
@@ -85,3 +81,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape recommandée : `/puls
 - `/pulse:plan US-003` : la conception et 3 tâches présentées en quelques lignes ; après votre accord, le plan est écrit à côté de la spec.
 - `/pulse:plan` sans argument : la liste des specs qui attendent leur plan, et la question « laquelle traiter ? ».
 - `/pulse:plan US-005` alors que sa spec est encore en brouillon : la commande vous propose de la terminer d'abord avec `/pulse:spec US-005`.
+
+## Références de la commande
+
+!`pulse-aidd contexte plan`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.

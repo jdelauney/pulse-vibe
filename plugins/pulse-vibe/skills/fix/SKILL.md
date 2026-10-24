@@ -15,13 +15,9 @@ Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-f
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte fix`
-
-Les règles de qualité du code se chargent à l'étape 3, par famille. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
 
 Problème signalé : `$ARGUMENTS`
 
@@ -108,3 +104,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si 
 
 - `/pulse:fix "le bouton Ajouter ne fait rien"` : la cause dite en une phrase, la correction, puis vous refaites l'action pour confirmer que tout fonctionne.
 - `/pulse:fix` sans argument : une seule ronde de questions (« Que faisiez-vous ? », « Y a-t-il un message en rouge ? ») avant toute recherche.
+
+## Références de la commande
+
+!`pulse-aidd contexte fix`
+
+Les règles de qualité du code se chargent à l'étape 3, par famille. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.

@@ -15,13 +15,9 @@ La rapidité vient du regroupement des questions et des déductions que Pulse fa
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte express`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte express` et lire sa sortie.
 
 Idée de départ (facultative), ou des documents à lire : `$ARGUMENTS`
 
@@ -117,3 +113,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc versi
 - `/pulse:express "un carnet de commandes pour ma boulangerie"` : quatre séries de questions, un seul écran récapitulatif à valider, puis le choix des outils et de l'apparence.
 - `/pulse:express docs/depart/` : vos documents (cahier des charges, maquettes) sont lus d'abord ; seules les questions sans réponse vous sont posées.
 - `/pulse:express` dans un projet déjà commencé : la proposition de reprendre là où il en est avec `/pulse:init`, ou de repartir de zéro avec votre accord.
+
+## Références de la commande
+
+!`pulse-aidd contexte express`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte express` et lire sa sortie.

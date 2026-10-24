@@ -13,9 +13,9 @@ Faire vivre à la personne ce que vit son visiteur, puis l'améliorer, chiffres 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée dans « Contexte ») pendant toute la commande.
+Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 Trois règles tiennent toute la commande (détails dans la référence) :
 - chaque chiffre dit sa **source** : simulation (laboratoire) ou vrais visiteurs (terrain), dans deux tableaux distincts ;
@@ -25,10 +25,6 @@ Trois règles tiennent toute la commande (détails dans la référence) :
 **Frontières**, à dire si la demande en sort : l'accessibilité réelle et l'apparence relèvent de `/pulse:ui audit` (le score d'accessibilité de Lighthouse n'en est qu'un indice) ; les en-têtes de sécurité, de `/pulse:security entetes` ; la lenteur côté serveur (requêtes en base, quotas) devient une ligne « côté serveur » du rapport, puis `/pulse:fix` ou une user story.
 
 ## Contexte
-
-!`pulse-aidd contexte perf`
-
-Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS`
 
@@ -117,3 +113,9 @@ Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il
 - `/pulse:perf` : 3 à 5 pages de votre site mesurées comme sur un téléphone moyen, une phrase de verdict par page et 3 priorités au plus, notées dans `docs/performance.md`.
 - `/pulse:perf corriger` : vous choisissez les priorités ; après la correction, la comparaison avant/après annonce seulement ce qui va vraiment mieux.
 - `/pulse:perf suivre` : un budget proposé à partir de la dernière mesure, puis, si vous l'acceptez, une vérification automatique chaque semaine.
+
+## Références de la commande
+
+!`pulse-aidd contexte perf`
+
+Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.

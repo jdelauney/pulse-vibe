@@ -13,22 +13,18 @@ Apprendre à la personne une **notion** de programmation (leçon, « expliquez-l
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Appliquer la « Pédagogie du professeur » (chargée dans « Contexte ») pendant toute la commande.
+Appliquer la « Pédagogie du professeur » (chargée en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Ce que la commande peut modifier
 
-- **Uniquement** le carnet `docs/apprentissage.md` (à créer après accord la première fois, à partir du modèle chargé dans « Contexte »).
+- **Uniquement** le carnet `docs/apprentissage.md` (à créer après accord la première fois, à partir du modèle chargé en fin de fichier, dans « Références de la commande »).
 - Le code et les documents du projet restent **intacts** : les exercices s'écrivent dans l'éditeur de la personne, hors du code du projet.
 
 ## Contexte
 
-!`pulse-aidd contexte learn`
-
 Date du jour : !`date +%Y-%m-%d`
-
-Si ce contexte est absent, lancer `pulse-aidd contexte learn` et lire sa sortie.
 
 Demande : `$ARGUMENTS`
 
@@ -89,3 +85,9 @@ Terminer par le bloc de fin de commande :
 - `/pulse:learn les variables` : une leçon d'un quart d'heure, illustrée avec votre projet, avec un petit exercice et la date du prochain rappel.
 - `/pulse:learn feynman les fonctions` : vous expliquez la notion avec vos mots ; le professeur repère ce qui coince et vous aide, par des questions, à le compléter vous-même.
 - `/pulse:learn` sans argument : les révisions du jour si des rappels sont dus, sinon la suite de votre parcours.
+
+## Références de la commande
+
+!`pulse-aidd contexte learn`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte learn` et lire sa sortie.

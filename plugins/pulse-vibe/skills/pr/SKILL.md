@@ -13,17 +13,13 @@ Phrase à dire la première fois : « Une branche, c'est une version parallèle 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Appliquer aussi les « Conventions Git » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi les « Conventions Git » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 Cette commande **laisse toujours la fusion à la personne**, envoie les commits normalement (`--force` interdit) et laisse le code et les documents du projet tels quels.
 
 ## Contexte
-
-!`pulse-aidd contexte pr`
-
-Si ce contexte est absent, lancer `pulse-aidd contexte pr` et lire sa sortie.
 
 Argument : `$ARGUMENTS`
 
@@ -104,3 +100,9 @@ Terminer avec le bloc de fin de commande. Fichiers : « aucun » (seulement Git 
 
 - `/pulse:pr branche US-003` : un nom de branche proposé (`feat/us-003-…`) ; après votre accord, vous y travaillez sans toucher au site en ligne.
 - `/pulse:pr` quand le travail est prêt : le titre et la description vous sont montrés ; après votre accord, l'envoi, puis la proposition en brouillon et son adresse sur le site du dépôt.
+
+## Références de la commande
+
+!`pulse-aidd contexte pr`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte pr` et lire sa sortie.

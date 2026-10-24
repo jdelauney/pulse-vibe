@@ -15,13 +15,9 @@ Vient en complément de la relecture (`/pulse:review`) et du test par la personn
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte auto-fix`
-
-Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.
 
 Option : `$ARGUMENTS` (`--detail` : afficher chaque erreur dans le rapport final)
 
@@ -102,3 +98,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pou
 - `/pulse:auto-fix` : les contrôles du projet relèvent 12 erreurs, plusieurs assistants les corrigent en même temps, puis tout est revérifié ; le rapport donne le nombre d'erreurs corrigées.
 - `/pulse:auto-fix --detail` : le même travail, avec la liste de chaque correction dans le rapport.
 - Une clé secrète écrite dans le code : la commande vous l'explique et vous la mettez à l'abri ensemble.
+
+## Références de la commande
+
+!`pulse-aidd contexte auto-fix`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.

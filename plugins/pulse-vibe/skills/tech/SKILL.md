@@ -20,13 +20,9 @@ Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **ap
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte tech`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference tech/choix-techniques.md` si la référence manque).
 
 Contrainte ou préférence exprimée (facultative) : `$ARGUMENTS`
 
@@ -132,3 +128,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : si `docs/design.md`
 - `/pulse:tech` dans un projet neuf : quelques questions sur votre besoin, puis 2 ou 3 options comparées avec une recommandation ; vous choisissez, et `docs/technical.md` est écrit.
 - `/pulse:tech` dans un projet qui a déjà du code : les outils utilisés, résumés en quelques lignes, à confirmer ou à corriger avant l'écriture.
 - `/pulse:tech "données hébergées en France"` : cette contrainte guide les options proposées.
+
+## Références de la commande
+
+!`pulse-aidd contexte tech`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference tech/choix-techniques.md` si la référence manque).
