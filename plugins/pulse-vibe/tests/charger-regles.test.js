@@ -1,4 +1,4 @@
-// Tests du chargement des règles par morceaux : pulse-aidd qualite [familles] [--checklists], pulse-aidd tests [morceaux],
+// Tests du chargement des règles par morceaux : pulse-aidd qualite <familles> [--tout] [--checklists], pulse-aidd tests <morceaux> [--tout] [--checklists],
 // la règle de travail sobre en tête, et les familles qu'un pack de pile déclare couvrir.
 // Lancer : node --test plugins/pulse-vibe/tests/charger-regles.test.js (nécessite bash dans le PATH)
 "use strict";
@@ -26,9 +26,21 @@ function dansLOrdre(sortie, titres) {
   return true;
 }
 
-test("qualite sans argument : les quatre familles, dans l'ordre, et la règle sobre en tête", () => {
+test("qualite sans famille : la règle de choix, sans aucune famille, sous 4 000 caractères", () => {
   const r = lancer(["qualite"]);
   assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 4000, String(r.stdout.length));
+  assert.ok(dansLOrdre(r.stdout, ["Travailler sobrement", "Règles de qualité du code"]), r.stdout.slice(0, 300));
+  assert.ok(r.stdout.includes("Relancez avec les familles utiles"));
+  for (const nom of ["clean-code", "composants", "securite", "organisation"]) assert.ok(r.stdout.includes(nom), nom);
+  assert.match(r.stdout, /`clean-code` toujours ; `composants` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier/);
+  for (const titre of ["Clean code", "Composants d'interface", "Sécurité du code", "Organisation des fichiers et nommage"]) assert.ok(!r.stdout.includes(`===== ${titre} =====`), titre);
+});
+
+test("qualite --tout : les quatre familles, dans l'ordre, et la règle sobre en tête", () => {
+  const r = lancer(["qualite", "--tout"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!r.stdout.includes("Relancez avec"));
   assert.ok(
     dansLOrdre(r.stdout, [
       "Travailler sobrement",
@@ -52,7 +64,7 @@ test("qualite clean-code securite : seulement ces familles", () => {
 });
 
 test("qualite --checklists : une checklist par famille, bien plus court", () => {
-  const complet = lancer(["qualite"]).stdout;
+  const complet = lancer(["qualite", "--tout"]).stdout;
   const r = lancer(["qualite", "--checklists"]);
   assert.strictEqual(r.status, 0, r.stderr);
   assert.strictEqual((r.stdout.match(/ : checklist =====/g) || []).length, 4, r.stdout.slice(0, 800));
@@ -100,10 +112,31 @@ const TITRES_TESTS = [
   "Scénarios Gherkin",
 ];
 
-test("tests sans argument : sortie actuelle, règle sobre en plus", () => {
+test("tests sans morceau : le sommaire et « Relancez avec les morceaux utiles », sous 4 000 caractères", () => {
   const r = lancer(["tests"]);
   assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 4000, String(r.stdout.length));
+  assert.ok(dansLOrdre(r.stdout, ["Travailler sobrement", "Stratégie de tests : sommaire"]), r.stdout.slice(0, 300));
+  assert.ok(r.stdout.includes("Relancez avec les morceaux utiles"));
+  for (const t of TITRES_TESTS) assert.ok(!r.stdout.includes(`===== ${t} =====`), t);
+});
+
+test("tests --tout : la méthode entière, règle sobre en plus", () => {
+  const r = lancer(["tests", "--tout"]);
+  assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(dansLOrdre(r.stdout, ["Travailler sobrement", "Stratégie de tests : sommaire", ...TITRES_TESTS]), r.stdout.slice(0, 500));
+  assert.ok(!r.stdout.includes("Relancez avec"));
+});
+
+test("tests ecrire unitaire --checklists : seulement des sections de contrôle", () => {
+  const r = lancer(["tests", "ecrire", "unitaire", "--checklists"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  const sections = r.stdout.split("\n").filter((l) => /^## /.test(l));
+  assert.ok(sections.length >= 3, sections.join("|"));
+  for (const l of sections) assert.match(l, /Checklist|Liste de contrôle|Signaux d'alerte/, l);
+  assert.ok(r.stdout.includes("===== Écrire un test : checklist ====="));
+  assert.ok(r.stdout.includes("===== Tests unitaires : checklist ====="));
+  assert.ok(!r.stdout.includes("===== Tests d'intégration"));
 });
 
 test("tests ecrire tdd gherkin unitaire : le nécessaire du test-writer", () => {
@@ -135,7 +168,7 @@ function dansLeProjet(args, { avecPack = true } = {}) {
 }
 
 test("pack qui couvre l'organisation : famille remplacée par un renvoi, sécurité gardée", { skip: !fs.existsSync(PACK_BIN) }, () => {
-  const r = dansLeProjet(["qualite"]);
+  const r = dansLeProjet(["qualite", "--tout"]);
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("Couverte par le pack Pulse Next.js"), r.stdout.slice(0, 300));
   assert.ok(!r.stdout.includes("## 5. Le code : des paliers progressifs"));
@@ -146,7 +179,7 @@ test("pack qui couvre l'organisation : famille remplacée par un renvoi, sécuri
 });
 
 test("pack non installé : organisation gardée", () => {
-  const r = dansLeProjet(["qualite"], { avecPack: false });
+  const r = dansLeProjet(["qualite", "--tout"], { avecPack: false });
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("## 5. Le code : des paliers progressifs"));
 });

@@ -226,3 +226,15 @@ Après :
 - [ ] La suite passe, dans n'importe quel ordre, et reste rapide.
 - [ ] Les règles métier et parcours critiques sont couverts (`tests/strategie.md` §3).
 - [ ] Un scénario de test inhabituel porte un commentaire qui explique pourquoi.
+
+## 13. Vocabulaire
+
+| Terme | Sens |
+|---|---|
+| **SUT** (*System Under Test*) | Ce qu'on teste ; par extension, l'objet de test qui l'enveloppe et expose des méthodes `given…`, `when…`, `then…` |
+| **Assertion** | Vérification automatique qui fait passer ou échouer le test |
+| **Doublure** | Remplaçant contrôlé d'une dépendance (factice, bouchon, espion, simulacre, faux) : `tests/ecrire-un-test.md` §8 |
+| **Jeu de données** (*fixture*) | Données de test prêtes à l'emploi, souvent produites par un constructeur avec valeurs par défaut |
+| **Frontière** | Point où le code du projet parle à l'extérieur : réseau, base, fichiers, horloge, hasard, service tiers |
+| **Test instable** (*flaky*) | Test qui passe ou échoue sans changement du code |
+| **DAMP** | *Descriptive And Meaningful Phrases* : un test se lit comme une phrase métier, quitte à répéter un peu |

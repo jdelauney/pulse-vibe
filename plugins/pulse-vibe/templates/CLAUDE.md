@@ -102,7 +102,7 @@ Le profil ci-dessous règle le niveau des explications, et le rythme de la réal
 
 ### Qualité du code
 
-Avant d'écrire ou de relire du code, chargez les règles de qualité avec `pulse-aidd qualite` (clean code, composants, sécurité du code). En cas de conflit, ce fichier et la mémoire du projet priment.
+Avant d'écrire ou de relire du code, chargez les familles utiles avec `pulse-aidd qualite <familles>` (la commande sans famille affiche la règle de choix). En cas de conflit, ce fichier et la mémoire du projet priment.
 
 ### Sécurité (non négociable)
 
