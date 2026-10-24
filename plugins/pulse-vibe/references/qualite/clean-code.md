@@ -140,14 +140,14 @@ Commentaires en français qui expliquent le *pourquoi* (intention, contrainte, p
 
 ## 12. Dépendances
 
-- **Une bibliothèque s'ajoute avec l'accord de la personne**, quand le langage ou la plateforme manque d'une solution simple ; sans cet accord, seules celles du fichier de dépendances du projet s'importent.
+- **Une bibliothèque s'ajoute avec l'accord de la personne**, seulement quand le langage ou la plateforme manque d'une solution simple ; sans cet accord, seules celles du fichier de dépendances du projet s'importent.
 - Elle **existe sous ce nom exact**, est maintenue et provient d'une source officielle (S8) : le nom se recopie depuis cette source, jamais deviné.
 - **Version fixée** (fichier de verrouillage enregistré, ou version explicite), plutôt qu'une « dernière version » implicite.
 - Son API : documentation officielle de la version installée, consultée à chaque fois.
 
 ## 13. Configuration
 
-- Une option de configuration s'ajoute **pour un problème constaté**, dans le fichier de configuration **déjà présent**, avec l'accord de la personne. Un nouveau fichier de configuration ou une dépendance répond à un besoin réel, au-delà d'une option « recommandée ».
+- Une option de configuration s'ajoute **seulement pour résoudre un problème constaté**, dans le fichier de configuration **déjà présent**, avec l'accord de la personne. Un nouveau fichier de configuration ou une dépendance répond à un besoin réel, au-delà d'une option « recommandée ».
 - Les valeurs qui changent selon l'environnement (adresses, clés, options) passent par des **variables d'environnement**, déclarées sans valeur dans le fichier d'exemple du projet ; noms et lieu de saisie : « Secrets et variables d'environnement » de `docs/technical.md`.
 
 ## 14. Outils de contrôle du projet

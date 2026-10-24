@@ -146,7 +146,7 @@ src/
 - `/pulse:tech` choisit le palier d'après les besoins et l'écrit dans « Organisation des fichiers », avec les suffixes retenus.
 - **On monte d'un palier quand le besoin est constaté** (YAGNI) ; c'est une tâche du plan, décidée avant l'implémentation. Un petit projet reste au palier le plus simple qui répond au besoin.
 - Les features d'un même projet suivent le même palier ; une feature triviale peut rester à plat si « Organisation des fichiers » le prévoit.
-- Chaque composant d'interface vit dans le `ui/` de sa feature ; `shared/` reçoit seulement ce qui sert **réellement** à au moins deux features, sous un nom qui dit son sujet (`shared/date-format.ts`), plutôt qu'un dossier `utils/` ou `helpers/` fourre-tout.
+- Chaque composant d'interface vit dans le `ui/` de sa feature (à plat au palier 1) ; `shared/` reçoit seulement ce qui sert **réellement** à au moins deux features, sous un nom qui dit son sujet (`shared/date-format.ts`), plutôt qu'un dossier `utils/` ou `helpers/` fourre-tout.
 
 ## 6. Règles de dépendance
 

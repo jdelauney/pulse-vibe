@@ -29,7 +29,7 @@ Refuser ce qui est vide, trop long, du mauvais type ou mal formé, **avant** tou
 - **Liste blanche des champs** : lire seulement les champs attendus, un par un. Un champ inattendu (`role`, `isAdmin`, `userId`, `price`) est ignoré, jamais copié tel quel dans l'enregistrement.
 - **Type** : une chaîne attendue est bien une chaîne ; un nombre est un nombre fini dans un intervalle.
 - **Longueur** minimale et maximale, après suppression des espaces en début et en fin ; **format** (email, téléphone, date, identifiant, valeur d'une liste fermée) ; **taille totale de la requête** bornée.
-- Les règles de chaque champ tiennent dans une table (`RULES = { email: { requis: vrai, max: 254, format: EMAIL }, … }`) lue par une seule fonction de validation, qui renvoie les données nettoyées ou un message simple (« Merci de remplir tous les champs obligatoires. », « Un des champs est trop long. »).
+- Les règles de chaque champ tiennent dans une table (`RULES = { email: { requis: vrai, max: 254, format: EMAIL }, … }`) lue par une seule fonction de validation, qui renvoie les données nettoyées ou un message simple (« Merci de remplir tous les champs obligatoires. », « Un des champs est trop long. ») ; un champ facultatif laissé vide passe le contrôle de format.
 - Si la base le permet, doubler par des contraintes (non nul, longueur, format, unicité).
 
 Des saisies comme `<script>` ou `' OR 1=1 --` sont acceptées et enregistrées **telles quelles** : la protection vient des requêtes paramétrées (une saisie reste une valeur, jamais concaténée dans le texte d'une requête) et de l'affichage en texte (section 11).
@@ -47,7 +47,7 @@ Si la base retenue le permet (règles par ligne, politiques d'accès, vues filtr
 
 ## 4. Champ piège et délai minimal (S10)
 
-**Champ piège (honeypot)** : invisible pour les humains et les technologies d'assistance, exclu de la tabulation et du remplissage automatique, placé hors de l'écran (un champ de type caché ou un affichage supprimé, certains robots les repèrent). Son nom n'évoque aucun champ que le navigateur ou un gestionnaire de mots de passe remplit tout seul (nom, société, adresse, e-mail, téléphone).
+**Champ piège (honeypot)** : invisible pour les humains et les technologies d'assistance, exclu de la tabulation et du remplissage automatique, placé hors de l'écran, plutôt qu'en champ de type caché ou en affichage supprimé, que certains robots repèrent. Son nom n'évoque aucun champ que le navigateur ou un gestionnaire de mots de passe remplit tout seul (nom, société, adresse, e-mail, téléphone).
 
 **Délai minimal** : le serveur connaît l'heure d'ouverture du formulaire, de préférence par un **jeton signé par le serveur** à l'ouverture (horodatage + nom du formulaire + signature HMAC), infalsifiable par le navigateur ; à défaut, une durée mesurée côté client (les horloges diffèrent), falsifiable. Moins de 2 à 3 secondes, ou une valeur illisible = robot probable.
 
@@ -119,6 +119,7 @@ Un service tiers reçoit des données techniques du visiteur : le citer dans la 
 - **Jamais** de balisage construit en assemblant une saisie dans une chaîne, ni d'insertion de balisage brut qui contourne l'échappement. Si un contenu riche est indispensable, le nettoyer avec une bibliothèque reconnue, après accord.
 - Une adresse fournie par une personne devient un lien seulement après vérification de son schéma (`https:`).
 - Sujet et en-têtes d'email sont des valeurs fixes du code, jamais construites avec une saisie (injection d'en-tête).
+- Le code exécuté est celui des sources, jamais du code construit à partir d'une chaîne (`qualite/clean-code.md` §4).
 
 ## 12. Envoi de fichiers (S7)
 
