@@ -63,7 +63,6 @@ RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
 TPL="$RACINE/templates"
 SK="$RACINE/skills"
-SK="$RACINE/skills"
 
 nom_sur() { # nom_sur <nom> : vrai si le nom reste dans son dossier (ni .., ni chemin absolu, ni lecteur Windows)
   case "$1" in ""|*..*|/*|\\*|[A-Za-z]:*) return 1 ;; esac

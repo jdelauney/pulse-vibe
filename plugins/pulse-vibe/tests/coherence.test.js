@@ -1509,3 +1509,29 @@ test("aucune commande n'en lance une autre : elle enchaîne une étape ou fait t
 test("une correction garde clean-code et la sécurité du code dès qu'elle touche le serveur", () => {
   assert.match(lire(RACINE, "agents", "implementer.md"), /Pour une correction : `clean-code`, les familles des constats reçus, et `securite` dès que la correction touche/);
 });
+
+test("spirc : le bout en bout se lance aussi en autonome, le rythme rapide est transmis, le profil « rapide » vaut -f", () => {
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  const groupe = spirc.slice(spirc.indexOf("### Test groupé"), spirc.indexOf("### Fin"));
+  assert.match(groupe, /\*\*En rythme complet\*\* : lancer d.abord « Tester de bout en bout »/, "Test groupé");
+  assert.match(spirc.slice(spirc.indexOf("### Fin")), /Rythme complet hors autonome, US faite : lancer « Tester de bout en bout »/, "Fin");
+  assert.doesNotMatch(spirc, /^Hors autonome, US faite/m);
+  assert.match(spirc, /Déléguer à \*\*`pulse:implementer`\*\*[^\n]*rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
+  assert.match(spirc, /le rythme est celui du profil \(« rapide » vaut `-f`\)/);
+});
+
+test("implementer : [I] Implémenter, en coulisse ; un secret à inventer est rendu à l'appelant", () => {
+  const texte = lire(RACINE, "agents", "implementer.md");
+  const description = texte.match(/^description:.*$/m)[0];
+  assert.match(description, /\/pulse:spirc \(\[I\] Implémenter\) et \/pulse:implement \(en coulisse\)/);
+  assert.doesNotMatch(description, /phase Exécuter|mode sous-agent/);
+  assert.match(texte, /un secret à inventer : son NOM, que l'appelant génère avec l'accord de la personne/);
+});
+
+test("agents : aucun ne cite les gestes qui touchent la production comme un geste à faire lui-même", () => {
+  for (const f of AGENTS_PAR_PLUGIN) assert.doesNotMatch(lire(f), /pulse-aidd secrets (generer|envoyer|elaguer|redeployer)/, path.relative(DEPOT, f));
+});
+
+test("pulse-aidd : SK n'est affecté qu'une fois", () => {
+  assert.strictEqual((lire(RACINE, "bin", "pulse-aidd").match(/^SK=/gm) || []).length, 1);
+});
