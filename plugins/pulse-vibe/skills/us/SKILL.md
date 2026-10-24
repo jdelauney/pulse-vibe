@@ -25,7 +25,7 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 ## Processus
 
-Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
+Appliquer « Penser avant d'écrire » (en fin de fichier). Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
 
 **Clarifier le périmètre par rondes** : une ronde de questions selon la règle commune 5 (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
 
@@ -33,7 +33,7 @@ Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées 
 
 Regrouper les fonctionnalités **Indispensables**, **Essentielles** et **Optionnelles** du PRD en **groupes** : un groupe = un grand besoin de l'utilisateur (« Gérer les demandes », « Suivre les paiements »), qui contient plusieurs US. Viser 2 à 6 groupes pour une première version ; un groupe d'une seule US est possible. Les **En attente** restent hors des groupes.
 
-Pour chaque groupe : un titre, un objectif en une phrase et un nom de dossier `<epic>` (règles ci-dessus). Montrer la liste des groupes avec leurs dossiers et la faire valider (« Valider » / « Modifier les groupes ») avant d'écrire les US.
+Pour chaque groupe : un titre, un objectif en une phrase et un nom de dossier `<epic>` (règles à « Fichier », plus bas). Montrer la liste des groupes avec leurs dossiers et la faire valider (« Valider » / « Modifier les groupes ») avant d'écrire les US.
 
 ### 2. Écrire les user stories
 

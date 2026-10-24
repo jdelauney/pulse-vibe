@@ -71,7 +71,7 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 #### 3. Rédiger
 
-- **Modèle** : celui du dépôt s'il existe (Conventions Git § 6), sinon le modèle Pulse ci-dessus. Remplir chaque section d'après le changement, puis retirer tous les commentaires du modèle.
+- **Modèle** : celui du dépôt s'il existe (Conventions Git § 6), sinon le modèle Pulse (en fin de fichier). Remplir chaque section d'après le changement, puis retirer tous les commentaires du modèle.
 - **Titre** : court et parlant, 72 caractères au plus, en français.
 - Une tâche sans rapport de relecture : l'indiquer dans « Relecture et sécurité » et proposer de taper `/pulse:review` avant d'ouvrir la demande.
 - Montrer titre, base et description, puis demander (AskUserQuestion) : « Ouvrir la proposition en brouillon (Recommandé) » / « Modifier le texte » / « Annuler ».
