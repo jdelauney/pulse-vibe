@@ -1221,3 +1221,35 @@ test("les règles de Pulse sans tube, en chaîne ou avec une autre commande pass
   passe("pulse-aidd revue | head -5");
   passePs("pulse-aidd qualite clean-code; Get-Date | Select-Object -First 1");
 });
+
+test("un caractère de contrôle dans la tête ne laisse rien passer en accord, sous Bash comme sous PowerShell", () => {
+  const separateurs = { "retour chariot": "\r", "retour à la ligne": "\n", "barre oblique et retour à la ligne": "\\n", "U+2028": "\u2028", "U+0085": "\u0085", "espace insécable": "\u00a0", tabulation: "\t" };
+  for (const outil of ["Bash", "PowerShell"]) {
+    for (const [nom, sep] of Object.entries(separateurs)) {
+      const s = sortieComplete({ command: `pulse-aidd qualite x${sep}git push --force | Select -First 1` }, outil);
+      assert.ok(!s || s.permissionDecision !== "allow", `${outil} : ${nom} ne doit pas être accordé`);
+    }
+    // Le séparateur placé avant le tube, dans la tête seule.
+    const t = sortieComplete({ command: "pulse-aidd qualite\rx | head -3" }, outil);
+    assert.ok(!t || t.permissionDecision !== "allow", `${outil} : retour chariot dans la tête`);
+  }
+});
+
+test("PowerShell : un retour chariot seul sépare deux instructions (envoi forcé refusé sans tube)", () => {
+  refusPs("pulse-aidd qualite x\rgit push --force");
+  refusPs("pulse-aidd qualite x\u2028git push --force");
+  confirmationPs("Get-Date\rgit reset --hard");
+});
+
+test("« |& » est un tube : la sortie de règles coupée est refusée, jamais accordée telle quelle", () => {
+  const s = sortieComplete({ command: "pulse-aidd qualite clean-code |& head -5" });
+  assert.strictEqual(s.permissionDecision, "deny");
+  assert.match(s.permissionDecisionReason, /règles de Pulse/);
+});
+
+test("une barre oblique inverse ou un accent grave dans la queue empêche la réécriture", () => {
+  for (const [c, outil] of [['pulse-aidd qualite x | grep "a\\" ; evil "', "PowerShell"], ["pulse-aidd qualite x | grep `;", "PowerShell"]]) {
+    const s = sortieComplete({ command: c }, outil);
+    assert.strictEqual(s.permissionDecision, "deny", c);
+  }
+});

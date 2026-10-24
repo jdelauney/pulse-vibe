@@ -173,7 +173,8 @@ function decouper(script, dialecte = "bash") {
       }
     } else if (c === "#" && mot === null && dialecte !== "cmd") {
       while (i < n && script[i] !== "\n") i++;
-    } else if (c === "\n") {
+    } else if (c === "\n" || (dialecte === "powershell" && (c === "\r" || c === "\u2028" || c === "\u2029" || c === "\u0085"))) {
+      // PowerShell lit aussi un retour chariot seul (et U+2028, U+2029, U+0085) comme une fin d'instruction.
       finirSegment();
       i++;
       lireHeredocs();
@@ -187,8 +188,15 @@ function decouper(script, dialecte = "bash") {
         i += script[i + 2] === ">" ? 3 : 2;
         continue;
       }
+      // Bash : « |& » est un tube qui envoie aussi les erreurs.
+      const tubeErreurs = posix && c === "|" && script[i + 1] === "&";
       const double = (c === "&" || c === "|" || c === ";") && script[i + 1] === c;
       finirSegment();
+      if (tubeErreurs) {
+        apresTube = true;
+        i += 2;
+        continue;
+      }
       if (c === "|" && !double) apresTube = true;
       i += double ? 2 : 1;
     } else if (c === "<" && script.startsWith("<<<", i) && dialecte !== "cmd") {
