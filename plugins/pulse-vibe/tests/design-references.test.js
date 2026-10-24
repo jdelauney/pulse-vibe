@@ -179,7 +179,9 @@ test("revue génération : designer autorisé à lancer le contrôle, écarts ju
 test("revue génération : exemples de rôles sans collision avec --accent de shadcn ; catalogue juste", () => {
   for (const t of [lire("regles-ui.md"), lireP("agents", "designer.md")]) assert.ok(!t.includes("--accent: var("), "exemple neutre");
   const th = fs.readFileSync(path.join(P, "..", "pulse-vibe-next", "references", "theme.md"), "utf8");
-  for (const attendu of ["--sidebar-ring", "Une couleur de rôle qui manque", "correspond à `--primary`", "`--ring`, `--input`"]) assert.ok(th.includes(attendu), attendu);
+  for (const attendu of ["--sidebar-ring", "Une couleur de rôle qui manque"]) assert.ok(th.includes(attendu), attendu);
+  const ui = fs.readFileSync(path.join(P, "..", "pulse-vibe-next", "references", "contexte", "ui.md"), "utf8");
+  for (const attendu of ["correspond à `--primary`", "`--ring`, `--input`"]) assert.ok(ui.includes(attendu), attendu);
   const dir = lire("directions.md");
   for (const absent of ["sans rebond", "verts, tons de terre"]) assert.ok(!dir.includes(absent), absent);
   for (const attendu of ["graisse (", "hors des polices réflexes"]) assert.ok(dir.includes(attendu), attendu);

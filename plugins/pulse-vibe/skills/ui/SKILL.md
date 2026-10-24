@@ -13,9 +13,9 @@ Aider la personne à **voir** et choisir l'apparence de son outil, puis à la so
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte ui` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les quatre références de design ont pour titres « Registres d'interface », « Règles d'interface », « Anti-patterns d'interface » (la « liste noire ») et « Motifs d'écrans » ; on peut les réafficher avec `pulse-aidd reference ui/<fichier>`.
 
@@ -24,10 +24,6 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
 **Noms des dossiers** : `d<n>-<slug>` pour une direction d'identité, `v<n>-<slug>` pour une variante de maquette (`<n>` = 1, 2, 3…). `<slug>` est tiré de la thèse : minuscules, sans accent, mots séparés par des tirets, 30 caractères au plus. `<spec>` est le nom commun de l'US et de sa spec, `US-XXX-<nom>`, tel qu'il existe réellement dans `aidd_docs/tasks/<epic>/`. **Avant de générer un nouveau lot**, déplacer les dossiers `d*` ou `v*` déjà présents dans le dossier concerné vers son sous-dossier `alternatives/` (ignoré par `pulse-aidd comparer`) ; numéroter les nouveaux dossiers à partir du plus grand `<n>` trouvé, `alternatives/` compris. **Hybride** : dossier `d<n+1>-hybride-<slug>` (identité) ou `v<n+1>-hybride-<slug>` (maquettes), thèse « Hybride : <ce qui vient de quelle proposition> » ; passer à l'agent les chemins des propositions sources. C'est ce dossier qui est copié dans `retenue/`.
 
 ## Contexte
-
-!`pulse-aidd contexte ui`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS`
 
@@ -90,7 +86,7 @@ Cette commande mène l'entretien, fait choisir la personne et écrit les documen
    - Copier la planche choisie (ou l'hybride) et son `note.md` dans `docs/design/identite/retenue/`.
    - Écrire `docs/design.md` à partir du modèle `design.md` : **toutes** les sections remplies ; écrire « sans objet » quand une section ne s'applique pas.
    - Montrer un résumé en 5 lignes et demander « Valider » / « Modifier quelque chose ».
-   - **Traduire dans le code** : si le squelette de la pile est en place (« Mise en place » de `docs/technical.md` faite), proposer « Appliquer cette identité au code maintenant (Recommandé) » / « Plus tard ». Maintenant : lancer `pulse-aidd qualite`, écrire les valeurs de `docs/design.md` dans le fichier du thème de la pile retenue (consignes du pack de pile s'il y en a un, sinon documentation officielle de la technologie), remplir la section « Dans le code » de `docs/design.md`, lancer les contrôles automatiques de « Commandes du projet », puis demander à la personne de regarder la page de départ dans son navigateur. Sans squelette : écrire « à créer à la mise en place » dans « Dans le code » ; `/pulse:tech` appliquera le thème après le squelette.
+   - **Traduire dans le code** : si le squelette de la pile est en place (« Mise en place » de `docs/technical.md` faite), proposer « Appliquer cette identité au code maintenant (Recommandé) » / « Plus tard ». Maintenant : lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants` (chaque sortie lue en entier), écrire les valeurs de `docs/design.md` dans le fichier du thème de la pile retenue (consignes du pack de pile s'il y en a un, sinon documentation officielle de la technologie), remplir la section « Dans le code » de `docs/design.md`, lancer les contrôles automatiques de « Commandes du projet », puis demander à la personne de regarder la page de départ dans son navigateur. Sans squelette : écrire « à créer à la mise en place » dans « Dans le code » ; `/pulse:tech` appliquera le thème après le squelette.
    - Si l'identité est traduite dans le code, proposer le contrôle `couleurs-variables` selon `pulse-aidd reference controles-proposes.md` ; le fichier des variables vient du contexte du pack, sinon du fichier où l'identité vient d'être traduite en code.
    - Proposer `/pulse:memory retenir` pour le registre et la stratégie de couleur.
 
@@ -145,7 +141,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui polish` 
 1. **Partir du rapport** `docs/design/audits/ui-*.md` le plus récent qui couvre la cible. S'il n'y en a pas, faire d'abord l'audit (section « audit »).
 2. **Trier.** Retenir les constats **purement visuels ou de texte** : apparence et libellés seulement, hors logique métier, données et contrôle d'accès. Renvoyer les autres vers `/pulse:refine` (besoin ou parcours) ou `/pulse:fix` (comportement cassé), en le disant.
 3. **Faire choisir.** Montrer la liste numérotée, puis proposer (AskUserQuestion) « Les 🔴 et les corrections rapides (Recommandé) » / « Tous les constats » / « Je donne les numéros » (réponse libre).
-4. **Appliquer** par petits lots. Avant d'écrire du code, lancer `pulse-aidd qualite` et appliquer ces règles. Respecter la pile retenue (`docs/technical.md`), `docs/design.md` et la maquette retenue. Lancer ensuite les contrôles automatiques de « Commandes du projet » (sauter ceux qui valent « aucune »).
+4. **Appliquer** par petits lots. Avant d'écrire du code, lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants` (chaque sortie lue en entier), et appliquer ces règles. Respecter la pile retenue (`docs/technical.md`), `docs/design.md` et la maquette retenue. Lancer ensuite les contrôles automatiques de « Commandes du projet » (sauter ceux qui valent « aucune »).
 5. **Vérifier.** Demander à la personne de vérifier dans son navigateur. Marquer les constats corrigés (✅) dans le rapport.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
@@ -164,3 +160,9 @@ En cas d'échec, afficher le chemin complet et dire : « Double-cliquez sur ce f
 - `/pulse:ui identite` : quelques questions sur votre outil, puis 2 ou 3 apparences à comparer dans votre navigateur ; vous choisissez, et `docs/design.md` est écrit.
 - `/pulse:ui maquettes US-003` : 3 versions des écrans de cette user story, côte à côte ; vous gardez celle qui vous plaît.
 - `/pulse:ui audit` : un rapport de ce qui cloche dans l'interface, sans rien modifier ; `/pulse:ui polish` applique ensuite les corrections que vous choisissez.
+
+## Références de la commande
+
+!`pulse-aidd contexte ui`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.

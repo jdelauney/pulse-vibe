@@ -23,7 +23,7 @@ Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, 
 
 ## Pack de pile
 
-Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte fix` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte fix` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous. Si la commande répond que le pack n'est pas installé, le signaler dans « À signaler » (le code s'écrit sans la fiche).
 
 ## Méthode
 
@@ -42,4 +42,7 @@ STATUT: <Tout corrigé | Partiel>
 
 ## Non corrigé
 - `fichier:ligne` [code] — <pourquoi : cause ailleurs, changement de comportement, deux essais échoués>
+
+## À signaler
+- <seulement si besoin : pack de pile non installé, code corrigé sans la fiche>
 ```

@@ -13,7 +13,7 @@ Produire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, à côté du fichier de 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spec` et lire sa sortie en entier) pendant toute la commande.
 
 ### Les quatre règles de la spec
 
@@ -23,10 +23,6 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
 4. **Verrouillée une fois validée.** La validation de la personne verrouille la spec (`Statut : verrouillée le AAAA-MM-JJ`). Une spec verrouillée se lit sans se réécrire ; un changement de besoin passe par une **nouvelle US** et sa spec (étape 0).
 
 ## Contexte
-
-!`pulse-aidd contexte spec`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
 
 Sujet de la spec : `$ARGUMENTS`
 
@@ -41,7 +37,7 @@ Fichiers de cette commande : [assets/spec.md](assets/spec.md).
 
 ### 0. Identifier l'US
 
-Lire l'argument (règles « User stories, specs et plans » ci-dessus) :
+Lire l'argument (règles des tâches) :
 - **un identifiant d'US** (`US-003`) : retrouver l'US dans `docs/user-stories.md` et son fichier `aidd_docs/tasks/<epic>/US-003-<nom>.md`. Introuvable : lister les US proches et demander.
 - **plusieurs identifiants** (une liste ou une plage) : une spec **par US**. Les traiter l'une après l'autre, dans l'ordre de réalisation du référentiel, en appliquant tout le déroulé (brouillon, questions, validation) à chacune.
 - **une description** (« ajouter un filtre par date ») : chercher l'US qui la couvre déjà.
@@ -68,7 +64,7 @@ Suivre le modèle de spec, avec `Statut : brouillon`. Relire les autres specs (`
 3. **Ce que l'utilisateur voit et fait** : pour chaque écran, qui y accède, ce qu'on y voit, ce qu'on y fait ; les situations à prévoir (en attente, rien à afficher, échec, sur téléphone) décrites par ce que vit l'utilisateur ; le parcours principal (schéma `flowchart` du modèle, 3 à 7 étapes ; le retirer pour un écran unique). Un écran se nomme par ce qu'il montre (« la liste de mes factures »), sans adresse ni composant. Sa colonne « Présentation » se remplit à l'étape 1 bis.
 4. **Informations manipulées** : pour chaque type d'information, ses informations en mots du métier (obligatoire ou non, règle, exemple réaliste et fictif), et **qui peut consulter, ajouter, modifier, supprimer**, en français (« un client consulte seulement les demandes dont il est l'auteur »). Le lieu de stockage et de vérification est décidé dans le plan.
 5. **Règles métier** : reprises de l'US, chacune en une phrase vraie.
-6. **Scénarios** : selon la référence « Scénarios Gherkin » ci-dessus, une `Règle` par règle métier de l'US, et pour chacune 2 à 5 exemples concrets (cas nominal, limites, cas refusés), écrits en langage métier avec des données fictives et les mots du glossaire. Chaque exemple porte l'étiquette du critère qu'il illustre (`@US-XXX-1`) et son niveau de preuve prévu (`@unitaire`, `@integration`, `@bout-en-bout`, ou `@manuel`, selon `tests/strategie.md` §2, affichable avec `pulse-aidd reference tests/strategie.md`) ; chaque critère d'acceptation est couvert par au moins un exemple.
+6. **Scénarios** : selon la référence « Scénarios Gherkin » (en fin de fichier), une `Règle` par règle métier de l'US, et pour chacune 2 à 5 exemples concrets (cas nominal, limites, cas refusés), écrits en langage métier avec des données fictives et les mots du glossaire. Chaque exemple porte l'étiquette du critère qu'il illustre (`@US-XXX-1`) et son niveau de preuve prévu (`@unitaire`, `@integration`, `@bout-en-bout`, ou `@manuel`, selon `tests/strategie.md` §2, affichable avec `pulse-aidd reference tests/strategie.md`) ; chaque critère d'acceptation est couvert par au moins un exemple.
 7. **Données personnelles et accès** : voir l'étape 2.
 8. **Ajouts proposés par Pulse** : voir l'étape 3.
 9. **Terminé quand** : 2 à 4 résultats observables par l'utilisateur, tirés des critères d'acceptation.
@@ -84,7 +80,7 @@ Pour chaque écran qui montre des informations ou un formulaire, la présentatio
 - **Créer ou modifier** : « Où créer ou modifier <une facture> ? » → « Sur une page à part » (formulaire long, plus de 5 champs) / « Dans une fenêtre par-dessus la liste » (formulaire court) / « Dans un volet sur le côté » (modifier en gardant la liste sous les yeux) / « Directement dans la liste » (un ou deux champs).
 - **Supprimer**, s'il y a lieu : « Supprimer <une facture> : demander confirmation (Recommandé) » / « Supprimer tout de suite, avec la possibilité d'annuler quelques secondes ».
 
-Noter chaque réponse dans la colonne « Présentation » de « Ce que l'utilisateur voit et fait ». Puis proposer (AskUserQuestion) : « Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) » / « Suivre ces choix, sans maquette » (en rythme rapide, règles communes § 1, la seconde est recommandée). Noter la réponse sur la ligne « Maquettes » de la spec ; « Voir » mène à `/pulse:ui maquettes US-XXX` une fois la spec verrouillée.
+Noter chaque réponse dans la colonne « Présentation » de « Ce que l'utilisateur voit et fait ». Puis proposer (AskUserQuestion) : « Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) » / « Suivre ces choix, sans maquette » (en rythme rapide du profil de `CLAUDE.md`, la seconde est recommandée). Noter la réponse sur la ligne « Maquettes » de la spec ; « Voir » mène à `/pulse:ui maquettes US-XXX` une fois la spec verrouillée.
 
 ### 2. La section « Données personnelles et accès » (obligatoire)
 
@@ -108,3 +104,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquette
 - `/pulse:spec US-003` : un brouillon de la spec, les ajouts proposés à trancher et les questions restantes ; après votre validation, la spec est verrouillée.
 - `/pulse:spec "ajouter un filtre par date"` : la commande cherche l'histoire qui couvre déjà cette demande, ou vous en propose une nouvelle.
 - `/pulse:spec` sans argument : la liste des histoires sans spec, la prochaine à réaliser en premier.
+
+## Références de la commande
+
+!`pulse-aidd contexte spec`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.

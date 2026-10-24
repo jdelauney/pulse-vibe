@@ -13,7 +13,8 @@
 //  - git grep / git diff avec --no-index, --untracked ou --no-exclude-standard dans un dossier qui contient un .env ;
 //  - la suppression de tout le disque, du dossier personnel ou du projet ;
 //  - la suppression d'un dépôt distant, ou son passage en public (gh repo, gh api private=false) ;
-//  - gitleaks sans --redact.
+//  - gitleaks sans --redact ;
+//  - la coupure d'une sortie de règles Pulse (pulse-aidd qualite|tests|reference|contexte|etape|agent, pile contexte|reference, suivie d'un tube : head, tail, grep…).
 // Demande confirmation pour :
 //  - ce qui jette ou déplace du travail (reset --hard, checkout/restore/switch -f, clean -f, stash drop,
 //    branch -D / -f, update-ref, filter-branch, reflog expire, gc --prune=now) ;
@@ -113,6 +114,9 @@ const MESSAGES = {
   gitleaksSansMasque:
     "Pulse refuse gitleaks sans --redact : les secrets trouvés s'afficheraient en clair dans la conversation. " +
     "À la place : `gitleaks detect --config .gitleaks.toml --redact`.",
+  reglesCoupees: (commande) =>
+    "Pulse refuse de couper la sortie de cette commande : ce sont des règles de Pulse, qui s'appliquent en entier. " +
+    `À la place : \`${commande}\` sans le tube, puis lisez toute la sortie ; si la sortie est enregistrée dans un fichier, lisez ce fichier en entier.`,
   sondeDetournee:
     "Pulse demande votre accord : cette commande change l'adresse à laquelle les tests de secrets envoient une clé (PULSE_SONDES_…). " +
     "Lancez plutôt la commande sans cette variable.",
@@ -932,6 +936,10 @@ function appliquerRegles(c, cwd, constats) {
   if (outil) reglesOutil(outil, constats);
 }
 
+// Sous-commandes de pulse-aidd dont la sortie est une règle à lire en entier (« pile » : seulement contexte et reference).
+const SORTIES_REGLES = new Set(["qualite", "tests", "reference", "contexte", "etape", "agent"]);
+const sortieDeRegles = ([a0, a1]) => SORTIES_REGLES.has(a0) || (a0 === "pile" && (a1 === "contexte" || a1 === "reference"));
+
 // Outils et scripts de Pulse, avec les mots qui les précèdent dans pulse-aidd (secrets.js envoyer = pulse-aidd secrets envoyer).
 const OUTILS_PULSE = { "pulse-aidd": [], "pulse-pile-next": ["pile"], secrets: ["secrets"], "search-console": ["search-console"], "secrets-vercel": ["pile", "hebergeur"] };
 const LANCEURS_SCRIPT = new Set(["node", "bun", "tsx", "ts-node", "deno"]);
@@ -954,6 +962,12 @@ function analyser(commande, cwd, dialecte) {
   const constats = [];
   const commandes = commandesSimples(commande, dialecte);
   for (const c of commandes) appliquerRegles(c, cwd, constats);
+  // Une sortie de règles Pulse passée par un tube (| head, | tail, | grep…) : coupée, donc lue en partie.
+  commandes.forEach((c, i) => {
+    const outil = appelOutilPulse(c);
+    if (outil && commandes[i + 1] && commandes[i + 1].apresTube && sortieDeRegles(outil.map((a) => String(a || "").toLowerCase())))
+      constats.push([REFUS, MESSAGES.reglesCoupees(`pulse-aidd ${outil.join(" ")}`)]);
+  });
   const sansCitations = commande.replace(/(?<!=)('[^']*'|"(?:[^"\\]|\\.)*")/g, "");
   // Contrôles coupés par une variable posée avant la commande (export HUSKY=0 ; $env:HUSKY = 0).
   const coupe = /(^|[\s;&|(])(export\s+|\$env:)(HUSKY\s*=\s*['"]?0|HUSKY_SKIP_HOOKS\s*=\s*['"]?1|SKIP_SIMPLE_GIT_HOOKS\s*=\s*['"]?1|LEFTHOOK\s*=\s*['"]?0)\b/i;

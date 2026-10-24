@@ -147,10 +147,13 @@ test("contexte implement et fix : règles de qualité chargées à la demande", 
     assert.ok(!r.stdout.includes("===== Règles de qualité du code ====="), commande);
     assert.ok(!r.stdout.includes("===== Clean code ====="), commande);
   }
-  assert.ok(lancer("qualite").stdout.includes("===== Clean code ====="), "pulse-aidd qualite reste complet");
+  const sansFamille = lancer("qualite").stdout;
+  assert.ok(!sansFamille.includes("===== Clean code ====="), "pulse-aidd qualite sans famille : règle de choix, pas les familles");
+  assert.ok(sansFamille.includes("Relancez avec les familles utiles"));
+  assert.ok(lancer("qualite", "--tout").stdout.includes("===== Clean code ====="), "--tout garde l'ancien comportement");
   const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
-  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite` une fois/);
-  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite` \(règles de qualité du code\), puis évaluer/);
+  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois/);
+  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour chaque famille utile des fichiers à corriger, chaque sortie lue en entier[^\n]*règle commune 12\), puis évaluer/);
   const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
 });
@@ -221,12 +224,24 @@ test("etape --sans-communes : instructions et contexte de l'étape, sans les rè
     assert.ok(sans.stdout.includes(titre), titre);
 });
 
+test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
+  for (const args of [["etape", "express", "--sans-communes"], ["etape", "express"]]) {
+    const r = lancer(...args);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Instructions de l'étape /pulse:express ====="));
+    assert.ok(!r.stdout.includes("allowed-tools:"), "sans l'en-tête du fichier");
+    assert.ok(!r.stdout.includes("## Exemples"), "sans la section Exemples");
+    assert.ok(r.stdout.includes("## Processus"), "le Processus reste");
+    assert.ok(!r.stdout.includes("## Références de la commande") && !r.stdout.includes("!`pulse-aidd contexte"), "sans la ligne d'injection du contexte, que l'étape affiche elle-même");
+  }
+});
+
 test("l'aide décrit l'option --sans-communes", () => {
   assert.match(lancer().stdout, /etape <commande> \[--sans-communes\]/);
 });
 
-test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
-  const r = lancer("tests");
+test("tests --tout : affiche toute la méthode de tests, Gherkin compris", () => {
+  const r = lancer("tests", "--tout");
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of [
     "===== Stratégie de tests =====",
@@ -288,7 +303,7 @@ function projetAvecPack({ declare, installe }) {
       "#!/usr/bin/env bash\n" +
         'case "$1" in\n' +
         `  info) printf 'id: ${installe}\nnom: Pile ${installe}\nresume: Une pile de test.\nversion: 0.1.0\n' ;;\n` +
-        '  contexte) echo "Consignes du pack pour $2" ;;\n' +
+        '  contexte) [ "$2" = annuler ] || echo "Consignes du pack pour $2" ;;\n' +
         '  echo) shift; printf "[%s]" "$@" ;;\n' +
         '  relais) printf "%s" "${PULSE_RELAIS_ARGC:-absent}"; env | grep -q "^PULSE_RELAIS_" && printf " (variables restantes)" ;;\n' +
         "  echec) exit 3 ;;\n" +
@@ -315,17 +330,43 @@ test("piles : liste les packs installés, ou le dit s'il n'y en a aucun", () => 
   assert.match(sans.lancerIci("piles").stdout, /Aucun pack de pile installé/);
 });
 
+test("piles : sous la ligne de chaque pack, ce que son contexte « piles » dit avant le choix", () => {
+  const r = projetAvecPack({ installe: "essai" }).lancerIci("piles");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^- essai : .*\n {2}Consignes du pack pour piles$/m);
+});
+
+test("piles : avec le vrai pack Next.js, ses points de vigilance sous la ligne « - next »", { skip: !fsP.existsSync(path.join(RACINE, "..", "pulse-vibe-next", "bin", "pulse-pile-next")) }, () => {
+  const bin = path.join(RACINE, "..", "pulse-vibe-next", "bin").split(path.sep).join("/");
+  const outil = OUTIL.split(path.sep).join("/");
+  const r = spawnSync("bash", ["-c", `PATH="$(cd "${bin}" && pwd):$PATH" exec bash "${outil}" piles`], { cwd: RACINE, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^- next : [^\n]*\n {2}[^\n]*\n(?:.*\n)*? {2}[^\n]*non commercial/m);
+});
+
+test("pile contexte : sans pack déclaré, sortie vide et code 0", () => {
+  const r = projetAvecPack({ installe: "essai" }).lancerIci("pile", "contexte", "implement");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(r.stdout.trim(), "");
+});
+
 test("pile : indique le pack déclaré par le projet et s'il est installé", () => {
   assert.match(projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("pile").stdout, /essai.*installé/s);
   assert.match(projetAvecPack({ declare: "essai" }).lancerIci("pile").stdout, /non installé/);
   assert.match(projetAvecPack({}).lancerIci("pile").stdout, /Aucun pack de pile déclaré/);
 });
 
+test("pile contexte : pack déclaré mais absent, la façon de l'installer et le code 0", () => {
+  const r = projetAvecPack({ declare: "essai" }).lancerIci("pile", "contexte", "review");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /\/plugin install pulse-essai@pulseia, puis redémarrer/);
+});
+
 test("contexte : ajoute les consignes du pack déclaré et installé", () => {
-  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("contexte", "implement");
+  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("contexte", "fix");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("===== Pack de pile : Pile essai ====="), r.stdout.slice(-300));
-  assert.match(r.stdout, /Consignes du pack pour implement/);
+  assert.match(r.stdout, /Consignes du pack pour fix/);
 });
 
 test("contexte : pack déclaré mais absent, un avertissement et aucune erreur", () => {
@@ -333,6 +374,12 @@ test("contexte : pack déclaré mais absent, un avertissement et aucune erreur",
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /Pack de pile : essai \(non installé\)/);
   assert.match(r.stdout, /pulse-essai@pulseia/);
+});
+
+test("contexte : l'en-tête du pack seulement quand le pack a du contenu pour la commande", () => {
+  const p = projetAvecPack({ declare: "essai", installe: "essai" });
+  assert.doesNotMatch(p.lancerIci("contexte", "annuler").stdout, /===== Pack de pile/);
+  assert.ok(p.lancerIci("contexte", "fix").stdout.includes("===== Pack de pile : Pile essai ====="));
 });
 
 test("contexte : sans pack déclaré, aucune section de pack", () => {
@@ -348,7 +395,43 @@ test("contexte review : la conversation principale sans les consignes du pack, q
     assert.doesNotMatch(r.stdout, /Consignes du pack pour review|===== Pack de pile/, args.join(" "));
   }
   assert.match(p.lancerIci("pile", "contexte", "review").stdout, /Consignes du pack pour review/, "le reviewer les obtient par le relais");
-  assert.match(p.lancerIci("contexte", "implement").stdout, /Consignes du pack pour implement/, "les autres commandes gardent le pack");
+  assert.match(p.lancerIci("contexte", "fix").stdout, /Consignes du pack pour fix/, "les commandes qui codent elles-mêmes gardent le pack");
+});
+
+test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'écrire du code, et les règles communes le disent", () => {
+  const lireSkill = (nom) => fsP.readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
+  assert.match(lireSkill("spirc"), /sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code/);
+  assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
+  assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier/);
+  assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant la première correction/);
+  for (const agent of ["implementer", "fixer"]) assert.match(fsP.readFileSync(path.join(RACINE, "agents", agent + ".md"), "utf8"), /pack n'est pas installé, le signaler dans « À signaler »/);
+  const communes = fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
+  assert.match(communes, /review, spirc, implement, auto-fix : les agents qui codent ou relisent les chargent eux-mêmes/);
+  assert.doesNotMatch(lireSkill("review"), /elles y sont dans les boucles/);
+});
+
+test("contexte spirc, auto-fix et implement : le pack reste aux agents qui codent (pulse-aidd pile contexte)", () => {
+  const p = projetAvecPack({ declare: "essai", installe: "essai" });
+  for (const commande of ["spirc", "auto-fix", "implement"]) {
+    for (const args of [["contexte", commande], ["etape", commande], ["etape", commande, "--sans-communes"]]) {
+      const r = p.lancerIci(...args);
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.doesNotMatch(r.stdout, /===== Pack de pile|Consignes du pack pour/, args.join(" "));
+    }
+    assert.match(p.lancerIci("pile", "contexte", commande).stdout, new RegExp("Consignes du pack pour " + commande), "les agents l'obtiennent par le relais");
+  }
+});
+
+test("contexte spirc, auto-fix et implement : pack déclaré mais absent, l'avertissement d'installation reste affiché", () => {
+  const p = projetAvecPack({ declare: "essai" });
+  for (const commande of ["spirc", "auto-fix", "implement"]) {
+    for (const args of [["contexte", commande], ["etape", commande, "--sans-communes"]]) {
+      const r = p.lancerIci(...args);
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.match(r.stdout, /Pack de pile : essai \(non installé\)[\s\S]*\/plugin install pulse-essai@pulseia/, args.join(" "));
+    }
+  }
+  assert.doesNotMatch(projetAvecPack({}).lancerIci("contexte", "spirc").stdout, /===== Pack de pile/, "sans pack déclaré, rien");
 });
 
 test("pile <sous-commande> : relaie vers le pack déclaré, arguments et code de sortie compris", () => {
@@ -525,15 +608,15 @@ test("contexte review et spirc : la référence « Examiner une tâche »", () =
 });
 
 test("etape --sans-communes : les consignes du pack restent", () => {
-  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("etape", "implement", "--sans-communes");
+  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("etape", "fix", "--sans-communes");
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.match(r.stdout, /Consignes du pack pour implement/);
+  assert.match(r.stdout, /Consignes du pack pour fix/);
   assert.doesNotMatch(r.stdout, /===== Règles communes Pulse =====/);
 });
 
 test("etape --sans-communes : une ligne rappelle que les règles communes sont déjà chargées", () => {
   const sans = lancer("etape", "commit", "--sans-communes").stdout;
-  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Processus ci-dessous.)"));
+  assert.ok(sans.includes("(Règles communes, noyau et modules : déjà chargés par la commande en cours ; appliquer seulement le Processus ci-dessous.)"));
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
 
@@ -750,4 +833,55 @@ test("contexte d'une commande inconnue : un message, sans charger les règles co
 
 test("contexte de chaque commande du cœur : reconnue", () => {
   for (const s of fsP.readdirSync(path.join(RACINE, "skills"))) assert.doesNotMatch(lancer("contexte", s).stdout, /commande inconnue/, s);
+});
+
+// Modules des règles communes (tâches T, relecture C, réalisation R) : chaque commande reçoit ceux de sa ligne de la matrice.
+const MODULES = { T: "===== Règles des tâches =====", C: "===== Règles de relecture =====", R: "===== Règles de réalisation =====" };
+const MATRICE = {
+  "": ["brainstorm", "cicd", "deploy", "explain", "learn", "memory", "perf", "prd", "rediger", "search-console", "secrets", "tech"],
+  T: ["us", "spec", "guide", "get-help", "pr", "express", "init"],
+  C: ["security", "seo"],
+  TC: ["ui"],
+  TR: ["status", "plan", "refine", "commit", "annuler", "fix", "auto-fix"],
+  TCR: ["test", "review", "implement", "spirc"],
+};
+
+test("contexte : le noyau puis les modules de la matrice (T tâches, C relecture, R réalisation)", () => {
+  for (const [modules, commandes] of Object.entries(MATRICE)) {
+    for (const commande of commandes) {
+      const r = lancer("contexte", commande);
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.ok(r.stdout.includes("===== Règles communes Pulse ====="), `${commande} : noyau`);
+      for (const [lettre, titre] of Object.entries(MODULES))
+        assert.strictEqual(r.stdout.includes(titre), modules.includes(lettre), `${commande} : module ${lettre}`);
+    }
+  }
+});
+
+test("contexte explain n'a pas « ## 6. Les constats de relecture » ; contexte review l'a, dans les règles de relecture", () => {
+  assert.ok(!lancer("contexte", "explain").stdout.includes("Les constats de relecture"));
+  assert.ok(lancer("contexte", "review").stdout.includes("Chaque constat d'une relecture"));
+});
+
+test("etape --sans-communes : ni noyau ni modules", () => {
+  const r = lancer("etape", "review", "--sans-communes");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of ["===== Règles communes Pulse =====", ...Object.values(MODULES)]) assert.ok(!r.stdout.includes(titre), titre);
+  assert.ok(lancer("etape", "review").stdout.includes(MODULES.C), "sans l'option : les modules suivent");
+});
+
+test("MATRICE des modules : chaque commande du dossier skills/ y figure, une seule fois", () => {
+  const dossiers = require("fs").readdirSync(path.join(RACINE, "skills")).sort();
+  const listees = Object.values(MATRICE).flat();
+  assert.deepStrictEqual([...listees].sort(), dossiers);
+});
+
+test("etape --sans-noyau : sans le noyau, avec les modules de l'étape, et une ligne qui le dit", () => {
+  const r = lancer("etape", "commit", "--sans-noyau");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!r.stdout.includes("===== Règles communes Pulse ====="), "sans le noyau");
+  assert.ok(r.stdout.includes(MODULES.T) && r.stdout.includes(MODULES.R) && !r.stdout.includes(MODULES.C), "modules T et R de commit");
+  assert.ok(r.stdout.includes("(Règles communes (noyau) : déjà chargées"), "la ligne dit que seul le noyau est omis");
+  assert.ok(lancer("etape", "commit", "--sans-communes").stdout.includes("(Règles communes, noyau et modules : déjà chargés"), "la ligne dit que noyau et modules sont omis");
+  assert.match(lancer().stdout, /etape <commande> --sans-noyau/);
 });

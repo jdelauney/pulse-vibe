@@ -40,35 +40,55 @@ test("info : les quatre lignes du contrat, avec la version du manifeste", () => 
 
 test("contexte : chaque commande concernée reçoit ses consignes, les autres rien, toujours le code 0", () => {
   const attendus = {
-    tech: ["Pour /pulse:tech", "Valeurs de docs/technical.md", "Fiche de la pile", "Le thème"],
-    ui: ["Pour /pulse:ui", "Le thème"],
+    tech: ["Pour /pulse:tech", "Valeurs de docs/technical.md"],
+    ui: ["Pour /pulse:ui", "Pour écrire du code"],
     express: ["Pour /pulse:express"],
     spec: ["Pour /pulse:spec", "Recettes disponibles"],
-    plan: ["Pour /pulse:plan", "Fiche de la pile", "Recettes disponibles"],
+    plan: ["Pour /pulse:plan", "Architecture du code", "Recettes disponibles"],
+    refine: ["Pour /pulse:plan", "Recettes disponibles"],
     implement: ["Pour réaliser et corriger", "Fiche de la pile", "Recettes disponibles"],
     fix: ["Pour réaliser et corriger", "Fiche de la pile"],
-    spirc: ["Pour réaliser et corriger"],
     review: ["Pour relire", "Fiche de la pile"],
-    security: ["Pour relire", "Pour la sécurité", "Fiche de la pile"],
+    security: ["Pour relire", "Pour la sécurité"],
     test: ["Pour les tests"],
     deploy: ["Pour mettre en ligne"],
     cicd: ["Pour mettre en ligne"],
     secrets: ["Pour /pulse:secrets"],
-    seo: ["Pour /pulse:seo", "Fiche de la pile", "Recettes disponibles"],
-    perf: ["Pour /pulse:perf", "Fiche de la pile"],
+    seo: ["Pour /pulse:seo", "Pour écrire du code"],
+    perf: ["Pour /pulse:perf", "Pour écrire du code"],
     "search-console": ["Pour Search Console"],
-    rediger: ["Pour /pulse:rediger"],
+    rediger: ["Pour /pulse:rediger", "Pour écrire du code"],
   };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, commande);
     for (const titre of titres) assert.ok(r.stdout.includes(`----- ${titre}`), `${commande} : ${titre}`);
   }
-  for (const commande of ["learn", "inconnue", ""]) {
+  for (const commande of ["learn", "spirc", "auto-fix", "inconnue", ""]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0);
     assert.strictEqual(r.stdout.trim(), "", commande);
   }
+});
+
+test("contexte piles : ce qu'il faut vérifier et dire avant de choisir la pile ; un libellé inconnu ne renvoie rien", () => {
+  const r = lancer("contexte", "piles");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const mot of ["non commercial", "Neon", "Francfort"]) assert.ok(r.stdout.includes(mot), mot);
+  const inconnu = lancer("contexte", "libelle-inconnu");
+  assert.strictEqual(inconnu.status, 0);
+  assert.strictEqual(inconnu.stdout, "");
+});
+
+test("contexte/tech.md : le choix de la pile est dans piles.md, plus dans tech.md", () => {
+  assert.ok(!lire(REF, "contexte", "tech.md").includes("non commercial"));
+});
+
+test("contexte/code.md : la fiche de la pile, et l'architecture pour un fichier ou un dossier nouveau", () => {
+  const code = lire(REF, "contexte", "code.md");
+  assert.match(code, /pulse-aidd pile reference fiche\.md/);
+  assert.match(code, /pulse-aidd pile reference architecture\.md/);
+  assert.match(code, /nouveau/);
 });
 
 test("secrets et hebergeur : relais vers les scripts du pack", () => {
@@ -195,17 +215,67 @@ test("aucune clé ressemblant à une vraie dans les références et le squelette
   assert.deepStrictEqual(trouves, []);
 });
 
-test("la fiche s'accompagne de l'architecture pour tech, plan et review ; à la demande pour réaliser et corriger", () => {
-  for (const commande of ["tech", "plan", "review"]) {
-    const r = lancer("contexte", commande);
-    assert.strictEqual(r.status, 0);
-    assert.match(r.stdout, /----- Architecture du code/, commande);
-  }
-  for (const commande of ["implement", "fix", "spirc", "auto-fix"]) {
+test("l'architecture du code accompagne plan ; à la demande pour tech, relire, réaliser et corriger", () => {
+  const plan = lancer("contexte", "plan");
+  assert.strictEqual(plan.status, 0);
+  assert.match(plan.stdout, /----- Architecture du code/);
+  for (const commande of ["tech", "review", "security", "implement", "fix"]) {
     const r = lancer("contexte", commande);
     assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
-    assert.match(r.stdout, /pulse-aidd pile reference architecture.md/, commande);
   }
+  for (const commande of ["implement", "fix"]) assert.match(lancer("contexte", commande).stdout, /pulse-aidd pile reference architecture.md/, commande);
+});
+
+test("seo, perf, ui, rediger : les consignes pour écrire du code à la place de la fiche et de l'architecture", () => {
+  const code = lire(REF, "contexte", "code.md").trim();
+  for (const commande of ["seo", "perf", "ui", "rediger"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, commande);
+    assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code)/, commande);
+    assert.ok(r.stdout.includes(code), `${commande} : texte de code.md`);
+  }
+  assert.doesNotMatch(lancer("contexte", "seo").stdout, /----- Recettes disponibles/);
+  const ui = lancer("contexte", "ui").stdout;
+  assert.doesNotMatch(ui, /----- Le thème/);
+  assert.match(ui, /correspond à `--primary`/);
+  assert.match(ui, /pulse-aidd pile reference theme.md/);
+  for (const commande of ["seo", "rediger"]) assert.match(lancer("contexte", commande).stdout, /pulse-aidd pile reference fiche.md`, règle (41|47)/, commande);
+});
+
+test("contexte review : sous le seuil de lecture, avec la fiche et sans l'architecture", () => {
+  const r = lancer("contexte", "review");
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères : une sortie plus longue est enregistrée dans un fichier`);
+  assert.match(r.stdout, /----- Fiche de la pile/);
+  assert.doesNotMatch(r.stdout, /----- Architecture du code/);
+});
+
+test("contexte tech : ni la fiche, ni l'architecture, ni le thème ; le thème se lit à la demande", () => {
+  const r = lancer("contexte", "tech");
+  assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code|Le thème)/);
+  assert.match(r.stdout, /pulse-aidd pile reference theme.md/);
+  assert.match(lire(REF, "technical.md"), /pulse-aidd pile reference theme.md/);
+});
+
+test("contexte security : ni la fiche ni l'architecture, des renvois pour les situer", () => {
+  const r = lancer("contexte", "security");
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code)/);
+  assert.match(r.stdout, /pulse-aidd pile reference fiche.md/);
+  assert.match(r.stdout, /pulse-aidd pile reference architecture.md/);
+});
+
+test("contexte plan et refine : plan garde l'architecture ; refine la lit à la demande ; le n° 36 de la fiche est reporté", () => {
+  const plan = lancer("contexte", "plan");
+  const refine = lancer("contexte", "refine");
+  for (const r of [plan, refine]) {
+    assert.doesNotMatch(r.stdout, /----- Fiche de la pile/);
+    assert.match(r.stdout, /----- Recettes disponibles/);
+    assert.match(r.stdout, /recette `limite`[^\n]*`formulaire-public`/);
+  }
+  assert.match(plan.stdout, /----- Architecture du code/);
+  assert.doesNotMatch(refine.stdout, /----- Architecture du code/);
+  assert.match(refine.stdout, /pulse-aidd pile reference architecture\.md/);
+  assert.match(plan.stdout, /Découpage mixte. Une tâche tirée d'une recette[^\n]*garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur/);
 });
 
 test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {
@@ -544,8 +614,8 @@ test("info : le pack déclare les familles de qualité qu'il couvre (organisatio
   assert.match(lancer("info").stdout, /^couvre: organisation$/m);
 });
 
-test("contexte review : l'architecture sans les modèles de code, gardés à la demande", () => {
-  const r = lancer("contexte", "review");
+test("contexte plan : l'architecture sans les modèles de code, gardés à la demande", () => {
+  const r = lancer("contexte", "plan");
   assert.match(r.stdout, /## 10\. Tests/);
   assert.doesNotMatch(r.stdout, /Modèles de code \(domaine/);
   assert.match(lire(REF, "modeles-code.md"), /^# Modèles de code \(domaine `factures`\)/);
@@ -555,4 +625,25 @@ test("contexte review : l'architecture sans les modèles de code, gardés à la 
 
 test("contexte implement : l'architecture (sens des imports) pour tout nouveau fichier, entité ou action", () => {
   assert.match(lire(REF, "contexte", "implement.md"), /Nouveau fichier ou dossier, entité, use-case, repository, action ou container : appliquer `pulse-aidd pile reference architecture.md`/);
+});
+
+// Un outil cité dans les consignes d'un agent lui est disponible : les commandes que le pack cite à un agent (sa sortie `contexte <x>`)
+// figurent dans la liste « Utiliser … seulement » de l'agent, sauf une ligne réservée à la conversation de la commande.
+test("agents qui chargent un contexte du pack : les commandes citées par le pack leur sont permises", () => {
+  const dossier = path.join(RACINE, "..", "pulse-vibe", "agents");
+  const echecs = [];
+  for (const fichier of fs.readdirSync(dossier).filter((f) => f.endsWith(".md"))) {
+    const texte = fs.readFileSync(path.join(dossier, fichier), "utf8");
+    const liste = texte.split("\n").find((l) => /^- Utiliser .*(Bash|commandes en lecture)/.test(l));
+    if (!liste) continue;
+    for (const [, libelle] of texte.matchAll(/pulse-aidd pile contexte ([a-z-]+)/g)) {
+      const sortie = lancer("contexte", libelle).stdout;
+      for (const ligne of sortie.split("\n").filter((l) => !l.includes("dans la conversation de cette commande")))
+        for (const [, mot1, mot2] of ligne.matchAll(/pulse-aidd ([a-z-]+)(?: ([a-z-]+))?/g)) {
+          const permis = liste.includes(`pulse-aidd ${mot1} ${mot2}`) || liste.includes(`pulse-aidd ${mot1} …`) || liste.includes(`pulse-aidd ${mot1}\``);
+          if (!permis) echecs.push(`${fichier} (contexte ${libelle}) : pulse-aidd ${mot1} ${mot2 || ""}`.trim());
+        }
+    }
+  }
+  assert.deepStrictEqual([...new Set(echecs)], []);
 });

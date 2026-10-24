@@ -16,13 +16,9 @@ Analogie à donner : « C'est comme un document partagé qui se met à jour tout
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte deploy` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte deploy`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie.
 
 Mode demandé (facultatif) : `$ARGUMENTS`
 
@@ -41,7 +37,7 @@ Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hé
 2. Branche : `git branch --show-current`. Si c'est `master`, proposer `git branch -m main` et expliquer que `main` est la branche publiée.
 3. Tout est enregistré : si `git status --short` liste des fichiers, proposer de taper `/pulse:commit` d'abord.
 4. Secrets : lancer `pulse-aidd verifier` depuis la racine du projet. Il vérifie que les fichiers d'environnement restent hors de Git et que le projet est exempt de clés secrètes. S'il échoue, expliquer chaque problème simplement et corriger avant d'aller plus loin.
-5. Contrôles du projet : lancer les contrôles automatiques, la commande « Tester » et la commande « Construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur ou un test en échec bloque l'envoi : appliquer `pulse-aidd etape fix --sans-communes` (un test ou une erreur précise) ou `pulse-aidd etape auto-fix --sans-communes` (beaucoup d'erreurs de lint ou de types). Si aucune commande de contrôle ni de test n'existe, le signaler et proposer d'en ajouter (tapez `/pulse:tech`).
+5. Contrôles du projet : lancer les contrôles automatiques, la commande « Tester » et la commande « Construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur ou un test en échec bloque l'envoi : appliquer `pulse-aidd etape fix --sans-noyau` (un test ou une erreur précise) ou `pulse-aidd etape auto-fix --sans-noyau` (beaucoup d'erreurs de lint ou de types). Si aucune commande de contrôle ni de test n'existe, le signaler et proposer d'en ajouter (tapez `/pulse:tech`).
 6. Sécurité, avant la **première** mise en ligne (aucun dépôt distant, mode `premiere`, ou ligne « Site en ligne » de `docs/technical.md` encore vide) : appliquer à l'identique le contrôle rapide de `/pulse:security rapide` (`pulse-aidd reference security/rapide.md`, en lecture seule). Un ⛔ bloque la mise en ligne : le corriger d'abord (une clé exposée : appliquer tout de suite `pulse-aidd reference secrets/fuite.md`). Les ⚠️ s'affichent avec leur correction proposée, et la mise en ligne continue.
 
 ### 2. Choisir le mode
@@ -63,7 +59,7 @@ Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/puls
 Suivre la documentation officielle de l'hébergeur retenu, et la traduire en étapes simples, une à la fois :
 1. Se connecter à l'hébergeur (avec le compte du dépôt distant si c'est proposé : c'est souvent le plus simple).
 2. Créer un nouveau site ou projet à partir d'un dépôt existant, autoriser l'accès au dépôt, choisir le dépôt.
-3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer en appliquant l'étape **commit** (`pulse-aidd etape commit --sans-communes`).
+3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer en appliquant l'étape **commit** (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier)).
 4. Si l'appli a besoin de variables d'environnement (« Secrets et variables d'environnement », `.env.example`) : les faire saisir **avant** le premier déploiement (section 5, point 2), sinon la construction ou l'appli échoue.
 5. Lancer le premier déploiement, attendre la fin, puis renommer le site si souhaité.
 6. Me coller l'adresse du site.
@@ -76,7 +72,7 @@ Le site répond et le garde-fou passe : proposer une **première mesure de vites
 
 #### 3c. Voir le déploiement automatique en action
 
-Proposer une petite modification visible (par exemple le texte du titre), puis appliquer l'étape **commit** (`pulse-aidd etape commit --sans-communes`, argument `push`), et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
+Proposer une petite modification visible (par exemple le texte du titre), puis appliquer l'étape **commit** (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`), et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
 
 ### 4. Mise à jour
 
@@ -119,3 +115,9 @@ Terminer avec le bloc de fin de commande, en indiquant l'adresse du site, le ré
 - `/pulse:deploy` la première fois : les vérifications, puis un guidage pas à pas chez l'hébergeur ; à la fin, l'adresse de votre site et la preuve qu'il répond.
 - `/pulse:deploy` ensuite : votre dernière version est envoyée, l'hébergeur la publie toute seule, et la nouveauté est vérifiée en ligne.
 - `/pulse:deploy production` : un contrôle automatique avant chaque mise en ligne, les clés secrètes et les réglages enregistrés chez l'hébergeur, et une surveillance du site.
+
+## Références de la commande
+
+!`pulse-aidd contexte deploy`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie.

@@ -47,13 +47,13 @@ Exemple: Liste vide
 \`\`\`
 ${extra}`;
 
-const TACHE = (id, { titre = "Voir la liste", depend = "—", fichiers = "à créer : `src/liste.js`", verification = "US-002 critère 1 – ouvrir la liste", tests = "US-002-1 (intégration)", statut = " " } = {}) => `- [${statut}] **${id} – ${titre}** · US-002
+const TACHE = (id, { titre = "Voir la liste", depend = "—", fichiers = "à créer : `src/liste.js`", verification = "US-002 critère 1 – ouvrir la liste", tests = "US-002-1 (intégration)", statut = " ", recette = "" } = {}) => `- [${statut}] **${id} – ${titre}** · US-002
   - Objectif : voir mes tâches
   - Dépend de : ${depend}
   - Fichiers : ${fichiers}
   - Vérification : ${verification}
   - Tests : ${tests}
-`;
+${recette ? `  - Recette : ${recette}\n` : ""}`;
 
 const PLAN = (taches, statut = "validé le 2026-10-11") => `# Plan – TodoIt – US-002 Voir la liste
 
@@ -160,6 +160,30 @@ test("fichiers : à modifier absent, à créer déjà présent, plus de 3 fichie
   // Une tâche terminée a créé ses fichiers : rien à signaler.
   const fait = projet({ "src/liste.js": "", [planFichier]: PLAN([TACHE("T1", { statut: "x", verification: "US-002 critères 1 et 2" }), MISE_EN_LIGNE]) });
   assert.deepStrictEqual(constats(fait), []);
+});
+
+test("fichiers : une tâche « Recette : » garde son découpage, une tâche ordinaire de 4 fichiers est signalée", () => {
+  const huit = Array.from({ length: 8 }, (_, i) => `\`src/f${i}.js\``).join(", ");
+  const quatre = Array.from({ length: 4 }, (_, i) => `\`src/g${i}.js\``).join(", ");
+  const racine = projet({
+    [planFichier]: PLAN([
+      TACHE("T1", { titre: "Recette : liste des factures", verification: "US-002 critère 1", fichiers: `à créer : ${huit}` }),
+      TACHE("T2", { titre: "Voir le détail", depend: "T1", verification: "US-002 critère 2", fichiers: `à créer : ${quatre}` }),
+      MISE_EN_LIGNE,
+    ]),
+  });
+  const c = constats(racine);
+  assert.ok(!c.some((l) => /^avertissement · T1 · \d+ fichiers/.test(l)), c.join("\n"));
+  assert.ok(c.some((l) => /^avertissement · T2 · 4 fichiers/.test(l)), c.join("\n"));
+});
+
+test("fichiers : une tâche au titre descriptif et à la ligne « Recette : <nom> » garde aussi son découpage", () => {
+  const dix = Array.from({ length: 10 }, (_, i) => `\`src/h${i}.js\``).join(", ");
+  const racine = projet({
+    [planFichier]: PLAN([TACHE("T1", { titre: "Règles des factures et aides génériques", verification: "US-002 critère 1", fichiers: `à créer : ${dix}`, recette: "liste" }), MISE_EN_LIGNE]),
+  });
+  const c = constats(racine);
+  assert.ok(!c.some((l) => /^avertissement · T1 · \d+ fichiers/.test(l)), c.join("\n"));
 });
 
 test("un fichier à modifier créé par une autre tâche, dans ce plan ou un autre, ne déclenche rien", () => {

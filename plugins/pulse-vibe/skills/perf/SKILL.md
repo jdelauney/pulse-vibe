@@ -13,9 +13,9 @@ Faire vivre à la personne ce que vit son visiteur, puis l'améliorer, chiffres 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte perf` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée dans « Contexte ») pendant toute la commande.
+Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 Trois règles tiennent toute la commande (détails dans la référence) :
 - chaque chiffre dit sa **source** : simulation (laboratoire) ou vrais visiteurs (terrain), dans deux tableaux distincts ;
@@ -25,10 +25,6 @@ Trois règles tiennent toute la commande (détails dans la référence) :
 **Frontières**, à dire si la demande en sort : l'accessibilité réelle et l'apparence relèvent de `/pulse:ui audit` (le score d'accessibilité de Lighthouse n'en est qu'un indice) ; les en-têtes de sécurité, de `/pulse:security entetes` ; la lenteur côté serveur (requêtes en base, quotas) devient une ligne « côté serveur » du rapport, puis `/pulse:fix` ou une user story.
 
 ## Contexte
-
-!`pulse-aidd contexte perf`
-
-Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS`
 
@@ -85,10 +81,10 @@ Prochaine étape : `/pulse:perf corriger` s'il y a une priorité, sinon `/pulse:
 2. **Point de comparaison** :
    - source PageSpeed Insights : la dernière mesure sert d'« avant » ;
    - source locale : mesurer d'abord l'« avant » sur ce poste, construction de production actuelle, `--passages 5 --json docs/performance/mesures/<AAAA-MM-JJ>-avant.json`.
-3. **Corriger** : appliquer les règles de qualité (`pulse-aidd qualite`), les consignes « Pack de pile » et la documentation officielle de la pile ; changer seulement ce que demande la priorité. Lancer ensuite les contrôles automatiques et la commande « Construire » de « Commandes du projet » : une erreur se corrige avant d'aller plus loin.
+3. **Corriger** : appliquer les règles de qualité (`pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants`, chaque sortie lue en entier), les consignes « Pack de pile » et la documentation officielle de la pile ; changer seulement ce que demande la priorité. Lancer ensuite les contrôles automatiques et la commande « Construire » de « Commandes du projet » : une erreur se corrige avant d'aller plus loin.
 4. **Mesurer l'« après »** :
    - source locale : servir la nouvelle construction, puis `pulse-aidd perf mesurer … --source local --passages 5 --json docs/performance/mesures/<AAAA-MM-JJ>-apres.json` ;
-   - source PageSpeed Insights : enregistrer (`pulse-aidd etape commit --sans-communes`, argument `push`), mettre en ligne avec l'accord de la personne (`pulse-aidd etape deploy --sans-communes`), vérifier avec `pulse-aidd sonder <adresse>`, puis mesurer avec `--passages 5`.
+   - source PageSpeed Insights : enregistrer (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`), mettre en ligne avec l'accord de la personne (`pulse-aidd etape deploy --sans-communes`), vérifier avec `pulse-aidd sonder <adresse>`, puis mesurer avec `--passages 5`.
 5. **Comparer** : `pulse-aidd perf comparer <avant.json> <apres.json>`. Annoncer une amélioration seulement sur les lignes « mieux » ; « dans le bruit » se dit tel quel, avec la proposition de remesurer.
 6. **Écrire** dans `docs/performance.md` : statut de chaque priorité (« corrigé le … », ou « écarté : raison »), « Dernière mesure », une ligne d'« Historique » avec l'avant/après. Proposer `/pulse:commit` pour le code et le document, puis la mise en ligne si elle reste à faire.
 7. Placer le **rapport de réalisation** des règles communes avant le bloc de fin : la preuve d'une correction est la ligne « mieux » de `pulse-aidd perf comparer`.
@@ -106,7 +102,7 @@ Trois volets, proposés un par un (AskUserQuestion), chacun facultatif.
    - Proposer la vérification automatique, avec le fournisseur de CI de « Hébergement et mise en ligne » (sa documentation officielle pour la syntaxe). `pulse-aidd perf installer` copie le script de mesure dans `scripts/perf.js` du projet ; la CI l'appelle avec `node scripts/perf.js`.
      - **Chaque semaine, sur le site en ligne (Recommandé)** : tâche planifiée et déclenchable à la main ; Node.js LTS ; `node scripts/perf.js mesurer <adresse du site> --pages docs/performance.md --source psi --passages 3 --json mesure.json`, puis `node scripts/perf.js budget mesure.json docs/performance.md` ; `mesure.json` gardé comme fichier joint du passage. La clé va dans les secrets du dépôt sous le nom `PULSE_PSI_CLE`, saisie par la personne. Un budget dépassé fait échouer la tâche : le fournisseur prévient par e-mail ; les fusions restent libres.
      - **Sur chaque proposition de version parallèle** : installer, construire, servir la construction en mode production en arrière-plan, attendre qu'elle réponde, puis `node scripts/perf.js mesurer http://localhost:<port> --pages docs/performance.md --source local --passages 3 --json mesure.json` et `budget`. La machine de CI diffère du poste : commencer en mode informatif (l'échec de cette étape laisse la CI verte), puis rendre l'étape bloquante quand les chiffres sont stables. PageSpeed Insights ne sert pas ici : les adresses de prévisualisation sont souvent protégées.
-   - Montrer le fichier de CI complet, l'écrire avec accord, essayer les deux commandes en local, puis l'enregistrer et l'envoyer (`pulse-aidd etape commit --sans-communes`, argument `push`). Mettre à jour « Mesure réelle et suivi » de `docs/performance.md` et la ligne CI de `docs/technical.md`.
+   - Montrer le fichier de CI complet, l'écrire avec accord, essayer les deux commandes en local, puis l'enregistrer et l'envoyer (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`). Mettre à jour « Mesure réelle et suivi » de `docs/performance.md` et la ligne CI de `docs/technical.md`.
 
 ### Fin
 
@@ -117,3 +113,9 @@ Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il
 - `/pulse:perf` : 3 à 5 pages de votre site mesurées comme sur un téléphone moyen, une phrase de verdict par page et 3 priorités au plus, notées dans `docs/performance.md`.
 - `/pulse:perf corriger` : vous choisissez les priorités ; après la correction, la comparaison avant/après annonce seulement ce qui va vraiment mieux.
 - `/pulse:perf suivre` : un budget proposé à partir de la dernière mesure, puis, si vous l'acceptez, une vérification automatique chaque semaine.
+
+## Références de la commande
+
+!`pulse-aidd contexte perf`
+
+Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.

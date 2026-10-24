@@ -76,7 +76,7 @@ Le carnet de route, tâche par tâche : [docs/guide/index.md](docs/guide/index.m
 
 ### Communication
 
-Le profil ci-dessous règle le niveau des explications, et le rythme de la réalisation (« à choisir » : demandé à chaque réalisation ; « rapide », posé par `/pulse:express` ; « complet » : règles communes Pulse, § 1). Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur », « rythme complet », « demande-moi le rythme à chaque fois ») : mettez alors le bloc à jour et dites-le en une ligne.
+Le profil ci-dessous règle le niveau des explications, et le rythme de la réalisation (« à choisir » : demandé à chaque réalisation ; « rapide », posé par `/pulse:express` ; « complet » : règles de réalisation de Pulse). Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur », « rythme complet », « demande-moi le rythme à chaque fois ») : mettez alors le bloc à jour et dites-le en une ligne.
 
 <!-- pulse_profil:debut -->
 - **Niveau** : à préciser
@@ -102,7 +102,7 @@ Le profil ci-dessous règle le niveau des explications, et le rythme de la réal
 
 ### Qualité du code
 
-Avant d'écrire ou de relire du code, chargez les règles de qualité avec `pulse-aidd qualite` (clean code, composants, sécurité du code). En cas de conflit, ce fichier et la mémoire du projet priment.
+Avant d'écrire ou de relire du code, chargez chaque famille utile avec `pulse-aidd qualite <famille>`, un appel par famille (la commande sans famille affiche la règle de choix). En cas de conflit, ce fichier et la mémoire du projet priment.
 
 ### Sécurité (non négociable)
 

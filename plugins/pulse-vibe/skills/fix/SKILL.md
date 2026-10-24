@@ -15,13 +15,9 @@ Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-f
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte fix` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte fix`
-
-Les règles de qualité du code se chargent à l'étape 3, avec `pulse-aidd qualite`. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
 
 Problème signalé : `$ARGUMENTS`
 
@@ -71,7 +67,7 @@ Repères fréquents :
 
 ### 3. Choisir la correction
 
-Lancer `pulse-aidd qualite` (règles de qualité du code), puis évaluer 1 à 3 solutions selon : **corrige la cause** (plutôt que le symptôme), **préserve ce qui fonctionne**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
+Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour chaque famille utile des fichiers à corriger, chaque sortie lue en entier (`composants` pour l'interface, `securite` pour un point d'entrée serveur, une action, une route ou la base, `organisation` pour un fichier créé ; règle commune 12), puis évaluer 1 à 3 solutions selon : **corrige la cause** (plutôt que le symptôme), **préserve ce qui fonctionne**, **le plus petit changement**, **cohérent avec le code existant** et les règles de qualité. Écarter toute « correction » qui affaiblit la sécurité ou les contrôles : désactiver une règle de contrôle d'accès ou du lint, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, interpréter comme du HTML une saisie qui doit s'afficher comme du texte.
 
 Si la correction **change le comportement attendu** (une règle métier, un écran) : cela devient une décision, au-delà d'une correction. La poser à la personne (AskUserQuestion), et proposer de mettre à jour la user story.
 
@@ -108,3 +104,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si 
 
 - `/pulse:fix "le bouton Ajouter ne fait rien"` : la cause dite en une phrase, la correction, puis vous refaites l'action pour confirmer que tout fonctionne.
 - `/pulse:fix` sans argument : une seule ronde de questions (« Que faisiez-vous ? », « Y a-t-il un message en rouge ? ») avant toute recherche.
+
+## Références de la commande
+
+!`pulse-aidd contexte fix`
+
+Les règles de qualité du code se chargent à l'étape 3, par famille. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.

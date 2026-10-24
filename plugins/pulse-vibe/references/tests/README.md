@@ -19,16 +19,4 @@ Ces références décrivent **quoi tester, comment écrire un test et dans quel 
 | `tests/tdd.md` | Cycle rouge / vert / remaniement, les 5 étapes pour écrire un exemple, ordre des exemples |
 | `tests/test-manuel.md` | Fiche de test manuel à adapter à chaque fonctionnalité, passe préalable dans le navigateur |
 
-`pulse-aidd tests` affiche toute la méthode (sans le test manuel) ; `pulse-aidd tests <morceau>…` seulement les morceaux nommés : `strategie`, `ecrire`, `unitaire`, `integration`, `bout-en-bout`, `tdd`, `gherkin` (les niveaux portent le nom des étiquettes des scénarios, sans `@`).
-
-## Vocabulaire
-
-| Terme | Sens |
-|---|---|
-| **SUT** (*System Under Test*) | Ce qu'on teste ; par extension, l'objet de test qui l'enveloppe et expose des méthodes `given…`, `when…`, `then…` |
-| **Assertion** | Vérification automatique qui fait passer ou échouer le test |
-| **Doublure** | Remplaçant contrôlé d'une dépendance (factice, bouchon, espion, simulacre, faux) : `tests/ecrire-un-test.md` §8 |
-| **Jeu de données** (*fixture*) | Données de test prêtes à l'emploi, souvent produites par un constructeur avec valeurs par défaut |
-| **Frontière** | Point où le code du projet parle à l'extérieur : réseau, base, fichiers, horloge, hasard, service tiers |
-| **Test instable** (*flaky*) | Test qui passe ou échoue sans changement du code |
-| **DAMP** | *Descriptive And Meaningful Phrases* : un test se lit comme une phrase métier, quitte à répéter un peu |
+`pulse-aidd tests <morceau>…` affiche seulement les morceaux nommés (sans morceau : ce sommaire seul ; `--tout` : toute la méthode, sans le test manuel ; `<morceaux> --checklists` : leurs listes de contrôle et signaux d'alerte seuls) : `strategie`, `ecrire`, `unitaire`, `integration`, `bout-en-bout`, `tdd`, `gherkin` (les niveaux portent le nom des étiquettes des scénarios, sans `@`).

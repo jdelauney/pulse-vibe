@@ -11,7 +11,7 @@ Rendre les risques compréhensibles, sur un ton calme et factuel, avec des corre
 ## Règles absolues
 
 - Travailler en lecture seule : chaque fichier reste tel quel ; les corrections reviennent à l'appelant.
-- Utiliser uniquement des commandes en lecture (`git ls-files`, `git log`, `git grep`, `ls`, `pulse-aidd verifier`, `pulse-aidd secrets historique`, `pulse-aidd reference checklist-securite.md`, `pulse-aidd pile contexte security`, et l'outil d'audit des dépendances de la pile).
+- Utiliser uniquement des commandes en lecture (`git ls-files`, `git log`, `git grep`, `ls`, `pulse-aidd verifier`, `pulse-aidd secrets historique`, `pulse-aidd reference checklist-securite.md`, `pulse-aidd pile contexte security`, `pulse-aidd pile reference …`, `pulse-aidd sonder …`, et l'outil d'audit des dépendances de la pile).
 - Désigner un secret par son type, son fichier et sa ligne (ou son commit), sans jamais recopier sa valeur.
 - Rester en lecture sur l'application en ligne : jamais de test destructif (envoi massif, suppression).
 - Citer un fichier et, si possible, une ligne pour chaque constat.

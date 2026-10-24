@@ -15,15 +15,11 @@ Le script `pulse-aidd seo` lit le site **servi**, comme un robot. Les textes son
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte seo` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi « Référencement : les règles » et « Référencement : assistants IA » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi « Référencement : les règles » et « Référencement : assistants IA » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte seo`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS` (vide = `audit`)
 
@@ -53,7 +49,7 @@ Fichiers de cette commande : [references/regles.md](references/regles.md), [refe
 2. **Lancer** `pulse-aidd seo <adresse> --ia [--chemins <pages>] [--privees <pages privées>] [--previsualisation]`, puis, avec un pack, `pulse-aidd pile seo-code` (contrôles du code). Expliquer en une phrase que les deux sont en lecture seule.
 3. **Enregistrer** le rapport dans `docs/seo/audits/seo-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe), selon le modèle `seo-audit.md` : constats rangés par les quatre questions, chacun avec sa conséquence concrète et sa correction.
 4. **Présenter** en 5 lignes : le bilan, les Critiques et Hautes avec leur conséquence (« Google ne peut pas ouvrir cette adresse, donc… »), ce qui va bien. Pour la quatrième question, poser deux ou trois questions de la référence « textes » (§ 3), sans note.
-5. **Traiter** les constats selon les règles communes (§ 6) : une fondation manquante → `bases` ; un titre ou une description → `textes` ; une politique IA absente → `ia` ; une page privée exposée → `/pulse:security` ; l'accessibilité → `/pulse:ui audit`. Avant de corriger du code : `pulse-aidd qualite`. Après correction : relancer `pulse-aidd seo` et remplir « Avant / après » du rapport.
+5. **Traiter** les constats selon les règles de relecture : une fondation manquante → `bases` ; un titre ou une description → `textes` ; une politique IA absente → `ia` ; une page privée exposée → `/pulse:security` ; l'accessibilité → `/pulse:ui audit`. Avant de corriger du code : `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite securite` (chaque sortie lue en entier). Après correction : relancer `pulse-aidd seo` et remplir « Avant / après » du rapport.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la première action de traitement, sinon `/pulse:seo lancer` si le site est en ligne sur son domaine définitif.
 
@@ -62,7 +58,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la première action
 Les fondations, posées une fois : adresse du site (variable de production), modèle de titre, description par défaut, robots.txt, sitemap, image de partage, icône, nom du site (`WebSite` sur l'accueil), organisation (`Organization`, ou `LocalBusiness` pour un commerce avec adresse), `noindex` des pages privées, vraie page 404.
 
 1. Avec un pack : suivre sa recette `seo` (`pulse-aidd pile recette seo`). Sans pack : la documentation officielle de la pile, pour chacune des fondations ci-dessus.
-2. Montrer la liste des fichiers à créer ou modifier avant d'écrire. Lancer `pulse-aidd qualite` et appliquer ses règles.
+2. Montrer la liste des fichiers à créer ou modifier avant d'écrire. Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour `securite` et `composants` (chaque sortie lue en entier), et appliquer ces règles.
 3. Créer `docs/seo.md` à partir du modèle `seo.md` s'il manque (bloc `pulse-seo` compris) ; la politique des robots IA reste « à décider » : robots.txt ouvert (choix A) en attendant.
 4. **Preuve** : construire, servir, `pulse-aidd seo <adresse locale> --ia` : aucun Critique ni Haute ; avec un pack, `pulse-aidd pile seo-code`. Lancer aussi les contrôles automatiques de « Commandes du projet ».
 
@@ -81,7 +77,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la page suivante, o
 
 ### ia
 
-Suivre « Référencement : assistants IA » ci-dessus.
+Suivre « Référencement : assistants IA » (en fin de fichier).
 
 1. Afficher la politique actuelle de `docs/seo.md` (choix et date), ou « à décider ».
 2. Expliquer en trois lignes les trois familles de robots, puis poser **une** question à quatre réponses (A, B, C, D) avec leurs conséquences, sans recommandation ; B porte la mention « (le plus courant pour un site vitrine) ». Les options (Content-Signal, Amazonbot, `nosnippet`) se proposent seulement si la personne s'y intéresse.
@@ -103,3 +99,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:search-cons
 - `/pulse:seo` : votre site lu comme le ferait Google, un rapport rangé par les quatre questions, et la première correction à faire.
 - `/pulse:seo textes /tarifs` : deux titres et deux descriptions proposés pour la page des tarifs ; vous choisissez ou réécrivez.
 - `/pulse:seo ia` : une question à quatre réponses sur ce que les assistants IA peuvent faire de votre site, puis votre choix noté dans `docs/seo.md`.
+
+## Références de la commande
+
+!`pulse-aidd contexte seo`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.

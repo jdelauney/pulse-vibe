@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 // Affiche les règles de qualité du code ou la méthode de tests, en entier ou par morceaux (pulse-aidd qualite, pulse-aidd tests).
 //
-//   node scripts/charger-regles.js qualite [clean-code|organisation|composants|securite]… [--checklists]
-//   node scripts/charger-regles.js tests [strategie|ecrire|unitaire|integration|bout-en-bout|tdd|gherkin]…
+//   node scripts/charger-regles.js qualite [clean-code|organisation|composants|securite]… [--tout] [--checklists]
+//   node scripts/charger-regles.js tests [strategie|ecrire|unitaire|integration|bout-en-bout|tdd|gherkin]… [--tout] [--checklists]
 //
-// Sans nom : toutes les familles, comme avant. Avec des noms : seulement celles-là, dans l'ordre ci-dessus.
-// --checklists : seulement la section « Checklist » de chaque famille retenue (relecture).
+// Avec des noms : seulement ces familles, dans l'ordre ci-dessus, après la règle de travail sobre (sans le sommaire). Sans nom :
+// la règle de travail sobre, le sommaire (qui porte la règle de choix) et « Relancez avec … », code 0 : chaque appel nomme ses familles.
+// --tout : toutes les familles, après le sommaire, même si des noms sont donnés (avec --checklists : toutes les checklists).
+// --checklists : seulement les sections de contrôle (Checklist, Liste de contrôle, Signaux d'alerte) des familles retenues.
 // PULSE_PACK_COUVRE (familles séparées par des espaces) et PULSE_PACK_NOM, posées par pulse-aidd quand le pack de pile
 // déclaré est installé : chaque famille couverte par le pack est remplacée par un renvoi au pack.
 // La règle de travail sobre (references/travail-sobre.md) vient toujours en tête : chaque agent qui écrit, relit
@@ -20,6 +22,7 @@ const REF = path.join(__dirname, "..", "references");
 const TYPES = {
   qualite: {
     sommaire: { titre: "Règles de qualité du code", fichier: "qualite/README.md" },
+    relance: "Relancez avec les familles utiles, une commande par famille : `pulse-aidd qualite <famille>` (`--tout` les charge toutes).",
     familles: [
       { nom: "clean-code", titre: "Clean code", fichier: "qualite/clean-code.md" },
       { nom: "organisation", titre: "Organisation des fichiers et nommage", fichier: "qualite/organisation.md" },
@@ -30,6 +33,7 @@ const TYPES = {
   // Les niveaux portent le nom des étiquettes des scénarios (@unitaire, @integration, @bout-en-bout), sans @.
   tests: {
     sommaire: { titre: "Stratégie de tests : sommaire", fichier: "tests/README.md" },
+    relance: "Relancez avec les morceaux utiles : `pulse-aidd tests <morceaux>` (`--tout` les charge tous ; `--checklists` : leurs listes de contrôle seules).",
     familles: [
       { nom: "strategie", titre: "Stratégie de tests", fichier: "tests/strategie.md" },
       { nom: "ecrire", titre: "Écrire un test", fichier: "tests/ecrire-un-test.md" },
@@ -50,13 +54,19 @@ function familles(type) {
   return TYPES[type].familles.map((f) => ({ ...f, fichier: path.join(REF, f.fichier) }));
 }
 
-/** La section « Checklist » d'une référence (du titre `## …Checklist…` au titre `## ` suivant), ou null. */
+const TITRE_CONTROLE = /^## .*(Checklist|Liste de contrôle|Signaux d'alerte)/;
+
+/** Les sections de contrôle d'une référence (de chaque titre `## …` reconnu au titre `## ` suivant), ou null. */
 function checklist(texte) {
   const lignes = texte.split("\n");
-  const debut = lignes.findIndex((l) => /^## .*Checklist/.test(l));
-  if (debut < 0) return null;
-  const fin = lignes.findIndex((l, i) => i > debut && /^## /.test(l));
-  return lignes.slice(debut, fin < 0 ? lignes.length : fin).join("\n").trimEnd() + "\n";
+  const sections = [];
+  for (let i = 0; i < lignes.length; i++) {
+    if (!TITRE_CONTROLE.test(lignes[i])) continue;
+    let fin = lignes.findIndex((l, j) => j > i && /^## /.test(l));
+    if (fin < 0) fin = lignes.length;
+    sections.push(lignes.slice(i, fin).join("\n").trimEnd());
+  }
+  return sections.length ? sections.join("\n\n") + "\n" : null;
 }
 
 /** Un bloc au format de `afficher()` de bin/pulse-aidd. */
@@ -69,22 +79,24 @@ function composer(type, args, pack = { couvre: [], nom: "" }) {
   const def = TYPES[type];
   if (!def) return { erreur: `Type inconnu : ${type}.` };
   const checklists = args.includes("--checklists");
-  if (checklists && type !== "qualite") return { erreur: "--checklists vaut seulement pour pulse-aidd qualite." };
-  const noms = args.filter((a) => a !== "--checklists");
+  const tout = args.includes("--tout");
+  const noms = args.filter((a) => a !== "--checklists" && a !== "--tout");
   const valides = def.familles.map((f) => f.nom);
   const inconnus = noms.filter((n) => !valides.includes(n));
   if (inconnus.length) return { erreur: `Inconnu : ${inconnus.join(", ")}. Noms possibles : ${valides.join(", ")}.` };
-  const retenues = noms.length ? def.familles.filter((f) => noms.includes(f.nom)) : def.familles;
-
   let sortie = bloc("Travailler sobrement", lire("travail-sobre.md"));
-  sortie += bloc(def.sommaire.titre, lire(def.sommaire.fichier));
+  // Des familles nommées : la règle sobre suffit ; le sommaire (et sa règle de choix) vient avec l'appel sans nom ou avec --tout.
+  const nomme = noms.length > 0 && !tout;
+  if (!nomme) sortie += bloc(def.sommaire.titre, lire(def.sommaire.fichier));
+  if (!noms.length && !tout && !checklists) return { sortie: sortie + "\n" + def.relance + "\n" };
+  const retenues = nomme ? def.familles.filter((f) => noms.includes(f.nom)) : def.familles;
   for (const f of retenues) {
     if (REMPLACABLES.includes(f.nom) && pack.couvre.includes(f.nom)) {
       sortie += bloc(f.titre, `Couverte par le pack ${pack.nom} : appliquer ses consignes et ses références (\`pulse-aidd pile reference <fichier>\`).`);
       continue;
     }
     const texte = lire(f.fichier);
-    sortie += checklists ? bloc(`${f.titre} : checklist`, checklist(texte) || "") : bloc(f.titre, texte);
+    sortie += checklists ? bloc(`${f.titre} : checklist`, checklist(texte) || "(aucune liste de contrôle)") : bloc(f.titre, texte);
   }
   return { sortie };
 }

@@ -13,15 +13,11 @@ Expliquer simplement un fichier, une fonction ou une ligne de code, en le relian
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte explain` et lire sa sortie en entier) pendant toute la commande.
 
 Cette commande **travaille en lecture seule** sur le code ; elle écrit seulement dans le lexique `docs/lexique.md`, sans demander d'autorisation, et signale chaque ajout en une ligne (« 📘 Ajouté au lexique : **…** »). Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
 
 ## Contexte
-
-!`pulse-aidd contexte explain`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.
 
 Ce qu'il faut expliquer : `$ARGUMENTS`
 
@@ -60,3 +56,9 @@ Pour cette commande, le bloc de fin de commande est facultatif.
 - `/pulse:explain src/panier.js` : à quoi sert ce fichier en une phrase, puis bloc par bloc, et une question à choix pour vérifier.
 - `/pulse:explain "pourquoi ce bouton attend avant d'afficher la liste ?"` : la réponse avec l'image d'une demande envoyée à un serveur, qui attend sa réponse.
 - `/pulse:explain` sans argument : le dernier fichier modifié vous est proposé.
+
+## Références de la commande
+
+!`pulse-aidd contexte explain`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.

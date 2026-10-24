@@ -2,7 +2,7 @@
 description: Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante)
 argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd etape review --sans-communes) Bash(pulse-aidd etape fix --sans-communes) Bash(pulse-aidd etape auto-fix --sans-communes) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Bash(git fetch origin) Bash(pulse-aidd revue *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd realisation *) Bash(pulse-aidd contexte auto-fix)
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd etape review --sans-communes) Bash(pulse-aidd etape fix --sans-communes) Bash(pulse-aidd etape auto-fix --sans-communes) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Bash(git fetch origin) Bash(pulse-aidd revue *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd realisation *) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd etape implement)
 ---
 
 # /pulse:implement – Réaliser une tâche
@@ -14,18 +14,14 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte impleme
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte implement` et lire sa sortie en entier) pendant toute la commande.
 
 ### Contraintes d'implémentation
 
-- Toujours appliquer les règles de qualité de code, chargées avec `pulse-aidd qualite`.
+- Toujours appliquer les règles de qualité de code, chargées par famille avec `pulse-aidd qualite <famille>`.
 - Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
 
 ## Contexte
-
-!`pulse-aidd contexte implement`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS` (les options, l'US dont on réalise le plan, puis la tâche, facultative)
 
@@ -36,12 +32,12 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 Les choix de la façon de travailler se font par une question au démarrage (§ 0). Les habitués peuvent les donner d'avance, avant l'US, regroupables (`-sw` = `-s -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
 - `-s` **en coulisse** (mode sous-agent) : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
 - `-d` **devant vous** (mode direct) : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
-- `-w` **dossier à part (worktree)** : travailler dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
-- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord » ci-dessus).
+- `-w` **dossier à part (worktree)** : travailler dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree », en fin de fichier). Utile quand une autre session travaille sur le même dossier.
+- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », en fin de fichier).
 
 ### Prérequis
 
-- **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
+- **Le plan** : celui de l'US désignée en premier argument (règles des tâches). Argument vide ou introuvable : lister les plans (en premier celui qui a une tâche `[~]`) et demander lequel. Aucun plan : proposer `/pulse:plan`.
 - La spec et l'US du même dossier (`SPEC-US-XXX-<nom>.md`, `US-XXX-<nom>.md`) et `docs/technical.md` sont nécessaires. Sinon, proposer la commande manquante. Sans `docs/technical.md` (pile non choisie) : proposer `/pulse:tech`, et attendre le choix de la pile pour installer ou coder.
 - Si des modifications non enregistrées concernent **une autre tâche** (`git status`), avec l'accord de la personne, appliquer d'abord l'étape **review** puis **commit** (`pulse-aidd etape review --sans-communes`, `pulse-aidd etape commit --sans-communes`) pour celle-ci. Un commit = une seule tâche.
 - Mode « tout le plan » : le dossier doit être un dépôt Git (`git rev-parse --is-inside-work-tree`). Sinon, proposer `/pulse:init`.
@@ -57,7 +53,7 @@ Cette commande prépare, contrôle, explique et parle à la personne ; en mode d
 
 ### 0. Choisir la façon de travailler
 
-**Mode découverte** (règles communes § 1) : aucune question ici ; chaque choix ci-dessous prend sa réponse recommandée, annoncée en une phrase. Sinon, poser **une seule ronde** (AskUserQuestion, 4 questions au plus) avec, selon le cas :
+**Mode découverte** (règles de réalisation) : aucune question ici ; chaque choix ci-dessous prend sa réponse recommandée, annoncée en une phrase. Sinon, poser **une seule ronde** (AskUserQuestion, 4 questions au plus) avec, selon le cas :
 
 - **Mode** : sans `-s` ni `-d`, question « Comment réaliser la tâche ? » : « Je code en coulisse (Recommandé) » (un assistant spécialisé code à part : la conversation reste légère) / « Je code devant vous » (vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
 - **Tests** : sans `-t`, « 2. Choisir au démarrage » de la référence « Tests automatiques ».
@@ -95,7 +91,7 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
 - **Terminé** : lire son rapport et les changements (`git diff`, `git status`), puis passer à l'étape 4. Les points « À signaler » sur `docs/` sont traités ici (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
 
-**Mode direct** : lancer `pulse-aidd qualite` une fois (avant la première tâche réalisée dans cette conversation, et de nouveau si ces règles ne figurent plus dans la conversation), puis réaliser soi-même, en suivant les consignes ci-dessous.
+**Mode direct** : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois (avant la première tâche réalisée dans cette conversation, et de nouveau si ces règles ne figurent plus dans la conversation) ; avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier ; puis réaliser soi-même, en suivant les consignes ci-dessous.
 
 Consignes de réalisation (pour les deux modes) :
 
@@ -103,7 +99,7 @@ Consignes de réalisation (pour les deux modes) :
 - **S'appuyer sur le code réel** : créer ou modifier les fichiers listés par la tâche, à l'emplacement prévu par l'organisation de `docs/technical.md` ; avant d'importer un module, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer dans cette tâche et le signaler. Dans un projet existant, réutiliser ce qui existe au lieu de le dupliquer.
 - Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la conception technique du plan cite une maquette, l'ouvrir et la **traduire** dans la pile retenue : son HTML sert de modèle, à réécrire.
 - Coder **uniquement** ce que demande la tâche. Une idée en plus se note dans `docs/prd.md` (« En attente »), pour plus tard.
-- Respecter « Pile retenue » de `docs/technical.md` (résumée dans la section « Stack technique » de `CLAUDE.md`) et **les références de qualité** (`pulse-aidd qualite` : clean code, composants, sécurité du code, concepts) : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
+- Respecter « Pile retenue » de `docs/technical.md` (résumée dans la section « Stack technique » de `CLAUDE.md`) et **les références de qualité** (`pulse-aidd qualite <famille>` : clean code, composants, sécurité du code) : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
 - **Documentation officielle** : pour toute API, forme du code ou configuration de la technologie retenue, consulter sa documentation officielle, à la version indiquée dans « Pile retenue » (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Vérifier chaque API, plutôt que la deviner.
 - Sécurité, toujours : les données saisies sont affichées comme du texte, jamais interprétées comme du code ; les secrets restent hors du code ; validation des champs côté serveur quand il y en a un ; messages d'erreur compréhensibles.
 - Données et contrôle d'accès, selon « Données et contrôle d'accès » de `docs/technical.md` :
@@ -116,7 +112,7 @@ Consignes de réalisation (pour les deux modes) :
 
 **Tests d'abord** : appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques » (en mode sous-agent, lancer d'abord `pulse-aidd qualite --checklists` si ces règles ne figurent pas encore dans la conversation), jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles.
 
-Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (en mode sous-agent, lancer d'abord `pulse-aidd qualite --checklists` si ces règles ne figurent pas encore dans la conversation ; s'il reste plus de 5 fichiers en erreur : `pulse-aidd etape auto-fix --sans-communes`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
+Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant la première correction ; en mode sous-agent, lancer d'abord `pulse-aidd qualite --checklists` si ces règles ne figurent pas encore dans la conversation ; s'il reste plus de 5 fichiers en erreur : `pulse-aidd etape auto-fix --sans-communes`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
 
 ### 5. Expliquer
 
@@ -140,3 +136,9 @@ Sans tâche donnée : lancer `pulse-aidd reference implement/boucle.md` et l'app
 - `/pulse:implement US-003 T3` : la tâche T3 est réalisée, puis expliquée : ce qui a changé, la notion du jour et les étapes pour la tester vous-même.
 - `/pulse:implement US-003` : toutes les tâches restantes, l'une après l'autre ; chacune est relue, testée par vous, puis enregistrée avant la suivante.
 - `/pulse:implement -d US-003 T3` : le même travail, fait devant vous étape par étape, pour apprendre en regardant.
+
+## Références de la commande
+
+!`pulse-aidd contexte implement`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <famille>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.

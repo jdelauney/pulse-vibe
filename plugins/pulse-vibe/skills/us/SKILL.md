@@ -8,18 +8,14 @@ allowed-tools: Bash(pulse-aidd contexte us) Bash(pulse-aidd reference *) Bash(pu
 
 ## Objectif
 
-Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles « User stories, specs et plans » chargées dans « Contexte »). Expliquer en deux phrases :
+Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles des tâches chargées en fin de fichier, dans « Références de la commande »). Expliquer en deux phrases :
 « Une user story décrit un besoin du point de vue de l'utilisateur. Ses critères d'acceptation, écrits sous la forme Étant donné… Lorsque… Alors…, sont ce qui permettra de vérifier que l'IA a codé exactement ce que vous vouliez. »
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte us` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte us`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.
 
 ### Prérequis
 
@@ -29,7 +25,7 @@ Les références et modèles cités dans cette commande figurent dans ce context
 
 ## Processus
 
-Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
+Appliquer « Penser avant d'écrire » (en fin de fichier). Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
 
 **Clarifier le périmètre par rondes** : une ronde de questions selon la règle commune 5 (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
 
@@ -37,7 +33,7 @@ Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées 
 
 Regrouper les fonctionnalités **Indispensables**, **Essentielles** et **Optionnelles** du PRD en **groupes** : un groupe = un grand besoin de l'utilisateur (« Gérer les demandes », « Suivre les paiements »), qui contient plusieurs US. Viser 2 à 6 groupes pour une première version ; un groupe d'une seule US est possible. Les **En attente** restent hors des groupes.
 
-Pour chaque groupe : un titre, un objectif en une phrase et un nom de dossier `<epic>` (règles ci-dessus). Montrer la liste des groupes avec leurs dossiers et la faire valider (« Valider » / « Modifier les groupes ») avant d'écrire les US.
+Pour chaque groupe : un titre, un objectif en une phrase et un nom de dossier `<epic>` (règles à « Fichier », plus bas). Montrer la liste des groupes avec leurs dossiers et la faire valider (« Valider » / « Modifier les groupes ») avant d'écrire les US.
 
 ### 2. Écrire les user stories
 
@@ -100,3 +96,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XX
 
 - `/pulse:us` : les groupes proposés à valider, puis chaque user story résumée avec ses critères ; après « Valider et sauvegarder », un fichier par user story et le référentiel `docs/user-stories.md`.
 - `/pulse:us` quand `docs/user-stories.md` existe déjà : la question « le compléter ou le refaire ? » ; le compléter garde les numéros existants.
+
+## Références de la commande
+
+!`pulse-aidd contexte us`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.

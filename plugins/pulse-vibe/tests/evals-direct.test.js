@@ -13,6 +13,7 @@ const OUTILS = path.join(__dirname, "..", "..", "..", "outils", "evals");
 const direct = require(path.join(OUTILS, "direct.js"));
 const mesure = require(path.join(OUTILS, "mesurer.js"));
 const CAS = path.join(OUTILS, "cas");
+const LF = String.fromCharCode(10);
 const TRACE = path.join(__dirname, "fixtures", "evals", "direct", "trace.jsonl");
 
 test("lireCas : le prompt, ses réglages et chaque vérification, tels que les écrit claude plugin eval", () => {
@@ -66,6 +67,49 @@ test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, r�
   assert.strictEqual(note("pulse-aidd tests x && git log | head"), true);
   assert.strictEqual(note("pulse-aidd tests x || echo echec"), true);
   assert.strictEqual(note("git log | head; pulse-aidd etat"), true);
+});
+
+test("lecture-entiere : un appel coupé par un tube mais refusé par le garde-fou ne compte pas", () => {
+  const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
+  const trace = (resultat) => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "refus-")), "trace.jsonl");
+    const appel = (id, command) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name: "Bash", input: { command } }] } });
+    const retour = (id, r) => ({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: id, ...r }] } });
+    const lignes = [appel("t1", "pulse-aidd qualite regles | head -80"), retour("t1", resultat), appel("t2", "pulse-aidd qualite regles"), retour("t2", { content: "regles" })];
+    fs.writeFileSync(f, lignes.map((l) => JSON.stringify(l)).join(LF) + LF);
+    return f;
+  };
+  const refus = { is_error: true, content: "PreToolUse:Bash hook error: ce sont des règles de Pulse, qui s'appliquent en entier" };
+  assert.strictEqual(direct.noter(trace(refus), [g]).details[0].reussi, true);
+  assert.strictEqual(direct.noter(trace({ content: "regles" }), [g]).details[0].reussi, false);
+  // une commande lancée qui a fini en échec a bien tourné : elle compte
+  assert.strictEqual(direct.noter(trace({ is_error: true, content: "Exit code 1" + LF + "erreur" }), [g]).details[0].reussi, false);
+});
+
+test("tool_used et tool_order : un appel refusé n'a rien fait", () => {
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "refus-")), "trace.jsonl");
+  const appel = (id, name) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name, input: {} }] } });
+  const retour = (id, extra) => ({ type: "user", message: { content: [{ type: "tool_result", tool_use_id: id, content: "x", ...extra }] } });
+  fs.writeFileSync(f, [appel("a", "Write"), retour("a", { is_error: true }), appel("b", "Read"), retour("b", {})].map((l) => JSON.stringify(l)).join(LF) + LF);
+  const notes = direct.noter(f, [
+    { nom: "u", type: "tool_used", tool: "Write" },
+    { nom: "r", type: "tool_used", tool: "Read" },
+    { nom: "o", type: "tool_order", before: { tool: "Write" }, after: { tool: "Read" } },
+  ]);
+  assert.deepStrictEqual(notes.details.map((d) => d.reussi), [false, true, false]);
+});
+
+test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", () => {
+  const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
+  const note = (texte) => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "blocs-")), "trace.jsonl");
+    const appel = { type: "assistant", message: { content: [{ type: "tool_use", id: "t1", name: "Bash", input: { command: "pulse-aidd qualite regles | head -80" } }] } };
+    const retour = { type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", is_error: true, content: [{ type: "text", text: texte }] }] } };
+    fs.writeFileSync(f, JSON.stringify(appel) + LF + JSON.stringify(retour) + LF);
+    return direct.noter(f, [g]).details[0].reussi;
+  };
+  assert.strictEqual(note("Exit code 1" + LF + "erreur"), false);
+  assert.strictEqual(note("PreToolUse:Bash hook error: règles de Pulse"), true);
 });
 
 test("argumentsDirect : claude -p avec le prompt d'abord, les plugins du dépôt, les outils du cas et ceux du lanceur", () => {
