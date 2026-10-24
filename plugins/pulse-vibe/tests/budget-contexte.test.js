@@ -73,7 +73,7 @@ const PLAFONDS_ETAPES = { review: 17500, commit: 29000 }; // review : mesure 17 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
 // injecte à son lancement (N-O5). Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
 const PLAFONDS_COMMANDE = {
-  annuler: 48500, // mesure 45 775
+  annuler: 49000, // mesure 48 502 (refactoring d'optimisation, tâche 1.3 : « proposer de taper » devant /pulse:get-help) ; avant, 45 775
   "auto-fix": 29500, // mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
   brainstorm: 44500, // mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
   cicd: 51500, // mesure 51 031 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 48 229

@@ -23,7 +23,7 @@ Chaque contrôle donne un statut : ✅ bon · ⚠️ à améliorer · ⛔ à cor
 
 - `pulse-aidd verifier` (formats de clés de nombreux fournisseurs, mots de passe dans une adresse de base de données…). ⛔ au moindre résultat.
 - Variables exposées au client : si la pile a une convention qui rend une variable visible côté client (préfixe, fichier de configuration publique ; voir sa documentation), chercher celles dont le nom évoque un secret, par exemple `git grep -n -o -E "<préfixe public>[A-Z_]*(SECRET|SERVICE|PRIVATE|PASSWORD)"` (`-o` : le nom seul, sans la valeur). ⛔ si trouvé.
-- Recherche de motifs dans le code client : `git grep -n -i -o -E "secret|private.?key|password\s*[:=]"` (`-o` : le mot trouvé et sa ligne, sans la valeur), puis examiner chaque ligne indiquée. ⛔ si une vraie valeur secrète part au client : la désigner par son fichier et sa ligne, sans recopier la valeur, et proposer `/pulse:secrets fuite`.
+- Recherche de motifs dans le code client : `git grep -n -i -o -E "secret|private.?key|password\s*[:=]"` (`-o` : le mot trouvé et sa ligne, sans la valeur), puis examiner chaque ligne indiquée. ⛔ si une vraie valeur secrète part au client : la désigner par son fichier et sa ligne, sans recopier la valeur, et appliquer tout de suite `pulse-aidd reference secrets/fuite.md`.
 
 ## 4. Validation des saisies
 

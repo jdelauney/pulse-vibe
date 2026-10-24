@@ -1490,6 +1490,7 @@ const RENVOIS_INTERDITS = [
   [/« [^»\n]*`\/pulse:[^`\n]*` \(Recommandé\)/, "réponse proposée qui contient la commande", "« Reprendre avec `/pulse:init` (Recommandé) »"],
   [/Recommandé\) » \(`\/pulse:/, "réponse proposée suivie de la commande", "« La reprendre (Recommandé) » (`/pulse:spirc US-XXX`)"],
   [/(?:\bproposez|enchaînez sur) `\/pulse:secrets fuite\b|\bpropos(?:er|ez) `\/pulse:memory retenir\b/, "fuite ou mémoire lancée par une commande", "proposez `/pulse:secrets fuite`"],
+  [/\b(?:proposer|proposez|appliquer|appliquez|enchaîner sur|enchaînez sur|traite avec|enregistrer avec)\s+(?:d'abord\s+)?`\/pulse:(?:commit|fix|auto-fix|review|secrets fuite|get-help|memory retenir)\b/, "verbe d'action devant une commande que le modèle ne peut pas lancer", "l'enregistrer avec `/pulse:commit`"],
   [/\(`\/pulse:memory retenir`\)/, "mémoire lancée par une commande", "fichier de décision (`/pulse:memory retenir`)"],
 ];
 test("aucune commande n'en lance une autre : elle enchaîne une étape ou fait taper la suivante", () => {
