@@ -40,10 +40,32 @@ test("noter : outils appelés (sous-agents compris), ordre, texte de la dernièr
     { nom: "ordre-inverse", type: "tool_order", before: { tool: "Bash", input_match: "verifier-plan" }, after: { tool: "Write", input_match: "PLAN-SPEC" } },
     { nom: "prochaine", type: "regex", pattern: "/pulse:plan US-001" },
     { nom: "juge", type: "llm", texte: "…" },
+    { nom: "jamais-edit", type: "tool_not_used", tool: "Edit" },
+    { nom: "jamais-etat", type: "tool_not_used", tool: "Bash", input_match: "pulse-aidd etat" },
   ]);
   const ok = Object.fromEntries(notes.details.map((d) => [d.nom, d.reussi]));
-  assert.deepStrictEqual(ok, { etat: true, ecrit: true, absent: false, ordre: true, "ordre-inverse": false, prochaine: true, juge: null });
-  assert.strictEqual(notes.score, 4 / 6);
+  assert.deepStrictEqual(ok, { etat: true, ecrit: true, absent: false, ordre: true, "ordre-inverse": false, prochaine: true, juge: null, "jamais-edit": true, "jamais-etat": false });
+  assert.strictEqual(notes.score, 5 / 8);
+});
+
+test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, réussit sinon", () => {
+  const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
+  assert.strictEqual(g.type, "tool_not_used");
+  const trace = (commande) => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "lecture-")), "trace.jsonl");
+    const bloc = { type: "tool_use", id: "t1", name: "Bash", input: { command: commande } };
+    fs.writeFileSync(f, JSON.stringify({ type: "assistant", message: { content: [bloc] } }) + "\n");
+    return f;
+  };
+  const note = (commande) => direct.noter(trace(commande), [g]).details[0].reussi;
+  assert.strictEqual(note("pulse-aidd qualite regles | head -60"), false);
+  assert.strictEqual(note('pulse-aidd reference "a/b.md" 2>&1 | tail -5'), false);
+  assert.strictEqual(note("pulse-aidd pile contexte realisation | head"), false);
+  assert.strictEqual(note("pulse-aidd tests x 2>&1 | head -5"), false);
+  assert.strictEqual(note("pulse-aidd qualite regles"), true);
+  assert.strictEqual(note("pulse-aidd tests x && git log | head"), true);
+  assert.strictEqual(note("pulse-aidd tests x || echo echec"), true);
+  assert.strictEqual(note("git log | head; pulse-aidd etat"), true);
 });
 
 test("argumentsDirect : claude -p avec le prompt d'abord, les plugins du dépôt, les outils du cas et ceux du lanceur", () => {
