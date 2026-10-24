@@ -1042,11 +1042,11 @@ test("règles communes : les documents du projet restent appliqués par les comm
   }
 });
 
-test("les lectures de fichiers-projet.md, cycle.md et gestes.md, citées par les règles communes, sont permises dans chaque skill", () => {
+test("les lectures de fichiers-projet.md, cycle.md, gestes.md et secrets/fuite.md, citées par les règles communes, sont permises dans chaque skill", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const motifs = motifsBash(fichier);
-    for (const ref of ["fichiers-projet.md", "cycle.md", "gestes.md"])
+    for (const ref of ["fichiers-projet.md", "cycle.md", "gestes.md", "secrets/fuite.md"])
       if (!motifs.some((m) => couvre(m, `pulse-aidd reference ${ref}`))) problemes.push(`${path.relative(DEPOT, fichier)} : ${ref}`);
   }
   assert.deepStrictEqual(problemes, []);
@@ -1522,6 +1522,7 @@ const RENVOIS_INTERDITS = [
   [/(?:\bproposez|enchaînez sur) `\/pulse:secrets fuite\b|\bpropos(?:er|ez) `\/pulse:memory retenir\b/, "fuite ou mémoire lancée par une commande", "proposez `/pulse:secrets fuite`"],
   [/\b(?:proposer|proposez|appliquer|appliquez|enchaîner sur|enchaînez sur|traite avec|enregistrer avec)\s+(?:d'abord\s+)?`\/pulse:(?:commit|fix|auto-fix|review|secrets fuite|get-help|memory retenir)\b/, "verbe d'action devant une commande que le modèle ne peut pas lancer", "l'enregistrer avec `/pulse:commit`"],
   [/\(`\/pulse:memory retenir`\)/, "mémoire lancée par une commande", "fichier de décision (`/pulse:memory retenir`)"],
+  [/\b(?:enregistrer|mettre en ligne|enregistrez|mettez en ligne)\b[^`\n]{0,60}\(`\/pulse:(?:commit|deploy)\b|\bEnregistrer et mettre en ligne ?: ?`\/pulse:/i, "enregistrer ou mettre en ligne par une commande que le modèle ne peut pas lancer", "enregistrer (`/pulse:commit`), mettre en ligne (`/pulse:deploy`) ; Enregistrer et mettre en ligne : `/pulse:commit`"],
 ];
 test("aucune commande n'en lance une autre : elle enchaîne une étape ou fait taper la suivante", () => {
   for (const [forme, nom, exemple] of RENVOIS_INTERDITS) assert.match(exemple, forme, `la forme « ${nom} » reconnaît son exemple`);
