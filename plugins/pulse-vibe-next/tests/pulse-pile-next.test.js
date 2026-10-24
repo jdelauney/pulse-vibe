@@ -44,7 +44,8 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     ui: ["Pour /pulse:ui", "Le thème"],
     express: ["Pour /pulse:express"],
     spec: ["Pour /pulse:spec", "Recettes disponibles"],
-    plan: ["Pour /pulse:plan", "Fiche de la pile", "Recettes disponibles"],
+    plan: ["Pour /pulse:plan", "Architecture du code", "Recettes disponibles"],
+    refine: ["Pour /pulse:plan", "Recettes disponibles"],
     implement: ["Pour réaliser et corriger", "Fiche de la pile", "Recettes disponibles"],
     fix: ["Pour réaliser et corriger", "Fiche de la pile"],
     review: ["Pour relire", "Fiche de la pile"],
@@ -245,6 +246,20 @@ test("contexte security : ni la fiche ni l'architecture, des renvois pour les si
   assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code)/);
   assert.match(r.stdout, /pulse-aidd pile reference fiche.md/);
   assert.match(r.stdout, /pulse-aidd pile reference architecture.md/);
+});
+
+test("contexte plan et refine : plan garde l'architecture ; refine la lit à la demande ; le n° 36 de la fiche est reporté", () => {
+  const plan = lancer("contexte", "plan");
+  const refine = lancer("contexte", "refine");
+  for (const r of [plan, refine]) {
+    assert.doesNotMatch(r.stdout, /----- Fiche de la pile/);
+    assert.match(r.stdout, /----- Recettes disponibles/);
+    assert.match(r.stdout, /recette `limite`[^\n]*`formulaire-public`/);
+  }
+  assert.match(plan.stdout, /----- Architecture du code/);
+  assert.doesNotMatch(refine.stdout, /----- Architecture du code/);
+  assert.match(refine.stdout, /pulse-aidd pile reference architecture\.md/);
+  assert.match(plan.stdout, /Recette : /);
 });
 
 test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {

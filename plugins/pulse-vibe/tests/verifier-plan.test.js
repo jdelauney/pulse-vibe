@@ -162,6 +162,21 @@ test("fichiers : à modifier absent, à créer déjà présent, plus de 3 fichie
   assert.deepStrictEqual(constats(fait), []);
 });
 
+test("fichiers : une tâche « Recette : » garde son découpage, une tâche ordinaire de 4 fichiers est signalée", () => {
+  const huit = Array.from({ length: 8 }, (_, i) => `\`src/f${i}.js\``).join(", ");
+  const quatre = Array.from({ length: 4 }, (_, i) => `\`src/g${i}.js\``).join(", ");
+  const racine = projet({
+    [planFichier]: PLAN([
+      TACHE("T1", { titre: "Recette : liste des factures", verification: "US-002 critère 1", fichiers: `à créer : ${huit}` }),
+      TACHE("T2", { titre: "Voir le détail", depend: "T1", verification: "US-002 critère 2", fichiers: `à créer : ${quatre}` }),
+      MISE_EN_LIGNE,
+    ]),
+  });
+  const c = constats(racine);
+  assert.ok(!c.some((l) => /^avertissement · T1 · \d+ fichiers/.test(l)), c.join("\n"));
+  assert.ok(c.some((l) => /^avertissement · T2 · 4 fichiers/.test(l)), c.join("\n"));
+});
+
 test("un fichier à modifier créé par une autre tâche, dans ce plan ou un autre, ne déclenche rien", () => {
   const racine = projet({
     [planFichier]: PLAN([TACHE("T1"), TACHE("T2", { depend: "T1", fichiers: "à modifier : `src/liste.js`", verification: "US-002 critère 2", tests: "aucun" }), MISE_EN_LIGNE]),

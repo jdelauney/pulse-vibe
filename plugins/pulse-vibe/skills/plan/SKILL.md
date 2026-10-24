@@ -35,6 +35,7 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
    - elles créent et modifient des types d'information différents (« Informations manipulées » des specs, « Données » de la conception des plans) ;
    - toutes deux sont exemptes de tâche de mise en place du squelette et de tâche « Mettre en ligne la première version ».
    Dans le doute, les traiter comme dépendantes : un conflit de fusion coûte plus cher que le temps gagné. La relation vaut dans les deux sens : mettre à jour aussi la ligne « En parallèle avec » des plans concernés (seulement cette ligne, avec l'accord donné à l'étape 3).
+10. **Avec un pack de pile**, une tâche « Recette : » garde le découpage vérifié de sa recette ; toute autre tâche suit les règles 1, 2 et 4 (tranche visible, 3 fichiers au plus, stockage dans la première tranche qui en a besoin). Chaque tâche reste vérifiable par la personne.
 
 ## Contexte
 

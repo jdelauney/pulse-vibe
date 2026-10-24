@@ -1390,6 +1390,13 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
   for (const skill of ["pr", "status"]) assert.doesNotMatch((skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1], /\b(Write|Edit)\(/, skill);
 });
 
+test("plan : avec un pack, une tâche « Recette : » garde son découpage, les autres suivent le découpage du cœur", () => {
+  const plan = skillTexte("plan");
+  assert.match(plan, /\*\*Avec un pack de pile\*\*, une tâche « Recette : » garde le découpage vérifié de sa recette/);
+  assert.match(plan, /toute autre tâche suit les règles 1, 2 et 4/);
+  assert.match(plan, /Chaque tâche reste vérifiable par la personne/);
+});
+
 test("tech : une fois le pack choisi, seules ses consignes se chargent ; review dit que le reviewer charge le pack", () => {
   const tech = skillTexte("tech");
   assert.match(tech, /puis lancer `pulse-aidd pile contexte tech`/);

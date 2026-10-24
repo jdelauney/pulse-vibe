@@ -83,9 +83,12 @@ contexte() {
     spec)
       afficher "Pour /pulse:spec" "$REF/contexte/spec.md"
       liste_recettes ;;
-    plan|refine)
+    plan)
       afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
-      fiche
+      afficher "Architecture du code : où va chaque fichier, sens des imports, modèles" "$REF/architecture.md"
+      liste_recettes ;;
+    refine)
+      afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
       liste_recettes ;;
     implement|fix)
       afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"
