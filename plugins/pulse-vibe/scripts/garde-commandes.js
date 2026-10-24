@@ -14,7 +14,11 @@
 //  - la suppression de tout le disque, du dossier personnel ou du projet ;
 //  - la suppression d'un dépôt distant, ou son passage en public (gh repo, gh api private=false) ;
 //  - gitleaks sans --redact ;
-//  - la coupure d'une sortie de règles Pulse (pulse-aidd qualite|tests|reference|contexte|etape|agent, pile contexte|reference, suivie d'un tube : head, tail, grep…).
+//  - la coupure d'une sortie de règles Pulse (pulse-aidd qualite|tests|reference|contexte|etape|agent, pile contexte|reference, suivie d'un tube : head, tail, grep…)
+//    quand la commande a une autre forme que « règles | filtre | filtre » seul (suite après ; && ||, sous-shell…).
+// Réécrit (accord limité à la commande réécrite) :
+//  - « <règles Pulse> [2>&1] | filtre… » seul : le tube est retiré, la commande est relancée en entier (updatedInput) ;
+//    tout autre constat sur la même commande l'emporte (refus ou demande d'accord).
 // Demande confirmation pour :
 //  - ce qui jette ou déplace du travail (reset --hard, checkout/restore/switch -f, clean -f, stash drop,
 //    branch -D / -f, update-ref, filter-branch, reflog expire, gc --prune=now) ;
@@ -117,6 +121,7 @@ const MESSAGES = {
   reglesCoupees: (commande) =>
     "Pulse refuse de couper la sortie de cette commande : ce sont des règles de Pulse, qui s'appliquent en entier. " +
     `À la place : \`${commande}\` sans le tube, puis lisez toute la sortie ; si la sortie est enregistrée dans un fichier, lisez ce fichier en entier.`,
+  tubeRetire: "La coupure (`| …`) a été retirée : les règles de Pulse se lisent en entier. Si la sortie est enregistrée dans un fichier, lisez ce fichier en entier.",
   sondeDetournee:
     "Pulse demande votre accord : cette commande change l'adresse à laquelle les tests de secrets envoient une clé (PULSE_SONDES_…). " +
     "Lancez plutôt la commande sans cette variable.",
@@ -958,6 +963,17 @@ function appelOutilPulse(c) {
   return connu(nom) ? [...OUTILS_PULSE[nom], ...libres.slice(1)] : null;
 }
 
+// « <outil de Pulse> mots simples [2>&1] | filtre… » seul : la commande sans le tube, ou null pour toute autre forme
+// (suite après ; & && ||, sous-shell, retour à la ligne, texte calculé ou cité avant le tube).
+const TETE_REGLES = /^\s*(pulse-aidd|pulse-pile-next)((?:\s+[\w./:@=,+\\-]+)*)(\s+2>&1)?\s*$/;
+function sansTube(commande) {
+  const i = commande.indexOf("|");
+  if (i < 0 || !TETE_REGLES.test(commande.slice(0, i))) return null;
+  const queue = commande.slice(i + 1).replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, "");
+  if (/[;&`(){}<'"\n\r]|\$\(|^\||\|\s*\|/.test(queue) || !queue.trim()) return null;
+  return commande.slice(0, i).trim();
+}
+
 function analyser(commande, cwd, dialecte) {
   const constats = [];
   const commandes = commandesSimples(commande, dialecte);
@@ -965,8 +981,10 @@ function analyser(commande, cwd, dialecte) {
   // Une sortie de règles Pulse passée par un tube (| head, | tail, | grep…) : coupée, donc lue en partie.
   commandes.forEach((c, i) => {
     const outil = appelOutilPulse(c);
-    if (outil && commandes[i + 1] && commandes[i + 1].apresTube && sortieDeRegles(outil.map((a) => String(a || "").toLowerCase())))
-      constats.push([REFUS, MESSAGES.reglesCoupees(`pulse-aidd ${outil.join(" ")}`)]);
+    if (outil && commandes[i + 1] && commandes[i + 1].apresTube && sortieDeRegles(outil.map((a) => String(a || "").toLowerCase()))) {
+      const entiere = i === 0 && commandes.slice(1).every((d) => d.apresTube) ? sansTube(commande) : null;
+      constats.push([REFUS, MESSAGES.reglesCoupees(`pulse-aidd ${outil.join(" ")}`), entiere]);
+    }
   });
   const sansCitations = commande.replace(/(?<!=)('[^']*'|"(?:[^"\\]|\\.)*")/g, "");
   // Contrôles coupés par une variable posée avant la commande (export HUSKY=0 ; $env:HUSKY = 0).
@@ -1059,6 +1077,8 @@ function evaluer(entree) {
     const cwd = entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : process.cwd();
     const constats = analyser(entree.tool_input.command, cwd, entree.tool_name === "PowerShell" ? "powershell" : "bash");
     if (!constats.length) return null;
+    // Seule une coupure réécrivable : la commande est relancée sans le tube, rien d'autre n'est accordé.
+    if (constats.every(([, , entiere]) => entiere) && new Set(constats.map(([, , entiere]) => entiere)).size === 1) return { decision: "allow", commande: constats[0][2], contexte: MESSAGES.tubeRetire };
     const refus = constats.filter(([d]) => d === REFUS);
     const raisons = [...new Set((refus.length ? refus : constats).map(([, r]) => r))];
     return {
@@ -1070,7 +1090,17 @@ function evaluer(entree) {
   }
 }
 
-module.exports = { evaluer };
+/** La sortie JSON du hook pour une décision de evaluer : refus, demande d'accord, ou accord avec la commande réécrite (le reste de l'entrée est gardé). */
+function sortieHook(d, entree) {
+  const sortie = { hookEventName: "PreToolUse", permissionDecision: d.decision };
+  if (d.decision === "allow") {
+    sortie.updatedInput = { ...entree.tool_input, command: d.commande };
+    sortie.additionalContext = d.contexte;
+  } else sortie.permissionDecisionReason = d.raison;
+  return JSON.stringify({ hookSpecificOutput: sortie });
+}
+
+module.exports = { evaluer, sortieHook };
 
 if (require.main === module) {
   let entree = null;
@@ -1080,6 +1110,6 @@ if (require.main === module) {
     // entrée illisible : rien à décider
   }
   const r = evaluer(entree);
-  if (r) fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: r.decision, permissionDecisionReason: r.raison } }));
+  if (r) fs.writeSync(1, sortieHook(r, entree));
   process.exit(0);
 }

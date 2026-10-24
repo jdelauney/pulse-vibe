@@ -38,7 +38,7 @@ Avant d'écrire une spec, un écran ou un texte : appliquer, s'ils existent, `do
 Un modèle s'affiche avec `pulse-aidd modele <fichier>` ; ceux que la commande utilise le plus figurent dans son contexte.
 Les outils `pulse-aidd` et `pulse-pile-<id>` se lancent avec l'outil Bash (Git Bash sous Windows), où s'appliquent les autorisations des commandes ; depuis PowerShell, leur relais `.ps1` les lance aussi, arguments intacts (si une stratégie d'entreprise bloque les scripts PowerShell : outil Bash).
 La pile technique et les commandes du projet se lisent dans `docs/technical.md`. Les règles de qualité du code s'affichent avec `pulse-aidd qualite <famille>`, celles que nomme la règle de choix (affichée par la commande sans famille ; règle 12).
-L'état des scénarios des specs (testés, sans test, manuels) s'affiche avec `pulse-aidd scenarios`. La méthode de tests (stratégie, écriture, niveaux, TDD, scénarios Gherkin) s'affiche avec `pulse-aidd tests <morceaux>` ; la procédure des tests d'abord (option `-t`) avec `pulse-aidd reference tests-automatiques.md`.
+L'état des scénarios des specs (testés, sans test, manuels) s'affiche avec `pulse-aidd scenarios`. La méthode de tests (stratégie, écriture, niveaux, TDD, scénarios Gherkin) s'affiche avec `pulse-aidd tests <morceaux>` ; la procédure des tests d'abord (option `-t`) avec `pulse-aidd reference tests-dabord.md`.
 Une référence s'affiche avec `pulse-aidd reference <chemin>` (sans chemin : la liste) ; chaque commande nomme celles qu'elle utilise, à l'étape qui en a besoin.
 
 ## 3. Garde-fous de la méthode

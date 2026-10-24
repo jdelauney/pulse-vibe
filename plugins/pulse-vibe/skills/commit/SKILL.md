@@ -96,7 +96,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 - Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
-- Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree.md`).
+- Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree-dossier.md`).
 - Si le site est déjà en ligne et que cette version reste en local : prochaine étape `/pulse:deploy` (il envoie, puis vérifie la version en ligne).
 
 Terminer avec le bloc de fin de commande.
