@@ -277,6 +277,16 @@ test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisé
   assert.deepStrictEqual(problemes, []);
 });
 
+// Règles communes : le noyau, puis les modules (tâches, relecture, réalisation) que « pulse-aidd contexte <commande> » affiche.
+const MODULES_COMMUNES = { "Règles des tâches": "regles-taches.md", "Règles de relecture": "regles-relecture.md", "Règles de réalisation": "regles-realisation.md" };
+const contextesCharges = new Map();
+function contexteCharge(skill) { // le texte affiché par pulse-aidd contexte <skill>, sans pack de pile (cwd = racine du plugin)
+  if (!contextesCharges.has(skill)) contextesCharges.set(skill, require("child_process").spawnSync("bash", ["bin/pulse-aidd", "contexte", skill], { cwd: RACINE, encoding: "utf8" }).stdout);
+  return contextesCharges.get(skill);
+}
+const MODULES_COMMUNES_FICHIERS = Object.fromEntries(Object.values(MODULES_COMMUNES).map((f) => [f, true]));
+const modulesCharges = (skill) => Object.entries(MODULES_COMMUNES).filter(([titre]) => contexteCharge(skill).includes(`===== ${titre} =====`)).map(([, fichier]) => fichier);
+
 test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu'il enchaîne, est autorisé d'avance", () => {
   assert.ok(couvre("pulse-aidd sonder *", "pulse-aidd sonder") && !couvre("pulse-aidd seo *", "pulse-aidd seobis") && couvre("pulse-aidd secrets inventaire*", "pulse-aidd secrets inventaire --json"), "règle de correspondance");
   const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
@@ -303,8 +313,47 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
       if (estSensible(commande)) continue; // passe par la demande d'autorisation : c'est voulu
       if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
     }
+    // Les commandes citées par les modules que cette commande charge (T-3) ; le noyau cite des outils pour toutes les commandes (secrets, pile…), sans que chacune les lance.
+    for (const fichier of modulesCharges(skill))
+      for (const commande of citationsOutil(lire(RACINE, "references", fichier))) {
+        if (estSensible(commande) || commande === "pulse-aidd search-console") continue;
+        if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} (${fichier}) : ${commande}`);
+      }
   }
-  assert.deepStrictEqual(manquants, []);
+  assert.deepStrictEqual([...new Set(manquants)], []);
+});
+
+test("règles communes : chaque mention d'un module (règles de relecture, de réalisation, des tâches, mode découverte) vient d'une commande qui le charge", () => {
+  // Mention -> module que la commande doit charger. « règles des tâches » : le module T.
+  const MENTIONS = [[/règles de relecture/i, "regles-relecture.md"], [/règles de réalisation|mode découverte/i, "regles-realisation.md"], [/règles des tâches/i, "regles-taches.md"]];
+  const sansEntete = (f) => lire(f).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "");
+  const problemes = [];
+  let verifiees = 0;
+  // Un SKILL.md : la commande elle-même charge le module.
+  for (const skill of SKILLS) {
+    const corps = sansEntete(path.join(RACINE, "skills", skill, "SKILL.md"));
+    for (const [motif, module] of MENTIONS)
+      if (motif.test(corps)) {
+        verifiees++;
+        if (!modulesCharges(skill).includes(module)) problemes.push(`skills/${skill}/SKILL.md : ${motif} sans ${module}`);
+      }
+  }
+  // Une référence ou un modèle que « contexte » affiche, ou qu'un skill nomme : au moins une commande qui l'utilise charge le module.
+  const references = [...fichiers(path.join(RACINE, "references"), ".md"), ...fichiers(path.join(RACINE, "templates"), ".md"), ...fichiers(path.join(RACINE, "skills"), ".md").filter((f) => !f.endsWith("SKILL.md"))];
+  for (const f of references) {
+    const nom = path.basename(f);
+    if (nom in MODULES_COMMUNES_FICHIERS || nom === "regles-communes.md") continue; // les modules se citent entre eux sans condition
+    const corps = sansEntete(f);
+    // Les commandes qui reçoivent ce texte : celles dont le contexte l'affiche, ou dont le SKILL.md ou la référence qui la nomme le charge.
+    const utilisatrices = [...SKILLS].filter((s) => contexteCharge(s).includes(corps.trim().slice(0, 80)) || sansEntete(path.join(RACINE, "skills", s, "SKILL.md")).includes(nom));
+    for (const [motif, module] of MENTIONS)
+      if (motif.test(corps) && utilisatrices.length) {
+        verifiees++;
+        if (!utilisatrices.some((s) => modulesCharges(s).includes(module))) problemes.push(`${path.relative(DEPOT, f)} : ${motif} sans ${module} dans aucune de ses commandes (${utilisatrices.join(", ")})`);
+      }
+  }
+  assert.ok(verifiees >= 10, "mentions relevées : " + verifiees);
+  assert.deepStrictEqual(problemes, []);
 });
 
 test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme, sont autorisées d'avance", () => {
@@ -643,14 +692,14 @@ test("règles communes : rondes de 4 questions, réponses libres en texte, mode 
   assert.match(regles, /réponse libre/);
   assert.doesNotMatch(regles, /`\/pulse:pr branche <US-XXX>` avant `\/pulse:implement`/);
   const definitions = TEXTES.filter(({ texte }) => /\*\*Mode découverte\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
-  assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-communes.md"]);
+  assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-realisation.md"]);
 });
 
 test("implement : questions de démarrage en clair et mode découverte", () => {
   const texte = skillTexte("implement");
   assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);
   assert.match(texte, /« Je code devant vous »/);
-  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
+  assert.match(texte, /\*\*Mode découverte\*\* \(règles de réalisation\)/);
   assert.doesNotMatch(texte, /Implémentation via sous-agent|Implémentation directe/);
 });
 
@@ -991,10 +1040,15 @@ test("mise en production : une sonde de disponibilité est proposée et notée",
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /^- Surveillance : /m);
 });
 
-test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références", () => {
+test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références, tâches, relecture et réalisation dans leurs modules", () => {
   const communes = lire(RACINE, "references", "regles-communes.md");
-  for (const titre of ["## 1. À qui vous parlez", "## 3. Garde-fous de la méthode", "## 4. Format de fin de commande", "## 6. Les constats de relecture"])
+  for (const titre of ["## 1. À qui vous parlez", "## 3. Garde-fous de la méthode", "## 4. Format de fin de commande"])
     assert.ok(communes.includes(titre), titre);
+  for (const [titre, module] of [["Chaque constat d'une relecture", "regles-relecture.md"], ["**Mode découverte**", "regles-realisation.md"], ["## Garder la trace", "regles-realisation.md"], ["**Rangement**", "regles-taches.md"]]) {
+    assert.ok(!communes.includes(titre), `noyau : « ${titre} » sorti vers ${module}`);
+    assert.ok(lire(RACINE, "references", module).includes(titre), `${module} : ${titre}`);
+  }
+  assert.match(lire(RACINE, "references", "regles-relecture.md"), /^\| Gravité \| Traitement \|$/m, "regles-relecture.md : le tableau des gravités");
   assert.ok(!communes.includes("| Fichier | Produit par | Contenu |"), "tableau des fichiers sorti des règles communes");
   assert.ok(!communes.includes("/pulse:init → /pulse:brainstorm"), "cycle sorti des règles communes");
   assert.ok(communes.includes("pulse-aidd reference fichiers-projet.md"), "renvoi vers les fichiers du projet");
@@ -1208,9 +1262,9 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
   const COMMANDES = ["express", "brainstorm", "prd", "us", "spirc", "implement", "tech", "ui", "spec", "plan", "search-console"];
   const regles = lire(RACINE, "references", "regles-communes.md");
   const regle16 = regles.split("\n").find((l) => l.startsWith("16. "));
+  assert.doesNotMatch(regle16, /`\/pulse:/, "règle 16 : pas de liste de commandes recopiée (chaque commande dit déjà qu'elle l'applique)");
   const fichiersProjet = lire(RACINE, "references", "fichiers-projet.md").split("\n").find((l) => l.startsWith("| `aidd_docs/tasks/in-progress.md` |"));
   for (const c of COMMANDES) {
-    assert.ok(regle16.includes(`\`/pulse:${c}\``), `règle 16 : /pulse:${c}`);
     assert.ok(fichiersProjet.includes(`\`/pulse:${c}\``), `fichiers-projet.md : /pulse:${c}`);
     const texte = skillTexte(c);
     assert.match(texte, /aidd_docs\/tasks\/in-progress\.md|règle commune 16/, `${c} : écrit le travail en cours`);
@@ -1235,8 +1289,8 @@ test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; 
   assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
   const depot = lire(RACINE, "references", "depot-distant.md");
   assert.match(depot, /« Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt \(Recommandé\) »/);
-  assert.match(depot, /En mode découverte \(règles communes § 1\)[^\n]*« Directement sur la version principale »/);
-  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.match(depot, /En mode découverte \(règles de réalisation\)[^\n]*« Directement sur la version principale »/);
+  const regles = lire(RACINE, "references", "regles-realisation.md");
   assert.match(regles, /sauf l'envoi, qui prend « Directement sur la version principale »/);
 });
 
@@ -1402,7 +1456,7 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   const auto = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(auto, /## 2 bis\. Tests essentiels \(rythme rapide\)/);
   assert.match(auto, /\*\*Aucun test de l'interface pendant les tâches\*\*/);
-  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme\*\* \(profil\) : « à choisir »[^\n]*« rapide »/);
+  assert.match(lire(RACINE, "references", "regles-realisation.md"), /\*\*Rythme\*\* \(profil\) : « à choisir »[^\n]*« rapide »/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
 });

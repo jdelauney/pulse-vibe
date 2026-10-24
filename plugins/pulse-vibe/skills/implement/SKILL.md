@@ -57,7 +57,7 @@ Cette commande prépare, contrôle, explique et parle à la personne ; en mode d
 
 ### 0. Choisir la façon de travailler
 
-**Mode découverte** (règles communes § 1) : aucune question ici ; chaque choix ci-dessous prend sa réponse recommandée, annoncée en une phrase. Sinon, poser **une seule ronde** (AskUserQuestion, 4 questions au plus) avec, selon le cas :
+**Mode découverte** (règles de réalisation) : aucune question ici ; chaque choix ci-dessous prend sa réponse recommandée, annoncée en une phrase. Sinon, poser **une seule ronde** (AskUserQuestion, 4 questions au plus) avec, selon le cas :
 
 - **Mode** : sans `-s` ni `-d`, question « Comment réaliser la tâche ? » : « Je code en coulisse (Recommandé) » (un assistant spécialisé code à part : la conversation reste légère) / « Je code devant vous » (vous voyez chaque étape). Si le sous-agent `pulse:implementer` n'est pas disponible : mode direct, en le signalant.
 - **Tests** : sans `-t`, « 2. Choisir au démarrage » de la référence « Tests automatiques ».

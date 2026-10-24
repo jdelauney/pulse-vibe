@@ -771,3 +771,38 @@ test("contexte d'une commande inconnue : un message, sans charger les règles co
 test("contexte de chaque commande du cœur : reconnue", () => {
   for (const s of fsP.readdirSync(path.join(RACINE, "skills"))) assert.doesNotMatch(lancer("contexte", s).stdout, /commande inconnue/, s);
 });
+
+// Modules des règles communes (tâches T, relecture C, réalisation R) : chaque commande reçoit ceux de sa ligne de la matrice.
+const MODULES = { T: "===== Règles des tâches =====", C: "===== Règles de relecture =====", R: "===== Règles de réalisation =====" };
+const MATRICE = {
+  "": ["brainstorm", "cicd", "deploy", "explain", "learn", "memory", "perf", "prd", "rediger", "search-console", "secrets", "tech"],
+  T: ["us", "spec", "guide", "get-help", "pr", "express", "init"],
+  C: ["security", "seo"],
+  TC: ["ui"],
+  TR: ["status", "plan", "refine", "commit", "annuler", "fix", "auto-fix"],
+  TCR: ["test", "review", "implement", "spirc"],
+};
+
+test("contexte : le noyau puis les modules de la matrice (T tâches, C relecture, R réalisation)", () => {
+  for (const [modules, commandes] of Object.entries(MATRICE)) {
+    for (const commande of commandes) {
+      const r = lancer("contexte", commande);
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.ok(r.stdout.includes("===== Règles communes Pulse ====="), `${commande} : noyau`);
+      for (const [lettre, titre] of Object.entries(MODULES))
+        assert.strictEqual(r.stdout.includes(titre), modules.includes(lettre), `${commande} : module ${lettre}`);
+    }
+  }
+});
+
+test("contexte explain n'a pas « ## 6. Les constats de relecture » ; contexte review l'a, dans les règles de relecture", () => {
+  assert.ok(!lancer("contexte", "explain").stdout.includes("Les constats de relecture"));
+  assert.ok(lancer("contexte", "review").stdout.includes("Chaque constat d'une relecture"));
+});
+
+test("etape --sans-communes : ni noyau ni modules", () => {
+  const r = lancer("etape", "review", "--sans-communes");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const titre of ["===== Règles communes Pulse =====", ...Object.values(MODULES)]) assert.ok(!r.stdout.includes(titre), titre);
+  assert.ok(lancer("etape", "review").stdout.includes(MODULES.C), "sans l'option : les modules suivent");
+});

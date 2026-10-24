@@ -92,7 +92,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 - **Après toute correction ultérieure de la tâche** (constats de relecture, test manuel non concluant) : relancer le test-runner en phase « vert attendu » avec la relecture de contrôle.
 - **Deux cycles de correction au plus**. Un échec qui persiste arrête la tâche (`[~]`) et s'explique simplement (tapez `/pulse:get-help` pour préparer une demande d'aide).
 - Un test contesté qui révèle un **écart de besoin** (le scénario ou le critère semble faux) se tranche avec la personne, quel que soit le mode. Si elle change le contrat : mettre à jour le scénario dans la spec, le critère dans l'US et la tâche dans le plan, puis reprendre au rouge.
-- Les constats du test-runner sur la **qualité des tests** suivent « Les constats de relecture » (règles communes § 6).
+- Les constats du test-runner sur la **qualité des tests** suivent « Les constats de relecture » (règles de relecture).
 
 ## 5. Garder la trace
 

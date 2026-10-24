@@ -56,7 +56,7 @@ La conversation principale orchestre : elle retrouve le contrat, présente les r
    - Échec **dû au code** : un par un, en appliquant l'étape **fix** (`pulse-aidd etape fix --sans-communes`, étapes 1 à 4 : cause d'abord, correction minimale, preuve), avec le test et le message d'échec.
    - Échec **dû au test** ou test **instable** : `pulse:test-writer`, mode « corriger », avec la liste du test-runner ; puis relancer le test-runner sur ces tests. Deux cycles au plus.
    - Échec **dû à l'environnement** : guider la personne pas à pas.
-4. Les constats de qualité des tests suivent « Les constats de relecture » (règles communes § 6).
+4. Les constats de qualité des tests suivent « Les constats de relecture » (règles de relecture).
 
 ### Écrire
 
