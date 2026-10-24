@@ -81,5 +81,4 @@ STATUT: <Terminé | Bloqué | Bloqué – décision nécessaire>
 ```
 
 ## Contraintes
-- Toujours appliquer les règles de qualité de code, chargées par famille (étape 3 de la méthode).
 - Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
