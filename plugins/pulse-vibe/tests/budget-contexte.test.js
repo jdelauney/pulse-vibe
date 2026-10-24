@@ -133,6 +133,13 @@ const AGENTS = {
   reviewer: { plafond: 28000, /* mesure 26 888 (pulse 0.50 : checklists lues en entier, consigne ajoutée) ; avant, 26 273 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"]] },
   "test-writer": { plafond: 42500, /* mesure 40 058 (pulse 0.50 : références de tests raccourcies) ; avant, 42 709 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin"], ["tests", "unitaire"], ["tests", "tdd"]] },
   "test-runner": { plafond: 28000, /* mesure 26 371 (pulse 0.50 : références de tests raccourcies) ; avant, 28 268 */ parties: [["agent", "test-runner"], ["tests", "ecrire"], ["tests", "unitaire"]] },
+  // Les six agents hors de la boucle (pulse 0.51 : plafonnés pour qu'un ajout de consigne se voie).
+  "security-auditor": { plafond: 18500, /* mesure 17 285 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "security-auditor"], ["reference", "checklist-securite.md"]] },
+  fixer: { plafond: 22500, /* mesure 21 001 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "fixer"], ["qualite", "clean-code"]] },
+  verifier: { plafond: 18500, /* mesure 17 569 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "verifier"], ["reference", "tests/test-manuel.md"], ["reference", "gestes.md"]] },
+  explorer: { plafond: 3500, /* mesure 3 030 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "explorer"]] },
+  "designer, planche": { plafond: 41000, /* mesure 38 682 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"]] },
+  "ui-critic": { plafond: 41000, /* mesure 39 029 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "ui-critic"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/heuristiques.md"], ["modele", "ui/revue-ui.md"]] },
 };
 
 for (const [agent, { plafond, parties }] of Object.entries(AGENTS)) {

@@ -143,6 +143,13 @@ const AGENTS_AVEC_PACK = {
   reviewer: { plafond: 47500, /* mesure 45 184 (pulse 0.51 : l'architecture à la demande, `pile contexte review` sous le seuil de lecture de 30 000) ; avant, 56 335 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"], ["pile", "contexte", "review"]] },
   "test-writer": { plafond: 43000, /* mesure 40 730 (pulse 0.50 : références de tests raccourcies) ; avant, 43 381 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"], ["pile", "contexte", "test"]] },
   "test-runner": { plafond: 29500, /* mesure 27 947 (pulse 0.50 : références de tests raccourcies) ; avant, 29 844 */ parties: [["agent", "test-runner"], ["tests", "ecrire", "unitaire"], ["pile", "contexte", "test"]] },
+  // Les six agents hors de la boucle (pulse 0.51 : premiers plafonds).
+  "security-auditor": { plafond: 24500, /* mesure 23 175 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "security-auditor"], ["reference", "checklist-securite.md"], ["pile", "contexte", "security"]] },
+  fixer: { plafond: 43500, /* mesure 41 072 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "fixer"], ["pile", "contexte", "fix"], ["qualite", "clean-code"]] },
+  verifier: { plafond: 21500, /* mesure 20 049 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "verifier"], ["pile", "contexte", "test"], ["reference", "tests/test-manuel.md"], ["reference", "gestes.md"]] },
+  explorer: { plafond: 6500, /* mesure 5 748 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "explorer"], ["pile", "contexte", "spec"]] },
+  "designer, planche": { plafond: 44500, /* mesure 42 230 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"], ["pile", "contexte", "ui"]] },
+  "ui-critic": { plafond: 45000, /* mesure 42 577 (pulse 0.51 : premier plafond, agent hors de la boucle) */ parties: [["agent", "ui-critic"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/heuristiques.md"], ["modele", "ui/revue-ui.md"], ["pile", "contexte", "ui"]] },
 };
 const chargementAgent = (parties) => parties.reduce((somme, args) => somme + taille(projetAvecPack, ...args), 0);
 
@@ -150,6 +157,80 @@ for (const [agent, { plafond, parties }] of Object.entries(AGENTS_AVEC_PACK)) {
   test(`cœur et pack : agent ${agent} ≤ ${plafond} caractères chargés avant le code`, { skip: !fs.existsSync(COEUR) }, () => {
     const total = chargementAgent(parties);
     assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
+
+// Structure : ce que le pack n'ajoute pas, commande par commande (un plafond seul laisse revenir 15 000 caractères sous la marge).
+// Le titre « ----- Fiche de la pile » est celui de afficher() dans bin/pulse-pile-next ; « ===== Pack de pile » celui du cœur.
+for (const commande of ["tech", "seo", "perf", "security", "plan", "refine"]) {
+  test(`structure : contexte du pack pour ${commande} sans la fiche de la pile`, { skip: !fs.existsSync(COEUR) }, () => {
+    for (const r of [lancer("contexte", commande), projetAvecPack("pile", "contexte", commande)]) {
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.ok(r.stdout.trim() !== "", "le pack apporte ses consignes");
+      assert.ok(!r.stdout.includes("----- Fiche de la pile"), "fiche à la demande");
+    }
+  });
+}
+
+test("structure : spirc, auto-fix et implement laissent le pack à leurs agents ; fix le garde", { skip: !fs.existsSync(COEUR) }, () => {
+  for (const commande of ["spirc", "auto-fix", "implement"]) assert.ok(!projetAvecPack("contexte", commande).stdout.includes("===== Pack de pile"), commande);
+  assert.ok(projetAvecPack("contexte", "fix").stdout.includes("===== Pack de pile"), "fix : le pack dans le contexte");
+  assert.ok(lancer("contexte", "implement").stdout.includes("----- Fiche de la pile"), "l'agent implementer charge la fiche");
+});
+
+// Les formes « pulse-aidd etape <commande> --sans-communes|--sans-noyau » citées par le cœur, mesurées avec le pack (limite de lecture : 30 000 caractères).
+// Plafond = mesure × 1,05, au 500 supérieur. Une forme au-dessus de la limite entre dans DEPASSEMENTS_CONNUS_AVEC_PACK avec sa mesure ; cette liste ne grandit pas.
+const LIMITE_LECTURE = 30000;
+const PLAFONDS_FORMES_AVEC_PACK = {
+  "auto-fix --sans-communes": 6000, // mesure 5 419
+  "auto-fix --sans-noyau": 12500, // mesure 11 686
+  "brainstorm --sans-communes": 22000, // mesure 20 653
+  "cicd --sans-communes": 42500, // mesure 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "commit --sans-communes": 28500, // mesure 26 896
+  "deploy --sans-communes": 44000, // mesure 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "express --sans-communes": 27500, // mesure 26 109
+  "fix --sans-communes": 32500, // mesure 30 759 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "fix --sans-noyau": 39000, // mesure 37 026 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "memory --sans-communes": 18500, // mesure 17 559
+  "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "plan --sans-communes": 62500, // mesure 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "pr --sans-communes": 18000, // mesure 16 931
+  "pr --sans-noyau": 22000, // mesure 20 495
+  "refine --sans-communes": 36500, // mesure 34 590 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "review --sans-communes": 17000, // mesure 15 728
+  "spec --sans-communes": 29500, // mesure 27 839
+  "tech --sans-communes": 70000, // mesure 66 375 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "ui --sans-communes": 63500, // mesure 60 343 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "ui --sans-noyau": 69500, // mesure 65 802 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "us --sans-communes": 18000, // mesure 16 910
+};
+const DEPASSEMENTS_CONNUS_AVEC_PACK = new Set([
+  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
+]);
+function formesCitees() {
+  const formes = new Set();
+  const parcourir = (dossier) => {
+    for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = path.join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (e.name.endsWith(".md"))
+        for (const m of fs.readFileSync(chemin, "utf8").matchAll(/pulse-aidd etape ([a-z][a-z-]*) (--sans-communes|--sans-noyau)/g)) formes.add(`${m[1]} ${m[2]}`);
+    }
+  };
+  for (const d of ["skills", "references", "agents", "templates"]) parcourir(path.join(RACINE, "..", "pulse-vibe", d));
+  return [...formes].sort();
+}
+
+test("avec le pack : chaque forme « etape <commande> --sans-… » citée a un plafond, et inversement", { skip: !fs.existsSync(COEUR) }, () => {
+  assert.deepStrictEqual(formesCitees(), Object.keys(PLAFONDS_FORMES_AVEC_PACK).sort());
+});
+
+for (const [forme, plafond] of Object.entries(PLAFONDS_FORMES_AVEC_PACK)) {
+  test(`avec le pack : etape ${forme} ≤ ${plafond} caractères, sous ${LIMITE_LECTURE} sauf dépassement connu`, { skip: !fs.existsSync(COEUR) }, () => {
+    const mesure = taille(projetAvecPack, "etape", ...forme.split(" "));
+    assert.ok(mesure <= plafond, `${mesure} > ${plafond}`);
+    if (DEPASSEMENTS_CONNUS_AVEC_PACK.has(forme)) assert.ok(mesure > LIMITE_LECTURE, `${forme} passe sous ${LIMITE_LECTURE} (${mesure}) : la retirer de DEPASSEMENTS_CONNUS_AVEC_PACK`);
+    else assert.ok(mesure < LIMITE_LECTURE, `${forme} : ${mesure} caractères avec le pack, la sortie serait enregistrée dans un fichier (limite ${LIMITE_LECTURE}) : la scinder`);
   });
 }
 
@@ -161,5 +242,6 @@ if (process.argv.includes("--tableau")) {
     lignes.push(`| ${n} avec pack | ${parties.reduce((s, [l, ...a]) => s + l(...a).stdout.length, 0)} | ${plafond} |`);
   for (const [c, p] of Object.entries(PLAFONDS_COMMANDE_AVEC_PACK)) lignes.push(`| commande ${c} avec pack (SKILL.md + contexte) | ${projetAvecPack("etape", c).stdout.length} | ${p} |`);
   for (const [a, { plafond, parties }] of Object.entries(AGENTS_AVEC_PACK)) lignes.push(`| agent ${a} avec pack | ${chargementAgent(parties)} | ${plafond} |`);
+  for (const [forme, p] of Object.entries(PLAFONDS_FORMES_AVEC_PACK)) lignes.push(`| etape ${forme} avec pack | ${projetAvecPack("etape", ...forme.split(" ")).stdout.length} | ${p} |`);
   console.log(lignes.join("\n"));
 }
