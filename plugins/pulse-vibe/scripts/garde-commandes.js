@@ -965,13 +965,22 @@ function appelOutilPulse(c) {
 
 // « <outil de Pulse> mots simples [2>&1] | filtre… » seul : la commande sans le tube, ou null pour toute autre forme
 // (suite après ; & && ||, sous-shell, retour à la ligne, texte calculé ou cité avant le tube).
-const TETE_REGLES = /^\s*(pulse-aidd|pulse-pile-next)((?:\s+[\w./:@=,+\\-]+)*)(\s+2>&1)?\s*$/;
+// La tête réécrite ne contient que des espaces simples et des mots ASCII : aucun caractère de contrôle ni séparateur de ligne
+// (retour chariot, U+2028…) qu'un shell lirait comme une fin d'instruction.
+const TETE_REGLES = /^(pulse-aidd|pulse-pile-next)( [\w./:@=,+-]+)*( 2>&1)?$/;
+const CONTROLE = /[\u0000-\u0008\u000a-\u001f\u007f\u0085\u2028\u2029]/;
 function sansTube(commande) {
+  if (CONTROLE.test(commande)) return null;
   const i = commande.indexOf("|");
-  if (i < 0 || !TETE_REGLES.test(commande.slice(0, i))) return null;
-  const queue = commande.slice(i + 1).replace(/'[^']*'|"(?:[^"\\]|\\.)*"/g, "");
-  if (/[;&`(){}<'"\n\r]|\$\(|^\||\|\s*\|/.test(queue) || !queue.trim()) return null;
-  return commande.slice(0, i).trim();
+  if (i < 0) return null;
+  const tete = commande.slice(0, i).replace(/^[ \t]+|[ \t]+$/g, "");
+  if (!TETE_REGLES.test(tete)) return null;
+  const brute = commande.slice(i + 1);
+  // Barre oblique inverse ou accent grave : l'échappement des guillemets change d'un shell à l'autre, la queue n'est plus fiable.
+  if (/[\\`]/.test(brute)) return null;
+  const queue = brute.replace(/'[^']*'|"[^"]*"/g, "");
+  if (/[;&(){}<'"]|\$\(|^\||\|\s*\|/.test(queue) || !queue.trim()) return null;
+  return tete;
 }
 
 function analyser(commande, cwd, dialecte) {
