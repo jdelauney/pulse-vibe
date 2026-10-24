@@ -71,6 +71,26 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
   }
 });
 
+test("contexte piles : ce qu'il faut vérifier et dire avant de choisir la pile ; un libellé inconnu ne renvoie rien", () => {
+  const r = lancer("contexte", "piles");
+  assert.strictEqual(r.status, 0, r.stderr);
+  for (const mot of ["non commercial", "Neon", "Francfort"]) assert.ok(r.stdout.includes(mot), mot);
+  const inconnu = lancer("contexte", "libelle-inconnu");
+  assert.strictEqual(inconnu.status, 0);
+  assert.strictEqual(inconnu.stdout, "");
+});
+
+test("contexte/tech.md : le choix de la pile est dans piles.md, plus dans tech.md", () => {
+  assert.ok(!lire(REF, "contexte", "tech.md").includes("non commercial"));
+});
+
+test("contexte/code.md : la fiche de la pile, et l'architecture pour un fichier ou un dossier nouveau", () => {
+  const code = lire(REF, "contexte", "code.md");
+  assert.match(code, /pulse-aidd pile reference fiche\.md/);
+  assert.match(code, /pulse-aidd pile reference architecture\.md/);
+  assert.match(code, /nouveau/);
+});
+
 test("secrets et hebergeur : relais vers les scripts du pack", () => {
   const fiche = lancer("secrets", "fiche", "STRIPE_SECRET_KEY");
   assert.strictEqual(fiche.status, 0);

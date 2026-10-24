@@ -330,6 +330,26 @@ test("piles : liste les packs installés, ou le dit s'il n'y en a aucun", () => 
   assert.match(sans.lancerIci("piles").stdout, /Aucun pack de pile installé/);
 });
 
+test("piles : sous la ligne de chaque pack, ce que son contexte « piles » dit avant le choix", () => {
+  const r = projetAvecPack({ installe: "essai" }).lancerIci("piles");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^- essai : .*\n {2}Consignes du pack pour piles$/m);
+});
+
+test("piles : avec le vrai pack Next.js, ses points de vigilance sous la ligne « - next »", { skip: !fsP.existsSync(path.join(RACINE, "..", "pulse-vibe-next", "bin", "pulse-pile-next")) }, () => {
+  const bin = path.join(RACINE, "..", "pulse-vibe-next", "bin").split(path.sep).join("/");
+  const outil = OUTIL.split(path.sep).join("/");
+  const r = spawnSync("bash", ["-c", `PATH="$(cd "${bin}" && pwd):$PATH" exec bash "${outil}" piles`], { cwd: RACINE, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^- next : [^\n]*\n {2}[^\n]*\n(?:.*\n)*? {2}[^\n]*non commercial/m);
+});
+
+test("pile contexte : sans pack déclaré, sortie vide et code 0", () => {
+  const r = projetAvecPack({ installe: "essai" }).lancerIci("pile", "contexte", "implement");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(r.stdout.trim(), "");
+});
+
 test("pile : indique le pack déclaré par le projet et s'il est installé", () => {
   assert.match(projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("pile").stdout, /essai.*installé/s);
   assert.match(projetAvecPack({ declare: "essai" }).lancerIci("pile").stdout, /non installé/);

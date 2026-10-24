@@ -5,7 +5,7 @@
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
 #   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
-#   pulse-pile-next contexte <commande>   consignes du pack pour /pulse:<commande>
+#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), ou piles (avant le choix de la pile) ; un libellé inconnu ne renvoie rien
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
@@ -68,6 +68,10 @@ liste_recettes() {
 
 contexte() {
   case "$1" in
+    piles)
+      cat "$REF/contexte/piles.md" ;;
+    code)
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     tech)
       afficher "Pour /pulse:tech" "$REF/contexte/tech.md"
       afficher "Valeurs de docs/technical.md" "$REF/technical.md"
