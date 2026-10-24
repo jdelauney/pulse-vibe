@@ -1513,8 +1513,8 @@ test("règles de Pulse lues en entier : consigne dans travail-sobre.md, aucun ag
 });
 
 // Chaque sortie d'une famille ou d'un morceau reste lisible en entier (sous la limite d'affichage de 30 000 caractères).
-// Vérifiée après le raccourcissement des familles (tâches 2.3b et 2.3c du refactoring d'optimisation).
-test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 caractères", { todo: "2.3b/2.3c" }, () => {
+// Garde les tâches de raccourcissement des familles (2.3b et 2.3c du refactoring d'optimisation).
+test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 caractères", () => {
   const { spawnSync } = require("child_process");
   const sorties = [["qualite", ["clean-code", "organisation", "composants", "securite"]], ["tests", ["strategie", "ecrire", "unitaire", "integration", "bout-en-bout", "tdd", "gherkin"]]];
   for (const [type, noms] of sorties) {
