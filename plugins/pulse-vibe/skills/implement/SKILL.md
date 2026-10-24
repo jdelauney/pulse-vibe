@@ -18,7 +18,7 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 ### Contraintes d'implémentation
 
-- Toujours appliquer les règles de qualité de code, chargées par famille avec `pulse-aidd qualite <familles>`.
+- Toujours appliquer les règles de qualité de code, chargées par famille avec `pulse-aidd qualite <famille>`.
 - Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
 
 ## Contexte
@@ -99,7 +99,7 @@ Consignes de réalisation (pour les deux modes) :
 - **S'appuyer sur le code réel** : créer ou modifier les fichiers listés par la tâche, à l'emplacement prévu par l'organisation de `docs/technical.md` ; avant d'importer un module, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer dans cette tâche et le signaler. Dans un projet existant, réutiliser ce qui existe au lieu de le dupliquer.
 - Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la conception technique du plan cite une maquette, l'ouvrir et la **traduire** dans la pile retenue : son HTML sert de modèle, à réécrire.
 - Coder **uniquement** ce que demande la tâche. Une idée en plus se note dans `docs/prd.md` (« En attente »), pour plus tard.
-- Respecter « Pile retenue » de `docs/technical.md` (résumée dans la section « Stack technique » de `CLAUDE.md`) et **les références de qualité** (`pulse-aidd qualite <familles>` : clean code, composants, sécurité du code) : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
+- Respecter « Pile retenue » de `docs/technical.md` (résumée dans la section « Stack technique » de `CLAUDE.md`) et **les références de qualité** (`pulse-aidd qualite <famille>` : clean code, composants, sécurité du code) : fonctions courtes, noms explicites, mots du glossaire, commentaires en français qui expliquent le *pourquoi*.
 - **Documentation officielle** : pour toute API, forme du code ou configuration de la technologie retenue, consulter sa documentation officielle, à la version indiquée dans « Pile retenue » (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Vérifier chaque API, plutôt que la deviner.
 - Sécurité, toujours : les données saisies sont affichées comme du texte, jamais interprétées comme du code ; les secrets restent hors du code ; validation des champs côté serveur quand il y en a un ; messages d'erreur compréhensibles.
 - Données et contrôle d'accès, selon « Données et contrôle d'accès » de `docs/technical.md` :
@@ -141,4 +141,4 @@ Sans tâche donnée : lancer `pulse-aidd reference implement/boucle.md` et l'app
 
 !`pulse-aidd contexte implement`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <familles>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
+Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <famille>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.

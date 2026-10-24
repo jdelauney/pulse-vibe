@@ -81,7 +81,7 @@ Prochaine étape : `/pulse:perf corriger` s'il y a une priorité, sinon `/pulse:
 2. **Point de comparaison** :
    - source PageSpeed Insights : la dernière mesure sert d'« avant » ;
    - source locale : mesurer d'abord l'« avant » sur ce poste, construction de production actuelle, `--passages 5 --json docs/performance/mesures/<AAAA-MM-JJ>-avant.json`.
-3. **Corriger** : appliquer les règles de qualité (`pulse-aidd qualite clean-code composants`), les consignes « Pack de pile » et la documentation officielle de la pile ; changer seulement ce que demande la priorité. Lancer ensuite les contrôles automatiques et la commande « Construire » de « Commandes du projet » : une erreur se corrige avant d'aller plus loin.
+3. **Corriger** : appliquer les règles de qualité (`pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants`, chaque sortie lue en entier), les consignes « Pack de pile » et la documentation officielle de la pile ; changer seulement ce que demande la priorité. Lancer ensuite les contrôles automatiques et la commande « Construire » de « Commandes du projet » : une erreur se corrige avant d'aller plus loin.
 4. **Mesurer l'« après »** :
    - source locale : servir la nouvelle construction, puis `pulse-aidd perf mesurer … --source local --passages 5 --json docs/performance/mesures/<AAAA-MM-JJ>-apres.json` ;
    - source PageSpeed Insights : enregistrer (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`), mettre en ligne avec l'accord de la personne (`pulse-aidd etape deploy --sans-communes`), vérifier avec `pulse-aidd sonder <adresse>`, puis mesurer avec `--passages 5`.
