@@ -19,6 +19,7 @@ Un comportement se teste **au niveau le plus bas qui suffit à le prouver**. Une
 |---|---|---|---|
 | **Prouve** | Une règle, un calcul, une transformation | Que plusieurs modules réels fonctionnent ensemble | Qu'un parcours complet marche comme pour la personne |
 | **Frontières** | Toutes passées en paramètre ou doublées | Celles du projet réelles (base de test, fichiers temporaires), services tiers doublés | Application complète, base de test |
+| **Durée visée** | Millisecondes par test | Secondes par test | Minutes pour l'ensemble |
 | **En cas d'échec** | Dit quelle règle est cassée | Dit quel assemblage est cassé | Dit quel parcours est cassé ; il faut souvent descendre d'un niveau pour trouver la cause |
 | **Référence** | `tests/unitaires.md` | `tests/integration.md` | `tests/bout-en-bout.md` |
 
