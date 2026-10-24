@@ -33,7 +33,7 @@ Les choix de la façon de travailler se font par une question au démarrage (§ 
 - `-s` **en coulisse** (mode sous-agent) : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
 - `-d` **devant vous** (mode direct) : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
 - `-w` **dossier à part (worktree)** : travailler dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree », en fin de fichier). Utile quand une autre session travaille sur le même dossier.
-- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », en fin de fichier).
+- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests d'abord » : `pulse-aidd reference tests-dabord.md`, à lancer avec `-t`).
 
 ### Prérequis
 
@@ -60,7 +60,7 @@ Cette commande prépare, contrôle, explique et parle à la personne ; en mode d
 - **Dossier à part** : sans `-w`, « 1. Faut-il un worktree ? » de la référence worktree, si la question se pose.
 - **Envoi** : dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant.md` (à chaque lancement, reprise comprise) ; appliquer « 2. Choisir comment envoyer le travail d'un plan » si la ligne « Envoi » du plan vaut « à choisir » ; en mode PR, préparer la branche de l'US ou y revenir (§ 2, « À chaque reprise du plan… vérifier qu'on est bien sur cette branche »).
 
-**Avec un dossier à part** : le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans ce dossier.
+**Avec un dossier à part** : lancer `pulse-aidd reference worktree-dossier.md`, puis le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la moindre tâche `[~]` : tout le travail de la commande (code, plan, commits) se fait ensuite dans ce dossier.
 
 Annoncer le choix en une ligne (« Je code en coulisse · tests d'abord · dans le dossier à part `us-003-<nom>` »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
@@ -83,13 +83,9 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 
 ### 3. Réaliser
 
-**Tests d'abord** : appliquer d'abord « Rouge : écrire les tests » (§ 4 de la référence « Tests automatiques »), dans les deux modes ; puis réaliser comme ci-dessous, en ajoutant à la délégation (ou à vos propres consignes en mode direct) ce que prévoit son étape 4 : fichiers de test, interface attendue, tests figés.
+**Tests d'abord** : lancer `pulse-aidd reference tests-dabord.md`, appliquer « Rouge : écrire les tests », dans les deux modes ; puis réaliser comme ci-dessous, en ajoutant à la délégation (ou à vos propres consignes en mode direct) ce que prévoit son étape 4 : fichiers de test, interface attendue, tests figés.
 
-**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets (repris du fichier de l'US), les extraits utiles de la spec et de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles, le chemin de `docs/design.md` et de la maquette citée s'ils existent, et les consignes ci-dessous (les familles de qualité de la tâche, sécurité du code comprise dès qu'elle touche le serveur ; documentation officielle, s'appuyer sur le code réel, sécurité, contrôles automatiques). Le sous-agent charge lui-même les références du plugin : ne recopier que les éléments propres à la tâche. À son retour :
-- **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse ;
-- **Bloqué** sur une action manuelle (schéma à appliquer dans une console, compte à créer, variable à saisir chez l'hébergeur, clé secrète à écrire dans le fichier local) : guider la personne pas à pas, puis relancer ;
-- **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
-- **Terminé** : lire son rapport et les changements (`git diff`, `git status`), puis passer à l'étape 4. Les points « À signaler » sur `docs/` sont traités ici (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
+**Mode sous-agent** : déléguer à **`pulse:implementer`** (outil Agent) selon « Déléguer à l'implementer » (le message, puis « Au retour »). Le sous-agent charge lui-même les références du plugin : ne recopier que les éléments propres à la tâche. Après « Terminé », passer à l'étape 4 ; en mode direct, s'arrêter de la même façon dès qu'un choix de la personne apparaît.
 
 **Mode direct** : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois (avant la première tâche réalisée dans cette conversation, et de nouveau si ces règles ne figurent plus dans la conversation) ; avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier ; puis réaliser soi-même, en suivant les consignes ci-dessous.
 
@@ -110,7 +106,7 @@ Consignes de réalisation (pour les deux modes) :
 
 ### 4. Vérifier vous-même
 
-**Tests d'abord** : appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques » (en mode sous-agent, lancer d'abord `pulse-aidd qualite --checklists` si ces règles ne figurent pas encore dans la conversation), jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles.
+**Tests d'abord** : appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests d'abord » (en mode sous-agent, lancer d'abord `pulse-aidd qualite --checklists` si ces règles ne figurent pas encore dans la conversation), jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles.
 
 Relire chaque critère d'acceptation de la tâche et vérifier que le code le réalise (en mode sous-agent : dans les changements qu'il a faits, au-delà de son rapport). Lancer les contrôles automatiques de « Commandes du projet » (`docs/technical.md`) : lint, format, types, tests, selon ce qui existe (« aucune » : le signaler, et s'en tenir aux commandes déclarées). Corriger avant de rendre la main (avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant la première correction ; en mode sous-agent, lancer d'abord `pulse-aidd qualite --checklists` si ces règles ne figurent pas encore dans la conversation ; s'il reste plus de 5 fichiers en erreur : `pulse-aidd etape auto-fix --sans-communes`). Si un critère se vérifie seulement en cliquant, l'inclure dans le test manuel.
 
@@ -141,4 +137,4 @@ Sans tâche donnée : lancer `pulse-aidd reference implement/boucle.md` et l'app
 
 !`pulse-aidd contexte implement`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <famille>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
+Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi), « Tests d'abord » (`pulse-aidd reference tests-dabord.md`, avec `-t`) et la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`, avec un dossier à part) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <famille>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.

@@ -38,7 +38,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 **Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, tout se choisit dans la ronde de départ (ci-dessous) ; **avec au moins une option**, le rythme est celui du profil (« rapide » vaut `-f`) ; profil « à choisir » ou absent : complet (pas à pas, avec points de validation, sans contrôle de sécurité supplémentaire), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
 - `-a` **autonome** : enchaîner les tâches sans s'arrêter : point de validation ✋ 2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles de relecture). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). La validation du plan quand il vient d'être créé s'obtient avant de partir. En cours de route, une décision de la personne attend dans le plan et seule sa tâche s'arrête (§ « Questions en attente ») ; un petit choix est pris et noté (même §).
-- `-t` **tests d'abord** : avant le code de chaque tâche, `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », chargée au démarrage de la réalisation, § [T]).
+- `-t` **tests d'abord** : avant le code de chaque tâche, `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests d'abord », chargée au démarrage de la réalisation, § [T]).
 - `-x` **contrôle de sécurité à chaque tâche** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
 - `-w` **dossier à part (worktree)** : réaliser le plan dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree », chargée au démarrage de la réalisation). Sans `-w`, si une autre session semble travailler sur ce dossier, le dossier à part est proposé (même avec `-a` : c'est une décision de la personne).
 - `-f` **rapide** : le rythme rapide pour cette réalisation, sans changer le profil (règles de réalisation, « Rythme ») : autonome (`-a`), tests essentiels (référence « Tests automatiques », § 2 bis), et une fiche de test complète de l'US à la fin.
@@ -111,7 +111,7 @@ La validation de la spec par l'étape **spec** vaut accord pour passer au plan :
 
 ### Choisir la façon de travailler
 
-**Charger une seule fois les références de la réalisation** : lancer `pulse-aidd etape commit --sans-communes` (conventions Git, envoi du travail ; inutile si les prérequis l'ont déjà chargée), `pulse-aidd reference worktree.md` et `pulse-aidd reference tests-automatiques.md`. Elles servent à cette ronde et à chaque tâche de la boucle. Si elles ne figurent plus dans la conversation (après `/clear` ou un résumé automatique), les relancer.
+**Charger une seule fois les références de la réalisation** : chacune par son propre appel, dans le même message (chaque sortie reste lisible en entier) : `pulse-aidd etape commit --sans-communes` (conventions Git, envoi du travail ; inutile si les prérequis l'ont déjà chargée), `pulse-aidd reference worktree.md`, `pulse-aidd reference tests-automatiques.md` ; avec `-t`, aussi `pulse-aidd reference tests-dabord.md`. Elles servent à cette ronde et à chaque tâche de la boucle. Si elles ne figurent plus dans la conversation (après `/clear` ou un résumé automatique), les relancer.
 
 Avant la boucle par tâche (une fois la spec et le plan écrits et validés), appliquer les choix de la ronde de départ ou des raccourcis. Avec au moins un raccourci, poser seulement ce qui reste à choisir, en **une seule ronde** :
 
@@ -127,7 +127,7 @@ Avant la boucle par tâche (une fois la spec et le plan écrits et validés), ap
 
 **Marqueur de réalisation** (reprise comprise) : avant la première tâche, `pulse-aidd realisation debut <US-XXX> --commande spirc --rythme <complet|rapide>` (plus `--autonome` en mode autonome), puis `pulse-aidd realisation questions <n>` si le plan a des questions ouvertes. À chaque étape, `pulse-aidd realisation etape <Tn> <étape>` : `test` ([T]), `realisation` ([I]), `examen` ([R]), `commit` ([C]), `questions` (arrêt pour les questions) et `test-groupe` (avec `<US-XXX>` à la place de la tâche).
 
-Puis, si un dossier à part est retenu, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que ce dossier les contienne. Toute la suite (réalisation, relecture, commits) se fait dans ce dossier. Sans dossier à part, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
+Puis, si un dossier à part est retenu : `pulse-aidd reference worktree-dossier.md`, « 2. Créer le worktree ou y revenir ». La spec et le plan doivent être enregistrés avant (`docs: spec et plan de US-XXX`), pour que ce dossier les contienne. Toute la suite (réalisation, relecture, commits) se fait dans ce dossier. Sans dossier à part, en mode PR : préparer la branche de l'US (§ 2 de la référence « Le dépôt distant et l'envoi du travail »). Puis appliquer « 4. Suggérer une US à mener en parallèle » de la référence worktree.
 
 ### [P] Planifier
 
@@ -145,18 +145,13 @@ Tâches concernées, dans l'ordre du plan : les tâches `[ ]` ou `[~]` de la por
 
 #### [T] Tests d'abord (avec `-t`)
 
-Appliquer « Rouge : écrire les tests » (§ 4 de la référence « Tests automatiques ») : `pulse:test-writer`, puis `pulse:test-runner` en phase « rouge attendu », puis tests figés. Une tâche dont la ligne `Tests` vaut « aucun » passe directement à [I].
+Appliquer « Rouge : écrire les tests » de la référence « Tests d'abord » : `pulse:test-writer`, puis `pulse:test-runner` en phase « rouge attendu », puis tests figés. Une tâche dont la ligne `Tests` vaut « aucun » passe directement à [I].
 
 #### [I] Implémenter
 
 1. Marquer la tâche `[~]` dans le plan. Annoncer en 3 lignes : « **T3 – Titre**. Ce qui va être fait : … »
-2. Déléguer à **`pulse:implementer`** : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), la consigne de charger **les familles de qualité de la tâche** (sécurité du code comprise dès qu'elle touche le serveur), de consulter la **documentation officielle** de la technologie retenue pour toute API (vérifier plutôt que deviner), de **s'appuyer sur le code réel** (vérifier qu'un fichier ou module existe avant de s'en servir) et de lancer les contrôles automatiques de « Commandes du projet », les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles. En rythme rapide : « tests essentiels » (référence « Tests automatiques », § 2 bis). Avec `-t` : en plus, ce que prévoit l'étape 4 de la référence « Tests automatiques » (fichiers de test, interface attendue, tests figés). Le pack de pile est chargé par l'agent (sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code).
-3. À son retour :
-   - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse.
-   - **Bloqué** sur une action manuelle (appliquer un schéma dans la console du fournisseur, créer un compte, saisir une variable chez l'hébergeur) : guider la personne pas à pas, puis relancer.
-   - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
-   - En mode autonome, ces trois cas suivent le § « Questions en attente » (un petit choix s'y règle seul, sans question), et la boucle continue avec la tâche suivante.
-   - **Terminé** : avec `-t`, appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests automatiques », jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles ; puis passer à l'examen. Les points « À signaler » sur `docs/` sont traités par vous (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
+2. Déléguer à **`pulse:implementer`** selon « Déléguer à l'implementer » (le message, puis le retour). Le pack de pile est chargé par l'agent (sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code).
+3. À son retour, appliquer « Au retour » de « Déléguer à l'implementer ». **Terminé** : avec `-t`, appliquer d'abord « Vert : réaliser » (étape 5) et « Trier les échecs » de la référence « Tests d'abord », jusqu'au verdict ✅ Vert ou à l'arrêt après deux cycles ; puis passer à l'examen.
 
 #### [R] Relire et vérifier (eXaminer)
 
@@ -236,7 +231,7 @@ Présenter un récapitulatif :
 
 Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi, les questions encore ouvertes, le travail encore mis de côté (`git stash list` : entrées « pulse: T<n> en attente »).
 
-**Dans un worktree** : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (fusion, demande de fusion ou worktree gardé), après avoir vérifié que les références de la réalisation sont chargées ; sinon les relancer (voir « Choisir la façon de travailler »).
+**Dans un worktree** : lancer `pulse-aidd reference worktree-dossier.md` (si elle ne figure pas dans la conversation) et appliquer « 3. Terminer : rassembler le travail » (fusion, demande de fusion ou worktree gardé), après avoir vérifié que les références de la réalisation sont chargées ; sinon les relancer (voir « Choisir la façon de travailler »).
 
 Une fois l'US réellement envoyée (travail publié, fusion ou demande de fusion faite), retirer ses captures de preuve : `pulse-aidd captures effacer <US-XXX>` (elle ne supprime que les images du verifier de cette US, dans `aidd_docs/captures/`).
 
@@ -255,4 +250,4 @@ Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si la premi�
 
 !`pulse-aidd contexte spirc`
 
-Ce contexte contient aussi « Examiner une tâche », le modèle de rapport de revue et le lexique. Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation : section « Choisir la façon de travailler ». Les règles de la mémoire projet se chargent à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.
+Ce contexte contient aussi « Examiner une tâche », le modèle de rapport de revue, « Déléguer à l'implementer » et le lexique. Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation : section « Choisir la façon de travailler ». Les règles de la mémoire projet se chargent à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.

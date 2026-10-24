@@ -14,7 +14,7 @@ allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd etape fix --sans-c
 
 Phrase à dire : « Les tests sont de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. Un assistant les lance ou les écrit ; un autre, qui n'a pas écrit le code, juge les résultats. »
 
-Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord », chargée en fin de fichier, dans « Références de la commande »).
+Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests d'abord » de ces commandes).
 
 ## Règles
 

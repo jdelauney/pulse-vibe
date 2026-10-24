@@ -174,7 +174,7 @@ references/                       partagées : regles-communes.md (le noyau), re
                                   checklist-securite.md, memoire.md (mémoire projet), raisonnement.md (penser avant d'écrire),
                                   gestes.md (les actions demandées à la personne, pas à pas : fichiers d'environnement, lancer l'application, gestes du navigateur),
                                   depot-distant.md (dépôt distant et envoi du travail), documents-depart.md (partir des documents de la personne : /pulse:express, /pulse:brainstorm), regles-controlees.md (les règles du projet qui portent un contrôle, appliqué par verifier.js), controles-proposes.md (les contrôles que Pulse propose : /pulse:ui, /pulse:review), autorisations.md (les autorisations du projet : /pulse:init, /pulse:tech, /pulse:spirc), git.md (conventions de commit, de branche et de PR), worktree.md (travail en parallèle),
-                                  examen.md (relecture et vérification d'une tâche), tests-automatiques.md (option -t),
+                                  examen.md (relecture et vérification d'une tâche), deleguer.md (le message de délégation à l'implementer et son retour, écrit une fois), tests-automatiques.md (choix des tests, tests essentiels, filet anti-régression), tests-dabord.md (option -t : rôles, rouge, vert, échecs), worktree-dossier.md (la suite de worktree.md : créer, entrer, rassembler),
                                   travail-sobre.md (la règle de travail sobre des agents, en tête de pulse-aidd qualite et tests),
                                   secrets/ (saisie hors conversation), qualite/ (références de qualité du code),
                                   tests/ (stratégie de tests, test manuel, Gherkin, TDD)

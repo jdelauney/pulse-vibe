@@ -261,6 +261,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     spirc)
       afficher "Examiner une tâche" "$REF/examen.md"
       afficher "Modèle : rapport de revue" "$TPL/revue.md"
+      afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
     express)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
@@ -288,8 +289,9 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
-      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Tests automatiques" "$REF/tests-automatiques.md"
       afficher "Travailler dans un worktree" "$REF/worktree.md"
+      afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
     fix) lexique ;;
     review)
@@ -363,7 +365,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       lexique ;;
     explain) lexique ;;
     test)
-      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Tests automatiques" "$REF/tests-automatiques.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       lexique ;;
     guide)
