@@ -176,3 +176,42 @@ test("le lanceur garde les transcriptions des essais avec leur rapport", () => {
     { cas: "realisation-boucle", score: 0.5, duree: 80, entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, sousAgents: 1 },
   ]);
 });
+
+test("le cœur assemblé ajoute son bin/ au PATH des essais (hook de démarrage, CLAUDE_ENV_FILE), le plugin publié reste tel quel", () => {
+  const racine = path.join(__dirname, "..", "..", "..");
+  const plugin = lanceur.assembler(racine, EVALS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-chemin-")));
+  const hooks = JSON.parse(fs.readFileSync(path.join(plugin, "hooks", "hooks.json"), "utf8")).hooks.SessionStart;
+  const commande = hooks[0].hooks[0];
+  assert.strictEqual(commande.command, "sh");
+  assert.deepStrictEqual(commande.args, ["${CLAUDE_PLUGIN_ROOT}/hooks/evals-chemin.sh"]);
+  const publie = JSON.parse(fs.readFileSync(path.join(racine, "plugins", "pulse-vibe", "hooks", "hooks.json"), "utf8")).hooks.SessionStart;
+  assert.strictEqual(hooks.length, publie.length + 1, "les hooks du plugin restent tous là");
+  assert.ok(!fs.existsSync(path.join(racine, "plugins", "pulse-vibe", "hooks", "evals-chemin.sh")), "rien dans le plugin publié");
+  if (!bash) {
+    const envFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "pulse-envfile-")), "env.sh");
+    const r = spawnSync("sh", [path.join(plugin, "hooks", "evals-chemin.sh").split(path.sep).join("/")], {
+      encoding: "utf8", env: { ...process.env, CLAUDE_ENV_FILE: envFile, CLAUDE_PLUGIN_ROOT: "/essai/plugin" },
+    });
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.strictEqual(fs.readFileSync(envFile, "utf8"), 'export PATH="/essai/plugin/bin:$PATH"\n');
+  }
+});
+
+test("les essais gardent leurs sous-agents au premier plan (sinon claude -p s'arrête avant leur réponse)", () => {
+  assert.strictEqual(lanceur.envEval({ PATH: "/x" }).CLAUDE_CODE_DISABLE_BACKGROUND_TASKS, "1");
+  assert.strictEqual(lanceur.envEval({ PATH: "/x" }).PATH, "/x");
+});
+
+test("les projets d'essai donnent un nom d'auteur à Git (le bac à sable protège .git/config pendant l'essai)", { skip: bash }, () => {
+  for (const c of cas) {
+    const d = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-eval-auteur-${c}-`));
+    spawnSync("bash", [path.join(EVALS, c, "projet.sh").split(path.sep).join("/")], { cwd: d, encoding: "utf8", env: { ...process.env, PULSE_EVAL_SANS_INSTALL: "1" } });
+    assert.strictEqual(spawnSync("git", ["config", "user.name"], { cwd: d, encoding: "utf8" }).stdout.trim(), "essai", c);
+  }
+});
+
+test("lancer.js --direct : passe au mode direct, sans transmettre l'option à claude plugin eval", () => {
+  assert.deepStrictEqual(lanceur.lireMode(["--direct", "--case", "plan-*"]), { direct: true, extra: ["--case", "plan-*"] });
+  assert.deepStrictEqual(lanceur.lireMode(["--case", "x"]), { direct: false, extra: ["--case", "x"] });
+  assert.strictEqual(lanceur.OUTILS_ACCORDES, require(path.join(OUTILS_EVALS, "direct.js")).OUTILS_ACCORDES, "une seule liste d'outils");
+});

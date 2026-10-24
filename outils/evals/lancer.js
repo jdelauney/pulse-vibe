@@ -4,7 +4,12 @@
 // et par un juge. Chaque essai est un vrai appel au modèle, facturé sur votre compte.
 //
 //   node outils/evals/lancer.js [options de claude plugin eval]     ex. --case plan-controle, --runs 3
+//   node outils/evals/lancer.js --direct [--case <motif>]           chaque cas avec claude -p (direct.js)
 //   outils/evals/lancer.sh …   (Linux, macOS, WSL2)    outils\evals\lancer.cmd …   (Windows)
+//
+// Le mode direct est celui qui marche aujourd'hui : dans claude plugin eval (2.1.309), chaque commande `!` d'un skill
+// est déclarée en échec (fichier de suivi du shell en lecture seule dans le bac à sable), et aucune commande Pulse n'y
+// démarre. Il note les vérifications automatiques et signale les juges IA comme non notés.
 //
 // Variables : RUNS (essais par cas, 1 par défaut), PLAFOND (coût maximal en dollars, 5 par défaut),
 // PACK (next : ajoute le pack de pile Next.js à côté du cœur, et accorde npm et npx aux essais).
@@ -25,14 +30,14 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const { nomTrace } = require("./mesurer");
+const modeDirect = require("./direct");
+const { OUTILS_ACCORDES, OUTILS_PACK, envEval } = modeDirect;
 
 const RACINE = path.resolve(__dirname, "..", "..");
 const CAS = path.join(__dirname, "cas");
 const RESULTATS = path.join(__dirname, "resultats");
 const CLAUDE_MIN = "2.1.269";
 const GIT_MIN = "2.31.0";
-const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
-const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
 
 /** Les arguments de `claude plugin eval` pour le cœur assemblé dans `dossierPlugin`. */
 function argumentsEval(dossierPlugin, env, extra) {
@@ -112,8 +117,10 @@ function direct(extra) {
     console.error("(ou décocher cette distribution dans Docker Desktop → Settings → Resources → WSL integration).");
     return 1;
   }
+  const mode = lireMode(extra);
+  if (mode.direct) return modeDirect.lancer(mode.extra, process.env, { depot: RACINE, dossierCas: CAS, resultats: RESULTATS });
   const dossierPlugin = assembler(RACINE, CAS, fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-")), { pack: process.env.PACK });
-  const r = spawnSync("claude", argumentsEval(dossierPlugin, process.env, extra), { stdio: "inherit" });
+  const r = spawnSync("claude", argumentsEval(dossierPlugin, process.env, extra), { stdio: "inherit", env: envEval(process.env) });
   const ranges = rapatrier(dossierPlugin, RESULTATS);
   for (const n of ranges) conserverTraces(path.join(RESULTATS, n));
   if (ranges.length) console.log(`Rapports rangés dans ${path.relative(RACINE, RESULTATS)}${path.sep}${ranges.join(", ")}`);
@@ -135,7 +142,21 @@ function assembler(racine, cas, temp, { pack } = {}) {
     const relais = path.join(dossierPlugin, "bin", "pulse-pile-next");
     fs.writeFileSync(relais, '#!/usr/bin/env bash\nexec "$(dirname "$0")/../evals-pack/next/bin/pulse-pile-next" "$@"\n', { mode: 0o755 });
   }
+  // claude plugin eval ne met pas bin/ dans le PATH de son bac à sable : un hook de démarrage l'y ajoute (evals-chemin.sh).
+  fs.copyFileSync(path.join(__dirname, "evals-chemin.sh"), path.join(dossierPlugin, "hooks", "evals-chemin.sh"));
+  const fichierHooks = path.join(dossierPlugin, "hooks", "hooks.json");
+  const hooks = JSON.parse(fs.readFileSync(fichierHooks, "utf8"));
+  hooks.hooks.SessionStart = [
+    { hooks: [{ type: "command", command: "sh", args: ["${CLAUDE_PLUGIN_ROOT}/hooks/evals-chemin.sh"], timeout: 10 }] },
+    ...(hooks.hooks.SessionStart || []),
+  ];
+  fs.writeFileSync(fichierHooks, JSON.stringify(hooks, null, 2) + "\n");
   return dossierPlugin;
+}
+
+/** L'option --direct (mode direct) et les autres arguments, transmis tels quels. */
+function lireMode(args) {
+  return { direct: args.includes("--direct"), extra: args.filter((a) => a !== "--direct") };
 }
 
 /** Copie dans <rapport>/traces/ la transcription de chaque essai et celles de ses sous-agents (le dossier temporaire est retiré). */
@@ -218,4 +239,4 @@ function principal(extra) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { argumentsEval, assembler, conserverTraces, rapatrier, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };
+module.exports = { argumentsEval, assembler, envEval, lireMode, conserverTraces, rapatrier, liensDocker, comparerVersions, premiereVersion, strategie, outilsRequis, distributions, pourBash, OUTILS_ACCORDES };

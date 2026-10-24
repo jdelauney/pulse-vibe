@@ -32,12 +32,13 @@ jobs:
           CAS: ${{ inputs.cas }}
         run: |
           set -euo pipefail
-          options=(--json resultats.json)
+          # Mode direct (claude -p) : dans claude plugin eval, les commandes `!` des skills échouent (outils/evals/direct.js).
+          options=(--direct)
           [ -n "$CAS" ] && options+=(--case "$CAS")
           bash outils/evals/lancer.sh "${options[@]}"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
           name: resultats-evaluations
-          path: resultats.json
+          path: outils/evals/resultats/direct-*/
           if-no-files-found: ignore
