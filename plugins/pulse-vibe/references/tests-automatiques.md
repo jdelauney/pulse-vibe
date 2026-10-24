@@ -1,6 +1,6 @@
 # Tests automatiques : tests d'abord
 
-Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-t`, ou réponse « Tests d'abord » à la question de démarrage) et par `/pulse:test`. La méthode d'écriture des tests est dans `references/tests/` (`pulse-aidd tests`, par morceaux).
+Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-t`, ou réponse « Tests d'abord » à la question de démarrage) et par `/pulse:test`. La méthode d'écriture des tests est dans `references/tests/` (`pulse-aidd tests <morceaux>`).
 
 À expliquer en deux phrases, la première fois : « Avant d'écrire le code, un assistant écrit des tests : de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. On les voit d'abord échouer (le code n'existe pas encore), puis le code les fait passer : à chaque changement futur, ils préviendront si quelque chose casse. »
 

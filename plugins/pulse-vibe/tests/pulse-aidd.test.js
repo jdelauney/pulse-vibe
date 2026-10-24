@@ -147,10 +147,13 @@ test("contexte implement et fix : règles de qualité chargées à la demande", 
     assert.ok(!r.stdout.includes("===== Règles de qualité du code ====="), commande);
     assert.ok(!r.stdout.includes("===== Clean code ====="), commande);
   }
-  assert.ok(lancer("qualite").stdout.includes("===== Clean code ====="), "pulse-aidd qualite reste complet");
+  const sansFamille = lancer("qualite").stdout;
+  assert.ok(!sansFamille.includes("===== Clean code ====="), "pulse-aidd qualite sans famille : règle de choix, pas les familles");
+  assert.ok(sansFamille.includes("Relancez avec les familles utiles"));
+  assert.ok(lancer("qualite", "--tout").stdout.includes("===== Clean code ====="), "--tout garde l'ancien comportement");
   const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
-  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite` une fois/);
-  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite` \(règles de qualité du code\), puis évaluer/);
+  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois/);
+  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite clean-code`, suivi des familles des fichiers à corriger[^\n]*règle commune 12\), puis évaluer/);
   const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
 });
@@ -236,8 +239,8 @@ test("l'aide décrit l'option --sans-communes", () => {
   assert.match(lancer().stdout, /etape <commande> \[--sans-communes\]/);
 });
 
-test("tests : affiche toute la méthode de tests, Gherkin compris", () => {
-  const r = lancer("tests");
+test("tests --tout : affiche toute la méthode de tests, Gherkin compris", () => {
+  const r = lancer("tests", "--tout");
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of [
     "===== Stratégie de tests =====",

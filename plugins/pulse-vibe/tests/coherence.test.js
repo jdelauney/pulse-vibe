@@ -1481,11 +1481,19 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
   assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
 });
 
+test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, --tout ni --checklists", () => {
+  const sansNom = /pulse-aidd (qualite|tests)`/;
+  const textes = [];
+  for (const plugin of PLUGINS) for (const ext of [".md", ".js"]) textes.push(...fichiers(plugin, ext).filter((f) => !f.includes(`${path.sep}tests${path.sep}`) && !f.includes("node_modules")));
+  for (const f of textes) assert.doesNotMatch(lire(f), sansNom, `${path.relative(DEPOT, f)} : « pulse-aidd qualite » ou « tests » sans famille`);
+});
+
 test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
   const implementer = agent("implementer");
-  assert.match(implementer, /`pulse-aidd qualite clean-code`/);
-  for (const famille of ["composants", "securite", "organisation"]) assert.match(implementer, new RegExp(`\`${famille}\``), famille);
+  assert.match(implementer, /`pulse-aidd qualite <familles>`, selon la règle de choix du sommaire/);
+  const choix = lire(RACINE, "references", "qualite", "README.md");
+  for (const famille of ["clean-code", "composants", "securite", "organisation"]) assert.match(choix, new RegExp(`\`${famille}\``), famille);
   assert.match(agent("reviewer"), /`pulse-aidd qualite --checklists`/);
   assert.match(agent("test-writer"), /`pulse-aidd tests ecrire gherkin/);
   assert.match(agent("test-runner"), /`pulse-aidd tests ecrire/);

@@ -45,7 +45,7 @@ Chaque contrôle donne un statut : ✅ bon · ⚠️ à améliorer · ⛔ à cor
 ## 7. Limitation des appels (rate limiting)
 
 - Concerné seulement si un point d'entrée **coûte** ou **expose** : envoi d'email, IA, paiement, connexion, formulaire public.
-- `git grep -n -i -E "rate.?limit|ratelimit|too.?many.?requests|429"` dans le code serveur, ou réglage équivalent chez l'hébergeur ou le service. ⚠️ par point d'entrée concerné sans limitation (voir la référence de qualité « sécurité du code », `pulse-aidd qualite`).
+- `git grep -n -i -E "rate.?limit|ratelimit|too.?many.?requests|429"` dans le code serveur, ou réglage équivalent chez l'hébergeur ou le service. ⚠️ par point d'entrée concerné sans limitation (voir la référence de qualité « sécurité du code », `pulse-aidd qualite securite`).
 
 ## Rapport (à afficher, ne pas écrire de fichier)
 

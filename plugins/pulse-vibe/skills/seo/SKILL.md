@@ -53,7 +53,7 @@ Fichiers de cette commande : [references/regles.md](references/regles.md), [refe
 2. **Lancer** `pulse-aidd seo <adresse> --ia [--chemins <pages>] [--privees <pages privées>] [--previsualisation]`, puis, avec un pack, `pulse-aidd pile seo-code` (contrôles du code). Expliquer en une phrase que les deux sont en lecture seule.
 3. **Enregistrer** le rapport dans `docs/seo/audits/seo-<AAAA-MM-JJ>.md` (ajouter `-2`, `-3` si le fichier existe), selon le modèle `seo-audit.md` : constats rangés par les quatre questions, chacun avec sa conséquence concrète et sa correction.
 4. **Présenter** en 5 lignes : le bilan, les Critiques et Hautes avec leur conséquence (« Google ne peut pas ouvrir cette adresse, donc… »), ce qui va bien. Pour la quatrième question, poser deux ou trois questions de la référence « textes » (§ 3), sans note.
-5. **Traiter** les constats selon les règles communes (§ 6) : une fondation manquante → `bases` ; un titre ou une description → `textes` ; une politique IA absente → `ia` ; une page privée exposée → `/pulse:security` ; l'accessibilité → `/pulse:ui audit`. Avant de corriger du code : `pulse-aidd qualite`. Après correction : relancer `pulse-aidd seo` et remplir « Avant / après » du rapport.
+5. **Traiter** les constats selon les règles communes (§ 6) : une fondation manquante → `bases` ; un titre ou une description → `textes` ; une politique IA absente → `ia` ; une page privée exposée → `/pulse:security` ; l'accessibilité → `/pulse:ui audit`. Avant de corriger du code : `pulse-aidd qualite clean-code securite`. Après correction : relancer `pulse-aidd seo` et remplir « Avant / après » du rapport.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : la première action de traitement, sinon `/pulse:seo lancer` si le site est en ligne sur son domaine définitif.
 
@@ -62,7 +62,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la première action
 Les fondations, posées une fois : adresse du site (variable de production), modèle de titre, description par défaut, robots.txt, sitemap, image de partage, icône, nom du site (`WebSite` sur l'accueil), organisation (`Organization`, ou `LocalBusiness` pour un commerce avec adresse), `noindex` des pages privées, vraie page 404.
 
 1. Avec un pack : suivre sa recette `seo` (`pulse-aidd pile recette seo`). Sans pack : la documentation officielle de la pile, pour chacune des fondations ci-dessus.
-2. Montrer la liste des fichiers à créer ou modifier avant d'écrire. Lancer `pulse-aidd qualite` et appliquer ses règles.
+2. Montrer la liste des fichiers à créer ou modifier avant d'écrire. Lancer `pulse-aidd qualite clean-code securite composants` et appliquer ses règles.
 3. Créer `docs/seo.md` à partir du modèle `seo.md` s'il manque (bloc `pulse-seo` compris) ; la politique des robots IA reste « à décider » : robots.txt ouvert (choix A) en attendant.
 4. **Preuve** : construire, servir, `pulse-aidd seo <adresse locale> --ia` : aucun Critique ni Haute ; avec un pack, `pulse-aidd pile seo-code`. Lancer aussi les contrôles automatiques de « Commandes du projet ».
 
