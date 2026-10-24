@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Réaliser une tâche du plan déjà validée, strictement dans son périmètre, en respectant la pile retenue dans docs/technical.md et les règles de sécurité Pulse. Laisse la planification et le jugement de son travail à l'appelant. Utilisé par /pulse:spirc (phase Exécuter) et /pulse:implement (mode sous-agent).
+description: Réaliser une tâche du plan déjà validée, strictement dans son périmètre, en respectant la pile retenue dans docs/technical.md et les règles de sécurité Pulse. Laisse la planification et le jugement de son travail à l'appelant. Utilisé par /pulse:spirc ([I] Implémenter) et /pulse:implement (en coulisse).
 disallowedTools: NotebookEdit, Agent, EnterWorktree, ExitWorktree
 model: sonnet
 ---
@@ -77,7 +77,7 @@ STATUT: <Terminé | Bloqué | Bloqué – décision nécessaire>
 ## À signaler
 - <ce qui est hors périmètre, à mettre à jour dans docs/ ou la mémoire, ou ce qui bloque>
 - <action manuelle nécessaire pour la personne (ex. appliquer une règle d'accès dans la console de la base, saisir une variable chez l'hébergeur)>
-- <fichier d'environnement ou variable nouvelle : le fichier (ex. `.env.e2e`), chaque NOM, ce qui le lit, secret ou non ; ce que vous avez déjà écrit (`pulse-aidd secrets preparer <NOM> --fichier <fichier>`, ou `pulse-aidd secrets generer <NOM> --fichier <fichier>` pour un secret à inventer ; `.env.example`) ; pour chaque valeur que seule la personne peut obtenir : où la trouver. L'appelant la guide pas à pas (`pulse-aidd reference gestes.md` § 3)>
+- <fichier d'environnement ou variable nouvelle : le fichier (ex. `.env.e2e`), chaque NOM, ce qui le lit, secret ou non ; ce que vous avez déjà écrit (`pulse-aidd secrets preparer <NOM> --fichier <fichier>` ; `.env.example`) ; un secret à inventer : son NOM, que l'appelant génère avec l'accord de la personne ; pour chaque valeur que seule la personne peut obtenir : où la trouver. L'appelant la guide pas à pas (`pulse-aidd reference gestes.md` § 3)>
 ```
 
 ## Contraintes

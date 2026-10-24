@@ -40,7 +40,7 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ### Lire les arguments
 
-**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, tout se choisit dans la ronde de départ (ci-dessous) ; **avec au moins une option**, le rythme non précisé prend sa valeur par défaut (pas à pas, avec points de validation, sans contrôle de sécurité supplémentaire), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
+**Raccourcis (facultatifs)**, placés avant l'US, regroupables (`-axw` = `-a -x -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. **Sans aucune option**, tout se choisit dans la ronde de départ (ci-dessous) ; **avec au moins une option**, le rythme est celui du profil (« rapide » vaut `-f`) ; profil « à choisir » ou absent : complet (pas à pas, avec points de validation, sans contrôle de sécurité supplémentaire), sans question. Les **tests** se choisissent par une question dès que `-t` est absent, avec ou sans autre option (comme `/pulse:implement`).
 - `-a` **autonome** : enchaîner les tâches sans s'arrêter : point de validation ✋ 2 et « Continuer avec T4 ? » sautés, constats de relecture traités automatiquement (Critique, Haute et Moyenne corrigés, Basse confrontés au code : règles communes § 6). **Le test par la personne et l'accord sur la mémoire sont regroupés à la fin**, en une seule fois (§ « Test groupé »). La validation du plan quand il vient d'être créé s'obtient avant de partir. En cours de route, une décision de la personne attend dans le plan et seule sa tâche s'arrête (§ « Questions en attente ») ; un petit choix est pris et noté (même §).
 - `-t` **tests d'abord** : avant le code de chaque tâche, `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », chargée au démarrage de la réalisation, § [T]).
 - `-x` **contrôle de sécurité à chaque tâche** : ajouter un audit de sécurité (`pulse:security-auditor`) à l'examen de chaque tâche.
@@ -154,7 +154,7 @@ Appliquer « Rouge : écrire les tests » (§ 4 de la référence « Tests autom
 #### [I] Implémenter
 
 1. Marquer la tâche `[~]` dans le plan. Annoncer en 3 lignes : « **T3 – Titre**. Ce qui va être fait : … »
-2. Déléguer à **`pulse:implementer`** : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), la consigne de charger **les familles de qualité de la tâche** (sécurité du code comprise dès qu'elle touche le serveur), de consulter la **documentation officielle** de la technologie retenue pour toute API (vérifier plutôt que deviner), de **s'appuyer sur le code réel** (vérifier qu'un fichier ou module existe avant de s'en servir) et de lancer les contrôles automatiques de « Commandes du projet », les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles. Avec `-t` : en plus, ce que prévoit l'étape 4 de la référence « Tests automatiques » (fichiers de test, interface attendue, tests figés).
+2. Déléguer à **`pulse:implementer`** : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, les sections « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès » et « Secrets et variables d'environnement » de `docs/technical.md` (recopiées), la consigne de charger **les familles de qualité de la tâche** (sécurité du code comprise dès qu'elle touche le serveur), de consulter la **documentation officielle** de la technologie retenue pour toute API (vérifier plutôt que deviner), de **s'appuyer sur le code réel** (vérifier qu'un fichier ou module existe avant de s'en servir) et de lancer les contrôles automatiques de « Commandes du projet », les conventions et pièges de `aidd_docs/memory/technical.md`, les mots du glossaire utiles. En rythme rapide : « tests essentiels » (référence « Tests automatiques », § 2 bis). Avec `-t` : en plus, ce que prévoit l'étape 4 de la référence « Tests automatiques » (fichiers de test, interface attendue, tests figés).
 3. À son retour :
    - **Bloqué** sur une question de besoin : la poser à la personne, puis relancer l'agent avec la réponse.
    - **Bloqué** sur une action manuelle (appliquer un schéma dans la console du fournisseur, créer un compte, saisir une variable chez l'hébergeur) : guider la personne pas à pas, puis relancer.
@@ -215,6 +215,8 @@ Quand toutes les tâches de la portée sont passées, après les réponses aux q
 
 En rythme rapide, d'abord écrire `aidd_docs/tasks/in-progress.md` (« Pour reprendre : `/pulse:spirc <US-XXX>` »), puis lancer `pulse-aidd reference spirc/examen-us.md` et l'appliquer : toute la suite de tests, relecture et vérification de toute l'US en parallèle, corrections ; à une reprise, `pulse-aidd revue <US-XXX>` dit où reprendre. Les étapes ci-dessous lisent alors le rapport de l'US au lieu de ceux des tâches.
 
+**En rythme complet** : lancer d'abord « Tester de bout en bout » (référence « Tests automatiques », § 2 ter), s'il existe ; un échec est un constat Critique, corrigé comme à l'étape 5.
+
 1. **Les choix faits par Pulse** d'abord (section du plan), s'il y en a : chacun en une ligne, avec sa question (AskUserQuestion, 4 par ronde) « Garder ce choix (Recommandé) » / « Changer ce choix ». Un choix changé : noter la nouvelle décision sur sa ligne, puis corriger la tâche comme à l'étape 5.
 2. Présenter, tâche par tâche, le **rapport de réalisation** (règles communes § 4) et, en langage simple, les constats corrigés et ceux écartés.
 3. Écrire **une fiche de test complète de l'US**, `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<nom>.md`, qui enchaîne les étapes de toutes les tâches dans l'ordre du plan (« 3 bis » de la référence « Examiner une tâche »), lancer l'application en arrière-plan, puis `pulse-aidd realisation etape <US-XXX> test-groupe` et donner le lien vers la fiche, sa durée et sa première étape.
@@ -226,7 +228,7 @@ En rythme rapide, d'abord écrire `aidd_docs/tasks/in-progress.md` (« Pour repr
 
 ### Fin
 
-Hors autonome, US faite : lancer « Tester de bout en bout » (§ 2 ter des tests) ; échec = constat Critique.
+Rythme complet hors autonome, US faite : lancer « Tester de bout en bout » (§ 2 ter des tests) ; échec = constat Critique.
 
 Présenter un récapitulatif :
 
