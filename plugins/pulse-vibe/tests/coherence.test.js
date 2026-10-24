@@ -308,7 +308,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
 });
 
 test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme, sont autorisées d'avance", () => {
-  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ""); // le corps seul : les motifs allowed-tools ne sont pas des citations
   const enchainees = (depart) => {
     const vues = new Set([depart]);
     const aVoir = [depart];
@@ -1042,12 +1042,41 @@ test("règles communes : les documents du projet restent appliqués par les comm
   }
 });
 
-test("les lectures de fichiers-projet.md et cycle.md, citées par les règles communes, sont permises dans chaque skill", () => {
+test("les lectures de fichiers-projet.md, cycle.md et gestes.md, citées par les règles communes, sont permises dans chaque skill", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const motifs = motifsBash(fichier);
-    for (const ref of ["fichiers-projet.md", "cycle.md"])
+    for (const ref of ["fichiers-projet.md", "cycle.md", "gestes.md"])
       if (!motifs.some((m) => couvre(m, `pulse-aidd reference ${ref}`))) problemes.push(`${path.relative(DEPOT, fichier)} : ${ref}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("allowed-tools : aucun motif `contexte <autre>` sans emploi, aucune paire `x` et `x *`", () => {
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ""); // le corps seul : les motifs allowed-tools ne sont pas des citations
+  const enchainees = (depart) => {
+    const vues = new Set([depart]);
+    const aVoir = [depart];
+    while (aVoir.length) {
+      for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        if (etape && SKILLS.has(etape) && !vues.has(etape)) {
+          vues.add(etape);
+          aVoir.push(etape);
+        }
+      }
+    }
+    return [...vues];
+  };
+  const problemes = [];
+  for (const skill of SKILLS) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const citees = new Set(enchainees(skill).flatMap((s) => [...texteSkill(s).matchAll(/pulse-aidd contexte ([a-z][a-z-]*)/g)].map((m) => m[1])));
+    for (const motif of motifs) {
+      const cible = (motif.match(/^pulse-aidd contexte ([a-z][a-z-]*)$/) || [])[1];
+      if (cible && cible !== skill && !citees.has(cible)) problemes.push(`${skill} : Bash(${motif}) sans emploi`);
+      if (!motif.endsWith("*") && motifs.includes(`${motif} *`)) problemes.push(`${skill} : Bash(${motif}) doublé par Bash(${motif} *)`);
+    }
   }
   assert.deepStrictEqual(problemes, []);
 });
