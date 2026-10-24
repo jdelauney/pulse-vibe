@@ -1735,6 +1735,15 @@ test("implementer : [I] Implémenter, en coulisse ; un secret à inventer est re
   assert.match(texte, /un secret à inventer : son NOM, que l'appelant génère avec l'accord de la personne/);
 });
 
+test("explorer sans numéro de checklist inventé, implementer sans doublon de la méthode", () => {
+  const explorer = lire(RACINE, "agents", "explorer.md");
+  assert.doesNotMatch(explorer, /point S… de la checklist|\bS\d+\b/, "l'explorer ne charge pas la checklist : pas de numéro");
+  assert.match(explorer, /sécurité \(donnée personnelle, accès réservé, saisie affichée, clé secrète\), régression possible, cas limite/);
+  const implementer = lire(RACINE, "agents", "implementer.md");
+  assert.doesNotMatch(implementer, /Toujours appliquer les règles de qualité de code, chargées par famille \(étape 3 de la méthode\)/);
+  assert.match(implementer, /code-concepts\.md/, "le pointeur vers les concepts de code reste, avec son quand");
+});
+
 test("agents : aucun ne cite les gestes qui touchent la production comme un geste à faire lui-même", () => {
   for (const f of AGENTS_PAR_PLUGIN) assert.doesNotMatch(lire(f), /pulse-aidd secrets (generer|envoyer|elaguer|redeployer)/, path.relative(DEPOT, f));
 });
