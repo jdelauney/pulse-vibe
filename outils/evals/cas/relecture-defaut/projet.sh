@@ -111,4 +111,9 @@ EOF
 
 sed -i 's#^import type { Metadata } from "next";#import { ListeCourses } from "@src/features/courses/components/sections/liste-courses";\nimport type { Metadata } from "next";#' app/page.tsx
 sed -i 's#^    </main>#      <ListeCourses articles={[]} />\n    </main>#' app/page.tsx
+# L'action de session fait partie de T2 : elle figure dans ses fichiers, le plan note que la personne est connectée
+# (S13 s'applique), et git diff la montre.
+sed -i 's#· à modifier : `app/page.tsx`#& · à créer aussi : `src/features/courses/actions/ouvrir-session.action.ts` (garde la personne connectée)#' "$PLAN"
+sed -i 's#^  - Attention : le nom d.un article s.affiche comme du texte (S6)$#&\n  - Attention : la personne est connectée par un cookie de session (S13)#' "$PLAN"
+git_essai add -N src/features/courses/actions/ouvrir-session.action.ts
 sed -i 's/^- \[ \] \*\*T2 /- [~] **T2 /' "$PLAN"
