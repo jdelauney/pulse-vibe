@@ -1,9 +1,5 @@
 # Pack Pulse Next.js – pour /pulse:tech
 
-La pile de ce pack est **une option** du tableau « Les options comparées » : une application web avec pages, comptes, données partagées, hébergée en Europe. Elle convient quand le besoin demande une interface web et des données côté serveur ; pour une simple page vitrine sans données, elle est surdimensionnée : le dire, et présenter alors une option plus légère.
-
-À la vérification (étape 4), contrôler en particulier : l'offre gratuite de Neon (stockage, transfert, mise en veille) et de Vercel (l'offre gratuite Hobby est réservée à un usage **non commercial** et limite l'optimisation des images ; un site qui vend ou fait la promotion d'une activité relève de l'offre Pro : le dire à la personne avant qu'elle choisisse), la région Francfort pour les données personnelles, les dernières versions publiées (`npm view next version`).
-
 Une fois la pile choisie :
 
 1. Écrire `docs/technical.md` avec les valeurs de la section « Valeurs de docs/technical.md » ci-dessous, dont la ligne `**Pack de pile Pulse** : next`, adaptées au projet (tableau des données et du contrôle d'accès d'après le PRD).

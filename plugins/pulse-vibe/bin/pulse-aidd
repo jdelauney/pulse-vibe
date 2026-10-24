@@ -141,6 +141,7 @@ piles() {
       vus="$vus$id "
       printf -- '- %s : %s – %s (version %s)
 ' "$id" "$(pack_info "$id" nom)" "$(pack_info "$id" resume)" "$(pack_info "$id" version)"
+      "$outil" contexte piles 2>/dev/null | sed 's/^/  /'
     done
   done
   [ "$vus" = " " ] && echo "Aucun pack de pile installé."
@@ -429,6 +430,11 @@ case "$1" in
   pile)
     shift
     [ $# -eq 0 ] && { pile; exit 0; }
+    # contexte : un projet sans pack n'a rien à charger (sortie vide, code 0) ; le pack déclaré mais absent est signalé.
+    if [ "$1" = contexte ]; then
+      [ -n "$(pack_declare)" ] || exit 0
+      command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { pile; exit 0; }
+    fi
     relais_pack "$@" ;;
   sonder)
     shift; exec node "$RACINE/scripts/sonder.js" "$@" ;;
