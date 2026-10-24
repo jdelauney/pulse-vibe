@@ -147,7 +147,7 @@ Après une étape longue (brainstorm, spirc), proposer plutôt : « Faites `/cle
 
 #### « M'expliquer la méthode »
 
-Montrer le chemin de « Le cycle Pulse » ci-dessus (son bloc, puis ses deux dernières lignes : `/pulse:spirc` et les commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
+Montrer le chemin de « Le cycle Pulse » (en fin de fichier) (son bloc, puis ses deux dernières lignes : `/pulse:spirc` et les commandes à tout moment), en 9 lignes au plus, l'étape en cours entre crochets. Puis remontrer l'écran.
 
 ### Fin
 

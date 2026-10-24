@@ -83,7 +83,7 @@ Demander (AskUserQuestion) : « Valider (Recommandé) » / « Modifier quelque c
 
 ### 5. Écrire les documents
 
-Avec les modèles ci-dessus, en appliquant « Qui a décidé quoi » (`raisonnement.md` § 5) :
+Avec les modèles (en fin de fichier), en appliquant « Qui a décidé quoi » (`raisonnement.md` § 5) :
 
 - `docs/brief.md` (blocs 1 et 2) et `aidd_docs/memory/glossary.md` (les mots du métier employés par la personne) ;
 - `docs/prd.md` : objectifs, utilisateurs, MVP en MoSCoW, contraintes (bloc 4), questions ouvertes ;

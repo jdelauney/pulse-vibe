@@ -77,7 +77,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la page suivante, o
 
 ### ia
 
-Suivre « Référencement : assistants IA » ci-dessus.
+Suivre « Référencement : assistants IA » (en fin de fichier).
 
 1. Afficher la politique actuelle de `docs/seo.md` (choix et date), ou « à décider ».
 2. Expliquer en trois lignes les trois familles de robots, puis poser **une** question à quatre réponses (A, B, C, D) avec leurs conséquences, sans recommandation ; B porte la mention « (le plus courant pour un site vitrine) ». Les options (Content-Signal, Amazonbot, `nosnippet`) se proposent seulement si la personne s'y intéresse.

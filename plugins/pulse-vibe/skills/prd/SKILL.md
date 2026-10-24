@@ -25,7 +25,7 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 ## Processus
 
-Appliquer « Penser avant d'écrire » ci-dessus : la coupe du MVP et la définition « La première version est prête quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
+Appliquer « Penser avant d'écrire » (en fin de fichier) : la coupe du MVP et la définition « La première version est prête quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
 
 ### 1. Lister les fonctionnalités
 

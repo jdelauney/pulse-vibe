@@ -74,7 +74,7 @@ Objectif : aucune coupure. L'ancienne valeur reste valide jusqu'à la preuve que
 
 ### fuite [<NOM>]
 
-Appliquer la référence « Réagir à une fuite de clé » ci-dessus, étape par étape, dans son ordre. Points propres à la commande :
+Appliquer la référence « Réagir à une fuite de clé » (en fin de fichier), étape par étape, dans son ordre. Points propres à la commande :
 
 - **Premier message** : court, calme, avec l'action n° 1. Exemple : « On s'en occupe tout de suite. Première chose : rendre l'ancienne clé inutilisable chez le fournisseur. Je vous guide. » Puis une seule question : quelle clé (menu tiré de l'inventaire, avec « Je ne sais pas laquelle »).
 - **Quelle clé ?** Si la personne ne sait pas : `pulse-aidd secrets historique` (traces dans Git) et la question des lieux d'exposition. Une clé collée dans cette conversation se reconnaît à son fournisseur, sans la répéter.

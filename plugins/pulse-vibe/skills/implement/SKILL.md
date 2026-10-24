@@ -32,8 +32,8 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 Les choix de la façon de travailler se font par une question au démarrage (§ 0). Les habitués peuvent les donner d'avance, avant l'US, regroupables (`-sw` = `-s -w`, dans n'importe quel ordre). Une lettre inconnue : la signaler et demander ce que la personne voulait. `-s` et `-d` ensemble se contredisent : demander lequel garder.
 - `-s` **en coulisse** (mode sous-agent) : la réalisation (étapes 3 et 4) est confiée au sous-agent `pulse:implementer`, qui code dans son propre contexte ; cette commande prépare, contrôle et explique. La conversation reste légère : conseillé pour tout un plan.
 - `-d` **devant vous** (mode direct) : la réalisation se fait dans cette conversation, sous les yeux de la personne. Pratique pour apprendre en voyant chaque étape.
-- `-w` **dossier à part (worktree)** : travailler dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree » ci-dessus). Utile quand une autre session travaille sur le même dossier.
-- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord » ci-dessus).
+- `-w` **dossier à part (worktree)** : travailler dans un dossier à part du projet, sur sa propre branche (référence « Travailler dans un worktree », en fin de fichier). Utile quand une autre session travaille sur le même dossier.
+- `-t` **tests d'abord** : avant le code de chaque tâche, le sous-agent `pulse:test-writer` écrit ses tests, qu'on voit échouer ; le code doit ensuite les faire passer, contrôlé par `pulse:test-runner` (référence « Tests automatiques : tests d'abord », en fin de fichier).
 
 ### Prérequis
 
