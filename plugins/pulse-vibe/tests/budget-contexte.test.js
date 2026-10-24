@@ -128,8 +128,8 @@ const BOUCLES = {
 // charger, dans un cas type, sans pack (plafond = mesure × 1,05, au 500 supérieur). Avant le chargement par famille (2026-10-23, pulse 0.48.2, pack Next compris) : implementer
 // ≈ 107 000, reviewer ≈ 133 000, test-writer et test-runner ≈ 62 000 chacun. Avec le pack : tests du pack.
 const AGENTS = {
-  "implementer, tâche d'interface": { plafond: 54000, /* mesure 51 188 (pulse 0.50 : une commande par famille, règles lues en entier) ; avant, 52 028 */ parties: [["agent", "implementer"], ["qualite", "clean-code"], ["qualite", "composants"]] },
-  "implementer, tâche serveur": { plafond: 57000, /* mesure 53 914 (pulse 0.50 : une commande par famille, règles lues en entier) ; avant, 54 754 */ parties: [["agent", "implementer"], ["qualite", "clean-code"], ["qualite", "securite"]] },
+  "implementer, tâche d'interface": { plafond: 47500, /* mesure 44 966 (pulse 0.50 : familles de qualité raccourcies) ; avant, 51 188 */ parties: [["agent", "implementer"], ["qualite", "clean-code"], ["qualite", "composants"]] },
+  "implementer, tâche serveur": { plafond: 50500, /* mesure 47 692 (pulse 0.50 : familles de qualité raccourcies) ; avant, 53 914 */ parties: [["agent", "implementer"], ["qualite", "clean-code"], ["qualite", "securite"]] },
   reviewer: { plafond: 28000, /* mesure 26 888 (pulse 0.50 : checklists lues en entier, consigne ajoutée) ; avant, 26 273 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"]] },
   "test-writer": { plafond: 45000, /* mesure 42 709 (pulse 0.50 : une commande par famille, règles lues en entier) ; avant, 43 351 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin"], ["tests", "unitaire"], ["tests", "tdd"]] },
   "test-runner": { plafond: 30000, /* mesure 28 268 (pulse 0.50 : une commande par famille, règles lues en entier) ; avant, 29 782 */ parties: [["agent", "test-runner"], ["tests", "ecrire"], ["tests", "unitaire"]] },
