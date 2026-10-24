@@ -364,8 +364,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     auto-fix) ;;
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
-  # review : l'agent reviewer charge lui-même les consignes du pack (pulse-aidd pile contexte review) ; la conversation principale orchestre.
-  [ "$1" = "review" ] || contexte_pack "$1"
+  # review, spirc, auto-fix, implement : les agents qui relisent ou codent chargent eux-mêmes les consignes du pack (pulse-aidd pile contexte <commande>) ; la conversation principale orchestre.
+  case "$1" in review|spirc|auto-fix|implement) ;; *) contexte_pack "$1" ;; esac
 }
 
 case "$1" in

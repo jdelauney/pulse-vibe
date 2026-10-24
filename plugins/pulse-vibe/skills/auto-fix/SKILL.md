@@ -70,7 +70,7 @@ Revérification : <commande de « Commandes du projet », limitée à ces fichie
 
 Rappeler dans chaque message que chaque correction préserve la sécurité et les contrôles ; restent interdites les « corrections » qui les affaiblissent : désactiver une règle du lint ou un contrôle, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, supprimer le code qui pose problème.
 
-**Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler.
+**Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler. Le pack de pile est chargé par l'agent (sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code).
 
 ### 3. Revérifier
 
