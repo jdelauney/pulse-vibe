@@ -74,9 +74,7 @@ contexte() {
       afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     tech)
       afficher "Pour /pulse:tech" "$REF/contexte/tech.md"
-      afficher "Valeurs de docs/technical.md" "$REF/technical.md"
-      fiche
-      afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;
+      afficher "Valeurs de docs/technical.md" "$REF/technical.md" ;;
     ui)
       afficher "Pour /pulse:ui" "$REF/contexte/ui.md"
       afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;

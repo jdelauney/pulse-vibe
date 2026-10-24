@@ -1393,6 +1393,7 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
 test("tech : une fois le pack choisi, seules ses consignes se chargent ; review dit que le reviewer charge le pack", () => {
   const tech = skillTexte("tech");
   assert.match(tech, /puis lancer `pulse-aidd pile contexte tech`/);
+  assert.match(tech, /`pulse-aidd piles`, qui affiche aussi, pour chaque pack, ce qu'il faut vérifier et dire avant le choix : l'appliquer aux étapes 3 et 4/);
   assert.doesNotMatch(tech, /relancer `pulse-aidd contexte tech`/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "tech", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte tech")), "tech : pile contexte tech autorisé");
   assert.match(skillTexte("review"), /le reviewer les charge lui-même \(`pulse-aidd pile contexte review`\)/);

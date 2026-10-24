@@ -17,7 +17,10 @@ const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 
 // pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l'architecture ; mesure à la fin du plan « Corrections 4 » : 20 087 (plafond = mesure × 1,05, au 500 supérieur).
 // Le pack n'est plus servi à spirc ni à auto-fix (pulse 0.50 : les agents qui codent le chargent) ; la clé implement mesure ce que charge l'agent implementer.
-const PLAFONDS_PACK = { implement: 21500, fix: 21500 };
+const PLAFONDS_PACK = { implement: 21500, fix: 21500, review: 20000 }; // review : mesure 18 941 (pulse 0.51 : sans l'architecture, sous le seuil de lecture de 30 000 ; avant, 31 229)
+// Commandes dont le pack n'apporte pas la fiche (elle se lit à la demande : pulse-aidd pile reference fiche.md).
+// tech : mesure 12 917 (pulse 0.51 : sans la fiche, l'architecture ni le thème ; avant, 47 523) ; security : mesure 6 010 (avant, 34 899).
+const PLAFONDS_PACK_SANS_FICHE = { tech: 13500, security: 6500 };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
 // pulse 0.50 : spirc et implement laissent le pack à leurs agents, `contexte` ne le contient plus ; plafonds = mesure × 1,05 : implement 44 534 (avant 65 242), spirc 33 412 (avant 51 627).
 const PLAFONDS_AVEC_PACK = { implement: 47000, spirc: 35500 }; // implement : avant, mesure 65 242 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -27,6 +30,16 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("----- Fiche de la pile"), "fiche");
+    assert.ok(!r.stdout.includes("----- Architecture du code"), "architecture à la demande");
+    assert.ok(r.stdout.length <= plafond, `${r.stdout.length} > ${plafond}`);
+  });
+}
+
+for (const [commande, plafond] of Object.entries(PLAFONDS_PACK_SANS_FICHE)) {
+  test(`pack : contexte ${commande} ≤ ${plafond} caractères, ni fiche ni architecture`, () => {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(!r.stdout.includes("----- Fiche de la pile"), "fiche à la demande");
     assert.ok(!r.stdout.includes("----- Architecture du code"), "architecture à la demande");
     assert.ok(r.stdout.length <= plafond, `${r.stdout.length} > ${plafond}`);
   });
@@ -70,7 +83,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 const PARCOURS_AVEC_PACK = {
   "boucle implement de 4 tâches": { plafond: 100500, /* mesure 95 300 (pulse 0.50 : le pack laissé à l'agent implementer) ; avant, 119 519 (relecture finale de la phase 1 : annonce des deux accords du dépôt distant) ; avant, 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
   "boucle spirc de 4 tâches": { plafond: 91000, /* mesure 86 453 (pulse 0.50 : le pack laissé aux agents qui codent) ; avant, 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
-  "tech, pack choisi en cours de commande": { plafond: 120000, /* mesure 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
+  "tech, pack choisi en cours de commande": { plafond: 84500, /* mesure 80 070 (pulse 0.51 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
 
 for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
@@ -99,7 +112,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   security: 46500, // mesure 44 263 (pulse 0.51 : la fiche et l'architecture à la demande, `pile contexte security` passe sous le seuil de lecture de 30 000) ; avant, mesure 72 074 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
   seo: 89500, // mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
   spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  tech: 120000, // mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
+  tech: 84500, // mesure 80 113 (pulse 0.51 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 52500, // mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 88000, // mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
 };
@@ -139,7 +152,7 @@ for (const [agent, { plafond, parties }] of Object.entries(AGENTS_AVEC_PACK)) {
 
 if (process.argv.includes("--tableau")) {
   const lignes = ["| Mesure | Caractères | Plafond |", "|---|---|---|"];
-  for (const [c, p] of Object.entries(PLAFONDS_PACK)) lignes.push(`| pulse-pile-next contexte ${c} | ${lancer("contexte", c).stdout.length} | ${p} |`);
+  for (const [c, p] of Object.entries({ ...PLAFONDS_PACK, ...PLAFONDS_PACK_SANS_FICHE })) lignes.push(`| pulse-pile-next contexte ${c} | ${lancer("contexte", c).stdout.length} | ${p} |`);
   for (const [c, p] of Object.entries(PLAFONDS_AVEC_PACK)) lignes.push(`| contexte ${c} avec pack | ${projetAvecPack("contexte", c).stdout.length} | ${p} |`);
   for (const [n, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK))
     lignes.push(`| ${n} avec pack | ${parties.reduce((s, [l, ...a]) => s + l(...a).stdout.length, 0)} | ${plafond} |`);

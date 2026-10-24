@@ -40,7 +40,7 @@ test("info : les quatre lignes du contrat, avec la version du manifeste", () => 
 
 test("contexte : chaque commande concernée reçoit ses consignes, les autres rien, toujours le code 0", () => {
   const attendus = {
-    tech: ["Pour /pulse:tech", "Valeurs de docs/technical.md", "Fiche de la pile", "Le thème"],
+    tech: ["Pour /pulse:tech", "Valeurs de docs/technical.md"],
     ui: ["Pour /pulse:ui", "Le thème"],
     express: ["Pour /pulse:express"],
     spec: ["Pour /pulse:spec", "Recettes disponibles"],
@@ -214,13 +214,11 @@ test("aucune clé ressemblant à une vraie dans les références et le squelette
   assert.deepStrictEqual(trouves, []);
 });
 
-test("la fiche s'accompagne de l'architecture pour tech et plan ; à la demande pour relire, réaliser et corriger", () => {
-  for (const commande of ["tech", "plan"]) {
-    const r = lancer("contexte", commande);
-    assert.strictEqual(r.status, 0);
-    assert.match(r.stdout, /----- Architecture du code/, commande);
-  }
-  for (const commande of ["review", "security", "implement", "fix"]) {
+test("l'architecture du code accompagne plan ; à la demande pour tech, relire, réaliser et corriger", () => {
+  const plan = lancer("contexte", "plan");
+  assert.strictEqual(plan.status, 0);
+  assert.match(plan.stdout, /----- Architecture du code/);
+  for (const commande of ["tech", "review", "security", "implement", "fix"]) {
     const r = lancer("contexte", commande);
     assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
   }
@@ -232,6 +230,13 @@ test("contexte review : sous le seuil de lecture, avec la fiche et sans l'archit
   assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères : une sortie plus longue est enregistrée dans un fichier`);
   assert.match(r.stdout, /----- Fiche de la pile/);
   assert.doesNotMatch(r.stdout, /----- Architecture du code/);
+});
+
+test("contexte tech : ni la fiche, ni l'architecture, ni le thème ; le thème se lit à la demande", () => {
+  const r = lancer("contexte", "tech");
+  assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code|Le thème)/);
+  assert.match(r.stdout, /pulse-aidd pile reference theme.md/);
+  assert.match(lire(REF, "technical.md"), /pulse-aidd pile reference theme.md/);
 });
 
 test("contexte security : ni la fiche ni l'architecture, des renvois pour les situer", () => {
