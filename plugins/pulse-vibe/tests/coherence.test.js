@@ -296,7 +296,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -313,14 +313,46 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
       if (estSensible(commande)) continue; // passe par la demande d'autorisation : c'est voulu
       if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
     }
-    // Les commandes citées par les modules que cette commande charge (T-3) ; le noyau cite des outils pour toutes les commandes (secrets, pile…), sans que chacune les lance.
-    for (const fichier of modulesCharges(skill))
-      for (const commande of citationsOutil(lire(RACINE, "references", fichier))) {
-        if (estSensible(commande) || commande === "pulse-aidd search-console") continue;
-        if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} (${fichier}) : ${commande}`);
-      }
+    // Les citations du noyau (outils cités pour toutes les commandes) sont contrôlées dans une tâche ultérieure ; les modules ne citent aucune commande pulse-aidd.
   }
   assert.deepStrictEqual([...new Set(manquants)], []);
+});
+
+test("étapes enchaînées : avec --sans-communes, les modules de l'étape sont déjà chargés par la commande qui l'enchaîne (sinon --sans-noyau)", () => {
+  const sansEntete = (f) => lire(f).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "");
+  // Ce que la commande lit : son SKILL.md, et les références qu'elle nomme.
+  const sources = (skill) => {
+    const corps = sansEntete(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const textes = [corps];
+    for (const m of corps.matchAll(/pulse-aidd reference ([\w./-]+\.md)|references\/([\w./-]+\.md)/g)) {
+      const ref = m[1] || m[2];
+      for (const chemin of [path.join(RACINE, "references", ref), path.join(RACINE, "skills", skill, "references", ref), path.join(RACINE, "skills", ...ref.split("/").slice(0, 1), "references", ...ref.split("/").slice(1))])
+        if (fs.existsSync(chemin) && fs.statSync(chemin).isFile()) textes.push(sansEntete(chemin));
+    }
+    return textes.join("\n");
+  };
+  const problemes = [];
+  let verifiees = 0;
+  for (const parent of SKILLS) {
+    const disponibles = new Set(modulesCharges(parent));
+    const vues = new Set([parent]);
+    const aVoir = [parent];
+    while (aVoir.length) {
+      const courant = aVoir.pop();
+      for (const m of sources(courant).matchAll(/pulse-aidd etape ([a-z][a-z-]*) (--sans-communes|--sans-noyau)/g)) {
+        const [, etape, option] = m;
+        if (!SKILLS.has(etape)) continue;
+        verifiees++;
+        if (option === "--sans-communes") {
+          const manque = modulesCharges(etape).filter((x) => !disponibles.has(x));
+          if (manque.length) problemes.push(`${parent} → ${etape} (cité par ${courant}) : --sans-communes sans ${manque.join(", ")}`);
+        } else for (const x of modulesCharges(etape)) disponibles.add(x);
+        if (!vues.has(etape)) { vues.add(etape); aVoir.push(etape); }
+      }
+    }
+  }
+  assert.ok(verifiees > 40, "étapes enchaînées relevées : " + verifiees);
+  assert.deepStrictEqual([...new Set(problemes)], []);
 });
 
 test("règles communes : chaque mention d'un module (règles de relecture, de réalisation, des tâches, mode découverte) vient d'une commande qui le charge", () => {
@@ -363,7 +395,7 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -408,7 +440,7 @@ test("allowed-tools : les commandes git de lecture citées par un skill, ou par 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -1068,7 +1100,7 @@ test("une étape enchaînée par une commande se charge sans les règles commune
   const problemes = [];
   for (const f of sources) {
     const corps = lire(f).replace(/^---\n[\s\S]*?\n---\n/, "");
-    for (const m of corps.matchAll(/pulse-aidd etape (\S+)( --sans-communes)?/g))
+    for (const m of corps.matchAll(/pulse-aidd etape (\S+)( --sans-(?:communes|noyau))?/g))
       if (!m[2]) problemes.push(`${path.relative(DEPOT, f)} : pulse-aidd etape ${m[1]}`);
   }
   assert.deepStrictEqual(problemes, []);
@@ -1113,7 +1145,7 @@ test("allowed-tools : aucun motif `contexte <autre>` sans emploi, aucune paire `
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);

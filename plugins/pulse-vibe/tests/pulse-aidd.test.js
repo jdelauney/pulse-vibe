@@ -553,7 +553,7 @@ test("etape --sans-communes : les consignes du pack restent", () => {
 
 test("etape --sans-communes : une ligne rappelle que les règles communes sont déjà chargées", () => {
   const sans = lancer("etape", "commit", "--sans-communes").stdout;
-  assert.ok(sans.includes("(Règles communes : déjà chargées par la commande en cours ; appliquer seulement le Processus ci-dessous.)"));
+  assert.ok(sans.includes("(Règles communes, noyau et modules : déjà chargés par la commande en cours ; appliquer seulement le Processus ci-dessous.)"));
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
 
@@ -805,4 +805,20 @@ test("etape --sans-communes : ni noyau ni modules", () => {
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of ["===== Règles communes Pulse =====", ...Object.values(MODULES)]) assert.ok(!r.stdout.includes(titre), titre);
   assert.ok(lancer("etape", "review").stdout.includes(MODULES.C), "sans l'option : les modules suivent");
+});
+
+test("MATRICE des modules : chaque commande du dossier skills/ y figure, une seule fois", () => {
+  const dossiers = require("fs").readdirSync(path.join(RACINE, "skills")).sort();
+  const listees = Object.values(MATRICE).flat();
+  assert.deepStrictEqual([...listees].sort(), dossiers);
+});
+
+test("etape --sans-noyau : sans le noyau, avec les modules de l'étape, et une ligne qui le dit", () => {
+  const r = lancer("etape", "commit", "--sans-noyau");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!r.stdout.includes("===== Règles communes Pulse ====="), "sans le noyau");
+  assert.ok(r.stdout.includes(MODULES.T) && r.stdout.includes(MODULES.R) && !r.stdout.includes(MODULES.C), "modules T et R de commit");
+  assert.ok(r.stdout.includes("(Règles communes (noyau) : déjà chargées"), "la ligne dit que seul le noyau est omis");
+  assert.ok(lancer("etape", "commit", "--sans-communes").stdout.includes("(Règles communes, noyau et modules : déjà chargés"), "la ligne dit que noyau et modules sont omis");
+  assert.match(lancer().stdout, /etape <commande> --sans-noyau/);
 });

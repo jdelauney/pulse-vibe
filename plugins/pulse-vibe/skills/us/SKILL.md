@@ -8,7 +8,7 @@ allowed-tools: Bash(pulse-aidd contexte us) Bash(pulse-aidd reference *) Bash(pu
 
 ## Objectif
 
-Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles « User stories, specs et plans » chargées dans « Contexte »). Expliquer en deux phrases :
+Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ensemble, le parcours utilisateur) et **un fichier par user story** dans le dossier de son groupe : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` (règles des tâches chargées dans « Contexte »). Expliquer en deux phrases :
 « Une user story décrit un besoin du point de vue de l'utilisateur. Ses critères d'acceptation, écrits sous la forme Étant donné… Lorsque… Alors…, sont ce qui permettra de vérifier que l'IA a codé exactement ce que vous vouliez. »
 
 ## Règles
