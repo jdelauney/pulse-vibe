@@ -171,5 +171,8 @@ ecrire aidd_docs/memory/glossary.md <<<'# Glossaire'
 ecrire index.html <<<'<!doctype html><title>Liste de courses</title><ul id="liste"></ul>'
 
 git init -q
+# Nom d'auteur des commits de l'essai : pendant l'essai, le bac à sable protège .git/config en écriture.
+git config user.name essai
+git config user.email essai@example.com
 git -c user.email=essai@example.com -c user.name=essai add -A
 git -c user.email=essai@example.com -c user.name=essai commit -q -m "chore: projet d'essai"
