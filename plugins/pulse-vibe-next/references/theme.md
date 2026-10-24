@@ -31,7 +31,3 @@ Le thème vit dans **`app/globals.css`**, en variables CSS que shadcn et Tailwin
 6. **Liens dans le texte** : `underline underline-offset-3` et la couleur d'accent (`text-primary`).
 7. **Vérifier à l'œil** : `npm run dev`, puis la page d'accueil et un écran avec boutons, champ, carte, message d'erreur ; sur ordinateur et sur téléphone.
 8. **Cibles tactiles de 44 px** sur téléphone : le squelette livre boutons et champs à `h-11` (44 px) ; les tailles compactes (`xs`, `sm`, `icon-xs`, `icon-sm`) le restent à partir de `md:`. Un composant réécrit par `npx shadcn add` reprend ces tailles : `src/components/ui/__tests__/cibles-tactiles.test.ts` signale l'écart.
-
-## Pour les maquettes de `/pulse:ui maquettes`
-
-Les maquettes HTML déclarent les **mêmes variables** dans un bloc `:root` : d'abord les nuances (`regles-ui.md` § 1 du cœur), puis les rôles (`--background`, `--foreground`, `--primary`, `--primary-foreground`, `--muted`, `--muted-foreground`, `--border`, `--ring`, `--input`, `--destructive`, `--radius`), employés dans leur CSS. L'accent de `docs/design.md` (la couleur d'action) correspond à `--primary` ; `--accent` est, chez shadcn, la surface de survol. La maquette retenue se traduit alors en composants sans réinventer les couleurs : seules les valeurs du thème comptent.
