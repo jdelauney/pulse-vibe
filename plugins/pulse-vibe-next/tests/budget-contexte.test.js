@@ -122,7 +122,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_COMMANDE_AVEC_PACK)) {
 // tests (l'organisation est couverte par le pack) et les consignes du pack (plafond = mesure × 1,05, au 500 supérieur). Avant le chargement par famille (2026-10-23,
 // pulse 0.48.2) : implementer ≈ 107 000, reviewer ≈ 133 000, test-writer et test-runner ≈ 62 000 chacun.
 const AGENTS_AVEC_PACK = {
-  "implementer, tâche d'interface": { plafond: 67500, /* mesure 64 144 (pulse 0.50 : familles de qualité raccourcies) ; avant, 72 098 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "composants"], ["pile", "contexte", "implement"]] },
+  "implementer, tâche d'interface": { plafond: 64500, /* mesure 61 238 (pulse 0.50 : familles de qualité raccourcies) ; avant, 72 098 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "composants"], ["pile", "contexte", "implement"]] },
   "implementer, tâche serveur": { plafond: 68000, /* mesure 64 617 (pulse 0.50 : familles de qualité raccourcies) ; avant, 74 824 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "securite"], ["pile", "contexte", "implement"]] },
   reviewer: { plafond: 59500, /* mesure 56 335 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"], ["pile", "contexte", "review"]] },
   "test-writer": { plafond: 48500, /* mesure 45 831 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"], ["pile", "contexte", "test"]] },
