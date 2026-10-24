@@ -47,7 +47,6 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     plan: ["Pour /pulse:plan", "Fiche de la pile", "Recettes disponibles"],
     implement: ["Pour réaliser et corriger", "Fiche de la pile", "Recettes disponibles"],
     fix: ["Pour réaliser et corriger", "Fiche de la pile"],
-    spirc: ["Pour réaliser et corriger"],
     review: ["Pour relire", "Fiche de la pile"],
     security: ["Pour relire", "Pour la sécurité", "Fiche de la pile"],
     test: ["Pour les tests"],
@@ -64,7 +63,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     assert.strictEqual(r.status, 0, commande);
     for (const titre of titres) assert.ok(r.stdout.includes(`----- ${titre}`), `${commande} : ${titre}`);
   }
-  for (const commande of ["learn", "inconnue", ""]) {
+  for (const commande of ["learn", "spirc", "auto-fix", "inconnue", ""]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0);
     assert.strictEqual(r.stdout.trim(), "", commande);
@@ -221,7 +220,7 @@ test("la fiche s'accompagne de l'architecture pour tech, plan et review ; à la 
     assert.strictEqual(r.status, 0);
     assert.match(r.stdout, /----- Architecture du code/, commande);
   }
-  for (const commande of ["implement", "fix", "spirc", "auto-fix"]) {
+  for (const commande of ["implement", "fix"]) {
     const r = lancer("contexte", commande);
     assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
     assert.match(r.stdout, /pulse-aidd pile reference architecture.md/, commande);

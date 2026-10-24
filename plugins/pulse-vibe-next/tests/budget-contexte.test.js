@@ -16,9 +16,11 @@ const lancer = (...args) => spawnSync("bash", ["bin/pulse-pile-next", ...args], 
 const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 
 // pulse-pile-next contexte <commande> seul. Avant la tâche 8 (4cd0e56) : 38 204 caractères avec l'architecture ; mesure à la fin du plan « Corrections 4 » : 20 087 (plafond = mesure × 1,05, au 500 supérieur).
-const PLAFONDS_PACK = { implement: 21500, fix: 21500, spirc: 21500, "auto-fix": 21500 };
+// Le pack n'est plus servi à spirc ni à auto-fix (pulse 0.50 : les agents qui codent le chargent) ; la clé implement mesure ce que charge l'agent implementer.
+const PLAFONDS_PACK = { implement: 21500, fix: 21500 };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
-const PLAFONDS_AVEC_PACK = { implement: 65500, spirc: 54500 }; // implement : mesure 65 242 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
+// pulse 0.50 : spirc et implement laissent le pack à leurs agents, `contexte` ne le contient plus ; plafonds = mesure × 1,05 : implement 44 534 (avant 65 242), spirc 33 412 (avant 51 627).
+const PLAFONDS_AVEC_PACK = { implement: 47000, spirc: 35500 }; // implement : avant, mesure 65 242 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
 
 for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   test(`pack : contexte ${commande} ≤ ${plafond} caractères, fiche sans architecture`, () => {
@@ -55,7 +57,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
   test(`cœur et pack : contexte ${commande} ≤ ${plafond} caractères`, { skip: !fs.existsSync(COEUR) }, () => {
     const r = projetAvecPack("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes("===== Pack de pile : Pulse Next.js ====="), "section du pack");
+    assert.ok(!r.stdout.includes("===== Pack de pile"), "le pack reste à l'agent qui code");
     assert.ok(r.stdout.length <= plafond, `${r.stdout.length} > ${plafond}`);
   });
 }
@@ -66,8 +68,8 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Mesures à la fin du plan « Corrections 4 » : boucle implement 106 755, boucle spirc 98 093, tech 127 898.
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
-  "boucle implement de 4 tâches": { plafond: 120000, /* mesure 119 519 (relecture finale de la phase 1 : annonce des deux accords du dépôt distant) ; avant, 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
-  "boucle spirc de 4 tâches": { plafond: 109000, /* mesure 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
+  "boucle implement de 4 tâches": { plafond: 100500, /* mesure 95 300 (pulse 0.50 : le pack laissé à l'agent implementer) ; avant, 119 519 (relecture finale de la phase 1 : annonce des deux accords du dépôt distant) ; avant, 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
+  "boucle spirc de 4 tâches": { plafond: 91000, /* mesure 86 453 (pulse 0.50 : le pack laissé aux agents qui codent) ; avant, 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
   "tech, pack choisi en cours de commande": { plafond: 120000, /* mesure 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
 
@@ -83,12 +85,10 @@ for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
 // security 82 959, implement 75 811, spirc 74 842, review 68 538 (35 000 une fois le pack laissé au reviewer).
 // Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, au 500 supérieur.
 const PLAFONDS_COMMANDE_AVEC_PACK = {
-  "auto-fix": 47500, // mesure 44 903 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 46 786
   cicd: 56500, // mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
   deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
   express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 53000, // mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
-  implement: 84500, // mesure 80 262 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 81 243 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
   perf: 85500, // mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
   plan: 99000, // mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
   rediger: 26500, // mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -99,7 +99,6 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   security: 76000, // mesure 72 074 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
   seo: 89500, // mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
   spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 92500, // mesure 87 675 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 604 (refactoring d'optimisation, tâche 1.4 : bout en bout lancé au test groupé en rythme complet, rythme rapide transmis à l'implementer, profil « rapide » = -f) ; avant, mesure 92 234 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 91 652 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   tech: 120000, // mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 52500, // mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 88000, // mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
@@ -107,7 +106,8 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
 
 test("chaque commande enrichie par le pack a un plafond avec pack", { skip: !fs.existsSync(COEUR) }, () => {
   const commandes = fs.readdirSync(path.join(RACINE, "..", "pulse-vibe", "skills")).sort();
-  const enrichies = commandes.filter((c) => lancer("contexte", c).stdout.trim() !== "");
+  // implement garde un contexte de pack, mais c'est l'agent implementer qui le charge (pulse-aidd pile contexte implement) : sa commande ne le contient pas.
+  const enrichies = commandes.filter((c) => c !== "implement" && lancer("contexte", c).stdout.trim() !== "");
   assert.deepStrictEqual(Object.keys(PLAFONDS_COMMANDE_AVEC_PACK).sort(), enrichies);
 });
 

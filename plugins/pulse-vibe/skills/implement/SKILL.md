@@ -91,7 +91,7 @@ Marquer la tâche `[~]` dans le plan. Puis annoncer en 4 lignes maximum :
 - **Bloqué – décision nécessaire** : présenter le choix à la personne en langage courant, avec ses options et leurs conséquences (AskUserQuestion) ; noter la réponse dans le plan (section « Ajouts proposés par Pulse ») et relancer l'agent avec elle. En mode direct, s'arrêter de la même façon dès qu'un tel choix apparaît.
 - **Terminé** : lire son rapport et les changements (`git diff`, `git status`), puis passer à l'étape 4. Les points « À signaler » sur `docs/` sont traités ici (une idée hors périmètre va dans `docs/prd.md`, « En attente »).
 
-**Mode direct** : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois (avant la première tâche réalisée dans cette conversation, et de nouveau si ces règles ne figurent plus dans la conversation), puis réaliser soi-même, en suivant les consignes ci-dessous.
+**Mode direct** : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois (avant la première tâche réalisée dans cette conversation, et de nouveau si ces règles ne figurent plus dans la conversation) ; avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier ; puis réaliser soi-même, en suivant les consignes ci-dessous.
 
 Consignes de réalisation (pour les deux modes) :
 

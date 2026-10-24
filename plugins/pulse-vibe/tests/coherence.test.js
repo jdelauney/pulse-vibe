@@ -1396,8 +1396,8 @@ test("tech : une fois le pack choisi, seules ses consignes se chargent ; review 
   assert.doesNotMatch(tech, /relancer `pulse-aidd contexte tech`/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "tech", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte tech")), "tech : pile contexte tech autorisé");
   assert.match(skillTexte("review"), /le reviewer les charge lui-même \(`pulse-aidd pile contexte review`\)/);
-  // Les corrections de review se codent avec les consignes du pack, chargées si elles manquent.
-  assert.match(skillTexte("review"), /avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation/);
+  // Les corrections de review se codent avec les consignes du pack, chargées en entier avant la première correction.
+  assert.match(skillTexte("review"), /avant la première correction, lancer `pulse-aidd pile contexte implement`, lu en entier/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "review", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte implement")), "review : pile contexte implement autorisé");
 });
 

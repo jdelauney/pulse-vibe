@@ -89,7 +89,7 @@ contexte() {
       afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
       fiche
       liste_recettes ;;
-    implement|fix|spirc|auto-fix)
+    implement|fix)
       afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"
       afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"
       liste_recettes ;;

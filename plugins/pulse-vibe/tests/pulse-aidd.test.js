@@ -357,10 +357,10 @@ test("pile : indique le pack déclaré par le projet et s'il est installé", () 
 });
 
 test("contexte : ajoute les consignes du pack déclaré et installé", () => {
-  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("contexte", "implement");
+  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("contexte", "fix");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("===== Pack de pile : Pile essai ====="), r.stdout.slice(-300));
-  assert.match(r.stdout, /Consignes du pack pour implement/);
+  assert.match(r.stdout, /Consignes du pack pour fix/);
 });
 
 test("contexte : pack déclaré mais absent, un avertissement et aucune erreur", () => {
@@ -373,7 +373,7 @@ test("contexte : pack déclaré mais absent, un avertissement et aucune erreur",
 test("contexte : l'en-tête du pack seulement quand le pack a du contenu pour la commande", () => {
   const p = projetAvecPack({ declare: "essai", installe: "essai" });
   assert.doesNotMatch(p.lancerIci("contexte", "annuler").stdout, /===== Pack de pile/);
-  assert.ok(p.lancerIci("contexte", "implement").stdout.includes("===== Pack de pile : Pile essai ====="));
+  assert.ok(p.lancerIci("contexte", "fix").stdout.includes("===== Pack de pile : Pile essai ====="));
 });
 
 test("contexte : sans pack déclaré, aucune section de pack", () => {
@@ -389,7 +389,29 @@ test("contexte review : la conversation principale sans les consignes du pack, q
     assert.doesNotMatch(r.stdout, /Consignes du pack pour review|===== Pack de pile/, args.join(" "));
   }
   assert.match(p.lancerIci("pile", "contexte", "review").stdout, /Consignes du pack pour review/, "le reviewer les obtient par le relais");
-  assert.match(p.lancerIci("contexte", "implement").stdout, /Consignes du pack pour implement/, "les autres commandes gardent le pack");
+  assert.match(p.lancerIci("contexte", "fix").stdout, /Consignes du pack pour fix/, "les commandes qui codent elles-mêmes gardent le pack");
+});
+
+test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'écrire du code, et les règles communes le disent", () => {
+  const lireSkill = (nom) => fsP.readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
+  assert.match(lireSkill("spirc"), /sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code/);
+  assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
+  assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier/);
+  const communes = fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
+  assert.match(communes, /review, spirc, implement, auto-fix : les agents qui codent ou relisent les chargent eux-mêmes/);
+  assert.doesNotMatch(lireSkill("review"), /elles y sont dans les boucles/);
+});
+
+test("contexte spirc, auto-fix et implement : le pack reste aux agents qui codent (pulse-aidd pile contexte)", () => {
+  const p = projetAvecPack({ declare: "essai", installe: "essai" });
+  for (const commande of ["spirc", "auto-fix", "implement"]) {
+    for (const args of [["contexte", commande], ["etape", commande], ["etape", commande, "--sans-communes"]]) {
+      const r = p.lancerIci(...args);
+      assert.strictEqual(r.status, 0, r.stderr);
+      assert.doesNotMatch(r.stdout, /===== Pack de pile|Consignes du pack pour/, args.join(" "));
+    }
+    assert.match(p.lancerIci("pile", "contexte", commande).stdout, new RegExp("Consignes du pack pour " + commande), "les agents l'obtiennent par le relais");
+  }
 });
 
 test("pile <sous-commande> : relaie vers le pack déclaré, arguments et code de sortie compris", () => {
@@ -566,9 +588,9 @@ test("contexte review et spirc : la référence « Examiner une tâche »", () =
 });
 
 test("etape --sans-communes : les consignes du pack restent", () => {
-  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("etape", "implement", "--sans-communes");
+  const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("etape", "fix", "--sans-communes");
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.match(r.stdout, /Consignes du pack pour implement/);
+  assert.match(r.stdout, /Consignes du pack pour fix/);
   assert.doesNotMatch(r.stdout, /===== Règles communes Pulse =====/);
 });
 
