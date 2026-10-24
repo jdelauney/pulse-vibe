@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Mode direct des évaluations (node outils/evals/lancer.js --direct [--case <motif>]) : chaque cas de outils/evals/cas/
 // tourne avec claude -p, dans un dossier temporaire et le bac à sable de Claude Code, avec les plugins du dépôt ; ses
-// vérifications automatiques (tool_used, tool_not_used, tool_order, regex, file_exists) sont notées sur la trace de l'essai, et les
-// vérifications par juge IA (llm) sont signalées « non notées ».
+// vérifications automatiques (tool_used, tool_not_used, tool_order, regex, file_exists) sont notées sur la trace de
+// l'essai, et les vérifications par juge IA (llm) sont signalées « non notées ».
 //
 // Pourquoi : dans claude plugin eval (2.1.309), chaque commande `!` d'un skill est déclarée en échec, même réussie
 // (le shell ne peut pas écrire son fichier de suivi, …/tmp/claude-<uid>/cwd-…, monté en lecture seule) : aucune

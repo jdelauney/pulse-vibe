@@ -61,7 +61,10 @@ test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, r�
   assert.strictEqual(note("pulse-aidd qualite regles | head -60"), false);
   assert.strictEqual(note('pulse-aidd reference "a/b.md" 2>&1 | tail -5'), false);
   assert.strictEqual(note("pulse-aidd pile contexte realisation | head"), false);
+  assert.strictEqual(note("pulse-aidd tests x 2>&1 | head -5"), false);
   assert.strictEqual(note("pulse-aidd qualite regles"), true);
+  assert.strictEqual(note("pulse-aidd tests x && git log | head"), true);
+  assert.strictEqual(note("pulse-aidd tests x || echo echec"), true);
   assert.strictEqual(note("git log | head; pulse-aidd etat"), true);
 });
 
