@@ -74,7 +74,8 @@ function lireCas(dossier) {
 }
 
 /** Une commande lancée qui a fini en échec (« Exit code N ») a bien tourné : ce n'est pas un refus. */
-const finDeCommande = (contenu) => /^Exit code [0-9]+/.test(typeof contenu === "string" ? contenu : JSON.stringify(contenu || ""));
+const texteDe = (contenu) => (Array.isArray(contenu) ? contenu.map((b) => (b && typeof b.text === "string" ? b.text : "")).join("") : typeof contenu === "string" ? contenu : JSON.stringify(contenu || ""));
+const finDeCommande = (contenu) => /^Exit code [0-9]+/.test(texteDe(contenu));
 
 /** Les appels d'outils de la trace (sous-agents compris), dans l'ordre, et le texte de la dernière réponse.
  *  Un appel dont le résultat est une erreur (refus d'un garde-fou compris) est marqué refuse : il n'a rien fait. */
