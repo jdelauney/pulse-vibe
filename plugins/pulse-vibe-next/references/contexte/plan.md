@@ -7,9 +7,9 @@ Conception technique (section du plan) :
 - **Fichiers** : d'après « Architecture du code » (affichée avec ces consignes pour `/pulse:plan` ; pour `/pulse:refine`, `pulse-aidd pile reference architecture.md` avant d'écrire la ligne « Fichiers » d'une tâche nouvelle) : `src/core/<domaine>/` (règles, ports, use-cases), `src/db/<domaine>/` (table, repository), `src/features/<domaine>/` (`actions/`, `queries/`, `schemas/`, `components/`), la page dans `app/`.
 - **Recettes** : citer chaque recette utilisée (« Recette : connexion ») dans la conception et dans les tâches concernées.
 
-Découpage mixte. Une tâche tirée d'une recette (titre « Recette : <nom> ») garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur : une tranche visible et testable, 3 fichiers au plus, le stockage dans la première tranche qui en a besoin.
+Découpage mixte. Une tâche tirée d'une recette (titre « Recette : <nom> » ou ligne « Recette : <nom> ») garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur : une tranche visible et testable, 3 fichiers au plus, le stockage dans la première tranche qui en a besoin.
 
-Ordre des tâches à l'intérieur d'une recette ou d'une grosse tranche, chacune livrant quelque chose de testé :
+Ordre des tâches à l'intérieur d'une recette, chacune livrant quelque chose de testé :
 
 1. **Table et migration** : `src/db/<domaine>/<sujet>.table.ts`, `npm run db:generate`, migration relue ; la personne applique `npm run db:migrate` sur sa base (ligne « Action manuelle »).
 2. **Règle métier** : `src/core/<domaine>/<sujet>.rules.ts` (et `.errors.ts`), tests unitaires des scénarios `@unitaire` dans `__tests__/`.
