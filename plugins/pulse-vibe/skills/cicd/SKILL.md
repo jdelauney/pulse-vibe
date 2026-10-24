@@ -2,7 +2,7 @@
 description: Mettre en place les contrôles automatiques - secrets, règles du code, tests et construction vérifiés à chaque envoi et sur chaque proposition de version parallèle, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale
 argument-hint: "[proteger] (vide : installer ou mettre à jour les contrôles automatiques)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte perf) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Read Glob Grep Bash(git status *) Bash(git remote -v) Bash(git remote get-url *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit -m *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*) Edit(docs/technical.md) Write(docs/performance.md) Edit(docs/performance.md)
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte perf) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd etape fix --sans-communes) Bash(pulse-aidd etape auto-fix --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Read Glob Grep Bash(git status *) Bash(git remote -v) Bash(git remote get-url *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit -m *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*) Edit(docs/technical.md) Write(docs/performance.md) Edit(docs/performance.md) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd verifier) Bash(pulse-aidd agent fixer) Bash(pulse-aidd contexte fix) Bash(pulse-aidd pile contexte *)
 ---
 
 # /pulse:cicd – Les contrôles automatiques (CI)
@@ -76,7 +76,7 @@ D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle
 
 ### 4. Essayer en local d'abord
 
-Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, l'audit des dépendances, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`/pulse:fix` ou `/pulse:auto-fix`), ou s'arrêter et l'expliquer.
+Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, l'audit des dépendances, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`pulse-aidd etape auto-fix --sans-communes` pour le lint et les types, `pulse-aidd etape fix --sans-communes` pour un test), ou s'arrêter et l'expliquer.
 
 ### 5. Enregistrer et envoyer
 
@@ -88,7 +88,7 @@ Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js
 
 - Montrer où suivre le résultat : l'onglet de la CI sur le site du dépôt, ou en ligne de commande si l'outil est connecté (GitHub : `gh run list --limit 1`, puis `gh run watch` ; GitLab : `glab ci status`).
 - **Coche verte** : expliquer qu'elle apparaîtra désormais à chaque envoi et sur chaque proposition de version parallèle.
-- **Croix rouge** : lire le journal de l'étape en échec (GitHub : `gh run view --log-failed`), l'expliquer simplement, corriger (ou `/pulse:fix`), enregistrer et renvoyer. Deux essais au plus, puis s'arrêter et proposer `/pulse:get-help`.
+- **Croix rouge** : lire le journal de l'étape en échec (GitHub : `gh run view --log-failed`), l'expliquer simplement, corriger (`pulse-aidd etape fix --sans-communes`), enregistrer et renvoyer. Deux essais au plus, puis s'arrêter et proposer `/pulse:get-help`.
 
 ### 7. Protéger la branche principale (facultatif)
 
