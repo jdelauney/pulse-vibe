@@ -29,3 +29,6 @@ Apparence : chaleureux, simple, soigné.
 Contraintes : nom et e-mail des clientes ; gratuit pour commencer.
 FIN
 git init -q
+# Nom d'auteur des commits de l'essai : pendant l'essai, le bac à sable protège .git/config en écriture.
+git config user.name essai
+git config user.email essai@example.com
