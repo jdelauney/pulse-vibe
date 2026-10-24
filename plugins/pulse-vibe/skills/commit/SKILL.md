@@ -101,7 +101,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
 - Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree.md`).
-- Si le site est déjà en ligne et que cette version reste en local : rappeler que `/pulse:commit push` (ou `git push`) mettra cette version en ligne.
+- Si le site est déjà en ligne et que cette version reste en local : prochaine étape `/pulse:deploy` (il envoie, puis vérifie la version en ligne).
 
 Terminer avec le bloc de fin de commande.
 

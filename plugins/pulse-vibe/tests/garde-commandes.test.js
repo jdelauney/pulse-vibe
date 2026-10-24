@@ -128,6 +128,11 @@ test("branches et worktrees : -D et --force demandent confirmation, -d passe", (
   passe("git worktree remove .claude/worktrees/x");
 });
 
+test("branche renommée en écrasant : -M demande confirmation, -m passe", () => {
+  confirmation("git branch -M main");
+  passe("git branch -m main");
+});
+
 test("configuration Git : nom et e-mail passent, le reste demande confirmation", () => {
   passe('git config --global user.name "Camille Martin"');
   passe("git config user.email camille@example.com");

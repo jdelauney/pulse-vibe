@@ -31,7 +31,7 @@ Les références et modèles cités dans cette commande figurent dans ce context
 
 Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
 
-**Clarifier le périmètre par rondes** : **3 questions au plus par ronde** (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
+**Clarifier le périmètre par rondes** : une ronde de questions selon la règle commune 5 (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
 
 ### 1. Découper en groupes
 
@@ -79,7 +79,7 @@ Une US est **prête** quand ces conditions sont réunies ; elle se sauvegarde se
 - elle passe INVEST (étape 3) ;
 - ses critères d'acceptation sont écrits, dont au moins un cas d'erreur ou limite ;
 - ses dépendances sont notées (« Dépend de », ou « — ») ;
-- **aucune question bloquante** ne reste : sinon, poser une nouvelle ronde (3 questions au plus).
+- **aucune question bloquante** ne reste : sinon, poser une nouvelle ronde (règle commune 5).
 
 Cocher la section « Prête » du modèle d'US une fois ces conditions vérifiées.
 

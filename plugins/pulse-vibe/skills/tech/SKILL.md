@@ -43,7 +43,7 @@ Fichiers de cette commande : [references/choix-techniques.md](references/choix-t
 
 La conversation principale joue le rôle d'architecte technique et orchestre : elle pose les questions, construit les options, écrit les documents et prépare la mise en place.
 
-- Agents `general-purpose` (étape 4) : un par option, lancés en parallèle ; chacun vérifie son option sur la documentation officielle et les pages de tarifs, et rend un verdict ✅ / ⚠️ / ❌ avec ses sources.
+- Agents `general-purpose` (étape 4), avec `model: "sonnet"` : un par option, lancés en parallèle ; chacun vérifie son option sur la documentation officielle et les pages de tarifs, et rend un verdict ✅ / ⚠️ / ❌ avec ses sources.
 - La décision appartient à la personne.
 
 ## Processus
@@ -79,7 +79,7 @@ Suivre `skills/tech/references/choix-techniques.md` pour construire **2 ou 3 opt
 
 #### 4. Vérifier les options sur la documentation officielle
 
-Avant de recommander quoi que ce soit, vérifier chaque option : lancer **en parallèle** un sous-agent `general-purpose` par option (plusieurs appels Agent dans le même message), avec pour consigne de consulter la **documentation officielle** et les pages de tarifs (outil de documentation comme context7 s'il est disponible, sinon WebFetch ou recherche web) : version actuelle maintenue, compatibilité des pièces entre elles, offre gratuite ou tarif annoncé, région d'hébergement si elle compte, façon officielle d'initialiser un projet, pièges connus récents. Chacun rend : verdict ✅ / ⚠️ / ❌, trois puces justifiées avec leurs sources. Si les sous-agents ne sont pas disponibles, faire ces vérifications soi-même, option par option.
+Avant de recommander quoi que ce soit, vérifier chaque option : lancer **en parallèle** un sous-agent `general-purpose` par option, avec `model: "sonnet"` (plusieurs appels Agent dans le même message), avec pour consigne de consulter la **documentation officielle** et les pages de tarifs (outil de documentation comme context7 s'il est disponible, sinon WebFetch ou recherche web) : version actuelle maintenue, compatibilité des pièces entre elles, offre gratuite ou tarif annoncé, région d'hébergement si elle compte, façon officielle d'initialiser un projet, pièges connus récents. Chacun rend : verdict ✅ / ⚠️ / ❌, trois puces justifiées avec leurs sources. Si les sous-agents ne sont pas disponibles, faire ces vérifications soi-même, option par option.
 
 Reporter les verdicts dans le tableau « Les options comparées ». Si toutes les options sont ❌ : expliquer le blocage commun et revenir à l'étape 2 ou 3.
 
