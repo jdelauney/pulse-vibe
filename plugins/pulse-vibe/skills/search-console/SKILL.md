@@ -51,7 +51,7 @@ La personne ouvre Search Console (search.google.com/search-console) avec **son**
 
 1. La personne copie **le contenu** de la balise que montre Search Console et le colle ici. Le dire : ce code est public, il s'écrit dans le code du site.
 2. L'écrire à l'endroit indiqué par le pack de pile ; sans pack, dans le `<head>` de la page d'accueil, d'après la documentation officielle de la technologie retenue.
-3. Enregistrer et mettre en ligne : `pulse-aidd etape commit --sans-noyau` (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
+3. Enregistrer et mettre en ligne : `pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier) (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
 4. Seulement alors, la personne clique « Vérifier ». Expliquer que la balise reste en place pour toujours (sinon la propriété se perd).
 
 #### 1c. Enregistrement DNS (domaine)

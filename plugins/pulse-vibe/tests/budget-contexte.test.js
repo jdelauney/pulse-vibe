@@ -164,6 +164,66 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_ETAPES)) {
   });
 }
 
+// Ce qu'une commande fait lire en un appel doit tenir sous 30 000 caractères : au-delà, Claude Code enregistre la sortie dans un
+// fichier et n'en montre qu'un aperçu (lecture tronquée). Chaque forme « pulse-aidd etape <commande> --sans-communes|--sans-noyau »
+// citée dans les textes livrés est mesurée (sans pack) ; plafond = mesure × 1,05, arrondie au 500 supérieur.
+// pulse 0.50 : « commit --sans-noyau » (33 067) est remplacé par « commit --sans-communes » (26 800) suivi de
+// « pulse-aidd reference regles-taches.md » et « regles-realisation.md », en appels séparés.
+const LIMITE_LECTURE = 30000;
+const PLAFONDS_FORMES = {
+  "auto-fix --sans-communes": 5500, // mesure 5 212
+  "auto-fix --sans-noyau": 12500, // mesure 11 479
+  "brainstorm --sans-communes": 22000, // mesure 20 553
+  "cicd --sans-communes": 28500, // mesure 26 708
+  "commit --sans-communes": 28500, // mesure 26 800
+  "deploy --sans-communes": 30000, // mesure 28 243
+  "express --sans-communes": 27000, // mesure 25 332
+  "fix --sans-communes": 11500, // mesure 10 479
+  "fix --sans-noyau": 18000, // mesure 16 746
+  "memory --sans-communes": 18500, // mesure 17 463
+  "perf --sans-communes": 35000, // mesure 33 120 : dépasse la limite, voir DEPASSEMENTS_CONNUS
+  "plan --sans-communes": 44500, // mesure 42 033 : dépasse la limite
+  "pr --sans-communes": 18000, // mesure 16 829
+  "pr --sans-noyau": 21500, // mesure 20 393
+  "refine --sans-communes": 31000, // mesure 29 261
+  "review --sans-communes": 17000, // mesure 15 745
+  "spec --sans-communes": 26500, // mesure 24 973
+  "tech --sans-communes": 56500, // mesure 53 438 : dépasse la limite
+  "ui --sans-communes": 59500, // mesure 56 545 : dépasse la limite
+  "ui --sans-noyau": 65500, // mesure 62 004 : dépasse la limite
+  "us --sans-communes": 18000, // mesure 16 794
+};
+// Formes citées qui dépassent encore la limite : ce sont des commandes entières enchaînées comme étape, à scinder dans une phase suivante.
+// Cette liste ne grandit pas : une forme nouvelle au-dessus de la limite fait échouer le test.
+const DEPASSEMENTS_CONNUS = new Set(["perf --sans-communes", "plan --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau"]);
+
+function formesCitees() {
+  const formes = new Set();
+  const parcourir = (dossier) => {
+    for (const e of fs.readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = path.join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (e.name.endsWith(".md"))
+        for (const m of fs.readFileSync(chemin, "utf8").matchAll(/pulse-aidd etape ([a-z][a-z-]*) (--sans-communes|--sans-noyau)/g)) formes.add(`${m[1]} ${m[2]}`);
+    }
+  };
+  for (const d of ["skills", "references", "agents", "templates"]) parcourir(path.join(RACINE, d));
+  return [...formes].sort();
+}
+
+test("chaque forme « etape <commande> --sans-… » citée a un plafond, et inversement", () => {
+  assert.deepStrictEqual(formesCitees(), Object.keys(PLAFONDS_FORMES).sort());
+});
+
+for (const [forme, plafond] of Object.entries(PLAFONDS_FORMES)) {
+  test(`etape ${forme} : ${plafond} caractères au plus, sous ${LIMITE_LECTURE} sauf dépassement connu`, () => {
+    const mesure = taille("etape", ...forme.split(" "));
+    assert.ok(mesure <= plafond, `${mesure} > ${plafond}`);
+    if (DEPASSEMENTS_CONNUS.has(forme)) assert.ok(mesure > LIMITE_LECTURE, `${forme} passe sous ${LIMITE_LECTURE} (${mesure}) : la retirer de DEPASSEMENTS_CONNUS`);
+    else assert.ok(mesure < LIMITE_LECTURE, `${forme} : ${mesure} caractères, la sortie serait enregistrée dans un fichier (limite ${LIMITE_LECTURE}) : la scinder`);
+  });
+}
+
 test("chaque commande a un plafond de commande complète (SKILL.md compris)", () => {
   assert.deepStrictEqual(Object.keys(PLAFONDS_COMMANDE).sort(), fs.readdirSync(path.join(RACINE, "skills")).sort());
 });

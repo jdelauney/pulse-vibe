@@ -59,7 +59,7 @@ Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/puls
 Suivre la documentation officielle de l'hébergeur retenu, et la traduire en étapes simples, une à la fois :
 1. Se connecter à l'hébergeur (avec le compte du dépôt distant si c'est proposé : c'est souvent le plus simple).
 2. Créer un nouveau site ou projet à partir d'un dépôt existant, autoriser l'accès au dépôt, choisir le dépôt.
-3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer en appliquant l'étape **commit** (`pulse-aidd etape commit --sans-noyau`).
+3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer en appliquant l'étape **commit** (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier)).
 4. Si l'appli a besoin de variables d'environnement (« Secrets et variables d'environnement », `.env.example`) : les faire saisir **avant** le premier déploiement (section 5, point 2), sinon la construction ou l'appli échoue.
 5. Lancer le premier déploiement, attendre la fin, puis renommer le site si souhaité.
 6. Me coller l'adresse du site.
@@ -72,7 +72,7 @@ Le site répond et le garde-fou passe : proposer une **première mesure de vites
 
 #### 3c. Voir le déploiement automatique en action
 
-Proposer une petite modification visible (par exemple le texte du titre), puis appliquer l'étape **commit** (`pulse-aidd etape commit --sans-noyau`, argument `push`), et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
+Proposer une petite modification visible (par exemple le texte du titre), puis appliquer l'étape **commit** (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`), et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
 
 ### 4. Mise à jour
 

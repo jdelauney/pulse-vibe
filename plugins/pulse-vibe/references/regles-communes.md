@@ -74,7 +74,7 @@ Terminez **toujours** par ce bloc, court :
 ➡️ Prochaine étape : <la commande à taper, et pourquoi en une phrase>
 ```
 
-Les commandes `/pulse:*` se lancent seulement par la personne : écrivez la commande à taper. Une étape que la commande en cours enchaîne se charge avec `pulse-aidd etape <commande> --sans-communes` (la commande a déjà les modules de l'étape) ou `--sans-noyau` (l'étape garde ses modules).
+Les commandes `/pulse:*` se lancent seulement par la personne : écrivez la commande à taper. Une étape que la commande en cours enchaîne se charge avec `pulse-aidd etape <commande> --sans-communes` (la commande a déjà les modules de l'étape) ou `--sans-noyau` (l'étape garde ses modules). Une sortie de plus de 30 000 caractères est enregistrée dans un fichier : pour une étape trop longue (commit avec ses modules), lancez-la avec `--sans-communes`, puis lisez à part, en un appel chacun, les modules qui vous manquent (`pulse-aidd reference regles-taches.md`, `pulse-aidd reference regles-realisation.md`).
 
 Si quelque chose a bloqué, remplacez la première ligne par `⚠️ À faire avant de continuer : …`.
 
