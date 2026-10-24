@@ -14,7 +14,7 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte impleme
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte implement` et lire sa sortie en entier) pendant toute la commande.
 
 ### Contraintes d'implémentation
 

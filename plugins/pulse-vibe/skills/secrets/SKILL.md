@@ -13,7 +13,7 @@ Tenir l'inventaire des secrets du projet dans `docs/secrets.md`, sans aucune val
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte secrets` et lire sa sortie en entier) pendant toute la commande.
 
 ### Principe
 

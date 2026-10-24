@@ -15,7 +15,7 @@ Vient en complément de la relecture (`/pulse:review`) et du test par la personn
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte auto-fix` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
 

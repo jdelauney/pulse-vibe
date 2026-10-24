@@ -13,7 +13,7 @@ Donner à la personne le tableau de bord que Google lui tend, en trois temps : *
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte search-console` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
 

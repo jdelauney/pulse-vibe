@@ -16,7 +16,7 @@ Analogie à donner : « C'est comme un document partagé qui se met à jour tout
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte deploy` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
 

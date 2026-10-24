@@ -13,7 +13,7 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte review` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
 

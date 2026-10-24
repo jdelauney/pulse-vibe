@@ -22,7 +22,7 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spirc` et lire sa sortie en entier) pendant toute la commande.
 
 ### Comment appliquer une étape de la méthode
 

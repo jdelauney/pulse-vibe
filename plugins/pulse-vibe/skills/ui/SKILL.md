@@ -13,7 +13,7 @@ Aider la personne à **voir** et choisir l'apparence de son outil, puis à la so
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte ui` et lire sa sortie en entier) pendant toute la commande.
 
 Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
