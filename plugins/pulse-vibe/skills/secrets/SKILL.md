@@ -13,25 +13,21 @@ Tenir l'inventaire des secrets du projet dans `docs/secrets.md`, sans aucune val
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Principe
 
 Un secret (clé d'API, mot de passe, adresse de base de données avec son mot de passe, clé de signature) permet d'agir à la place de la personne. Trois règles tiennent toute la commande :
 
-1. **La valeur reste hors de la conversation.** Elle va du fournisseur au fichier `.env` par les mains de la personne, puis du fichier à l'hébergeur par `pulse-aidd secrets envoyer`. Vous travaillez avec les noms. Les gestes exacts : « Garder la valeur d'un secret hors de la conversation » (chargée dans « Contexte »).
+1. **La valeur reste hors de la conversation.** Elle va du fournisseur au fichier `.env` par les mains de la personne, puis du fichier à l'hébergeur par `pulse-aidd secrets envoyer`. Vous travaillez avec les noms. Les gestes exacts : « Garder la valeur d'un secret hors de la conversation » (chargée en fin de fichier, dans « Références de la commande »).
 2. **Deux ordres à retenir.** Renouvellement planifié : la nouvelle serrure d'abord, l'ancienne ensuite. Fuite : l'ancienne serrure condamnée tout de suite.
 3. **Une variable modifiée sert au déploiement suivant.** Après chaque envoi vers l'hébergeur : redéployer, puis vérifier en production.
 
-Les détails propres à chaque variable (page exacte du fournisseur, effet, délai de grâce, préfixe attendu, test) viennent de la fiche du pack de pile, sous « Pack de pile » dans « Contexte », ou de `pulse-aidd pile secrets fiche <NOM>`. Sans pack : « Secrets et variables d'environnement » de `docs/technical.md` et la documentation officielle du fournisseur (règle 15), dont vous tirez chaque libellé et chaque menu.
+Les détails propres à chaque variable (page exacte du fournisseur, effet, délai de grâce, préfixe attendu, test) viennent de la fiche du pack de pile, sous « Pack de pile » dans « Références de la commande », ou de `pulse-aidd pile secrets fiche <NOM>`. Sans pack : « Secrets et variables d'environnement » de `docs/technical.md` et la documentation officielle du fournisseur (règle 15), dont vous tirez chaque libellé et chaque menu.
 
 `generer`, `envoyer`, `elaguer` et `redeployer` modifient une valeur ou la production : Claude Code demande l'accord de la personne. Avant, dites en une phrase ce qu'elle va autoriser.
 
 ## Contexte
-
-!`pulse-aidd contexte secrets`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS` (vide = `inventaire`)
 
@@ -99,3 +95,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : après `inventaire`
 - `/pulse:secrets` : le tableau de vos clés, sans aucune valeur, et les points à corriger, du plus grave au moins grave.
 - `/pulse:secrets renouveler STRIPE_SECRET_KEY` : la nouvelle clé est créée à côté de l'ancienne, envoyée en ligne et testée ; l'ancienne est coupée seulement après votre « Ça marche ».
 - `/pulse:secrets fuite` après avoir collé une clé dans le chat : d'abord la rendre inutilisable chez le fournisseur, puis la remplacer, pas à pas.
+
+## Références de la commande
+
+!`pulse-aidd contexte secrets`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.

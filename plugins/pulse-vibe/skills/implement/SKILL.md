@@ -2,7 +2,7 @@
 description: Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante)
 argument-hint: "<US-XXX> [T3] (sans tâche : tout le plan)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd etape review --sans-communes) Bash(pulse-aidd etape fix --sans-communes) Bash(pulse-aidd etape auto-fix --sans-communes) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Bash(git fetch origin) Bash(pulse-aidd revue *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd realisation *) Bash(pulse-aidd contexte auto-fix)
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte implement) Bash(pulse-aidd contexte review) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd etape review --sans-communes) Bash(pulse-aidd etape fix --sans-communes) Bash(pulse-aidd etape auto-fix --sans-communes) Bash(pulse-aidd agent *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Bash(git fetch origin) Bash(pulse-aidd revue *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd realisation *) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd etape implement)
 ---
 
 # /pulse:implement – Réaliser une tâche
@@ -14,7 +14,7 @@ allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte impleme
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Contraintes d'implémentation
 
@@ -22,10 +22,6 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
 - Pour une tâche de refactoring, ou pour nommer une odeur de code et choisir son remède : consulter `pulse-aidd reference qualite/code-concepts.md` (odeurs de code, SOLID, refactorings).
 
 ## Contexte
-
-!`pulse-aidd contexte implement`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <familles>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS` (les options, l'US dont on réalise le plan, puis la tâche, facultative)
 
@@ -140,3 +136,9 @@ Sans tâche donnée : lancer `pulse-aidd reference implement/boucle.md` et l'app
 - `/pulse:implement US-003 T3` : la tâche T3 est réalisée, puis expliquée : ce qui a changé, la notion du jour et les étapes pour la tester vous-même.
 - `/pulse:implement US-003` : toutes les tâches restantes, l'une après l'autre ; chacune est relue, testée par vous, puis enregistrée avant la suivante.
 - `/pulse:implement -d US-003 T3` : le même travail, fait devant vous étape par étape, pour apprendre en regardant.
+
+## Références de la commande
+
+!`pulse-aidd contexte implement`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte, sauf la référence « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au moment du choix de l'envoi) et les règles de qualité du code : le sous-agent `pulse:implementer` les charge lui-même, et le mode direct les charge avec `pulse-aidd qualite <familles>` (§ 3). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.

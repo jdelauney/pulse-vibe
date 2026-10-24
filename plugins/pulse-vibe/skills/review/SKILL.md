@@ -13,13 +13,9 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte review`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
 
 Tâche demandée (facultative) : `$ARGUMENTS`
 
@@ -84,3 +80,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
 - `/pulse:review T3` : deux assistants relisent et essaient la tâche 3 ; vous recevez le verdict, les points importants en langage simple, puis les étapes de votre test.
 - `/pulse:review US-003` : chaque tâche en cours de l'US est examinée, puis vous la testez une par une.
 - `/pulse:review` sans argument : la tâche en cours est reprise ; s'il y en a plusieurs, la question « laquelle relire ? ».
+
+## Références de la commande
+
+!`pulse-aidd contexte review`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.

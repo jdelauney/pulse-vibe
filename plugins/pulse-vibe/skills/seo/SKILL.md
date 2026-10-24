@@ -15,15 +15,11 @@ Le script `pulse-aidd seo` lit le site **servi**, comme un robot. Les textes son
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Appliquer aussi « Référencement : les règles » et « Référencement : assistants IA » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi « Référencement : les règles » et « Référencement : assistants IA » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte seo`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS` (vide = `audit`)
 
@@ -103,3 +99,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:search-cons
 - `/pulse:seo` : votre site lu comme le ferait Google, un rapport rangé par les quatre questions, et la première correction à faire.
 - `/pulse:seo textes /tarifs` : deux titres et deux descriptions proposés pour la page des tarifs ; vous choisissez ou réécrivez.
 - `/pulse:seo ia` : une question à quatre réponses sur ce que les assistants IA peuvent faire de votre site, puis votre choix noté dans `docs/seo.md`.
+
+## Références de la commande
+
+!`pulse-aidd contexte seo`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.

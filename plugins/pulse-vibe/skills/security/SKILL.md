@@ -13,13 +13,9 @@ Vérifier la sécurité du projet : audit complet S1 à S13 avec le test du camb
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte security`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS` (vide = `audit`)
 
@@ -90,3 +86,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pui
 - `/pulse:security` : un bilan de sécurité de votre appli, les points bloquants expliqués simplement, puis des tests à faire vous-même, un à la fois.
 - `/pulse:security rapide` : un contrôle en 2 minutes, sans rien modifier.
 - `/pulse:security entetes` : la configuration des protections du site vous est montrée avant d'être écrite.
+
+## Références de la commande
+
+!`pulse-aidd contexte security`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.

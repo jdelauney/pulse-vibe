@@ -14,17 +14,13 @@ allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd etape fix --sans-c
 
 Phrase à dire : « Les tests sont de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. Un assistant les lance ou les écrit ; un autre, qui n'a pas écrit le code, juge les résultats. »
 
-Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord », chargée dans « Contexte »).
+Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord », chargée en fin de fichier, dans « Références de la commande »).
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte test`
-
-Les références citées dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS`
 
@@ -83,3 +79,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:fix "<éche
 
 - `/pulse:test` : tous les tests sont lancés ; vous voyez combien réussissent, et chaque échec expliqué en une ligne avec la proposition de le corriger.
 - `/pulse:test ecrire US-003` : des tests écrits à partir des scénarios de la spec, lancés aussitôt ; un défaut du code trouvé vous est expliqué simplement.
+
+## Références de la commande
+
+!`pulse-aidd contexte test`
+
+Les références citées dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.

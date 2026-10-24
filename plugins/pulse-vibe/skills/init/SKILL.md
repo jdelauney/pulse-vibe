@@ -19,7 +19,7 @@ lire l'état → décider la prochaine étape → montrer l'écran → agir sur 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 Règles de la boucle :
 - **Guider, en restant bref.** Un écran court, une seule action recommandée.
@@ -28,10 +28,6 @@ Règles de la boucle :
 - **Travailler sur un état frais** : relire l'état après chaque action.
 
 ## Contexte
-
-!`pulse-aidd contexte init`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.
 
 Argument reçu (nom du projet, facultatif) : `$ARGUMENTS`
 
@@ -162,3 +158,9 @@ Quand la personne arrête la boucle (ou après une étape lancée), terminer ave
 - `/pulse:init` dans un dossier vide : l'écran propose de préparer le projet ; après votre accord, quelques questions (nom, niveau, explications), puis les dossiers et la mémoire sont créés.
 - `/pulse:init` au milieu du travail : l'écran « Votre projet » montre où vous en êtes et propose la prochaine étape ; rien ne se lance sans votre réponse.
 - `/pulse:init` dans un projet qui a déjà du code : les règles et la mémoire de Pulse s'ajoutent, et tout ce qui existe est gardé.
+
+## Références de la commande
+
+!`pulse-aidd contexte init`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.

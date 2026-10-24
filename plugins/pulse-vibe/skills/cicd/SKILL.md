@@ -15,13 +15,9 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte cicd`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.
 
 Argument : `$ARGUMENTS`
 
@@ -114,3 +110,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si 
 
 - `/pulse:cicd` : un contrôle automatique écrit pour votre dépôt, essayé d'abord sur votre ordinateur, puis envoyé ; vous voyez ensuite la coche verte ou la croix rouge.
 - `/pulse:cicd proteger` : un guidage pas à pas pour que seules les versions aux contrôles verts rejoignent la branche principale.
+
+## Références de la commande
+
+!`pulse-aidd contexte cicd`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.

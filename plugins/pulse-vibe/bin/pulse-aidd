@@ -379,7 +379,7 @@ case "$1" in
 ===== Instructions de l'"'"'étape /pulse:%s =====
 
 ' "$2"
-    awk 'n<2&&/^---$/{n++;next} n>=2' "$RACINE/skills/$2/SKILL.md" | awk '/^## Exemples/{s=1;next} /^## /{s=0} !s'
+    awk 'n<2&&/^---$/{n++;next} n>=2' "$RACINE/skills/$2/SKILL.md" | awk '/^## (Exemples|Références de la commande)/{s=1;next} /^## /{s=0} !s'
     printf '
 '
     contexte "$2" "$3"; exit 0 ;;

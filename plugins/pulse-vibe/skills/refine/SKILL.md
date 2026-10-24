@@ -13,13 +13,9 @@ Quand la personne a des questions ou veut des changements sur un plan (`aidd_doc
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte refine`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS` (l'US dont on ajuste le plan, facultative, puis les remarques)
 
@@ -96,3 +92,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiqu�
 - `/pulse:refine US-003 "Je veux voir la liste avant le formulaire"` : la réponse, le nouvel ordre des tâches montré avant tout changement ; après votre accord, le plan est mis à jour.
 - `/pulse:refine US-003 "Pourquoi le filtre n'est pas dans la première version ?"` : une réponse avec sa raison ; le plan reste tel quel.
 - `/pulse:refine` sans remarque : la question « Qu'aimeriez-vous changer dans le plan ? », avec quelques réponses types.
+
+## Références de la commande
+
+!`pulse-aidd contexte refine`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.

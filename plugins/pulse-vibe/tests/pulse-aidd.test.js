@@ -232,6 +232,7 @@ test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
     assert.ok(!r.stdout.includes("allowed-tools:"), "sans l'en-tête du fichier");
     assert.ok(!r.stdout.includes("## Exemples"), "sans la section Exemples");
     assert.ok(r.stdout.includes("## Processus"), "le Processus reste");
+    assert.ok(!r.stdout.includes("## Références de la commande") && !r.stdout.includes("!`pulse-aidd contexte"), "sans la ligne d'injection du contexte, que l'étape affiche elle-même");
   }
 });
 

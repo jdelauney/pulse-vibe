@@ -19,11 +19,11 @@ On parle du **métier** : la technique (base de données, framework, écrans dé
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Les principes de l'entretien
 
-Appliquer « Penser avant d'écrire » (chargé dans « Contexte ») : les branches marquées **clé** ci-dessous se posent en question clé (réponse libre, exemples, reformuler et confronter) ; les autres en rondes à choix.
+Appliquer « Penser avant d'écrire » (chargé en fin de fichier, dans « Références de la commande ») : les branches marquées **clé** ci-dessous se posent en question clé (réponse libre, exemples, reformuler et confronter) ; les autres en rondes à choix.
 
 #### 1. Un arbre de décisions, parcouru par rondes
 
@@ -76,10 +76,6 @@ Quand une réponse tranche une question structurante, la noter dans la liste des
 
 ## Contexte
 
-!`pulse-aidd contexte brainstorm`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.
-
 Idée reçue en argument (facultative) : `$ARGUMENTS`
 
 ### Prérequis
@@ -121,3 +117,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour 
 
 - `/pulse:brainstorm "réserver un créneau chez mon coiffeur"` : des questions par petites séries, une première histoire de votre idée à valider, puis `docs/brief.md` écrit avec votre accord.
 - `/pulse:brainstorm` alors que `docs/brief.md` existe : la question « compléter ou repartir de zéro ? », puis l'entretien reprend sur les questions restées ouvertes.
+
+## Références de la commande
+
+!`pulse-aidd contexte brainstorm`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.

@@ -157,7 +157,7 @@ Le plugin vit dans `plugins/pulse-vibe/` du dépôt ; le catalogue `.claude-plug
 ```
 .claude-plugin/plugin.json        manifeste du plugin
 skills/<commande>/                une commande = un dossier :
-  SKILL.md                        ses consignes, en six parties : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples
+  SKILL.md                        ses consignes, en sept parties : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références de la commande (le contexte injecté, en fin de fichier : une compaction ne garde que le début du skill)
   references/, assets/, scripts/  ce qui sert à cette commande seule (au besoin) : références (pulse-aidd reference <commande>/<fichier>),
                                   modèles (pulse-aidd modele <commande>/<fichier>), scripts lancés par pulse-aidd
                                   ex. ui (références d'interface, modèles design.md et revue-ui.md, contraste.js, identite.js, maquettes.js, comparer.js),

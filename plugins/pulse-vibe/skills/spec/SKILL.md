@@ -13,7 +13,7 @@ Produire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, à côté du fichier de 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Les quatre règles de la spec
 
@@ -23,10 +23,6 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
 4. **Verrouillée une fois validée.** La validation de la personne verrouille la spec (`Statut : verrouillée le AAAA-MM-JJ`). Une spec verrouillée se lit sans se réécrire ; un changement de besoin passe par une **nouvelle US** et sa spec (étape 0).
 
 ## Contexte
-
-!`pulse-aidd contexte spec`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
 
 Sujet de la spec : `$ARGUMENTS`
 
@@ -108,3 +104,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquette
 - `/pulse:spec US-003` : un brouillon de la spec, les ajouts proposés à trancher et les questions restantes ; après votre validation, la spec est verrouillée.
 - `/pulse:spec "ajouter un filtre par date"` : la commande cherche l'histoire qui couvre déjà cette demande, ou vous en propose une nouvelle.
 - `/pulse:spec` sans argument : la liste des histoires sans spec, la prochaine à réaliser en premier.
+
+## Références de la commande
+
+!`pulse-aidd contexte spec`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.

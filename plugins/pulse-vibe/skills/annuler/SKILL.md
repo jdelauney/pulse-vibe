@@ -13,15 +13,11 @@ Revenir en arrière **sans rien perdre** : chaque annulation est elle-même rév
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Appliquer aussi les « Conventions Git » (en particulier « 7. Annuler ») et « Le dépôt distant et l'envoi du travail » (chargés dans « Contexte ») pendant toute la commande.
+Appliquer aussi les « Conventions Git » (en particulier « 7. Annuler ») et « Le dépôt distant et l'envoi du travail » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte annuler`
-
-Si ce contexte est absent, lancer `pulse-aidd contexte annuler` et lire sa sortie.
 
 Arguments : `$ARGUMENTS` — une tâche (`T3`) ou une US (`US-003` : toutes ses tâches enregistrées), facultatif.
 
@@ -109,3 +105,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:status`, ou
 - `/pulse:annuler T3` : la tâche T3 montrée (son objectif, ses fichiers) ; après votre accord, une nouvelle version la défait, et vous pourrez la récupérer.
 - `/pulse:annuler` sans argument : la question « Que voulez-vous annuler ? » ; vos changements en cours peuvent être mis de côté, sans rien perdre.
 - `/pulse:annuler` puis « Récupérer quelque chose que j'ai annulé » : ce qui avait été mis de côté revient.
+
+## Références de la commande
+
+!`pulse-aidd contexte annuler`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte annuler` et lire sa sortie.

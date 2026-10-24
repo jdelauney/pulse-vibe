@@ -1209,7 +1209,7 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
   assert.match(spirc, /y compris une reprise[^\n]*ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler »/);
   assert.match(spirc, /avant la première tâche, le test groupé ou la fin/);
-  const groupe = spirc.slice(spirc.indexOf("## Test groupé"));
+  const groupe = spirc.slice(spirc.indexOf("## Test groupé"), spirc.indexOf("## Références de la commande"));
   assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 2, "test groupé et fin rappellent le rechargement");
   const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
@@ -1400,7 +1400,7 @@ test("tech : une fois le pack choisi, seules ses consignes se chargent ; review 
 });
 
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
-const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples"];
+const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
 
 test("une skill = un dossier : SKILL.md, et seulement assets/, references/, scripts/ à côté", () => {
@@ -1415,7 +1415,8 @@ test("une skill = un dossier : SKILL.md, et seulement assets/, references/, scri
   assert.deepStrictEqual(ecarts, []);
 });
 
-test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples", () => {
+// Après une compaction, Claude Code ne garde que les premiers ~5 000 jetons d'un skill : l'injection du contexte (13 à 35 ko de règles) ferme donc le fichier, et le Processus reste dans le début conservé.
+test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références de la commande", () => {
   const ecarts = [];
   for (const p of PLUGINS) for (const skill of lister(path.join(p, "skills"))) {
     const texte = lire(p, "skills", skill, "SKILL.md");
@@ -1424,8 +1425,10 @@ test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facult
     if (JSON.stringify(t) !== JSON.stringify(attendu)) ecarts.push(`${skill} : ${t.join(", ")}`);
     const regles = texte.split(/^## Règles\s*$/m)[1] || "";
     if (!/^\s*Appliquer les « Règles communes Pulse »/.test(regles)) ecarts.push(`${skill} : Règles commence par les règles communes`);
-    const contexte = (texte.split(/^## Contexte\s*$/m)[1] || "").split(/^## /m)[0];
-    if (!contexte.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Contexte »`);
+    const references = texte.split(/^## Références de la commande\s*$/m)[1] || "";
+    if (!references.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Références de la commande »`);
+    if ((texte.match(/!`pulse-aidd contexte /g) || []).length !== 1) ecarts.push(`${skill} : une seule injection du contexte, en fin de fichier`);
+    if (/dans « Contexte »/.test(texte)) ecarts.push(`${skill} : les règles sont « chargées en fin de fichier, dans « Références de la commande » »`);
   }
   assert.deepStrictEqual(ecarts, []);
 });
