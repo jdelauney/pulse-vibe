@@ -104,21 +104,23 @@ function textes(commande, vus = new Set()) {
   return resultat;
 }
 
-const CONDITION = /(?<![\p{L}])(à l'étape|avant|pour|si|seulement|quand|au début)(?![\p{L}])/iu;
+// Condition de chargement : un moment (étape, avant, au début, au moment) ou un cas (seulement, quand + action).
+// « pour » et « si » seuls ne suffisent pas ; les phrases de repli du contexte (« figurent dans ce contexte »…) ne comptent pas.
+const CONDITION = /(?<![\p{L}])(à l'étape|avant|seulement|au début|au moment|lors(?:que)?|étape \d|quand\s+\S+\s+\S+)/iu;
+const REPLI = /figurent dans ce contexte|ce contexte est absent|si la référence manque|si le modèle manque/i;
 
 // Les formes de pointeur qui désignent ce fichier.
 function pointeurs(fichier) {
-  const nom = path.posix.basename(fichier);
   const formes = [];
   let m;
   if ((m = fichier.match(/^references\/(.+)$/))) {
-    formes.push(`pulse-aidd reference ${m[1]}`, `pulse-aidd pile reference ${nom}`);
+    formes.push(`pulse-aidd reference ${m[1]}`);
     if (m[1].startsWith("qualite/")) formes.push("pulse-aidd qualite");
     if (m[1].startsWith("tests/") || m[1] === "tests-automatiques.md") formes.push("pulse-aidd tests");
   } else if ((m = fichier.match(/^templates\/(.+)$/))) {
     formes.push(`pulse-aidd modele ${m[1]}`);
   } else if ((m = fichier.match(/^skills\/([^/]+)\/references\/(.+)$/))) {
-    formes.push(`pulse-aidd reference ${m[1]}/${m[2]}`, `pulse-aidd pile reference ${nom}`);
+    formes.push(`pulse-aidd reference ${m[1]}/${m[2]}`);
   } else if ((m = fichier.match(/^skills\/([^/]+)\/assets\/(.+)$/))) {
     formes.push(`pulse-aidd modele ${m[1]}/${m[2]}`);
   } else if ((m = fichier.match(/^skills\/([^/]+)\/SKILL\.md$/))) {
@@ -132,9 +134,14 @@ function phrases(texte) {
   return texte.split("\n").flatMap((l) => l.split(/(?<=[.!?])\s+(?=[A-ZÉÈÀ«*`-])/));
 }
 
+// Une phrase est un vrai pointeur si elle cite une forme du fichier avec une condition, hors phrase de repli.
+function phraseValide(phrase, formes) {
+  return !REPLI.test(phrase) && formes.some((f) => phrase.includes(f)) && CONDITION.test(phrase);
+}
+
 function pointeurAvecCondition(commande, fichier) {
   const formes = pointeurs(fichier);
-  return textes(commande).some((t) => phrases(t).some((p) => formes.some((f) => p.includes(f)) && CONDITION.test(p)));
+  return textes(commande).some((t) => phrases(t).some((p) => phraseValide(p, formes)));
 }
 
 test("chaque commande de BASE existe et bin/pulse-aidd se lit", () => {
@@ -158,7 +165,7 @@ test("un fichier sorti du contexte d'une commande garde un pointeur avec sa cond
       assert.ok(
         pointeurAvecCondition(commande, fichier),
         `/pulse:${commande} n'affiche plus ${fichier} et ne le cite nulle part avec sa condition ` +
-          `(attendu dans skills/${commande}/SKILL.md ou une étape enchaînée : « ${pointeurs(fichier)[0]} » dans une phrase avec « à l'étape », « avant », « pour », « si », « seulement », « quand » ou « au début »)`,
+          `(attendu dans skills/${commande}/SKILL.md ou une étape enchaînée : « ${pointeurs(fichier)[0]} » dans une phrase avec « à l'étape », « avant », « seulement », « au début », « au moment » ou « quand » suivi d'une action)`,
       );
     }
   }
@@ -168,4 +175,15 @@ test("les exceptions désignent des fichiers de BASE", () => {
   for (const [commande, fichiers] of Object.entries(EXCEPTIONS)) {
     for (const f of fichiers) assert.ok((BASE[commande] || []).includes(f), `exception ${commande} : ${f} n'est pas dans BASE`);
   }
+});
+
+test("le repérage accepte un vrai pointeur et refuse le repli et la condition trop faible", () => {
+  const formes = pointeurs("skills/ui/references/regles-ui.md");
+  assert.ok(phraseValide("À l'étape 2, lancer `pulse-aidd reference ui/regles-ui.md`.", formes));
+  assert.ok(phraseValide("Lancer `pulse-aidd reference ui/regles-ui.md` seulement pour une refonte.", formes));
+  assert.ok(!phraseValide("Si ce contexte est absent, lancer `pulse-aidd contexte ui` (et `pulse-aidd reference ui/regles-ui.md` si la référence manque).", formes));
+  assert.ok(!phraseValide("Les références figurent dans ce contexte : `pulse-aidd reference ui/regles-ui.md` avant tout.", formes));
+  assert.ok(!phraseValide("Les règles pour l'interface : `pulse-aidd reference ui/regles-ui.md`.", formes));
+  assert.ok(!phraseValide("Si besoin, voir `pulse-aidd reference ui/regles-ui.md`.", formes));
+  assert.ok(!pointeurs("references/git.md").some((f) => f.includes("pile reference")));
 });
