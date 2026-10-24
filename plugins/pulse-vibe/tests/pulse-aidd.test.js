@@ -356,6 +356,12 @@ test("pile : indique le pack déclaré par le projet et s'il est installé", () 
   assert.match(projetAvecPack({}).lancerIci("pile").stdout, /Aucun pack de pile déclaré/);
 });
 
+test("pile contexte : pack déclaré mais absent, la façon de l'installer et le code 0", () => {
+  const r = projetAvecPack({ declare: "essai" }).lancerIci("pile", "contexte", "review");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /\/plugin install pulse-essai@pulseia, puis redémarrer/);
+});
+
 test("contexte : ajoute les consignes du pack déclaré et installé", () => {
   const r = projetAvecPack({ declare: "essai", installe: "essai" }).lancerIci("contexte", "fix");
   assert.strictEqual(r.status, 0, r.stderr);

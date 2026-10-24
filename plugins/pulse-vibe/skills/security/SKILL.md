@@ -77,6 +77,8 @@ Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la
 
 #### 5. Corriger
 
+Avant la première correction de code : `pulse-aidd qualite securite` et, avec un pack de pile, `pulse-aidd pile contexte implement` ; corriger selon eux.
+
 Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (Recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée : appliquer tout de suite `pulse-aidd reference secrets/fuite.md` (révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation). Après correction, refaire le test manuel concerné.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` puis `/pulse:commit` si des corrections ont été faites.

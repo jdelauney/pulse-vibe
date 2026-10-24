@@ -156,6 +156,11 @@ pile() {
   fi
 }
 
+indication_pack_absent() { # indication_pack_absent <id> : comment installer le pack déclaré mais absent
+  local id="$1"
+  echo "Le pack de pile « $id » est déclaré mais pas installé : /plugin install pulse-$id@pulseia, puis redémarrer Claude Code."
+}
+
 relais_pack() { # relais_pack <sous-commande> [arguments] : exécute pulse-pile-<id déclaré> avec les mêmes arguments
   local id; id="$(pack_declare)"
   if [ -z "$id" ]; then
@@ -163,7 +168,7 @@ relais_pack() { # relais_pack <sous-commande> [arguments] : exécute pulse-pile-
     exit 1
   fi
   if ! command -v "pulse-pile-$id" >/dev/null 2>&1; then
-    echo "Le pack de pile « $id » est déclaré mais pas installé : /plugin install pulse-$id@pulseia, puis redémarrer Claude Code."
+    indication_pack_absent "$id"
     exit 1
   fi
   exec "pulse-pile-$id" "$@"
@@ -433,7 +438,7 @@ case "$1" in
     # contexte : un projet sans pack n'a rien à charger (sortie vide, code 0) ; le pack déclaré mais absent est signalé.
     if [ "$1" = contexte ]; then
       [ -n "$(pack_declare)" ] || exit 0
-      command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { pile; exit 0; }
+      command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { indication_pack_absent "$(pack_declare)"; exit 0; }
     fi
     relais_pack "$@" ;;
   sonder)
