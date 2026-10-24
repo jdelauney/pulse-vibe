@@ -318,7 +318,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
   assert.deepStrictEqual([...new Set(manquants)], []);
 });
 
-test("étapes enchaînées : avec --sans-communes, les modules de l'étape sont déjà chargés par la commande qui l'enchaîne (sinon --sans-noyau)", () => {
+test("étapes enchaînées : avec --sans-communes, les modules de l'étape sont déjà chargés par la commande qui l'enchaîne (sinon --sans-noyau, ou les modules lus à part)", () => {
   const sansEntete = (f) => lire(f).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "");
   // Ce que la commande lit : son SKILL.md, et les références qu'elle nomme.
   const sources = (skill) => {
@@ -339,6 +339,8 @@ test("étapes enchaînées : avec --sans-communes, les modules de l'étape sont 
     const aVoir = [parent];
     while (aVoir.length) {
       const courant = aVoir.pop();
+      // Un module lu à part (« pulse-aidd reference regles-taches.md ») est chargé comme s'il venait du contexte.
+      for (const x of Object.values(MODULES_COMMUNES)) if (sources(courant).includes(`pulse-aidd reference ${x}`)) disponibles.add(x);
       for (const m of sources(courant).matchAll(/pulse-aidd etape ([a-z][a-z-]*) (--sans-communes|--sans-noyau)/g)) {
         const [, etape, option] = m;
         if (!SKILLS.has(etape)) continue;

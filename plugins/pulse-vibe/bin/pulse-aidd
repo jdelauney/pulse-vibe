@@ -5,7 +5,7 @@
 #
 #   pulse-aidd contexte <commande>   affiche les règles et modèles utiles à une commande
 #   pulse-aidd etape <commande> [--sans-communes]   idem, précédé des instructions de la commande ; --sans-communes : sans les règles communes ni leurs modules, déjà chargés par la commande qui enchaîne l'étape
-#   pulse-aidd etape <commande> --sans-noyau   idem, sans le noyau des règles communes seul, déjà chargé ; les modules de la commande (tâches, relecture, réalisation) restent
+#   pulse-aidd etape <commande> --sans-noyau   idem, sans le noyau des règles communes, déjà chargé ; garde les modules de l'étape (tâches, relecture, réalisation)
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/, ou d'une skill : <skill>/<fichier> (skills/<skill>/assets/)
 #   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
