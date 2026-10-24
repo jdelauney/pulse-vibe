@@ -1101,7 +1101,8 @@ test("boucles d'implement et de spirc : review et commit chargés une seule fois
   assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
   assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
-  assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "spirc : commit chargée une fois");
+  // Deux emplois : aux prérequis (modifications à enregistrer d'abord) et au démarrage de la réalisation ; le second se saute si le premier a eu lieu.
+  assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 2, "spirc : commit chargée une fois par déroulé");
   for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
     assert.ok(spirc.includes(ref), ref);
 });
