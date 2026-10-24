@@ -107,6 +107,37 @@ test("un outil cité dans les consignes d'un agent lui est disponible", () => {
   assert.deepStrictEqual(problemes, []);
 });
 
+test("aucune consigne ne cite pulse-aidd reference design/ (les références de design sont dans ui/)", () => {
+  const fautifs = [...fichiers(path.join(RACINE, "skills"), "SKILL.md"), ...AGENTS_PAR_PLUGIN].filter((f) => /pulse-aidd reference design\//.test(lire(f))).map((f) => path.relative(DEPOT, f));
+  assert.deepStrictEqual(fautifs, []);
+});
+
+test("agents : chaque commande pulse-aidd citée figure dans la phrase « Utiliser … seulement/uniquement … » de l'agent", () => {
+  const problemes = [];
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const corps = lire(fichier);
+    const phrase = (corps.match(/^- Utiliser (?:Bash seulement|uniquement des commandes en lecture)[^\n]*$/m) || [])[0];
+    if (!phrase) continue;
+    const reste = corps.replace(phrase, "");
+    for (const m of reste.matchAll(/(?<!par `)pulse-aidd (pile (?:contexte|reference|recette)|[a-z][a-z-]*)/g)) {
+      if (!phrase.includes("pulse-aidd " + m[1]) && !phrase.includes("pulse-aidd " + m[1].split(" ")[0] + " …")) problemes.push(path.relative(DEPOT, fichier) + " : pulse-aidd " + m[1]);
+    }
+  }
+  assert.deepStrictEqual([...new Set(problemes)], []);
+});
+
+test("un agent qui doit corriger un fichier avec Edit a Edit dans tools (designer compris)", () => {
+  const problemes = [];
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const [, entete, corps] = lire(fichier).match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
+    const tools = ((entete.match(/^tools:\s*(.*)$/m) || [])[1] || "").split(",").map((x) => x.trim());
+    if (/corriger[^.\n]*avec Edit/.test(corps) && !tools.includes("Edit")) problemes.push(path.relative(DEPOT, fichier));
+  }
+  assert.deepStrictEqual(problemes, []);
+  const designer = lire(RACINE, "agents", "designer.md");
+  assert.ok(/^tools:.*\bEdit\b/m.test(designer) && /corriger[^.\n]*avec Edit/.test(designer), "designer : corrige avec Edit");
+});
+
 test("allowed-tools des skills : motifs précis, sans suppression, fusion de demande, envoi forcé ni configuration", () => {
   // Permis : l'abandon d'une fusion en conflit (git merge --abort).
   assert.ok(SKILLS_PAR_PLUGIN.length >= SKILLS.size && SKILLS.size > 0, "lecture des skills");

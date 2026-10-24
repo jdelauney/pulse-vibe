@@ -17,7 +17,7 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
 
 Appliquer aussi les « Règles de la mémoire projet » et les références de design (chargées dans « Contexte ») pendant toute la commande.
 
-Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les quatre références de design ont pour titres « Registres d'interface », « Règles d'interface », « Anti-patterns d'interface » (la « liste noire ») et « Motifs d'écrans » ; on peut les réafficher avec `pulse-aidd reference design/<fichier>`.
+Poser les questions une par une ou par rondes (AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) »). Les quatre références de design ont pour titres « Registres d'interface », « Règles d'interface », « Anti-patterns d'interface » (la « liste noire ») et « Motifs d'écrans » ; on peut les réafficher avec `pulse-aidd reference ui/<fichier>`.
 
 Les maquettes HTML sont une **référence visuelle**, indépendante de la pile : le code les traduit ensuite dans la technologie de `docs/technical.md`. `/pulse:ui` laisse le code intact ; seule l'action `polish` le modifie.
 
