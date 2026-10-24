@@ -2,7 +2,7 @@
 description: Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours
 argument-hint: "[relier | lire [28j|3m] | suivre | inspecter <adresse>] (détecté si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Edit(docs/technical.md) Write(docs/referencement/**) Edit(docs/referencement/**)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Edit(docs/technical.md) Write(docs/referencement/**) Edit(docs/referencement/**) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd agent *) Bash(pulse-aidd qualite *) Bash(pulse-aidd perf *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *)
 ---
 
 # /pulse:search-console – Ce que Google voit de votre site
@@ -55,7 +55,7 @@ La personne ouvre Search Console (search.google.com/search-console) avec **son**
 
 1. La personne copie **le contenu** de la balise que montre Search Console et le colle ici. Le dire : ce code est public, il s'écrit dans le code du site.
 2. L'écrire à l'endroit indiqué par le pack de pile ; sans pack, dans le `<head>` de la page d'accueil, d'après la documentation officielle de la technologie retenue.
-3. Enregistrer et mettre en ligne : `/pulse:commit`, puis l'envoi (`/pulse:deploy`, mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
+3. Enregistrer et mettre en ligne : `pulse-aidd etape commit --sans-communes` (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
 4. Seulement alors, la personne clique « Vérifier ». Expliquer que la balise reste en place pour toujours (sinon la propriété se perd).
 
 #### 1c. Enregistrement DNS (domaine)
