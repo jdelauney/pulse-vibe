@@ -66,7 +66,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Mesures à la fin du plan « Corrections 4 » : boucle implement 106 755, boucle spirc 98 093, tech 127 898.
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
-  "boucle implement de 4 tâches": { plafond: 119500, /* mesure 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
+  "boucle implement de 4 tâches": { plafond: 120000, /* mesure 119 519 (relecture finale de la phase 1 : annonce des deux accords du dépôt distant) ; avant, 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
   "boucle spirc de 4 tâches": { plafond: 109000, /* mesure 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
   "tech, pack choisi en cours de commande": { plafond: 134500, parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
@@ -84,7 +84,7 @@ for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
 // Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, au 500 supérieur.
 const PLAFONDS_COMMANDE_AVEC_PACK = {
   "auto-fix": 49500, // mesure 46 786
-  cicd: 65000, // mesure 61 680
+  cicd: 65500, // mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
   deploy: 66000, // mesure 62 576
   express: 52000, // mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 54500, // mesure 51 889

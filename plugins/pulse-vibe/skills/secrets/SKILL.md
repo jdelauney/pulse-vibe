@@ -82,8 +82,8 @@ Appliquer la référence « Réagir à une fuite de clé » ci-dessus, étape pa
 
 - **Premier message** : court, calme, avec l'action n° 1. Exemple : « On s'en occupe tout de suite. Première chose : rendre l'ancienne clé inutilisable chez le fournisseur. Je vous guide. » Puis une seule question : quelle clé (menu tiré de l'inventaire, avec « Je ne sais pas laquelle »).
 - **Quelle clé ?** Si la personne ne sait pas : `pulse-aidd secrets historique` (traces dans Git) et la question des lieux d'exposition. Une clé collée dans cette conversation se reconnaît à son fournisseur, sans la répéter.
-- **Révoquer** : chemin exact de la fiche, réglage immédiat. Attendre la confirmation de la personne (« C'est fait ») avant de passer au remplacement.
-- **Remplacer, redéployer, vérifier** : étapes 3 à 6 de `renouveler`, sans délai de grâce. Secret inventé par le projet après une fuite : `pulse-aidd secrets generer <NOM>` sans `--versionne` (ou avec `--seul`) : l'ancienne valeur ne doit plus rien ouvrir.
+- **Révoquer** : étape 2 de la référence (chemin exact de la fiche, réglage immédiat, attente du « C'est fait »).
+- **Remplacer, redéployer, vérifier** : étape 3 de la référence (génération comprise), sans délai de grâce.
 - **Couper ce qui reste ouvert** : action de la fiche (sessions, redémarrage de la base).
 - **Journal d'incident** : `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` à partir du modèle « journal d'incident », sans aucune valeur ; puis `pulse-aidd secrets journal <NOM> fuite --revoquee <AAAA-MM-JJ> --production oui`.
 - Terminer par la prévention : la cause en une phrase, les protections manquantes de l'inventaire, et `/pulse:security` si aucun audit récent n'existe.
