@@ -95,11 +95,10 @@ contexte() {
       liste_recettes ;;
     review)
       afficher "Pour relire" "$REF/contexte/review.md"
-      fiche ;;
+      afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md" ;;
     security)
       afficher "Pour relire" "$REF/contexte/review.md"
-      afficher "Pour la sécurité" "$REF/contexte/security.md"
-      fiche ;;
+      afficher "Pour la sécurité" "$REF/contexte/security.md" ;;
     test)
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
     deploy|cicd)

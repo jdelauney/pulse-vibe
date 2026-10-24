@@ -48,7 +48,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     implement: ["Pour réaliser et corriger", "Fiche de la pile", "Recettes disponibles"],
     fix: ["Pour réaliser et corriger", "Fiche de la pile"],
     review: ["Pour relire", "Fiche de la pile"],
-    security: ["Pour relire", "Pour la sécurité", "Fiche de la pile"],
+    security: ["Pour relire", "Pour la sécurité"],
     test: ["Pour les tests"],
     deploy: ["Pour mettre en ligne"],
     cicd: ["Pour mettre en ligne"],
@@ -214,17 +214,32 @@ test("aucune clé ressemblant à une vraie dans les références et le squelette
   assert.deepStrictEqual(trouves, []);
 });
 
-test("la fiche s'accompagne de l'architecture pour tech, plan et review ; à la demande pour réaliser et corriger", () => {
-  for (const commande of ["tech", "plan", "review"]) {
+test("la fiche s'accompagne de l'architecture pour tech et plan ; à la demande pour relire, réaliser et corriger", () => {
+  for (const commande of ["tech", "plan"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0);
     assert.match(r.stdout, /----- Architecture du code/, commande);
   }
-  for (const commande of ["implement", "fix"]) {
+  for (const commande of ["review", "security", "implement", "fix"]) {
     const r = lancer("contexte", commande);
     assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
-    assert.match(r.stdout, /pulse-aidd pile reference architecture.md/, commande);
   }
+  for (const commande of ["implement", "fix"]) assert.match(lancer("contexte", commande).stdout, /pulse-aidd pile reference architecture.md/, commande);
+});
+
+test("contexte review : sous le seuil de lecture, avec la fiche et sans l'architecture", () => {
+  const r = lancer("contexte", "review");
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères : une sortie plus longue est enregistrée dans un fichier`);
+  assert.match(r.stdout, /----- Fiche de la pile/);
+  assert.doesNotMatch(r.stdout, /----- Architecture du code/);
+});
+
+test("contexte security : ni la fiche ni l'architecture, des renvois pour les situer", () => {
+  const r = lancer("contexte", "security");
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code)/);
+  assert.match(r.stdout, /pulse-aidd pile reference fiche.md/);
+  assert.match(r.stdout, /pulse-aidd pile reference architecture.md/);
 });
 
 test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {
@@ -563,8 +578,8 @@ test("info : le pack déclare les familles de qualité qu'il couvre (organisatio
   assert.match(lancer("info").stdout, /^couvre: organisation$/m);
 });
 
-test("contexte review : l'architecture sans les modèles de code, gardés à la demande", () => {
-  const r = lancer("contexte", "review");
+test("contexte plan : l'architecture sans les modèles de code, gardés à la demande", () => {
+  const r = lancer("contexte", "plan");
   assert.match(r.stdout, /## 10\. Tests/);
   assert.doesNotMatch(r.stdout, /Modèles de code \(domaine/);
   assert.match(lire(REF, "modeles-code.md"), /^# Modèles de code \(domaine `factures`\)/);

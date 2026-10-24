@@ -25,7 +25,7 @@ Le message de délégation indique : la tâche (ex. T3), le chemin des documents
 
 ## Pack de pile
 
-Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte review` avant de commencer (lire sa sortie en entier, sans la couper), et appliquer ses consignes en plus des règles ci-dessous.
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte review` avant de commencer (lire sa sortie en entier, sans la couper) ; si la tâche crée un fichier ou un dossier, lancer aussi `pulse-aidd pile reference architecture.md` ; appliquer ces consignes en plus des règles ci-dessous.
 
 ## Méthode
 
