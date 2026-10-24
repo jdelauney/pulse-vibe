@@ -84,7 +84,7 @@ Pour chaque écran qui montre des informations ou un formulaire, la présentatio
 - **Créer ou modifier** : « Où créer ou modifier <une facture> ? » → « Sur une page à part » (formulaire long, plus de 5 champs) / « Dans une fenêtre par-dessus la liste » (formulaire court) / « Dans un volet sur le côté » (modifier en gardant la liste sous les yeux) / « Directement dans la liste » (un ou deux champs).
 - **Supprimer**, s'il y a lieu : « Supprimer <une facture> : demander confirmation (Recommandé) » / « Supprimer tout de suite, avec la possibilité d'annuler quelques secondes ».
 
-Noter chaque réponse dans la colonne « Présentation » de « Ce que l'utilisateur voit et fait ». Puis proposer (AskUserQuestion) : « Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) » / « Suivre ces choix, sans maquette » (en rythme rapide, règles communes § 1, la seconde est recommandée). Noter la réponse sur la ligne « Maquettes » de la spec ; « Voir » mène à `/pulse:ui maquettes US-XXX` une fois la spec verrouillée.
+Noter chaque réponse dans la colonne « Présentation » de « Ce que l'utilisateur voit et fait ». Puis proposer (AskUserQuestion) : « Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) » / « Suivre ces choix, sans maquette » (en rythme rapide du profil de `CLAUDE.md`, la seconde est recommandée). Noter la réponse sur la ligne « Maquettes » de la spec ; « Voir » mène à `/pulse:ui maquettes US-XXX` une fois la spec verrouillée.
 
 ### 2. La section « Données personnelles et accès » (obligatoire)
 

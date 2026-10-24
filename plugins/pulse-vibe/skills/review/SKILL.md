@@ -67,7 +67,7 @@ Noter dans la section « Test par la personne » du rapport la date, le résulta
 
 ### 6. Corriger
 
-Traiter les constats selon « Les constats de relecture » des règles communes (§ 6) : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
+Traiter les constats selon « Les constats de relecture » des règles de relecture : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
 
 Avec un pack de pile, avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation (elles y sont dans les boucles de `/pulse:implement` et `/pulse:spirc`), et coder les corrections selon elles.
 

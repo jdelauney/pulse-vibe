@@ -73,7 +73,7 @@ Hors tâche en cours, omettre la parenthèse ou mettre une zone courte. Si la pe
 
 ### 5. Mettre à jour le plan
 
-Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles communes (§ 7) : mode autonome ou contrôle de sécurité à chaque tâche (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
+Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles de réalisation : mode autonome ou contrôle de sécurité à chaque tâche (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
 
 ### 6. Enregistrer
 
