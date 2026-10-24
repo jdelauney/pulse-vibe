@@ -403,6 +403,7 @@ test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'é
   assert.match(lireSkill("spirc"), /sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code/);
   assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
   assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier/);
+  assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant la première correction/);
   for (const agent of ["implementer", "fixer"]) assert.match(fsP.readFileSync(path.join(RACINE, "agents", agent + ".md"), "utf8"), /pack n'est pas installé, le signaler dans « À signaler »/);
   const communes = fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.match(communes, /review, spirc, implement, auto-fix : les agents qui codent ou relisent les chargent eux-mêmes/);
