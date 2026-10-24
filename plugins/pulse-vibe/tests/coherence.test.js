@@ -1579,6 +1579,20 @@ test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, 
   for (const f of textes) assert.doesNotMatch(lire(f), sansNom, `${path.relative(DEPOT, f)} : « pulse-aidd qualite » ou « tests » sans famille`);
 });
 
+// Une famille tient sous 30 000 caractères, pas deux : « clean-code composants » fait 31 720, « clean-code securite » 35 288.
+// Au-delà, Claude Code enregistre la sortie dans un fichier et n'en montre qu'un aperçu. Les textes livrés citent donc une commande par famille
+// (l'outil accepte toujours plusieurs familles, mais aucune consigne ne le demande).
+test("qualite : aucun texte livré ne lance deux familles dans le même appel", () => {
+  const famille = "(?:clean-code|composants|securite|organisation)";
+  const combine = new RegExp(`pulse-aidd qualite ${famille}(?: ${famille})+`);
+  const textes = [];
+  for (const plugin of PLUGINS) textes.push(...fichiers(plugin, ".md").filter((f) => !f.includes(`${path.sep}tests${path.sep}`) && !f.includes("node_modules")));
+  assert.ok(textes.length > 100, "textes relevés : " + textes.length);
+  assert.ok(combine.test("lancer `pulse-aidd qualite clean-code composants` ici"), "auto-test du repérage");
+  assert.ok(!combine.test("`pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants`"), "auto-test : une famille par appel");
+  for (const f of textes) assert.doesNotMatch(lire(f), combine, `${path.relative(DEPOT, f)} : plusieurs familles dans un appel`);
+});
+
 test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
   const implementer = agent("implementer");

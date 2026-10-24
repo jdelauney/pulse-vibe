@@ -14,6 +14,6 @@ Ces références décrivent **comment écrire** le code, quelle que soit **la te
 | `qualite/securite-code.md` | Points d'entrée sécurisés, contrôle d'accès, anti-abus (S1–S13) | `pulse-aidd qualite securite` |
 | `qualite/code-concepts.md` | Code smells, SOLID, refactorings | `pulse-aidd reference qualite/code-concepts.md` |
 
-**Règle de choix** (chaque appel nomme ses familles) : `clean-code` toujours ; `composants` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier. Exemple : `pulse-aidd qualite clean-code securite`. Les déduire des fichiers de la tâche.
+**Règle de choix** (un appel par famille) : `clean-code` toujours ; `composants` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier. Exemple : `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite securite`, chaque sortie lue en entier (deux familles ensemble dépassent 30 000 caractères). Les déduire des fichiers de la tâche.
 
-Chaque famille se termine par sa checklist ; `pulse-aidd qualite <familles> --checklists` affiche les checklists seules, pour relire. `pulse-aidd qualite --tout` charge les quatre familles d'un coup.
+Chaque famille se termine par sa checklist ; `pulse-aidd qualite <famille> --checklists` affiche les checklists seules, pour relire. `pulse-aidd qualite --tout` charge les quatre familles d'un coup.

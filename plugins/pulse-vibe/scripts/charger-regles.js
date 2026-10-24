@@ -22,7 +22,7 @@ const REF = path.join(__dirname, "..", "references");
 const TYPES = {
   qualite: {
     sommaire: { titre: "Règles de qualité du code", fichier: "qualite/README.md" },
-    relance: "Relancez avec les familles utiles : `pulse-aidd qualite <familles>` (`--tout` les charge toutes).",
+    relance: "Relancez avec les familles utiles, une commande par famille : `pulse-aidd qualite <famille>` (`--tout` les charge toutes).",
     familles: [
       { nom: "clean-code", titre: "Clean code", fichier: "qualite/clean-code.md" },
       { nom: "organisation", titre: "Organisation des fichiers et nommage", fichier: "qualite/organisation.md" },

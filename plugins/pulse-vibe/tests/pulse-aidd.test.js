@@ -153,7 +153,7 @@ test("contexte implement et fix : règles de qualité chargées à la demande", 
   assert.ok(lancer("qualite", "--tout").stdout.includes("===== Clean code ====="), "--tout garde l'ancien comportement");
   const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
   assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois/);
-  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite clean-code`, suivi des familles des fichiers à corriger[^\n]*règle commune 12\), puis évaluer/);
+  assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour chaque famille utile des fichiers à corriger, chaque sortie lue en entier[^\n]*règle commune 12\), puis évaluer/);
   const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
 });
