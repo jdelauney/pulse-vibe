@@ -14,13 +14,9 @@ Rappeler en une phrase : « La première version est la plus petite réellement 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte prd` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte prd`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.
 
 ### Prérequis
 
@@ -29,7 +25,7 @@ Les références et modèles cités dans cette commande figurent dans ce context
 
 ## Processus
 
-Appliquer « Penser avant d'écrire » ci-dessus : la coupe du MVP et la définition « La première version est prête quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
+Appliquer « Penser avant d'écrire » (en fin de fichier) : la coupe du MVP et la définition « La première version est prête quand… » sont des **questions clés** ; les objectifs mesurables, les contraintes et le hors périmètre se proposent par questions à choix.
 
 ### 1. Lister les fonctionnalités
 
@@ -77,3 +73,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour 
 
 - `/pulse:prd` : la liste de ce que l'outil doit permettre, puis la question « si vous ne pouviez livrer que 3 choses dans quinze jours, lesquelles ? » ; votre choix devient la première version.
 - `/pulse:prd` sans `docs/brief.md` : la proposition de `/pulse:brainstorm`, ou d'un mode express en 3 questions.
+
+## Références de la commande
+
+!`pulse-aidd contexte prd`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.

@@ -15,15 +15,11 @@ allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-com
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte memory` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi les « Règles de la mémoire projet » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte memory`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.
 
 Action demandée : `$ARGUMENTS`
 
@@ -114,3 +110,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande où vou
 - `/pulse:memory retenir "les prix s'affichent toujours TTC"` : la ligne exacte et sa destination vous sont montrées ; après « Ajouter », l'IA s'en souviendra à chaque session.
 - `/pulse:memory actualiser` : la liste des points devenus faux ou manquants, et vous choisissez ceux à corriger.
 - `/pulse:memory compacter` : la mémoire resserrée, lignes avant → après ; vous la gardez ou revenez à la version d'avant.
+
+## Références de la commande
+
+!`pulse-aidd contexte memory`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.

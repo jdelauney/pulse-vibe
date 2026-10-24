@@ -13,19 +13,15 @@ Quand la personne a des questions ou veut des changements sur un plan (`aidd_doc
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte refine` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte refine`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS` (l'US dont on ajuste le plan, facultative, puis les remarques)
 
 ### Prérequis
 
-- **Le plan** : celui de l'US désignée en premier argument (règles « User stories, specs et plans » ci-dessus). Absent : demander lequel, en premier celui qui a une tâche `[~]`. Aucun plan : proposer `/pulse:plan`.
+- **Le plan** : celui de l'US désignée en premier argument (règles des tâches). Absent : demander lequel, en premier celui qui a une tâche `[~]`. Aucun plan : proposer `/pulse:plan`.
 - Remarques vides : demander (AskUserQuestion) « Qu'aimeriez-vous changer dans le plan ? » avec des réponses types : « Une tâche est floue » / « Je veux changer l'ordre » / « Je veux ajouter quelque chose » / « Une tâche est de trop ».
 
 ## Processus
@@ -46,9 +42,9 @@ Les **faits** se cherchent dans les documents et le code ; seules les **décisio
 
 ### 2. Répondre et proposer
 
-Pour chaque remarque : la réponse directe, la raison (règle de découpage, priorité MoSCoW, dépendance, sécurité), et, si utile, une alternative. Pour expliquer un choix de code ou de structure, s'appuyer sur les règles de qualité (`pulse-aidd qualite`).
+Pour chaque remarque : la réponse directe, la raison (règle de découpage, priorité MoSCoW, dépendance, sécurité), et, si utile, une alternative. Pour expliquer un choix de code ou de structure, s'appuyer sur les règles de qualité (`pulse-aidd qualite clean-code`, et la famille du sujet).
 
-Appliquer les **règles du plan** (rappelées dans le modèle « plan » ci-dessus et dans `/pulse:plan`) à toute tâche nouvelle ou modifiée : découpage vertical (visible et testable en moins de 2 minutes), 3 fichiers et 3 critères au plus, première tâche = squelette (s'il n'est pas en place), et « Mettre en ligne la première version » seulement dans le plan de la dernière US Indispensable du parcours. Un plan couvre une seule US : une tâche qui relève d'une autre US va dans le plan de celle-ci. La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2). Si les fichiers ou les dépendances des tâches changent, revérifier la ligne « En parallèle avec » (règle 9 de `/pulse:plan`) de ce plan et des plans qu'elle cite.
+Appliquer les **règles du plan** (rappelées dans le modèle « plan » en fin de fichier et dans `/pulse:plan`) à toute tâche nouvelle ou modifiée : découpage vertical (visible et testable en moins de 2 minutes), 3 fichiers et 3 critères au plus, première tâche = squelette (s'il n'est pas en place), et « Mettre en ligne la première version » seulement dans le plan de la dernière US Indispensable du parcours. Un plan couvre une seule US : une tâche qui relève d'une autre US va dans le plan de celle-ci. La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2). Si les fichiers ou les dépendances des tâches changent, revérifier la ligne « En parallèle avec » (règle 9 de `/pulse:plan`) de ce plan et des plans qu'elle cite.
 
 **Ce qu'on garde tel quel** :
 - une tâche `[x]` (terminée et enregistrée) : elle reste telle quelle ; un changement devient une **nouvelle tâche** ;
@@ -96,3 +92,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiqu�
 - `/pulse:refine US-003 "Je veux voir la liste avant le formulaire"` : la réponse, le nouvel ordre des tâches montré avant tout changement ; après votre accord, le plan est mis à jour.
 - `/pulse:refine US-003 "Pourquoi le filtre n'est pas dans la première version ?"` : une réponse avec sa raison ; le plan reste tel quel.
 - `/pulse:refine` sans remarque : la question « Qu'aimeriez-vous changer dans le plan ? », avec quelques réponses types.
+
+## Références de la commande
+
+!`pulse-aidd contexte refine`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.

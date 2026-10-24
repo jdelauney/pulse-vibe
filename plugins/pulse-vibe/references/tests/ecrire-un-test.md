@@ -1,64 +1,35 @@
 # Écrire un test
 
-Un bon test **raconte une histoire métier** : une situation de départ, un événement, un résultat observable. Il se lit comme une spécification et change seulement quand l'histoire change.
-
-Ces règles valent pour **tous les types de tests**. Ce qui est propre à chaque type se trouve dans `tests/unitaires.md`, `tests/integration.md` et `tests/bout-en-bout.md`.
+Un bon test **raconte une histoire métier** : une situation de départ, un événement, un résultat observable. Il se lit comme une spécification et change seulement quand l'histoire change. Ces règles valent pour tous les types de tests ; le propre de chaque niveau est dans `tests/unitaires.md`, `tests/integration.md` et `tests/bout-en-bout.md`.
 
 ## 1. F.I.R.S.T : les cinq qualités d'un test
 
 | Qualité | Ce que cela demande |
 |---|---|
-| **F – Rapide** (*Fast*) | Unitaire en millisecondes, intégration en secondes, bout en bout en minutes pour l'ensemble. Les frontières lentes (réseau, service tiers) sont doublées en unitaire. Les tests peuvent tourner en parallèle |
-| **I – Indépendant** (*Independent*) | Aucun état partagé entre deux tests. Chaque test prépare sa situation et nettoie ce qu'il a créé. N'importe quel ordre, et l'exécution en parallèle, donnent le même résultat |
+| **F – Rapide** (*Fast*) | Unitaire en millisecondes, intégration en secondes, bout en bout en minutes pour l'ensemble. Les frontières lentes (réseau, service tiers) sont doublées en unitaire |
+| **I – Indépendant** (*Independent*) | Aucun état partagé entre deux tests : chaque test prépare sa situation et nettoie ce qu'il a créé. N'importe quel ordre, et l'exécution en parallèle, donnent le même résultat |
 | **R – Reproductible** (*Repeatable*) | Même résultat sur toute machine, à toute heure. Date du jour, hasard, identifiants générés et fuseau horaire sont fixés par le test (passés en paramètre, `qualite/clean-code.md` §5). Données de test écrites en dur plutôt que tirées au hasard. Système de fichiers et base remis dans leur état de départ |
-| **S – Auto-vérifiant** (*Self-validating*) | Le test passe ou échoue tout seul, par ses assertions. Le message d'échec dit ce qui était attendu et ce qui a été obtenu. Les vérifications passent par des assertions, et les affichages en console servent seulement au débogage |
-| **T – Complet** (*Thorough*) | Cas nominal, limites, cas refusés et erreurs : la liste Z.O.M.B.I.E.S (§5) |
-
-Variante courante du T : *Timely*, écrit au bon moment, c'est-à-dire avant ou avec le code : c'est le rôle du TDD (`tests/tdd.md`).
+| **S – Auto-vérifiant** (*Self-validating*) | Le test passe ou échoue tout seul, par ses assertions (message d'échec : §7) ; les affichages en console servent seulement au débogage |
+| **T – Complet** (*Thorough*) | Cas nominal, limites, cas refusés et erreurs : la liste Z.O.M.B.I.E.S (§5). Variante courante : *Timely*, écrit avant ou avec le code (`tests/tdd.md`) |
 
 ## 2. Structure : Fonctionnalité / Règle / Exemple
 
-Les tests se regroupent comme une spécification métier, avec les mots du glossaire du projet :
+Les tests se regroupent comme une spécification métier, avec les mots du glossaire du projet ; fonctionnalité et règle deviennent des groupes de tests imbriqués, l'exemple devient le test (forme complète au §4).
 
-```
-fonctionnalité "Relance des factures"
-  règle "Une facture non payée après son échéance est en retard"
-    exemple "Facture échue hier et non payée : elle est en retard"
-    exemple "Facture échue hier mais payée : elle n'est pas en retard"
-    exemple "Facture qui arrive à échéance aujourd'hui : elle n'est pas encore en retard"
-  règle "Une facture en retard reçoit une seule relance par semaine"
-    exemple ...
-```
-
-- **Fonctionnalité** : le sujet, tel que la personne le nomme.
-- **Règle** : une règle métier, formulée comme une phrase vraie.
-- **Exemple** : un cas concret, avec ses valeurs, qui illustre la règle. Son titre dit la situation et le résultat attendu.
+- **Fonctionnalité** : le sujet, tel que la personne le nomme (« Relance des factures »). **Règle** : une règle métier, formulée comme une phrase vraie (« Une facture non payée après son échéance est en retard »). **Exemple** : un cas concret, avec ses valeurs ; son titre dit la situation et le résultat attendu (« Facture échue hier mais payée : elle n'est pas en retard »). Une règle a plusieurs exemples.
 - Les titres sont écrits dans la langue des textes du projet (français par défaut) ; les noms de fonctions et de méthodes suivent `qualite/clean-code.md` §2 (anglais).
-- Correspondance avec les outils : fonctionnalité et règle deviennent des groupes de tests imbriqués, l'exemple devient le test.
 
 ## 3. Le corps du test : Étant donné / Quand / Alors
 
-Chaque test a trois parties, dans cet ordre, séparées visuellement :
-
-| Partie | Rôle | Équivalent |
-|---|---|---|
-| **Étant donné** (*Given*) | La situation de départ, observable | *Arrange* |
-| **Quand** (*When*) | L'action déclenchée, une seule | *Act* |
-| **Alors** (*Then*) | Le résultat observable attendu | *Assert* |
+Trois parties, dans cet ordre, séparées visuellement : **Étant donné** (*Given*, *Arrange*) la situation de départ, observable ; **Quand** (*When*, *Act*) l'action déclenchée, une seule ; **Alors** (*Then*, *Assert*) le résultat observable attendu.
 
 - **Un comportement par test.** Plusieurs assertions sont permises si elles vérifient le même résultat (les champs d'un même objet, le message et le code d'une même erreur). Deux comportements différents font deux tests.
 - **Une seule action** dans « Quand ». Deux actions successives racontent deux histoires, ou une histoire dont la première action fait partie de la situation de départ.
-- Pas de condition ni de boucle dans un test : chaque cas a son propre exemple.
+- Chaque cas a son propre exemple : le test reste sans condition ni boucle.
 
 ## 4. L'objet SUT : un test qui se lit comme une phrase
 
-Pour qu'un test reste lisible, ses détails techniques vont dans un **objet de test** (SUT) créé à neuf pour chaque test. Il expose des méthodes nommées comme des phrases :
-
-| Méthode | Rôle | Exemple de nom |
-|---|---|---|
-| `given…` | Installe la situation de départ | `givenInvoice(invoice)`, `givenToday(date)` |
-| `when…` | Déclenche l'action testée | `whenOverdueStatusIsChecked()` |
-| `then…` | Vérifie le résultat attendu | `thenInvoiceIsOverdue()`, `thenErrorIs("INVALID_EMAIL")` |
+Les détails techniques d'un test vont dans un **objet de test** (SUT) créé à neuf pour chaque test. Ses méthodes se lisent comme des phrases : `given…` installe la situation de départ, `when…` déclenche l'action testée, `then…` vérifie le résultat attendu.
 
 ```
 fonctionnalité "Relance des factures"
@@ -85,8 +56,7 @@ fonction createSut() :
   }
 ```
 
-- **Tout l'état du test dans le SUT** : rien de global, rien de partagé entre deux tests.
-- **Un SUT neuf par test** (créé avant chaque test).
+- **Tout l'état du test dans le SUT**, **un SUT neuf par test** (créé avant chaque test) : rien de global, rien de partagé entre deux tests.
 - **Règle d'exhaustivité** : une méthode `given…` ou `when…` utilise **tous** ses paramètres, et les objets passés le sont **en entier**. Un paramètre ignoré tromperait la personne qui lit le test.
 - Les méthodes sont **asynchrones** quand le code testé l'est : le test attend chaque étape.
 - Le SUT est utile dès qu'un test demande de la préparation. Pour une fonction pure à une ligne, un test direct (appel puis assertion) reste plus clair.
@@ -108,20 +78,12 @@ Pour chaque règle, parcourir la liste et écrire un exemple pour chaque cas per
 
 ## 6. Données de test
 
-**Ce qui compte pour l'exemple apparaît dans le test ; le reste vient des valeurs par défaut.**
-
-Un **constructeur de données** produit un objet complet et valide, et chaque méthode `with…` change un seul champ :
+**Ce qui compte pour l'exemple apparaît dans le test ; le reste vient des valeurs par défaut.** Un **constructeur de données** produit un objet complet et valide, et chaque méthode `with…` change un seul champ :
 
 ```
 // invoice.fixtures
 fonction anInvoice() :
-  data = {
-    id: "invoice-001",
-    customerEmail: "client@exemple.fr",
-    amount: 120.00,
-    dueDate: "2026-03-01",
-    status: SENT
-  }
+  data = { id: "invoice-001", customerEmail: "client@exemple.fr", amount: 120.00, dueDate: "2026-03-01", status: SENT }
   RETOURNER {
     withDueDate(d) : data.dueDate = d ; RETOURNER ce constructeur
     withStatus(s)  : data.status = s  ; RETOURNER ce constructeur
@@ -136,14 +98,13 @@ sut.givenInvoice(anInvoice().withStatus(PAID).build())
 - Valeurs **réalistes mais simples**, écrites en dur, sans donnée personnelle réelle.
 - **DAMP plutôt que DRY** : dans un test, la clarté prime sur la factorisation. On factorise la mécanique (constructeurs, SUT), et l'histoire reste écrite en entier dans chaque test.
 - Emplacement des données partagées : `qualite/organisation.md` §7.
-- Base de données de test : remise à zéro ou transaction annulée après chaque test, et données de départ propres à chaque scénario.
 
 ## 7. Assertions
 
 - **Vérifier le résultat observable** : valeur retournée, état enregistré, message affiché, appel fait à une frontière. L'état interne et les fonctions privées restent hors du test.
 - **Comparer l'objet entier** quand le résultat est un objet : l'objet attendu, construit avec le même constructeur de données, révèle aussi les champs inattendus. Pour une valeur imprévisible (identifiant généré), la fixer par injection, ou utiliser le comparateur « n'importe quelle valeur de ce type » de l'outil.
 - **Comparateur adapté** : égalité stricte pour une valeur simple, égalité de contenu pour un objet ou une liste, comparateur dédié pour une erreur attendue.
-- **Message d'échec utile** : le nom du test et l'assertion suffisent pour comprendre ce qui est cassé, sans relancer en mode débogage.
+- **Message d'échec utile** : il dit ce qui était attendu et ce qui a été obtenu ; le nom du test et l'assertion suffisent pour comprendre ce qui est cassé, sans relancer en mode débogage.
 
 ## 8. Doublures
 
@@ -158,7 +119,7 @@ sut.givenInvoice(anInvoice().withStatus(PAID).build())
 | Base de données et fichiers, **en test unitaire** | La base de test et les fichiers temporaires, **en test d'intégration** |
 | Un service qui permet de provoquer une erreur rare (panne, délai dépassé) | Une dépendance simple et rapide, déjà fiable |
 
-Trop de doublures rendent les tests fragiles : ils vérifient alors comment le code est écrit plutôt que ce qu'il fait. Si un test a besoin de nombreuses doublures, c'est un signal de couplage (`qualite/clean-code.md` §5).
+Trop de doublures rendent les tests fragiles : ils vérifient alors comment le code est écrit plutôt que ce qu'il fait. Un test qui a besoin de nombreuses doublures signale un couplage (`qualite/clean-code.md` §5).
 
 ### Les cinq sortes
 
@@ -171,15 +132,14 @@ Trop de doublures rendent les tests fragiles : ils vérifient alors comment le c
 | **Faux** (*fake*) | Implémentation simplifiée qui fonctionne vraiment | Dépôt en mémoire à la place de la base |
 
 - Préférer, dans cet ordre : **faux** et **bouchon** (on vérifie le résultat), puis **espion** (on vérifie un effet), puis **simulacre** (on vérifie un échange précis).
-- Les doublures sont **remises à zéro avant chaque test** (ou recréées par le SUT).
 - La doublure entre par la porte : le code reçoit sa dépendance en paramètre ou à la construction (`qualite/clean-code.md` §5), ce qui évite de remplacer des modules entiers par l'outil de test.
 
 ## 9. Préparation et nettoyage
 
-- **Avant chaque test** : SUT neuf, données neuves, doublures remises à zéro.
+- **Avant chaque test** : SUT neuf, données neuves, doublures remises à zéro (ou recréées par le SUT).
 - **Une seule fois pour le groupe** : seulement une ressource coûteuse à démarrer et que les tests ne modifient pas (conteneur de base de données, serveur de test). Chaque test nettoie quand même ses propres données (transaction annulée, tables vidées).
-- **Après chaque test** : supprimer fichiers temporaires, connexions ouvertes, minuteries, données créées.
-- **Code asynchrone** : le test attend la fin de chaque opération. Pour un état qui arrive plus tard, attendre une condition observable avec un délai maximal ; les pauses de durée fixe rendent le test lent et instable.
+- **Après chaque test** : supprimer fichiers temporaires, connexions ouvertes, minuteries, données créées. La base de test est remise à zéro ou la transaction annulée, et chaque scénario installe ses propres données de départ.
+- **Code asynchrone** : le test attend la fin de chaque opération. Pour un état qui arrive plus tard, attendre une condition observable avec un délai maximal, plutôt qu'une pause de durée fixe, qui rend le test lent et instable.
 
 ## 10. Erreurs attendues
 
@@ -226,3 +186,14 @@ Après :
 - [ ] La suite passe, dans n'importe quel ordre, et reste rapide.
 - [ ] Les règles métier et parcours critiques sont couverts (`tests/strategie.md` §3).
 - [ ] Un scénario de test inhabituel porte un commentaire qui explique pourquoi.
+
+## 13. Vocabulaire
+
+| Terme | Sens |
+|---|---|
+| **SUT** (*System Under Test*) | Ce qu'on teste ; par extension, l'objet de test qui l'enveloppe (§4) |
+| **Doublure** | Remplaçant contrôlé d'une dépendance (§8) |
+| **Jeu de données** (*fixture*) | Données de test prêtes à l'emploi, souvent produites par un constructeur avec valeurs par défaut (§6) |
+| **Frontière** | Point où le code du projet parle à l'extérieur : réseau, base, fichiers, horloge, hasard, service tiers |
+| **Test instable** (*flaky*) | Test qui passe ou échoue sans changement du code (`tests/strategie.md` §4) |
+| **DAMP** | *Descriptive And Meaningful Phrases* : un test se lit comme une phrase métier, quitte à répéter un peu |

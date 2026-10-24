@@ -5,7 +5,7 @@
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
 #   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
-#   pulse-pile-next contexte <commande>   consignes du pack pour /pulse:<commande>
+#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
@@ -56,11 +56,6 @@ etapes_recette() { # etapes_recette <dossier> : liste « - etape <id> : <titre> 
   sed -n 's/^- Étape \([^ ]*\) – \(.*\) : `pulse-aidd pile recette .*`$/- etape \1 : \2/p' "$1/index.md"
 }
 
-fiche() {
-  afficher "Architecture du code : où va chaque fichier, sens des imports, modèles" "$REF/architecture.md"
-  afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"
-}
-
 liste_recettes() {
   printf '\n----- Recettes disponibles (pulse-aidd pile recette <nom>) -----\n\n'
   recettes
@@ -68,34 +63,38 @@ liste_recettes() {
 
 contexte() {
   case "$1" in
+    piles)
+      cat "$REF/contexte/piles.md" ;;
+    code)
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     tech)
       afficher "Pour /pulse:tech" "$REF/contexte/tech.md"
-      afficher "Valeurs de docs/technical.md" "$REF/technical.md"
-      fiche
-      afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;
+      afficher "Valeurs de docs/technical.md" "$REF/technical.md" ;;
     ui)
       afficher "Pour /pulse:ui" "$REF/contexte/ui.md"
-      afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     express)
       afficher "Pour /pulse:express" "$REF/contexte/express.md" ;;
     spec)
       afficher "Pour /pulse:spec" "$REF/contexte/spec.md"
       liste_recettes ;;
-    plan|refine)
+    plan)
       afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
-      fiche
+      afficher "Architecture du code : où va chaque fichier, sens des imports, modèles" "$REF/architecture.md"
       liste_recettes ;;
-    implement|fix|spirc|auto-fix)
+    refine)
+      afficher "Pour /pulse:plan" "$REF/contexte/plan.md"
+      liste_recettes ;;
+    implement|fix)
       afficher "Pour réaliser et corriger" "$REF/contexte/implement.md"
       afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"
       liste_recettes ;;
     review)
       afficher "Pour relire" "$REF/contexte/review.md"
-      fiche ;;
+      afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md" ;;
     security)
       afficher "Pour relire" "$REF/contexte/review.md"
-      afficher "Pour la sécurité" "$REF/contexte/security.md"
-      fiche ;;
+      afficher "Pour la sécurité" "$REF/contexte/security.md" ;;
     test)
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
     deploy|cicd)
@@ -104,15 +103,15 @@ contexte() {
       afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md" ;;
     seo)
       afficher "Pour /pulse:seo" "$REF/contexte/seo.md"
-      fiche
-      liste_recettes ;;
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     perf)
       afficher "Pour /pulse:perf" "$REF/contexte/perf.md"
-      fiche ;;
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     search-console)
       afficher "Pour Search Console" "$REF/contexte/search-console.md" ;;
     rediger)
-      afficher "Pour /pulse:rediger" "$REF/contexte/rediger.md" ;;
+      afficher "Pour /pulse:rediger" "$REF/contexte/rediger.md"
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     *) ;;
   esac
 }

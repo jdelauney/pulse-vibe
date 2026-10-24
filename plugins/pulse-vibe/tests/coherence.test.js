@@ -277,6 +277,16 @@ test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisé
   assert.deepStrictEqual(problemes, []);
 });
 
+// Règles communes : le noyau, puis les modules (tâches, relecture, réalisation) que « pulse-aidd contexte <commande> » affiche.
+const MODULES_COMMUNES = { "Règles des tâches": "regles-taches.md", "Règles de relecture": "regles-relecture.md", "Règles de réalisation": "regles-realisation.md" };
+const contextesCharges = new Map();
+function contexteCharge(skill) { // le texte affiché par pulse-aidd contexte <skill>, sans pack de pile (cwd = racine du plugin)
+  if (!contextesCharges.has(skill)) contextesCharges.set(skill, require("child_process").spawnSync("bash", ["bin/pulse-aidd", "contexte", skill], { cwd: RACINE, encoding: "utf8" }).stdout);
+  return contextesCharges.get(skill);
+}
+const MODULES_COMMUNES_FICHIERS = Object.fromEntries(Object.values(MODULES_COMMUNES).map((f) => [f, true]));
+const modulesCharges = (skill) => Object.entries(MODULES_COMMUNES).filter(([titre]) => contexteCharge(skill).includes(`===== ${titre} =====`)).map(([, fichier]) => fichier);
+
 test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu'il enchaîne, est autorisé d'avance", () => {
   assert.ok(couvre("pulse-aidd sonder *", "pulse-aidd sonder") && !couvre("pulse-aidd seo *", "pulse-aidd seobis") && couvre("pulse-aidd secrets inventaire*", "pulse-aidd secrets inventaire --json"), "règle de correspondance");
   const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
@@ -286,7 +296,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -303,8 +313,81 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
       if (estSensible(commande)) continue; // passe par la demande d'autorisation : c'est voulu
       if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
     }
+    // Les citations du noyau (outils cités pour toutes les commandes) sont contrôlées dans une tâche ultérieure ; les modules ne citent aucune commande pulse-aidd.
   }
-  assert.deepStrictEqual(manquants, []);
+  assert.deepStrictEqual([...new Set(manquants)], []);
+});
+
+test("étapes enchaînées : avec --sans-communes, les modules de l'étape sont déjà chargés par la commande qui l'enchaîne (sinon --sans-noyau, ou les modules lus à part)", () => {
+  const sansEntete = (f) => lire(f).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "");
+  // Ce que la commande lit : son SKILL.md, et les références qu'elle nomme.
+  const sources = (skill) => {
+    const corps = sansEntete(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const textes = [corps];
+    for (const m of corps.matchAll(/pulse-aidd reference ([\w./-]+\.md)|references\/([\w./-]+\.md)/g)) {
+      const ref = m[1] || m[2];
+      for (const chemin of [path.join(RACINE, "references", ref), path.join(RACINE, "skills", skill, "references", ref), path.join(RACINE, "skills", ...ref.split("/").slice(0, 1), "references", ...ref.split("/").slice(1))])
+        if (fs.existsSync(chemin) && fs.statSync(chemin).isFile()) textes.push(sansEntete(chemin));
+    }
+    return textes.join("\n");
+  };
+  const problemes = [];
+  let verifiees = 0;
+  for (const parent of SKILLS) {
+    const disponibles = new Set(modulesCharges(parent));
+    const vues = new Set([parent]);
+    const aVoir = [parent];
+    while (aVoir.length) {
+      const courant = aVoir.pop();
+      // Un module lu à part (« pulse-aidd reference regles-taches.md ») est chargé comme s'il venait du contexte.
+      for (const x of Object.values(MODULES_COMMUNES)) if (sources(courant).includes(`pulse-aidd reference ${x}`)) disponibles.add(x);
+      for (const m of sources(courant).matchAll(/pulse-aidd etape ([a-z][a-z-]*) (--sans-communes|--sans-noyau)/g)) {
+        const [, etape, option] = m;
+        if (!SKILLS.has(etape)) continue;
+        verifiees++;
+        if (option === "--sans-communes") {
+          const manque = modulesCharges(etape).filter((x) => !disponibles.has(x));
+          if (manque.length) problemes.push(`${parent} → ${etape} (cité par ${courant}) : --sans-communes sans ${manque.join(", ")}`);
+        } else for (const x of modulesCharges(etape)) disponibles.add(x);
+        if (!vues.has(etape)) { vues.add(etape); aVoir.push(etape); }
+      }
+    }
+  }
+  assert.ok(verifiees > 40, "étapes enchaînées relevées : " + verifiees);
+  assert.deepStrictEqual([...new Set(problemes)], []);
+});
+
+test("règles communes : chaque mention d'un module (règles de relecture, de réalisation, des tâches, mode découverte) vient d'une commande qui le charge", () => {
+  // Mention -> module que la commande doit charger. « règles des tâches » : le module T.
+  const MENTIONS = [[/règles de relecture/i, "regles-relecture.md"], [/règles de réalisation|mode découverte/i, "regles-realisation.md"], [/règles des tâches/i, "regles-taches.md"]];
+  const sansEntete = (f) => lire(f).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, "");
+  const problemes = [];
+  let verifiees = 0;
+  // Un SKILL.md : la commande elle-même charge le module.
+  for (const skill of SKILLS) {
+    const corps = sansEntete(path.join(RACINE, "skills", skill, "SKILL.md"));
+    for (const [motif, module] of MENTIONS)
+      if (motif.test(corps)) {
+        verifiees++;
+        if (!modulesCharges(skill).includes(module)) problemes.push(`skills/${skill}/SKILL.md : ${motif} sans ${module}`);
+      }
+  }
+  // Une référence ou un modèle que « contexte » affiche, ou qu'un skill nomme : au moins une commande qui l'utilise charge le module.
+  const references = [...fichiers(path.join(RACINE, "references"), ".md"), ...fichiers(path.join(RACINE, "templates"), ".md"), ...fichiers(path.join(RACINE, "skills"), ".md").filter((f) => !f.endsWith("SKILL.md"))];
+  for (const f of references) {
+    const nom = path.basename(f);
+    if (nom in MODULES_COMMUNES_FICHIERS || nom === "regles-communes.md") continue; // les modules se citent entre eux sans condition
+    const corps = sansEntete(f);
+    // Les commandes qui reçoivent ce texte : celles dont le contexte l'affiche, ou dont le SKILL.md ou la référence qui la nomme le charge.
+    const utilisatrices = [...SKILLS].filter((s) => contexteCharge(s).includes(corps.trim().slice(0, 80)) || sansEntete(path.join(RACINE, "skills", s, "SKILL.md")).includes(nom));
+    for (const [motif, module] of MENTIONS)
+      if (motif.test(corps) && utilisatrices.length) {
+        verifiees++;
+        if (!utilisatrices.some((s) => modulesCharges(s).includes(module))) problemes.push(`${path.relative(DEPOT, f)} : ${motif} sans ${module} dans aucune de ses commandes (${utilisatrices.join(", ")})`);
+      }
+  }
+  assert.ok(verifiees >= 10, "mentions relevées : " + verifiees);
+  assert.deepStrictEqual(problemes, []);
 });
 
 test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme, sont autorisées d'avance", () => {
@@ -314,7 +397,7 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -359,7 +442,7 @@ test("allowed-tools : les commandes git de lecture citées par un skill, ou par 
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -643,14 +726,14 @@ test("règles communes : rondes de 4 questions, réponses libres en texte, mode 
   assert.match(regles, /réponse libre/);
   assert.doesNotMatch(regles, /`\/pulse:pr branche <US-XXX>` avant `\/pulse:implement`/);
   const definitions = TEXTES.filter(({ texte }) => /\*\*Mode découverte\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
-  assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-communes.md"]);
+  assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-realisation.md"]);
 });
 
 test("implement : questions de démarrage en clair et mode découverte", () => {
   const texte = skillTexte("implement");
   assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);
   assert.match(texte, /« Je code devant vous »/);
-  assert.match(texte, /\*\*Mode découverte\*\* \(règles communes § 1\)/);
+  assert.match(texte, /\*\*Mode découverte\*\* \(règles de réalisation\)/);
   assert.doesNotMatch(texte, /Implémentation via sous-agent|Implémentation directe/);
 });
 
@@ -991,10 +1074,15 @@ test("mise en production : une sonde de disponibilité est proposée et notée",
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /^- Surveillance : /m);
 });
 
-test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références", () => {
+test("règles communes : le noyau seul ; fichiers du projet et cycle dans leurs références, tâches, relecture et réalisation dans leurs modules", () => {
   const communes = lire(RACINE, "references", "regles-communes.md");
-  for (const titre of ["## 1. À qui vous parlez", "## 3. Garde-fous de la méthode", "## 4. Format de fin de commande", "## 6. Les constats de relecture"])
+  for (const titre of ["## 1. À qui vous parlez", "## 3. Garde-fous de la méthode", "## 4. Format de fin de commande"])
     assert.ok(communes.includes(titre), titre);
+  for (const [titre, module] of [["Chaque constat d'une relecture", "regles-relecture.md"], ["**Mode découverte**", "regles-realisation.md"], ["## Garder la trace", "regles-realisation.md"], ["**Rangement**", "regles-taches.md"]]) {
+    assert.ok(!communes.includes(titre), `noyau : « ${titre} » sorti vers ${module}`);
+    assert.ok(lire(RACINE, "references", module).includes(titre), `${module} : ${titre}`);
+  }
+  assert.match(lire(RACINE, "references", "regles-relecture.md"), /^\| Gravité \| Traitement \|$/m, "regles-relecture.md : le tableau des gravités");
   assert.ok(!communes.includes("| Fichier | Produit par | Contenu |"), "tableau des fichiers sorti des règles communes");
   assert.ok(!communes.includes("/pulse:init → /pulse:brainstorm"), "cycle sorti des règles communes");
   assert.ok(communes.includes("pulse-aidd reference fichiers-projet.md"), "renvoi vers les fichiers du projet");
@@ -1014,7 +1102,7 @@ test("une étape enchaînée par une commande se charge sans les règles commune
   const problemes = [];
   for (const f of sources) {
     const corps = lire(f).replace(/^---\n[\s\S]*?\n---\n/, "");
-    for (const m of corps.matchAll(/pulse-aidd etape (\S+)( --sans-communes)?/g))
+    for (const m of corps.matchAll(/pulse-aidd etape (\S+)( --sans-(?:communes|noyau))?/g))
       if (!m[2]) problemes.push(`${path.relative(DEPOT, f)} : pulse-aidd etape ${m[1]}`);
   }
   assert.deepStrictEqual(problemes, []);
@@ -1059,7 +1147,7 @@ test("allowed-tools : aucun motif `contexte <autre>` sans emploi, aucune paire `
     const aVoir = [depart];
     while (aVoir.length) {
       for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
-        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-(?:communes|noyau))?$/) || [])[1];
         if (etape && SKILLS.has(etape) && !vues.has(etape)) {
           vues.add(etape);
           aVoir.push(etape);
@@ -1123,7 +1211,7 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
   assert.match(spirc, /y compris une reprise[^\n]*ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler »/);
   assert.match(spirc, /avant la première tâche, le test groupé ou la fin/);
-  const groupe = spirc.slice(spirc.indexOf("## Test groupé"));
+  const groupe = spirc.slice(spirc.indexOf("## Test groupé"), spirc.indexOf("## Références de la commande"));
   assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 2, "test groupé et fin rappellent le rechargement");
   const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
@@ -1208,9 +1296,9 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
   const COMMANDES = ["express", "brainstorm", "prd", "us", "spirc", "implement", "tech", "ui", "spec", "plan", "search-console"];
   const regles = lire(RACINE, "references", "regles-communes.md");
   const regle16 = regles.split("\n").find((l) => l.startsWith("16. "));
+  assert.doesNotMatch(regle16, /`\/pulse:/, "règle 16 : pas de liste de commandes recopiée (chaque commande dit déjà qu'elle l'applique)");
   const fichiersProjet = lire(RACINE, "references", "fichiers-projet.md").split("\n").find((l) => l.startsWith("| `aidd_docs/tasks/in-progress.md` |"));
   for (const c of COMMANDES) {
-    assert.ok(regle16.includes(`\`/pulse:${c}\``), `règle 16 : /pulse:${c}`);
     assert.ok(fichiersProjet.includes(`\`/pulse:${c}\``), `fichiers-projet.md : /pulse:${c}`);
     const texte = skillTexte(c);
     assert.match(texte, /aidd_docs\/tasks\/in-progress\.md|règle commune 16/, `${c} : écrit le travail en cours`);
@@ -1235,8 +1323,8 @@ test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; 
   assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
   const depot = lire(RACINE, "references", "depot-distant.md");
   assert.match(depot, /« Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt \(Recommandé\) »/);
-  assert.match(depot, /En mode découverte \(règles communes § 1\)[^\n]*« Directement sur la version principale »/);
-  const regles = lire(RACINE, "references", "regles-communes.md");
+  assert.match(depot, /En mode découverte \(règles de réalisation\)[^\n]*« Directement sur la version principale »/);
+  const regles = lire(RACINE, "references", "regles-realisation.md");
   assert.match(regles, /sauf l'envoi, qui prend « Directement sur la version principale »/);
 });
 
@@ -1302,19 +1390,27 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
   for (const skill of ["pr", "status"]) assert.doesNotMatch((skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1], /\b(Write|Edit)\(/, skill);
 });
 
+test("plan : avec un pack, une tâche « Recette : » garde son découpage, les autres suivent le découpage du cœur", () => {
+  const plan = skillTexte("plan");
+  assert.match(plan, /\*\*Avec un pack de pile\*\*, une tâche tirée d'une recette \(titre ou ligne « Recette : <nom> »\) garde le découpage vérifié de sa recette/);
+  assert.match(plan, /toute autre tâche suit les règles 1, 2 et 4/);
+  assert.match(plan, /Chaque tâche reste vérifiable par la personne/);
+});
+
 test("tech : une fois le pack choisi, seules ses consignes se chargent ; review dit que le reviewer charge le pack", () => {
   const tech = skillTexte("tech");
   assert.match(tech, /puis lancer `pulse-aidd pile contexte tech`/);
+  assert.match(tech, /`pulse-aidd piles`, qui affiche aussi, pour chaque pack, ce qu'il faut vérifier et dire avant le choix : l'appliquer aux étapes 3 et 4/);
   assert.doesNotMatch(tech, /relancer `pulse-aidd contexte tech`/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "tech", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte tech")), "tech : pile contexte tech autorisé");
   assert.match(skillTexte("review"), /le reviewer les charge lui-même \(`pulse-aidd pile contexte review`\)/);
-  // Les corrections de review se codent avec les consignes du pack, chargées si elles manquent.
-  assert.match(skillTexte("review"), /avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation/);
+  // Les corrections de review se codent avec les consignes du pack, chargées en entier avant la première correction.
+  assert.match(skillTexte("review"), /avant la première correction faite par cette conversation elle-même \(un agent qui corrige charge le pack lui-même\), lancer `pulse-aidd pile contexte implement`, lu en entier/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "review", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte implement")), "review : pile contexte implement autorisé");
 });
 
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
-const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples"];
+const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
 
 test("une skill = un dossier : SKILL.md, et seulement assets/, references/, scripts/ à côté", () => {
@@ -1329,7 +1425,8 @@ test("une skill = un dossier : SKILL.md, et seulement assets/, references/, scri
   assert.deepStrictEqual(ecarts, []);
 });
 
-test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples", () => {
+// Après une compaction, Claude Code ne garde que les premiers ~5 000 jetons d'un skill : l'injection du contexte (13 à 35 ko de règles) ferme donc le fichier, et le Processus reste dans le début conservé.
+test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références de la commande", () => {
   const ecarts = [];
   for (const p of PLUGINS) for (const skill of lister(path.join(p, "skills"))) {
     const texte = lire(p, "skills", skill, "SKILL.md");
@@ -1338,8 +1435,12 @@ test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facult
     if (JSON.stringify(t) !== JSON.stringify(attendu)) ecarts.push(`${skill} : ${t.join(", ")}`);
     const regles = texte.split(/^## Règles\s*$/m)[1] || "";
     if (!/^\s*Appliquer les « Règles communes Pulse »/.test(regles)) ecarts.push(`${skill} : Règles commence par les règles communes`);
-    const contexte = (texte.split(/^## Contexte\s*$/m)[1] || "").split(/^## /m)[0];
-    if (!contexte.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Contexte »`);
+    // Le repli est dans le début conservé après une compaction, pas en fin de fichier avec les règles.
+    if (!regles.includes(`absentes de la conversation : lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier`)) ecarts.push(`${skill} : la ligne des règles donne le repli « pulse-aidd contexte ${skill} »`);
+    const references = texte.split(/^## Références de la commande\s*$/m)[1] || "";
+    if (!references.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Références de la commande »`);
+    if ((texte.match(/!`pulse-aidd contexte /g) || []).length !== 1) ecarts.push(`${skill} : une seule injection du contexte, en fin de fichier`);
+    if (/dans « Contexte »/.test(texte)) ecarts.push(`${skill} : les règles sont « chargées en fin de fichier, dans « Références de la commande » »`);
   }
   assert.deepStrictEqual(ecarts, []);
 });
@@ -1402,7 +1503,7 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   const auto = lire(RACINE, "references", "tests-automatiques.md");
   assert.match(auto, /## 2 bis\. Tests essentiels \(rythme rapide\)/);
   assert.match(auto, /\*\*Aucun test de l'interface pendant les tâches\*\*/);
-  assert.match(lire(RACINE, "references", "regles-communes.md"), /\*\*Rythme\*\* \(profil\) : « à choisir »[^\n]*« rapide »/);
+  assert.match(lire(RACINE, "references", "regles-realisation.md"), /\*\*Rythme\*\* \(profil\) : « à choisir »[^\n]*« rapide »/);
   assert.match(lire(RACINE, "agents", "implementer.md"), /\*\*Tests essentiels\*\* \(rythme rapide/);
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
 });
@@ -1481,18 +1582,64 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
   assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
 });
 
+test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, --tout ni --checklists", () => {
+  const sansNom = /pulse-aidd (qualite|tests)`/;
+  const textes = [];
+  for (const plugin of PLUGINS) for (const ext of [".md", ".js"]) textes.push(...fichiers(plugin, ext).filter((f) => !f.endsWith(".test.js") && !f.includes("node_modules")));
+  for (const f of textes) assert.doesNotMatch(lire(f), sansNom, `${path.relative(DEPOT, f)} : « pulse-aidd qualite » ou « tests » sans famille`);
+});
+
+// Une famille tient sous 30 000 caractères, pas deux : « clean-code composants » fait 31 720, « clean-code securite » 35 288.
+// Au-delà, Claude Code enregistre la sortie dans un fichier et n'en montre qu'un aperçu. Les textes livrés citent donc une commande par famille
+// (l'outil accepte toujours plusieurs familles, mais aucune consigne ne le demande).
+test("qualite : aucun texte livré ne lance deux familles dans le même appel", () => {
+  const famille = "(?:clean-code|composants|securite|organisation)";
+  const combine = new RegExp(`pulse-aidd qualite ${famille}(?: ${famille})+`);
+  const textes = [];
+  for (const plugin of PLUGINS) textes.push(...fichiers(plugin, ".md").filter((f) => !f.includes(`${path.sep}tests${path.sep}`) && !f.includes("node_modules")));
+  assert.ok(textes.length > 100, "textes relevés : " + textes.length);
+  assert.ok(combine.test("lancer `pulse-aidd qualite clean-code composants` ici"), "auto-test du repérage");
+  assert.ok(!combine.test("`pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants`"), "auto-test : une famille par appel");
+  for (const f of textes) assert.doesNotMatch(lire(f), combine, `${path.relative(DEPOT, f)} : plusieurs familles dans un appel`);
+});
+
 test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
   const implementer = agent("implementer");
-  assert.match(implementer, /`pulse-aidd qualite clean-code`/);
-  for (const famille of ["composants", "securite", "organisation"]) assert.match(implementer, new RegExp(`\`${famille}\``), famille);
+  assert.match(implementer, /une commande par famille/);
+  assert.match(implementer, /Lire chaque sortie en entier, sans la couper/);
+  const choix = lire(RACINE, "references", "qualite", "README.md");
+  for (const famille of ["clean-code", "composants", "securite", "organisation"]) assert.match(choix, new RegExp(`\`${famille}\``), famille);
   assert.match(agent("reviewer"), /`pulse-aidd qualite --checklists`/);
   assert.match(agent("test-writer"), /`pulse-aidd tests ecrire gherkin/);
   assert.match(agent("test-runner"), /`pulse-aidd tests ecrire/);
+  for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) assert.match(agent(nom), /en entier/, `${nom} : règles lues en entier`);
   for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) {
     assert.doesNotMatch(agent(nom), /`pulse-aidd (?:qualite|tests)`/, `${nom} : chargement complet`);
   }
   assert.match(lire(RACINE, "references", "tests-automatiques.md"), /`pulse-aidd tests ecrire gherkin/);
+});
+
+test("règles de Pulse lues en entier : consigne dans travail-sobre.md, aucun agent ne coupe la sortie", () => {
+  assert.match(lire(RACINE, "references", "travail-sobre.md"), /en entier/);
+  for (const f of fichiers(RACINE, ".md").filter((x) => x.includes(`${path.sep}agents${path.sep}`))) {
+    assert.doesNotMatch(lire(f), /pulse-aidd (?:qualite|reference|tests|pile)[^\n]*\|\s*(?:head|grep|tail|sed)\b/, `${path.relative(DEPOT, f)} : sortie de règles coupée`);
+  }
+});
+
+// Chaque sortie d'une famille ou d'un morceau reste lisible en entier (sous la limite d'affichage de 30 000 caractères).
+// Garde les tâches de raccourcissement des familles (2.3b et 2.3c du refactoring d'optimisation).
+test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 caractères", () => {
+  const { spawnSync } = require("child_process");
+  const sorties = [["qualite", ["clean-code", "organisation", "composants", "securite"]], ["tests", ["strategie", "ecrire", "unitaire", "integration", "bout-en-bout", "tdd", "gherkin"]]];
+  for (const [type, noms] of sorties) {
+    for (const nom of noms) {
+      const r = spawnSync("bash", ["bin/pulse-aidd", type, nom], { cwd: RACINE, encoding: "utf8" });
+      assert.strictEqual(r.status, 0, `${type} ${nom} : échec ${r.stderr}`);
+      assert.ok(r.stdout.length > 0, `${type} ${nom} : sortie vide`);
+      assert.ok(r.stdout.length < 30000, `${type} ${nom} : ${r.stdout.length}`);
+    }
+  }
 });
 
 test("correction ciblée : l'implementer reçoit les constats et charge leurs familles de qualité", () => {

@@ -6,7 +6,7 @@ Ces règles s'appliquent à chaque ligne de code. Elles décrivent les versions 
 
 ## 1. Où vit chaque chose
 
-L'organisation complète est dans **Architecture du code** (affichée avec cette fiche, sauf pour réaliser et corriger : `pulse-aidd pile reference architecture.md`) : arborescence, sens des imports, niveaux de composants, flux, erreurs ; modèles de code : `pulse-aidd pile reference modeles-code.md`.
+L'organisation complète est dans **Architecture du code** (`pulse-aidd pile reference architecture.md`) : arborescence, sens des imports, niveaux de composants, flux, erreurs ; modèles de code : `pulse-aidd pile reference modeles-code.md`.
 
 | Quoi | Où |
 |---|---|

@@ -13,15 +13,11 @@ Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explica
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte commit` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi les « Conventions Git » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer aussi les « Conventions Git » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte commit`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
 
 Arguments : `$ARGUMENTS` — si le **premier mot** est `push`, envoyer la branche après le commit ; le reste, s'il y en a, est le message proposé par la personne. Placé ailleurs, le mot `push` fait partie du message : `/pulse:commit "ajoute le bouton push"` enregistre sans envoyer.
 
@@ -73,7 +69,7 @@ Hors tâche en cours, omettre la parenthèse ou mettre une zone courte. Si la pe
 
 ### 5. Mettre à jour le plan
 
-Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles communes (§ 7) : mode autonome ou contrôle de sécurité à chaque tâche (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
+Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles de réalisation : mode autonome ou contrôle de sécurité à chaque tâche (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
 
 ### 6. Enregistrer
 
@@ -110,3 +106,9 @@ Terminer avec le bloc de fin de commande.
 - `/pulse:commit` : vos modifications triées par sujet et le message proposé ; la version enregistrée apparaît ensuite avec son identifiant court.
 - `/pulse:commit push` : la même chose, puis l'envoi sur le dépôt distant, après votre accord.
 - `/pulse:commit` pour une tâche que vous n'avez pas encore testée : la commande s'arrête et propose `/pulse:review T3`, qui reprend à votre test.
+
+## Références de la commande
+
+!`pulse-aidd contexte commit`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.

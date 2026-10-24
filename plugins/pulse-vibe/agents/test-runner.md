@@ -28,7 +28,7 @@ Le message de délégation indique la **phase** et contient : la tâche et ses c
 
 ## Pack de pile
 
-Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer (lire sa sortie en entier, sans la couper), et appliquer ses consignes en plus des règles ci-dessous.
 
 ## Méthode
 
@@ -41,7 +41,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - **Environnement** : outil absent, base de test indisponible, variable manquante, port pris ;
    - **Instable** : résultat qui change d'une exécution à l'autre.
    Pour chaque test contesté par l'implementer : trancher (le test a raison, ou il se trompe) avec la raison tirée du scénario.
-5. **Juger la qualité des tests** (`pulse-aidd tests ecrire`, suivi des niveaux des tests lancés : `unitaire`, `integration`, `bout-en-bout` ; surtout `tests/ecrire-un-test.md` §11) : chaque critère couvert par au moins un test ; chaque scénario `@unitaire`, `@integration` ou `@bout-en-bout` de la tâche cité par le titre d'un test (`pulse-aidd scenarios` donne l'état ; un scénario sans test est un constat Haute) ; un test sans assertion ou qui ne peut pas échouer ; une pause de durée fixe ; une horloge ou un hasard réels ; un état partagé entre tests ; une vérification de l'état interne plutôt que du résultat ; des doublures sur le code du projet. Chaque constat porte une gravité (🔴 Critique, 🟠 Haute, 🟡 Moyenne, 🔵 Basse).
+5. **Juger la qualité des tests** (`pulse-aidd tests ecrire`, puis une commande par niveau des tests lancés : `unitaire`, `integration`, `bout-en-bout` ; chaque sortie lue en entier, sans la couper ; surtout `tests/ecrire-un-test.md` §11) : chaque critère couvert par au moins un test ; chaque scénario `@unitaire`, `@integration` ou `@bout-en-bout` de la tâche cité par le titre d'un test (`pulse-aidd scenarios` donne l'état ; un scénario sans test est un constat Haute) ; un test sans assertion ou qui ne peut pas échouer ; une pause de durée fixe ; une horloge ou un hasard réels ; un état partagé entre tests ; une vérification de l'état interne plutôt que du résultat ; des doublures sur le code du projet. Chaque constat porte une gravité (🔴 Critique, 🟠 Haute, 🟡 Moyenne, 🔵 Basse).
 
 ## Format de votre réponse
 

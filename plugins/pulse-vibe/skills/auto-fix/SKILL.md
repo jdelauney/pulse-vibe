@@ -15,13 +15,9 @@ Vient en complément de la relecture (`/pulse:review`) et du test par la personn
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte auto-fix` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte auto-fix`
-
-Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.
 
 Option : `$ARGUMENTS` (`--detail` : afficher chaque erreur dans le rapport final)
 
@@ -74,7 +70,7 @@ Revérification : <commande de « Commandes du projet », limitée à ces fichie
 
 Rappeler dans chaque message que chaque correction préserve la sécurité et les contrôles ; restent interdites les « corrections » qui les affaiblissent : désactiver une règle du lint ou un contrôle, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, supprimer le code qui pose problème.
 
-**Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler.
+**Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler. Le pack de pile est chargé par l'agent (sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code).
 
 ### 3. Revérifier
 
@@ -102,3 +98,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pou
 - `/pulse:auto-fix` : les contrôles du projet relèvent 12 erreurs, plusieurs assistants les corrigent en même temps, puis tout est revérifié ; le rapport donne le nombre d'erreurs corrigées.
 - `/pulse:auto-fix --detail` : le même travail, avec la liste de chaque correction dans le rapport.
 - Une clé secrète écrite dans le code : la commande vous l'explique et vous la mettez à l'abri ensemble.
+
+## Références de la commande
+
+!`pulse-aidd contexte auto-fix`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.

@@ -52,7 +52,7 @@ Sources sur `developers.google.com/search/docs/…`, sauf mention.
 
 ## 4. Les contrôles du script
 
-`pulse-aidd seo <adresse>` lit le HTML **servi**, sans exécuter JavaScript, comme un robot. Gravités Pulse (`regles-communes.md` § 6) : 🔴 la page ou le site disparaît de Google ou se présente cassé ; 🟠 forte perte de visibilité ; 🟡 présentation dégradée ; 🔵 amélioration.
+`pulse-aidd seo <adresse>` lit le HTML **servi**, sans exécuter JavaScript, comme un robot. Gravités Pulse (règles de relecture) : 🔴 la page ou le site disparaît de Google ou se présente cassé ; 🟠 forte perte de visibilité ; 🟡 présentation dégradée ; 🔵 amélioration.
 
 | Question | Contrôles |
 |---|---|

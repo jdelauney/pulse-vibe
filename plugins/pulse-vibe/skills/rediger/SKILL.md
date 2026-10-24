@@ -2,7 +2,7 @@
 description: Écrire les textes de vos pages (accueil, à propos, services…) dans la voix du site, sans tics d'écriture IA, puis les intégrer si vous le souhaitez
 argument-hint: "[page] [--humaniser]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte rediger) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd agent redacteur) Read Glob Grep Write(docs/voix.md) Edit(docs/voix.md) Write(docs/textes/**) Edit(docs/textes/**)
+allowed-tools: Bash(pulse-aidd contexte rediger) Bash(pulse-aidd textes *) Bash(pulse-aidd reference *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd agent redacteur) Read Glob Grep Write(docs/voix.md) Edit(docs/voix.md) Write(docs/textes/**) Edit(docs/textes/**)
 ---
 
 # /pulse:rediger – Écrire les textes des pages
@@ -13,15 +13,11 @@ Donner à chaque page un texte qui parle au public du site, dans la voix du proj
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte rediger` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer « Rédiger les textes des pages » (chargé dans « Contexte ») pendant toute la commande.
+Appliquer « Rédiger les textes des pages » (chargé en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte rediger`
-
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte rediger` et lire sa sortie.
 
 Demande : `$ARGUMENTS` (une page, éventuellement suivie de `--humaniser`)
 
@@ -62,7 +58,7 @@ Lancer le sous-agent `pulse:redacteur`. Lui indiquer : la fiche de la page (obje
 
 Demander (AskUserQuestion) :
 - **Garder le document** : le texte reste dans `docs/textes/<page>.md`, prêt pour plus tard.
-- **Intégrer dans la page** : appliquer les consignes de la section « Pack de pile » du contexte ci-dessus ; sans pack de pile, suivre l'organisation des pages décrite dans `docs/technical.md`. Ensuite, lancer les vérifications du projet (« Commandes du projet » de `docs/technical.md`) et montrer la page à la personne.
+- **Intégrer dans la page** : appliquer les consignes de la section « Pack de pile » du contexte (en fin de fichier) ; sans pack de pile, suivre l'organisation des pages décrite dans `docs/technical.md`. Ensuite, lancer les vérifications du projet (« Commandes du projet » de `docs/technical.md`) et montrer la page à la personne.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : une autre page avec `/pulse:rediger <page>`, sinon `/pulse:commit`.
 
@@ -71,3 +67,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : une autre page avec
 - `/pulse:rediger accueil` : quelques questions sur la page (pour qui, quel bouton, quels faits), puis un texte à relire ; ensuite, vous choisissez de le garder de côté ou de le mettre dans la page.
 - `/pulse:rediger a-propos --humaniser` : le texte actuel de la page est réécrit dans la voix du site, sans les tournures typiques des IA.
 - `/pulse:rediger services` la première fois : la voix du site (vous ou tu, ton, promesse) est fixée avec vous avant d'écrire la page.
+
+## Références de la commande
+
+!`pulse-aidd contexte rediger`
+
+Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte rediger` et lire sa sortie.

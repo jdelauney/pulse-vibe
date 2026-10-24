@@ -11,7 +11,7 @@ Rédiger les textes destinés à la personne (`note.md`, réponse) en français,
 ## Règles absolues
 
 - Écrire **uniquement** dans le dossier de sortie reçu ; laisser intacts tous les autres fichiers, dont `docs/` et le code du projet.
-- Utiliser Bash seulement pour `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd maquettes verifier …` et `pulse-aidd contraste …`.
+- Utiliser Bash seulement pour `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd pile reference …`, `pulse-aidd pile recette …`, `pulse-aidd maquettes verifier …` et `pulse-aidd contraste …`.
 - Inventer des contenus fictifs **réalistes**, tirés du glossaire, du PRD, du brief, des user stories et de la spec reçus, à la place des données réelles et des textes de remplissage génériques. Prendre chaque nom, écran et contenu dans ces documents.
 - Écarter tous les anti-patterns 🔴 de `ui/anti-patterns.md`.
 - Suivre la thèse reçue, même si une autre semblerait meilleure : les autres variantes couvrent les autres pistes.
@@ -32,7 +32,7 @@ Si le type, la thèse ou le dossier de sortie manque, s'arrêter et le dire.
 
 ## Pack de pile
 
-Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte ui` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte ui` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous. Ses consignes « Pour écrire du code » ne s'appliquent pas aux maquettes (pages HTML autonomes) : la fiche de la pile ne se charge pas.
 
 ## Méthode
 

@@ -13,15 +13,11 @@ Quand Pulse n'arrive pas à débloquer une situation, préparer une **demande d'
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte get-help` et lire sa sortie en entier) pendant toute la commande.
 
 Cette commande écrit seulement la fiche `docs/aide/demande-<AAAA-MM-JJ>-<sujet>.md`. Elle ne publie rien : c'est la personne qui choisit où l'envoyer.
 
 ## Contexte
-
-!`pulse-aidd contexte get-help`
-
-Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.
 
 Description reçue (facultative) : `$ARGUMENTS`
 
@@ -70,3 +66,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : une fois la répons
 
 - `/pulse:get-help "la page de connexion reste blanche"` : quelques questions si besoin, puis une fiche prête à envoyer, sans vos mots de passe ni vos clés, et le choix de l'endroit où demander.
 - `/pulse:get-help` sans argument : le dernier blocage de la conversation sert de point de départ.
+
+## Références de la commande
+
+!`pulse-aidd contexte get-help`
+
+Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.

@@ -13,13 +13,9 @@ Donner à la personne le tableau de bord que Google lui tend, en trois temps : *
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte search-console` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte search-console`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte (« Search Console : relier, lire, suivre », modèle du rapport, et les consignes du pack de pile s'il y en a un). Si ce contexte est absent, lancer `pulse-aidd contexte search-console`, puis `pulse-aidd reference search-console/search-console.md`, et lire leur sortie.
 
 Action demandée (facultative) : `$ARGUMENTS`
 
@@ -55,7 +51,7 @@ La personne ouvre Search Console (search.google.com/search-console) avec **son**
 
 1. La personne copie **le contenu** de la balise que montre Search Console et le colle ici. Le dire : ce code est public, il s'écrit dans le code du site.
 2. L'écrire à l'endroit indiqué par le pack de pile ; sans pack, dans le `<head>` de la page d'accueil, d'après la documentation officielle de la technologie retenue.
-3. Enregistrer et mettre en ligne : `pulse-aidd etape commit --sans-communes` (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
+3. Enregistrer et mettre en ligne : `pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier) (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
 4. Seulement alors, la personne clique « Vérifier ». Expliquer que la balise reste en place pour toujours (sinon la propriété se perd).
 
 #### 1c. Enregistrement DNS (domaine)
@@ -132,3 +128,9 @@ Terminer avec le bloc de fin de commande ; « Prochaine étape » donne la date 
 - `/pulse:search-console relier` : une étape à la fois, vous ajoutez votre site dans Search Console avec votre compte Google, puis vous déclarez le plan du site.
 - `/pulse:search-console lire` : un rapport court dans `docs/referencement/`, avec les 3 actions prioritaires expliquées simplement.
 - `/pulse:search-console` sans argument, 28 jours après le dernier rapport : la comparaison avec la période d'avant, reliée aux changements faits sur le site.
+
+## Références de la commande
+
+!`pulse-aidd contexte search-console`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte (« Search Console : relier, lire, suivre », modèle du rapport, et les consignes du pack de pile s'il y en a un). Si ce contexte est absent, lancer `pulse-aidd contexte search-console`, puis `pulse-aidd reference search-console/search-console.md`, et lire leur sortie.

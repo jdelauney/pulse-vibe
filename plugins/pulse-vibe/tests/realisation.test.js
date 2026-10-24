@@ -101,6 +101,21 @@ test("lire et rappel : où on en est", () => {
   assert.strictEqual(lire(d).questions, 1);
 });
 
+test("rappel : redonne la commande à recharger (une compaction ne garde que le début du skill)", () => {
+  const { rappel } = require(SCRIPT);
+  for (const commande of ["spirc", "implement"]) {
+    const d = projet();
+    lancer(d, "debut", "US-003", "--commande", commande, "--rythme", "rapide");
+    const texte = rappel(d);
+    assert.match(texte, new RegExp(`Rechargez vos instructions : lancez \`pulse-aidd etape ${commande}\``));
+    // La sortie dépasse 30 000 caractères : Claude Code l'enregistre dans un fichier, à lire en entier.
+    assert.match(texte, /lisez toute la sortie[^\n]*fichier enregistré/);
+  }
+  const d = projet();
+  lancer(d, "debut", "US-003", "--rythme", "rapide");
+  assert.ok(!/Rechargez/.test(rappel(d)), "sans commande connue, pas de rechargement");
+});
+
 test("--rappel affiche le rappel", () => {
   const d = projet();
   assert.strictEqual(lancer(d, "--rappel").stdout, "");

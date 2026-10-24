@@ -1,6 +1,6 @@
 # Tests automatiques : tests d'abord
 
-Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-t`, ou réponse « Tests d'abord » à la question de démarrage) et par `/pulse:test`. La méthode d'écriture des tests est dans `references/tests/` (`pulse-aidd tests`, par morceaux).
+Utilisé par `/pulse:implement` et `/pulse:spirc` (option `-t`, ou réponse « Tests d'abord » à la question de démarrage) et par `/pulse:test`. La méthode d'écriture des tests est dans `references/tests/` (`pulse-aidd tests <morceaux>`).
 
 À expliquer en deux phrases, la première fois : « Avant d'écrire le code, un assistant écrit des tests : de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. On les voit d'abord échouer (le code n'existe pas encore), puis le code les fait passer : à chaque changement futur, ils préviendront si quelque chose casse. »
 
@@ -66,7 +66,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 
 ### Rouge : écrire les tests
 
-1. Déléguer à **`pulse:test-writer`**, mode « avant le code » : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, sa ligne `Tests`, les **scénarios Gherkin** de la spec qu'elle couvre (recopiés), les règles métier de l'US, les « Informations manipulées » utiles de la spec et les « Données » de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md` (recopiées), les mots du glossaire utiles, et la consigne de charger `pulse-aidd tests ecrire gherkin tdd` et les niveaux de la ligne `Tests`.
+1. Déléguer à **`pulse:test-writer`**, mode « avant le code » : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, sa ligne `Tests`, les **scénarios Gherkin** de la spec qu'elle couvre (recopiés), les règles métier de l'US, les « Informations manipulées » utiles de la spec et les « Données » de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md` (recopiées), les mots du glossaire utiles, et la consigne de charger `pulse-aidd tests ecrire gherkin`, puis `tdd` et chaque niveau de la ligne `Tests`, une commande chacun.
 2. Déléguer à **`pulse:test-runner`**, phase « rouge attendu » : les fichiers de test écrits, la commande « tester », les critères de la tâche.
    - **🔴 Rouge confirmé** (chaque test échoue parce que le comportement manque) : continuer.
    - **⚠️ Rouge pour une mauvaise raison** (erreur dans le test lui-même) ou test qui passe déjà : renvoyer au test-writer la liste du test-runner, puis relancer le test-runner. Deux cycles au plus.
@@ -92,7 +92,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 - **Après toute correction ultérieure de la tâche** (constats de relecture, test manuel non concluant) : relancer le test-runner en phase « vert attendu » avec la relecture de contrôle.
 - **Deux cycles de correction au plus**. Un échec qui persiste arrête la tâche (`[~]`) et s'explique simplement (tapez `/pulse:get-help` pour préparer une demande d'aide).
 - Un test contesté qui révèle un **écart de besoin** (le scénario ou le critère semble faux) se tranche avec la personne, quel que soit le mode. Si elle change le contrat : mettre à jour le scénario dans la spec, le critère dans l'US et la tâche dans le plan, puis reprendre au rouge.
-- Les constats du test-runner sur la **qualité des tests** suivent « Les constats de relecture » (règles communes § 6).
+- Les constats du test-runner sur la **qualité des tests** suivent « Les constats de relecture » (règles de relecture).
 
 ## 5. Garder la trace
 

@@ -1,26 +1,15 @@
 # Stratégie de tests
 
-Un test sert à **prouver qu'un comportement attendu par le métier fonctionne**, et à prévenir dès qu'il cesse de fonctionner. Il raconte une histoire métier et reste valable tant que cette histoire ne change pas, même si le code est réécrit.
+Un test sert à **prouver qu'un comportement attendu par le métier fonctionne**, et à prévenir dès qu'il cesse de fonctionner, même si le code est réécrit.
 
 ## 1. La pyramide
 
-```
-            /\         Bout en bout (peu)
-           /  \        parcours critiques, vérification après déploiement
-          /----\
-         /      \      Intégration (quelques-uns)
-        /        \     modules réels ensemble, base, API, fichiers
-       /----------\
-      /            \   Unitaires (beaucoup)
-     /              \  règles métier, calculs, transformations
-    /----------------\
-    Contrôles statiques (toujours) : formatage, règles d'écriture, types
-```
+Du bas vers le haut :
 
-- **Beaucoup de tests unitaires** : rapides, précis, ils disent exactement quelle règle est cassée.
-- **Quelques tests d'intégration** : ils prouvent que les morceaux s'assemblent (requête réelle, écriture en base, appel d'API).
-- **Peu de tests de bout en bout** : ils donnent la plus grande confiance mais coûtent le plus cher à écrire, à lancer et à maintenir ; on les réserve aux parcours dont l'échec bloquerait l'usage.
-- **Les contrôles statiques** passent avant tout test : les commandes sont dans « Commandes du projet » de `docs/technical.md`.
+- **Contrôles statiques, toujours, avant tout test** : formatage, règles d'écriture, types ; les commandes sont dans « Commandes du projet » de `docs/technical.md`.
+- **Beaucoup de tests unitaires** (règles métier, calculs, transformations) : rapides, précis, ils disent exactement quelle règle est cassée.
+- **Quelques tests d'intégration** (modules réels ensemble, base, API, fichiers) : ils prouvent que les morceaux s'assemblent (requête réelle, écriture en base, appel d'API).
+- **Peu de tests de bout en bout** (parcours critiques, vérification après déploiement) : ils donnent la plus grande confiance mais coûtent le plus cher à écrire, à lancer et à maintenir ; on les réserve aux parcours dont l'échec bloquerait l'usage.
 
 ## 2. Choisir le niveau
 
@@ -29,8 +18,8 @@ Un comportement se teste **au niveau le plus bas qui suffit à le prouver**. Une
 | | Unitaire | Intégration | Bout en bout |
 |---|---|---|---|
 | **Prouve** | Une règle, un calcul, une transformation | Que plusieurs modules réels fonctionnent ensemble | Qu'un parcours complet marche comme pour la personne |
-| **Durée visée** | Millisecondes | Secondes | Minutes pour l'ensemble |
 | **Frontières** | Toutes passées en paramètre ou doublées | Celles du projet réelles (base de test, fichiers temporaires), services tiers doublés | Application complète, base de test |
+| **Durée visée** | Millisecondes par test | Secondes par test | Minutes pour l'ensemble |
 | **En cas d'échec** | Dit quelle règle est cassée | Dit quel assemblage est cassé | Dit quel parcours est cassé ; il faut souvent descendre d'un niveau pour trouver la cause |
 | **Référence** | `tests/unitaires.md` | `tests/integration.md` | `tests/bout-en-bout.md` |
 
@@ -50,7 +39,7 @@ Le découpage suit `qualite/clean-code.md` §5 et `qualite/organisation.md` §5 
 
 ## 3. Couverture
 
-La couverture mesure les lignes exécutées par les tests. C'est **un indicateur pour trouver les zones oubliées**, pas un objectif : une ligne exécutée sans assertion utile n'est pas testée.
+La couverture mesure les lignes exécutées par les tests. C'est **un indicateur pour trouver les zones oubliées**, plutôt qu'un objectif : une ligne exécutée sans assertion utile n'est pas testée.
 
 | Zone | Repère |
 |---|---|

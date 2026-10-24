@@ -18,7 +18,7 @@ Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une co
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte guide` et lire sa sortie en entier) pendant toute la commande.
 
 ### Principes
 
@@ -28,10 +28,6 @@ Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») penda
 - **La personne lance elle-même chaque commande** : le guide se copie-colle.
 
 ## Contexte
-
-!`pulse-aidd contexte guide`
-
-Si ce contexte est absent, lancer `pulse-aidd contexte guide` et lire sa sortie.
 
 Argument : `$ARGUMENTS`
 
@@ -56,3 +52,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiqu�
 
 - `/pulse:guide` : le guide est mis à jour à partir du plan, puis vous voyez où en est le projet et la prochaine commande à copier.
 - `/pulse:guide expliquer` : la page du plan en cours, parcourue avec vous une tâche à la fois, avec le rôle de chaque commande.
+
+## Références de la commande
+
+!`pulse-aidd contexte guide`
+
+Si ce contexte est absent, lancer `pulse-aidd contexte guide` et lire sa sortie.

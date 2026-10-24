@@ -14,17 +14,13 @@ allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd etape fix --sans-c
 
 Phrase à dire : « Les tests sont de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. Un assistant les lance ou les écrit ; un autre, qui n'a pas écrit le code, juge les résultats. »
 
-Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord », chargée dans « Contexte »).
+Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests automatiques : tests d'abord », chargée en fin de fichier, dans « Références de la commande »).
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte test` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte test`
-
-Les références citées dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
 
 Arguments reçus : `$ARGUMENTS`
 
@@ -56,7 +52,7 @@ La conversation principale orchestre : elle retrouve le contrat, présente les r
    - Échec **dû au code** : un par un, en appliquant l'étape **fix** (`pulse-aidd etape fix --sans-communes`, étapes 1 à 4 : cause d'abord, correction minimale, preuve), avec le test et le message d'échec.
    - Échec **dû au test** ou test **instable** : `pulse:test-writer`, mode « corriger », avec la liste du test-runner ; puis relancer le test-runner sur ces tests. Deux cycles au plus.
    - Échec **dû à l'environnement** : guider la personne pas à pas.
-4. Les constats de qualité des tests suivent « Les constats de relecture » (règles communes § 6).
+4. Les constats de qualité des tests suivent « Les constats de relecture » (règles de relecture).
 
 ### Écrire
 
@@ -83,3 +79,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:fix "<éche
 
 - `/pulse:test` : tous les tests sont lancés ; vous voyez combien réussissent, et chaque échec expliqué en une ligne avec la proposition de le corriger.
 - `/pulse:test ecrire US-003` : des tests écrits à partir des scénarios de la spec, lancés aussitôt ; un défaut du code trouvé vous est expliqué simplement.
+
+## Références de la commande
+
+!`pulse-aidd contexte test`
+
+Les références citées dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.

@@ -13,13 +13,9 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées dans « Contexte ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte review` et lire sa sortie en entier) pendant toute la commande.
 
 ## Contexte
-
-!`pulse-aidd contexte review`
-
-Les références et modèles cités dans cette commande figurent dans ce contexte. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
 
 Tâche demandée (facultative) : `$ARGUMENTS`
 
@@ -67,9 +63,9 @@ Noter dans la section « Test par la personne » du rapport la date, le résulta
 
 ### 6. Corriger
 
-Traiter les constats selon « Les constats de relecture » des règles communes (§ 6) : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
+Traiter les constats selon « Les constats de relecture » des règles de relecture : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
 
-Avec un pack de pile, avant la première correction, lancer `pulse-aidd pile contexte implement` si ces consignes ne sont pas déjà dans la conversation (elles y sont dans les boucles de `/pulse:implement` et `/pulse:spirc`), et coder les corrections selon elles.
+Avec un pack de pile, avant la première correction faite par cette conversation elle-même (un agent qui corrige charge le pack lui-même), lancer `pulse-aidd pile contexte implement`, lu en entier, et coder les corrections selon elles.
 
 Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche ») ; après un test de la personne ❌, remettre aussi la ligne « Résultat » de « Test par la personne » à la valeur du modèle, comme le décrit ce § 4. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer de taper `/pulse:get-help`.
 
@@ -84,3 +80,9 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
 - `/pulse:review T3` : deux assistants relisent et essaient la tâche 3 ; vous recevez le verdict, les points importants en langage simple, puis les étapes de votre test.
 - `/pulse:review US-003` : chaque tâche en cours de l'US est examinée, puis vous la testez une par une.
 - `/pulse:review` sans argument : la tâche en cours est reprise ; s'il y en a plusieurs, la question « laquelle relire ? ».
+
+## Références de la commande
+
+!`pulse-aidd contexte review`
+
+Les références et modèles cités dans cette commande figurent dans ce contexte. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
