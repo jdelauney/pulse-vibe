@@ -29,11 +29,11 @@ Le message de délégation indique le **mode** et contient : la tâche (identifi
 
 ## Pack de pile
 
-Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous.
+Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte test` avant de commencer (lire sa sortie en entier, sans la couper), et appliquer ses consignes en plus des règles ci-dessous.
 
 ## Méthode
 
-1. **Charger la méthode utile**, en une commande, et l'appliquer : `pulse-aidd tests ecrire gherkin`, suivi des niveaux des scénarios reçus (`unitaire`, `integration`, `bout-en-bout`, les étiquettes sans `@`), et de `tdd` en mode « avant le code » (ex. `pulse-aidd tests ecrire gherkin unitaire tdd`). Pour choisir un niveau que ni le scénario ni le plan ne donnent : ajouter `strategie`. En cas de conflit, les conventions de test déjà présentes dans le projet priment.
+1. **Charger la méthode utile** et l'appliquer, chaque sortie lue en entier, sans la couper : `pulse-aidd tests ecrire gherkin`, puis une commande par niveau des scénarios reçus (`pulse-aidd tests unitaire`, `integration`, `bout-en-bout`, les étiquettes sans `@`), et `pulse-aidd tests tdd` en mode « avant le code ». Pour choisir un niveau que ni le scénario ni le plan ne donnent : `pulse-aidd tests strategie`. En cas de conflit, les conventions de test déjà présentes dans le projet priment.
 2. **Lister les exemples** : un test par `Exemple` (et par ligne de `Exemples:`) des scénarios reçus ; compléter, pour chaque règle, les cas Z.O.M.B.I.E.S utiles qui manquent (limites, refus), en les signalant comme ajouts. Un critère sans scénario reçoit au moins un exemple.
 3. **Choisir le niveau** de chaque test : l'étiquette du scénario (`@unitaire`, `@integration`, `@bout-en-bout`) ou la ligne `Tests` du plan, sinon le niveau le plus bas qui suffit (`tests/strategie.md` §2). Les exemples `@manuel` restent au test manuel.
 4. **Définir l'interface attendue** (mode « avant le code ») : pour chaque module à tester, le nom de la fonction ou de la route, ses paramètres et son résultat, avec les mots du glossaire et à l'emplacement prévu par « Organisation des fichiers ». Réutiliser les noms déjà présents dans la spec, le plan ou le code existant. Les dépendances (horloge, stockage, envoi) entrent en paramètre (`qualite/clean-code.md` §5).
