@@ -65,7 +65,7 @@ Noter dans la section « Test par la personne » du rapport la date, le résulta
 
 Traiter les constats selon « Les constats de relecture » des règles de relecture : Critique, Haute et Moyenne à corriger, Basse confrontés au code, décision notée dans « Suite donnée aux constats ». Un test manuel en échec compte comme un constat Critique.
 
-Avec un pack de pile, avant la première correction, lancer `pulse-aidd pile contexte implement`, lu en entier, et coder les corrections selon elles.
+Avec un pack de pile, avant la première correction faite par cette conversation elle-même (un agent qui corrige charge le pack lui-même), lancer `pulse-aidd pile contexte implement`, lu en entier, et coder les corrections selon elles.
 
 Pour chaque correction : la faire, puis l'expliquer en une ligne. Ensuite lancer la relecture de contrôle (§ 4 de la référence « Examiner une tâche ») ; après un test de la personne ❌, remettre aussi la ligne « Résultat » de « Test par la personne » à la valeur du modèle, comme le décrit ce § 4. Limiter à **deux cycles** de correction maximum : si un point bloquant persiste, l'expliquer simplement, le noter dans la ligne « Blocage » du rapport (« persiste après 2 cycles : /pulse:get-help ») et proposer de taper `/pulse:get-help`.
 

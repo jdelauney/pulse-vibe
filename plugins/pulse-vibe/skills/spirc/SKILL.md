@@ -187,7 +187,7 @@ Annoncer l'avancement en une ligne : `T3 ✅ terminée · US-XXX : 3/6`.
 
 ✋ **Après chaque tâche** (sauf `-a`) : « Continuer avec T4 – <titre> ? » → « Continuer » / « Faire une pause ».
 
-**Garde-fou anti-secrets déclenché** : expliquer, corriger, puis reprendre l'étape en cours.
+**Garde-fou anti-secrets déclenché** : expliquer, corriger (avec un pack de pile, après `pulse-aidd pile contexte implement`), puis reprendre l'étape en cours.
 **Conversation longue** (hors mode autonome) : après 3 tâches, rappeler qu'on peut faire `/clear` puis relancer `/pulse:spirc <US-XXX>` : la commande reprend automatiquement grâce aux statuts du plan, aux rapports de revue et à la mémoire.
 **Reprise** (après `/clear`, un résumé automatique ou la limite d'utilisation) : relire l'état dans le plan, `pulse-aidd revue <Tn>` et `pulse-aidd realisation` ; ces fichiers font foi, le souvenir de la conversation peut être incomplet.
 
