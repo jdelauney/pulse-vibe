@@ -20,8 +20,10 @@ const COEUR = path.join(RACINE, "..", "pulse-vibe", "bin", "pulse-aidd");
 const PLAFONDS_PACK = { implement: 21500, fix: 21500, review: 20000 }; // review : mesure 18 629 (pulse 0.51 : sans l'architecture, sous le seuil de lecture de 30 000 ; avant, 31 229)
 // Commandes dont le pack n'apporte pas la fiche (elle se lit à la demande : pulse-aidd pile reference fiche.md).
 // tech : mesure 12 630 (pulse 0.51 : sans la fiche, l'architecture ni le thème ; avant, 47 523) ; security : mesure 5 890 (avant, 34 899) ;
-// plan : mesure 16 718 (pulse 0.51 : l'architecture reste, la fiche part ; avant, 33 280) ; refine : mesure 4 766 (ni fiche ni architecture, à la demande ; avant, 33 280).
-const PLAFONDS_PACK_SANS_FICHE = { tech: { plafond: 13500 }, security: { plafond: 6500 }, plan: { plafond: 18000, architecture: true }, refine: { plafond: 5500 } };
+// plan : mesure 16 718 (pulse 0.51 : l'architecture reste, la fiche part ; avant, 33 280) ; refine : mesure 4 766 (ni fiche ni architecture, à la demande ; avant, 33 280) ;
+// seo : mesure 3 379 (pulse 0.51 : les consignes pour écrire du code, ni la fiche, ni l'architecture, ni la liste des recettes ; avant, 33 885) ; perf : mesure 6 737 (même cause ; avant, 35 578) ;
+// ui : mesure 3 548 (même cause, et la section « Pour les maquettes » du thème passe dans ui.md ; avant, 8 195) ; rediger : mesure 1 926 (les consignes pour écrire du code en plus ; avant, 1 601).
+const PLAFONDS_PACK_SANS_FICHE = { tech: { plafond: 13500 }, security: { plafond: 6500 }, plan: { plafond: 18000, architecture: true }, refine: { plafond: 5500 }, seo: { plafond: 4000 }, perf: { plafond: 7500 }, ui: { plafond: 4000 }, rediger: { plafond: 2500 } };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
 // pulse 0.50 : spirc et implement laissent le pack à leurs agents, `contexte` ne le contient plus ; plafonds = mesure × 1,05 : implement 44 534 (avant 65 242), spirc 33 412 (avant 51 627).
 const PLAFONDS_AVEC_PACK = { implement: 47000, spirc: 35500 }; // implement : avant, mesure 65 242 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -103,19 +105,19 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
   express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 53000, // mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
-  perf: 85500, // mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
+  perf: 56500, // mesure 53 788 (pulse 0.51 : seo, perf, ui et rediger chargent les consignes pour écrire du code à la place de la fiche et de l'architecture) ; avant, mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
   plan: 83500, // mesure 79 197 (pulse 0.51 : le pack de plan sans la fiche du code) ; avant, mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
-  rediger: 26500, // mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
+  rediger: 27000, // mesure 25 615 (pulse 0.51 : les consignes pour écrire du code en plus, 350 caractères ; plafond relevé avec la mesure) ; avant, mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
   refine: 57500, // mesure 54 577 (pulse 0.51 : le pack de refine sans la fiche ni l'architecture) ; avant, mesure 81 487 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
   review: 39500, // mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 51500, // mesure 48 616 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 057
   secrets: 62500, // mesure 59 103 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 67 057
   security: 46500, // mesure 44 263 (pulse 0.51 : la fiche et l'architecture à la demande, `pile contexte security` passe sous le seuil de lecture de 30 000) ; avant, mesure 72 074 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
-  seo: 89500, // mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
+  seo: 59000, // mesure 55 761 (pulse 0.51 : consignes pour écrire du code à la place de la fiche, de l'architecture et de la liste des recettes) ; avant, mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
   spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
   tech: 84500, // mesure 80 113 (pulse 0.51 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 52500, // mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
-  ui: 88000, // mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
+  ui: 83500, // mesure 79 522 (pulse 0.51 : consignes pour écrire du code à la place du thème complet, section « Pour les maquettes » gardée) ; avant, mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
 };
 
 test("chaque commande enrichie par le pack a un plafond avec pack", { skip: !fs.existsSync(COEUR) }, () => {

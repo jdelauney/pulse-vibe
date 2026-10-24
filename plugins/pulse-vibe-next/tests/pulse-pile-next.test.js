@@ -41,7 +41,7 @@ test("info : les quatre lignes du contrat, avec la version du manifeste", () => 
 test("contexte : chaque commande concernée reçoit ses consignes, les autres rien, toujours le code 0", () => {
   const attendus = {
     tech: ["Pour /pulse:tech", "Valeurs de docs/technical.md"],
-    ui: ["Pour /pulse:ui", "Le thème"],
+    ui: ["Pour /pulse:ui", "Pour écrire du code"],
     express: ["Pour /pulse:express"],
     spec: ["Pour /pulse:spec", "Recettes disponibles"],
     plan: ["Pour /pulse:plan", "Architecture du code", "Recettes disponibles"],
@@ -54,10 +54,10 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     deploy: ["Pour mettre en ligne"],
     cicd: ["Pour mettre en ligne"],
     secrets: ["Pour /pulse:secrets"],
-    seo: ["Pour /pulse:seo", "Fiche de la pile", "Recettes disponibles"],
-    perf: ["Pour /pulse:perf", "Fiche de la pile"],
+    seo: ["Pour /pulse:seo", "Pour écrire du code"],
+    perf: ["Pour /pulse:perf", "Pour écrire du code"],
     "search-console": ["Pour Search Console"],
-    rediger: ["Pour /pulse:rediger"],
+    rediger: ["Pour /pulse:rediger", "Pour écrire du code"],
   };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
@@ -224,6 +224,22 @@ test("l'architecture du code accompagne plan ; à la demande pour tech, relire, 
     assert.doesNotMatch(r.stdout, /----- Architecture du code/, commande);
   }
   for (const commande of ["implement", "fix"]) assert.match(lancer("contexte", commande).stdout, /pulse-aidd pile reference architecture.md/, commande);
+});
+
+test("seo, perf, ui, rediger : les consignes pour écrire du code à la place de la fiche et de l'architecture", () => {
+  const code = lire(REF, "contexte", "code.md").trim();
+  for (const commande of ["seo", "perf", "ui", "rediger"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, commande);
+    assert.doesNotMatch(r.stdout, /----- (Fiche de la pile|Architecture du code)/, commande);
+    assert.ok(r.stdout.includes(code), `${commande} : texte de code.md`);
+  }
+  assert.doesNotMatch(lancer("contexte", "seo").stdout, /----- Recettes disponibles/);
+  const ui = lancer("contexte", "ui").stdout;
+  assert.doesNotMatch(ui, /----- Le thème/);
+  assert.match(ui, /correspond à `--primary`/);
+  assert.match(ui, /pulse-aidd pile reference theme.md/);
+  for (const commande of ["seo", "rediger"]) assert.match(lancer("contexte", commande).stdout, /pulse-aidd pile reference fiche.md`, règle (41|47)/, commande);
 });
 
 test("contexte review : sous le seuil de lecture, avec la fiche et sans l'architecture", () => {

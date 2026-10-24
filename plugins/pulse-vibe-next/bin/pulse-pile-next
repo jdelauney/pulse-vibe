@@ -56,11 +56,6 @@ etapes_recette() { # etapes_recette <dossier> : liste « - etape <id> : <titre> 
   sed -n 's/^- Étape \([^ ]*\) – \(.*\) : `pulse-aidd pile recette .*`$/- etape \1 : \2/p' "$1/index.md"
 }
 
-fiche() {
-  afficher "Architecture du code : où va chaque fichier, sens des imports, modèles" "$REF/architecture.md"
-  afficher "Fiche de la pile : règles pour un code juste du premier coup" "$REF/fiche.md"
-}
-
 liste_recettes() {
   printf '\n----- Recettes disponibles (pulse-aidd pile recette <nom>) -----\n\n'
   recettes
@@ -77,7 +72,7 @@ contexte() {
       afficher "Valeurs de docs/technical.md" "$REF/technical.md" ;;
     ui)
       afficher "Pour /pulse:ui" "$REF/contexte/ui.md"
-      afficher "Le thème : de docs/design.md à shadcn" "$REF/theme.md" ;;
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     express)
       afficher "Pour /pulse:express" "$REF/contexte/express.md" ;;
     spec)
@@ -108,15 +103,15 @@ contexte() {
       afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md" ;;
     seo)
       afficher "Pour /pulse:seo" "$REF/contexte/seo.md"
-      fiche
-      liste_recettes ;;
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     perf)
       afficher "Pour /pulse:perf" "$REF/contexte/perf.md"
-      fiche ;;
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     search-console)
       afficher "Pour Search Console" "$REF/contexte/search-console.md" ;;
     rediger)
-      afficher "Pour /pulse:rediger" "$REF/contexte/rediger.md" ;;
+      afficher "Pour /pulse:rediger" "$REF/contexte/rediger.md"
+      afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
     *) ;;
   esac
 }
