@@ -101,6 +101,9 @@ test("usage : numéro invalide, aucun fichier, chemin hors du dossier, action in
     ["mettre-de-cote", "T4", "--", "src/../../x"],
     ["mettre-de-cote", "T4", "--", "/etc/passwd"],
     ["mettre-de-cote", "T4", "--", "C:/x.js"],
+    ["mettre-de-cote", "T4", "--", "..\\x"],
+    ["mettre-de-cote", "T4", "--", "\\\\srv\\x"],
+    ["mettre-de-cote", "T4", "--", "C:\\x"],
     ["remettre", "../x"],
     ["remettre"],
     ["bidule"],
@@ -199,5 +202,48 @@ test("liste : une ligne par entrée de tâche en attente, « aucune » sinon", (
   assert.strictEqual(l.length, 2, r.stdout);
   assert.match(l[0], /^T5 · stash@\{0\} · 1 fichier · \d{4}-\d{2}-\d{2}$/);
   assert.match(l[1], /^T4 · stash@\{1\} · 2 fichiers · \d{4}-\d{2}-\d{2}$/);
+  nettoyer(d);
+});
+
+test("mettre-de-cote : un chemin avec des barres inverses est accepté et ramené à « / »", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a2\n");
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "src\\a.js");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "fichier"), ["src/a.js"]);
+  nettoyer(d);
+});
+
+test("remettre : conflit sur un fichier suivi (autre tâche validée entre-temps) : arbre remis à l'état d'avant, fichiers listés, entrée gardée", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js").status, 0);
+  ecrire(d, "src/a.js", "a-T5\n"); // T5 change le même fichier et l'enregistre : l'arbre est propre
+  git(d, "commit", "-q", "-am", "T5");
+  ecrire(d, "src/autre.js", "autre\n");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["conflit"]);
+  assert.deepStrictEqual(lignes(r, "fichier-en-conflit"), ["src/a.js"]);
+  assert.match(lignes(r, "message")[0], /CONFLICT/);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T5\n");
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "ls-files", "-u").stdout, "");
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("remettre : travail remis mais entrée impossible à retirer : remis-sans-nettoyage, code 0, entrée signalée", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a2\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js").status, 0);
+  fs.writeFileSync(path.join(d, ".git", "refs", "stash.lock"), ""); // le retrait de l'entrée échouera
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["remis-sans-nettoyage"]);
+  assert.deepStrictEqual(lignes(r, "mise-de-cote"), ["stash@{0}"]);
+  assert.match(lignes(r, "a-retirer")[0], /stash@\{0\}/);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a2\n");
   nettoyer(d);
 });

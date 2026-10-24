@@ -6,8 +6,10 @@
 //   pulse-aidd attente liste                               les entrées en attente : « T4 · stash@{1} · 3 fichiers · 2026-10-24 », ou « aucune »
 //
 // Sortie en lignes « clé: valeur ». Codes : 0 fait · 1 usage ou argument invalide · 2 refus préalable (rien n'a changé) ·
-// 3 échec Git (l'entrée mise de côté est gardée). Chemins refusés : avec « .. », absolus, ou avec une lettre de lecteur.
-// Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), lectures (status, stash list, stash show, rev-parse).
+// 3 échec Git (l'entrée mise de côté est gardée ; après une remise en conflit, l'arbre est ramené à l'état d'avant). Chemins refusés : avec « .. », absolus, ou avec une lettre de lecteur.
+// Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), reset --merge (seulement juste après
+// notre propre stash apply en échec, pour défaire ses marques de conflit), lectures (status, stash list, stash show, rev-parse).
+// Les noms de fichiers d'une entrée se lisent avec `stash show --include-untracked`, qui demande Git 2.32 ou plus.
 "use strict";
 
 const { spawnSync } = require("child_process");
@@ -29,19 +31,23 @@ function cheminSur(brut) {
   return brut.replace(/\\/g, "/").replace(/^(\.\/)+/, "").replace(/\/+$/, "") || null;
 }
 
-/** Les fichiers modifiés, ajoutés ou non suivis (un par ligne, y compris dans un dossier tout neuf). */
-function fichiersChanges(racine) {
+/** Les fichiers modifiés, ajoutés ou non suivis, avec leur état à deux lettres (un par ligne, y compris dans un dossier tout neuf). */
+function etatArbre(racine) {
   const r = git(racine, ["status", "--porcelain", "-z", "--untracked-files=all"]);
   const morceaux = r.sortie.split("\0");
   const fichiers = [];
   for (let i = 0; i < morceaux.length; i++) {
     const m = morceaux[i];
     if (m.length < 4) continue;
-    fichiers.push(m.slice(3));
+    fichiers.push({ xy: m.slice(0, 2), chemin: m.slice(3) });
     if (/[RC]/.test(m.slice(0, 2))) i++; // renommage : le morceau suivant est l'ancien nom
   }
   return fichiers;
 }
+
+const fichiersChanges = (racine) => etatArbre(racine).map((e) => e.chemin);
+const instantane = (racine) => etatArbre(racine).map((e) => e.xy + e.chemin).sort().join("\n");
+const EN_CONFLIT = /^(?:U.|.U|AA|DD)$/;
 
 const sujetDe = (tn) => `pulse: ${tn} en attente`;
 
@@ -87,7 +93,8 @@ function mettreDeCote(racine, tn, demandes) {
   const fichiers = [...retenus];
   const r = git(racine, ["stash", "push", "-u", "-m", sujetDe(tn), "--", ...fichiers]);
   const entree = entrees(racine).find((e) => e.tache === tn);
-  const restes = fichiers.filter((f) => fichiersChanges(racine).includes(f));
+  const apres = fichiersChanges(racine);
+  const restes = fichiers.filter((f) => apres.includes(f));
   if (!r.ok || !entree || restes.length) {
     sortir(3, ["etat: echec", ...restes.map((f) => `fichier-reste: ${f}`), `message: ${r.erreur || "la mise de côté n'est pas complète"}`]);
   }
@@ -103,10 +110,20 @@ function remettre(racine, tn) {
   const communs = fichiers.filter((f) => changes.some((c) => c === f || f.startsWith(c.replace(/\/$/, "") + "/")));
   if (communs.length) sortir(2, ["etat: fichiers-communs", ...communs.map((f) => `fichier: ${f}`)]);
 
+  const avant = instantane(racine);
   const a = git(racine, ["stash", "apply", entree.ref]);
-  if (!a.ok) sortir(3, ["etat: conflit", `mise-de-cote: ${entree.ref}`, `message: ${a.erreur.split("\n").join(" ")}`]);
+  if (!a.ok) {
+    const message = `message: ${[a.sortie, a.erreur].join(" ").replace(/\s+/g, " ").trim()}`;
+    const enConflit = etatArbre(racine).filter((e) => EN_CONFLIT.test(e.xy)).map((e) => `fichier-en-conflit: ${e.chemin}`);
+    git(racine, ["reset", "--merge"]); // seulement ici : défaire les marques de notre propre remise en échec
+    if (instantane(racine) !== avant) sortir(3, ["etat: conflit-non-nettoye", `mise-de-cote: ${entree.ref}`, ...enConflit, message]);
+    sortir(3, ["etat: conflit", `mise-de-cote: ${entree.ref}`, ...enConflit, message]);
+  }
   const d = git(racine, ["stash", "drop", entree.ref]);
-  if (!d.ok) sortir(3, ["etat: conflit", `mise-de-cote: ${entree.ref}`, `message: ${d.erreur}`]);
+  if (!d.ok) {
+    // Le travail est en place : l'entrée restante n'est qu'un reste à retirer plus tard (code 0).
+    sortir(0, ["etat: remis-sans-nettoyage", `mise-de-cote: ${entree.ref}`, ...fichiers.map((f) => `fichier: ${f}`), `a-retirer: l'entrée ${entree.ref} reste à retirer plus tard (${d.erreur.replace(/\s+/g, " ")})`]);
+  }
   sortir(0, ["etat: remis", ...fichiers.map((f) => `fichier: ${f}`)]);
 }
 
