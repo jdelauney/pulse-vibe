@@ -40,7 +40,7 @@ const PLAFONDS = {
   implement: 45000, // mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 24000, // mesure 22 408
   review: 32500, // mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  commit: 39000, // mesure 37 065
+  commit: 39500, // mesure 39 088 (pulse 0.49+ : annonce de l'accord avant git remote add dans depot-distant.md, envoi forcé refusé dans git.md)
   pr: 32000, // mesure 30 391
   annuler: 38500, // mesure 36 358
   "get-help": 23500, // mesure 22 362

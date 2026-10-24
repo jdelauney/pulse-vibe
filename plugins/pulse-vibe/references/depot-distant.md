@@ -25,7 +25,7 @@ Toujours **privé**, au nom du projet (minuscules, tirets), et **vide** : le pro
 ### 1b. Relier un dépôt existant
 
 1. Faire coller l'adresse du dépôt (HTTPS ou SSH).
-2. `git remote add origin <adresse>`, puis `git push -u origin <branche courante>`. Une fenêtre de connexion au fournisseur peut s'ouvrir au premier envoi : c'est normal, il faut l'accepter.
+2. Annoncer : « Claude Code va vous demander l'accord pour relier ce projet au dépôt en ligne : c'est un réglage de Git, fait une seule fois. » Puis `git remote add origin <adresse>`, puis `git push -u origin <branche courante>`. Une fenêtre de connexion au fournisseur peut s'ouvrir au premier envoi : c'est normal, il faut l'accepter.
 3. **Envoi refusé parce que le dépôt contient déjà des fichiers** (un README créé sur le site, par exemple) : expliquer, puis, avec accord : `git pull origin <branche> --allow-unrelated-histories`, régler les éventuels conflits avec la personne (garder les deux contenus en cas de doute), commiter, et renvoyer. Jamais d'envoi forcé.
 
 ### 1c. Noter

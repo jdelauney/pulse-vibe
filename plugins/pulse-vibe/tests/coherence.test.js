@@ -421,7 +421,7 @@ test("envoi du travail : git push passe par la demande d'autorisation ; /pulse:c
 });
 
 test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale, ni dépôt distant créé ; commits par git commit -m", () => {
-  const interdit = /^(git branch -f\b|git merge --no-ff\b|git pull\b|gh repo create\b|glab repo create\b)/;
+  const interdit = /^(git branch -f\b|git branch -M\b|git remote add\b|git merge --no-ff\b|git pull\b|gh repo create\b|glab repo create\b)/;
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const skill = path.relative(DEPOT, path.dirname(fichier));
@@ -438,6 +438,20 @@ test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale,
   assert.match(depot, /`glab repo create <nom> --private`/);
   assert.match(depot, /Claude Code demande l'accord de la personne/);
   assert.match(lire(RACINE, "references", "git.md"), /`git commit -m "<description>"`/);
+});
+
+test("consignes mortes : ni « 3 questions au plus », ni --force-with-lease proposé, ni « une journée »", () => {
+  const problemes = [];
+  for (const { fichier, texte } of TEXTES) {
+    if (/3 questions au plus/.test(texte)) problemes.push(`${fichier} : « 3 questions au plus » (règle commune 5 : 4 au plus)`);
+    for (const ligne of texte.split("\n")) {
+      if (/--force-with-lease/.test(ligne) && !/refus/.test(ligne)) problemes.push(`${fichier} : --force-with-lease hors d'une phrase de refus`);
+      if (/une journée|fin de journée/.test(ligne) && /MVP|première version|Délai/.test(ligne)) problemes.push(`${fichier} : durée imposée à la première version`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+  assert.doesNotMatch(lire(RACINE, "skills", "spec", "SKILL.md"), /rondes de 3 au plus/);
+  assert.doesNotMatch(lire(DEPOT, "docs", "commandes", "prd.html"), /en une journée/);
 });
 
 test("mise en ligne : tests, contrôle rapide de sécurité avant la première fois, audit complet proposé en clôture", () => {

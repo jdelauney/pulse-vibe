@@ -35,7 +35,7 @@ La conversation principale orchestre : elle comprend le blocage, nettoie les sec
 
 ### 1. Comprendre
 
-Reprendre ce que la conversation, la description reçue et le projet disent déjà (dernier blocage expliqué par `/pulse:fix`, `/pulse:review`, `/pulse:implement` ou `/pulse:spirc`). Poser seulement ce qui manque, en une ronde (AskUserQuestion, 3 questions au plus) : ce que la personne voulait faire, ce qui se passe à la place, si elle accepte de partager l'adresse du dépôt.
+Reprendre ce que la conversation, la description reçue et le projet disent déjà (dernier blocage expliqué par `/pulse:fix`, `/pulse:review`, `/pulse:implement` ou `/pulse:spirc`). Poser seulement ce qui manque, en une ronde (règle commune 5) : ce que la personne voulait faire, ce qui se passe à la place, si elle accepte de partager l'adresse du dépôt.
 
 ### 2. Rassembler
 

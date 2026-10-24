@@ -56,7 +56,7 @@ Un contrôle automatique (garde-fou anti-secrets, lint, format…) peut refuser 
 ## 4. Envoyer (push)
 
 - `git push` envoie la branche courante ; la première fois pour une branche : `git push -u origin <branche>`.
-- **Jamais `--force`.** `--force-with-lease` seulement si la personne le demande explicitement, après explication du risque.
+- **Jamais d'envoi forcé** : le garde-fou le refuse (`--force`, `--force-with-lease`). Envoi refusé parce que le dépôt distant a des changements plus récents : `git pull`, puis un nouvel envoi.
 - Le garde-fou anti-secrets bloque un envoi si un fichier d'environnement local est suivi par Git.
 
 ## 5. Les branches

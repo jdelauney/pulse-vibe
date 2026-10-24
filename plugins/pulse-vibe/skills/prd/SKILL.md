@@ -50,7 +50,7 @@ Expliquer les 4 catégories en une ligne chacune :
 
 Construire ensuite le classement complet à partir de sa coupe, le montrer avec la colonne « Origine » (vous / Pulse), et le faire valider (AskUserQuestion). C'est **sa** décision.
 
-**Garde-fou de taille** : si plus de 5 ou 6 fonctionnalités sont « Indispensables » pour un MVP à réaliser en une journée, dites-le franchement et proposer lesquelles passer en « Essentiel ». Poser la question test : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? »
+**Garde-fou de taille** : au-delà de 5 ou 6 fonctionnalités « Indispensables », le dire franchement (une première version se veut petite et finie) et proposer lesquelles passer en « Essentiel ». Poser la question test : « Si cette fonctionnalité manquait, l'outil serait-il quand même utile ? »
 
 **Travail en cours** : tant que la coupe du MVP ou la définition « La première version est prête quand… » attend la personne, tenir `aidd_docs/tasks/in-progress.md` à jour (règle commune 16). L'effacer (`pulse-aidd travail-fini`) après l'écriture de `docs/prd.md`.
 

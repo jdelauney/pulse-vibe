@@ -41,7 +41,7 @@ La première version est la plus petite **réellement utilisable** par de vrais 
 
 - **Données personnelles** : {{lesquelles, ou « aucune »}}
 - **Budget mensuel acceptable pour les services** : {{montant et devise, ou 0}}
-- **Délai** : {{ex. première version en fin de journée}}
+- **Délai** : {{date ou durée visée pour la première version}}
 - **Appareils** : {{ordinateur, téléphone…}}
 - **Être trouvé** : {{sur Google et par les assistants IA : par qui, avec quels mots (ceux des clients), quelles pages publiques ; ou « non : outil interne, rien dans Google »}}
 - **Autres** :
