@@ -99,6 +99,19 @@ test("tool_used et tool_order : un appel refusé n'a rien fait", () => {
   assert.deepStrictEqual(notes.details.map((d) => d.reussi), [false, true, false]);
 });
 
+test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", () => {
+  const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
+  const note = (texte) => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "blocs-")), "trace.jsonl");
+    const appel = { type: "assistant", message: { content: [{ type: "tool_use", id: "t1", name: "Bash", input: { command: "pulse-aidd qualite regles | head -80" } }] } };
+    const retour = { type: "user", message: { content: [{ type: "tool_result", tool_use_id: "t1", is_error: true, content: [{ type: "text", text: texte }] }] } };
+    fs.writeFileSync(f, JSON.stringify(appel) + LF + JSON.stringify(retour) + LF);
+    return direct.noter(f, [g]).details[0].reussi;
+  };
+  assert.strictEqual(note("Exit code 1" + LF + "erreur"), false);
+  assert.strictEqual(note("PreToolUse:Bash hook error: règles de Pulse"), true);
+});
+
 test("argumentsDirect : claude -p avec le prompt d'abord, les plugins du dépôt, les outils du cas et ceux du lanceur", () => {
   const c = { prompt: "/pulse:status", maxTours: 15, outils: ["Read", "Skill"] };
   const a = direct.argumentsDirect(c, "/depot", {});
