@@ -88,4 +88,4 @@ Suivre le modèle `pulse-aidd modele tech/technical.md`, avec les sections suiva
 - « Mise en place » : les étapes de départ, dans l'ordre.
 - « Ce qu'on a écarté » : les options non retenues et pourquoi.
 
-Une décision difficile à défaire (hébergement des données, service de connexion) se propose aussi en fichier de décision (`/pulse:memory retenir`).
+Une décision difficile à défaire (hébergement des données, service de connexion) se propose aussi en fichier de décision (modèle « décision (ADR) », déjà dans le contexte de tech).

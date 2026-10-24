@@ -2,7 +2,7 @@
 description: Les secrets du projet - inventaire sans aucune valeur, renouvellement sans coupure, réaction à une fuite de clé (révoquer d'abord) ; la valeur ne passe jamais par la conversation
 argument-hint: "[inventaire | renouveler <NOM> | fuite [<NOM>]] (par défaut : inventaire)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte secrets) Bash(pulse-aidd reference secrets/*) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd modele *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *) Bash(pulse-aidd sonder *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git log *) Bash(git ls-files *) Bash(git check-ignore *) Bash(git remote -v) Bash(git remote get-url *) Write(docs/secrets.md) Edit(docs/secrets.md) Write(docs/incidents/**) Edit(docs/incidents/**) Write(docs/lexique.md) Edit(docs/lexique.md)
+allowed-tools: Bash(pulse-aidd contexte secrets) Bash(pulse-aidd reference secrets/*) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd modele *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *) Bash(pulse-aidd sonder *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git log *) Bash(git ls-files *) Bash(git check-ignore *) Bash(git remote -v) Bash(git remote get-url *) Write(docs/secrets.md) Edit(docs/secrets.md) Write(docs/incidents/**) Edit(docs/incidents/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(pulse-aidd reference gestes.md)
 ---
 
 # /pulse:secrets – Les secrets du projet
@@ -82,8 +82,8 @@ Appliquer la référence « Réagir à une fuite de clé » ci-dessus, étape pa
 
 - **Premier message** : court, calme, avec l'action n° 1. Exemple : « On s'en occupe tout de suite. Première chose : rendre l'ancienne clé inutilisable chez le fournisseur. Je vous guide. » Puis une seule question : quelle clé (menu tiré de l'inventaire, avec « Je ne sais pas laquelle »).
 - **Quelle clé ?** Si la personne ne sait pas : `pulse-aidd secrets historique` (traces dans Git) et la question des lieux d'exposition. Une clé collée dans cette conversation se reconnaît à son fournisseur, sans la répéter.
-- **Révoquer** : chemin exact de la fiche, réglage immédiat. Attendre la confirmation de la personne (« C'est fait ») avant de passer au remplacement.
-- **Remplacer, redéployer, vérifier** : étapes 3 à 6 de `renouveler`, sans délai de grâce. Secret inventé par le projet après une fuite : `pulse-aidd secrets generer <NOM>` sans `--versionne` (ou avec `--seul`) : l'ancienne valeur ne doit plus rien ouvrir.
+- **Révoquer** : étape 2 de la référence (chemin exact de la fiche, réglage immédiat, attente du « C'est fait »).
+- **Remplacer, redéployer, vérifier** : étape 3 de la référence (génération comprise), sans délai de grâce.
 - **Couper ce qui reste ouvert** : action de la fiche (sessions, redémarrage de la base).
 - **Journal d'incident** : `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` à partir du modèle « journal d'incident », sans aucune valeur ; puis `pulse-aidd secrets journal <NOM> fuite --revoquee <AAAA-MM-JJ> --production oui`.
 - Terminer par la prévention : la cause en une phrase, les protections manquantes de l'inventaire, et `/pulse:security` si aucun audit récent n'existe.

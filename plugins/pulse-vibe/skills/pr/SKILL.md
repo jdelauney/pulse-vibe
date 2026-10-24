@@ -49,7 +49,7 @@ Fichiers de cette commande : [assets/pull-request.md](assets/pull-request.md).
 
 À faire **avant** de coder, typiquement avant `/pulse:implement <US-XXX>`.
 
-1. Modifications non enregistrées (`git status --short`) : proposer d'abord `/pulse:commit`, sauf si la personne veut les emporter sur la nouvelle branche (elles suivent automatiquement).
+1. Modifications non enregistrées (`git status --short`) : proposer de taper d'abord `/pulse:commit`, sauf si la personne veut les emporter sur la nouvelle branche (elles suivent automatiquement).
 2. **Nom** : à partir du plan désigné (ou de la spec, ou de la demande de la personne ; argument absent : lister les plans de `aidd_docs/tasks/` et demander, règle commune « Argument absent »), selon Conventions Git § 5 : `feat/us-xxx-<nom>` par défaut (l'identifiant de l'US et son nom, en minuscules), `fix/…` pour une correction. Le faire valider (AskUserQuestion, le nom proposé avec « (Recommandé) », « Autre nom »).
 3. Partir de la branche principale à jour (Claude Code va vous demander l'accord pour `git pull` : c'est ce qui récupère la dernière version du dépôt distant) : `git switch <principale>`, `git pull`, puis `git switch -c <nom>`. Si la branche existe déjà : proposer d'y revenir (`git switch <nom>`) plutôt que d'en créer une autre.
 4. Expliquer : « Vous êtes maintenant sur `<nom>`. Vos commits y seront rangés ; le site en ligne change seulement quand sa proposition est acceptée sur le site du dépôt. »
@@ -60,7 +60,7 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 #### 1. Vérifier
 
-- Modifications non enregistrées : proposer `/pulse:commit` d'abord et s'arrêter.
+- Modifications non enregistrées : proposer de taper `/pulse:commit` d'abord et s'arrêter.
 - **Sur la branche principale** :
   - Des commits n'ont pas encore été envoyés (`git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Tout est conservé. » Après accord explicite (AskUserQuestion) : `git switch -c <nom>` puis `git branch -f <principale> origin/<principale>`, et vérifier avec `git log --oneline -5` que les commits sont bien sur `<nom>`.
   - Tous les commits déjà envoyés : la demande se fait depuis une branche de travail ; l'expliquer et proposer `/pulse:pr branche` pour la prochaine fois.
@@ -77,7 +77,7 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 - **Modèle** : celui du dépôt s'il existe (Conventions Git § 6), sinon le modèle Pulse ci-dessus. Remplir chaque section d'après le changement, puis retirer tous les commentaires du modèle.
 - **Titre** : court et parlant, 72 caractères au plus, en français.
-- Une tâche sans rapport de relecture : l'indiquer dans « Relecture et sécurité » et proposer `/pulse:review` avant d'ouvrir la demande.
+- Une tâche sans rapport de relecture : l'indiquer dans « Relecture et sécurité » et proposer de taper `/pulse:review` avant d'ouvrir la demande.
 - Montrer titre, base et description, puis demander (AskUserQuestion) : « Ouvrir la proposition en brouillon (Recommandé) » / « Modifier le texte » / « Annuler ».
 
 #### 4. Envoyer et créer

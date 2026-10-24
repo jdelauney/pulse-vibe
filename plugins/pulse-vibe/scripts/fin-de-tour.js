@@ -262,7 +262,7 @@ function principal() {
   tour.ecrireRelances(cleEntree, racine, relances + 1);
   const raison =
     `Pulse a contrôlé les fichiers écrits pendant ce tour et trouvé des points à corriger :\n${liste(constats)}\n` +
-    "Corrigez ces points, puis relancez `pulse-aidd verifier`. Expliquez ensuite le blocage à la personne en une phrase simple.";
+    "Corrigez ces points, puis relancez le contrôle cité (ou `pulse-aidd verifier` pour une clé). Expliquez ensuite le blocage à la personne en une phrase simple.";
   fs.writeSync(1, JSON.stringify({ decision: "block", reason: raison }));
 }
 

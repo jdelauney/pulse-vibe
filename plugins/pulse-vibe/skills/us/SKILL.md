@@ -31,7 +31,7 @@ Les références et modèles cités dans cette commande figurent dans ce context
 
 Appliquer « Penser avant d'écrire » ci-dessus. Les règles déjà tranchées (brief, glossaire, PRD) se reprennent sans les redemander. La rédaction (format, découpage, contrôle qualité) reste à Pulse.
 
-**Clarifier le périmètre par rondes** : **3 questions au plus par ronde** (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
+**Clarifier le périmètre par rondes** : une ronde de questions selon la règle commune 5 (un seul appel AskUserQuestion), chacune sur un besoin de l'utilisateur : ce qu'il fait, ce qu'il voit, ce qui se passe dans un cas limite. Les choix techniques se tranchent plus tard, avec `/pulse:tech` et le plan. Les **cas limites importants** sont les questions clés de cette commande.
 
 ### 1. Découper en groupes
 
@@ -70,7 +70,7 @@ Vérifier aussi qu'elle est **bien rangée** : l'US sert l'objectif de son group
 
 ### 4. Trancher les questions et trier
 
-1. **Questions clés** : repérer les **cas limites** dont le comportement change ce que vit l'utilisateur et qu'aucun document ne tranche (une annulation tardive, un doublon, un accès refusé). Les poser par rondes de 3 au plus, sous forme de scénario concret (« Un client annule une heure avant le rendez-vous : que se passe-t-il ? »), avec des exemples de réponses tirés d'autres métiers. La réponse donne le « alors… » du critère de cas d'erreur ou limite. Une question **bloquante** (sans sa réponse, un critère d'acceptation reste à écrire ou la taille reste inconnue) se pose dans une ronde ; une question **non bloquante** (un détail que la spec tranchera) reste dans les « Questions ouvertes » de l'US.
+1. **Questions clés** : repérer les **cas limites** dont le comportement change ce que vit l'utilisateur et qu'aucun document ne tranche (une annulation tardive, un doublon, un accès refusé). Les poser par rondes (règle commune 5), sous forme de scénario concret (« Un client annule une heure avant le rendez-vous : que se passe-t-il ? »), avec des exemples de réponses tirés d'autres métiers. La réponse donne le « alors… » du critère de cas d'erreur ou limite. Une question **bloquante** (sans sa réponse, un critère d'acceptation reste à écrire ou la taille reste inconnue) se pose dans une ronde ; une question **non bloquante** (un détail que la spec tranchera) reste dans les « Questions ouvertes » de l'US.
 2. **Ordre de réalisation** : trier les US par priorité d'implémentation : d'abord celles dont d'autres dépendent, puis par priorité (Indispensable, Essentiel, Optionnel), puis dans l'ordre du parcours. Vérifier que les dépendances s'enchaînent dans un seul sens, sans boucle.
 
 ### 5. Definition of Ready
@@ -79,7 +79,7 @@ Une US est **prête** quand ces conditions sont réunies ; elle se sauvegarde se
 - elle passe INVEST (étape 3) ;
 - ses critères d'acceptation sont écrits, dont au moins un cas d'erreur ou limite ;
 - ses dépendances sont notées (« Dépend de », ou « — ») ;
-- **aucune question bloquante** ne reste : sinon, poser une nouvelle ronde (3 questions au plus).
+- **aucune question bloquante** ne reste : sinon, poser une nouvelle ronde (règle commune 5).
 
 Cocher la section « Prête » du modèle d'US une fois ces conditions vérifiées.
 

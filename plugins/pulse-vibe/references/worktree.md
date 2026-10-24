@@ -47,7 +47,7 @@ Quand le plan de l'US est terminé, ou quand la personne s'arrête, lire la lign
 4. Annoncer en une phrase : « Claude Code va vous demander l'accord pour fusionner : c'est ce qui rassemble le travail du dossier à part dans votre dossier principal. » Puis `git merge --no-ff feat/us-xxx-<nom> -m "merge: US-XXX <titre>"`.
    - **Conflit** : `git merge --abort`, expliquer simplement (« les deux sessions ont modifié les mêmes lignes ») et proposer `/pulse:pr`, qui laisse la fusion se faire sur le site du dépôt, ou `/pulse:get-help`. Préserver le travail de l'autre session : ne jamais résoudre un conflit en l'écrasant.
 5. Nettoyer : `git worktree remove .claude/worktrees/us-xxx-<nom>` puis `git branch -d feat/us-xxx-<nom>` (jamais `-D`, ni `--force` : si Git refuse, il reste du travail à fusionner ; le dire et s'arrêter).
-6. Lancer `pulse-aidd guide`. Rappeler que le travail reste local pour l'instant : `/pulse:deploy` ou `/pulse:commit push`.
+6. Lancer `pulse-aidd guide`. Rappeler que le travail reste local pour l'instant : `/pulse:deploy` l'envoie et le vérifie en ligne.
 
 **Demande de fusion** : depuis le worktree, appliquer l'étape **pr** (`pulse-aidd etape pr --sans-communes`, section B) avec la branche `feat/us-xxx-<nom>`. Garder le worktree jusqu'à la fusion sur le site ; ensuite, `/pulse:status` propose de le supprimer.
 

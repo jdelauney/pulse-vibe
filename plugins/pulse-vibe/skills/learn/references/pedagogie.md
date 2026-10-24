@@ -101,7 +101,7 @@ Pour chaque notion dont le rappel est dû (3 au plus par séance) : une question
 
 - Si le dossier contient un projet (`docs/technical.md`, du code), prendre les exemples **dans la pile retenue** et, si possible, **dans les fichiers réels** : « Dans votre fichier `<chemin lu>`, ligne N, vous avez justement une condition. » Citer uniquement ce qui a été lu (règle commune 13).
 - Sans projet, ou pour une notion absente du projet : exemples neutres et courts, dans un langage courant adapté à la notion, en le disant.
-- Un bug ou un problème de sécurité repéré au passage : le signaler en une ligne et proposer `/pulse:fix` ou `/pulse:review` pour le corriger.
+- Un bug ou un problème de sécurité repéré au passage : le signaler en une ligne et proposer de taper `/pulse:fix` ou `/pulse:review` pour le corriger.
 
 ## 8. Vérifier la compréhension
 

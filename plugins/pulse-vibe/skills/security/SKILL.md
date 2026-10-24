@@ -71,7 +71,7 @@ Si le sous-agent est indisponible, faire l'audit en suivant **strictement** la m
 - Le niveau global (🟢 / 🟠 / 🔴) et le nombre de points bloquants.
 - Pour chaque ⛔ : ce qu'un inconnu pourrait faire concrètement, en une phrase, puis la correction proposée.
 - Les ⚠️ en liste courte.
-- Un ⛔ en S1 (clé dans le code ou dans l'historique, fichier d'environnement suivi par Git) : proposer `/pulse:secrets fuite` en premier, avant toute autre correction.
+- Un ⛔ en S1 (clé dans le code ou dans l'historique, fichier d'environnement suivi par Git) : appliquer en premier, avant toute autre correction, `pulse-aidd reference secrets/fuite.md`.
 
 Rester factuel et rassurant : trouver des failles maintenant, c'est exactement le but.
 
@@ -81,7 +81,7 @@ Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la
 
 #### 5. Corriger
 
-Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (Recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée se traite avec `/pulse:secrets fuite` : révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation. Après correction, refaire le test manuel concerné.
+Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (Recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée : appliquer tout de suite `pulse-aidd reference secrets/fuite.md` (révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation). Après correction, refaire le test manuel concerné.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` puis `/pulse:commit` si des corrections ont été faites.
 
