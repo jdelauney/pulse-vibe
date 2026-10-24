@@ -2,7 +2,7 @@
 description: Mettre l'appli en ligne et la mettre à jour automatiquement à chaque envoi, puis passer en mode production (variables, services, retour arrière ; les contrôles automatiques se mettent en place avec /pulse:cicd)
 argument-hint: "[premiere | production] (détecté automatiquement si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-hook) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Bash(git remote -v) Bash(git remote get-url *) Bash(git remote add origin *) Bash(gh auth status*) Bash(glab auth status*) Bash(git log *) Bash(git branch --show-current) Bash(git branch -M main) Bash(git rev-parse *) Bash(node scripts/verifier.js) Edit(docs/technical.md) Edit(./CLAUDE.md) Edit(./README.md) Edit(aidd_docs/tasks/**) Write(docs/performance.md) Edit(docs/performance.md)
+allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd verifier) Bash(pulse-aidd installer-ci) Bash(pulse-aidd sonder *) Bash(pulse-aidd seo *) Bash(pulse-aidd perf *) Bash(pulse-aidd secrets inventaire*) Bash(pulse-aidd secrets historique*) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-hook) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(git status *) Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Bash(git remote -v) Bash(git remote get-url *) Bash(gh auth status*) Bash(glab auth status*) Bash(git log *) Bash(git branch --show-current) Bash(git branch -m main) Bash(git rev-parse *) Bash(node scripts/verifier.js) Edit(docs/technical.md) Edit(./CLAUDE.md) Edit(./README.md) Edit(aidd_docs/tasks/**) Write(docs/performance.md) Edit(docs/performance.md) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd agent fixer) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git add *) Bash(git commit -m *)
 ---
 
 # /pulse:deploy – Mettre en ligne
@@ -38,11 +38,11 @@ Lire la section « Hébergement et mise en ligne » de `docs/technical.md` : hé
 ### 1. Contrôles avant envoi (toujours)
 
 1. Dépôt Git présent, sinon proposer `/pulse:init`.
-2. Branche : `git branch --show-current`. Si c'est `master`, proposer `git branch -M main` et expliquer que `main` est la branche publiée.
-3. Tout est enregistré : si `git status --short` liste des fichiers, proposer `/pulse:commit` d'abord.
+2. Branche : `git branch --show-current`. Si c'est `master`, proposer `git branch -m main` et expliquer que `main` est la branche publiée.
+3. Tout est enregistré : si `git status --short` liste des fichiers, proposer de taper `/pulse:commit` d'abord.
 4. Secrets : lancer `pulse-aidd verifier` depuis la racine du projet. Il vérifie que les fichiers d'environnement restent hors de Git et que le projet est exempt de clés secrètes. S'il échoue, expliquer chaque problème simplement et corriger avant d'aller plus loin.
-5. Contrôles du projet : lancer les contrôles automatiques, la commande « Tester » et la commande « Construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur ou un test en échec bloque l'envoi : proposer `/pulse:fix` ou `/pulse:auto-fix`. Si aucune commande de contrôle ni de test n'existe, le signaler et proposer d'en ajouter avec `/pulse:tech`.
-6. Sécurité, avant la **première** mise en ligne (aucun dépôt distant, mode `premiere`, ou ligne « Site en ligne » de `docs/technical.md` encore vide) : appliquer à l'identique le contrôle rapide de `/pulse:security rapide` (`pulse-aidd reference security/rapide.md`, en lecture seule). Un ⛔ bloque la mise en ligne : le corriger d'abord (une clé exposée se traite avec `/pulse:secrets fuite`). Les ⚠️ s'affichent avec leur correction proposée, et la mise en ligne continue.
+5. Contrôles du projet : lancer les contrôles automatiques, la commande « Tester » et la commande « Construire » de « Commandes du projet » (celles qui ont une valeur autre que « aucune »). Une erreur ou un test en échec bloque l'envoi : appliquer `pulse-aidd etape fix --sans-communes` (un test ou une erreur précise) ou `pulse-aidd etape auto-fix --sans-communes` (beaucoup d'erreurs de lint ou de types). Si aucune commande de contrôle ni de test n'existe, le signaler et proposer d'en ajouter (tapez `/pulse:tech`).
+6. Sécurité, avant la **première** mise en ligne (aucun dépôt distant, mode `premiere`, ou ligne « Site en ligne » de `docs/technical.md` encore vide) : appliquer à l'identique le contrôle rapide de `/pulse:security rapide` (`pulse-aidd reference security/rapide.md`, en lecture seule). Un ⛔ bloque la mise en ligne : le corriger d'abord (une clé exposée : appliquer tout de suite `pulse-aidd reference secrets/fuite.md`). Les ⚠️ s'affichent avec leur correction proposée, et la mise en ligne continue.
 
 ### 2. Choisir le mode
 
@@ -63,7 +63,7 @@ Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/puls
 Suivre la documentation officielle de l'hébergeur retenu, et la traduire en étapes simples, une à la fois :
 1. Se connecter à l'hébergeur (avec le compte du dépôt distant si c'est proposé : c'est souvent le plus simple).
 2. Créer un nouveau site ou projet à partir d'un dépôt existant, autoriser l'accès au dépôt, choisir le dépôt.
-3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer avec `/pulse:commit`.
+3. Vérifier les réglages de construction et de publication d'après « Commandes du projet » (commande « construire », ou aucune) et « Organisation des fichiers » (dossier publié ou point d'entrée). Si un fichier de configuration de l'hébergeur est nécessaire, le proposer d'après sa documentation, le montrer avant de l'écrire, puis l'enregistrer en appliquant l'étape **commit** (`pulse-aidd etape commit --sans-communes`).
 4. Si l'appli a besoin de variables d'environnement (« Secrets et variables d'environnement », `.env.example`) : les faire saisir **avant** le premier déploiement (section 5, point 2), sinon la construction ou l'appli échoue.
 5. Lancer le premier déploiement, attendre la fin, puis renommer le site si souhaité.
 6. Me coller l'adresse du site.
@@ -76,7 +76,7 @@ Le site répond et le garde-fou passe : proposer une **première mesure de vites
 
 #### 3c. Voir le déploiement automatique en action
 
-Proposer une petite modification visible (par exemple le texte du titre), puis : `/pulse:commit`, `git push`, et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
+Proposer une petite modification visible (par exemple le texte du titre), puis appliquer l'étape **commit** (`pulse-aidd etape commit --sans-communes`, argument `push`), et suivre l'avancement dans la liste des déploiements de l'hébergeur. Rafraîchir le site quand le déploiement est terminé. C'est le moment « waouh » : la nouvelle version est en ligne sans rien faire d'autre.
 
 ### 4. Mise à jour
 
@@ -101,7 +101,7 @@ Expliquer d'abord l'**intégration continue (CI)** : « Avant chaque mise en lig
 4. **Environnements** : si l'hébergeur le propose, expliquer la différence entre une adresse de **prévisualisation** (pour une version parallèle proposée, pour la tester sans toucher au site) et la **production** publiée depuis `main` (le site des clients).
 5. **Être trouvé** (si « Être trouvé » de `docs/prd.md` répond oui) : une seule adresse officielle pour le site (domaine définitif, autres variantes redirigées). Le référencement et Search Console suivent en clôture (section 6).
 6. **Surveillance** : proposer une sonde de disponibilité, gratuite chez la plupart des services (la personne choisit le sien) : elle appelle l'adresse du site toutes les quelques minutes et prévient par e-mail s'il ne répond plus. Guider la création, faite par la personne, d'après la documentation du service. Pour les erreurs, indiquer que les journaux de l'hébergeur les montrent et où les ouvrir (d'après sa documentation ou le contexte du pack de pile). Noter le service et l'adresse surveillée dans la ligne « Surveillance » de `docs/technical.md` (« aucune » si la personne préfère attendre).
-7. **Retour arrière** : montrer la section « Retour arrière » de `docs/technical.md` (le site, puis les données) ; si elle manque, l'écrire d'après les valeurs du pack de pile ou la documentation de l'hébergeur et de la base (modèle « docs/technical.md »). Rassurer : tout reste réparable.
+7. **Retour arrière** : montrer la section « Retour arrière » de `docs/technical.md` (le site, puis les données) ; si elle manque, l'écrire d'après les valeurs du pack de pile ou la documentation de l'hébergeur et de la base (modèle : `pulse-aidd modele tech/technical.md`, section « Retour arrière »). Rassurer : tout reste réparable.
 8. **Enregistrer et envoyer** : commit `chore: contrôle automatique avant mise en ligne`, puis `git push` (accord annoncé au § 3). Montrer où voir le résultat de la CI (coche verte ou croix rouge sur le dépôt distant, ou journal de la CI) et le journal du déploiement chez l'hébergeur.
 
 ### 6. Clore

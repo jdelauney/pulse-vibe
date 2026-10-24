@@ -620,8 +620,7 @@ function reglesGit(c, cwd, constats) {
       break;
     case "branch":
       if (court("D") || ((aLongue("--delete") || court("d")) && (aLongue("--force") || court("f")))) constats.push([ACCORD, MESSAGES.brancheForcee]);
-      // -M (renommer en écrasant) reste libre : /pulse:deploy l'emploie pour renommer master en main.
-      else if (court("f") || aLongue("--force") || court("C")) constats.push([ACCORD, MESSAGES.brancheDeplacee]);
+      else if (court("f") || aLongue("--force") || court("C") || court("M")) constats.push([ACCORD, MESSAGES.brancheDeplacee]);
       break;
     case "update-ref":
       constats.push([ACCORD, MESSAGES.brancheDeplacee]);

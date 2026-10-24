@@ -35,7 +35,7 @@ La conversation principale orchestre : elle comprend le blocage, nettoie les sec
 
 ### 1. Comprendre
 
-Reprendre ce que la conversation, la description reçue et le projet disent déjà (dernier blocage expliqué par `/pulse:fix`, `/pulse:review`, `/pulse:implement` ou `/pulse:spirc`). Poser seulement ce qui manque, en une ronde (AskUserQuestion, 3 questions au plus) : ce que la personne voulait faire, ce qui se passe à la place, si elle accepte de partager l'adresse du dépôt.
+Reprendre ce que la conversation, la description reçue et le projet disent déjà (dernier blocage expliqué par `/pulse:fix`, `/pulse:review`, `/pulse:implement` ou `/pulse:spirc`). Poser seulement ce qui manque, en une ronde (règle commune 5) : ce que la personne voulait faire, ce qui se passe à la place, si elle accepte de partager l'adresse du dépôt.
 
 ### 2. Rassembler
 
@@ -49,7 +49,7 @@ S'il y a du code, confier la recherche au sous-agent **`pulse:explorer`** (sinon
 
 ### 3. Nettoyer
 
-Remplacer toute clé, tout mot de passe, toute adresse de base de données et toute donnée réelle par une valeur fictive (`sk_test_XXXX`, `client@example.com`), et le dire en une ligne. Le garde-fou anti-secrets de Pulse vérifie aussi la fiche à l'écriture. Si la personne a collé une vraie clé ou un vrai mot de passe pendant l'échange, ou si le garde-fou bloque l'écriture de la fiche : la valeur est exposée ; proposer `/pulse:secrets fuite` avant d'envoyer la demande.
+Remplacer toute clé, tout mot de passe, toute adresse de base de données et toute donnée réelle par une valeur fictive (`sk_test_XXXX`, `client@example.com`), et le dire en une ligne. Le garde-fou anti-secrets de Pulse vérifie aussi la fiche à l'écriture. Si la personne a collé une vraie clé ou un vrai mot de passe pendant l'échange, ou si le garde-fou bloque l'écriture de la fiche : la valeur est exposée ; appliquer tout de suite `pulse-aidd reference secrets/fuite.md` avant d'envoyer la demande.
 
 ### 4. Écrire
 

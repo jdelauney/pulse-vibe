@@ -2,7 +2,7 @@
 description: Lancer les tests automatiques du projet et expliquer chaque échec (lancer), ou écrire les tests d'un code existant à partir des scénarios de la spec (ecrire), par des assistants spécialisés
 argument-hint: "[lancer | ecrire <US-XXX | Tn | chemin>]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd agent test-writer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git add *) Edit(aidd_docs/tasks/**) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *)
+allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd etape fix --sans-communes) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd agent test-writer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Read Glob Grep Bash(git status *) Bash(git diff *) Edit(aidd_docs/tasks/**) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd contexte fix)
 ---
 
 # /pulse:test – Les tests automatiques
@@ -53,7 +53,7 @@ La conversation principale orchestre : elle retrouve le contrat, présente les r
 
    puis chaque échec en une ligne simple : ce qui ne marche pas, la cause (code, test, environnement, instable), la tâche concernée si on la trouve.
 3. Demander (AskUserQuestion), seulement s'il y a des échecs : « Corriger maintenant (Recommandé) » / « Seulement noter les échecs ».
-   - Échec **dû au code** : un par un, avec `/pulse:fix` (cause d'abord, correction minimale, preuve), en lui transmettant le test et le message d'échec.
+   - Échec **dû au code** : un par un, en appliquant l'étape **fix** (`pulse-aidd etape fix --sans-communes`, étapes 1 à 4 : cause d'abord, correction minimale, preuve), avec le test et le message d'échec.
    - Échec **dû au test** ou test **instable** : `pulse:test-writer`, mode « corriger », avec la liste du test-runner ; puis relancer le test-runner sur ces tests. Deux cycles au plus.
    - Échec **dû à l'environnement** : guider la personne pas à pas.
 4. Les constats de qualité des tests suivent « Les constats de relecture » (règles communes § 6).

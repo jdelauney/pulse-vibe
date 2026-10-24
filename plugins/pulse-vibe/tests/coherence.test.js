@@ -107,6 +107,37 @@ test("un outil cité dans les consignes d'un agent lui est disponible", () => {
   assert.deepStrictEqual(problemes, []);
 });
 
+test("aucune consigne ne cite pulse-aidd reference design/ (les références de design sont dans ui/)", () => {
+  const fautifs = [...fichiers(path.join(RACINE, "skills"), "SKILL.md"), ...AGENTS_PAR_PLUGIN].filter((f) => /pulse-aidd reference design\//.test(lire(f))).map((f) => path.relative(DEPOT, f));
+  assert.deepStrictEqual(fautifs, []);
+});
+
+test("agents : chaque commande pulse-aidd citée figure dans la phrase « Utiliser … seulement/uniquement … » de l'agent", () => {
+  const problemes = [];
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const corps = lire(fichier);
+    const phrase = (corps.match(/^- Utiliser (?:Bash seulement|uniquement des commandes en lecture)[^\n]*$/m) || [])[0];
+    if (!phrase) continue;
+    const reste = corps.replace(phrase, "");
+    for (const m of reste.matchAll(/(?<!par `)pulse-aidd (pile (?:contexte|reference|recette)|[a-z][a-z-]*)/g)) {
+      if (!phrase.includes("pulse-aidd " + m[1]) && !phrase.includes("pulse-aidd " + m[1].split(" ")[0] + " …")) problemes.push(path.relative(DEPOT, fichier) + " : pulse-aidd " + m[1]);
+    }
+  }
+  assert.deepStrictEqual([...new Set(problemes)], []);
+});
+
+test("un agent qui doit corriger un fichier avec Edit a Edit dans tools (designer compris)", () => {
+  const problemes = [];
+  for (const fichier of AGENTS_PAR_PLUGIN) {
+    const [, entete, corps] = lire(fichier).match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
+    const tools = ((entete.match(/^tools:\s*(.*)$/m) || [])[1] || "").split(",").map((x) => x.trim());
+    if (/corriger[^.\n]*avec Edit/.test(corps) && !tools.includes("Edit")) problemes.push(path.relative(DEPOT, fichier));
+  }
+  assert.deepStrictEqual(problemes, []);
+  const designer = lire(RACINE, "agents", "designer.md");
+  assert.ok(/^tools:.*\bEdit\b/m.test(designer) && /corriger[^.\n]*avec Edit/.test(designer), "designer : corrige avec Edit");
+});
+
 test("allowed-tools des skills : motifs précis, sans suppression, fusion de demande, envoi forcé ni configuration", () => {
   // Permis : l'abandon d'une fusion en conflit (git merge --abort).
   assert.ok(SKILLS_PAR_PLUGIN.length >= SKILLS.size && SKILLS.size > 0, "lecture des skills");
@@ -277,7 +308,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
 });
 
 test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme, sont autorisées d'avance", () => {
-  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md");
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ""); // le corps seul : les motifs allowed-tools ne sont pas des citations
   const enchainees = (depart) => {
     const vues = new Set([depart]);
     const aVoir = [depart];
@@ -390,7 +421,7 @@ test("envoi du travail : git push passe par la demande d'autorisation ; /pulse:c
 });
 
 test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale, ni dépôt distant créé ; commits par git commit -m", () => {
-  const interdit = /^(git branch -f\b|git merge --no-ff\b|git pull\b|gh repo create\b|glab repo create\b)/;
+  const interdit = /^(git branch -f\b|git branch -M\b|git remote add\b|git merge --no-ff\b|git pull\b|gh repo create\b|glab repo create\b)/;
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const skill = path.relative(DEPOT, path.dirname(fichier));
@@ -407,6 +438,20 @@ test("allowed-tools : ni branche déplacée, ni fusion ou récupération locale,
   assert.match(depot, /`glab repo create <nom> --private`/);
   assert.match(depot, /Claude Code demande l'accord de la personne/);
   assert.match(lire(RACINE, "references", "git.md"), /`git commit -m "<description>"`/);
+});
+
+test("consignes mortes : ni « 3 questions au plus », ni --force-with-lease proposé, ni « une journée »", () => {
+  const problemes = [];
+  for (const { fichier, texte } of TEXTES) {
+    if (/3 questions au plus/.test(texte)) problemes.push(`${fichier} : « 3 questions au plus » (règle commune 5 : 4 au plus)`);
+    for (const ligne of texte.split("\n")) {
+      if (/--force-with-lease/.test(ligne) && !/refus/.test(ligne)) problemes.push(`${fichier} : --force-with-lease hors d'une phrase de refus`);
+      if (/une journée|fin de journée/.test(ligne) && /MVP|première version|Délai/.test(ligne)) problemes.push(`${fichier} : durée imposée à la première version`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
+  assert.doesNotMatch(lire(RACINE, "skills", "spec", "SKILL.md"), /rondes de 3 au plus/);
+  assert.doesNotMatch(lire(DEPOT, "docs", "commandes", "prd.html"), /en une journée/);
 });
 
 test("mise en ligne : tests, contrôle rapide de sécurité avant la première fois, audit complet proposé en clôture", () => {
@@ -997,12 +1042,41 @@ test("règles communes : les documents du projet restent appliqués par les comm
   }
 });
 
-test("les lectures de fichiers-projet.md et cycle.md, citées par les règles communes, sont permises dans chaque skill", () => {
+test("les lectures de fichiers-projet.md, cycle.md, gestes.md et secrets/fuite.md, citées par les règles communes, sont permises dans chaque skill", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const motifs = motifsBash(fichier);
-    for (const ref of ["fichiers-projet.md", "cycle.md"])
+    for (const ref of ["fichiers-projet.md", "cycle.md", "gestes.md", "secrets/fuite.md"])
       if (!motifs.some((m) => couvre(m, `pulse-aidd reference ${ref}`))) problemes.push(`${path.relative(DEPOT, fichier)} : ${ref}`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("allowed-tools : aucun motif `contexte <autre>` sans emploi, aucune paire `x` et `x *`", () => {
+  const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ""); // le corps seul : les motifs allowed-tools ne sont pas des citations
+  const enchainees = (depart) => {
+    const vues = new Set([depart]);
+    const aVoir = [depart];
+    while (aVoir.length) {
+      for (const c of citationsOutil(texteSkill(aVoir.pop()))) {
+        const etape = (c.match(/^pulse-aidd etape ([a-z][a-z-]*)(?: --sans-communes)?$/) || [])[1];
+        if (etape && SKILLS.has(etape) && !vues.has(etape)) {
+          vues.add(etape);
+          aVoir.push(etape);
+        }
+      }
+    }
+    return [...vues];
+  };
+  const problemes = [];
+  for (const skill of SKILLS) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    const citees = new Set(enchainees(skill).flatMap((s) => [...texteSkill(s).matchAll(/pulse-aidd contexte ([a-z][a-z-]*)/g)].map((m) => m[1])));
+    for (const motif of motifs) {
+      const cible = (motif.match(/^pulse-aidd contexte ([a-z][a-z-]*)$/) || [])[1];
+      if (cible && cible !== skill && !citees.has(cible)) problemes.push(`${skill} : Bash(${motif}) sans emploi`);
+      if (!motif.endsWith("*") && motifs.includes(`${motif} *`)) problemes.push(`${skill} : Bash(${motif}) doublé par Bash(${motif} *)`);
+    }
   }
   assert.deepStrictEqual(problemes, []);
 });
@@ -1027,7 +1101,8 @@ test("boucles d'implement et de spirc : review et commit chargés une seule fois
   assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
   assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
-  assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "spirc : commit chargée une fois");
+  // Deux emplois : aux prérequis (modifications à enregistrer d'abord) et au démarrage de la réalisation ; le second se saute si le premier a eu lieu.
+  assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 2, "spirc : commit chargée une fois par déroulé");
   for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
     assert.ok(spirc.includes(ref), ref);
 });
@@ -1430,6 +1505,75 @@ test("correction ciblée : l'implementer reçoit les constats et charge leurs fa
   for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /familles de qualité de la tâche/, skill);
 });
 
+// Aucune commande n'en lance une autre : les commandes /pulse:* ont disable-model-invocation: true.
+// Une commande enchaîne une étape avec `pulse-aidd etape <commande> --sans-communes`, ou écrit « tapez `/pulse:…` ».
+// Formes interdites (un verbe d'action adressé au modèle devant la commande) ; permis : une ligne qui dit « tapez »/« taper »,
+// et les lignes « Prochaine étape ».
+const LIGNE_PERMISE = /tapez|taper|Prochaine étape/i;
+const RENVOIS_INTERDITS = [
+  [/\b(?:lancer|enchaînez sur)\b[^`\n.]{0,25}`\/pulse:/, "lancer / enchaîner sur une commande", "Voulez-vous lancer `/pulse:spec US-003` d'abord ?"],
+  [/\bavec `\/pulse:(?:fix|auto-fix|get-help)\b/, "corriger ou demander de l'aide « avec /pulse:… »", "un par un, avec `/pulse:fix`"],
+  [/\bcorriger[^`\n]{0,20}\((?:ou )?`\/pulse:(?:fix|auto-fix)\b/, "corriger par /pulse:fix ou /pulse:auto-fix", "corriger (ou `/pulse:fix`)"],
+  [/erreurs : `\/pulse:auto-fix\b/, "beaucoup d'erreurs : /pulse:auto-fix", "s'il reste beaucoup d'erreurs : `/pulse:auto-fix`"],
+  [/\bpuis ?: ?`\/pulse:commit`/, "puis /pulse:commit", "puis : `/pulse:commit`, `git push`"],
+  [/\bpropos(?:er|ez) d'abord `\/pulse:review`/, "proposer d'abord /pulse:review", "proposer d'abord `/pulse:review` puis"],
+  [/« [^»\n]*`\/pulse:[^`\n]*` \(Recommandé\)/, "réponse proposée qui contient la commande", "« Reprendre avec `/pulse:init` (Recommandé) »"],
+  [/Recommandé\) » \(`\/pulse:/, "réponse proposée suivie de la commande", "« La reprendre (Recommandé) » (`/pulse:spirc US-XXX`)"],
+  [/(?:\bproposez|enchaînez sur) `\/pulse:secrets fuite\b|\bpropos(?:er|ez) `\/pulse:memory retenir\b/, "fuite ou mémoire lancée par une commande", "proposez `/pulse:secrets fuite`"],
+  [/\b(?:proposer|proposez|appliquer|appliquez|enchaîner sur|enchaînez sur|traite avec|enregistrer avec)\s+(?:d'abord\s+)?`\/pulse:(?:commit|fix|auto-fix|review|secrets fuite|get-help|memory retenir)\b/, "verbe d'action devant une commande que le modèle ne peut pas lancer", "l'enregistrer avec `/pulse:commit`"],
+  [/\(`\/pulse:memory retenir`\)/, "mémoire lancée par une commande", "fichier de décision (`/pulse:memory retenir`)"],
+  [/\b(?:enregistrer|mettre en ligne|enregistrez|mettez en ligne)\b[^`\n]{0,60}\(`\/pulse:(?:commit|deploy)\b|\bEnregistrer et mettre en ligne ?: ?`\/pulse:/i, "enregistrer ou mettre en ligne par une commande que le modèle ne peut pas lancer", "enregistrer (`/pulse:commit`), mettre en ligne (`/pulse:deploy`) ; Enregistrer et mettre en ligne : `/pulse:commit`"],
+];
+test("aucune commande n'en lance une autre : elle enchaîne une étape ou fait taper la suivante", () => {
+  for (const [forme, nom, exemple] of RENVOIS_INTERDITS) assert.match(exemple, forme, `la forme « ${nom} » reconnaît son exemple`);
+  const fautifs = [];
+  for (const { fichier, texte } of TEXTES) {
+    if (!/(^|[\\/])(skills|agents|references)[\\/]/.test(fichier)) continue;
+    texte.split("\n").forEach((ligne, i) => {
+      if (LIGNE_PERMISE.test(ligne)) return;
+      for (const [forme, nom] of RENVOIS_INTERDITS) if (forme.test(ligne)) fautifs.push(`${fichier}:${i + 1} (${nom})`);
+    });
+  }
+  assert.deepStrictEqual(fautifs, []);
+});
+
 test("une correction garde clean-code et la sécurité du code dès qu'elle touche le serveur", () => {
   assert.match(lire(RACINE, "agents", "implementer.md"), /Pour une correction : `clean-code`, les familles des constats reçus, et `securite` dès que la correction touche/);
+});
+
+test("spirc : le bout en bout se lance aussi en autonome, le rythme rapide est transmis, le profil « rapide » vaut -f", () => {
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  const groupe = spirc.slice(spirc.indexOf("### Test groupé"), spirc.indexOf("### Fin"));
+  assert.match(groupe, /\*\*En rythme complet\*\* : lancer d.abord « Tester de bout en bout »/, "Test groupé");
+  assert.match(spirc.slice(spirc.indexOf("### Fin")), /Rythme complet hors autonome, US faite : lancer « Tester de bout en bout »/, "Fin");
+  assert.doesNotMatch(spirc, /^Hors autonome, US faite/m);
+  assert.match(spirc, /Déléguer à \*\*`pulse:implementer`\*\*[^\n]*rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
+  assert.match(spirc, /le rythme est celui du profil \(« rapide » vaut `-f`\)/);
+});
+
+test("implementer : [I] Implémenter, en coulisse ; un secret à inventer est rendu à l'appelant", () => {
+  const texte = lire(RACINE, "agents", "implementer.md");
+  const description = texte.match(/^description:.*$/m)[0];
+  assert.match(description, /\/pulse:spirc \(\[I\] Implémenter\) et \/pulse:implement \(en coulisse\)/);
+  assert.doesNotMatch(description, /phase Exécuter|mode sous-agent/);
+  assert.match(texte, /un secret à inventer : son NOM, que l'appelant génère avec l'accord de la personne/);
+});
+
+test("agents : aucun ne cite les gestes qui touchent la production comme un geste à faire lui-même", () => {
+  for (const f of AGENTS_PAR_PLUGIN) assert.doesNotMatch(lire(f), /pulse-aidd secrets (generer|envoyer|elaguer|redeployer)/, path.relative(DEPOT, f));
+});
+
+test("pulse-aidd : SK n'est affecté qu'une fois", () => {
+  assert.strictEqual((lire(RACINE, "bin", "pulse-aidd").match(/^SK=/gm) || []).length, 1);
+});
+
+test("aucun motif allowed-tools ne finit par un guillemet isolé", () => {
+  const problemes = [];
+  for (const fichier of SKILLS_PAR_PLUGIN) {
+    for (const motif of motifsBash(fichier)) {
+      // Un guillemet en trop (nombre impair dans le motif) : Bash(start "" *.html") ne correspond à rien.
+      if ((motif.match(/"/g) || []).length % 2 === 1) problemes.push(`${path.relative(DEPOT, path.dirname(fichier))} : Bash(${motif})`);
+    }
+  }
+  assert.deepStrictEqual(problemes, []);
 });

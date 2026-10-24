@@ -25,7 +25,7 @@ Toujours **privé**, au nom du projet (minuscules, tirets), et **vide** : le pro
 ### 1b. Relier un dépôt existant
 
 1. Faire coller l'adresse du dépôt (HTTPS ou SSH).
-2. `git remote add origin <adresse>`, puis `git push -u origin <branche courante>`. Une fenêtre de connexion au fournisseur peut s'ouvrir au premier envoi : c'est normal, il faut l'accepter.
+2. Annoncer : « Claude Code va vous demander deux fois votre accord : d'abord pour relier ce projet au dépôt en ligne (un réglage de Git, fait une seule fois), puis pour y envoyer votre travail. » Puis `git remote add origin <adresse>`, puis `git push -u origin <branche courante>`. Une fenêtre de connexion au fournisseur peut s'ouvrir au premier envoi : c'est normal, il faut l'accepter.
 3. **Envoi refusé parce que le dépôt contient déjà des fichiers** (un README créé sur le site, par exemple) : expliquer, puis, avec accord : `git pull origin <branche> --allow-unrelated-histories`, régler les éventuels conflits avec la personne (garder les deux contenus en cas de doute), commiter, et renvoyer. Jamais d'envoi forcé.
 
 ### 1c. Noter
@@ -58,7 +58,7 @@ Appliqué par `/pulse:commit` juste après le commit d'une tâche, selon la lign
 - **Branche principale** : `git push`. La première fois, rappeler que, si le déploiement automatique est en place, la tâche est maintenant en ligne.
 - **Local** : tout reste local.
 - **Après l'envoi, passer directement à la suite.** La mise en ligne chez l'hébergeur se fait seule ; son suivi (état, journal, adresse) appartient à `/pulse:deploy` et `/pulse:status`. En rythme rapide (règles communes § 1), l'envoi se résume à une ligne : « Envoyé. »
-- Envoi refusé (le dépôt distant a des changements plus récents) : expliquer, proposer `git pull` puis un nouvel envoi ; jamais d'envoi forcé.
+- Envoi refusé (le dépôt distant a des changements plus récents) : appliquer la règle de `git.md` (§ 4, envoi refusé) ; jamais d'envoi forcé.
 
 ## 4. Fin du plan, en mode PR
 

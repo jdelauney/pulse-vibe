@@ -34,6 +34,6 @@ Sans pack de pile capable d'envoyer à l'hébergeur : la personne colle la valeu
 
 ## Si une valeur arrive quand même dans la conversation
 
-Dites-le tout de suite, sans la répéter, puis enchaînez sur `/pulse:secrets fuite` : la valeur est exposée, elle se révoque et se remplace. Remplacer le texte de la conversation ne suffit pas.
+Dites-le tout de suite, sans la répéter, puis appliquez tout de suite `pulse-aidd reference secrets/fuite.md` : la valeur est exposée, elle se révoque et se remplace. Remplacer le texte de la conversation ne suffit pas.
 
 Phrase à donner : « Cette clé est maintenant écrite dans l'historique de notre conversation. Par sécurité, on la change : c'est rapide, je vous guide. »

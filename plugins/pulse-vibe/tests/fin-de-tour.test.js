@@ -95,7 +95,7 @@ test("fichier relevé qui enfreint une règle : bloqué, la raison cite la règl
   assert.match(s.reason, /Les montants s'écrivent en centimes/);
   assert.match(s.reason, /src\/prix\.js/);
   assert.match(s.reason, /ligne 2/);
-  assert.match(s.reason, /pulse-aidd verifier/);
+  assert.match(s.reason, /relancez le contrôle cité \(ou `pulse-aidd verifier` pour une clé\)/);
   assert.match(s.reason, /une phrase simple/);
   assert.strictEqual(releve(d, e).relances, 1);
   assert.deepStrictEqual(releve(d, e).fichiers, ["src/prix.js"]);

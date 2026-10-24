@@ -2,7 +2,7 @@
 description: Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session
 argument-hint: "[creer | actualiser | compacter | retenir \"leçon ou décision\"]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git restore -- aidd_docs/memory/*) Bash(wc -l aidd_docs/memory/*) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Edit(./CLAUDE.md)
+allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-compactor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd memoire) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(wc -l aidd_docs/memory/*) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Edit(./CLAUDE.md)
 ---
 
 # /pulse:memory – La mémoire du projet
@@ -90,7 +90,7 @@ Modifier seulement après l'accord de la personne.
 
 La mémoire chargée à chaque session occupe le contexte de chaque conversation : limite de **200 lignes** au total pour `aidd_docs/memory/*.md`, compactage proposé à **95 %** (190 lignes), cible **140 lignes** pour garder de la place.
 
-1. **Mettre la version actuelle à l'abri** : `git status --short -- aidd_docs/memory/` doit être vide, pour pouvoir revenir en arrière. Sinon, dire en une phrase que des changements de la mémoire ne sont pas encore enregistrés, proposer `/pulse:commit` d'abord, et s'arrêter.
+1. **Mettre la version actuelle à l'abri** : `git status --short -- aidd_docs/memory/` doit être vide, pour pouvoir revenir en arrière. Sinon, dire en une phrase que des changements de la mémoire ne sont pas encore enregistrés, proposer de taper `/pulse:commit` d'abord, et s'arrêter.
 2. **Mesurer** : `wc -l aidd_docs/memory/*.md` (hors `README.md`).
 3. **Déléguer** au sous-agent **`pulse:memory-compactor`** : la limite (200), la cible (140), le nombre de lignes de chaque fichier. S'il est indisponible, faire le travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent memory-compactor`), et le signaler.
 4. **Présenter** en langage simple : lignes avant → après, puis les changements regroupés (resserré, déplacé, corrigé, retiré), en commençant par les retraits et les corrections ; montrer `git diff --stat -- aidd_docs/memory/` et les fichiers créés. Signaler en premier un secret retiré ou une contradiction à trancher.

@@ -45,7 +45,7 @@ Ce qu'il faut expliquer : `$ARGUMENTS`
    - tableau, objet (une liste, une fiche avec des champs) ;
    - stockage des données (un carnet où l'appli range ce qu'elle doit retenir) ;
    - requête et attente de la réponse (demander quelque chose à un serveur et attendre qu'il réponde).
-4. Si un problème de sécurité ou un bug est repéré au passage, le signaler en une ligne, laisser le code tel quel et proposer `/pulse:review`.
+4. Si un problème de sécurité ou un bug est repéré au passage, le signaler en une ligne, laisser le code tel quel et proposer de taper `/pulse:review`.
 
 ### Pour finir
 
