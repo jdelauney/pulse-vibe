@@ -117,7 +117,7 @@ trouver() { # trouver <references|assets> <nom> : le chemin partagé, sinon celu
 # ---------------------------------------------------------------- Packs de pile
 # Un pack de pile est un plugin qui fournit, dans son bin/, un outil pulse-pile-<id> :
 #   pulse-pile-<id> info                 id, nom, resume, version (une ligne « clé: valeur » chacun)
-#   pulse-pile-<id> contexte <commande>  consignes ajoutées au contexte de /pulse:<commande>
+#   pulse-pile-<id> contexte <libellé>   consignes du pack : une commande, `piles` ou `code` (un libellé inconnu ne renvoie rien)
 # Le projet le déclare dans docs/technical.md : « **Pack de pile Pulse** : <id> ».
 
 pack_declare() {

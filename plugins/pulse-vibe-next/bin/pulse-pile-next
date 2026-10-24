@@ -5,7 +5,7 @@
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
 #   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
-#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), ou piles (avant le choix de la pile) ; un libellé inconnu ne renvoie rien
+#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
