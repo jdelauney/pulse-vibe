@@ -2,21 +2,21 @@
 
 Un scénario Gherkin décrit un comportement attendu **en langage métier**, avec un exemple concret : une situation de départ, une action, un résultat observable. Il se lit sans savoir programmer, et il se traduit directement en test (`tests/ecrire-un-test.md` §2 et §3).
 
-Dans Pulse, les scénarios s'écrivent dans la spec (section « Scénarios »). Ils servent à trois choses : la personne valide le comportement avant le code, le test-writer en tire un test par exemple, et le test manuel les reprend. C'est un **format de spécification** : aucun outil d'exécution Gherkin n'est imposé, et le test-writer les traduit dans l'outil de test retenu.
+Dans Pulse, les scénarios s'écrivent dans la spec (section « Scénarios »). Ils servent à trois choses : la personne valide le comportement avant le code, le test-writer en tire un test par exemple, et le test manuel les reprend. C'est un **format de spécification** : le test-writer les traduit dans l'outil de test retenu, sans outil d'exécution Gherkin imposé.
 
 ## 1. Les mots-clés en français
 
-| Mot-clé | Rôle | Correspond dans le test à |
-|---|---|---|
-| `Fonctionnalité:` | Le sujet, une par spec (le titre de l'US) | Groupe de tests de premier niveau |
-| `Règle:` | Une règle métier de l'US, formulée comme une phrase vraie | Groupe de tests imbriqué |
-| `Exemple:` | Un cas concret qui illustre la règle (synonyme : `Scénario:`) | Un test |
-| `Contexte:` | Les étapes « Étant donné » communes à tous les exemples d'une règle | Préparation avant chaque test |
-| `Étant donné` | La situation de départ | `given…` |
-| `Quand` | L'action, une seule | `when…` |
-| `Alors` | Le résultat observable | `then…` |
-| `Et`, `Mais` | Prolongent l'étape précédente | Même type que l'étape prolongée |
-| `Plan du scénario:` + `Exemples:` | Le même scénario avec plusieurs jeux de valeurs (tableau) | Un test par ligne du tableau |
+| Mot-clé | Rôle |
+|---|---|
+| `Fonctionnalité:` | Le sujet, une par spec (le titre de l'US) |
+| `Règle:` | Une règle métier de l'US, formulée comme une phrase vraie |
+| `Exemple:` | Un cas concret qui illustre la règle (synonyme : `Scénario:`) |
+| `Contexte:` | Les étapes « Étant donné » communes à tous les exemples d'une règle |
+| `Étant donné` | La situation de départ |
+| `Quand` | L'action, une seule |
+| `Alors` | Le résultat observable |
+| `Et`, `Mais` | Prolongent l'étape précédente, du même type qu'elle |
+| `Plan du scénario:` + `Exemples:` | Le même scénario avec plusieurs jeux de valeurs (tableau) |
 
 ## 2. Écrire un bon scénario
 
@@ -26,7 +26,7 @@ Dans Pulse, les scénarios s'écrivent dans la spec (section « Scénarios »). 
 - **Un comportement par exemple** : une seule étape `Quand` ; `Alors` décrit un seul résultat, éventuellement prolongé par `Et` s'il s'agit du même résultat (le message et la liste mise à jour).
 - **Court** : 3 à 6 étapes. Un scénario plus long cache souvent deux comportements.
 - **Titre de l'exemple = situation et résultat** : « Facture échue hier et non payée : elle est en retard ».
-- **Observable** : `Alors` décrit ce que l'utilisateur voit ou obtient (un message, une liste, un refus, un e-mail reçu), jamais l'état interne du code.
+- **Observable** : `Alors` décrit ce que l'utilisateur voit ou obtient (un message, une liste, un refus, un e-mail reçu), plutôt que l'état interne du code.
 
 ## 3. Choisir les exemples
 
@@ -93,7 +93,8 @@ Fonctionnalité: Relance des factures en retard
 
 | Gherkin | Test (`tests/ecrire-un-test.md`) |
 |---|---|
-| `Fonctionnalité` / `Règle` / `Exemple` | Groupes de tests imbriqués et test, avec les mêmes titres |
+| `Fonctionnalité` / `Règle` / `Exemple` | Groupes de tests imbriqués (premier niveau, puis règle) et test, avec les mêmes titres |
+| `Contexte` | Préparation avant chaque test |
 | `Étant donné …` | `sut.given…(…)`, avec les valeurs du scénario |
 | `Quand …` | `sut.when…()` |
 | `Alors …` | `sut.then…(…)` |

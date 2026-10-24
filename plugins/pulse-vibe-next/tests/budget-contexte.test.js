@@ -125,7 +125,7 @@ const AGENTS_AVEC_PACK = {
   "implementer, tâche d'interface": { plafond: 64500, /* mesure 61 238 (pulse 0.50 : familles de qualité raccourcies) ; avant, 72 098 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "composants"], ["pile", "contexte", "implement"]] },
   "implementer, tâche serveur": { plafond: 68000, /* mesure 64 617 (pulse 0.50 : familles de qualité raccourcies) ; avant, 74 824 */ parties: [["agent", "implementer"], ["qualite", "clean-code", "securite"], ["pile", "contexte", "implement"]] },
   reviewer: { plafond: 59500, /* mesure 56 335 */ parties: [["agent", "reviewer"], ["qualite", "--checklists"], ["reference", "checklist-securite.md"], ["pile", "contexte", "review"]] },
-  "test-writer": { plafond: 43000, /* mesure 40 871 (pulse 0.50 : références de tests raccourcies) ; avant, 43 381 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"], ["pile", "contexte", "test"]] },
+  "test-writer": { plafond: 43000, /* mesure 40 730 (pulse 0.50 : références de tests raccourcies) ; avant, 43 381 */ parties: [["agent", "test-writer"], ["tests", "ecrire", "gherkin", "tdd", "unitaire"], ["pile", "contexte", "test"]] },
   "test-runner": { plafond: 29500, /* mesure 27 947 (pulse 0.50 : références de tests raccourcies) ; avant, 29 844 */ parties: [["agent", "test-runner"], ["tests", "ecrire", "unitaire"], ["pile", "contexte", "test"]] },
 };
 const chargementAgent = (parties) => parties.reduce((somme, args) => somme + taille(projetAvecPack, ...args), 0);
