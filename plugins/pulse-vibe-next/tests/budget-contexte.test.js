@@ -68,7 +68,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 const PARCOURS_AVEC_PACK = {
   "boucle implement de 4 tâches": { plafond: 120000, /* mesure 119 519 (relecture finale de la phase 1 : annonce des deux accords du dépôt distant) ; avant, 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
   "boucle spirc de 4 tâches": { plafond: 109000, /* mesure 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
-  "tech, pack choisi en cours de commande": { plafond: 130000, /* mesure 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
+  "tech, pack choisi en cours de commande": { plafond: 120000, /* mesure 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
 
 for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
@@ -83,26 +83,26 @@ for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
 // security 82 959, implement 75 811, spirc 74 842, review 68 538 (35 000 une fois le pack laissé au reviewer).
 // Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, au 500 supérieur.
 const PLAFONDS_COMMANDE_AVEC_PACK = {
-  "auto-fix": 49500, // mesure 46 786
-  cicd: 65500, // mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
-  deploy: 66000, // mesure 62 576
-  express: 51500, // mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
-  fix: 54500, // mesure 51 889
-  implement: 85500, // mesure 81 243 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
-  perf: 95000, // mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
-  plan: 103000, // mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
-  rediger: 36000, // mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
-  refine: 89000, // mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
-  review: 40000, // mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
-  "search-console": 60000, // mesure 57 057
-  secrets: 70500, // mesure 67 057
-  security: 83500, // mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
-  seo: 97000, // mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
-  spec: 53500, // mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  spirc: 93000, // mesure 92 604 (refactoring d'optimisation, tâche 1.4 : bout en bout lancé au test groupé en rythme complet, rythme rapide transmis à l'implementer, profil « rapide » = -f) ; avant, mesure 92 234 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 91 652 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  tech: 130000, // mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
+  "auto-fix": 47500, // mesure 44 903 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 46 786
+  cicd: 56500, // mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
+  deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
+  express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
+  fix: 53000, // mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
+  implement: 84500, // mesure 80 262 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 81 243 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 84 034 (pulse 0.42 : rythme rapide, option -f, gestes)
+  perf: 85500, // mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
+  plan: 99000, // mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
+  rediger: 26500, // mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
+  refine: 86000, // mesure 81 487 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
+  review: 39500, // mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
+  "search-console": 51500, // mesure 48 616 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 057
+  secrets: 62500, // mesure 59 103 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 67 057
+  security: 76000, // mesure 72 074 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
+  seo: 89500, // mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
+  spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
+  spirc: 92500, // mesure 87 675 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 604 (refactoring d'optimisation, tâche 1.4 : bout en bout lancé au test groupé en rythme complet, rythme rapide transmis à l'implementer, profil « rapide » = -f) ; avant, mesure 92 234 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 91 652 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 91 193 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 90 675 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 86 057 (pulse 0.48 : captures gardées, examen.md et ménage de la fin ; avant, 85 155 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  tech: 120000, // mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 52500, // mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
-  ui: 90000, // mesure 85 248
+  ui: 88000, // mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
 };
 
 test("chaque commande enrichie par le pack a un plafond avec pack", { skip: !fs.existsSync(COEUR) }, () => {
