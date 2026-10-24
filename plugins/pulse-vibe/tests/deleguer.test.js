@@ -22,7 +22,9 @@ const section = (texte, titre) => {
 const INFORMATIONS = {
   tâche: /identifiant, titre, objectif/,
   "critères d'acceptation": /critères d'acceptation/,
-  fichiers: /fichiers/,
+  "fichiers concernés": /fichiers concernés/,
+  glossaire: /mots du glossaire/,
+  "conception technique": /conception technique du plan/,
   "conventions de la mémoire": /conventions[^;\n]*mémoire/,
   "familles de qualité": /familles de qualité/,
   "tests essentiels": /tests essentiels/,

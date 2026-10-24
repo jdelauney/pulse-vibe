@@ -1139,7 +1139,14 @@ test("dernier tour : git grep -O, filtres de noms, --redact répété, hooksPath
 
 // ------------------------------------------------------------ Règles de Pulse lues en entier
 
-test("une sortie de règles Pulse coupée par un tube est refusée, avec la commande sans tube", () => {
+/** Sortie complète du hook (JSON), pour les décisions qui réécrivent la commande. */
+function sortieComplete(tool_input, outil = "Bash") {
+  const r = spawnSync("node", [HOOK], { input: JSON.stringify({ tool_name: outil, tool_input, cwd: os.tmpdir() }), encoding: "utf8", env: { ...process.env, PULSE_GARDE_COMMANDES_OFF: "" } });
+  assert.strictEqual(r.status, 0);
+  return r.stdout ? JSON.parse(r.stdout).hookSpecificOutput : null;
+}
+
+test("une sortie de règles Pulse coupée par un tube est relancée en entier (commande réécrite, accord limité à elle)", () => {
   for (const [c, sans] of [
     ["pulse-aidd qualite clean-code | head -80", "pulse-aidd qualite clean-code"],
     ["pulse-aidd qualite composants | head -60", "pulse-aidd qualite composants"],
@@ -1149,24 +1156,63 @@ test("une sortie de règles Pulse coupée par un tube est refusée, avec la comm
     ["pulse-aidd pile reference recettes/liste | cut -c1-80", "pulse-aidd pile reference recettes/liste"],
     ["pulse-aidd agent reviewer | less", "pulse-aidd agent reviewer"],
     ["pulse-aidd etape implement --sans-communes | awk 'NR<5'", "pulse-aidd etape implement --sans-communes"],
-    ["pulse-aidd contexte implement 2>&1 | head -50", "pulse-aidd contexte implement"],
+    ["pulse-aidd contexte implement 2>&1 | head -50", "pulse-aidd contexte implement 2>&1"],
+    ["pulse-aidd qualite clean-code | head -20 | grep -v x", "pulse-aidd qualite clean-code"],
+    ["pulse-pile-next contexte implement | head -5", "pulse-pile-next contexte implement"],
   ]) {
-    const d = refus(c);
-    assert.ok(d.raison.includes(sans), `la commande sans tube est donnée : ${c}`);
-    assert.match(d.raison, /règles de Pulse/);
-    assert.match(d.raison, /lisez ce fichier en entier/);
+    const entree = { command: c, description: "Lire les règles", timeout: 30000 };
+    const s = sortieComplete(entree);
+    assert.ok(s, `décision attendue : ${c}`);
+    assert.strictEqual(s.hookEventName, "PreToolUse");
+    assert.strictEqual(s.permissionDecision, "allow", c);
+    assert.deepStrictEqual(s.updatedInput, { command: sans, description: "Lire les règles", timeout: 30000 }, c);
+    assert.match(s.additionalContext, /La coupure \(`\| …`\) a été retirée/);
+    assert.match(s.additionalContext, /lisez ce fichier en entier/);
   }
 });
 
-test("une sortie de règles Pulse coupée est refusée aussi sous PowerShell", () => {
-  const d = refusPs("pulse-aidd qualite clean-code | Select-Object -First 60");
-  assert.match(d.raison, /pulse-aidd qualite clean-code`/);
-  refusPs("pulse-aidd pile contexte implement | Select-Object -Skip 2");
+test("une sortie de règles Pulse coupée est relancée en entier aussi sous PowerShell", () => {
+  const s = sortieComplete({ command: "pulse-aidd qualite clean-code | Select-Object -First 60", description: "d" }, "PowerShell");
+  assert.strictEqual(s.permissionDecision, "allow");
+  assert.deepStrictEqual(s.updatedInput, { command: "pulse-aidd qualite clean-code", description: "d" });
+  const t = sortieComplete({ command: "pulse-aidd pile contexte implement | Select-Object -Skip 2" }, "PowerShell");
+  assert.strictEqual(t.updatedInput.command, "pulse-aidd pile contexte implement");
+});
+
+test("une coupure suivie d'autre chose, ou dans un sous-shell, reste refusée avec la commande sans tube", () => {
+  for (const c of [
+    "pulse-aidd qualite clean-code | head -60; cat x",
+    "pulse-aidd qualite clean-code | head -60 && git status",
+    "pulse-aidd qualite clean-code | head -60 || echo vide",
+    "pulse-aidd qualite clean-code | head -60\ngit status",
+    "pulse-aidd qualite clean-code | head -60 & git status",
+    "pulse-aidd qualite clean-code | head -60 | tee $(echo f)",
+    "bash -c 'pulse-aidd qualite clean-code | head -60'",
+    "(pulse-aidd qualite clean-code | head -60)",
+    "echo ok; pulse-aidd qualite clean-code | head -60",
+    "pulse-aidd qualite $(echo clean-code) | head -60",
+    "pulse-aidd qualite 'clean-code' | head -60",
+  ]) {
+    const d = refus(c);
+    assert.match(d.raison, /règles de Pulse/);
+    assert.match(d.raison, /lisez ce fichier en entier/);
+  }
+  assert.match(refus("pulse-aidd qualite clean-code | head -60; cat x").raison, /pulse-aidd qualite clean-code`/);
+  refusPs("pulse-aidd qualite clean-code | Select-Object -First 2; Get-Date");
+});
+
+test("une coupure qui déclenche un autre refus reste refusée, jamais réécrite", () => {
+  const d = refus("pulse-aidd qualite clean-code | grep KEY .env");
+  assert.strictEqual(sortieComplete({ command: "pulse-aidd qualite clean-code | grep KEY .env" }).permissionDecision, "deny");
+  assert.match(d.raison, /\.env/);
+  assert.strictEqual(sortieComplete({ command: "pulse-aidd qualite clean-code | head -3 && git push --force" }).permissionDecision, "deny");
 });
 
 test("les règles de Pulse sans tube, en chaîne ou avec une autre commande passent", () => {
   passe("pulse-aidd qualite clean-code");
   passe("pulse-aidd qualite clean-code && git status");
+  passe("npm test | tail");
+  assert.strictEqual(sortieComplete({ command: "npm test | tail" }), null);
   passe("pulse-aidd qualite clean-code ; git status | head -5");
   passe("pulse-aidd tests ecrire 2>&1");
   passe("pulse-aidd qualite clean-code || echo vide");

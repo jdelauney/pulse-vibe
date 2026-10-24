@@ -4,7 +4,7 @@ Utilisé par `/pulse:spirc` et `/pulse:implement`. L'agent lit lui-même `docs/t
 
 ## Le message
 
-- la tâche (identifiant, titre, objectif, fichiers) et ses critères d'acceptation complets, repris du fichier de l'US ; ce que la conception technique du plan dit de cette tâche ;
+- la tâche (identifiant, titre, objectif), ses fichiers concernés et ses critères d'acceptation complets, repris du fichier de l'US ; ce que la conception technique du plan dit de cette tâche ;
 - les familles de qualité de la tâche : `clean-code`, plus `composants` (interface), `securite` (point d'entrée serveur, action, route, base), `organisation` (fichier ou dossier créé) ;
 - les conventions et pièges de la mémoire du projet (`aidd_docs/memory/technical.md`) et les mots du glossaire utiles à la tâche ;
 - rythme rapide : « tests essentiels » (référence « Tests automatiques », § 2 bis) ;
