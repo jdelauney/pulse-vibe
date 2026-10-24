@@ -97,7 +97,7 @@ test("racineGit : la racine d'un dépôt, null hors dépôt", () => {
   const d = path.join(BASE, "depot");
   fs.mkdirSync(path.join(d, "sous"), { recursive: true });
   spawnSync("git", ["init", "-q"], { cwd: d });
-  assert.strictEqual(path.resolve(tour.racineGit(path.join(d, "sous"))).toLowerCase(), path.resolve(fs.realpathSync(d)).toLowerCase());
+  assert.strictEqual(path.resolve(tour.racineGit(path.join(d, "sous"))).toLowerCase(), path.resolve(fs.realpathSync.native(d)).toLowerCase());
   assert.strictEqual(tour.racineGit(fs.mkdtempSync(path.join(BASE, "vide-"))), null);
 });
 
@@ -218,4 +218,19 @@ test("noter : un fichier désigné par un lien symbolique vers la racine reste d
   const e3 = { session_id: "sym3", tool_input: { file_path: path.join(BASE, "ailleurs.ts") } };
   tour.noter(e3, lien);
   assert.deepStrictEqual(tour.lireTour(e3, lien).fichiers, [], "hors du projet");
+});
+
+test("noter : fichier écrit par un autre chemin du projet (lien, nom court Windows) dans un dossier qui n'existe pas encore", (t) => {
+  const d = projetPulse();
+  const alias = path.join(BASE, `alias-${path.basename(d)}`);
+  try {
+    fs.symlinkSync(d, alias, "junction");
+  } catch (e) {
+    return t.skip("lien non permis ici");
+  }
+  const racine = tour.racineGit(d);
+  const e = (f) => ({ session_id: "s12", tool_input: { file_path: f } });
+  tour.noter(e(path.join(alias, "src", "neuf", "a.ts")), racine);
+  assert.deepStrictEqual(tour.lireTour(e(""), racine).fichiers, ["src/neuf/a.ts"]);
+  tour.effacerTour(e(""), racine);
 });

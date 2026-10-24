@@ -81,14 +81,29 @@ function ecrire(racine, k, etat) {
 
 const sansFinDeChemin = (p) => p.replace(/\\/g, "/").replace(/\/+$/, "");
 
-/** Le fichier (par son dossier parent existant) et la racine, liens symboliques résolus ; null quand l'un des deux ne se résout pas. */
-function resolus(abs, racine) {
-  try {
-    const dossier = sansFinDeChemin(fs.realpathSync(path.posix.dirname(abs)));
-    return { abs: `${dossier}/${path.posix.basename(abs)}`, r: sansFinDeChemin(fs.realpathSync(racine)) };
-  } catch {
-    return null;
+/** Le chemin réel : son plus proche dossier existant résolu (liens symboliques, noms courts Windows comme RUNNER~1),
+ * suivi du reste du chemin tel quel ; null quand rien ne se résout. realpathSync.native, car realpathSync garde les noms courts. */
+function reel(p) {
+  let existant = p;
+  const reste = [];
+  for (;;) {
+    try {
+      const r = sansFinDeChemin(fs.realpathSync.native(existant));
+      return reste.length ? `${r}/${reste.reverse().join("/")}` : r;
+    } catch {
+      const parent = path.posix.dirname(existant);
+      if (parent === existant) return null;
+      reste.push(path.posix.basename(existant));
+      existant = parent;
+    }
   }
+}
+
+/** Le fichier (par son dossier) et la racine, chemins réels ; null quand l'un des deux ne se résout pas. */
+function resolus(abs, racine) {
+  const dossier = reel(path.posix.dirname(abs));
+  const r = reel(sansFinDeChemin(String(racine)));
+  return dossier && r ? { abs: `${dossier}/${path.posix.basename(abs)}`, r } : null;
 }
 
 /** Le chemin relatif à la racine, avec des `/`, ou null quand le fichier est hors du projet. */
