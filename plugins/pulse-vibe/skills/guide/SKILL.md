@@ -43,10 +43,10 @@ Argument : `$ARGUMENTS`
 3. **Contrôler la cohérence** avec le projet, en lecture seule :
    - une tâche `[~]` sans trace de travail (ligne `en-cours-sans-trace` de `pulse-aidd etat --tableau`) ou une tâche `[ ]` déjà réalisée dans le code : le signaler, et proposer `/pulse:refine` pour corriger le plan ;
    - une action manuelle qui manque probablement dans le plan (ex. appliquer un schéma dans la console du fournisseur de données, saisir une variable d'environnement chez l'hébergeur, selon `docs/technical.md`) : la signaler de la même façon.
-4. **Présenter** : la **prochaine commande à copier** (celle de « Où en êtes-vous ? », la même que `/pulse:status`), la progression en une ligne, puis les actions manuelles ⚠️ à prévoir, l'apport propre au guide.
+4. **Présenter** : la **prochaine commande à copier** : lancer `pulse-aidd etat` et donner sa `prochaine` (la même que `/pulse:status`) ; si elle diffère de « Où en êtes-vous ? » du guide (site en ligne, versions pas encore envoyées), dire que c'est l'étape à jour. Ensuite, la progression en une ligne et les actions manuelles ⚠️ à prévoir, l'apport propre au guide.
 5. Avec l'argument `expliquer` : parcourir avec la personne la page du plan en cours, une tâche à la fois : ce que fait chaque commande, et pourquoi cet ordre (réaliser → relire et tester → enregistrer).
 
-Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée dans « Où en êtes-vous ? » du guide.
+Terminer avec le bloc de fin de commande. Prochaine étape : la `prochaine` de `pulse-aidd etat` (étape 4).
 
 ## Exemples
 

@@ -218,7 +218,17 @@ function ecrireIndex(plans, nom, conseil) {
   if (!suite) {
     lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
   }
-  lignes.push(`Prochaine commande à copier (la même que \`/pulse:status\`) : ${conseil.raison}.`, "", "```", conseil.prochaine, "```", "");
+  lignes.push(
+    `Prochaine commande à copier : ${conseil.raison}.`,
+    "",
+    "```",
+    conseil.prochaine,
+    "```",
+    "",
+    // Sans Git ni suivi du référencement (le guide n'est refait qu'au changement d'un plan) : le dire franchement.
+    "C'est la même que `/pulse:status`, sauf une fois le site en ligne ou quand des versions enregistrées ne sont pas encore envoyées : tapez alors `/pulse:status` pour l'étape à jour.",
+    "",
+  );
   if (suite) {
     lignes.push(`Tâche à reprendre : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}).`, "");
     const autre = usEnParallele(plans, suite.plan);
