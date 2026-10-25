@@ -108,4 +108,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si 
 
 !`pulse-aidd contexte cicd`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.

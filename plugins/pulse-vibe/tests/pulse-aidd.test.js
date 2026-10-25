@@ -93,8 +93,11 @@ test("contexte secrets : règles communes, saisie hors conversation, fuite, mod�
     assert.ok(r.stdout.includes(`===== ${titre}`), titre);
 });
 
-test("contexte deploy : saisie des secrets hors conversation ; contexte security : le modèle de docs/securite.md seul", () => {
-  assert.ok(lancer("contexte", "deploy").stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), "deploy");
+test("contexte deploy : les règles communes seules, chaque mode lance sa référence ; contexte security : le modèle de docs/securite.md seul", () => {
+  const deploy = lancer("contexte", "deploy").stdout;
+  assert.ok(deploy.includes("===== Règles communes Pulse ====="), "deploy : règles communes");
+  assert.deepStrictEqual([...deploy.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]), ["Règles communes Pulse"], "deploy : rien d'autre");
+  for (const mode of ["premiere", "production", "variables"]) assert.strictEqual(lancer("reference", `deploy/${mode}.md`).status, 0, mode);
   const security = lancer("contexte", "security").stdout;
   assert.ok(security.includes("===== Modèle : docs/securite.md ====="), "security : modèle");
   for (const titre of ["Garder la valeur d'un secret hors de la conversation", "Checklist sécurité", "Modèle : mention de confidentialité"])
