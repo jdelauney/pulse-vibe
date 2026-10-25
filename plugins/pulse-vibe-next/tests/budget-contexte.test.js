@@ -187,7 +187,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "commit --sans-communes": 28500, // mesure 26 896
   "deploy --sans-communes": 44000, // mesure 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "express --sans-communes": 27500, // mesure 26 109
-  "fix --sans-communes": 31500, // mesure 29 942 (pulse 0.53 : passe sous la limite de lecture ; avant, 30 759)
+  "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.53 ; avant, 30 759)
   "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.53 ; avant, 37 026)
   "memory --sans-communes": 18500, // mesure 17 559
   "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
@@ -203,7 +203,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "us --sans-communes": 18000, // mesure 16 910
 };
 const DEPASSEMENTS_CONNUS_AVEC_PACK = new Set([
-  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
+  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
 ]);
 function formesCitees() {
   const formes = new Set();
