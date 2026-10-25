@@ -9,8 +9,8 @@
 // 3 échec Git (l'entrée mise de côté est gardée ; après une remise en conflit, l'arbre est ramené à l'état d'avant). Chemins refusés : avec « .. », absolus, ou avec une lettre de lecteur.
 // Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), reset --merge (seulement juste après notre
 // propre stash apply en échec, sur un dossier vérifié propre au départ), lectures (status, stash list, stash show, ls-files, ls-tree, check-ignore, rev-parse).
-// `mettre-de-cote` refuse d'avance (code 2) ce que `git stash push` ne sait pas mettre de côté : suppression ou renommage enregistrés, fichier ignoré
-// ajouté de force. Si Git échoue quand même après avoir créé une entrée, elle est signalée (`mise-de-cote-orpheline`, code 3).
+// `mettre-de-cote` refuse d'avance (code 2) dès qu'un fichier est déjà préparé pour un enregistrement (`git stash push` emporte toute la préparation),
+// et pour un fichier ignoré ajouté de force. Si Git échoue quand même après avoir créé une entrée, elle est signalée (`mise-de-cote-orpheline`, code 3).
 // `remettre` n'agit que sur un dossier propre (sinon arbre-occupe, code 2) : aucun changement suivi ou enregistré, sauf une modification non enregistrée
 // d'un document de docs/ ou aidd_docs/ hors des chemins de l'entrée (le plan coché juste avant ; `reset --merge` la garde) ; aucun chemin de l'entrée
 // ni de ses dossiers déjà occupé ; aucun fichier neuf de l'entrée suivi depuis par le projet.
@@ -26,11 +26,11 @@ const sortir = (code, lignes) => {
   process.exit(code);
 };
 
-/** Lance git à `cwd` ; les chemins reçus sont pris tels quels (jamais comme motifs ; check-ignore les prend tels quels sans ce réglage, qu'il refuse). */
+/** Lance git à `cwd` ; les chemins reçus sont pris tels quels (jamais comme motifs ; check-ignore refuse ce réglage : ses chemins portent `:(top)`). */
 function git(cwd, args, entree) {
   const env = { ...process.env, GIT_LITERAL_PATHSPECS: args[0] === "check-ignore" ? "0" : "1" };
   const r = spawnSync("git", args, { cwd, encoding: "utf8", env, input: entree });
-  return { ok: r.status === 0, sortie: r.stdout || "", erreur: (r.stderr || "").trim() || (r.error ? String(r.error.message) : "") };
+  return { ok: r.status === 0, code: r.status, sortie: r.stdout || "", erreur: (r.stderr || "").trim() || (r.error ? String(r.error.message) : "") };
 }
 
 /** Un chemin du dépôt, avec « / », ou null s'il sort du dossier. */
@@ -121,17 +121,19 @@ function mettreDeCote(racine, tn, demandes) {
 /** Les empreintes des entrées mises de côté, de la plus récente à la plus ancienne. */
 const empreintes = (racine) => git(racine, ["stash", "list", "--format=%H"]).sortie.split("\n").filter(Boolean);
 
-/** Les fichiers que `git stash push` ne sait pas mettre de côté, avec la raison : renommage ou suppression enregistrés, fichier ignoré. */
+/**
+ * Ce qui empêche `git stash push` de mettre de côté ces fichiers seuls, une ligne « chemin (raison) » par chemin : tout fichier déjà préparé pour
+ * un enregistrement, même d'une autre tâche (Git emporterait toute la préparation, et la remise perdrait la version préparée), et les fichiers ignorés.
+ */
 function intransportables(racine, arbre, fichiers) {
   const raisons = new Map();
-  for (const e of arbre) {
-    if (!fichiers.includes(e.chemin)) continue;
-    if (/[RC]/.test(e.xy[0])) raisons.set(e.chemin, "renommage enregistré");
-    else if (e.xy[0] === "D") raisons.set(e.chemin, "suppression enregistrée");
-  }
-  const ignores = git(racine, ["check-ignore", "--no-index", "-z", "--stdin"], fichiers.join("\0") + "\0").sortie.split("\0").filter(Boolean);
-  for (const f of ignores) if (!raisons.has(f)) raisons.set(f, "fichier ignoré");
-  return fichiers.filter((f) => raisons.has(f)).map((f) => `${f} (${raisons.get(f)})`);
+  for (const e of arbre) if (!/^[ ?]/.test(e.xy) && !raisons.has(e.chemin)) raisons.set(e.chemin, "déjà préparé pour un enregistrement");
+  // `:(top)` : chaque chemin lu tel quel, même s'il commence par « : » ; check-ignore répond 0 (certains ignorés) ou 1 (aucun).
+  const c = git(racine, ["check-ignore", "--no-index", "-z", "--stdin"], fichiers.map((f) => `:(top)${f}\0`).join(""));
+  const ignores = c.code === 0 || c.code === 1 ? c.sortie.split("\0").filter(Boolean).map((f) => f.replace(/^:\(top\)/, "")) : fichiers;
+  const raison = c.code === 0 || c.code === 1 ? "fichier ignoré" : "impossible de vérifier s'il est ignoré";
+  for (const f of ignores) if (!raisons.has(f)) raisons.set(f, raison);
+  return [...raisons].map(([f, r]) => `${f} (${r})`);
 }
 
 /** Ce qui empêche la remise : les changements en cours (sauf un document de la méthode modifié sans être enregistré, hors de l'entrée) et les chemins de l'entrée déjà occupés. */

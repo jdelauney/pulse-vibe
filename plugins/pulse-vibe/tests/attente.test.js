@@ -297,7 +297,6 @@ test("remettre : en conflit, un fichier non suivi d'une autre tâche reste octet
 test("remettre : un chemin de l'entrée devenu un dossier avec une modification non enregistrée : refus avant tout, la modification reste", () => {
   const d = depot();
   ecrire(d, "src/x", "x-T4\n");
-  git(d, "add", "src/x");
   assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/x").status, 0);
   ecrire(d, "src/x/m.js", "m1\n");
   git(d, "add", "src/x/m.js");
@@ -379,7 +378,7 @@ test("mettre-de-cote : un renommage enregistré (git mv) est refusé d'avance, d
     assert.strictEqual(git(d, "stash", "list").stdout, "");
   }
   const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/b.js");
-  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js (renommage enregistré)", "src/b.js (renommage enregistré)"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js (déjà préparé pour un enregistrement)", "src/b.js (déjà préparé pour un enregistrement)"]);
   nettoyer(d);
 });
 
@@ -394,7 +393,7 @@ test("mettre-de-cote : une suppression enregistrée (git rm) est refusée d'avan
   const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/c.js");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
-  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (suppression enregistrée)"]);
+  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (déjà préparé pour un enregistrement)"]);
   assert.strictEqual(statut(d), avant);
   assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a2\n");
   assert.strictEqual(git(d, "stash", "list").stdout, "");
@@ -415,7 +414,7 @@ test("mettre-de-cote : un fichier ajouté de force dans un dossier ignoré est r
   const r = lancer(d, "mettre-de-cote", "T4", "--", "build/suivi.js", "build/neuf.js");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
-  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["build/neuf.js (fichier ignoré)", "build/suivi.js (fichier ignoré)"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["build/neuf.js (déjà préparé pour un enregistrement)", "build/suivi.js (fichier ignoré)"]);
   assert.strictEqual(statut(d), avant);
   assert.strictEqual(git(d, "stash", "list").stdout, "");
   nettoyer(d);
@@ -509,5 +508,74 @@ test("remettre : en conflit, les dossiers vides créés par la remise sont retir
   assert.ok(!fs.existsSync(path.join(d, "lib")), "lib/ retiré");
   assert.ok(!fs.existsSync(path.join(d, "vide/sous")), "vide/sous/ retiré");
   assert.ok(fs.existsSync(path.join(d, "vide")), "vide/ gardé");
+  nettoyer(d);
+});
+
+test("mettre-de-cote : une suppression préparée par une autre tâche fait refuser d'avance (Git l'emporterait), rien ne change", () => {
+  const d = depot();
+  ecrire(d, "src/c.js", "c\n");
+  git(d, "add", "src/c.js");
+  git(d, "commit", "-q", "-m", "c");
+  git(d, "rm", "-q", "src/c.js"); // l'autre tâche
+  ecrire(d, "src/a.js", "a-T4\n"); // T4, non préparé
+  const avant = statut(d);
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (déjà préparé pour un enregistrement)"]);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T4\n");
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+test("mettre-de-cote : un fichier demandé préparé puis changé encore (MD, AM, MM) est refusé d'avance, rien ne change", () => {
+  const d = depot();
+  ecrire(d, "src/m.js", "m1\n");
+  git(d, "add", "src/m.js");
+  git(d, "commit", "-q", "-m", "m");
+  ecrire(d, "src/a.js", "a-prepare\n");
+  git(d, "add", "src/a.js");
+  fs.rmSync(path.join(d, "src/a.js")); // MD
+  ecrire(d, "src/n.js", "n-prepare\n");
+  git(d, "add", "src/n.js");
+  ecrire(d, "src/n.js", "n-encore\n"); // AM
+  ecrire(d, "src/m.js", "m-prepare\n");
+  git(d, "add", "src/m.js");
+  ecrire(d, "src/m.js", "m-encore\n"); // MM
+  const avant = statut(d);
+  const indexAvant = git(d, "diff", "--cached").stdout;
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/n.js", "src/m.js");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js", "src/m.js", "src/n.js"].map((f) => `${f} (déjà préparé pour un enregistrement)`));
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "diff", "--cached").stdout, indexAvant);
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+// Windows refuse « : » dans un nom de fichier : ce test tourne sous Linux et macOS (CI Ubuntu).
+test("mettre-de-cote : un nom qui commence par « : » est lu tel quel pour les fichiers ignorés", { skip: process.platform === "win32" && "Windows refuse « : » dans un nom de fichier" }, () => {
+  const d = depot();
+  ecrire(d, ".gitignore", "/:x\n");
+  ecrire(d, ":x", "x1\n");
+  ecrire(d, ":!q", "q1\n");
+  ecrire(d, ":(top)z", "z1\n");
+  spawnSync("git", ["add", "-f", ".gitignore", ":x", ":!q", ":(top)z"], { cwd: d, env: { ...ENV, GIT_LITERAL_PATHSPECS: "1" } });
+  git(d, "commit", "-q", "-m", "deux-points");
+  ecrire(d, ":x", "x2\n"); // suivi, ignoré, modifié
+  ecrire(d, ":!q", "q2\n"); // suivi, modifié
+  ecrire(d, ":(top)z", "z2\n");
+  const avant = statut(d);
+  let r = lancer(d, "mettre-de-cote", "T4", "--", ":x", ":!q", ":(top)z");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "refuse"), [":x (fichier ignoré)"]);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  r = lancer(d, "mettre-de-cote", "T4", "--", ":!q", ":(top)z");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "fichier").sort(), [":!q", ":(top)z"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, ":!q"), "utf8"), "q1\n");
   nettoyer(d);
 });
