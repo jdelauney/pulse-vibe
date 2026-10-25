@@ -35,6 +35,7 @@ const SCRIPTS = {
   "e2e.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/e2e", "x\\n"); console.log("# tests 1\\n# pass 1");`,
   "rapport.js": `require("fs").writeFileSync("rapport.xml", String(Date.now())); console.log("# tests 2\\n# pass 2");`,
   "vide.js": `console.log("# tests 0\\n# pass 0");`,
+  "build-ecrit.js": `require("fs").writeFileSync("sortie.txt", String(Date.now()));`,
 };
 const TECHNIQUE = {
   tester: "`node tests.js` (bout en bout : `node e2e.js`)",
@@ -355,7 +356,7 @@ test("fins de ligne CRLF avec core.autocrlf : à jour tant que le contenu ne cha
   assert.strictEqual(preuve(p, "etat").status, 0, "copie de travail passée en CRLF : à jour");
 });
 
-test("fichiers de test refusés (.., chemin absolu, lecteur, option) : code 2, rien n'est lancé ; tache sans fichier : code 1", () => {
+test("fichiers de test refusés (.., chemin absolu, lecteur, option) : code 2, rien n'est lancé ; options inconnues : code 1", () => {
   const p = depot();
   for (const f of ["../x.test.js", "/tmp/x.test.js", "C:/x.test.js", "src/a b.test.js", "-r"]) {
     const r = preuve(p, "lancer", "--portee", "tache", f);
@@ -363,7 +364,6 @@ test("fichiers de test refusés (.., chemin absolu, lecteur, option) : code 2, r
   }
   assert.ok(!lance(p.traces, "tests") && !lance(p.traces, "lint"));
   assert.ok(!fs.existsSync(fichierPreuve(p.d)));
-  assert.strictEqual(preuve(p, "lancer", "--portee", "tache").status, 1);
   assert.strictEqual(preuve(p, "lancer", "--portee", "autre").status, 1);
   assert.strictEqual(preuve(p, "etat", "--exiger", "autre").status, 1);
   assert.strictEqual(preuve(p).status, 1);
@@ -400,4 +400,59 @@ test("aucun test trouvé : ❌ signalé comme un problème du projet, à corrige
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1);
   assert.match(r.stdout, /la commande « Tester » de docs\/technical\.md ne lance aucun test : corrigez-la, ou écrivez « aucune » si le projet n'a pas de tests/);
+});
+
+const sansTester = (lignes) => "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n" + lignes + "| Contrôles automatiques | `node lint.js` |\n";
+
+test("« Tester » sans accents graves : la cellule est la commande, lancée comme les autres", () => {
+  const p = depot();
+  ecrire(p.d, "docs/technical.md", sansTester("| Tester | node tests.js |\n"));
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /tests 3\/3 ✅ \(suite\)/);
+  assert.ok(lance(p.traces, "tests"), "la commande sans accents graves est lancée");
+  assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 0);
+});
+
+test("ligne « Tester » absente ou vide : ❌, code 1, jamais prise pour « aucune »", () => {
+  for (const lignes of ["", "| Tester |  |\n"]) {
+    const p = depot();
+    ecrire(p.d, "docs/technical.md", sansTester(lignes));
+    const r = preuve(p, "lancer");
+    assert.strictEqual(r.status, 1, r.stdout);
+    assert.match(r.stdout, /ligne « Tester » absente de docs\/technical\.md/);
+    assert.doesNotMatch(r.stdout, /choix du projet/);
+    assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 1);
+  }
+});
+
+test("preuve rouge : etat --exiger construction dit les échecs avant la construction ; construire la refuse (code 2)", () => {
+  const p = depot({ controles: "`node echec.js`" });
+  assert.strictEqual(preuve(p, "lancer").status, 1);
+  const e = preuve(p, "etat", "--exiger", "construction");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /Échecs à corriger/);
+  assert.doesNotMatch(e.stdout, /ajoutez-la/);
+  const c = preuve(p, "construire");
+  assert.strictEqual(c.status, 2, c.stdout);
+  assert.match(c.stdout, /échecs à corriger d'abord ; rien n'a été lancé/);
+  assert.ok(!lance(p.traces, "build"));
+});
+
+test("construire : un fichier compté écrit par la construction est signalé, la preuve devient périmée", () => {
+  const p = depot({ construire: "`node build-ecrit.js`" });
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  const c = preuve(p, "construire");
+  assert.match(c.stdout, /Fichiers écrits pendant la construction : sortie\.txt/);
+  assert.match(preuve(p, "etat").stdout, /^preuve: périmée/m);
+});
+
+test("--portee tache sans fichier (tâche sans test, filet limité) : contrôles seuls, aucun test lancé", () => {
+  const p = depot();
+  const r = preuve(p, "lancer", "--portee", "tache");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /tests : aucun fichier de test pour cette tâche/);
+  assert.ok(lance(p.traces, "lint") && !lance(p.traces, "tests"));
+  assert.strictEqual(preuve(p, "etat").status, 0);
+  assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 1);
 });
