@@ -183,7 +183,7 @@ test("structure : spirc, auto-fix et implement laissent le pack à leurs agents 
 const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES_AVEC_PACK = {
   "auto-fix --sans-noyau": 12500, // mesure 11 686
-  "brainstorm --sans-communes": 22000, // mesure 20 653
+  "brainstorm --sans-communes": 21500, // mesure 20 265 (tâche 6.3 : règles citées au lieu d'être recopiées) ; avant, 20 653
   "cicd --sans-communes": 42500, // mesure 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "commit --sans-communes": 28500, // mesure 26 896
   "deploy --sans-communes": 44000, // mesure 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK

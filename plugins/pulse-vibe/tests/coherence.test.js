@@ -741,6 +741,23 @@ test("règles communes : rondes de 4 questions, réponses libres en texte, mode 
   assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-realisation.md"]);
 });
 
+test("brainstorm et « Penser avant d'écrire » citent les règles communes 4, 5 et 10 et les règles de la mémoire au lieu de les recopier", () => {
+  const brainstorm = lire(RACINE, "skills", "brainstorm", "SKILL.md");
+  assert.match(brainstorm, /Les questions secondaires suivent la règle commune 5 ; la description de la réponse recommandée dit pourquoi\./);
+  assert.doesNotMatch(brainstorm, /2 à 4 réponses concrètes/);
+  assert.match(brainstorm, /^#### 2\. Chercher avant de demander$/m);
+  assert.doesNotMatch(brainstorm, /Les décisions appartiennent à la personne\*\* : besoin, priorités/);
+  assert.match(brainstorm, /S'en tenir à la complexité qu'elle a mentionnée/);
+  assert.match(brainstorm, /`pulse:explorer`/);
+  assert.match(brainstorm, /seulement si les 3 conditions des règles de la mémoire sont réunies/);
+  assert.doesNotMatch(brainstorm, /difficile à défaire, surprenante sans contexte/);
+  // Le test de compréhension porte le principe « la personne raisonne » : gardé mot pour mot.
+  assert.ok(brainstorm.includes("2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief."));
+  const raisonnement = lire(RACINE, "references", "raisonnement.md");
+  assert.match(raisonnement, /^# Penser avant d'écrire \(\/pulse:brainstorm, \/pulse:prd, \/pulse:us, \/pulse:express\)$/m);
+  assert.match(raisonnement, /\| AskUserQuestion selon la règle commune 5 \|/);
+});
+
 test("implement : questions de démarrage en clair et mode découverte", () => {
   const texte = skillTexte("implement");
   assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);
