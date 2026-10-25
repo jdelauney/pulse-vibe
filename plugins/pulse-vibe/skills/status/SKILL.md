@@ -23,7 +23,7 @@ Argument : `$ARGUMENTS` (vide : le tableau de bord ; `ligne` ou `ligne retirer` 
 
 ## Processus
 
-1. **Tableau** : lancer `pulse-aidd etat --tableau`. Ses lignes donnent tout le tableau de bord, sans autre lecture : l'avancement (`etapes`, `mvp`), la prochaine étape (`prochaine`, `raison`, `regle`, `aussi`), le travail en cours (`attente`, `ancien`, `dossier`, `questions`, `realisation`), puis une ligne par élément du format ci-dessous (`projet`, `pile`, `rythme`, `groupe`, `tache`, `plan`, `git`, `sessions`, `worktree`, `branche-fusionnee`, `ci`, `en-ligne`, `referencement`, `seo-suivi`, `revue`, `securite`, `memoire`). Avec la clé `questions`, lire seulement la section « Questions en attente » des plans pour nommer l'US.
+1. **Tableau** : lancer `pulse-aidd etat --tableau`. Ses lignes donnent tout le tableau de bord, sans autre lecture : l'avancement (`etapes`, `mvp`), la prochaine étape (`prochaine`, `raison`, `regle`, `aussi`), le travail en cours (`attente`, `ancien`, `dossier`, `questions`, `realisation`), puis une ligne par élément du format ci-dessous (`projet`, `pile`, `rythme`, `groupe`, `tache`, `plan`, `git`, `sessions`, `worktree`, `branche-fusionnee`, `ci`, `en-ligne`, `referencement`, `seo-suivi`, `revue`, `securite`, `memoire`). Avec la clé `questions`, lire seulement la section « Questions en attente » des plans pour nommer l'US. Une ligne `tableau: illisible` ou `suivi: illisible` : la prochaine étape reste valable ; le dire en une ligne, avec sa raison, et marquer « illisible » les éléments concernés.
 2. **CI** : si `ci:` n'est pas `aucune` et que l'outil est connecté, lire le dernier passage (`gh run list --limit 1`, ou `glab ci status`). Un dernier passage en échec devient la prochaine étape quand `regle` vaut R21 à R24 (le verdict passe alors dans « Aussi »), sinon la tête de « Aussi » : `/pulse:fix` avec le message de l'étape en échec. Une CI en échec ne reste jamais cachée derrière une étape de réalisation.
 3. **Réalisation interrompue** : avec la ligne `realisation: perimee` (une réalisation arrêtée depuis plusieurs heures sans se terminer), le dire en une phrase et demander (AskUserQuestion) « La reprendre : tapez `/pulse:spirc US-XXX` (Recommandé) » (ou `/pulse:implement US-XXX <Tn>` quand le repère nomme une tâche) / « La considérer comme terminée » (`pulse-aidd realisation fin`).
 
@@ -38,7 +38,7 @@ Méthode : ✅ init · ✅ brief · ✅ PRD · ⬜ technique · ⬜ design (facu
 Rythme   : <rythme> (à changer : « rythme rapide », « rythme complet » ou « demande-moi le rythme à chaque fois »)
 Groupes  : <groupe 1> : US-001 (spec ✅ plan ✅) · US-002 (spec ✅ plan ⬜) · <groupe 2> : US-004 (spec ⬜)
 
-Tâches – US-XXX   (lignes `tache`)
+Tâches – US-XXX <titre>   (lignes `tache`, titre de la ligne `plan`)
   À faire  : T4 …, T5 … (n)
   En cours : T3 … 
   Terminé  : T1 …, T2 … (n)
@@ -49,9 +49,10 @@ Dossiers à part : us-003-filtre 🔄 en cours (2 enregistrements à rassembler)
 Sessions : 1 autre session ouverte sur ce dossier (ou « aucune autre »)
 Parallèle: US-004 peut avancer en même temps que US-003 (ou ligne absente)
 En ligne : https://… (ou « pas encore »)
-Référencement : relié le … · dernier rapport le … · prochain conseillé le … (ou « à relier : /pulse:search-console relier », ligne absente avec `en-ligne: non`)
+Référencement : relié le … · dernier rapport le … · prochain conseillé le … (ou « à relier », la prochaine étape dit comment reprendre ; ligne absente avec `en-ligne: non`)
 Contrôles: ✅ automatiques à chaque envoi (GitHub) · dernier passage ✅ (ou ⬜ pas encore en place · ❌ dernier passage en échec)
 Revue    : T2 – ✅ Validé (date)
+Sécurité : dernier audit le … (ou « pas encore »)   (ligne `securite`)
 Mémoire  : ✅ branchée · glossaire 8 mots · 1 décision (ou « ⚠️ non branchée »)
 
 ➡️ Prochaine étape conseillée : <prochaine> — <raison>

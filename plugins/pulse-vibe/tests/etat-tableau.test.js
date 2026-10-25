@@ -196,7 +196,7 @@ test("--tableau : projet, pile, rythme, groupes, tâches, plans, CI, en ligne, r
     "sans-dossier | US-003 spec=absente plan=absent maquette=non",
   ]);
   assert.deepStrictEqual(liste(s.tache), ["US-001 T1 terminee Créer une tâche", "US-002 T2 en-cours en-pause Voir la liste", "US-002 T3 a-faire Trier"]);
-  assert.deepStrictEqual(liste(s.plan), ["US-001 envoi=version parallèle parallele=US-002,US-003", "US-002 envoi=branche principale parallele=aucune"]);
+  assert.deepStrictEqual(liste(s.plan), ["US-001 envoi=version parallèle parallele=US-002,US-003 titre=Titre", "US-002 envoi=branche principale parallele=aucune titre=Titre"]);
   assert.strictEqual(s.ci, "github fichier=.github/workflows/verifications.yml");
   assert.strictEqual(s["en-ligne"], "https://todoit.example.org");
   assert.strictEqual(s.revue, `T2 etat=validee date=2026-10-05 fichier=${revues}/T2-2026-10-05-2.md`);
@@ -280,6 +280,72 @@ test("signaux de suivi : en tête de « aussi » quand une autre étape passe av
   assert.ok(!liste(interne.aussi).some((a) => /seo|search-console/.test(a)));
   const horsLigne = tableau(projet({ ...TERMINE, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir.md": PLAN("US-002", "- [x] **T2 – Voir** · US-002") }), "--sans-git");
   assert.ok(!liste(horsLigne.aussi).some((a) => /seo lancer|search-console/.test(a)), "site hors ligne : pas de signal");
+});
+
+// ---------------------------------------------------------------- lancement du référencement interrompu, R21, R15
+
+const SUIVI_DNS = "| 2026-10-07 | Search Console : propriété Domaine, TXT ajouté | Plus tard (vérification DNS en attente) |";
+
+test("lancement interrompu pendant l'attente DNS : /pulse:seo lancer le reprend (pas search-console relier seul)", () => {
+  const s = tableau(projet({ ...TERMINE, "docs/seo.md": SEO_SUIVI(SUIVI_DNS, "{{date}}"), "docs/technical.md": TECHNIQUE("à relier – domaine `sc-domain:todoit.example.org` ; TXT ajouté le 2026-10-07 ; vérification DNS en attente") }, EN_LIGNE), "--sans-git");
+  assert.deepStrictEqual([s.regle, s.prochaine], ["R24", "/pulse:seo lancer"]);
+  assert.match(s.raison, /reprendre/);
+});
+
+test("lancement interrompu après Search Console (étape 2 faite, pas de rendez-vous) : /pulse:seo lancer le reprend", () => {
+  const relie = TECHNIQUE("`sc-domain:todoit.example.org` – DNS – vérifiée le 2026-09-02");
+  const s = tableau(projet({ ...TERMINE, "docs/technical.md": relie, "docs/seo.md": SEO_SUIVI(SUIVI_FAIT, "{{date}}") }, EN_LIGNE), "--sans-git");
+  assert.deepStrictEqual([s.regle, s.prochaine], ["R24", "/pulse:seo lancer"]);
+  assert.match(s.raison, /reprendre/);
+});
+
+test("lancement fini (rendez-vous écrit) : aucun signal avant la date, /pulse:seo audit une fois la date arrivée", () => {
+  const fichiers = { ...TERMINE, "docs/technical.md": TECHNIQUE("`sc-domain:todoit.example.org` – DNS – vérifiée le 2026-09-02"), "docs/seo.md": SEO_SUIVI(SUIVI_FAIT, "2026-11-08") };
+  assert.strictEqual(tableau(projet(fichiers, EN_LIGNE), "--sans-git").regle, "R23");
+  const plusTard = spawnSync(process.execPath, [ETAT, "--sans-git", "--aujourdhui", "2026-11-09"], { cwd: projet(fichiers, EN_LIGNE), encoding: "utf8", env: { ...process.env, PULSE_SESSIONS_DIR: SESSIONS } }).stdout;
+  assert.match(plusTard, /^regle: R24$/m);
+  assert.match(plusTard, /^prochaine: \/pulse:seo audit$/m);
+});
+
+test("R24 remplace aussi R21 (en ligne, sans audit de sécurité) ; prête mais hors ligne, le rendez-vous passe en tête de « aussi » derrière R15", () => {
+  const sansAudit = { ...TERMINE, "docs/securite.md": null };
+  const r21 = tableau(projet({ ...sansAudit, "docs/seo.md": SEO_SUIVI(SUIVI_MODELE, "{{date}}") }, EN_LIGNE), "--sans-git");
+  assert.deepStrictEqual([r21.regle, r21.prochaine], ["R24", "/pulse:seo lancer"]);
+  assert.ok(liste(r21.aussi).some((a) => a.startsWith("/pulse:security — ")), "le verdict R21 passe dans « aussi »");
+  const horsLigne = { ...TERMINE, "aidd_docs/tasks/gerer-taches/PLAN-SPEC-US-002-voir.md": PLAN("US-002", "- [x] **T2 – Voir** · US-002\n- [ ] **T3 – Mettre en ligne la première version** · —"), "docs/seo.md": SEO_SUIVI(SUIVI_FAIT, "2026-10-01") };
+  const r15 = tableau(projet(horsLigne), "--sans-git");
+  assert.deepStrictEqual([r15.regle, r15.prochaine], ["R15", "/pulse:deploy"]);
+  assert.match(liste(r15.aussi)[0], /^\/pulse:seo audit — /);
+});
+
+// ---------------------------------------------------------------- une lecture qui échoue ne dégrade que ses lignes
+
+/** Lance etat.js avec un fs.readdirSync qui échoue sur les chemins contenant `fragment`. */
+function avecPanne(dossier, fragment, ...args) {
+  const panne = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "pulse-panne-")), "panne.js");
+  fs.writeFileSync(panne, `const fs = require("fs"); const lire = fs.readdirSync; fs.readdirSync = (d, ...r) => { if (String(d).includes(${JSON.stringify(fragment)})) throw new Error("lecture refusée"); return lire(d, ...r); };\n`);
+  const r = spawnSync(process.execPath, ["-r", panne, ETAT, "--aujourdhui", "2026-10-08", ...args], { cwd: dossier, encoding: "utf8", env: { ...process.env, PULSE_SESSIONS_DIR: SESSIONS } });
+  assert.strictEqual(r.status, 0, r.stderr);
+  return r.stdout;
+}
+
+test("faits de suivi illisibles : verdict sans suivi et ligne « suivi: illisible », jamais R0", () => {
+  const d = projet({ ...TERMINE, "docs/referencement/search-console-2026-09-03.md": "_Prochain rapport conseillé : à partir du 2026-10-01._\n" }, EN_LIGNE);
+  const sortie = avecPanne(d, "referencement", "--sans-git", "--tableau");
+  assert.match(sortie, /^regle: R23$/m, "le verdict reste, sans les signaux de suivi");
+  assert.match(sortie, /^suivi: illisible \(lecture refusée\)$/m);
+  assert.match(sortie, /^referencement: illisible$/m);
+  assert.match(sortie, /^seo-suivi: illisible$/m);
+  assert.match(sortie, /^projet: TodoIt$/m, "le reste du tableau reste");
+});
+
+test("tableau illisible : les lignes d'init restent, une ligne « tableau: illisible » à la place du tableau", () => {
+  const d = projet({ ...TERMINE, "aidd_docs/memory/internal/decisions/2026-09-01-stockage.md": "# Décision\n" }, EN_LIGNE);
+  const sortie = avecPanne(d, "decisions", "--sans-git", "--tableau");
+  assert.match(sortie, /^prochaine: /m);
+  assert.doesNotMatch(sortie, /^regle: R0$/m);
+  assert.match(sortie, /^tableau: illisible \(lecture refusée\)$/m);
+  assert.doesNotMatch(avecPanne(d, "decisions", "--sans-git"), /illisible/, "sans --tableau, rien n'est lu ni signalé");
 });
 
 test("decider sans les faits de suivi (guide, tests) : verdict inchangé ; lireSuivi lit les mêmes faits que le tableau", () => {
