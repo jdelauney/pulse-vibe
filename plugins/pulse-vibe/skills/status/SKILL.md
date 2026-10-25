@@ -91,4 +91,4 @@ Avec `ligne` ou `ligne retirer` : lancer `pulse-aidd reference status/ligne.md` 
 
 !`pulse-aidd contexte status`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
+Ce contexte contient « Règles communes Pulse », « Règles des tâches » et « Règles de réalisation » ; le tableau de bord vient de `pulse-aidd etat --tableau`, la ligne d'état de `pulse-aidd reference status/ligne.md`. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.

@@ -93,4 +93,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pui
 
 !`pulse-aidd contexte security`
 
-Le modèle de `docs/securite.md` figure dans ce contexte ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/securite.md » ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.

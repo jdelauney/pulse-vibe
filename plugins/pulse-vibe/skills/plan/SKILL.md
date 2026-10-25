@@ -69,4 +69,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape recommandée : `/puls
 
 !`pulse-aidd contexte plan`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.
+Ce contexte contient aussi « Règles de découpage du plan », « Checklist sécurité », « Stratégie de tests », « Motifs d'écrans » et « Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md ». Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.

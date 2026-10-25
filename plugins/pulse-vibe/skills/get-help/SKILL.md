@@ -72,4 +72,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : une fois la répons
 
 !`pulse-aidd contexte get-help`
 
-Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.
+Ce contexte contient aussi « Modèle : demande d'aide » ; la réaction à une fuite (`pulse-aidd reference secrets/fuite.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.

@@ -146,4 +146,4 @@ Quand la personne arrête la boucle (ou après une étape lancée), terminer ave
 
 !`pulse-aidd contexte init`
 
-La bannière figure dans ce contexte ; chaque référence ou modèle se charge à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.
+Ce contexte contient aussi « Bannière » ; chaque référence ou modèle se charge à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.

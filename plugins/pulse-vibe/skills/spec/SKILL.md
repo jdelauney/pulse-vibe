@@ -102,4 +102,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquette
 
 !`pulse-aidd contexte spec`
 
-La présentation des écrans, les scénarios Gherkin et le modèle de spec figurent dans ce contexte ; les règles et le modèle d'US et la stratégie de tests se lancent au moment qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
+Ce contexte contient aussi « Présentation des écrans », « Scénarios Gherkin » et « Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md » ; les règles et le modèle d'US et la stratégie de tests se lancent au moment qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.

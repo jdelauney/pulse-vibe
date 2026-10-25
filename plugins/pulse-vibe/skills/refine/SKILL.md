@@ -102,4 +102,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec "…"`
 
 !`pulse-aidd contexte refine`
 
-Les règles de découpage du plan figurent dans ce contexte. Le plan lui-même montre le format des tâches ; lancer `pulse-aidd modele plan.md` seulement quand une section manque. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
+Ce contexte contient aussi « Règles de découpage du plan ». Le plan lui-même montre le format des tâches ; lancer `pulse-aidd modele plan.md` seulement quand une section manque. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.

@@ -121,4 +121,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour 
 
 !`pulse-aidd contexte brainstorm`
 
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire », « Règles de la mémoire projet », « Modèle : docs/brief.md », « Modèle : aidd_docs/memory/glossary.md » et « Modèle : décision (ADR) » ; la référence des documents de départ (`pulse-aidd reference documents-depart.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.

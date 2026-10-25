@@ -72,4 +72,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XX
 
 !`pulse-aidd contexte us`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire », « Les règles des user stories », « Modèle : docs/user-stories.md (référentiel) » et « Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md ». Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.

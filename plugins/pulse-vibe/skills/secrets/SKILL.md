@@ -85,4 +85,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : après `inventaire`
 
 !`pulse-aidd contexte secrets`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.
+Ce contexte contient aussi « Garder la valeur d'un secret hors de la conversation », « Modèle : docs/secrets.md » et « Modèle : docs/lexique.md » ; la branche fuite lance `pulse-aidd reference secrets/fuite.md` et `pulse-aidd modele secrets/incident.md` à son premier geste. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.

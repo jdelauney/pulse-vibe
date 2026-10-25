@@ -106,4 +106,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : le rendez-vous not�
 
 !`pulse-aidd contexte seo`
 
-Les règles et le modèle `docs/seo.md` figurent dans ce contexte ; la politique IA, le modèle d'audit et les autres références se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
+Ce contexte contient aussi « Référencement : les règles », « Modèle : docs/seo.md » et « Modèle : docs/lexique.md » ; la politique IA, le modèle d'audit et les autres références se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
