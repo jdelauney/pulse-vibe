@@ -99,6 +99,15 @@ test("tool_used et tool_order : un appel refusé n'a rien fait", () => {
   assert.deepStrictEqual(notes.details.map((d) => d.reussi), [false, true, false]);
 });
 
+test("tool_order strict : un appel « after » avant le premier « before » fait échouer", () => {
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "ordre-")), "trace.jsonl");
+  const appel = (id, name, input) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name, input }] } });
+  fs.writeFileSync(f, [appel("a", "Write", { file_path: "src/a.ts" }), appel("b", "Bash", { command: "pulse-aidd qualite clean-code" }), appel("c", "Write", { file_path: "src/b.ts" })].map((l) => JSON.stringify(l)).join(LF) + LF);
+  const ordre = { type: "tool_order", before: { tool: "Bash", input_match: "qualite" }, after: { tool: "Write", input_match: "src" } };
+  const notes = direct.noter(f, [{ nom: "souple", ...ordre }, { nom: "strict", ...ordre, strict: "true" }]);
+  assert.deepStrictEqual(notes.details.map((d) => d.reussi), [true, false]);
+});
+
 test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", () => {
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   const note = (texte) => {

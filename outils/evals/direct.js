@@ -123,8 +123,10 @@ function noter(fichier, verifications, dossierProjet = null) {
     if (v.type === "tool_used") reussi = appels.some((a) => correspond(a, v));
     else if (v.type === "tool_not_used") reussi = !appels.some((a) => correspond(a, v));
     else if (v.type === "tool_order") {
+      // strict: true : aucun appel « after » avant le premier « before » (« avant le premier fichier écrit »).
       const avant = appels.findIndex((a) => correspond(a, v.before));
-      reussi = avant >= 0 && appels.some((a, i) => i > avant && correspond(a, v.after));
+      const apres = appels.findIndex((a) => correspond(a, v.after));
+      reussi = avant >= 0 && (String(v.strict) === "true" ? apres > avant : appels.some((a, i) => i > avant && correspond(a, v.after)));
     } else if (v.type === "regex") reussi = new RegExp(v.pattern, v.flags || "").test(reponse);
     else if (v.type === "file_exists") reussi = Boolean(dossierProjet && v.path && fs.existsSync(path.join(dossierProjet, v.path)));
     return { nom: v.nom, type: v.type, reussi };
