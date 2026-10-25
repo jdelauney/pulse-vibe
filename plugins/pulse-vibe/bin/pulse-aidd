@@ -243,10 +243,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/brief.md" "$TPL/brief.md"
       afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
-    tech)
+    tech) # la démarche de choix (projet neuf) et l'organisation (étape 6.1, projet neuf sans pack) se chargent à l'étape qui les cite
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Aider à choisir la technologie" "$SK/tech/references/choix-techniques.md"
-      afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
       afficher "Modèle : docs/technical.md" "$SK/tech/assets/technical.md"
       afficher "Modèle : .gitignore" "$TPL/gitignore.template"
       afficher "Modèle : .env.example" "$TPL/env.example.template"

@@ -29,7 +29,7 @@ function taille(...args) {
 const PLAFONDS = {
   init: 18500, // mesure 17 376 (refactoring d'optimisation, tâche 6.1 : contexte réduit à la bannière ; dépôt distant, cycle et modèle CLAUDE.md chargés à l'action, ancien format retiré) ; avant, mesure 40 860 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 45 347 (pulse 0.42 : rythme rapide, option -f, gestes)
   brainstorm: 25500, // mesure 24 235 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 31 945
-  tech: 52000, // mesure 49 242 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 222
+  tech: 28000, // mesure 26 551 (refactoring d'optimisation, tâche 6.2 : démarche de choix et organisation chargées à l'étape, squelette décrit une fois dans le modèle) ; avant, mesure 49 242 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 222
   memory: 20000, // mesure 18 609 (refactoring d'optimisation, tâche 6.7 : contexte réduit aux règles de la mémoire, modèles affichés à l'action) ; avant, mesure 22 638 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 261
   spirc: 35500, // mesure 33 523 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 35 779 (pulse 0.51 : deleguer.md, le message de délégation écrit une fois (+ 2,3 k)) ; avant, mesure 34 020 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
   express: 36000, // mesure 34 236 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 394
@@ -104,7 +104,7 @@ const PLAFONDS_COMMANDE = {
   spec: 44500, // mesure 41 938 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 787 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
   spirc: 69500, // mesure 66 076 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 66 429 (pulse 0.51 : analyse en référence, délégation unique, rechargement en une règle) ; avant, mesure 67 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 68 662 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 72 675 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 72 108 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 71 538 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 71 062 (pulse 0.48 : remise en place du travail mis de côté comparée avant, conflit = arrêt unique, suite d'un constat Critique en pause, contrôle de la copie avant une règle avec « sauf ») ; avant, 70 544 (pulse 0.48 : questions en attente, petit choix, marqueur de réalisation, travail mis de côté) ; avant, 62 528 (pulse 0.44.3 : rythme rapide sans test de l'interface)
   status: 33000, // mesure 31 407 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
-  tech: 70500, // mesure 66 702 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 604 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 75 338
+  tech: 44000, // mesure 41 592 (refactoring d'optimisation, tâche 6.2 : démarche de choix et organisation chargées à l'étape, squelette décrit une fois dans le modèle) ; avant, mesure 66 702 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 604 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 75 338
   test: 30000, // mesure 28 340 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 41 920 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 49 776 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 79500, // mesure 75 319 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 77 215
   us: 35500, // mesure 33 709 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 722
@@ -190,14 +190,14 @@ const PLAFONDS_FORMES = {
   "refine --sans-communes": 31000, // mesure 29 261
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 745
   "spec --sans-communes": 26500, // mesure 24 973
-  "tech --sans-communes": 56500, // mesure 53 438 : dépasse la limite
+  "tech --sans-communes": 30000, // mesure 28 191 (tâche 6.2 : démarche et organisation chargées à l'étape) ; avant, 53 438
   "ui --sans-communes": 59500, // mesure 56 545 : dépasse la limite
   "ui --sans-noyau": 65500, // mesure 62 004 : dépasse la limite
   "us --sans-communes": 18000, // mesure 16 794
 };
 // Formes citées qui dépassent encore la limite : ce sont des commandes entières enchaînées comme étape, à scinder dans une phase suivante.
 // Cette liste ne grandit pas : une forme nouvelle au-dessus de la limite fait échouer le test.
-const DEPASSEMENTS_CONNUS = new Set(["perf --sans-communes", "plan --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau"]);
+const DEPASSEMENTS_CONNUS = new Set(["perf --sans-communes", "plan --sans-communes", "ui --sans-communes", "ui --sans-noyau"]);
 
 function formesCitees() {
   const formes = new Set();
