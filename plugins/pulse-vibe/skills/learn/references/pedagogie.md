@@ -30,7 +30,7 @@ Une demande hors de ce périmètre (cuisine, droit, marketing, actualité, devoi
 
 ## 4. Les trois niveaux
 
-Le niveau se note dans le carnet (`docs/apprentissage.md`). Au premier usage, l'évaluer en **2 ou 3 questions courtes à choix** (AskUserQuestion), par exemple : avez-vous déjà écrit du code ; que fait une condition ; savez-vous lire un message d'erreur. Puis l'ajuster en continu : un débutant qui répond avec aisance monte d'un cran pour la notion en cours ; un intermédiaire qui bute sur un mot de base redescend.
+Le niveau se note dans le carnet (`docs/apprentissage.md`). Au premier usage, il part du niveau du profil, confirmé par une question (« Avant de commencer » de la commande) ; profil « à préciser » : l'évaluer en **2 ou 3 questions courtes à choix** (AskUserQuestion), par exemple : avez-vous déjà écrit du code ; que fait une condition ; savez-vous lire un message d'erreur. Puis l'ajuster en continu : un débutant qui répond avec aisance monte d'un cran pour la notion en cours ; un intermédiaire qui bute sur un mot de base redescend.
 
 | Niveau | Explications | Questions | Aide de départ | Réponse complète |
 |---|---|---|---|---|

@@ -1639,6 +1639,7 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
     deploy: ["Edit(docs/technical.md)", "Edit(./CLAUDE.md)", "Edit(./README.md)", "Edit(aidd_docs/tasks/**)", ...PERF],
     "get-help": ["Write(docs/aide/**)", "Edit(docs/aide/**)"],
     guide: ["Edit(aidd_docs/tasks/**)"],
+    learn: ["Write(docs/apprentissage.md)", "Edit(docs/apprentissage.md)", ...LEXIQUE],
     memory: [...MEMOIRE, "Edit(./CLAUDE.md)"],
     perf: [...PERF, "Edit(docs/technical.md)", ...LEXIQUE],
     rediger: ["Write(docs/voix.md)", "Edit(docs/voix.md)", "Write(docs/textes/**)", "Edit(docs/textes/**)"],
@@ -1660,6 +1661,10 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
     for (const outil of outils) if (!jetons.includes(outil)) manquants.push(`${skill} : ${outil}`);
   }
   assert.deepStrictEqual(manquants, []);
+  // explain répond au code du projet ; une notion générale part vers learn, qui l'enseigne et la note au carnet.
+  assert.match(skillTexte("explain"), /question générale sur une notion[^\n]*`\/pulse:learn <notion>`/, "frontière explain / learn écrite côté explain");
+  // learn part du niveau du profil, confirmé par une question.
+  assert.match(skillTexte("learn"), /« Jamais programmé » et « Quelques notions » → Débutant, « Développeur » → Avancé/, "learn : niveau tiré du profil");
   // pr et status n'écrivent aucun fichier : aucune écriture autorisée d'avance.
   for (const skill of ["pr", "status"]) assert.doesNotMatch((skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1], /\b(Write|Edit)\(/, skill);
 });

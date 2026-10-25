@@ -23,7 +23,8 @@ Ce qu'il faut expliquer : `$ARGUMENTS`
 
 ### Choisir la cible
 
-- Un fichier, `fichier:ligne`, un nom de fonction ou une question : expliquer cela.
+- Un fichier, `fichier:ligne`, un nom de fonction, ou une question sur le code du projet : expliquer cela, en citant le code qui répond.
+- Une question générale sur une notion (« c'est quoi une API ? ») : répondre en deux phrases, puis proposer `/pulse:learn <notion>`, qui l'enseigne et la note au carnet.
 - Argument vide : prendre le fichier le plus récemment modifié (`git status`, `git diff --stat`) et le proposer, ou demander quoi expliquer.
 
 ## Processus
