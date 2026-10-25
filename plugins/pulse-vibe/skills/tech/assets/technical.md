@@ -63,16 +63,18 @@ flowchart LR
 
 ## Commandes du projet
 
+<!-- Chaque commande entre accents graves, une par paire (`npm test`) ; « aucune » sans accents graves. -->
+
 | Action | Commande |
 |---|---|
-| Installer les dépendances | {{commande ou « aucune »}} |
-| Lancer en local | {{commande, et adresse à ouvrir}} |
-| Tester | {{commande ou « aucune », sans les tests qui ouvrent un navigateur}} |
-| Tester de bout en bout (navigateur) | {{commande ou « aucune »}} |
-| Contrôles automatiques (lint, format, types) | {{commandes ou « aucune »}} |
-| Auditer les dépendances | {{commande ou « aucune » : l'outil d'audit des vulnérabilités de la pile}} |
-| Construire | {{commande ou « aucune »}} |
-| Déployer | {{automatique à chaque envoi sur la branche principale, ou commande}} |
+| Installer les dépendances | {{`commande` ou « aucune »}} |
+| Lancer en local | {{`commande`, et adresse à ouvrir}} |
+| Tester | {{`commande` ou « aucune », sans les tests qui ouvrent un navigateur}} |
+| Tester de bout en bout (navigateur) | {{`commande` ou « aucune »}} |
+| Contrôles automatiques (lint, format, types) | {{`commande` et `commande`, ou « aucune »}} |
+| Auditer les dépendances | {{`commande` ou « aucune » : l'outil d'audit des vulnérabilités de la pile}} |
+| Construire | {{`commande` ou « aucune »}} |
+| Déployer | {{automatique à chaque envoi sur la branche principale, ou `commande`}} |
 
 ## Données et contrôle d'accès
 

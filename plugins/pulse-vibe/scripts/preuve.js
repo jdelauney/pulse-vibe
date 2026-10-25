@@ -8,8 +8,9 @@
 //     (libellé exact : jamais « Tester de bout en bout » ; toute la suite, ou les fichiers donnés) et « Construire »
 //     avec --construire. Une commande hors des autorisations du projet (raisonRefus d'autorisations.js) n'est pas
 //     lancée : la preuve est ❌, avec la raison. Une cellule sans accents graves est la commande elle-même (celluleNue
-//     d'autorisations.js). « Tester » à « aucune » : pas de suite, choix du projet (la preuve le dit) ; ligne « Tester »
-//     absente ou vide : ❌ ; une suite qui ne lance aucun test : ❌. --portee tache sans fichier (tâche sans test) :
+//     d'autorisations.js : « — » vaut « aucune », plusieurs commandes dans la cellule sont refusées). « Tester » à
+//     « aucune » : pas de suite, choix du projet (la preuve le dit) ; ligne « Tester » absente ou vide : ❌ ; une suite
+//     qui ne lance aucun test : ❌. --portee tache sans fichier (tâche sans test) :
 //     contrôles, et construction demandée, seuls. Code 0 si tout passe, 1 sinon, 2 si un fichier de test est refusé
 //     (rien n'est lancé).
 //   construire
@@ -117,18 +118,22 @@ const citer = (fichiers) =>
 
 /**
  * Les commandes de chaque famille dans « Commandes du projet » (sans celles qui réécrivent) : { controles, tests,
- * construction, aucune: Set des familles à « aucune » } ou null. Cellule sans accents graves : la cellule est la commande.
+ * construction, aucune: Set des familles à « aucune », refus: Map commande → raison } ou null. Cellule sans accents
+ * graves : la cellule est la commande (refusée quand elle en contient plusieurs).
  */
 function commandesParFamille(racine) {
   const lignes = lignesCommandes(racine);
   if (!lignes) return null;
-  const resultat = { controles: [], tests: [], construction: [], aucune: new Set() };
+  const resultat = { controles: [], tests: [], construction: [], aucune: new Set(), refus: new Map() };
   for (const { libelle, cellule } of lignes) {
     const famille = FAMILLES.find((x) => x.libelle.test(libelle));
     if (!famille || resultat[famille.famille].length || resultat.aucune.has(famille.famille)) continue;
     const nue = celluleNue(cellule);
     if (nue && nue.aucune) resultat.aucune.add(famille.famille);
-    else resultat[famille.famille] = (nue ? (nue.commande ? [nue.commande] : []) : commandesDe(cellule)).filter((c) => !REECRIT.test(c));
+    else if (nue && nue.refus) {
+      resultat[famille.famille] = [nue.commande];
+      resultat.refus.set(nue.commande, nue.refus);
+    } else resultat[famille.famille] = (nue ? (nue.commande ? [nue.commande] : []) : commandesDe(cellule)).filter((c) => !REECRIT.test(c));
   }
   return resultat;
 }
@@ -228,7 +233,7 @@ function lancerFamilles(racine, familles, retenues, options) {
   for (const famille of retenues) {
     if (famille === "tests" && options.portee === "tache" && !options.fichiers.length) continue; // tâche sans test
     for (const c of familles[famille]) {
-      const raison = raisonRefus(c);
+      const raison = familles.refus.get(c) || raisonRefus(c);
       if (raison) {
         resultats.push({ famille, commande: c, code: null, nonLance: raison });
         continue;

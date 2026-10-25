@@ -130,3 +130,23 @@ test("réglage à faux : `claude --version` n'est pas lancé", () => {
   assert.match(lancer('{"autoContinueAtUsageLimit":false}'), /^reprise-auto: desactivee$/m);
   assert.ok(!fs.existsSync(marque), "claude --version n'est pas lancé");
 });
+
+test("cellules nues : « — » vaut « aucune » ; plusieurs commandes, $( ou accents graves : refusées avec une raison claire", () => {
+  const { celluleNue, raisonRefus } = require(SCRIPT);
+  for (const tiret of ["—", "–", "-", " — "]) assert.deepStrictEqual(celluleNue(tiret), { aucune: true }, tiret);
+  for (const plusieurs of ["npm run lint et npm run typecheck", "npm run lint, npm run typecheck", "npm run lint puis npm test", "npm run lint && npm run typecheck", "npm run lint ; npm test"]) {
+    const nue = celluleNue(` ${plusieurs} `);
+    assert.strictEqual(nue.commande, plusieurs);
+    assert.match(nue.refus || "", /une commande par cellule, entre accents graves/, plusieurs);
+  }
+  assert.strictEqual(celluleNue('npx eslint "src, tests"').refus, undefined, "une virgule entre guillemets reste une seule commande");
+  assert.strictEqual(celluleNue("npx vitest --reporter=default,junit").refus, undefined, "virgule sans espace : une seule commande");
+  for (const substitution of ["npm test $(whoami)", "npm test `whoami`", "npm test\nwhoami"]) assert.match(raisonRefus(substitution) || "", /substitution|une seule commande/, substitution);
+  const nues = commandesDuProjet(
+    projet({
+      "docs/technical.md":
+        "## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Lancer en local | — |\n| Tester | npm test $(id) |\n| Contrôles automatiques | npm run lint et npm run typecheck |\n| Construire | npm run build |\n",
+    }),
+  );
+  assert.deepStrictEqual(nues, ["npm run build"], "ni « — », ni substitution, ni plusieurs commandes dans une cellule");
+});
