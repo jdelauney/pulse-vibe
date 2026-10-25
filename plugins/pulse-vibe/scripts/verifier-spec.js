@@ -52,11 +52,15 @@ function trouver(racine, us) {
   return null;
 }
 
-/** Les écrans nommés du tableau de la section 3 dont la colonne « Présentation » est vide, encore au modèle ou absente. */
+/** Les écrans nommés du tableau de la section 3 dont la colonne « Présentation » est vide, encore au modèle ou absente.
+ *  Seul le premier tableau (les lignes « | » qui se suivent) décrit les écrans ; un autre tableau de la section est ignoré. */
 function ecransSansPresentation(texte) {
   const section = (texte.split(/^## (?:\d+\.\s*)?Ce que l['’]utilisateur voit et fait\b.*$/m)[1] || "").split(/^## /m)[0];
   const cellules = (l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
-  const lignes = section.split(/\r?\n/).filter((l) => l.trim().startsWith("|"));
+  const toutes = section.split(/\r?\n/);
+  const debut = toutes.findIndex((l) => l.trim().startsWith("|"));
+  const fin = debut === -1 ? -1 : toutes.findIndex((l, i) => i > debut && !l.trim().startsWith("|"));
+  const lignes = debut === -1 ? [] : toutes.slice(debut, fin === -1 ? undefined : fin);
   if (!lignes.length) return [];
   const colonne = cellules(lignes[0]).findIndex((c) => /^Pr[ée]sentation\b/i.test(c));
   return lignes

@@ -300,6 +300,8 @@ test("seo, perf, ui, rediger : les consignes pour écrire du code à la place de
   assert.doesNotMatch(ui, /----- Le thème/);
   assert.match(ui, /correspond à `--primary`/);
   assert.match(ui, /pulse-aidd pile reference theme.md/);
+  // polish : un composant ajouté par shadcn reprend ses couleurs et ses tailles d'origine, « Le thème » les recadre.
+  assert.match(ui.split("**polish**")[1].split("\n- **")[0], /relire « Le thème » \(`pulse-aidd pile reference theme\.md`\), règles 5 et 8/);
   for (const commande of ["seo", "rediger"]) assert.match(lancer("contexte", commande).stdout, /pulse-aidd pile reference fiche.md`, règle (41|47)/, commande);
 });
 

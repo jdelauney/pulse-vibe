@@ -256,6 +256,7 @@ function lireObjets(objets, racine, taille) {
 
 // Au-delà, un fichier texte préparé est refusé plutôt que lu (même limite que le garde-fou des commandes).
 const TAILLE_MAX_INDEX = 20 * 1024 * 1024;
+const TAILLE_MAX_PAQUET = 64 * 1024 * 1024;
 
 /** Un fichier préparé de plus de 20 Mo est-il binaire (Git ne compte pas ses lignes) ? */
 function estBinaireIndexe(f, racine) {
@@ -267,7 +268,7 @@ function estBinaireIndexe(f, racine) {
 }
 
 /** Le contenu préparé de chaque fichier : Map fichier → { contenu } (binaire ou sous-module : contenu vide), ou { probleme }
- *  quand il ne peut pas être contrôlé. Deux processus Git en tout, quel que soit le nombre de fichiers. */
+ *  quand il ne peut pas être contrôlé. Deux processus Git, quel que soit le nombre de fichiers (un de plus par tranche de 64 Mo de contenu). */
 function contenusIndexes(entrees, racine) {
   const resultat = new Map();
   const illisible = (f) => ({ probleme: `${f} : contenu préparé illisible, non contrôlé. Préparez-le de nouveau (git add ${f}), puis relancez le contrôle.` });
@@ -283,10 +284,24 @@ function contenusIndexes(entrees, racine) {
     else if (estBinaireIndexe(e.fichier, racine)) resultat.set(e.fichier, { contenu: "" });
     else resultat.set(e.fichier, { probleme: `${e.fichier} : fichier trop gros pour être contrôlé (plus de 20 Mo). Un fichier de cette taille n'a pas sa place dans le dépôt : rangez-le hors du projet, ou ajoutez-le au .gitignore.` });
   }
-  const objets = [...new Set(petits.map((e) => e.objet))];
-  const lus = lireObjets(objets, racine, objets.reduce((somme, o) => somme + tailles.get(o), 0));
+  // Lus par paquets d'au plus 64 Mo : un seul tampon pour tous les fichiers pourrait manquer de mémoire.
+  const lus = new Map();
+  let paquet = [];
+  let tailleDuPaquet = 0;
+  const lirePaquet = () => {
+    const contenus = lireObjets(paquet, racine, tailleDuPaquet);
+    if (contenus) for (const [objet, brut] of contenus) lus.set(objet, brut);
+    paquet = [];
+    tailleDuPaquet = 0;
+  };
+  for (const objet of new Set(petits.map((e) => e.objet))) {
+    if (paquet.length && tailleDuPaquet + tailles.get(objet) > TAILLE_MAX_PAQUET) lirePaquet();
+    paquet.push(objet);
+    tailleDuPaquet += tailles.get(objet);
+  }
+  if (paquet.length) lirePaquet();
   for (const e of petits) {
-    const brut = lus ? lus.get(e.objet) : undefined;
+    const brut = lus.get(e.objet);
     resultat.set(e.fichier, brut ? { contenu: brut.includes(0) ? "" : brut.toString("utf8") } : illisible(e.fichier));
   }
   return resultat;

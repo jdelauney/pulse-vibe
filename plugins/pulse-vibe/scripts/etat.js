@@ -299,7 +299,7 @@ function codeExistant(racine) {
 
 /**
  * Des contrôles du projet à remettre à jour : les signes de skills/init/references/controles.md (un fait, un seul endroit),
- * hors notes du pack, que /pulse:init lit lui-même. CLAUDE.md sans la ligne des commandes à proposer (/pulse:refine dans
+ * hors notes du pack : /pulse:init les lit avec les autres contrôles, quand l'un d'eux est proposé. CLAUDE.md sans la ligne des commandes à proposer (/pulse:refine dans
  * « Commandes »), .gitignore incomplet, copie de Pulse ancienne, contrôle avant commit absent ou ancien.
  */
 function modeleAncien(racine, texteClaude) {

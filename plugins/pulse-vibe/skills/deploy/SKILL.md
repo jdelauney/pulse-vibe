@@ -60,7 +60,7 @@ Appliquer `deploy/premiere.md` dans l'ordre (3a, 3b, 3c), puis passer à la sect
 
 ### 4. Mise à jour
 
-1. **Commits à envoyer** (`git status -sb` : `[ahead N]` sur la première ligne, ou branche sans suivi, sans `...origin/<branche>`) : annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie. » Puis `git push` (après les contrôles de la section 1). Tout est déjà envoyé : le dire, et passer au point 3.
+1. **Commits à envoyer** (`git status --porcelain=v2 --branch` : la ligne `# branch.ab +N -M` avec N plus grand que 0, ou aucune ligne `# branch.upstream` (branche sans suivi)) : annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant, d'où l'hébergeur le publie. » Puis `git push` (après les contrôles de la section 1). Tout est déjà envoyé : le dire, et passer au point 3.
 2. Expliquer que l'hébergeur publie la nouvelle version automatiquement, et où suivre l'avancement (liste des déploiements de l'hébergeur).
 3. Une fois la publication terminée chez l'hébergeur, lancer `pulse-aidd sonder <adresse du site>` (section « Adresses » de `CLAUDE.md`), avec `--texte` suivi d'un texte que la nouvelle version affiche, puis `pulse-aidd seo <adresse du site> --essentiel` (❌ = mise en ligne à corriger, comme en première mise en ligne). Donner l'adresse à la personne pour qu'elle regarde la nouveauté.
 4. Si cette version change une page de « Pages suivies » dans `docs/performance.md`, proposer `/pulse:perf mesurer` en une ligne (la mesure reste au choix de la personne : elle prend quelques minutes).

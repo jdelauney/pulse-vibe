@@ -54,7 +54,7 @@ Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/` et le code s'il y en a.
 2. **Commandes du projet** : relever celles que le projet déclare (installer, lancer en local, tester, contrôles automatiques : lint / format / types, construire, auditer les dépendances, déployer). Une commande absente s'écrit « aucune » ; noter uniquement les commandes déclarées.
 3. **Vérifier les points incertains** sur la documentation officielle des technologies observées (outil de documentation comme context7 s'il est disponible, sinon WebFetch) : version maintenue ou non, mécanisme de contrôle d'accès, gestion des secrets.
 4. **Présenter** la pile observée en 5 à 8 lignes, avec les manques constatés (pas de contrôle automatique, contrôle d'accès seulement dans le navigateur, secret dans le code…). Proposer un changement de technologie seulement si le besoin l'exige, en expliquant le coût (réécriture). Demander « C'est bien ça » / « Corriger quelque chose ».
-5. Passer à l'étape 6 (« Écrire ») : les tableaux « Les options comparées » et « Ce qu'on a écarté » indiquent « Projet existant : pile observée, pas de comparaison » sauf si un changement a été décidé.
+5. Passer à l'étape 6 (« Écrire ») : les tableaux « Les options comparées » et « Ce qu'on a écarté » indiquent « Projet existant : pile observée, pas de comparaison » ; si un changement a été décidé, ils présentent la comparaison, précédée de la ligne « Projet existant : pile observée, changement décidé ».
 
 ### B. Projet neuf : construire et comparer les options
 
@@ -94,7 +94,7 @@ Présenter le tableau et **recommander** une option en une phrase. Avant la ques
    - « Hébergement et mise en ligne » : hébergeur, dépôt distant, CI éventuelle ;
    - « Mise en place » : les étapes pas à pas avant la première tâche (comptes à créer, initialisation du squelette selon la documentation officielle, compléments à `.gitignore` et `.env.example`) ;
    - un schéma Mermaid simple de l'assemblage des pièces.
-2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ».
+2. **`CLAUDE.md`** (marqueurs absents : ajouter d'abord la section « Stack technique » du modèle, avec ses marqueurs (`pulse-aidd modele CLAUDE.md`, seulement à ce moment), le reste du fichier intact) : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ».
 3. **`aidd_docs/memory/technical.md`** : une ligne datée par décision dans « Décisions techniques ». La pile reste dans `docs/technical.md` et le bloc « Stack technique ».
 4. **Décisions difficiles à défaire** (langage ou framework, stockage des données, mécanisme de connexion, hébergement de données personnelles) : proposer un fichier de décision seulement si les 3 conditions des règles de la mémoire sont réunies. Montrer avant d'écrire.
 5. Lancer `pulse-aidd memoire`.

@@ -452,6 +452,9 @@ test("projet existant après tech : noter les conventions propres au code (R8d),
   assert.strictEqual(etat(projet({ "docs/technical.md": "x", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }, PILE_CHOISIE)).regle, "R10", "sans code, rien à observer");
   // Projet neuf : tech a comparé des options puis posé le squelette (du code), sans brief : le périmètre d'abord.
   assert.strictEqual(existant({ "docs/technical.md": "## Les options comparées\n\n| Option | Coût |\n", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R10", "projet neuf : pas de R8d");
+  // Projet existant dont la pile change (comparaison faite) : tech garde le repère, R8d reste proposé.
+  const change = "## Les options comparées\n\nProjet existant : pile observée, changement décidé.\n\n| Option | Coût |\n";
+  assert.strictEqual(existant({ "docs/technical.md": change, "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R8d", "changement décidé : R8d");
   // creer sans convention à noter l'écrit : R8d ne revient pas.
   const aucune = MEMOIRE_VIDE.replace("<!-- Une ligne par convention. -->", "- Aucune convention propre relevée (2026-10-25).");
   assert.strictEqual(existant({ "aidd_docs/memory/technical.md": aucune }).regle, "R10", "aucune convention relevée : la suite");
