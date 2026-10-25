@@ -1201,6 +1201,13 @@ test("auditeur de sécurité : deux portées, projet (/pulse:security) ou tache 
   assert.match(tache, /les points que ces fichiers touchent/);
   assert.match(tache, /« — hors de la tâche »/);
   assert.match(auditeur, /S1 à S13, tous présents ; en portée `tache`, « — hors de la tâche »/);
+  assert.match(portee, /sans portée indiquée : `projet`/, "portée par défaut");
+  assert.match(tache, /à l'étape 2, l'inventaire de ces fichiers et de leur chemin d'appel/, "portée tache : inventaire limité");
+  const texteExamen = lire(RACINE, "references", "examen.md");
+  const fiche = texteExamen.split("## 3 bis.")[1].split(/\n## /)[0];
+  assert.match(fiche, /contrôle de sécurité[^\n]*« Fiche du cambrioleur » de l'auditeur[^\n]*s'ajoutent à la fiche/, "§ 3 bis : les tests de l'auditeur rejoignent la fiche de test");
+  const controle = texteExamen.split("## 4. Relecture de contrôle")[1].split(/\n## /)[0];
+  assert.match(controle, /l'auditeur en portée `tache`/, "§ 4 : relecture de contrôle en portée tache");
   const examen = lire(RACINE, "references", "examen.md").split("\n").find((l) => l.includes("**`pulse:security-auditor`**"));
   assert.match(examen, /portée `tache`/);
   assert.doesNotMatch(examen, /checklist/, "examen.md : l'agent charge la checklist lui-même");
