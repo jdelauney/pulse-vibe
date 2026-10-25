@@ -257,8 +257,10 @@ const SENSIBLES = [
   "pulse-aidd search-console deconnecter",
   "pulse-aidd pile hebergeur envoyer NOM production",
   "pulse-aidd pile hebergeur redeployer production",
+  "pulse-aidd deplacer-commits feat/us-003-liste", // déplace la branche principale (règle commune 17)
+  "pulse-aidd deplacer-commits feat/us-003-liste --principale main",
 ];
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier))\b/.test(commande);
+const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
@@ -2081,4 +2083,24 @@ test("commit : clés et règles contrôlées par pulse-aidd verifier --index apr
   assert.match(commit.slice(commit.indexOf("### Suite")), /plan est terminé et envoyé sur la branche principale d'un site en ligne : prochaine étape `\/pulse:deploy`/);
   assert.match(lire(DEPOT, "docs", "commandes", "commit.html"), /Pour publier et vérifier le site : <a href="deploy\.html"><code>\/pulse:deploy<\/code><\/a>/);
   assert.match(lire(DEPOT, "docs", "memo-commandes.md"), /`\/pulse:commit push` l'envoie sur le dépôt en ligne, après votre accord ; `\/pulse:deploy` publie et vérifie/);
+});
+
+test("pr : commits déplacés par pulse-aidd deplacer-commits après accord, secrets de chaque commit envoyé contrôlés, /pulse:deploy après la fusion", () => {
+  const pr = skillTexte("pr");
+  const verifier = pr.slice(pr.indexOf("#### 1. Vérifier"), pr.indexOf("#### 2."));
+  assert.match(verifier, /Après accord explicite \(AskUserQuestion\)[^\n]*Claude Code va vous demander l'accord pour déplacer[^\n]*`pulse-aidd deplacer-commits <nom>`[^\n]*montrer sa sortie/);
+  assert.doesNotMatch(pr, /git branch -f|git switch -c <nom>` puis/, "plus de déplacement par gestes libres");
+  const envoyer = pr.slice(pr.indexOf("#### 4."), pr.indexOf("#### 5."));
+  assert.match(envoyer, /`pulse-aidd secrets historique --depuis origin\/<base>` \(aucune valeur affichée\) ; un ⛔ arrête l'envoi et passe par `\/pulse:secrets fuite`/);
+  assert.doesNotMatch(envoyer, /étape 1 de `\/pulse:commit`/, "plus de renvoi à une étape non chargée");
+  assert.match(envoyer, /Envoi refusé : Conventions Git § 4\./);
+  assert.doesNotMatch(pr, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
+  assert.match(pr, /Cette commande \*\*laisse toujours la fusion à la personne\*\* et laisse le code et les documents du projet tels quels\./);
+  assert.match(pr, /\*\*Modèle\*\*, au moment de rédiger : celui du dépôt s'il existe \(Conventions Git § 6\), sinon `pulse-aidd modele pr\/pull-request\.md`/);
+  assert.doesNotMatch(pr, /Fichiers de cette commande/);
+  assert.match(pr, /`git switch <principale>` puis `git pull` ; pour publier et vérifier la version en ligne : `\/pulse:deploy`/);
+  const motifs = motifsBash(path.join(RACINE, "skills", "pr", "SKILL.md"));
+  assert.ok(motifs.some((m) => couvre(m, "pulse-aidd secrets historique --depuis origin/main")), "pr : contrôle de l'historique autorisé");
+  assert.ok(!motifs.some((m) => couvre(m, "pulse-aidd deplacer-commits feat/x")), "pr : le déplacement passe par la demande d'accord");
+  assert.match(lire(DEPOT, "docs", "commandes", "pr.html"), /<a href="deploy\.html"><code>\/pulse:deploy<\/code><\/a>/);
 });

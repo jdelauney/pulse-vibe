@@ -38,7 +38,7 @@ test("contexte learn : règles communes, pédagogie et modèle du carnet", () =>
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte commit et pr : conventions Git partagées, modèle de PR pour pr", () => {
+test("contexte commit et pr : conventions Git partagées, modèles lancés à la demande", () => {
   const commit = lancer("contexte", "commit");
   assert.strictEqual(commit.status, 0, commit.stderr);
   assert.ok(commit.stdout.includes("===== Conventions Git ====="));
@@ -49,8 +49,8 @@ test("contexte commit et pr : conventions Git partagées, modèle de PR pour pr"
   for (const titre of [
     "===== Règles communes Pulse =====",
     "===== Conventions Git =====",
-    "===== Modèle : description de demande de fusion =====",
   ]) assert.ok(pr.stdout.includes(titre), titre);
+  assert.ok(!pr.stdout.includes("===== Modèle : description de demande de fusion ====="), "le modèle se lance au moment de rédiger");
   assert.doesNotMatch(pr.stdout, /commande inconnue/);
 });
 
