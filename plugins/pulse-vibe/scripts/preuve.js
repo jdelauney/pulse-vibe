@@ -10,8 +10,8 @@
 //     lancée : la preuve est ❌, avec la raison. Une cellule sans accents graves est la commande elle-même (celluleNue
 //     d'autorisations.js : « — » vaut « aucune », plusieurs commandes dans la cellule sont refusées). « Tester » à
 //     « aucune » : pas de suite, choix du projet (la preuve le dit) ; ligne « Tester » absente ou vide : ❌ ; une suite
-//     qui ne lance aucun test : ❌, sauf quand le projet n'a encore aucun fichier de test (« aucun test écrit pour
-//     l'instant », non bloquant). --portee tache sans fichier (tâche sans test) : contrôles, et construction demandée,
+//     qui ne lance aucun test (0 test, ou outil arrêté faute de test) : ❌, sauf quand le projet n'a encore aucun
+//     fichier de test (« aucun test écrit pour l'instant », non bloquant). --portee tache sans fichier (tâche sans test) : contrôles, et construction demandée,
 //     seuls. Fichiers de test écrits avec « \ » : lus avec « / ». La preuve est réécrite après chaque commande : un
 //     lancement arrêté en route (délai de l'outil qui le lance) laisse « lancement interrompu », avec la relance. La
 //     ligne donne la durée des tests. Code 0 si tout passe, 1 sinon, 2 si un fichier de test est refusé (rien n'est lancé).
@@ -55,6 +55,8 @@ const COMMANDES = "docs/technical.md"; // compté malgré HORS : ses commandes f
 const FICHIER_TEST_SUR = /^[\w@%+=,./][\w@%+=,./-]*$/;
 // Un fichier de test du projet : *.test.*, *.spec.*, *_test.*, test_*.py, ou rangé dans un dossier tests/ ou __tests__/.
 const FICHIER_DE_TEST = /(^|\/)(tests|__tests__)\/|\.(test|spec)\.[^/]+$|_test\.[^/]+$|(^|\/)test_[^/]*\.py$/;
+// Ce qu'écrit un outil de test qui s'arrête en échec faute de test (Vitest, Jest, pytest).
+const AUCUN_TEST_TROUVE = /no test files found|no tests found|no tests ran|collected 0 items/i;
 const OUTIL_BASH = "(outil Bash : timeout 600000)"; // une preuve groupée dépasse vite les 2 minutes par défaut de l'outil
 const FAMILLES = [
   { famille: "controles", libelle: /^contr[ôo]les automatiques\b/i },
@@ -217,6 +219,9 @@ function duree(ms) {
 /** Aucun test trouvé alors que des fichiers de test existent (ou en portée tâche) : la commande « Tester » est à corriger. */
 const aucunTest = (preuve) => Boolean(preuve.tests && preuve.tests.total === 0 && !preuve.aucunTestEcrit);
 
+/** Vrai pour une commande « Tester » en échec faute de test, quand le projet n'a encore écrit aucun test. */
+const sansTestEcrit = (preuve, c) => Boolean(preuve.aucunTestEcrit && c.famille === "tests" && !c.nonLance);
+
 /** La commande qui relance la même preuve : même portée, mêmes fichiers de test, construction gardée. */
 const memeLancement = (preuve) =>
   `pulse-aidd preuve lancer ${preuve.portee === "tache" ? ["--portee tache", ...preuve.fichiersTest].join(" ") : "--portee suite"}${preuve.construire ? " --construire" : ""}`;
@@ -224,7 +229,7 @@ const memeLancement = (preuve) =>
 /** Vrai quand une famille a une commande en échec ou non lancée (ou, pour les tests, aucun test trouvé ou ligne « Tester » absente). */
 function enEchec(preuve, famille) {
   if (preuve.interrompu) return true;
-  return preuve.resultats.some((c) => c.famille === famille && c.code !== 0) || (famille === "tests" && (aucunTest(preuve) || preuve.testerAbsente));
+  return preuve.resultats.some((c) => c.famille === famille && c.code !== 0 && !sansTestEcrit(preuve, c)) || (famille === "tests" && (aucunTest(preuve) || preuve.testerAbsente));
 }
 
 /** La ligne de la preuve, puis les lignes utiles de chaque échec et chaque commande non lancée, avec sa raison. */
@@ -242,7 +247,7 @@ function resume(preuve) {
   else morceaux.push(`tests${preuve.tests ? ` ${preuve.tests.passes}/${preuve.tests.total}` : ""} ${signe("tests")} ${portee}${aucunTest(preuve) ? " (aucun test trouvé)" : ""}`);
   if (preuve.construire && !preuve.interrompu) morceaux.push(preuve.absentes.includes("construction") ? ABSENTE.construction : `construction ${signe("construction")}`);
   const lignes = [`preuve: ${preuve.ok ? "✅" : "❌"} à jour · ${morceaux.join(" · ")} · ${age(preuve.date)}`];
-  for (const c of preuve.resultats.filter((x) => x.code !== 0)) {
+  for (const c of preuve.resultats.filter((x) => x.code !== 0 && !sansTestEcrit(preuve, x))) {
     if (c.nonLance) lignes.push("", `❌ contrôle non lancé : \`${c.commande}\` ${c.nonLance}`);
     else lignes.push("", `❌ \`${c.commande}\` (${c.depasse ? `délai de ${DELAI_S} s dépassé` : `code ${c.code}, ${Math.round(c.duree / 1000)} s`}) :`, ...c.lignes);
   }
@@ -275,7 +280,7 @@ function lancerFamilles(racine, familles, retenues, options, apresChaque = () =>
     if (raison) resultats.push({ famille, commande: c, code: null, nonLance: raison });
     else {
       const r = executer(racine, famille === "tests" && options.portee === "tache" ? avecFichiers(c, options.fichiers) : c);
-      if (famille === "tests") sortiesTests.push(r.texte);
+      if (famille === "tests") sortiesTests.push(r);
       const resultat = { famille, commande: r.commande, code: r.code, duree: r.duree };
       if (r.depasse) resultat.depasse = true;
       if (r.code !== 0) resultat.lignes = sansCouleurs(r.texte).replace(/\s+$/, "").split(/\r?\n/).slice(-LIGNES_ECHEC);
@@ -358,16 +363,20 @@ function lancer(racine, options) {
     enregistrer(racine, { ...base, date: new Date().toISOString(), empreinte: empreinte(avant), interrompu: true, prevues: aLancer(familles, retenues, options).length, tests: null, resultats, ok: false, fichiers: avant });
   partielle([]);
   const { resultats, sortiesTests } = lancerFamilles(racine, familles, retenues, options, partielle);
-  const comptes = sortiesTests.map(compteTests);
+  const comptes = sortiesTests.map((r) => compteTests(r.texte));
   const tests = comptes.length && comptes.every(Boolean) ? comptes.reduce((a, b) => ({ passes: a.passes + b.passes, total: a.total + b.total })) : null;
-  // Aucun test trouvé : non bloquant tant que le projet n'a aucun fichier de test (outil installé, aucun test écrit).
-  const projetTests = tests && tests.total === 0 ? fichiersDeTest(racine) : [];
+  // Aucun test trouvé (0 test, ou outil arrêté en échec faute de test) : non bloquant tant que le projet n'a aucun
+  // fichier de test (outil installé, aucun test écrit).
+  const vide =
+    sortiesTests.length > 0 &&
+    sortiesTests.every((r, i) => (r.code === 0 && comptes[i] && comptes[i].total === 0) || (r.code !== 0 && !r.depasse && AUCUN_TEST_TROUVE.test(sansCouleurs(r.texte))));
+  const projetTests = vide ? fichiersDeTest(racine) : [];
   const apres = etatFichiers(racine);
   const preuve = {
     ...base,
     date: new Date().toISOString(),
     empreinte: empreinte(apres),
-    aucunTestEcrit: Boolean(tests && tests.total === 0 && options.portee === "suite" && !projetTests.length),
+    aucunTestEcrit: vide && options.portee === "suite" && !projetTests.length,
     exemplesTest: projetTests.slice(0, 3),
     tests,
     resultats,
