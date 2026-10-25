@@ -104,11 +104,12 @@ contexte() {
     deploy-production)
       afficher "Pour le mode production" "$REF/contexte/deploy-production.md" ;;
     deploy-variables)
-      afficher "Pour les variables d'environnement chez Vercel" "$REF/contexte/deploy-variables.md" ;;
+      afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
     cicd)
       afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md" ;;
     secrets)
-      afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md" ;;
+      afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md"
+      afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
     seo)
       afficher "Pour /pulse:seo" "$REF/contexte/seo.md"
       afficher "Pour écrire du code" "$REF/contexte/code.md" ;;

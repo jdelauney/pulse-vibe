@@ -47,7 +47,7 @@ const PLAFONDS = {
   cicd: 15000, // mesure 13 855 (refactoring d'optimisation, tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, mesure 24 624 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 30 334 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 527 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 37 332
   deploy: 15000, // mesure 13 855 (refactoring d'optimisation, tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, mesure 23 075 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 27 127 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
   security: 18000, // mesure 16 933 (refactoring d'optimisation, tâche 5.5 : le modèle de docs/securite.md seul, la checklist chargée par l'auditeur) ; avant, mesure 31 689 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 37 291
-  secrets: 31500, // mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
+  secrets: 22500, // mesure 21 223 (refactoring d'optimisation, tâche 7.6 : fuite.md et le modèle d'incident chargés au premier geste de la branche fuite) ; avant, mesure 30 169 ; avant, mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
   refine: 45000, // mesure 42 413 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   ui: 59500, // mesure 56 299 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 58 567
   rediger: 20500, // mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
@@ -98,7 +98,7 @@ const PLAFONDS_COMMANDE = {
   refine: 51500, // mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 37500, // mesure 35 291 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 47000, // mesure 44 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 989
-  secrets: 41500, // mesure 39 337 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 290
+  secrets: 31000, // mesure 29 053 (refactoring d'optimisation, tâche 7.6 : fuite.md et le modèle d'incident chargés au premier geste de la branche fuite, Principe et alertes de l'inventaire sans redite) ; avant, mesure 39 728 ; avant, mesure 39 337 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 290
   security: 24000, // mesure 22 835 (refactoring d'optimisation, tâche 5.5 : contexte réduit au modèle, délégation sans recopie) ; avant, mesure 37 842 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 46 122 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 43 499
   seo: 54500, // mesure 51 696 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 741
   spec: 44500, // mesure 41 938 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 787 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
@@ -126,6 +126,8 @@ const MODES = {
     parties: [["etape", "deploy"], ["reference", "deploy/premiere.md"]] },
   "deploy, mode production": { plafond: 26500, // mesure 25 144
     parties: [["etape", "deploy"], ["reference", "deploy/production.md"]] },
+  "secrets, fuite": { plafond: 40500, // mesure 38 307 (tâche 7.6 : premier plafond ; la commande, fuite.md et le modèle d'incident)
+    parties: [["etape", "secrets"], ["reference", "secrets/fuite.md"], ["modele", "secrets/incident.md"]] },
 };
 
 // Ce que charge chaque agent de la boucle avant de lire le code : ses consignes, puis les règles que ses consignes lui font

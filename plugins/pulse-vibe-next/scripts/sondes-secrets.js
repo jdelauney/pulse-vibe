@@ -5,7 +5,7 @@
 //   pulse-pile-next secrets tester <NOM>    test réel d'une valeur ; lit sur l'entrée standard un JSON { NOM: valeur, … }
 //   pulse-pile-next secrets suites <NOM>    variables non secrètes déduites de NOM (règle « suites ») ; même entrée que tester ;
 //                                           écrit { variables: [{ nom, environnements, valeur }] } ; codes 0 rendu, 1 refus, 3 impossible pour l'instant
-//   pulse-pile-next secrets fiche <NOM>     la fiche de la variable (references/contexte/secrets.md)
+//   pulse-pile-next secrets fiche <NOM>     la fiche de la variable (references/contexte/secrets-fiches.md)
 //
 // S'exécute dans le dossier du projet et utilise SES dépendances (pilote Neon, nodemailer, client S3).
 // Aucune sortie ne contient une valeur. Codes de sortie de « tester » : 0 bon, 1 mauvais, 3 pas de test réel possible.
@@ -15,9 +15,9 @@ const fs = require("fs");
 const path = require("path");
 const { createRequire } = require("module");
 
-const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets.md");
+const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets-fiches.md");
 
-// Règles par variable : la fiche (references/contexte/secrets.md) en donne l'explication ; un test vérifie qu'elles restent alignées.
+// Règles par variable : la fiche (references/contexte/secrets-fiches.md) en donne l'explication ; un test vérifie qu'elles restent alignées.
 // parEnvironnement : la valeur de .env (développement) diffère de celle de la production ; le cœur refuse de l'y envoyer telle quelle.
 const NEON = ["DATABASE_URL", "DATABASE_URL_DIRECT"];
 const R2 = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];

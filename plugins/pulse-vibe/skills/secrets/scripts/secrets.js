@@ -684,9 +684,10 @@ function historique(options) {
       if (types.length) traces.push({ hash, date, fichier, types });
     }
   }
-  dire("Recherche de secrets dans tout l'historique Git (aucune valeur affichée)");
+  const depuis = options["--depuis"];
+  dire(depuis ? `Recherche de secrets dans les commits faits depuis ${depuis} (aucune valeur affichée)` : "Recherche de secrets dans tout l'historique Git (aucune valeur affichée)");
   if (!traces.length) {
-    dire("✅ Aucune trace de clé secrète ni de fichier d'environnement dans l'historique.");
+    dire(`✅ Aucune trace de clé secrète ni de fichier d'environnement ${depuis ? "dans ces commits" : "dans l'historique"}.`);
     terminer(0);
   }
   const suivis = new Set((git(["ls-files"]) || "").split("\n"));

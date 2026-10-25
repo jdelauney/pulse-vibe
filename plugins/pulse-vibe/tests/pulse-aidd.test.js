@@ -86,11 +86,12 @@ test("l'aide cite secrets, seo, perf et search-console", () => {
     assert.ok(r.stdout.includes(sc), sc);
 });
 
-test("contexte secrets : règles communes, saisie hors conversation, fuite, modèles des secrets et de l'incident", () => {
+test("contexte secrets : règles communes, saisie hors conversation, modèle des secrets ; la fuite et le journal d'incident à la demande", () => {
   const r = lancer("contexte", "secrets");
   assert.strictEqual(r.status, 0);
-  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Réagir à une fuite de clé", "Modèle : docs/secrets.md", "Modèle : journal d'incident"])
+  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Modèle : docs/secrets.md", "Modèle : docs/lexique.md"])
     assert.ok(r.stdout.includes(`===== ${titre}`), titre);
+  for (const titre of ["Réagir à une fuite de clé", "Modèle : journal d'incident"]) assert.ok(!r.stdout.includes(`===== ${titre}`), `sans ${titre}`);
 });
 
 test("contexte deploy : les règles communes seules, chaque mode lance sa référence ; contexte security : le modèle de docs/securite.md seul", () => {
