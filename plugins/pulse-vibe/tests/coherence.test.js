@@ -696,7 +696,7 @@ test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour ch
   for (const skill of ["review", "spirc"]) assert.match(skillTexte(skill), /référence « Examiner une tâche »/, skill);
   assert.match(skillTexte("implement"), /`\/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche/, "implement renvoie la vérification indépendante à review");
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
-  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
+  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /surface réelle/);
   for (const { fichier, texte } of TEXTES) assert.doesNotMatch(texte, /boucle de `?\/pulse:implement|`?\/pulse:implement`? et sa boucle|boucle d'implement/, `${fichier} : implement n'a plus de boucle`);
   assert.doesNotMatch(lire(RACINE, "agents", "verifier.md"), /boucle de \/pulse:implement/);
 });
@@ -1883,4 +1883,27 @@ test("aucun motif allowed-tools ne finit par un guillemet isolé", () => {
     }
   }
   assert.deepStrictEqual(problemes, []);
+});
+
+// ---------------------------------------------------------------- Preuve unique (pulse-aidd preuve)
+
+test("preuve unique : le verifier et le test-runner la produisent, l'implementer et le reviewer la laissent, le test-runner juge avec les checklists", () => {
+  const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
+  for (const nom of ["verifier", "test-runner"]) assert.match(agent(nom), /`pulse-aidd preuve lancer --portee suite/, `${nom} produit la preuve`);
+  assert.match(agent("verifier"), /`pulse-aidd preuve etat --exiger suite/, "le verifier lit d'abord la preuve");
+  assert.match(agent("verifier"), /`--construire` si « Construire » existe[^.]*page, une route ou la configuration/, "construction seulement pour une page, une route ou la configuration");
+  assert.doesNotMatch(agent("verifier"), /lancé pendant cette vérification/, "un test compte s'il a été lancé sur le contenu actuel des fichiers");
+  for (const nom of ["implementer", "reviewer"]) assert.doesNotMatch(agent(nom), /preuve lancer/, `${nom} ne produit pas la preuve`);
+  assert.match(agent("test-runner"), /`pulse-aidd tests ecrire --checklists/, "le test-runner juge avec les checklists");
+  assert.doesNotMatch(agent("test-runner"), /surtout `tests\/ecrire-un-test\.md`/);
+  assert.match(agent("test-writer"), /mode « corriger » : `pulse-aidd tests ecrire <niveau> --checklists`/, "test-writer : mode corriger avec les checklists");
+  for (const nom of ["verifier", "test-runner", "test-writer"]) assert.doesNotMatch(agent(nom).match(/^description:.*$/m)[0], /Utilisé par/, `${nom} : description sans « Utilisé par »`);
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  assert.match(auto, /`pulse-aidd preuve etat --exiger suite`/, "le filet lit la preuve");
+  assert.match(auto, /`pulse-aidd preuve lancer --portee suite`/, "le filet relance la preuve si besoin");
+  assert.doesNotMatch(auto, /après la dernière modification de fichier/, "l'empreinte décide, plus le jugement du modèle");
+  const dabord = lire(RACINE, "references", "tests-dabord.md");
+  assert.doesNotMatch(dabord, /\(recopiés\)|\(recopiées\)/, "délégation au test-writer sans recopie");
+  assert.match(dabord, /L'agent lit lui-même[^.]*`docs\/technical\.md`/);
+  assert.match(dabord, /relancer le test-runner en phase « vert attendu » \*\*avant\*\* la relecture de contrôle/);
 });
