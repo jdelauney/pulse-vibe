@@ -28,7 +28,7 @@ Appliqué par `/pulse:commit` juste après le commit d'une tâche, selon la lign
 - **Branche principale** : `git push`. La première fois, rappeler que, si le déploiement automatique est en place, la tâche est maintenant en ligne.
 - **Local** : tout reste local.
 - **Après l'envoi, passer directement à la suite.** La mise en ligne chez l'hébergeur se fait seule ; son suivi (état, journal, adresse) appartient à `/pulse:deploy` et `/pulse:status`. En rythme rapide (règles de réalisation), l'envoi se résume à une ligne : « Envoyé. »
-- Envoi refusé (le dépôt distant a des changements plus récents) : Conventions Git § 4.
+- Envoi refusé (le dépôt distant a des changements plus récents) : Conventions Git § 4 (absentes de la conversation : `pulse-aidd reference git.md`).
 
 ## 3. Fin du plan, en mode PR
 
