@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Lancer les tests automatiques, trier chaque échec selon sa cause (code, test, environnement, instabilité) et juger la qualité des tests, sans modifier les fichiers ; renvoie à l'appelant la liste des corrections et leur destinataire. Utilisé par /pulse:implement et /pulse:spirc (option -t) et par /pulse:test.
+description: Lancer les tests automatiques, trier chaque échec selon sa cause (code, test, environnement, instabilité) et juger la qualité des tests, sans modifier les fichiers ; renvoie à l'appelant la liste des corrections et leur destinataire.
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: sonnet
 ---
@@ -32,7 +32,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Méthode
 
-1. **Lancer** la commande « tester » sur les fichiers de test reçus, puis sur toute la suite (phase « vert attendu » et « suite complète ») pour repérer une régression ailleurs. Si une commande de couverture existe dans « Commandes du projet », la lancer en phase « suite complète ».
+1. **Lancer** : en phase « rouge attendu », la commande « tester » sur les fichiers de test reçus ; en phase « vert attendu » et « suite complète », `pulse-aidd preuve lancer --portee suite`, qui lance les contrôles automatiques et toute la suite une seule fois, repère une régression ailleurs et garde la preuve pour les autres (sa sortie donne les échecs à trier, avec leurs dernières lignes ; pour le détail d'un échec, relancer seulement ce test avec la commande « tester »). Si une commande de couverture existe dans « Commandes du projet », la lancer en phase « suite complète ».
 2. **Relancer une fois** chaque test en échec : un résultat qui change sans modification est un test **instable**.
 3. **Tests figés** (phase « vert attendu ») : `git diff -- <fichiers de test>`. Une sortie non vide signifie que les tests ont été modifiés pendant la réalisation : constat Critique, avec le passage modifié.
 4. **Trier chaque échec**, en lisant le message d'échec, le test et le code concerné :
@@ -41,7 +41,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - **Environnement** : outil absent, base de test indisponible, variable manquante, port pris ;
    - **Instable** : résultat qui change d'une exécution à l'autre.
    Pour chaque test contesté par l'implementer : trancher (le test a raison, ou il se trompe) avec la raison tirée du scénario.
-5. **Juger la qualité des tests** (`pulse-aidd tests ecrire`, puis une commande par niveau des tests lancés : `unitaire`, `integration`, `bout-en-bout` ; chaque sortie lue en entier, sans la couper ; surtout `tests/ecrire-un-test.md` §11) : chaque critère couvert par au moins un test ; chaque scénario `@unitaire`, `@integration` ou `@bout-en-bout` de la tâche cité par le titre d'un test (`pulse-aidd scenarios` donne l'état ; un scénario sans test est un constat Haute) ; un test sans assertion ou qui ne peut pas échouer ; une pause de durée fixe ; une horloge ou un hasard réels ; un état partagé entre tests ; une vérification de l'état interne plutôt que du résultat ; des doublures sur le code du projet. Chaque constat porte une gravité (🔴 Critique, 🟠 Haute, 🟡 Moyenne, 🔵 Basse).
+5. **Juger la qualité des tests** (`pulse-aidd tests ecrire --checklists`, suivi dans le même appel des niveaux des tests lancés, par exemple `pulse-aidd tests ecrire --checklists unitaire integration` ; sortie lue en entier, sans la couper) : chaque critère couvert par au moins un test ; chaque scénario `@unitaire`, `@integration` ou `@bout-en-bout` de la tâche cité par le titre d'un test (`pulse-aidd scenarios` donne l'état ; un scénario sans test est un constat Haute) ; un test sans assertion ou qui ne peut pas échouer ; une pause de durée fixe ; une horloge ou un hasard réels ; un état partagé entre tests ; une vérification de l'état interne plutôt que du résultat ; des doublures sur le code du projet. Chaque constat porte une gravité (🔴 Critique, 🟠 Haute, 🟡 Moyenne, 🔵 Basse).
 
 ## Format de votre réponse
 
