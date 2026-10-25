@@ -7,10 +7,10 @@
 //
 // Sortie en lignes « clé: valeur ». Codes : 0 fait · 1 usage ou argument invalide · 2 refus préalable (rien n'a changé) ·
 // 3 échec Git (l'entrée mise de côté est gardée ; après une remise en conflit, l'arbre est ramené à l'état d'avant). Chemins refusés : avec « .. », absolus, ou avec une lettre de lecteur.
-// Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), restore --staged --worktree --source=HEAD
-// et rm --cached (seulement sur les chemins de l'entrée, juste après notre propre stash apply en échec, pour défaire ses marques de conflit ;
-// jamais reset), lectures (status, stash list, stash show, rev-parse, cat-file). `remettre` refuse d'agir quand l'index contient des changements.
-// Les noms de fichiers d'une entrée se lisent avec `stash show --include-untracked`, qui demande Git 2.32 ou plus.
+// Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), reset --merge (seulement juste après notre
+// propre stash apply en échec, sur un dossier vérifié propre au départ), lectures (status, stash list, stash show, ls-files, rev-parse).
+// `remettre` n'agit que sur un dossier propre : aucun changement suivi ou enregistré, et aucun chemin de l'entrée déjà occupé (arbre-occupe, code 2).
+// Les noms de fichiers d'une entrée se lisent avec `stash show --include-untracked --no-renames`, qui demande Git 2.32 ou plus.
 "use strict";
 
 const fs = require("fs");
@@ -43,7 +43,10 @@ function etatArbre(racine) {
     const m = morceaux[i];
     if (m.length < 4) continue;
     fichiers.push({ xy: m.slice(0, 2), chemin: m.slice(3) });
-    if (/[RC]/.test(m.slice(0, 2))) i++; // renommage : le morceau suivant est l'ancien nom
+    if (/[RC]/.test(m.slice(0, 2))) { // renommage : le morceau suivant est l'ancien nom, compté lui aussi
+      i++;
+      if (morceaux[i]) fichiers.push({ xy: m.slice(0, 2), chemin: morceaux[i] });
+    }
   }
   return fichiers;
 }
@@ -67,7 +70,7 @@ function entrees(racine) {
 }
 
 function fichiersEntree(racine, ref) {
-  const r = git(racine, ["stash", "show", "--include-untracked", "--name-only", "-z", ref]);
+  const r = git(racine, ["stash", "show", "--include-untracked", "--name-only", "--no-renames", "-z", ref]);
   return r.ok ? r.sortie.split("\0").filter(Boolean) : null;
 }
 
@@ -104,18 +107,18 @@ function mettreDeCote(racine, tn, demandes) {
   sortir(0, ["etat: fait", `mise-de-cote: ${entree.ref}`, ...fichiers.map((f) => `fichier: ${f}`), ...laisse, `ligne-plan: · Mis de côté : ${sujetDe(tn)}`]);
 }
 
-/**
- * Défait, chemin par chemin, une remise en échec : seuls les chemins de l'entrée sont touchés (jamais le reste du travail).
- * Un chemin connu de HEAD revient à HEAD (index et dossier) ; les autres (fichiers neufs) sortent de l'index, et le fichier
- * est effacé seulement s'il n'existait pas avant la remise.
- */
-function defaire(racine, fichiers, existaient) {
-  const connus = fichiers.filter((f) => git(racine, ["cat-file", "-e", `HEAD:${f}`]).ok);
-  if (connus.length) git(racine, ["restore", "--staged", "--worktree", "--source=HEAD", "--", ...connus]);
-  for (const f of fichiers.filter((x) => !connus.includes(x))) {
-    git(racine, ["rm", "--cached", "-q", "--ignore-unmatch", "--", f]);
-    if (!existaient.has(f)) fs.rmSync(path.join(racine, f), { force: true });
+/** Les chemins que l'entrée occupe déjà dans le dossier de travail : tout sauf un fichier suivi par Git et propre. */
+function occupes(racine, fichiers, arbre) {
+  const suivis = new Set(git(racine, ["ls-files", "-z"]).sortie.split("\0").filter(Boolean));
+  const sales = arbre.filter((e) => e.xy !== "??").map((e) => e.chemin); // changement suivi ou enregistré
+  const nonSuivis = arbre.filter((e) => e.xy === "??").map((e) => e.chemin.replace(/\/$/, ""));
+  const lies = (a, b) => a === b || a.startsWith(b + "/") || b.startsWith(a + "/");
+  const trouves = new Set(sales);
+  for (const f of fichiers) {
+    if (nonSuivis.some((c) => lies(c, f))) trouves.add(f);
+    else if (fs.existsSync(path.join(racine, f)) && !suivis.has(f)) trouves.add(f); // fichier ignoré ou dossier à cet endroit
   }
+  return [...trouves];
 }
 
 function remettre(racine, tn) {
@@ -123,12 +126,8 @@ function remettre(racine, tn) {
   if (!entree) sortir(2, ["etat: absente"]);
   const fichiers = fichiersEntree(racine, entree.ref);
   if (!fichiers) sortir(3, ["etat: echec", `message: l'entrée ${entree.ref} ne se lit pas`]);
-  const arbre = etatArbre(racine);
-  const indexes = arbre.filter((e) => e.xy[0] !== " " && e.xy[0] !== "?");
-  if (indexes.length) sortir(2, ["etat: index-occupe", ...indexes.map((e) => `fichier-indexe: ${e.chemin}`)]);
-  const changes = arbre.map((e) => e.chemin);
-  const communs = fichiers.filter((f) => changes.some((c) => c === f || f.startsWith(c.replace(/\/$/, "") + "/")));
-  if (communs.length) sortir(2, ["etat: fichiers-communs", ...communs.map((f) => `fichier: ${f}`)]);
+  const occupe = occupes(racine, fichiers, etatArbre(racine));
+  if (occupe.length) sortir(2, ["etat: arbre-occupe", ...occupe.map((f) => `fichier: ${f}`)]);
 
   const avant = instantane(racine);
   const existaient = new Set(fichiers.filter((f) => fs.existsSync(path.join(racine, f))));
@@ -136,9 +135,18 @@ function remettre(racine, tn) {
   if (!a.ok) {
     const message = `message: ${[a.sortie, a.erreur].join(" ").replace(/\s+/g, " ").trim()}`;
     const enConflit = etatArbre(racine).filter((e) => EN_CONFLIT.test(e.xy)).map((e) => `fichier-en-conflit: ${e.chemin}`);
-    defaire(racine, fichiers, existaient);
-    if (instantane(racine) !== avant) sortir(3, ["etat: conflit-non-nettoye", `mise-de-cote: ${entree.ref}`, ...enConflit, message]);
-    sortir(3, ["etat: conflit", `mise-de-cote: ${entree.ref}`, ...enConflit, message]);
+    // Départ propre : `reset --merge` ne défait ici que cette remise ; puis les fichiers neufs qu'elle a créés.
+    git(racine, ["reset", "--merge"]);
+    const reste = [];
+    for (const f of fichiers.filter((x) => !existaient.has(x))) {
+      try {
+        fs.rmSync(path.join(racine, f), { force: true });
+      } catch (e) {
+        reste.push(`fichier: ${f}`);
+      }
+    }
+    const propre = !reste.length && instantane(racine) === avant;
+    sortir(3, [propre ? "etat: conflit" : "etat: conflit-non-nettoye", `mise-de-cote: ${entree.ref}`, ...enConflit, ...reste, message]);
   }
   const d = git(racine, ["stash", "drop", entree.ref]);
   if (!d.ok) {
