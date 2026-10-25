@@ -247,3 +247,47 @@ test("remettre : travail remis mais entrée impossible à retirer : remis-sans-n
   assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a2\n");
   nettoyer(d);
 });
+
+test("remettre : un changement déjà enregistré dans l'index d'une autre tâche : refus avant tout (index-occupe), rien ne change", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js").status, 0);
+  ecrire(d, "src/o.js", "o\n");
+  ecrire(d, "src/p.js", "p\n");
+  git(d, "add", "src/o.js");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["index-occupe"]);
+  assert.deepStrictEqual(lignes(r, "fichier-indexe"), ["src/o.js"]);
+  assert.strictEqual(statut(d), avant);
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("remettre : en conflit, le travail d'une autre tâche (modifié, non suivi) reste octet pour octet, les marques disparaissent", () => {
+  const d = depot();
+  ecrire(d, "src/u.js", "u1\n");
+  git(d, "add", "-A");
+  git(d, "commit", "-q", "-m", "u");
+  ecrire(d, "src/a.js", "a-T4\n");
+  ecrire(d, "src/neuf.js", "neuf-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/neuf.js").status, 0);
+  ecrire(d, "src/a.js", "a-T5\n");
+  git(d, "commit", "-q", "-am", "T5"); // chevauche T4
+  ecrire(d, "src/u.js", "u-modifie\n"); // modifié, pas dans l'index
+  ecrire(d, "src/n.js", "n-non-suivi\n");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["conflit"]);
+  assert.deepStrictEqual(lignes(r, "fichier-en-conflit"), ["src/a.js"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T5\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/u.js"), "utf8"), "u-modifie\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/n.js"), "utf8"), "n-non-suivi\n");
+  assert.ok(!fs.existsSync(path.join(d, "src/neuf.js")));
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "ls-files", "-u").stdout, "");
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
