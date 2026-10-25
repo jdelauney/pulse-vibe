@@ -20,9 +20,17 @@ const { evaluer } = require("../../plugins/pulse-vibe/scripts/garde-commandes");
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
 const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
 
-/** L'environnement des essais : sous-agents au premier plan, sinon une session claude -p se termine avant leur réponse. */
-function envEval(env) {
-  return { ...env, CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1" };
+/** L'environnement des essais : sous-agents au premier plan, sinon une session claude -p se termine avant leur réponse ;
+ * PATH : les bin/ des plugins essayés en tête, sans les plugins pulseia installés sur le poste (sous WSL, le PATH de Windows
+ * apporte la version installée, qui passerait avant celle du dépôt). */
+function envEval(env, bins = []) {
+  const garde = (env.PATH || "").split(path.delimiter).filter((d) => d && !/[\/]plugins[\/]cache[\/]pulseia[\/]/.test(d));
+  return { ...env, CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1", PATH: [...bins, ...garde].join(path.delimiter) };
+}
+
+/** Les bin/ des plugins du dépôt essayés (le pack avec PACK=next). */
+function binsDepot(depot, env) {
+  return [path.join(depot, "plugins", "pulse-vibe", "bin"), ...(env.PACK === "next" ? [path.join(depot, "plugins", "pulse-vibe-next", "bin")] : [])];
 }
 
 /** Une valeur YAML simple : nombre, texte entre apostrophes ou guillemets, liste [a, b], table { k: v }. */
@@ -199,7 +207,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
     for (let n = 1; n <= essaisParCas; n++) {
       const projet = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-direct-${nom}-`));
       if (cas.preparation) {
-        const p = spawnSync("bash", [cas.preparation], { cwd: projet, encoding: "utf8" });
+        const p = spawnSync("bash", [cas.preparation], { cwd: projet, encoding: "utf8", env: envEval(env, binsDepot(depot, env)) });
         if (p.status !== 0) {
           console.error(`${nom} : préparation en échec\n${(p.stderr || "").slice(-800)}`);
           continue;
@@ -208,7 +216,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
       const trace = path.join(sortie, `${nom}-${n}.jsonl`);
       const debut = Date.now();
       const r = spawnSync("claude", argumentsDirect(cas, depot, env), {
-        cwd: projet, env: envEval(env), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
+        cwd: projet, env: envEval(env, binsDepot(depot, env)), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
       });
       fs.writeFileSync(trace, r.stdout || "");
       const duree = Math.round((Date.now() - debut) / 1000);
@@ -227,4 +235,4 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
   return 0;
 }
 
-module.exports = { OUTILS_ACCORDES, OUTILS_PACK, envEval, valeur, entete, lireCas, lireTrace, noter, argumentsDirect, ecrireRapport, choisirCas, lancer };
+module.exports = { OUTILS_ACCORDES, OUTILS_PACK, envEval, binsDepot, valeur, entete, lireCas, lireTrace, noter, argumentsDirect, ecrireRapport, choisirCas, lancer };

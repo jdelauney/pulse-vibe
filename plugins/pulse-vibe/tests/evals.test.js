@@ -212,6 +212,17 @@ test("les essais gardent leurs sous-agents au premier plan (sinon claude -p s'ar
   assert.strictEqual(lanceur.envEval({ PATH: "/x" }).PATH, "/x");
 });
 
+test("essais : les bin/ du dépôt passent avant tout, les plugins pulseia installés sur le poste sont retirés du PATH", () => {
+  const d = path.delimiter;
+  const installe = ["", "mnt", "c", "Users", "x", ".claude", "plugins", "cache", "pulseia", "pulse", "0.49.2", "bin"].join("/");
+  const env = { PATH: ["/a", installe, "/b"].join(d), PACK: "next" };
+  const direct = require("../../../outils/evals/direct");
+  const bins = direct.binsDepot("/depot", env);
+  assert.deepStrictEqual(bins, [path.join("/depot", "plugins", "pulse-vibe", "bin"), path.join("/depot", "plugins", "pulse-vibe-next", "bin")]);
+  assert.strictEqual(direct.envEval(env, bins).PATH, [...bins, "/a", "/b"].join(d));
+  assert.strictEqual(direct.binsDepot("/depot", {}).length, 1);
+});
+
 test("les projets d'essai donnent un nom d'auteur à Git (le bac à sable protège .git/config pendant l'essai)", { skip: bash }, () => {
   for (const c of cas) {
     const d = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-eval-auteur-${c}-`));
