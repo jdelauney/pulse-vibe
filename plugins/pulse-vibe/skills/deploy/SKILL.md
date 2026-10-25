@@ -52,7 +52,7 @@ Chaque envoi déclenche une demande d'accord de Claude Code : c'est ce qui met v
 
 #### 3a. Le dépôt distant
 
-Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/pulse:init`) : l'envoyer à jour (`git push`) et passer à 3b. Sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; le fournisseur est celui de « Hébergement et mise en ligne ». Si la personne répond « Non, plus tard », expliquer qu'une mise en ligne passe par un dépôt distant, et s'arrêter.
+Un dépôt distant est déjà relié (`git remote -v`, par exemple depuis `/pulse:init`) : l'envoyer à jour (`git push`) et passer à 3b. Sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant » ; le fournisseur est celui de « Hébergement et mise en ligne ». Si la personne répond « Non, plus tard », expliquer qu'une mise en ligne passe par un dépôt distant, et s'arrêter.
 
 #### 3b. Relier le dépôt à l'hébergeur (à faire par la personne, guidé)
 

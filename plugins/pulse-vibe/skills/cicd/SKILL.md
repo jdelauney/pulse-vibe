@@ -31,7 +31,7 @@ Argument : `$ARGUMENTS`
 ### Prérequis
 
 - `docs/technical.md` est nécessaire (« Commandes du projet », « Hébergement et mise en ligne ») : sinon, proposer `/pulse:tech` et s'arrêter.
-- Un **dépôt distant** relié (`git remote -v`) : sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; s'arrêter tant qu'il manque (la CI tourne chez son fournisseur).
+- Un **dépôt distant** relié (`git remote -v`) : sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant » ; s'arrêter tant qu'il manque (la CI tourne chez son fournisseur).
 - Le **squelette** de la pile en place (« Mise en place » de `docs/technical.md` faite, les fichiers qu'elle annonce présents) : sinon, les contrôles attendent encore du code à vérifier. Proposer « Installer seulement le contrôle des secrets maintenant » / « Attendre la première tâche du plan (Recommandé) ».
 - Des modifications non enregistrées : proposer de taper `/pulse:commit` d'abord, pour que le commit de la CI contienne uniquement la CI.
 - Pour tout ce qui est propre au fournisseur de CI (emplacement et format du fichier, déclencheurs, étapes, réglages du dépôt) : suivre sa **documentation officielle** (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Tirer de cette documentation chaque syntaxe, nom d'action ou menu.

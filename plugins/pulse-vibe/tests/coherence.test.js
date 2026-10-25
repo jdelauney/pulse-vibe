@@ -902,7 +902,7 @@ test("phrases dites à la personne sans « MVP », « worktree » ni « demande 
   // Permis : un titre de section ou de référence cité (lu par l'IA), et la phrase qui explique le mot « worktree ».
   const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est /;
   const problemes = [];
-  const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md")];
+  const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md"), path.join("references", "envoi.md")];
   for (const f of fichiers) {
     for (const ligne of lire(RACINE, f).split("\n")) {
       for (const m of ligne.matchAll(/« ((?:[^«»]|«[^«»]*»)+) »/g)) {
@@ -1378,7 +1378,7 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   assert.doesNotMatch(spirc, /Références de la réalisation chargées ; sinon les relancer/);
   const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
-  assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
+  assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference envoi\.md`/);
 });
 
 test("spirc : l'analyse d'une demande libre est une référence, -d est un raccourci, chaque référence de la réalisation se charge par son appel", () => {
@@ -1498,11 +1498,11 @@ test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; 
   assert.match(pr, /« Marquer la proposition comme prête à accepter »/);
   assert.match(pr, /« \(Recommandé\) » va à la première quand toutes les tâches du plan sont terminées, sinon à « Garder le dossier à part »/);
   assert.match(pr, /marquée prête, sortir du dossier à part \(outil `ExitWorktree`/);
-  assert.match(lire(RACINE, "references", "depot-distant.md"), /Chaque envoi passe toujours par la demande d'autorisation de Claude Code/);
+  assert.match(lire(RACINE, "references", "envoi.md"), /Chaque envoi passe toujours par la demande d'autorisation de Claude Code/);
   for (const skill of ["tech", "ui"]) assert.match(skillTexte(skill), /étape de `\/pulse:express`[^)]*: le réécrire plutôt pour cette commande, à son étape suivante\)/, skill);
   assert.doesNotMatch(pr, /Rassembler dans/, "pas de fusion locale proposée en mode PR");
   assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
-  const depot = lire(RACINE, "references", "depot-distant.md");
+  const depot = lire(RACINE, "references", "envoi.md");
   assert.match(depot, /« Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt \(Recommandé\) »/);
   assert.match(depot, /En mode découverte \(règles de réalisation\)[^\n]*« Directement sur la version principale »/);
   const regles = lire(RACINE, "references", "regles-realisation.md");
@@ -1689,8 +1689,23 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
 });
 
+test("dépôt distant et envoi : relier dans depot-distant.md, envoyer dans envoi.md, chacun chargé par ses commandes", () => {
+  const depot = lire(RACINE, "references", "depot-distant.md");
+  const envoi = lire(RACINE, "references", "envoi.md");
+  assert.match(depot, /^## 1\. Relier le projet à un dépôt distant$/m);
+  assert.doesNotMatch(depot, /Choisir comment envoyer le travail|Envoyer après chaque tâche|Fin du plan, en mode PR/);
+  for (const t of ["## 1. Choisir comment envoyer le travail d'un plan", "## 2. Envoyer après chaque tâche enregistrée", "## 3. Fin du plan, en mode PR"]) assert.ok(envoi.includes(t), t);
+  assert.doesNotMatch(envoi, /Relier le projet à un dépôt distant/);
+  // Plus aucun renvoi à l'ancien titre commun (init et refine : phase 6, corrigés à la fusion).
+  const fautifs = TEXTES.filter(({ fichier }) => !/skills[\\/](init|refine)[\\/]/.test(fichier))
+    .filter(({ texte }) => /Le dépôt distant et l'envoi du travail/.test(texte))
+    .map(({ fichier }) => fichier);
+  assert.deepStrictEqual(fautifs, []);
+  assert.match(OUTIL, /^ {4}commit\)\n(?: {6}[^\n]*\n)* {6}afficher "L'envoi du travail" "\$REF\/envoi\.md"/m);
+});
+
 test("envoi : sans suivi de la mise en ligne chez l'hébergeur, laissé à deploy et status", () => {
-  assert.match(lire(RACINE, "references", "depot-distant.md"), /\*\*Après l'envoi, passer directement à la suite\.\*\*[^\n]*`\/pulse:deploy` et `\/pulse:status`[^\n]*rythme rapide/);
+  assert.match(lire(RACINE, "references", "envoi.md"), /\*\*Après l'envoi, passer directement à la suite\.\*\*[^\n]*`\/pulse:deploy` et `\/pulse:status`[^\n]*rythme rapide/);
 });
 
 test("spirc : une ronde de départ unique (rythme, options à cocher, tests, envoi), posée même en mode découverte", () => {

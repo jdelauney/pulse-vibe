@@ -15,7 +15,7 @@ Revenir en arrière **sans rien perdre** : chaque annulation est elle-même rév
 
 Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte annuler` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi « Le dépôt distant et l'envoi du travail » à l'étape 6 (`pulse-aidd reference depot-distant.md`).
+Appliquer aussi « L'envoi du travail » à l'étape 6 (`pulse-aidd reference envoi.md`).
 
 ## Contexte
 
@@ -65,7 +65,7 @@ Demander (AskUserQuestion) : « Annuler » / « Ne rien faire ». Une réponse a
 
 ### 6. Envoyer
 
-Pour une tâche ou une version : lire `pulse-aidd reference depot-distant.md` et appliquer « 3. Envoyer après chaque tâche enregistrée », selon la ligne « Envoi » du plan concerné. Si le site est en ligne, rappeler que cet envoi le remettra dans l'état choisi (si le déploiement automatique est en place). Toujours un envoi simple : **jamais `--force`**.
+Pour une tâche ou une version : lire `pulse-aidd reference envoi.md` et appliquer « 2. Envoyer après chaque tâche enregistrée », selon la ligne « Envoi » du plan concerné. Si le site est en ligne, rappeler que cet envoi le remettra dans l'état choisi (si le déploiement automatique est en place). Toujours un envoi simple : **jamais `--force`**.
 
 ### 7. Compte rendu
 
