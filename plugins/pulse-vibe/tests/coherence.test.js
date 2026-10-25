@@ -988,7 +988,8 @@ test("deploy : porte officielle chargée par mode, mise à jour qui vérifie aus
   const controles = deploy.split("### 1. Contrôles avant envoi")[1].split("\n### 2.")[0];
   assert.match(controles, /`pulse-aidd preuve etat --exiger suite --exiger construction`[^\n]*`pulse-aidd preuve lancer --portee suite --construire`/);
   const miseAJour = deploy.split("### 4. Mise à jour")[1].split("\n### ")[0];
-  assert.match(miseAJour, /`git log --oneline @\{u\}\.\.`/);
+  assert.match(miseAJour, /`git status -sb`[^\n]*`\[ahead N\]`/, "commits à envoyer lus par git status, qui marche sous Bash comme sous PowerShell");
+  assert.doesNotMatch(miseAJour, /@\{u\}/, "@{u} est une table de hachage pour PowerShell");
   assert.match(miseAJour, /Tout est déjà envoyé : le dire, et passer au point 3\./);
   const tout = skillTexte("deploy");
   assert.doesNotMatch(tout, /etape perf/, "la mesure de vitesse en deux commandes");
@@ -2155,7 +2156,8 @@ test("cicd : règles communes seules dans son contexte, vitesse par perf/ci-vite
   assert.match(cicd, /`pulse-aidd preuve lancer --portee suite --construire`, puis l'audit des dépendances et `node scripts\/verifier\.js`/);
   assert.doesNotMatch(cicd, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
   const perf = lire(RACINE, "skills", "perf", "SKILL.md");
-  assert.match(perf, /Vérification automatique de la vitesse : `pulse-aidd reference perf\/ci-vitesse\.md`/);
+  assert.match(perf, /Proposer la vérification automatique de la vitesse : `pulse-aidd reference perf\/ci-vitesse\.md`, lancé au moment de la proposer\./);
+  assert.doesNotMatch(perf, /Proposer la vérification automatique\. Vérification automatique/, "une seule fois");
   assert.doesNotMatch(perf, /node scripts\/perf\.js mesurer/, "la vérification automatique vit dans ci-vitesse.md");
   const vitesse = lire(RACINE, "skills", "perf", "references", "ci-vitesse.md");
   for (const attendu of ["pulse-aidd perf installer", "--source psi", "--source local", "PULSE_PSI_CLE", "mode informatif"]) assert.ok(vitesse.includes(attendu), `ci-vitesse.md : ${attendu}`);

@@ -99,7 +99,7 @@ Trois volets, proposés un par un (AskUserQuestion), chacun facultatif.
 2. **Tendance des vrais visiteurs** (clé présente, site en ligne) : `pulse-aidd perf terrain <adresse du site> --historique`. Résumer en une phrase par mesure (« le contenu principal s'affiche plus vite depuis 6 semaines »).
 3. **Budget et vérification automatique.**
    - Proposer un budget à partir de la dernière mesure (§ « Le budget » de la référence), le faire valider, l'écrire dans « Budget » de `docs/performance.md`, puis le vérifier : `pulse-aidd perf budget <dernière mesure.json> docs/performance.md`.
-   - Proposer la vérification automatique. Vérification automatique de la vitesse : `pulse-aidd reference perf/ci-vitesse.md`, lancé au moment de la proposer.
+   - Proposer la vérification automatique de la vitesse : `pulse-aidd reference perf/ci-vitesse.md`, lancé au moment de la proposer.
    - Montrer le fichier de CI complet, l'écrire avec accord, essayer les deux commandes en local, puis l'enregistrer et l'envoyer (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`). Mettre à jour « Mesure réelle et suivi » de `docs/performance.md` et la ligne CI de `docs/technical.md`.
 
 ### Fin

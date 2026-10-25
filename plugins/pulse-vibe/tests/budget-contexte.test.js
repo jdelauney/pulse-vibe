@@ -124,8 +124,8 @@ const BOUCLES = {
 const MODES = {
   "deploy, première mise en ligne": { plafond: 27500, // mesure 26 138
     parties: [["etape", "deploy"], ["reference", "deploy/premiere.md"]] },
-  "deploy, mode production": { plafond: 26500, // mesure 25 144
-    parties: [["etape", "deploy"], ["reference", "deploy/production.md"]] },
+  "deploy, mode production": { plafond: 32500, // mesure 30 638, plafond relevé (relecture de la tâche 7.5 : le mode production lance toujours deploy/variables.md, et celle-ci la saisie hors conversation ; ils sont comptés) ; avant, 25 144 sans eux
+    parties: [["etape", "deploy"], ["reference", "deploy/production.md"], ["reference", "deploy/variables.md"], ["reference", "secrets/sans-conversation.md"]] },
   "secrets, fuite": { plafond: 40500, // mesure 38 307 (tâche 7.6 : premier plafond ; la commande, fuite.md et le modèle d'incident)
     parties: [["etape", "secrets"], ["reference", "secrets/fuite.md"], ["modele", "secrets/incident.md"]] },
 };
