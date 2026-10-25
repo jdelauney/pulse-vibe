@@ -1533,6 +1533,21 @@ test("seo : contrôles IA dans les règles, politique IA chargée en mode ia, mo
   assert.doesNotMatch(section("lancer"), /vérification minimale/, "seo lancer suit la procédure complète de relier.md");
 });
 
+test("perf : la clé Google dans perf/cle.md, chargée pour la créer ; règles de la commande résumées ; lectures de références par un seul motif", () => {
+  const cle = lire(RACINE, "skills", "perf", "references", "cle.md");
+  for (const fait of [/PageSpeed Insights API/, /Chrome UX Report API/, /PULSE_PSI_CLE/, /Clé compromise/, /pulse-aidd perf cle/]) assert.match(cle, fait, `cle.md : ${fait}`);
+  const ref = lire(RACINE, "skills", "perf", "references", "performance.md");
+  assert.doesNotMatch(ref, /La clé Google \(PageSpeed Insights et CrUX\)|Clé compromise/, "performance.md : la clé est dans cle.md");
+  const perf = lire(RACINE, "skills", "perf", "SKILL.md");
+  assert.match(perf, /`pulse-aidd reference perf\/cle\.md`[^\n]*« Clé compromise »/);
+  const regles = perf.slice(perf.indexOf("## Règles"), perf.indexOf("## Contexte"));
+  assert.doesNotMatch(regles, /deux tableaux distincts|\*\*Frontières\*\*/, "les règles de la commande renvoient aux §§ 3, 4 et 8 au lieu de les recopier");
+  assert.match(regles, /§ 3[\s\S]*§ 4[\s\S]*§ 8 \(Frontières\)/);
+  assert.match(lire(RACINE, "skills", "perf", "references", "performance.md"), /^## 8\. Frontières/m);
+  const motifs = motifsBash(path.join(RACINE, "skills", "perf", "SKILL.md")).filter((m) => m.startsWith("pulse-aidd reference"));
+  assert.deepStrictEqual(motifs, ["pulse-aidd reference *"]);
+});
+
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
   const worktree = lire(RACINE, "references", "worktree-dossier.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));

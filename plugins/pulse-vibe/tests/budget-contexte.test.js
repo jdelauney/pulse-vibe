@@ -52,7 +52,7 @@ const PLAFONDS = {
   ui: 20500, // mesure 19 296 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, mesure 56 299 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 58 567
   rediger: 20000, // mesure 18 877 (phase 8 : le modèle du texte de page laissé au redacteur) ; avant, mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
   seo: 34500, // mesure 32 405 (phase 8 : la politique IA chargée en mode ia, ses contrôles dans les règles ; modèle d'audit chargé à l'audit) ; avant, mesure 43 163 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 49 096
-  perf: 36000, // mesure 33 884 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 707
+  perf: 34000, // mesure 32 191 (phase 8 : la clé Google dans perf/cle.md, chargée pour la créer) ; avant, mesure 33 884 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 707
   "search-console": 29500, // mesure 28 083 (phase 8 : la liaison dans relier.md et le modèle du travail en cours, chargés à l'étape qui les cite) ; avant, mesure 33 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 273
   learn: 28000, // mesure 26 412 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 226
   explain: 15500, // mesure 14 585 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 22 408
@@ -90,7 +90,7 @@ const PLAFONDS_COMMANDE = {
   init: 61500, // mesure 58 565 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 64 250 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 33000, // mesure 31 126 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 613 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 39 206
   memory: 32500, // mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
-  perf: 48500, // mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
+  perf: 47000, // mesure 44 322 (phase 8 : clé Google dans perf/cle.md, règles de la commande résumées) ; avant, mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
   plan: 65000, // mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 35500, // mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
   prd: 25000, // mesure 23 807 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
@@ -184,7 +184,7 @@ const PLAFONDS_FORMES = {
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
   "memory --sans-communes": 18500, // mesure 17 463
-  "perf --sans-communes": 35000, // mesure 33 120 : dépasse la limite, voir DEPASSEMENTS_CONNUS
+  "perf --sans-communes": 32500, // mesure 30 590 (phase 8 : clé Google dans perf/cle.md, règles résumées ; avant, 33 120) : dépasse la limite, voir DEPASSEMENTS_CONNUS
   "plan --sans-communes": 44500, // mesure 42 033 : dépasse la limite
   "pr --sans-communes": 18000, // mesure 16 829
   "pr --sans-noyau": 21500, // mesure 20 393

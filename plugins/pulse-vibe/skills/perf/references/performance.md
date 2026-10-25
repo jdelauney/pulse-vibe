@@ -67,29 +67,7 @@ En simulation, l'INP n'existe pas (il faut de vraies interactions) : on lit à s
 
 **Mobile d'abord**, ordinateur sur demande (`--appareil ordinateur`).
 
-## 5. La clé Google (PageSpeed Insights et CrUX)
-
-Une clé personnelle, gratuite, valable pour tous les projets de la personne. Sans clé, PageSpeed Insights refuse en pratique toute demande (erreur 429, quota de 0), et CrUX exige une clé.
-
-**Créer la clé** (une fois, par la personne, guidée pas à pas ; libellés de la console Google Cloud à vérifier à l'écran) :
-1. Ouvrir https://console.cloud.google.com et se connecter avec un compte Google.
-2. Créer un projet (sélecteur de projet → « Nouveau projet »), par exemple « mesure-vitesse ».
-3. « API et services » → « Bibliothèque » : activer **PageSpeed Insights API**, puis **Chrome UX Report API**.
-4. « API et services » → « Identifiants » → « Créer des identifiants » → « Clé API ».
-5. Restreindre la clé : « Restrictions d'API » → « Restreindre la clé » → cocher seulement **PageSpeed Insights API** et **Chrome UX Report API** → Enregistrer. Une clé restreinte ne sert à rien d'autre si elle fuit.
-
-**La ranger sur le poste**, dans la variable d'environnement `PULSE_PSI_CLE`, hors de tout projet. La personne colle la valeur elle-même, dans la fenêtre de son système ; la clé reste hors de la conversation.
-- Windows : menu Démarrer → « Modifier les variables d'environnement pour votre compte » → « Nouvelle… » → nom `PULSE_PSI_CLE`, valeur : la clé → OK.
-- macOS et Linux : ouvrir `~/.zshrc` (macOS) ou `~/.bashrc` (Linux) dans un éditeur de texte, ajouter la ligne `export PULSE_PSI_CLE="<la clé>"`, enregistrer.
-- Puis fermer et rouvrir le terminal et Claude Code (la variable est lue au démarrage), et lancer `pulse-aidd perf cle` : il vérifie que la clé est présente et acceptée, sans l'afficher.
-
-**Ailleurs** : pour la tâche hebdomadaire de CI, la clé va dans les secrets du dépôt (nom `PULSE_PSI_CLE`), saisie par la personne dans les réglages du dépôt. Le garde-fou anti-secrets de Pulse bloque une clé Google écrite dans un fichier du projet.
-
-**Clé compromise** (collée dans une conversation, un fichier ou un message) : la supprimer dans « Identifiants », en créer une nouvelle, mettre à jour la variable du poste et le secret de CI.
-
-Quota gratuit indiqué dans la console (« Quotas ») ; CrUX : 150 requêtes par minute.
-
-## 6. Lire les diagnostics de Lighthouse 13
+## 5. Lire les diagnostics de Lighthouse 13
 
 `pulse-aidd perf mesurer` liste les diagnostics en échec de la catégorie performance (groupes « insights » et « diagnostics » de Lighthouse 13, score < 0,9), du plus grand gain estimé au plus petit, avec l'élément ou la ressource en cause. Identifiants relevés sur un rapport réel de Lighthouse 13.5.0 ; le JSON de chaque mesure garde la version (`lighthouse`). À chaque nouvelle version majeure, relire cette table.
 
@@ -120,7 +98,7 @@ Quota gratuit indiqué dans la console (« Quotas ») ; CrUX : 150 requêtes par
 - **Côté serveur** : un TTFB mauvais ou `document-latency-insight` en échec relève du serveur (requêtes en base, démarrage à froid, région). Une ligne « côté serveur » dans le rapport, puis `/pulse:fix` ou une user story.
 - Les identifiants s'affichent pour le profil « Développeur » ; pour les autres, la cause en mots simples et l'élément désigné (« la grande photo de l'accueil », « le bouton de discussion en bas à droite »).
 
-## 7. Le budget
+## 6. Le budget
 
 Un budget fixe des limites sur les **mesures** (pas sur le score seul, qui mélange cinq mesures). Il se note dans la section « Budget » de `docs/performance.md`, un tableau `| Mesure | Limite |` lu par `pulse-aidd perf budget` :
 
@@ -135,7 +113,7 @@ Un budget fixe des limites sur les **mesures** (pas sur le score seul, qui méla
 
 Mesures reconnues : LCP, CLS, TBT, FCP, SI, TTFB, Poids, Requêtes, Score. Une limite vide (« — ») est ignorée. `pulse-aidd perf budget <mesure.json> docs/performance.md` sort avec le code 1 si une médiane dépasse sa limite, ce qui fait échouer une tâche de CI.
 
-## 8. Mythes à corriger
+## 7. Mythes à corriger
 
 1. « Le score Lighthouse fait le classement Google. » Google regarde les vrais visiteurs, parmi beaucoup d'autres signaux.
 2. « 100/100 ou rien. » Au-dessus de 90, le gain n'est plus perceptible.
@@ -148,7 +126,7 @@ Mesures reconnues : LCP, CLS, TBT, FCP, SI, TTFB, Poids, Requêtes, Score. Une l
 9. « Le CO2 par visite est une mesure. » C'est une estimation de méthode ; le poids de la page et le nombre de requêtes sont, eux, mesurés.
 10. « Lighthouse CI est à jour. » Au 2026-10-07, `@lhci/cli` embarque encore Lighthouse 12 : `pulse-aidd perf` appelle Lighthouse 13 directement.
 
-## 9. Frontières
+## 8. Frontières
 
 | Question | Commande |
 |---|---|
