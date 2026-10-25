@@ -18,6 +18,10 @@ Pile non choisie : lancer `/pulse:tech`.
 - **Explications** : normales
 - **Rythme** : complet
 <!-- pulse_profil:fin -->
+
+## Commandes
+
+- Quand la personne demande où elle en est ou quoi faire ensuite, proposez-lui de taper `/pulse:status`. Quand elle veut changer l'ordre ou le contenu d'un plan, proposez `/pulse:refine <US-XXX>`, qui garde intactes les tâches déjà faites. Les commandes `/pulse:*` se lancent quand la personne les tape.
 FIN
 cat > docs/depart/cahier-des-charges.md <<'FIN'
 # Carnet de réservations du Salon Lila

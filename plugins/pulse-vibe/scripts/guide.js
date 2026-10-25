@@ -241,7 +241,7 @@ function ecrireIndex(plans, nom) {
     "/pulse:status      # où en est le projet, et quoi faire maintenant",
     "```",
     "",
-    "La première fois, ou après une mise à jour du plugin Pulse : `/pulse:init` (il prépare le projet et le met à niveau).",
+    "La première fois, ou après une mise à jour du plugin Pulse : `/pulse:init` (il prépare le projet et remet ses contrôles à jour).",
     "",
     "## Si vous êtes bloqué",
     "",
@@ -354,7 +354,7 @@ function generer() {
     if (ignores.length > 0) {
       return { erreur: `Aucune tâche reconnue (${ignores.join(", ")}) : format attendu « - [ ] **T1 – Titre** · US-001 » sous « ## Tâches ».` };
     }
-    if (ancienEmplacement()) return { erreur: "Les plans sont à l'ancien emplacement (docs/plans/ ou docs/plan.md) : lancez /pulse:init pour les réorganiser dans aidd_docs/tasks/." };
+    if (ancienEmplacement()) return { erreur: "Les plans sont à l'ancien emplacement (docs/plans/ ou docs/plan.md) : cette version de Pulse lit seulement aidd_docs/tasks/ ; créez chaque plan avec /pulse:plan." };
     return { erreur: "Aucun plan dans aidd_docs/tasks/ : lancez d'abord /pulse:plan <US-XXX>." };
   }
 

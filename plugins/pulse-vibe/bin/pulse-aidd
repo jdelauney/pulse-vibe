@@ -235,34 +235,22 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
   [ "$2" = "--sans-communes" ] || [ "$2" = "--sans-noyau" ] || afficher "Règles communes Pulse" "$REF/regles-communes.md"
   [ "$2" = "--sans-communes" ] || modules "$1"
   case "$1" in
-    init)
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
-      afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
-      afficher "Le cycle Pulse" "$REF/cycle.md"
-      afficher "Bannière" "$SK/init/assets/banniere.txt"
-      afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
+    init) # dépôt distant, cycle et modèle CLAUDE.md : chargés à l'action qui les cite
+      afficher "Bannière" "$SK/init/assets/banniere.txt" ;;
     brainstorm)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Modèle : docs/brief.md" "$TPL/brief.md"
       afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
-    tech)
+    tech) # la démarche de choix (projet neuf) et l'organisation (étape 6.1, projet neuf sans pack) se chargent à l'étape qui les cite
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Aider à choisir la technologie" "$SK/tech/references/choix-techniques.md"
-      afficher "Organisation des fichiers et nommage" "$REF/qualite/organisation.md"
       afficher "Modèle : docs/technical.md" "$SK/tech/assets/technical.md"
       afficher "Modèle : .gitignore" "$TPL/gitignore.template"
       afficher "Modèle : .env.example" "$TPL/env.example.template"
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
-    memory)
-      afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Modèle : aidd_docs/memory/README.md" "$TPL/aidd-memory-readme.md"
-      afficher "Modèle : aidd_docs/memory/project.md" "$TPL/aidd-memory-project.md"
-      afficher "Modèle : aidd_docs/memory/technical.md" "$TPL/aidd-memory-technical.md"
-      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
-      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md"
-      afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
+    memory) # les modèles s'affichent à l'action qui les cite (pulse-aidd modele)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md" ;;
     spirc)
       afficher "Examiner une tâche" "$REF/examen.md"
       afficher "Déléguer à l'implementer" "$REF/deleguer.md"
@@ -272,6 +260,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Modèle : docs/brief.md" "$TPL/brief.md"
       afficher "Modèle : docs/prd.md" "$TPL/prd.md"
+      afficher "Les règles des user stories" "$SK/us/references/regles-us.md"
       afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md"
       afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
@@ -281,13 +270,15 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/prd.md" "$TPL/prd.md" ;;
     us)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
+      afficher "Les règles des user stories" "$SK/us/references/regles-us.md"
       afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md" ;;
-    spec)
-      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
+    spec) # règles et modèle d'US : chargés avant d'écrire une US créée (pulse-aidd reference us/regles-us.md, pulse-aidd modele us.md)
+      afficher "Présentation des écrans" "$SK/spec/references/presentation.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$SK/spec/assets/spec.md" ;;
     plan)
+      afficher "Règles de découpage du plan" "$SK/plan/references/decoupage.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Stratégie de tests" "$REF/tests/strategie.md"
       afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
@@ -323,9 +314,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/secrets.md" "$SK/secrets/assets/secrets.md"
       afficher "Modèle : journal d'incident" "$SK/secrets/assets/incident.md"
       lexique ;;
-    refine)
-      afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
-      afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
+    refine) # le plan modifié montre le format des tâches ; son modèle se lance seulement quand une section manque
+      afficher "Règles de découpage du plan" "$SK/plan/references/decoupage.md" ;;
     ui)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Registres d'interface" "$SK/ui/references/registres.md"

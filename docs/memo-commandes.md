@@ -17,7 +17,7 @@
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **première version** |
 | `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options (dont une pile Pulse prête à l'emploi si elle est installée), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
-| `/pulse:us` | Découpe le besoin en groupes et écrit les user stories : « En tant que… je souhaite… afin de… », par rondes de questions courtes ; chaque US vérifiée et prête à spécifier, triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
+| `/pulse:us` | Découpe le besoin en groupes et écrit les user stories : « En tant que… je souhaite… afin de… », avec des questions courtes par rondes, et les cas difficiles un à un, avec vos mots ; chaque US vérifiée et prête à spécifier, triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
 ## 3. Préparer la construction
 
