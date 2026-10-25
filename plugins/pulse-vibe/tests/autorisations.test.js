@@ -40,6 +40,7 @@ test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans prod
   assert.ok(a.deny.includes("Read(./.env)"));
   assert.ok(a.allow.includes("Bash(git commit -m *)"));
   assert.ok(a.allow.includes("Bash(pulse-aidd qualite *)") && a.allow.includes("Bash(pulse-aidd reference *)"));
+  assert.ok(a.allow.includes("Bash(pulse-aidd preuve *)"), "la preuve des tests, lancée par les agents");
   assert.ok(a.allow.includes("Bash(npm test)") && a.allow.includes("Bash(npm test *)"));
   const tout = a.allow.join("\n");
   assert.doesNotMatch(tout, /git push|secrets (generer|envoyer|elaguer|redeployer)|installer-|ligne-etat|nouveau|pulse-aidd \*\)/);
