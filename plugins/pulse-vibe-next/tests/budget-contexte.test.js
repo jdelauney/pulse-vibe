@@ -190,7 +190,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "express --sans-communes": 27500, // mesure 26 109
   "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 30 759)
   "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 37 026)
-  "memory --sans-communes": 18500, // mesure 17 559
+  "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles de la mémoire affichés à l'action) ; avant, 17 559
   "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "plan --sans-communes": 62500, // mesure 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "pr --sans-communes": 18000, // mesure 16 931

@@ -30,7 +30,7 @@ const PLAFONDS = {
   init: 18500, // mesure 17 376 (refactoring d'optimisation, tâche 6.1 : contexte réduit à la bannière ; dépôt distant, cycle et modèle CLAUDE.md chargés à l'action, ancien format retiré) ; avant, mesure 40 860 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 45 347 (pulse 0.42 : rythme rapide, option -f, gestes)
   brainstorm: 25500, // mesure 24 235 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 31 945
   tech: 52000, // mesure 49 242 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 222
-  memory: 24000, // mesure 22 638 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 261
+  memory: 20000, // mesure 18 609 (refactoring d'optimisation, tâche 6.7 : contexte réduit aux règles de la mémoire, modèles affichés à l'action) ; avant, mesure 22 638 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 261
   spirc: 35500, // mesure 33 523 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 35 779 (pulse 0.51 : deleguer.md, le message de délégation écrit une fois (+ 2,3 k)) ; avant, mesure 34 020 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
   express: 36000, // mesure 34 236 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 394
   prd: 20500, // mesure 19 165 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 982
@@ -89,7 +89,7 @@ const PLAFONDS_COMMANDE = {
   implement: 47500, // mesure 44 812 (pulse 0.51, étape C : une seule tâche, boucle.md supprimée, SKILL.md raccourci) ; avant, mesure 50 212 (pulse 0.51, étape A : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 60 136 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 60 878 (pulse 0.47 : la boucle sur tout le plan chargée seulement sans tâche, skills/implement/references/boucle.md)
   init: 31500, // mesure 29 663 (refactoring d'optimisation, tâche 6.1 : contexte réduit à la bannière, « Mettre à niveau » remplacé par controles.md chargé à la demande) ; avant, mesure 58 565 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 64 250 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 33000, // mesure 31 126 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 613 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 39 206
-  memory: 32500, // mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
+  memory: 29000, // mesure 27 407 (refactoring d'optimisation, tâche 6.7 : modèles affichés à l'action, creer après tech pour un projet existant) ; avant, mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
   perf: 48500, // mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
   plan: 65000, // mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 35500, // mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
@@ -182,7 +182,7 @@ const PLAFONDS_FORMES = {
   "express --sans-communes": 27000, // mesure 25 332
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
-  "memory --sans-communes": 18500, // mesure 17 463
+  "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles affichés à l'action) ; avant, 17 463
   "perf --sans-communes": 35000, // mesure 33 120 : dépasse la limite, voir DEPASSEMENTS_CONNUS
   "plan --sans-communes": 44500, // mesure 42 033 : dépasse la limite
   "pr --sans-communes": 18000, // mesure 16 829

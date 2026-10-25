@@ -414,10 +414,23 @@ test("projet existant : du code sans brief ni choix techniques, documenter l'exi
     assert.deepStrictEqual([r.regle, r.prochaine], ["R8c", "/pulse:tech"], Object.keys(code)[0]);
     assert.match(r.raison, /existant/);
   }
-  // avec un brief ou des choix techniques, la suite normale s'applique
+  // avec un brief, la suite normale s'applique
   assert.strictEqual(etat(projet({ "package.json": "{}", "docs/brief.md": "x" })).regle, "R10");
-  assert.strictEqual(etat(projet({ "package.json": "{}", "docs/technical.md": "x" }, PILE_CHOISIE)).regle, "R10");
   assert.strictEqual(etat(projet()).regle, "R9");
+});
+
+test("projet existant après tech : noter les conventions propres au code (R8d), puis la suite normale", () => {
+  const MEMOIRE_VIDE = "# Mémoire technique\n\n## Conventions propres au projet\n\n<!-- Une ligne par convention. -->\n\n## Pièges et leçons\n\n- Un piège déjà noté.\n";
+  const existant = (fichiers) => etat(projet({ "package.json": "{}", "docs/technical.md": "x", ...fichiers }, PILE_CHOISIE));
+  const r = existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE });
+  assert.deepStrictEqual([r.regle, r.prochaine], ["R8d", "/pulse:memory creer"]);
+  assert.match(r.raison, /conventions/);
+  assert.ok(r.aussi.some((a) => a.startsWith("/pulse:prd — ")), "la personne peut passer directement au PRD");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": "# Technique\n" }).regle, "R8d", "section absente : aucune convention notée");
+  const remplie = MEMOIRE_VIDE.replace("<!-- Une ligne par convention. -->", "- Les prix sont stockés en centimes.");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": remplie }).regle, "R10", "conventions notées : le périmètre ensuite");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE, "docs/brief.md": "x" }).regle, "R10", "avec un brief, la suite normale");
+  assert.strictEqual(etat(projet({ "docs/technical.md": "x", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }, PILE_CHOISIE)).regle, "R10", "sans code, rien à observer");
 });
 
 test("contrôles à remettre à jour : une ligne « aussi », jamais un blocage du parcours", () => {

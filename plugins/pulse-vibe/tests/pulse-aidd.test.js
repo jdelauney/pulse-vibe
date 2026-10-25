@@ -145,6 +145,13 @@ test("contexte init : la bannière seule ; guide : fichiers du projet et cycle P
   assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
 });
 
+test("contexte memory : les règles de la mémoire seules, chaque modèle affiché à l'action qui le cite", () => {
+  const r = lancer("contexte", "memory");
+  assert.strictEqual(r.status, 0, r.stderr);
+  const titres = [...r.stdout.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]).filter((t) => t !== "Règles communes Pulse");
+  assert.deepStrictEqual(titres, ["Règles de la mémoire projet"]);
+});
+
 test("contexte implement et fix : règles de qualité chargées à la demande", () => {
   for (const commande of ["implement", "fix"]) {
     const r = lancer("contexte", commande);

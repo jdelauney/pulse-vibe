@@ -79,7 +79,7 @@
 </ol>
 <!-- /auto:parcours -->
 <ul>
-<li><strong>Vous ajoutez Pulse à un projet qui a déjà du code</strong> : <code>creer</code> remplit la mémoire à partir de ce qui existe.</li>
+<li><strong>Vous ajoutez Pulse à un projet qui a déjà du code</strong> : après <code>/pulse:tech</code>, qui décrit les outils du projet, <code>creer</code> note dans la mémoire les habitudes d'écriture et les pièges propres à votre code.</li>
 <li><strong>Vous voulez que l'IA se souvienne de quelque chose</strong> la prochaine fois : <code>retenir</code>.</li>
 <li><strong>Le projet a beaucoup changé</strong> depuis des semaines : <code>actualiser</code> repère ce qui est devenu faux.</li>
 <li><strong>Pulse vous dit que la mémoire est presque pleine</strong> : <code>compacter</code>.</li>
@@ -94,7 +94,7 @@
 <p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
 <ul>
-<li><strong><code>creer</code></strong> : la mémoire est absente ou incomplète. Pulse lit vos documents, votre code et l'historique, crée les fichiers qui manquent et les remplit avec ce qu'il a appris. L'existant est gardé tel quel.</li>
+<li><strong><code>creer</code></strong> : la mémoire est absente, incomplète ou encore vide. Pulse lit vos documents, votre code et l'historique, crée les fichiers qui manquent et remplit ceux qui sont encore vides avec ce qu'il a appris. L'existant est gardé tel quel.</li>
 <li><strong><code>actualiser</code></strong> : Pulse compare la mémoire au projet réel et liste ce qui est faux, manquant ou en double. Vous choisissez les corrections à appliquer.</li>
 <li><strong><code>retenir</code> suivi d'une phrase entre guillemets</strong> : une leçon, une habitude, un mot du métier ou une décision. Pulse choisit le bon fichier et vous montre la ligne exacte. Pour une habitude qu'on peut vérifier dans le code (« les montants s'écrivent en centimes »), Pulse peut lui ajouter un contrôle : un enregistrement qui ne la respecte pas est alors refusé, avec la règle citée. Une règle peut aussi prévoir une exception (« sauf dans ce fichier »). Les mêmes règles sont contrôlées quand un assistant rend la main, avant même l'enregistrement.</li>
 <li><strong><code>compacter</code></strong> : la mémoire approche de sa limite de 200 lignes. Un assistant la resserre autour de 140 lignes et la remet à jour.</li>
