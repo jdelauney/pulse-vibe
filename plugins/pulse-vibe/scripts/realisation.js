@@ -11,8 +11,8 @@
 //
 //   pulse-aidd realisation debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] [--devant]
 //   pulse-aidd realisation etape <Tn> <etape>   la tâche et l'étape en cours (test, realisation, examen, commit, questions, test-groupe…)
-//     Avec --devant (la conversation code elle-même), bin/pulse-aidd affiche ensuite, pour realisation et test, le contexte
-//     du pack de pile déclaré (pulse-pile-<id> contexte implement ou test), ou le bloc « non installé » : la fiche avant le code.
+//     Avec --devant (la conversation code elle-même), bin/pulse-aidd affiche ensuite, pour realisation, le contexte
+//     du pack de pile déclaré (pulse-pile-<id> contexte implement), ou le bloc « non installé » : la fiche avant le code.
 //   pulse-aidd realisation questions <n>        le nombre de questions qui attendent la personne
 //   pulse-aidd realisation fin                  supprime le marqueur
 //   pulse-aidd realisation                      affiche « clé: valeur » (plus « perime: oui » s'il est périmé), rien si absent
@@ -110,10 +110,10 @@ function rappel(racine) {
   if (n > 0) lignes.push(n === 1 ? "1 question vous attend." : `${n} questions vous attendent.`);
   // Une compaction ne garde que le début d'un skill : la commande se recharge par son étape.
   if (e.commande === "spirc" || e.commande === "implement") lignes.push(`Rechargez vos instructions : lancez \`pulse-aidd etape ${e.commande}\` et lisez toute la sortie, y compris dans le fichier enregistré quand Claude Code ne l'affiche pas en entier (elle dépasse 30 000 caractères).`);
-  // Devant vous : la fiche du pack se recharge par l'étape de code (test ou realisation), avant d'écrire.
-  if (e.devant) {
-    const etape = e.tache && (e.etape === "test" || e.etape === "realisation") ? `${e.tache} ${e.etape}` : `${e.tache || "<tâche>"} realisation`;
-    lignes.push(`Avant d'écrire du code, relancez \`pulse-aidd realisation etape ${etape}\` et lisez toute sa sortie : elle recharge la fiche du pack de pile.`);
+  // Devant vous, tant que le code de la tâche reste à écrire (étape test ou realisation) : la fiche du pack se recharge
+  // par l'étape de réalisation, avant d'écrire. Aux étapes suivantes, rien à relancer.
+  if (e.devant && e.tache && (e.etape === "test" || e.etape === "realisation")) {
+    lignes.push(`Avant d'écrire du code, relancez \`pulse-aidd realisation etape ${e.tache} realisation\` et lisez toute sa sortie : elle recharge la fiche du pack de pile.`);
   }
   return lignes.join("\n");
 }
