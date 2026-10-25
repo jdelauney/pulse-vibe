@@ -672,10 +672,20 @@ test("init et status appliquent le verdict de pulse-aidd etat, sans règles de d
   assert.doesNotMatch(skillTexte("init"), /\*\*Questions\*\* \(une ronde AskUserQuestion\) : le \*\*nom\*\*/, "nom et description : réponse libre");
 });
 
+test("décision 6 : plus de réorganisation de l'ancien format, les contrôles du projet remis à jour à la demande", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /réorganise les documents|réorganiser \*\*en conservant|Documents à l'ancien format/.test(texte)).map(({ fichier }) => unix(fichier)), []);
+  const init = lire(RACINE, "skills", "init", "SKILL.md");
+  assert.match(init, /^#### Remettre les contrôles du projet à jour$/m);
+  assert.match(init, /`pulse-aidd reference init\/controles\.md`/);
+  assert.doesNotMatch(init.match(/^allowed-tools:.*$/m)[0], /Bash\(git mv \*\)/, "git mv servait seulement à la réorganisation");
+  assert.match(lire(RACINE, "skills", "init", "references", "controles.md"), /`CLAUDE\.md` sans la ligne des commandes à proposer \(`\/pulse:status`, `\/pulse:refine`\)/);
+});
+
 test("init et status ne citent que des clés et des valeurs réellement émises par etat.js", () => {
   const source = lire(RACINE, "scripts", "etat.js");
   const valeurs = [...new Set([...source.matchAll(/fondation: "([a-z]+)"/g)].map((m) => m[1]))];
-  assert.ok(valeurs.length >= 6, "valeurs de fondation lues dans etat.js");
+  assert.ok(valeurs.length >= 5, "valeurs de fondation lues dans etat.js");
   const tableau = skillTexte("init").split("| `fondation` |")[1] || "";
   for (const v of valeurs) assert.ok(tableau.includes(`| \`${v}\` |`), `init : ligne « ${v} » absente de la table des fondations`);
   const emises = new Set(["prochaine", "raison", "regle", "etapes", "mvp", "aussi"]);
@@ -1053,6 +1063,13 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   assert.match(claude, /par la boucle de `\/pulse:spirc`/);
   assert.doesNotMatch(claude, /boucles de `\/pulse:implement`/);
   assert.doesNotMatch(claude, /traces de travail par session/);
+  // Décision 4 : à la fin de « Commandes », la ligne qui fait proposer /pulse:status et /pulse:refine ; les commandes restent tapées par la personne.
+  const commandes = claude.split(/^## Commandes\s*$/m)[1].split(/^## /m)[0];
+  assert.match(commandes, /proposez-lui de taper `\/pulse:status`/);
+  assert.match(commandes, /proposez `\/pulse:refine <US-XXX>`/);
+  assert.match(commandes.trim().split("\n").pop(), /Les commandes `\/pulse:\*` se lancent quand la personne les tape\.$/, "dernière ligne de « Commandes »");
+  // Hors d'une commande, aucune règle commune n'est chargée : le modèle n'y renvoie pas.
+  assert.doesNotMatch(claude, /règles communes Pulse, § 1|règles de réalisation de Pulse/);
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
   assert.match(skillTexte("ui"), /quatre références de design/);
   assert.doesNotMatch(skillTexte("ui"), /trois références/);

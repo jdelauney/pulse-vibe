@@ -498,7 +498,9 @@ test("migrations.md : notes de mise à niveau, lues par /pulse:init seulement", 
   for (const commande of ["tech", "plan", "implement", "review", "security", "deploy", "seo"])
     assert.ok(!lancer("contexte", commande).stdout.includes("mettre à niveau un projet plus ancien"), commande);
   assert.strictEqual(lancer("reference", "migrations.md").status, 0);
-  assert.match(lire(RACINE, "..", "pulse-vibe", "skills", "init", "SKILL.md"), /pulse-aidd pile reference migrations\.md/);
+  // /pulse:init, « Remettre les contrôles du projet à jour » (référence chargée à la demande).
+  assert.match(lire(RACINE, "..", "pulse-vibe", "skills", "init", "references", "controles.md"), /pulse-aidd pile reference migrations\.md/);
+  assert.match(notes, /« Remettre les contrôles du projet à jour »/);
   assert.match(lire(REF, "contexte", "security.md"), /pulse-aidd pile reference migrations\.md/);
 });
 
