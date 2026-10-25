@@ -8,7 +8,7 @@
 //   groupe: <dossier> | US-001 spec=<absente|brouillon|verrouillee> plan=<absent|a-valider|valide> maquette=<oui|non> | …
 //                                         US du référentiel sans fichier : groupe « sans-dossier »
 //   tache: US-001 T2 <a-faire|en-cours|terminee>[ en-pause] <titre>
-//   plan: US-001 envoi=<choix> parallele=<US-…,…|aucune>
+//   plan: US-001 envoi=<choix> parallele=<US-…,…|aucune> titre=<titre de l'US, d'après le titre du plan>
 //   git: modifies=<n> dernier=<sujet|aucun> distant=<oui|non> branche=<nom>            (sauf --sans-git)
 //   sessions: <autres sessions ouvertes sur ce dossier>
 //   worktree: <nom> branche=<b> avance=<n> modifies=<n> fusionne=<oui|non>             (.claude/worktrees/*)
@@ -17,6 +17,8 @@
 //   en-ligne: <adresse|non>
 //   referencement: relie=<AAAA-MM-JJ|oui|non> rapport=<AAAA-MM-JJ|aucun> prochain=<AAAA-MM-JJ|aucun>
 //   seo-suivi: <oui|non> rendez-vous=<AAAA-MM-JJ|aucun>
+//                                         faits de suivi illisibles : « referencement: illisible », « seo-suivi: illisible »
+//                                         (etat.js écrit alors « suivi: illisible (<raison>) » ; un tableau illisible : « tableau: illisible (<raison>) »)
 //   revue: <Tn|US-XXX> etat=<…> date=<AAAA-MM-JJ> fichier=<chemin>   (ou « aucune »)
 //   securite: <AAAA-MM-JJ|absent>
 //   memoire: bloc=<oui|non> glossaire=<n> decisions=<n>
@@ -107,7 +109,10 @@ function lireSuivi(racine, aujourdhui = Date.now()) {
 function signauxSuivi(s, enLigne) {
   const signaux = [];
   if (enLigne && s.trouve) {
+    // Le lancement note chaque étape dans « Suivi » et écrit le rendez-vous à la fin (seo/references/lancer.md § 5) :
+    // sans rendez-vous, il reste à finir. /pulse:seo lancer reprend lui-même la liaison à Search Console à l'étape notée.
     if (!s.seoSuivi) signaux.push({ prochaine: "/pulse:seo lancer", raison: "le site est en ligne : il reste à le faire connaître de Google et de Bing (Search Console, plan du site)" });
+    else if (!s.rendezVous) signaux.push({ prochaine: "/pulse:seo lancer", raison: "le lancement du référencement est commencé : le reprendre là où il s'est arrêté (Search Console, carte de partage, assistants IA, rendez-vous de suivi)" });
     else if (s.relie === "non") {
       signaux.push({
         prochaine: "/pulse:search-console relier",
@@ -197,7 +202,10 @@ function plans(racine) {
       const envoi = ((/\*\*Envoi\*\*\s*:\s*(.+)/.exec(texte) || [])[1] || "à choisir").split(" (")[0].replace(/\{\{.*?\}\}/g, "").trim() || "à choisir";
       const brut = (/\*\*En parall[èe]le avec\*\*\s*:\s*(.+)/i.exec(texte) || [])[1] || "";
       const ids = /^\s*(aucune|\{\{)/i.test(brut) ? [] : (brut.split("(")[0].match(/US-\d+/gi) || []).map(normaliserUs);
-      lignes.push({ us: normaliserUs(m[1]), texte: `${normaliserUs(m[1])} envoi=${envoi} parallele=${ids.length ? ids.join(",") : "aucune"}` });
+      const id = normaliserUs(m[1]);
+      const h1 = (/^#\s+(.+)$/m.exec(texte) || [])[1] || "";
+      const titre = ((/US-\d+\s*[–—-]?\s*(.+)$/i.exec(h1) || [])[1] || "").trim();
+      lignes.push({ us: id, texte: `${id} envoi=${envoi} parallele=${ids.length ? ids.join(",") : "aucune"} titre=${titre && !titre.includes("{{") ? titre : "—"}` });
     }
   }
   return lignes.sort((a, b) => a.us.localeCompare(b.us)).map((l) => l.texte);
@@ -253,9 +261,9 @@ function tableau(racine, faits, { git = true, derniereRevue }) {
   lignes.push(workflows.length ? `ci: github fichier=.github/workflows/${workflows[0]}` : existe(p(".gitlab-ci.yml")) ? "ci: gitlab fichier=.gitlab-ci.yml" : "ci: aucune");
   const site = (/Site en ligne\s*:\s*<?(https?:\/\/[^\s>)`*,]+)/i.exec(claude) || [])[1];
   lignes.push(`en-ligne: ${site || "non"}`);
-  const s = faits.suivi || lireSuivi(racine);
-  lignes.push(`referencement: relie=${s.relie} rapport=${s.rapport || "aucun"} prochain=${s.prochain || "aucun"}`);
-  lignes.push(`seo-suivi: ${s.seoSuivi ? "oui" : "non"} rendez-vous=${s.rendezVous || "aucun"}`);
+  const s = faits.suivi; // absent : faits de suivi illisibles (etat.js l'a signalé)
+  lignes.push(s ? `referencement: relie=${s.relie} rapport=${s.rapport || "aucun"} prochain=${s.prochain || "aucun"}` : "referencement: illisible");
+  lignes.push(s ? `seo-suivi: ${s.seoSuivi ? "oui" : "non"} rendez-vous=${s.rendezVous || "aucun"}` : "seo-suivi: illisible");
   lignes.push(`revue: ${derniereRevueDuProjet(racine, derniereRevue)}`);
   const securite = lireSi(p("docs", "securite.md"));
   const dateSecurite = securite === null ? null : (DATE.exec(securite.split(/\r?\n/).slice(0, 10).join("\n")) || [])[1] || jour(fs.statSync(p("docs", "securite.md")).mtimeMs);

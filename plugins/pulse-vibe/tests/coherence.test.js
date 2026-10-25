@@ -691,6 +691,10 @@ test("init et status ne citent que des clés et des valeurs réellement émises 
   for (const c of CLES_TABLEAU) assert.ok(sourceTableau.includes(`\`${c}: `), `etat-tableau.js n'émet pas ${c}`);
   const status = skillTexte("status");
   assert.match(status, /`pulse-aidd etat --tableau`/);
+  assert.match(status, /^Sécurité : dernier audit le … \(ou « pas encore »\)   \(ligne `securite`\)$/m, "la ligne securite s'affiche");
+  assert.match(status, /^Tâches – US-XXX <titre>   \(lignes `tache`, titre de la ligne `plan`\)$/m, "le titre de l'US vient du tableau");
+  assert.match(status, /`tableau: illisible`[^\n]*`suivi: illisible`/, "status sait quoi faire d'une ligne illisible");
+  assert.match(skillTexte("guide"), /lancer `pulse-aidd etat`[^\n]*`prochaine`/, "guide présente l'étape à jour de pulse-aidd etat");
   for (const c of CLES_TABLEAU.filter((x) => x !== "en-cours-sans-trace")) assert.match(status, new RegExp(`\`${c}[\`:= ]`), `status s'appuie sur la ligne ${c}`);
   assert.match(skillTexte("guide"), /`en-cours-sans-trace` de `pulse-aidd etat --tableau`/, "guide repère une tâche en cours sans trace avec le tableau");
 });

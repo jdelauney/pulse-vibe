@@ -593,9 +593,23 @@ if (require.main === module) {
     console.log(blocs.join("\n\n"));
   } else {
     try {
+      // Faits de suivi et tableau lus à part : une erreur n'y dégrade que leurs lignes, jamais le verdict d'init.
       const { lireSuivi, tableau } = require("./etat-tableau.js");
-      const faits = { ...lireFaits(process.cwd(), options), suivi: lireSuivi(process.cwd(), options.aujourdhui) };
-      const lignes = [formater(faits, decider(faits), process.cwd()), ...(options.tableau ? tableau(process.cwd(), faits, { ...options, derniereRevue }) : [])];
+      const faits = lireFaits(process.cwd(), options);
+      const pannes = [];
+      try {
+        faits.suivi = lireSuivi(process.cwd(), options.aujourdhui);
+      } catch (e) {
+        pannes.push(`suivi: illisible (${e.message})`);
+      }
+      const lignes = [formater(faits, decider(faits), process.cwd()), ...pannes];
+      if (options.tableau) {
+        try {
+          lignes.push(...tableau(process.cwd(), faits, { ...options, derniereRevue }));
+        } catch (e) {
+          lignes.push(`tableau: illisible (${e.message})`);
+        }
+      }
       console.log(lignes.join("\n"));
     } catch (e) {
       console.log(sortieIllisible(e.message));
