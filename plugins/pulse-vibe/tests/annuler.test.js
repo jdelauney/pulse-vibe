@@ -1,0 +1,337 @@
+// Tests de `pulse-aidd annuler` (skills/annuler/scripts/annuler.js) : dépôts Git temporaires.
+// Lancer : node --test plugins/pulse-vibe/tests/annuler.test.js
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const SCRIPT = path.join(__dirname, "..", "skills", "annuler", "scripts", "annuler.js");
+const PLAN = "aidd_docs/tasks/US-003/PLAN-SPEC-US-003-liste.md";
+
+function git(dossier, ...args) {
+  const r = spawnSync("git", args, { cwd: dossier, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, `git ${args.join(" ")} : ${r.stderr}`);
+  return r.stdout.trim();
+}
+
+function depot() {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-annuler-"));
+  git(d, "init", "-q", "-b", "main");
+  for (const [k, v] of [["user.email", "t@t"], ["user.name", "t"], ["core.autocrlf", "false"], ["commit.gpgsign", "false"]]) git(d, "config", k, v);
+  return d;
+}
+const ecrire = (d, f, texte) => { fs.mkdirSync(path.dirname(path.join(d, f)), { recursive: true }); fs.writeFileSync(path.join(d, f), texte); };
+const lire = (d, f) => fs.readFileSync(path.join(d, f), "utf8");
+const valider = (d, sujet, ...fichiers) => { git(d, "add", ...(fichiers.length ? fichiers : ["."])); git(d, "commit", "-q", "-m", sujet); return git(d, "rev-parse", "HEAD"); };
+
+function plan(taches, statut = "x", extra = "") {
+  return [
+    "# Plan – US-003", "", `Statut : a${extra}`, "", "## Tâches", "",
+    ...taches.flatMap((t) => [`- [${statut}] **${t} – Titre ${t}** · US-003`, `  - Objectif : objectif ${t}`, `  - Fichiers : à créer : ${t.toLowerCase()}.txt`]),
+    "", "## Journal", "", "| Date | Tâche | Commit | Remarque |", "|---|---|---|---|", "| 2026-01-01 | T1 | abc | enregistrée |", "",
+  ].join("\n");
+}
+
+function lancer(d, ...args) {
+  const r = spawnSync(process.execPath, [SCRIPT, ...args], { cwd: d, encoding: "utf8" });
+  const cles = {};
+  for (const l of r.stdout.split("\n").filter(Boolean)) {
+    const i = l.indexOf(":");
+    (cles[l.slice(0, i)] = cles[l.slice(0, i)] || []).push(l.slice(i + 1).trim());
+  }
+  return { code: r.status, sortie: r.stdout, cles, premier: (k) => (cles[k] || [])[0] };
+}
+
+const propre = (d) => git(d, "status", "--porcelain") === "";
+const sujets = (d) => git(d, "log", "--format=%s").split("\n");
+
+/** Dépôt de base : un plan avec T1 et T2 enregistrées, un commit par tâche. */
+function projetDeuxTaches() {
+  const d = depot();
+  ecrire(d, "README.md", "projet\n");
+  valider(d, "chore: départ");
+  ecrire(d, PLAN, plan(["T1", "T2"], " "));
+  valider(d, "docs: plan");
+  ecrire(d, "t1.txt", "un\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], "x").replace("- [x] **T2", "- [ ] **T2"));
+  valider(d, "feat(T1): premier");
+  ecrire(d, "t2.txt", "deux\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], "x"));
+  valider(d, "feat(T2): second");
+  return d;
+}
+
+test("aperçu puis défaire une tâche simple : une version d'annulation, plan et journal à jour", () => {
+  const d = projetDeuxTaches();
+  const avant = git(d, "rev-parse", "HEAD");
+  const ap = lancer(d, "apercu", "T2");
+  assert.strictEqual(ap.code, 0, ap.sortie);
+  assert.match(ap.premier("tache"), /^T2 · Titre T2 · objectif T2$/);
+  assert.ok(ap.cles.fichier.includes("t2.txt"));
+  assert.strictEqual(ap.premier("envoyes"), "non");
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant, "l'aperçu ne change rien");
+
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.strictEqual(r.premier("etat"), "fait");
+  assert.ok(!fs.existsSync(path.join(d, "t2.txt")));
+  assert.ok(fs.existsSync(path.join(d, "t1.txt")));
+  const p = lire(d, PLAN);
+  assert.match(p, /- \[ \] \*\*T2/);
+  assert.match(p, /- \[x\] \*\*T1/);
+  assert.match(p, /\| T2 \| — \| annulée par \/pulse:annuler \|/);
+  assert.match(sujets(d)[0], /^revert\(T2\): annule /);
+  assert.match(git(d, "log", "-1", "--format=%B"), /Annule [0-9a-f]{7}\./);
+  assert.ok(propre(d));
+  assert.strictEqual(sujets(d).length, 5, "l'historique reste entier");
+});
+
+test("une US à deux tâches : un seul commit, les deux tâches repassent à faire", () => {
+  const d = projetDeuxTaches();
+  const r = lancer(d, "defaire", "US-003");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.strictEqual(r.premier("taches"), "T1 T2");
+  assert.ok(!fs.existsSync(path.join(d, "t1.txt")) && !fs.existsSync(path.join(d, "t2.txt")));
+  const p = lire(d, PLAN);
+  assert.doesNotMatch(p, /\[x\] \*\*T/);
+  assert.match(sujets(d)[0], /^revert\(US-003\): annule /);
+  assert.strictEqual(sujets(d).length, 5);
+  assert.ok(propre(d));
+});
+
+test("un commit de fusion est défait avec -m 1 et garde le travail de la branche principale", () => {
+  const d = depot();
+  ecrire(d, "base.txt", "base\n");
+  ecrire(d, PLAN, plan(["T3"], "x"));
+  valider(d, "chore: départ");
+  git(d, "checkout", "-q", "-b", "cote");
+  ecrire(d, "cote.txt", "cote\n");
+  valider(d, "wip: côté");
+  git(d, "checkout", "-q", "main");
+  ecrire(d, "principal.txt", "principal\n");
+  valider(d, "chore: principal");
+  git(d, "merge", "--no-ff", "-q", "cote", "-m", "feat(T3): fusionne le côté");
+  const r = lancer(d, "defaire", "T3");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.ok(!fs.existsSync(path.join(d, "cote.txt")));
+  assert.ok(fs.existsSync(path.join(d, "principal.txt")));
+  assert.ok(propre(d));
+});
+
+test("conflit sur le plan seul : le plan actuel est gardé, la tâche repasse à faire", () => {
+  const d = depot();
+  ecrire(d, "base.txt", "base\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], " "));
+  valider(d, "chore: départ");
+  ecrire(d, "t1.txt", "un\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], " ", " (b)").replace("- [ ] **T1", "- [x] **T1"));
+  valider(d, "feat(T1): premier");
+  ecrire(d, "t2.txt", "deux\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], "x", " (c)"));
+  valider(d, "feat(T2): second");
+  const r = lancer(d, "defaire", "T1");
+  assert.strictEqual(r.code, 0, r.sortie);
+  const p = lire(d, PLAN);
+  assert.match(p, /Statut : a \(c\)/, "la version actuelle du plan est gardée");
+  assert.match(p, /- \[ \] \*\*T1/);
+  assert.match(p, /- \[x\] \*\*T2/);
+  assert.ok(!fs.existsSync(path.join(d, "t1.txt")) && fs.existsSync(path.join(d, "t2.txt")));
+  assert.ok(propre(d));
+});
+
+test("conflit sur du code : l'état d'avant revient, code 3", () => {
+  const d = depot();
+  ecrire(d, "code.js", "ligne\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], "x"));
+  valider(d, "chore: départ");
+  ecrire(d, "code.js", "ligne T1\n");
+  valider(d, "feat(T1): premier");
+  ecrire(d, "code.js", "ligne T2\n");
+  ecrire(d, "autre.txt", "x\n");
+  valider(d, "feat(T2): second");
+  const avant = git(d, "rev-parse", "HEAD");
+  const r = lancer(d, "defaire", "T1");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.ok(r.cles.fichier.includes("code.js"));
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant);
+  assert.strictEqual(lire(d, "code.js"), "ligne T2\n");
+  assert.ok(propre(d));
+  assert.strictEqual(lancer(d, "etat").premier("operation"), "aucune");
+});
+
+test("un dossier modifié est refusé, code 2, rien ne change", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "t1.txt", "modifié\n");
+  ecrire(d, "neuf.txt", "neuf\n");
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "changements-en-cours");
+  assert.strictEqual(lire(d, "t1.txt"), "modifié\n");
+  assert.ok(fs.existsSync(path.join(d, "t2.txt")));
+  assert.strictEqual(sujets(d).length, 4);
+});
+
+test("T3 défait seulement T3, jamais T30", () => {
+  const d = depot();
+  ecrire(d, "base.txt", "base\n");
+  ecrire(d, PLAN, plan(["T3", "T30"], "x"));
+  valider(d, "chore: départ");
+  ecrire(d, "t3.txt", "3\n");
+  valider(d, "feat(T3): trois");
+  ecrire(d, "t30.txt", "30\n");
+  valider(d, "feat(T30): trente");
+  const r = lancer(d, "defaire", "T3");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.ok(!fs.existsSync(path.join(d, "t3.txt")) && fs.existsSync(path.join(d, "t30.txt")));
+  const p = lire(d, PLAN);
+  assert.match(p, /- \[ \] \*\*T3 /);
+  assert.match(p, /- \[x\] \*\*T30 /);
+});
+
+test("revenir à une version : branche de sauvegarde sur l'état d'avant, un seul commit", () => {
+  const d = projetDeuxTaches();
+  const version = git(d, "rev-parse", "HEAD~2");
+  const avant = git(d, "rev-parse", "HEAD");
+  const ap = lancer(d, "apercu", "version", version.slice(0, 7));
+  assert.strictEqual(ap.code, 0, ap.sortie);
+  assert.strictEqual(ap.premier("taches"), "T1 T2");
+  const r = lancer(d, "defaire", "version", version.slice(0, 7));
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.match(r.premier("sauvegarde"), /^sauvegarde\/\d{4}-\d{2}-\d{2}-\d{4}/);
+  assert.strictEqual(git(d, "rev-parse", r.premier("sauvegarde")), avant);
+  assert.match(sujets(d)[0], /^revert: revient à la version du \d{2}\/\d{2}\/\d{4}$/);
+  assert.match(git(d, "log", "-1", "--format=%B"), /Tâches défaites : T1 T2/);
+  assert.ok(!fs.existsSync(path.join(d, "t1.txt")) && !fs.existsSync(path.join(d, "t2.txt")));
+  assert.doesNotMatch(lire(d, PLAN), /\[x\] \*\*T/);
+  assert.ok(propre(d));
+});
+
+test("un commit refusé par un contrôle : l'état d'avant revient, code 3", () => {
+  const d = projetDeuxTaches();
+  const avant = git(d, "rev-parse", "HEAD");
+  const crochet = path.join(d, ".git", "hooks", "pre-commit");
+  fs.writeFileSync(crochet, "#!/bin/sh\necho 'contrôle refusé' >&2\nexit 1\n", { mode: 0o755 });
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant);
+  assert.ok(propre(d));
+  assert.ok(fs.existsSync(path.join(d, "t2.txt")));
+  assert.match(lire(d, PLAN), /- \[x\] \*\*T2/);
+  assert.strictEqual(git(d, "branch", "--list", "sauvegarde/*"), "");
+});
+
+test("mettre de côté puis récupérer ; une entrée de spirc est refusée", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "t1.txt", "modifié\n");
+  ecrire(d, "neuf.txt", "neuf\n");
+  const m = lancer(d, "mettre-de-cote", "--resume", "essai de couleur");
+  assert.strictEqual(m.code, 0, m.sortie);
+  assert.match(m.premier("mise-de-cote"), /^stash@\{0\} · pulse-annuler \d{4}-\d{2}-\d{2} \d{2}:\d{2} essai de couleur$/);
+  assert.ok(propre(d));
+  assert.strictEqual(lire(d, "t1.txt"), "un\n");
+
+  // Une entrée de spirc, plus récente.
+  ecrire(d, "attente.txt", "x\n");
+  git(d, "stash", "push", "-u", "-m", "pulse: T4 en attente");
+  const refus = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(refus.code, 2, refus.sortie);
+  assert.strictEqual(refus.premier("etat"), "mise-de-cote-etrangere");
+  assert.ok(!fs.existsSync(path.join(d, "attente.txt")));
+
+  const r = lancer(d, "recuperer", "stash@{1}");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.strictEqual(r.premier("a-supprimer"), "stash@{1}");
+  assert.strictEqual(lire(d, "t1.txt"), "modifié\n");
+  assert.ok(fs.existsSync(path.join(d, "neuf.txt")));
+  assert.match(git(d, "stash", "list"), /pulse-annuler/, "la mise de côté n'est pas supprimée");
+});
+
+test("mettre de côté quelques fichiers seulement ; chemins douteux et fichiers sans changement refusés", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "t1.txt", "modifié\n");
+  ecrire(d, "t2.txt", "modifié aussi\n");
+  for (const mauvais of ["../hors.txt", "/etc/passwd", "C:/x.txt"]) {
+    const r = lancer(d, "mettre-de-cote", "--", mauvais);
+    assert.strictEqual(r.code, 2, mauvais);
+    assert.strictEqual(r.premier("etat"), "chemin-refuse");
+  }
+  const inconnu = lancer(d, "mettre-de-cote", "--", "README.md");
+  assert.strictEqual(inconnu.code, 2);
+  assert.strictEqual(inconnu.premier("etat"), "fichier-sans-changement");
+  const r = lancer(d, "mettre-de-cote", "--", "t1.txt");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.strictEqual(lire(d, "t1.txt"), "un\n");
+  assert.strictEqual(lire(d, "t2.txt"), "modifié aussi\n");
+});
+
+test("mettre de côté sans changement est refusé ; la tâche en cours repasse à faire", () => {
+  const d = projetDeuxTaches();
+  assert.strictEqual(lancer(d, "mettre-de-cote").code, 2);
+  // T2 en cours dans le plan enregistré, ses fichiers modifiés.
+  ecrire(d, PLAN, plan(["T1", "T2"], "x").replace("- [x] **T2", "- [~] **T2"));
+  valider(d, "docs: T2 en cours");
+  ecrire(d, "t2.txt", "début de reprise\n");
+  const r = lancer(d, "mettre-de-cote", "--resume", "reprise");
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.strictEqual(r.premier("tache-en-cours"), "T2");
+  assert.match(lire(d, PLAN), /- \[ \] \*\*T2/);
+});
+
+test("rétablir une annulation : la tâche revient à faite, avec sa ligne de journal", () => {
+  const d = projetDeuxTaches();
+  lancer(d, "defaire", "T2");
+  const annulation = git(d, "rev-parse", "--short", "HEAD");
+  const etat = lancer(d, "etat");
+  assert.ok(etat.cles.annulation.some((l) => l.startsWith(annulation)), etat.sortie);
+  const r = lancer(d, "recuperer", annulation);
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.strictEqual(r.premier("commit"), git(d, "rev-parse", "--short", "HEAD"));
+  assert.ok(fs.existsSync(path.join(d, "t2.txt")));
+  const p = lire(d, PLAN);
+  assert.match(p, /- \[x\] \*\*T2/);
+  assert.match(p, /rétablie par \/pulse:annuler/);
+  assert.match(sujets(d)[0], /^revert: rétablit T2$/);
+  assert.ok(propre(d));
+  // Un commit ordinaire n'est pas une annulation.
+  assert.strictEqual(lancer(d, "recuperer", git(d, "rev-parse", "--short", "HEAD~3")).code, 2);
+});
+
+test("l'état : versions reliées à leurs tâches, mises de côté de Pulse seulement, autres sessions", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "t1.txt", "modifié\n");
+  const e = lancer(d, "etat");
+  assert.strictEqual(e.code, 0, e.sortie);
+  assert.strictEqual(e.premier("depot"), "oui");
+  assert.strictEqual(e.premier("operation"), "aucune");
+  assert.strictEqual(e.premier("changements"), "1");
+  assert.match(e.cles.version[0], /^[0-9a-f]{7} · \d{2}\/\d{2} \d{2}:\d{2} · T2 · US-003 · feat\(T2\): second · local$/);
+  assert.strictEqual(e.cles.version.length, 4);
+  git(d, "stash", "push", "-u", "-m", "pulse: T4 en attente");
+  assert.strictEqual((lancer(d, "etat").cles["mise-de-cote"] || []).length, 0);
+  assert.strictEqual(lancer(d, "etat", "--session", "inconnue").premier("autres-sessions"), "0");
+});
+
+test("hors dépôt, usage incorrect et cibles inconnues", () => {
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-annuler-vide-"));
+  const sansDepot = lancer(dossier, "etat");
+  assert.strictEqual(sansDepot.code, 0);
+  assert.strictEqual(sansDepot.premier("depot"), "non");
+  assert.strictEqual(lancer(dossier, "defaire", "T1").code, 2);
+  const d = projetDeuxTaches();
+  assert.strictEqual(lancer(d).code, 1);
+  assert.strictEqual(lancer(d, "supprimer").code, 1);
+  assert.strictEqual(lancer(d, "defaire").code, 1);
+  assert.strictEqual(lancer(d, "defaire", "T99").code, 2);
+  assert.strictEqual(lancer(d, "defaire", "version", "--hard").code, 1);
+  assert.strictEqual(lancer(d, "defaire", "version", "-1").code, 2);
+  assert.strictEqual(lancer(d, "recuperer").code, 1);
+});
+
+test("le script n'emploie aucune opération Git destructrice", () => {
+  const source = fs.readFileSync(SCRIPT, "utf8").replace(/^\s*\/\/.*$/gm, "");
+  for (const interdit of [/"reset",\s*"--hard"/, /"clean"/, /\["push"/, /"branch",\s*"-D"/, /"stash",\s*"drop"/, /"checkout",\s*"--",\s*"\."/]) assert.doesNotMatch(source, interdit);
+});

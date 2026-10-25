@@ -2,7 +2,7 @@
 description: Revenir en arrière sans rien perdre - abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération
 argument-hint: "[T3 | US-003] (facultatif : la tâche ou l'US à annuler)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte annuler) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git show *) Bash(git rev-parse *) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch sauvegarde/*) Bash(git stash push *) Bash(git stash list*) Bash(git stash show *) Bash(git stash apply *) Bash(git revert *) Bash(git merge --abort) Bash(git rev-list *) Bash(git checkout --ours *) Bash(git add *) Bash(git commit -m *) Bash(git remote -v) Bash(git remote get-url *) Bash(git symbolic-ref *) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte annuler) Bash(pulse-aidd annuler *) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd sessions *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git show *) Bash(git diff *) Bash(git revert --abort) Bash(git merge --abort) Bash(git remote -v) Bash(git remote get-url *) Bash(git symbolic-ref *) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:annuler – Revenir en arrière
@@ -15,24 +15,22 @@ Revenir en arrière **sans rien perdre** : chaque annulation est elle-même rév
 
 Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte annuler` et lire sa sortie en entier) pendant toute la commande.
 
-Appliquer aussi les « Conventions Git » (en particulier « 7. Annuler ») et « Le dépôt distant et l'envoi du travail » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer aussi « Le dépôt distant et l'envoi du travail » à l'étape 6 (`pulse-aidd reference depot-distant.md`).
 
 ## Contexte
 
 Arguments : `$ARGUMENTS` — une tâche (`T3`) ou une US (`US-003` : toutes ses tâches enregistrées), facultatif.
 
-Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd sessions`).
-
 ### Prérequis
 
-- Le dossier doit être un dépôt Git avec au moins un commit (`git rev-parse --is-inside-work-tree`, `git log --oneline -1`). Sinon, proposer `/pulse:init`.
-- Une opération Git est en cours (fusion, revert interrompu : `git status` l'indique) : l'expliquer et proposer de l'interrompre proprement (`git revert --abort` ou `git merge --abort`) avant toute chose. Si une autre session travaille sur ce dossier (`pulse-aidd sessions <session>`, `autres` > 0), cette opération est peut-être la sienne : le dire et laisser la personne la terminer dans cette session.
+- Le dossier doit être un dépôt Git avec au moins un commit (« `depot: non` » dans l'état, ou `commits: 0`). Sinon, proposer `/pulse:init`.
+- Une opération Git est en cours (`operation:` n'est pas `aucune` : fusion, annulation interrompue) : l'expliquer et proposer de l'interrompre proprement (`git revert --abort` ou `git merge --abort`) avant toute chose. Si une autre session travaille sur ce dossier (`autres-sessions` > 0), cette opération est peut-être la sienne : le dire et laisser la personne la terminer dans cette session.
 
 ## Processus
 
 ### 1. Lire l'état
 
-`git status --short`, `git log -15 --date=format:'%d/%m %H:%M' --format='%h %ad %s'`, `git stash list`, `git branch --list 'sauvegarde/*'`, `git remote -v`, `pulse-aidd sessions <session>` (la ligne `autres=N` : N > 0 signifie qu'une autre session Claude Code travaille sur ce dossier), et les plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) pour relier chaque commit `(<Tâche>)` à sa tâche et à son US.
+`pulse-aidd annuler etat --session ${CLAUDE_SESSION_ID}` : l'état du dépôt, les 15 dernières versions reliées à leurs tâches, les mises de côté, les sauvegardes, les autres sessions (`autres-sessions` > 0 : une autre session Claude Code travaille sur ce dossier).
 
 ### 2. Choisir le cas
 
@@ -45,17 +43,13 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ### 3. Préciser et montrer l'aperçu
 
-**Changements en cours** : lister les fichiers modifiés, un par ligne, avec ce qu'ils représentent (« la page d'accueil », « le plan de US-003 »). Demander : « Tout abandonner » / « Seulement certains fichiers » (puis lesquels). **Une autre session travaille sur ce dossier** (`autres` > 0) : certains de ces changements sont peut-être les siens ; le dire, et proposer seulement « Seulement certains fichiers », pour ne mettre de côté que ceux que la personne nomme.
+**Changements en cours** : lister les fichiers modifiés (lignes `changement`), un par ligne, avec ce qu'ils représentent (« la page d'accueil », « le plan de US-003 »). Demander : « Tout abandonner » / « Seulement certains fichiers » (puis lesquels). **Une autre session travaille sur ce dossier** : certains de ces changements sont peut-être les siens ; le dire, et proposer seulement « Seulement certains fichiers », pour ne mettre de côté que ceux que la personne nomme.
 
-**Toute une US** (argument `US-003`) : ses tâches enregistrées, du plus récent au plus ancien, traitées comme une seule annulation (un seul aperçu, un seul accord, un seul commit).
-
-**Tâche enregistrée** : trouver ses commits (`git log --format='%h %s' --grep='(<Tâche>)'`). Sans argument, proposer la dernière tâche enregistrée, ou en choisir une autre dans la liste. Montrer : le titre de la tâche, ce qu'elle apportait à l'utilisateur (son objectif dans le plan), ses commits, ses fichiers (`git show --stat`). Signaler les tâches **postérieures** qui touchent les mêmes fichiers : elles pourraient ne plus fonctionner ; proposer de les annuler aussi ou de s'arrêter.
-
-**Version précédente** : présenter les 10 dernières versions en langage simple (« hier 17 h – T4 : permet de cocher une tâche terminée ») et demander laquelle retrouver. Montrer tout ce qui sera défait : les tâches et leurs objectifs.
+**Une tâche, une US ou une version** : `pulse-aidd annuler apercu <T3 | US-003 | version <commit>>` donne les commits à défaire, leurs fichiers, les tâches postérieures qui touchent les mêmes fichiers (elles pourraient ne plus fonctionner : proposer de les annuler aussi ou de s'arrêter), ce qui est déjà envoyé et les actions manuelles du plan. Le présenter en langage simple (titre, objectif, fichiers ; pour une version : « hier 17 h – T4 : permet de cocher une tâche terminée »). Une US s'annule en un seul aperçu, un seul accord, un seul commit. Sans argument pour une tâche, proposer la dernière tâche enregistrée (lignes `version`), ou une autre de la liste.
 
 Dans tous les cas, ajouter :
-- **Déjà envoyé ou en ligne ?** Un commit est déjà envoyé quand `git branch -r --contains <commit>` affiche au moins une branche ; le site est en ligne quand « Adresses » de `CLAUDE.md` indique son adresse. Le dire.
-- **Ce qu'annuler ne défait pas**, quand cela s'applique : un schéma appliqué dans la console du fournisseur de données, des données saisies sur le site en ligne, des variables saisies chez l'hébergeur, un compte créé sur un service. Les nommer d'après le plan (lignes « Action manuelle ») et expliquer comment les défaire à la main si besoin.
+- **Déjà envoyé ou en ligne ?** (`envoyes`, `en-ligne`) Le dire.
+- **Ce qu'annuler ne défait pas**, quand cela s'applique : un schéma appliqué dans la console du fournisseur de données, des données saisies sur le site en ligne, des variables saisies chez l'hébergeur, un compte créé sur un service (lignes `action-manuelle`). Les nommer et expliquer comment les défaire à la main si besoin.
 
 ### 4. Obtenir l'accord
 
@@ -63,36 +57,15 @@ Demander (AskUserQuestion) : « Annuler » / « Ne rien faire ». Une réponse a
 
 ### 5. Opérer
 
-**Changements en cours** :
-- `git stash push -u -m "pulse-annuler <AAAA-MM-JJ HH:MM> <résumé en quelques mots>"` (ajouter `-- <fichiers>` pour une partie seulement, et toujours quand une autre session travaille sur ce dossier).
-- Une tâche `[~]` dont tous les changements sont mis de côté : la remettre à `[ ]` dans son plan.
+**Changements en cours** : `pulse-aidd annuler mettre-de-cote --resume "<quelques mots>"` (avec `-- <fichiers>` pour une partie, et toujours quand une autre session travaille sur ce dossier) ; une tâche `[~]` dont tous les changements sont partis repasse à `[ ]`.
 
-**Défaire des commits** (utilisé par les trois cas suivants) :
-- Défaire chaque commit, **du plus récent au plus ancien** : `git revert --no-commit <commit>` ; pour un commit de fusion (il a deux parents : `git rev-list --parents -n 1 <commit>` affiche trois identifiants), `git revert --no-commit -m 1 <commit>`.
-- **Conflit sur un plan seulement** (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`, souvent le Journal, mis à jour par une tâche plus récente) : garder la version actuelle du plan (`git checkout --ours -- <plan>`, puis `git add <plan>`) ; la mise à jour du plan se fait ensuite à la main (étape « plan » ci-dessous). Continuer.
-- **Tout autre conflit, ou toute autre erreur** de `git revert` : `git revert --abort` (l'état d'avant revient), expliquer simplement (« une tâche plus récente a modifié les mêmes lignes de code ») et proposer de taper `/pulse:get-help`. S'arrêter.
+**Tâche, US ou version** : des changements en cours existent (`etat: changements-en-cours`) : proposer d'abord de les mettre de côté, avec accord, sinon s'arrêter ; puis `pulse-aidd annuler defaire <T3 | US-003 | version <commit>>`. `etat: fait` : le commit d'annulation est fait et les plans sont mis à jour (une version garde aussi une branche `sauvegarde/`). `etat: echec` avec un `conflit` : tout est revenu à l'état d'avant ; expliquer simplement (« une tâche plus récente a modifié les mêmes lignes ») et proposer de taper `/pulse:get-help`.
 
-**Tâche enregistrée, ou toute une US** :
-1. Des changements non enregistrés existent : proposer d'abord de les mettre de côté (comme ci-dessus), sinon s'arrêter.
-2. Défaire les commits de la tâche (ou de toutes les tâches de l'US), comme ci-dessus.
-3. **Plan** : chaque tâche défaite repasse de `[x]` à `[ ]`, et une ligne s'ajoute au Journal (date, tâche, « annulée par /pulse:annuler », remarque). Les rapports de relecture restent en place.
-4. `git add <fichiers défaits> <plan>` puis `git commit -m "revert(<Tâche ou US>): annule <description>" -m "Annule <commits>."`
-
-**Version précédente** :
-1. Changements non enregistrés : comme pour une tâche.
-2. `git branch sauvegarde/<AAAA-MM-JJ-HHMM>` (l'état actuel, intact).
-3. Les commits à défaire sont ceux de la branche courante depuis cette version, fusions comprises : `git rev-list --first-parent <version>..HEAD` (déjà du plus récent au plus ancien). Les défaire comme ci-dessus.
-4. **Plan** : les tâches défaites repassent à `[ ]` dans leurs plans, avec une ligne de Journal chacune.
-5. Un seul commit : `revert: revient à la version du <date>` et un corps qui liste les tâches défaites.
-
-**Récupérer** :
-- Une mise de côté : `git stash list`, choisir l'entrée `pulse-annuler`, `git stash apply <entrée>`. Après vérification par la personne, proposer de supprimer l'entrée (`git stash drop <entrée>`).
-- Un commit d'annulation : le défaire comme ci-dessus, remettre ses tâches à `[x]` avec une ligne de Journal, puis commit `revert: rétablit <description>`.
-- Une branche `sauvegarde/` : l'expliquer et proposer de taper `/pulse:get-help` si la personne veut repartir de cette branche (opération délicate).
+**Récupérer** : `pulse-aidd annuler recuperer <entrée | commit>` ; pour une mise de côté (`a-supprimer`), après vérification par la personne, proposer de la supprimer (`git stash drop <entrée>`) ; une branche `sauvegarde/` : l'expliquer et proposer de taper `/pulse:get-help` si la personne veut repartir de cette branche (opération délicate).
 
 ### 6. Envoyer
 
-Pour une tâche ou une version : appliquer « 3. Envoyer après chaque tâche enregistrée » de « Le dépôt distant et l'envoi du travail », selon la ligne « Envoi » du plan concerné. Si le site est en ligne, rappeler que cet envoi le remettra dans l'état choisi (si le déploiement automatique est en place). Toujours un envoi simple : **jamais `--force`**.
+Pour une tâche ou une version : lire `pulse-aidd reference depot-distant.md` et appliquer « 3. Envoyer après chaque tâche enregistrée », selon la ligne « Envoi » du plan concerné. Si le site est en ligne, rappeler que cet envoi le remettra dans l'état choisi (si le déploiement automatique est en place). Toujours un envoi simple : **jamais `--force`**.
 
 ### 7. Compte rendu
 
