@@ -80,7 +80,7 @@ Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dan
 
 ### 7. Envoyer
 
-- **Commit d'une tâche** : appliquer « 3. Envoyer après chaque tâche enregistrée » de la référence « Le dépôt distant et l'envoi du travail », selon la ligne « Envoi » de son plan. Si un dépôt distant existe et que cette ligne vaut encore « à choisir » : appliquer d'abord son § 2 (le choix est écrit dans le plan et enregistré au commit suivant ; en mode PR, sur la branche principale, les commits non envoyés se déplacent sur la branche de l'US comme le prévoit l'étape **pr**, section B.1).
+- **Commit d'une tâche** : appliquer « 2. Envoyer après chaque tâche enregistrée » de la référence « L'envoi du travail », selon la ligne « Envoi » de son plan. Si un dépôt distant existe et que cette ligne vaut encore « à choisir » : appliquer d'abord son § 1 (le choix est écrit dans le plan et enregistré au commit suivant ; en mode PR, sur la branche principale, les commits non envoyés se déplacent sur la branche de l'US comme le prévoit l'étape **pr**, section B.1).
 - **Autre commit** (documents, mémoire…) : envoyer seulement avec `push`.
 - Branche courante : `git branch --show-current`. Dépôt distant absent (`git remote -v` vide) : garder le commit en local ; avec `push`, proposer `/pulse:init` pour en relier un (ou `/pulse:deploy`).
 - Annoncer en une phrase : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push` (première fois pour cette branche : `git push -u origin <branche>`). **Jamais `--force`.** Envoi refusé parce que le dépôt distant a des changements plus récents : ne pas forcer ; expliquer et proposer `git pull` puis un nouvel envoi.
@@ -93,7 +93,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 ### Suite
 
 - S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
-- Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
+- Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 3. Fin du plan, en mode PR » de la référence « L'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
 - Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree-dossier.md`).

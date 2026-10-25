@@ -84,7 +84,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Mesures à la fin du plan « Corrections 4 » : boucle implement 106 755, boucle spirc 98 093, tech 127 898.
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
-  "boucle spirc de 4 tâches": { plafond: 78000, /* mesure 74 053 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport) ; avant, mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 86 453 (pulse 0.50 : le pack laissé aux agents qui codent) ; avant, 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
+  "boucle spirc de 4 tâches": { plafond: 76000, /* mesure 72 016 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md) ; avant, mesure 74 053 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport) ; avant, mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 86 453 (pulse 0.50 : le pack laissé aux agents qui codent) ; avant, 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
   "tech, pack choisi en cours de commande": { plafond: 84500, /* mesure 80 070 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
 
@@ -100,8 +100,8 @@ for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
 // security 82 959, implement 75 811, spirc 74 842, review 68 538 (35 000 une fois le pack laissé au reviewer).
 // Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, au 500 supérieur.
 const PLAFONDS_COMMANDE_AVEC_PACK = {
-  cicd: 56500, // mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
-  deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
+  cicd: 50500, // mesure 47 754 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
+  deploy: 54000, // mesure 51 057 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
   express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 52500, // mesure 49 923 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
   perf: 56500, // mesure 53 788 (pulse 0.50 : seo, perf, ui et rediger chargent les consignes pour écrire du code à la place de la fiche et de l'architecture) ; avant, mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
@@ -184,9 +184,9 @@ const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES_AVEC_PACK = {
   "auto-fix --sans-noyau": 12500, // mesure 11 686
   "brainstorm --sans-communes": 22000, // mesure 20 653
-  "cicd --sans-communes": 42500, // mesure 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "commit --sans-communes": 28500, // mesure 26 896
-  "deploy --sans-communes": 44000, // mesure 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "cicd --sans-communes": 36000, // mesure 34 022 (tâche 7.1 : relier seul chargé) ; avant, 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "commit --sans-communes": 23500, // mesure 21 980 (tâche 7.1 : envoi.md au lieu de depot-distant.md) ; avant, 26 896
+  "deploy --sans-communes": 39500, // mesure 37 325 (tâche 7.1 : relier seul chargé) ; avant, 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "express --sans-communes": 27500, // mesure 26 109
   "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 30 759)
   "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 37 026)

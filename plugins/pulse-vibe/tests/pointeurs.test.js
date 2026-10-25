@@ -71,7 +71,10 @@ const EXCEPTIONS = {
   deploy: ["templates/ci-verifications.yml.template"],
   // refactoring d'optimisation, tâche 5.5 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
   security: ["references/checklist-securite.md", SANS_CONVERSATION],
-  annuler: [GIT], // pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
+  // refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé ; l'envoi du travail (envoi.md) est affiché par commit, lu par annuler à l'étape 6 ;
+  // relier un dépôt distant ne se fait plus dans ces commandes (/pulse:init, /pulse:deploy)
+  commit: [DEPOT],
+  annuler: [GIT, DEPOT], // GIT : pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
 };
 
 // Ce que « pulse-aidd contexte <commande> » affiche aujourd'hui, lu dans les lignes « afficher » de bin/pulse-aidd.

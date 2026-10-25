@@ -118,7 +118,7 @@ test("contexte annuler : règles communes seules ; l'envoi du travail se lit à 
   const r = lancer("contexte", "annuler");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
-  for (const titre of ["Conventions Git", "Le dépôt distant et l'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
+  for (const titre of ["Conventions Git", "Le dépôt distant", "L'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -220,8 +220,9 @@ test("etape --sans-communes : instructions et contexte de l'étape, sans les rè
   assert.strictEqual(sans.status, 0, sans.stderr);
   assert.ok(avec.stdout.includes("===== Règles communes Pulse ====="), "sans option : règles communes");
   assert.ok(!sans.stdout.includes("===== Règles communes Pulse ====="), "avec l'option : sans règles communes");
-  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== L'envoi du travail ====="])
     assert.ok(sans.stdout.includes(titre), titre);
+  assert.ok(!sans.stdout.includes("===== Le dépôt distant ====="), "relier un dépôt distant : init, cicd et deploy");
 });
 
 test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
@@ -591,6 +592,29 @@ test("installer-hook : contrôle introuvable (ni scripts/verifier.js, ni copie) 
   assert.match(git("diff", "--cached", "--name-only").stdout, /a\.txt/);
 });
 
+test("verifier --index : seulement les fichiers préparés, avec le message d'avant commit ; verifier seul inchangé", () => {
+  const { d, git } = depotHook("pulse-verifier-index-");
+  fs.writeFileSync(path.join(d, "a.txt"), "bonjour\n");
+  git("add", "a.txt");
+  assert.strictEqual(git("commit", "-q", "-m", "x").status, 0);
+  fs.writeFileSync(path.join(d, "brouillon.js"), cleHook()); // pas préparé : hors du contrôle d'avant commit
+  fs.writeFileSync(path.join(d, "b.txt"), "propre\n");
+  git("add", "b.txt");
+  const sain = dans(d, "verifier", "--index");
+  assert.strictEqual(sain.status, 0, sain.stdout + sain.stderr);
+  assert.match(sain.stdout, /\(1 fichiers contrôlés\)/);
+  fs.writeFileSync(path.join(d, "app.js"), cleHook());
+  git("add", "app.js");
+  const refus = dans(d, "verifier", "--index");
+  assert.strictEqual(refus.status, 1, refus.stdout + refus.stderr);
+  assert.match(refus.stderr, /❌ Commit annulé : un secret allait être enregistré/);
+  assert.match(refus.stderr, /app\.js/);
+  assert.doesNotMatch(refus.stderr, /brouillon\.js/);
+  const complet = dans(d, "verifier");
+  assert.strictEqual(complet.status, 1);
+  assert.match(complet.stderr, /❌ Vérification échouée/);
+});
+
 test("installer-hook : un hooksPath réglé pour tous les projets n'est jamais modifié", () => {
   const { d } = depotHook("pulse-hook-global-");
   const globaux = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hooks-globaux-"));
@@ -639,7 +663,7 @@ test("contexte spirc : règles communes et lexique ; modèle de revue et référ
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : docs/lexique.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
-  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== L'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
 });
 
