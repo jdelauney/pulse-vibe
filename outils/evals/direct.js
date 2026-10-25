@@ -15,6 +15,7 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const { nomTrace } = require("./mesurer");
+const { evaluer } = require("../../plugins/pulse-vibe/scripts/garde-commandes");
 
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
 const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
@@ -104,12 +105,18 @@ function lireTrace(fichier) {
     for (const bloc of blocs) {
       if (bloc.type !== "tool_use" || vus.has(bloc.id)) continue;
       vus.add(bloc.id);
-      const appel = { outil: bloc.name, entree: JSON.stringify(bloc.input || {}), refuse: false };
+      const appel = { outil: bloc.name, entree: JSON.stringify(commandeLancee(bloc.name, bloc.input || {})), refuse: false };
       appels.push(appel);
       parId.set(bloc.id, appel);
     }
   }
   return { appels, reponse };
+}
+
+/** L'entrée réellement lancée : une commande que le garde-fou réécrit (sortie de règles coupée par un tube) se lance tube retiré. */
+function commandeLancee(outil, entree) {
+  const d = evaluer({ tool_name: outil, tool_input: entree });
+  return d && d.decision === "allow" && d.commande ? { ...entree, command: d.commande } : entree;
 }
 
 const correspond = (appel, { tool, input_match: motif }) => appel.outil === tool && (!motif || new RegExp(motif).test(appel.entree));
