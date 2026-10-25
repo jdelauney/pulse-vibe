@@ -331,7 +331,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     explain) lexique ;;
     test) lexique ;;
     guide) afficher "Le cycle Pulse" "$REF/cycle.md" ;; # les fichiers du projet : pulse-aidd reference fichiers-projet.md
-    status) ;; # le cycle Pulse : dans le contexte de /pulse:init et /pulse:guide ; le tableau vient de pulse-aidd etat --tableau
+    status) ;; # le cycle Pulse : dans le contexte de /pulse:guide ; le tableau vient de pulse-aidd etat --tableau
     auto-fix) ;;
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac

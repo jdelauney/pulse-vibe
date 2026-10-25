@@ -795,7 +795,7 @@ test("découpage du plan : règles écrites une fois, chargées par plan et refi
   // Le wiki dit les écritures que refine fait sans autre demande, après « Appliquer ces changements ».
   const refineHtml = lire(DEPOT, "docs", "commandes", "refine.html");
   assert.doesNotMatch(refineHtml, /Seuls les fichiers des tâches s'écrivent sans demande/);
-  assert.match(refineHtml, /le plan, le PRD, la priorité des user stories et le lexique s'écrivent ensuite sans autre demande/);
+  assert.match(refineHtml, /Le plan, le PRD et la priorité des user stories s'écrivent seulement après votre accord à « Appliquer ces changements », sans autre demande ; le lexique se complète au fil des explications\./);
   // La phrase « Envoi » reste mot pour mot sur sa ligne, avec son renvoi à envoi.md (phases 6 et 7).
   assert.ok(refine.split("\n").includes("La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « 1. Choisir comment envoyer le travail d'un plan » de la référence « L'envoi du travail » (`pulse-aidd reference envoi.md`)."));
 });
@@ -1123,7 +1123,8 @@ test("deploy : porte officielle chargée par mode, mise à jour qui vérifie aus
   const controles = deploy.split("### 1. Contrôles avant envoi")[1].split("\n### 2.")[0];
   assert.match(controles, /`pulse-aidd preuve etat --exiger suite --exiger construction`[^\n]*`pulse-aidd preuve lancer --portee suite --construire`/);
   const miseAJour = deploy.split("### 4. Mise à jour")[1].split("\n### ")[0];
-  assert.match(miseAJour, /`git status -sb`[^\n]*`\[ahead N\]`/, "commits à envoyer lus par git status, qui marche sous Bash comme sous PowerShell");
+  assert.match(miseAJour, /`git status --porcelain=v2 --branch`[^\n]*`# branch\.ab \+N -M`/, "commits à envoyer lus par git status, stable (non traduit), sous Bash comme sous PowerShell");
+  assert.doesNotMatch(miseAJour, /status -sb|\[ahead/, "git status -sb est traduit");
   assert.doesNotMatch(miseAJour, /@\{u\}/, "@{u} est une table de hachage pour PowerShell");
   assert.match(miseAJour, /Tout est déjà envoyé : le dire, et passer au point 3\./);
   const tout = skillTexte("deploy");
@@ -2120,6 +2121,8 @@ test("décision 5 : projet existant, tech puis memory creer ; la pile écrite se
   assert.match(memory, /`- Aucune convention propre relevée \(AAAA-MM-JJ\)\.`/);
   // R8d lit le repère que tech écrit pour un projet existant (pulse-aidd etat, fait pileObservee).
   assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée, pas de comparaison »"));
+  // Changement de pile décidé : le repère reste, la comparaison suit (R8d toujours proposé).
+  assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée, changement décidé »"));
   assert.ok(lire(RACINE, "scripts", "etat.js").includes("Projet existant : pile observée"));
   assert.match(memory, /les fichiers créés, et ceux encore au modèle/, "creer remplit aussi les fichiers restés au modèle");
   assert.match(memory, /la pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
@@ -2504,4 +2507,24 @@ test("contexte annoncé : chaque titre dit « dans ce contexte » ou « en fin d
       if (!affiche(m[1])) ecarts.push(`skills/${skill} : « ${m[1]} » dit en fin de fichier, absent de pulse-aidd contexte ${skill}`);
   }
   assert.deepStrictEqual(ecarts, []);
+});
+
+test("reports des phases 6 à 8 : marqueurs de pile, notes du pack, US d'une demande libre, R24, envoi après fusion", () => {
+  // CLAUDE.md sans marqueurs pulse_pile : tech ajoute d'abord la section du modèle (relecture finale de la phase 6, m1).
+  assert.match(lire(RACINE, "skills", "tech", "SKILL.md"), /marqueurs absents : ajouter d'abord la section « Stack technique » du modèle, avec ses marqueurs \(`pulse-aidd modele CLAUDE\.md`, seulement à ce moment\)/);
+  // Les notes du pack se lisent avec les autres contrôles, quand l'un d'eux est proposé (m2) : le wiki ne promet pas plus.
+  const initHtml = lire(DEPOT, "docs", "commandes", "init.html");
+  assert.doesNotMatch(initHtml, /la bonne commande, notes du pack\)/);
+  assert.match(initHtml, /lit alors aussi les notes de mise à niveau du pack de pile/);
+  // Une US créée par une demande libre suit les règles des user stories (report de la phase 6).
+  assert.match(lire(RACINE, "skills", "spirc", "references", "analyser.md"), /créer une \*\*nouvelle US\*\*[^\n]*`pulse-aidd reference us\/regles-us\.md` et `pulse-aidd modele us\.md`/);
+  // init propose /pulse:status après la mise en ligne, suivi du référencement compris (m6 de la phase 8).
+  assert.match(lire(RACINE, "skills", "init", "SKILL.md"), /\*\*Après la mise en ligne\*\* \(`regle` R21 à R24\)/);
+  // Commentaire du contexte status : le cycle n'est plus dans le contexte d'init (m7 de la phase 8).
+  assert.match(OUTIL, /status\) ;; # le cycle Pulse : dans le contexte de \/pulse:guide ;/);
+  // envoi.md : l'envoi forcé renvoie à git.md § 4 une seule fois ; après la fusion, /pulse:deploy (m5, m6 de la phase 7).
+  const envoi = lire(RACINE, "references", "envoi.md");
+  assert.doesNotMatch(envoi, /jamais `--force`|jamais d'envoi forcé/);
+  assert.match(envoi, /Envoi refusé \(le dépôt distant a des changements plus récents\) : Conventions Git § 4\./);
+  assert.match(envoi.split("## 3. Fin du plan")[1], /3\. Après la fusion :[^\n]*pour publier et vérifier la version en ligne : `\/pulse:deploy`\./);
 });

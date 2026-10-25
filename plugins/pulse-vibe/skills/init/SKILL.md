@@ -57,7 +57,7 @@ Fichiers de cette commande : [assets/banniere.txt](assets/banniere.txt), [script
    | `pile` | `pulse-aidd etape tech --sans-communes` ; si `docs/technical.md` contient déjà « Pile retenue » et « Commandes du projet », son étape « Écrire », point 2, suffit |
 
    Une ligne `aussi` qui commence par `/pulse:init` se traite ici, une seule fois par séance : « Régler les autorisations » (§ 4, point 5), « 1. Relier le projet à un dépôt distant » (§ 4, « Préparer un nouveau projet », point 6), ou « Remettre les contrôles du projet à jour » (§ 4). La personne peut refuser un point : la suite continue quelle que soit la réponse.
-3. **Après la mise en ligne** (`regle` R21, R22 ou R23) : proposer aussi `/pulse:status`, qui regarde la CI, le référencement et la Search Console.
+3. **Après la mise en ligne** (`regle` R21 à R24) : proposer aussi `/pulse:status`, qui regarde la CI, le référencement et la Search Console.
 
 ### 3. Montrer l'écran
 

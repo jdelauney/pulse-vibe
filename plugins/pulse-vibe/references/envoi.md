@@ -24,15 +24,15 @@ En mode découverte (règles de réalisation), la question n'est pas posée (sau
 
 Appliqué par `/pulse:commit` juste après le commit d'une tâche, selon la ligne « Envoi » de son plan (l'argument `push` envoie toujours, quel que soit le mode) :
 
-- **Version parallèle** (ou **PR**, dans un plan plus ancien) : `git push -u origin feat/us-xxx-<nom>` (jamais `--force`). Si la demande de fusion de cette branche reste à créer (`gh pr view`, `glab mr view`) : appliquer l'étape **pr** section B (`pulse-aidd etape pr --sans-communes`) pour l'ouvrir en brouillon. Sinon, dire en une ligne que la demande est à jour, avec son adresse.
+- **Version parallèle** (ou **PR**, dans un plan plus ancien) : `git push -u origin feat/us-xxx-<nom>`. Si la demande de fusion de cette branche reste à créer (`gh pr view`, `glab mr view`) : appliquer l'étape **pr** section B (`pulse-aidd etape pr --sans-communes`) pour l'ouvrir en brouillon. Sinon, dire en une ligne que la demande est à jour, avec son adresse.
 - **Branche principale** : `git push`. La première fois, rappeler que, si le déploiement automatique est en place, la tâche est maintenant en ligne.
 - **Local** : tout reste local.
 - **Après l'envoi, passer directement à la suite.** La mise en ligne chez l'hébergeur se fait seule ; son suivi (état, journal, adresse) appartient à `/pulse:deploy` et `/pulse:status`. En rythme rapide (règles de réalisation), l'envoi se résume à une ligne : « Envoyé. »
-- Envoi refusé (le dépôt distant a des changements plus récents) : appliquer la règle de `git.md` (§ 4, envoi refusé) ; jamais d'envoi forcé.
+- Envoi refusé (le dépôt distant a des changements plus récents) : Conventions Git § 4.
 
 ## 3. Fin du plan, en mode PR
 
 Quand la dernière tâche du plan est enregistrée et envoyée :
 1. Proposer de passer la demande « prête » (`gh pr ready`, `glab mr update --ready`, ou le bouton sur le site), après un dernier coup d'œil à l'adresse de prévisualisation si l'hébergeur en fournit une.
 2. Rappeler que **la fusion se fait par la personne**, sur le site du dépôt (bouton « Merge ») : Pulse ne fusionne jamais une demande.
-3. Après la fusion : `git switch <principale>`, `git pull`, puis supprimer la branche locale (`git branch -d feat/us-xxx-<nom>` ; jamais `-D`). `/pulse:status` le rappelle si la branche traîne.
+3. Après la fusion : `git switch <principale>`, `git pull`, puis supprimer la branche locale (`git branch -d feat/us-xxx-<nom>` ; jamais `-D`). `/pulse:status` le rappelle si la branche traîne ; pour publier et vérifier la version en ligne : `/pulse:deploy`.

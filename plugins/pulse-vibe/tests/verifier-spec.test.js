@@ -96,6 +96,12 @@ test("présentation des écrans : « sans objet », titre sans numéro ou à l'a
   for (const ecran of ["La liste", "Le détail"]) assert.ok(c.includes(`avertissement · écrans · presentation-manquante: ${ecran}`), c.join("\n"));
 });
 
+test("présentation des écrans : seul le premier tableau de la section 3 décrit les écrans", () => {
+  const ecrans = ECRANS(["| La liste de courses | tout le monde | les articles | ajouter | liste simple |"]);
+  const situations = "\n**Situations à prévoir**\n\n| Situation | Ce qui se passe |\n|---|---|\n| Liste vide | un message invite à ajouter |\n";
+  assert.deepStrictEqual(constats(projet(SPEC({ extra: ecrans + situations }))), []);
+});
+
 test("en ligne de commande : bilan, spec introuvable, argument manquant", () => {
   const d = projet(SPEC({ scenarios: [SCENARIO("@US-001-1 @unitaire", "Un article ajouté apparaît")] }));
   const lancer = (...a) => spawnSync(process.execPath, [SCRIPT, ...a], { cwd: d, encoding: "utf8" });
