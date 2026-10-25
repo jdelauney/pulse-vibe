@@ -31,6 +31,7 @@ Puis, dans Search Console, **Inspection de l'URL** de l'accueil → « Demander 
 - **Dans 1 mois** : Search Console → Pages (indexées, exclues et pourquoi), Performance (premières requêtes réelles : ce sont les vrais mots des clients, à reporter dans `docs/seo.md`). Puis `/pulse:seo audit`.
 - **Dans 3 mois** : même lecture, et **test manuel** : 5 questions de clients posées à 3 assistants ; noter dans « Suivi » la question, l'assistant, cité oui ou non, la date. Un test isolé ne prouve rien : les réponses varient d'une fois à l'autre.
 - Rappeler les délais : quelques jours pour l'indexation, des semaines à des mois pour le classement.
+- Écrire la date du premier rendez-vous dans `docs/seo.md`, ligne **Prochain rendez-vous** : la date du jour plus un mois, au format AAAA-MM-JJ (par exemple 2026-11-25). `/pulse:status` y lit que le lancement est fini.
 
 ## 6. Pour aller plus loin
 
