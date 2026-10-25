@@ -51,16 +51,16 @@ Dossiers à part : aucun
 En ligne : pas encore
 Mémoire  : ✅ branchée · glossaire 6 mots · 0 décision
 
-➡️ Prochaine étape conseillée : /pulse:implement US-001 T3 : terminer le choix du créneau</code></pre>
+➡️ Prochaine étape conseillée : /pulse:review T3 — relire et vérifier le choix du créneau</code></pre>
 <p class="legende">Le tableau de bord de <code>/pulse:status</code>, au milieu de la construction du carnet de réservations.</p>
 </section>
 
 <section id="pourquoi">
 <h2>Pourquoi l'utiliser</h2>
 <ul>
-<li><strong>Vous retrouvez le fil en un coup d'œil.</strong> Tout l'avancement tient sur un seul écran, en mots simples.</li>
+<li><strong>Vous retrouvez le fil en un coup d'œil.</strong> Tout l'avancement tient sur un seul écran, en mots simples. Pulse le calcule d'un coup, sans relire chaque document devant vous : la réponse arrive vite.</li>
 <li><strong>Vous savez quoi faire ensuite.</strong> Une étape conseillée, avec sa raison en une phrase, et parfois d'autres possibilités.</li>
-<li><strong>Rien ne bouge sans vous.</strong> La commande lit seulement. Les deux seules modifications possibles attendent votre accord.</li>
+<li><strong>Rien ne bouge sans vous.</strong> La commande lit seulement. Quatre modifications sont possibles, chacune avec votre accord.</li>
 <li><strong>Les alertes ne restent pas cachées.</strong> Une fois le site en ligne, un contrôle automatique en échec ou un rendez-vous de suivi dépassé passe en tête des conseils.</li>
 </ul>
 </section>
@@ -105,11 +105,12 @@ Mémoire  : ✅ branchée · glossaire 6 mots · 0 décision
 
 <section id="produit">
 <h2>Ce qu'elle produit</h2>
-<p>Un résumé à l'écran. Rien n'est modifié dans votre projet, sauf dans trois cas, et toujours après votre accord :</p>
+<p>Un résumé à l'écran. Rien n'est modifié dans votre projet, sauf dans quatre cas, et toujours après votre accord :</p>
 <table>
 <thead><tr><th>Cas</th><th>Ce qui change</th></tr></thead>
 <tbody>
 <tr><td>Un travail en cours ancien, devenu sans objet</td><td>Pulse vous demande s'il est toujours d'actualité. Sinon, il efface la note de travail en cours, dans <code>aidd_docs/tasks/</code>.</td></tr>
+<tr><td>Une réalisation interrompue depuis plusieurs heures</td><td>Si vous la considérez comme terminée, Pulse efface son petit fichier de suivi, dans <code>aidd_docs/tasks/</code>. Pour la reprendre, il vous donne la commande à taper.</td></tr>
 <tr><td>Un dossier à part déjà rassemblé avec le projet principal</td><td>Pulse propose de supprimer ce dossier dans <code>.claude/worktrees/</code>, et sa branche.</td></tr>
 <tr><td>Avec <code>ligne</code></td><td>La ligne d'état est réglée dans <code>.claude/settings.local.json</code>, propre à votre ordinateur, avec sa copie <code>.claude/pulse-ligne-etat.js</code> ; les deux sont ajoutés au <code>.gitignore</code>. Claude Code vous demande aussi votre accord.</td></tr>
 </tbody>

@@ -73,9 +73,16 @@ function lireHook() {
 
 const heure = (iso) => new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
 
-const args = process.argv.slice(2);
+/** Le nombre d'autres sessions ouvertes sur ce dossier : la plus récente des inscrites est la session courante. */
+const autresSessions = (dossier) => Math.max(0, sessions(racine(dossier)).length - 1);
 
-if (args[0] === "--debut" || args[0] === "--fin") {
+module.exports = { autresSessions };
+
+const args = require.main === module ? process.argv.slice(2) : null;
+
+if (args === null) {
+  // chargé comme module (pulse-aidd etat --tableau) : rien à lancer
+} else if (args[0] === "--debut" || args[0] === "--fin") {
   // Un hook ne doit jamais gêner la session : aucune sortie, aucune erreur.
   try {
     const { id, dossier } = lireHook();
