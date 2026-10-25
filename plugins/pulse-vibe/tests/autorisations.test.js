@@ -47,7 +47,7 @@ test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans prod
   assert.ok(a.allow.includes("Bash(pulse-aidd verifier --index)"), "le contrôle des fichiers préparés, avant chaque commit");
   assert.ok(a.allow.includes("Bash(npm test)") && a.allow.includes("Bash(npm test *)"));
   const tout = a.allow.join("\n");
-  assert.doesNotMatch(tout, /git push|secrets (generer|envoyer|elaguer|redeployer)|installer-|ligne-etat|nouveau|pulse-aidd \*\)/);
+  assert.doesNotMatch(tout, /git push|secrets (generer|envoyer|elaguer|redeployer)|installer-|ligne-etat|nouveau|deplacer-commits|pulse-aidd \*\)/);
 });
 
 test("chaque sous-commande citée par un agent est autorisée, sauf celles qui passent par l'accord", () => {

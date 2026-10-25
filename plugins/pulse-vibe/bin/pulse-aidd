@@ -18,6 +18,7 @@
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
+#   pulse-aidd deplacer-commits <nouvelle-branche> [--principale <nom>]  range les commits pas encore envoyés de la branche principale sur une nouvelle branche, puis remet la principale à l'état du dépôt distant, avec contrôles avant et après (/pulse:pr) ; toujours après l'accord de la personne
 #   pulse-aidd verifier [--index]    contrôle les secrets, les fichiers d'environnement suivis par Git, les règles du projet et les scénarios sans test ; --index : les seuls fichiers préparés (avant commit), sans les scénarios
 #   pulse-aidd preuve lancer [--portee suite | --portee tache [<fichiers de test…>]] [--construire]  lance les contrôles automatiques, les tests (toute la suite ou les fichiers donnés) et, avec --construire, la construction ; garde la preuve, liée au contenu des fichiers
 #   pulse-aidd preuve construire     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests (code 2 sans preuve à jour : rien n'est lancé)
@@ -303,8 +304,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Conventions Git" "$REF/git.md"
       afficher "L'envoi du travail" "$REF/envoi.md" ;; # le modèle .gitignore : lancé seulement s'il manque (étape 1)
     pr)
-      afficher "Conventions Git" "$REF/git.md"
-      afficher "Modèle : description de demande de fusion" "$SK/pr/assets/pull-request.md" ;;
+      afficher "Conventions Git" "$REF/git.md" ;; # le modèle de description : lancé au moment de rédiger (B.3)
     annuler) ;; # ni conventions Git ni dépôt distant : les gestes sont dans pulse-aidd annuler, l'envoi se lit à l'étape 6
     get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
     cicd)
@@ -425,6 +425,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   annuler)
     shift; exec node "$RACINE/skills/annuler/scripts/annuler.js" "$@" ;;
+  deplacer-commits)
+    shift; exec node "$RACINE/scripts/deplacer-commits.js" "$@" ;;
   verifier)
     case "${2:-}" in
       --index) exec node "$TPL/verifier.js" --index ;;

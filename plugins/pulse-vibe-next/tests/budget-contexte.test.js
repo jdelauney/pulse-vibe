@@ -193,8 +193,8 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "memory --sans-communes": 18500, // mesure 17 559
   "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "plan --sans-communes": 62500, // mesure 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "pr --sans-communes": 18000, // mesure 16 931
-  "pr --sans-noyau": 22000, // mesure 20 495
+  "pr --sans-communes": 15000, // mesure 13 840 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 16 931
+  "pr --sans-noyau": 18500, // mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 495
   "refine --sans-communes": 36500, // mesure 34 590 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 728
   "spec --sans-communes": 29500, // mesure 27 839

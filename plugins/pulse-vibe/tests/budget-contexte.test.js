@@ -41,7 +41,7 @@ const PLAFONDS = {
   fix: 22000, // mesure 20 834 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 22 408
   review: 31500, // mesure 29 793 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 32 792 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   commit: 32500, // mesure 30 843 (refactoring d'optimisation, tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 31 689 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md) ; avant, mesure 36 455 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 518 (refactoring d'optimisation, tâche 2.3a : règle de choix des familles de qualité renvoyée à la commande sans famille, règles communes) ; avant, mesure 39 088 (pulse 0.49+ : annonce de l'accord avant git remote add dans depot-distant.md, envoi forcé refusé dans git.md)
-  pr: 28000, // mesure 26 192 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 391
+  pr: 25000, // mesure 23 442 (refactoring d'optimisation, tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, mesure 26 192 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 391
   annuler: 21500, // mesure 20 110 (pulse 0.51 : les gestes Git passent par pulse-aidd annuler, conventions Git et dépôt distant ne sont plus chargés d'office) ; avant, mesure 35 609 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 553 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 36 358
   "get-help": 19000, // mesure 18 085 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 23 797 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 22 362
   cicd: 26000, // mesure 24 624 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 30 334 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 527 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 37 332
@@ -92,7 +92,7 @@ const PLAFONDS_COMMANDE = {
   memory: 32500, // mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
   perf: 48500, // mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
   plan: 65000, // mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
-  pr: 35500, // mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
+  pr: 33000, // mesure 31 118 (refactoring d'optimisation, tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
   prd: 25000, // mesure 23 807 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
   rediger: 24500, // mesure 23 144 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 51500, // mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
@@ -185,8 +185,8 @@ const PLAFONDS_FORMES = {
   "memory --sans-communes": 18500, // mesure 17 463
   "perf --sans-communes": 35000, // mesure 33 120 : dépasse la limite, voir DEPASSEMENTS_CONNUS
   "plan --sans-communes": 44500, // mesure 42 033 : dépasse la limite
-  "pr --sans-communes": 18000, // mesure 16 829
-  "pr --sans-noyau": 21500, // mesure 20 393
+  "pr --sans-communes": 15000, // mesure 13 840 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 16 829
+  "pr --sans-noyau": 18500, // mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 393
   "refine --sans-communes": 31000, // mesure 29 261
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 745
   "spec --sans-communes": 26500, // mesure 24 973

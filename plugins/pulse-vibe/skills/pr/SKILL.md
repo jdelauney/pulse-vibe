@@ -2,7 +2,7 @@
 description: Travailler sur une version parallèle et proposer de la rassembler - créer la branche de travail, puis ouvrir sur le site du dépôt la proposition en brouillon, décrite à partir des commits, du plan et des relectures
 argument-hint: "[branche [<US-XXX>] | <branche de base>] (vide : ouvrir la demande pour la branche en cours)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte pr) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git rev-parse *) Bash(git remote -v) Bash(git remote get-url *) Bash(git symbolic-ref *) Bash(git fetch origin) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh repo view *) Bash(gh pr create --draft *) Bash(gh pr view*) Bash(glab auth status*) Bash(glab repo view *) Bash(glab mr create --draft *) Bash(glab mr view*)
+allowed-tools: Bash(pulse-aidd contexte pr) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git rev-parse *) Bash(git remote -v) Bash(git remote get-url *) Bash(git symbolic-ref *) Bash(git fetch origin) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh repo view *) Bash(gh pr create --draft *) Bash(gh pr view*) Bash(glab auth status*) Bash(glab repo view *) Bash(glab mr create --draft *) Bash(glab mr view*)
 ---
 
 # /pulse:pr – Branche de travail et demande de fusion
@@ -17,13 +17,11 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 Appliquer aussi les « Conventions Git » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Cette commande **laisse toujours la fusion à la personne**, envoie les commits normalement (`--force` interdit) et laisse le code et les documents du projet tels quels.
+Cette commande **laisse toujours la fusion à la personne** et laisse le code et les documents du projet tels quels.
 
 ## Contexte
 
 Argument : `$ARGUMENTS`
-
-Fichiers de cette commande : [assets/pull-request.md](assets/pull-request.md).
 
 ### Choisir l'action
 
@@ -58,7 +56,7 @@ Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail es
 
 - Modifications non enregistrées : proposer de taper `/pulse:commit` d'abord et s'arrêter.
 - **Sur la branche principale** :
-  - Des commits n'ont pas encore été envoyés (`git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Tout est conservé. » Après accord explicite (AskUserQuestion) : `git switch -c <nom>` puis `git branch -f <principale> origin/<principale>`, et vérifier avec `git log --oneline -5` que les commits sont bien sur `<nom>`.
+  - Des commits n'ont pas encore été envoyés (`git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Tout est conservé. » Après accord explicite (AskUserQuestion), annoncer : « Claude Code va vous demander l'accord pour déplacer la branche principale : c'est ce qui range vos commits sur `<nom>`. » Puis `pulse-aidd deplacer-commits <nom>` (`--principale <principale>` si `origin/HEAD` manque) et montrer sa sortie. Code 2 : rien n'a changé, expliquer le refus (`divergence` : proposer `git pull` d'abord). Code 3 : la principale est revenue à son départ et les commits restent sur `branche-gardee` ; expliquer et proposer de taper `/pulse:get-help`.
   - Tous les commits déjà envoyés : la demande se fait depuis une branche de travail ; l'expliquer et proposer `/pulse:pr branche` pour la prochaine fois.
 - Branche identique à la base : le dire et s'arrêter, la demande attend de nouveaux commits.
 
@@ -71,15 +69,15 @@ Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail es
 
 #### 3. Rédiger
 
-- **Modèle** : celui du dépôt s'il existe (Conventions Git § 6), sinon le modèle Pulse (en fin de fichier). Remplir chaque section d'après le changement, puis retirer tous les commentaires du modèle.
+- **Modèle**, au moment de rédiger : celui du dépôt s'il existe (Conventions Git § 6), sinon `pulse-aidd modele pr/pull-request.md`. Remplir chaque section d'après le changement, puis retirer tous les commentaires du modèle.
 - **Titre** : court et parlant, 72 caractères au plus, en français.
 - Une tâche sans rapport de relecture : l'indiquer dans « Relecture et sécurité » et proposer de taper `/pulse:review` avant d'ouvrir la demande.
 - Montrer titre, base et description, puis demander (AskUserQuestion) : « Ouvrir la proposition en brouillon (Recommandé) » / « Modifier le texte » / « Annuler ».
 
 #### 4. Envoyer et créer
 
-1. Contrôle des secrets, comme à l'étape 1 de `/pulse:commit` (fichiers d'environnement hors du suivi Git, `git diff <base>...HEAD` exempt de clé).
-2. Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push -u origin <branche>` (jamais `--force` ; envoi refusé : expliquer, proposer `git pull` puis réessayer).
+1. Contrôle des secrets des commits à envoyer : `pulse-aidd secrets historique --depuis origin/<base>` (aucune valeur affichée) ; un ⛔ arrête l'envoi et passe par `/pulse:secrets fuite`.
+2. Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push -u origin <branche>`. Envoi refusé : Conventions Git § 4.
 3. Créer la demande **en brouillon** :
    - GitHub : `gh pr create --draft --base <base> --head <branche> --title "<titre>" --body "<description>"` ;
    - GitLab : `glab mr create --draft --target-branch <base> --source-branch <branche> --title "<titre>" --description "<description>"`.
@@ -89,7 +87,7 @@ Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail es
 
 - L'adresse de la proposition, et ce qu'est un **brouillon** : on la passe « prête » (Ready for review) quand on veut la faire relire.
 - Si l'hébergeur le propose, une **adresse de prévisualisation** apparaît souvent dans la proposition : tester les « Étapes pour tester » dessus, sans toucher au site en ligne.
-- Pour l'accepter : bouton « Merge » sur le site du dépôt. Ensuite, dans Claude Code : `git switch <principale>` puis `git pull` pour récupérer la version principale à jour ; la mise en ligne suit si le déploiement automatique est en place.
+- Pour l'accepter : bouton « Merge » sur le site du dépôt. Ensuite, dans Claude Code : `git switch <principale>` puis `git pull` ; pour publier et vérifier la version en ligne : `/pulse:deploy`.
 - D'autres commits sur la même branche ? `/pulse:commit push` : la proposition se met à jour toute seule.
 
 ### Fin
