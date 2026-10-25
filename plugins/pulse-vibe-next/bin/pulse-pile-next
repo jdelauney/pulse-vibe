@@ -97,8 +97,10 @@ contexte() {
       afficher "Pour la sécurité" "$REF/contexte/security.md" ;;
     test)
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
-    deploy|cicd)
+    deploy)
       afficher "Pour mettre en ligne" "$REF/contexte/deploy.md" ;;
+    cicd)
+      afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md" ;;
     secrets)
       afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md" ;;
     seo)

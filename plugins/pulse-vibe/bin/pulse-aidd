@@ -307,10 +307,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Conventions Git" "$REF/git.md" ;; # le modèle de description : lancé au moment de rédiger (B.3)
     annuler) ;; # ni conventions Git ni dépôt distant : les gestes sont dans pulse-aidd annuler, l'envoi se lit à l'étape 6
     get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
-    cicd)
-      afficher "Le dépôt distant" "$REF/depot-distant.md"
-      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template"
-      afficher "Conventions Git" "$REF/git.md" ;;
+    cicd) ;; # relier, le refus d'un commit ou d'un envoi : lancés seulement dans ce cas ; l'exemple de CI : copié dans le projet par installer-ci
     deploy)
       afficher "Le dépôt distant" "$REF/depot-distant.md"
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
