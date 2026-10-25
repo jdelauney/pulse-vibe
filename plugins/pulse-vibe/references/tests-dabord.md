@@ -21,7 +21,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 
 ### Rouge : écrire les tests
 
-1. Déléguer à **`pulse:test-writer`**, mode « avant le code » : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, sa ligne `Tests`, les **scénarios Gherkin** de la spec qu'elle couvre (recopiés), les règles métier de l'US, les « Informations manipulées » utiles de la spec et les « Données » de la conception technique du plan, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md` (recopiées), les mots du glossaire utiles, et la consigne de charger `pulse-aidd tests ecrire gherkin`, puis `tdd` et chaque niveau de la ligne `Tests`, une commande chacun.
+1. Déléguer à **`pulse:test-writer`**, mode « avant le code » : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation complets, sa ligne `Tests`, les chemins de la spec et du plan, les identifiants des **scénarios Gherkin** qu'elle couvre, les mots du glossaire utiles, et la consigne de charger `pulse-aidd tests ecrire gherkin`, puis `tdd` et chaque niveau de la ligne `Tests`, une commande chacun. L'agent lit lui-même la spec (scénarios, règles métier, « Informations manipulées »), les « Données » du plan et `docs/technical.md`.
 2. Déléguer à **`pulse:test-runner`**, phase « rouge attendu » : les fichiers de test écrits, la commande « tester », les critères de la tâche.
    - **🔴 Rouge confirmé** (chaque test échoue parce que le comportement manque) : continuer.
    - **⚠️ Rouge pour une mauvaise raison** (erreur dans le test lui-même) ou test qui passe déjà : renvoyer au test-writer la liste du test-runner, puis relancer le test-runner. Deux cycles au plus.
@@ -31,7 +31,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 ### Vert : réaliser
 
 4. Déléguer la tâche à **`pulse:implementer`** selon « Déléguer à l'implementer » (`pulse-aidd reference deleguer.md`), en ajoutant : les chemins des fichiers de test, l'**interface attendue** rapportée par le test-writer (fonctions, routes, paramètres, résultats), et la consigne « faire passer ces tests sans modifier les fichiers de test ; un test qui semble faux se conteste dans « Tests contestés », avec la raison ». Devant vous (`-d`), s'appliquer la même consigne.
-5. Déléguer à **`pulse:test-runner`**, phase « vert attendu » : les fichiers de test, les fichiers modifiés par la tâche, la commande « tester », les critères de la tâche, les tests contestés par l'implementer.
+5. Déléguer à **`pulse:test-runner`**, phase « vert attendu » : les fichiers de test, les fichiers modifiés par la tâche, les critères de la tâche, les tests contestés par l'implementer. Sa preuve (`pulse-aidd preuve`) sert ensuite à l'examen et au commit.
 
 ### Trier les échecs
 
@@ -44,7 +44,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 | ⛔ échec **dû à l'environnement** (base de test, variable, outil) | la personne ou la commande | guider pas à pas, puis relancer |
 | Test **instable** | `pulse:test-writer` | corriger la cause (`tests/strategie.md` §4) |
 
-- **Après toute correction ultérieure de la tâche** (constats de relecture, test manuel non concluant) : relancer le test-runner en phase « vert attendu » avec la relecture de contrôle.
+- **Après toute correction ultérieure de la tâche** (constats de relecture, test manuel non concluant) : relancer le test-runner en phase « vert attendu » **avant** la relecture de contrôle.
 - **Deux cycles de correction au plus**. Un échec qui persiste arrête la tâche (`[~]`) et s'explique simplement (tapez `/pulse:get-help` pour préparer une demande d'aide).
 - Un test contesté qui révèle un **écart de besoin** (le scénario ou le critère semble faux) se tranche avec la personne, quel que soit le mode. Si elle change le contrat : mettre à jour le scénario dans la spec, le critère dans l'US et la tâche dans le plan, puis reprendre au rouge.
 - Les constats du test-runner sur la **qualité des tests** suivent « Les constats de relecture » (règles de relecture).

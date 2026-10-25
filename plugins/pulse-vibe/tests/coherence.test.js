@@ -696,7 +696,7 @@ test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour ch
   for (const skill of ["review", "spirc"]) assert.match(skillTexte(skill), /référence « Examiner une tâche »/, skill);
   assert.match(skillTexte("implement"), /`\/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche/, "implement renvoie la vérification indépendante à review");
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
-  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
+  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /surface réelle/);
   for (const { fichier, texte } of TEXTES) assert.doesNotMatch(texte, /boucle de `?\/pulse:implement|`?\/pulse:implement`? et sa boucle|boucle d'implement/, `${fichier} : implement n'a plus de boucle`);
   assert.doesNotMatch(lire(RACINE, "agents", "verifier.md"), /boucle de \/pulse:implement/);
 });
@@ -1271,6 +1271,11 @@ test("implement relancé sur une tâche [~] au code commencé : le marqueur fait
   assert.match(prerequis, /`pulse-aidd realisation` montre `commande: implement`, `us: <US-XXX>`, `tache: <Tn>` et `etape: realisation` ou `test`, sans `perime: oui`/);
   assert.match(prerequis, /reprendre au § 2/);
   assert.ok(prerequis.indexOf("pulse-aidd realisation") < prerequis.indexOf("pulse-aidd revue <Tn>"), "le marqueur se lit avant pulse-aidd revue");
+  // Reprise au § 2, § 0 sauté : les tests figés à l'index rappellent les tests d'abord, la phase « Vert » n'est pas sautée.
+  assert.match(prerequis, /fichiers de test déjà à l'index \(`git diff --cached --name-only`\) sont les tests figés des tests d'abord : reprendre alors à « Vert : réaliser »/);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "implement", "SKILL.md")).some((m) => couvre(m, "git diff --cached --name-only")), "implement : git diff autorisé");
+  // Filet quoi qu'il arrive : l'examen exige une preuve de toute la suite à jour et verte.
+  assert.match(lire(RACINE, "references", "examen.md"), /une preuve « à jour » et ✅ \(`pulse-aidd preuve etat --exiger suite`, code 0\) : une preuve ❌, périmée ou absente n'est jamais une preuve/);
 });
 
 test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
@@ -1733,7 +1738,7 @@ test("tests essentiels : intégration et sécurité nécessaires seulement, ceux
   assert.ok(auto.includes("**Seulement les contrôles rapides**") && auto.includes("`next build`"), "pas de construction en rythme rapide");
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("tests essentiels : jamais de « construire »"));
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
-  assert.ok(lire(RACINE, "skills", "spirc", "references", "examen-us.md").includes("**Tests** : lancer une fois toute la suite (commande « Tester »)"));
+  assert.ok(lire(RACINE, "skills", "spirc", "references", "examen-us.md").includes("**Tests** : lancer une fois toute la suite, avec les contrôles automatiques, par `pulse-aidd preuve lancer --portee suite`"));
 });
 
 test("série : deux US indépendantes en même temps, avec accord, dossiers à part rassemblés dès la fin de leur construction", () => {
@@ -1824,7 +1829,7 @@ test("correction ciblée : l'implementer reçoit les constats et charge leurs fa
     ["spirc", lire(RACINE, "skills", "spirc", "SKILL.md")],
     ["deleguer.md", lire(RACINE, "references", "deleguer.md")],
   ]) assert.match(texte, /familles de qualité (?:qu'ils|que les constats) concernent/, nom);
-  assert.match(lire(RACINE, "references", "examen.md"), /`pulse-aidd qualite --checklists`/);
+  assert.match(lire(RACINE, "agents", "reviewer.md"), /`pulse-aidd qualite --checklists`/, "le reviewer charge lui-même les checklists de qualité");
   // Le message de délégation est écrit une fois (deleguer.md) ; les deux commandes y renvoient.
   assert.match(lire(RACINE, "references", "deleguer.md"), /familles de qualité de la tâche/);
   for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /selon « Déléguer à l'implementer »/, skill);
@@ -1912,4 +1917,68 @@ test("aucun motif allowed-tools ne finit par un guillemet isolé", () => {
     }
   }
   assert.deepStrictEqual(problemes, []);
+});
+
+// ---------------------------------------------------------------- Preuve unique (pulse-aidd preuve)
+
+test("preuve unique : le verifier et le test-runner la produisent, l'implementer et le reviewer la laissent, le test-runner juge avec les checklists", () => {
+  const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
+  for (const nom of ["verifier", "test-runner"]) assert.match(agent(nom), /`pulse-aidd preuve lancer --portee suite/, `${nom} produit la preuve`);
+  assert.match(agent("verifier"), /`pulse-aidd preuve etat --exiger suite/, "le verifier lit d'abord la preuve");
+  assert.match(agent("verifier"), /`--construire` si « Construire » existe[^.]*page, une route ou la configuration/, "construction seulement pour une page, une route ou la configuration");
+  assert.doesNotMatch(agent("verifier"), /lancé pendant cette vérification/, "un test compte s'il a été lancé sur le contenu actuel des fichiers");
+  for (const nom of ["implementer", "reviewer"]) assert.doesNotMatch(agent(nom), /preuve lancer/, `${nom} ne produit pas la preuve`);
+  assert.match(agent("test-runner"), /`pulse-aidd tests ecrire --checklists/, "le test-runner juge avec les checklists");
+  assert.doesNotMatch(agent("test-runner"), /surtout `tests\/ecrire-un-test\.md`/);
+  assert.match(agent("test-writer"), /mode « corriger » : `pulse-aidd tests ecrire <niveau> --checklists`/, "test-writer : mode corriger avec les checklists");
+  for (const nom of ["verifier", "test-runner", "test-writer"]) assert.doesNotMatch(agent(nom).match(/^description:.*$/m)[0], /Utilisé par/, `${nom} : description sans « Utilisé par »`);
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  assert.match(auto, /`pulse-aidd preuve etat --exiger suite`/, "le filet lit la preuve");
+  assert.match(auto, /`pulse-aidd preuve lancer --portee suite`/, "le filet relance la preuve si besoin");
+  assert.doesNotMatch(auto, /après la dernière modification de fichier/, "l'empreinte décide, plus le jugement du modèle");
+  const dabord = lire(RACINE, "references", "tests-dabord.md");
+  assert.doesNotMatch(dabord, /\(recopiés\)|\(recopiées\)/, "délégation au test-writer sans recopie");
+  assert.match(dabord, /L'agent lit lui-même[^.]*`docs\/technical\.md`/);
+  assert.match(dabord, /relancer le test-runner en phase « vert attendu » \*\*avant\*\* la relecture de contrôle/);
+});
+
+test("examen : rapport au modèle chargé à l'étape, délégations sans recopie de docs/technical.md, preuve unique lue et exigée", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  assert.match(examen, /`pulse-aidd modele revue\.md`/, "le modèle de rapport se charge à l'étape du rapport");
+  assert.match(examen, /`pulse-aidd preuve etat --exiger suite`/, "la ligne « Filet anti-régression » vient de la preuve");
+  assert.match(examen, /constat 🟠 Haute/, "un échec de la preuve devient un constat Haute");
+  const ligne = (agent) => examen.split("\n").find((l) => l.startsWith(`- **\`pulse:${agent}\`** :`)) || "";
+  for (const agent of ["reviewer", "verifier"]) {
+    assert.ok(ligne(agent), agent);
+    assert.doesNotMatch(ligne(agent), /sections? « (Pile retenue|Commandes du projet) »/, `${agent} : docs/technical.md non recopié`);
+    assert.match(ligne(agent), /L'agent lit lui-même/, `${agent} lit lui-même ses documents`);
+  }
+  assert.match(ligne("reviewer"), /sans verifier \(rythme rapide\), la consigne d'écrire la section « Test manuel »/);
+  assert.match(examen, /test-runner en phase « vert attendu » d'abord/, "relecture de contrôle : le test-runner d'abord");
+  for (const skill of ["review", "spirc"]) {
+    assert.match(skillTexte(skill), /`pulse-aidd modele revue\.md`/, `${skill} : pointeur du modèle de rapport`);
+    assert.ok(motifsBash(path.join(RACINE, "skills", skill, "SKILL.md")).some((m) => couvre(m, "pulse-aidd preuve etat --exiger suite")), `${skill} : preuve autorisée`);
+  }
+  assert.doesNotMatch(skillTexte("review"), /Les références et modèles cités dans cette commande figurent dans ce contexte/);
+  const reviewer = lire(RACINE, "agents", "reviewer.md");
+  assert.doesNotMatch(reviewer, /Lancer les contrôles automatiques/, "le reviewer ne relance pas les contrôles");
+  assert.doesNotMatch(reviewer, /contrôles automatiques de « Commandes du projet »/, "plus de contrôles dans ses commandes en lecture");
+  assert.doesNotMatch(reviewer.match(/^description:.*$/m)[0], /Utilisé par/);
+  assert.match(reviewer, /## Test manuel à faire par la personne \(seulement si le message l'indique : examen sans verifier\)/);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /1\. \*\*Tests\*\* : lancer une fois toute la suite[^\n]*`pulse-aidd preuve lancer --portee suite`/);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse-aidd modele revue\.md`/);
+});
+
+test("test : références des tests chargées à la demande, délégation au test-writer sans recopie de docs/technical.md", () => {
+  const t = skillTexte("test");
+  assert.match(t, /Quand elle vaut « aucune » : lancer `pulse-aidd reference tests-automatiques\.md` et appliquer son § 3/);
+  assert.match(t, /Seulement pour une spec sans scénarios[^\n]*`pulse-aidd tests gherkin`/);
+  assert.match(t, /Pour écrire des tests \*\*avant\*\* le code d'une nouvelle tâche : `\/pulse:implement -t` ou `\/pulse:spirc -t`\.\n/);
+  const delegation = t.split("\n").find((l) => l.startsWith("2. Déléguer à **`pulse:test-writer`**")) || "";
+  assert.ok(delegation, "délégation au test-writer");
+  assert.doesNotMatch(delegation, /« Pile retenue »|contrat recopié/);
+  assert.match(delegation, /L'agent lit lui-même `docs\/technical\.md`/);
+  assert.doesNotMatch(t, /Les références citées dans cette commande figurent dans ce contexte/);
+  assert.match(t, /`pulse-aidd etape fix --sans-communes`/, "échec dû au code : l'étape fix enchaînée");
+  assert.ok(!motifsBash(path.join(RACINE, "skills", "test", "SKILL.md")).some((m) => m.startsWith("git add")), "test n'autorise pas git add");
 });

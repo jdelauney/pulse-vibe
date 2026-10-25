@@ -2,14 +2,14 @@
 description: Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections
 argument-hint: "[T3 | <US-XXX> | tout]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(pulse-aidd revue *) Bash(pulse-aidd copies)
+allowed-tools: Bash(pulse-aidd contexte review) Bash(pulse-aidd agent reviewer) Bash(pulse-aidd agent verifier) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd seo *) Bash(pulse-aidd verifier) Bash(pulse-aidd preuve *) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(pulse-aidd revue *) Bash(pulse-aidd copies)
 ---
 
 # /pulse:review – Relire, tester, corriger
 
 ## Objectif
 
-Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un relit le code, l'autre essaie l'application en marche), faire tester la personne elle-même, puis corriger. Expliquer en une phrase : « Un regard extérieur repère les oublis, et un essai en marche prouve que ça fonctionne ; votre test manuel le confirme ensuite. »
+Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un relit le code, l'autre essaie l'application en marche), faire tester la personne elle-même, puis corriger. Expliquer la phrase d'« Examiner une tâche ».
 
 ## Règles
 
@@ -49,7 +49,7 @@ Appliquer le § 2 de la référence « Examiner une tâche » : `pulse:reviewer`
 
 ### 3. Enregistrer le rapport
 
-Appliquer le § 3 de la référence « Examiner une tâche ». Avec `tout` : `docs/revue-projet-<AAAA-MM-JJ>.md`.
+Appliquer le § 3 de la référence « Examiner une tâche » ; au moment d'écrire le rapport, lancer `pulse-aidd modele revue.md` (le modèle de rapport). Avec `tout` : `docs/revue-projet-<AAAA-MM-JJ>.md`.
 
 ### 4. Présenter
 
@@ -85,4 +85,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
 
 !`pulse-aidd contexte review`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
+Ce contexte contient « Examiner une tâche » ; le modèle de rapport s'affiche au § 3. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
