@@ -17,7 +17,7 @@ const { spawn } = require("child_process");
 const { ecouter } = require("../../pulse-vibe/scripts/port-libre");
 
 const SCRIPT = path.join(__dirname, "..", "scripts", "sondes-secrets.js");
-const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets.md");
+const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets-fiches.md");
 const { VARIABLES, sectionFiche } = require(SCRIPT);
 const hasard = (n = 12) => crypto.randomBytes(n).toString("hex");
 

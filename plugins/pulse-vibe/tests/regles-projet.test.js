@@ -88,6 +88,33 @@ test("avant commit (--index) : seuls les fichiers prêts à être enregistrés, 
   assert.match(r.stderr, /Commit annulé : une règle du projet n'est pas respectée/);
   assert.match(r.stderr, /src\/neuf\.js : enfreint/);
   assert.doesNotMatch(r.stderr, /ancien\.js/, "fichier non préparé : hors du contrôle avant commit");
+  const sousDossier = lancer(path.join(d, "src"), "--index");
+  assert.strictEqual(sousDossier.status, 1, "lancé depuis un sous-dossier : les règles du projet comptent aussi");
+  assert.match(sousDossier.stderr, /src\/neuf\.js : enfreint/);
+});
+
+test("projet rangé dans un sous-dossier d'un dépôt plus grand : ses règles et ses scénarios comptent, avec ou sans --index", { skip: sansGit }, () => {
+  const d = projet({
+    "lisezmoi.md": "Dépôt parent\n",
+    "projet/aidd_docs/memory/technical.md": MEMOIRE(["- Les montants s'écrivent en centimes. — Contrôle : interdit `parseFloat(` dans `src/`"]),
+    "projet/aidd_docs/tasks/01-panier/SPEC-US-001-panier.md": "# Spec\n\n```gherkin\n@US-001-1 @unitaire\nScénario: total du panier\n```\n",
+    "projet/src/prix.js": "parseFloat(1);\n",
+  });
+  git(d, "init", "-q");
+  git(d, "add", ".");
+  git(d, "commit", "-q", "-m", "init");
+  const racine = path.join(d, "projet");
+  for (const dossier of [racine, path.join(racine, "src")]) {
+    const r = lancer(dossier);
+    assert.strictEqual(r.status, 1, `${dossier} : ${r.stdout}${r.stderr}`);
+    assert.match(r.stderr, /src\/prix\.js : enfreint la règle du projet/);
+  }
+  assert.match(lancer(racine, "--scenarios").stdout, /US-001-1/, "les scénarios du projet sont suivis");
+  fs.writeFileSync(path.join(racine, "src", "neuf.js"), "parseFloat(2);\n");
+  git(d, "add", "projet/src/neuf.js");
+  const index = lancer(racine, "--index");
+  assert.strictEqual(index.status, 1, index.stdout + index.stderr);
+  assert.match(index.stderr, /src\/neuf\.js : enfreint la règle du projet/);
 });
 
 const REGLES = path.join(__dirname, "..", "scripts", "regles.js");

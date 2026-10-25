@@ -2,7 +2,7 @@
 description: Mettre en place les contrôles automatiques - secrets, règles du code, tests et construction vérifiés à chaque envoi et sur chaque proposition de version parallèle, adaptés au fournisseur du dépôt distant ; puis, au choix, protéger la branche principale
 argument-hint: "[proteger] (vide : installer ou mettre à jour les contrôles automatiques)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte perf) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd etape fix --sans-noyau) Bash(pulse-aidd etape auto-fix --sans-noyau) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Read Glob Grep Bash(git status *) Bash(git remote -v) Bash(git remote get-url *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit -m *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*) Edit(docs/technical.md) Write(docs/performance.md) Edit(docs/performance.md) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd verifier) Bash(pulse-aidd agent fixer) Bash(pulse-aidd contexte fix) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd agent *) Bash(pulse-aidd guide) Bash(git diff *) Bash(pulse-aidd preuve *)
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd etape fix --sans-noyau) Bash(pulse-aidd etape auto-fix --sans-noyau) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd perf installer) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Bash(git remote -v) Bash(git remote get-url *) Bash(git branch --show-current) Bash(git log *) Bash(git rev-parse *) Bash(git add *) Bash(git commit -m *) Bash(node scripts/verifier.js) Bash(gh auth status*) Bash(gh run list*) Bash(gh run watch*) Bash(gh run view*) Bash(glab auth status*) Bash(glab ci status*) Bash(glab ci view*) Edit(docs/technical.md) Write(docs/performance.md) Edit(docs/performance.md) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd verifier) Bash(pulse-aidd agent fixer) Bash(pulse-aidd contexte fix) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd etape *) Bash(pulse-aidd agent *) Bash(git diff *) Bash(pulse-aidd preuve *) Bash(pulse-aidd verifier --index)
 ---
 
 # /pulse:cicd – Les contrôles automatiques (CI)
@@ -31,7 +31,7 @@ Argument : `$ARGUMENTS`
 ### Prérequis
 
 - `docs/technical.md` est nécessaire (« Commandes du projet », « Hébergement et mise en ligne ») : sinon, proposer `/pulse:tech` et s'arrêter.
-- Un **dépôt distant** relié (`git remote -v`) : sinon, appliquer « 1. Relier le projet à un dépôt distant » de la référence « Le dépôt distant et l'envoi du travail » ; s'arrêter tant qu'il manque (la CI tourne chez son fournisseur).
+- Un **dépôt distant** relié (`git remote -v`) : sinon, et seulement dans ce cas, lancer `pulse-aidd reference depot-distant.md` et appliquer sa section « 1. Relier le projet à un dépôt distant » ; s'arrêter tant qu'il manque (la CI tourne chez son fournisseur).
 - Le **squelette** de la pile en place (« Mise en place » de `docs/technical.md` faite, les fichiers qu'elle annonce présents) : sinon, les contrôles attendent encore du code à vérifier. Proposer « Installer seulement le contrôle des secrets maintenant » / « Attendre la première tâche du plan (Recommandé) ».
 - Des modifications non enregistrées : proposer de taper `/pulse:commit` d'abord, pour que le commit de la CI contienne uniquement la CI.
 - Pour tout ce qui est propre au fournisseur de CI (emplacement et format du fichier, déclencheurs, étapes, réglages du dépôt) : suivre sa **documentation officielle** (outil de documentation comme context7 s'il est disponible, sinon WebFetch). Tirer de cette documentation chaque syntaxe, nom d'action ou menu.
@@ -56,28 +56,21 @@ Lancer aussi `pulse-aidd installer-hook` : le même contrôle des secrets s'exé
 D'après la documentation officielle de l'outil retenu, à l'emplacement qu'elle impose :
 
 - **Déclencheurs** : chaque envoi sur la branche principale, et chaque demande de fusion (PR / MR) vers elle.
-- **Étapes**, dans l'ordre, en sautant celles qui valent « aucune » dans « Commandes du projet » :
-  1. récupérer le code ;
-  2. installer l'environnement d'exécution de la pile retenue, à la version de « Pile retenue » ;
-  3. installer les dépendances (« installer ») ;
-  4. contrôler les secrets et les scénarios : `node scripts/verifier.js` (Node.js doit être disponible : l'installer dans une étape si la pile utilise un autre langage que JavaScript) ;
-  5. auditer les dépendances (« Auditer les dépendances » : une faille de gravité élevée ou critique fait échouer la CI) ;
-  6. les contrôles automatiques (lint, format, types) ;
-  7. les tests (« tester ») ;
-  8. la construction (« construire »).
+- **Étapes** : celles de `scripts/ci-verifications.exemple.yml` (copié à l'étape 2), dans son ordre, avec les commandes de « Commandes du projet », en sautant celles qui valent « aucune ». Node.js reste disponible pour `node scripts/verifier.js`, même si la pile utilise un autre langage. L'audit des dépendances (« Auditer les dépendances ») fait échouer la CI sur une faille de gravité élevée ou critique.
 - **Versions fixées** pour chaque action ou image utilisée, comme pour une bibliothèque (règle commune 8).
 - **Secrets hors du fichier**. Si la construction a besoin d'une variable d'environnement, écrire seulement son **nom** ; la personne saisit elle-même la valeur dans les réglages du dépôt (« secrets » ou « variables » de la CI), guidée pas à pas. La valeur va uniquement dans ces réglages, jamais dans la conversation.
 - Montrer le fichier complet, expliquer chaque bloc en une ligne, puis l'écrire avec accord. Supprimer ensuite `scripts/ci-verifications.exemple.yml`, devenu inutile.
-- **Vitesse** (facultatif) : si `docs/performance.md` contient une section « Budget », proposer la vérification de vitesse de « suivre » de `/pulse:perf` (`pulse-aidd etape perf --sans-communes`, volet 3) : chaque semaine sur le site en ligne (Recommandé), ou sur chaque proposition de version parallèle contre la construction locale. Sans budget : la proposer plus tard avec `/pulse:perf suivre`.
+- **Vitesse** (facultatif) : seulement si `docs/performance.md` contient une section « Budget », proposer la vérification de vitesse : `pulse-aidd reference perf/ci-vitesse.md`, à appliquer telle quelle, puis noter la façon choisie dans « Mesure réelle et suivi » de `docs/performance.md`. Sans budget : la proposer plus tard avec `/pulse:perf suivre`.
 
 ### 4. Essayer en local d'abord
 
-Lancer, dans l'ordre, les mêmes commandes que la CI : `node scripts/verifier.js`, l'audit des dépendances, les contrôles automatiques, les tests, la construction. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`pulse-aidd etape auto-fix --sans-noyau` pour le lint et les types, `pulse-aidd etape fix --sans-noyau` pour un test), ou s'arrêter et l'expliquer.
+Lancer `pulse-aidd preuve lancer --portee suite --construire`, puis l'audit des dépendances et `node scripts/verifier.js` : les mêmes contrôles que la CI. Une erreur ici serait une croix rouge là-bas : la corriger d'abord (`pulse-aidd etape auto-fix --sans-noyau` pour le lint et les types, `pulse-aidd etape fix --sans-noyau` pour un test), ou s'arrêter et l'expliquer.
 
 ### 5. Enregistrer et envoyer
 
-- Commit `ci: contrôles automatiques à chaque envoi et sur chaque proposition` (`scripts/verifier.js`, le fichier de CI), avec les contrôles de sécurité de `/pulse:commit`.
-- Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met le fichier de CI sur le dépôt distant. » Puis l'envoyer (`git push`, jamais `--force`) : la CI tourne seulement après l'envoi.
+- Commit `ci: contrôles automatiques à chaque envoi et sur chaque proposition` (`scripts/verifier.js`, le fichier de CI) : `git add` de ces fichiers, `pulse-aidd verifier --index`, puis `git commit -m "<sujet>"`.
+- Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met le fichier de CI sur le dépôt distant. » Puis l'envoyer (`git push`) : la CI tourne seulement après l'envoi.
+- Commit ou envoi refusé : seulement dans ce cas, lancer `pulse-aidd reference git.md` et suivre « Quand un contrôle refuse le commit » (§ 3) ou « Envoyer (push) » (§ 4).
 - Mettre à jour la ligne « Contrôle automatique avant mise en ligne (CI) » de « Hébergement et mise en ligne » dans `docs/technical.md` (outil, fichier, ce qu'il contrôle), dans le même commit ou un commit `docs: CI`.
 
 ### 6. Voir le premier passage
@@ -115,4 +108,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si 
 
 !`pulse-aidd contexte cicd`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.

@@ -27,7 +27,7 @@ const GIT = ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(
 // envoyer, elaguer, redeployer, installer-ci, installer-hook, ligne-etat, nouveau…) passent par la demande d'accord.
 // preuve lance seulement les contrôles de « Commandes du projet » déjà autorisés ici (raisonRefus).
 const PULSE = [
-  "qualite *", "tests *", "scenarios", "verifier", "preuve *", "verifier-spec *", "bilan", "memoire", "guide", "travail-fini",
+  "qualite *", "tests *", "scenarios", "verifier", "verifier --index", "preuve *", "verifier-spec *", "bilan", "memoire", "guide", "travail-fini",
   "reference *", "modele *", "agent *", "contexte *", "etape *", "etat *", "revue *", "verifier-plan *", "sessions *",
   "pile contexte *", "pile reference *", "pile recette *",
   "maquettes verifier *", "textes verifier *", "contraste *", "comparer *", "seo *", "sonder *",

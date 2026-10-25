@@ -40,14 +40,14 @@ const PLAFONDS = {
   implement: 37500, // mesure 35 665 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 45 116 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 22000, // mesure 20 834 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 22 408
   review: 31500, // mesure 29 793 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 32 792 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  commit: 38500, // mesure 36 455 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 518 (refactoring d'optimisation, tâche 2.3a : règle de choix des familles de qualité renvoyée à la commande sans famille, règles communes) ; avant, mesure 39 088 (pulse 0.49+ : annonce de l'accord avant git remote add dans depot-distant.md, envoi forcé refusé dans git.md)
-  pr: 28000, // mesure 26 192 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 391
+  commit: 32500, // mesure 30 843 (refactoring d'optimisation, tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 31 689 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md) ; avant, mesure 36 455 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 518 (refactoring d'optimisation, tâche 2.3a : règle de choix des familles de qualité renvoyée à la commande sans famille, règles communes) ; avant, mesure 39 088 (pulse 0.49+ : annonce de l'accord avant git remote add dans depot-distant.md, envoi forcé refusé dans git.md)
+  pr: 25000, // mesure 23 442 (refactoring d'optimisation, tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, mesure 26 192 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 391
   annuler: 21500, // mesure 20 110 (pulse 0.51 : les gestes Git passent par pulse-aidd annuler, conventions Git et dépôt distant ne sont plus chargés d'office) ; avant, mesure 35 609 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 553 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 36 358
   "get-help": 19000, // mesure 18 085 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 23 797 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 22 362
-  cicd: 32000, // mesure 30 334 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 527 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 37 332
-  deploy: 28500, // mesure 27 127 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
+  cicd: 15000, // mesure 13 855 (refactoring d'optimisation, tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, mesure 24 624 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 30 334 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 527 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 37 332
+  deploy: 15000, // mesure 13 855 (refactoring d'optimisation, tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, mesure 23 075 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 27 127 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
   security: 18000, // mesure 16 933 (refactoring d'optimisation, tâche 5.5 : le modèle de docs/securite.md seul, la checklist chargée par l'auditeur) ; avant, mesure 31 689 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 37 291
-  secrets: 31500, // mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
+  secrets: 22500, // mesure 21 223 (refactoring d'optimisation, tâche 7.6 : fuite.md et le modèle d'incident chargés au premier geste de la branche fuite) ; avant, mesure 30 169 ; avant, mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
   refine: 27000, // mesure 25 468 (tâche 6.6 : les seules règles de découpage, au lieu de tout le SKILL de plan et du modèle de plan) ; avant, mesure 42 413 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   ui: 59500, // mesure 56 299 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 58 567
   rediger: 20500, // mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
@@ -68,8 +68,8 @@ const PLAFONDS = {
 // review relevé à 16 000 (pulse 0.40) : règle commune 19 et fiche de test, mesure 15 023.
 // review : mesure 16 289 (pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
 // review : mesure 16 526, commit : mesure 28 524 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-const PLAFONDS_ETAPES = { review: 14500, commit: 28500 }; // review : mesure 13 415 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 17 209 (pulse 0.48 : captures gardées, examen.md)
-// commit : mesure 26 900 (pulse 0.50 : etape sans en-tête ni Exemples)
+const PLAFONDS_ETAPES = { review: 14500, commit: 22500 }; // review : mesure 13 415 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 17 209 (pulse 0.48 : captures gardées, examen.md)
+// commit : mesure 21 385 (tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 21 980 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md) ; avant, mesure 26 900 (pulse 0.50 : etape sans en-tête ni Exemples)
 // review : mesure 16 131 (pulse 0.50 : etape sans en-tête ni Exemples)
 
 // Plafonds en caractères de « pulse-aidd etape <commande> » : le SKILL.md et son contexte, soit tout ce que la commande
@@ -78,9 +78,9 @@ const PLAFONDS_COMMANDE = {
   annuler: 27500, // mesure 26 089 (pulse 0.51 : les gestes Git passent par pulse-aidd annuler, conventions Git et dépôt distant ne sont plus chargés d'office) ; avant, mesure 44 004 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 502 (refactoring d'optimisation, tâche 1.3 : « proposer de taper » devant /pulse:get-help) ; avant, 45 775
   "auto-fix": 26500, // mesure 25 062 (pulse 0.51 : règle anti-affaiblissement laissée au fixer) ; avant, mesure 24 777 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
   brainstorm: 35500, // mesure 33 666 (refactoring d'optimisation, tâche 6.3 : règles communes 4, 5 et 10 et règles de la mémoire citées au lieu d'être recopiées) ; avant, mesure 33 866 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
-  cicd: 42500, // mesure 40 104 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 517 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 51 031 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 48 229
-  commit: 49000, // mesure 46 404 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 100 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  deploy: 44000, // mesure 41 456 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
+  cicd: 25000, // mesure 23 428 (refactoring d'optimisation, tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, mesure 34 304 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 40 104 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 517 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 51 031 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 48 229
+  commit: 43500, // mesure 41 346 (refactoring d'optimisation, tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 41 941 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md) ; avant, mesure 46 404 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 100 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+  deploy: 22500, // mesure 21 418 (refactoring d'optimisation, tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, mesure 37 607 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 41 456 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
   explain: 18500, // mesure 17 447 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 705 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 48500, // mesure 45 986 (refactoring d'optimisation, tâche 6.4 : plafond relevé, les règles des user stories (regles-us.md, 3 648) chargées pour express, qui les citait sans les avoir) ; avant, mesure 42 224 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 936 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
   fix: 31500, // mesure 29 857 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 30 625 ; avant, mesure 30 102 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 933 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -92,13 +92,13 @@ const PLAFONDS_COMMANDE = {
   memory: 29000, // mesure 27 407 (refactoring d'optimisation, tâche 6.7 : modèles affichés à l'action, creer après tech pour un projet existant) ; avant, mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
   perf: 48500, // mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
   plan: 64500, // mesure 61 333 (tâche 6.6 : règles de découpage en référence, squelette décrit dans « Mise en place », branche « spec plus ancienne » retirée) ; avant, mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
-  pr: 35500, // mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
+  pr: 33000, // mesure 31 118 (refactoring d'optimisation, tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
   prd: 25000, // mesure 23 807 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
   rediger: 24500, // mesure 23 144 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 33500, // mesure 31 647 (tâche 6.6 : les seules règles de découpage, sans le SKILL de plan ni le modèle de plan) ; avant, mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 37500, // mesure 35 291 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 47000, // mesure 44 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 989
-  secrets: 41500, // mesure 39 337 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 290
+  secrets: 31000, // mesure 29 053 (refactoring d'optimisation, tâche 7.6 : fuite.md et le modèle d'incident chargés au premier geste de la branche fuite, Principe et alertes de l'inventaire sans redite) ; avant, mesure 39 728 ; avant, mesure 39 337 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 290
   security: 24000, // mesure 22 835 (refactoring d'optimisation, tâche 5.5 : contexte réduit au modèle, délégation sans recopie) ; avant, mesure 37 842 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 46 122 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 43 499
   seo: 54500, // mesure 51 696 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 741
   spec: 43000, // mesure 40 505 (tâche 6.5 : présentation des écrans en référence, citée par le SKILL au lieu d'y être écrite ; modèle d'US à la demande) ; avant, mesure 41 938 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 787 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 48 422 (pulse 0.44 : présentation des écrans choisie dans la spec)
@@ -114,9 +114,20 @@ const PLAFONDS_COMMANDE = {
 const BOUCLES = {
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 78000, // mesure 74 053 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 88 728 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
+    plafond: 75000, // mesure 71 421 (tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 72 016 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, chargé par l'étape commit) ; avant, mesure 74 053 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 88 728 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
+};
+
+// Une commande chargée par mode : ce que la conversation principale lit pour un mode, la commande puis la référence du mode
+// (refactoring d'optimisation, tâche 7.5 : premiers plafonds, mesure × 1,05 au 500 supérieur). La mise à jour, le mode le plus fréquent, est la commande seule.
+const MODES = {
+  "deploy, première mise en ligne": { plafond: 27500, // mesure 26 138
+    parties: [["etape", "deploy"], ["reference", "deploy/premiere.md"]] },
+  "deploy, mode production": { plafond: 32500, // mesure 30 638, plafond relevé (relecture de la tâche 7.5 : le mode production lance toujours deploy/variables.md, et celle-ci la saisie hors conversation ; ils sont comptés) ; avant, 25 144 sans eux
+    parties: [["etape", "deploy"], ["reference", "deploy/production.md"], ["reference", "deploy/variables.md"], ["reference", "secrets/sans-conversation.md"]] },
+  "secrets, fuite": { plafond: 40500, // mesure 38 307 (tâche 7.6 : premier plafond ; la commande, fuite.md et le modèle d'incident)
+    parties: [["etape", "secrets"], ["reference", "secrets/fuite.md"], ["modele", "secrets/incident.md"]] },
 };
 
 // Ce que charge chaque agent de la boucle avant de lire le code : ses consignes, puis les règles que ses consignes lui font
@@ -176,17 +187,17 @@ const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES = {
   "auto-fix --sans-noyau": 12500, // mesure 11 479
   "brainstorm --sans-communes": 21500, // mesure 20 265 (tâche 6.3 : règles citées au lieu d'être recopiées) ; avant, 20 553
-  "cicd --sans-communes": 28500, // mesure 26 708
-  "commit --sans-communes": 28500, // mesure 26 800
-  "deploy --sans-communes": 30000, // mesure 28 243
+  "cicd --sans-communes": 10500, // mesure 9 696 (tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, 20 572 (tâche 7.1 : relier seul chargé) ; avant, 26 708
+  "commit --sans-communes": 22500, // mesure 21 385 (tâche 7.2 : modèle .gitignore à la demande) ; avant, 21 980 (tâche 7.1 : envoi.md au lieu de depot-distant.md) ; avant, 26 800
+  "deploy --sans-communes": 8500, // mesure 7 686 (tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, 23 875 (tâche 7.1 : relier seul chargé) ; avant, 28 243
   "express --sans-communes": 30500, // mesure 29 039 (tâche 6.4 : plafond relevé, règles des user stories chargées ; reste sous la limite de lecture) ; avant, 25 332
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
   "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles affichés à l'action) ; avant, 17 463
   "perf --sans-communes": 35000, // mesure 33 120 : dépasse la limite, voir DEPASSEMENTS_CONNUS
   "plan --sans-communes": 44000, // mesure 41 683 (tâche 6.6 : règles de découpage dédoublonnées) ; avant, 42 033 : dépasse la limite
-  "pr --sans-communes": 18000, // mesure 16 829
-  "pr --sans-noyau": 21500, // mesure 20 393
+  "pr --sans-communes": 15000, // mesure 13 840 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 16 829
+  "pr --sans-noyau": 18500, // mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 393
   "refine --sans-communes": 13000, // mesure 11 997 (tâche 6.6 : les seules règles de découpage) ; avant, 29 261
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 745
   "spec --sans-communes": 25000, // mesure 23 558 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, 24 973
@@ -244,6 +255,13 @@ for (const [commande, { plafond, parties }] of Object.entries(BOUCLES)) {
   });
 }
 
+for (const [nom, { plafond, parties }] of Object.entries(MODES)) {
+  test(`${nom} : ${plafond} caractères au plus`, () => {
+    const total = parties.reduce((somme, args) => somme + taille(...args), 0);
+    assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
+
 function tableau() {
   const lignes = ["| Mesure | Caractères | Plafond |", "|---|---|---|"];
   for (const [c, p] of Object.entries(PLAFONDS)) lignes.push(`| contexte ${c} | ${taille("contexte", c)} | ${p} |`);
@@ -251,6 +269,7 @@ function tableau() {
   for (const [c, p] of Object.entries(PLAFONDS_COMMANDE)) lignes.push(`| commande ${c} (SKILL.md + contexte) | ${taille("etape", c)} | ${p} |`);
   for (const [c, { plafond, parties }] of Object.entries(BOUCLES))
     lignes.push(`| boucle ${c} (4 tâches) | ${parties.reduce((s, a) => s + taille(...a), 0)} | ${plafond} |`);
+  for (const [n, { plafond, parties }] of Object.entries(MODES)) lignes.push(`| ${n} | ${parties.reduce((s, a) => s + taille(...a), 0)} | ${plafond} |`);
   for (const [a, { plafond, parties }] of Object.entries(AGENTS))
     lignes.push(`| agent ${a} | ${parties.reduce((s, x) => s + taille(...x), 0)} | ${plafond} |`);
   return lignes.join("\n");
@@ -258,4 +277,4 @@ function tableau() {
 
 if (process.argv.includes("--tableau")) console.log(tableau());
 
-module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, PLAFONDS_COMMANDE, AGENTS };
+module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, MODES, PLAFONDS_COMMANDE, AGENTS };

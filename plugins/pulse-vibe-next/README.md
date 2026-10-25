@@ -34,7 +34,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 | `seo` | Référencement : adresse du site, métadonnées complètes par page, robots.txt selon la politique IA, sitemap aux vraies dates, image de partage, données structurées typées (`schema-dts`), pages connectées hors de Google, vrai 404 |
 | `mesure-reelle` | Vitesse vécue par les vrais visiteurs : Speed Insights de Vercel, ou mesures envoyées au site (table Neon, 75e centile par page) |
 
-**Secrets** : `/pulse:secrets` reçoit la fiche de chaque variable du squelette et des recettes (où la renouveler, effet, délai de grâce, test). Avec le Vercel CLI connecté (`vercel login`, `vercel link`), les valeurs partent vers Vercel par l'entrée standard, sans passer par la conversation.
+**Secrets** : `/pulse:secrets` reçoit l'index des variables du squelette et des recettes ; la fiche de chacune (où la renouveler, effet, délai de grâce, test) s'affiche à la demande (`pulse-aidd pile secrets fiche <NOM>`). Avec le Vercel CLI connecté (`vercel login`, `vercel link`), les valeurs partent vers Vercel par l'entrée standard, sans passer par la conversation.
 
 **Référencement, vitesse, Search Console** : le squelette pose déjà l'adresse du site, les métadonnées, `robots.txt`, le sitemap, l'image de partage et les icônes ; `/pulse:seo`, `/pulse:perf` et `/pulse:search-console` reçoivent les consignes propres à Next.js et Vercel.
 
@@ -42,10 +42,10 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 
 ```
 .claude-plugin/plugin.json   manifeste ; dépend de pulse
-bin/pulse-pile-next          info | contexte <libellé> (une commande, `piles` ou `code` (un libellé inconnu ne renvoie rien)) | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | squelette | seo-code | secrets | hebergeur
+bin/pulse-pile-next          info | contexte <libellé> (une commande, une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`), `piles` ou `code` ; un libellé inconnu ne renvoie rien) | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | squelette | seo-code | secrets | hebergeur
 bin/pulse-pile-next.ps1      relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-pile-next.cmd : relais pour l'invite de commandes (cmd)
 references/                  fiche.md (règles de la pile), technical.md (valeurs de docs/technical.md),
-                             theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), modeles-code.md (un exemple de chaque couche, à la demande), contexte/ (consignes par commande), recettes/<nom>/ (index.md, une étape par fichier, tests.md),
+                             theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), modeles-code.md (un exemple de chaque couche, à la demande), contexte/ (consignes par commande ; cicd.md : les étapes de la CI, audit des dépendances compris ; deploy.md commun à toute mise en ligne, deploy-premiere.md et deploy-production.md lus par mode ; variables-vercel.md : les variables chez Vercel, pour la mise en ligne et pour /pulse:secrets ; secrets.md : l'index des variables ; secrets-fiches.md : une fiche par variable, lue à la demande), recettes/<nom>/ (index.md, une étape par fichier, tests.md),
                              migrations.md (mettre à niveau un projet plus ancien), readme.md (section « Tester en local » du README du projet)
 templates/squelette/         le projet de départ
 scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi sur un port libre, mise à jour des versions ; un test instable fait échouer ; dossier temporaire retiré, sauf --garder),
