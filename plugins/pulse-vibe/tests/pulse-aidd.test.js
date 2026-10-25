@@ -186,6 +186,14 @@ test("contexte brainstorm, prd et us : la référence « Penser avant d'écrire 
   }
 });
 
+test("contexte us et express : les règles des user stories, écrites une fois pour us, spec et express", () => {
+  for (const commande of ["us", "express"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Les règles des user stories ====="), commande);
+  }
+});
+
 test("travail-fini : efface le travail en cours du dossier courant, sans erreur s'il est absent", () => {
   const fs = require("fs");
   const os = require("os");
