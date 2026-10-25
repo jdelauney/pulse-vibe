@@ -273,8 +273,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Les règles des user stories" "$SK/us/references/regles-us.md"
       afficher "Modèle : docs/user-stories.md (référentiel)" "$TPL/user-stories.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md" "$TPL/us.md" ;;
-    spec)
-      afficher "Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md (pour une nouvelle US)" "$TPL/us.md"
+    spec) # règles et modèle d'US : chargés avant d'écrire une US créée (pulse-aidd reference us/regles-us.md, pulse-aidd modele us.md)
+      afficher "Présentation des écrans" "$SK/spec/references/presentation.md"
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$SK/spec/assets/spec.md" ;;
     plan)

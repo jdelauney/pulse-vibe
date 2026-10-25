@@ -7,7 +7,8 @@
 //                   (@unitaire, @integration, @bout-en-bout ou @manuel), section obligatoire absente (Intention,
 //                   Scénarios, Données personnelles et accès, Terminé quand), champ du modèle resté à remplir,
 //                   spec verrouillée qui garde un « TBD: » ;
-//   avertissement : scénario étiqueté pour un critère qui n'existe pas dans l'US.
+//   avertissement : scénario étiqueté pour un critère qui n'existe pas dans l'US ; écran du tableau de la section 3
+//                   sans présentation choisie (colonne « Présentation » vide ou au modèle : « presentation-manquante: <écran> »).
 // Affiche des lignes « clé: valeur », puis un constat par ligne (« - à corriger · scénarios · … ») :
 //   spec: aidd_docs/tasks/<epic>/SPEC-US-003-<nom>.md
 //   statut: brouillon | verrouillée
@@ -51,6 +52,22 @@ function trouver(racine, us) {
   return null;
 }
 
+/** Les écrans nommés du tableau de la section 3 dont la colonne « Présentation » est vide, encore au modèle ou absente. */
+function ecransSansPresentation(texte) {
+  const section = (texte.split(/^## \d+\.\s*Ce que l'utilisateur voit et fait\b.*$/m)[1] || "").split(/^## /m)[0];
+  const cellules = (l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+  const lignes = section.split(/\r?\n/).filter((l) => l.trim().startsWith("|"));
+  if (!lignes.length) return [];
+  const colonne = cellules(lignes[0]).findIndex((c) => /^Pr[ée]sentation\b/i.test(c));
+  return lignes
+    .slice(1)
+    .filter((l) => !/^\|[\s|:-]+\|?$/.test(l.trim()))
+    .map(cellules)
+    .filter((c) => c[0] && !/\{\{/.test(c[0]))
+    .filter((c) => colonne === -1 || !c[colonne] || /\{\{/.test(c[colonne]))
+    .map((c) => c[0]);
+}
+
 function verifierSpec(racine, idUs) {
   const us = normaliserUs(idUs);
   const fichiers = trouver(racine, us);
@@ -68,6 +85,8 @@ function verifierSpec(racine, idUs) {
   for (const [nom, re] of SECTIONS) if (!re.test(texte)) corriger("sections", `la section « ${nom} » manque`);
   const restes = lignes.filter((l) => /\{\{/.test(l));
   if (restes.length) corriger("modèle", `${restes.length} ligne(s) encore au modèle (« {{…}} »), dont : ${restes[0].trim().slice(0, 80)}`);
+
+  for (const ecran of ecransSansPresentation(texte)) avertir("écrans", `presentation-manquante: ${ecran}`);
 
   const scenarios = scenariosDeSpec(texte).filter((s) => normaliserUs(s.id.replace(/-\d+$/, "")) === us);
   for (const s of scenarios) if (!s.niveau) corriger("scénarios", `le scénario ${s.id} « ${s.titre} » n'a pas de niveau (@unitaire, @integration, @bout-en-bout ou @manuel)`);

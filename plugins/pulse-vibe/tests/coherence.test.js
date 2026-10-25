@@ -778,6 +778,26 @@ test("us : les cas limites clés posés un à un, en réponse libre ; format, IN
   assert.match(lire(RACINE, "skills", "express", "SKILL.md"), /\(« Les règles des user stories », chargées dans « Références de la commande »\)/);
 });
 
+test("INVEST et la Definition of Ready : cités seulement par une commande qui charge ou pointe les règles des user stories", () => {
+  const cites = [];
+  for (const nom of fs.readdirSync(path.join(RACINE, "skills")).sort()) {
+    const fichier = path.join(RACINE, "skills", nom, "SKILL.md");
+    if (!fs.existsSync(fichier)) continue;
+    const texte = fs.readFileSync(fichier, "utf8");
+    if (!/\bINVEST\b|Definition of Ready/.test(texte)) continue;
+    cites.push(nom);
+    const charge = contexteCharge(nom).includes("===== Les règles des user stories =====");
+    const pointe = texte.includes("pulse-aidd reference us/regles-us.md");
+    assert.ok(charge || pointe, `${nom} cite INVEST ou la Definition of Ready sans charger ni pointer us/regles-us.md`);
+  }
+  assert.ok(cites.includes("us") && cites.includes("spec"), cites.join(","));
+  // spec crée une US (nouveau comportement, US optionnelle) : règles et modèle lancés avant de l'écrire ;
+  // la stratégie de tests, avant d'étiqueter le premier scénario.
+  const spec = lire(RACINE, "skills", "spec", "SKILL.md");
+  assert.match(spec, /avant de la rédiger, lancer `pulse-aidd reference us\/regles-us\.md` et `pulse-aidd modele us\.md`/);
+  assert.match(spec, /lancer `pulse-aidd reference tests\/strategie\.md` avant d'étiqueter le premier scénario/);
+});
+
 test("implement : questions de démarrage en clair et mode découverte", () => {
   const texte = skillTexte("implement");
   assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);
@@ -1799,9 +1819,17 @@ test("rythme rapide : aucun test de l'interface pendant les tâches ; avec spirc
 });
 
 test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {
-  const spec = skillTexte("spec");
-  for (const t of ["### 1 bis. Choisir la présentation des écrans", "« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`"])
-    assert.ok(spec.includes(t), t);
+  // Les phrases imposées vivent dans « Présentation des écrans », chargée par contexte spec ; la spec y renvoie.
+  const presentation = lire(RACINE, "skills", "spec", "references", "presentation.md");
+  assert.match(presentation, /^La présentation est une décision de la personne : la poser, sans la choisir à sa place\.$/m);
+  for (const t of ["« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`", "selon les critères entre parenthèses"])
+    assert.ok(presentation.includes(t), t);
+  assert.doesNotMatch(presentation, /ui\/motifs\.md/, "les critères entre parenthèses suffisent");
+  const specSkill = lire(RACINE, "skills", "spec", "SKILL.md");
+  assert.match(specSkill, /^### 1 bis\. Choisir la présentation des écrans\n\nAppliquer « Présentation des écrans » \(chargée dans « Références de la commande »\)/m);
+  assert.doesNotMatch(specSkill, /« Comment présenter <les factures> \? »/, "questions recopiées dans le SKILL");
+  assert.match(specSkill, /`presentation-manquante`[^\n]*avant (la validation|le verrouillage)/, "une présentation manquante se pose à la personne avant le verrouillage");
+  assert.ok(contexteCharge("spec").includes("===== Présentation des écrans ====="));
   assert.match(lire(RACINE, "skills", "spec", "assets", "spec.md"), /\| Présentation \(choisie par la personne\) \|/);
   assert.match(lire(RACINE, "skills", "spec", "assets", "spec.md"), /\*\*Maquettes\*\* :/);
   assert.match(skillTexte("plan"), /sa \*\*présentation\*\*, reprise de la colonne « Présentation » de la spec/);

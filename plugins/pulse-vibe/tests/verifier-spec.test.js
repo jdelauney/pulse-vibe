@@ -68,6 +68,21 @@ test("sections obligatoires, champs du modèle, verrouillée avec TBD", () => {
   assert.deepStrictEqual([brouillon.tbd, brouillon.constats.length], [1, 0]);
 });
 
+const ECRANS = (lignes) =>
+  `## 3. Ce que l'utilisateur voit et fait\n\n| Écran | Qui y accède | Ce qu'on y voit | Ce qu'on y fait | Présentation (choisie par la personne) |\n|---|---|---|---|---|\n${lignes.join("\n")}\n`;
+
+test("présentation des écrans : un écran sans présentation choisie est signalé, avant le verrouillage", () => {
+  const complete = ECRANS(["| La liste de courses | tout le monde | les articles | ajouter | liste simple ; ajout directement dans la liste |"]);
+  assert.deepStrictEqual(constats(projet(SPEC({ extra: complete }))), []);
+  const vide = constats(projet(SPEC({ extra: ECRANS(["| La liste de courses | tout le monde | les articles | ajouter |  |"]) })));
+  assert.ok(vide.includes("avertissement · écrans · presentation-manquante: La liste de courses"), vide.join("\n"));
+  const modele = constats(projet(SPEC({ extra: ECRANS(["| Le détail d'un article | tout le monde | le nom | modifier | {{ex. « tableau »}} |"]) })));
+  assert.ok(modele.includes("avertissement · écrans · presentation-manquante: Le détail d'un article"), modele.join("\n"));
+  // La ligne vide du modèle (sans écran nommé) relève du constat « modèle », pas de la présentation.
+  const gabarit = constats(projet(SPEC({ extra: ECRANS(["| | | | | {{ex. « tableau »}} |"]) })));
+  assert.ok(!gabarit.some((l) => l.includes("presentation-manquante")), gabarit.join("\n"));
+});
+
 test("en ligne de commande : bilan, spec introuvable, argument manquant", () => {
   const d = projet(SPEC({ scenarios: [SCENARIO("@US-001-1 @unitaire", "Un article ajouté apparaît")] }));
   const lancer = (...a) => spawnSync(process.execPath, [SCRIPT, ...a], { cwd: d, encoding: "utf8" });
