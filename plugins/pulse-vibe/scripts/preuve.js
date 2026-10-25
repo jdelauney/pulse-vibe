@@ -53,8 +53,8 @@ const CITES_MAX = 10;
 const HORS = /^(docs|aidd_docs)\//;
 const COMMANDES = "docs/technical.md"; // compté malgré HORS : ses commandes font la preuve
 const FICHIER_TEST_SUR = /^[\w@%+=,./][\w@%+=,./-]*$/;
-// Un fichier de test du projet : *.test.*, *.spec.*, *_test.*, test_*.py, ou rangé dans un dossier tests/ ou __tests__/.
-const FICHIER_DE_TEST = /(^|\/)(tests|__tests__)\/|\.(test|spec)\.[^/]+$|_test\.[^/]+$|(^|\/)test_[^/]*\.py$/;
+// Un fichier de test du projet : *.test.*, *.spec.*, *_test.*, *-test.*, *_spec.*, test_*.py, ou rangé dans un dossier test/, tests/, spec/ ou __tests__/ (src/test/ des projets Java et Kotlin compris).
+const FICHIER_DE_TEST = /(^|\/)(tests?|spec|__tests__)\/|\.(test|spec)\.[^/]+$|[_-](test|spec)\.[^/]+$|(^|\/)test_[^/]*\.py$/;
 // Ce qu'écrit un outil de test qui s'arrête en échec faute de test (Vitest, Jest, pytest).
 const AUCUN_TEST_TROUVE = /no test files found|no tests found|no tests ran|collected 0 items/i;
 const OUTIL_BASH = "(outil Bash : timeout 600000)"; // une preuve groupée dépasse vite les 2 minutes par défaut de l'outil
@@ -308,6 +308,18 @@ function enregistrer(racine, preuve) {
   fs.renameSync(provisoire, cible);
 }
 
+/** Écriture partielle : quelques essais rapprochés (Windows : fichier lu au même moment), puis la suite du lancement continue. */
+function enregistrerSansArret(racine, preuve) {
+  for (let essai = 0; essai < 4; essai++) {
+    try {
+      enregistrer(racine, preuve);
+      return;
+    } catch {
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
+    }
+  }
+}
+
 /** Ajoute la construction à la preuve à jour, sans relancer contrôles ni tests. */
 function construire(racine) {
   const preuve = lirePreuve(racine);
@@ -360,7 +372,7 @@ function lancer(racine, options) {
   };
   // Preuve partielle, réécrite après chaque commande : un lancement arrêté en route reste visible (« lancement interrompu »).
   const partielle = (resultats) =>
-    enregistrer(racine, { ...base, date: new Date().toISOString(), empreinte: empreinte(avant), interrompu: true, prevues: aLancer(familles, retenues, options).length, tests: null, resultats, ok: false, fichiers: avant });
+    enregistrerSansArret(racine, { ...base, date: new Date().toISOString(), empreinte: empreinte(avant), interrompu: true, prevues: aLancer(familles, retenues, options).length, tests: null, resultats, ok: false, fichiers: avant });
   partielle([]);
   const { resultats, sortiesTests } = lancerFamilles(racine, familles, retenues, options, partielle);
   const comptes = sortiesTests.map((r) => compteTests(r.texte));

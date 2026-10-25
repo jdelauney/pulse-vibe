@@ -35,7 +35,7 @@ const SCRIPTS = {
   "e2e.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/e2e", "x\\n"); console.log("# tests 1\\n# pass 1");`,
   "rapport.js": `require("fs").writeFileSync("rapport.xml", String(Date.now())); console.log("# tests 2\\n# pass 2");`,
   "vide.js": `console.log("# tests 0\\n# pass 0");`,
-  "sans-test.js": `console.log("No test files found, exiting with code 1"); process.exit(1);`,
+  "sans-essais.js": `console.log("No test files found, exiting with code 1"); process.exit(1);`,
   "build-ecrit.js": `require("fs").writeFileSync("sortie.txt", String(Date.now()));`,
   "env.js": `if (!require("fs").existsSync("ignore/env.txt")) { console.log("variable manquante : ignore/env.txt"); process.exit(1); } console.log("# tests 2\\n# pass 2");`,
   "attend.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/attend", "x\\n"); setTimeout(() => require("fs").appendFileSync(process.env.PREUVE_TRACES + "/fin", "x\\n"), 4000);`,
@@ -555,7 +555,7 @@ test("fichier de test écrit avec des barres obliques inverses (Windows) : lu av
 });
 
 test("outil qui s'arrête en échec faute de test (« No test files found », Vitest, Jest) : aucun fichier de test, non bloquant ; avec un fichier de test, ❌", () => {
-  const p = depot({ tester: "`node sans-test.js`" });
+  const p = depot({ tester: "`node sans-essais.js`" });
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 0, r.stdout);
   assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests : aucun test écrit pour l'instant · /m);
@@ -563,5 +563,24 @@ test("outil qui s'arrête en échec faute de test (« No test files found », Vi
   ecrire(p.d, "src/a.spec.ts", "// test\n");
   const rouge = preuve(p, "lancer");
   assert.strictEqual(rouge.status, 1, rouge.stdout);
-  assert.match(rouge.stdout, /^❌ `node sans-test\.js` \(code 1/m);
+  assert.match(rouge.stdout, /^❌ `node sans-essais.js` \(code 1/m);
+});
+
+test("fichier de test dans test/ (ou spec/, src/test/, *-test.js) et « Tester » qui n'en trouve aucun : ❌, jamais « aucun test écrit »", () => {
+  for (const f of ["test/vrai.js", "spec/vrai.rb", "src/test/java/FooTest.java", "lib/vrai-test.js", "lib/vrai_spec.rb", "pkg/test_vrai.py"]) {
+    const p = depot({ tester: "`node sans-essais.js`" });
+    ecrire(p.d, f, "// test\n");
+    const r = preuve(p, "lancer");
+    assert.strictEqual(r.status, 1, f + " : " + r.stdout);
+    assert.doesNotMatch(r.stdout, /aucun test écrit pour l'instant/, f);
+  }
+});
+
+test("écriture partielle impossible : le lancement va au bout, seule l'écriture finale échoue", () => {
+  const p = depot();
+  fs.mkdirSync(fichierPreuve(p.d), { recursive: true });
+  const r = preuve(p, "lancer");
+  assert.ok(lance(p.traces, "tests"), "les tests ont été lancés malgré l'écriture partielle impossible");
+  assert.notStrictEqual(r.status, 0, "l'écriture finale reste stricte");
+  assert.match(r.stdout, /erreur/);
 });
