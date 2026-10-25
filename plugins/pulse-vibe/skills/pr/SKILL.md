@@ -56,7 +56,7 @@ Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail es
 
 - Modifications non enregistrées : proposer de taper `/pulse:commit` d'abord et s'arrêter.
 - **Sur la branche principale** :
-  - Des commits n'ont pas encore été envoyés (`git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Tout est conservé. » Après accord explicite (AskUserQuestion), annoncer : « Claude Code va vous demander l'accord pour déplacer la branche principale : c'est ce qui range vos commits sur `<nom>`. » Puis `pulse-aidd deplacer-commits <nom>` (`--principale <principale>` si `origin/HEAD` manque) et montrer sa sortie. Code 2 : rien n'a changé, expliquer le refus (`divergence` : proposer `git pull` d'abord). Code 3 : la principale est revenue à son départ et les commits restent sur `branche-gardee` ; expliquer et proposer de taper `/pulse:get-help`.
+  - Des commits n'ont pas encore été envoyés (`git fetch origin`, puis `git log --oneline origin/<principale>..HEAD`) : proposer de les **déplacer sur une nouvelle branche** (nom comme en A.2). Expliquer : « Vos commits seront rangés sur la branche `<nom>` ; la branche principale reviendra à l'état du dépôt en ligne. Tout est conservé. » Après accord explicite (AskUserQuestion), annoncer : « Claude Code va vous demander l'accord pour déplacer la branche principale : c'est ce qui range vos commits sur `<nom>`. » Puis `pulse-aidd deplacer-commits <nom> --principale <principale>` et montrer sa sortie. Code 2 : rien n'a changé, expliquer le refus (`divergence` : proposer `git pull` d'abord). Code 3 avec `etat: echec` ou `etat: controle-final-echoue` : la principale est revenue à son départ et les commits restent sur `branche-gardee` ; expliquer et proposer de taper `/pulse:get-help`. Code 3 avec `etat: etat-incertain` : la principale est à vérifier avant tout autre geste (la ligne `principale` donne son commit de départ) ; le dire et proposer de taper `/pulse:get-help`.
   - Tous les commits déjà envoyés : la demande se fait depuis une branche de travail ; l'expliquer et proposer `/pulse:pr branche` pour la prochaine fois.
 - Branche identique à la base : le dire et s'arrêter, la demande attend de nouveaux commits.
 
@@ -65,7 +65,7 @@ Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail es
 - **Base** : l'argument s'il y en a un, sinon Conventions Git § 6. La dire en une phrase avec sa raison (« vers `main`, la branche principale du dépôt »).
 - **Outil** : déduit de l'adresse du dépôt distant (Conventions Git § 6) ; vérifier la connexion (`gh auth status` ou `glab auth status`).
 - **Changement** : `git log --oneline <base>..HEAD` et `git diff --stat <base>...HEAD`. Relever les tâches citées dans les commits (`(Tn)`), leur plan dans `aidd_docs/tasks/<epic>/`, l'US liée, la section « Vérification » du plan et les rapports de relecture `Tn-*.md` du dossier `revues/` de ce plan.
-- Une demande existe déjà pour cette branche (`gh pr view` ou `glab mr view`) : donner son adresse et proposer de simplement envoyer les nouveaux commits (`git push`) ; garder cette demande unique.
+- Une demande existe déjà pour cette branche (`gh pr view` ou `glab mr view`) : donner son adresse et proposer d'y envoyer les nouveaux commits par le § 4, points 1 et 2 (contrôle des secrets, puis envoi) ; garder cette demande unique.
 
 #### 3. Rédiger
 
@@ -76,7 +76,7 @@ Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail es
 
 #### 4. Envoyer et créer
 
-1. Contrôle des secrets des commits à envoyer : `pulse-aidd secrets historique --depuis origin/<base>` (aucune valeur affichée) ; un ⛔ arrête l'envoi et passe par `/pulse:secrets fuite`.
+1. Contrôle des secrets des commits à envoyer : `pulse-aidd secrets historique --depuis origin/<base>` (aucune valeur affichée) ; un ⛔ arrête l'envoi et passe par `/pulse:secrets fuite` ; un ❌ (historique illisible, par exemple `origin/<base>` absent) arrête aussi l'envoi : l'expliquer et proposer de taper `/pulse:get-help`.
 2. Annoncer : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push -u origin <branche>`. Envoi refusé : Conventions Git § 4.
 3. Créer la demande **en brouillon** :
    - GitHub : `gh pr create --draft --base <base> --head <branche> --title "<titre>" --body "<description>"` ;

@@ -394,6 +394,44 @@ test("verifier.js --index : contrôle le contenu indexé seulement", () => {
   assert.match(r2.stderr, /Commit annulé/);
 });
 
+test("verifier.js --index : un gros fichier préparé est contrôlé ; au-delà de 20 Mo, texte refusé, binaire ignoré", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  ecrire("gros.js", "// remplissage\n".repeat(90000) + `const k = "${FAUX.stripe}";\n`);
+  git("add", "gros.js");
+  const r1 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r1.status, 1, "fichier de plus de 1 Mo : sa clé est trouvée");
+  assert.match(r1.stderr, /gros\.js : contient une clé secrète/);
+  git("rm", "-q", "--cached", "gros.js");
+  ecrire("enorme.txt", "x".repeat(21 * 1024 * 1024));
+  git("add", "enorme.txt");
+  const r2 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r2.status, 1, "texte de plus de 20 Mo : refusé, jamais compté comme contrôlé");
+  assert.match(r2.stderr, /enorme\.txt : fichier trop gros pour être contrôlé/);
+  assert.match(r2.stderr, /Commit annulé : un fichier préparé n'a pas pu être contrôlé/);
+  assert.doesNotMatch(r2.stderr, /révoquez-la/, "aucune clé trouvée : pas de conseil de fuite");
+  git("rm", "-q", "--cached", "enorme.txt");
+  const binaire = Buffer.alloc(21 * 1024 * 1024, 1);
+  binaire[0] = 0;
+  fs.writeFileSync(path.join(dir, "video.bin"), binaire);
+  git("add", "video.bin");
+  const r3 = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8" });
+  assert.strictEqual(r3.status, 0, r3.stderr);
+});
+
+test("verifier.js --index : refuse hors d'un dépôt Git ; depuis un sous-dossier, contrôle comme à la racine", () => {
+  const hors = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hors-"));
+  const r1 = spawnSync("node", [VERIFIER, "--index"], { cwd: hors, encoding: "utf8", env: { ...process.env, GIT_CEILING_DIRECTORIES: path.dirname(hors) } });
+  assert.strictEqual(r1.status, 1, "hors d'un dépôt : jamais « ✅ »");
+  assert.match(r1.stderr, /Contrôle impossible/);
+  const { dir, git, ecrire } = depotTemporaire();
+  fs.mkdirSync(path.join(dir, "src"));
+  ecrire("src/app.js", `const k = "${FAUX.stripe}";\n`);
+  git("add", "src/app.js");
+  const r2 = spawnSync("node", [VERIFIER, "--index"], { cwd: path.join(dir, "src"), encoding: "utf8" });
+  assert.strictEqual(r2.status, 1);
+  assert.match(r2.stderr, /src\/app\.js : contient une clé secrète/);
+});
+
 test("secret en clair : constantes ordinaires (URL, regex, nom d'en-tête) non signalées, vrais secrets signalés", () => {
   const { trouverSecrets } = require("../scripts/motifs");
   for (const c of [

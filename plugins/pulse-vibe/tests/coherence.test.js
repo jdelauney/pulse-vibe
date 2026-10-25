@@ -2088,10 +2088,17 @@ test("commit : clés et règles contrôlées par pulse-aidd verifier --index apr
 test("pr : commits déplacés par pulse-aidd deplacer-commits après accord, secrets de chaque commit envoyé contrôlés, /pulse:deploy après la fusion", () => {
   const pr = skillTexte("pr");
   const verifier = pr.slice(pr.indexOf("#### 1. Vérifier"), pr.indexOf("#### 2."));
-  assert.match(verifier, /Après accord explicite \(AskUserQuestion\)[^\n]*Claude Code va vous demander l'accord pour déplacer[^\n]*`pulse-aidd deplacer-commits <nom>`[^\n]*montrer sa sortie/);
+  assert.match(verifier, /Après accord explicite \(AskUserQuestion\)[^\n]*Claude Code va vous demander l'accord pour déplacer[^\n]*`pulse-aidd deplacer-commits <nom>[^`]*`[^\n]*montrer sa sortie/);
   assert.doesNotMatch(pr, /git branch -f|git switch -c <nom>` puis/, "plus de déplacement par gestes libres");
+  assert.match(verifier, /`git fetch origin`, puis `git log --oneline origin\/<principale>\.\.HEAD`/, "état du dépôt distant récupéré avant de compter et de déplacer");
+  assert.match(verifier, /`pulse-aidd deplacer-commits <nom> --principale <principale>`/, "principale toujours passée : une seule demande d'accord");
+  assert.match(verifier, /`etat: etat-incertain`[^\n]*\/pulse:get-help/, "code 3 incertain : la principale est à vérifier");
+  const rassembler = pr.slice(pr.indexOf("#### 2."), pr.indexOf("#### 3."));
+  assert.doesNotMatch(rassembler, /simplement envoyer les nouveaux commits \(`git push`\)/, "un envoi passe toujours par le contrôle des secrets");
+  assert.match(rassembler, /§ 4, points 1 et 2/);
   const envoyer = pr.slice(pr.indexOf("#### 4."), pr.indexOf("#### 5."));
   assert.match(envoyer, /`pulse-aidd secrets historique --depuis origin\/<base>` \(aucune valeur affichée\) ; un ⛔ arrête l'envoi et passe par `\/pulse:secrets fuite`/);
+  assert.match(envoyer, /un ❌ \(historique illisible[^\n]*arrête aussi l'envoi/);
   assert.doesNotMatch(envoyer, /étape 1 de `\/pulse:commit`/, "plus de renvoi à une étape non chargée");
   assert.match(envoyer, /Envoi refusé : Conventions Git § 4\./);
   assert.doesNotMatch(pr, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
