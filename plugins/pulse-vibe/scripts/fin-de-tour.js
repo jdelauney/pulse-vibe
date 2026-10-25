@@ -286,11 +286,16 @@ function lanceur(commande, delai) {
   });
 }
 
-if (process.argv[2] === "--lancer") lanceur(process.argv[3], Number(process.argv[4]) || DELAI_S * 1000);
-else {
-  try {
-    principal();
-  } catch (e) {
-    // silencieux
+// Lu aussi par preuve.js (pulse-aidd preuve) : mêmes commandes, même contrôle qui réécrit sauté, même lanceur.
+module.exports = { commandesDe, REECRIT, DEPASSE };
+
+if (require.main === module) {
+  if (process.argv[2] === "--lancer") lanceur(process.argv[3], Number(process.argv[4]) || DELAI_S * 1000);
+  else {
+    try {
+      principal();
+    } catch (e) {
+      // silencieux
+    }
   }
 }
