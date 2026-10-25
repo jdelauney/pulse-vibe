@@ -2,7 +2,7 @@
 description: Où en suis-je ? Étapes faites, tâches à faire, en cours et terminées, état Git, dossiers à part en cours et prochaine étape conseillée, la même que /pulse:init ; propose de supprimer les dossiers à part déjà rassemblés
 argument-hint: "[ligne | ligne retirer]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd bilan) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini *) Bash(pulse-aidd realisation fin) Read Glob Grep Bash(git status *) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
+allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd bilan) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini *) Bash(pulse-aidd realisation fin) Read Glob Grep Bash(git status *) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
 
 # /pulse:status – Où en suis-je ?

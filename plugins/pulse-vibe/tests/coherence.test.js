@@ -425,7 +425,14 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
         if (fs.existsSync(path.join(RACINE, "references", ref))) sources.set(`référence ${ref}`, lire(RACINE, "references", ref));
       }
     }
+    // Les sous-agents ne reçoivent pas les autorisations du skill (scripts/autorisations.js) : les commandes d'un agent
+    // s'exigent seulement quand la conversation peut faire son travail (repli « agent indisponible » ou « devant vous » :
+    // `pulse-aidd agent <nom>` cité par le skill, une étape enchaînée, une référence nommée ou son contexte).
+    const replis = [...textes, contexteCharge(skill), ...[...sources].filter(([o]) => o.startsWith("référence ")).map(([, t]) => t)].join("\n");
+    const remplacable = (agent) => replis.includes("pulse-aidd agent <nom>") || new RegExp(`pulse-aidd agent ${agent}(?![\\w-])`).test(replis);
     for (const [origine, texte] of sources) {
+      const agent = (origine.match(/^agent (.+)$/) || [])[1];
+      if (agent && !remplacable(agent)) continue;
       for (const commande of citationsOutil(texte)) {
         if (estSensible(commande) || commande === "pulse-aidd search-console") continue; // le second est un titre de tableau, pas une commande
         verifies++;
@@ -435,6 +442,16 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
   }
   assert.ok(verifies > 100, "lecture des agents et des références");
   assert.deepStrictEqual([...new Set(manquants)], []);
+});
+
+test("socle des agents : les commandes de documents n'autorisent pas d'avance les commandes du code (qualite, tests, scenarios, pile recette)", () => {
+  const SOCLE = ["pulse-aidd qualite *", "pulse-aidd tests *", "pulse-aidd scenarios", "pulse-aidd pile recette *"];
+  for (const skill of ["explain", "learn", "prd", "brainstorm", "memory", "us", "guide", "status", "get-help", "pr"]) {
+    const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
+    for (const m of SOCLE) assert.ok(!motifs.includes(m), `skills/${skill} : Bash(${m})`);
+  }
+  // L'étape perf n'est plus enchaînée (phase 7 : la vitesse passe par perf/ci-vitesse.md et deploy/premiere.md) : plus de droit pour elle.
+  for (const skill of SKILLS) assert.ok(!motifsBash(path.join(RACINE, "skills", skill, "SKILL.md")).includes("pulse-aidd etape perf --sans-communes"), `skills/${skill} : droit mort etape perf`);
 });
 
 test("allowed-tools : les commandes git de lecture citées par un skill, ou par une étape qu'il enchaîne, sont autorisées d'avance", () => {
