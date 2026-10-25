@@ -74,6 +74,15 @@ test("chaque agent et chaque fichier de scripts/ figure dans le README de son pl
   for (const { dossier, readme: fichier } of PLUGINS) for (const s of lister(dossier, "scripts")) assert.ok(texte(fichier).includes(s), `${fichier} : script ${s}`);
 });
 
+test("README du cœur, bloc skills/ : chaque script d'une commande (skills/<commande>/scripts/), avec sa commande", options, () => {
+  const bloc = blocStructure(texte("plugins/pulse-vibe/README.md"), "skills/<commande>/");
+  for (const s of lister(RACINE, "skills"))
+    for (const f of lister(RACINE, "skills", s, "scripts")) {
+      assert.ok(bloc.includes(f), `README du cœur, bloc skills/ : ${s}/scripts/${f}`);
+      assert.match(bloc, new RegExp(`(^|[\\s,])${s} \\([^)]*${f.replace(/\./g, "\\.")}`, "m"), `README du cœur : ${f} cité avec ${s}`);
+    }
+});
+
 test("chaque recette du pack figure dans son README", options, () => {
   const readme = texte("plugins/pulse-vibe-next/README.md");
   for (const r of lister(NEXT, "references", "recettes").map((f) => f.replace(/\.md$/, ""))) assert.ok(readme.includes(`\`${r}\``), `README du pack : recette ${r}`);
