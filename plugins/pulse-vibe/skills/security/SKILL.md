@@ -54,7 +54,7 @@ Passer tout le projet au crible de la checklist sécurité Pulse, puis donner à
 
 Expliquer en une phrase que l'audit est effectué en lecture seule : les fichiers restent intacts.
 
-Utiliser l'outil Agent avec le sous-agent **`pulse:security-auditor`**. Indiquer : la racine du projet, le document `docs/technical.md` (sections « Pile retenue », « Organisation des fichiers », « Données et contrôle d'accès », « Secrets et variables d'environnement »), les specs et les plans (`aidd_docs/tasks/*/SPEC-US-*.md`, `aidd_docs/tasks/*/PLAN-SPEC-US-*.md`, section « Conception technique »), `docs/user-stories.md` et les fichiers d'US, et la consigne de charger la checklist sécurité avec `pulse-aidd reference checklist-securite.md`. Avant de lancer le sous-agent, lancer `pulse-aidd secrets historique` et `pulse-aidd secrets inventaire --sans-hebergeur`, et lui transmettre leurs sorties (noms et types seulement, aucune valeur) pour le point S1.
+Avant de lancer le sous-agent, lancer `pulse-aidd secrets historique` et `pulse-aidd secrets inventaire --sans-hebergeur`. Utiliser l'outil Agent avec **`pulse:security-auditor`**, portée `projet` : la racine du projet, et leurs sorties (noms et types seulement, aucune valeur) pour S1. L'agent lit lui-même les documents et la checklist.
 
 Si le sous-agent est indisponible, faire l'audit en suivant **strictement** la méthode et le format décrits par `pulse-aidd agent security-auditor`, en lecture seule pendant l'audit.
 
@@ -77,7 +77,7 @@ Présenter la fiche adaptée au projet comme une liste à cocher. Proposer de la
 
 #### 5. Corriger
 
-Avant la première correction de code : `pulse-aidd qualite securite` et, avec un pack de pile, `pulse-aidd pile contexte implement` ; corriger selon eux.
+Avant la première correction de code : `pulse-aidd qualite securite` et, avec un pack de pile, `pulse-aidd pile contexte implement` ; corriger selon eux. Avant de corriger S9 : partir du modèle `pulse-aidd modele confidentialite.md`.
 
 Proposer de corriger les points par ordre de priorité (AskUserQuestion : « Corriger les points bloquants maintenant (Recommandé) » / « Tout corriger » / « Plus tard »). Expliquer chaque correction en une ligne. Une correction du contrôle d'accès se fait dans le code ou le fichier de règles indiqué par « Données et contrôle d'accès » ; si elle doit aussi être appliquée à la main dans la base ou chez le fournisseur (console d'administration), guider la personne pas à pas, d'après la documentation officielle. Une clé exposée : appliquer tout de suite `pulse-aidd reference secrets/fuite.md` (révocation chez le fournisseur d'abord, puis remplacement, sans que la valeur passe par la conversation). Après correction, refaire le test manuel concerné.
 
@@ -93,4 +93,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pui
 
 !`pulse-aidd contexte security`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
+Le modèle de `docs/securite.md` figure dans ce contexte ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.

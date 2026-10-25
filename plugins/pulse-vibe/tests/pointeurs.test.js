@@ -69,6 +69,8 @@ const EXCEPTIONS = {
   ui: [MEMOIRE],
   status: ["references/cycle.md"],
   deploy: ["templates/ci-verifications.yml.template"],
+  // pulse 0.53 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
+  security: ["references/checklist-securite.md", SANS_CONVERSATION],
   annuler: [GIT], // pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
 };
 
