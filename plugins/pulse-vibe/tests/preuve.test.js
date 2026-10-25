@@ -456,3 +456,24 @@ test("--portee tache sans fichier (tâche sans test, filet limité) : contrôles
   assert.strictEqual(preuve(p, "etat").status, 0);
   assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 1);
 });
+
+test("cellule « — » : vaut « aucune » ; plusieurs commandes dans une cellule sans accents graves, ou « $( » : non lancées, ❌ avec une raison claire", () => {
+  const p = depot();
+  ecrire(p.d, "docs/technical.md", sansTester("| Tester | — |\n"));
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /suite : aucune \(choix du projet/);
+  assert.doesNotMatch(r.stdout, /`—`/, "« — » n'est jamais lancé comme une commande");
+  const plusieurs = depot();
+  ecrire(plusieurs.d, "docs/technical.md", "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Tester | `node tests.js` |\n| Contrôles automatiques | node lint.js et node marque.js |\n");
+  const rp = preuve(plusieurs, "lancer");
+  assert.strictEqual(rp.status, 1, rp.stdout);
+  assert.match(rp.stdout, /^❌ contrôle non lancé : `node lint\.js et node marque\.js` plusieurs commandes dans une cellule : écrivez une commande par cellule, entre accents graves/m);
+  assert.ok(!lance(plusieurs.traces, "lint") && !lance(plusieurs.traces, "marque"));
+  const substitution = depot();
+  ecrire(substitution.d, "docs/technical.md", "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Tester | node tests.js $(node marque.js) |\n| Contrôles automatiques | `node lint.js` |\n");
+  const rs = preuve(substitution, "lancer");
+  assert.strictEqual(rs.status, 1, rs.stdout);
+  assert.match(rs.stdout, /❌ contrôle non lancé : `node tests\.js \$\(node marque\.js\)` contient une substitution de commande/);
+  assert.ok(!lance(substitution.traces, "marque") && !lance(substitution.traces, "tests"));
+});

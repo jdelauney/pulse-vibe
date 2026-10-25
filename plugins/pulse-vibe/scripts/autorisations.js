@@ -61,21 +61,32 @@ function lignesCommandes(racine) {
   return lignes;
 }
 
+// Une cellule qui ne donne aucune commande : « aucune », ou un tiret (« — », « – », « - »).
+const SANS_COMMANDE = /^(aucune|[—–-])$/i;
+// Plusieurs commandes dans une cellule sans accents graves, hors guillemets : séparateurs du shell, virgule suivie d'une
+// espace, « et », « puis », « ou ».
+const PLUSIEURS = /[;&|]|,\s|\s(?:et|puis|ou|and|then)\s/i;
+const horsGuillemets = (texte) => texte.replace(/"[^"]*"|'[^']*'/g, '""');
+
 /**
- * Une cellule de « Commandes du projet » sans accents graves : « aucune » (choix du projet, parenthèses et guillemets
- * ignorés) → { aucune: true } ; vide → {} ; sinon la cellule elle-même, sans ses parenthèses, est la commande →
- * { commande }. Avec des accents graves : null (les commandes sont entre eux). Lu aussi par preuve.js.
+ * Une cellule de « Commandes du projet » sans accents graves : « aucune » ou un tiret (choix du projet, parenthèses et
+ * guillemets ignorés) → { aucune: true } ; vide → {} ; sinon la cellule elle-même, sans ses parenthèses (« $( » gardé, pour
+ * le refus), est la commande → { commande }, avec { refus } quand elle en contient plusieurs. Avec des accents graves : null (les commandes sont
+ * entre eux). Lu aussi par preuve.js et fin-de-tour.js.
  */
 function celluleNue(cellule) {
   if (cellule.includes("`")) return null;
-  const texte = cellule.replace(/\([^)]*\)/g, "").replace(/[«»]/g, "").trim();
+  const texte = cellule.replace(/(^|[^$])\([^)]*\)/g, "$1").replace(/[«»]/g, "").trim();
   if (!texte) return {};
-  if (/^aucune$/i.test(texte)) return { aucune: true };
+  if (SANS_COMMANDE.test(texte)) return { aucune: true };
+  if (PLUSIEURS.test(horsGuillemets(texte)))
+    return { commande: texte, refus: "plusieurs commandes dans une cellule : écrivez une commande par cellule, entre accents graves, dans docs/technical.md" };
   return { commande: texte };
 }
 
 /** Pourquoi une commande du projet reste hors des autorisations, ou null quand elle est autorisée. */
 function raisonRefus(commande) {
+  if (/\$\(|`|[\r\n]/.test(commande)) return "contient une substitution de commande ($(…), accents graves ou retour à la ligne) : écrivez une seule commande simple entre accents graves dans docs/technical.md";
   if (/[;&|<>]/.test(commande)) return "enchaîne plusieurs commandes (&&, |, ;…) : écrivez une seule commande par paire d'accents graves dans docs/technical.md";
   if (RISQUE.test(commande)) return "installe, envoie, migre ou efface : elle reste hors des autorisations du projet, à lancer par la personne";
   if (/^https?:/i.test(commande)) return "est une adresse, pas une commande";
@@ -89,7 +100,7 @@ function commandesDuProjet(racine) {
     if (!LIGNES.test(libelle)) continue;
     const nue = celluleNue(cellule);
     if (nue) {
-      if (nue.commande && !raisonRefus(nue.commande)) commandes.add(nue.commande);
+      if (nue.commande && !nue.refus && !raisonRefus(nue.commande)) commandes.add(nue.commande);
       continue;
     }
     for (const [, c] of cellule.matchAll(/`([^`]+)`/g)) {
