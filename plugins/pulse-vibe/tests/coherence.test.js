@@ -61,8 +61,9 @@ function citations(regex) {
 const absentes = (liste, existe) => liste.filter((c) => !existe(c.valeur)).map((c) => `${c.fichier} : ${c.valeur}`);
 
 test("chaque commande /pulse:<commande> citée existe", () => {
-  // « xxx » : exemple fictif des modèles.
-  assert.deepStrictEqual(absentes(citations(/\/pulse:([a-z][a-z-]*)/g), (v) => SKILLS.has(v) || v === "xxx"), []);
+  // « xxx » : exemple fictif des modèles ; « express » : l'ancien nom de nouveau, accepté à la reprise (décision 2).
+  const ancienNom = (c) => c.valeur === "express" && c.fichier === path.join("plugins", "pulse-vibe", "skills", "nouveau", "SKILL.md");
+  assert.deepStrictEqual(absentes(citations(/\/pulse:([a-z][a-z-]*)/g).filter((c) => !ancienNom(c)), (v) => SKILLS.has(v) || v === "xxx"), []);
 });
 
 test("chaque sous-commande pulse-aidd citée existe", () => {
@@ -806,7 +807,7 @@ test("brainstorm et « Penser avant d'écrire » citent les règles communes 4, 
   // Le test de compréhension porte le principe « la personne raisonne » : gardé mot pour mot.
   assert.ok(brainstorm.includes("2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief."));
   const raisonnement = lire(RACINE, "references", "raisonnement.md");
-  assert.match(raisonnement, /^# Penser avant d'écrire \(\/pulse:brainstorm, \/pulse:prd, \/pulse:us, \/pulse:express\)$/m);
+  assert.match(raisonnement, /^# Penser avant d'écrire \(\/pulse:brainstorm, \/pulse:prd, \/pulse:us, \/pulse:nouveau\)$/m);
   assert.match(raisonnement, /\| AskUserQuestion selon la règle commune 5 \|/);
 });
 
@@ -818,9 +819,9 @@ test("us : les cas limites clés posés un à un, en réponse libre ; format, IN
   assert.match(cles, /suivie de 2 ou 3 exemples tirés d'autres métiers ; reformuler et confronter la réponse/);
   assert.doesNotMatch(cles, /par rondes/, "les questions clés ne passent plus par les rondes à choix");
   assert.match(us, /\*\*Clarifier le périmètre\*\* : les questions secondaires \(ce que l'utilisateur fait, ce qu'il voit\) suivent la règle commune 5/);
-  // Les règles des US : un seul texte, chargé par us et express ; us y renvoie.
+  // Les règles des US : un seul texte, chargé par us et nouveau ; us y renvoie.
   const regles = lire(RACINE, "skills", "us", "references", "regles-us.md");
-  assert.match(regles, /^# Les règles des user stories \(`\/pulse:us`, `\/pulse:spec`, `\/pulse:express`\)$/m);
+  assert.match(regles, /^# Les règles des user stories \(`\/pulse:us`, `\/pulse:spec`, `\/pulse:nouveau`\)$/m);
   for (const section of ["Format", "INVEST", "Bien rangée et US d'accès", "Definition of Ready", "Ticketing"]) assert.match(regles, new RegExp(`^## ${section}$`, "m"), section);
   assert.match(regles, /une seule action \(une phrase sans « et » ni « ou »\), 4 critères et une règle métier au plus/);
   assert.match(regles, /`gh issue create`/);
@@ -828,7 +829,7 @@ test("us : les cas limites clés posés un à un, en réponse libre ; format, IN
   assert.doesNotMatch(us, /`gh issue create`/, "ticketing recopié dans us");
   assert.match(us, /selon « Ticketing » des règles des user stories/);
   assert.doesNotMatch(us, /Cocher sa section « Prête »/, "la case « Prête » se coche selon les règles des user stories");
-  assert.match(lire(RACINE, "skills", "express", "SKILL.md"), /\(« Les règles des user stories », chargées dans « Références de la commande »\)/);
+  assert.match(lire(RACINE, "skills", "nouveau", "SKILL.md"), /\(« Les règles des user stories », chargées dans « Références de la commande »\)/);
 });
 
 test("INVEST et la Definition of Ready : cités seulement par une commande qui charge ou pointe les règles des user stories", () => {
@@ -1153,7 +1154,7 @@ test("les commandes qui écrivent des documents, ou enchaînent des étapes qui 
   const attendus = {
     brainstorm: ["Write(docs/brief.md)", "Edit(docs/brief.md)"],
     init: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
-    express: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
+    nouveau: ["Write(docs/brief.md)", "Write(docs/prd.md)", "Write(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Write(docs/lexique.md)"],
     spirc: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)", "Edit(docs/user-stories.md)", "Write(docs/lexique.md)"],
     implement: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)"],
     review: ["Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
@@ -1642,7 +1643,7 @@ test("commit : un commit docs:, chore: ou sans rapport avec la tâche n'est jama
 });
 
 test("règle 16 : chaque commande qui attend une décision structurante la sauvegarde, et peut l'effacer", () => {
-  const COMMANDES = ["express", "brainstorm", "prd", "us", "spirc", "implement", "tech", "ui", "spec", "plan", "search-console"];
+  const COMMANDES = ["nouveau", "brainstorm", "prd", "us", "spirc", "implement", "tech", "ui", "spec", "plan", "search-console"];
   const regles = lire(RACINE, "references", "regles-communes.md");
   const regle16 = regles.split("\n").find((l) => l.startsWith("16. "));
   assert.doesNotMatch(regle16, /`\/pulse:/, "règle 16 : pas de liste de commandes recopiée (chaque commande dit déjà qu'elle l'applique)");
@@ -1747,7 +1748,7 @@ test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; 
   assert.match(pr, /« \(Recommandé\) » va à la première quand toutes les tâches du plan sont terminées, sinon à « Garder le dossier à part »/);
   assert.match(pr, /marquée prête, sortir du dossier à part \(outil `ExitWorktree`/);
   assert.match(lire(RACINE, "references", "envoi.md"), /Chaque envoi passe toujours par la demande d'autorisation de Claude Code/);
-  for (const skill of ["tech", "ui"]) assert.match(skillTexte(skill), /étape de `\/pulse:express`[^)]*: le réécrire plutôt pour cette commande, à son étape suivante\)/, skill);
+  for (const skill of ["tech", "ui"]) assert.match(skillTexte(skill), /étape de `\/pulse:nouveau`[^)]*: le réécrire plutôt pour cette commande, à son étape suivante\)/, skill);
   assert.doesNotMatch(pr, /Rassembler dans/, "pas de fusion locale proposée en mode PR");
   assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
   const depot = lire(RACINE, "references", "envoi.md");
@@ -1806,7 +1807,7 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
     ui: [...DESIGN, "Edit(aidd_docs/tasks/**)", "Write(aidd_docs/tasks/in-progress.md)"],
     brainstorm: [...MEMOIRE, "Edit(./CLAUDE.md)", ...LEXIQUE],
     init: [...TECH, ...DESIGN],
-    express: [...TECH, ...DESIGN],
+    nouveau: [...TECH, ...DESIGN],
     spirc: TECH,
   };
   const manquants = [];
@@ -1952,12 +1953,24 @@ test("gestes de la personne : faire soi-même d'abord, fichier d'environnement e
   for (const a of ["implementer", "test-writer", "test-runner", "verifier"]) assert.match(lire(RACINE, "agents", `${a}.md`), /pulse-aidd reference gestes\.md/, a);
 });
 
-test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en bout, une fiche complète de l'US à la fin", () => {
+test("décision 2 : /pulse:express devient /pulse:nouveau, sans commande de renvoi ; la reprise accepte l'ancien nom", () => {
+  assert.ok(!fs.existsSync(path.join(RACINE, "skills", "express")), "aucune commande de renvoi");
+  const nouveau = skillTexte("nouveau");
+  assert.match(nouveau, /^# \/pulse:nouveau – Démarrer vite$/m);
+  assert.match(nouveau, /`aidd_docs\/tasks\/in-progress\.md` concerne `\/pulse:nouveau` \(ou son ancien nom `\/pulse:express`\)/);
+  assert.strictEqual((nouveau.match(/pulse:express/g) || []).length, 1, "l'ancien nom, seulement pour la reprise");
+  // Le libellé du parcours dans init : « Démarrer vite avec /pulse:nouveau ».
+  assert.match(skillTexte("init"), /« Démarrer vite avec \/pulse:nouveau \(Recommandé\) »/);
+  assert.doesNotMatch(skillTexte("init"), /[Pp]arcours express/);
+  assert.doesNotMatch(lire(RACINE, "templates", "revue.md"), /ou express/);
+});
+
+test("rythme rapide : posé par nouveau ou par -f, tests essentiels sans bout en bout, une fiche complète de l'US à la fin", () => {
   assert.match(lire(RACINE, "templates", "CLAUDE.md"), /- \*\*Rythme\*\* : à choisir\n<!-- pulse_profil:fin -->/);
   // Trois valeurs : « à choisir » (la question est posée), « rapide », « complet » (plus de question sur le rythme).
   assert.match(skillTexte("spirc"), /1\. \*\*Rythme\*\* \(seulement si la ligne « Rythme » du profil de `CLAUDE\.md` vaut « à choisir » ou manque/);
   assert.match(lire(RACINE, "templates", "CLAUDE.md"), /« demande-moi le rythme à chaque fois »/);
-  assert.match(skillTexte("express"), /« - \*\*Rythme\*\* : rapide »/);
+  assert.match(skillTexte("nouveau"), /« - \*\*Rythme\*\* : rapide »/);
   const spirc = skillTexte("spirc");
   assert.match(spirc, /^- `-f` \*\*rapide\*\*/m);
   assert.match(spirc, /« Comment réaliser cette user story \? » → « Rapide \(Recommandé\) »[^\n]*« Rapide » vaut `-f`/, "question au début, sans -f");

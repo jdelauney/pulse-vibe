@@ -7,7 +7,7 @@
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
 | `/pulse:init` | Prépare le dossier du projet, puis vous dit où vous en êtes et quoi faire ensuite | Les fichiers de base, la mémoire et l'historique Git |
-| `/pulse:express` | ⚡ Pour démarrer vite : en une conversation (vos documents de départ lus d'abord, s'il y en a), votre idée, vos écrans, l'apparence et vos contraintes ; puis les outils et 2 apparences à comparer. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
+| `/pulse:nouveau` | ⚡ Pour démarrer vite : en une conversation (vos documents de départ lus d'abord, s'il y en a), votre idée, vos écrans, l'apparence et vos contraintes ; puis les outils et 2 apparences à comparer. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
 
 ## 2. Décrire (sans technique)
 

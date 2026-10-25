@@ -29,7 +29,7 @@ const BASE = {
   memory: [MEMOIRE, "templates/aidd-memory-readme.md", "templates/aidd-memory-project.md", "templates/aidd-memory-technical.md",
     "templates/aidd-memory-glossary.md", "templates/aidd-memory-decision.md", "templates/claude-bloc-memoire.md"],
   spirc: ["references/examen.md", "templates/revue.md", LEXIQUE],
-  express: [RAISONNEMENT, MEMOIRE, "templates/brief.md", "templates/prd.md", "templates/user-stories.md", "templates/us.md",
+  nouveau: [RAISONNEMENT, MEMOIRE, "templates/brief.md", "templates/prd.md", "templates/user-stories.md", "templates/us.md",
     "templates/aidd-memory-glossary.md", "templates/in-progress.md"],
   prd: [RAISONNEMENT, "templates/prd.md"],
   us: [RAISONNEMENT, "templates/user-stories.md", "templates/us.md"],

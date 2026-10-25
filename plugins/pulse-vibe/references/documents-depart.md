@@ -1,6 +1,6 @@
 # Partir des documents de la personne
 
-Utilisé par `/pulse:express` et `/pulse:brainstorm` quand la personne arrive avec des documents déjà prêts : un cahier des charges, des notes, des captures d'écran, des maquettes (pages HTML ou images faites avec un autre outil), une présentation.
+Utilisé par `/pulse:nouveau` et `/pulse:brainstorm` quand la personne arrive avec des documents déjà prêts : un cahier des charges, des notes, des captures d'écran, des maquettes (pages HTML ou images faites avec un autre outil), une présentation.
 
 ## 1. Où les trouver
 

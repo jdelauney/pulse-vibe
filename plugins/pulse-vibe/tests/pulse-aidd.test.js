@@ -194,8 +194,8 @@ test("contexte brainstorm, prd et us : la référence « Penser avant d'écrire 
   }
 });
 
-test("contexte us et express : les règles des user stories, écrites une fois pour us, spec et express", () => {
-  for (const commande of ["us", "express"]) {
+test("contexte us et nouveau : les règles des user stories, écrites une fois pour us, spec et nouveau", () => {
+  for (const commande of ["us", "nouveau"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Les règles des user stories ====="), commande);
@@ -254,10 +254,10 @@ test("etape --sans-communes : instructions et contexte de l'étape, sans les rè
 });
 
 test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
-  for (const args of [["etape", "express", "--sans-communes"], ["etape", "express"]]) {
+  for (const args of [["etape", "nouveau", "--sans-communes"], ["etape", "nouveau"]]) {
     const r = lancer(...args);
     assert.strictEqual(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes("===== Instructions de l'étape /pulse:express ====="));
+    assert.ok(r.stdout.includes("===== Instructions de l'étape /pulse:nouveau ====="));
     assert.ok(!r.stdout.includes("allowed-tools:"), "sans l'en-tête du fichier");
     assert.ok(!r.stdout.includes("## Exemples"), "sans la section Exemples");
     assert.ok(r.stdout.includes("## Processus"), "le Processus reste");
@@ -915,7 +915,7 @@ test("contexte de chaque commande du cœur : reconnue", () => {
 const MODULES = { T: "===== Règles des tâches =====", C: "===== Règles de relecture =====", R: "===== Règles de réalisation =====" };
 const MATRICE = {
   "": ["brainstorm", "cicd", "deploy", "explain", "learn", "memory", "perf", "prd", "rediger", "search-console", "secrets", "tech"],
-  T: ["us", "spec", "guide", "get-help", "pr", "express", "init"],
+  T: ["us", "spec", "guide", "get-help", "pr", "nouveau", "init"],
   C: ["security", "seo"],
   TC: ["ui"],
   TR: ["status", "plan", "refine", "commit", "annuler", "fix", "auto-fix"],

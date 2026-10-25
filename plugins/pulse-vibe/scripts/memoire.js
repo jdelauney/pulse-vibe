@@ -221,7 +221,9 @@ function blocTravailEnCours(fichier) {
     return null; // absent ou illisible : rien à rappeler
   }
   if (contenu === "") return null;
-  // Une ancienne note « /pulse:implement US-XXX » s'affiche comme les nouvelles : avec /pulse:spirc.
+  // Une ancienne note « /pulse:implement US-XXX » s'affiche comme les nouvelles : avec /pulse:spirc ;
+  // une ancienne note de /pulse:express (renommée), avec /pulse:nouveau.
+  contenu = contenu.replace(/\/pulse:express\b/gi, "/pulse:nouveau");
   contenu = contenu.replace(/^(.*\*\*Pour reprendre\*\*\s*:\s*`?)(\/pulse:implement[^`\r\n]*?)(`?[ \t]*)$/im, (_, avant, commande, apres) => avant + repriseActuelle(commande) + apres);
   if (contenu.length > LIMITE_EN_COURS) {
     let coupe = contenu.slice(0, LIMITE_EN_COURS);

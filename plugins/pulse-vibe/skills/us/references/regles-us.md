@@ -1,4 +1,4 @@
-# Les règles des user stories (`/pulse:us`, `/pulse:spec`, `/pulse:express`)
+# Les règles des user stories (`/pulse:us`, `/pulse:spec`, `/pulse:nouveau`)
 
 ## Format
 

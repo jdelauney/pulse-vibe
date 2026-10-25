@@ -10,7 +10,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 
 ## Comment il s'utilise
 
-1. `/pulse:tech` (ou `/pulse:express`) le propose comme option quand le projet a des écrans, des comptes ou des données partagées. La personne choisit.
+1. `/pulse:tech` (ou `/pulse:nouveau`) le propose comme option quand le projet a des écrans, des comptes ou des données partagées. La personne choisit.
 2. `docs/technical.md` reçoit la ligne `**Pack de pile Pulse** : next`. Dès lors, chaque commande Pulse et chaque agent reçoivent les consignes du pack.
 3. Le squelette se pose avec `pulse-aidd pile squelette --nom "<nom>" --description "<phrase>"` : page de départ, thème, configuration complète, un test unitaire et un test de bout en bout. Il garde les fichiers déjà présents.
 4. Les specs et les plans s'appuient sur les **recettes** (`pulse-aidd pile recettes`, `pulse-aidd pile recette <nom>`). Chaque recette est découpée en étapes : la vue d'ensemble d'abord, puis une étape à la fois (`pulse-aidd pile recette <nom> etape <id>`) et le code de ses tests (`pulse-aidd pile recette <nom> tests`). Le pack répond de la même façon à `pulse-pile-next recette`.
