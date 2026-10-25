@@ -32,11 +32,11 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Méthode
 
-1. **Lancer** : en phase « rouge attendu », la commande « tester » sur les fichiers de test reçus ; en phase « vert attendu » et « suite complète », `pulse-aidd preuve lancer --portee suite`, qui lance les contrôles automatiques et toute la suite une seule fois, repère une régression ailleurs et garde la preuve pour les autres (sa sortie donne les échecs à trier, avec leurs dernières lignes ; pour le détail d'un échec, relancer seulement ce test avec la commande « tester »). Si une commande de couverture existe dans « Commandes du projet », la lancer en phase « suite complète ».
+1. **Lancer** : en phase « rouge attendu », la commande « tester » sur les fichiers de test reçus ; en phase « vert attendu » et « suite complète », `pulse-aidd preuve lancer --portee suite` (filet limité, si le message l'indique : `--portee tache <fichiers de test reçus>`), qui lance les contrôles automatiques et toute la suite une seule fois, repère une régression ailleurs et garde la preuve pour les autres (sa sortie donne les échecs à trier, avec leurs dernières lignes ; pour le détail d'un échec, relancer seulement ce test avec la commande « tester »). Si une commande de couverture existe dans « Commandes du projet », la lancer en phase « suite complète ».
 2. **Relancer une fois** chaque test en échec : un résultat qui change sans modification est un test **instable**.
 3. **Tests figés** (phase « vert attendu ») : `git diff -- <fichiers de test>`. Une sortie non vide signifie que les tests ont été modifiés pendant la réalisation : constat Critique, avec le passage modifié.
 4. **Trier chaque échec**, en lisant le message d'échec, le test et le code concerné :
-   - **Code** : le comportement manque ou diffère de ce que le scénario attend (phase « rouge attendu » : c'est l'échec voulu) ;
+   - **Code** : le comportement manque ou diffère de ce que le scénario attend (phase « rouge attendu » : c'est l'échec voulu) ; un contrôle automatique en échec (règles du code, types) se classe aussi « code » ;
    - **Test** : le test se trompe (attendu contraire au scénario ou au critère, erreur de syntaxe, mauvais import, jeu de données cassé, doublure sur du code interne, test qui passe en phase « rouge attendu ») ;
    - **Environnement** : outil absent, base de test indisponible, variable manquante, port pris ;
    - **Instable** : résultat qui change d'une exécution à l'autre.

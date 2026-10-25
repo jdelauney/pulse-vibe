@@ -1,6 +1,6 @@
 # Examiner une tâche : relecture et vérification
 
-Utilisé par `/pulse:review`, et par `/pulse:spirc`. Une seule façon d'examiner une tâche, quel que soit le chemin : un assistant relit le code, un autre l'essaie en marche. Aucun des deux n'a écrit le code.
+Utilisé par `/pulse:review` et `/pulse:spirc`. Un assistant relit le code, un autre l'essaie en marche ; aucun des deux ne l'a écrit.
 
 À expliquer en une phrase, la première fois : « Un regard extérieur repère les oublis, et un essai en marche prouve que ça fonctionne ; votre test manuel le confirme ensuite. »
 
@@ -13,8 +13,8 @@ Pour la tâche `Tn`, dans le dossier de son epic `aidd_docs/tasks/<epic>/` : le 
 Lancer **en parallèle** (plusieurs appels Agent dans le même message) :
 
 - **`pulse:reviewer`** : la tâche (identifiant et titre), la racine du projet, le mode, les chemins des documents de référence (§ 1) ; s'ils existent, le chemin de `docs/design.md` et celui de la maquette citée par la spec ou la tâche (`docs/design/maquettes/US-XXX-<nom>/retenue/`) ; avec les tests d'abord, les fichiers de test et le dernier rapport du test-runner ; sans verifier (rythme rapide), la consigne d'écrire la section « Test manuel ». L'agent lit lui-même `docs/technical.md`, `docs/brief.md`, le glossaire, la checklist sécurité et les règles de qualité.
-- **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne, ou l'objectif de la tâche), ses critères d'acceptation complets, les fichiers modifiés (`git status`, `git diff --stat`). L'agent lit lui-même « Commandes du projet » et produit la preuve (`pulse-aidd preuve`) si elle manque.
-  Le verifier démarre lui-même l'application (commande « Lancer en local » de « Commandes du projet »), note l'adresse, puis l'arrête à la fin. Claude Code demande alors l'accord de la personne pour démarrer l'application et l'interroger : l'annoncer d'avance en une phrase (« Claude Code va vous demander l'accord pour lancer l'application et l'essayer : c'est ainsi que je prouve que chaque critère fonctionne. »).
+- **`pulse:verifier`** : la tâche, la **demande d'origine** (la phrase de la personne, ou l'objectif de la tâche), ses critères d'acceptation complets, les fichiers modifiés (`git status`, `git diff --stat`) ; avec le filet limité (journal du plan), ses fichiers de test. L'agent lit lui-même « Commandes du projet » et produit la preuve (`pulse-aidd preuve`) si elle manque.
+  Le verifier démarre lui-même l'application (commande « Lancer en local » de « Commandes du projet »), note l'adresse, puis l'arrête à la fin. Claude Code demande alors l'accord de la personne pour démarrer l'application : l'annoncer d'avance en une phrase (« Claude Code va vous demander l'accord pour lancer l'application et l'essayer : c'est ainsi que je prouve que chaque critère fonctionne. »).
 - Avec le **contrôle de sécurité à chaque tâche** (option `-x` de `/pulse:spirc`) : **`pulse:security-auditor`**, portée `tache` : la tâche, les documents de référence (§ 1) et les fichiers modifiés (`git status`, `git diff --stat`).
 
 **Rythme rapide** (règles de réalisation) : avec `/pulse:spirc`, aucun examen par tâche : toute l'US s'examine une fois, à la fin (`spirc/examen-us.md`). Sinon : `pulse:reviewer` seul, sur le code de la tâche ; ni verifier, ni application lancée ou interrogée, ni test de l'interface pendant les tâches. Les tests de la tâche sont ceux lancés à la fin de sa réalisation. Chaque critère qui se voit à l'écran passe en ❓, vers la fiche de test de fin d'US ; la section « Vérification » du rapport porte « — (rythme rapide) ».
@@ -29,13 +29,13 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 - la ligne `Mode` (la commande, et « contrôle de sécurité à chaque tâche » s'il y a lieu) ;
 - le rapport du reviewer ;
-- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images Markdown au chemin relatif `../../../../captures/US-XXX/<fichier>.png`, suivies de la phrase « Ces images restent sur cet ordinateur, jusqu'à l'envoi de l'US. »), puis la ligne « Filet anti-régression », tirée de `pulse-aidd preuve etat --exiger suite` (avec `--exiger construction` quand « Construire » existe et que la tâche touche une page, une route ou la configuration) : « N tests, tous verts » quand elle répond « à jour » et ✅ ; sinon, relancer `pulse-aidd preuve lancer --portee suite` une fois ;
+- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images Markdown au chemin relatif `../../../../captures/US-XXX/<fichier>.png`, suivies de la phrase « Ces images restent sur cet ordinateur, jusqu'à l'envoi de l'US. »), puis la ligne « Filet anti-régression », tirée de la preuve (« Lire la preuve » ci-dessous) ;
 - avec les tests d'abord, la section `## Tests automatiques` (verdicts et tableaux du test-runner, rouge puis vert) ;
 - avec le contrôle de sécurité, la section `## Audit de sécurité`.
 
-La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌ ; en rythme complet, il demande aussi une preuve « à jour » et ✅ (`pulse-aidd preuve etat --exiger suite`, code 0) : une preuve ❌, périmée ou absente n'est jamais une preuve. Chaque échec de la preuve, contrôle non lancé compris, est un constat 🟠 Haute du rapport.
+La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌ ; en rythme complet, il demande aussi une preuve « à jour » et ✅ (code 0) : une preuve ❌, périmée ou absente n'est jamais une preuve.
 
-Le **rapport de réalisation** présenté ensuite à la personne (règles communes § 4) se construit à partir du tableau du verifier.
+**Lire la preuve** : `pulse-aidd preuve etat --exiger suite` (filet limité : `--portee tache`, lue sans `--exiger suite` ; `--exiger construction` quand « Construire » existe et que la tâche touche une page, une route ou la configuration). « à jour » ✅ : « N tests, tous verts », ou « — (aucun test automatique) » si « Tester » vaut « aucune ». « à jour » ❌ : chaque échec est un constat 🟠 Haute, à corriger, sans relance. Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une fois.
 
 ## 3 bis. Écrire la fiche de test de la personne
 

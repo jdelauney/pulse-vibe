@@ -1275,7 +1275,7 @@ test("implement relancé sur une tâche [~] au code commencé : le marqueur fait
   assert.match(prerequis, /fichiers de test déjà à l'index \(`git diff --cached --name-only`\) sont les tests figés des tests d'abord : reprendre alors à « Vert : réaliser »/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "implement", "SKILL.md")).some((m) => couvre(m, "git diff --cached --name-only")), "implement : git diff autorisé");
   // Filet quoi qu'il arrive : l'examen exige une preuve de toute la suite à jour et verte.
-  assert.match(lire(RACINE, "references", "examen.md"), /une preuve « à jour » et ✅ \(`pulse-aidd preuve etat --exiger suite`, code 0\) : une preuve ❌, périmée ou absente n'est jamais une preuve/);
+  assert.match(lire(RACINE, "references", "examen.md"), /une preuve « à jour » et ✅ \(code 0\) : une preuve ❌, périmée ou absente n'est jamais une preuve/);
 });
 
 test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
@@ -1981,4 +1981,22 @@ test("test : références des tests chargées à la demande, délégation au tes
   assert.doesNotMatch(t, /Les références citées dans cette commande figurent dans ce contexte/);
   assert.match(t, /`pulse-aidd etape fix --sans-communes`/, "échec dû au code : l'étape fix enchaînée");
   assert.ok(!motifsBash(path.join(RACINE, "skills", "test", "SKILL.md")).some((m) => m.startsWith("git add")), "test n'autorise pas git add");
+});
+
+test("preuve : relance seulement pour périmée, aucune ou portée insuffisante ; rouge à jour = échecs à corriger ; filet limité sans boucle", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  const verifier = lire(RACINE, "agents", "verifier.md");
+  for (const [nom, texte] of [["examen.md", examen], ["tests-automatiques.md", auto], ["verifier.md", verifier]]) {
+    assert.match(texte, /« à jour » ❌[^.]*sans relance/, `${nom} : une preuve rouge à jour se corrige, sans relance`);
+    assert.match(texte, /la relance indiquée par sa ligne/, `${nom} : la relance vient de la ligne de la preuve`);
+    assert.match(texte, /--portee tache/, `${nom} : le filet limité se lit en portée tâche`);
+    assert.doesNotMatch(texte, /ne prouve rien : relancer|« à jour » et ✅ ; sinon, relancer/, `${nom} : pas de relance d'une preuve rouge`);
+  }
+  assert.match(examen, /filet limité/, "examen : le message au verifier dit le filet limité");
+  assert.match(auto, /toute la suite tourne une fois à la fin de l'US/, "filet limité : toute la suite à la fin de l'US");
+  assert.doesNotMatch(lire(RACINE, "agents", "reviewer.md"), /extraits du message de délégation/);
+  assert.match(lire(RACINE, "agents", "test-runner.md"), /contrôle automatique en échec[^.]*« code »/, "test-runner : un contrôle rouge se classe code");
+  assert.match(lire(RACINE, "README.md"), /produite par le test-runner, le verifier ou, à défaut, la conversation au moment de décider ; jamais par l'implementer/);
+  assert.doesNotMatch(lire(DEPOT, "docs", "commandes", "review.html"), /Deux assistants qui n'ont pas écrit le code vont l'examiner/);
 });
