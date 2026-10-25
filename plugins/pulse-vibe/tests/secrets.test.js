@@ -501,6 +501,33 @@ test("historique : retrouve une clé et un .env passés dans un ancien commit, s
   sansValeur(r.sortie, CLE_STRIPE, MOT_DE_PASSE_BASE);
 });
 
+test("historique --depuis : la sortie nomme la portée examinée, les commits depuis la référence, pas tout l'historique", () => {
+  const p = projet({ pack: false });
+  const g = (...a) => spawnSync("git", ["-c", "user.name=Test", "-c", "user.email=test@exemple.test", ...a], { cwd: p.dossier, encoding: "utf8" });
+  ecrire(p, "lisezmoi.md", "Projet\n");
+  g("add", "lisezmoi.md", ".gitignore");
+  g("commit", "-q", "-m", "départ");
+  g("tag", "envoye");
+  const propre = lancer(p, ["historique", "--depuis", "envoye"]);
+  assert.strictEqual(propre.code, 0, propre.sortie);
+  assert.match(propre.sortie, /commits faits depuis envoye/);
+  assert.match(propre.sortie, /✅ Aucune trace[^\n]*dans ces commits/);
+  assert.doesNotMatch(propre.sortie, /tout l'historique/);
+
+  ecrire(p, "src/config.js", `export const cle = "${CLE_STRIPE}";\n`);
+  g("add", "src/config.js");
+  g("commit", "-q", "-m", "erreur");
+  const r = lancer(p, ["historique", "--depuis", "envoye"]);
+  assert.strictEqual(r.code, 1, r.sortie);
+  assert.match(r.sortie, /commits faits depuis envoye/);
+  assert.doesNotMatch(r.sortie, /tout l'historique/);
+  assert.match(r.sortie, /src\/config\.js : clé secrète/);
+  sansValeur(r.sortie, CLE_STRIPE);
+
+  const complet = lancer(p, ["historique"]);
+  assert.match(complet.sortie, /tout l'historique Git/);
+});
+
 // ---------------------------------------------------------------- journal
 
 test("journal : crée docs/secrets.md depuis le modèle, ajoute la ligne datée ; l'inventaire la reprend", () => {

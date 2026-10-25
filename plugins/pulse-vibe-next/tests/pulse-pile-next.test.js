@@ -95,7 +95,7 @@ test("contexte deploy-<mode> : chaque mode reçoit ses consignes, la partie comm
   const attendus = {
     "deploy-premiere": ["Pour la première mise en ligne", "Relier Neon à Vercel"],
     "deploy-production": ["Pour le mode production", "Sonde de disponibilité", "buildCommand"],
-    "deploy-variables": ["Pour les variables d'environnement chez Vercel", "SMTP de test"],
+    "deploy-variables": ["Variables d'environnement chez Vercel", "SMTP de test"],
   };
   for (const [libelle, morceaux] of Object.entries(attendus)) {
     const r = lancer("contexte", libelle);
@@ -108,6 +108,37 @@ test("contexte deploy-<mode> : chaque mode reçoit ses consignes, la partie comm
   for (const m of ["en deux mises en ligne", "la version en ligne reste celle d'avant", "pulse-aidd sonder"]) assert.ok(commun.includes(m), `contexte deploy : ${m}`);
   for (const absent of ["Relier Neon à Vercel", "Sonde de disponibilité", "SMTP de test"]) assert.ok(!commun.includes(absent), `contexte deploy sans « ${absent} »`);
   assert.strictEqual(lancer("contexte", "deploy-inconnu").stdout, "");
+});
+
+test("contexte secrets : l'index des variables (une ligne chacune) et les variables chez Vercel, sans les fiches", () => {
+  const { VARIABLES } = require("../scripts/sondes-secrets.js");
+  const r = lancer("contexte", "secrets");
+  assert.strictEqual(r.status, 0);
+  const sortie = r.stdout;
+  assert.ok(sortie.includes("| NOM | rôle | fournisseur | page de renouvellement |"), "en-tête de l'index");
+  const lignes = sortie.split("\n").filter((l) => l.startsWith("| `"));
+  const premiers = new Set(lignes.flatMap((l) => [...l.split("|")[1].matchAll(/`([A-Z][A-Z0-9_]*)`/g)].map((m) => m[1])));
+  const index = lignes.join("\n");
+  for (const [nom, regle] of Object.entries(VARIABLES)) {
+    if (regle.secret) assert.ok(premiers.has(nom), `index : une ligne pour ${nom}`);
+    else assert.ok(index.includes(`\`${nom}\``), `index : ${nom} cité`);
+  }
+  const fiches = lire(REF, "contexte", "secrets-fiches.md");
+  for (const titre of fiches.split("\n").filter((l) => l.startsWith("### ")))
+    for (const m of titre.matchAll(/`([A-Z][A-Z0-9_]*)`/g)) assert.ok(premiers.has(m[1]), `index : une ligne pour ${m[1]} (fiche)`);
+  for (const absent of ["### `", "Restart compute", "Expire key"]) assert.ok(!sortie.includes(absent), `contexte secrets sans la fiche (${absent})`);
+  assert.ok(sortie.includes("----- Variables d'environnement chez Vercel"), "secrets : les variables chez Vercel");
+  assert.ok(sortie.includes("pulse-pile-next secrets fiche") || sortie.includes("pulse-aidd pile secrets fiche"), "secrets : la fiche à la demande");
+});
+
+test("variables chez Vercel : un seul fichier, affiché pour /pulse:secrets et pour la mise en ligne", () => {
+  const vercel = lire(REF, "contexte", "variables-vercel.md");
+  for (const libelle of ["secrets", "deploy-variables"]) assert.ok(lancer("contexte", libelle).stdout.includes(vercel.trim()), `${libelle} : variables-vercel.md en entier`);
+  const autres = fs.readdirSync(path.join(REF, "contexte")).filter((f) => f !== "variables-vercel.md");
+  for (const fait of ["vercel env add", "type Config se supprime", "Deployment Protection", "Deux envois pour ce qui agit sur le monde réel", "Une variable modifiée sert au déploiement suivant"]) {
+    assert.ok(vercel.includes(fait), `variables-vercel.md : ${fait}`);
+    for (const f of autres) assert.ok(!lire(REF, "contexte", f).includes(fait), `un fait, un seul endroit : « ${fait} » aussi dans contexte/${f}`);
+  }
 });
 
 test("contexte/tech.md : le choix de la pile est dans piles.md, plus dans tech.md", () => {
@@ -481,7 +512,7 @@ test("modèles de code : une facture se paie une seule fois, même avec deux dem
 });
 
 // Les consignes de mise en ligne : la partie commune et celle de chaque mode (deploy-premiere, deploy-production, deploy-variables).
-const consignesDeploy = () => ["deploy.md", "deploy-premiere.md", "deploy-production.md", "deploy-variables.md"].map((f) => lire(REF, "contexte", f)).join("\n");
+const consignesDeploy = () => ["deploy.md", "deploy-premiere.md", "deploy-production.md", "variables-vercel.md"].map((f) => lire(REF, "contexte", f)).join("\n");
 
 test("production : base dev séparée, intégration Vercel–Neon, migrations sauvegardées, retour arrière", () => {
   const technique = lire(REF, "technical.md");
@@ -492,7 +523,7 @@ test("production : base dev séparée, intégration Vercel–Neon, migrations sa
     assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
   assert.ok(!deploy.includes("essai-surveillance"), "aucune page d'essai dans le site publié");
   assert.ok(!deploy.includes("appliquer `npm run db:migrate` sur la base de production"), "plus de migration à la main en production");
-  const secrets = lire(REF, "contexte", "secrets.md");
+  const secrets = lire(REF, "contexte", "secrets-fiches.md");
   assert.match(secrets, /^### `NEON_API_KEY`$/m);
   assert.ok(secrets.includes("Une valeur par environnement"), "DATABASE_URL : une valeur par environnement");
 });
@@ -614,7 +645,7 @@ test("deploy : tests dans la construction, prévisualisations sans vrais destina
   const deploy = consignesDeploy();
   for (const attendu of ["npm test && node scripts/migrer.mjs --vercel && npm run build", "copie des données réelles", "Deployment Protection", "SMTP de test", "clés de test", "réserver une variable à la construction"])
     assert.ok(deploy.includes(attendu), `deploy.md : ${attendu}`);
-  const secrets = lire(REF, "contexte", "secrets.md");
+  const secrets = lire(REF, "contexte", "secrets-fiches.md");
   assert.ok(secrets.includes("lisible par le code du site"), "secrets.md : NEON_API_KEY lisible à l'exécution");
   assert.match(lire(REF, "migrations.md"), /Projet créé avant pulse-next 0\.22\.0/);
   assert.match(lire(REF, "migrations.md"), /Projet créé ou mis à niveau avec pulse-next 0\.22\.0\*\* \(dossier `app\/essai-surveillance\/`.*supprimer ce dossier/);

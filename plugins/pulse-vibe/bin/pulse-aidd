@@ -312,9 +312,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     security) afficher "Modèle : docs/securite.md" "$SK/security/assets/securite.md" ;; # la checklist : chargée par l'auditeur
     secrets)
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Réagir à une fuite de clé" "$SK/secrets/references/fuite.md"
       afficher "Modèle : docs/secrets.md" "$SK/secrets/assets/secrets.md"
-      afficher "Modèle : journal d'incident" "$SK/secrets/assets/incident.md"
       lexique ;;
     refine)
       afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
