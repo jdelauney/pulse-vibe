@@ -95,7 +95,7 @@ test("fichier suivi modifié : périmée, et le fichier est nommé", () => {
   ecrire(p.d, "src/a.js", "module.exports = 2;\n");
   const e = preuve(p, "etat");
   assert.strictEqual(e.status, 1);
-  assert.match(e.stdout, /^preuve: périmée \(fichiers modifiés depuis : src\/a\.js\)$/m);
+  assert.match(e.stdout, /^preuve: périmée \(fichiers modifiés depuis : src\/a\.js\) ; relancez : pulse-aidd preuve lancer --portee suite$/m);
 });
 
 test("fichier non suivi et non ignoré créé : périmée", () => {
@@ -165,6 +165,37 @@ test("--exiger construction sans --construire : insuffisante ; avec --construire
   assert.strictEqual(avec.status, 0, avec.stdout);
 });
 
+test("construire : ajoute la construction à une preuve à jour sans relancer contrôles ni tests", () => {
+  const p = depot();
+  assert.strictEqual(preuve(p, "lancer", "--portee", "suite").status, 0);
+  fs.rmSync(path.join(p.traces, "tests"));
+  fs.rmSync(path.join(p.traces, "lint"));
+  const r = preuve(p, "construire");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite\) · construction ✅ · /m);
+  assert.ok(lance(p.traces, "build"), "construction lancée");
+  assert.ok(!lance(p.traces, "tests") && !lance(p.traces, "lint"), "ni tests ni contrôles relancés");
+  const e = preuve(p, "etat", "--exiger", "suite", "--exiger", "construction");
+  assert.strictEqual(e.status, 0, e.stdout);
+});
+
+test("construire : construction en échec, ❌ code 1 ; sans preuve à jour, code 2 et rien n'est lancé", () => {
+  const p = depot({ construire: "`node echec.js`" });
+  const sans = preuve(p, "construire");
+  assert.strictEqual(sans.status, 2, sans.stdout);
+  assert.match(sans.stdout, /rien n'a été lancé/);
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  ecrire(p.d, "src/a.js", "module.exports = 2;\n");
+  const perimee = preuve(p, "construire");
+  assert.strictEqual(perimee.status, 2, "preuve périmée : refus");
+  assert.match(perimee.stdout, /pulse-aidd preuve lancer --portee suite --construire/);
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  const r = preuve(p, "construire");
+  assert.strictEqual(r.status, 1, r.stdout);
+  assert.match(r.stdout, /^preuve: ❌ à jour · .*construction ❌/m);
+  assert.strictEqual(preuve(p, "etat", "--exiger", "construction").status, 1);
+});
+
 test("aucune preuve : aucune, code 1", () => {
   const p = depot();
   const e = preuve(p, "etat");
@@ -226,7 +257,7 @@ test("commande qui enchaîne plusieurs commandes : non lancée, ❌ avec sa rais
   assert.ok(!lance(p.traces, "lint"));
 });
 
-test("« Tester » : aucune ; la ligne de bout en bout n'est jamais prise pour la suite ; --exiger suite : insuffisante", () => {
+test("« Tester » : aucune (choix du projet) ; la ligne de bout en bout n'est jamais prise pour la suite ; --exiger suite : satisfaite, contrôles et construction toujours exigés", () => {
   const p = depot();
   ecrire(
     p.d,
@@ -235,15 +266,20 @@ test("« Tester » : aucune ; la ligne de bout en bout n'est jamais prise pour l
   );
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 0, r.stdout);
-  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · aucun test \(ligne « Tester » sans commande dans docs\/technical\.md\) · à l'instant$/m);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · suite : aucune \(choix du projet, docs\/technical\.md\) · à l'instant$/m);
   assert.ok(!lance(p.traces, "e2e"), "les tests de bout en bout ne sont pas la suite");
   assert.strictEqual(preuve(p, "etat").status, 0);
   const e = preuve(p, "etat", "--exiger", "suite");
-  assert.strictEqual(e.status, 1);
-  assert.match(e.stdout, /^preuve: portée insuffisante \(aucune commande « Tester »/m);
+  assert.strictEqual(e.status, 0, e.stdout);
+  assert.match(e.stdout, /^preuve: ✅ à jour · contrôles ✅ · suite : aucune \(choix du projet, docs\/technical\.md\)/m);
+  assert.strictEqual(preuve(p, "etat", "--exiger", "suite", "--exiger", "construction").status, 1, "la construction reste exigée");
+  ecrire(p.d, "docs/technical.md", "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Tester | aucune |\n| Contrôles automatiques | `node echec.js` |\n");
+  const rouge = preuve(p, "lancer");
+  assert.strictEqual(rouge.status, 1, "un contrôle rouge reste rouge");
+  assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 1, "suite aucune : les contrôles restent exigés");
   const tache = preuve(p, "lancer", "--portee", "tache", "src/a.test.js");
   assert.ok(!lance(p.traces, "e2e"), "ni en portée tâche");
-  assert.match(tache.stdout, /aucun test/);
+  assert.match(tache.stdout, /suite : aucune/);
 });
 
 test("aucun test trouvé (0 test lancé) : ❌, code 1", () => {
@@ -339,4 +375,29 @@ test("relais : pulse-aidd preuve etat", () => {
   const r = spawnSync("bash", ["-c", `exec bash "${outil}" "$@"`, "preuve", "preuve", "etat"], { cwd: p.d, encoding: "utf8" });
   assert.strictEqual(r.status, 1, r.stdout + r.stderr);
   assert.match(r.stdout, /^preuve: aucune\b/m);
+});
+
+test("etat indique la suite à donner : relance seulement pour périmée, aucune ou portée insuffisante ; rouge à jour = échecs à corriger", () => {
+  const p = depot();
+  const aucune = preuve(p, "etat", "--exiger", "suite", "--exiger", "construction");
+  assert.match(aucune.stdout, /relancez : pulse-aidd preuve lancer --portee suite --construire/, "aucune : relance avec la construction demandée");
+  assert.strictEqual(preuve(p, "lancer", "--portee", "tache", "src/a.test.js").status, 0);
+  assert.match(preuve(p, "etat", "--exiger", "suite").stdout, /portée insuffisante[^\n]*relancez : pulse-aidd preuve lancer --portee suite$/m);
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  assert.match(preuve(p, "etat", "--exiger", "construction").stdout, /portée insuffisante[^\n]*ajoutez-la : pulse-aidd preuve construire/, "seule la construction manque");
+  ecrire(p.d, "src/a.js", "module.exports = 3;\n");
+  assert.match(preuve(p, "etat").stdout, /périmée[^\n]*relancez : pulse-aidd preuve lancer --portee suite/);
+  const rouge = depot({ controles: "`node echec.js`" });
+  preuve(rouge, "lancer");
+  const e = preuve(rouge, "etat", "--exiger", "suite");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /Échecs à corriger : relancer sur le même contenu donnerait le même résultat/);
+  assert.doesNotMatch(e.stdout, /relancez/);
+});
+
+test("aucun test trouvé : ❌ signalé comme un problème du projet, à corriger dans docs/technical.md", () => {
+  const p = depot({ tester: "`node vide.js`" });
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /la commande « Tester » de docs\/technical\.md ne lance aucun test : corrigez-la, ou écrivez « aucune » si le projet n'a pas de tests/);
 });

@@ -7,11 +7,20 @@
 //     « Contrôles automatiques » (sauf ceux qui réécrivent les fichiers, motif REECRIT de fin-de-tour.js), « Tester »
 //     (libellé exact : jamais « Tester de bout en bout » ; toute la suite, ou les fichiers donnés) et « Construire »
 //     avec --construire. Une commande hors des autorisations du projet (raisonRefus d'autorisations.js) n'est pas
-//     lancée : la preuve est ❌, avec la raison. « Tester » sans commande : pas de suite (la preuve le dit) ; une suite
-//     qui ne lance aucun test : ❌. Code 0 si tout passe, 1 sinon, 2 si un fichier de test est refusé (rien n'est lancé).
+//     lancée : la preuve est ❌, avec la raison. « Tester » sans commande : pas de suite, choix du projet (la preuve le
+//     dit) ; une suite qui ne lance aucun test : ❌. Code 0 si tout passe, 1 sinon, 2 si un fichier de test est refusé
+//     (rien n'est lancé).
+//   construire
+//     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests. Code 0 si elle passe, 1 sinon,
+//     2 sans preuve à jour (rien n'est lancé). L'empreinte reste celle de la preuve : si la construction modifie un
+//     fichier compté, la preuve devient périmée.
 //   etat [--exiger suite] [--exiger construction]
 //     à jour et verte : la ligne de la preuve, code 0 ; à jour et rouge (❌, avec ses lignes d'échec), « périmée
-//     (fichiers modifiés depuis : …) », « aucune » ou « portée insuffisante » : code 1.
+//     (fichiers modifiés depuis : …) », « aucune » ou « portée insuffisante » : code 1. --exiger suite est satisfaite
+//     quand « Tester » vaut « aucune » (choix du projet) ; les contrôles, et la construction si elle est exigée, comptent.
+//     Chaque réponse dit la suite à donner : « relancez : … » (périmée, aucune, portée insuffisante : même portée que
+//     l'ancienne preuve, construction gardée), « ajoutez-la : pulse-aidd preuve construire », ou, pour une preuve
+//     rouge à jour, « échecs à corriger » (la relancer sur le même contenu ne change rien).
 //
 // Empreinte, prise après le lancement (un fichier écrit par les tests ne la rend pas périmée aussitôt ; il est
 // signalé) : le contenu des fichiers suivis et non suivis non ignorés, hors docs/ et aidd_docs/ mais avec
@@ -43,11 +52,12 @@ const FAMILLES = [
   { famille: "construction", libelle: /^construire\b/i },
 ];
 const ABSENTE = {
-  tests: "aucun test (ligne « Tester » sans commande dans docs/technical.md)",
+  tests: "suite : aucune (choix du projet, docs/technical.md)",
   construction: "aucune construction (ligne « Construire » sans commande dans docs/technical.md)",
 };
 const USAGE =
   "Usage : pulse-aidd preuve lancer [--portee suite | --portee tache <fichiers de test…>] [--construire]\n" +
+  "        pulse-aidd preuve construire\n" +
   "        pulse-aidd preuve etat [--exiger suite] [--exiger construction]";
 
 function git(racine, args, input) {
@@ -195,18 +205,13 @@ function resume(preuve) {
     if (c.nonLance) lignes.push("", `❌ contrôle non lancé : \`${c.commande}\` ${c.nonLance}`);
     else lignes.push("", `❌ \`${c.commande}\` (${c.depasse ? `délai de ${DELAI_S} s dépassé` : `code ${c.code}, ${Math.round(c.duree / 1000)} s`}) :`, ...c.lignes);
   }
+  if (aucunTest(preuve)) lignes.push("", "❌ la commande « Tester » de docs/technical.md ne lance aucun test : corrigez-la, ou écrivez « aucune » si le projet n'a pas de tests.");
+  if (!preuve.ok) lignes.push("", "Échecs à corriger : relancer sur le même contenu donnerait le même résultat.");
   return lignes.join("\n");
 }
 
-function lancer(racine, options) {
-  const familles = commandesParFamille(racine);
-  if (!familles) {
-    console.log("preuve: aucune commande (section « Commandes du projet » de docs/technical.md introuvable)");
-    return 1;
-  }
-  const retenues = ["controles", "tests", ...(options.construire ? ["construction"] : [])];
-  const absentes = retenues.filter((f) => f !== "controles" && !familles[f].length);
-  const avant = etatFichiers(racine);
+/** Lance les commandes des familles retenues (celles hors des autorisations : non lancées, avec la raison). */
+function lancerFamilles(racine, familles, retenues, options) {
   const resultats = [];
   const sortiesTests = [];
   for (const famille of retenues) {
@@ -224,6 +229,58 @@ function lancer(racine, options) {
       resultats.push(resultat);
     }
   }
+  return { resultats, sortiesTests };
+}
+
+/** La preuve enregistrée (null si absente, illisible ou d'une ancienne version). */
+function lirePreuve(racine) {
+  try {
+    const preuve = JSON.parse(fs.readFileSync(fichierPreuve(racine), "utf8"));
+    return preuve && preuve.version === VERSION && preuve.fichiers ? preuve : null;
+  } catch {
+    return null;
+  }
+}
+
+function enregistrer(racine, preuve) {
+  const cible = fichierPreuve(racine);
+  const provisoire = `${cible}.${process.pid}.tmp`;
+  fs.writeFileSync(provisoire, JSON.stringify(preuve) + "\n");
+  fs.renameSync(provisoire, cible);
+}
+
+/** Ajoute la construction à la preuve à jour, sans relancer contrôles ni tests. */
+function construire(racine) {
+  const preuve = lirePreuve(racine);
+  if (!preuve || empreinte(etatFichiers(racine)) !== preuve.empreinte) {
+    console.log(`preuve: ${preuve ? "périmée" : "aucune"} : rien n'a été lancé (lancez pulse-aidd preuve lancer --portee suite --construire)`);
+    return 2;
+  }
+  const familles = commandesParFamille(racine);
+  if (!familles) {
+    console.log("preuve: aucune commande (section « Commandes du projet » de docs/technical.md introuvable) ; rien n'a été lancé.");
+    return 2;
+  }
+  const { resultats } = lancerFamilles(racine, familles, ["construction"], { portee: preuve.portee });
+  preuve.resultats = [...preuve.resultats.filter((c) => c.famille !== "construction"), ...resultats];
+  preuve.construire = true;
+  preuve.absentes = [...preuve.absentes.filter((f) => f !== "construction"), ...(familles.construction.length ? [] : ["construction"])];
+  preuve.ok = !["controles", "tests", "construction"].some((f) => enEchec(preuve, f));
+  enregistrer(racine, preuve); // empreinte gardée : un fichier compté modifié par la construction rend la preuve périmée
+  console.log(resume(preuve));
+  return preuve.ok ? 0 : 1;
+}
+
+function lancer(racine, options) {
+  const familles = commandesParFamille(racine);
+  if (!familles) {
+    console.log("preuve: aucune commande (section « Commandes du projet » de docs/technical.md introuvable)");
+    return 1;
+  }
+  const retenues = ["controles", "tests", ...(options.construire ? ["construction"] : [])];
+  const absentes = retenues.filter((f) => f !== "controles" && !familles[f].length);
+  const avant = etatFichiers(racine);
+  const { resultats, sortiesTests } = lancerFamilles(racine, familles, retenues, options);
   const comptes = sortiesTests.map(compteTests);
   const tests = comptes.length && comptes.every(Boolean) ? comptes.reduce((a, b) => ({ passes: a.passes + b.passes, total: a.total + b.total })) : null;
   const apres = etatFichiers(racine);
@@ -240,10 +297,7 @@ function lancer(racine, options) {
     fichiers: apres,
   };
   preuve.ok = !retenues.some((f) => enEchec(preuve, f));
-  const cible = fichierPreuve(racine);
-  const provisoire = `${cible}.${process.pid}.tmp`;
-  fs.writeFileSync(provisoire, JSON.stringify(preuve) + "\n");
-  fs.renameSync(provisoire, cible);
+  enregistrer(racine, preuve);
 
   console.log(resume(preuve));
   const ecrits = differences(avant, apres);
@@ -252,32 +306,35 @@ function lancer(racine, options) {
   return preuve.ok ? 0 : 1;
 }
 
+/** La relance à indiquer : toute la suite si elle est exigée (ou sans ancienne preuve), sinon la portée de l'ancienne preuve ; construction gardée. */
+function relance(exigences, preuve) {
+  const tache = !exigences.includes("suite") && preuve && preuve.portee === "tache" && preuve.fichiersTest.length;
+  const construire = exigences.includes("construction") || Boolean(preuve && preuve.construire);
+  return `relancez : pulse-aidd preuve lancer ${tache ? `--portee tache ${preuve.fichiersTest.join(" ")}` : "--portee suite"}${construire ? " --construire" : ""}`;
+}
+
 function etat(racine, exigences) {
-  let preuve = null;
-  try {
-    preuve = JSON.parse(fs.readFileSync(fichierPreuve(racine), "utf8"));
-  } catch {
-    // absente ou illisible
-  }
-  if (!preuve || preuve.version !== VERSION || !preuve.fichiers) {
-    console.log("preuve: aucune (lancez pulse-aidd preuve lancer --portee suite)");
+  const preuve = lirePreuve(racine);
+  if (!preuve) {
+    console.log(`preuve: aucune ; ${relance(exigences, null)}`);
     return 1;
   }
   const actuels = etatFichiers(racine);
   if (empreinte(actuels) !== preuve.empreinte) {
-    console.log(`preuve: périmée (fichiers modifiés depuis : ${citer(differences(preuve.fichiers, actuels))})`);
+    console.log(`preuve: périmée (fichiers modifiés depuis : ${citer(differences(preuve.fichiers, actuels))}) ; ${relance(exigences, preuve)}`);
     return 1;
   }
-  if (exigences.includes("suite") && preuve.absentes.includes("tests")) {
-    console.log("preuve: portée insuffisante (aucune commande « Tester » dans docs/technical.md : pas de suite de tests ; demandée : toute la suite)");
-    return 1;
-  }
-  if (exigences.includes("suite") && preuve.portee !== "suite") {
-    console.log("preuve: portée insuffisante (tests des fichiers de la tâche seulement ; demandée : toute la suite)");
+  // « Tester » vaut « aucune » : pas de suite, choix du projet ; --exiger suite est satisfaite par les contrôles.
+  if (exigences.includes("suite") && preuve.portee !== "suite" && !preuve.absentes.includes("tests")) {
+    console.log(`preuve: portée insuffisante (tests des fichiers de la tâche seulement ; demandée : toute la suite) ; ${relance(exigences, preuve)}`);
     return 1;
   }
   if (exigences.includes("construction") && (!preuve.construire || preuve.absentes.includes("construction"))) {
-    console.log(`preuve: portée insuffisante (${preuve.construire ? "aucune commande « Construire » dans docs/technical.md" : "construction non lancée"} ; demandée : construction)`);
+    console.log(
+      preuve.construire
+        ? "preuve: portée insuffisante (aucune commande « Construire » dans docs/technical.md ; demandée : construction) : lisez la preuve sans --exiger construction"
+        : "preuve: portée insuffisante (construction non lancée ; demandée : construction) ; ajoutez-la : pulse-aidd preuve construire",
+    );
     return 1;
   }
   console.log(resume(preuve));
@@ -303,6 +360,7 @@ function lireOptions(args) {
       return { refus: `fichier de test refusé : ${refuse} (donnez un chemin relatif au projet, sans « .. », sans espace, sans lecteur, sans tiret au début)` };
     return { action, options };
   }
+  if (action === "construire") return reste.length ? { usage: `Option inconnue : ${reste[0]}` } : { action };
   if (action === "etat") {
     const exigences = [];
     for (let i = 0; i < reste.length; i++) {
@@ -329,7 +387,9 @@ function principal(args) {
     console.log("preuve: pas de dépôt Git ici (lancez la commande dans le dossier du projet)");
     return 1;
   }
-  return lu.action === "lancer" ? lancer(racine, lu.options) : etat(racine, lu.exigences);
+  if (lu.action === "lancer") return lancer(racine, lu.options);
+  if (lu.action === "construire") return construire(racine);
+  return etat(racine, lu.exigences);
 }
 
 if (require.main === module) {
