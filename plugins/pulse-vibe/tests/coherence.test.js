@@ -1239,7 +1239,7 @@ test("la réalisation dans la conversation s'appelle « devant vous » (`-d`) pa
 
 test("implement relancé sur une tâche [~] au code commencé : le marqueur fait reprendre la réalisation, pas la relecture", () => {
   const prerequis = skillTexte("implement").split("\n").find((l) => l.startsWith("- Tâche déjà `[~]`")) || "";
-  assert.match(prerequis, /`pulse-aidd realisation` montre `commande: implement`, `tache: <Tn>` et `etape: realisation` ou `test`, sans `perime: oui`/);
+  assert.match(prerequis, /`pulse-aidd realisation` montre `commande: implement`, `us: <US-XXX>`, `tache: <Tn>` et `etape: realisation` ou `test`, sans `perime: oui`/);
   assert.match(prerequis, /reprendre au § 2/);
   assert.ok(prerequis.indexOf("pulse-aidd realisation") < prerequis.indexOf("pulse-aidd revue <Tn>"), "le marqueur se lit avant pulse-aidd revue");
 });
