@@ -62,7 +62,7 @@ Annoncer le choix en une ligne (« Je code en coulisse · tests d'abord · dans 
 
 Marquer la tâche `[~]` dans le plan, puis annoncer en 4 lignes au plus : « **T3 – Titre**. Je vais : … (2 à 4 puces). Fichiers concernés : … »
 
-**Marqueur de réalisation** : `pulse-aidd realisation debut <US-XXX> --commande implement --rythme <rapide si le profil vaut « rapide », sinon complet>` ; à chaque étape, `pulse-aidd realisation etape <Tn> <test|realisation>` ; avant le bloc de fin, `pulse-aidd realisation fin`.
+**Marqueur de réalisation** : `pulse-aidd realisation debut <US-XXX> --commande implement --rythme <rapide si le profil vaut « rapide », sinon complet>`, plus `--devant` devant vous ; à chaque étape, `pulse-aidd realisation etape <Tn> <test|realisation>` ; avant le bloc de fin, `pulse-aidd realisation fin`.
 
 **Travail en cours** (règle commune 16) : à chaque arrêt pour la personne (blocage, choix), écrire `aidd_docs/tasks/in-progress.md` avec « Pour reprendre : `/pulse:implement <US-XXX> <Tn>` » ; l'effacer (`pulse-aidd travail-fini`) dès sa réponse.
 
@@ -72,7 +72,7 @@ Marquer la tâche `[~]` dans le plan, puis annoncer en 4 lignes au plus : « **T
 
 **En coulisse** : déléguer à **`pulse:implementer`** selon « Déléguer à l'implementer » (message, puis retour).
 
-**Devant vous** : lancer `pulse-aidd agent implementer` et appliquer, dans cette conversation, ses « Règles absolues », son « Pack de pile » et sa « Méthode » (règles de qualité par famille comprises), en annonçant chaque étape : ce que vous lisez, ce que vous écrivez et pourquoi. Avec un pack de pile, `pulse-aidd pile contexte implement`, lu en entier, passe avant le premier fichier écrit et avant toute correction faite par cette conversation elle-même. S'arrêter dès qu'un choix de la personne apparaît (« Bloqué – décision nécessaire »), comme au retour de l'agent.
+**Devant vous** (marqueur lancé avec `--devant`) : la sortie de `pulse-aidd realisation etape <Tn> realisation`, fiche du pack de pile comprise, se lit en entier avant le premier fichier écrit. Puis lancer `pulse-aidd agent implementer` et appliquer, dans cette conversation, ses « Règles absolues », sa « Méthode » (règles de qualité par famille comprises) et la fiche ainsi chargée (son « Pack de pile »), en annonçant chaque étape : ce que vous lisez, ce que vous écrivez et pourquoi. Une correction faite par cette conversation hors de cette étape commence par `pulse-aidd pile contexte implement`, lu en entier, s'il ne figure pas dans la conversation. S'arrêter dès qu'un choix de la personne apparaît (« Bloqué – décision nécessaire »), comme au retour de l'agent.
 
 ### 3. Vérifier
 

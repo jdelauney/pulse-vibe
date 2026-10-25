@@ -1193,6 +1193,17 @@ test("la boucle sur le plan vit dans spirc seule : commit chargée une fois par 
     assert.ok(spirc.includes(ref), ref);
 });
 
+test("devant vous : le marqueur porte --devant et la sortie de l'étape de réalisation (fiche du pack comprise) se lit avant le premier fichier", () => {
+  const ligne = (texte, motif) => texte.split("\n").find((l) => motif.test(l)) || "";
+  for (const [skill, motifDevant] of [["implement", /^\*\*Devant vous\*\*/], ["spirc", /Avec `-d` \(ou sans agent disponible/]]) {
+    const texte = lire(RACINE, "skills", skill, "SKILL.md");
+    assert.match(ligne(texte, /^\*\*Marqueur de réalisation\*\*/), /`--devant`/, `${skill} : la ligne du marqueur cite --devant`);
+    const devant = ligne(texte, motifDevant);
+    assert.match(devant, /`--devant`/, `${skill} : la ligne « devant vous » cite --devant`);
+    assert.match(devant, /`pulse-aidd realisation etape <Tn> realisation`[^.]*fiche du pack[^.]*en entier[^.]*avant le premier fichier écrit/, `${skill} : la sortie de l'étape se lit en entier avant le premier fichier`);
+  }
+});
+
 test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
   assert.ok(!fs.existsSync(path.join(RACINE, "skills", "implement", "references", "boucle.md")), "boucle.md supprimée");
   const implement = skillTexte("implement");

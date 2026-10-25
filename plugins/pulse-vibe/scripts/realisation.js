@@ -2,15 +2,17 @@
 // Pulse – marqueur « réalisation en cours » (`pulse-aidd realisation`).
 //
 // Un petit fichier, aidd_docs/tasks/realisation.json (ignoré par Git), dit qu'une réalisation est en cours :
-// l'US, la commande, le rythme, la tâche et l'étape courantes, les questions en attente. Les hooks s'en servent :
+// l'US, la commande, le rythme, le mode devant vous, la tâche et l'étape courantes, les questions en attente. Les hooks s'en servent :
 // rappel de « où on en est » après un compactage (--rappel), notification du bureau (notifier.js), et contrôles
 // automatiques de fin de tour lancés seulement pendant une réalisation (fin-de-tour.js).
 // Un marqueur dont la dernière mise à jour (maj) date de plus de PERIME_H heures est périmé : une réalisation
 // interrompue sans « fin ». Les hooks l'ignorent ; `pulse-aidd etat` le signale (realisation: perimee) et
 // la commande nue affiche « perime: oui » ; etape et questions le rafraîchissent, fin le retire.
 //
-//   pulse-aidd realisation debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome]
+//   pulse-aidd realisation debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] [--devant]
 //   pulse-aidd realisation etape <Tn> <etape>   la tâche et l'étape en cours (test, realisation, examen, commit, questions, test-groupe…)
+//     Avec --devant (la conversation code elle-même), bin/pulse-aidd affiche ensuite, pour realisation et test, le contexte
+//     du pack de pile déclaré (pulse-pile-<id> contexte implement ou test), ou le bloc « non installé » : la fiche avant le code.
 //   pulse-aidd realisation questions <n>        le nombre de questions qui attendent la personne
 //   pulse-aidd realisation fin                  supprime le marqueur
 //   pulse-aidd realisation                      affiche « clé: valeur » (plus « perime: oui » s'il est périmé), rien si absent
@@ -25,7 +27,7 @@ const fs = require("fs");
 const path = require("path");
 
 const CHEMIN = ["aidd_docs", "tasks", "realisation.json"];
-const CLES = ["us", "commande", "rythme", "autonome", "tache", "etape", "questions", "debut", "maj"];
+const CLES = ["us", "commande", "rythme", "autonome", "devant", "tache", "etape", "questions", "debut", "maj"];
 const PERIME_H = 6; // au-delà, la réalisation a été interrompue sans « fin » : les hooks se taisent
 
 const fichier = (racine) => path.join(racine, ...CHEMIN);
@@ -101,13 +103,18 @@ function mettreAJour(racine, changements) {
 function rappel(racine) {
   const e = lire(racine);
   if (!e) return "";
-  const lignes = [`Une réalisation est en cours : ${e.us || "US inconnue"} (${e.commande || "?"}, rythme ${e.rythme || "?"}${e.autonome ? ", sans pause" : ""}).`];
+  const lignes = [`Une réalisation est en cours : ${e.us || "US inconnue"} (${e.commande || "?"}, rythme ${e.rythme || "?"}${e.autonome ? ", sans pause" : ""}${e.devant ? ", devant vous" : ""}).`];
   if (e.tache) lignes.push(`Tâche en cours : ${e.tache}${e.etape ? `, étape ${e.etape}` : ""}.`);
   else if (e.etape) lignes.push(`Étape en cours : ${e.etape}.`);
   const n = Number(e.questions) || 0;
   if (n > 0) lignes.push(n === 1 ? "1 question vous attend." : `${n} questions vous attendent.`);
   // Une compaction ne garde que le début d'un skill : la commande se recharge par son étape.
   if (e.commande === "spirc" || e.commande === "implement") lignes.push(`Rechargez vos instructions : lancez \`pulse-aidd etape ${e.commande}\` et lisez toute la sortie, y compris dans le fichier enregistré quand Claude Code ne l'affiche pas en entier (elle dépasse 30 000 caractères).`);
+  // Devant vous : la fiche du pack se recharge par l'étape de code (test ou realisation), avant d'écrire.
+  if (e.devant) {
+    const etape = e.tache && (e.etape === "test" || e.etape === "realisation") ? `${e.tache} ${e.etape}` : `${e.tache || "<tâche>"} realisation`;
+    lignes.push(`Avant d'écrire du code, relancez \`pulse-aidd realisation etape ${etape}\` et lisez toute sa sortie : elle recharge la fiche du pack de pile.`);
+  }
   return lignes.join("\n");
 }
 
@@ -130,6 +137,7 @@ function main(args, racine) {
       commande: valeurOption(reste, "--commande") || "",
       rythme: valeurOption(reste, "--rythme") || "",
       autonome: reste.includes("--autonome"),
+      devant: reste.includes("--devant"),
       tache: "",
       etape: "",
       questions: 0,

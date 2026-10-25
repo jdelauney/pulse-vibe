@@ -92,6 +92,14 @@ test("README de chaque plugin : chaque fichier de bin/, et chaque sous-commande 
   }
 });
 
+test("aide de pulse-aidd : chaque option de « realisation debut » lue dans l'en-tête de realisation.js", options, () => {
+  const usage = lire(RACINE, "scripts", "realisation.js").split("\n").find((l) => /^\/\/\s+pulse-aidd realisation debut /.test(l)) || "";
+  const aide = lire(RACINE, "bin", "pulse-aidd").split("\n").find((l) => /^#\s+pulse-aidd realisation /.test(l)) || "";
+  const opts = [...usage.matchAll(/--[a-z]+/g)].map((m) => m[0]);
+  assert.ok(opts.includes("--devant"), "en-tête de realisation.js : --devant");
+  for (const o of opts) assert.ok(aide.includes(o), `aide de pulse-aidd, ligne realisation : ${o}`);
+});
+
 test("README de chaque plugin : chaque fichier et dossier de premier niveau de references/", options, () => {
   for (const { dossier, readme } of PLUGINS) {
     const bloc = blocStructure(texte(readme), "references/");

@@ -28,7 +28,7 @@
 #   pulse-aidd ligne-etat [--installer [--remplacer] | --retirer]  la ligne d'état de Claude Code (US, tâche, avancement, décision en attente) ; --installer la règle dans .claude/settings.local.json (/pulse:status ligne)
 #   pulse-aidd captures effacer <US-XXX>  retire les captures d'écran gardées comme preuves (aidd_docs/captures/<US-XXX>/), une fois l'US envoyée
 #   pulse-aidd bilan                 le bilan chiffré de chaque US (tâches, relectures, corrections, tests non concluants, constats par gravité)
-#   pulse-aidd realisation [debut|etape|questions|fin]  le marqueur « réalisation en cours » (aidd_docs/tasks/realisation.json) : debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] · etape <Tn> <étape> · questions <n> · fin ; sans action : l'état
+#   pulse-aidd realisation [debut|etape|questions|fin]  le marqueur « réalisation en cours » (aidd_docs/tasks/realisation.json) : debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] [--devant] · etape <Tn> <étape> (avec --devant, realisation et test affichent ensuite le contexte du pack de pile) · questions <n> · fin ; sans action : l'état
 #   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
@@ -417,7 +417,15 @@ case "$1" in
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
   realisation)
-    shift; exec node "$RACINE/scripts/realisation.js" "$@" ;;
+    shift
+    node "$RACINE/scripts/realisation.js" "$@"; code=$?
+    # Devant vous (marqueur lancé avec --devant) : l'étape realisation ou test affiche aussitôt le contexte du pack déclaré
+    # (implement : sa fiche ; test), ou le bloc « non installé » : la conversation le lit avant le premier fichier écrit.
+    if [ "$code" -eq 0 ] && [ "${1:-}" = etape ] && [ -n "${2:-}" ] && [ -n "$(pack_declare)" ]; then
+      case "${3:-}" in realisation) fiche=implement ;; test) fiche=test ;; *) fiche="" ;; esac
+      if [ -n "$fiche" ] && node "$RACINE/scripts/realisation.js" 2>/dev/null | grep -qx 'devant: true'; then contexte_pack "$fiche"; fi
+    fi
+    exit "$code" ;;
   sessions)
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   annuler)
