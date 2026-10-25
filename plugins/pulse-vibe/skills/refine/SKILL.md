@@ -53,7 +53,7 @@ Si les fichiers ou les dépendances des tâches changent, revérifier la ligne �
 **Ce qu'on garde tel quel** :
 - une tâche `[x]` (terminée et enregistrée) : elle reste telle quelle ; un changement devient une **nouvelle tâche** ;
 - une tâche `[~]` : la modifier seulement avec l'accord explicite de la personne, en signalant le code déjà écrit ;
-- les numéros des tâches existantes : une nouvelle tâche prend le numéro suivant (règles des tâches), même si elle s'insère plus tôt dans l'ordre ;
+- les numéros des tâches existantes : une nouvelle tâche prend le numéro qui suit le plus grand `Tn` de tous les plans (règles des tâches), même si elle s'insère plus tôt dans l'ordre ;
 - le « Journal », complété d'une ligne (date, tâche « — », « plan modifié : <résumé> ») une fois les changements validés.
 
 Un plan qui dépasse 4 tâches (hors mise en place et mise en ligne) : le signaler et proposer de découper l'US en deux (`/pulse:us`).

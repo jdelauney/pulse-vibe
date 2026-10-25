@@ -2,6 +2,8 @@
 
 La présentation est une décision de la personne : la poser, sans la choisir à sa place.
 
+Un écran sans informations ni formulaire : « sans objet » dans la colonne « Présentation », sans question.
+
 Pour chaque écran qui montre des informations ou un formulaire, une ronde (AskUserQuestion, 4 questions au plus, réponse recommandée en premier selon les critères entre parenthèses, avec sa raison en quelques mots ; un écran déjà décidé dans une autre spec reprend sa présentation, sans question) :
 
 - **Montrer les informations** : « Comment présenter <les factures> ? » → « Un tableau, une ligne par <facture> » (beaucoup d'éléments ou de colonnes à comparer) / « Des cartes » (peu d'éléments, une image ou un résumé) / « Une liste simple » (un ou deux renseignements par élément).

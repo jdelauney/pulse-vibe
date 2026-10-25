@@ -83,6 +83,19 @@ test("présentation des écrans : un écran sans présentation choisie est signa
   assert.ok(!gabarit.some((l) => l.includes("presentation-manquante")), gabarit.join("\n"));
 });
 
+test("présentation des écrans : « sans objet », titre sans numéro ou à l'apostrophe typographique, tableau sans colonne « Présentation »", () => {
+  const confirmation = ECRANS(["| La confirmation | tout le monde | un message | rien | sans objet |"]);
+  assert.deepStrictEqual(constats(projet(SPEC({ extra: confirmation }))), [], "« sans objet » : rien à choisir");
+  const vide = "| La liste de courses | tout le monde | les articles | ajouter |  |";
+  for (const titre of ["## 3. Ce que l’utilisateur voit et fait", "## Ce que l'utilisateur voit et fait"]) {
+    const extra = ECRANS([vide]).replace("## 3. Ce que l'utilisateur voit et fait", titre);
+    assert.ok(constats(projet(SPEC({ extra }))).includes("avertissement · écrans · presentation-manquante: La liste de courses"), titre);
+  }
+  const ancien = "## 3. Ce que l'utilisateur voit et fait\n\n| Écran | Qui y accède | Ce qu'on y voit |\n|---|---|---|\n| La liste | tout le monde | les articles |\n| Le détail | tout le monde | le nom |\n";
+  const c = constats(projet(SPEC({ extra: ancien })));
+  for (const ecran of ["La liste", "Le détail"]) assert.ok(c.includes(`avertissement · écrans · presentation-manquante: ${ecran}`), c.join("\n"));
+});
+
 test("en ligne de commande : bilan, spec introuvable, argument manquant", () => {
   const d = projet(SPEC({ scenarios: [SCENARIO("@US-001-1 @unitaire", "Un article ajouté apparaît")] }));
   const lancer = (...a) => spawnSync(process.execPath, [SCRIPT, ...a], { cwd: d, encoding: "utf8" });

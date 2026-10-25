@@ -164,7 +164,10 @@ function dansLeProjet(args, { avecPack = true } = {}) {
   const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
   const bin = PACK_BIN.split(path.sep).join("/");
   const chemin = avecPack ? `PATH="$(cd "${bin}" && pwd):$PATH" ` : "";
-  return spawnSync("bash", ["-c", `${chemin}exec bash "${outil}" "$@"`, "regles", ...args], { cwd: PROJET_PACK, encoding: "utf8" });
+  // Le pack installé sur le poste (plugins/cache/pulseia) reste hors du PATH : seul le pack du dépôt compte, et seulement avec avecPack.
+  const cle = Object.keys(process.env).find((k) => k.toUpperCase() === "PATH") || "PATH";
+  const env = { ...process.env, [cle]: (process.env[cle] || "").split(path.delimiter).filter((d) => !d.split(path.sep).join("/").includes("plugins/cache/pulseia")).join(path.delimiter) };
+  return spawnSync("bash", ["-c", `${chemin}exec bash "${outil}" "$@"`, "regles", ...args], { cwd: PROJET_PACK, encoding: "utf8", env });
 }
 
 test("pack qui couvre l'organisation : famille remplacée par un renvoi, sécurité gardée", { skip: !fs.existsSync(PACK_BIN) }, () => {
