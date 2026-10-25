@@ -14,7 +14,7 @@
 #   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md), ou d'une skill : <skill>/<fichier> (skills/<skill>/references/, ex. seo/regles.md)
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
 #   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
-#   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
+#   pulse-aidd comparer <dossier> [--ranger | --retenir <variante> [--mobile <variante>]]   écrit <dossier>/comparer.html pour comparer des variantes ; range les variantes avant un lot ou après le choix (/pulse:ui)
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
@@ -326,15 +326,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     refine)
       afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
-    ui)
-      afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Registres d'interface" "$SK/ui/references/registres.md"
-      afficher "Règles d'interface" "$SK/ui/references/regles-ui.md"
-      afficher "Anti-patterns d'interface" "$SK/ui/references/anti-patterns.md"
-      afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
-      afficher "Modèle : docs/design.md" "$SK/ui/assets/design.md"
-      afficher "Modèle : note de variante" "$SK/ui/assets/maquette-note.md"
-      afficher "Modèle : rapport d'audit d'interface" "$SK/ui/assets/revue-ui.md" ;;
+    ui) ;; # références et modèles chargés à l'étape qui les cite (skills/ui/SKILL.md) ; les agents designer et ui-critic chargent les leurs
     rediger)
       afficher "Rédiger les textes des pages" "$SK/rediger/references/regles.md"
       afficher "Modèle : docs/voix.md" "$SK/rediger/assets/voix.md"
@@ -406,8 +398,8 @@ case "$1" in
   guide)
     exec node "$RACINE/scripts/guide.js" ;;
   comparer)
-    if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes>"; exit 1; fi
-    exec node "$RACINE/skills/ui/scripts/comparer.js" "$2" ;;
+    if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes> [--ranger | --retenir <variante> [--mobile <variante>]]"; exit 1; fi
+    exec node "$RACINE/skills/ui/scripts/comparer.js" "${@:2}" ;;
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
   realisation)

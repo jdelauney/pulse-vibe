@@ -11,11 +11,11 @@ const RACINE = path.join(__dirname, "..");
 // Chemin relatif et cwd = racine du plugin : fonctionne avec Git Bash, Cygwin, macOS et Linux.
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-aidd", ...args], { cwd: RACINE, encoding: "utf8" });
 
-test("contexte ui : règles communes, quatre références de design et trois modèles", () => {
+test("contexte ui : les règles communes seules (références et modèles chargés à l'étape qui les cite)", () => {
   const r = lancer("contexte", "ui");
   assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
   for (const titre of [
-    "===== Règles communes Pulse =====",
     "===== Registres d'interface =====",
     "===== Règles d'interface =====",
     "===== Anti-patterns d'interface =====",
@@ -23,7 +23,7 @@ test("contexte ui : règles communes, quatre références de design et trois mod
     "===== Modèle : docs/design.md =====",
     "===== Modèle : note de variante =====",
     "===== Modèle : rapport d'audit d'interface =====",
-  ]) assert.ok(r.stdout.includes(titre), titre);
+  ]) assert.ok(!r.stdout.includes(titre), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -467,8 +467,9 @@ test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () =>
   assert.match(r.stdout, /LEX-001/);
 });
 
-test("contexte ui et plan : les motifs d'écrans", () => {
-  for (const commande of ["ui", "plan"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Motifs d'écrans ====="), commande);
+test("contexte plan : les motifs d'écrans (ui les laisse à ses agents)", () => {
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Motifs d'écrans ====="));
+  assert.ok(!lancer("contexte", "ui").stdout.includes("===== Motifs d'écrans ====="));
 });
 
 test("identite extraire et maquettes verifier : relaient vers leurs scripts", () => {
@@ -480,6 +481,13 @@ test("identite extraire et maquettes verifier : relaient vers leurs scripts", ()
   const m = lancer("maquettes", "verifier", path.join(vide, "p.html"));
   assert.strictEqual(m.status, 1, m.stdout + m.stderr);
   assert.match(m.stdout, /Texte en dégradé de couleur/);
+});
+
+test("comparer : relaie ses options de rangement (--ranger, --retenir) vers son script", () => {
+  const r = lancer("comparer", "dossier-de-variantes-absent", "--ranger");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^prochain: 1$/m);
+  assert.strictEqual(lancer("comparer", "dossier-de-variantes-absent", "--retenir").status, 1);
 });
 
 const fs = require("fs");

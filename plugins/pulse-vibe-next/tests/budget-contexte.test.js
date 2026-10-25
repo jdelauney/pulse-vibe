@@ -116,7 +116,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
   tech: 84500, // mesure 80 113 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 32500, // mesure 30 863 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
-  ui: 83500, // mesure 79 522 (pulse 0.50 : consignes pour écrire du code à la place du thème complet, section « Pour les maquettes » gardée) ; avant, mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
+  ui: 44500, // mesure 42 343 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, mesure 79 522 (pulse 0.50 : consignes pour écrire du code à la place du thème complet, section « Pour les maquettes » gardée) ; avant, mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
 };
 
 test("chaque commande enrichie par le pack a un plafond avec pack", { skip: !fs.existsSync(COEUR) }, () => {
@@ -148,7 +148,8 @@ const AGENTS_AVEC_PACK = {
   fixer: { plafond: 62500, /* mesure 59 370 (pulse 0.51, étape D : correction de comportement envoyée par fix, le fixer charge clean-code et une famille, ici securite ; avant, 41 072 : clean-code seul, anticipé) */ parties: [["agent", "fixer"], ["pile", "contexte", "fix"], ["qualite", "clean-code", "securite"]] },
   verifier: { plafond: 21500, /* mesure 20 049 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "verifier"], ["pile", "contexte", "test"], ["reference", "tests/test-manuel.md"], ["reference", "gestes.md"]] },
   explorer: { plafond: 6500, /* mesure 5 748 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "explorer"], ["pile", "contexte", "spec"]] },
-  "designer, planche": { plafond: 44500, /* mesure 42 230 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"], ["pile", "contexte", "ui"]] },
+  "designer, maquette": { plafond: 35000, /* mesure 33 056 (phase 8 : premier plafond ; registres.md seulement pour une planche ou une direction provisoire) */ parties: [["agent", "designer"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["modele", "ui/maquette-note.md"], ["pile", "contexte", "ui"]] },
+  "designer, planche": { plafond: 44500, /* mesure 42 588 (phase 8 : consigne de chargement des registres précisée) ; avant, 42 230 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"], ["pile", "contexte", "ui"]] },
   "ui-critic": { plafond: 45000, /* mesure 42 577 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "ui-critic"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/heuristiques.md"], ["modele", "ui/revue-ui.md"], ["pile", "contexte", "ui"]] },
 };
 const chargementAgent = (parties) => parties.reduce((somme, args) => somme + taille(projetAvecPack, ...args), 0);
@@ -199,12 +200,12 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 728
   "spec --sans-communes": 29500, // mesure 27 839
   "tech --sans-communes": 70000, // mesure 66 375 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "ui --sans-communes": 63500, // mesure 60 343 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "ui --sans-noyau": 69500, // mesure 65 802 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "ui --sans-communes": 24500, // mesure 23 170 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, 60 343
+  "ui --sans-noyau": 30500, // mesure 28 629 (même raison ; sous la limite de lecture) ; avant, 65 802
   "us --sans-communes": 18000, // mesure 16 910
 };
 const DEPASSEMENTS_CONNUS_AVEC_PACK = new Set([
-  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
+  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes",
 ]);
 function formesCitees() {
   const formes = new Set();

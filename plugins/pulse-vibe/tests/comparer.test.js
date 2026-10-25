@@ -125,3 +125,128 @@ test("relance : comparer.html réécrit à l'identique et jamais pris pour une v
   assert.strictEqual(r.status, 0);
   assert.strictEqual(page(d), premiere);
 });
+
+// --- Rangement des variantes (--ranger, --retenir) : lancé depuis la racine du projet, chemin relatif ---
+
+const projet = (variantes, sous = "docs/design/maquettes/US-001-liste") => {
+  const racine = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-ranger-"));
+  const d = path.join(racine, sous);
+  for (const [nom, fichiers] of Object.entries(variantes)) {
+    fs.mkdirSync(path.join(d, nom), { recursive: true });
+    for (const [f, contenu] of Object.entries(fichiers)) fs.writeFileSync(path.join(d, nom, f), contenu);
+  }
+  return { racine, d, sous };
+};
+const lancerDans = (cwd, ...args) => spawnSync("node", [COMPARER, ...args], { cwd, encoding: "utf8" });
+const existe = (...p) => fs.existsSync(path.join(...p));
+const lireF = (...p) => fs.readFileSync(path.join(...p), "utf8");
+const aujourdhui = () => {
+  const j = new Date();
+  return `${j.getFullYear()}-${String(j.getMonth() + 1).padStart(2, "0")}-${String(j.getDate()).padStart(2, "0")}`;
+};
+
+test("--ranger : les d*/v* présents vont dans alternatives/, prochain = plus grand numéro + 1, alternatives/ compris", () => {
+  const { racine, d, sous } = projet({
+    "d1-sobre": { "planche.html": html, "note.md": "**Thèse** : Sobre\n" },
+    "d2-vive": { "planche.html": html, "note.md": "**Thèse** : Vive\n" },
+    "alternatives/d3-ancienne": { "planche.html": html },
+    retenue: { "planche.html": html },
+  }, "docs/design/identite");
+  fs.writeFileSync(path.join(d, "comparer.html"), html);
+  const r = lancerDans(racine, sous, "--ranger");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^prochain: 4$/m);
+  assert.ok(existe(d, "alternatives", "d1-sobre", "planche.html") && existe(d, "alternatives", "d2-vive", "note.md"));
+  assert.ok(!existe(d, "d1-sobre") && !existe(d, "d2-vive"));
+  assert.ok(existe(d, "alternatives", "d3-ancienne") && existe(d, "retenue", "planche.html"), "retenue/ et alternatives/ restent en place");
+  assert.ok(!existe(d, "comparer.html"), "comparer.html périmé retiré");
+});
+
+test("--ranger : dossier encore absent ou sans variante → prochain: 1, rien d'écrit", () => {
+  const { racine } = projet({});
+  const r = lancerDans(racine, "docs/design/identite", "--ranger");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^prochain: 1$/m);
+  assert.ok(!existe(racine, "docs", "design", "identite"), "aucun dossier créé");
+});
+
+test("--ranger : un nom déjà pris dans alternatives/ reçoit un suffixe, rien n'est écrasé", () => {
+  const { racine, d, sous } = projet({ "v2-cartes": { "desktop.html": "nouvelle" }, "alternatives/v2-cartes": { "desktop.html": "ancienne" } });
+  const r = lancerDans(racine, sous, "--ranger");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^prochain: 3$/m);
+  assert.strictEqual(lireF(d, "alternatives", "v2-cartes", "desktop.html"), "ancienne");
+  assert.strictEqual(lireF(d, "alternatives", "v2-cartes-2", "desktop.html"), "nouvelle");
+});
+
+test("--retenir v2 --mobile v1 : ancienne retenue datée, choix copié, autres variantes rangées, comparer.html retiré", () => {
+  const { racine, d, sous } = projet({
+    "v1-liste": { "desktop.html": "bureau v1", "mobile.html": "mobile v1", "note.md": "**Thèse** : Liste\n" },
+    "v2-cartes": { "desktop.html": "bureau v2", "mobile.html": "mobile v2", "note.md": "**Thèse** : Cartes\n" },
+    "v3-tableau": { "desktop.html": "bureau v3", "mobile.html": "mobile v3" },
+    retenue: { "desktop.html": "ancienne", "critique.md": "ancienne critique" },
+  });
+  fs.writeFileSync(path.join(d, "comparer.html"), html);
+  const r = lancerDans(racine, sous, "--retenir", "v2", "--mobile", "v1");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(lireF(d, "retenue", "desktop.html"), "bureau v2");
+  assert.strictEqual(lireF(d, "retenue", "note.md"), "**Thèse** : Cartes\n");
+  assert.strictEqual(lireF(d, "retenue", "mobile.html"), "mobile v1");
+  assert.ok(!existe(d, "retenue", "critique.md"), "la critique de l'ancienne retenue part avec elle");
+  const ancienne = path.join(d, "alternatives", `retenue-${aujourdhui()}`);
+  assert.strictEqual(lireF(ancienne, "desktop.html"), "ancienne");
+  assert.strictEqual(lireF(ancienne, "critique.md"), "ancienne critique");
+  assert.ok(existe(d, "alternatives", "v3-tableau", "desktop.html") && !existe(d, "v3-tableau"), "variante écartée rangée");
+  assert.ok(existe(d, "v1-liste") && existe(d, "v2-cartes"), "les variantes choisies restent en place");
+  assert.ok(!existe(d, "comparer.html"));
+  assert.match(r.stdout, /^retenue: /m);
+});
+
+test("--retenir d'une planche d'identité, nom complet accepté, sans ancienne retenue", () => {
+  const { racine, d, sous } = projet({
+    "d1-sobre": { "planche.html": "planche 1", "note.md": "**Thèse** : Sobre\n" },
+    "d2-vive": { "planche.html": "planche 2", "note.md": "**Thèse** : Vive\n" },
+  }, "docs/design/identite");
+  const r = lancerDans(racine, sous, "--retenir", "d2-vive");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(lireF(d, "retenue", "planche.html"), "planche 2");
+  assert.ok(existe(d, "alternatives", "d1-sobre") && !existe(d, "alternatives", `retenue-${aujourdhui()}`));
+});
+
+test("--retenir : une deuxième ancienne retenue le même jour reçoit un suffixe", () => {
+  const { racine, d, sous } = projet({
+    "v4-hybride-mix": { "desktop.html": "hybride" },
+    retenue: { "desktop.html": "de ce matin" },
+    [`alternatives/retenue-${aujourdhui()}`]: { "desktop.html": "d'hier soir" },
+  });
+  const r = lancerDans(racine, sous, "--retenir", "v4");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.strictEqual(lireF(d, "alternatives", `retenue-${aujourdhui()}`, "desktop.html"), "d'hier soir");
+  assert.strictEqual(lireF(d, "alternatives", `retenue-${aujourdhui()}-2`, "desktop.html"), "de ce matin");
+  assert.strictEqual(lireF(d, "retenue", "desktop.html"), "hybride");
+});
+
+test("--retenir : variante inconnue ou ambiguë → code 2, rien ne bouge", () => {
+  const { racine, d, sous } = projet({
+    "v1-liste": { "desktop.html": "1" },
+    "v1-autre": { "desktop.html": "1 bis" },
+    retenue: { "desktop.html": "ancienne" },
+  });
+  for (const args of [["--retenir", "v9"], ["--retenir", "v1"], ["--retenir", "v1-liste", "--mobile", "v7"], ["--retenir", "retenue"]]) {
+    const r = lancerDans(racine, sous, ...args);
+    assert.strictEqual(r.status, 2, `${args.join(" ")} : ${r.stdout}${r.stderr}`);
+  }
+  assert.strictEqual(lireF(d, "retenue", "desktop.html"), "ancienne");
+  assert.ok(existe(d, "v1-liste") && existe(d, "v1-autre") && !existe(d, "alternatives"));
+});
+
+test("--ranger et --retenir : chemin absolu, avec .. ou lettre de lecteur refusé (code 2) ; option incomplète : code 1", () => {
+  const { racine, d } = projet({ "v1-a": { "desktop.html": html } });
+  for (const cible of [d, "../ailleurs", "C:/projet"]) {
+    const r = lancerDans(racine, cible, "--ranger");
+    assert.strictEqual(r.status, 2, `${cible} : ${r.stderr}`);
+  }
+  assert.ok(existe(d, "v1-a"));
+  assert.strictEqual(lancerDans(racine, "docs", "--retenir").status, 1);
+  assert.strictEqual(lancerDans(racine, "docs", "--retenir", "v1", "--mobile").status, 1);
+});

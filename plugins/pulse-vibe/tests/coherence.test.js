@@ -1054,8 +1054,8 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   assert.doesNotMatch(claude, /boucles de `\/pulse:implement`/);
   assert.doesNotMatch(claude, /traces de travail par session/);
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
-  assert.match(skillTexte("ui"), /quatre références de design/);
-  assert.doesNotMatch(skillTexte("ui"), /trois références/);
+  for (const r of ["ui/registres.md", "ui/regles-ui.md", "ui/anti-patterns.md"]) assert.ok(skillTexte("ui").includes(`pulse-aidd reference ${r}`), `ui : pointeur ${r}`);
+  assert.doesNotMatch(skillTexte("ui"), /trois références|quatre références/);
 });
 
 test("la règle deny se propose en clair : le bloc JSON se montre seulement sur demande", () => {
