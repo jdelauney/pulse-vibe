@@ -244,7 +244,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/brief.md" "$TPL/brief.md"
       afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
-    tech) # la démarche de choix (projet neuf) et l'organisation (étape 6.1, projet neuf sans pack) se chargent à l'étape qui les cite
+    tech) # la démarche de choix (projet neuf) et l'organisation (étape 6.1, projet neuf sans pack) se chargent à l'étape qui les cite ; les valeurs du pack aussi (pulse-aidd pile contexte tech, étape 6.1)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Modèle : docs/technical.md" "$SK/tech/assets/technical.md"
       afficher "Modèle : .gitignore" "$TPL/gitignore.template"
@@ -336,8 +336,9 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
   # review, spirc, auto-fix, implement : les agents qui relisent ou codent chargent eux-mêmes les consignes du pack (pulse-aidd pile contexte <commande>) ; la conversation principale orchestre.
+  # tech : les valeurs du pack servent une fois la pile choisie ; tech les charge à l'étape « Écrire », en un appel à part (avec elles, etape tech --sans-communes dépassait la limite de lecture de 30 000 caractères).
   # Pack déclaré mais absent : le bloc « non installé » reste affiché, la conversation propose de l'installer.
-  case "$1" in review|spirc|auto-fix|implement) command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { [ -z "$(pack_declare)" ] || pack_absent "$(pack_declare)"; } ;; *) contexte_pack "$1" ;; esac
+  case "$1" in review|spirc|auto-fix|implement|tech) command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { [ -z "$(pack_declare)" ] || pack_absent "$(pack_declare)"; } ;; *) contexte_pack "$1" ;; esac
 }
 
 case "$1" in
