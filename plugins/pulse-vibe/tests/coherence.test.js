@@ -1237,7 +1237,10 @@ test("fix confie la correction décidée au fixer, élargi aux corrections de co
   assert.match(fixer.match(/## Informations reçues\n\n([^\n]*)\n/)[1], /cause trouvée|solution retenue/, "champs de la correction de comportement annoncés");
   assert.match(fix.match(/^allowed-tools:.*$/m)[0], /Bash\(pulse-aidd agent fixer\)/);
   assert.match(fixer, /change le comportement de l'appli, la signaler au lieu de l'appliquer, sauf si le message la donne comme solution retenue avec la personne \(section « Correction de comportement »\)/);
-  assert.match(section, /sans commande de preuve, rendre « preuve à refaire par la personne »/);
+  assert.match(section, /sans commande de preuve, ou si la preuve est un parcours, rendre « preuve à refaire par la personne »/);
+  assert.doesNotMatch(fixer.match(/^disallowedTools: .*$/m)[0], /\bWrite\b/, "un nouveau fichier peut être demandé par la solution retenue");
+  assert.match(section, /créer un fichier seulement quand la solution retenue le nomme ; sinon, la signaler/);
+  assert.match(section, /Les corrections de `\/pulse:auto-fix` restent des modifications de fichiers existants/);
   assert.match(section, /« Une autre solution paraît nécessaire : … »/);
   assert.match(fix, /chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin/);
   assert.match(fix, /confiée à `pulse:fixer` \(outil Agent, `model: "sonnet"`\)/);
@@ -1245,6 +1248,17 @@ test("fix confie la correction décidée au fixer, élargi aux corrections de co
   assert.doesNotMatch(fix, /Une correction complexe se fait dans la conversation principale/);
   const symptomes = (fix.match(/\| Symptôme \| Cause habituelle \|\n\|---\|---\|\n((?:\|[^\n]*\n)+)/) || [])[1] || "";
   assert.strictEqual(symptomes.trim().split("\n").length, 5, "tableau des symptômes ramené aux cinq lignes propres à Pulse");
+});
+
+test("fix et fixer : le même plafond de 5 fichiers", () => {
+  const fixer = lire(RACINE, "agents", "fixer.md");
+  const fix = lire(RACINE, "skills", "fix", "SKILL.md");
+  const cote = (texte, motif) => (texte.match(motif) || [])[1];
+  assert.strictEqual(cote(fix, /tient en (\d+) fichiers au plus/), "5");
+  const plafond = cote(fixer, /dans (\d+) fichiers au plus/);
+  assert.strictEqual(cote(fix, /une demande par groupe de (\d+) au plus/), plafond, "groupes de fix = plafond du fixer");
+  assert.strictEqual(cote(fixer, /Pour chaque fichier \((\d+) au plus\)/), plafond);
+  assert.strictEqual(cote(fixer, /les fichiers \((\d+) au plus\)/), plafond);
 });
 
 test("chaque agent a un modèle explicite (model:)", () => {

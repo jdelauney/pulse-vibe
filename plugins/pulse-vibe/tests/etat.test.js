@@ -217,6 +217,13 @@ test("travail en cours : une reprise d'implement sans tâche conseille spirc, av
   assert.deepStrictEqual([sans.regle, sans.prochaine], ["R1", "/pulse:spirc US-002"]);
   const avec = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement US-002 T3") }));
   assert.deepStrictEqual([avec.regle, avec.prochaine], ["R1", "/pulse:implement US-002 T3"]);
+  // Les options (-d, -t…) ne cachent pas l'absence de tâche ; -s, propre à implement, n'est pas repris.
+  const options = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement -dt US-002") }));
+  assert.deepStrictEqual([options.regle, options.prochaine], ["R1", "/pulse:spirc -dt US-002"]);
+  const coulisse = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement -s US-002") }));
+  assert.strictEqual(coulisse.prochaine, "/pulse:spirc US-002");
+  const optionsEtTache = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement -d US-002 T3") }));
+  assert.strictEqual(optionsEtTache.prochaine, "/pulse:implement -d US-002 T3");
 });
 
 test("projet neuf : raconter l'idée, ou démarrer vite (R9)", () => {
