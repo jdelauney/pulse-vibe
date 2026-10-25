@@ -344,8 +344,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     search-console)
       afficher "Search Console : relier, lire, suivre" "$SK/search-console/references/search-console.md"
       afficher "Modèle : docs/referencement/search-console-<date>.md" "$SK/search-console/assets/rapport-search-console.md"
-      afficher "Modèle : travail en cours" "$TPL/in-progress.md"
-      lexique ;;
+      lexique ;; # relier.md et le modèle du travail en cours : chargés à l'étape qui les cite (skills/search-console/SKILL.md)
     learn)
       afficher "Pédagogie du professeur" "$SK/learn/references/pedagogie.md"
       afficher "Modèle : docs/apprentissage.md" "$SK/learn/assets/apprentissage.md"
