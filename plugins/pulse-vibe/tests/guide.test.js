@@ -10,6 +10,39 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const GUIDE = path.join(__dirname, "..", "scripts", "guide.js");
+const ETAT = path.join(__dirname, "..", "scripts", "etat.js");
+
+// Un projet Pulse prêt jusqu'aux user stories : la prochaine étape du guide est celle de pulse-aidd etat.
+const CLAUDE = `# TodoIt
+
+## Résumé du projet
+
+Ce projet suit la **méthode Pulse**.
+
+<!-- pulse_pile:debut -->
+- **Pile** : HTML et JavaScript
+<!-- pulse_pile:fin -->
+
+<!-- pulse_memoire:debut -->
+<!-- pulse_memoire:fin -->
+
+<!-- pulse_profil:debut -->
+- **Niveau** : Jamais programmé
+<!-- pulse_profil:fin -->
+
+- Dépôt distant : aucun pour l'instant
+`;
+const PROJET_PULSE = {
+  "CLAUDE.md": CLAUDE,
+  "aidd_docs/memory/project.md": "# Projet\n",
+  "aidd_docs/memory/technical.md": "# Technique\n",
+  "aidd_docs/memory/glossary.md": "# Glossaire\n",
+  ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite *)"] } }\n',
+  "docs/brief.md": "# Brief\n",
+  "docs/prd.md": "# PRD\n",
+  "docs/technical.md": "# Technique\n",
+  "docs/user-stories.md": "# User stories\n",
+};
 
 const PLAN_US1 = `# Plan – TodoIt – US-001 Créer une tâche
 
@@ -75,7 +108,10 @@ const US6 = "partager/US-006-exporter-liste.md";
 function projet(plans = { [`${TACHES.epic}/${TACHES.us1}`]: PLAN_US1 }) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-guide-"));
   fs.mkdirSync(path.join(d, "aidd_docs", "tasks"), { recursive: true });
-  fs.writeFileSync(path.join(d, "CLAUDE.md"), "# TodoIt\n");
+  for (const [chemin, contenu] of Object.entries(PROJET_PULSE)) {
+    fs.mkdirSync(path.dirname(path.join(d, chemin)), { recursive: true });
+    fs.writeFileSync(path.join(d, chemin), contenu);
+  }
   for (const [nom, contenu] of Object.entries(plans)) ecrire(d, nom, contenu);
   return d;
 }
@@ -107,7 +143,7 @@ test("produit l'index et une page par plan, rangée dans le dossier de son epic,
   assert.match(index, /```\n\/pulse:review T2\n```/, "T2 en cours : la prochaine étape est la relecture");
   assert.match(index, /\| gerer-taches \| US-001 – Créer une tâche \| Indispensable \| 2 \| 1\/2 \|/);
   assert.match(index, /Première version \(US Indispensables planifiées\) : 1\/2/);
-  assert.match(index, /Choisir les outils[^\n]*\n- \[ \] ⚪ Définir l'identité visuelle \(facultatif, avant les user stories\) : `\/pulse:ui identite`[^\n]*\n- \[ \] Écrire les user stories/, "l'identité visuelle, facultative, entre la pile et les user stories");
+  assert.match(index, /Choisir les outils[^\n]*\n- \[ \] ⚪ Définir l'identité visuelle \(facultatif, avant les user stories\) : `\/pulse:ui identite`[^\n]*\n- \[[ x]\] Écrire les user stories/, "l'identité visuelle, facultative, entre la pile et les user stories");
   assert.doesNotMatch(index + lire(d, US1), /T99/, "le Journal est ignoré");
   assert.doesNotMatch(index, /T98|\| revues \|/, "les rapports de relecture ne sont ni un plan ni une epic");
 });
@@ -141,15 +177,18 @@ test("plusieurs plans : MVP d'abord, la mise en ligne après toutes ses tâches,
   assert.ok(index.indexOf("| US-001 –") < index.indexOf("| US-002 –") && index.indexOf("| US-002 –") < index.indexOf("| US-006 –"), "les US Indispensables d'abord");
   assert.match(index, /⚠️ Spec sans plan : `\/pulse:plan US-007`/);
   assert.doesNotMatch(index, /Spec sans plan : `\/pulse:plan US-006`/);
+  assert.match(index, /```\n\/pulse:review T2\n```/, "une tâche en cours passe avant la spec sans plan, comme dans pulse-aidd etat");
+  fs.unlinkSync(path.join(d, "aidd_docs", "tasks", "partager", "SPEC-US-007-rappels.md"));
 
   ecrire(d, `${TACHES.epic}/${TACHES.us1}`, PLAN_US1.replace("- [~] **T2", "- [x] **T2"));
   lancer(d);
-  assert.match(lire(d, "index.md"), /```\n\/pulse:implement US-002 T3\n```/, "T3 avant la mise en ligne T4");
+  assert.match(lire(d, "index.md"), /```\n\/pulse:spirc US-002\n```/, "T3 avant la mise en ligne T4 : réaliser US-002 (règle R19 de pulse-aidd etat)");
+  assert.match(lire(d, "index.md"), /Tâche à reprendre : \*\*T3 – Cocher une tâche\*\* \(⬜ à faire\), US `US-002`, dans \[gerer-taches\/US-002-terminer-tache\.md\]/);
 
   ecrire(d, `${TACHES.epic}/${TACHES.us2}`, PLAN_US2.replace("- [ ] **T3", "- [x] **T3"));
   ecrire(d, "gerer-taches/PLAN-SPEC-US-003-supprimer-tache", PLAN_US2.replace(/US-002/g, "US-003").replace("T3 – Cocher", "T6 – Supprimer").replace(/\n<!--[\s\S]*$/, "\n"));
   lancer(d);
-  assert.match(lire(d, "index.md"), /```\n\/pulse:implement US-003 T6\n```/, "une US Indispensable planifiée plus tard passe avant la mise en ligne");
+  assert.match(lire(d, "index.md"), /```\n\/pulse:spirc US-003\n```/, "une US Indispensable planifiée plus tard passe avant la mise en ligne");
 
   ecrire(d, "gerer-taches/PLAN-SPEC-US-003-supprimer-tache", "# Plan\n\n- **Priorité** : Indispensable\n\n## Tâches\n\n- [x] **T6 – Supprimer** · US-003\n");
   lancer(d);
@@ -161,11 +200,25 @@ test("plusieurs plans : MVP d'abord, la mise en ligne après toutes ses tâches,
   assert.match(lire(d, "index.md"), /```\n\/pulse:review T5\n```/, "une tâche en cours passe avant les autres");
 });
 
+test("index et résumé : la même prochaine commande que pulse-aidd etat (T1 terminée, T2 à faire : /pulse:spirc US-002)", () => {
+  const plan = PLAN_US1.replace(/US-001/g, "US-002").replace("- [~] **T2", "- [ ] **T2");
+  const d = projet({ [`${TACHES.epic}/PLAN-SPEC-US-002-voir-liste`]: plan });
+  const r = lancer(d);
+  assert.strictEqual(r.status, 0, r.stdout);
+  const etat = spawnSync("node", [ETAT, "--sans-git"], { cwd: d, encoding: "utf8" }).stdout;
+  assert.match(etat, /^prochaine: \/pulse:spirc US-002$/m);
+  const index = lire(d, "index.md");
+  assert.match(index, /```\n\/pulse:spirc US-002\n```/);
+  assert.match(index, /la même que `\/pulse:status`/);
+  assert.doesNotMatch(index, /^\/pulse:implement US-002 T2$/m, "plus de règle propre au guide pour l'index");
+  assert.match(r.stdout, /➡️ Prochaine étape : \/pulse:spirc US-002 {2}\(US-002 a des tâches à réaliser/);
+});
+
 test("US indépendante : proposée dans une deuxième session, sauf si on y travaille déjà ou si elle est terminée", () => {
   const parallele = (texte) => PLAN_US1.replace("**Priorité** : Indispensable", `**Priorité** : Indispensable\n- **En parallèle avec** : ${texte}`);
   const d = projet({ [`${TACHES.epic}/${TACHES.us1}`]: parallele("US-006 (aucun fichier ni donnée en commun avec US-002)"), "partager/PLAN-SPEC-US-006-exporter-liste": PLAN_US6 });
   lancer(d);
-  assert.match(lire(d, "index.md"), /```\n\/pulse:review T2\n```\n\n💡 En même temps, dans une deuxième session Claude Code : `\/pulse:spirc US-006` \(US-006 – Exporter la liste/);
+  assert.match(lire(d, "index.md"), /```\n\/pulse:review T2\n```\n\nTâche à reprendre : [^\n]*\n\n💡 En même temps, dans une deuxième session Claude Code : `\/pulse:spirc US-006` \(US-006 – Exporter la liste/);
   assert.doesNotMatch(lire(d, "index.md"), /spirc -w/);
   assert.doesNotMatch(lire(d, "index.md"), /deuxième session Claude Code : `\/pulse:spirc US-002`/, "une US citée dans la parenthèse n'est pas retenue");
   assert.match(lire(d, US1), /Peut avancer en parallèle de : US-006/);

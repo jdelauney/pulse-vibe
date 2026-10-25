@@ -174,9 +174,13 @@ function prochaineTache(plans) {
   return ordre.find((x) => x.tache.statut === "en-cours") || ordre.find((x) => x.tache.statut === "a-faire") || null;
 }
 
-function commandeSuivante(plan, tache) {
-  if (estMiseEnLigne(tache)) return "/pulse:deploy";
-  return tache.statut === "en-cours" ? `/pulse:review ${tache.id}` : `/pulse:implement ${plan.id} ${tache.id}`;
+/**
+ * La prochaine étape conseillée, calculée comme pour /pulse:status et /pulse:init (scripts/etat.js), sans Git ni décision
+ * en attente : le guide n'est refait qu'au changement d'un plan, une décision en attente y resterait périmée.
+ */
+function prochaineEtape() {
+  const { lireFaits, decider } = require("./etat.js");
+  return decider({ ...lireFaits(process.cwd(), { git: false }), enAttente: null });
 }
 
 /** Un worktree est-il déjà ouvert pour cette US (dossier .claude/worktrees/us-xxx-…) ? */
@@ -196,7 +200,7 @@ function usEnParallele(plans, plan) {
   );
 }
 
-function ecrireIndex(plans, nom) {
+function ecrireIndex(plans, nom, conseil) {
   const suite = prochaineTache(plans);
   const lignes = [
     `# Guide de réalisation – ${nom}`,
@@ -211,15 +215,16 @@ function ecrireIndex(plans, nom) {
   if (mvp.length > 0) {
     lignes.push(`Première version (US Indispensables planifiées) : ${mvp.filter((t) => t.statut === "terminee").length}/${mvp.length} tâche(s) terminée(s).`, "");
   }
+  if (!suite) {
+    lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
+  }
+  lignes.push(`Prochaine commande à copier (la même que \`/pulse:status\`) : ${conseil.raison}.`, "", "```", conseil.prochaine, "```", "");
   if (suite) {
-    lignes.push(`Prochaine étape : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}) :`, "");
-    lignes.push("```", commandeSuivante(suite.plan, suite.tache), "```", "");
+    lignes.push(`Tâche à reprendre : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}).`, "");
     const autre = usEnParallele(plans, suite.plan);
     if (autre) {
       lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera un dossier à part).`, "");
     }
-  } else {
-    lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
   }
   lignes.push("## Avant de construire", "", ...etapesAvantLePlan(plans), "");
   lignes.push("## Les plans", "", "| Groupe | US | Priorité | Tâches | Terminées | Guide |", "|---|---|---|---|---|---|");
@@ -370,7 +375,8 @@ function generer() {
     if (avant !== contenu) fs.writeFileSync(complet, contenu, "utf8");
     ecrits.push(f);
   };
-  ecrire("index.md", ecrireIndex(plans, nom));
+  const conseil = prochaineEtape();
+  ecrire("index.md", ecrireIndex(plans, nom, conseil));
   for (const plan of plans) ecrire(plan.guide, ecrirePlan(plan, nom));
   const toutes = plans.flatMap((p) => p.taches);
   return {
@@ -379,7 +385,7 @@ function generer() {
     plans: plans.length,
     taches: toutes.length,
     faites: toutes.filter((t) => t.statut === "terminee").length,
-    suite: prochaineTache(plans),
+    conseil,
   };
 }
 
@@ -415,7 +421,7 @@ if (require.main === module) {
       console.log(`✅ Guide de réalisation à jour : ${r.plans} plan(s), ${r.faites}/${r.taches} tâche(s) terminée(s).`);
       for (const f of r.ecrits) console.log(`   docs/guide/${f}`);
       for (const n of r.ignores) console.log(`⚠️ ${n} : aucune tâche reconnue, plan ignoré.`);
-      if (r.suite) console.log(`➡️ Prochaine étape : ${commandeSuivante(r.suite.plan, r.suite.tache)}  (${r.suite.tache.id} – ${r.suite.tache.titre})`);
+      console.log(`➡️ Prochaine étape : ${r.conseil.prochaine}  (${r.conseil.raison})`);
     }
   }
 }
