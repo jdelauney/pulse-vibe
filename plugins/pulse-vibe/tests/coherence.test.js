@@ -680,6 +680,10 @@ test("décision 6 : plus de réorganisation de l'ancien format, les contrôles d
   assert.match(init, /`pulse-aidd reference init\/controles\.md`/);
   assert.doesNotMatch(init.match(/^allowed-tools:.*$/m)[0], /Bash\(git mv \*\)/, "git mv servait seulement à la réorganisation");
   assert.match(lire(RACINE, "skills", "init", "references", "controles.md"), /`CLAUDE\.md` sans la ligne des commandes à proposer \(`\/pulse:status`, `\/pulse:refine`\)/);
+  assert.match(lire(RACINE, "skills", "init", "references", "controles.md"), /section « Commandes » absente : la créer avant « Contraintes », d'après le modèle/);
+  // Le wiki cite aussi le signe le plus fréquent après une mise à jour : la ligne qui fait proposer la bonne commande.
+  const initHtml = lire(DEPOT, "docs", "commandes", "init.html");
+  assert.strictEqual((initHtml.match(/la ligne qui fait proposer la bonne commande/g) || []).length, 2, "init.html : liste et problème fréquent");
 });
 
 test("init et status ne citent que des clés et des valeurs réellement émises par etat.js", () => {
@@ -1915,7 +1919,14 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
 
 test("décision 5 : projet existant, tech puis memory creer ; la pile écrite seulement dans docs/technical.md et « Stack technique »", () => {
   const memory = lire(RACINE, "skills", "memory", "SKILL.md");
-  assert.match(memory, /code sans `docs\/technical\.md`[^\n]*taper d'abord `\/pulse:tech`/, "memory creer : tech d'abord");
+  assert.match(memory, /code sans `docs\/technical\.md`[^\n]*taper `\/pulse:tech`/, "memory creer : tech avant les conventions");
+  // Mémoire pas encore branchée : la brancher d'abord (pulse-aidd etat répond R6 tant qu'elle ne l'est pas), puis tech.
+  assert.match(memory, /\*\*Projet qui contient du code sans `docs\/technical\.md`\*\* : créer les fichiers qui manquent \(étape 2\) et brancher la mémoire \(étape 5\) ; puis proposer de taper `\/pulse:tech`/);
+  // creer qui ne trouve aucune convention le note, pour que pulse-aidd etat passe à la suite (R8d ne revient pas).
+  assert.match(memory, /`- Aucune convention propre relevée \(AAAA-MM-JJ\)\.`/);
+  // R8d lit le repère que tech écrit pour un projet existant (pulse-aidd etat, fait pileObservee).
+  assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée, pas de comparaison »"));
+  assert.ok(lire(RACINE, "scripts", "etat.js").includes("Projet existant : pile observée"));
   assert.match(memory, /les fichiers créés, et ceux encore au modèle/, "creer remplit aussi les fichiers restés au modèle");
   assert.match(memory, /la pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
   assert.doesNotMatch(memory, /pile et conventions depuis/);

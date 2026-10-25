@@ -344,6 +344,8 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     modeleAncien: claude.etat === "pulse" && modeleAncien(racine, texteClaude),
     codeExistant: codeExistant(racine),
     conventionsVides: conventionsVides(lireSi(p("aidd_docs", "memory", "technical.md"))),
+    // Repère écrit par /pulse:tech, chemin A (projet existant) : un projet neuf compare des options, même avec un squelette posé.
+    pileObservee: /Projet existant : pile observée/.test(lireSi(p("docs", "technical.md")) || ""),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
     controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite *)"), // la forme sans argument ne couvre pas « qualite <familles> » (pulse 0.49)
@@ -411,7 +413,7 @@ function decider(f) {
   if (f.codeExistant && !d.brief && !d.prd && !d.userStories && !d.technical) {
     return verdict("R8c", "/pulse:tech", "le projet existant a déjà du code : documenter les outils qu'il utilise (Chemin A) avant de continuer");
   }
-  if (f.codeExistant && !d.brief && !d.prd && !d.userStories && d.technical && f.conventionsVides) {
+  if (f.codeExistant && f.pileObservee && !d.brief && !d.prd && !d.userStories && d.technical && f.conventionsVides) {
     aussi.unshift("/pulse:prd — passer directement au périmètre de la première version");
     return verdict("R8d", "/pulse:memory creer", "les outils du projet existant sont documentés : noter dans la mémoire les conventions et les pièges propres à son code");
   }
