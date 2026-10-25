@@ -86,7 +86,7 @@ const PLAFONDS_COMMANDE = {
   fix: 32000, // mesure 30 102 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 933 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 23500, // mesure 22 116 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
   guide: 29500, // mesure 28 033 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 661 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 577
-  implement: 53000, // mesure 50 212 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 60 136 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 60 878 (pulse 0.47 : la boucle sur tout le plan chargée seulement sans tâche, skills/implement/references/boucle.md)
+  implement: 47500, // mesure 44 812 (pulse 0.52 : une seule tâche, boucle.md supprimée, SKILL.md raccourci) ; avant, mesure 50 212 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 60 136 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 60 878 (pulse 0.47 : la boucle sur tout le plan chargée seulement sans tâche, skills/implement/references/boucle.md)
   init: 61500, // mesure 58 565 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 64 250 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 33000, // mesure 31 126 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 613 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 39 206
   memory: 32500, // mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
@@ -112,11 +112,6 @@ const PLAFONDS_COMMANDE = {
 
 // Une boucle de 4 tâches : ce que la conversation principale charge, une seule fois.
 const BOUCLES = {
-  implement: {
-    // mesure 86 580 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
-    plafond: 96000, // mesure 91 360 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 99 888 (pulse 0.47 : boucle.md, sortie du SKILL.md, est désormais comptée dans la boucle)
-    parties: [["contexte", "implement"], ["etape", "review", "--sans-communes"], ["etape", "commit", "--sans-communes"], ["reference", "depot-distant.md"], ["reference", "implement/boucle.md"]],
-  },
   spirc: {
     // mesure 77 918 à la fin du plan « Corrections 4 » × 1,05, arrondie au 500 supérieur.
     plafond: 81500, // mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 88 728 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
@@ -178,7 +173,6 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_ETAPES)) {
 // « pulse-aidd reference regles-taches.md » et « regles-realisation.md », en appels séparés.
 const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES = {
-  "auto-fix --sans-communes": 5500, // mesure 5 212
   "auto-fix --sans-noyau": 12500, // mesure 11 479
   "brainstorm --sans-communes": 22000, // mesure 20 553
   "cicd --sans-communes": 28500, // mesure 26 708

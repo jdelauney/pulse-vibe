@@ -76,7 +76,7 @@ La prochaine étape conseillée est celle de `pulse-aidd etat` (lignes `prochain
 Après l'affichage, seulement si un worktree est dans ce cas :
 
 - **Fusionné, sans modification non enregistrée** : demander (AskUserQuestion) « Supprimer les dossiers à part déjà rassemblés (Recommandé) » / « Les garder », en les nommant. Si oui, pour chacun : `git worktree remove .claude/worktrees/<nom>` puis `git branch -d <branche>` (jamais `--force` ni `-D` : si Git refuse, le dire et en rester là). Une session peut encore travailler dedans : si `pulse-aidd sessions` signale une autre session, le rappeler dans la question.
-- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le dossier à part `us-xxx-<nom>` : `/pulse:implement US-XXX` ou `/pulse:spirc US-XXX` (Pulse propose d'y revenir) pour continuer et le rassembler ».
+- **Non fusionné** : le garder, et le signaler avec la façon de reprendre : « travail en cours dans le dossier à part `us-xxx-<nom>` : `/pulse:spirc US-XXX` (Pulse propose d'y revenir) pour continuer et le rassembler ».
 - **Fusionné mais avec des modifications non enregistrées** : le garder ; le signaler (« des changements y restent, non enregistrés »).
 
 De même, une branche locale `feat/us-…` sans worktree, déjà fusionnée dans la branche du dossier principal (`git branch --merged`, après `git pull` si la demande de fusion a été acceptée sur le site) et inutilisée en ce moment : proposer de la supprimer (`git branch -d`, jamais `-D`). Une demande de fusion encore ouverte pour un plan terminé (`gh pr view`, `glab mr view`) : rappeler à la personne que cette proposition attend d'être acceptée sur le site du dépôt.

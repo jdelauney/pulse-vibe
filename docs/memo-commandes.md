@@ -32,7 +32,7 @@
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
+| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : Pulse propose de taper `/pulse:spirc`, qui enchaîne tout le plan) |
 | `/pulse:review` | Deux assistants indépendants relisent et essaient la tâche en marche ; **vous testez** ; on corrige |
 | `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne, après votre accord |
 
@@ -47,7 +47,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt » : Pulse prépare la version parallèle et sa proposition (relisible sur le site du dépôt, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
 
-🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose un **dossier à part** du projet (un worktree), sur sa propre version parallèle, puis rassemble le travail à la fin.
+🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:spirc US-002` (ou `/pulse:implement US-002 T1`) dans la deuxième. Pulse voit l'autre session et vous propose un **dossier à part** du projet (un worktree), sur sa propre version parallèle, puis rassemble le travail à la fin.
 
 ## 5. Mettre en ligne
 

@@ -24,7 +24,7 @@
 <!-- /auto:etape -->
 <h1><code>/pulse:implement</code></h1>
 <!-- auto:chapo -->
-<p class="chapo">Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante).</p>
+<p class="chapo">Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; pour enchaîner tout le plan, /pulse:spirc.</p>
 <!-- /auto:chapo -->
 </header>
 
@@ -32,8 +32,8 @@
 
 <section id="description">
 <h2>Description</h2>
-<p>Avec un numéro de tâche, <code>/pulse:implement</code> réalise cette tâche du plan, puis vous l'explique : ce qui a changé, fichier par fichier, une notion de programmation tirée du code (« 💡 la notion du jour »), et les étapes pour la tester vous-même. La relecture et l'enregistrement viennent ensuite, avec <a href="review.html"><code>/pulse:review</code></a> puis <a href="commit.html"><code>/pulse:commit</code></a>.</p>
-<p>Sans numéro de tâche, elle réalise tout le plan, en boucle. Chaque tâche est réalisée, relue et vérifiée par deux assistants qui ne l'ont pas écrite, testée par vous, corrigée si besoin, puis enregistrée avant de passer à la suivante. Chaque tâche a sa propre version enregistrée.</p>
+<p><code>/pulse:implement</code> réalise une tâche du plan, puis vous l'explique : ce qui a changé, fichier par fichier, une notion de programmation tirée du code (« 💡 la notion du jour »), et les étapes pour la tester vous-même. La relecture et l'enregistrement viennent ensuite, avec <a href="review.html"><code>/pulse:review</code></a> puis <a href="commit.html"><code>/pulse:commit</code></a>.</p>
+<p>Sans numéro de tâche, elle vous propose de taper <a href="spirc.html"><code>/pulse:spirc US-001</code></a>, qui enchaîne tout le plan, ou de réaliser seulement la tâche suivante ici.</p>
 <p>Au démarrage, une seule série de questions : Pulse code-t-il en coulisse (un assistant spécialisé code à part, la conversation reste légère) ou devant vous (vous voyez chaque étape) ? Faut-il écrire les tests d'abord, travailler dans un dossier à part, et comment envoyer le travail ? Avec le profil « Jamais programmé », Pulse prend les réglages conseillés et vous les annonce en une phrase.</p>
 <pre class="commande"><code>T3 – Afficher les créneaux libres
 
@@ -49,25 +49,22 @@ Ce qui a changé
   3. Un créneau déjà réservé n'apparaît pas</code></pre>
 <p class="legende">L'explication d'une tâche réalisée, telle que <code>/pulse:implement</code> la présente.</p>
 
-<figure class="anim" data-etapes="6" data-duree="1300">
-<svg viewBox="0 0 760 270" role="img" aria-labelledby="implement-boucle-titre">
-<title id="implement-boucle-titre">La boucle de /pulse:implement sur tout le plan</title>
-<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="6" width="222" height="64" rx="18"/><rect class="schema-boite-active" x="10" y="12" width="210" height="52" rx="14"/><text class="schema-texte" x="115" y="35" text-anchor="middle">Au démarrage</text><text class="schema-texte-secondaire" x="115" y="53" text-anchor="middle">en coulisse ou devant vous</text></g>
-<path class="schema-fleche trace e2" pathLength="1" d="M90 64 V98" marker-end="url(#implement-pointe-grise)"/>
-<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="4" y="98" width="172" height="68" rx="18"/><rect class="schema-boite" x="10" y="104" width="160" height="56" rx="14"/><text class="schema-texte" x="90" y="128" text-anchor="middle">Réaliser la tâche</text><text class="schema-texte-secondaire" x="90" y="146" text-anchor="middle">et vous l'expliquer</text></g>
-<path class="schema-fleche trace e3" pathLength="1" d="M170 132 H196" marker-end="url(#implement-pointe-grise)"/>
-<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="194" y="98" width="172" height="68" rx="18"/><rect class="schema-boite" x="200" y="104" width="160" height="56" rx="14"/><text class="schema-texte" x="280" y="128" text-anchor="middle">Relire et vérifier</text><text class="schema-texte-secondaire" x="280" y="146" text-anchor="middle">puis vous testez</text></g>
-<path class="schema-fleche trace e4" pathLength="1" d="M360 132 H386" marker-end="url(#implement-pointe-grise)"/>
-<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="384" y="98" width="172" height="68" rx="18"/><rect class="schema-boite" x="390" y="104" width="160" height="56" rx="14"/><text class="schema-texte" x="470" y="128" text-anchor="middle">Corriger</text><text class="schema-texte-secondaire" x="470" y="146" text-anchor="middle">deux fois au plus</text></g>
-<path class="schema-fleche trace e5" pathLength="1" d="M550 132 H576" marker-end="url(#implement-pointe-grise)"/>
-<g class="e5" data-etape="5"><rect class="actif-halo schema-halo-primaire" x="574" y="98" width="172" height="68" rx="18"/><rect class="schema-boite" x="580" y="104" width="160" height="56" rx="14"/><text class="schema-texte" x="660" y="128" text-anchor="middle">Enregistrer</text><text class="schema-texte-secondaire" x="660" y="146" text-anchor="middle">une version par tâche</text></g>
-<g class="e6" data-etape="6"><path class="schema-accompagne trace e6" pathLength="1" d="M660 162 C660 240 90 240 90 164" marker-end="url(#implement-pointe-mauve)"/><text class="schema-texte-secondaire" x="375" y="258" text-anchor="middle">tâche suivante, jusqu'à la fin du plan</text></g>
+<figure class="anim" data-etapes="4" data-duree="1300">
+<svg viewBox="0 0 760 170" role="img" aria-labelledby="implement-tache-titre">
+<title id="implement-tache-titre">Une tâche réalisée par /pulse:implement</title>
+<g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="4" y="50" width="172" height="68" rx="18"/><rect class="schema-boite-active" x="10" y="56" width="160" height="56" rx="14"/><text class="schema-texte" x="90" y="80" text-anchor="middle">Au démarrage</text><text class="schema-texte-secondaire" x="90" y="98" text-anchor="middle">en coulisse ou devant vous</text></g>
+<path class="schema-fleche trace e2" pathLength="1" d="M170 84 H196" marker-end="url(#implement-pointe-grise)"/>
+<g class="e2" data-etape="2"><rect class="actif-halo schema-halo-primaire" x="194" y="50" width="172" height="68" rx="18"/><rect class="schema-boite" x="200" y="56" width="160" height="56" rx="14"/><text class="schema-texte" x="280" y="80" text-anchor="middle">Réaliser la tâche</text><text class="schema-texte-secondaire" x="280" y="98" text-anchor="middle">une seule</text></g>
+<path class="schema-fleche trace e3" pathLength="1" d="M360 84 H386" marker-end="url(#implement-pointe-grise)"/>
+<g class="e3" data-etape="3"><rect class="actif-halo schema-halo-primaire" x="384" y="50" width="172" height="68" rx="18"/><rect class="schema-boite" x="390" y="56" width="160" height="56" rx="14"/><text class="schema-texte" x="470" y="80" text-anchor="middle">Vérifier</text><text class="schema-texte-secondaire" x="470" y="98" text-anchor="middle">deux essais au plus</text></g>
+<path class="schema-fleche trace e4" pathLength="1" d="M550 84 H576" marker-end="url(#implement-pointe-mauve)"/>
+<g class="e4" data-etape="4"><rect class="actif-halo schema-halo-primaire" x="574" y="50" width="172" height="68" rx="18"/><rect class="schema-boite" x="580" y="56" width="160" height="56" rx="14"/><text class="schema-texte" x="660" y="80" text-anchor="middle">Expliquer</text><text class="schema-texte-secondaire" x="660" y="98" text-anchor="middle">et vous donner le test</text></g>
 <defs>
 <marker id="implement-pointe-grise" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe-grise"/></marker>
 <marker id="implement-pointe-mauve" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="schema-pointe"/></marker>
 </defs>
 </svg>
-<figcaption>Au démarrage, vous choisissez si Pulse code en coulisse ou devant vous. Puis, pour chaque tâche : Pulse la réalise et vous l'explique, deux assistants la relisent et la vérifient, vous la testez, Pulse corrige si besoin (deux fois au plus) et enregistre une version. Il passe ensuite à la tâche suivante, jusqu'à la fin du plan.</figcaption>
+<figcaption>Au démarrage, vous choisissez si Pulse code en coulisse ou devant vous. Puis Pulse réalise la tâche, vérifie ses contrôles automatiques (deux essais au plus), vous l'explique et vous donne le test à faire. La relecture et l'enregistrement viennent ensuite, avec /pulse:review puis /pulse:commit.</figcaption>
 </figure>
 </section>
 
@@ -77,7 +74,7 @@ Ce qui a changé
 <li><strong>Une tâche à la fois.</strong> Chaque tâche est petite, testée et enregistrée seule : un problème se repère tout de suite.</li>
 <li><strong>Vous apprenez en chemin.</strong> À chaque tâche, une notion de programmation tirée de votre propre code, expliquée simplement et ajoutée à votre lexique.</li>
 <li><strong>Le code suit vos choix.</strong> Pulse code seulement ce que demande la tâche, avec les outils retenus, l'apparence choisie et vos maquettes. Une idée en plus est notée « En attente » dans le PRD, pour plus tard.</li>
-<li><strong>Tout le plan, sans rien oublier.</strong> Sans numéro de tâche, la boucle enchaîne réaliser, relire, tester, corriger et enregistrer, pour chaque tâche.</li>
+<li><strong>Tout le plan, quand vous le voulez.</strong> Sans numéro de tâche, Pulse vous propose <a href="spirc.html"><code>/pulse:spirc</code></a>, qui enchaîne réaliser, relire, tester, corriger et enregistrer, pour chaque tâche.</li>
 </ul>
 </section>
 
@@ -97,25 +94,25 @@ Ce qui a changé
 <ul>
 <li><strong>Après <a href="plan.html"><code>/pulse:plan</code></a></strong> (et <a href="refine.html"><code>/pulse:refine</code></a> si vous avez ajusté le plan).</li>
 <li><strong>Avec un numéro de tâche</strong>, pour avancer pas à pas : ensuite <a href="review.html"><code>/pulse:review</code></a>, puis <a href="commit.html"><code>/pulse:commit</code></a>.</li>
-<li><strong>Sans numéro de tâche</strong>, pour réaliser tout le plan d'une US.</li>
-<li><strong>Pour reprendre</strong> après une pause ou un <code>/clear</code> : relancez <code>/pulse:implement US-001</code>. La boucle reprend là où elle s'était arrêtée, votre test compris.</li>
+<li><strong>Sans numéro de tâche</strong>, pour être guidé vers <a href="spirc.html"><code>/pulse:spirc</code></a>, qui réalise tout le plan d'une US.</li>
+<li><strong>Pour reprendre</strong> une tâche en cours après une pause ou un <code>/clear</code> : relancez <code>/pulse:implement US-001 T3</code>. Pulse regarde où la tâche en est et vous propose la bonne suite (relecture, test ou enregistrement).</li>
 <li><strong>Dans une deuxième session Claude Code</strong> sur le même projet : Pulse le voit et vous propose un dossier à part.</li>
 </ul>
-<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> après 3 tâches, la conversation s'alourdit. Tapez <code>/clear</code>, puis relancez <code>/pulse:implement US-001</code> : la boucle reprend grâce aux statuts du plan et aux rapports de relecture.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour tout un plan, tapez <code>/pulse:spirc US-001</code> : après 3 tâches, vous pourrez faire <code>/clear</code> puis relancer la même commande, qui reprend grâce aux statuts du plan et aux rapports de relecture.</p></aside>
 </section>
 
 <section id="arguments">
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
-<pre class="commande"><code>/pulse:implement &lt;US-XXX&gt; [T3]</code></pre>
-<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Sans tâche : tout le plan.</p>
+<pre class="commande"><code>/pulse:implement &lt;US-XXX&gt; &lt;T3&gt;</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
 <ul>
 <li><strong>L'US</strong> : celle dont vous réalisez le plan, par exemple <code>US-001</code>. Absente ou introuvable, Pulse liste les plans (en premier celui qui a une tâche en cours) et vous demande lequel.</li>
-<li><strong>La tâche</strong> (facultative) : par exemple <code>T3</code>, pour réaliser cette seule tâche. Sans elle, Pulse réalise toutes les tâches restantes du plan, dans l'ordre.</li>
+<li><strong>La tâche</strong> : par exemple <code>T3</code>, la tâche réalisée. Sans elle, Pulse vous propose de taper <code>/pulse:spirc</code> pour tout le plan, ou de réaliser seulement la tâche suivante.</li>
 <li><strong>Les raccourcis</strong> (pour les habitués, facultatifs) : ils répondent d'avance aux questions du démarrage. Placez-les avant l'US ; ils se regroupent (<code>-sw</code> vaut <code>-s -w</code>).
 <ul>
-<li><code>-s</code> : en coulisse. Un assistant spécialisé code à part ; conseillé pour tout un plan.</li>
+<li><code>-s</code> : en coulisse. Un assistant spécialisé code à part ; la conversation reste légère.</li>
 <li><code>-d</code> : devant vous. Pratique pour apprendre en voyant chaque étape.</li>
 <li><code>-w</code> : dans un dossier à part, sur sa propre branche. Utile quand une autre session travaille sur le même dossier.</li>
 <li><code>-t</code> : tests d'abord. Un assistant écrit les tests de la tâche, on les voit échouer, puis le code doit les faire passer.</li>
@@ -123,7 +120,6 @@ Ce qui a changé
 <code>-s</code> et <code>-d</code> ensemble se contredisent : Pulse vous demande lequel garder.</li>
 </ul>
 <pre class="commande"><code>/pulse:implement US-001 T3</code></pre>
-<pre class="commande"><code>/pulse:implement US-001</code></pre>
 <pre class="commande"><code>/pulse:implement -d US-001 T3</code></pre>
 </section>
 
@@ -133,15 +129,15 @@ Ce qui a changé
 <thead><tr><th>Fichier ou dossier</th><th>Ce qui change</th></tr></thead>
 <tbody>
 <tr><td>Les fichiers de la tâche</td><td>Le code, créé ou modifié à l'emplacement prévu par <code>docs/technical.md</code>.</td></tr>
-<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan : la tâche passe « en cours » ; sur tout le plan, elle passe « terminée » une fois enregistrée, avec une ligne dans le journal.</td></tr>
-<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/…</code></td><td>Sur tout le plan : un rapport de relecture par tâche.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan : la tâche passe « en cours ». Elle sera « terminée » une fois relue et enregistrée.</td></tr>
+<tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/SMOKE-TEST-US-XXX-…md</code></td><td>La fiche de test de la tâche, pour l'essayer vous-même.</td></tr>
 <tr><td><code>docs/lexique.md</code></td><td>La notion du jour, ajoutée à votre lexique.</td></tr>
 <tr><td><code>.env.example</code></td><td>Le nom d'une nouvelle clé secrète, sans sa valeur.</td></tr>
 <tr><td><code>docs/prd.md</code></td><td>Une idée hors de la tâche, notée « En attente ».</td></tr>
 <tr><td><code>aidd_docs/tasks/in-progress.md</code></td><td>Une note de reprise, écrite à chaque arrêt pour vous et effacée dès votre réponse.</td></tr>
 </tbody>
 </table>
-<p>Sur tout le plan, s'y ajoute une version enregistrée dans Git par tâche. Avec un numéro de tâche, la tâche reste « en cours » : elle sera terminée après la relecture et l'enregistrement.</p>
+<p>La tâche reste « en cours » : elle sera terminée après la relecture et l'enregistrement.</p>
 </section>
 
 <section id="risques">
@@ -150,8 +146,7 @@ Ce qui a changé
 <li><strong>Vos clés secrètes restent chez vous.</strong> Vous les écrivez vous-même dans le fichier local prévu ; Pulse ajoute seulement leur nom dans <code>.env.example</code>.</li>
 <li><strong>Une bibliothèque s'ajoute seulement avec votre accord</strong>, avec une version fixée.</li>
 <li><strong>Les décisions vous reviennent.</strong> Dès qu'un choix apparaît, Pulse s'arrête et vous présente les options et leurs conséquences.</li>
-<li>Claude Code vous demande votre accord pour lancer l'application et l'essayer pendant la relecture, et pour envoyer le travail sur le dépôt en ligne.</li>
-<li><strong>Le plan terminé, les tests qui ouvrent le site dans un navigateur tournent une fois.</strong> Un échec se corrige avant le récapitulatif, comme un problème grave.</li>
+<li>Claude Code vous demande votre accord pour lancer l'application et, plus tard, pour envoyer le travail sur le dépôt en ligne.</li>
 </ul>
 <aside class="encadre encadre-attention"><p><strong>Attention :</strong> une tâche « Mettre en ligne… » ne se fait pas ici. Pulse s'arrête avant elle et vous propose <a href="deploy.html"><code>/pulse:deploy</code></a>.</p></aside>
 <aside class="encadre encadre-risque"><p><strong>Risque :</strong> sur la branche principale, chaque envoi peut mettre votre site en ligne à jour, si le déploiement automatique est en place. Pour tester avant de publier, choisissez au démarrage « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt ».</p></aside>
@@ -160,11 +155,11 @@ Ce qui a changé
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
 <details class="probleme"><summary>Pulse me propose d'abord <code>/pulse:review</code> et <code>/pulse:commit</code></summary><p>Des changements non enregistrés concernent une autre tâche. Une version enregistrée = une seule tâche : relisez et enregistrez d'abord celle-là, puis relancez la commande.</p></details>
-<details class="probleme"><summary>La boucle s'arrête sur une tâche</summary><p>Il y a un blocage : une question sur votre besoin, une action à faire vous-même (créer un compte, saisir une variable chez l'hébergeur), ou un contrôle qui reste en échec. Répondez ou suivez les étapes données, puis Pulse reprend. Si un problème grave persiste après deux corrections, il vous propose <a href="get-help.html"><code>/pulse:get-help</code></a>.</p></details>
+<details class="probleme"><summary>Pulse s'arrête sur la tâche</summary><p>Il y a un blocage : une question sur votre besoin ou une action à faire vous-même (créer un compte, saisir une variable chez l'hébergeur). Répondez ou suivez les étapes données, puis Pulse reprend. Si un contrôle reste en échec après deux essais, il est signalé dans le rapport et Pulse vous propose <a href="get-help.html"><code>/pulse:get-help</code></a>.</p></details>
 <details class="probleme"><summary>Il reste beaucoup d'erreurs rouges après la tâche</summary><p>Lancez <a href="auto-fix.html"><code>/pulse:auto-fix</code></a> : plusieurs assistants corrigent les erreurs des contrôles automatiques en même temps.</p></details>
 <details class="probleme"><summary>Pulse me demande de choisir les outils avant de coder</summary><p>Il faut d'abord savoir avec quoi construire. Lancez <a href="tech.html"><code>/pulse:tech</code></a> ; Pulse attend ce choix pour installer ou coder.</p></details>
 <details class="probleme"><summary>Pulse me renvoie vers <code>/pulse:spirc</code> pour une tâche « en pause »</summary><p>Cette tâche attend votre réponse à une question notée dans la section « Questions en attente » du plan, pendant une réalisation autonome. Lancez <a href="spirc.html"><code>/pulse:spirc US-XXX</code></a> : Pulse vous pose la question, puis reprend la tâche.</p></details>
-<details class="probleme"><summary>J'ai fermé la conversation au milieu du plan</summary><p>Rien n'est perdu. Relancez <code>/pulse:implement US-001</code> : une tâche en cours reprend à la bonne étape (relecture, correction, votre test ou enregistrement).</p></details>
+<details class="probleme"><summary>J'ai fermé la conversation au milieu d'une tâche</summary><p>Rien n'est perdu. Relancez <code>/pulse:implement US-001 T3</code> : Pulse regarde où la tâche en est et vous propose la bonne suite (relecture, votre test ou enregistrement). Pour reprendre tout le plan, tapez <code>/pulse:spirc US-001</code>.</p></details>
 </section>
 
 <section id="exemples">
@@ -179,15 +174,9 @@ T3 – Afficher les créneaux libres. Je vais : calculer les créneaux libres de
 🧪 À vous de tester : votre fiche SMOKE-TEST-US-001-T3-afficher-les-creneaux-libres.md (4 étapes, environ 3 minutes). L'application est ouverte : tapez http://localhost:3000 dans votre navigateur. Étape 1 : cliquez sur « Prendre rendez-vous », en haut de la page ; les créneaux de 9 h à 18 h s'affichent, sauf ceux déjà réservés.
 ➡️ Prochaine étape : /pulse:review, où deux assistants relisent la tâche et l'essaient.</p>
 </div>
-<div class="conversation" data-titre="Exemple : réaliser tout le plan">
+<div class="conversation" data-titre="Exemple : sans numéro de tâche">
 <p data-role="vous">/pulse:implement US-001</p>
-<p data-role="claude">Je vais réaliser T4 et T5, l'une après l'autre : chacune sera relue, corrigée et enregistrée avant de passer à la suivante.</p>
-<p data-role="claude">T4 – Confirmer le rendez-vous : réalisée. Deux assistants l'ont relue et essayée : ✅ Validé.
-🧪 À vous de tester : votre fiche SMOKE-TEST-US-001-T4-confirmer-le-rendez-vous.md (5 étapes, environ 3 minutes). L'application est ouverte : tapez http://localhost:3000 dans votre navigateur. Étape 1 : cliquez sur le créneau « 10 h », tapez « Léa Martin » dans le champ Nom, cliquez sur Valider ; un message vert confirme le rendez-vous.
-Le test est-il concluant ?</p>
-<p data-role="vous">Oui, tout fonctionne</p>
-<p data-role="outil">git commit -m "feat(T4): confirme le rendez-vous par un message"</p>
-<p data-role="claude">T4 ✅ enregistrée · US-001 : 4/5 · suite : T5 – Annuler un rendez-vous</p>
+<p data-role="claude">Pour enchaîner tout le plan (réaliser, relire, tester, enregistrer, tâche suivante), tapez /pulse:spirc US-001. Que préférez-vous : taper /pulse:spirc US-001 pour enchaîner tout le plan (recommandé), ou réaliser seulement T4 – Confirmer le rendez-vous ici ?</p>
 </div>
 </section>
 
@@ -195,9 +184,9 @@ Le test est-il concluant ?</p>
 <h2>Commandes liées</h2>
 <ul>
 <li><a href="plan.html"><code>/pulse:plan</code></a> : découpe la spec en tâches, avant cette commande.</li>
-<li><a href="review.html"><code>/pulse:review</code></a> : la relecture et votre test, après une tâche réalisée seule.</li>
+<li><a href="review.html"><code>/pulse:review</code></a> : la relecture et votre test, après une tâche réalisée.</li>
 <li><a href="commit.html"><code>/pulse:commit</code></a> : enregistre la tâche relue et testée.</li>
-<li><a href="spirc.html"><code>/pulse:spirc</code></a> : la même boucle, avec en plus la spec et le plan s'ils manquent.</li>
+<li><a href="spirc.html"><code>/pulse:spirc</code></a> : enchaîne tout le plan (réaliser, relire, tester, enregistrer), avec en plus la spec et le plan s'ils manquent.</li>
 <li><a href="auto-fix.html"><code>/pulse:auto-fix</code></a> : corrige les erreurs rouges restantes.</li>
 <li><a href="deploy.html"><code>/pulse:deploy</code></a> : met en ligne une fois le plan terminé.</li>
 </ul>

@@ -37,7 +37,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 
 | Verdict ou constat du test-runner | Destinataire | Ensuite |
 |---|---|---|
-| ✅ Vert, tests intacts | — | passer à la relecture (et, dans `/pulse:implement`, à « Vérifier vous-même ») |
+| ✅ Vert, tests intacts | — | passer à la relecture (et, dans `/pulse:implement`, à « Vérifier ») |
 | ❌ échec **dû au code** | `pulse:implementer`, avec la liste des échecs | relancer le test-runner |
 | ❌ échec **dû au test** (ou test contesté confirmé) | `pulse:test-writer`, mode « corriger », avec la liste | `git add` des fichiers corrigés, puis relancer le test-runner |
 | Tests modifiés pendant la réalisation (`git diff -- <fichiers de test>` non vide) | — | constat Critique : remettre les tests figés (`git restore -- <fichiers de test>`, avec l'accord demandé par Claude Code), puis renvoyer à l'implementer |

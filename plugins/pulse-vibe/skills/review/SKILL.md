@@ -22,7 +22,7 @@ Tâche demandée (facultative) : `$ARGUMENTS`
 ### Prérequis
 
 - Au moins un plan dans `aidd_docs/tasks/` et `docs/user-stories.md` sont nécessaires.
-- Vérifier qu'il y a quelque chose à relire : des modifications (`git status`, `git diff`) ou une tâche `[~]`. Sinon, l'indiquer et proposer `/pulse:implement <US-XXX>`.
+- Vérifier qu'il y a quelque chose à relire : des modifications (`git status`, `git diff`) ou une tâche `[~]`. Sinon, l'indiquer et proposer de taper `/pulse:spirc <US-XXX>`.
 
 ## Rôle
 
