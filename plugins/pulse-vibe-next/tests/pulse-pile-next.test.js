@@ -52,7 +52,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
     security: ["Pour relire", "Pour la sécurité"],
     test: ["Pour les tests"],
     deploy: ["Pour mettre en ligne"],
-    cicd: ["Pour mettre en ligne"],
+    cicd: ["Pour les contrôles automatiques"],
     secrets: ["Pour /pulse:secrets"],
     seo: ["Pour /pulse:seo", "Pour écrire du code"],
     perf: ["Pour /pulse:perf", "Pour écrire du code"],
@@ -78,6 +78,17 @@ test("contexte piles : ce qu'il faut vérifier et dire avant de choisir la pile 
   const inconnu = lancer("contexte", "libelle-inconnu");
   assert.strictEqual(inconnu.status, 0);
   assert.strictEqual(inconnu.stdout, "");
+});
+
+test("contexte cicd : les étapes de la CI seules, audit des dépendances compris, sans les consignes de mise en ligne", () => {
+  const r = lancer("contexte", "cicd");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("npm audit --omit=dev --audit-level=high"), "audit des dépendances, valeur de technical.md");
+  assert.ok(r.stdout.length < 2000, `${r.stdout.length} caractères`);
+  assert.ok(!r.stdout.includes("Pour mettre en ligne"));
+  const etapes = ["npm ci", "node scripts/verifier.js", "npm audit", "npm run check", "npm test", "npm run build"].map((e) => r.stdout.indexOf(e));
+  assert.deepStrictEqual([...etapes].sort((a, b) => a - b), etapes, "ordre du wiki : installer, secrets, audit, règles du code, tests, construction");
+  assert.ok(!lire(REF, "contexte", "deploy.md").includes("**CI (GitHub Actions)**"), "un fait, un seul endroit");
 });
 
 test("contexte/tech.md : le choix de la pile est dans piles.md, plus dans tech.md", () => {

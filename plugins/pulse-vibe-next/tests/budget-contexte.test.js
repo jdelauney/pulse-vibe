@@ -100,7 +100,7 @@ for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
 // security 82 959, implement 75 811, spirc 74 842, review 68 538 (35 000 une fois le pack laissé au reviewer).
 // Plafond = mesure à la fin du plan « Corrections 4 » × 1,05, au 500 supérieur.
 const PLAFONDS_COMMANDE_AVEC_PACK = {
-  cicd: 50500, // mesure 47 754 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
+  cicd: 25500, // mesure 24 033 (refactoring d'optimisation, tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf ; le pack ne donne plus que contexte/cicd.md) ; avant, mesure 47 754 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
   deploy: 54000, // mesure 51 057 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
   express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 52500, // mesure 49 923 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
@@ -184,7 +184,7 @@ const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES_AVEC_PACK = {
   "auto-fix --sans-noyau": 12500, // mesure 11 686
   "brainstorm --sans-communes": 22000, // mesure 20 653
-  "cicd --sans-communes": 36000, // mesure 34 022 (tâche 7.1 : relier seul chargé) ; avant, 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "cicd --sans-communes": 11000, // mesure 10 301 (tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf ; sous la limite de lecture) ; avant, 34 022 (tâche 7.1 : relier seul chargé) ; avant, 40 252
   "commit --sans-communes": 22500, // mesure 21 385 (tâche 7.2 : modèle .gitignore à la demande) ; avant, 21 980 (tâche 7.1 : envoi.md au lieu de depot-distant.md) ; avant, 26 896
   "deploy --sans-communes": 39500, // mesure 37 325 (tâche 7.1 : relier seul chargé) ; avant, 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "express --sans-communes": 27500, // mesure 26 109
@@ -204,7 +204,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "us --sans-communes": 18000, // mesure 16 910
 };
 const DEPASSEMENTS_CONNUS_AVEC_PACK = new Set([
-  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
+  "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
 ]);
 function formesCitees() {
   const formes = new Set();

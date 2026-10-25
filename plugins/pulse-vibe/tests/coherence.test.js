@@ -591,7 +591,7 @@ test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes 
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /\| Auditer les dépendances \|/);
   assert.match(lire(RACINE, "templates", "ci-verifications.yml.template"), /\{\{Auditer les dépendances\}\}/);
   const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
-  assert.match(cicd, /auditer les dépendances \(« Auditer les dépendances »/);
+  assert.match(cicd, /audit des dépendances \(« Auditer les dépendances »\) fait échouer la CI sur une faille de gravité élevée ou critique/);
   assert.match(cicd, /## 8\. Mises à jour des dépendances/);
   assert.match(cicd, /Dependabot/);
   assert.match(cicd, /Renovate/);
@@ -607,6 +607,7 @@ test("checklist sécurité : sauvegarde dans le modèle technique, audit dans l'
   assert.match(cicd.split("## Objectif")[1].split("\n## ")[0], /dépendances/);
   assert.match(lire(RACINE, "README.md"), /\/pulse:cicd[^\n]*dépendances/);
   assert.match(lire(RACINE, "agents", "security-auditor.md"), /aucun fichier de dépendances[^\n]*S8 vaut « — »/);
+  assert.ok(lire(RACINE, "templates", "ci-verifications.yml.template").indexOf("Installer les dépendances") < lire(RACINE, "templates", "ci-verifications.yml.template").indexOf("Contrôler l'absence de secrets"), "modèle de CI : dépendances installées avant le contrôle des secrets, comme le wiki");
   const code = lire(RACINE, "references", "qualite", "securite-code.md");
   assert.match(code, /En-têtes de sécurité \| S12 \|/);
   assert.match(code, /\| S13 \|/);
@@ -2110,4 +2111,25 @@ test("pr : commits déplacés par pulse-aidd deplacer-commits après accord, sec
   assert.ok(motifs.some((m) => couvre(m, "pulse-aidd secrets historique --depuis origin/main")), "pr : contrôle de l'historique autorisé");
   assert.ok(!motifs.some((m) => couvre(m, "pulse-aidd deplacer-commits feat/x")), "pr : le déplacement passe par la demande d'accord");
   assert.match(lire(DEPOT, "docs", "commandes", "pr.html"), /<a href="deploy\.html"><code>\/pulse:deploy<\/code><\/a>/);
+});
+
+test("cicd : règles communes seules dans son contexte, vitesse par perf/ci-vitesse.md, étapes du modèle copié, commit contrôlé, essai local par la preuve", () => {
+  const contexte = contexteCharge("cicd");
+  for (const titre of ["Le dépôt distant", "Exemple de CI à adapter", "Conventions Git"]) assert.ok(!contexte.includes(`===== ${titre} =====`), `contexte cicd sans « ${titre} »`);
+  const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
+  assert.match(cicd, /`pulse-aidd reference perf\/ci-vitesse\.md`/);
+  assert.doesNotMatch(cicd, /etape perf|contexte perf/, "plus l'étape perf entière pour une option");
+  assert.match(cicd, /`scripts\/ci-verifications\.exemple\.yml`[^\n]*dans son ordre/);
+  assert.match(cicd, /`git add`[^\n]*`pulse-aidd verifier --index`[^\n]*`git commit -m/);
+  assert.match(cicd, /`pulse-aidd preuve lancer --portee suite --construire`, puis l'audit des dépendances et `node scripts\/verifier\.js`/);
+  assert.doesNotMatch(cicd, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
+  const perf = lire(RACINE, "skills", "perf", "SKILL.md");
+  assert.match(perf, /Vérification automatique de la vitesse : `pulse-aidd reference perf\/ci-vitesse\.md`/);
+  assert.doesNotMatch(perf, /node scripts\/perf\.js mesurer/, "la vérification automatique vit dans ci-vitesse.md");
+  const vitesse = lire(RACINE, "skills", "perf", "references", "ci-vitesse.md");
+  for (const attendu of ["pulse-aidd perf installer", "--source psi", "--source local", "PULSE_PSI_CLE", "mode informatif"]) assert.ok(vitesse.includes(attendu), `ci-vitesse.md : ${attendu}`);
+  const motifs = motifsBash(path.join(RACINE, "skills", "cicd", "SKILL.md"));
+  for (const retire of ["pulse-aidd contexte perf", "pulse-aidd etape perf --sans-communes", "pulse-aidd perf *", "git branch --list *", "git branch -r *", "git branch --merged*"])
+    assert.ok(!motifs.includes(retire), `cicd : Bash(${retire}) sans emploi`);
+  assert.ok(motifs.some((m) => couvre(m, "pulse-aidd perf installer")), "cicd : la copie du script de mesure (ci-vitesse.md)");
 });
