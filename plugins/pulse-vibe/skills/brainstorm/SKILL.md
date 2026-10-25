@@ -30,7 +30,7 @@ Appliquer « Penser avant d'écrire » (chargé en fin de fichier, dans « Réf�
 Chaque sujet à trancher est une **branche** ; certaines dépendent d'autres (les règles d'annulation se discutent une fois qu'on sait qui réserve). À chaque instant, la **frontière** regroupe les questions dont tous les prérequis sont déjà tranchés : on peut les poser maintenant en s'appuyant uniquement sur des réponses déjà entendues.
 
 - **Une ronde = la frontière.** Ses questions clés se posent d'abord, une par message, en réponse libre. Ses questions secondaires se posent ensuite en **un seul appel AskUserQuestion** (4 questions au maximum ; s'il y en a plus, garder les plus structurantes et reporter les autres à la ronde suivante).
-- Chaque question secondaire propose **2 à 4 réponses concrètes et réalistes** (un « oui / non » seulement pour une question fermée). **La réponse recommandée est la première**, avec « (Recommandé) » dans son libellé et une description qui dit pourquoi. La personne peut toujours écrire sa propre réponse.
+- Les questions secondaires suivent la règle commune 5 ; la description de la réponse recommandée dit pourquoi. La personne peut toujours écrire sa propre réponse.
 - Une question qui dépend d'une autre question **de la même ronde** attend la ronde suivante.
 - Après chaque ronde : **reformuler en 1 ou 2 lignes** ce qui est décidé (« ✔ Décidé : … »), recalculer la frontière, puis poser la ronde suivante.
 - Afficher la progression en une ligne : « Ronde 3 · encore environ 2 sujets à éclaircir ».
@@ -45,10 +45,9 @@ Branches de départ habituelles (à adapter aux réponses) :
 
 **Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. L'effacer (`pulse-aidd travail-fini`) après l'écriture du brief.
 
-#### 2. Les faits, c'est vous ; les décisions, c'est la personne
+#### 2. Chercher avant de demander
 
 - **Chercher d'abord dans les fichiers ; demander à la personne le reste.** Avant chaque ronde, consulter ce qui existe : `docs/`, `aidd_docs/memory/` (surtout `glossary.md` et `project.md`), et le code s'il y en a. Dans un projet qui contient déjà du code, confier la recherche au sous-agent **`pulse:explorer`** et continuer pendant sa recherche : seules les questions qui dépendent de sa réponse sont reportées.
-- **Les décisions appartiennent à la personne** : besoin, priorités, règles métier, périmètre. Les poser, attendre la réponse, la laisser trancher.
 - **S'en tenir à la complexité qu'elle a mentionnée.** Si elle n'a jamais parlé de comptes utilisateurs, l'histoire n'en contient pas. On peut poser la question ; la décision lui revient.
 
 #### 3. L'histoire (domain storytelling)
@@ -67,7 +66,7 @@ La validation de l'histoire est une question de la ronde suivante : « Est-ce bi
 
 #### 5. Les décisions
 
-Quand une réponse tranche une question structurante, la noter dans la liste des décisions (§ « Fin de l'entretien »). Proposer un **fichier de décision** (modèle « décision (ADR) », dans `aidd_docs/memory/internal/decisions/`) **seulement** si les 3 conditions sont réunies : difficile à défaire, surprenante sans contexte, fruit d'un vrai choix entre plusieurs options.
+Quand une réponse tranche une question structurante, la noter dans la liste des décisions (§ « Fin de l'entretien ») ; proposer un **fichier de décision** (modèle « décision (ADR) ») seulement si les 3 conditions des règles de la mémoire sont réunies.
 
 #### 6. Garder la personne à l'aise
 
@@ -88,7 +87,7 @@ Idée reçue en argument (facultative) : `$ARGUMENTS`
 
 La conversation principale mène l'entretien et écrit le brief, le glossaire et la mémoire ; les décisions appartiennent à la personne.
 
-- `pulse:explorer` : dans un projet qui contient déjà du code, cherche dans les fichiers pendant que l'entretien continue (voir « 2. Les faits, c'est vous ; les décisions, c'est la personne »).
+- `pulse:explorer` : dans un projet qui contient déjà du code, cherche dans les fichiers pendant que l'entretien continue (voir « 2. Chercher avant de demander »).
 
 ## Processus
 

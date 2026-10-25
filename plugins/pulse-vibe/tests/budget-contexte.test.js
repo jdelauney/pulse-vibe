@@ -77,7 +77,7 @@ const PLAFONDS_ETAPES = { review: 14500, commit: 28500 }; // review : mesure 13 
 const PLAFONDS_COMMANDE = {
   annuler: 27500, // mesure 26 089 (pulse 0.51 : les gestes Git passent par pulse-aidd annuler, conventions Git et dépôt distant ne sont plus chargés d'office) ; avant, mesure 44 004 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 502 (refactoring d'optimisation, tâche 1.3 : « proposer de taper » devant /pulse:get-help) ; avant, 45 775
   "auto-fix": 26500, // mesure 25 062 (pulse 0.51 : règle anti-affaiblissement laissée au fixer) ; avant, mesure 24 777 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 101 (pulse 0.40 : règle commune 19 et fiche de test)
-  brainstorm: 36000, // mesure 33 866 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
+  brainstorm: 35500, // mesure 33 666 (refactoring d'optimisation, tâche 6.3 : règles communes 4, 5 et 10 et règles de la mémoire citées au lieu d'être recopiées) ; avant, mesure 33 866 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
   cicd: 42500, // mesure 40 104 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 517 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 51 031 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 48 229
   commit: 49000, // mesure 46 404 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 100 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 44000, // mesure 41 456 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
@@ -175,7 +175,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_ETAPES)) {
 const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES = {
   "auto-fix --sans-noyau": 12500, // mesure 11 479
-  "brainstorm --sans-communes": 22000, // mesure 20 553
+  "brainstorm --sans-communes": 21500, // mesure 20 265 (tâche 6.3 : règles citées au lieu d'être recopiées) ; avant, 20 553
   "cicd --sans-communes": 28500, // mesure 26 708
   "commit --sans-communes": 28500, // mesure 26 800
   "deploy --sans-communes": 30000, // mesure 28 243
