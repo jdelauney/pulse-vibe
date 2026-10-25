@@ -1179,6 +1179,25 @@ test("une sortie de règles Pulse coupée est relancée en entier aussi sous Pow
   assert.strictEqual(t.updatedInput.command, "pulse-aidd pile contexte implement");
 });
 
+test("la fiche donnée par realisation etape, coupée par un tube, est relancée en entier sous Bash comme sous PowerShell", () => {
+  for (const [outil, c] of [
+    ["Bash", "pulse-aidd realisation etape T1 realisation | head -40"],
+    ["Bash", "pulse-aidd realisation etape T2 test | tail -n +3"],
+    ["PowerShell", "pulse-aidd realisation etape T1 realisation | Select-Object -First 40"],
+  ]) {
+    const s = sortieComplete({ command: c, description: "d" }, outil);
+    assert.ok(s, `${outil} : décision attendue : ${c}`);
+    assert.strictEqual(s.permissionDecision, "allow", `${outil} : ${c}`);
+    assert.strictEqual(s.updatedInput.command, c.slice(0, c.indexOf(" |")), `${outil} : ${c}`);
+  }
+  const d = refus("pulse-aidd realisation etape T1 realisation | head; ls");
+  assert.match(d.raison, /pulse-aidd realisation etape T1 realisation`/);
+  refusPs("pulse-aidd realisation etape T1 realisation | Select-Object -First 4; Get-Date");
+  // Les autres sous-commandes de realisation rendent un état, pas une règle.
+  passe("pulse-aidd realisation | head -5");
+  passe("pulse-aidd realisation debut implement T1 realisation | head -5");
+});
+
 test("une coupure suivie d'autre chose, ou dans un sous-shell, reste refusée avec la commande sans tube", () => {
   for (const c of [
     "pulse-aidd qualite clean-code | head -60; cat x",

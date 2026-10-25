@@ -70,6 +70,8 @@ test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, r�
   assert.strictEqual(note('pulse-aidd reference "a/b.md" 2>&1 | tail -5'), false);
   assert.strictEqual(note("pulse-aidd pile contexte realisation | head"), false);
   assert.strictEqual(note("pulse-aidd tests x 2>&1 | head -5"), false);
+  assert.strictEqual(note("pulse-aidd realisation etape T1 realisation | head -40"), false);
+  assert.strictEqual(note("pulse-aidd realisation | head -5"), true);
   assert.strictEqual(note("pulse-aidd qualite regles"), true);
   assert.strictEqual(note("pulse-aidd tests x && git log | head"), true);
   assert.strictEqual(note("pulse-aidd tests x || echo echec"), true);
@@ -115,6 +117,14 @@ test("lecture-entiere : une coupure que le garde-fou réécrit (tube retiré) n'
   assert.strictEqual(direct.noter(f, [g]).details[0].reussi, true);
   fs.writeFileSync(f, JSON.stringify(appel("b", "pulse-aidd qualite clean-code | head -50; ls")) + LF);
   assert.strictEqual(direct.noter(f, [g]).details[0].reussi, false);
+  fs.writeFileSync(f, JSON.stringify(appel("c", "pulse-aidd realisation etape T1 realisation | head -40")) + LF);
+  assert.strictEqual(direct.noter(f, [g]).details[0].reussi, true);
+});
+
+test("lecture-entiere : la même expression dans les trois cas qui lisent des règles", () => {
+  const motifs = ["implement-tache", "realisation-boucle", "relecture-defaut"].map((cas) => direct.lireCas(path.join(CAS, cas)).verifications.find((v) => v.nom === "lecture-entiere").input_match);
+  assert.strictEqual(new Set(motifs).size, 1);
+  assert.match(motifs[0], /realisation etape/);
 });
 
 test("tool_order strict : un appel « after » avant le premier « before » fait échouer", () => {
