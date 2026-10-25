@@ -758,6 +758,26 @@ test("brainstorm et « Penser avant d'écrire » citent les règles communes 4, 
   assert.match(raisonnement, /\| AskUserQuestion selon la règle commune 5 \|/);
 });
 
+test("us : les cas limites clés posés un à un, en réponse libre ; format, INVEST, Definition of Ready et ticketing dans les règles des user stories", () => {
+  const us = lire(RACINE, "skills", "us", "SKILL.md");
+  const cles = us.split("\n").find((l) => l.startsWith("1. **Questions clés**")) || "";
+  assert.match(cles, /\(1 à 2 par groupe, « Penser avant d'écrire » § 1 à 4\)/);
+  assert.match(cles, /Chacune se pose seule, dans la conversation, en réponse libre, sous forme de scénario concret/);
+  assert.match(cles, /suivie de 2 ou 3 exemples tirés d'autres métiers ; reformuler et confronter la réponse/);
+  assert.doesNotMatch(cles, /par rondes/, "les questions clés ne passent plus par les rondes à choix");
+  assert.match(us, /\*\*Clarifier le périmètre\*\* : les questions secondaires \(ce que l'utilisateur fait, ce qu'il voit\) suivent la règle commune 5/);
+  // Les règles des US : un seul texte, chargé par us et express ; us y renvoie.
+  const regles = lire(RACINE, "skills", "us", "references", "regles-us.md");
+  assert.match(regles, /^# Les règles des user stories \(`\/pulse:us`, `\/pulse:spec`, `\/pulse:express`\)$/m);
+  for (const section of ["Format", "INVEST", "Bien rangée et US d'accès", "Definition of Ready", "Ticketing"]) assert.match(regles, new RegExp(`^## ${section}$`, "m"), section);
+  assert.match(regles, /une seule action \(une phrase sans « et » ni « ou »\), 4 critères et une règle métier au plus/);
+  assert.match(regles, /`gh issue create`/);
+  assert.doesNotMatch(us, /^\| \*\*Indépendante\*\* \|/m, "tableau INVEST recopié dans us");
+  assert.doesNotMatch(us, /`gh issue create`/, "ticketing recopié dans us");
+  assert.match(us, /selon « Ticketing » des règles des user stories/);
+  assert.match(lire(RACINE, "skills", "express", "SKILL.md"), /\(« Les règles des user stories », chargées dans « Références de la commande »\)/);
+});
+
 test("implement : questions de démarrage en clair et mode découverte", () => {
   const texte = skillTexte("implement");
   assert.match(texte, /« Je code en coulisse \(Recommandé\) »/);

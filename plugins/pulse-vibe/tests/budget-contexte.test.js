@@ -32,9 +32,9 @@ const PLAFONDS = {
   tech: 28000, // mesure 26 551 (refactoring d'optimisation, tâche 6.2 : démarche de choix et organisation chargées à l'étape, squelette décrit une fois dans le modèle) ; avant, mesure 49 242 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 222
   memory: 20000, // mesure 18 609 (refactoring d'optimisation, tâche 6.7 : contexte réduit aux règles de la mémoire, modèles affichés à l'action) ; avant, mesure 22 638 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 30 261
   spirc: 35500, // mesure 33 523 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 35 779 (pulse 0.51 : deleguer.md, le message de délégation écrit une fois (+ 2,3 k)) ; avant, mesure 34 020 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 528 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis et ménage de la fin ; avant, 32 608 : pulse 0.48 : constat récurrent de examen.md § 3, proposition de règle contrôlée)
-  express: 36000, // mesure 34 236 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 394
+  express: 40000, // mesure 38 030 (refactoring d'optimisation, tâche 6.4 : plafond relevé, les règles des user stories (regles-us.md, 3 648) chargées pour express, qui les citait sans les avoir) ; avant, mesure 34 236 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 394
   prd: 20500, // mesure 19 165 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 982
-  us: 26000, // mesure 24 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 742
+  us: 30000, // mesure 28 154 (refactoring d'optimisation, tâche 6.4 : plafond relevé, format, INVEST, Definition of Ready et ticketing passent du SKILL.md à regles-us.md, chargé dans le contexte ; commande complète 33 856, sous son plafond) ; avant, mesure 24 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 742
   spec: 31500, // mesure 29 546 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 33 492
   plan: 49500, // mesure 46 853 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 800
   implement: 37500, // mesure 35 665 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 45 116 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
@@ -82,7 +82,7 @@ const PLAFONDS_COMMANDE = {
   commit: 49000, // mesure 46 404 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 100 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   deploy: 44000, // mesure 41 456 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
   explain: 18500, // mesure 17 447 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 705 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
-  express: 44500, // mesure 42 224 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 936 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
+  express: 48500, // mesure 45 986 (refactoring d'optimisation, tâche 6.4 : plafond relevé, les règles des user stories (regles-us.md, 3 648) chargées pour express, qui les citait sans les avoir) ; avant, mesure 42 224 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 936 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
   fix: 31500, // mesure 29 857 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 30 625 ; avant, mesure 30 102 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 933 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
   "get-help": 23500, // mesure 22 116 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 126 (pulse 0.40 : règle commune 19 et fiche de test)
   guide: 29500, // mesure 28 033 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 661 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 577
@@ -179,7 +179,7 @@ const PLAFONDS_FORMES = {
   "cicd --sans-communes": 28500, // mesure 26 708
   "commit --sans-communes": 28500, // mesure 26 800
   "deploy --sans-communes": 30000, // mesure 28 243
-  "express --sans-communes": 27000, // mesure 25 332
+  "express --sans-communes": 30500, // mesure 29 039 (tâche 6.4 : plafond relevé, règles des user stories chargées ; reste sous la limite de lecture) ; avant, 25 332
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
   "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles affichés à l'action) ; avant, 17 463
