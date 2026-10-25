@@ -333,10 +333,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       lexique ;; # le modèle du texte de page : chargé par le redacteur (et par le repli, qui suit ses consignes)
     seo)
       afficher "Référencement : les règles" "$SK/seo/references/regles.md"
-      afficher "Référencement : assistants IA" "$SK/seo/references/ia.md"
       afficher "Modèle : docs/seo.md" "$SK/seo/assets/seo.md"
-      afficher "Modèle : rapport d'audit de référencement" "$SK/seo/assets/seo-audit.md"
-      lexique ;;
+      lexique ;; # la politique IA (ia.md) et le modèle d'audit : chargés à l'étape qui les cite (skills/seo/SKILL.md)
     perf)
       afficher "La vitesse vécue par les visiteurs" "$SK/perf/references/performance.md"
       afficher "Modèle : docs/performance.md" "$SK/perf/assets/performance.md"

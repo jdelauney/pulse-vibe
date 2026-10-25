@@ -13,7 +13,7 @@ Chaque constat se range sous l'une de ces questions, dans cet ordre. La personne
 | 3 | **Comment la page se présente-t-elle ?** | titre, description, nom du site, icône, carte de partage, données structurées | script ; les textes se choisissent **avec** la personne (`/pulse:seo textes`) |
 | 4 | **Mérite-t-elle d'être choisie ?** | contenu utile, écrit pour les clients, auteur et preuves visibles | se discute avec la personne ; aucun score |
 
-Les assistants IA s'ajoutent comme une cinquième rubrique du même rapport (référence « Référencement : assistants IA »).
+Les assistants IA s'ajoutent comme une cinquième rubrique du même rapport (contrôles IA1 à IA12, § 4).
 
 ## 2. Ce que Google promet, et ce qu'il ne promet pas
 
@@ -59,6 +59,9 @@ Sources sur `developers.google.com/search/docs/…`, sauf mention.
 | Venir | L1 accueil 200 · L2 une seule adresse (https, www) · L3 redirections courtes · L5 robots.txt · L6 sitemap · L7 dates du sitemap · L15 liens explorables · L16 liens internes cassés |
 | Garder | L4 noindex · L8 vraie 404 · L11 adresse officielle · L17 texte sans JavaScript · L23 langues · L24 taille · L25 pages privées · L26 prévisualisation · L27 métadonnées dans `<head>` pour Googlebot |
 | Se présenter | L9 titre · L10 description · L12 langue · L13 titre principal · L14 images · L18 carte de partage · L19 robots de partage · L20 données structurées · L21 nom du site · L22 icône |
+| Assistants IA (`--ia`) | IA1 robots.txt conforme à la politique · IA2 groupe nommé qui rouvre des chemins fermés · IA3 jetons périmés ou sans effet · IA4 le serveur (ou un pare-feu) refuse un robot autorisé · IA5 texte lisible sans JavaScript · IA6 métadonnées dans `<head>` · IA7 `nosnippet` non décidé · IA8 refus d'entraînement incomplet · IA9 Content-Signal · IA10 llms.txt mal formé (s'il existe) · IA11 faits clés absents du texte · IA12 données structurées absentes du texte visible |
+
+IA4 imite un robot sans venir de ses adresses : un vrai robot peut être traité autrement par un pare-feu. Le dire avec le résultat.
 
 Options utiles : `--chemins /a,/b` (pages publiques à lire en plus ; avec un pack, la liste vient de lui) ; `--privees /compte` (pages qui exigent la connexion) ; `--previsualisation` ; `--prive` (outil interne : `noindex` attendu partout) ; `--ia` ; `--json`. Le bloc `<!-- pulse-seo … -->` de `docs/seo.md` fournit aussi la politique IA, les faits clés et les pages privées.
 

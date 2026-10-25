@@ -50,9 +50,7 @@ Options, à proposer seulement si la personne s'y intéresse :
 
 ## 5. Les contrôles IA du script
 
-IA1 robots.txt conforme à la politique · IA2 groupe nommé qui rouvre des chemins fermés · IA3 jetons périmés ou sans effet · IA4 le serveur (ou un pare-feu) refuse un robot autorisé · IA5 texte lisible sans JavaScript · IA6 métadonnées dans `<head>` · IA7 `nosnippet` non décidé · IA8 refus d'entraînement incomplet · IA9 Content-Signal · IA10 llms.txt mal formé (s'il existe) · IA11 faits clés absents du texte · IA12 données structurées absentes du texte visible.
-
-IA4 imite un robot sans venir de ses adresses : un vrai robot peut être traité autrement par un pare-feu. Le dire avec le résultat.
+IA1 à IA12, avec la mise en garde sur IA4 : « Les contrôles du script » de `pulse-aidd reference seo/regles.md` (§ 4).
 
 ## 6. Mesurer
 
