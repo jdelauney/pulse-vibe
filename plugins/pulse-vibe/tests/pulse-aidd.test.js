@@ -132,13 +132,13 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte init et guide : fichiers du projet et cycle Pulse ; status : ni l'un ni l'autre (le tableau vient de pulse-aidd etat --tableau)", () => {
+test("contexte init : fichiers du projet et cycle Pulse ; guide : le cycle seul ; status : ni l'un ni l'autre (le tableau vient de pulse-aidd etat --tableau)", () => {
   for (const commande of ["init", "guide", "status"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Règles communes Pulse ====="), commande);
     assert.strictEqual(r.stdout.includes("===== Le cycle Pulse ====="), commande !== "status", `${commande} : cycle Pulse`);
-    assert.strictEqual(r.stdout.includes("===== Les fichiers du projet ====="), commande !== "status", `${commande} : fichiers du projet`);
+    assert.strictEqual(r.stdout.includes("===== Les fichiers du projet ====="), commande === "init", `${commande} : fichiers du projet`);
   }
   assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
 });

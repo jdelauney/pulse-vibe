@@ -692,6 +692,7 @@ test("init et status ne citent que des clés et des valeurs réellement émises 
   const status = skillTexte("status");
   assert.match(status, /`pulse-aidd etat --tableau`/);
   for (const c of CLES_TABLEAU.filter((x) => x !== "en-cours-sans-trace")) assert.match(status, new RegExp(`\`${c}[\`:= ]`), `status s'appuie sur la ligne ${c}`);
+  assert.match(skillTexte("guide"), /`en-cours-sans-trace` de `pulse-aidd etat --tableau`/, "guide repère une tâche en cours sans trace avec le tableau");
 });
 
 test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour chaque chemin", () => {
