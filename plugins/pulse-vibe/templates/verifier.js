@@ -256,7 +256,9 @@ function lireObjets(objets, racine, taille) {
 
 // Au-delà, un fichier texte préparé est refusé plutôt que lu (même limite que le garde-fou des commandes).
 const TAILLE_MAX_INDEX = 20 * 1024 * 1024;
-const TAILLE_MAX_PAQUET = 64 * 1024 * 1024;
+// Taille d'un paquet de lecture : PULSE_TAILLE_PAQUET (octets, plus petite seulement) sert aux tests, pour lire en plusieurs paquets sans 64 Mo de fichiers.
+const TAILLE_PAQUET_TEST = Number(process.env.PULSE_TAILLE_PAQUET);
+const TAILLE_MAX_PAQUET = Math.min(Number.isInteger(TAILLE_PAQUET_TEST) && TAILLE_PAQUET_TEST > 0 ? TAILLE_PAQUET_TEST : Infinity, 64 * 1024 * 1024);
 
 /** Un fichier préparé de plus de 20 Mo est-il binaire (Git ne compte pas ses lignes) ? */
 function estBinaireIndexe(f, racine) {

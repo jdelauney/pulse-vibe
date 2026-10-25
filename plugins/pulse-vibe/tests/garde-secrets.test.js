@@ -445,6 +445,29 @@ test("verifier.js --index : le contenu préparé se lit en quelques processus Gi
   assert.ok(lancements.length <= 6, `${lancements.length} lancements de Git pour 41 fichiers :\n${lancements.join("\n")}`);
 });
 
+test("verifier.js --index : lu par paquets (taille réduite pour l'essai), la clé d'un fichier du dernier paquet est trouvée", () => {
+  const { dir, git, ecrire } = depotTemporaire();
+  for (let i = 0; i < 10; i++) ecrire(`f${i}.js`, `export const n${i} = ${i};\n`);
+  ecrire("z-cle.js", `const k = "${FAUX.stripe}";\n`); // dernier dans l'ordre de l'index
+  git("add", ".");
+  let essai = 0;
+  const lire = (env) => {
+    const trace = path.join(dir, "..", `trace-paquets-${path.basename(dir)}-${++essai}.txt`);
+    const r = spawnSync("node", [VERIFIER, "--index"], { cwd: dir, encoding: "utf8", env: { ...process.env, ...env, GIT_TRACE: trace.split(path.sep).join("/") } });
+    const paquets = fs.readFileSync(trace, "utf8").split("\n").filter((l) => /trace: built-in: git cat-file --batch$/.test(l.trim())).length;
+    return { r, paquets };
+  };
+  // PULSE_TAILLE_PAQUET : réservée aux tests, lue seulement par verifier.js ; 64 octets = deux ou trois fichiers par paquet.
+  const { r, paquets } = lire({ PULSE_TAILLE_PAQUET: "64" });
+  assert.ok(paquets >= 4, `${paquets} paquets lus`);
+  assert.strictEqual(r.status, 1, r.stderr);
+  assert.match(r.stderr, /z-cle\.js : contient une clé secrète/);
+  assert.doesNotMatch(r.stderr, /illisible/, "chaque paquet est lu");
+  // Sans la variable, un seul paquet ; une valeur invalide garde la taille normale.
+  assert.strictEqual(lire({}).paquets, 1);
+  assert.strictEqual(lire({ PULSE_TAILLE_PAQUET: "abc" }).paquets, 1);
+});
+
 test("verifier.js --index : un sous-module préparé (lien vers un autre dépôt) est laissé de côté, comme un binaire", () => {
   const { dir, git, ecrire } = depotTemporaire();
   ecrire("app.js", "export const a = 1;\n");
