@@ -2038,3 +2038,14 @@ test("examen sans verifier (rythme rapide, tout) : le reviewer lance les contrô
   assert.match(us, /« Audit de sécurité »/);
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Audit de sécurité$/m, "le modèle de rapport a sa section « Audit de sécurité »");
 });
+
+test("commit : le filet anti-régression se lit dans la preuve, sans référence absente de son contexte ; filet limité : toute la suite au commit de la dernière tâche de l'US hors spirc", () => {
+  const commit = skillTexte("commit");
+  const ligne = commit.split("\n").find((l) => l.startsWith("- `commit` :")) || "";
+  assert.match(ligne, /En rythme complet : `pulse-aidd preuve etat --exiger suite`/, "commit lit la preuve");
+  assert.match(ligne, /❌ : s'arrêter, dire les échecs et proposer de taper `\/pulse:review <Tn>`/);
+  assert.match(ligne, /la relance indiquée, une fois \(outil Bash : `timeout` 600000\)/);
+  assert.match(ligne, /dernière tâche de l'US hors `\/pulse:spirc`/, "filet limité : toute la suite à la dernière tâche");
+  assert.doesNotMatch(commit, /référence « Tests automatiques »/, "aucune référence hors du contexte de commit");
+  assert.ok(motifsBash(path.join(RACINE, "skills", "commit", "SKILL.md")).some((m) => couvre(m, "pulse-aidd preuve etat --exiger suite")), "commit : preuve autorisée");
+});
