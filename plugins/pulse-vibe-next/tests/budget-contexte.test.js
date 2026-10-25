@@ -103,7 +103,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   cicd: 56500, // mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
   deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
   express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
-  fix: 52500, // mesure 49 923 (pulse 0.53 : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
+  fix: 52500, // mesure 49 923 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
   perf: 56500, // mesure 53 788 (pulse 0.50 : seo, perf, ui et rediger chargent les consignes pour écrire du code à la place de la fiche et de l'architecture) ; avant, mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
   plan: 83500, // mesure 79 197 (pulse 0.50 : le pack de plan sans la fiche du code) ; avant, mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
   rediger: 27000, // mesure 25 615 (pulse 0.50 : les consignes pour écrire du code en plus, 350 caractères ; plafond relevé avec la mesure) ; avant, mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -144,7 +144,7 @@ const AGENTS_AVEC_PACK = {
   "test-runner": { plafond: 29500, /* mesure 27 947 (pulse 0.50 : références de tests raccourcies) ; avant, 29 844 */ parties: [["agent", "test-runner"], ["tests", "ecrire", "unitaire"], ["pile", "contexte", "test"]] },
   // Les six agents hors de la boucle (pulse 0.50 : premiers plafonds).
   "security-auditor": { plafond: 24500, /* mesure 23 175 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "security-auditor"], ["reference", "checklist-securite.md"], ["pile", "contexte", "security"]] },
-  fixer: { plafond: 62500, /* mesure 59 370 (pulse 0.53 : correction de comportement envoyée par fix, le fixer charge clean-code et une famille, ici securite ; avant, 41 072 : clean-code seul, anticipé) */ parties: [["agent", "fixer"], ["pile", "contexte", "fix"], ["qualite", "clean-code", "securite"]] },
+  fixer: { plafond: 62500, /* mesure 59 370 (pulse 0.51, étape D : correction de comportement envoyée par fix, le fixer charge clean-code et une famille, ici securite ; avant, 41 072 : clean-code seul, anticipé) */ parties: [["agent", "fixer"], ["pile", "contexte", "fix"], ["qualite", "clean-code", "securite"]] },
   verifier: { plafond: 21500, /* mesure 20 049 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "verifier"], ["pile", "contexte", "test"], ["reference", "tests/test-manuel.md"], ["reference", "gestes.md"]] },
   explorer: { plafond: 6500, /* mesure 5 748 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "explorer"], ["pile", "contexte", "spec"]] },
   "designer, planche": { plafond: 44500, /* mesure 42 230 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"], ["pile", "contexte", "ui"]] },
@@ -187,8 +187,8 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "commit --sans-communes": 28500, // mesure 26 896
   "deploy --sans-communes": 44000, // mesure 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "express --sans-communes": 27500, // mesure 26 109
-  "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.53 ; avant, 30 759)
-  "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.53 ; avant, 37 026)
+  "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 30 759)
+  "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 37 026)
   "memory --sans-communes": 18500, // mesure 17 559
   "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "plan --sans-communes": 62500, // mesure 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
