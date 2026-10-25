@@ -8,8 +8,12 @@
 // Sortie en lignes « clé: valeur ». Codes : 0 fait · 1 usage ou argument invalide · 2 refus préalable (rien n'a changé) ·
 // 3 échec Git (l'entrée mise de côté est gardée ; après une remise en conflit, l'arbre est ramené à l'état d'avant). Chemins refusés : avec « .. », absolus, ou avec une lettre de lecteur.
 // Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), reset --merge (seulement juste après notre
-// propre stash apply en échec, sur un dossier vérifié propre au départ), lectures (status, stash list, stash show, ls-files, rev-parse).
-// `remettre` n'agit que sur un dossier propre : aucun changement suivi ou enregistré, et aucun chemin de l'entrée déjà occupé (arbre-occupe, code 2).
+// propre stash apply en échec, sur un dossier vérifié propre au départ), lectures (status, stash list, stash show, ls-files, ls-tree, check-ignore, rev-parse).
+// `mettre-de-cote` refuse d'avance (code 2) ce que `git stash push` ne sait pas mettre de côté : suppression ou renommage enregistrés, fichier ignoré
+// ajouté de force. Si Git échoue quand même après avoir créé une entrée, elle est signalée (`mise-de-cote-orpheline`, code 3).
+// `remettre` n'agit que sur un dossier propre (sinon arbre-occupe, code 2) : aucun changement suivi ou enregistré, sauf une modification non enregistrée
+// d'un document de docs/ ou aidd_docs/ hors des chemins de l'entrée (le plan coché juste avant ; `reset --merge` la garde) ; aucun chemin de l'entrée
+// ni de ses dossiers déjà occupé ; aucun fichier neuf de l'entrée suivi depuis par le projet.
 // Les noms de fichiers d'une entrée se lisent avec `stash show --include-untracked --no-renames`, qui demande Git 2.32 ou plus.
 "use strict";
 
@@ -22,9 +26,10 @@ const sortir = (code, lignes) => {
   process.exit(code);
 };
 
-/** Lance git à `cwd` ; les chemins reçus sont pris tels quels (jamais comme motifs). */
-function git(cwd, args) {
-  const r = spawnSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, GIT_LITERAL_PATHSPECS: "1" } });
+/** Lance git à `cwd` ; les chemins reçus sont pris tels quels (jamais comme motifs ; check-ignore les prend tels quels sans ce réglage, qu'il refuse). */
+function git(cwd, args, entree) {
+  const env = { ...process.env, GIT_LITERAL_PATHSPECS: args[0] === "check-ignore" ? "0" : "1" };
+  const r = spawnSync("git", args, { cwd, encoding: "utf8", env, input: entree });
   return { ok: r.status === 0, sortie: r.stdout || "", erreur: (r.stderr || "").trim() || (r.error ? String(r.error.message) : "") };
 }
 
@@ -34,7 +39,7 @@ function cheminSur(brut) {
   return brut.replace(/\\/g, "/").replace(/^(\.\/)+/, "").replace(/\/+$/, "") || null;
 }
 
-/** Les fichiers modifiés, ajoutés ou non suivis, avec leur état à deux lettres (un par ligne, y compris dans un dossier tout neuf). */
+/** Les fichiers modifiés, ajoutés ou non suivis, avec leur état à deux lettres (un par ligne, y compris dans un dossier tout neuf) ; l'ancien nom d'un renommage aussi. */
 function etatArbre(racine) {
   const r = git(racine, ["status", "--porcelain", "-z", "--untracked-files=all"]);
   const morceaux = r.sortie.split("\0");
@@ -52,6 +57,8 @@ function etatArbre(racine) {
 }
 
 const fichiersChanges = (racine) => etatArbre(racine).map((e) => e.chemin);
+const DOCUMENT = /^(docs|aidd_docs)\//;
+const lies = (a, b) => a === b || a.startsWith(b + "/") || b.startsWith(a + "/");
 const instantane = (racine) => etatArbre(racine).map((e) => e.xy + e.chemin).sort().join("\n");
 const EN_CONFLIT = /^(?:U.|.U|AA|DD)$/;
 
@@ -75,7 +82,8 @@ function fichiersEntree(racine, ref) {
 }
 
 function mettreDeCote(racine, tn, demandes) {
-  const changes = fichiersChanges(racine);
+  const arbre = etatArbre(racine);
+  const changes = arbre.map((e) => e.chemin);
   const inconnus = [];
   const retenus = new Set();
   const laisses = [];
@@ -86,39 +94,82 @@ function mettreDeCote(racine, tn, demandes) {
       continue;
     }
     for (const f of correspondants) {
-      if (/^(docs|aidd_docs)\//.test(f)) laisses.push(f);
+      if (DOCUMENT.test(f)) laisses.push(f);
       else retenus.add(f);
     }
   }
+  const fichiers = [...retenus];
+  const refuses = fichiers.length ? intransportables(racine, arbre, fichiers) : [];
   const deja = entrees(racine).find((e) => e.tache === tn);
   const laisse = [...new Set(laisses)].map((f) => `laisse: ${f} (document de la méthode)`);
-  if (inconnus.length) sortir(2, ["etat: refuse", ...inconnus.map((f) => `inconnu: ${f}`)]);
+  if (inconnus.length || refuses.length) sortir(2, ["etat: refuse", ...inconnus.map((f) => `inconnu: ${f}`), ...refuses.map((f) => `refuse: ${f}`)]);
   if (deja) sortir(2, ["etat: refuse", `deja: ${deja.ref}`]);
-  if (!retenus.size) sortir(2, ["etat: rien-a-mettre-de-cote", ...laisse]);
+  if (!fichiers.length) sortir(2, ["etat: rien-a-mettre-de-cote", ...laisse]);
 
-  const fichiers = [...retenus];
+  const avant = new Set(empreintes(racine));
   const r = git(racine, ["stash", "push", "-u", "-m", sujetDe(tn), "--", ...fichiers]);
-  const entree = entrees(racine).find((e) => e.tache === tn);
+  const derniere = empreintes(racine)[0];
+  const creee = derniere && !avant.has(derniere) ? "stash@{0}" : null; // entrée créée par cet appel
   const apres = fichiersChanges(racine);
   const restes = fichiers.filter((f) => apres.includes(f));
-  if (!r.ok || !entree || restes.length) {
-    sortir(3, ["etat: echec", ...restes.map((f) => `fichier-reste: ${f}`), `message: ${r.erreur || "la mise de côté n'est pas complète"}`]);
+  if (!r.ok || !creee || restes.length) {
+    sortir(3, ["etat: echec", ...(creee ? [`mise-de-cote-orpheline: ${creee}`] : []), ...restes.map((f) => `fichier-reste: ${f}`), `message: ${r.erreur || "la mise de côté n'est pas complète"}`]);
   }
-  sortir(0, ["etat: fait", `mise-de-cote: ${entree.ref}`, ...fichiers.map((f) => `fichier: ${f}`), ...laisse, `ligne-plan: · Mis de côté : ${sujetDe(tn)}`]);
+  sortir(0, ["etat: fait", `mise-de-cote: ${creee}`, ...fichiers.map((f) => `fichier: ${f}`), ...laisse, `ligne-plan: · Mis de côté : ${sujetDe(tn)}`]);
 }
 
-/** Les chemins que l'entrée occupe déjà dans le dossier de travail : tout sauf un fichier suivi par Git et propre. */
-function occupes(racine, fichiers, arbre) {
-  const suivis = new Set(git(racine, ["ls-files", "-z"]).sortie.split("\0").filter(Boolean));
-  const sales = arbre.filter((e) => e.xy !== "??").map((e) => e.chemin); // changement suivi ou enregistré
+/** Les empreintes des entrées mises de côté, de la plus récente à la plus ancienne. */
+const empreintes = (racine) => git(racine, ["stash", "list", "--format=%H"]).sortie.split("\n").filter(Boolean);
+
+/** Les fichiers que `git stash push` ne sait pas mettre de côté, avec la raison : renommage ou suppression enregistrés, fichier ignoré. */
+function intransportables(racine, arbre, fichiers) {
+  const raisons = new Map();
+  for (const e of arbre) {
+    if (!fichiers.includes(e.chemin)) continue;
+    if (/[RC]/.test(e.xy[0])) raisons.set(e.chemin, "renommage enregistré");
+    else if (e.xy[0] === "D") raisons.set(e.chemin, "suppression enregistrée");
+  }
+  const ignores = git(racine, ["check-ignore", "--no-index", "-z", "--stdin"], fichiers.join("\0") + "\0").sortie.split("\0").filter(Boolean);
+  for (const f of ignores) if (!raisons.has(f)) raisons.set(f, "fichier ignoré");
+  return fichiers.filter((f) => raisons.has(f)).map((f) => `${f} (${raisons.get(f)})`);
+}
+
+/** Ce qui empêche la remise : les changements en cours (sauf un document de la méthode modifié sans être enregistré, hors de l'entrée) et les chemins de l'entrée déjà occupés. */
+function occupes(racine, ref, fichiers, arbre) {
+  const suivis = new Set(git(racine, ["ls-files", "-z"]).sortie.split("\0").filter(Boolean)); // comme HEAD : tout changement enregistré bloque déjà
+  const neufs = new Set(git(racine, ["ls-tree", "-r", "--name-only", "-z", `${ref}^3`]).sortie.split("\0").filter(Boolean)); // les fichiers non suivis de l'entrée
+  const tolere = (e) => e.xy[0] === " " && DOCUMENT.test(e.chemin) && !fichiers.some((f) => lies(e.chemin, f));
+  const sales = arbre.filter((e) => e.xy !== "??" && !tolere(e)).map((e) => e.chemin); // changement suivi ou enregistré
   const nonSuivis = arbre.filter((e) => e.xy === "??").map((e) => e.chemin.replace(/\/$/, ""));
-  const lies = (a, b) => a === b || a.startsWith(b + "/") || b.startsWith(a + "/");
   const trouves = new Set(sales);
   for (const f of fichiers) {
+    for (const dossier of dossiersDe(f)) { // un dossier de l'entrée remplacé par un fichier
+      const infos = lire(racine, dossier);
+      if (infos && !infos.isDirectory()) trouves.add(dossier);
+    }
     if (nonSuivis.some((c) => lies(c, f))) trouves.add(f);
     else if (fs.existsSync(path.join(racine, f)) && !suivis.has(f)) trouves.add(f); // fichier ignoré ou dossier à cet endroit
+    else if (neufs.has(f) && suivis.has(f)) trouves.add(f); // fichier neuf de l'entrée, suivi depuis par le projet
   }
   return [...trouves];
+}
+
+/** Les dossiers d'un chemin, du plus haut au plus profond : « a/b/c.js » → a, a/b. */
+const dossiersDe = (f) => f.split("/").slice(0, -1).map((_, i, parties) => parties.slice(0, i + 1).join("/"));
+
+/** Ce qui se trouve à ce chemin (sans suivre un lien), ou null. */
+function lire(racine, chemin) {
+  try {
+    return fs.lstatSync(path.join(racine, chemin));
+  } catch (e) {
+    return null;
+  }
+}
+
+/** Les dossiers absents qui accueilleront ces fichiers, du plus profond au moins profond. */
+function dossiersAbsents(racine, fichiers) {
+  const absents = new Set(fichiers.flatMap((f) => dossiersDe(f).filter((d) => !lire(racine, d))));
+  return [...absents].sort((a, b) => b.split("/").length - a.split("/").length);
 }
 
 function remettre(racine, tn) {
@@ -126,16 +177,17 @@ function remettre(racine, tn) {
   if (!entree) sortir(2, ["etat: absente"]);
   const fichiers = fichiersEntree(racine, entree.ref);
   if (!fichiers) sortir(3, ["etat: echec", `message: l'entrée ${entree.ref} ne se lit pas`]);
-  const occupe = occupes(racine, fichiers, etatArbre(racine));
+  const occupe = occupes(racine, entree.ref, fichiers, etatArbre(racine));
   if (occupe.length) sortir(2, ["etat: arbre-occupe", ...occupe.map((f) => `fichier: ${f}`)]);
 
   const avant = instantane(racine);
   const existaient = new Set(fichiers.filter((f) => fs.existsSync(path.join(racine, f))));
+  const dossiersNeufs = dossiersAbsents(racine, fichiers.filter((f) => !existaient.has(f)));
   const a = git(racine, ["stash", "apply", entree.ref]);
   if (!a.ok) {
     const message = `message: ${[a.sortie, a.erreur].join(" ").replace(/\s+/g, " ").trim()}`;
     const enConflit = etatArbre(racine).filter((e) => EN_CONFLIT.test(e.xy)).map((e) => `fichier-en-conflit: ${e.chemin}`);
-    // Départ propre : `reset --merge` ne défait ici que cette remise ; puis les fichiers neufs qu'elle a créés.
+    // Départ propre : `reset --merge` ne défait ici que cette remise ; puis les fichiers neufs qu'elle a créés, et leurs dossiers restés vides.
     git(racine, ["reset", "--merge"]);
     const reste = [];
     for (const f of fichiers.filter((x) => !existaient.has(x))) {
@@ -143,6 +195,13 @@ function remettre(racine, tn) {
         fs.rmSync(path.join(racine, f), { force: true });
       } catch (e) {
         reste.push(`fichier: ${f}`);
+      }
+    }
+    for (const dossier of dossiersNeufs) {
+      try {
+        fs.rmdirSync(path.join(racine, dossier));
+      } catch (e) {
+        // déjà retiré, ou pas vide : il reste, et la comparaison ci-dessous le signale s'il contient un fichier
       }
     }
     const propre = !reste.length && instantane(racine) === avant;
