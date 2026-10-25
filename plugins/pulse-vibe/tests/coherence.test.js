@@ -1934,3 +1934,17 @@ test("examen : rapport au modèle chargé à l'étape, délégations sans recopi
   assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /1\. \*\*Tests\*\* : lancer une fois toute la suite[^\n]*`pulse-aidd preuve lancer --portee suite`/);
   assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse-aidd modele revue\.md`/);
 });
+
+test("test : références des tests chargées à la demande, délégation au test-writer sans recopie de docs/technical.md", () => {
+  const t = skillTexte("test");
+  assert.match(t, /Quand elle vaut « aucune » : lancer `pulse-aidd reference tests-automatiques\.md` et appliquer son § 3/);
+  assert.match(t, /Seulement pour une spec sans scénarios[^\n]*`pulse-aidd tests gherkin`/);
+  assert.match(t, /Pour écrire des tests \*\*avant\*\* le code d'une nouvelle tâche : `\/pulse:implement -t` ou `\/pulse:spirc -t`\.\n/);
+  const delegation = t.split("\n").find((l) => l.startsWith("2. Déléguer à **`pulse:test-writer`**")) || "";
+  assert.ok(delegation, "délégation au test-writer");
+  assert.doesNotMatch(delegation, /« Pile retenue »|contrat recopié/);
+  assert.match(delegation, /L'agent lit lui-même `docs\/technical\.md`/);
+  assert.doesNotMatch(t, /Les références citées dans cette commande figurent dans ce contexte/);
+  assert.match(t, /`pulse-aidd etape fix --sans-communes`/, "échec dû au code : l'étape fix enchaînée");
+  assert.ok(!motifsBash(path.join(RACINE, "skills", "test", "SKILL.md")).some((m) => m.startsWith("git add")), "test n'autorise pas git add");
+});
