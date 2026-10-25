@@ -23,7 +23,7 @@
 #   pulse-aidd preuve construire     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests (code 2 sans preuve à jour : rien n'est lancé)
 #   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1) ; « Tester » à « aucune » (choix du projet) satisfait --exiger suite
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
-#   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
+#   pulse-aidd etat [--sans-git] [--tableau]  état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status) ; --tableau : le tableau de bord de /pulse:status (tâches, Git, dossiers à part, référencement, revue, mémoire)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review ; revue <US-XXX> : la relecture de toute l'US (rythme rapide)
 #   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json
@@ -352,8 +352,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     guide)
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;
-    status)
-      afficher "Le cycle Pulse" "$REF/cycle.md" ;;
+    status) ;; # le cycle Pulse : dans le contexte de /pulse:init et /pulse:guide ; le tableau vient de pulse-aidd etat --tableau
     auto-fix) ;;
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac

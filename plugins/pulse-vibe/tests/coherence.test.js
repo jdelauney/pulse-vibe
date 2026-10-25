@@ -685,6 +685,13 @@ test("init et status ne citent que des clés et des valeurs réellement émises 
     const cites = [...skillTexte(skill).matchAll(/`(prochaine|raison|regle|fondation|attente|ancien|dossier|aussi|etapes|mvp)(?::[^`]*)?`/g)].map((m) => m[1]);
     for (const c of cites) assert.ok(emises.has(c), `${skill} cite la clé ${c}, absente de etat.js`);
   }
+  // Le tableau de /pulse:status (pulse-aidd etat --tableau) : chaque clé est émise par etat-tableau.js, et status s'appuie dessus.
+  const sourceTableau = lire(RACINE, "scripts", "etat-tableau.js");
+  const CLES_TABLEAU = ["projet", "pile", "rythme", "groupe", "tache", "plan", "git", "sessions", "worktree", "branche-fusionnee", "ci", "en-ligne", "referencement", "seo-suivi", "revue", "securite", "memoire", "en-cours-sans-trace"];
+  for (const c of CLES_TABLEAU) assert.ok(sourceTableau.includes(`\`${c}: `), `etat-tableau.js n'émet pas ${c}`);
+  const status = skillTexte("status");
+  assert.match(status, /`pulse-aidd etat --tableau`/);
+  for (const c of CLES_TABLEAU.filter((x) => x !== "en-cours-sans-trace")) assert.match(status, new RegExp(`\`${c}[\`:= ]`), `status s'appuie sur la ligne ${c}`);
 });
 
 test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour chaque chemin", () => {
@@ -887,7 +894,7 @@ test("modèles et sorties des outils lus par la personne sans « MVP », « epic
       if (m) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")}:${i + 1} : ${m[0]}`);
     });
   }
-  for (const script of ["etat.js", "guide.js", "garde-commandes.js"]) {
+  for (const script of ["etat.js", "etat-tableau.js", "guide.js", "garde-commandes.js"]) {
     // Une chaîne d'un seul mot (« worktrees », « --worktree ») est du code : un nom de dossier ou une option de Git.
     // Seul le mot « worktree » y est permis ; les autres mots de méthode restent cherchés.
     for (const chaine of chainesDuScript(lire(RACINE, "scripts", script))) {
@@ -1528,7 +1535,9 @@ test("Search Console : une seule règle d'avancement pour relier.md, lue à la r
   const sc = lire(RACINE, "skills", "search-console", "SKILL.md");
   assert.match(sc, /Search Console notée « à relier » → `relier`/, "search-console sans argument reprend la liaison en cours");
   const status = lire(RACINE, "skills", "status", "SKILL.md");
-  assert.match(status, /Search Console notée « à relier »[^\n]*→ `\/pulse:search-console relier`/, "status signale une liaison en cours");
+  // La liaison en cours (« à relier ») devient un signal de suivi calculé par pulse-aidd etat (etat-tableau.test.js), que status reprend.
+  assert.match(lire(RACINE, "scripts", "etat-tableau.js"), /à relier/, "etat-tableau.js reconnaît une liaison en cours");
+  assert.match(status, /règle R24[^\n]*`\/pulse:search-console relier`/, "status reprend les signaux de suivi de pulse-aidd etat");
   const seo = lire(RACINE, "skills", "seo", "SKILL.md");
   const lancer = seo.slice(seo.indexOf("### lancer\n"), seo.indexOf("\n## Exemples"));
   assert.match(lancer, /« Avancement »/, "seo lancer note l'avancement de relier.md avant de rendre la main");
