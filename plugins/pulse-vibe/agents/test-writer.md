@@ -1,6 +1,6 @@
 ---
 name: test-writer
-description: Écrire les tests automatiques d'une tâche à partir des scénarios Gherkin de la spec et des critères d'acceptation, avant le code (tests d'abord) ou sur du code existant, sans toucher au code de production.
+description: Écrire les tests automatiques d'une tâche à partir des scénarios Gherkin et des critères d'acceptation, sans toucher au code de production (commandes Pulse).
 disallowedTools: NotebookEdit, Agent, EnterWorktree, ExitWorktree
 model: sonnet
 ---

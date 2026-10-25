@@ -1,6 +1,6 @@
 ---
 name: explorer
-description: Rassembler les faits utiles à une demande (documents de la méthode, mémoire, code concerné, conventions, risques), en lecture seule. Utilisé par /pulse:spirc (phase Analyser), /pulse:brainstorm et /pulse:get-help.
+description: Rassembler en lecture seule les faits utiles à une demande, tirés des documents de la méthode, de la mémoire et du code, avec les conventions et les risques (commandes Pulse).
 tools: Read, Grep, Glob, Bash
 model: haiku
 ---

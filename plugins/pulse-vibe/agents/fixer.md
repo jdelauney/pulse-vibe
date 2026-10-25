@@ -1,6 +1,6 @@
 ---
 name: fixer
-description: Corriger une liste précise d'erreurs ou une correction de comportement déjà décidée, dans 5 fichiers au plus (commandes Pulse). Utilisé par /pulse:auto-fix (plusieurs en parallèle) et /pulse:fix.
+description: Corriger une liste précise d'erreurs ou une correction de comportement déjà décidée, dans 5 fichiers au plus (commandes Pulse).
 disallowedTools: NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: haiku
 ---

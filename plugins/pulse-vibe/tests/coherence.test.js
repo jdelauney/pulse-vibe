@@ -1216,7 +1216,7 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   assert.match(commandes.trim().split("\n").pop(), /Les commandes `\/pulse:\*` se lancent quand la personne les tape\.$/, "dernière ligne de « Commandes »");
   // Hors d'une commande, aucune règle commune n'est chargée : le modèle n'y renvoie pas.
   assert.doesNotMatch(claude, /règles communes Pulse, § 1|règles de réalisation de Pulse/);
-  assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
+  assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\(commandes Pulse\)\.$/);
   for (const r of ["ui/registres.md", "ui/regles-ui.md", "ui/anti-patterns.md"]) assert.ok(skillTexte("ui").includes(`pulse-aidd reference ${r}`), `ui : pointeur ${r}`);
   assert.doesNotMatch(skillTexte("ui"), /trois références|quatre références/);
   // Après un compactage, les références chargées à une étape précédente se rechargent, action par action (dans les premières lignes, gardées).
@@ -1360,9 +1360,9 @@ test("checklist sécurité : chargée par les agents qui relisent, plus recopié
 test("auditeur de sécurité : deux portées, projet (/pulse:security) ou tache (-x), données par la délégation", () => {
   const auditeur = lire(RACINE, "agents", "security-auditor.md");
   assert.match(auditeur.match(/^description:.*$/m)[0], /le projet, ou une tâche/);
-  assert.match(auditeur.match(/^description:.*$/m)[0], /\/pulse:spirc/);
   const portee = (auditeur.split(/^## Portée$/m)[1] || "").split(/^## /m)[0];
   assert.ok(portee, "section « ## Portée »");
+  assert.match(portee, /\*\*`tache`\*\* \(`\/pulse:spirc -x`/, "la portée tache dit qui la demande (la description n'a plus de liste de commandes)");
   assert.match(portee, /\*\*`projet`\*\*/);
   const tache = portee.split("**`tache`**")[1] || "";
   assert.ok(tache, "portée `tache`");
@@ -1491,7 +1491,7 @@ test("fix confie la correction décidée au fixer, élargi aux corrections de co
   const fix = lire(RACINE, "skills", "fix", "SKILL.md");
   const description = fixer.match(/^description: (.*)$/m)[1];
   assert.match(description, /correction de comportement déjà décidée/);
-  assert.match(description, /\/pulse:fix/);
+  assert.match(fixer, /^## Correction de comportement \(envoyée par \/pulse:fix\)$/m);
   const section = (fixer.match(/## Correction de comportement[^\n]*\n([\s\S]*?)(?=\n## |$)/) || [])[1] || "";
   assert.match(section, /la cause trouvée, la solution retenue avec la personne/);
   assert.match(section, /pulse-aidd qualite <famille>/);
@@ -1953,6 +1953,19 @@ test("gestes de la personne : faire soi-même d'abord, fichier d'environnement e
   for (const a of ["implementer", "test-writer", "test-runner", "verifier"]) assert.match(lire(RACINE, "agents", `${a}.md`), /pulse-aidd reference gestes\.md/, a);
 });
 
+test("agents : une phrase de capacité de 160 caractères au plus, suivie de « (commandes Pulse) » ; moins de 2 000 caractères en tout (chargés dans chaque session)", () => {
+  const descriptions = AGENTS_PAR_PLUGIN.map((f) => ({ f: path.basename(f), d: (lire(f).match(/^description: (.*)$/m) || [])[1] || "" }));
+  assert.ok(descriptions.length >= 12, "les 12 agents du cœur");
+  for (const { f, d } of descriptions) {
+    const m = /^(.+) \(commandes Pulse\)\.$/.exec(d);
+    assert.ok(m, `${f} : « (commandes Pulse). » en fin de description`);
+    assert.ok(m[1].length <= 160, `${f} : phrase de capacité de ${m[1].length} caractères (160 au plus)`);
+    assert.doesNotMatch(d, /Utilisé par|\/pulse:/, `${f} : ni « Utilisé par », ni liste de commandes`);
+  }
+  const total = descriptions.reduce((s, { d }) => s + d.length, 0);
+  assert.ok(total < 2000, `descriptions des agents : ${total} caractères (moins de 2 000)`);
+});
+
 test("décision 2 : /pulse:express devient /pulse:nouveau, sans commande de renvoi ; la reprise accepte l'ancien nom", () => {
   assert.ok(!fs.existsSync(path.join(RACINE, "skills", "express")), "aucune commande de renvoi");
   const nouveau = skillTexte("nouveau");
@@ -2225,7 +2238,6 @@ test("spirc : le bout en bout se lance aussi en autonome, le rythme rapide est t
 test("implementer : [I] Implémenter, en coulisse ; un secret à inventer est rendu à l'appelant", () => {
   const texte = lire(RACINE, "agents", "implementer.md");
   const description = texte.match(/^description:.*$/m)[0];
-  assert.match(description, /\/pulse:spirc \(\[I\] Implémenter\) et \/pulse:implement \(en coulisse\)/);
   assert.doesNotMatch(description, /phase Exécuter|mode sous-agent/);
   assert.match(texte, /un secret à inventer : son NOM, que l'appelant génère avec l'accord de la personne/);
 });
