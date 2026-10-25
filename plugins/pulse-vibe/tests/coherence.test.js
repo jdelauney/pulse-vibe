@@ -2006,3 +2006,20 @@ test("filet limité : le test-runner est prévenu, la portée tâche se lance (p
   assert.doesNotMatch(lire(RACINE, "references", "examen.md"), /`--portee tache`, lue sans/, "--portee tache appartient à preuve lancer");
   assert.match(lire(RACINE, "references", "tests-automatiques.md"), /tâche sans test : `pulse-aidd preuve lancer --portee tache` sans fichier/);
 });
+
+test("preuve : délai de l'outil Bash donné à chaque lancement ; preuve rouge due à l'environnement relancée une fois la cause réparée ; aucun test écrit non bloquant", () => {
+  const textes = {
+    "verifier.md": lire(RACINE, "agents", "verifier.md"),
+    "test-runner.md": lire(RACINE, "agents", "test-runner.md"),
+    "tests-automatiques.md": lire(RACINE, "references", "tests-automatiques.md"),
+    "examen.md": lire(RACINE, "references", "examen.md"),
+    "examen-us.md": lire(RACINE, "skills", "spirc", "references", "examen-us.md"),
+  };
+  for (const [nom, texte] of Object.entries(textes)) assert.match(texte, /outil Bash[^\n]*`timeout` 600000/, `${nom} : délai de l'outil Bash`);
+  assert.match(textes["examen.md"], /sans relance, sauf cause hors des fichiers réparée \(relance indiquée par la preuve\)/);
+  assert.match(textes["verifier.md"], /dû à l'environnement[^.]*la cause réparée, se relance une fois/);
+  assert.match(lire(RACINE, "references", "tests-dabord.md"), /dû à l'environnement\*\*[^\n]*guider pas à pas, puis relancer le test-runner une fois/);
+  assert.match(textes["tests-automatiques.md"], /aucun test écrit pour l'instant/);
+  assert.match(lire(RACINE, "templates", "revue.md"), /— \(aucun test écrit pour l'instant\)/);
+  for (const nom of ["examen.md", "tests-automatiques.md"]) assert.match(textes[nom], /filet limité : (avec les )?fichiers de test de cette tâche/, `${nom} : relance du filet limité avec les tests de la tâche`);
+});

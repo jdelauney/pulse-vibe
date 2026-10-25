@@ -36,6 +36,8 @@ const SCRIPTS = {
   "rapport.js": `require("fs").writeFileSync("rapport.xml", String(Date.now())); console.log("# tests 2\\n# pass 2");`,
   "vide.js": `console.log("# tests 0\\n# pass 0");`,
   "build-ecrit.js": `require("fs").writeFileSync("sortie.txt", String(Date.now()));`,
+  "env.js": `if (!require("fs").existsSync("ignore/env.txt")) { console.log("variable manquante : ignore/env.txt"); process.exit(1); } console.log("# tests 2\\n# pass 2");`,
+  "attend.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/attend", "x\\n"); setTimeout(() => require("fs").appendFileSync(process.env.PREUVE_TRACES + "/fin", "x\\n"), 4000);`,
 };
 const TECHNIQUE = {
   tester: "`node tests.js` (bout en bout : `node e2e.js`)",
@@ -73,12 +75,12 @@ test("lancer puis etat : à jour ; la ligne résume contrôles, tests et portée
   const p = depot();
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite\) · à l'instant$/m);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite, \d+ s\) · à l'instant$/m);
   assert.ok(lance(p.traces, "lint") && lance(p.traces, "tests"), "contrôles et tests lancés");
   assert.ok(!lance(p.traces, "build"), "construction lancée seulement avec --construire");
   const e = preuve(p, "etat");
   assert.strictEqual(e.status, 0, e.stdout);
-  assert.match(e.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite\) · à l'instant$/m);
+  assert.match(e.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite, \d+ s\) · à l'instant$/m);
   const enregistree = JSON.parse(fs.readFileSync(fichierPreuve(p.d), "utf8"));
   assert.strictEqual(enregistree.portee, "suite");
   assert.match(enregistree.empreinte, /^[0-9a-f]{64}$/);
@@ -96,7 +98,7 @@ test("fichier suivi modifié : périmée, et le fichier est nommé", () => {
   ecrire(p.d, "src/a.js", "module.exports = 2;\n");
   const e = preuve(p, "etat");
   assert.strictEqual(e.status, 1);
-  assert.match(e.stdout, /^preuve: périmée \(fichiers modifiés depuis : src\/a\.js\) ; relancez : pulse-aidd preuve lancer --portee suite$/m);
+  assert.match(e.stdout, /^preuve: périmée \(fichiers modifiés depuis : src\/a\.js\) ; relancez : pulse-aidd preuve lancer --portee suite \(outil Bash : timeout 600000\)$/m);
 });
 
 test("fichier non suivi et non ignoré créé : périmée", () => {
@@ -144,7 +146,7 @@ test("--portee tache : les fichiers de test donnés ; etat --exiger suite : port
   const p = depot();
   const r = preuve(p, "lancer", "--portee", "tache", "src/a.test.js", "src/b.test.js");
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /tests 2\/2 ✅ \(tâche\)/);
+  assert.match(r.stdout, /tests 2\/2 ✅ \(tâche, \d+ s\)/);
   assert.strictEqual(fs.readFileSync(path.join(p.traces, "tests"), "utf8").trim(), "src/a.test.js src/b.test.js");
   assert.strictEqual(preuve(p, "etat").status, 0);
   const e = preuve(p, "etat", "--exiger", "suite");
@@ -160,7 +162,7 @@ test("--exiger construction sans --construire : insuffisante ; avec --construire
   assert.match(sans.stdout, /^preuve: portée insuffisante \(/m);
   const r = preuve(p, "lancer", "--portee", "suite", "--construire");
   assert.strictEqual(r.status, 0, r.stdout);
-  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite\) · construction ✅ · à l'instant$/m);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite, \d+ s\) · construction ✅ · à l'instant$/m);
   assert.ok(lance(p.traces, "build"));
   const avec = preuve(p, "etat", "--exiger", "suite", "--exiger", "construction");
   assert.strictEqual(avec.status, 0, avec.stdout);
@@ -173,7 +175,7 @@ test("construire : ajoute la construction à une preuve à jour sans relancer co
   fs.rmSync(path.join(p.traces, "lint"));
   const r = preuve(p, "construire");
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite\) · construction ✅ · /m);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 3\/3 ✅ \(suite, \d+ s\) · construction ✅ · /m);
   assert.ok(lance(p.traces, "build"), "construction lancée");
   assert.ok(!lance(p.traces, "tests") && !lance(p.traces, "lint"), "ni tests ni contrôles relancés");
   const e = preuve(p, "etat", "--exiger", "suite", "--exiger", "construction");
@@ -225,7 +227,7 @@ test("commande en échec : ❌, code 1, les 30 dernières lignes ; etat garde le
   const p = depot({ tester: "`node echec.js`" });
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1, r.stdout);
-  assert.match(r.stdout, /^preuve: ❌ à jour · contrôles ✅ · tests ❌ \(suite\) · à l'instant$/m);
+  assert.match(r.stdout, /^preuve: ❌ à jour · contrôles ✅ · tests ❌ \(suite, \d+ s\) · à l'instant$/m);
   assert.match(r.stdout, /`node echec\.js`.*code 1/);
   assert.match(r.stdout, /^ligne 21$/m);
   assert.match(r.stdout, /^ligne 50$/m);
@@ -240,7 +242,7 @@ test("commande qui réécrit (formatage) : jamais lancée ; commande qui install
   const p = depot({ controles: "`node lint.js`, `node marque.js --write`, `node marque.js format`, `npm run lint:fix` et `node reset.js`" });
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1, r.stdout);
-  assert.match(r.stdout, /^preuve: ❌ à jour · contrôles ❌ · tests 3\/3 ✅ \(suite\)/m);
+  assert.match(r.stdout, /^preuve: ❌ à jour · contrôles ❌ · tests 3\/3 ✅ \(suite, \d+ s\)/m);
   assert.ok(lance(p.traces, "lint"));
   assert.ok(!lance(p.traces, "marque"), "le formatage n'est jamais lancé");
   assert.ok(!lance(p.traces, "reset"), "une commande hors des autorisations n'est pas lancée");
@@ -283,11 +285,20 @@ test("« Tester » : aucune (choix du projet) ; la ligne de bout en bout n'est j
   assert.match(tache.stdout, /suite : aucune/);
 });
 
-test("aucun test trouvé (0 test lancé) : ❌, code 1", () => {
+/** Un dépôt dont « Tester » ne trouve aucun test, avec un fichier de test suivi. */
+function depotAvecFichierDeTest() {
   const p = depot({ tester: "`node vide.js`" });
+  ecrire(p.d, "src/a.test.js", "// test\n");
+  git(p.d, "add", "--", "src/a.test.js");
+  git(p.d, "commit", "-q", "-m", "un test");
+  return p;
+}
+
+test("aucun test trouvé (0 test lancé) alors que des fichiers de test existent : ❌, code 1", () => {
+  const p = depotAvecFichierDeTest();
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1, r.stdout);
-  assert.match(r.stdout, /tests 0\/0 ❌ \(suite\) \(aucun test trouvé\)/);
+  assert.match(r.stdout, /tests 0\/0 ❌ \(suite, \d+ s\) \(aucun test trouvé\)/);
 });
 
 test("fichier non ignoré écrit par les tests : l'empreinte est prise après le lancement, la preuve reste à jour", () => {
@@ -382,7 +393,7 @@ test("etat indique la suite à donner : relance seulement pour périmée, aucune
   const aucune = preuve(p, "etat", "--exiger", "suite", "--exiger", "construction");
   assert.match(aucune.stdout, /relancez : pulse-aidd preuve lancer --portee suite --construire/, "aucune : relance avec la construction demandée");
   assert.strictEqual(preuve(p, "lancer", "--portee", "tache", "src/a.test.js").status, 0);
-  assert.match(preuve(p, "etat", "--exiger", "suite").stdout, /portée insuffisante[^\n]*relancez : pulse-aidd preuve lancer --portee suite$/m);
+  assert.match(preuve(p, "etat", "--exiger", "suite").stdout, /portée insuffisante[^\n]*relancez : pulse-aidd preuve lancer --portee suite \(outil Bash : timeout 600000\)$/m);
   assert.strictEqual(preuve(p, "lancer").status, 0);
   assert.match(preuve(p, "etat", "--exiger", "construction").stdout, /portée insuffisante[^\n]*ajoutez-la : pulse-aidd preuve construire/, "seule la construction manque");
   ecrire(p.d, "src/a.js", "module.exports = 3;\n");
@@ -391,15 +402,27 @@ test("etat indique la suite à donner : relance seulement pour périmée, aucune
   preuve(rouge, "lancer");
   const e = preuve(rouge, "etat", "--exiger", "suite");
   assert.strictEqual(e.status, 1);
-  assert.match(e.stdout, /Échecs à corriger : relancer sur le même contenu donnerait le même résultat/);
-  assert.doesNotMatch(e.stdout, /relancez/);
+  assert.match(e.stdout, /^Échecs à corriger\. Cause hors des fichiers \(service à démarrer, variable, outil, délai dépassé\), une fois réparée : relancez : pulse-aidd preuve lancer --portee suite \(outil Bash : timeout 600000\)\.$/m);
+  assert.doesNotMatch(e.stdout, /^preuve: [^\n]*relancez/m, "la ligne de la preuve reste celle d'une preuve rouge");
 });
 
-test("aucun test trouvé : ❌ signalé comme un problème du projet, à corriger dans docs/technical.md", () => {
-  const p = depot({ tester: "`node vide.js`" });
+test("aucun test trouvé alors que des fichiers de test existent : ❌ à corriger dans docs/technical.md, sans proposer « aucune »", () => {
+  const p = depotAvecFichierDeTest();
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1);
-  assert.match(r.stdout, /la commande « Tester » de docs\/technical\.md ne lance aucun test : corrigez-la, ou écrivez « aucune » si le projet n'a pas de tests/);
+  assert.match(r.stdout, /la commande « Tester » de docs\/technical\.md ne lance aucun test, alors que le projet a des fichiers de test \(src\/a\.test\.js\) : corrigez-la\./);
+  assert.doesNotMatch(r.stdout, /écrivez « aucune »/, "les tests du projet restent");
+});
+
+test("aucun test trouvé et aucun fichier de test (outil installé, aucun test écrit) : non bloquant, la ligne le dit", () => {
+  const p = depot({ tester: "`node vide.js`" });
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests : aucun test écrit pour l'instant · /m);
+  assert.doesNotMatch(r.stdout, /écrivez « aucune »/);
+  assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 0);
+  ecrire(p.d, "tests/premier.js", "// test non suivi, non ignoré\n");
+  assert.strictEqual(preuve(p, "lancer").status, 1, "un fichier de test non suivi compte aussi");
 });
 
 const sansTester = (lignes) => "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n" + lignes + "| Contrôles automatiques | `node lint.js` |\n";
@@ -409,7 +432,7 @@ test("« Tester » sans accents graves : la cellule est la commande, lancée com
   ecrire(p.d, "docs/technical.md", sansTester("| Tester | node tests.js |\n"));
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 0, r.stdout);
-  assert.match(r.stdout, /tests 3\/3 ✅ \(suite\)/);
+  assert.match(r.stdout, /tests 3\/3 ✅ \(suite, \d+ s\)/);
   assert.ok(lance(p.traces, "tests"), "la commande sans accents graves est lancée");
   assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 0);
 });
@@ -476,4 +499,56 @@ test("cellule « — » : vaut « aucune » ; plusieurs commandes dans une cellu
   assert.strictEqual(rs.status, 1, rs.stdout);
   assert.match(rs.stdout, /❌ contrôle non lancé : `node tests\.js \$\(node marque\.js\)` contient une substitution de commande/);
   assert.ok(!lance(substitution.traces, "marque") && !lance(substitution.traces, "tests"));
+});
+
+test("preuve rouge due à l'environnement (fichier ignoré manquant) : etat cite la relance ; réparée, lancer → ✅", () => {
+  const p = depot({ tester: "`node env.js`" });
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 1, r.stdout);
+  assert.match(r.stdout, /variable manquante/);
+  ecrire(p.d, "ignore/env.txt", "CLE=test\n");
+  const e = preuve(p, "etat", "--exiger", "suite");
+  assert.strictEqual(e.status, 1, "même contenu compté : toujours rouge");
+  assert.match(e.stdout, /Cause hors des fichiers[^\n]*une fois réparée : relancez : pulse-aidd preuve lancer --portee suite/);
+  const relance = preuve(p, "lancer", "--portee", "suite");
+  assert.strictEqual(relance.status, 0, relance.stdout);
+  assert.match(relance.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests 2\/2 ✅ \(suite, \d+ s\)/m);
+  assert.strictEqual(preuve(p, "etat", "--exiger", "suite").status, 0);
+});
+
+test("lancement interrompu (outil arrêté avant la fin) : la preuve dit « lancement interrompu » et la relance, jamais « aucune »", async () => {
+  const p = depot({ tester: "`node attend.js`" });
+  const { spawn } = require("child_process");
+  const enfant = spawn(process.execPath, [SCRIPT, "lancer"], { cwd: p.d, env: { ...process.env, PREUVE_TRACES: p.traces }, stdio: "ignore" });
+  const fin = Date.now() + 20000;
+  while (!lance(p.traces, "attend") && Date.now() < fin) await new Promise((ok) => setTimeout(ok, 100));
+  assert.ok(lance(p.traces, "attend"), "les tests ont démarré");
+  const arret = new Promise((ok) => enfant.on("exit", ok));
+  enfant.kill("SIGKILL");
+  await arret;
+  const e = preuve(p, "etat", "--exiger", "suite");
+  assert.strictEqual(e.status, 1, e.stdout);
+  assert.match(e.stdout, /^preuve: ❌ à jour · contrôles ✅ · /m);
+  assert.match(e.stdout, /❌ lancement interrompu[^\n]*timeout 600000/);
+  assert.match(e.stdout, /Relancez : pulse-aidd preuve lancer --portee suite\./);
+  assert.doesNotMatch(e.stdout, /^preuve: aucune/m);
+  // Les tests arrêtés sans leur parent finissent seuls : attendre leur fin avant d'effacer le dossier.
+  while (!lance(p.traces, "fin") && Date.now() < fin + 20000) await new Promise((ok) => setTimeout(ok, 100));
+});
+
+test("filet limité : la relance d'une preuve de portée tâche périmée demande les fichiers de test de la tâche, pas ceux de l'ancienne preuve", () => {
+  const p = depot();
+  assert.strictEqual(preuve(p, "lancer", "--portee", "tache", "src/a.test.js").status, 0);
+  ecrire(p.d, "src/a.js", "module.exports = 4;\n");
+  const e = preuve(p, "etat");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /^preuve: périmée [^\n]*relancez : pulse-aidd preuve lancer --portee tache <fichiers de test de la tâche> \(outil Bash : timeout 600000\)$/m);
+  assert.doesNotMatch(e.stdout, /--portee tache src\/a\.test\.js/);
+});
+
+test("fichier de test écrit avec des barres obliques inverses (Windows) : lu avec des « / »", () => {
+  const p = depot();
+  const r = preuve(p, "lancer", "--portee", "tache", "src\\a.test.js");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.strictEqual(fs.readFileSync(path.join(p.traces, "tests"), "utf8").trim(), "src/a.test.js");
 });

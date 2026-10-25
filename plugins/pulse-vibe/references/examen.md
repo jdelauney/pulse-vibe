@@ -29,17 +29,17 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 - la ligne `Mode` (la commande, et « contrôle de sécurité à chaque tâche » s'il y a lieu) ;
 - le rapport du reviewer ;
-- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images Markdown au chemin relatif `../../../../captures/US-XXX/<fichier>.png`, suivies de la phrase « Ces images restent sur cet ordinateur, jusqu'à l'envoi de l'US. »), puis la ligne « Filet anti-régression », tirée de la preuve (« Lire la preuve » ci-dessous) ;
+- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images, comme le dit le modèle), puis la ligne « Filet anti-régression », tirée de la preuve (« Lire la preuve » ci-dessous) ;
 - avec les tests d'abord, la section `## Tests automatiques` (verdicts et tableaux du test-runner, rouge puis vert) ;
 - avec le contrôle de sécurité, la section `## Audit de sécurité`.
 
 La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌ ; en rythme complet, il demande aussi une preuve « à jour » et ✅ (code 0) : une preuve ❌, périmée ou absente n'est jamais une preuve.
 
-**Lire la preuve** : `pulse-aidd preuve etat --exiger suite` (filet limité : preuve de portée tâche, lue sans `--exiger suite` ; `--exiger construction` quand « Construire » existe et que la tâche touche une page, une route ou la configuration). « à jour » ✅ : « N tests, tous verts », ou « — (aucun test automatique) » si « Tester » vaut « aucune ». « à jour » ❌ : chaque échec est un constat 🟠 Haute, à corriger, sans relance. Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une fois.
+**Lire la preuve** : `pulse-aidd preuve etat --exiger suite` (filet limité : preuve de portée tâche, lue sans `--exiger suite` ; `--exiger construction` quand « Construire » existe et que la tâche touche une page, une route ou la configuration). « à jour » ✅ : « N tests, tous verts », ou « — (<ce que dit la preuve>) » sans test (« aucune », aucun test écrit). « à jour » ❌ : chaque échec est un constat 🟠 Haute, à corriger, sans relance, sauf cause hors des fichiers réparée (relance indiquée par la preuve). Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une fois (outil Bash : `timeout` 600000 ; filet limité : fichiers de test de cette tâche).
 
 ## 3 bis. Écrire la fiche de test de la personne
 
-À partir de la section « Test manuel » du verifier, écrire la fiche `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>.md` (modèle : `pulse-aidd modele smoke-test.md` ; règles : `pulse-aidd reference tests/test-manuel.md` § 1) : étapes détaillées geste par geste, critères ❓ du verifier en premier, résultat des contrôles automatiques en tête. Quand le verifier a gardé des captures, la fiche les montre en images Markdown au chemin relatif `../../captures/US-XXX/<fichier>.png` (là où l'écran attendu est décrit), avec la phrase « Ces images restent sur cet ordinateur, jusqu'à l'envoi de l'US. ». Dans le rapport, la section « Test manuel à faire par vous » donne seulement le lien vers la fiche.
+À partir de la section « Test manuel » du verifier, écrire la fiche `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre-de-la-tache>.md` (modèle : `pulse-aidd modele smoke-test.md` ; règles : `pulse-aidd reference tests/test-manuel.md` § 1) : étapes détaillées geste par geste, critères ❓ du verifier en premier, résultat des contrôles automatiques en tête. Quand le verifier a gardé des captures, la fiche les montre en images là où l'écran attendu est décrit, comme le dit le modèle. Dans le rapport, la section « Test manuel à faire par vous » donne seulement le lien vers la fiche.
 
 Avec le contrôle de sécurité, les tests de la « Fiche du cambrioleur » de l'auditeur s'ajoutent à la fiche, après les critères ❓.
 

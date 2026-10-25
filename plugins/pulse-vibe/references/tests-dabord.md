@@ -41,7 +41,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 | ❌ échec **dû au code** | `pulse:implementer`, avec la liste des échecs | relancer le test-runner |
 | ❌ échec **dû au test** (ou test contesté confirmé) | `pulse:test-writer`, mode « corriger », avec la liste | `git add` des fichiers corrigés, puis relancer le test-runner |
 | Tests modifiés pendant la réalisation (`git diff -- <fichiers de test>` non vide) | — | constat Critique : remettre les tests figés (`git restore -- <fichiers de test>`, avec l'accord demandé par Claude Code), puis renvoyer à l'implementer |
-| ⛔ échec **dû à l'environnement** (base de test, variable, outil) | la personne ou la commande | guider pas à pas, puis relancer |
+| ⛔ échec **dû à l'environnement** (base de test, variable, outil, délai dépassé) | la personne ou la commande | guider pas à pas, puis relancer le test-runner une fois : la cause est hors des fichiers, sa preuve rouge se relance |
 | Test **instable** | `pulse:test-writer` | corriger la cause (`tests/strategie.md` §4) |
 
 - **Après toute correction ultérieure de la tâche** (constats de relecture, test manuel non concluant) : relancer le test-runner en phase « vert attendu » **avant** la relecture de contrôle.
