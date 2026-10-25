@@ -209,7 +209,7 @@ test("index et résumé : la même prochaine commande que pulse-aidd etat (T1 te
   assert.match(etat, /^prochaine: \/pulse:spirc US-002$/m);
   const index = lire(d, "index.md");
   assert.match(index, /```\n\/pulse:spirc US-002\n```/);
-  assert.match(index, /la même que `\/pulse:status`/);
+  assert.match(index, /C'est la même que `\/pulse:status`, sauf une fois le site en ligne ou quand des versions enregistrées ne sont pas encore envoyées : tapez alors `\/pulse:status` pour l'étape à jour\./);
   assert.doesNotMatch(index, /^\/pulse:implement US-002 T2$/m, "plus de règle propre au guide pour l'index");
   assert.match(r.stdout, /➡️ Prochaine étape : \/pulse:spirc US-002 {2}\(US-002 a des tâches à réaliser/);
 });
@@ -218,7 +218,7 @@ test("US indépendante : proposée dans une deuxième session, sauf si on y trav
   const parallele = (texte) => PLAN_US1.replace("**Priorité** : Indispensable", `**Priorité** : Indispensable\n- **En parallèle avec** : ${texte}`);
   const d = projet({ [`${TACHES.epic}/${TACHES.us1}`]: parallele("US-006 (aucun fichier ni donnée en commun avec US-002)"), "partager/PLAN-SPEC-US-006-exporter-liste": PLAN_US6 });
   lancer(d);
-  assert.match(lire(d, "index.md"), /```\n\/pulse:review T2\n```\n\nTâche à reprendre : [^\n]*\n\n💡 En même temps, dans une deuxième session Claude Code : `\/pulse:spirc US-006` \(US-006 – Exporter la liste/);
+  assert.match(lire(d, "index.md"), /```\n\/pulse:review T2\n```\n\nC'est la même que [^\n]*\n\nTâche à reprendre : [^\n]*\n\n💡 En même temps, dans une deuxième session Claude Code : `\/pulse:spirc US-006` \(US-006 – Exporter la liste/);
   assert.doesNotMatch(lire(d, "index.md"), /spirc -w/);
   assert.doesNotMatch(lire(d, "index.md"), /deuxième session Claude Code : `\/pulse:spirc US-002`/, "une US citée dans la parenthèse n'est pas retenue");
   assert.match(lire(d, US1), /Peut avancer en parallèle de : US-006/);
