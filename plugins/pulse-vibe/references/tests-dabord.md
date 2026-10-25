@@ -10,7 +10,7 @@ Utilisé par `/pulse:implement` et `/pulse:spirc` avec l'option `-t` (ou la rép
 |---|---|---|
 | Écrire les tests à partir des scénarios et des critères | sous-agent `pulse:test-writer` | le code de production |
 | Lancer les tests, trier chaque échec et juger la qualité des tests | sous-agent `pulse:test-runner` | toute modification de fichier |
-| Écrire le code qui fait passer les tests | sous-agent `pulse:implementer` (ou la conversation en mode direct) | les fichiers de test |
+| Écrire le code qui fait passer les tests | sous-agent `pulse:implementer` (ou la conversation, devant vous avec `-d`) | les fichiers de test |
 | Orchestrer, aiguiller les échecs, parler à la personne | la commande | — |
 
 Si un sous-agent est indisponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), et le signaler. Le test-writer et l'implementer restent de préférence deux contextes distincts : des tests écrits par celui qui code finissent par vérifier le code plutôt que le besoin.
@@ -30,7 +30,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 
 ### Vert : réaliser
 
-4. Déléguer la tâche à **`pulse:implementer`** selon « Déléguer à l'implementer » (`pulse-aidd reference deleguer.md`), en ajoutant : les chemins des fichiers de test, l'**interface attendue** rapportée par le test-writer (fonctions, routes, paramètres, résultats), et la consigne « faire passer ces tests sans modifier les fichiers de test ; un test qui semble faux se conteste dans « Tests contestés », avec la raison ». En mode direct, s'appliquer la même consigne.
+4. Déléguer la tâche à **`pulse:implementer`** selon « Déléguer à l'implementer » (`pulse-aidd reference deleguer.md`), en ajoutant : les chemins des fichiers de test, l'**interface attendue** rapportée par le test-writer (fonctions, routes, paramètres, résultats), et la consigne « faire passer ces tests sans modifier les fichiers de test ; un test qui semble faux se conteste dans « Tests contestés », avec la raison ». Devant vous (`-d`), s'appliquer la même consigne.
 5. Déléguer à **`pulse:test-runner`**, phase « vert attendu » : les fichiers de test, les fichiers modifiés par la tâche, la commande « tester », les critères de la tâche, les tests contestés par l'implementer.
 
 ### Trier les échecs
