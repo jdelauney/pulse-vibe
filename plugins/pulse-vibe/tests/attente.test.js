@@ -249,18 +249,24 @@ test("remettre : travail remis mais entrée impossible à retirer : remis-sans-n
   nettoyer(d);
 });
 
-test("remettre : un changement enregistré ou non d'une autre tâche : refus avant tout (arbre-occupe), rien ne change", () => {
+test("remettre : un changement enregistré ou non d'une autre tâche hors documents de la méthode : refus avant tout (arbre-occupe), rien ne change", () => {
   const d = depot();
   ecrire(d, "src/a.js", "a-T4\n");
   assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js").status, 0);
+  ecrire(d, "src/p.js", "p\n");
+  git(d, "add", "src/p.js");
+  git(d, "commit", "-q", "-m", "p");
+  ecrire(d, "src/p.js", "p-modifie\n"); // modifié, pas enregistré
   ecrire(d, "src/o.js", "o\n");
   git(d, "add", "src/o.js"); // enregistré pour le prochain commit
-  ecrire(d, "aidd_docs/tasks/US-001/PLAN-SPEC-US-001.md", "plan2\n"); // modifié, pas enregistré
+  ecrire(d, "docs/technical.md", "doc-enregistre\n");
+  git(d, "add", "docs/technical.md"); // un document de la méthode enregistré bloque lui aussi
+  ecrire(d, "aidd_docs/tasks/US-001/PLAN-SPEC-US-001.md", "plan2\n"); // le plan coché, pas enregistré : toléré
   const avant = statut(d);
   const r = lancer(d, "remettre", "T4");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["arbre-occupe"]);
-  assert.deepStrictEqual(lignes(r, "fichier").sort(), ["aidd_docs/tasks/US-001/PLAN-SPEC-US-001.md", "src/o.js"]);
+  assert.deepStrictEqual(lignes(r, "fichier").sort(), ["docs/technical.md", "src/o.js", "src/p.js"]);
   assert.strictEqual(statut(d), avant);
   assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
   nettoyer(d);
@@ -316,5 +322,192 @@ test("remettre : un fichier renommé mis de côté : les deux côtés du renomma
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["arbre-occupe"]);
   assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-encore\n");
+  nettoyer(d);
+});
+
+// Le plan est coché juste avant la remise (spirc, « Questions en attente », étapes 4 et 5).
+const PLAN = "aidd_docs/tasks/US-001/PLAN-SPEC-US-001.md";
+
+test("remettre : le plan et des documents de la méthode modifiés sans être enregistrés n'empêchent pas la remise et restent tels quels", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  ecrire(d, "src/neuf.js", "neuf\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/neuf.js").status, 0);
+  ecrire(d, PLAN, "plan coché\n");
+  ecrire(d, "docs/technical.md", "doc2\n");
+  ecrire(d, "docs/nouveau.md", "nouveau\n");
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["remis"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T4\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/neuf.js"), "utf8"), "neuf\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, PLAN), "utf8"), "plan coché\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "docs/technical.md"), "utf8"), "doc2\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "docs/nouveau.md"), "utf8"), "nouveau\n");
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+test("remettre : en conflit, le plan modifié sans être enregistré reste octet pour octet", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js").status, 0);
+  ecrire(d, "src/a.js", "a-T5\n");
+  git(d, "commit", "-q", "-am", "T5");
+  ecrire(d, PLAN, "plan coché\r\nsans fin de ligne");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["conflit"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, PLAN), "utf8"), "plan coché\r\nsans fin de ligne");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T5\n");
+  assert.strictEqual(statut(d), avant);
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("mettre-de-cote : un renommage enregistré (git mv) est refusé d'avance, des deux côtés, sans entrée créée", () => {
+  const d = depot();
+  git(d, "mv", "src/a.js", "src/b.js");
+  const avant = statut(d);
+  for (const demandes of [["src/a.js", "src/b.js"], ["src/a.js"], ["src/b.js"], ["src"]]) {
+    const r = lancer(d, "mettre-de-cote", "T4", "--", ...demandes);
+    assert.strictEqual(r.status, 2, JSON.stringify(demandes) + r.stdout + r.stderr);
+    assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+    assert.ok(lignes(r, "refuse").length >= 1, r.stdout);
+    assert.strictEqual(statut(d), avant);
+    assert.strictEqual(git(d, "stash", "list").stdout, "");
+  }
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/b.js");
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js (renommage enregistré)", "src/b.js (renommage enregistré)"]);
+  nettoyer(d);
+});
+
+test("mettre-de-cote : une suppression enregistrée (git rm) est refusée d'avance, sans entrée créée", () => {
+  const d = depot();
+  ecrire(d, "src/c.js", "c\n");
+  git(d, "add", "src/c.js");
+  git(d, "commit", "-q", "-m", "c");
+  git(d, "rm", "-q", "src/c.js");
+  ecrire(d, "src/a.js", "a2\n");
+  const avant = statut(d);
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/c.js");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (suppression enregistrée)"]);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a2\n");
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+test("mettre-de-cote : un fichier ajouté de force dans un dossier ignoré est refusé d'avance, enregistré ou non", () => {
+  const d = depot();
+  ecrire(d, ".gitignore", "build/\n");
+  ecrire(d, "build/suivi.js", "s1\n");
+  git(d, "add", ".gitignore");
+  git(d, "add", "-f", "build/suivi.js");
+  git(d, "commit", "-q", "-m", "build");
+  ecrire(d, "build/suivi.js", "s2\n"); // suivi, modifié sans être enregistré
+  ecrire(d, "build/neuf.js", "n\n");
+  git(d, "add", "-f", "build/neuf.js"); // ajouté de force, enregistré
+  const avant = statut(d);
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "build/suivi.js", "build/neuf.js");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["build/neuf.js (fichier ignoré)", "build/suivi.js (fichier ignoré)"]);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+test("mettre-de-cote : Git crée l'entrée puis échoue : l'entrée est signalée (mise-de-cote-orpheline), code 3", () => {
+  const d = depot();
+  fs.mkdirSync(path.join(d, "imbrique"));
+  git(path.join(d, "imbrique"), "init", "-q"); // un dépôt dans le dépôt, sans commit : Git ne sait pas le mettre de côté
+  ecrire(d, "imbrique/n.txt", "n\n");
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "imbrique");
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["echec"]);
+  assert.deepStrictEqual(lignes(r, "mise-de-cote-orpheline"), ["stash@{0}"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "imbrique/n.txt"), "utf8"), "n\n");
+  nettoyer(d);
+});
+
+test("remettre : un dossier parent de l'entrée devenu un fichier ignoré : refus avant tout, le fichier reste", () => {
+  const d = depot();
+  ecrire(d, "build/out.js", "out\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "build/out.js").status, 0);
+  ecrire(d, ".gitignore", "build\n");
+  git(d, "add", ".gitignore");
+  git(d, "commit", "-q", "-m", "ignore");
+  ecrire(d, "build", "un fichier\n");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["arbre-occupe"]);
+  assert.deepStrictEqual(lignes(r, "fichier"), ["build"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "build"), "utf8"), "un fichier\n");
+  assert.strictEqual(statut(d), avant);
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("remettre : le dossier d'un fichier neuf de l'entrée maintenant suivi comme fichier : refus avant tout, rien ne change", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  ecrire(d, "src/x/m.js", "m-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/x/m.js").status, 0);
+  ecrire(d, "src/x", "x-T5\n");
+  git(d, "add", "src/x");
+  git(d, "commit", "-q", "-m", "T5");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["arbre-occupe"]);
+  assert.deepStrictEqual(lignes(r, "fichier"), ["src/x"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/x"), "utf8"), "x-T5\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a1\n");
+  assert.strictEqual(statut(d), avant);
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("remettre : un fichier neuf de l'entrée maintenant suivi par le projet : refus avant tout, rien ne change", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  ecrire(d, "src/neuf.js", "neuf-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/neuf.js").status, 0);
+  ecrire(d, "src/neuf.js", "neuf-T5\n");
+  git(d, "add", "src/neuf.js");
+  git(d, "commit", "-q", "-m", "T5");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["arbre-occupe"]);
+  assert.deepStrictEqual(lignes(r, "fichier"), ["src/neuf.js"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/neuf.js"), "utf8"), "neuf-T5\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a1\n");
+  assert.strictEqual(statut(d), avant);
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("remettre : en conflit, les dossiers vides créés par la remise sont retirés, et seulement eux", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  ecrire(d, "lib/profond/n.js", "n-T4\n");
+  ecrire(d, "vide/sous/m.js", "m-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "lib/profond/n.js", "vide/sous/m.js").status, 0);
+  assert.ok(!fs.existsSync(path.join(d, "lib")));
+  fs.mkdirSync(path.join(d, "vide"), { recursive: true }); // un dossier vide déjà là avant la remise
+  ecrire(d, "src/a.js", "a-T5\n");
+  git(d, "commit", "-q", "-am", "T5");
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["conflit"]);
+  assert.ok(!fs.existsSync(path.join(d, "lib")), "lib/ retiré");
+  assert.ok(!fs.existsSync(path.join(d, "vide/sous")), "vide/sous/ retiré");
+  assert.ok(fs.existsSync(path.join(d, "vide")), "vide/ gardé");
   nettoyer(d);
 });
