@@ -7,7 +7,7 @@
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
 | `/pulse:init` | Prépare le dossier du projet, puis vous dit où vous en êtes et quoi faire ensuite | Les fichiers de base, la mémoire et l'historique Git |
-| `/pulse:express` | ⚡ Pour démarrer vite : en une conversation (vos documents de départ lus d'abord, s'il y en a), votre idée, vos écrans, l'apparence et vos contraintes ; puis les outils et 2 apparences à comparer. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
+| `/pulse:nouveau` | ⚡ Pour démarrer vite : en une conversation (vos documents de départ lus d'abord, s'il y en a), votre idée, vos écrans, l'apparence et vos contraintes ; puis les outils et 2 apparences à comparer. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
 
 ## 2. Décrire (sans technique)
 
@@ -17,7 +17,7 @@
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **première version** |
 | `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options (dont une pile Pulse prête à l'emploi si elle est installée), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
-| `/pulse:us` | Découpe le besoin en groupes et écrit les user stories : « En tant que… je souhaite… afin de… », par rondes de questions courtes ; chaque US vérifiée et prête à spécifier, triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
+| `/pulse:us` | Découpe le besoin en groupes et écrit les user stories : « En tant que… je souhaite… afin de… », avec des questions courtes par rondes, et les cas difficiles un à un, avec vos mots ; chaque US vérifiée et prête à spécifier, triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
 ## 3. Préparer la construction
 
@@ -34,7 +34,7 @@
 |---|---|
 | `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : Pulse propose de taper `/pulse:spirc`, qui enchaîne tout le plan) |
 | `/pulse:review` | Deux assistants indépendants relisent et essaient la tâche en marche ; **vous testez** ; on corrige |
-| `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne, après votre accord |
+| `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie sur le dépôt en ligne, après votre accord ; `/pulse:deploy` publie et vérifie |
 
 🔁 Recommencez pour chaque tâche. Ou laissez `/pulse:spirc US-001` enchaîner : des assistants réalisent, relisent et vérifient ; il s'arrête pour votre accord et c'est vous qui testez.
 Astuce : `/pulse:spirc US-001 "ajouter un filtre par date"` ajoute une demande précise au plan de l'US (ou crée une nouvelle US si c'est un nouveau besoin) et la traite de bout en bout.
@@ -88,6 +88,6 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 3. **Jamais de vraie donnée ni de vraie clé** dans la conversation ou dans le code.
 4. **« Si ce n'est pas interdit côté serveur, c'est autorisé. »**
 
-⚙️ Avec le pack **pulse-next** installé, `/pulse:tech` vous propose une pile Next.js prête à l'emploi : un projet de départ vérifié, et des recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite) que la spec et le plan reprennent pour vous.
+⚙️ Avec le pack **pulse-next** installé, `/pulse:tech` vous propose une pile Next.js prête à l'emploi : un projet de départ vérifié, et des recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite de requêtes, formulaires ouverts à tous, référencement, vitesse vécue par les visiteurs) que la spec et le plan reprennent pour vous.
 
 🔒 Si Pulse refuse une commande ou vous demande votre accord (« Pulse demande votre accord… »), c'est son garde-fou : il protège votre travail, vos données et votre site. Lisez la raison, puis acceptez seulement si vous comprenez ce qui va se passer.

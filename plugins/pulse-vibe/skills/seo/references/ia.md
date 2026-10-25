@@ -45,20 +45,18 @@ Options, à proposer seulement si la personne s'y intéresse :
    - avec un pack : ses consignes (« Pack de pile ») ;
    - sans pack : `pulse-aidd seo robots <A|B|C|D> --sitemap <adresse complète du sitemap> [--fermes /api/] [--signal "search=yes, ai-input=yes, ai-train=no"] [--bloquer-amazonbot]` affiche le texte de robots.txt pour cette politique ; le placer là où la pile sert robots.txt (documentation officielle).
    Montrer robots.txt à la personne avant de l'écrire.
-3. C : guider le réglage Search Console (référence « lancement », § 5). D : `noindex` sur toutes les pages, en plus de la connexion.
+3. C : guider le réglage Search Console d'après `pulse-aidd reference search-console/search-console.md`, § 6. D : `noindex` sur toutes les pages, en plus de la connexion.
 4. **Preuve** : construire, servir, puis `pulse-aidd seo <adresse> --ia` : IA1 vert (robots.txt conforme), IA4 vert (le serveur répond aux robots autorisés).
 
 ## 5. Les contrôles IA du script
 
-IA1 robots.txt conforme à la politique · IA2 groupe nommé qui rouvre des chemins fermés · IA3 jetons périmés ou sans effet · IA4 le serveur (ou un pare-feu) refuse un robot autorisé · IA5 texte lisible sans JavaScript · IA6 métadonnées dans `<head>` · IA7 `nosnippet` non décidé · IA8 refus d'entraînement incomplet · IA9 Content-Signal · IA10 llms.txt mal formé (s'il existe) · IA11 faits clés absents du texte · IA12 données structurées absentes du texte visible.
-
-IA4 imite un robot sans venir de ses adresses : un vrai robot peut être traité autrement par un pare-feu. Le dire avec le résultat.
+IA1 à IA12, avec la mise en garde sur IA4 : « Les contrôles du script » de `pulse-aidd reference seo/regles.md` (§ 4).
 
 ## 6. Mesurer
 
 - Bing Webmaster Tools → AI Performance (citations dans Copilot, depuis février 2026) ; Search Console → impressions dans les fonctions d'IA générative.
 - Statistiques du site : `utm_source=chatgpt.com` (ChatGPT) ; référents `perplexity.ai`, `gemini.google.com`, `copilot.microsoft.com`, `claude.ai`.
-- Test manuel à 1 et 3 mois (référence « lancement », § 6). Les outils payants de suivi posent des questions en série : leurs chiffres varient beaucoup.
+- Test manuel à 1 et 3 mois (référence « lancement », § 5). Les outils payants de suivi posent des questions en série : leurs chiffres varient beaucoup.
 - Les assistants ne s'interrogent pas par script : la personne pose ses questions elle-même.
 
 ## 7. Le droit (information générale, pas un avis)

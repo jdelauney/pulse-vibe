@@ -2,7 +2,7 @@
 description: Apprendre la programmation avec un professeur patient - leçon, « expliquez-le-moi » pour vérifier ce que vous avez compris, exercices ou parcours, adaptés à votre niveau et illustrés avec votre projet, avec un carnet de progression et des révisions espacées
 argument-hint: "[<notion> | feynman <notion> | exercice <notion> | parcours \"<objectif>\"] (vide : réviser ou reprendre)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte learn) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Edit(docs/lexique.md) Write(docs/lexique.md) Bash(date *) Read Glob Grep Bash(git status *) Bash(git diff *)
+allowed-tools: Bash(pulse-aidd contexte learn) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Edit(docs/lexique.md) Write(docs/lexique.md) Write(docs/apprentissage.md) Edit(docs/apprentissage.md) Bash(date *) Read Glob Grep Bash(git status *) Bash(git diff *)
 ---
 
 # /pulse:learn – Apprendre avec un professeur
@@ -19,7 +19,7 @@ Appliquer la « Pédagogie du professeur » (chargée en fin de fichier, dans «
 
 ### Ce que la commande peut modifier
 
-- **Uniquement** le carnet `docs/apprentissage.md` (à créer après accord la première fois, à partir du modèle chargé en fin de fichier, dans « Références de la commande »).
+- Le carnet `docs/apprentissage.md` (créé après accord la première fois, à partir du modèle chargé en fin de fichier, dans « Références de la commande ») et le statut des termes de `docs/lexique.md`.
 - Le code et les documents du projet restent **intacts** : les exercices s'écrivent dans l'éditeur de la personne, hors du code du projet.
 
 ## Contexte
@@ -34,7 +34,7 @@ Fichiers de cette commande : [references/pedagogie.md](references/pedagogie.md),
 
 1. **Lire le carnet** `docs/apprentissage.md` s'il existe : niveau, objectif, parcours en cours, notions et rappels dus (date du rappel ≤ date du jour). Lire aussi `docs/lexique.md` : les termes « vu » non encore travaillés sont de bonnes notions à proposer, et une notion travaillée avec succès passe à « maîtrisé » dans le lexique.
 2. **Lire le contexte du projet** s'il existe : `docs/technical.md` (« Pile retenue »), `aidd_docs/memory/glossary.md`, et les fichiers de code utiles à la notion (Glob, Grep, Read). Sans projet, enseigner avec des exemples neutres (Pédagogie § 7).
-3. **Carnet absent** : expliquer en une phrase à quoi il sert, demander l'accord pour le créer (AskUserQuestion : « Oui, créer mon carnet (Recommandé) » / « Non, pas de suivi »), puis évaluer le niveau en 2 ou 3 questions (Pédagogie § 4). En cas de refus, enseigner quand même, en lecture seule.
+3. **Carnet absent** : expliquer en une phrase à quoi il sert, demander l'accord pour le créer (AskUserQuestion : « Oui, créer mon carnet (Recommandé) » / « Non, pas de suivi »), puis partir du niveau du profil de `CLAUDE.md` (bloc `pulse_profil` : « Jamais programmé » et « Quelques notions » → Débutant, « Développeur » → Avancé) et le confirmer en une question (AskUserQuestion, ce niveau en premier, Recommandé) ; profil « à préciser » ou absent : 2 ou 3 questions (Pédagogie § 4). En cas de refus, enseigner quand même, en lecture seule.
 
 ## Rôle
 
@@ -72,13 +72,7 @@ La séance se termine quand le déroulé du mode est fini ou quand la personne v
 2. **Mettre à jour le carnet** (si la personne l'a accepté) : niveau ajusté, maîtrise et points fragiles de chaque notion travaillée, date du prochain rappel (Pédagogie § 9), case cochée du parcours, ligne de journal.
 3. **Proposer la suite** : la notion suivante du parcours, un exercice sur la notion vue, ou « revenez le <date du prochain rappel> avec `/pulse:learn` pour réviser ».
 
-Terminer par le bloc de fin de commande :
-
-```
-✅ Fait : <notion(s) travaillée(s) et résultat en une ligne>
-📄 Fichiers : docs/apprentissage.md (ou « aucun »)
-➡️ Prochaine étape : <la suite proposée, et pourquoi en une phrase>
-```
+Terminer par le bloc de fin de commande ; « 📄 Fichiers » cite `docs/apprentissage.md` ou « aucun ».
 
 ## Exemples
 

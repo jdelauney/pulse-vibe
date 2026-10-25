@@ -26,12 +26,11 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 Sujet de la spec : `$ARGUMENTS`
 
-Fichiers de cette commande : [assets/spec.md](assets/spec.md).
+Fichiers de cette commande : [references/presentation.md](references/presentation.md), [assets/spec.md](assets/spec.md).
 
 ### Prérequis
 
 - `docs/user-stories.md` (le référentiel) et `docs/prd.md` sont nécessaires. Sinon, proposer `/pulse:us`.
-- Ancien format (`docs/specs/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) : proposer `/pulse:init`, qui réorganise les documents, et s'arrêter.
 
 ## Processus
 
@@ -43,11 +42,11 @@ Lire l'argument (règles des tâches) :
 - **une description** (« ajouter un filtre par date ») : chercher l'US qui la couvre déjà.
   - Une US la couvre et sa spec est encore en brouillon (ou absente) : la spec porte sur cette US (la citer).
   - Une US la couvre et sa spec est **verrouillée** : le changement devient une nouvelle US (cas suivant), qui complète ou remplace l'ancienne.
-  - **Nouveau comportement prévu au PRD** : créer une nouvelle US (numéro suivant, format du modèle d'US, prête selon `/pulse:us` : INVEST et Definition of Ready), demander son epic (AskUserQuestion : les epics existantes, l'epic la plus proche en premier avec « (Recommandé) », et « Un nouveau groupe »), la montrer et attendre sa validation, puis écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au tableau de son epic et à l'ordre de réalisation dans `docs/user-stories.md`.
+  - **Nouveau comportement prévu au PRD** : créer une nouvelle US (numéro suivant) ; avant de la rédiger, lancer `pulse-aidd reference us/regles-us.md` et `pulse-aidd modele us.md` (format, INVEST, Definition of Ready) ; demander son epic (AskUserQuestion : les epics existantes, l'epic la plus proche en premier avec « (Recommandé) », et « Un nouveau groupe »), la montrer et attendre sa validation, puis écrire son fichier dans `aidd_docs/tasks/<epic>/` et l'ajouter au tableau de son epic et à l'ordre de réalisation dans `docs/user-stories.md`.
   - **Nouveau comportement hors PRD** : décision de périmètre, la poser (AskUserQuestion) : « La noter « En attente » dans le PRD (Recommandé) » / « L'ajouter au périmètre maintenant ». Dans le premier cas, l'écrire dans `docs/prd.md` et s'arrêter.
 - **argument vide** : demander (AskUserQuestion) quelle US spécifier, en proposant les US sans spec dans l'ordre de réalisation du référentiel (« La prochaine US à réaliser (Recommandé) »), et « Décrire une demande ».
 
-Si l'US attend encore son fichier (US Optionnelle, seulement dans le référentiel) : l'écrire d'abord au format du modèle d'US, la montrer et la faire valider, puis remplir la colonne « Fichier » du référentiel.
+Si l'US attend encore son fichier (US Optionnelle, seulement dans le référentiel) : l'écrire d'abord selon ces deux mêmes fichiers (`pulse-aidd reference us/regles-us.md` et `pulse-aidd modele us.md`, lancés avant de la rédiger), la montrer et la faire valider, puis remplir la colonne « Fichier » du référentiel.
 
 Si `SPEC-US-XXX-<nom>.md` existe déjà :
 - **brouillon** : la compléter, en commençant par ses `TBD:` ;
@@ -64,7 +63,7 @@ Suivre le modèle de spec, avec `Statut : brouillon`. Relire les autres specs (`
 3. **Ce que l'utilisateur voit et fait** : pour chaque écran, qui y accède, ce qu'on y voit, ce qu'on y fait ; les situations à prévoir (en attente, rien à afficher, échec, sur téléphone) décrites par ce que vit l'utilisateur ; le parcours principal (schéma `flowchart` du modèle, 3 à 7 étapes ; le retirer pour un écran unique). Un écran se nomme par ce qu'il montre (« la liste de mes factures »), sans adresse ni composant. Sa colonne « Présentation » se remplit à l'étape 1 bis.
 4. **Informations manipulées** : pour chaque type d'information, ses informations en mots du métier (obligatoire ou non, règle, exemple réaliste et fictif), et **qui peut consulter, ajouter, modifier, supprimer**, en français (« un client consulte seulement les demandes dont il est l'auteur »). Le lieu de stockage et de vérification est décidé dans le plan.
 5. **Règles métier** : reprises de l'US, chacune en une phrase vraie.
-6. **Scénarios** : selon la référence « Scénarios Gherkin » (en fin de fichier), une `Règle` par règle métier de l'US, et pour chacune 2 à 5 exemples concrets (cas nominal, limites, cas refusés), écrits en langage métier avec des données fictives et les mots du glossaire. Chaque exemple porte l'étiquette du critère qu'il illustre (`@US-XXX-1`) et son niveau de preuve prévu (`@unitaire`, `@integration`, `@bout-en-bout`, ou `@manuel`, selon `tests/strategie.md` §2, affichable avec `pulse-aidd reference tests/strategie.md`) ; chaque critère d'acceptation est couvert par au moins un exemple.
+6. **Scénarios** : selon la référence « Scénarios Gherkin » (en fin de fichier), une `Règle` par règle métier de l'US, et pour chacune 2 à 5 exemples concrets (cas nominal, limites, cas refusés), écrits en langage métier avec des données fictives et les mots du glossaire. Chaque exemple porte l'étiquette du critère qu'il illustre (`@US-XXX-1`) et son niveau de preuve prévu (`@unitaire`, `@integration`, `@bout-en-bout`, ou `@manuel`, selon `tests/strategie.md` § 2 : lancer `pulse-aidd reference tests/strategie.md` avant d'étiqueter le premier scénario) ; chaque critère d'acceptation est couvert par au moins un exemple.
 7. **Données personnelles et accès** : voir l'étape 2.
 8. **Ajouts proposés par Pulse** : voir l'étape 3.
 9. **Terminé quand** : 2 à 4 résultats observables par l'utilisateur, tirés des critères d'acceptation.
@@ -74,13 +73,7 @@ Suivre le modèle de spec, avec `Statut : brouillon`. Relire les autres specs (`
 
 ### 1 bis. Choisir la présentation des écrans
 
-Pour chaque écran qui montre des informations ou un formulaire, la présentation est une décision de la personne : la poser, sans la choisir à sa place. Une ronde (AskUserQuestion, 4 questions au plus, réponse recommandée en premier selon les motifs d'écrans `pulse-aidd reference ui/motifs.md`, avec sa raison en quelques mots ; un écran déjà décidé dans une autre spec reprend sa présentation, sans question) :
-
-- **Montrer les informations** : « Comment présenter <les factures> ? » → « Un tableau, une ligne par <facture> » (beaucoup d'éléments ou de colonnes à comparer) / « Des cartes » (peu d'éléments, une image ou un résumé) / « Une liste simple » (un ou deux renseignements par élément).
-- **Créer ou modifier** : « Où créer ou modifier <une facture> ? » → « Sur une page à part » (formulaire long, plus de 5 champs) / « Dans une fenêtre par-dessus la liste » (formulaire court) / « Dans un volet sur le côté » (modifier en gardant la liste sous les yeux) / « Directement dans la liste » (un ou deux champs).
-- **Supprimer**, s'il y a lieu : « Supprimer <une facture> : demander confirmation (Recommandé) » / « Supprimer tout de suite, avec la possibilité d'annuler quelques secondes ».
-
-Noter chaque réponse dans la colonne « Présentation » de « Ce que l'utilisateur voit et fait ». Puis proposer (AskUserQuestion) : « Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) » / « Suivre ces choix, sans maquette » (en rythme rapide du profil de `CLAUDE.md`, la seconde est recommandée). Noter la réponse sur la ligne « Maquettes » de la spec ; « Voir » mène à `/pulse:ui maquettes US-XXX` une fois la spec verrouillée.
+Appliquer « Présentation des écrans » (chargée dans « Références de la commande ») pour chaque écran qui montre des informations ou un formulaire.
 
 ### 2. La section « Données personnelles et accès » (obligatoire)
 
@@ -94,8 +87,8 @@ La troisième (ce que vit l'utilisateur qui remplit mal un formulaire) se dédui
 
 1. **Ajouts proposés par Pulse** : relever tout ce que la spec ajoute au-delà de l'US et du PRD (un écran, un message, une confirmation, une règle d'accès) et le présenter dans la section « Ajouts proposés par Pulse », une ligne par ajout, avec « Pourquoi ça compte » en langage courant. Faire trancher chaque ligne (AskUserQuestion, choix multiple « Lesquels gardez-vous ? »). Un ajout refusé sort de la spec ; s'il reste une bonne idée, il va dans `docs/prd.md` (« En attente »).
 2. **Les `TBD:`** : poser les questions en suspens par rondes (règle commune 5 ; AskUserQuestion, réponse recommandée en premier quand un document la suggère) ; chaque réponse remplace son `TBD:`. Une question que la personne veut garder ouverte reste `TBD:`, et la spec reste en brouillon.
-3. Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, puis lancer `pulse-aidd verifier-spec US-XXX` : corriger chaque constat « à corriger » (critère sans scénario, scénario sans niveau, section manquante) et relancer, deux tours au plus ; ce qui reste se dit en une ligne. Présenter un résumé en 5 lignes au plus (US, écrans, informations, hors objectifs, « terminé quand »), puis les **titres des scénarios**, groupés par règle (« Voici ce que l'outil devra faire, exemple par exemple »).
-4. **Validation** (AskUserQuestion ; avant la question, et avant chaque ronde de `TBD:`, écrire `aidd_docs/tasks/in-progress.md`, règle commune 16, effacé avec `pulse-aidd travail-fini` après la réponse) : « Valider (la spec ne bougera plus) » / « Corriger un scénario ou un point ». « Valider (la spec ne bougera plus) » est proposé seulement quand il ne reste aucun `TBD:` ; sinon, dire lesquels restent et proposer « La garder en brouillon ». À la validation, écrire `Statut : verrouillée le <date du jour>`. Plusieurs US demandées : passer à la suivante seulement après cette validation.
+3. Écrire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, puis lancer `pulse-aidd verifier-spec US-XXX` : corriger chaque constat « à corriger » (critère sans scénario, scénario sans niveau, section manquante) et relancer, deux tours au plus ; ce qui reste se dit en une ligne. Un avertissement `presentation-manquante` : poser à la personne la question de présentation de cet écran (étape 1 bis) avant la validation. Présenter un résumé en 5 lignes au plus (US, écrans, informations, hors objectifs, « terminé quand »), puis les **titres des scénarios**, groupés par règle (« Voici ce que l'outil devra faire, exemple par exemple »).
+4. **Validation** (AskUserQuestion ; avant la question, et avant chaque ronde de `TBD:`, écrire `aidd_docs/tasks/in-progress.md`, règle commune 16, effacé avec `pulse-aidd travail-fini` après la réponse) : « Valider (la spec ne bougera plus) » / « Corriger un scénario ou un point ». « Valider (la spec ne bougera plus) » est proposé seulement quand il ne reste aucun `TBD:` ni présentation manquante ; sinon, dire lesquels restent et proposer « La garder en brouillon ». À la validation, écrire `Statut : verrouillée le <date du jour>`. Plusieurs US demandées : passer à la suivante seulement après cette validation.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquettes US-XXX` pour une spec verrouillée dont la ligne « Maquettes » vaut « à voir », sinon `/pulse:plan US-XXX` ; `/pulse:spec US-XXX` pour une spec restée en brouillon.
 
@@ -109,4 +102,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquette
 
 !`pulse-aidd contexte spec`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
+Ce contexte contient aussi « Présentation des écrans », « Scénarios Gherkin » et « Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md » ; les règles et le modèle d'US et la stratégie de tests se lancent au moment qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.

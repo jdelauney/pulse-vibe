@@ -164,7 +164,10 @@ function dansLeProjet(args, { avecPack = true } = {}) {
   const outil = path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/");
   const bin = PACK_BIN.split(path.sep).join("/");
   const chemin = avecPack ? `PATH="$(cd "${bin}" && pwd):$PATH" ` : "";
-  return spawnSync("bash", ["-c", `${chemin}exec bash "${outil}" "$@"`, "regles", ...args], { cwd: PROJET_PACK, encoding: "utf8" });
+  // Le pack installé sur le poste (plugins/cache/pulseia) reste hors du PATH : seul le pack du dépôt compte, et seulement avec avecPack.
+  const cle = Object.keys(process.env).find((k) => k.toUpperCase() === "PATH") || "PATH";
+  const env = { ...process.env, [cle]: (process.env[cle] || "").split(path.delimiter).filter((d) => !d.split(path.sep).join("/").includes("plugins/cache/pulseia")).join(path.delimiter) };
+  return spawnSync("bash", ["-c", `${chemin}exec bash "${outil}" "$@"`, "regles", ...args], { cwd: PROJET_PACK, encoding: "utf8", env });
 }
 
 test("pack qui couvre l'organisation : famille remplacée par un renvoi, sécurité gardée", { skip: !fs.existsSync(PACK_BIN) }, () => {
@@ -184,10 +187,35 @@ test("pack non installé : organisation gardée", () => {
   assert.ok(r.stdout.includes("## 5. Le code : des paliers progressifs"));
 });
 
-test("contexte tech : organisation chargée même avec un pack", { skip: !fs.existsSync(PACK_BIN) }, () => {
+test("contexte tech : l'organisation se charge à l'étape 6.1, projet neuf sans pack, plutôt qu'au lancement", () => {
+  const r = dansLeProjet(["contexte", "tech"], { avecPack: false });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!r.stdout.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte de tech");
+  const tech = fs.readFileSync(path.join(RACINE, "skills", "tech", "SKILL.md"), "utf8");
+  assert.match(tech, /Projet neuf sans pack : lancer `pulse-aidd reference qualite\/organisation\.md`/);
+  assert.match(tech, /Projet neuf avec pack : les valeurs du pack/);
+});
+
+test("contexte tech avec le pack : l'organisation reste hors du contexte ; les valeurs du pack se chargent à l'étape 6, en un appel séparé", { skip: !fs.existsSync(PACK_BIN) }, () => {
   const r = dansLeProjet(["contexte", "tech"]);
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes("===== Organisation des fichiers et nommage ====="));
+  assert.ok(!r.stdout.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte de tech");
+  // Relecture finale de la phase 9, R-m1 : etape tech --sans-communes faisait 41 206 caractères avec le pack, au-delà de la limite
+  // de lecture (30 000). Le pack sert « une fois la pile choisie » : tech le charge à l'étape « Écrire », en un appel séparé.
+  assert.ok(!r.stdout.includes("===== Pack de pile"), "consignes du pack hors du contexte de tech");
+  const etape = dansLeProjet(["etape", "tech", "--sans-communes"]);
+  assert.ok(!etape.stdout.includes("===== Pack de pile"), "ni dans l'étape enchaînée");
+  const pack = dansLeProjet(["pile", "contexte", "tech"]);
+  assert.ok(pack.stdout.includes("Pour /pulse:tech"), "pile contexte tech donne les valeurs du pack");
+  for (const sortie of [r.stdout, etape.stdout, pack.stdout]) assert.ok(sortie.length < 30000, `${sortie.length} caractères`);
+  const tech = fs.readFileSync(path.join(RACINE, "skills", "tech", "SKILL.md"), "utf8");
+  assert.match(tech.split("### 6. Écrire")[1], /\*\*Pack de pile choisi\*\* \(ou déjà déclaré\)[^\n]*puis lancer `pulse-aidd pile contexte tech` \(un appel à part, sortie lue en entier\)/);
+});
+
+test("contexte tech, pack déclaré mais absent : l'avertissement reste", () => {
+  const r = dansLeProjet(["contexte", "tech"], { avecPack: false });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /===== Pack de pile : next \(non installé\) =====/);
 });
 
 test("un pack remplace seulement l'organisation, jamais la sécurité du code", () => {

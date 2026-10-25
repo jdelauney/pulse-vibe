@@ -2,7 +2,7 @@
 description: Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique
 argument-hint: "[mesurer | corriger | suivre] (vide : mesurer)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse-aidd reference perf/performance.md) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd modele perf/performance.md) Bash(pulse-aidd modele lexique.md) Bash(pulse-aidd modele confidentialite.md) Bash(pulse-aidd qualite *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(git status *) Bash(git log *) Bash(git branch --show-current) Read Glob Grep Write(docs/performance.md) Edit(docs/performance.md) Edit(docs/technical.md) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd modele *) Bash(pulse-aidd agent *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd preuve *)
+allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse-aidd modele perf/performance.md) Bash(pulse-aidd modele lexique.md) Bash(pulse-aidd modele confidentialite.md) Bash(pulse-aidd qualite *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(git status *) Bash(git log *) Bash(git branch --show-current) Read Glob Grep Write(docs/performance.md) Edit(docs/performance.md) Edit(docs/technical.md) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd modele *) Bash(pulse-aidd agent *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd preuve *) Bash(pulse-aidd verifier --index) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *)
 ---
 
 # /pulse:perf – La vitesse vécue par vos visiteurs
@@ -17,18 +17,13 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
-Trois règles tiennent toute la commande (détails dans la référence) :
-- chaque chiffre dit sa **source** : simulation (laboratoire) ou vrais visiteurs (terrain), dans deux tableaux distincts ;
-- chaque chiffre de simulation est une **médiane** de plusieurs passages, avec son écart ; une mesure instable se refait avant de conclure ;
-- **trois priorités au plus**, chacune avec ce que vit le visiteur, la cause en mots simples, le gain attendu et qui décide.
-
-**Frontières**, à dire si la demande en sort : l'accessibilité réelle et l'apparence relèvent de `/pulse:ui audit` (le score d'accessibilité de Lighthouse n'en est qu'un indice) ; les en-têtes de sécurité, de `/pulse:security entetes` ; la lenteur côté serveur (requêtes en base, quotas) devient une ligne « côté serveur » du rapport, puis `/pulse:fix` ou une user story.
+Trois règles tiennent toute la commande : la **source** de chaque chiffre (§ 3), la **médiane** et l'instabilité (§ 4), **trois priorités au plus** (« mesurer », étape 5). Une demande qui sort de la vitesse se renvoie d'après le § 8 (Frontières).
 
 ## Contexte
 
 Action demandée : `$ARGUMENTS`
 
-Fichiers de cette commande : [references/performance.md](references/performance.md), [assets/performance.md](assets/performance.md), [scripts/perf.js](scripts/perf.js).
+Fichiers de cette commande : [references/performance.md](references/performance.md), [references/cle.md](references/cle.md), [assets/performance.md](assets/performance.md), [scripts/perf.js](scripts/perf.js).
 
 ### Choisir l'action
 
@@ -48,7 +43,7 @@ Fichiers de cette commande : [references/performance.md](references/performance.
 3. `docs/performance.md` : s'il existe, le lire (pages suivies, budget, dernière mesure, priorités) ; sinon, il sera créé à partir du modèle `performance.md`.
 4. **La source** : lancer `pulse-aidd perf cle`.
    - Clé présente et site en ligne : PageSpeed Insights.
-   - Sinon, proposer (AskUserQuestion) : « Mesurer sur ce poste, sans clé (Recommandé pour commencer) » / « Créer ma clé Google d'abord (5 minutes) ». La clé : suivre « La clé Google » de la référence, une étape à la fois. La personne colle la clé elle-même dans la fenêtre de son système ; si une clé apparaît dans la conversation, appliquer « Clé compromise » de la référence.
+   - Sinon, proposer (AskUserQuestion) : « Mesurer sur ce poste, sans clé (Recommandé pour commencer) » / « Créer ma clé Google d'abord (5 minutes) ». La clé : au moment de la créer, charger `pulse-aidd reference perf/cle.md` et guider une étape à la fois ; la personne colle la clé elle-même dans la fenêtre de son système. Si une clé apparaît dans la conversation, appliquer « Clé compromise » de `pulse-aidd reference perf/cle.md`.
    - Une mesure sur ce poste se compare seulement avec une autre mesure de ce poste : le dire une fois.
 
 ## Processus
@@ -99,9 +94,7 @@ Trois volets, proposés un par un (AskUserQuestion), chacun facultatif.
 2. **Tendance des vrais visiteurs** (clé présente, site en ligne) : `pulse-aidd perf terrain <adresse du site> --historique`. Résumer en une phrase par mesure (« le contenu principal s'affiche plus vite depuis 6 semaines »).
 3. **Budget et vérification automatique.**
    - Proposer un budget à partir de la dernière mesure (§ « Le budget » de la référence), le faire valider, l'écrire dans « Budget » de `docs/performance.md`, puis le vérifier : `pulse-aidd perf budget <dernière mesure.json> docs/performance.md`.
-   - Proposer la vérification automatique, avec le fournisseur de CI de « Hébergement et mise en ligne » (sa documentation officielle pour la syntaxe). `pulse-aidd perf installer` copie le script de mesure dans `scripts/perf.js` du projet ; la CI l'appelle avec `node scripts/perf.js`.
-     - **Chaque semaine, sur le site en ligne (Recommandé)** : tâche planifiée et déclenchable à la main ; Node.js LTS ; `node scripts/perf.js mesurer <adresse du site> --pages docs/performance.md --source psi --passages 3 --json mesure.json`, puis `node scripts/perf.js budget mesure.json docs/performance.md` ; `mesure.json` gardé comme fichier joint du passage. La clé va dans les secrets du dépôt sous le nom `PULSE_PSI_CLE`, saisie par la personne. Un budget dépassé fait échouer la tâche : le fournisseur prévient par e-mail ; les fusions restent libres.
-     - **Sur chaque proposition de version parallèle** : installer, construire, servir la construction en mode production en arrière-plan, attendre qu'elle réponde, puis `node scripts/perf.js mesurer http://localhost:<port> --pages docs/performance.md --source local --passages 3 --json mesure.json` et `budget`. La machine de CI diffère du poste : commencer en mode informatif (l'échec de cette étape laisse la CI verte), puis rendre l'étape bloquante quand les chiffres sont stables. PageSpeed Insights ne sert pas ici : les adresses de prévisualisation sont souvent protégées.
+   - Proposer la vérification automatique de la vitesse : `pulse-aidd reference perf/ci-vitesse.md`, lancé au moment de la proposer.
    - Montrer le fichier de CI complet, l'écrire avec accord, essayer les deux commandes en local, puis l'enregistrer et l'envoyer (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`). Mettre à jour « Mesure réelle et suivi » de `docs/performance.md` et la ligne CI de `docs/technical.md`.
 
 ### Fin
@@ -118,4 +111,4 @@ Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il
 
 !`pulse-aidd contexte perf`
 
-Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
+Ce contexte contient aussi « La vitesse vécue par les visiteurs », « Modèle : docs/performance.md » et « Modèle : docs/lexique.md » ; la clé Google (`pulse-aidd reference perf/cle.md`), la vérification en CI (`pulse-aidd reference perf/ci-vitesse.md`) et le modèle de confidentialité (`pulse-aidd modele confidentialite.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.

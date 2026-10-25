@@ -164,11 +164,13 @@ function main(args, racine) {
 }
 
 /**
- * Une ancienne note « Pour reprendre » d'implement sans tâche (« /pulse:implement [options] US-XXX ») se
- * reprend avec /pulse:spirc : implement ne boucle plus. Les options passent (sauf `-s`, propre à implement) ;
+ * Une ancienne note « Pour reprendre » se reprend avec la commande d'aujourd'hui. /pulse:express, renommée,
+ * devient /pulse:nouveau. Implement sans tâche (« /pulse:implement [options] US-XXX ») se reprend avec
+ * /pulse:spirc : implement ne boucle plus. Les options passent (sauf `-s`, propre à implement) ;
  * avec une tâche, la commande reste telle quelle.
  */
 function repriseActuelle(commande) {
+  commande = commande.replace(/^\/pulse:express\b/i, "/pulse:nouveau");
   const m = /^\/pulse:implement((?:\s+-[a-z]+)*)\s+(US-\d+)((?:\s+-[a-z]+)*)\s*$/i.exec(commande);
   if (!m) return commande;
   const options = (m[1] + m[3]).split(/\s+/).map((o) => o.replace(/s/g, "")).filter((o) => o.length > 1);

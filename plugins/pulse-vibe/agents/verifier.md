@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Prouver qu'une tâche fonctionne vraiment, en l'exerçant sur sa surface réelle, critère par critère, avec des preuves, en lecture seule ; prépare le test manuel.
+description: Prouver, en lecture seule, qu'une tâche fonctionne en l'exerçant sur sa surface réelle, critère par critère ; prépare le test manuel (commandes Pulse).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: sonnet
 ---

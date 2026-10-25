@@ -2,7 +2,7 @@
 description: Expliquer simplement un fichier, une fonction ou une ligne de code, avec une question pour vérifier
 argument-hint: "[fichier | fichier:ligne | nom de fonction | question]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte explain) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *)
+allowed-tools: Bash(pulse-aidd contexte explain) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *)
 ---
 
 # /pulse:explain – Comprendre le code
@@ -23,7 +23,8 @@ Ce qu'il faut expliquer : `$ARGUMENTS`
 
 ### Choisir la cible
 
-- Un fichier, `fichier:ligne`, un nom de fonction ou une question : expliquer cela.
+- Un fichier, `fichier:ligne`, un nom de fonction, ou une question sur le code du projet : expliquer cela, en citant le code qui répond.
+- Une question générale sur une notion (« c'est quoi une API ? ») : répondre en deux phrases, puis proposer `/pulse:learn <notion>`, qui l'enseigne et la note au carnet.
 - Argument vide : prendre le fichier le plus récemment modifié (`git status`, `git diff --stat`) et le proposer, ou demander quoi expliquer.
 
 ## Processus
@@ -61,4 +62,4 @@ Pour cette commande, le bloc de fin de commande est facultatif.
 
 !`pulse-aidd contexte explain`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/lexique.md ». Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.

@@ -8,7 +8,7 @@ window.PULSE_WIKI = {
       "couleur": 1,
       "commandes": [
         "init",
-        "express"
+        "nouveau"
       ]
     },
     {
@@ -168,13 +168,6 @@ window.PULSE_WIKI = {
       "note": ""
     },
     {
-      "nom": "express",
-      "etape": "demarrer",
-      "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser",
-      "forme": "[votre idée en une phrase | vos documents]",
-      "note": ""
-    },
-    {
       "nom": "fix",
       "etape": "toujours",
       "description": "Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter",
@@ -221,6 +214,13 @@ window.PULSE_WIKI = {
       "etape": "toujours",
       "description": "Créer, actualiser, enrichir ou compacter la mémoire du projet (choix, mots du métier, pièges), chargée par l'IA à chaque session",
       "forme": "[creer | actualiser | compacter | retenir \"leçon ou décision\"]",
+      "note": ""
+    },
+    {
+      "nom": "nouveau",
+      "etape": "demarrer",
+      "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser",
+      "forme": "[votre idée en une phrase | vos documents]",
       "note": ""
     },
     {

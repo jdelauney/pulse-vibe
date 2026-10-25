@@ -7,14 +7,16 @@
 //   prochaine: /pulse:spec US-003       la commande conseillée
 //   raison: …                            pourquoi, en une phrase
 //   regle: R20                           la règle appliquée
-//   fondation: profil                    R2 à R8 : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile)
+//   fondation: profil                    R2 à R8 : ce que /pulse:init prépare (dossier, profil, memoire, git, pile)
 //   attente: … / ancien: oui / dossier: …   R1 : la décision en attente, si elle date de plus de 7 jours, son dossier
 //   questions: 2                         questions ouvertes (« - [ ] Q<n> ») sous « ## Questions en attente » des plans (ligne absente à zéro)
 //   realisation: perimee                le marqueur aidd_docs/tasks/realisation.json n'a pas bougé depuis plus de 6 heures (ligne absente sinon)
 //   aussi: /pulse:… — …                  alternatives utiles (zéro, une ou plusieurs lignes)
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
-// Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests).
+// Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests),
+// --tableau (ajoute le tableau de bord de /pulse:status, scripts/etat-tableau.js). R24 : un signal de suivi du référencement
+// (etat-tableau.js) passe devant R21 à R23.
 // --revue <Tn> [<Tn>…] (`pulse-aidd revue <Tn>`) : la dernière relecture de chaque tâche et où reprendre (tache, statut, plan,
 // etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide. --revue <US-XXX> : la relecture
 // de toute l'US (rythme rapide), même format sans « statut ». `reprendre: decision` : la tâche porte la sous-ligne « En pause : Q<n> ».
@@ -81,8 +83,10 @@ function lireAttente(fichier, aujourdhui, dossier) {
   const quand = /(\d{4})-(\d{2})-(\d{2})/.exec(champ("Mis à jour le"));
   const jours = quand ? (aujourdhui - Date.UTC(Number(quand[1]), Number(quand[2]) - 1, Number(quand[3]))) / 86400000 : 0;
   // /pulse:implement ne boucle plus : une reprise sans tâche (options comprises) se fait avec /pulse:spirc.
-  const pourReprendre = require("./realisation").repriseActuelle(champ("Pour reprendre"));
-  return { commande: champ("Commande"), etape: champ("[ÉE]tape"), pourReprendre, ancien: jours > 7, dossier };
+  // Une ancienne note de /pulse:express (renommée) se reprend avec /pulse:nouveau.
+  const { repriseActuelle } = require("./realisation");
+  const pourReprendre = repriseActuelle(champ("Pour reprendre"));
+  return { commande: repriseActuelle(champ("Commande")), etape: champ("[ÉE]tape"), pourReprendre, ancien: jours > 7, dossier };
 }
 
 /** Les tâches de la section « ## Tâches » d'un plan (même format que le guide de réalisation). */
@@ -293,12 +297,19 @@ function codeExistant(racine) {
   );
 }
 
-/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md (dont la trame d'avant « Résumé du projet »), .gitignore sans le travail en cours ni les captures, contrôle avant commit absent. */
+/**
+ * Des contrôles du projet à remettre à jour : les signes de skills/init/references/controles.md (un fait, un seul endroit),
+ * hors notes du pack : /pulse:init les lit avec les autres contrôles, quand l'un d'eux est proposé. CLAUDE.md sans la ligne des commandes à proposer (/pulse:refine dans
+ * « Commandes ») ou qui cite encore /pulse:express, .gitignore incomplet, copie de Pulse ancienne, contrôle avant commit absent ou ancien.
+ */
 function modeleAncien(racine, texteClaude) {
   const p = (...x) => path.join(racine, ...x);
-  if (texteClaude !== null && (!/^## Résumé du projet\s*$/m.test(texteClaude) || /AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
+  const commandes = texteClaude === null ? "" : (texteClaude.split(/^## Commandes\s*$/m)[1] || "").split(/^## /m)[0];
+  if (texteClaude !== null && !commandes.includes("/pulse:refine")) return true;
+  // Phrase du profil des modèles d'avant Pulse 0.52 : « rapide », posé par /pulse:express (renommée /pulse:nouveau).
+  if (texteClaude !== null && texteClaude.includes("/pulse:express")) return true;
   const gitignore = lireSi(p(".gitignore"));
-  if (gitignore !== null && (!gitignore.includes("aidd_docs/tasks/in-progress.md") || !gitignore.includes("aidd_docs/captures/"))) return true;
+  if (gitignore !== null && ["aidd_docs/tasks/in-progress.md", "aidd_docs/tasks/realisation.json", "aidd_docs/captures/"].some((l) => !gitignore.includes(l))) return true;
   // Une copie de Pulse (contrôle des secrets, ligne d'état) intacte mais posée par une version plus ancienne.
   const { etatDe } = require("./copies.js");
   if (etatDe("verifier", p("scripts", "verifier.js")) === "ancienne" || etatDe("ligne-etat", p(".claude", "pulse-ligne-etat.js")) === "ancienne") return true;
@@ -309,6 +320,12 @@ function modeleAncien(racine, texteClaude) {
     return !crochet.includes("verifier.js --index");
   }
   return false;
+}
+
+/** Aucune convention notée dans « ## Conventions propres au projet » de la mémoire technique (section absente comprise). */
+function conventionsVides(texte) {
+  const section = ((texte || "").split(/^## Conventions propres au projet\s*$/m)[1] || "").split(/^## /m)[0];
+  return !/^- /m.test(section);
 }
 
 /** Tous les faits utiles à la décision. */
@@ -323,8 +340,6 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
       lireAttente(p(".claude", "worktrees", w, "aidd_docs", "tasks", "in-progress.md"), aujourdhui, `.claude/worktrees/${w}`),
     ),
   ].filter(Boolean);
-  const anciens = [p("docs", "spec.md"), p("docs", "plan.md")].some(existe) ||
-    ["specs", "plans", "revues"].some((d) => fichiersDe(p("docs", d)).some((f) => /\.md$/i.test(f)));
   const relie = (faitsGit && faitsGit.remote) || claude.distant === "adresse";
   return {
     claude: claude.etat,
@@ -334,11 +349,13 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     memoire: claude.memoireBloc && ["project.md", "technical.md", "glossary.md"].every((f) => existe(p("aidd_docs", "memory", f))),
     modeleAncien: claude.etat === "pulse" && modeleAncien(racine, texteClaude),
     codeExistant: codeExistant(racine),
+    conventionsVides: conventionsVides(lireSi(p("aidd_docs", "memory", "technical.md"))),
+    // Repère écrit par /pulse:tech, chemin A (projet existant) : un projet neuf compare des options, même avec un squelette posé.
+    pileObservee: /Projet existant : pile observée/.test(lireSi(p("docs", "technical.md")) || ""),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
     controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite *)"), // la forme sans argument ne couvre pas « qualite <familles> » (pulse 0.49)
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
-    ancienFormat: anciens,
     enAttente: attentes[0] || null,
     docs: {
       brief: existe(p("docs", "brief.md")),
@@ -369,12 +386,13 @@ const libelle = (u) => LIBELLES[u.priorite] || "priorité à préciser";
 /** Applique les règles R1 à R23 dans l'ordre : la première qui s'applique donne la prochaine étape. */
 function decider(f) {
   const aussi = [];
-  const verdict = (regle, prochaine, raison, extra = {}) => ({ regle, prochaine, raison, aussi, ...extra });
+  // Signaux de suivi du référencement (faits « suivi », lus par etat-tableau.js) : R24 ou tête de « aussi ».
+  const verdict = (regle, prochaine, raison, extra = {}) => require("./etat-tableau.js").appliquerSuivi(f, { regle, prochaine, raison, aussi, ...extra }, bilan(f).pret);
   if (f.claude === "pulse") {
     if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
     else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
     else if (!f.controlesAutorises) aussi.push("/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois");
-    if (f.modeleAncien) aussi.push("/pulse:init — mettre à niveau le projet (modèles et contrôles)");
+    if (f.modeleAncien) aussi.push("/pulse:init — remettre les contrôles du projet à jour");
     if (f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
   }
 
@@ -388,7 +406,6 @@ function decider(f) {
   }
   if (f.claude === "absent") return verdict("R2", "/pulse:init", "le projet n'est pas encore préparé pour Pulse", { fondation: "dossier" });
   if (f.claude === "sans-pulse") return verdict("R3", "/pulse:init", "CLAUDE.md existe sans les règles de Pulse", { fondation: "dossier" });
-  if (f.ancienFormat) return verdict("R4", "/pulse:init", "des documents sont à l'ancien format : ils se rangent maintenant par groupe", { fondation: "documents" });
   if (!f.profil || /pr[ée]ciser/i.test(f.profil)) return verdict("R5", "/pulse:init", "votre profil (niveau, explications) reste à préciser", { fondation: "profil" });
   if (!f.memoire) return verdict("R6", "/pulse:memory creer", "la mémoire du projet n'est pas branchée", { fondation: "memoire" });
   if (f.git && (!f.git.depot || !f.git.commits)) {
@@ -403,8 +420,12 @@ function decider(f) {
   if (f.codeExistant && !d.brief && !d.prd && !d.userStories && !d.technical) {
     return verdict("R8c", "/pulse:tech", "le projet existant a déjà du code : documenter les outils qu'il utilise (Chemin A) avant de continuer");
   }
+  if (f.codeExistant && f.pileObservee && !d.brief && !d.prd && !d.userStories && d.technical && f.conventionsVides) {
+    aussi.unshift("/pulse:prd — passer directement au périmètre de la première version");
+    return verdict("R8d", "/pulse:memory creer", "les outils du projet existant sont documentés : noter dans la mémoire les conventions et les pièges propres à son code");
+  }
   if (!d.brief && !d.prd && !d.userStories && !d.technical) {
-    aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");
+    aussi.unshift("/pulse:nouveau — démarrer vite : l'idée, le PRD et les user stories en une conversation");
     return verdict("R9", "/pulse:brainstorm", "raconter l'idée est la première étape");
   }
   if (!d.prd && !d.userStories) return verdict("R10", "/pulse:prd", "il reste à décider du périmètre de la première version");
@@ -546,13 +567,14 @@ function sortieIllisible(message) {
   return `prochaine: /pulse:get-help\nraison: l'état du projet n'a pas pu être lu (${message}) : décrivez le problème à /pulse:get-help\nregle: R0`;
 }
 
-const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --revue <Tn> [<Tn>…]";
+const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --tableau, --revue <Tn> [<Tn>…]";
 
-/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --revue <Tn> [<Tn>…]. Toute autre option est une erreur de la consigne qui appelle l'outil. */
+/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --tableau, --revue <Tn> [<Tn>…]. Toute autre option est une erreur de la consigne qui appelle l'outil. */
 function lireOptions(args) {
   const options = { git: true, aujourdhui: Date.now() };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--sans-git") options.git = false;
+    else if (args[i] === "--tableau") options.tableau = true;
     else if (args[i] === "--revue") {
       // Les tâches qui suivent, jusqu'à l'option suivante ; aucune tâche : réponse « inconnue », jamais une erreur.
       options.revue = [];
@@ -589,8 +611,24 @@ if (require.main === module) {
     console.log(blocs.join("\n\n"));
   } else {
     try {
+      // Faits de suivi et tableau lus à part : une erreur n'y dégrade que leurs lignes, jamais le verdict d'init.
+      const { lireSuivi, tableau } = require("./etat-tableau.js");
       const faits = lireFaits(process.cwd(), options);
-      console.log(formater(faits, decider(faits), process.cwd()));
+      const pannes = [];
+      try {
+        faits.suivi = lireSuivi(process.cwd(), options.aujourdhui);
+      } catch (e) {
+        pannes.push(`suivi: illisible (${e.message})`);
+      }
+      const lignes = [formater(faits, decider(faits), process.cwd()), ...pannes];
+      if (options.tableau) {
+        try {
+          lignes.push(...tableau(process.cwd(), faits, { ...options, derniereRevue }));
+        } catch (e) {
+          lignes.push(`tableau: illisible (${e.message})`);
+        }
+      }
+      console.log(lignes.join("\n"));
     } catch (e) {
       console.log(sortieIllisible(e.message));
     }

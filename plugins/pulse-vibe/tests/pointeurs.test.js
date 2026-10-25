@@ -29,7 +29,7 @@ const BASE = {
   memory: [MEMOIRE, "templates/aidd-memory-readme.md", "templates/aidd-memory-project.md", "templates/aidd-memory-technical.md",
     "templates/aidd-memory-glossary.md", "templates/aidd-memory-decision.md", "templates/claude-bloc-memoire.md"],
   spirc: ["references/examen.md", "templates/revue.md", LEXIQUE],
-  express: [RAISONNEMENT, MEMOIRE, "templates/brief.md", "templates/prd.md", "templates/user-stories.md", "templates/us.md",
+  nouveau: [RAISONNEMENT, MEMOIRE, "templates/brief.md", "templates/prd.md", "templates/user-stories.md", "templates/us.md",
     "templates/aidd-memory-glossary.md", "templates/in-progress.md"],
   prd: [RAISONNEMENT, "templates/prd.md"],
   us: [RAISONNEMENT, "templates/user-stories.md", "templates/us.md"],
@@ -66,12 +66,23 @@ const BASE = {
 const EXCEPTIONS = {
   init: ["references/fichiers-projet.md"],
   guide: ["references/fichiers-projet.md"],
-  ui: [MEMOIRE],
+  // phase 8 (web et aide) : les motifs servent aux agents designer et ui-critic, qui les chargent ; la conversation de /pulse:ui ne les emploie pas
+  ui: [MEMOIRE, "skills/ui/references/motifs.md"],
+  // phase 8 (web et aide) : le redacteur charge le modèle du texte de page ; le repli sans agent passe par pulse-aidd agent redacteur, dont la méthode le charge
+  rediger: ["skills/rediger/assets/texte-page.md"],
   status: ["references/cycle.md"],
-  deploy: ["templates/ci-verifications.yml.template"],
+  // refactoring d'optimisation, tâche 7.4 : l'exemple de CI est copié dans le projet par pulse-aidd installer-ci (scripts/ci-verifications.exemple.yml, lu à l'étape 3)
+  cicd: ["templates/ci-verifications.yml.template"],
+  // refactoring d'optimisation, tâche 7.5 : la saisie hors conversation est lancée par deploy/variables.md (première mise en ligne et production), au moment d'envoyer une valeur
+  deploy: ["templates/ci-verifications.yml.template", SANS_CONVERSATION],
   // refactoring d'optimisation, tâche 5.5 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
   security: ["references/checklist-securite.md", SANS_CONVERSATION],
-  annuler: [GIT], // pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
+  // refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé ; l'envoi du travail (envoi.md) est affiché par commit, lu par annuler à l'étape 6 ;
+  // relier un dépôt distant ne se fait plus dans ces commandes (/pulse:init, /pulse:deploy)
+  commit: [DEPOT],
+  annuler: [GIT, DEPOT], // GIT : pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
+  // refactoring d'optimisation, tâche 6.6 : refine n'utilisait que les règles de découpage, devenues skills/plan/references/decoupage.md (chargé)
+  refine: ["skills/plan/SKILL.md"],
 };
 
 // Ce que « pulse-aidd contexte <commande> » affiche aujourd'hui, lu dans les lignes « afficher » de bin/pulse-aidd.

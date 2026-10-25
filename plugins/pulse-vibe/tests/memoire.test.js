@@ -142,6 +142,14 @@ test("hook : une ancienne reprise d'implement sans tâche s'affiche avec /pulse:
   assert.match(avec.stdout, /\*\*Pour reprendre\*\* : `\/pulse:implement US-002 T3`/);
 });
 
+test("hook : une ancienne note de /pulse:express (renommée) s'affiche avec /pulse:nouveau", () => {
+  const note = "# Travail en cours\n\n- **Commande** : `/pulse:express`\n- **Étape** : 6. Les choix techniques\n- **Pour reprendre** : `/pulse:express docs/depart/`\n";
+  const r = lancer(projet({ ...BANQUE, "CLAUDE.md": `${DEBUT}\n${FIN}\n`, [EN_COURS]: note }));
+  assert.match(r.stdout, /\*\*Commande\*\* : `\/pulse:nouveau`/);
+  assert.match(r.stdout, /\*\*Pour reprendre\*\* : `\/pulse:nouveau docs\/depart\/`/);
+  assert.doesNotMatch(r.stdout, /pulse:express/);
+});
+
 test("hook : le travail en cours est rappelé même sans mémoire projet", () => {
   const d = projet({ [EN_COURS]: TRAVAIL });
   const r = lancer(d);

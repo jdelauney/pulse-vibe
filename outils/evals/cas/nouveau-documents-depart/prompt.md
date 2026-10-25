@@ -4,4 +4,4 @@ timeout_seconds: 400
 allowed_tools: [Read, Glob, Grep, Skill, AskUserQuestion]
 ---
 
-/pulse:express docs/depart/
+/pulse:nouveau docs/depart/

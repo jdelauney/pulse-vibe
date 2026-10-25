@@ -34,7 +34,7 @@
 <h2>Description</h2>
 <p>Une <dfn>user story</dfn> décrit un besoin du point de vue de l'utilisateur : « En tant que… je souhaite… afin de… ». Ses critères d'acceptation, écrits sous la forme <em>Étant donné… Lorsque… Alors…</em>, permettront de vérifier que l'IA a codé exactement ce que vous vouliez.</p>
 <p>Pulse part de votre PRD. Il range d'abord les fonctionnalités en <strong>groupes</strong>, un par grand besoin (« Gérer les rendez-vous »), que vous validez. Puis il écrit chaque user story avec sa règle métier, un exemple concret et 2 à 4 critères, dont au moins un cas d'erreur ou un cas limite.</p>
-<p>Chaque user story est vérifiée avant d'être déclarée prête : elle se réalise seule, elle est petite, chaque critère se voit à l'écran. Les cas limites que rien ne tranche deviennent des questions, 3 au plus par ronde. Enfin, Pulse trie les user stories dans l'ordre de réalisation.</p>
+<p>Chaque user story est vérifiée avant d'être déclarée prête : elle se réalise seule, elle est petite, chaque critère se voit à l'écran. Les cas limites que rien ne tranche deviennent des questions, une ou deux par groupe, posées une à une : un exemple concret de situation, et vous répondez avec vos mots. Enfin, Pulse trie les user stories dans l'ordre de réalisation.</p>
 <pre class="commande"><code>US-001 · Prendre rendez-vous · taille S · dépend de : —
 En tant que cliente, je souhaite choisir un créneau libre
 afin de réserver ma coupe sans téléphoner.
@@ -113,7 +113,6 @@ lorsque Inès le choisit, alors on lui propose les créneaux voisins.</code></pr
 <details class="probleme"><summary>Pulse me demande de compléter ou de refaire</summary><p>Des user stories existent déjà. « Compléter » garde leurs numéros et ajoute les nouvelles à la suite. « Refaire » réécrit tout, sauf les fiches qui ont déjà une spec ou un plan.</p></details>
 <details class="probleme"><summary>Je ne suis pas d'accord avec une règle</summary><p>Choisissez « Contester une règle proposée par Pulse ». Pulse vous pose la question sous forme de scénario concret, corrige la user story et vous la présente à nouveau.</p></details>
 <details class="probleme"><summary>Une de mes idées a été coupée en deux</summary><p>Une user story doit rester petite : une seule personne, une seule action, 4 critères au plus. Pulse découpe celles qui en font trop ; chaque morceau se teste seul.</p></details>
-<details class="probleme"><summary>Pulse me propose de lancer <code>/pulse:init</code></summary><p>Votre fichier <code>docs/user-stories.md</code> est à l'ancien format, avec tout le détail dedans. <a href="init.html"><code>/pulse:init</code></a> range les documents au nouveau format, sans rien perdre.</p></details>
 </section>
 
 <section id="exemples">

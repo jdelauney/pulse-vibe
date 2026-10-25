@@ -19,19 +19,17 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 Un secret (clé d'API, mot de passe, adresse de base de données avec son mot de passe, clé de signature) permet d'agir à la place de la personne. Trois règles tiennent toute la commande :
 
-1. **La valeur reste hors de la conversation.** Elle va du fournisseur au fichier `.env` par les mains de la personne, puis du fichier à l'hébergeur par `pulse-aidd secrets envoyer`. Vous travaillez avec les noms. Les gestes exacts : « Garder la valeur d'un secret hors de la conversation » (chargée en fin de fichier, dans « Références de la commande »).
+1. **La valeur reste hors de la conversation** : « Garder la valeur d'un secret hors de la conversation » (chargée en fin de fichier, dans « Références de la commande »).
 2. **Deux ordres à retenir.** Renouvellement planifié : la nouvelle serrure d'abord, l'ancienne ensuite. Fuite : l'ancienne serrure condamnée tout de suite.
 3. **Une variable modifiée sert au déploiement suivant.** Après chaque envoi vers l'hébergeur : redéployer, puis vérifier en production.
 
-Les détails propres à chaque variable (page exacte du fournisseur, effet, délai de grâce, préfixe attendu, test) viennent de la fiche du pack de pile, sous « Pack de pile » dans « Références de la commande », ou de `pulse-aidd pile secrets fiche <NOM>`. Sans pack : « Secrets et variables d'environnement » de `docs/technical.md` et la documentation officielle du fournisseur (règle 15), dont vous tirez chaque libellé et chaque menu.
+Le rôle, le fournisseur et la page de renouvellement de chaque variable viennent de l'index du pack de pile, sous « Pack de pile » dans « Références de la commande ». Les détails propres à une variable (page exacte du fournisseur, effet, délai de grâce, préfixe attendu, test) : `pulse-aidd pile secrets fiche <NOM>`, lancé à l'étape 1 de `renouveler` et au moment d'identifier la clé en `fuite`. Sans pack : « Secrets et variables d'environnement » de `docs/technical.md` et la documentation officielle du fournisseur (règle 15), dont vous tirez chaque libellé et chaque menu.
 
 `generer`, `envoyer`, `elaguer` et `redeployer` modifient une valeur ou la production : Claude Code demande l'accord de la personne. Avant, dites en une phrase ce qu'elle va autoriser.
 
 ## Contexte
 
 Action demandée : `$ARGUMENTS` (vide = `inventaire`)
-
-Fichiers de cette commande : [references/fuite.md](references/fuite.md), [assets/secrets.md](assets/secrets.md), [assets/incident.md](assets/incident.md), [scripts/secrets.js](scripts/secrets.js).
 
 ### Choisir l'action
 
@@ -41,27 +39,22 @@ Fichiers de cette commande : [references/fuite.md](references/fuite.md), [assets
 | `renouveler <NOM>` | Rotation planifiée : départ d'une personne, fin de mission d'un prestataire, revue annuelle, clé montrée par erreur sans exposition publique |
 | `inventaire` (par défaut) | À tout moment ; avant une mise en ligne ; proposé par `/pulse:deploy` et `/pulse:security` |
 
-Une demande ambiguë qui évoque une exposition va vers `fuite`. En cas de doute entre `renouveler` et `fuite`, posez la question des lieux d'exposition (tableau de la référence « Réagir à une fuite de clé ») et traitez comme une fuite au moindre doute.
+Une demande ambiguë qui évoque une exposition va vers `fuite`. En cas de doute entre `renouveler` et `fuite`, posez la question des lieux d'exposition (tableau « Quand parler de fuite » de `pulse-aidd reference secrets/fuite.md`) et traitez comme une fuite au moindre doute.
 
 ## Processus
 
 ### inventaire
 
 1. Lancer `pulse-aidd secrets inventaire`. Le script lit les noms dans `.env.example`, `.env`, le code (pack) et chez l'hébergeur (pack), sans aucune valeur.
-2. Présenter le tableau tel quel, puis les points d'attention, du plus grave au moins grave, chacun avec sa correction en une ligne :
-   - ⛔ `.env` suivi par Git ou non ignoré → corriger `.gitignore`, puis `pulse-aidd secrets historique` et, si une valeur est partie, `fuite` ;
-   - ⛔ secret en type Config chez l'hébergeur → le recréer en type Secret (la personne le fait dans les réglages de l'hébergeur ; un Secret ne se relit pas) ;
-   - ⚠️ règle `deny` absente → proposer d'ajouter à `.claude/settings.json` : `"permissions": { "deny": ["Read(./.env)", "Read(./.env.local)", "Read(./.env.*.local)", "Read(./.env.envoi)"] }` (proposer en une phrase, « Cette règle empêche l'IA de lire vos clés », le bloc sur demande seulement ; écrire après accord ; `.env.example` reste lisible, car les recettes y ajoutent des noms) ;
-   - ⚠️ variable à remplir → `pulse-aidd secrets preparer <NOM>` puis la saisie par la personne ;
-   - ❓ même nom en Production et Preview → demander si les valeurs diffèrent ; pour un secret généré, proposer `renouveler` avec une valeur par environnement.
-3. Écrire ou mettre à jour `docs/secrets.md` (modèle « docs/secrets.md ») : l'inventaire avec le rôle de chaque variable, le fournisseur et la page où la renouveler (fiche du pack), les variables liées. Les noms et les dates seulement. Demander avant de remplacer un fichier existant ; le journal des rotations se garde.
+2. Présenter le tableau tel quel, puis chaque alerte du script, du plus grave au moins grave, avec l'action qu'il indique. Une règle à ajouter (`deny`) se propose en une phrase (« Cette règle empêche l'IA de lire vos clés ») et s'écrit dans `.claude/settings.json` après accord, le bloc sur demande ; un secret en type Config, la personne le recrée en type Secret chez l'hébergeur ; une variable présente en Production et en Preview : demander si les valeurs diffèrent, et proposer `renouveler` pour un secret généré.
+3. Écrire ou mettre à jour `docs/secrets.md` (modèle « docs/secrets.md ») : l'inventaire avec le rôle de chaque variable, le fournisseur et la page où la renouveler (index du pack), les variables liées. Les noms et les dates seulement. Demander avant de remplacer un fichier existant ; le journal des rotations se garde.
 4. Proposer `pulse-aidd secrets historique` si aucun contrôle de l'historique n'a été fait : une clé passée un jour dans Git reste lisible dans l'historique.
 
 ### renouveler <NOM>
 
 Objectif : aucune coupure. L'ancienne valeur reste valide jusqu'à la preuve que la nouvelle marche en production.
 
-1. **Lire la fiche** de la variable : effet du renouvellement, délai de grâce, valeur montrée une seule fois, variables liées, test. Résumer en trois lignes à la personne. Si le fournisseur n'a pas de délai de grâce (la fiche le dit), annoncer la coupure courte et proposer une heure creuse ; préparer tout avant (page de l'hébergeur ouverte, commandes prêtes), puis enchaîner sans pause.
+1. **Lire la fiche** de la variable (`pulse-aidd pile secrets fiche <NOM>`) : effet du renouvellement, délai de grâce, valeur montrée une seule fois, variables liées, test. Résumer en trois lignes à la personne. Si le fournisseur n'a pas de délai de grâce (la fiche le dit), annoncer la coupure courte et proposer une heure creuse ; préparer tout avant (page de l'hébergeur ouverte, commandes prêtes), puis enchaîner sans pause.
 2. **Créer la nouvelle valeur à côté de l'ancienne** :
    - secret du fournisseur : la personne crée la nouvelle clé en gardant l'ancienne active (délai de grâce, deuxième clé, nouvel identifiant), d'après le chemin exact de la fiche ; si la valeur n'est montrée qu'une fois, elle garde l'onglet ouvert jusqu'à l'étape 3 ;
    - secret inventé par le projet : `pulse-aidd secrets generer <NOM>` ; avec une forme versionnée prévue par la fiche (`--versionne`), l'ancienne valeur reste lisible pendant la transition.
@@ -74,15 +67,7 @@ Objectif : aucune coupure. L'ancienne valeur reste valide jusqu'à la preuve que
 
 ### fuite [<NOM>]
 
-Appliquer la référence « Réagir à une fuite de clé » (en fin de fichier), étape par étape, dans son ordre. Points propres à la commande :
-
-- **Premier message** : court, calme, avec l'action n° 1. Exemple : « On s'en occupe tout de suite. Première chose : rendre l'ancienne clé inutilisable chez le fournisseur. Je vous guide. » Puis une seule question : quelle clé (menu tiré de l'inventaire, avec « Je ne sais pas laquelle »).
-- **Quelle clé ?** Si la personne ne sait pas : `pulse-aidd secrets historique` (traces dans Git) et la question des lieux d'exposition. Une clé collée dans cette conversation se reconnaît à son fournisseur, sans la répéter.
-- **Révoquer** : étape 2 de la référence (chemin exact de la fiche, réglage immédiat, attente du « C'est fait »).
-- **Remplacer, redéployer, vérifier** : étape 3 de la référence (génération comprise), sans délai de grâce.
-- **Couper ce qui reste ouvert** : action de la fiche (sessions, redémarrage de la base).
-- **Journal d'incident** : `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` à partir du modèle « journal d'incident », sans aucune valeur ; puis `pulse-aidd secrets journal <NOM> fuite --revoquee <AAAA-MM-JJ> --production oui`.
-- Terminer par la prévention : la cause en une phrase, les protections manquantes de l'inventaire, et `/pulse:security` si aucun audit récent n'existe.
+Avant le premier message, lancer `pulse-aidd reference secrets/fuite.md`, puis l'appliquer étape par étape, dans son ordre : un premier message court et calme avec l'action n° 1, la clé révoquée d'abord. Au moment d'écrire le journal d'incident (étape 8 de la référence), partir du modèle `pulse-aidd modele secrets/incident.md`, sans aucune valeur.
 
 ### Lexique
 
@@ -100,4 +85,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : après `inventaire`
 
 !`pulse-aidd contexte secrets`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.
+Ce contexte contient aussi « Garder la valeur d'un secret hors de la conversation », « Modèle : docs/secrets.md » et « Modèle : docs/lexique.md » ; la branche fuite lance `pulse-aidd reference secrets/fuite.md` et `pulse-aidd modele secrets/incident.md` à son premier geste. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.

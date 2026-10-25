@@ -34,7 +34,7 @@
 <h2>Description</h2>
 <p>La <dfn>spec</dfn> décrit précisément ce que l'outil doit permettre pour <strong>une</strong> user story, du point de vue de l'utilisateur : les écrans, les informations, les règles, et ce qui doit se passer exemple par exemple. « La spec fixe ce que vous voulez obtenir ; le plan choisira comment le construire. »</p>
 <p>Pulse rédige d'abord un brouillon, sans rien inventer : chaque information vient de vos documents ou de vos réponses. Ce qu'il ne sait pas devient une question en suspens, notée à sa place. Il vous montre aussi ce qu'il propose d'ajouter (un message, une confirmation) : vous gardez ou vous retirez.</p>
-<p>Avant de vous la faire valider, Pulse la fait vérifier par un outil : chaque critère de votre user story doit être illustré par au moins un exemple, chaque exemple doit dire comment il sera vérifié, et aucune partie obligatoire ne doit manquer.</p>
+<p>Avant de vous la faire valider, Pulse la fait vérifier par un outil : chaque critère de votre user story doit être illustré par au moins un exemple, chaque exemple doit dire comment il sera vérifié, et aucune partie obligatoire ne doit manquer. Un écran dont vous n'avez pas encore choisi la présentation vous est signalé : la question vous est posée avant la validation.</p>
 <p>Une fois validée, la spec est <strong>verrouillée</strong> : elle ne bougera plus. Un changement de besoin passera par une nouvelle user story et sa propre spec.</p>
 <pre class="commande"><code>US-001 · Prendre rendez-vous
 Écrans      : les créneaux libres de la semaine · la confirmation
@@ -126,7 +126,6 @@ Règle : un créneau se réserve une seule fois
 <details class="probleme"><summary>Je veux changer une spec déjà validée</summary><p>Elle est verrouillée. Pulse propose « Créer une nouvelle US qui la fait évoluer » : la nouvelle spec cite l'ancienne, et l'ancienne reçoit seulement la mention « remplacée par » si elle est remplacée.</p></details>
 <details class="probleme"><summary>Je ne sais pas encore répondre à une question</summary><p>Gardez-la ouverte : elle reste notée dans la spec, qui reste en brouillon. Relancez <code>/pulse:spec US-001</code> quand vous avez la réponse ; Pulse reprend par les questions en suspens.</p></details>
 <details class="probleme"><summary>Pulse me propose de découper la user story</summary><p>Elle est de grande taille. Une spec couvre une user story de taille raisonnable : découpez-la avec <a href="us.html"><code>/pulse:us</code></a>, puis faites une spec pour chaque morceau.</p></details>
-<details class="probleme"><summary>Pulse me renvoie vers <code>/pulse:init</code></summary><p>Vos documents sont à l'ancien format. <a href="init.html"><code>/pulse:init</code></a> les range au nouveau format, puis relancez la spec.</p></details>
 </section>
 
 <section id="exemples">
