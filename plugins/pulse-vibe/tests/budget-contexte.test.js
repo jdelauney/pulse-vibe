@@ -45,7 +45,7 @@ const PLAFONDS = {
   annuler: 21500, // mesure 20 110 (pulse 0.51 : les gestes Git passent par pulse-aidd annuler, conventions Git et dépôt distant ne sont plus chargés d'office) ; avant, mesure 35 609 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 553 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 36 358
   "get-help": 19000, // mesure 18 085 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 23 797 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 22 362
   cicd: 15000, // mesure 13 855 (refactoring d'optimisation, tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, mesure 24 624 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 30 334 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 527 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 37 332
-  deploy: 24500, // mesure 23 075 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 27 127 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
+  deploy: 15000, // mesure 13 855 (refactoring d'optimisation, tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, mesure 23 075 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 27 127 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
   security: 18000, // mesure 16 933 (refactoring d'optimisation, tâche 5.5 : le modèle de docs/securite.md seul, la checklist chargée par l'auditeur) ; avant, mesure 31 689 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 37 291
   secrets: 31500, // mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
   refine: 45000, // mesure 42 413 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
@@ -80,7 +80,7 @@ const PLAFONDS_COMMANDE = {
   brainstorm: 36000, // mesure 33 866 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 002 (pulse 0.49 : autorisations qualite * et tests *) ; avant, 41 756
   cicd: 25000, // mesure 23 428 (refactoring d'optimisation, tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, mesure 34 304 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 40 104 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 517 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 51 031 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 48 229
   commit: 43500, // mesure 41 346 (refactoring d'optimisation, tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 41 941 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md) ; avant, mesure 46 404 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 100 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 50 722 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
-  deploy: 39500, // mesure 37 607 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 41 456 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
+  deploy: 22500, // mesure 21 418 (refactoring d'optimisation, tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, mesure 37 607 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, relier seul chargé) ; avant, mesure 41 456 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 043 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 125
   explain: 18500, // mesure 17 447 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 705 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 27 251 (pulse 0.42 : rythme rapide, option -f, gestes)
   express: 44500, // mesure 42 224 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 936 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 50 537 (pulse 0.46 : documents de départ, série d'US en prochaine étape)
   fix: 31500, // mesure 29 857 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 30 625 ; avant, mesure 30 102 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 933 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 33 586 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -117,6 +117,15 @@ const BOUCLES = {
     plafond: 75000, // mesure 71 421 (tâche 7.2 : modèle .gitignore lancé seulement s'il manque, contrôle des clés par pulse-aidd verifier --index) ; avant, mesure 72 016 (refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé, l'envoi du travail dans envoi.md, chargé par l'étape commit) ; avant, mesure 74 053 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 88 728 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, 88 161 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 87 254 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
     parties: [["contexte", "spirc"], ["etape", "commit", "--sans-communes"], ["reference", "worktree.md"], ["reference", "tests-automatiques.md"], ["reference", "memoire.md"]],
   },
+};
+
+// Une commande chargée par mode : ce que la conversation principale lit pour un mode, la commande puis la référence du mode
+// (refactoring d'optimisation, tâche 7.5 : premiers plafonds, mesure × 1,05 au 500 supérieur). La mise à jour, le mode le plus fréquent, est la commande seule.
+const MODES = {
+  "deploy, première mise en ligne": { plafond: 27500, // mesure 26 138
+    parties: [["etape", "deploy"], ["reference", "deploy/premiere.md"]] },
+  "deploy, mode production": { plafond: 26500, // mesure 25 144
+    parties: [["etape", "deploy"], ["reference", "deploy/production.md"]] },
 };
 
 // Ce que charge chaque agent de la boucle avant de lire le code : ses consignes, puis les règles que ses consignes lui font
@@ -178,7 +187,7 @@ const PLAFONDS_FORMES = {
   "brainstorm --sans-communes": 22000, // mesure 20 553
   "cicd --sans-communes": 10500, // mesure 9 696 (tâche 7.4 : règles communes seules, étapes de la CI lues dans le modèle copié, vitesse par perf/ci-vitesse.md au lieu de l'étape perf) ; avant, 20 572 (tâche 7.1 : relier seul chargé) ; avant, 26 708
   "commit --sans-communes": 22500, // mesure 21 385 (tâche 7.2 : modèle .gitignore à la demande) ; avant, 21 980 (tâche 7.1 : envoi.md au lieu de depot-distant.md) ; avant, 26 800
-  "deploy --sans-communes": 25500, // mesure 23 875 (tâche 7.1 : relier seul chargé) ; avant, 28 243
+  "deploy --sans-communes": 8500, // mesure 7 686 (tâche 7.5 : règles communes seules, chaque mode lance sa référence (deploy/premiere.md, production.md, variables.md) et les consignes du pack pour ce mode, mesure de vitesse sans l'étape perf) ; avant, 23 875 (tâche 7.1 : relier seul chargé) ; avant, 28 243
   "express --sans-communes": 27000, // mesure 25 332
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
@@ -244,6 +253,13 @@ for (const [commande, { plafond, parties }] of Object.entries(BOUCLES)) {
   });
 }
 
+for (const [nom, { plafond, parties }] of Object.entries(MODES)) {
+  test(`${nom} : ${plafond} caractères au plus`, () => {
+    const total = parties.reduce((somme, args) => somme + taille(...args), 0);
+    assert.ok(total <= plafond, `${total} > ${plafond}`);
+  });
+}
+
 function tableau() {
   const lignes = ["| Mesure | Caractères | Plafond |", "|---|---|---|"];
   for (const [c, p] of Object.entries(PLAFONDS)) lignes.push(`| contexte ${c} | ${taille("contexte", c)} | ${p} |`);
@@ -251,6 +267,7 @@ function tableau() {
   for (const [c, p] of Object.entries(PLAFONDS_COMMANDE)) lignes.push(`| commande ${c} (SKILL.md + contexte) | ${taille("etape", c)} | ${p} |`);
   for (const [c, { plafond, parties }] of Object.entries(BOUCLES))
     lignes.push(`| boucle ${c} (4 tâches) | ${parties.reduce((s, a) => s + taille(...a), 0)} | ${plafond} |`);
+  for (const [n, { plafond, parties }] of Object.entries(MODES)) lignes.push(`| ${n} | ${parties.reduce((s, a) => s + taille(...a), 0)} | ${plafond} |`);
   for (const [a, { plafond, parties }] of Object.entries(AGENTS))
     lignes.push(`| agent ${a} | ${parties.reduce((s, x) => s + taille(...x), 0)} | ${plafond} |`);
   return lignes.join("\n");
@@ -258,4 +275,4 @@ function tableau() {
 
 if (process.argv.includes("--tableau")) console.log(tableau());
 
-module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, PLAFONDS_COMMANDE, AGENTS };
+module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, MODES, PLAFONDS_COMMANDE, AGENTS };

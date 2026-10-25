@@ -308,10 +308,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     annuler) ;; # ni conventions Git ni dépôt distant : les gestes sont dans pulse-aidd annuler, l'envoi se lit à l'étape 6
     get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
     cicd) ;; # relier, le refus d'un commit ou d'un envoi : lancés seulement dans ce cas ; l'exemple de CI : copié dans le projet par installer-ci
-    deploy)
-      afficher "Le dépôt distant" "$REF/depot-distant.md"
-      afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
+    deploy) ;; # chaque mode lance sa référence (deploy/premiere.md, deploy/production.md, deploy/variables.md) et, avec un pack, pulse-aidd pile contexte deploy-<mode>
     security) afficher "Modèle : docs/securite.md" "$SK/security/assets/securite.md" ;; # la checklist : chargée par l'auditeur
     secrets)
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"

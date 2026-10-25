@@ -70,7 +70,8 @@ const EXCEPTIONS = {
   status: ["references/cycle.md"],
   // refactoring d'optimisation, tâche 7.4 : l'exemple de CI est copié dans le projet par pulse-aidd installer-ci (scripts/ci-verifications.exemple.yml, lu à l'étape 3)
   cicd: ["templates/ci-verifications.yml.template"],
-  deploy: ["templates/ci-verifications.yml.template"],
+  // refactoring d'optimisation, tâche 7.5 : la saisie hors conversation est lancée par deploy/variables.md (première mise en ligne et production), au moment d'envoyer une valeur
+  deploy: ["templates/ci-verifications.yml.template", SANS_CONVERSATION],
   // refactoring d'optimisation, tâche 5.5 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
   security: ["references/checklist-securite.md", SANS_CONVERSATION],
   // refactoring d'optimisation, tâche 7.1 : depot-distant.md scindé ; l'envoi du travail (envoi.md) est affiché par commit, lu par annuler à l'étape 6 ;

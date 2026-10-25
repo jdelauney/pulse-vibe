@@ -961,7 +961,7 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
   for (const [fichier, motif] of [
     [["skills", "commit", "SKILL.md"], /### 7\. Envoyer[\s\S]*Claude Code va vous demander/],
     [["skills", "pr", "SKILL.md"], /Claude Code va vous demander l'accord pour \x60git pull\x60[\s\S]*Claude Code va vous demander l'accord pour envoyer/],
-    [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. Annoncer : « Claude Code va vous demander/],
+    [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. \*\*Commits à envoyer\*\*[^\n]*annoncer : « Claude Code va vous demander/],
     [["skills", "cicd", "SKILL.md"], /Annoncer : « Claude Code va vous demander[^\n]*Puis l'envoyer \(\x60git push\x60/],
     [["references", "worktree-dossier.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
   ]) {
@@ -971,10 +971,40 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
   }
 });
 
-test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section", () => {
-  const sections = lire(RACINE, "skills", "deploy", "SKILL.md").split(/^###? /m).filter((s) => /git push/.test(s));
+test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section, références par mode comprises", () => {
+  const fichiers = [path.join(RACINE, "skills", "deploy", "SKILL.md"), ...["premiere.md", "production.md", "variables.md"].map((f) => path.join(RACINE, "skills", "deploy", "references", f))];
+  const sections = fichiers.flatMap((f) => lire(f).split(/^#{2,4} /m).filter((s) => /git push/.test(s)).map((s) => [path.basename(f), s]));
   assert.ok(sections.length >= 4, "sections avec envoi");
-  for (const s of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord|accord annoncé au § 3/, s.slice(0, 30));
+  for (const [f, s] of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord/, `${f} : ${s.slice(0, 30)}`);
+});
+
+test("deploy : porte officielle chargée par mode, mise à jour qui vérifie aussi un envoi déjà fait, preuve relue, vitesse sans l'étape perf", () => {
+  const contexte = contexteCharge("deploy");
+  for (const titre of ["Le dépôt distant", "Garder la valeur d'un secret hors de la conversation", "Exemple de CI à adapter"]) assert.ok(!contexte.includes(`===== ${titre} =====`), `contexte deploy sans « ${titre} »`);
+  const deploy = lire(RACINE, "skills", "deploy", "SKILL.md");
+  const choisir = deploy.split("### 2. Choisir le mode")[1].split("\n### 3.")[0];
+  for (const attendu of ["`pulse-aidd reference deploy/premiere.md`", "`pulse-aidd pile contexte deploy-premiere`", "`pulse-aidd reference deploy/production.md`", "`pulse-aidd pile contexte deploy-production`"])
+    assert.ok(choisir.includes(attendu), `§ 2 : ${attendu}`);
+  const controles = deploy.split("### 1. Contrôles avant envoi")[1].split("\n### 2.")[0];
+  assert.match(controles, /`pulse-aidd preuve etat --exiger suite --exiger construction`[^\n]*`pulse-aidd preuve lancer --portee suite --construire`/);
+  const miseAJour = deploy.split("### 4. Mise à jour")[1].split("\n### ")[0];
+  assert.match(miseAJour, /`git log --oneline @\{u\}\.\.`/);
+  assert.match(miseAJour, /Tout est déjà envoyé : le dire, et passer au point 3\./);
+  const tout = skillTexte("deploy");
+  assert.doesNotMatch(tout, /etape perf/, "la mesure de vitesse en deux commandes");
+  const premiere = lire(RACINE, "skills", "deploy", "references", "premiere.md");
+  assert.match(premiere, /`pulse-aidd perf cle`[^\n]*`pulse-aidd perf mesurer <adresse du site> --passages 3 --json docs\/performance\/mesures\/<AAAA-MM-JJ>\.json`/);
+  assert.match(premiere, /`pulse-aidd reference deploy\/variables\.md`/);
+  const variables = lire(RACINE, "skills", "deploy", "references", "variables.md");
+  assert.match(variables, /`pulse-aidd pile contexte deploy-variables`/);
+  assert.match(variables, /`pulse-aidd reference secrets\/sans-conversation\.md`/);
+  assert.match(variables, /`pulse-aidd secrets redeployer --env production`/);
+  assert.match(lire(RACINE, "skills", "deploy", "references", "production.md"), /`pulse-aidd etape cicd --sans-communes`/);
+  assert.match(deploy.split("### 6. Clore")[1], /proposer `\/pulse:seo lancer` \(il vérifie l'essentiel et relie Search Console\)/);
+  assert.doesNotMatch(deploy, /search-console relier/, "/pulse:seo lancer relie Search Console lui-même");
+  const motifs = motifsBash(path.join(RACINE, "skills", "deploy", "SKILL.md"));
+  for (const retire of ["git grep -l *", "pulse-aidd secrets historique*"]) assert.ok(!motifs.includes(retire), `deploy : Bash(${retire}) sans emploi`);
+  assert.ok(motifs.some((m) => couvre(m, "pulse-aidd pile contexte deploy-premiere")), "deploy : consignes du pack par mode");
 });
 
 test("commit nomme la forme `git commit -m`, annuler passe par `pulse-aidd annuler`, et commit utilise `git remote -v`", () => {
@@ -1072,14 +1102,15 @@ test("production : retour arrière dans le modèle technical.md et dans deploy ;
   const modele = lire(RACINE, "skills", "tech", "assets", "technical.md");
   assert.match(modele, /\n## Retour arrière\n/);
   assert.ok(modele.indexOf("## Retour arrière") < modele.indexOf("## Référencement"), "après « Hébergement et mise en ligne »");
-  const deploy = lire(RACINE, "skills", "deploy", "SKILL.md");
+  const deploy = skillTexte("deploy");
   assert.match(deploy, /section « Retour arrière » de `docs\/technical\.md`/);
-  assert.match(deploy, /propre à chaque environnement/);
+  assert.match(deploy, /`pulse-aidd reference secrets\/sans-conversation\.md`/);
+  assert.match(lire(RACINE, "references", "secrets", "sans-conversation.md"), /propre à chaque environnement/);
   assert.match(lire(RACINE, "references", "secrets", "sans-conversation.md"), /--meme-valeur/);
 });
 
 test("mise en production : une sonde de disponibilité est proposée et notée", () => {
-  assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
+  assert.match(skillTexte("deploy"), /\*\*Surveillance\*\*/);
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /^- Surveillance : /m);
 });
 

@@ -5,7 +5,7 @@
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
 #   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
-#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien
+#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
@@ -99,6 +99,12 @@ contexte() {
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
     deploy)
       afficher "Pour mettre en ligne" "$REF/contexte/deploy.md" ;;
+    deploy-premiere)
+      afficher "Pour la première mise en ligne" "$REF/contexte/deploy-premiere.md" ;;
+    deploy-production)
+      afficher "Pour le mode production" "$REF/contexte/deploy-production.md" ;;
+    deploy-variables)
+      afficher "Pour les variables d'environnement chez Vercel" "$REF/contexte/deploy-variables.md" ;;
     cicd)
       afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md" ;;
     secrets)
