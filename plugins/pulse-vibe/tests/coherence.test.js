@@ -730,6 +730,34 @@ test("plan : écrit « à valider », contrôlé par verifier-plan, montré, pui
   assert.match(lire(RACINE, "templates", "plan.md"), /^- \*\*Statut\*\* : à valider$/m);
 });
 
+test("découpage du plan : règles écrites une fois, chargées par plan et refine ; refine renvoie une nouvelle US à /pulse:spec", () => {
+  const decoupage = lire(RACINE, "skills", "plan", "references", "decoupage.md");
+  assert.match(decoupage, /^# Règles de découpage du plan \(`\/pulse:plan`, `\/pulse:refine`\)$/m);
+  const regles = decoupage.split("\n").filter((l) => /^\d+\. /.test(l)).map((l) => Number(l.split(".")[0]));
+  assert.deepStrictEqual(regles, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "les dix règles, règle mixte du pack comprise");
+  assert.match(decoupage, /\*\*Découpage vertical\*\*/);
+  assert.match(decoupage, /« Mise en place » de `docs\/technical\.md` l'indique « À réaliser avec la première tâche du premier plan »/);
+  assert.doesNotMatch(decoupage, /dans un dossier temporaire|en préservant `CLAUDE\.md`/, "le squelette se décrit une fois, dans « Mise en place »");
+  assert.match(decoupage, /le guide lit seulement les lignes `- \[ \] \*\*Tn – …\*\*` de `## Tâches` et leurs détails/);
+  for (const commande of ["plan", "refine"]) assert.ok(contexteCharge(commande).includes("===== Règles de découpage du plan ====="), commande);
+  const plan = lire(RACINE, "skills", "plan", "SKILL.md");
+  assert.doesNotMatch(plan, /\*\*Découpage vertical\*\*/, "règles recopiées dans plan");
+  assert.match(plan, /Appliquer les « Règles de découpage » \(chargées dans « Références de la commande »\) à chaque tâche\./);
+  assert.match(plan, /Numéroter à la suite des autres plans \(règles des tâches\)\./);
+  // Option B (décision 6) : plus de branche « spec plus ancienne ».
+  assert.doesNotMatch(plan, /spec plus ancienne/i);
+  const refine = lire(RACINE, "skills", "refine", "SKILL.md");
+  assert.ok(!contexteCharge("refine").includes("# /pulse:plan – Le plan de réalisation"), "refine ne charge plus tout le SKILL de plan");
+  const ligne = (type) => refine.split("\n").find((l) => l.startsWith(`| **${type}** |`)) || "";
+  assert.match(ligne("Changement de périmètre"), /`docs\/prd\.md` \(MoSCoW\) d'abord, avec l'accord ; puis proposer `\/pulse:spec "…"`/);
+  assert.match(ligne("Exigence manquante"), /proposer `\/pulse:spec "…"`/);
+  assert.doesNotMatch(ligne("Exigence manquante"), /spec en brouillon/, "branche morte : un plan suppose une spec verrouillée");
+  assert.doesNotMatch(refine, /découpage vertical \(visible et testable en moins de 2 minutes\), 3 fichiers et 3 critères au plus/, "résumé des règles recopié");
+  assert.match(refine, /une nouvelle tâche prend le numéro suivant \(règles des tâches\)/);
+  // La phrase « Envoi » reste mot pour mot sur sa ligne (la phase 7 la fait pointer vers envoi.md à la fusion).
+  assert.ok(refine.split("\n").includes("La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2)."));
+});
+
 test("règles communes : rondes de 4 questions, réponses libres en texte, mode découverte écrit une fois", () => {
   const unix = (f) => f.split(path.sep).join("/");
   const regles = lire(RACINE, "references", "regles-communes.md");
@@ -1050,12 +1078,13 @@ test("commit nomme la forme `git commit -m`, annuler passe par `pulse-aidd annul
   assert.match(commit, /contrôle de sécurité à chaque tâche/);
 });
 
-test("prd, us, spec et plan lisent et écrivent leurs documents sans demande d'autorisation", () => {
+test("prd, us, spec, plan et refine lisent et écrivent leurs documents sans demande d'autorisation", () => {
   const attendus = {
     prd: ["Read", "Glob", "Grep", "Write(docs/prd.md)", "Edit(docs/prd.md)", "Write(aidd_docs/tasks/in-progress.md)", "Edit(aidd_docs/tasks/in-progress.md)"],
     us: ["Read", "Glob", "Grep", "Write(docs/user-stories.md)", "Edit(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
     spec: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/user-stories.md)", "Edit(docs/prd.md)"],
     plan: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+    refine: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)", "Edit(docs/user-stories.md)"],
   };
   for (const [skill, outils] of Object.entries(attendus)) {
     const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";

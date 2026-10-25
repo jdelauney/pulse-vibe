@@ -278,6 +278,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md" "$SK/spec/assets/spec.md" ;;
     plan)
+      afficher "Règles de découpage du plan" "$SK/plan/references/decoupage.md"
       afficher "Checklist sécurité" "$REF/checklist-securite.md"
       afficher "Stratégie de tests" "$REF/tests/strategie.md"
       afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
@@ -313,9 +314,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/secrets.md" "$SK/secrets/assets/secrets.md"
       afficher "Modèle : journal d'incident" "$SK/secrets/assets/incident.md"
       lexique ;;
-    refine)
-      afficher "Règles du plan (/pulse:plan)" "$RACINE/skills/plan/SKILL.md"
-      afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
+    refine) # le plan modifié montre le format des tâches ; son modèle se lance seulement quand une section manque
+      afficher "Règles de découpage du plan" "$SK/plan/references/decoupage.md" ;;
     ui)
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Registres d'interface" "$SK/ui/references/registres.md"

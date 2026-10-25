@@ -295,6 +295,13 @@ test("contexte spec : Gherkin, sans checklist (le comment va au plan) ; contexte
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ====="));
 });
 
+test("contexte plan et refine : les règles de découpage, écrites une fois ; refine sans le SKILL de plan ni son modèle", () => {
+  for (const commande of ["plan", "refine"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Règles de découpage du plan ====="), commande);
+  const refine = lancer("contexte", "refine").stdout;
+  assert.ok(!refine.includes("===== Règles du plan (/pulse:plan) ====="));
+  assert.ok(!refine.includes("===== Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md ====="));
+});
+
 test("agents test-writer et test-runner disponibles, et cités dans le message d'erreur", () => {
   for (const nom of ["test-writer", "test-runner"]) {
     const r = lancer("agent", nom);
