@@ -803,6 +803,7 @@ test("us : les cas limites clés posés un à un, en réponse libre ; format, IN
   assert.doesNotMatch(us, /^\| \*\*Indépendante\*\* \|/m, "tableau INVEST recopié dans us");
   assert.doesNotMatch(us, /`gh issue create`/, "ticketing recopié dans us");
   assert.match(us, /selon « Ticketing » des règles des user stories/);
+  assert.doesNotMatch(us, /Cocher sa section « Prête »/, "la case « Prête » se coche selon les règles des user stories");
   assert.match(lire(RACINE, "skills", "express", "SKILL.md"), /\(« Les règles des user stories », chargées dans « Références de la commande »\)/);
 });
 
@@ -1702,11 +1703,17 @@ test("tech : démarche de choix et organisation chargées à l'étape qui les se
   assert.ok(!contexte.includes("===== Aider à choisir la technologie ====="), "démarche hors du contexte");
   assert.ok(!contexte.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte");
   const projetNeuf = tech.split("### B. Projet neuf")[1] || "";
-  assert.match(projetNeuf.split("#### 2.")[0], /Avant la première question : lancer `pulse-aidd reference tech\/choix-techniques\.md` et l'appliquer jusqu'à l'étape 5\./);
+  assert.match(projetNeuf.split("#### 2.")[0], /Avant la première question : lancer `pulse-aidd reference tech\/choix-techniques\.md` et l'appliquer pendant tout le chemin B\./);
+  // La démarche sert jusqu'à l'écriture (outil de test, règles transverses) : sa portée et son repli après une compaction le disent.
+  assert.match(tech, /Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, pendant tout ce chemin\./);
+  assert.doesNotMatch(tech, /jusqu'à l'étape 5|jusqu'au choix\./);
+  assert.match(tech.split("## Références de la commande")[1], /chemin B : relancer aussi `pulse-aidd reference tech\/choix-techniques\.md` si la démarche n'est plus dans la conversation/);
   assert.match(tech, /Projet neuf sans pack : lancer `pulse-aidd reference qualite\/organisation\.md`/);
   // Squelette : la règle des fichiers gardés vit dans « Mise en place » du modèle, lue par tech, plan et l'implementer.
   const modele = lire(RACINE, "skills", "tech", "assets", "technical.md");
   assert.match(modele.split("## Mise en place")[1], /dossier temporaire[^\n]*`CLAUDE\.md`, `README\.md` et `\.gitignore`/);
+  // Avec un pack, son script de squelette fait foi : la phrase générique le dit, versions fixées comprises.
+  assert.match(modele.split("## Mise en place")[1], /^Sans pack de pile : le squelette s'initialise selon la documentation officielle, versions fixées ;/m);
   assert.match(tech, /Appliquer les étapes de « Mise en place » de `docs\/technical\.md`/);
   assert.doesNotMatch(tech, /dossier temporaire/);
   // Pile : docs/technical.md et le bloc « Stack technique » ; la mémoire technique garde les décisions datées.

@@ -51,7 +51,7 @@ Vérifier chaque US selon « INVEST » et « Bien rangée et US d'accès » des 
 
 ### 5. Definition of Ready
 
-Une US se sauvegarde seulement prête (« Definition of Ready » des règles des user stories) ; une question bloquante restante se tranche d'abord (étape 4). Cocher sa section « Prête ».
+Une US se sauvegarde seulement prête (« Definition of Ready » des règles des user stories) ; une question bloquante restante se tranche d'abord (étape 4).
 
 ### 6. Valider, puis sauvegarder
 

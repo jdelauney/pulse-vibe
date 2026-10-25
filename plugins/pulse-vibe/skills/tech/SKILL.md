@@ -20,7 +20,7 @@ Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **ap
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, jusqu'au choix.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, pendant tout ce chemin.
 
 ## Contexte
 
@@ -58,7 +58,7 @@ Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/` et le code s'il y en a.
 
 ### B. Projet neuf : construire et comparer les options
 
-Avant la première question : lancer `pulse-aidd reference tech/choix-techniques.md` et l'appliquer jusqu'à l'étape 5.
+Avant la première question : lancer `pulse-aidd reference tech/choix-techniques.md` et l'appliquer pendant tout le chemin B.
 
 #### 2. Les questions qui restent (par rondes)
 
@@ -132,4 +132,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : projet existant : `
 
 !`pulse-aidd contexte tech`
 
-Les règles de la mémoire et les modèles cités figurent dans ce contexte ; la démarche de choix (projet neuf) et l'organisation des fichiers se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie.
+Les règles de la mémoire et les modèles cités figurent dans ce contexte ; la démarche de choix (projet neuf) et l'organisation des fichiers se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie ; chemin B : relancer aussi `pulse-aidd reference tech/choix-techniques.md` si la démarche n'est plus dans la conversation.
