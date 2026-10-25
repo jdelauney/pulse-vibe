@@ -42,7 +42,8 @@ test("contexte commit et pr : conventions Git partagées, modèle de PR pour pr"
   const commit = lancer("contexte", "commit");
   assert.strictEqual(commit.status, 0, commit.stderr);
   assert.ok(commit.stdout.includes("===== Conventions Git ====="));
-  assert.ok(commit.stdout.includes("===== Modèle : .gitignore ====="));
+  assert.ok(commit.stdout.includes("===== L'envoi du travail ====="));
+  assert.ok(!commit.stdout.includes("===== Modèle : .gitignore ====="), "le modèle .gitignore se lance seulement s'il manque");
   const pr = lancer("contexte", "pr");
   assert.strictEqual(pr.status, 0, pr.stderr);
   for (const titre of [
