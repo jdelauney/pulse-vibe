@@ -35,7 +35,7 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 La ligne **Verdict** en tête résume l'ensemble : ✅ Validé quand le reviewer valide **et** qu'aucun critère du verifier n'est ❌ ; en rythme complet, il demande aussi une preuve « à jour » et ✅ (code 0) : une preuve ❌, périmée ou absente n'est jamais une preuve.
 
-**Lire la preuve** : `pulse-aidd preuve etat --exiger suite` (filet limité : `--portee tache`, lue sans `--exiger suite` ; `--exiger construction` quand « Construire » existe et que la tâche touche une page, une route ou la configuration). « à jour » ✅ : « N tests, tous verts », ou « — (aucun test automatique) » si « Tester » vaut « aucune ». « à jour » ❌ : chaque échec est un constat 🟠 Haute, à corriger, sans relance. Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une fois.
+**Lire la preuve** : `pulse-aidd preuve etat --exiger suite` (filet limité : preuve de portée tâche, lue sans `--exiger suite` ; `--exiger construction` quand « Construire » existe et que la tâche touche une page, une route ou la configuration). « à jour » ✅ : « N tests, tous verts », ou « — (aucun test automatique) » si « Tester » vaut « aucune ». « à jour » ❌ : chaque échec est un constat 🟠 Haute, à corriger, sans relance. Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une fois.
 
 ## 3 bis. Écrire la fiche de test de la personne
 
