@@ -346,30 +346,76 @@ function miseDeCoteEnConflit() {
   return d;
 }
 
-test("récupérer avec un fichier préparé (index occupé) : refusé d'avance, rien ne bouge", () => {
-  const d = miseDeCoteEnConflit();
-  ecrire(d, "prepare.txt", "préparé\n");
-  git(d, "add", "prepare.txt");
-  const index = git(d, "diff", "--cached");
-  const r = lancer(d, "recuperer", "stash@{0}");
-  assert.strictEqual(r.code, 2, r.sortie);
-  assert.strictEqual(r.premier("etat"), "index-occupe");
-  assert.ok(r.cles.fichier.includes("prepare.txt"));
-  assert.strictEqual(lire(d, "prepare.txt"), "préparé\n");
-  assert.strictEqual(git(d, "diff", "--cached"), index);
+test("récupérer avec un fichier préparé ou modifié sans rapport : refusé d'avance (arbre-occupe), rien ne bouge", () => {
+  for (const preparer of [true, false]) {
+    const d = miseDeCoteEnConflit();
+    ecrire(d, "prepare.txt", "préparé\n");
+    if (preparer) git(d, "add", "prepare.txt");
+    else { ecrire(d, "README.md", "modifié\n"); }
+    const avant = git(d, "status", "--porcelain");
+    const r = lancer(d, "recuperer", "stash@{0}");
+    assert.strictEqual(r.code, 2, r.sortie);
+    assert.strictEqual(r.premier("etat"), "arbre-occupe");
+    assert.ok(r.cles.fichier.includes(preparer ? "prepare.txt" : "README.md"));
+    assert.strictEqual(lire(d, "prepare.txt"), "préparé\n");
+    assert.strictEqual(git(d, "status", "--porcelain"), avant);
+  }
 });
 
-test("récupérer en conflit : le travail sans rapport est gardé tel quel, l'entrée reste, code 3", () => {
+test("récupérer un chemin devenu dossier dans HEAD, avec une modification en cours : refusé, modification intacte", () => {
   const d = miseDeCoteEnConflit();
-  ecrire(d, "README.md", "projet modifié\n");
+  git(d, "rm", "-q", "t1.txt");
+  ecrire(d, "t1.txt/dedans.txt", "dedans\n");
+  valider(d, "chore: t1 devient un dossier");
+  ecrire(d, "t1.txt/dedans.txt", "dedans modifié\n");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "arbre-occupe");
+  assert.strictEqual(lire(d, "t1.txt/dedans.txt"), "dedans modifié\n");
+});
+
+test("récupérer un renommage dont l'ancien chemin a changé dans HEAD : arbre identique, entrée gardée", () => {
+  const d = projetDeuxTaches();
+  git(d, "mv", "t1.txt", "n1.txt");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "--resume", "renommage").code, 0);
+  ecrire(d, "t1.txt", "changé ailleurs\n");
+  ecrire(d, "n1.txt", "autre contenu\n");
+  valider(d, "chore: t1 change, n1 existe");
+  const avant = git(d, "rev-parse", "HEAD");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.ok(propre(d), git(d, "status", "--porcelain"));
+  assert.strictEqual(lire(d, "n1.txt"), "autre contenu\n");
+  assert.strictEqual(lire(d, "t1.txt"), "changé ailleurs\n");
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant);
+  assert.match(git(d, "stash", "list"), /renommage/);
+});
+
+test("récupérer un fichier ignoré, régénéré au même chemin : refusé d'avance, fichier intact", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "gen.txt", "mis de côté\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "--resume", "gen").code, 0);
+  ecrire(d, ".gitignore", "gen.txt\n");
+  valider(d, "chore: ignore gen");
+  ecrire(d, "gen.txt", "régénéré\n");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "arbre-occupe");
+  assert.ok(r.cles.fichier.includes("gen.txt"));
+  assert.strictEqual(lire(d, "gen.txt"), "régénéré\n");
+});
+
+test("récupérer en conflit sur un arbre propre : état identique, fichier sans rapport gardé, entrée gardée, code 3", () => {
+  const d = miseDeCoteEnConflit();
   ecrire(d, "libre.txt", "fichier libre\n");
   const r = lancer(d, "recuperer", "stash@{0}");
   assert.strictEqual(r.code, 3, r.sortie);
-  assert.strictEqual(lire(d, "README.md"), "projet modifié\n");
+  assert.strictEqual(r.premier("etat"), "echec");
+  assert.ok(r.cles["fichier-en-conflit"].includes("t1.txt"));
   assert.strictEqual(lire(d, "libre.txt"), "fichier libre\n");
-  assert.strictEqual(lire(d, "t1.txt"), "version du commit\n", "le fichier de l'entrée revient à HEAD");
+  assert.strictEqual(lire(d, "t1.txt"), "version du commit\n");
   assert.match(git(d, "stash", "list"), /pulse-annuler/);
-  assert.strictEqual(git(d, "status", "--porcelain").split("\n").map((l) => l.trim()).sort().join("|"), "?? libre.txt|M README.md");
+  assert.strictEqual(git(d, "status", "--porcelain"), "?? libre.txt");
   assert.strictEqual(lancer(d, "etat").premier("operation"), "aucune");
 });
 
