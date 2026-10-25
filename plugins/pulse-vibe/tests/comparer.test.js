@@ -152,7 +152,7 @@ test("--ranger : les d*/v* présents vont dans alternatives/, prochain = plus gr
     "alternatives/d3-ancienne": { "planche.html": html },
     retenue: { "planche.html": html },
   }, "docs/design/identite");
-  fs.writeFileSync(path.join(d, "comparer.html"), html);
+  assert.strictEqual(lancerDans(racine, sous).status, 0, "page de comparaison générée");
   const r = lancerDans(racine, sous, "--ranger");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /^prochain: 4$/m);
@@ -186,7 +186,7 @@ test("--retenir v2 --mobile v1 : ancienne retenue datée, choix copié, autres v
     "v3-tableau": { "desktop.html": "bureau v3", "mobile.html": "mobile v3" },
     retenue: { "desktop.html": "ancienne", "critique.md": "ancienne critique" },
   });
-  fs.writeFileSync(path.join(d, "comparer.html"), html);
+  assert.strictEqual(lancerDans(racine, sous).status, 0, "page de comparaison générée");
   const r = lancerDans(racine, sous, "--retenir", "v2", "--mobile", "v1");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.strictEqual(lireF(d, "retenue", "desktop.html"), "bureau v2");
@@ -249,4 +249,93 @@ test("--ranger et --retenir : chemin absolu, avec .. ou lettre de lecteur refus�
   assert.ok(existe(d, "v1-a"));
   assert.strictEqual(lancerDans(racine, "docs", "--retenir").status, 1);
   assert.strictEqual(lancerDans(racine, "docs", "--retenir", "v1", "--mobile").status, 1);
+});
+
+test("--ranger et --retenir : seulement docs/design/identite ou docs/design/maquettes/<spec> ; un dossier de code est refusé, rien ne bouge", () => {
+  const { racine, d, sous } = projet({ v1: { "route.ts": "export {}" }, "v2-beta": { "route.ts": "export {}" } }, "src/app/api");
+  fs.writeFileSync(path.join(d, "comparer.html"), "<p>page de la personne</p>");
+  for (const args of [["--ranger"], ["--retenir", "v1"]]) {
+    const r = lancerDans(racine, sous, ...args);
+    assert.strictEqual(r.status, 2, `${args.join(" ")} : ${r.stdout}${r.stderr}`);
+    assert.match(r.stderr, /docs\/design\/identite/);
+  }
+  for (const cible of ["docs/design", "docs/design/maquettes", "docs/design/maquettes/US-001/retenue", "docs/design/identite/../../../src/app/api", "./src/app/api"])
+    assert.strictEqual(lancerDans(racine, cible, "--ranger").status, 2, cible);
+  assert.ok(existe(d, "v1", "route.ts") && existe(d, "v2-beta", "route.ts") && !existe(d, "alternatives"), "dossiers de code en place");
+  assert.strictEqual(lireF(d, "comparer.html"), "<p>page de la personne</p>", "comparer.html gardé");
+});
+
+test("--ranger : séparateurs Windows et ./ acceptés pour un dossier de design", () => {
+  const { racine, d } = projet({ "d1-sobre": { "planche.html": html } }, "docs/design/identite");
+  const r = lancerDans(racine, ".\\docs\\design\\identite\\", "--ranger");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^prochain: 2$/m);
+  assert.ok(existe(d, "alternatives", "d1-sobre"));
+});
+
+test("--ranger : un dossier de design qui renvoie ailleurs (lien) est refusé, rien ne bouge", () => {
+  const { racine, d } = projet({ v1: { "route.ts": "export {}" } }, "src/app/api");
+  fs.mkdirSync(path.join(racine, "docs", "design", "maquettes"), { recursive: true });
+  fs.symlinkSync(d, path.join(racine, "docs", "design", "maquettes", "US-001-lien"), "junction");
+  const r = lancerDans(racine, "docs/design/maquettes/US-001-lien", "--ranger");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.ok(existe(d, "v1", "route.ts") && !existe(d, "alternatives"));
+});
+
+test("--ranger : comparer.html écrit par quelqu'un d'autre que comparer est gardé", () => {
+  const { racine, d, sous } = projet({ "v1-a": { "desktop.html": html } });
+  fs.writeFileSync(path.join(d, "comparer.html"), "<p>notes de la personne</p>");
+  assert.strictEqual(lancerDans(racine, sous, "--ranger").status, 0);
+  assert.strictEqual(lireF(d, "comparer.html"), "<p>notes de la personne</p>");
+});
+
+test("--ranger et --retenir : une cible qui est un fichier → code 2 ; option inconnue → code 1, rien d'écrit", () => {
+  const { racine, d, sous } = projet({ "v1-a": { "desktop.html": html } });
+  fs.writeFileSync(path.join(racine, "docs", "design", "maquettes", "US-002"), "un fichier");
+  for (const args of [["--ranger"], ["--retenir", "v1"]]) {
+    const r = lancerDans(racine, "docs/design/maquettes/US-002", ...args);
+    assert.strictEqual(r.status, 2, `${args.join(" ")} : ${r.stdout}${r.stderr}`);
+    assert.doesNotMatch(r.stderr, /at .*\(/, "pas de trace d'erreur");
+  }
+  for (const args of [["--rangr"], ["--ranger", "--vite"], ["v1"]]) {
+    const r = lancerDans(racine, sous, ...args);
+    assert.strictEqual(r.status, 1, args.join(" "));
+    assert.match(r.stderr, /Usage/);
+  }
+  assert.ok(!existe(d, "comparer.html") && existe(d, "v1-a"), "rien d'écrit ni déplacé");
+});
+
+test("--retenir : un déplacement qui échoue en cours de route → code 3, état d'avant remis", () => {
+  const { racine, d, sous } = projet({
+    "v1-liste": { "desktop.html": "bureau v1" },
+    "v2-cartes": { "desktop.html": "bureau v2" },
+    "v3-tableau": { "desktop.html": "bureau v3" },
+    retenue: { "desktop.html": "ancienne" },
+  });
+  const comparer = require(COMPARER);
+  const dossierAvant = process.cwd();
+  const renommer = fs.renameSync;
+  const erreur = console.error;
+  let appels = 0;
+  let message = "";
+  fs.renameSync = (...a) => {
+    appels += 1;
+    if (appels === 3) throw new Error("disque plein (simulé)");
+    return renommer(...a);
+  };
+  console.error = (m) => (message += m);
+  let code;
+  try {
+    process.chdir(racine);
+    code = comparer.principal([sous, "--retenir", "v2"]);
+  } finally {
+    process.chdir(dossierAvant);
+    fs.renameSync = renommer;
+    console.error = erreur;
+  }
+  assert.strictEqual(code, 3, message);
+  assert.match(message, /état d'avant est remis/);
+  assert.strictEqual(lireF(d, "retenue", "desktop.html"), "ancienne");
+  for (const v of ["v1-liste", "v2-cartes", "v3-tableau"]) assert.ok(existe(d, v, "desktop.html"), v);
+  assert.ok(!existe(d, "alternatives") && !existe(d, ".retenue-en-cours"));
 });

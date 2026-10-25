@@ -1056,6 +1056,11 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
   for (const r of ["ui/registres.md", "ui/regles-ui.md", "ui/anti-patterns.md"]) assert.ok(skillTexte("ui").includes(`pulse-aidd reference ${r}`), `ui : pointeur ${r}`);
   assert.doesNotMatch(skillTexte("ui"), /trois références|quatre références/);
+  // Après un compactage, les références chargées à une étape précédente se rechargent, action par action (dans les premières lignes, gardées).
+  const rechargement = skillTexte("ui").split("\n").find((l) => /compactage/.test(l)) || "";
+  assert.ok(skillTexte("ui").indexOf(rechargement) < 3000, "ui : rechargement des références dans le haut du fichier");
+  for (const attendu of ["identite", "polish", "pulse-aidd reference ui/registres.md", "pulse-aidd reference ui/regles-ui.md", "pulse-aidd reference ui/anti-patterns.md"])
+    assert.ok(rechargement.includes(attendu), `ui : rechargement après compactage : ${attendu}`);
 });
 
 test("la règle deny se propose en clair : le bloc JSON se montre seulement sur demande", () => {

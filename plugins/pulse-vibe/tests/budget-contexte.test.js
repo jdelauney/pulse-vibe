@@ -106,7 +106,7 @@ const PLAFONDS_COMMANDE = {
   status: 33000, // mesure 31 407 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 467 (pulse 0.46 : argument « ligne », la ligne d'état chargée à la demande)
   tech: 70500, // mesure 66 702 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 604 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 75 338
   test: 30000, // mesure 28 340 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 41 920 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 49 776 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 46 893 (pulse 0.42 : rythme rapide, option -f, gestes)
-  ui: 41000, // mesure 38 723 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, mesure 75 319 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 77 215
+  ui: 41000, // mesure 39 165 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs ; correctifs : rechargement après compactage et dossiers acceptés par le rangement, cités) ; avant, mesure 75 319 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 77 215
   us: 35500, // mesure 33 709 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 722
 };
 
@@ -135,7 +135,7 @@ const AGENTS = {
   verifier: { plafond: 18500, /* mesure 17 569 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "verifier"], ["reference", "tests/test-manuel.md"], ["reference", "gestes.md"]] },
   explorer: { plafond: 3500, /* mesure 3 030 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "explorer"]] },
   "designer, maquette": { plafond: 31000, /* mesure 29 479 (phase 8 : premier plafond ; registres.md seulement pour une planche ou une direction provisoire) */ parties: [["agent", "designer"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["modele", "ui/maquette-note.md"]] },
-  "designer, planche": { plafond: 41000, /* mesure 39 011 (phase 8 : consigne de chargement des registres précisée) ; avant, 38 682 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"]] },
+  "designer, planche": { plafond: 41000, /* mesure 39 011 (phase 8 : consigne de chargement des registres précisée) ; avant, mesure 38 877 sur 53ab806 (plafond posé en pulse 0.50 sur 38 682, agent hors de la boucle) */ parties: [["agent", "designer"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/directions.md"], ["modele", "ui/maquette-note.md"]] },
   "ui-critic": { plafond: 41000, /* mesure 39 029 (pulse 0.50 : premier plafond, agent hors de la boucle) */ parties: [["agent", "ui-critic"], ["reference", "ui/registres.md"], ["reference", "ui/regles-ui.md"], ["reference", "ui/anti-patterns.md"], ["reference", "ui/motifs.md"], ["reference", "ui/heuristiques.md"], ["modele", "ui/revue-ui.md"]] },
 };
 
@@ -192,8 +192,8 @@ const PLAFONDS_FORMES = {
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 745
   "spec --sans-communes": 26500, // mesure 24 973
   "tech --sans-communes": 56500, // mesure 53 438 : dépasse la limite
-  "ui --sans-communes": 21000, // mesure 19 550 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, 56 545
-  "ui --sans-noyau": 26500, // mesure 25 009 (même raison) ; avant, 62 004
+  "ui --sans-communes": 21000, // mesure 19 992 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, 56 545
+  "ui --sans-noyau": 26500, // mesure 25 451 (même raison) ; avant, 62 004
   "us --sans-communes": 18000, // mesure 16 794
 };
 // Formes citées qui dépassent encore la limite : ce sont des commandes entières enchaînées comme étape, à scinder dans une phase suivante.
