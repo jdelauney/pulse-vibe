@@ -1223,7 +1223,7 @@ test("les règles de Pulse sans tube, en chaîne ou avec une autre commande pass
 });
 
 test("un caractère de contrôle dans la tête ne laisse rien passer en accord, sous Bash comme sous PowerShell", () => {
-  const separateurs = { "retour chariot": "\r", "retour à la ligne": "\n", "barre oblique et retour à la ligne": "\\n", "U+2028": "\u2028", "U+0085": "\u0085", "espace insécable": "\u00a0", tabulation: "\t" };
+  const separateurs = { "retour chariot": "\r", "retour à la ligne": "\n", "barre oblique et retour à la ligne": "\\\n", "U+2028": "\u2028", "U+0085": "\u0085", "espace insécable": "\u00a0", tabulation: "\t" };
   for (const outil of ["Bash", "PowerShell"]) {
     for (const [nom, sep] of Object.entries(separateurs)) {
       const s = sortieComplete({ command: `pulse-aidd qualite x${sep}git push --force | Select -First 1` }, outil);
@@ -1237,8 +1237,31 @@ test("un caractère de contrôle dans la tête ne laisse rien passer en accord, 
 
 test("PowerShell : un retour chariot seul sépare deux instructions (envoi forcé refusé sans tube)", () => {
   refusPs("pulse-aidd qualite x\rgit push --force");
-  refusPs("pulse-aidd qualite x\u2028git push --force");
+  refusPs("pulse-aidd qualite x\r\ngit push --force");
   confirmationPs("Get-Date\rgit reset --hard");
+});
+
+// Espaces que PowerShell lit comme des espaces entre deux mots (vérifié avec son analyseur) : NBSP, VT, FF, U+0085, U+1680, U+2000 à U+200A, U+2028, U+2029, U+202F, U+205F, U+3000.
+const ESPACES_POWERSHELL = ["\u00a0", "\u000b", "\u000c", "\u0085", "\u1680", "\u2000", "\u2003", "\u200a", "\u2028", "\u2029", "\u202f", "\u205f", "\u3000"];
+
+test("PowerShell : une espace Unicode sépare les mots, l'envoi forcé déguisé est refusé", () => {
+  for (const e of ESPACES_POWERSHELL) {
+    const nom = "U+" + e.codePointAt(0).toString(16).padStart(4, "0");
+    assert.match(refusPs(`git${e}push --force`).raison, /git pull/, nom);
+    refusPs(`git push${e}--force`);
+    confirmationPs(`git${e}reset --hard`);
+    // Une espace Unicode ne finit pas l'instruction : un appel de règles suivi d'un mot reste une seule commande.
+    passePs(`pulse-aidd qualite x${e}y`);
+  }
+});
+
+test("Bash : une espace Unicode reste un caractère de mot, rien n'est accordé ni réécrit avec elle", () => {
+  for (const e of ESPACES_POWERSHELL) {
+    const s = sortieComplete({ command: `pulse-aidd qualite x${e}| head -3` }, "Bash");
+    assert.ok(!s || s.permissionDecision !== "allow", "tête : U+" + e.codePointAt(0).toString(16));
+    const t = sortieComplete({ command: `pulse-aidd qualite x | head -3${e}; git push --force` }, "Bash");
+    assert.ok(t && t.permissionDecision === "deny", "queue : U+" + e.codePointAt(0).toString(16));
+  }
 });
 
 test("« |& » est un tube : la sortie de règles coupée est refusée, jamais accordée telle quelle", () => {
