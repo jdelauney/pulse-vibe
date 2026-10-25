@@ -468,16 +468,43 @@ function metteDeCote(options, fichiers) {
 
 // ---------------------------------------------------------------- recuperer
 
-/** Une reprise ratée : seuls les fichiers de l'entrée reviennent à HEAD (ou disparaissent s'ils n'existaient pas) ; le reste du dossier n'est pas touché. */
-function annulerReprise(chemins, existaient) {
-  for (const f of chemins) {
-    if (!cheminSur(f)) continue;
-    if (git(["cat-file", "-e", `HEAD:${f}`]).ok) git(["restore", "--source=HEAD", "--staged", "--worktree", "--", f]);
-    else {
-      git(["rm", "--cached", "-q", "--ignore-unmatch", "--", f]);
-      if (!existaient.has(f)) fs.rmSync(path.join(RACINE, f), { force: true });
-    }
+const normal = (p) => p.replace(/\\/g, "/").replace(/\/+$/, "");
+const imbriques = (a, b) => a === b || a.startsWith(b + "/") || b.startsWith(a + "/");
+
+/** Les fichiers de la mise de côté (sans détection de renommage : l'ancien et le nouveau chemin y figurent). */
+const fichiersDeLEntree = (ref) => gitLignes(["stash", "show", "--include-untracked", "--name-only", "--no-renames", ref]).map(normal);
+
+/** Ce qui empêche de reprendre l'entrée : arbre occupé, ou chemin de l'entrée déjà présent sur le disque sans être suivi. */
+function obstaclesALaReprise(chemins) {
+  const obstacles = new Set();
+  for (const c of changements()) {
+    if (c.etat !== "?" && c.etat !== "??") obstacles.add(normal(c.chemin)); // modifié, préparé, supprimé, en conflit
+    else if (chemins.some((p) => imbriques(p, normal(c.chemin)))) obstacles.add(normal(c.chemin));
   }
+  const suivis = new Set(gitLignes(["ls-files"]).map(normal));
+  for (const p of chemins) if (fs.existsSync(path.join(RACINE, p)) && !suivis.has(p)) obstacles.add(p);
+  return [...obstacles];
+}
+
+/** Reprise ratée sur un arbre propre au départ : tout revient comme avant, sauf ce que Git a créé, retiré ici fichier par fichier. */
+function annulerReprise(ref, chemins, avant, sortieGit) {
+  const conflits = fichiersEnConflit();
+  remettreEtatAvant(true);
+  for (const p of chemins) {
+    if (!cheminSur(p) || git(["cat-file", "-e", `HEAD:${p}`]).ok) continue; // un fichier suivi est revenu à HEAD par reset --merge
+    if (avant.has(p)) continue;
+    try { fs.rmSync(path.join(RACINE, p), { force: true }); } catch (e) { dire("erreur", `${p} : ${e.message}`); }
+  }
+  const apres = new Map(changements().map((c) => [normal(c.chemin), c.etat]));
+  const ecarts = [...apres].filter(([p, e]) => avant.get(p) !== e).map(([p, e]) => `${e} ${p}`);
+  for (const p of avant.keys()) if (!apres.has(p)) ecarts.push(`absent ${p}`);
+  const identique = ecarts.length === 0;
+  dire("etat", identique ? "echec" : "conflit-non-nettoye");
+  dire("raison", sortieGit.replace(/\s+/g, " ").slice(0, 300));
+  dire("mise-de-cote", ref);
+  for (const f of conflits) dire("fichier-en-conflit", f);
+  for (const x of ecarts) dire("fichier", x);
+  terminer(3);
 }
 
 function recuperer(args) {
@@ -489,18 +516,12 @@ function recuperer(args) {
     if (!entree) refuser("mise-de-cote-inconnue", ["mise-de-cote", ref]);
     const texte = entree.slice(1).join("\t").replace(/^On [^:]+: /, "");
     if (!/^pulse-annuler/.test(texte)) refuser("mise-de-cote-etrangere", ["mise-de-cote", `${ref} · ${texte}`]);
-    const prepares = gitLignes(["diff", "--cached", "--name-only"]);
-    if (prepares.length) refuser("index-occupe", ...prepares.map((f) => ["fichier", f]));
-    const pris = new Set(changements().map((c) => c.chemin));
-    const dedans = gitLignes(["stash", "show", "--name-only", "--include-untracked", ref]);
-    const communs = dedans.filter((f) => pris.has(f));
-    if (communs.length) refuser("fichiers-en-commun", ...communs.map((f) => ["fichier", f]));
-    const existaient = new Set(dedans.filter((f) => cheminSur(f) && fs.existsSync(path.join(RACINE, f))));
+    const dedans = fichiersDeLEntree(ref);
+    const obstacles = obstaclesALaReprise(dedans);
+    if (obstacles.length) refuser("arbre-occupe", ...obstacles.map((f) => ["fichier", f]));
+    const avant = new Map(changements().map((c) => [normal(c.chemin), c.etat]));
     const r = git(["stash", "apply", ref]);
-    if (!r.ok) {
-      annulerReprise(dedans, existaient);
-      signalerEchec(r.erreur || "reprise impossible", [["mise-de-cote", ref]]);
-    }
+    if (!r.ok) annulerReprise(ref, dedans, avant, `${r.erreur} ${r.sortie}`);
     dire("etat", "fait");
     dire("a-supprimer", ref);
     terminer(0);
