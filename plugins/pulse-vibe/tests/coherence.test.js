@@ -1990,7 +1990,7 @@ test("preuve : relance seulement pour périmée, aucune ou portée insuffisante 
   for (const [nom, texte] of [["examen.md", examen], ["tests-automatiques.md", auto], ["verifier.md", verifier]]) {
     assert.match(texte, /« à jour » ❌[^.]*sans relance/, `${nom} : une preuve rouge à jour se corrige, sans relance`);
     assert.match(texte, /la relance indiquée par sa ligne/, `${nom} : la relance vient de la ligne de la preuve`);
-    assert.match(texte, /--portee tache/, `${nom} : le filet limité se lit en portée tâche`);
+    assert.match(texte, /--portee tache|preuve de portée tâche/, `${nom} : le filet limité se lit en portée tâche`);
     assert.doesNotMatch(texte, /ne prouve rien : relancer|« à jour » et ✅ ; sinon, relancer/, `${nom} : pas de relance d'une preuve rouge`);
   }
   assert.match(examen, /filet limité/, "examen : le message au verifier dit le filet limité");
@@ -1999,4 +1999,10 @@ test("preuve : relance seulement pour périmée, aucune ou portée insuffisante 
   assert.match(lire(RACINE, "agents", "test-runner.md"), /contrôle automatique en échec[^.]*« code »/, "test-runner : un contrôle rouge se classe code");
   assert.match(lire(RACINE, "README.md"), /produite par le test-runner, le verifier ou, à défaut, la conversation au moment de décider ; jamais par l'implementer/);
   assert.doesNotMatch(lire(DEPOT, "docs", "commandes", "review.html"), /Deux assistants qui n'ont pas écrit le code vont l'examiner/);
+});
+
+test("filet limité : le test-runner est prévenu, la portée tâche se lance (pas une option de etat), tâche sans test : contrôles seuls", () => {
+  assert.match(lire(RACINE, "references", "tests-dabord.md"), /phase « vert attendu »[^\n]*filet limité/, "délégation vert : le filet limité est transmis");
+  assert.doesNotMatch(lire(RACINE, "references", "examen.md"), /`--portee tache`, lue sans/, "--portee tache appartient à preuve lancer");
+  assert.match(lire(RACINE, "references", "tests-automatiques.md"), /tâche sans test : `pulse-aidd preuve lancer --portee tache` sans fichier/);
 });

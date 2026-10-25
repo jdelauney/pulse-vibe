@@ -31,7 +31,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 ### Vert : réaliser
 
 4. Déléguer la tâche à **`pulse:implementer`** selon « Déléguer à l'implementer » (`pulse-aidd reference deleguer.md`), en ajoutant : les chemins des fichiers de test, l'**interface attendue** rapportée par le test-writer (fonctions, routes, paramètres, résultats), et la consigne « faire passer ces tests sans modifier les fichiers de test ; un test qui semble faux se conteste dans « Tests contestés », avec la raison ». Devant vous (`-d`), s'appliquer la même consigne.
-5. Déléguer à **`pulse:test-runner`**, phase « vert attendu » : les fichiers de test, les fichiers modifiés par la tâche, les critères de la tâche, les tests contestés par l'implementer. Sa preuve (`pulse-aidd preuve`) sert ensuite à l'examen et au commit.
+5. Déléguer à **`pulse:test-runner`**, phase « vert attendu » : les fichiers de test, les fichiers modifiés par la tâche, les critères de la tâche, les tests contestés par l'implementer ; avec le filet limité (journal du plan), la consigne du filet limité (`--portee tache`). Sa preuve (`pulse-aidd preuve`) sert ensuite à l'examen et au commit.
 
 ### Trier les échecs
 
