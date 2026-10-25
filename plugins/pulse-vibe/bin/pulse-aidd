@@ -264,7 +264,6 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
     spirc)
       afficher "Examiner une tâche" "$REF/examen.md"
-      afficher "Modèle : rapport de revue" "$TPL/revue.md"
       afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
     express)
@@ -298,9 +297,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
     fix) lexique ;;
-    review)
-      afficher "Examiner une tâche" "$REF/examen.md"
-      afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
+    review) afficher "Examiner une tâche" "$REF/examen.md" ;;
     commit)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"

@@ -618,22 +618,23 @@ test("etape --sans-communes : une ligne rappelle que les règles communes sont d
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
 
-test("contexte review : modèle de rapport, checklist chargée par le reviewer", () => {
+test("contexte review : sans le modèle de rapport (chargé à l'étape du rapport) ni la checklist (chargée par le reviewer), sous 30 000 caractères", () => {
   const r = lancer("contexte", "review");
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes("===== Modèle : rapport de revue ====="));
+  assert.ok(!r.stdout.includes("===== Modèle : rapport de revue ====="));
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
   assert.ok(!r.stdout.includes("===== Checklist sécurité ====="));
   assert.ok(!lancer("contexte", "spirc").stdout.includes("===== Checklist sécurité ====="), "spirc sans checklist");
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ="), "plan la garde");
   assert.ok(lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security la garde");
 });
 
-test("contexte spirc : règles communes, modèle de revue et lexique ; références de réalisation à la demande", () => {
+test("contexte spirc : règles communes et lexique ; modèle de revue et références de réalisation à la demande", () => {
   const r = lancer("contexte", "spirc");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : rapport de revue =====", "===== Modèle : docs/lexique.md ====="])
+  for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : docs/lexique.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
-  for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
 });
 
