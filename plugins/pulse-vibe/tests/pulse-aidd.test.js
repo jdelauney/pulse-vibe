@@ -111,14 +111,11 @@ test("contexte seo, perf et search-console : leurs références, leurs modèles 
   }
 });
 
-test("contexte annuler : règles communes, conventions Git et envoi du travail", () => {
+test("contexte annuler : règles communes seules ; l'envoi du travail se lit à l'étape 6", () => {
   const r = lancer("contexte", "annuler");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of [
-    "===== Règles communes Pulse =====",
-    "===== Conventions Git =====",
-    "===== Le dépôt distant et l'envoi du travail =====",
-  ]) assert.ok(r.stdout.includes(titre), titre);
+  assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
+  for (const titre of ["Conventions Git", "Le dépôt distant et l'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 

@@ -17,6 +17,7 @@
 #   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
+#   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
 #   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
@@ -304,9 +305,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     pr)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Modèle : description de demande de fusion" "$SK/pr/assets/pull-request.md" ;;
-    annuler)
-      afficher "Conventions Git" "$REF/git.md"
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
+    annuler) ;; # ni conventions Git ni dépôt distant : les gestes sont dans pulse-aidd annuler, l'envoi se lit à l'étape 6
     get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
     cicd)
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
@@ -421,6 +420,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/realisation.js" "$@" ;;
   sessions)
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
+  annuler)
+    shift; exec node "$RACINE/skills/annuler/scripts/annuler.js" "$@" ;;
   verifier)
     exec node "$TPL/verifier.js" ;;
   scenarios)
