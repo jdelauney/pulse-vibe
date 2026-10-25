@@ -29,6 +29,16 @@ test("au moins trois cas, chacun avec un prompt, des vérifications et son scrip
   }
 });
 
+test("chaque expression des vérifications (input_match, pattern) se compile, lue comme direct.js la lit", () => {
+  const direct = require("../../../outils/evals/direct");
+  for (const c of cas) {
+    for (const v of direct.lireCas(path.join(EVALS, c)).verifications) {
+      const motifs = [v.input_match, v.pattern, v.before && v.before.input_match, v.after && v.after.input_match].filter(Boolean);
+      for (const m of motifs) assert.doesNotThrow(() => new RegExp(m, v.flags || ""), `${c}/${v.nom} : ${m}`);
+    }
+  }
+});
+
 test("chaque script de préparation crée son projet d'essai dans un dossier vide", { skip: bash }, () => {
   for (const c of cas) {
     const d = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-eval-${c}-`));
