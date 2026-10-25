@@ -472,3 +472,65 @@ test("la lecture de l'état Git qui échoue est un refus (code 2)", () => {
   assert.strictEqual(r.code, 2, r.sortie);
   assert.strictEqual(r.premier("etat"), "lecture-impossible");
 });
+
+test("récupérer pendant une opération Git en cours : refusé (operation-en-cours), HEAD et opération intacts", () => {
+  const d = miseDeCoteEnConflit();
+  // Une annulation à la main, en conflit : REVERT_HEAD reste en place.
+  const echec = spawnSync("git", ["revert", "--no-edit", "HEAD~2"], { cwd: d, encoding: "utf8" });
+  assert.notStrictEqual(echec.status, 0);
+  const avant = git(d, "rev-parse", "HEAD");
+  const statut = git(d, "status", "--porcelain");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "operation-en-cours");
+  assert.strictEqual(r.premier("operation"), "annulation");
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant);
+  assert.strictEqual(git(d, "status", "--porcelain"), statut);
+  assert.ok(fs.existsSync(path.join(d, ".git", "REVERT_HEAD")));
+});
+
+test("un contrôle qui modifie des fichiers puis refuse le commit : l'état est dit non nettoyé, avec la liste", () => {
+  const d = projetDeuxTaches();
+  fs.writeFileSync(path.join(d, ".git", "hooks", "pre-commit"), "#!/bin/sh\necho x >> README.md\necho y > hook-log.txt\nexit 1\n", { mode: 0o755 });
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(r.premier("etat"), "conflit-non-nettoye");
+  assert.ok(r.cles.fichier.some((l) => /README\.md/.test(l)), r.sortie);
+  assert.ok(r.cles.fichier.some((l) => /hook-log\.txt/.test(l)), r.sortie);
+});
+
+test("un dossier parent de l'entrée qui existe comme fichier ignoré : récupération refusée d'avance", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "gen/a.txt", "dedans\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "--resume", "gen").code, 0);
+  ecrire(d, ".gitignore", "gen\n");
+  valider(d, "chore: ignore gen");
+  ecrire(d, "gen", "un fichier\n");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "arbre-occupe");
+  assert.ok(r.cles.fichier.includes("gen"));
+  assert.strictEqual(lire(d, "gen"), "un fichier\n");
+});
+
+test("un fichier non suivi de l'entrée que HEAD suit désormais : récupération refusée d'avance", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "u.txt", "mis de côté\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "--resume", "u").code, 0);
+  ecrire(d, "u.txt", "suivi par HEAD\n");
+  valider(d, "chore: u.txt suivi");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "arbre-occupe");
+  assert.ok(r.cles.fichier.includes("u.txt"));
+  assert.ok(propre(d));
+});
+
+test("la lecture de l'état qui échoue après un changement : code 3 honnête, jamais « rien n'a changé »", () => {
+  const d = projetDeuxTaches();
+  fs.writeFileSync(path.join(d, ".git", "hooks", "pre-commit"), "#!/bin/sh\nprintf junk > \"$(git rev-parse --git-dir)/index\"\nexit 1\n", { mode: 0o755 });
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.match(r.premier("etat"), /^(conflit-non-nettoye|echec)$/);
+  assert.notStrictEqual(r.premier("etat"), "lecture-impossible");
+});
