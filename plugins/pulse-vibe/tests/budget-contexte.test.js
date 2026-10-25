@@ -50,7 +50,7 @@ const PLAFONDS = {
   secrets: 31500, // mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
   refine: 45000, // mesure 42 413 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   ui: 20500, // mesure 19 296 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, mesure 56 299 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 58 567
-  rediger: 20500, // mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
+  rediger: 20000, // mesure 18 877 (phase 8 : le modèle du texte de page laissé au redacteur) ; avant, mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
   seo: 45500, // mesure 43 163 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 49 096
   perf: 36000, // mesure 33 884 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 707
   "search-console": 35500, // mesure 33 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 273
@@ -94,7 +94,7 @@ const PLAFONDS_COMMANDE = {
   plan: 65000, // mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 35500, // mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
   prd: 25000, // mesure 23 807 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
-  rediger: 24500, // mesure 23 144 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
+  rediger: 24500, // mesure 23 255 (phase 8 : modèle du texte de page laissé au redacteur, qualité chargée pour intégrer, questions libres en texte) ; avant, mesure 23 144 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 51500, // mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 37500, // mesure 35 291 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 47000, // mesure 44 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 989

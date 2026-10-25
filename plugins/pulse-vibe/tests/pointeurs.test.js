@@ -68,6 +68,8 @@ const EXCEPTIONS = {
   guide: ["references/fichiers-projet.md"],
   // phase 8 (web et aide) : les motifs servent aux agents designer et ui-critic, qui les chargent ; la conversation de /pulse:ui ne les emploie pas
   ui: [MEMOIRE, "skills/ui/references/motifs.md"],
+  // phase 8 (web et aide) : le redacteur charge le modèle du texte de page ; le repli sans agent passe par pulse-aidd agent redacteur, dont la méthode le charge
+  rediger: ["skills/rediger/assets/texte-page.md"],
   status: ["references/cycle.md"],
   deploy: ["templates/ci-verifications.yml.template"],
   // refactoring d'optimisation, tâche 5.5 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
