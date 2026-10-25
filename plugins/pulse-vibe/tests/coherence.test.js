@@ -697,6 +697,8 @@ test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour ch
   assert.match(skillTexte("implement"), /`\/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche/, "implement renvoie la vérification indépendante à review");
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
   assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
+  for (const { fichier, texte } of TEXTES) assert.doesNotMatch(texte, /boucle de `?\/pulse:implement|`?\/pulse:implement`? et sa boucle|boucle d'implement/, `${fichier} : implement n'a plus de boucle`);
+  assert.doesNotMatch(lire(RACINE, "agents", "verifier.md"), /boucle de \/pulse:implement/);
 });
 
 test("examen d'une tâche : chaque agent nommé par la référence est repliable par `pulse-aidd agent <nom>` dans les skills qui la chargent", () => {
@@ -1338,7 +1340,7 @@ test("reprise après une interruption : commit, implement, spirc et review suive
   assert.match(verification, /- `correction` ou `aide` : [^\n]*S'arrêter/);
   assert.doesNotMatch(verification, /`test`[^\n]*Enregistrer quand même/, "l'enregistrement sans test n'est pas proposé");
   const implement = skillTexte("implement");
-  assert.match(implement, /Tâche déjà `\[~\]` : lancer `pulse-aidd revue <Tn>` : `examen`, `test`, `correction` ou `aide` → proposer de taper `\/pulse:review <Tn>` ; `commit` → proposer de taper `\/pulse:commit` ; `decision` → proposer de taper `\/pulse:spirc <US-XXX>`/);
+  assert.match(implement, /Tâche déjà `\[~\]` : sauf si `aidd_docs\/tasks\/in-progress\.md` concerne cette commande et cette tâche \(reprendre à son étape, règle commune 16\), lancer `pulse-aidd revue <Tn>` : `examen`, `test`, `correction` ou `aide` → proposer de taper `\/pulse:review <Tn>` ; `commit` → proposer de taper `\/pulse:commit` ; `decision` → proposer de taper `\/pulse:spirc <US-XXX>`/);
   assert.doesNotMatch(implement, /reprend à la correction ou au commit/);
   const spirc = skillTexte("spirc");
   assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
