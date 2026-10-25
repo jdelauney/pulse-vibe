@@ -42,7 +42,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 
 ```
 .claude-plugin/plugin.json   manifeste ; dépend de pulse
-bin/pulse-pile-next          info | contexte <libellé> (une commande, une commande et son mode : `deploy-premiere`, `deploy-production`, `deploy-variables`, `piles` ou `code` (un libellé inconnu ne renvoie rien)) | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | squelette | seo-code | secrets | hebergeur
+bin/pulse-pile-next          info | contexte <libellé> (une commande, une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`), `piles` ou `code` ; un libellé inconnu ne renvoie rien) | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | squelette | seo-code | secrets | hebergeur
 bin/pulse-pile-next.ps1      relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-pile-next.cmd : relais pour l'invite de commandes (cmd)
 references/                  fiche.md (règles de la pile), technical.md (valeurs de docs/technical.md),
                              theme.md (de docs/design.md à shadcn), architecture.md (structure hexagonale et règles de dépendance), modeles-code.md (un exemple de chaque couche, à la demande), contexte/ (consignes par commande ; cicd.md : les étapes de la CI, audit des dépendances compris ; deploy.md commun à toute mise en ligne, deploy-premiere.md et deploy-production.md lus par mode ; variables-vercel.md : les variables chez Vercel, pour la mise en ligne et pour /pulse:secrets ; secrets.md : l'index des variables ; secrets-fiches.md : une fiche par variable, lue à la demande), recettes/<nom>/ (index.md, une étape par fichier, tests.md),

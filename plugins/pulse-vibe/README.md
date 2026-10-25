@@ -163,7 +163,7 @@ skills/<commande>/                une commande = un dossier :
                                   modèles (pulse-aidd modele <commande>/<fichier>), scripts lancés par pulse-aidd
                                   ex. ui (références d'interface, modèles design.md et revue-ui.md, contraste.js, identite.js, maquettes.js, comparer.js),
                                   seo (règles, textes, lancement, assistants IA, robots-ia.json ; seo.js, seo-html.js, seo-regles.js, robots.js),
-                                  rediger (règles et détecteur de tics ; textes.js), security (en-têtes, actions), secrets (fuite ; secrets.js), deploy (premiere.md, production.md, variables.md : un mode, une référence),
+                                  rediger (règles et détecteur de tics ; textes.js), security (en-têtes, actions), secrets (fuite ; secrets.js), deploy (premiere.md et production.md : une référence par mode ; variables.md : les variables chez l'hébergeur, lue par les deux modes),
                                   perf (performance.md, ci-vitesse.md : la vérification automatique de la vitesse, pour /pulse:perf et /pulse:cicd ; perf.js), search-console (search-console.md ; search-console.js), tech (choix-techniques.md),
                                   learn (pedagogie.md), init (bannière ; nouveau-projet.js), annuler (annuler.js : les gestes Git, testés, avec retour à l'état d'avant), spirc (analyser, série, examen de l'US ; attente.js : mise de côté d'une tâche en attente), spec, pr, get-help (leurs modèles)
 agents/                           les moyens de l'orchestration, appelés par les commandes : explorer, test-writer, implementer, test-runner, reviewer, verifier, security-auditor, designer, ui-critic, redacteur, fixer, memory-compactor
