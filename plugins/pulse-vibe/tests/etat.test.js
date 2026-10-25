@@ -506,6 +506,19 @@ test("contrôles à remettre à jour : une ligne « aussi », jamais un blocage 
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/memory/glossary.md": null }).regle, "R6");
 });
 
+test("contrôles à remettre à jour : un CLAUDE.md qui cite encore /pulse:express (renommée /pulse:nouveau)", () => {
+  const MAJ = "/pulse:init — remettre les contrôles du projet à jour";
+  // Phrase du profil posée par les modèles d'avant Pulse 0.52 (relecture finale de la phase 9, R-m3).
+  const ANCIEN = CLAUDE().replace("## Commandes\n", "Rythme « rapide », posé par `/pulse:express`.\n\n## Commandes\n");
+  const ancien = etat(projet({ "CLAUDE.md": ANCIEN }));
+  assert.ok(ancien.aussi.includes(MAJ), ancien.brut);
+  assert.deepStrictEqual([ancien.regle, ancien.prochaine], ["R9", "/pulse:brainstorm"], "une ligne « aussi », jamais un blocage");
+  assert.ok(!etat(projet({ "CLAUDE.md": CLAUDE() })).aussi.includes(MAJ), "trame actuelle : rien à remettre à jour");
+  // Un fait, un seul endroit : le signe et son geste sont dans la référence que /pulse:init applique.
+  const controles = fs.readFileSync(path.join(RACINE, "skills", "init", "references", "controles.md"), "utf8");
+  assert.match(controles, /`CLAUDE\.md` cite `\/pulse:express`[^\n]*→[^\n]*`pulse-aidd modele CLAUDE\.md`[^\n]*s'appelle maintenant `\/pulse:nouveau`/);
+});
+
 test("R13 lit le verdict du rapport à jour, pas le résultat d'origine du verifier", () => {
   const r = (opts, verdict = "✅ Validé") => etat(projet({ ...EN_COURS, [`${REVUES}/T2-2026-10-07.md`]: RAPPORT(verdict, opts) }, PILE_CHOISIE));
   assert.strictEqual(r({ verif: "❌ Échoue" }).regle, "R13", "verifier d'origine ❌, contrôle ✅ : le Verdict en tête fait foi");

@@ -300,12 +300,14 @@ function codeExistant(racine) {
 /**
  * Des contrôles du projet à remettre à jour : les signes de skills/init/references/controles.md (un fait, un seul endroit),
  * hors notes du pack : /pulse:init les lit avec les autres contrôles, quand l'un d'eux est proposé. CLAUDE.md sans la ligne des commandes à proposer (/pulse:refine dans
- * « Commandes »), .gitignore incomplet, copie de Pulse ancienne, contrôle avant commit absent ou ancien.
+ * « Commandes ») ou qui cite encore /pulse:express, .gitignore incomplet, copie de Pulse ancienne, contrôle avant commit absent ou ancien.
  */
 function modeleAncien(racine, texteClaude) {
   const p = (...x) => path.join(racine, ...x);
   const commandes = texteClaude === null ? "" : (texteClaude.split(/^## Commandes\s*$/m)[1] || "").split(/^## /m)[0];
   if (texteClaude !== null && !commandes.includes("/pulse:refine")) return true;
+  // Phrase du profil des modèles d'avant Pulse 0.52 : « rapide », posé par /pulse:express (renommée /pulse:nouveau).
+  if (texteClaude !== null && texteClaude.includes("/pulse:express")) return true;
   const gitignore = lireSi(p(".gitignore"));
   if (gitignore !== null && ["aidd_docs/tasks/in-progress.md", "aidd_docs/tasks/realisation.json", "aidd_docs/captures/"].some((l) => !gitignore.includes(l))) return true;
   // Une copie de Pulse (contrôle des secrets, ligne d'état) intacte mais posée par une version plus ancienne.

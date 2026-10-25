@@ -61,8 +61,10 @@ function citations(regex) {
 const absentes = (liste, existe) => liste.filter((c) => !existe(c.valeur)).map((c) => `${c.fichier} : ${c.valeur}`);
 
 test("chaque commande /pulse:<commande> citée existe", () => {
-  // « xxx » : exemple fictif des modèles ; « express » : l'ancien nom de nouveau, accepté à la reprise (décision 2).
-  const ancienNom = (c) => c.valeur === "express" && c.fichier === path.join("plugins", "pulse-vibe", "skills", "nouveau", "SKILL.md");
+  // « xxx » : exemple fictif des modèles ; « express » : l'ancien nom de nouveau, accepté à la reprise (décision 2), et signe
+  // d'un ancien CLAUDE.md à remettre à jour dans controles.md (relecture finale de la phase 9, R-m3).
+  const ANCIEN_NOM = [path.join("plugins", "pulse-vibe", "skills", "nouveau", "SKILL.md"), path.join("plugins", "pulse-vibe", "skills", "init", "references", "controles.md")];
+  const ancienNom = (c) => c.valeur === "express" && ANCIEN_NOM.includes(c.fichier);
   assert.deepStrictEqual(absentes(citations(/\/pulse:([a-z][a-z-]*)/g).filter((c) => !ancienNom(c)), (v) => SKILLS.has(v) || v === "xxx"), []);
 });
 
