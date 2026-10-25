@@ -330,8 +330,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     rediger)
       afficher "Rédiger les textes des pages" "$SK/rediger/references/regles.md"
       afficher "Modèle : docs/voix.md" "$SK/rediger/assets/voix.md"
-      afficher "Modèle : docs/textes/<page>.md" "$SK/rediger/assets/texte-page.md"
-      lexique ;;
+      lexique ;; # le modèle du texte de page : chargé par le redacteur (et par le repli, qui suit ses consignes)
     seo)
       afficher "Référencement : les règles" "$SK/seo/references/regles.md"
       afficher "Référencement : assistants IA" "$SK/seo/references/ia.md"

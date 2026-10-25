@@ -454,11 +454,12 @@ test("pile <sous-commande> : sans pack déclaré ou pack absent, message et code
   assert.match(absent.stdout + absent.stderr, /pulse-essai@pulseia/);
 });
 
-test("contexte rediger : règles communes, règles de rédaction, modèles de la voix et du texte de page", () => {
+test("contexte rediger : règles communes, règles de rédaction, modèle de la voix (le texte de page : chargé par le redacteur)", () => {
   const r = lancer("contexte", "rediger");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md =====", "===== Modèle : docs/textes/<page>.md ====="])
+  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
+  assert.ok(!r.stdout.includes("===== Modèle : docs/textes/<page>.md ====="));
 });
 
 test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () => {
