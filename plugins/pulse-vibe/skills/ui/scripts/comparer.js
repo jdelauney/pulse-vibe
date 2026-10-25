@@ -7,7 +7,8 @@
 // <dossier>/comparer.html : une colonne par variante, avec un cadre par fichier et un lien
 // pour l'ouvrir en grand. Page autonome, chemins relatifs : elle s'ouvre par double-clic.
 //
-// Rangement, sans commande de déplacement à autoriser (chemin relatif à la racine du projet) :
+// Rangement, sans commande de déplacement à autoriser, de docs/design/identite ou docs/design/maquettes/<spec>
+// seulement (indiqué depuis la racine du projet, liens refusés ; comparer.html retiré seulement s'il vient de ce script) :
 //   --ranger : avant un nouveau lot, range les d<n>-…/v<n>-… dans alternatives/ et affiche « prochain: <n> » ;
 //   --retenir <variante> [--mobile <variante>] : après le choix, l'ancien retenue/ part dans
 //   alternatives/retenue-<AAAA-MM-JJ>/, le choix est copié dans retenue/ (mobile pris de la seconde variante),
@@ -123,7 +124,7 @@ ${colonnes}
 
 function principal(argv) {
   const cible = argv[0];
-  if (argv.includes("--ranger") || argv.includes("--retenir") || argv.includes("--mobile")) return rangement(argv);
+  if (argv.length > 1 || (cible || "").startsWith("--")) return rangement(argv); // toute option : rangement, ou usage (code 1)
   if (!cible) {
     console.error("Usage : pulse-aidd comparer <dossier de variantes> [--ranger | --retenir <variante> [--mobile <variante>]]");
     return 1;
@@ -152,6 +153,42 @@ const NOM_VARIANTE = /^[dv](\d+)(?:-|$)/; // d<n>-<slug> (identité), v<n>-<slug
 /** Un chemin relatif au projet, sans « .. », ni chemin absolu, ni lettre de lecteur. */
 function cheminSur(c) {
   return typeof c === "string" && c !== "" && !c.startsWith("-") && !/(^|[\\/])\.\.([\\/]|$)/.test(c) && !path.isAbsolute(c) && !/^[A-Za-z]:/.test(c);
+}
+
+/** Le dossier de design visé, écrit avec des / : docs/design/identite ou docs/design/maquettes/<spec>, sinon null. */
+function dossierDeDesign(c) {
+  if (!cheminSur(c)) return null;
+  const parties = c.replace(/\\/g, "/").split("/").filter((p) => p !== "" && p !== ".");
+  const normal = parties.join("/");
+  if (normal === "docs/design/identite") return normal;
+  if (parties.length === 4 && normal.startsWith("docs/design/maquettes/") && !["retenue", "alternatives"].includes(parties[3])) return normal;
+  return null;
+}
+
+/** Le dossier existant reste-t-il, liens résolus, à sa place dans le projet ? */
+function resteDansLeProjet(dossier, normal) {
+  if (!fs.existsSync(dossier)) return true;
+  const reel = fs.realpathSync.native(dossier);
+  const attendu = path.join(fs.realpathSync.native(process.cwd()), normal);
+  return process.platform === "win32" ? reel.toLowerCase() === attendu.toLowerCase() : reel === attendu;
+}
+
+const estUnLien = (p) => {
+  try {
+    return fs.lstatSync(p).isSymbolicLink();
+  } catch {
+    return false;
+  }
+};
+
+/** comparer.html écrit par ce script (et non une page de la personne au même nom). */
+function pageDeComparaison(fichier) {
+  try {
+    const texte = fs.readFileSync(fichier, "utf8");
+    return texte.startsWith("<!doctype html>") && texte.includes("<title>Comparer – ");
+  } catch {
+    return false;
+  }
 }
 
 function sousDossiers(d) {
@@ -245,10 +282,13 @@ function rangement(argv) {
     console.error("Usage : pulse-aidd comparer <dossier> --ranger | pulse-aidd comparer <dossier> --retenir <variante> [--mobile <variante>]");
     return 1;
   }
-  if (!cheminSur(options.cible))
-    return refus(`Chemin refusé : ${options.cible}. Indiquez le dossier des variantes depuis la racine du projet (par exemple docs/design/identite), sans « .. » ni chemin absolu.`);
-
-  const dossier = path.resolve(options.cible);
+  const normal = dossierDeDesign(options.cible);
+  if (!normal)
+    return refus(`Rangement refusé pour ${options.cible} : seuls docs/design/identite et docs/design/maquettes/<spec> se rangent, indiqués depuis la racine du projet.`);
+  const dossier = path.resolve(normal);
+  if (!resteDansLeProjet(dossier, normal) || ["alternatives", "retenue"].some((n) => estUnLien(path.join(dossier, n))))
+    return refus(`Rangement refusé pour ${options.cible} : ce dossier, ou un dossier qu'il contient, renvoie ailleurs (lien).`);
+  if (fs.existsSync(dossier) && !fs.statSync(dossier).isDirectory()) return refus(`Dossier introuvable : ${options.cible} est un fichier.`);
   const alternatives = path.join(dossier, "alternatives");
   const journal = []; // déplacements faits, défaits en cas d'échec
   const crees = []; // dossiers créés ici, retirés en cas d'échec
@@ -270,7 +310,10 @@ function rangement(argv) {
     for (const nom of variantesPresentes(dossier).filter((n) => !gardees.includes(n)))
       lignes.push(`range: ${versAlternatives(nom, path.join(dossier, nom))}`);
   };
-  const retirerComparer = () => fs.rmSync(path.join(dossier, "comparer.html"), { force: true });
+  const retirerComparer = () => {
+    const page = path.join(dossier, "comparer.html");
+    if (pageDeComparaison(page)) fs.rmSync(page);
+  };
 
   if (options.ranger) {
     const prochain = prochainNumero(dossier);
@@ -316,4 +359,4 @@ function rangement(argv) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { lireVariantes, these, echapper, construirePage, prochainNumero, trouverVariante };
+module.exports = { lireVariantes, these, echapper, construirePage, prochainNumero, trouverVariante, dossierDeDesign, principal };

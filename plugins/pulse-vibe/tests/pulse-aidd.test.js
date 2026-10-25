@@ -485,10 +485,11 @@ test("identite extraire et maquettes verifier : relaient vers leurs scripts", ()
 });
 
 test("comparer : relaie ses options de rangement (--ranger, --retenir) vers son script", () => {
-  const r = lancer("comparer", "dossier-de-variantes-absent", "--ranger");
+  const r = lancer("comparer", "docs/design/identite", "--ranger"); // absent de la racine du plugin : rien à ranger
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /^prochain: 1$/m);
-  assert.strictEqual(lancer("comparer", "dossier-de-variantes-absent", "--retenir").status, 1);
+  assert.strictEqual(lancer("comparer", "docs/design/identite", "--retenir").status, 1);
+  assert.strictEqual(lancer("comparer", "skills", "--ranger").status, 2, "hors des dossiers de design : refusé");
 });
 
 const fs = require("fs");
