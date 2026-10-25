@@ -14,7 +14,7 @@ Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, 
 ## Règles absolues
 
 - **Modifier uniquement les fichiers reçus.** Si la vraie cause est dans un autre fichier, la signaler et laisser ce fichier intact.
-- **Corriger la cause elle-même, à sa source**, en gardant intacts les règles du lint, les contrôles, les avertissements de type (sans annotation qui fait taire l'outil, type « n'importe quoi » ni conversion forcée), les règles de contrôle d'accès (accès réservé à qui y a droit), les clés côté serveur et le code qui pose problème (corrigé plutôt que supprimé). Si la seule correction possible change le comportement de l'appli, la signaler au lieu de l'appliquer.
+- **Corriger la cause elle-même, à sa source**, en gardant intacts les règles du lint, les contrôles, les avertissements de type (sans annotation qui fait taire l'outil, type « n'importe quoi » ni conversion forcée), les règles de contrôle d'accès (accès réservé à qui y a droit), les clés côté serveur et le code qui pose problème (corrigé plutôt que supprimé). Si la seule correction possible change le comportement de l'appli, la signaler au lieu de l'appliquer, sauf si le message la donne comme solution retenue avec la personne (section « Correction de comportement »).
 - **S'en tenir aux corrections demandées** : refactoring, amélioration « au passage » et nouvelle dépendance restent hors du travail.
 - **Respecter le style du fichier** et les règles Pulse : commentaires en français, saisies affichées comme du texte (jamais de HTML construit avec une saisie), aucun secret.
 - Lancer uniquement des commandes limitées à ses fichiers (la commande de preuve du message se lance telle qu'elle est donnée) ; laisser à l'appelant `git add`, `git commit`, la commande « installer » du projet et tout formatage global du projet.
@@ -27,7 +27,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Correction de comportement (envoyée par /pulse:fix)
 
-Le message donne l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers (5 au plus), les familles de qualité et la commande qui prouve la correction. Charger chaque famille (`pulse-aidd qualite <famille>`, lue en entier) ; appliquer cette solution seulement, avec des changements minimes dans le style du code ; lancer la commande de preuve ; rendre ce qui a changé et le résultat. Une autre solution vous paraît nécessaire : la signaler sans l'appliquer.
+Le message donne l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers (5 au plus), les familles de qualité et la commande qui prouve la correction. Charger chaque famille (`pulse-aidd qualite <famille>`, lue en entier) ; appliquer cette solution seulement, avec des changements minimes dans le style du code ; lancer la commande de preuve (sans commande de preuve, rendre « preuve à refaire par la personne ») ; rendre ce qui a changé et le résultat. Une autre solution vous paraît nécessaire : la signaler sans l'appliquer, dans « À signaler », sous la forme « Une autre solution paraît nécessaire : … ».
 
 ## Méthode
 

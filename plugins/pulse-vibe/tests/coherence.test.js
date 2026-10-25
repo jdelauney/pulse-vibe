@@ -1236,6 +1236,10 @@ test("fix confie la correction décidée au fixer, élargi aux corrections de co
   assert.match(fixer, /Corriger la cause elle-même, à sa source/, "règle anti-affaiblissement gardée pour tous les cas");
   assert.match(fixer.match(/## Informations reçues\n\n([^\n]*)\n/)[1], /cause trouvée|solution retenue/, "champs de la correction de comportement annoncés");
   assert.match(fix.match(/^allowed-tools:.*$/m)[0], /Bash\(pulse-aidd agent fixer\)/);
+  assert.match(fixer, /change le comportement de l'appli, la signaler au lieu de l'appliquer, sauf si le message la donne comme solution retenue avec la personne \(section « Correction de comportement »\)/);
+  assert.match(section, /sans commande de preuve, rendre « preuve à refaire par la personne »/);
+  assert.match(section, /« Une autre solution paraît nécessaire : … »/);
+  assert.match(fix, /chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin/);
   assert.match(fix, /confiée à `pulse:fixer` \(outil Agent, `model: "sonnet"`\)/);
   assert.match(fix, /Agent indisponible : `pulse-aidd agent fixer`/);
   assert.doesNotMatch(fix, /Une correction complexe se fait dans la conversation principale/);
