@@ -534,3 +534,109 @@ test("la lecture de l'état qui échoue après un changement : code 3 honnête, 
   assert.match(r.premier("etat"), /^(conflit-non-nettoye|echec)$/);
   assert.notStrictEqual(r.premier("etat"), "lecture-impossible");
 });
+
+/** Chaque ligne de la sortie est une clé connue ; `raison` tient sur une ligne, sans les conseils de Git. */
+function raisonSurUneLigne(r) {
+  for (const l of r.sortie.split("\n").filter(Boolean)) assert.match(l, /^[a-z-]+:( |$)/, `ligne hors « clé: valeur » : ${l}`);
+  assert.strictEqual((r.cles.raison || []).length, 1, r.sortie);
+  assert.doesNotMatch(r.sortie, /hint:/i, r.sortie);
+  assert.doesNotMatch(r.sortie, /use "git/i, r.sortie);
+  return r.premier("raison");
+}
+
+test("raison d'une annulation en conflit : une ligne, la première erreur de Git, sans ses conseils", () => {
+  const d = depot();
+  ecrire(d, "code.js", "ligne\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], "x"));
+  valider(d, "chore: départ");
+  ecrire(d, "code.js", "ligne T1\n");
+  const t1 = valider(d, "feat(T1): premier");
+  ecrire(d, "code.js", "ligne T2 avec des s\n");
+  valider(d, "feat(T2): second");
+  const r = lancer(d, "defaire", "T1");
+  assert.strictEqual(r.code, 3, r.sortie);
+  const raison = raisonSurUneLigne(r);
+  assert.ok(raison.includes(t1.slice(0, 7)), `la ligne d'erreur de Git, qui nomme le commit : ${raison}`);
+  assert.doesNotMatch(raison, /CONFLICT|Auto-merging/);
+});
+
+test("raison d'un commit refusé par un contrôle bavard : sa première ligne seulement", () => {
+  const d = projetDeuxTaches();
+  fs.writeFileSync(path.join(d, ".git", "hooks", "pre-commit"), [
+    "#!/bin/sh",
+    "echo 'contrôle refusé : les tests sont en échec' >&2",
+    "echo 'hint: use \"git commit --no-verify\" to skip' >&2",
+    "echo '  (use \"git restore <file>...\" to discard)' >&2",
+    "echo 'seconde ligne du contrôle' >&2",
+    "echo 'sortie standard du contrôle'",
+    "exit 1", "",
+  ].join("\n"), { mode: 0o755 });
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(raisonSurUneLigne(r), "contrôle refusé : les tests sont en échec");
+});
+
+/** Une suite lancée à la main, arrêtée sur un conflit dont l'étape est ensuite enregistrée par la personne : REVERT_HEAD ou CHERRY_PICK_HEAD parti, la suite reste en cours. */
+function suiteArreteePuisEnregistree(d, args) {
+  const r = spawnSync("git", args, { cwd: d, encoding: "utf8" });
+  assert.notStrictEqual(r.status, 0, "la suite s'arrête sur un conflit");
+  ecrire(d, "t2.txt", "résolu à la main\n");
+  git(d, "add", "t2.txt");
+  git(d, "commit", "-q", "-m", "chore: étape résolue à la main");
+  const suite = path.join(d, ".git", "sequencer");
+  assert.ok(fs.existsSync(suite));
+  assert.ok(!fs.existsSync(path.join(d, ".git", "REVERT_HEAD")) && !fs.existsSync(path.join(d, ".git", "CHERRY_PICK_HEAD")));
+  return { head: git(d, "rev-parse", "HEAD"), statut: git(d, "status", "--porcelain"), todo: lire(d, ".git/sequencer/todo") };
+}
+
+function rienNaBouge(d, avant) {
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant.head);
+  assert.strictEqual(git(d, "status", "--porcelain"), avant.statut);
+  assert.strictEqual(lire(d, ".git/sequencer/todo"), avant.todo, "la suite de la personne est intacte");
+}
+
+test("une suite d'annulations en cours (étape en conflit enregistrée) : défaire et récupérer refusés d'avance", () => {
+  const d = projetDeuxTaches();
+  ecrire(d, "neuf.txt", "neuf\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "--resume", "neuf").code, 0);
+  ecrire(d, "a.txt", "a\n");
+  const a = valider(d, "chore: a");
+  ecrire(d, "t2.txt", "deux B\n");
+  const b = valider(d, "chore: b");
+  ecrire(d, "t2.txt", "deux C\n");
+  valider(d, "chore: c");
+  ecrire(d, "y.txt", "y\n");
+  const dd = valider(d, "chore: d");
+  const avant = suiteArreteePuisEnregistree(d, ["revert", "--no-edit", dd, b, a]);
+
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "operation-en-cours");
+  assert.strictEqual(r.premier("operation"), "suite d'annulations");
+  rienNaBouge(d, avant);
+
+  const rec = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(rec.code, 2, rec.sortie);
+  assert.strictEqual(rec.premier("operation"), "suite d'annulations");
+  rienNaBouge(d, avant);
+  assert.strictEqual(lancer(d, "etat").premier("operation"), "suite d'annulations");
+});
+
+test("une suite de reports en cours (étape en conflit enregistrée) : défaire refusé d'avance", () => {
+  const d = projetDeuxTaches();
+  git(d, "checkout", "-q", "-b", "autre");
+  ecrire(d, "t2.txt", "deux B\n");
+  const b = valider(d, "chore: b");
+  ecrire(d, "y.txt", "y\n");
+  const dd = valider(d, "chore: d");
+  git(d, "checkout", "-q", "main");
+  ecrire(d, "t2.txt", "deux C\n");
+  valider(d, "chore: c");
+  const avant = suiteArreteePuisEnregistree(d, ["cherry-pick", b, dd]);
+
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "operation-en-cours");
+  assert.strictEqual(r.premier("operation"), "suite de reports");
+  rienNaBouge(d, avant);
+});
