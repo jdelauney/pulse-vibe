@@ -1188,6 +1188,28 @@ test("checklist sécurité : chargée par les agents qui relisent, plus recopié
     assert.doesNotMatch(lire(RACINE, ...fichier), /checklist sécurité complète/, fichier.join("/"));
 });
 
+test("auditeur de sécurité : deux portées, projet (/pulse:security) ou tache (-x), données par la délégation", () => {
+  const auditeur = lire(RACINE, "agents", "security-auditor.md");
+  assert.match(auditeur.match(/^description:.*$/m)[0], /le projet, ou une tâche/);
+  assert.match(auditeur.match(/^description:.*$/m)[0], /\/pulse:spirc/);
+  const portee = (auditeur.split(/^## Portée$/m)[1] || "").split(/^## /m)[0];
+  assert.ok(portee, "section « ## Portée »");
+  assert.match(portee, /\*\*`projet`\*\*/);
+  const tache = portee.split("**`tache`**")[1] || "";
+  assert.ok(tache, "portée `tache`");
+  for (const point of ["S3", "S4", "S9", "S11", "S12", "S13"]) assert.ok(tache.includes(point), `portée tache : ${point} en premier`);
+  assert.match(tache, /les points que ces fichiers touchent/);
+  assert.match(tache, /« — hors de la tâche »/);
+  assert.match(auditeur, /S1 à S13, tous présents ; en portée `tache`, « — hors de la tâche »/);
+  const examen = lire(RACINE, "references", "examen.md").split("\n").find((l) => l.includes("**`pulse:security-auditor`**"));
+  assert.match(examen, /portée `tache`/);
+  assert.doesNotMatch(examen, /checklist/, "examen.md : l'agent charge la checklist lui-même");
+  const security = lire(RACINE, "skills", "security", "SKILL.md");
+  const delegation = security.split("\n").find((l) => l.includes("outil Agent avec **`pulse:security-auditor`**"));
+  assert.match(delegation, /portée `projet`/);
+  assert.doesNotMatch(delegation, /checklist-securite\.md|PLAN-SPEC/, "security : l'agent lit lui-même les documents et la checklist");
+});
+
 test("la boucle sur le plan vit dans spirc seule : commit chargée une fois par déroulé", () => {
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
   // Deux emplois : aux prérequis (modifications à enregistrer d'abord) et au démarrage de la réalisation ; le second se saute si le premier a eu lieu.
