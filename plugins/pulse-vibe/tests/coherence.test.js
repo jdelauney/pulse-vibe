@@ -2543,6 +2543,8 @@ test("reports des phases 6 à 8 : marqueurs de pile, notes du pack, US d'une dem
   // envoi.md : l'envoi forcé renvoie à git.md § 4 une seule fois ; après la fusion, /pulse:deploy (m5, m6 de la phase 7).
   const envoi = lire(RACINE, "references", "envoi.md");
   assert.doesNotMatch(envoi, /jamais `--force`|jamais d'envoi forcé/);
-  assert.match(envoi, /Envoi refusé \(le dépôt distant a des changements plus récents\) : Conventions Git § 4\./);
+  // annuler, implement et refine lisent envoi.md sans git.md dans leur contexte : la ligne dit comment le lire (phase 9, B-m1).
+  assert.match(envoi, /Envoi refusé \(le dépôt distant a des changements plus récents\) : Conventions Git § 4 \(absentes de la conversation : `pulse-aidd reference git\.md`\)\./);
+  for (const skill of ["annuler", "implement", "refine"]) assert.ok(motifsBash(path.join(RACINE, "skills", skill, "SKILL.md")).some((m) => couvre(m, "pulse-aidd reference git.md")), `${skill} : reference git.md autorisé`);
   assert.match(envoi.split("## 3. Fin du plan")[1], /3\. Après la fusion :[^\n]*pour publier et vérifier la version en ligne : `\/pulse:deploy`\./);
 });
