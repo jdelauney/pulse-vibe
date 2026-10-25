@@ -52,7 +52,7 @@ const PLAFONDS = {
   ui: 20500, // mesure 19 296 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, mesure 56 299 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 58 567
   rediger: 20000, // mesure 18 877 (phase 8 : le modèle du texte de page laissé au redacteur) ; avant, mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
   seo: 34500, // mesure 32 405 (phase 8 : la politique IA chargée en mode ia, ses contrôles dans les règles ; modèle d'audit chargé à l'audit) ; avant, mesure 43 163 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 49 096
-  perf: 34000, // mesure 32 191 (phase 8 : la clé Google dans perf/cle.md, chargée pour la créer) ; avant, mesure 33 884 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 707
+  perf: 33500, // mesure 31 860 (refactoring d'optimisation, phases 7 et 8 : vérification de la vitesse en CI dans perf/ci-vitesse.md, clé Google dans perf/cle.md, règles communes allégées en phase 6) ; avant, mesure 32 191 (phase 8 : la clé Google dans perf/cle.md, chargée pour la créer) ; avant, mesure 33 884 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 707
   "search-console": 29500, // mesure 28 083 (phase 8 : la liaison dans relier.md et le modèle du travail en cours, chargés à l'étape qui les cite) ; avant, mesure 33 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 273
   learn: 28000, // mesure 26 412 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 226
   explain: 15500, // mesure 14 585 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 22 408
@@ -90,7 +90,7 @@ const PLAFONDS_COMMANDE = {
   init: 31500, // mesure 29 663 (refactoring d'optimisation, tâche 6.1 : contexte réduit à la bannière, « Mettre à niveau » remplacé par controles.md chargé à la demande) ; avant, mesure 58 565 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 64 250 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 65 875 (pulse 0.40 : règle commune 19 et autorisations Git proposées)
   learn: 33000, // mesure 31 126 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 613 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 39 206
   memory: 29000, // mesure 27 407 (refactoring d'optimisation, tâche 6.7 : modèles affichés à l'action, creer après tech pour un projet existant) ; avant, mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
-  perf: 47000, // mesure 44 322 (phase 8 : clé Google dans perf/cle.md, règles de la commande résumées) ; avant, mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
+  perf: 45000, // mesure 42 697 (refactoring d'optimisation, phases 7 et 8 : vérification de la vitesse en CI dans perf/ci-vitesse.md, clé Google dans perf/cle.md, règles communes allégées en phase 6) ; avant, mesure 44 322 (phase 8 : clé Google dans perf/cle.md, règles de la commande résumées) ; avant, mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
   plan: 64500, // mesure 61 333 (tâche 6.6 : règles de découpage en référence, squelette décrit dans « Mise en place », branche « spec plus ancienne » retirée) ; avant, mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 33000, // mesure 31 118 (refactoring d'optimisation, tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
   prd: 25000, // mesure 23 807 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
@@ -195,7 +195,7 @@ const PLAFONDS_FORMES = {
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
   "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles affichés à l'action) ; avant, 17 463
-  "perf --sans-communes": 32500, // mesure 30 590 (phase 8 : clé Google dans perf/cle.md, règles résumées ; avant, 33 120) : dépasse la limite, voir DEPASSEMENTS_CONNUS
+  "perf --sans-communes": 31000, // mesure 29 296 (refactoring d'optimisation, phases 7 et 8 : vérification de la vitesse en CI dans perf/ci-vitesse.md, clé Google dans perf/cle.md ; sous la limite de lecture, sortie de DEPASSEMENTS_CONNUS) ; avant, 30 590 (phase 8) ; avant, 33 120
   "plan --sans-communes": 44000, // mesure 41 683 (tâche 6.6 : règles de découpage dédoublonnées) ; avant, 42 033 : dépasse la limite
   "pr --sans-communes": 15000, // mesure 13 840 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 16 829
   "pr --sans-noyau": 18500, // mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 393
@@ -209,7 +209,7 @@ const PLAFONDS_FORMES = {
 };
 // Formes citées qui dépassent encore la limite : ce sont des commandes entières enchaînées comme étape, à scinder dans une phase suivante.
 // Cette liste ne grandit pas : une forme nouvelle au-dessus de la limite fait échouer le test.
-const DEPASSEMENTS_CONNUS = new Set(["perf --sans-communes", "plan --sans-communes"]);
+const DEPASSEMENTS_CONNUS = new Set(["plan --sans-communes"]);
 
 function formesCitees() {
   const formes = new Set();

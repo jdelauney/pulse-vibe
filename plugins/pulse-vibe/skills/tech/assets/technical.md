@@ -106,7 +106,7 @@ flowchart LR
 
 ## Référencement
 
-<!-- Rempli par /pulse:search-console relier (et /pulse:seo lancer pour la vérification minimale). Les textes et la politique des robots IA sont dans docs/seo.md. -->
+<!-- Rempli par /pulse:search-console relier ou /pulse:seo lancer (la même liaison à Search Console). Les textes et la politique des robots IA sont dans docs/seo.md. -->
 - Search Console : {{propriété (`sc-domain:exemple.fr` ou `https://adresse/`) – méthode (balise meta ou DNS) – vérifiée le AAAA-MM-JJ, ou « à relier avec /pulse:search-console relier »}}
 - Balise de vérification : {{fichier où elle se trouve, à garder en place, ou « aucune (DNS) »}}
 - Sitemap : {{adresse – déclaré le AAAA-MM-JJ}}
