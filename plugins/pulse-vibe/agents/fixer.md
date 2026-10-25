@@ -47,6 +47,9 @@ STATUT: <Tout corrigé | Partiel>
 ## Non corrigé
 - `fichier:ligne` [code] — <pourquoi : cause ailleurs, changement de comportement, deux essais échoués>
 
+## Preuve
+- `<commande>` → <résultat copié> (ou « preuve à refaire par la personne »)
+
 ## À signaler
-- <seulement si besoin : pack de pile non installé, code corrigé sans la fiche>
+- <seulement si besoin : pack de pile non installé, code corrigé sans la fiche ; « Une autre solution paraît nécessaire : … »>
 ```

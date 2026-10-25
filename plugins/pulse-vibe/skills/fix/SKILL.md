@@ -64,7 +64,7 @@ Si la correction **change le comportement attendu** (une règle métier, un écr
 ### 4. Corriger
 
 - **Confier la correction à `pulse:fixer`** (outil Agent, `model: "sonnet"`) quand elle tient en 5 fichiers au plus. Le message donne : l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers, les familles de qualité de l'étape 3 et la commande qui prouve la correction (un contrôle de « Commandes du projet », ou le parcours à refaire). Plus de 5 fichiers : une demande par groupe de 5 au plus, chaque fichier à un seul groupe ; chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin. Agent indisponible : `pulse-aidd agent fixer`, puis appliquer sa section « Correction de comportement » dans cette conversation.
-- Relire ce que le fixer rend : il doit s'en tenir à la solution retenue. S'il écrit « Une autre solution paraît nécessaire », ou signale une autre solution, revenir à l'étape 3 avec la personne.
+- Relire son rapport et ses changements (`git diff -- <fichiers>`) : ils s'en tiennent à la solution retenue. S'il écrit « Une autre solution paraît nécessaire », ou signale une autre solution, revenir à l'étape 3 avec la personne.
 - Une action manuelle est nécessaire (appliquer une règle d'accès dans la console de la base ou du fournisseur, saisir une variable chez l'hébergeur) : guider la personne pas à pas.
 
 ### 5. Prouver

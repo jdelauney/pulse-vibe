@@ -1270,6 +1270,15 @@ test("auto-fix : la règle anti-affaiblissement reste aux consignes du fixer, le
   assert.doesNotMatch(entete, /pulse-aidd (modele|tests|scenarios|pile recette|pile reference)/, "motifs sans emploi retirés (reference * reste : les règles communes citent des références ; qualite sert à la section « Correction de comportement » du fixer)");
 });
 
+test("fixer : la réponse a sa place pour la preuve et pour une autre solution ; fix relit aussi ses changements", () => {
+  const format = (lire(RACINE, "agents", "fixer.md").match(/## Format de votre réponse\n\n```\n([\s\S]*?)```/) || [])[1] || "";
+  assert.match(format, /^## Preuve\n- `<commande>` → <résultat copié> \(ou « preuve à refaire par la personne »\)$/m);
+  assert.match(format, /## À signaler\n- <seulement si besoin : pack de pile non installé, code corrigé sans la fiche ; « Une autre solution paraît nécessaire : … »>/);
+  const fix = lire(RACINE, "skills", "fix", "SKILL.md");
+  assert.match(fix, /Relire son rapport et ses changements \(`git diff -- <fichiers>`\) : ils s'en tiennent à la solution retenue\./);
+  assert.match(fix.match(/^allowed-tools:.*$/m)[0], /Bash\(git diff \*\)/);
+});
+
 test("fix confie la correction décidée au fixer, élargi aux corrections de comportement (décision 17)", () => {
   const fixer = lire(RACINE, "agents", "fixer.md");
   const fix = lire(RACINE, "skills", "fix", "SKILL.md");
