@@ -20,10 +20,18 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const sortie = [];
-const dire = (cle, valeur = "") => sortie.push(valeur === "" ? `${cle}:` : `${cle}: ${valeur}`);
+// Une valeur tient toujours sur une ligne : un retour à la ligne ajouterait une clé lue par le modèle.
+const dire = (cle, valeur = "") => { const v = String(valeur).replace(/[\r\n]+/g, " "); sortie.push(v === "" ? `${cle}:` : `${cle}: ${v}`); };
 function terminer(code) {
   if (sortie.length) fs.writeSync(1, sortie.join("\n") + "\n");
   process.exit(code);
+}
+/** La raison d'un échec, tirée de la sortie de Git : une ligne, sans les conseils de Git (« hint: », « use "git … »), la première erreur d'abord. */
+function raisonDe(texte, repli, max = 300) {
+  const lignes = String(texte || "").split(/\r?\n/).map((l) => l.trim())
+    .filter((l) => l && !/^hint:/i.test(l) && !/use "git /i.test(l));
+  const premiere = lignes.find((l) => /^(error|fatal|CONFLICT)\b/i.test(l)) || lignes[0] || repli;
+  return premiere.replace(/\s+/g, " ").slice(0, max);
 }
 const refuser = (etat, ...details) => { dire("etat", etat); for (const [k, v] of details) dire(k, v); terminer(2); };
 const usage = (texte) => { dire("usage", texte); terminer(1); };
@@ -51,13 +59,32 @@ function cheminSur(c) {
   return typeof c === "string" && c !== "" && !/(^|[\\/])\.\.([\\/]|$)/.test(c) && !path.isAbsolute(c) && !/^[A-Za-z]:/.test(c) && !c.startsWith("-");
 }
 
+const cheminGit = (n) => { const r = git(["rev-parse", "--git-path", n]); return r.ok ? path.resolve(RACINE, r.sortie.trim()) : ""; };
+const existeGit = (n) => { const c = cheminGit(n); return Boolean(c) && fs.existsSync(c); };
+
+/**
+ * Une suite d'annulations ou de reports lancée à la main (`git revert A B`, `git cherry-pick A B`) :
+ * son dossier reste tant qu'elle n'est pas terminée, même après un commit de l'étape en conflit (REVERT_HEAD parti).
+ */
+function suiteEnCours() {
+  if (!existeGit("sequencer")) return "";
+  let premier = "";
+  try {
+    const ligne = fs.readFileSync(path.join(cheminGit("sequencer"), "todo"), "utf8").split(/\r?\n/).find((l) => l.trim() && !l.trim().startsWith("#"));
+    premier = ligne ? ligne.trim().split(/\s+/)[0] : "";
+  } catch { /* liste illisible : la suite reste en cours */ }
+  if (/^(revert|r)$/.test(premier)) return "suite d'annulations";
+  if (/^(pick|p)$/.test(premier)) return "suite de reports";
+  return existeGit("CHERRY_PICK_HEAD") ? "suite de reports" : "suite d'annulations";
+}
+
 function operationEnCours() {
-  const chemin = (n) => { const r = git(["rev-parse", "--git-path", n]); return r.ok ? path.resolve(RACINE, r.sortie.trim()) : ""; };
-  const existe = (n) => { const c = chemin(n); return c && fs.existsSync(c); };
-  if (existe("MERGE_HEAD")) return "fusion";
-  if (existe("REVERT_HEAD")) return "annulation";
-  if (existe("CHERRY_PICK_HEAD")) return "report";
-  if (existe("rebase-merge") || existe("rebase-apply")) return "rebasage";
+  if (existeGit("MERGE_HEAD")) return "fusion";
+  const suite = suiteEnCours();
+  if (suite) return suite;
+  if (existeGit("REVERT_HEAD")) return "annulation";
+  if (existeGit("CHERRY_PICK_HEAD")) return "report";
+  if (existeGit("rebase-merge") || existeGit("rebase-apply")) return "rebasage";
   return "aucune";
 }
 
@@ -69,10 +96,10 @@ function changements() {
   const r = git(["status", "--porcelain", "-z", "--untracked-files=all"]);
   if (!r.ok && modifie) {
     dire("etat", "conflit-non-nettoye");
-    dire("raison", (r.erreur || "git status a échoué").replace(/s+/g, " ").slice(0, 200));
+    dire("raison", raisonDe(r.erreur, "git status a échoué", 200));
     terminer(3);
   }
-  if (!r.ok) refuser("lecture-impossible", ["raison", (r.erreur || "git status a échoué").slice(0, 200)]);
+  if (!r.ok) refuser("lecture-impossible", ["raison", raisonDe(r.erreur, "git status a échoué", 200)]);
   const morceaux = r.sortie.split("\0").filter(Boolean);
   const res = [];
   for (let i = 0; i < morceaux.length; i++) {
@@ -360,11 +387,12 @@ function ecartsAvec(avant) {
 /**
  * Remet l'état d'avant par `reset --merge`.
  * Réservé aux gestes lancés sur un arbre vérifié propre au départ : sinon `reset --merge` effacerait le travail de la personne.
- * `revert --abort` n'est permis que pour une annulation lancée par ce script (defaire).
+ * `revert --abort` n'est permis que pour une annulation lancée par ce script (defaire) : REVERT_HEAD présent et aucune suite au départ.
  */
 function remettreEtatAvant(arbrePropreAuDepart, { abandonnerAnnulation = false } = {}) {
   if (arbrePropreAuDepart !== true) throw new Error("remettreEtatAvant : arbre propre au départ non établi");
-  if (abandonnerAnnulation) git(["revert", "--abort"]);
+  // Seulement l'annulation de ce script : jamais une suite de la personne, en cours au départ (son abandon déplacerait HEAD).
+  if (abandonnerAnnulation && !SUITE_AU_DEPART && existeGit("REVERT_HEAD")) git(["revert", "--abort"]);
   if (changements().length || operationEnCours() !== "aucune") git(["reset", "--merge"]);
 }
 
@@ -372,7 +400,7 @@ function remettreEtatAvant(arbrePropreAuDepart, { abandonnerAnnulation = false }
 function terminerEchec(raison, avant, details = []) {
   const ecarts = ecartsAvec(avant);
   dire("etat", ecarts.length ? "conflit-non-nettoye" : "echec");
-  dire("raison", raison.replace(/s+/g, " ").slice(0, 300));
+  dire("raison", raisonDe(raison, "échec"));
   for (const [k, v] of details) dire(k, v);
   for (const x of ecarts) dire("fichier", x);
   terminer(3);
@@ -479,7 +507,7 @@ function metteDeCote(options, fichiers) {
   const message = `pulse-annuler ${aujourdhui(maintenant)} ${pad(maintenant.getHours())}:${pad(maintenant.getMinutes())}${resume ? " " + resume : ""}`;
   modifie = true;
   const r = git(["stash", "push", "-u", "-m", message, ...(cibles ? ["--", ...cibles] : [])]);
-  if (!r.ok) { dire("etat", "echec"); dire("raison", r.erreur.slice(0, 300)); terminer(3); }
+  if (!r.ok) { dire("etat", "echec"); dire("raison", raisonDe(r.erreur, "mise de côté refusée")); terminer(3); }
   dire("etat", "fait");
   dire("mise-de-cote", `stash@{0} · ${message}`);
   const mises = new Set(cibles || chg.map((c) => c.chemin));
@@ -557,7 +585,7 @@ function recuperer(args) {
     const avant = instantane();
     modifie = true;
     const r = git(["stash", "apply", ref]);
-    if (!r.ok) annulerReprise(ref, dedans, avant, `${r.erreur} ${r.sortie}`);
+    if (!r.ok) annulerReprise(ref, dedans, avant, `${r.erreur}\n${r.sortie}`);
     dire("etat", "fait");
     dire("a-supprimer", ref);
     terminer(0);
@@ -575,6 +603,8 @@ if (!trouverRacine() || !aDesCommits()) {
   if (sous === "etat") { dire("depot", "non"); terminer(0); }
   refuser("pas-de-depot");
 }
+// Relevé au départ : une suite de la personne n'est jamais abandonnée par ce script.
+const SUITE_AU_DEPART = existeGit("sequencer");
 const { positionnels, options, fichiers } = lireArguments(reste);
 switch (sous) {
   case "etat": etat(options); break;
