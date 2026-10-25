@@ -33,7 +33,7 @@
 <section id="description">
 <h2>Description</h2>
 <p>Votre plan est prêt, mais une tâche vous paraît floue, l'ordre ne vous convient pas, ou vous avez simplement une question. <code>/pulse:refine</code> répond à chacune de vos remarques, puis ajuste le plan en gardant ses règles : des tâches petites, visibles et testables en moins de 2 minutes.</p>
-<p>Chaque remarque est d'abord classée : une simple question (le plan reste tel quel), un changement d'ordre ou de découpage, un ajout au périmètre, un souci technique ou une exigence oubliée. Selon le cas, le changement se fait dans le plan, ou d'abord dans le PRD, le fichier de l'US ou les choix techniques.</p>
+<p>Chaque remarque est d'abord classée : une simple question (le plan reste tel quel), un changement d'ordre ou de découpage, un ajout au périmètre, un souci technique ou une exigence oubliée. Selon le cas, le changement se fait dans le plan, ou d'abord dans le PRD ou les choix techniques. Une fonctionnalité en plus ou une exigence oubliée devient une nouvelle US : Pulse vous propose de l'écrire avec <a href="spec.html"><code>/pulse:spec "…"</code></a>, qui la vérifie et vous la fait valider.</p>
 <p>Rien n'est écrit avant votre accord. Pulse vous montre un tableau de vos remarques, puis la liste de ce qui change (✏️ modifié, ➕ ajouté, ➖ déplacé). Sa règle : « Le plan est à vous : on peut le changer, à condition de savoir ce que ça change. »</p>
 <pre class="commande"><code>## Ajustement du plan
 
@@ -48,6 +48,7 @@
 - docs/prd.md : rien
 - US-001-prise-de-rendez-vous.md : rien
 - docs/user-stories.md : rien
+- Nouvelle US à écrire ensuite : aucune
 
 Questions restantes : aucune</code></pre>
 <p class="legende">La proposition que <code>/pulse:refine</code> vous montre avant de toucher au plan.</p>
@@ -107,9 +108,9 @@ Questions restantes : aucune</code></pre>
 <thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
 <tbody>
 <tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/PLAN-SPEC-US-XXX-&lt;nom&gt;.md</code></td><td>Le plan : tâches modifiées, ajoutées ou déplacées, et une ligne « plan modifié » dans son journal.</td></tr>
-<tr><td><code>docs/prd.md</code></td><td>Seulement pour un changement de périmètre : une fonctionnalité ajoutée à la première version, ou reportée.</td></tr>
-<tr><td><code>US-XXX-&lt;nom&gt;.md</code></td><td>Un critère d'acceptation ajouté, pour une exigence oubliée, tant que la spec est encore en brouillon.</td></tr>
-<tr><td><code>docs/user-stories.md</code></td><td>Une US ajoutée ou une priorité changée.</td></tr>
+<tr><td><code>docs/prd.md</code></td><td>Seulement pour un changement de périmètre : une fonctionnalité ajoutée à la première version, ou reportée. La nouvelle US s'écrit ensuite avec <a href="spec.html"><code>/pulse:spec "…"</code></a>.</td></tr>
+<tr><td><code>US-XXX-&lt;nom&gt;.md</code></td><td>Un critère d'acceptation ajouté, quand l'exigence oubliée relève d'une autre US.</td></tr>
+<tr><td><code>docs/user-stories.md</code></td><td>Une priorité changée.</td></tr>
 <tr><td><code>aidd_docs/memory/project.md</code></td><td>Une décision durable (par exemple « pas de compte client dans la première version »), si vous acceptez de la noter.</td></tr>
 <tr><td><code>docs/guide/</code></td><td>Votre carnet de route, mis à jour tout seul.</td></tr>
 </tbody>
@@ -121,7 +122,7 @@ Questions restantes : aucune</code></pre>
 <ul>
 <li><strong>Rien n'est écrit sans votre accord.</strong> Trois choix vous sont proposés : « Appliquer ces changements », « Modifier la proposition » ou « Garder le plan actuel ».</li>
 <li><strong>Le travail fait reste en place.</strong> Une tâche terminée ne change pas. La tâche en cours se modifie seulement avec votre accord, et Pulse vous signale le code déjà écrit.</li>
-<li><strong>Une spec validée reste telle quelle.</strong> Une exigence oubliée devient alors une nouvelle US, avec sa spec et son plan.</li>
+<li><strong>Une spec validée reste telle quelle.</strong> Une exigence oubliée devient alors une nouvelle US, avec sa spec et son plan, écrite avec <a href="spec.html"><code>/pulse:spec</code></a>.</li>
 <li><strong>Les numéros des tâches ne changent jamais.</strong> Une nouvelle tâche prend le numéro qui suit, même si elle se place plus tôt dans l'ordre.</li>
 <li>Seuls les fichiers des tâches s'écrivent sans demande. Pour modifier le PRD ou la liste des user stories, Claude Code vous demande votre autorisation.</li>
 </ul>

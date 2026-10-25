@@ -36,7 +36,7 @@ const PLAFONDS = {
   prd: 20500, // mesure 19 165 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 982
   us: 30000, // mesure 28 154 (refactoring d'optimisation, tâche 6.4 : plafond relevé, format, INVEST, Definition of Ready et ticketing passent du SKILL.md à regles-us.md, chargé dans le contexte ; commande complète 33 856, sous son plafond) ; avant, mesure 24 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 28 742
   spec: 31000, // mesure 29 490 (tâche 6.5 : présentation des écrans en référence chargée, modèle d'US lancé seulement pour une US créée) ; avant, mesure 29 546 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 33 492
-  plan: 49500, // mesure 46 853 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 800
+  plan: 55500, // mesure 52 806 (tâche 6.6 : plafond relevé, les règles de découpage passent du SKILL.md à decoupage.md, affiché dans le contexte et partagé avec refine ; la commande complète baisse, 62 098 → 61 333) ; avant, mesure 46 853 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 800
   implement: 37500, // mesure 35 665 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 45 116 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 44 573 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
   fix: 22000, // mesure 20 834 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 22 408
   review: 31500, // mesure 29 793 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 32 792 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 300 (pulse 0.48 : captures gardées, examen.md § 3 et 3 bis ; avant, 31 617 : pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter)
@@ -48,7 +48,7 @@ const PLAFONDS = {
   deploy: 28500, // mesure 27 127 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 030 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 33 877
   security: 18000, // mesure 16 933 (refactoring d'optimisation, tâche 5.5 : le modèle de docs/securite.md seul, la checklist chargée par l'auditeur) ; avant, mesure 31 689 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 37 291
   secrets: 31500, // mesure 29 779 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 36 989
-  refine: 45000, // mesure 42 413 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
+  refine: 27000, // mesure 25 468 (tâche 6.6 : les seules règles de découpage, au lieu de tout le SKILL de plan et du modèle de plan) ; avant, mesure 42 413 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 44 183 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   ui: 59500, // mesure 56 299 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 58 567
   rediger: 20500, // mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
   seo: 45500, // mesure 43 163 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 49 096
@@ -91,11 +91,11 @@ const PLAFONDS_COMMANDE = {
   learn: 33000, // mesure 31 126 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 613 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 39 206
   memory: 29000, // mesure 27 407 (refactoring d'optimisation, tâche 6.7 : modèles affichés à l'action, creer après tech pour un projet existant) ; avant, mesure 30 804 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 265 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 38 661
   perf: 48500, // mesure 46 160 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 522 (correction de la relecture finale de la phase 1 : étapes enchaînées nommées et autorisations de leurs commandes ajoutées à l'en-tête) ; avant, mesure 54 519
-  plan: 65000, // mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
+  plan: 64500, // mesure 61 333 (tâche 6.6 : règles de découpage en référence, squelette décrit dans « Mise en place », branche « spec plus ancienne » retirée) ; avant, mesure 61 574 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 66 048 (pulse 0.48 : sections « Questions en attente » et « Choix faits par Pulse » du modèle de plan)
   pr: 35500, // mesure 33 643 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 38 807
   prd: 25000, // mesure 23 807 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 036 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 32 244
   rediger: 24500, // mesure 23 144 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
-  refine: 51500, // mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
+  refine: 33500, // mesure 31 647 (tâche 6.6 : les seules règles de découpage, sans le SKILL de plan ni le modèle de plan) ; avant, mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 37500, // mesure 35 291 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 47000, // mesure 44 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 989
   secrets: 41500, // mesure 39 337 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 290
@@ -184,10 +184,10 @@ const PLAFONDS_FORMES = {
   "fix --sans-noyau": 18000, // mesure 16 746
   "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles affichés à l'action) ; avant, 17 463
   "perf --sans-communes": 35000, // mesure 33 120 : dépasse la limite, voir DEPASSEMENTS_CONNUS
-  "plan --sans-communes": 44500, // mesure 42 033 : dépasse la limite
+  "plan --sans-communes": 44000, // mesure 41 683 (tâche 6.6 : règles de découpage dédoublonnées) ; avant, 42 033 : dépasse la limite
   "pr --sans-communes": 18000, // mesure 16 829
   "pr --sans-noyau": 21500, // mesure 20 393
-  "refine --sans-communes": 31000, // mesure 29 261
+  "refine --sans-communes": 13000, // mesure 11 997 (tâche 6.6 : les seules règles de découpage) ; avant, 29 261
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 745
   "spec --sans-communes": 25000, // mesure 23 558 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, 24 973
   "tech --sans-communes": 30000, // mesure 28 191 (tâche 6.2 : démarche et organisation chargées à l'étape) ; avant, 53 438
