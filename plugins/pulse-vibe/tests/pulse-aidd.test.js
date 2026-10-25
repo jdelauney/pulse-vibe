@@ -92,9 +92,12 @@ test("contexte secrets : règles communes, saisie hors conversation, fuite, mod�
     assert.ok(r.stdout.includes(`===== ${titre}`), titre);
 });
 
-test("contexte deploy et security : saisie des secrets hors conversation", () => {
-  for (const commande of ["deploy", "security"])
-    assert.ok(lancer("contexte", commande).stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), commande);
+test("contexte deploy : saisie des secrets hors conversation ; contexte security : le modèle de docs/securite.md seul", () => {
+  assert.ok(lancer("contexte", "deploy").stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), "deploy");
+  const security = lancer("contexte", "security").stdout;
+  assert.ok(security.includes("===== Modèle : docs/securite.md ====="), "security : modèle");
+  for (const titre of ["Garder la valeur d'un secret hors de la conversation", "Checklist sécurité", "Modèle : mention de confidentialité"])
+    assert.ok(!security.includes(`===== ${titre}`), `security sans « ${titre} »`);
 });
 
 test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique", () => {
@@ -625,7 +628,7 @@ test("contexte review : modèle de rapport, checklist chargée par le reviewer",
   assert.ok(!r.stdout.includes("===== Checklist sécurité ====="));
   assert.ok(!lancer("contexte", "spirc").stdout.includes("===== Checklist sécurité ====="), "spirc sans checklist");
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ="), "plan la garde");
-  assert.ok(lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security la garde");
+  assert.ok(!lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security sans checklist : l'auditeur la charge");
 });
 
 test("contexte spirc : règles communes, modèle de revue et lexique ; références de réalisation à la demande", () => {
