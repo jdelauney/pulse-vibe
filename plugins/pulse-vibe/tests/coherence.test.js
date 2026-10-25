@@ -1962,7 +1962,8 @@ test("examen : rapport au modèle chargé à l'étape, délégations sans recopi
   assert.doesNotMatch(skillTexte("review"), /Les références et modèles cités dans cette commande figurent dans ce contexte/);
   const reviewer = lire(RACINE, "agents", "reviewer.md");
   assert.doesNotMatch(reviewer, /Lancer les contrôles automatiques/, "le reviewer ne relance pas les contrôles");
-  assert.doesNotMatch(reviewer, /contrôles automatiques de « Commandes du projet »/, "plus de contrôles dans ses commandes en lecture");
+  for (const phrase of reviewer.split(/(?<=[.;])\s/).filter((x) => /contrôles automatiques de « Commandes du projet »/.test(x)))
+    assert.match(phrase, /^Sans verifier dans l'examen/, "le reviewer lance les contrôles seulement sans verifier dans l'examen");
   assert.doesNotMatch(reviewer.match(/^description:.*$/m)[0], /Utilisé par/);
   assert.match(reviewer, /## Test manuel à faire par la personne \(seulement si le message l'indique : examen sans verifier\)/);
   assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /1\. \*\*Tests\*\* : lancer une fois toute la suite[^\n]*`pulse-aidd preuve lancer --portee suite`/);
@@ -2022,4 +2023,18 @@ test("preuve : délai de l'outil Bash donné à chaque lancement ; preuve rouge 
   assert.match(textes["tests-automatiques.md"], /aucun test écrit pour l'instant/);
   assert.match(lire(RACINE, "templates", "revue.md"), /— \(aucun test écrit pour l'instant\)/);
   for (const nom of ["examen.md", "tests-automatiques.md"]) assert.match(textes[nom], /filet limité : (avec les )?fichiers de test de cette tâche/, `${nom} : relance du filet limité avec les tests de la tâche`);
+});
+
+test("examen sans verifier (rythme rapide, tout) : le reviewer lance les contrôles qui laissent les fichiers intacts ; rythme rapide avec -x : l'auditeur en portée tâche ; examens parallèles : une seule preuve", () => {
+  const reviewer = lire(RACINE, "agents", "reviewer.md");
+  assert.match(reviewer, /Sans verifier dans l'examen \(le message le dit : rythme rapide, ou `tout`\), lancer aussi les contrôles automatiques de « Commandes du projet » qui laissent les fichiers intacts \(pas les tests\) et signaler leurs erreurs/);
+  const examen = lire(RACINE, "references", "examen.md");
+  assert.match(examen, /sans verifier \(rythme rapide\), la consigne d'écrire la section « Test manuel » et de lancer les contrôles/);
+  const review = skillTexte("review");
+  assert.match(review, /Avec `tout` : seulement `pulse:reviewer`[^\n]*examen sans verifier/, "tout : le message dit l'examen sans verifier");
+  assert.match(review, /avant des examens en parallèle[^\n]*`pulse-aidd preuve etat --exiger suite`[^\n]*une seule preuve/, "une US : une seule preuve avant les examens parallèles");
+  const us = lire(RACINE, "skills", "spirc", "references", "examen-us.md");
+  assert.match(us, /avec `-x` : `pulse:security-auditor`, portée `tache`/, "rythme rapide avec -x : l'auditeur");
+  assert.match(us, /« Audit de sécurité »/);
+  assert.match(lire(RACINE, "templates", "revue.md"), /^## Audit de sécurité$/m, "le modèle de rapport a sa section « Audit de sécurité »");
 });

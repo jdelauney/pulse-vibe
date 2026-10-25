@@ -45,7 +45,7 @@ Pour une tâche qui a déjà un rapport, lancer `pulse-aidd revue <Tn>` : `test`
 
 ### 2. Lancer l'examen
 
-Appliquer le § 2 de la référence « Examiner une tâche » : `pulse:reviewer` et `pulse:verifier` en parallèle, pour chaque tâche. Avec `tout` : seulement `pulse:reviewer`, sur l'ensemble du projet par rapport à toutes les US terminées ; la vérification en marche se fait tâche par tâche.
+Appliquer le § 2 de la référence « Examiner une tâche » : `pulse:reviewer` et `pulse:verifier` en parallèle, pour chaque tâche. Une US, avant des examens en parallèle : lire `pulse-aidd preuve etat --exiger suite` et lancer au besoin une seule preuve, de toute la suite (la relance indiquée ; `--construire` si une des tâches touche une page, une route ou la configuration ; outil Bash : `timeout` 600000) ; les verifiers la relisent. Avec `tout` : seulement `pulse:reviewer` (message : examen sans verifier), sur l'ensemble du projet par rapport à toutes les US terminées ; la vérification en marche se fait tâche par tâche.
 
 ### 3. Enregistrer le rapport
 
