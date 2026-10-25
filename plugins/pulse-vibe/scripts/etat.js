@@ -80,8 +80,8 @@ function lireAttente(fichier, aujourdhui, dossier) {
     ((new RegExp(`\\*\\*${nom}\\*\\*\\s*:\\s*(.+)`, "i").exec(texte) || [])[1] || "").replace(/`/g, "").replace(/\{\{.*?\}\}/g, "").trim();
   const quand = /(\d{4})-(\d{2})-(\d{2})/.exec(champ("Mis à jour le"));
   const jours = quand ? (aujourdhui - Date.UTC(Number(quand[1]), Number(quand[2]) - 1, Number(quand[3]))) / 86400000 : 0;
-  // /pulse:implement ne boucle plus : une reprise « implement US-XXX » sans tâche se fait avec /pulse:spirc.
-  const pourReprendre = champ("Pour reprendre").replace(/^\/pulse:implement\s+(US-\d+)\s*$/i, "/pulse:spirc $1");
+  // /pulse:implement ne boucle plus : une reprise sans tâche (options comprises) se fait avec /pulse:spirc.
+  const pourReprendre = require("./realisation").repriseActuelle(champ("Pour reprendre"));
   return { commande: champ("Commande"), etape: champ("[ÉE]tape"), pourReprendre, ancien: jours > 7, dossier };
 }
 

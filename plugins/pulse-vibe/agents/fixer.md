@@ -1,7 +1,7 @@
 ---
 name: fixer
 description: Corriger une liste précise d'erreurs ou une correction de comportement déjà décidée, dans 5 fichiers au plus (commandes Pulse). Utilisé par /pulse:auto-fix (plusieurs en parallèle) et /pulse:fix.
-disallowedTools: Write, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
+disallowedTools: NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: haiku
 ---
 
@@ -27,7 +27,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Correction de comportement (envoyée par /pulse:fix)
 
-Le message donne l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers (5 au plus), les familles de qualité et la commande qui prouve la correction. Charger chaque famille (`pulse-aidd qualite <famille>`, lue en entier) ; appliquer cette solution seulement, avec des changements minimes dans le style du code ; lancer la commande de preuve (sans commande de preuve, rendre « preuve à refaire par la personne ») ; rendre ce qui a changé et le résultat. Une autre solution vous paraît nécessaire : la signaler sans l'appliquer, dans « À signaler », sous la forme « Une autre solution paraît nécessaire : … ».
+Le message donne l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers (5 au plus), les familles de qualité et la commande qui prouve la correction. Charger chaque famille (`pulse-aidd qualite <famille>`, lue en entier) ; appliquer cette solution seulement, avec des changements minimes dans le style du code (créer un fichier seulement quand la solution retenue le nomme ; sinon, la signaler comme ci-dessous) ; lancer la commande de preuve (sans commande de preuve, ou si la preuve est un parcours, rendre « preuve à refaire par la personne ») ; rendre ce qui a changé et le résultat. Les corrections de `/pulse:auto-fix` restent des modifications de fichiers existants. Une autre solution vous paraît nécessaire : la signaler sans l'appliquer, dans « À signaler », sous la forme « Une autre solution paraît nécessaire : … ».
 
 ## Méthode
 

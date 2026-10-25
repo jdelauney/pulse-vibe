@@ -155,7 +155,19 @@ function main(args, racine) {
   }
 }
 
-module.exports = { ecrire, lire, lireBrut, perime, trouver, rappel, PERIME_H };
+/**
+ * Une ancienne note « Pour reprendre » d'implement sans tâche (« /pulse:implement [options] US-XXX ») se
+ * reprend avec /pulse:spirc : implement ne boucle plus. Les options passent (sauf `-s`, propre à implement) ;
+ * avec une tâche, la commande reste telle quelle.
+ */
+function repriseActuelle(commande) {
+  const m = /^\/pulse:implement((?:\s+-[a-z]+)*)\s+(US-\d+)((?:\s+-[a-z]+)*)\s*$/i.exec(commande);
+  if (!m) return commande;
+  const options = (m[1] + m[3]).split(/\s+/).map((o) => o.replace(/s/g, "")).filter((o) => o.length > 1);
+  return ["/pulse:spirc", ...options, m[2]].join(" ");
+}
+
+module.exports = { repriseActuelle, ecrire, lire, lireBrut, perime, trouver, rappel, PERIME_H };
 
 if (require.main === module) {
   let code = 0;
