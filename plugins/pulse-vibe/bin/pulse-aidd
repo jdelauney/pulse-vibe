@@ -363,10 +363,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/apprentissage.md" "$SK/learn/assets/apprentissage.md"
       lexique ;;
     explain) lexique ;;
-    test)
-      afficher "Tests automatiques" "$REF/tests-automatiques.md"
-      afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
-      lexique ;;
+    test) lexique ;;
     guide)
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;

@@ -14,7 +14,7 @@ allowed-tools: Bash(pulse-aidd contexte test) Bash(pulse-aidd etape fix --sans-c
 
 Phrase à dire : « Les tests sont de petits programmes qui vérifient automatiquement que l'outil fait ce que la spec demande. Un assistant les lance ou les écrit ; un autre, qui n'a pas écrit le code, juge les résultats. »
 
-Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t` (référence « Tests d'abord » de ces commandes).
+Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:implement -t` ou `/pulse:spirc -t`.
 
 ## Règles
 
@@ -27,7 +27,7 @@ Arguments reçus : `$ARGUMENTS`
 ### Prérequis
 
 - `docs/technical.md` existe. Sinon, proposer `/pulse:tech` et s'arrêter.
-- « Tester » de « Commandes du projet » existe. Sinon (« aucune ») : proposer d'installer un outil de test selon le § 3 de la référence « Tests automatiques » ; sans accord, s'arrêter.
+- « Tester » de « Commandes du projet » existe. Quand elle vaut « aucune » : lancer `pulse-aidd reference tests-automatiques.md` et appliquer son § 3 « Si l'outil de test manque » (proposer d'installer un outil de test) ; sans accord, s'arrêter.
 - Noter les fichiers déjà modifiés (`git status --short`) : à la fin, montrer seulement ce que cette commande a changé.
 
 ## Rôle
@@ -56,9 +56,9 @@ La conversation principale orchestre : elle retrouve le contrat, présente les r
 
 ### Écrire
 
-1. **Retrouver le contrat** : pour une US ou une tâche, sa spec (section « Scénarios »), le fichier de l'US (critères d'acceptation) et le plan (lignes `Fichiers` et `Tests`). Pour un fichier ou un dossier : la tâche dont la ligne `Fichiers` le cite, sinon demander quel comportement il doit avoir. Une spec sans scénarios (spec plus ancienne) : rédiger les scénarios manquants selon la référence Gherkin, les montrer, les faire valider, puis les ajouter à la spec.
-2. Déléguer à **`pulse:test-writer`**, mode « code existant » : le contrat recopié (scénarios, critères, lignes `Tests`), les fichiers de code concernés, les sections « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md`, les mots du glossaire utiles. Plusieurs tâches indépendantes : un test-writer par tâche, en parallèle (plusieurs appels Agent dans le même message).
-3. Déléguer à **`pulse:test-runner`**, phase « suite complète », limitée aux nouveaux tests puis à toute la suite.
+1. **Retrouver le contrat** : pour une US ou une tâche, sa spec (section « Scénarios »), le fichier de l'US (critères d'acceptation) et le plan (lignes `Fichiers` et `Tests`). Pour un fichier ou un dossier : la tâche dont la ligne `Fichiers` le cite, sinon demander quel comportement il doit avoir. Seulement pour une spec sans scénarios (spec plus ancienne) : lancer `pulse-aidd tests gherkin`, rédiger selon cette méthode les scénarios manquants, les montrer, les faire valider, puis les ajouter à la spec.
+2. Déléguer à **`pulse:test-writer`**, mode « code existant » : le contrat (scénarios, critères, lignes `Tests`), les fichiers de code concernés, les mots du glossaire utiles. L'agent lit lui-même `docs/technical.md`. Plusieurs tâches indépendantes : un test-writer par tâche, en parallèle (plusieurs appels Agent dans le même message).
+3. Déléguer à **`pulse:test-runner`**, phase « suite complète », avec la liste des nouveaux tests (la suite les comprend).
 4. Présenter :
    - les tests écrits, groupés par règle, en une ligne chacun ;
    - les **défauts probables du code** (un test fidèle au scénario qui échoue) : chacun expliqué simplement, avec la proposition `/pulse:fix` ; un tel test reste dans la suite ;
@@ -84,4 +84,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:fix "<éche
 
 !`pulse-aidd contexte test`
 
-Les références citées dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
+Ce contexte contient le lexique et, avec un pack de pile, ses consignes de test. « Tests automatiques » et la méthode Gherkin se lancent à la demande (prérequis, et étape 1 d'« Écrire »). Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.

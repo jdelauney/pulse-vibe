@@ -115,7 +115,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   seo: 59000, // mesure 55 761 (pulse 0.50 : consignes pour écrire du code à la place de la fiche, de l'architecture et de la liste des recettes) ; avant, mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
   spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
   tech: 84500, // mesure 80 113 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
-  test: 52500, // mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
+  test: 32500, // mesure 30 863 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 83500, // mesure 79 522 (pulse 0.50 : consignes pour écrire du code à la place du thème complet, section « Pour les maquettes » gardée) ; avant, mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
 };
 
