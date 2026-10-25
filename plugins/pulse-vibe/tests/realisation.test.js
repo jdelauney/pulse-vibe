@@ -272,14 +272,21 @@ test("debut --devant : le mode devant vous est gardé dans le marqueur (faux san
   assert.strictEqual(marqueur(sans).devant, false);
 });
 
-test("rappel en mode devant vous : relancer l'étape pour recharger la fiche du pack avant d'écrire", () => {
+test("rappel en mode devant vous : relancer l'étape de réalisation seulement si du code reste à écrire", () => {
   const { rappel } = require(SCRIPT);
   const d = projet();
   lancer(d, "debut", "US-004", "--commande", "spirc", "--rythme", "complet", "--devant");
   lancer(d, "etape", "T2", "realisation");
   assert.match(rappel(d), /`pulse-aidd realisation etape T2 realisation`[^\n]*fiche du pack/);
-  lancer(d, "etape", "T2", "examen");
-  assert.match(rappel(d), /`pulse-aidd realisation etape T2 realisation`/, "hors étape de code : l'étape de réalisation de la tâche");
+  lancer(d, "etape", "T2", "test");
+  assert.match(rappel(d), /`pulse-aidd realisation etape T2 realisation`[^\n]*fiche du pack/, "tests d'abord : le code reste à écrire");
+  for (const apres of ["examen", "commit", "questions"]) {
+    lancer(d, "etape", "T2", apres);
+    assert.doesNotMatch(rappel(d), /realisation etape/, `${apres} : plus de code à écrire, rien à relancer`);
+  }
+  const avant = projet();
+  lancer(avant, "debut", "US-004", "--commande", "spirc", "--rythme", "complet", "--devant");
+  assert.doesNotMatch(rappel(avant), /realisation etape/, "aucune tâche commencée : l'étape se lance à son heure");
   const sans = projet();
   lancer(sans, "debut", "US-004", "--commande", "spirc", "--rythme", "complet");
   lancer(sans, "etape", "T2", "realisation");
@@ -323,15 +330,15 @@ test("devant vous : etape <Tn> realisation affiche la fiche du pack déclaré, s
   assert.strictEqual(marqueur(d).etape, "realisation");
 });
 
-test("devant vous : etape <Tn> test affiche le contexte des tests du pack, sous 30 000 caractères", sansNext, () => {
+test("devant vous : etape <Tn> test n'affiche rien, le contexte des tests vient des consignes du test-writer", sansNext, () => {
   const d = projetNext("next");
   aidd(d, true, "realisation", "debut", "US-001", "--commande", "spirc", "--rythme", "complet", "--devant");
   const r = aidd(d, true, "realisation", "etape", "T1", "test");
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes("===== Pack de pile : Pulse Next.js ====="), r.stdout.slice(0, 300));
-  assert.match(r.stdout, /----- Pour les tests -----/);
-  assert.doesNotMatch(r.stdout, /Fiche de la pile/);
-  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.strictEqual(r.stdout, "");
+  assert.strictEqual(marqueur(d).etape, "test");
+  // Celui qui écrit les tests (le test-writer, ou la conversation qui suit ses consignes sans agent disponible) les charge.
+  assert.match(fs.readFileSync(path.join(__dirname, "..", "agents", "test-writer.md"), "utf8"), /lancer `pulse-aidd pile contexte test` avant de commencer/);
 });
 
 test("etape : rien de plus sans --devant, sans pack déclaré, ou pour une autre étape", sansNext, () => {

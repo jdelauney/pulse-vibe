@@ -1213,6 +1213,26 @@ test("devant vous : la fiche donnée par l'étape de réalisation tient lieu de 
   assert.match(pack, /Devant vous, la sortie de l'étape de réalisation \(`realisation etape <Tn> realisation`, lancée par la commande\) donne déjà cette fiche : elle tient lieu de cet appel\./);
 });
 
+test("rappel après compaction : chaque commande pulse-aidd qu'il peut écrire pour spirc et implement est autorisée d'avance", () => {
+  const { ecrire, rappel } = require(path.join(RACINE, "scripts", "realisation.js"));
+  const os = require("os");
+  const maintenant = new Date().toISOString();
+  const problemes = [];
+  for (const commande of ["spirc", "implement"]) {
+    const motifs = motifsBash(path.join(RACINE, "skills", commande, "SKILL.md"));
+    for (const devant of [false, true])
+      for (const [tache, etape] of [["", ""], ["T2", "test"], ["T2", "realisation"], ["T2", "examen"], ["T2", "commit"], ["US-004", "test-groupe"]]) {
+        const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-rappel-"));
+        ecrire(d, { us: "US-004", commande, rythme: "complet", autonome: false, devant, tache, etape, questions: 0, debut: maintenant, maj: maintenant });
+        const cites = citationsOutil(rappel(d));
+        if (!cites.length) problemes.push(`${commande} : rappel sans commande à relancer`);
+        for (const c of cites) if (!motifs.some((m) => couvre(m, c))) problemes.push(`${commande} (devant ${devant}, ${etape || "aucune étape"}) : « ${c} » non autorisée`);
+        fs.rmSync(d, { recursive: true, force: true });
+      }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
 test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
   assert.ok(!fs.existsSync(path.join(RACINE, "skills", "implement", "references", "boucle.md")), "boucle.md supprimée");
   const implement = skillTexte("implement");
