@@ -42,7 +42,7 @@ test("contexte : chaque commande concernée reçoit ses consignes, les autres ri
   const attendus = {
     tech: ["Pour /pulse:tech", "Valeurs de docs/technical.md"],
     ui: ["Pour /pulse:ui", "Pour écrire du code"],
-    express: ["Pour /pulse:express"],
+    nouveau: ["Pour /pulse:nouveau"],
     spec: ["Pour /pulse:spec", "Recettes disponibles"],
     plan: ["Pour /pulse:plan", "Architecture du code", "Recettes disponibles"],
     refine: ["Pour /pulse:plan", "Recettes disponibles"],
@@ -419,8 +419,8 @@ test("recette formulaire-public : correctifs de revue (champ neutre, clés Turns
   assert.ok(!/@e2e\b/.test(texte), "étiquette @bout-en-bout, comme les autres recettes");
 });
 
-test("express et spec orientent vers formulaire-public", () => {
-  assert.match(lire(REF, "contexte", "express.md"), /formulaires publics → `formulaire-public`/);
+test("nouveau et spec orientent vers formulaire-public", () => {
+  assert.match(lire(REF, "contexte", "nouveau.md"), /formulaires publics → `formulaire-public`/);
   assert.match(lire(REF, "contexte", "spec.md"), /formulaire public/);
 });
 

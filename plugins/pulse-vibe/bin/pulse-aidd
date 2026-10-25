@@ -213,7 +213,7 @@ pack_absent() { # pack_absent <id> : le bloc « non installé » (le pack décla
 
 modules() { # modules <commande> : les modules des règles communes que la commande utilise (T tâches, C relecture, R réalisation)
   case "$1" in
-    us|spec|guide|get-help|pr|express|init) afficher "Règles des tâches" "$REF/regles-taches.md" ;;
+    us|spec|guide|get-help|pr|nouveau|init) afficher "Règles des tâches" "$REF/regles-taches.md" ;;
     security|seo) afficher "Règles de relecture" "$REF/regles-relecture.md" ;;
     ui)
       afficher "Règles des tâches" "$REF/regles-taches.md"
@@ -256,7 +256,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Examiner une tâche" "$REF/examen.md"
       afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
-    express)
+    nouveau)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
       afficher "Règles de la mémoire projet" "$REF/memoire.md"
       afficher "Modèle : docs/brief.md" "$TPL/brief.md"

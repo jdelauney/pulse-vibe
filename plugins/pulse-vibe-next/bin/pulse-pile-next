@@ -73,8 +73,8 @@ contexte() {
     ui)
       afficher "Pour /pulse:ui" "$REF/contexte/ui.md"
       afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
-    express)
-      afficher "Pour /pulse:express" "$REF/contexte/express.md" ;;
+    nouveau)
+      afficher "Pour /pulse:nouveau" "$REF/contexte/nouveau.md" ;;
     spec)
       afficher "Pour /pulse:spec" "$REF/contexte/spec.md"
       liste_recettes ;;

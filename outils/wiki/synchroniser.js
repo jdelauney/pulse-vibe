@@ -16,7 +16,7 @@ const SKILLS = path.join(DEPOT, "plugins", "pulse-vibe", "skills");
 
 // Les étapes du parcours, dans l'ordre. `couleur` : pas de l'échelle de maturité (1 à 4), 0 hors parcours.
 const ETAPES = [
-  { id: "demarrer", numero: 1, nom: "Démarrer", couleur: 1, commandes: ["init", "express"] },
+  { id: "demarrer", numero: 1, nom: "Démarrer", couleur: 1, commandes: ["init", "nouveau"] },
   { id: "decrire", numero: 2, nom: "Décrire", couleur: 1, commandes: ["brainstorm", "prd", "tech", "ui", "us"] },
   { id: "preparer", numero: 3, nom: "Préparer", couleur: 2, commandes: ["spec", "plan", "refine", "guide"] },
   { id: "construire", numero: 4, nom: "Construire", couleur: 3, commandes: ["implement", "spirc", "review", "test", "auto-fix", "commit", "pr"] },

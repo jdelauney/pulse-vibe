@@ -50,7 +50,7 @@
 <!-- ===================================================================================================== -->
 <section id="init" class="etape-tuto">
 <h2><span class="etape-numero">1</span> Créer le projet <span class="duree">5 minutes</span></h2>
-<p><strong>Objectif :</strong> préparer le dossier (règles du projet, mémoire, historique des versions) et choisir le parcours express.</p>
+<p><strong>Objectif :</strong> préparer le dossier (règles du projet, mémoire, historique des versions) et choisir de démarrer vite avec <code>/pulse:nouveau</code>.</p>
 <pre class="commande"><code>/pulse:init carnet-reservations</code></pre>
 <p>Pulse vous demande une phrase de description, votre niveau et la quantité d'explications voulue. Répondez « Jamais programmé » si c'est votre cas : Pulse prendra alors lui-même les réglages techniques conseillés, sans vous poser de questions de développeur. Il propose ensuite de protéger vos clés et de créer la copie en ligne du projet sur GitHub.</p>
 <div class="conversation" data-titre="Créer le projet">
@@ -64,13 +64,13 @@ Combien d'explications voulez-vous ? → Normales (Recommandé)</p>
 <p data-role="claude">C'est prêt : les règles du projet, la mémoire et un premier enregistrement.
 Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Protéger mes clés (Recommandé)
 Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recommandé), privé, sur GitHub.</p>
-<p data-role="claude">Pour la suite : parcours express (démarrer vite) ou parcours complet, étape par étape ?</p>
-<p data-role="vous">Parcours express</p>
+<p data-role="claude">Pour la suite : démarrer vite avec /pulse:nouveau, ou parcours complet, étape par étape ?</p>
+<p data-role="vous">Démarrer vite avec /pulse:nouveau</p>
 </div>
 <figure class="capture capture-a-venir" data-capture="captures/rapide-accueil-pulse.png"><div class="capture-cadre">Capture à venir : VS Code avec le panneau Claude Code ouvert sur l'écran d'accueil de Pulse (bannière et tableau « Votre projet »)</div><figcaption>L'écran d'accueil de Pulse : l'état du projet et la prochaine étape conseillée.</figcaption></figure>
 <p>Les nouveaux fichiers apparaissent dans l'explorateur de VS Code, à gauche. S'il est caché, cliquez sur l'icône des deux feuilles en haut de la barre de gauche, ou appuyez sur <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>E</kbd> (<kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>E</kbd> sur Mac).</p>
 <aside class="encadre encadre-attention"><p><strong>Attention :</strong> la protection des clés et la création du dépôt passent par une demande d'autorisation de Claude Code, qui s'affiche dans le panneau. Acceptez-les : la première empêche l'IA de lire vos clés, la seconde crée une copie privée de votre projet.</p></aside>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; un dépôt privé <code>carnet-reservations</code> existe sur GitHub ; la conversation enchaîne sur le parcours express.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; un dépôt privé <code>carnet-reservations</code> existe sur GitHub ; la conversation enchaîne sur <code>/pulse:nouveau</code>.</p></aside>
 <details class="probleme"><summary>« Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Installez l'outil indiqué (page <a href="../prerequis.html">Prérequis</a>), puis <strong>fermez et rouvrez VS Code</strong> (il lit la liste des programmes installés à son démarrage), et relancez <code>/pulse:init carnet-reservations</code>. Plus de détails sur la page <a href="../commandes/init.html">/pulse:init</a>.</p></details>
 <details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>Chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et l'e-mail de votre compte GitHub. C'est demandé une seule fois sur cet ordinateur.</p></details>
 <details class="probleme"><summary>La création du dépôt GitHub échoue</summary><p>Pulse vous guide alors sur le site de GitHub : nouveau dépôt, nom <code>carnet-reservations</code>, visibilité <strong>privée</strong>, dépôt laissé vide. Collez-lui ensuite l'adresse du dépôt. Vous pouvez aussi répondre « Non, plus tard » : <code>/pulse:deploy</code> reposera la question.</p></details>
@@ -78,15 +78,15 @@ Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recomman
 </section>
 
 <!-- ===================================================================================================== -->
-<section id="express" class="etape-tuto">
+<section id="nouveau" class="etape-tuto">
 <h2><span class="etape-numero">2</span> Décrire l'idée en une conversation <span class="duree">20 minutes</span></h2>
 <p><strong>Objectif :</strong> transformer votre idée en documents clairs (brief, PRD, user stories) grâce à quatre blocs de questions et un seul écran de validation.</p>
-<p>Vous avez choisi le parcours express : la conversation continue d'elle-même, sans rien taper. La commande ci-dessous sert seulement à le relancer, par exemple après une pause. Le détail est sur la page <a href="../commandes/express.html">/pulse:express</a>.</p>
-<pre class="commande"><code>/pulse:express "un carnet de réservations pour mon salon de coiffure"</code></pre>
+<p>Vous avez choisi de démarrer vite : la conversation continue d'elle-même, sans rien taper. La commande ci-dessous sert seulement à le relancer, par exemple après une pause. Le détail est sur la page <a href="../commandes/nouveau.html">/pulse:nouveau</a>.</p>
+<pre class="commande"><code>/pulse:nouveau "un carnet de réservations pour mon salon de coiffure"</code></pre>
 
 <figure class="anim" data-etapes="4" data-duree="1300">
-<svg viewBox="0 0 640 300" role="img" aria-labelledby="rapide-express-titre">
-<title id="rapide-express-titre">Les quatre blocs de la conversation express deviennent les documents du projet, puis la première US prête</title>
+<svg viewBox="0 0 640 300" role="img" aria-labelledby="rapide-nouveau-titre">
+<title id="rapide-nouveau-titre">Les quatre blocs de la conversation de /pulse:nouveau deviennent les documents du projet, puis la première US prête</title>
 <g class="e1" data-etape="1"><rect class="actif-halo schema-halo-primaire" x="14" y="14" width="162" height="208" rx="18"/>
 <rect class="schema-boite" x="20" y="20" width="150" height="40" rx="12"/><text class="schema-texte" x="95" y="45" text-anchor="middle">L'idée</text>
 <rect class="schema-boite" x="20" y="72" width="150" height="40" rx="12"/><text class="schema-texte" x="95" y="97" text-anchor="middle">Les écrans</text>
@@ -125,7 +125,7 @@ Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recomman
 </tbody>
 </table>
 
-<div class="conversation" data-titre="La conversation express (extrait)">
+<div class="conversation" data-titre="La conversation de /pulse:nouveau (extrait)">
 <p data-role="claude">On va droit au but : quatre blocs de questions, un seul écran de validation, puis on choisit les outils et l'apparence. Vous pourrez tout affiner ensuite.
 Pour qui est cet outil ? Par exemple, chez un fleuriste : « mes clients, qui commandent un bouquet ».</p>
 <p data-role="vous">Mes clients, qui réservent une coupe ou une couleur. Et moi, qui veux voir mes rendez-vous du jour.</p>
@@ -157,7 +157,7 @@ Proposé par Pulse : un message de confirmation après la réservation
 <figure class="capture capture-a-venir" data-capture="captures/rapide-brief-apercu.png"><div class="capture-cadre">Capture à venir : VS Code avec docs/brief.md sélectionné dans l'explorateur, son aperçu mis en forme au centre, et le panneau Claude Code ouvert à droite</div><figcaption>Le brief, lu dans l'aperçu de VS Code.</figcaption></figure>
 <details class="probleme"><summary>Je ne sais pas quoi répondre à une question</summary><p>Répondez avec vos mots, même de façon approximative : Pulse reformule toujours avant d'écrire. Vous pouvez aussi demander « Donne-moi des exemples ».</p></details>
 <details class="probleme"><summary>Pulse a oublié un écran ou mal compris un point</summary><p>Choisissez « Modifier quelque chose » sur l'écran de validation et dites ce qui ne va pas. Rien n'est écrit tant que vous n'avez pas validé.</p></details>
-<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:express</code> : Pulse a noté l'étape en cours et vous propose de la reprendre. <code>/pulse:status</code> vous montre où vous en êtes.</p></aside>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code> : Pulse a noté l'étape en cours et vous propose de la reprendre. <code>/pulse:status</code> vous montre où vous en êtes.</p></aside>
 </section>
 
 <!-- ===================================================================================================== -->
@@ -194,7 +194,7 @@ Mettre en ligne la page de départ maintenant ? (Recommandé)</p>
 <details class="probleme"><summary>Neon ou Vercel affichent des boutons en anglais</summary><p>C'est normal. Pulse vous donne le nom exact du bouton à cliquer, avec sa traduction entre parenthèses. Dites-lui ce que vous voyez à l'écran si quelque chose diffère.</p></details>
 <details class="probleme"><summary>La page ne s'ouvre pas sur localhost:3000</summary><p>Le programme qui fait tourner l'appli s'est peut-être arrêté. Demandez à Pulse : « Relance l'appli en local ». S'il signale qu'une adresse manque dans <code>.env</code>, ouvrez ce fichier dans l'explorateur de VS Code et vérifiez la ligne indiquée. Si Pulse vous demande de lancer l'appli vous-même, ouvrez le terminal intégré de VS Code (menu <strong>Terminal</strong>, puis <strong>New Terminal</strong>), tapez la commande qu'il vous donne et appuyez sur <kbd>Entrée</kbd>.</p></details>
 <details class="probleme"><summary>La branche <code>dev</code> de Neon a disparu le lendemain</summary><p>La case « Automatically delete branch after » était cochée à la création. Recréez la branche en laissant cette case décochée, puis recopiez ses adresses dans <code>.env</code>.</p></details>
-<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:express</code> : il reprend à l'étape notée. <code>/pulse:status</code> vous indique la pile choisie et ce qui reste.</p></aside>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code> : il reprend à l'étape notée. <code>/pulse:status</code> vous indique la pile choisie et ce qui reste.</p></aside>
 </section>
 
 <!-- ===================================================================================================== -->
@@ -215,11 +215,11 @@ Laquelle préférez-vous ? Vous pouvez aussi mélanger les deux.</p>
 Appliquer cette identité au code maintenant ? (Recommandé)</p>
 </div>
 <figure class="capture capture-a-venir" data-capture="captures/rapide-comparateur.png"><div class="capture-cadre">Capture à venir : la page de comparaison, ouverte dans le navigateur, avec les deux apparences proposées côte à côte</div><figcaption>Le comparateur : deux apparences, avec les mêmes contenus du salon, pour choisir en voyant.</figcaption></figure>
-<p>Pulse termine le parcours express par un résumé en quatre lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie et ce qui reste à faire de votre côté.</p>
+<p>Pulse termine <code>/pulse:nouveau</code> par un résumé en quatre lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie et ce qui reste à faire de votre côté.</p>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/design.md</code> décrit l'apparence choisie ; la page de départ, rechargée dans le navigateur, prend ses couleurs ; Pulse propose comme prochaine étape <code>/pulse:spirc version</code> (toute la première version), ou <code>/pulse:spirc US-001</code> pour une seule user story. Ce tutoriel prend la seconde : une user story à la fois.</p></aside>
 <details class="probleme"><summary>Aucune des deux apparences ne me plaît</summary><p>Dites-le avec vos mots : « aucune, je voudrais plus coloré ». Pulse repart de cette consigne et en propose de nouvelles.</p></details>
 <details class="probleme"><summary>La page de comparaison ne s'ouvre pas</summary><p>Dans l'explorateur de VS Code, ouvrez <code>docs/design/identite/</code>, faites un clic droit sur <code>comparer.html</code>, puis <strong>Reveal in File Explorer</strong> (afficher dans l'explorateur de fichiers ; <strong>Reveal in Finder</strong> sur Mac). Double-cliquez ensuite sur le fichier : il s'ouvre dans votre navigateur.</p></details>
-<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:express</code>, ou <code>/pulse:init</code> si le parcours est terminé : l'écran vous donne la prochaine étape. <code>/pulse:status</code> fait le point sans rien lancer.</p></aside>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code>, ou <code>/pulse:init</code> si le parcours est terminé : l'écran vous donne la prochaine étape. <code>/pulse:status</code> fait le point sans rien lancer.</p></aside>
 </section>
 
 <!-- ===================================================================================================== -->
@@ -228,7 +228,7 @@ Appliquer cette identité au code maintenant ? (Recommandé)</p>
 <p><strong>Objectif :</strong> faire construire l'écran de réservation, tâche par tâche, puis l'essayer vous-même.</p>
 <p>Repartez d'abord d'une conversation neuve : elle sera plus légère, et Pulse retrouve tout dans les documents et la mémoire du projet. Dans le panneau Claude Code, tapez <code>/clear</code>. Si cette commande n'apparaît pas dans la liste qui s'affiche quand vous tapez <code>/</code>, ouvrez plutôt une nouvelle conversation : <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>Échap</kbd> (<kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>Échap</kbd> sur Mac) l'ouvre dans un nouvel onglet. Puis lancez la réalisation de la première user story :</p>
 <pre class="commande"><code>/pulse:spirc -a US-001</code></pre>
-<p><code>/pulse:spirc</code> enchaîne tout le travail d'une user story : il décrit précisément ce qu'elle doit faire (la spec), la découpe en petites tâches (le plan), puis fait réaliser et enregistrer chaque tâche par un assistant. Le parcours express a réglé Pulse sur le rythme rapide : une fois toutes les tâches faites, deux autres assistants, qui n'ont pas écrit le code, relisent et essaient toute la user story en une seule fois. Avant d'écrire le plan, Pulse le fait aussi vérifier par un outil : chaque point de votre user story doit avoir sa tâche. L'option <code>-a</code> (autonome) enchaîne les tâches sans s'arrêter entre elles : vous testez tout en une fois, à la fin. Le détail est sur la page <a href="../commandes/spirc.html">/pulse:spirc</a>.</p>
+<p><code>/pulse:spirc</code> enchaîne tout le travail d'une user story : il décrit précisément ce qu'elle doit faire (la spec), la découpe en petites tâches (le plan), puis fait réaliser et enregistrer chaque tâche par un assistant. <code>/pulse:nouveau</code> a réglé Pulse sur le rythme rapide : une fois toutes les tâches faites, deux autres assistants, qui n'ont pas écrit le code, relisent et essaient toute la user story en une seule fois. Avant d'écrire le plan, Pulse le fait aussi vérifier par un outil : chaque point de votre user story doit avoir sa tâche. L'option <code>-a</code> (autonome) enchaîne les tâches sans s'arrêter entre elles : vous testez tout en une fois, à la fin. Le détail est sur la page <a href="../commandes/spirc.html">/pulse:spirc</a>.</p>
 <p>Même en autonome, les décisions restent les vôtres. Vous validez la spec et le plan avant que Pulse ne parte. Ensuite, une question sur le besoin ou une action à faire à la main met seulement sa tâche en pause : Pulse continue les autres, puis vous pose toutes ses questions ensemble, une seule fois.</p>
 <div class="conversation" data-titre="Réaliser US-001">
 <p data-role="vous">/pulse:spirc -a US-001</p>

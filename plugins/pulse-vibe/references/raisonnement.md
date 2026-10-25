@@ -1,4 +1,4 @@
-# Penser avant d'écrire (/pulse:brainstorm, /pulse:prd, /pulse:us, /pulse:express)
+# Penser avant d'écrire (/pulse:brainstorm, /pulse:prd, /pulse:us, /pulse:nouveau)
 
 Le vrai risque d'un projet n'est pas la lenteur : c'est de construire vite une solution mal comprise. Ces commandes aident la personne à **raisonner sur son produit** et à trancher elle-même ce qui le structure, en respectant son temps : peu de questions ouvertes, bien choisies ; tout le reste en questions à choix.
 

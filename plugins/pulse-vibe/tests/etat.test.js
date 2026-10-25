@@ -234,10 +234,26 @@ test("travail en cours : une reprise d'implement sans tâche conseille spirc, av
   assert.strictEqual(optionsEtTache.prochaine, "/pulse:implement -d US-002 T3");
 });
 
+test("travail en cours : une ancienne note de /pulse:express (renommée) se reprend avec /pulse:nouveau", () => {
+  const attente = (commande, reprise) => `# Travail en cours
+
+- **Commande** : \`${commande}\`
+- **Étape** : 6. Les choix techniques
+- **Mis à jour le** : 2026-10-07 18:00
+- **Pour reprendre** : ${reprise}
+`;
+  const avec = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:express", "`/pulse:express docs/depart/`") }));
+  assert.deepStrictEqual([avec.regle, avec.prochaine], ["R1", "/pulse:nouveau docs/depart/"]);
+  const sans = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:express", "") }));
+  assert.deepStrictEqual([sans.regle, sans.prochaine], ["R1", "/pulse:nouveau"]);
+  const actuelle = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:nouveau", "`/pulse:nouveau`") }));
+  assert.strictEqual(actuelle.prochaine, "/pulse:nouveau");
+});
+
 test("projet neuf : raconter l'idée, ou démarrer vite (R9)", () => {
   const r = etat(projet());
   assert.deepStrictEqual([r.regle, r.prochaine], ["R9", "/pulse:brainstorm"]);
-  assert.match(r.aussi[0], /^\/pulse:express — /);
+  assert.match(r.aussi[0], /^\/pulse:nouveau — /);
   assert.ok(r.aussi.some((a) => a.startsWith("/pulse:init — relier")), "dépôt distant à décider");
   assert.strictEqual(r.etapes, "brief=a-faire prd=a-faire technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non");
   assert.strictEqual(r.mvp, "0/0");

@@ -83,8 +83,10 @@ function lireAttente(fichier, aujourdhui, dossier) {
   const quand = /(\d{4})-(\d{2})-(\d{2})/.exec(champ("Mis à jour le"));
   const jours = quand ? (aujourdhui - Date.UTC(Number(quand[1]), Number(quand[2]) - 1, Number(quand[3]))) / 86400000 : 0;
   // /pulse:implement ne boucle plus : une reprise sans tâche (options comprises) se fait avec /pulse:spirc.
-  const pourReprendre = require("./realisation").repriseActuelle(champ("Pour reprendre"));
-  return { commande: champ("Commande"), etape: champ("[ÉE]tape"), pourReprendre, ancien: jours > 7, dossier };
+  // Une ancienne note de /pulse:express (renommée) se reprend avec /pulse:nouveau.
+  const { repriseActuelle } = require("./realisation");
+  const pourReprendre = repriseActuelle(champ("Pour reprendre"));
+  return { commande: repriseActuelle(champ("Commande")), etape: champ("[ÉE]tape"), pourReprendre, ancien: jours > 7, dossier };
 }
 
 /** Les tâches de la section « ## Tâches » d'un plan (même format que le guide de réalisation). */
@@ -421,7 +423,7 @@ function decider(f) {
     return verdict("R8d", "/pulse:memory creer", "les outils du projet existant sont documentés : noter dans la mémoire les conventions et les pièges propres à son code");
   }
   if (!d.brief && !d.prd && !d.userStories && !d.technical) {
-    aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");
+    aussi.unshift("/pulse:nouveau — démarrer vite : l'idée, le PRD et les user stories en une conversation");
     return verdict("R9", "/pulse:brainstorm", "raconter l'idée est la première étape");
   }
   if (!d.prd && !d.userStories) return verdict("R10", "/pulse:prd", "il reste à décider du périmètre de la première version");

@@ -14,7 +14,7 @@
 <!-- Verdict et tableau du verifier : chaque critère essayé sur l'application en marche. -->
 
 - **Verdict** : {{✅ Prouvé | ❓ Partiellement prouvé | ❌ Échoue}}
-- **Filet anti-régression** : {{N tests, tous verts (preuve à jour) | N tests de la tâche, tous verts (filet limité) | — (aucun test automatique) | — (aucun test écrit pour l'instant) | — (rythme rapide ou express : fin d'US)}}
+- **Filet anti-régression** : {{N tests, tous verts (preuve à jour) | N tests de la tâche, tous verts (filet limité) | — (aucun test automatique) | — (aucun test écrit pour l'instant) | — (rythme rapide : fin d'US)}}
 
 | Critère | Attendu | Obtenu | Résultat | Preuve |
 |---|---|---|---|---|
