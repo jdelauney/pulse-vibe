@@ -190,6 +190,14 @@ test("contexte tech : l'organisation se charge à l'étape 6.1, projet neuf sans
   assert.ok(!r.stdout.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte de tech");
   const tech = fs.readFileSync(path.join(RACINE, "skills", "tech", "SKILL.md"), "utf8");
   assert.match(tech, /Projet neuf sans pack : lancer `pulse-aidd reference qualite\/organisation\.md`/);
+  assert.match(tech, /Projet neuf avec pack : les valeurs du pack/);
+});
+
+test("contexte tech avec le pack : l'organisation reste hors du contexte, le pack donne ses valeurs", { skip: !fs.existsSync(PACK_BIN) }, () => {
+  const r = dansLeProjet(["contexte", "tech"]);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Pack de pile"), "consignes du pack présentes");
+  assert.ok(!r.stdout.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte de tech");
 });
 
 test("un pack remplace seulement l'organisation, jamais la sécurité du code", () => {
