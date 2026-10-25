@@ -49,7 +49,14 @@ test("noter : outils appelés (sous-agents compris), ordre, texte de la dernièr
   assert.strictEqual(notes.score, 5 / 8);
 });
 
-test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, réussit sinon", () => {
+// L'expression seule, sans la réécriture du garde-fou (testée à part) : sinon chaque coupure réécrivable serait lancée en entier.
+function sansReecriture(t) {
+  process.env.PULSE_GARDE_COMMANDES_OFF = "1";
+  t.after(() => delete process.env.PULSE_GARDE_COMMANDES_OFF);
+}
+
+test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, réussit sinon", (t) => {
+  sansReecriture(t);
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   assert.strictEqual(g.type, "tool_not_used");
   const trace = (commande) => {
@@ -69,7 +76,8 @@ test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, r�
   assert.strictEqual(note("git log | head; pulse-aidd etat"), true);
 });
 
-test("lecture-entiere : un appel coupé par un tube mais refusé par le garde-fou ne compte pas", () => {
+test("lecture-entiere : un appel coupé par un tube mais refusé par le garde-fou ne compte pas", (t) => {
+  sansReecriture(t);
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   const trace = (resultat) => {
     const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "refus-")), "trace.jsonl");
@@ -99,6 +107,16 @@ test("tool_used et tool_order : un appel refusé n'a rien fait", () => {
   assert.deepStrictEqual(notes.details.map((d) => d.reussi), [false, true, false]);
 });
 
+test("lecture-entiere : une coupure que le garde-fou réécrit (tube retiré) n'est pas comptée", () => {
+  const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "reecrit-")), "trace.jsonl");
+  const appel = (id, command) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name: "Bash", input: { command } }] } });
+  fs.writeFileSync(f, JSON.stringify(appel("a", "pulse-aidd qualite clean-code 2>&1 | head -50")) + LF);
+  assert.strictEqual(direct.noter(f, [g]).details[0].reussi, true);
+  fs.writeFileSync(f, JSON.stringify(appel("b", "pulse-aidd qualite clean-code | head -50; ls")) + LF);
+  assert.strictEqual(direct.noter(f, [g]).details[0].reussi, false);
+});
+
 test("tool_order strict : un appel « after » avant le premier « before » fait échouer", () => {
   const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "ordre-")), "trace.jsonl");
   const appel = (id, name, input) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name, input }] } });
@@ -108,7 +126,8 @@ test("tool_order strict : un appel « after » avant le premier « before » fai
   assert.deepStrictEqual(notes.details.map((d) => d.reussi), [true, false]);
 });
 
-test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", () => {
+test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", (t) => {
+  sansReecriture(t);
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   const note = (texte) => {
     const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "blocs-")), "trace.jsonl");
