@@ -54,7 +54,7 @@ function trouver(racine, us) {
 
 /** Les écrans nommés du tableau de la section 3 dont la colonne « Présentation » est vide, encore au modèle ou absente. */
 function ecransSansPresentation(texte) {
-  const section = (texte.split(/^## \d+\.\s*Ce que l'utilisateur voit et fait\b.*$/m)[1] || "").split(/^## /m)[0];
+  const section = (texte.split(/^## (?:\d+\.\s*)?Ce que l['’]utilisateur voit et fait\b.*$/m)[1] || "").split(/^## /m)[0];
   const cellules = (l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
   const lignes = section.split(/\r?\n/).filter((l) => l.trim().startsWith("|"));
   if (!lignes.length) return [];

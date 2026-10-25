@@ -737,6 +737,7 @@ test("découpage du plan : règles écrites une fois, chargées par plan et refi
   assert.deepStrictEqual(regles, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "les dix règles, règle mixte du pack comprise");
   assert.match(decoupage, /\*\*Découpage vertical\*\*/);
   assert.match(decoupage, /« Mise en place » de `docs\/technical\.md` l'indique « À réaliser avec la première tâche du premier plan »/);
+  assert.match(lire(RACINE, "skills", "tech", "SKILL.md"), /l'indiquer dans « Mise en place » \(« À réaliser avec la première tâche du premier plan »\)/, "tech écrit la phrase que lit le plan");
   assert.doesNotMatch(decoupage, /dans un dossier temporaire|en préservant `CLAUDE\.md`/, "le squelette se décrit une fois, dans « Mise en place »");
   assert.match(decoupage, /le guide lit seulement les lignes `- \[ \] \*\*Tn – …\*\*` de `## Tâches` et leurs détails/);
   for (const commande of ["plan", "refine"]) assert.ok(contexteCharge(commande).includes("===== Règles de découpage du plan ====="), commande);
@@ -753,7 +754,11 @@ test("découpage du plan : règles écrites une fois, chargées par plan et refi
   assert.match(ligne("Exigence manquante"), /proposer `\/pulse:spec "…"`/);
   assert.doesNotMatch(ligne("Exigence manquante"), /spec en brouillon/, "branche morte : un plan suppose une spec verrouillée");
   assert.doesNotMatch(refine, /découpage vertical \(visible et testable en moins de 2 minutes\), 3 fichiers et 3 critères au plus/, "résumé des règles recopié");
-  assert.match(refine, /une nouvelle tâche prend le numéro suivant \(règles des tâches\)/);
+  assert.match(refine, /une nouvelle tâche prend le numéro qui suit le plus grand `Tn` de tous les plans \(règles des tâches\)/);
+  // Le wiki dit les écritures que refine fait sans autre demande, après « Appliquer ces changements ».
+  const refineHtml = lire(DEPOT, "docs", "commandes", "refine.html");
+  assert.doesNotMatch(refineHtml, /Seuls les fichiers des tâches s'écrivent sans demande/);
+  assert.match(refineHtml, /le plan, le PRD, la priorité des user stories et le lexique s'écrivent ensuite sans autre demande/);
   // La phrase « Envoi » reste mot pour mot sur sa ligne (la phase 7 la fait pointer vers envoi.md à la fusion).
   assert.ok(refine.split("\n").includes("La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2)."));
 });
@@ -1861,6 +1866,8 @@ test("écrans : la présentation se choisit dans la spec, les maquettes se propo
   for (const t of ["« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`", "selon les critères entre parenthèses"])
     assert.ok(presentation.includes(t), t);
   assert.doesNotMatch(presentation, /ui\/motifs\.md/, "les critères entre parenthèses suffisent");
+  assert.match(presentation, /Un écran sans informations ni formulaire : « sans objet » dans la colonne « Présentation »/);
+  assert.match(lire(RACINE, "skills", "spec", "SKILL.md"), /seulement quand il ne reste aucun `TBD:` ni présentation manquante/);
   const specSkill = lire(RACINE, "skills", "spec", "SKILL.md");
   assert.match(specSkill, /^### 1 bis\. Choisir la présentation des écrans\n\nAppliquer « Présentation des écrans » \(chargée dans « Références de la commande »\)/m);
   assert.doesNotMatch(specSkill, /« Comment présenter <les factures> \? »/, "questions recopiées dans le SKILL");
