@@ -13,6 +13,8 @@ const RACINE = path.join(__dirname, "..");
 const ETAT = path.join(RACINE, "scripts", "etat.js");
 const { lireFaits, decider, sortieIllisible } = require(ETAT);
 
+// La ligne des commandes à proposer (décision 4), lue dans le modèle de CLAUDE.md pour rester alignée.
+const LIGNE_COMMANDES = fs.readFileSync(path.join(RACINE, "templates", "CLAUDE.md"), "utf8").split("\n").find((l) => l.includes("/pulse:refine <US-XXX>"));
 const CLAUDE = (options = {}) => `# TodoIt
 
 ## Résumé du projet
@@ -34,6 +36,10 @@ ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
 
 <!-- pulse_memoire:debut -->
 <!-- pulse_memoire:fin -->
+
+## Commandes
+
+${LIGNE_COMMANDES}
 
 ## Adresses
 
@@ -172,10 +178,12 @@ test("dossier vide : préparer le projet (R2)", () => {
   assert.deepStrictEqual(r.aussi, [], "pas d'alternative tant que le projet n'est pas préparé");
 });
 
-test("CLAUDE.md sans Pulse (R3), documents à l'ancien format (R4), profil à préciser (R5)", () => {
+test("CLAUDE.md sans Pulse (R3), profil à préciser (R5) ; l'ancien format des documents n'est plus une étape", () => {
   assert.strictEqual(etat(projet({ "CLAUDE.md": "# Mon outil\n\nDes règles à moi.\n" })).regle, "R3");
-  const ancien = etat(projet({ "docs/specs/creer.md": "# Spec\n" }));
-  assert.deepStrictEqual([ancien.regle, ancien.prochaine, ancien.fondation], ["R4", "/pulse:init", "documents"]);
+  // Décision 6 : la réorganisation de l'ancien format est retirée d'init ; ces fichiers ne bloquent plus le parcours.
+  const ancien = etat(projet({ "docs/specs/creer.md": "# Spec\n", "docs/plan.md": "# Plan\n" }));
+  assert.deepStrictEqual([ancien.regle, ancien.prochaine, ancien.fondation], ["R9", "/pulse:brainstorm", undefined]);
+  assert.ok(!("ancienFormat" in lireFaits(projet({ "docs/specs/creer.md": "# Spec\n" }), { git: false })), "plus de fait ancienFormat");
   const profil = etat(projet({}, { niveau: "à préciser" }));
   assert.deepStrictEqual([profil.regle, profil.fondation], ["R5", "profil"]);
 });
@@ -226,10 +234,26 @@ test("travail en cours : une reprise d'implement sans tâche conseille spirc, av
   assert.strictEqual(optionsEtTache.prochaine, "/pulse:implement -d US-002 T3");
 });
 
+test("travail en cours : une ancienne note de /pulse:express (renommée) se reprend avec /pulse:nouveau", () => {
+  const attente = (commande, reprise) => `# Travail en cours
+
+- **Commande** : \`${commande}\`
+- **Étape** : 6. Les choix techniques
+- **Mis à jour le** : 2026-10-07 18:00
+- **Pour reprendre** : ${reprise}
+`;
+  const avec = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:express", "`/pulse:express docs/depart/`") }));
+  assert.deepStrictEqual([avec.regle, avec.prochaine], ["R1", "/pulse:nouveau docs/depart/"]);
+  const sans = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:express", "") }));
+  assert.deepStrictEqual([sans.regle, sans.prochaine], ["R1", "/pulse:nouveau"]);
+  const actuelle = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:nouveau", "`/pulse:nouveau`") }));
+  assert.strictEqual(actuelle.prochaine, "/pulse:nouveau");
+});
+
 test("projet neuf : raconter l'idée, ou démarrer vite (R9)", () => {
   const r = etat(projet());
   assert.deepStrictEqual([r.regle, r.prochaine], ["R9", "/pulse:brainstorm"]);
-  assert.match(r.aussi[0], /^\/pulse:express — /);
+  assert.match(r.aussi[0], /^\/pulse:nouveau — /);
   assert.ok(r.aussi.some((a) => a.startsWith("/pulse:init — relier")), "dépôt distant à décider");
   assert.strictEqual(r.etapes, "brief=a-faire prd=a-faire technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non");
   assert.strictEqual(r.mvp, "0/0");
@@ -408,39 +432,91 @@ test("projet existant : du code sans brief ni choix techniques, documenter l'exi
     assert.deepStrictEqual([r.regle, r.prochaine], ["R8c", "/pulse:tech"], Object.keys(code)[0]);
     assert.match(r.raison, /existant/);
   }
-  // avec un brief ou des choix techniques, la suite normale s'applique
+  // avec un brief, la suite normale s'applique
   assert.strictEqual(etat(projet({ "package.json": "{}", "docs/brief.md": "x" })).regle, "R10");
-  assert.strictEqual(etat(projet({ "package.json": "{}", "docs/technical.md": "x" }, PILE_CHOISIE)).regle, "R10");
   assert.strictEqual(etat(projet()).regle, "R9");
 });
 
-test("modèle à mettre à niveau : une ligne « aussi », jamais un blocage du parcours", () => {
+test("projet existant après tech : noter les conventions propres au code (R8d), puis la suite normale", () => {
+  const MEMOIRE_VIDE = "# Mémoire technique\n\n## Conventions propres au projet\n\n<!-- Une ligne par convention. -->\n\n## Pièges et leçons\n\n- Un piège déjà noté.\n";
+  const OBSERVEE = "## Les options comparées\n\nProjet existant : pile observée, pas de comparaison.\n";
+  const existant = (fichiers) => etat(projet({ "package.json": "{}", "docs/technical.md": OBSERVEE, ...fichiers }, PILE_CHOISIE));
+  const r = existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE });
+  assert.deepStrictEqual([r.regle, r.prochaine], ["R8d", "/pulse:memory creer"]);
+  assert.match(r.raison, /conventions/);
+  assert.ok(r.aussi.some((a) => a.startsWith("/pulse:prd — ")), "la personne peut passer directement au PRD");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": "# Technique\n" }).regle, "R8d", "section absente : aucune convention notée");
+  const remplie = MEMOIRE_VIDE.replace("<!-- Une ligne par convention. -->", "- Les prix sont stockés en centimes.");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": remplie }).regle, "R10", "conventions notées : le périmètre ensuite");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE, "docs/brief.md": "x" }).regle, "R10", "avec un brief, la suite normale");
+  assert.strictEqual(etat(projet({ "docs/technical.md": "x", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }, PILE_CHOISIE)).regle, "R10", "sans code, rien à observer");
+  // Projet neuf : tech a comparé des options puis posé le squelette (du code), sans brief : le périmètre d'abord.
+  assert.strictEqual(existant({ "docs/technical.md": "## Les options comparées\n\n| Option | Coût |\n", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R10", "projet neuf : pas de R8d");
+  // Projet existant dont la pile change (comparaison faite) : tech garde le repère, R8d reste proposé.
+  const change = "## Les options comparées\n\nProjet existant : pile observée, changement décidé.\n\n| Option | Coût |\n";
+  assert.strictEqual(existant({ "docs/technical.md": change, "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R8d", "changement décidé : R8d");
+  // creer sans convention à noter l'écrit : R8d ne revient pas.
+  const aucune = MEMOIRE_VIDE.replace("<!-- Une ligne par convention. -->", "- Aucune convention propre relevée (2026-10-25).");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": aucune }).regle, "R10", "aucune convention relevée : la suite");
+});
+
+test("contrôles à remettre à jour : une ligne « aussi », jamais un blocage du parcours", () => {
   const modele = (fichiers, options) => etat(projet(fichiers, options));
-  const MAJ = "/pulse:init — mettre à niveau le projet (modèles et contrôles)";
-  const ancien = modele({ "CLAUDE.md": CLAUDE().replace("Ce projet suit", "Projet AI-Driven : il suit") });
+  const MAJ = "/pulse:init — remettre les contrôles du projet à jour";
+  const SANS_LIGNE = CLAUDE().replace(/\n## Commandes\n\n[^\n]*\n/, "\n## Commandes\n\n| Commande | Rôle |\n");
+  const ancien = modele({ "CLAUDE.md": SANS_LIGNE });
   assert.deepStrictEqual([ancien.regle, ancien.prochaine, ancien.fondation], ["R9", "/pulse:brainstorm", undefined]);
-  assert.ok(ancien.aussi.includes(MAJ));
+  assert.ok(ancien.aussi.includes(MAJ), "CLAUDE.md sans la ligne des commandes à proposer (/pulse:status, /pulse:refine)");
   const a = (fichiers) => modele(fichiers).aussi.includes(MAJ);
-  assert.ok(a({ "CLAUDE.md": CLAUDE() + "\n- Commit et envoi vers le dépôt distant : uniquement sur demande.\n" }));
-  assert.ok(a({ "CLAUDE.md": CLAUDE() + "\n- `aidd_docs/tasks/` : traces de travail par session.\n" }));
-  assert.ok(a({ "CLAUDE.md": CLAUDE().replace("## Résumé du projet\n", "## Le projet\n") }), "trame d'avant « Résumé du projet »");
-  assert.ok(!a({ "CLAUDE.md": CLAUDE() }), "trame actuelle : rien à mettre à niveau");
+  assert.ok(a({ "CLAUDE.md": SANS_LIGNE + "\n## Contraintes\n\n- Lancez `/pulse:refine` pour un plan.\n" }), "/pulse:refine hors de « Commandes » : la ligne manque");
+  assert.ok(a({ "CLAUDE.md": CLAUDE().replace(/\n## Commandes\n\n[^\n]*\n/, "\n") }), "CLAUDE.md sans section « Commandes »");
+  assert.ok(!a({ "CLAUDE.md": CLAUDE() }), "trame actuelle : rien à remettre à jour");
+  // Décision 6 : la trame d'avant Pulse 0.39 et les anciennes lignes ne sont plus des signes.
+  assert.ok(!a({ "CLAUDE.md": CLAUDE().replace("## Résumé du projet\n", "## Le projet\n") }), "trame d'avant « Résumé du projet » seule");
+  assert.ok(!a({ "CLAUDE.md": CLAUDE().replace("Ce projet suit", "Projet AI-Driven : il suit") }), "ancien accueil seul");
+  assert.ok(!a({ "CLAUDE.md": CLAUDE() + "\n- Commit et envoi vers le dépôt distant : uniquement sur demande.\n" }), "ancienne ligne d'envoi seule");
   assert.ok(a({ ".gitignore": ".env\n" }));
-  assert.ok(a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\n" }), "sans le dossier des captures");
+  assert.ok(a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\naidd_docs/tasks/realisation.json\n" }), "sans le dossier des captures");
+  assert.ok(a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\naidd_docs/captures/\n" }), "sans le marqueur de réalisation");
   assert.ok(!a({ ".gitignore": ".env\naidd_docs/tasks/in-progress.md\naidd_docs/tasks/realisation.json\naidd_docs/captures/\n" }));
   const crochet = { "scripts/verifier.js": "x", ".git/hooks/pre-commit": "#!/bin/sh\nexit 0\n" };
   assert.ok(a(crochet));
   assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\nexec node \"$secours/pulse/verifier.js\" --index\n" }), "crochet à jour");
   assert.ok(a({ ...crochet, ".git/hooks/pre-commit": "# pulse-aidd: contrôle des secrets\n[ -f scripts/verifier.js ] || exit 0\n" }), "ancien crochet, sans copie de secours");
-  // /pulse:init remplace aussi cet ancien crochet (installer-hook réécrit un crochet de Pulse).
-  assert.match(fs.readFileSync(path.join(RACINE, "skills", "init", "SKILL.md"), "utf8"), /ou crochet de Pulse sans `pulse\/verifier\.js` \(ancien modèle[^)]*\) → `pulse-aidd installer-hook`/);
+  // /pulse:init remplace aussi cet ancien crochet (installer-hook réécrit un crochet de Pulse) : référence « Remettre les contrôles du projet à jour ».
+  const controles = fs.readFileSync(path.join(RACINE, "skills", "init", "references", "controles.md"), "utf8");
+  assert.match(controles, /ou crochet de Pulse sans `pulse\/verifier\.js` \(ancien modèle[^)]*\) → `pulse-aidd installer-hook`/);
+  // Un fait, un seul endroit : les signes vus par etat.js sont ceux de la référence (.gitignore, copies, crochet, CLAUDE.md), plus les notes du pack.
+  for (const signe of ["`aidd_docs/tasks/in-progress.md`", "`aidd_docs/tasks/realisation.json`", "`aidd_docs/captures/`", "copie `ancienne`", "(`/pulse:status`, `/pulse:refine`)", "`pulse-aidd pile reference migrations.md`"])
+    assert.ok(controles.includes(signe), `controles.md : ${signe}`);
   assert.ok(!a({ ...crochet, ".git/hooks/pre-commit": "#!/bin/sh\nnode scripts/verifier.js --index\n" }), "ligne ajoutée à la main");
   assert.ok(a({ "scripts/verifier.js": "x", ".git/hooks": "<dossier>" }), "crochet absent");
   assert.ok(!a({ ...crochet, ".git/config": "[core]\n\thooksPath = .husky\n" }), "Husky range ses contrôles ailleurs");
   assert.ok(!a({ "scripts/verifier.js": "x" }), "sans dépôt, pas de crochet à vérifier");
+  // Une copie intacte d'un ancien contrôle des secrets (sans la partie « Scénarios ») est vue « ancienne » : à remettre à jour.
+  const { empreinte } = require(path.join(RACINE, "scripts", "copies.js"));
+  const modeleVerifier = fs.readFileSync(path.join(RACINE, "templates", "verifier.js"), "utf8").replace(/\r\n/g, "\n");
+  const vieux = modeleVerifier.split("\n").filter((l) => !l.includes("Scénarios")).join("\n");
+  assert.notStrictEqual(vieux, modeleVerifier, "le modèle a bien une partie « Scénarios »");
+  const lignes = vieux.split("\n");
+  lignes.splice(1, 0, `// pulse-copie: ${empreinte(vieux)}`);
+  assert.ok(a({ "scripts/verifier.js": lignes.join("\n") }), "ancien verifier.js intact, sans « Scénarios »");
   // la décision en attente et les autres fondations gardent leur place
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/tasks/in-progress.md": "" }).regle, "R1");
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/memory/glossary.md": null }).regle, "R6");
+});
+
+test("contrôles à remettre à jour : un CLAUDE.md qui cite encore /pulse:express (renommée /pulse:nouveau)", () => {
+  const MAJ = "/pulse:init — remettre les contrôles du projet à jour";
+  // Phrase du profil posée par les modèles d'avant Pulse 0.52 (relecture finale de la phase 9, R-m3).
+  const ANCIEN = CLAUDE().replace("## Commandes\n", "Rythme « rapide », posé par `/pulse:express`.\n\n## Commandes\n");
+  const ancien = etat(projet({ "CLAUDE.md": ANCIEN }));
+  assert.ok(ancien.aussi.includes(MAJ), ancien.brut);
+  assert.deepStrictEqual([ancien.regle, ancien.prochaine], ["R9", "/pulse:brainstorm"], "une ligne « aussi », jamais un blocage");
+  assert.ok(!etat(projet({ "CLAUDE.md": CLAUDE() })).aussi.includes(MAJ), "trame actuelle : rien à remettre à jour");
+  // Un fait, un seul endroit : le signe et son geste sont dans la référence que /pulse:init applique.
+  const controles = fs.readFileSync(path.join(RACINE, "skills", "init", "references", "controles.md"), "utf8");
+  assert.match(controles, /`CLAUDE\.md` cite `\/pulse:express`[^\n]*→[^\n]*`pulse-aidd modele CLAUDE\.md`[^\n]*s'appelle maintenant `\/pulse:nouveau`/);
 });
 
 test("R13 lit le verdict du rapport à jour, pas le résultat d'origine du verifier", () => {
@@ -649,9 +725,9 @@ test("autorisations : les commandes Git courantes non autorisées d'avance donne
   assert.ok(!avecArguments.aussi.includes(CONTROLES), "qualite * couvre qualite seul");
 });
 
-test("copie de Pulse ancienne et intacte (contrôle des secrets, ligne d'état) : mise à niveau proposée par /pulse:init", () => {
+test("copie de Pulse ancienne et intacte (contrôle des secrets, ligne d'état) : remise à jour proposée par /pulse:init", () => {
   const { empreinte, texteDeCopie } = require(path.join(RACINE, "scripts", "copies.js"));
-  const MAJ = "/pulse:init — mettre à niveau le projet (modèles et contrôles)";
+  const MAJ = "/pulse:init — remettre les contrôles du projet à jour";
   const ancien = "#!/usr/bin/env node\nconsole.log('ancien');\n";
   const ancienne = ancien.replace("\n", `\n// pulse-copie: ${empreinte(ancien)}\n`);
   assert.ok(etat(projet({ "scripts/verifier.js": ancienne })).aussi.includes(MAJ));

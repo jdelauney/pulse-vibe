@@ -2,7 +2,7 @@
 description: Enregistrer une version dans Git - un sujet par commit, message clair, après contrôle des secrets ; option push pour l'envoyer
 argument-hint: "[push] [\"message\"] (facultatifs)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *) Bash(pulse-aidd preuve *)
+allowed-tools: Bash(pulse-aidd contexte commit) Bash(pulse-aidd etape pr --sans-communes) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(git status *) Bash(git diff *) Bash(git add *) Bash(pulse-aidd verifier --index) Bash(pulse-aidd secrets historique *) Bash(git commit -m *) Bash(git log *) Bash(git rev-parse *) Bash(git branch --show-current) Bash(git branch --list *) Bash(git branch -r *) Bash(git branch --merged*) Bash(git symbolic-ref *) Bash(git switch -c *) Bash(git switch feat/*) Bash(git switch main) Bash(git switch master) Bash(gh auth status*) Bash(gh pr view*) Bash(gh pr create --draft *) Bash(gh pr ready*) Bash(glab auth status*) Bash(glab mr view*) Bash(glab mr create --draft *) Bash(glab mr update --ready*) Bash(git worktree list*) Bash(git worktree add *) Bash(git merge --abort) EnterWorktree ExitWorktree Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *) Bash(pulse-aidd preuve *)
 ---
 
 # /pulse:commit – Enregistrer une version
@@ -32,11 +32,10 @@ Identifiant de cette session : `${CLAUDE_SESSION_ID}` (à passer à `pulse-aidd 
 
 ### 1. Contrôles de sécurité
 
-- `.gitignore` existe et exclut le fichier local de secrets (celui de « Secrets et variables d'environnement » de `docs/technical.md`, `.env` sinon). Sinon, ajouter les lignes du modèle `.gitignore` et expliquer pourquoi.
+- `.gitignore` existe et exclut le fichier local de secrets (celui de « Secrets et variables d'environnement » de `docs/technical.md`, `.env` sinon). Sinon, et seulement dans ce cas, lancer `pulse-aidd modele gitignore.template` et en ajouter les lignes, en expliquant pourquoi.
 - Les fichiers d'environnement locaux restent hors de `git status` (seul `.env.example` peut y figurer).
-- Parcourir rapidement les modifications (`git diff`, nouveaux fichiers) à la recherche d'une clé ou d'un mot de passe.
 
-Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient un secret. S'il se déclenche, expliquer simplement pourquoi c'est une protection, corriger, puis recommencer.
+Le contrôle des clés et des règles du projet se fait à l'enregistrement (étape 6). S'il refuse, expliquer pourquoi c'est une protection, corriger, puis recommencer.
 
 ### 2. Vérifier que la tâche a été relue et testée
 
@@ -74,17 +73,17 @@ Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dan
 ### 6. Enregistrer
 
 - Montrer les fichiers de ce commit et le message.
-- `git add <fichiers du sujet>` (nommer chaque fichier, plutôt que `git add -A`, tant que d'autres sujets restent), puis `git commit` avec le message (corps et `Réf.` compris), sous la forme `git commit -m "<sujet>" -m "<corps>"`.
+- `git add <fichiers du sujet>` (nommer chaque fichier, plutôt que `git add -A`, tant que d'autres sujets restent), puis `pulse-aidd verifier --index` (clés et règles du projet dans les fichiers préparés ; un ❌ suit « Quand un contrôle refuse le commit »), puis `git commit` avec le message (corps et `Réf.` compris), sous la forme `git commit -m "<sujet>" -m "<corps>"`.
 - **Commit refusé par un contrôle** : appliquer « Quand un contrôle refuse le commit » des Conventions Git (correction mécanique dans les fichiers de ce commit, 3 essais au plus, sinon s'arrêter et expliquer ; jamais `--no-verify`).
 - Afficher `git log --oneline -3` et expliquer la première ligne (identifiant court + message).
 
 ### 7. Envoyer
 
-- **Commit d'une tâche** : appliquer « 3. Envoyer après chaque tâche enregistrée » de la référence « Le dépôt distant et l'envoi du travail », selon la ligne « Envoi » de son plan. Si un dépôt distant existe et que cette ligne vaut encore « à choisir » : appliquer d'abord son § 2 (le choix est écrit dans le plan et enregistré au commit suivant ; en mode PR, sur la branche principale, les commits non envoyés se déplacent sur la branche de l'US comme le prévoit l'étape **pr**, section B.1).
+- **Commit d'une tâche** : appliquer « 2. Envoyer après chaque tâche enregistrée » de la référence « L'envoi du travail », selon la ligne « Envoi » de son plan. Si un dépôt distant existe et que cette ligne vaut encore « à choisir » : appliquer d'abord son § 1 (le choix est écrit dans le plan et enregistré au commit suivant ; en mode PR, sur la branche principale, les commits non envoyés se déplacent sur la branche de l'US comme le prévoit l'étape **pr**, section B.1).
 - **Autre commit** (documents, mémoire…) : envoyer seulement avec `push`.
 - Branche courante : `git branch --show-current`. Dépôt distant absent (`git remote -v` vide) : garder le commit en local ; avec `push`, proposer `/pulse:init` pour en relier un (ou `/pulse:deploy`).
-- Annoncer en une phrase : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push` (première fois pour cette branche : `git push -u origin <branche>`). **Jamais `--force`.** Envoi refusé parce que le dépôt distant a des changements plus récents : ne pas forcer ; expliquer et proposer `git pull` puis un nouvel envoi.
-- Sur la branche principale, rappeler que l'envoi met le site à jour si le déploiement automatique est en place.
+- Annoncer en une phrase : « Claude Code va vous demander l'accord pour envoyer : c'est ce qui met votre travail sur le dépôt distant. » Puis `git push` (première fois pour cette branche : `git push -u origin <branche>`). Envoi refusé : Conventions Git § 4.
+- Envoi sur la branche principale d'un site déjà en ligne (« Adresses » de `CLAUDE.md`) : l'annonce dit aussi qu'il met le site à jour si le déploiement automatique est en place (règle commune 17) ; hors d'une boucle de `/pulse:spirc` ou de `/pulse:implement`, proposer ensuite `/pulse:deploy`, qui vérifie la nouvelle version en ligne.
 
 ### 8. Compte rendu
 
@@ -93,9 +92,9 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 ### Suite
 
 - S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
-- Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 4. Fin du plan, en mode PR » de la référence « Le dépôt distant et l'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
+- Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 3. Fin du plan, en mode PR » de la référence « L'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
-- Si toutes les US Indispensables (le MVP) sont terminées, ou si la tâche suivante est « Mettre en ligne… » : prochaine étape `/pulse:deploy`.
+- Si toutes les US Indispensables (le MVP) sont terminées, si la tâche suivante est « Mettre en ligne… », ou si le plan est terminé et envoyé sur la branche principale d'un site en ligne : prochaine étape `/pulse:deploy` (vérification en ligne).
 - Si le commit a été fait **dans un worktree** (`git rev-parse --git-dir` différent de `git rev-parse --git-common-dir`) et que le plan de l'US est terminé : appliquer « 3. Terminer : rassembler le travail » de la référence worktree (`pulse-aidd reference worktree-dossier.md`).
 - Si le site est déjà en ligne et que cette version reste en local : prochaine étape `/pulse:deploy` (il envoie, puis vérifie la version en ligne).
 
@@ -111,4 +110,4 @@ Terminer avec le bloc de fin de commande.
 
 !`pulse-aidd contexte commit`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
+Ce contexte contient aussi « Conventions Git » et « L'envoi du travail » ; le modèle `.gitignore` (`pulse-aidd modele gitignore.template`) et la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.

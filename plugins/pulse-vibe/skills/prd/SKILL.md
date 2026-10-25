@@ -1,7 +1,7 @@
 ---
 description: Produire le PRD - le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/prd.md) Edit(docs/prd.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(docs/lexique.md) Edit(docs/lexique.md)
+allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/prd.md) Edit(docs/prd.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
 
 # /pulse:prd – Le besoin produit et le périmètre du MVP
@@ -78,4 +78,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour 
 
 !`pulse-aidd contexte prd`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire » et « Modèle : docs/prd.md ». Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.

@@ -174,9 +174,13 @@ function prochaineTache(plans) {
   return ordre.find((x) => x.tache.statut === "en-cours") || ordre.find((x) => x.tache.statut === "a-faire") || null;
 }
 
-function commandeSuivante(plan, tache) {
-  if (estMiseEnLigne(tache)) return "/pulse:deploy";
-  return tache.statut === "en-cours" ? `/pulse:review ${tache.id}` : `/pulse:implement ${plan.id} ${tache.id}`;
+/**
+ * La prochaine étape conseillée, calculée comme pour /pulse:status et /pulse:init (scripts/etat.js), sans Git ni décision
+ * en attente : le guide n'est refait qu'au changement d'un plan, une décision en attente y resterait périmée.
+ */
+function prochaineEtape() {
+  const { lireFaits, decider } = require("./etat.js");
+  return decider({ ...lireFaits(process.cwd(), { git: false }), enAttente: null });
 }
 
 /** Un worktree est-il déjà ouvert pour cette US (dossier .claude/worktrees/us-xxx-…) ? */
@@ -196,7 +200,7 @@ function usEnParallele(plans, plan) {
   );
 }
 
-function ecrireIndex(plans, nom) {
+function ecrireIndex(plans, nom, conseil) {
   const suite = prochaineTache(plans);
   const lignes = [
     `# Guide de réalisation – ${nom}`,
@@ -211,15 +215,26 @@ function ecrireIndex(plans, nom) {
   if (mvp.length > 0) {
     lignes.push(`Première version (US Indispensables planifiées) : ${mvp.filter((t) => t.statut === "terminee").length}/${mvp.length} tâche(s) terminée(s).`, "");
   }
+  if (!suite) {
+    lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
+  }
+  lignes.push(
+    `Prochaine commande à copier : ${conseil.raison}.`,
+    "",
+    "```",
+    conseil.prochaine,
+    "```",
+    "",
+    // Sans Git ni suivi du référencement (le guide n'est refait qu'au changement d'un plan) : le dire franchement.
+    "C'est la même que `/pulse:status`, sauf une fois le site en ligne ou quand des versions enregistrées ne sont pas encore envoyées : tapez alors `/pulse:status` pour l'étape à jour.",
+    "",
+  );
   if (suite) {
-    lignes.push(`Prochaine étape : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}) :`, "");
-    lignes.push("```", commandeSuivante(suite.plan, suite.tache), "```", "");
+    lignes.push(`Tâche à reprendre : **${suite.tache.id} – ${suite.tache.titre}** (${LIBELLES[suite.tache.statut]}), US \`${suite.plan.id}\`, dans [${suite.plan.guide}](${suite.plan.guide}).`, "");
     const autre = usEnParallele(plans, suite.plan);
     if (autre) {
       lignes.push(`💡 En même temps, dans une deuxième session Claude Code : \`/pulse:spirc ${autre.id}\` (${nomPlan(autre)} ne touche pas aux mêmes fichiers ; Pulse vous proposera un dossier à part).`, "");
     }
-  } else {
-    lignes.push("🎉 Toutes les tâches des plans sont terminées. Prochaines étapes possibles : `/pulse:deploy`, `/pulse:security`, `/pulse:seo` (être trouvé), une nouvelle US avec `/pulse:spec <US-XXX>`, ou une demande avec `/pulse:spirc <US-XXX> \"…\"`.", "");
   }
   lignes.push("## Avant de construire", "", ...etapesAvantLePlan(plans), "");
   lignes.push("## Les plans", "", "| Groupe | US | Priorité | Tâches | Terminées | Guide |", "|---|---|---|---|---|---|");
@@ -241,7 +256,7 @@ function ecrireIndex(plans, nom) {
     "/pulse:status      # où en est le projet, et quoi faire maintenant",
     "```",
     "",
-    "La première fois, ou après une mise à jour du plugin Pulse : `/pulse:init` (il prépare le projet et le met à niveau).",
+    "La première fois, ou après une mise à jour du plugin Pulse : `/pulse:init` (il prépare le projet et remet ses contrôles à jour).",
     "",
     "## Si vous êtes bloqué",
     "",
@@ -354,7 +369,7 @@ function generer() {
     if (ignores.length > 0) {
       return { erreur: `Aucune tâche reconnue (${ignores.join(", ")}) : format attendu « - [ ] **T1 – Titre** · US-001 » sous « ## Tâches ».` };
     }
-    if (ancienEmplacement()) return { erreur: "Les plans sont à l'ancien emplacement (docs/plans/ ou docs/plan.md) : lancez /pulse:init pour les réorganiser dans aidd_docs/tasks/." };
+    if (ancienEmplacement()) return { erreur: "Les plans sont à l'ancien emplacement (docs/plans/ ou docs/plan.md) : cette version de Pulse lit seulement aidd_docs/tasks/ ; créez chaque plan avec /pulse:plan." };
     return { erreur: "Aucun plan dans aidd_docs/tasks/ : lancez d'abord /pulse:plan <US-XXX>." };
   }
 
@@ -370,7 +385,8 @@ function generer() {
     if (avant !== contenu) fs.writeFileSync(complet, contenu, "utf8");
     ecrits.push(f);
   };
-  ecrire("index.md", ecrireIndex(plans, nom));
+  const conseil = prochaineEtape();
+  ecrire("index.md", ecrireIndex(plans, nom, conseil));
   for (const plan of plans) ecrire(plan.guide, ecrirePlan(plan, nom));
   const toutes = plans.flatMap((p) => p.taches);
   return {
@@ -379,7 +395,7 @@ function generer() {
     plans: plans.length,
     taches: toutes.length,
     faites: toutes.filter((t) => t.statut === "terminee").length,
-    suite: prochaineTache(plans),
+    conseil,
   };
 }
 
@@ -415,7 +431,7 @@ if (require.main === module) {
       console.log(`✅ Guide de réalisation à jour : ${r.plans} plan(s), ${r.faites}/${r.taches} tâche(s) terminée(s).`);
       for (const f of r.ecrits) console.log(`   docs/guide/${f}`);
       for (const n of r.ignores) console.log(`⚠️ ${n} : aucune tâche reconnue, plan ignoré.`);
-      if (r.suite) console.log(`➡️ Prochaine étape : ${commandeSuivante(r.suite.plan, r.suite.tache)}  (${r.suite.tache.id} – ${r.suite.tache.titre})`);
+      console.log(`➡️ Prochaine étape : ${r.conseil.prochaine}  (${r.conseil.raison})`);
     }
   }
 }

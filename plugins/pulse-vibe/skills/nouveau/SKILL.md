@@ -2,10 +2,10 @@
 description: Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser
 argument-hint: "[votre idée en une phrase | vos documents]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte express) Bash(pulse-aidd contexte perf) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape cicd --sans-communes) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape deploy --sans-communes) Bash(pulse-aidd etape perf --sans-communes) Bash(pulse-aidd etape tech --sans-communes) Bash(pulse-aidd etape ui --sans-noyau) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd verifier-spec *) Bash(pulse-aidd autorisations) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Bash(pulse-aidd contraste *) Bash(pulse-aidd guide) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(start "" *.html) Bash(open *.html) Bash(xdg-open *.html) Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Bash(git status *) Write(docs/brief.md) Edit(docs/brief.md) Write(docs/prd.md) Edit(docs/prd.md) Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(git diff *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *) Write(docs/technical.md) Edit(docs/technical.md) Edit(./CLAUDE.md) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Write(docs/design.md) Edit(docs/design.md) Write(docs/design/**) Edit(docs/design/**) Bash(pulse-aidd copies) Bash(pulse-aidd etape auto-fix --sans-noyau) Bash(pulse-aidd etape fix --sans-noyau) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd contexte fix) Bash(pulse-aidd preuve *)
+allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte nouveau) Bash(pulse-aidd contexte tech) Bash(pulse-aidd contexte ui) Bash(pulse-aidd etape cicd --sans-communes) Bash(pulse-aidd etape commit --sans-communes) Bash(pulse-aidd etape deploy --sans-communes) Bash(pulse-aidd etape tech --sans-communes) Bash(pulse-aidd etape ui --sans-noyau) Bash(pulse-aidd agent designer) Bash(pulse-aidd agent ui-critic) Bash(pulse-aidd reference *) Bash(pulse-aidd verifier-spec *) Bash(pulse-aidd autorisations) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd comparer *) Bash(pulse-aidd identite *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd memoire) Bash(pulse-aidd perf *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile squelette *) Bash(pulse-aidd piles) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd seo *) Bash(pulse-aidd sessions *) Bash(pulse-aidd sonder *) Bash(pulse-aidd travail-fini) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd maquettes verifier *) Bash(pulse-aidd textes verifier *) Bash(pulse-aidd contraste *) Bash(pulse-aidd guide) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(start "" *.html) Bash(open *.html) Bash(xdg-open *.html) Bash(git ls-files *) Bash(git grep -n *) Bash(git grep -l *) Bash(git status *) Write(docs/brief.md) Edit(docs/brief.md) Write(docs/prd.md) Edit(docs/prd.md) Write(docs/user-stories.md) Edit(docs/user-stories.md) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(git diff *) Bash(git log *) Bash(git remote -v) Bash(git remote get-url *) Bash(git fetch origin) Bash(pulse-aidd revue *) Write(docs/technical.md) Edit(docs/technical.md) Edit(./CLAUDE.md) Write(aidd_docs/memory/**) Edit(aidd_docs/memory/**) Write(docs/design.md) Edit(docs/design.md) Write(docs/design/**) Edit(docs/design/**) Bash(pulse-aidd copies) Bash(pulse-aidd etape auto-fix --sans-noyau) Bash(pulse-aidd etape fix --sans-noyau) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd contexte fix) Bash(pulse-aidd preuve *) Bash(pulse-aidd verifier --index) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *)
 ---
 
-# /pulse:express – Démarrer vite
+# /pulse:nouveau – Démarrer vite
 
 ## Objectif
 
@@ -15,7 +15,7 @@ La rapidité vient du regroupement des questions et des déductions que Pulse fa
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte express` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte nouveau` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
 
@@ -24,8 +24,8 @@ Idée de départ (facultative), ou des documents à lire : `$ARGUMENTS`
 ### Prérequis
 
 - `CLAUDE.md` Pulse présent : sinon, proposer `/pulse:init` et s'arrêter.
-- `docs/brief.md`, `docs/prd.md` ou `docs/user-stories.md` existent déjà : le projet a commencé. Proposer (AskUserQuestion) « Reprendre là où en est le projet : tapez `/pulse:init` (Recommandé) » / « Repartir de zéro en express (les documents existants sont remplacés) ». Sur la première réponse, rendre la main. Remplacer seulement avec cet accord explicite.
-- `aidd_docs/tasks/in-progress.md` concerne `/pulse:express` : proposer de reprendre à l'étape notée.
+- `docs/brief.md`, `docs/prd.md` ou `docs/user-stories.md` existent déjà : le projet a commencé. Proposer (AskUserQuestion) « Reprendre là où en est le projet : tapez `/pulse:init` (Recommandé) » / « Repartir de zéro (les documents existants sont remplacés) ». Sur la première réponse, rendre la main. Remplacer seulement avec cet accord explicite.
+- `aidd_docs/tasks/in-progress.md` concerne `/pulse:nouveau` (ou son ancien nom `/pulse:express`) : proposer de reprendre à l'étape notée.
 - **Documents de départ** (en argument, ou `docs/depart/`) : appliquer `pulse-aidd reference documents-depart.md` ; demander seulement le reste.
 
 ## Processus
@@ -60,7 +60,7 @@ Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/t
 À partir des quatre blocs, Pulse déduit lui-même :
 
 - **Le MVP** (MoSCoW) : le parcours le plus court qui règle le problème principal = **Indispensable** ; le reste en Essentiel, Optionnel ou « En attente ».
-- **Les groupes et les US** (règles de `/pulse:us` : identifiants, `<epic>`, `<nom>`, critères d'acceptation vérifiables, INVEST et Definition of Ready), avec un **parcours utilisateur** et un **ordre de réalisation**.
+- **Les groupes et les US** (« Les règles des user stories », chargées dans « Références de la commande »), avec un **parcours utilisateur** et un **ordre de réalisation**.
 - **Les besoins techniques**, à partir des actions notées : comptes ou espace réservé → connexion ; réservation, commande, fiche, contenu géré → données partagées ; paiement → service de paiement, en mode test ; dépôt de fichiers → stockage ; e-mails ou confirmations → service d'e-mail ; plusieurs langues → traduction. Seulement ce que la personne a décrit : une mesure d'audience, par exemple, attend une demande explicite.
 
 Une ambiguïté qui change le périmètre (paiement unique ou abonnement ? une seule personne ou une équipe ?) : poser **une seule** question ciblée.
@@ -87,7 +87,7 @@ Avec les modèles (en fin de fichier), en appliquant « Qui a décidé quoi » (
 
 - `docs/brief.md` (blocs 1 et 2) et `aidd_docs/memory/glossary.md` (les mots du métier employés par la personne) ;
 - `docs/prd.md` : objectifs, utilisateurs, MVP en MoSCoW, contraintes (bloc 4), questions ouvertes ;
-- `docs/user-stories.md` (référentiel) et un fichier `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` par US ; si la mémoire projet indique un outil de ticketing, les tickets aussi (étape 6 de `/pulse:us`) ;
+- `docs/user-stories.md` (référentiel) et un fichier `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` par US ; si la mémoire projet indique un outil de ticketing, les tickets aussi (« Ticketing » des règles des user stories) ;
 - les réponses du bloc 3 dans la section « Décisions prises » du brief, sur une ligne « Apparence souhaitée : <3 mots> ; références : … », pour l'étape 7.
 
 Dans le bloc `pulse_profil` de `CLAUDE.md`, écrire « - **Rythme** : rapide » (ajouter la ligne si elle manque), et le dire en une phrase : « J'ai réglé la réalisation sur le rythme rapide : l'essentiel des tests, et un seul test complet par vous à la fin de chaque user story. Dites « rythme complet » si vous voulez tout le détail. »
@@ -110,12 +110,12 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc versi
 
 ## Exemples
 
-- `/pulse:express "un carnet de commandes pour ma boulangerie"` : quatre séries de questions, un seul écran récapitulatif à valider, puis le choix des outils et de l'apparence.
-- `/pulse:express docs/depart/` : vos documents (cahier des charges, maquettes) sont lus d'abord ; seules les questions sans réponse vous sont posées.
-- `/pulse:express` dans un projet déjà commencé : la proposition de reprendre là où il en est avec `/pulse:init`, ou de repartir de zéro avec votre accord.
+- `/pulse:nouveau "un carnet de commandes pour ma boulangerie"` : quatre séries de questions, un seul écran récapitulatif à valider, puis le choix des outils et de l'apparence.
+- `/pulse:nouveau docs/depart/` : vos documents (cahier des charges, maquettes) sont lus d'abord ; seules les questions sans réponse vous sont posées.
+- `/pulse:nouveau` dans un projet déjà commencé : la proposition de reprendre là où il en est avec `/pulse:init`, ou de repartir de zéro avec votre accord.
 
 ## Références de la commande
 
-!`pulse-aidd contexte express`
+!`pulse-aidd contexte nouveau`
 
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte express` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire », « Règles de la mémoire projet », « Les règles des user stories », « Modèle : docs/brief.md », « Modèle : docs/prd.md », « Modèle : docs/user-stories.md (référentiel) », « Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md », « Modèle : aidd_docs/memory/glossary.md » et « Modèle : travail en cours » ; la référence des documents de départ (`pulse-aidd reference documents-depart.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte nouveau` et lire sa sortie.

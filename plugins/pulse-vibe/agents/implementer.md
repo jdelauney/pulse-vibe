@@ -1,6 +1,6 @@
 ---
 name: implementer
-description: Réaliser une tâche du plan déjà validée, strictement dans son périmètre, en respectant la pile retenue dans docs/technical.md et les règles de sécurité Pulse. Laisse la planification et le jugement de son travail à l'appelant. Utilisé par /pulse:spirc ([I] Implémenter) et /pulse:implement (en coulisse).
+description: Réaliser une tâche validée d'un plan, dans son périmètre, selon docs/technical.md et les règles de sécurité ; planifier et juger reste à l'appelant (commandes Pulse).
 disallowedTools: NotebookEdit, Agent, EnterWorktree, ExitWorktree
 model: sonnet
 ---

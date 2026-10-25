@@ -52,7 +52,7 @@ Cette commande prépare, contrôle, explique et parle à la personne ; devant vo
 - **Mode** (sans `-s` ni `-d`) : « Comment réaliser la tâche ? » → « Je code en coulisse (Recommandé) » (un assistant spécialisé code à part : la conversation reste légère) / « Je code devant vous » (vous voyez chaque étape). Sous-agent `pulse:implementer` indisponible : devant vous, en le signalant.
 - **Tests** (sans `-t`) : « 2. Choisir au démarrage » de « Tests automatiques ».
 - **Dossier à part** (sans `-w`) : « 1. Faut-il un worktree ? » de la référence worktree, si la question se pose.
-- **Envoi** : dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant.md` (à chaque lancement, y compris à une reprise) ; appliquer « 2. Choisir comment envoyer le travail d'un plan » si la ligne « Envoi » du plan vaut « à choisir » ; en mode PR, préparer la branche de l'US ou y revenir (selon « Le dépôt distant et l'envoi du travail »).
+- **Envoi** : dès qu'un dépôt distant existe, lancer `pulse-aidd reference envoi.md` (à chaque lancement, y compris à une reprise) ; appliquer « 1. Choisir comment envoyer le travail d'un plan » si la ligne « Envoi » du plan vaut « à choisir » ; en mode PR, préparer la branche de l'US ou y revenir (selon « L'envoi du travail »).
 
 **Avec un dossier à part** : `pulse-aidd reference worktree-dossier.md`, puis le créer ou y revenir (« 2. Créer le worktree ou y revenir »), **avant** de marquer la tâche `[~]`.
 
@@ -106,4 +106,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review`, o�
 
 !`pulse-aidd contexte implement`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte, sauf « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, au choix de l'envoi), « Tests d'abord » (`pulse-aidd reference tests-dabord.md`, avec `-t`), la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`, avec un dossier à part) et les consignes de l'implementer (`pulse-aidd agent implementer`, devant vous, § 2). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
+Ce contexte contient aussi « Tests automatiques », « Travailler dans un worktree », « Déléguer à l'implementer » et « Modèle : docs/lexique.md ». Se lancent à leur étape : « L'envoi du travail » (`pulse-aidd reference envoi.md`, au choix de l'envoi), « Tests d'abord » (`pulse-aidd reference tests-dabord.md`, avec `-t`), la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`, avec un dossier à part), les consignes de l'implementer (`pulse-aidd agent implementer`, devant vous, § 2) et la fiche de test (`pulse-aidd modele smoke-test.md` et `pulse-aidd reference tests/test-manuel.md`, à « À vous de tester »). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.

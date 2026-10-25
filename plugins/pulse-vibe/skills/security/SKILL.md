@@ -2,7 +2,7 @@
 description: Sécurité du projet - audit complet S1 à S13 et test du cambrioleur, contrôle rapide, en-têtes de sécurité, préparation d'un audit outillé
 argument-hint: "[audit | rapide | entetes | preparer] (par défaut : audit)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte security) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git ls-files *) Bash(git log *) Bash(git grep -n *) Bash(git grep -l *) Bash(pulse-aidd sonder *) Bash(gitleaks detect --config .gitleaks.toml --redact*) Write(docs/securite.md) Edit(docs/securite.md)
+allowed-tools: Bash(pulse-aidd contexte security) Bash(pulse-aidd agent security-auditor) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd pile contexte *) Bash(pulse-aidd verifier) Bash(git status *) Bash(git ls-files *) Bash(git log *) Bash(git grep -n *) Bash(git grep -l *) Bash(pulse-aidd sonder *) Bash(gitleaks detect --config .gitleaks.toml --redact*) Write(docs/securite.md) Edit(docs/securite.md) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *)
 ---
 
 # /pulse:security – La sécurité du projet
@@ -93,4 +93,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pui
 
 !`pulse-aidd contexte security`
 
-Le modèle de `docs/securite.md` figure dans ce contexte ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/securite.md » ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.

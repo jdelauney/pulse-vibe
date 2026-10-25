@@ -90,7 +90,7 @@ function erreurInattendue(e) {
 
 const MESSAGE_SANS_CLE =
   "La clé Google manque : la variable d'environnement PULSE_PSI_CLE n'est pas définie sur ce poste.\n" +
-  "  Créez-la une fois (procédure guidée : /pulse:perf suivre, ou « La clé Google » dans pulse-aidd reference perf/performance.md),\n" +
+  "  Créez-la une fois (procédure guidée : /pulse:perf, ou pulse-aidd reference perf/cle.md),\n" +
   "  puis redémarrez Claude Code. Pour mesurer sans clé : --source local (Lighthouse sur cette machine).";
 
 // ------------------------------------------------------------------ Mise en forme française

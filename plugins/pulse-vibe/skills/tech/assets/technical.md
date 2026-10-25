@@ -55,7 +55,7 @@ flowchart LR
 
 ## Organisation des fichiers
 
-> Projet existant : l'organisation observée dans le code. Projet neuf : l'organisation décidée (les dossiers sont créés au fil des tâches).
+> Projet existant : l'organisation observée dans le code. Projet neuf : l'organisation décidée (les dossiers sont créés au fil des tâches). Où vont le code client, le code serveur, les fichiers publiés, et ce qui reste privé (`docs/` reste toujours privé).
 
 ```
 {{arborescence}}
@@ -106,7 +106,7 @@ flowchart LR
 
 ## Référencement
 
-<!-- Rempli par /pulse:search-console relier (et /pulse:seo lancer pour la vérification minimale). Les textes et la politique des robots IA sont dans docs/seo.md. -->
+<!-- Rempli par /pulse:search-console relier ou /pulse:seo lancer (la même liaison à Search Console). Les textes et la politique des robots IA sont dans docs/seo.md. -->
 - Search Console : {{propriété (`sc-domain:exemple.fr` ou `https://adresse/`) – méthode (balise meta ou DNS) – vérifiée le AAAA-MM-JJ, ou « à relier avec /pulse:search-console relier »}}
 - Balise de vérification : {{fichier où elle se trouve, à garder en place, ou « aucune (DNS) »}}
 - Sitemap : {{adresse – déclaré le AAAA-MM-JJ}}
@@ -117,6 +117,8 @@ flowchart LR
 ## Mise en place
 
 Ce qu'il faut créer ou installer avant la première tâche (comptes, squelette du projet, commandes). Les clés secrètes ne sont **jamais** collées dans la conversation : la personne les saisit elle-même dans le fichier local ou chez l'hébergeur.
+
+Sans pack de pile : le squelette s'initialise selon la documentation officielle, versions fixées ; si l'outil refuse un dossier non vide ou risque d'écraser un fichier, il s'initialise dans un dossier temporaire, puis ses fichiers sont rapatriés en gardant `CLAUDE.md`, `README.md` et `.gitignore` (ce qu'ils apportent d'utile y est fusionné), et le dossier temporaire est supprimé.
 
 1. {{étape}}
 

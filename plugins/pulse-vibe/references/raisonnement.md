@@ -1,4 +1,4 @@
-# Penser avant d'écrire (/pulse:brainstorm, /pulse:prd, /pulse:us)
+# Penser avant d'écrire (/pulse:brainstorm, /pulse:prd, /pulse:us, /pulse:nouveau)
 
 Le vrai risque d'un projet n'est pas la lenteur : c'est de construire vite une solution mal comprise. Ces commandes aident la personne à **raisonner sur son produit** et à trancher elle-même ce qui le structure, en respectant son temps : peu de questions ouvertes, bien choisies ; tout le reste en questions à choix.
 
@@ -9,7 +9,7 @@ On raisonne sur le **métier** : l'apprentissage de la programmation (notion du 
 | | Questions clés | Questions secondaires |
 |---|---|---|
 | Quoi | Ce qui structure le produit : pour qui, quel problème, ce qui ferait dire « ça m'aide vraiment », la règle métier centrale, la coupe du MVP, le « alors » d'un cas limite important | Détails, valeurs par défaut, préférences |
-| Comment | **Dans la conversation, une à la fois, réponse libre**, sans réponse recommandée, avec des exemples (§ 2) | AskUserQuestion, 2 à 4 réponses, la recommandée en premier avec « (Recommandé) » |
+| Comment | **Dans la conversation, une à la fois, réponse libre**, sans réponse recommandée, avec des exemples (§ 2) | AskUserQuestion selon la règle commune 5 |
 | Combien | brief : 4 à 5 · PRD : 2 à 3 · US : 1 à 2 par epic | autant que nécessaire, par rondes |
 
 Une question clé déjà tranchée par un document (brief, glossaire, PRD, mémoire) ne se repose pas : la citer et passer à la suite.

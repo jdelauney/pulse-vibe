@@ -115,6 +115,10 @@ test("wiki : texte visible sans jargon (hors code, termes définis avec <dfn> et
   assert.deepStrictEqual(problemes, []);
 });
 
+test("wiki : aucune page ne renvoie à un paragraphe numéroté des consignes (§), qui change avec elles", options, () => {
+  assert.deepStrictEqual(PAGES.filter((p) => /§|&sect;/.test(lire(p))).map(relatif), []);
+});
+
 test("wiki : charte – pas de vert, couleurs par variables, graisses retenues, un seul CTA à flamme par page", options, () => {
   const problemes = [];
   const sources = [...PAGES, ...fichiers(WIKI, ".css"), ...fichiers(WIKI, ".js")];

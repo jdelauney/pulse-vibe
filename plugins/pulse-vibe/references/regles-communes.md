@@ -29,11 +29,9 @@ La personne en face est **indépendante, dirigeante ou collaboratrice d'une peti
 
 ## 2. Où se trouvent les choses
 
-Le tableau des fichiers du projet (ce que produit chaque commande, et ce qu'ils contiennent) s'affiche avec `pulse-aidd reference fichiers-projet.md` ; il figure dans le contexte de `/pulse:init` et `/pulse:guide`.
+Le tableau des fichiers du projet (ce que produit chaque commande, et ce qu'ils contiennent) s'affiche avec `pulse-aidd reference fichiers-projet.md`.
 
 Avant d'écrire une spec, un écran ou un texte : appliquer, s'ils existent, `docs/design.md` (identité visuelle), `docs/seo.md` (source unique des titres et descriptions), `docs/textes/<page>.md` (textes validés de la page) et `docs/voix.md` (voix du site).
-
-**Ancien projet** (`docs/specs/`, `docs/plans/`, `docs/revues/`, ou `docs/spec.md` et `docs/plan.md`, ou des US détaillées dans `docs/user-stories.md`) : proposer `/pulse:init`, qui réorganise les documents dans `aidd_docs/tasks/`.
 
 Un modèle s'affiche avec `pulse-aidd modele <fichier>` ; ceux que la commande utilise le plus figurent dans son contexte.
 Les outils `pulse-aidd` et `pulse-pile-<id>` se lancent avec l'outil Bash (Git Bash sous Windows), où s'appliquent les autorisations des commandes ; depuis PowerShell, leur relais `.ps1` les lance aussi, arguments intacts (si une stratégie d'entreprise bloque les scripts PowerShell : outil Bash).
@@ -91,4 +89,4 @@ Une ligne par critère ; une rubrique vide s'écrit « aucun ». Un test écrit 
 
 ## 5. Le cycle Pulse
 
-L'ordre des commandes, et celles qui s'utilisent à tout moment, s'affichent avec `pulse-aidd reference cycle.md` ; ils figurent dans le contexte de `/pulse:init`, `/pulse:status` et `/pulse:guide`.
+L'ordre des commandes, et celles qui s'utilisent à tout moment, s'affichent avec `pulse-aidd reference cycle.md` ; ils figurent dans le contexte de `/pulse:guide`.

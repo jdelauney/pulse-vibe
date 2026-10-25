@@ -84,4 +84,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:fix "<éche
 
 !`pulse-aidd contexte test`
 
-Ce contexte contient le lexique et, avec un pack de pile, ses consignes de test. « Tests automatiques » et la méthode Gherkin se lancent à la demande (prérequis, et étape 1 d'« Écrire »). Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/lexique.md » et, avec un pack de pile, ses consignes de test. « Tests automatiques » et la méthode Gherkin se lancent à la demande (prérequis, et étape 1 d'« Écrire »). Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.

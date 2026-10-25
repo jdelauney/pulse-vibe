@@ -11,11 +11,11 @@ const RACINE = path.join(__dirname, "..");
 // Chemin relatif et cwd = racine du plugin : fonctionne avec Git Bash, Cygwin, macOS et Linux.
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-aidd", ...args], { cwd: RACINE, encoding: "utf8" });
 
-test("contexte ui : règles communes, quatre références de design et trois modèles", () => {
+test("contexte ui : les règles communes seules (références et modèles chargés à l'étape qui les cite)", () => {
   const r = lancer("contexte", "ui");
   assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
   for (const titre of [
-    "===== Règles communes Pulse =====",
     "===== Registres d'interface =====",
     "===== Règles d'interface =====",
     "===== Anti-patterns d'interface =====",
@@ -23,7 +23,7 @@ test("contexte ui : règles communes, quatre références de design et trois mod
     "===== Modèle : docs/design.md =====",
     "===== Modèle : note de variante =====",
     "===== Modèle : rapport d'audit d'interface =====",
-  ]) assert.ok(r.stdout.includes(titre), titre);
+  ]) assert.ok(!r.stdout.includes(titre), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -38,18 +38,19 @@ test("contexte learn : règles communes, pédagogie et modèle du carnet", () =>
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte commit et pr : conventions Git partagées, modèle de PR pour pr", () => {
+test("contexte commit et pr : conventions Git partagées, modèles lancés à la demande", () => {
   const commit = lancer("contexte", "commit");
   assert.strictEqual(commit.status, 0, commit.stderr);
   assert.ok(commit.stdout.includes("===== Conventions Git ====="));
-  assert.ok(commit.stdout.includes("===== Modèle : .gitignore ====="));
+  assert.ok(commit.stdout.includes("===== L'envoi du travail ====="));
+  assert.ok(!commit.stdout.includes("===== Modèle : .gitignore ====="), "le modèle .gitignore se lance seulement s'il manque");
   const pr = lancer("contexte", "pr");
   assert.strictEqual(pr.status, 0, pr.stderr);
   for (const titre of [
     "===== Règles communes Pulse =====",
     "===== Conventions Git =====",
-    "===== Modèle : description de demande de fusion =====",
   ]) assert.ok(pr.stdout.includes(titre), titre);
+  assert.ok(!pr.stdout.includes("===== Modèle : description de demande de fusion ====="), "le modèle se lance au moment de rédiger");
   assert.doesNotMatch(pr.stdout, /commande inconnue/);
 });
 
@@ -85,32 +86,38 @@ test("l'aide cite secrets, seo, perf et search-console", () => {
     assert.ok(r.stdout.includes(sc), sc);
 });
 
-test("contexte secrets : règles communes, saisie hors conversation, fuite, modèles des secrets et de l'incident", () => {
+test("contexte secrets : règles communes, saisie hors conversation, modèle des secrets ; la fuite et le journal d'incident à la demande", () => {
   const r = lancer("contexte", "secrets");
   assert.strictEqual(r.status, 0);
-  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Réagir à une fuite de clé", "Modèle : docs/secrets.md", "Modèle : journal d'incident"])
+  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Modèle : docs/secrets.md", "Modèle : docs/lexique.md"])
     assert.ok(r.stdout.includes(`===== ${titre}`), titre);
+  for (const titre of ["Réagir à une fuite de clé", "Modèle : journal d'incident"]) assert.ok(!r.stdout.includes(`===== ${titre}`), `sans ${titre}`);
 });
 
-test("contexte deploy : saisie des secrets hors conversation ; contexte security : le modèle de docs/securite.md seul", () => {
-  assert.ok(lancer("contexte", "deploy").stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), "deploy");
+test("contexte deploy : les règles communes seules, chaque mode lance sa référence ; contexte security : le modèle de docs/securite.md seul", () => {
+  const deploy = lancer("contexte", "deploy").stdout;
+  assert.ok(deploy.includes("===== Règles communes Pulse ====="), "deploy : règles communes");
+  assert.deepStrictEqual([...deploy.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]), ["Règles communes Pulse"], "deploy : rien d'autre");
+  for (const mode of ["premiere", "production", "variables"]) assert.strictEqual(lancer("reference", `deploy/${mode}.md`).status, 0, mode);
   const security = lancer("contexte", "security").stdout;
   assert.ok(security.includes("===== Modèle : docs/securite.md ====="), "security : modèle");
   for (const titre of ["Garder la valeur d'un secret hors de la conversation", "Checklist sécurité", "Modèle : mention de confidentialité"])
     assert.ok(!security.includes(`===== ${titre}`), `security sans « ${titre} »`);
 });
 
-test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique", () => {
+test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique ; la politique IA, le modèle d'audit et le modèle du travail en cours se chargent à l'étape qui les cite", () => {
   const attendus = {
-    seo: ["Référencement : les règles", "Référencement : assistants IA", "Modèle : docs/seo.md", "Modèle : rapport d'audit de référencement"],
+    seo: ["Référencement : les règles", "Modèle : docs/seo.md"],
     perf: ["La vitesse vécue par les visiteurs", "Modèle : docs/performance.md"],
-    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md", "Modèle : travail en cours"],
+    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md"],
   };
+  const absents = { seo: ["Référencement : assistants IA", "Modèle : rapport d'audit de référencement"], "search-console": ["Modèle : travail en cours"] };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, commande);
     assert.doesNotMatch(r.stdout, /commande inconnue/, commande);
     for (const titre of [...titres, "Modèle : docs/lexique.md"]) assert.ok(r.stdout.includes(`===== ${titre} =====`), `${commande} : ${titre}`);
+    for (const titre of absents[commande] || []) assert.ok(!r.stdout.includes(`===== ${titre} =====`), `${commande} sans « ${titre} »`);
   }
 });
 
@@ -118,7 +125,7 @@ test("contexte annuler : règles communes seules ; l'envoi du travail se lit à 
   const r = lancer("contexte", "annuler");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
-  for (const titre of ["Conventions Git", "Le dépôt distant et l'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
+  for (const titre of ["Conventions Git", "Le dépôt distant", "L'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -130,14 +137,27 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte init et guide : fichiers du projet et cycle Pulse ; status : le cycle seul", () => {
-  for (const commande of ["init", "guide", "status"]) {
+test("contexte init : la bannière seule ; guide : le cycle Pulse seul ; status : ni l'un ni l'autre (le tableau vient de pulse-aidd etat --tableau)", () => {
+  const init = lancer("contexte", "init");
+  assert.strictEqual(init.status, 0, init.stderr);
+  const communes = /^Règles (communes Pulse|des tâches|de relecture|de réalisation)$/; // noyau et modules
+  const titres = [...init.stdout.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]).filter((t) => !communes.test(t));
+  assert.deepStrictEqual(titres, ["Bannière"], "init : chaque référence ou modèle se charge à l'action qui le cite");
+  for (const commande of ["guide", "status"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
-    for (const titre of ["===== Règles communes Pulse =====", "===== Le cycle Pulse ====="]) assert.ok(r.stdout.includes(titre), `${commande} : ${titre}`);
-    assert.strictEqual(r.stdout.includes("===== Les fichiers du projet ====="), commande !== "status", `${commande} : fichiers du projet`);
+    assert.ok(r.stdout.includes("===== Règles communes Pulse ====="), commande);
+    assert.strictEqual(r.stdout.includes("===== Le cycle Pulse ====="), commande !== "status", `${commande} : cycle Pulse`);
+    assert.ok(!r.stdout.includes("===== Les fichiers du projet ====="), `${commande} : fichiers du projet`);
   }
   assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
+});
+
+test("contexte memory : les règles de la mémoire seules, chaque modèle affiché à l'action qui le cite", () => {
+  const r = lancer("contexte", "memory");
+  assert.strictEqual(r.status, 0, r.stderr);
+  const titres = [...r.stdout.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]).filter((t) => t !== "Règles communes Pulse");
+  assert.deepStrictEqual(titres, ["Règles de la mémoire projet"]);
 });
 
 test("contexte implement et fix : règles de qualité chargées à la demande", () => {
@@ -171,6 +191,14 @@ test("contexte brainstorm, prd et us : la référence « Penser avant d'écrire 
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Penser avant d'écrire ====="), commande);
+  }
+});
+
+test("contexte us et nouveau : les règles des user stories, écrites une fois pour us, spec et nouveau", () => {
+  for (const commande of ["us", "nouveau"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Les règles des user stories ====="), commande);
   }
 });
 
@@ -220,15 +248,16 @@ test("etape --sans-communes : instructions et contexte de l'étape, sans les rè
   assert.strictEqual(sans.status, 0, sans.stderr);
   assert.ok(avec.stdout.includes("===== Règles communes Pulse ====="), "sans option : règles communes");
   assert.ok(!sans.stdout.includes("===== Règles communes Pulse ====="), "avec l'option : sans règles communes");
-  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== L'envoi du travail ====="])
     assert.ok(sans.stdout.includes(titre), titre);
+  assert.ok(!sans.stdout.includes("===== Le dépôt distant ====="), "relier un dépôt distant : init, cicd et deploy");
 });
 
 test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
-  for (const args of [["etape", "express", "--sans-communes"], ["etape", "express"]]) {
+  for (const args of [["etape", "nouveau", "--sans-communes"], ["etape", "nouveau"]]) {
     const r = lancer(...args);
     assert.strictEqual(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes("===== Instructions de l'étape /pulse:express ====="));
+    assert.ok(r.stdout.includes("===== Instructions de l'étape /pulse:nouveau ====="));
     assert.ok(!r.stdout.includes("allowed-tools:"), "sans l'en-tête du fichier");
     assert.ok(!r.stdout.includes("## Exemples"), "sans la section Exemples");
     assert.ok(r.stdout.includes("## Processus"), "le Processus reste");
@@ -268,8 +297,18 @@ test("contexte implement : la procédure des tests automatiques ; contexte test 
 test("contexte spec : Gherkin, sans checklist (le comment va au plan) ; contexte plan : stratégie de tests et checklist", () => {
   assert.ok(lancer("contexte", "spec").stdout.includes("===== Scénarios Gherkin ====="));
   assert.ok(!lancer("contexte", "spec").stdout.includes("===== Checklist sécurité ====="));
+  // La présentation des écrans sert à chaque spec ; le modèle d'US, seulement à une US créée (pulse-aidd modele us.md).
+  assert.ok(lancer("contexte", "spec").stdout.includes("===== Présentation des écrans ====="));
+  assert.ok(!lancer("contexte", "spec").stdout.includes("US-XXX-<nom>.md (pour une nouvelle US)"));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Stratégie de tests ====="));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ====="));
+});
+
+test("contexte plan et refine : les règles de découpage, écrites une fois ; refine sans le SKILL de plan ni son modèle", () => {
+  for (const commande of ["plan", "refine"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Règles de découpage du plan ====="), commande);
+  const refine = lancer("contexte", "refine").stdout;
+  assert.ok(!refine.includes("===== Règles du plan (/pulse:plan) ====="));
+  assert.ok(!refine.includes("===== Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md ====="));
 });
 
 test("agents test-writer et test-runner disponibles, et cités dans le message d'erreur", () => {
@@ -454,11 +493,12 @@ test("pile <sous-commande> : sans pack déclaré ou pack absent, message et code
   assert.match(absent.stdout + absent.stderr, /pulse-essai@pulseia/);
 });
 
-test("contexte rediger : règles communes, règles de rédaction, modèles de la voix et du texte de page", () => {
+test("contexte rediger : règles communes, règles de rédaction, modèle de la voix (le texte de page : chargé par le redacteur)", () => {
   const r = lancer("contexte", "rediger");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md =====", "===== Modèle : docs/textes/<page>.md ====="])
+  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
+  assert.ok(!r.stdout.includes("===== Modèle : docs/textes/<page>.md ====="));
 });
 
 test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () => {
@@ -467,8 +507,9 @@ test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () =>
   assert.match(r.stdout, /LEX-001/);
 });
 
-test("contexte ui et plan : les motifs d'écrans", () => {
-  for (const commande of ["ui", "plan"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Motifs d'écrans ====="), commande);
+test("contexte plan : les motifs d'écrans (ui les laisse à ses agents)", () => {
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Motifs d'écrans ====="));
+  assert.ok(!lancer("contexte", "ui").stdout.includes("===== Motifs d'écrans ====="));
 });
 
 test("identite extraire et maquettes verifier : relaient vers leurs scripts", () => {
@@ -480,6 +521,14 @@ test("identite extraire et maquettes verifier : relaient vers leurs scripts", ()
   const m = lancer("maquettes", "verifier", path.join(vide, "p.html"));
   assert.strictEqual(m.status, 1, m.stdout + m.stderr);
   assert.match(m.stdout, /Texte en dégradé de couleur/);
+});
+
+test("comparer : relaie ses options de rangement (--ranger, --retenir) vers son script", () => {
+  const r = lancer("comparer", "docs/design/identite", "--ranger"); // absent de la racine du plugin : rien à ranger
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^prochain: 1$/m);
+  assert.strictEqual(lancer("comparer", "docs/design/identite", "--retenir").status, 1);
+  assert.strictEqual(lancer("comparer", "skills", "--ranger").status, 2, "hors des dossiers de design : refusé");
 });
 
 const fs = require("fs");
@@ -591,6 +640,29 @@ test("installer-hook : contrôle introuvable (ni scripts/verifier.js, ni copie) 
   assert.match(git("diff", "--cached", "--name-only").stdout, /a\.txt/);
 });
 
+test("verifier --index : seulement les fichiers préparés, avec le message d'avant commit ; verifier seul inchangé", () => {
+  const { d, git } = depotHook("pulse-verifier-index-");
+  fs.writeFileSync(path.join(d, "a.txt"), "bonjour\n");
+  git("add", "a.txt");
+  assert.strictEqual(git("commit", "-q", "-m", "x").status, 0);
+  fs.writeFileSync(path.join(d, "brouillon.js"), cleHook()); // pas préparé : hors du contrôle d'avant commit
+  fs.writeFileSync(path.join(d, "b.txt"), "propre\n");
+  git("add", "b.txt");
+  const sain = dans(d, "verifier", "--index");
+  assert.strictEqual(sain.status, 0, sain.stdout + sain.stderr);
+  assert.match(sain.stdout, /\(1 fichiers contrôlés\)/);
+  fs.writeFileSync(path.join(d, "app.js"), cleHook());
+  git("add", "app.js");
+  const refus = dans(d, "verifier", "--index");
+  assert.strictEqual(refus.status, 1, refus.stdout + refus.stderr);
+  assert.match(refus.stderr, /❌ Commit annulé : un secret allait être enregistré/);
+  assert.match(refus.stderr, /app\.js/);
+  assert.doesNotMatch(refus.stderr, /brouillon\.js/);
+  const complet = dans(d, "verifier");
+  assert.strictEqual(complet.status, 1);
+  assert.match(complet.stderr, /❌ Vérification échouée/);
+});
+
 test("installer-hook : un hooksPath réglé pour tous les projets n'est jamais modifié", () => {
   const { d } = depotHook("pulse-hook-global-");
   const globaux = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hooks-globaux-"));
@@ -639,7 +711,7 @@ test("contexte spirc : règles communes et lexique ; modèle de revue et référ
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : docs/lexique.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
-  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== L'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
 });
 
@@ -843,7 +915,7 @@ test("contexte de chaque commande du cœur : reconnue", () => {
 const MODULES = { T: "===== Règles des tâches =====", C: "===== Règles de relecture =====", R: "===== Règles de réalisation =====" };
 const MATRICE = {
   "": ["brainstorm", "cicd", "deploy", "explain", "learn", "memory", "perf", "prd", "rediger", "search-console", "secrets", "tech"],
-  T: ["us", "spec", "guide", "get-help", "pr", "express", "init"],
+  T: ["us", "spec", "guide", "get-help", "pr", "nouveau", "init"],
   C: ["security", "seo"],
   TC: ["ui"],
   TR: ["status", "plan", "refine", "commit", "annuler", "fix", "auto-fix"],

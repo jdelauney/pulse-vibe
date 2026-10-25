@@ -34,14 +34,14 @@
     "demarre-rythme": {
       question: "Comment voulez-vous avancer ensuite ?",
       choix: [
-        ["Vite : voir une première version aujourd'hui", "init-express"],
+        ["Vite : voir une première version aujourd'hui", "init-nouveau"],
         ["Pas à pas, en prenant le temps", "init-complet"]
       ]
     },
     "idee": {
       question: "Où en est votre idée ?",
       choix: [
-        ["Elle est dans ma tête, je veux aller vite", "express"],
+        ["Elle est dans ma tête, je veux aller vite", "nouveau"],
         ["Elle est dans ma tête, je veux la creuser", "brainstorm"],
         ["Elle est racontée : je veux fixer l'indispensable", "prd"],
         ["Je veux choisir les outils de mon appli", "tech"],
@@ -116,11 +116,11 @@
 
   // Un conseil : { commande, arguments, pourquoi, note (facultative), autre: { commande, arguments, pourquoi } }.
   var CONSEILS = {
-    "init-express": {
+    "init-nouveau": {
       commande: "init", arguments: "mon-projet",
       pourquoi: "Elle prépare votre dossier de projet : les règles lues par l'IA, la mémoire du projet et l'historique des versions. Puis elle vous propose de démarrer vite.",
       note: "Remplacez mon-projet par le nom de votre projet, ou tapez la commande seule : Pulse vous le demandera.",
-      autre: { commande: "express", arguments: "\"un carnet de réservations pour mon salon\"", pourquoi: "Juste après, une seule conversation transforme votre idée en documents prêts, jusqu'à la première fonctionnalité à réaliser." }
+      autre: { commande: "nouveau", arguments: "\"un carnet de réservations pour mon salon\"", pourquoi: "Juste après, une seule conversation transforme votre idée en documents prêts, jusqu'à la première fonctionnalité à réaliser." }
     },
     "init-complet": {
       commande: "init", arguments: "mon-projet",
@@ -138,15 +138,15 @@
       pourquoi: "Elle fait le point sur votre projet, vous montre la prochaine étape conseillée, puis la lance avec vous.",
       autre: { commande: "status", arguments: "", pourquoi: "Le même point, en lecture seule, sans rien lancer." }
     },
-    "express": {
-      commande: "express", arguments: "\"votre idée en une phrase\"",
+    "nouveau": {
+      commande: "nouveau", arguments: "\"votre idée en une phrase\"",
       pourquoi: "En une seule conversation, vos réponses deviennent les documents du projet et les fonctionnalités à réaliser.",
       autre: { commande: "brainstorm", arguments: "", pourquoi: "Si vous préférez prendre le temps de creuser votre idée." }
     },
     "brainstorm": {
       commande: "brainstorm", arguments: "\"votre idée en une phrase\"",
       pourquoi: "Un entretien guidé, question par question, pour raconter votre idée en détail. Il produit le brief et les mots de votre métier.",
-      autre: { commande: "express", arguments: "", pourquoi: "Si vous voulez aller plus vite, en une seule conversation." }
+      autre: { commande: "nouveau", arguments: "", pourquoi: "Si vous voulez aller plus vite, en une seule conversation." }
     },
     "prd": {
       commande: "prd", arguments: "",
