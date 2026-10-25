@@ -30,11 +30,11 @@ Le rythme rapide va à l'essentiel : tests essentiels (ci-dessous), tâches ench
 
 Le filet attrape ce qu'une tâche casse ailleurs. Il vaut pour le rythme complet (profil `complet`), avec ou sans `-a`.
 
-- **Avant le commit de chaque tâche** : lancer toute la commande « Tester » de « Commandes du projet », pas seulement les tests de la tâche. Un échec se corrige d'abord (« Trier les échecs » de `pulse-aidd reference tests-dabord.md`).
+- **Avant le commit de chaque tâche** : toute la suite, pas seulement les tests de la tâche, doit être prouvée verte sur le code à enregistrer : `pulse-aidd preuve etat --exiger suite` ; si elle répond autre chose qu'« à jour », `pulse-aidd preuve lancer --portee suite`. La preuve vient d'ordinaire du test-runner ou du verifier, pendant l'examen. Un échec se corrige d'abord (« Trier les échecs » de `pulse-aidd reference tests-dabord.md`).
 - **Tests de bout en bout** (ceux qui ouvrent un navigateur, ligne « Tester de bout en bout (navigateur) » de « Commandes du projet ») : lancés une fois, à la fin de l'US. `/pulse:spirc` : au « Test groupé » (autonome) ou à la « Fin ».
 - **Rythme rapide** : inchangé, toute la suite tourne une fois à la fin de l'US (§ 2 bis).
-- **La preuve** : la ligne `Filet anti-régression : N tests, tous verts` vient d'un lancement réel, après la dernière modification de fichier. Absente ou plus ancienne que la dernière modification : relancer avant de dire « terminé ».
-- **Suite trop longue** : au-delà de 2 minutes, le dire une fois à la personne, ne lancer plus que les tests de la tâche pour le reste de l'US, et noter au journal du plan « filet limité aux tests de chaque tâche (suite > 2 min) ».
+- **La preuve** : la ligne `Filet anti-régression : N tests, tous verts` se tire de la ligne `preuve:` de `pulse-aidd preuve etat --exiger suite`, « à jour » et ✅ (code 0). Le script la lie au contenu des fichiers : un fichier modifié depuis la rend périmée. Une preuve ❌, périmée, absente ou de portée insuffisante ne prouve rien : relancer `pulse-aidd preuve lancer --portee suite` avant de dire « terminé ».
+- **Suite trop longue** : au-delà de 2 minutes, le dire une fois à la personne, ne lancer plus que les tests de la tâche pour le reste de l'US (`pulse-aidd preuve lancer --portee tache <fichiers de test>`, lue par `pulse-aidd preuve etat` sans `--exiger suite`), et noter au journal du plan « filet limité aux tests de chaque tâche (suite > 2 min) ».
 
 La ligne figure dans le rapport de revue (section « Vérification »), et dans le rapport de fin d'US en rythme rapide.
 
