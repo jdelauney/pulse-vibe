@@ -378,7 +378,7 @@ test("mettre-de-cote : un renommage enregistré (git mv) est refusé d'avance, d
     assert.strictEqual(git(d, "stash", "list").stdout, "");
   }
   const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/b.js");
-  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js (déjà préparé pour un enregistrement)", "src/b.js (déjà préparé pour un enregistrement)"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js (suppression ou renommage préparé, ou fichier changé depuis sa préparation)", "src/b.js (suppression ou renommage préparé, ou fichier changé depuis sa préparation)"]);
   nettoyer(d);
 });
 
@@ -393,7 +393,7 @@ test("mettre-de-cote : une suppression enregistrée (git rm) est refusée d'avan
   const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/c.js");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
-  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (déjà préparé pour un enregistrement)"]);
+  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (suppression ou renommage préparé, ou fichier changé depuis sa préparation)"]);
   assert.strictEqual(statut(d), avant);
   assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a2\n");
   assert.strictEqual(git(d, "stash", "list").stdout, "");
@@ -414,7 +414,7 @@ test("mettre-de-cote : un fichier ajouté de force dans un dossier ignoré est r
   const r = lancer(d, "mettre-de-cote", "T4", "--", "build/suivi.js", "build/neuf.js");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
-  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["build/neuf.js (déjà préparé pour un enregistrement)", "build/suivi.js (fichier ignoré)"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["build/neuf.js (fichier ignoré)", "build/suivi.js (fichier ignoré)"]);
   assert.strictEqual(statut(d), avant);
   assert.strictEqual(git(d, "stash", "list").stdout, "");
   nettoyer(d);
@@ -522,7 +522,7 @@ test("mettre-de-cote : une suppression préparée par une autre tâche fait refu
   const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
-  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (déjà préparé pour un enregistrement)"]);
+  assert.deepStrictEqual(lignes(r, "refuse"), ["src/c.js (préparé pour un enregistrement, hors des fichiers mis de côté)"]);
   assert.strictEqual(statut(d), avant);
   assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T4\n");
   assert.strictEqual(git(d, "stash", "list").stdout, "");
@@ -548,7 +548,7 @@ test("mettre-de-cote : un fichier demandé préparé puis changé encore (MD, AM
   const r = lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/n.js", "src/m.js");
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
-  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js", "src/m.js", "src/n.js"].map((f) => `${f} (déjà préparé pour un enregistrement)`));
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["src/a.js", "src/m.js", "src/n.js"].map((f) => `${f} (suppression ou renommage préparé, ou fichier changé depuis sa préparation)`));
   assert.strictEqual(statut(d), avant);
   assert.strictEqual(git(d, "diff", "--cached").stdout, indexAvant);
   assert.strictEqual(git(d, "stash", "list").stdout, "");
@@ -577,5 +577,139 @@ test("mettre-de-cote : un nom qui commence par « : » est lu tel quel pour les 
   assert.strictEqual(r.status, 0, r.stdout + r.stderr);
   assert.deepStrictEqual(lignes(r, "fichier").sort(), [":!q", ":(top)z"]);
   assert.strictEqual(fs.readFileSync(path.join(d, ":!q"), "utf8"), "q1\n");
+  nettoyer(d);
+});
+
+// « Tests d'abord » prépare les fichiers de test de la tâche (`git add`) après la phase rouge (references/tests-dabord.md, « Figer les tests »).
+const index = (d) => git(d, "diff", "--cached", "--binary").stdout;
+
+test("tests d'abord : un fichier de test neuf préparé et du code non préparé sont mis de côté, puis remis avec la même préparation", () => {
+  const d = depot();
+  ecrire(d, "tests/t4.test.js", "test T4\n");
+  git(d, "add", "tests/t4.test.js"); // figé : A
+  ecrire(d, "src/t4.js", "code T4\n"); // ??
+  ecrire(d, "src/a.js", "a-T4\n"); //  M
+  const avant = statut(d);
+  const indexAvant = index(d);
+  assert.match(avant, /^A {2}tests\/t4\.test\.js$/m);
+  let r = lancer(d, "mettre-de-cote", "T4", "--", "tests/t4.test.js", "src/t4.js", "src/a.js");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["fait"]);
+  assert.deepStrictEqual(lignes(r, "fichier").sort(), ["src/a.js", "src/t4.js", "tests/t4.test.js"]);
+  assert.strictEqual(statut(d), "");
+  assert.strictEqual(index(d), "");
+  assert.ok(!fs.existsSync(path.join(d, "tests/t4.test.js")));
+  ecrire(d, "src/t5.js", "T5\n"); // une autre tâche avance et s'enregistre entre-temps
+  git(d, "add", "src/t5.js");
+  git(d, "commit", "-q", "-m", "T5");
+  r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["remis"]);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(index(d), indexAvant);
+  assert.strictEqual(fs.readFileSync(path.join(d, "tests/t4.test.js"), "utf8"), "test T4\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/t4.js"), "utf8"), "code T4\n");
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T4\n");
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+test("tests d'abord : un fichier suivi modifié puis préparé (M) est mis de côté, puis remis préparé", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-prepare\n");
+  git(d, "add", "src/a.js"); // M
+  ecrire(d, "src/neuf.js", "neuf\n");
+  const avant = statut(d);
+  const indexAvant = index(d);
+  assert.match(avant, /^M {2}src\/a\.js$/m);
+  let r = lancer(d, "mettre-de-cote", "T4", "--", "src");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a1\n");
+  assert.strictEqual(index(d), "");
+  r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["remis"]);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(index(d), indexAvant);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-prepare\n");
+  nettoyer(d);
+});
+
+test("mettre-de-cote : une préparation hors des fichiers mis de côté (autre tâche, document de la méthode) fait refuser d'avance, rien ne change", () => {
+  const d = depot();
+  ecrire(d, "src/autre.js", "autre tâche\n");
+  git(d, "add", "src/autre.js"); // A, non demandé
+  ecrire(d, "docs/technical.md", "doc-prepare\n");
+  git(d, "add", "docs/technical.md"); // M, demandé mais laissé en place
+  ecrire(d, "tests/t4.test.js", "test T4\n");
+  git(d, "add", "tests/t4.test.js"); // A, demandé : accepté
+  const avant = statut(d);
+  const indexAvant = index(d);
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "tests/t4.test.js", "docs/technical.md");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+  assert.deepStrictEqual(lignes(r, "refuse").sort(), ["docs/technical.md", "src/autre.js"].map((f) => `${f} (préparé pour un enregistrement, hors des fichiers mis de côté)`));
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(index(d), indexAvant);
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+});
+
+test("remettre : un fichier préparé que le projet a changé entre-temps : conflit, rien ne change, le fichier est cité, l'entrée reste", () => {
+  const d = depot();
+  ecrire(d, "src/a.js", "a-T4\n");
+  git(d, "add", "src/a.js");
+  ecrire(d, "src/neuf.js", "neuf-T4\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "T4", "--", "src/a.js", "src/neuf.js").status, 0);
+  ecrire(d, "src/a.js", "a-T5\n");
+  git(d, "commit", "-q", "-am", "T5");
+  const avant = statut(d);
+  const r = lancer(d, "remettre", "T4");
+  assert.strictEqual(r.status, 3, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["conflit"]);
+  assert.deepStrictEqual(lignes(r, "fichier-en-conflit"), ["src/a.js"]);
+  assert.strictEqual(fs.readFileSync(path.join(d, "src/a.js"), "utf8"), "a-T5\n");
+  assert.ok(!fs.existsSync(path.join(d, "src/neuf.js")));
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(index(d), "");
+  assert.match(git(d, "stash", "list").stdout, /pulse: T4 en attente/);
+  nettoyer(d);
+});
+
+test("réglages Git des chemins (GIT_ICASE_PATHSPECS, GIT_GLOB_PATHSPECS, GIT_NOGLOB_PATHSPECS) dans l'environnement : sans effet", () => {
+  for (const reglage of [{ GIT_ICASE_PATHSPECS: "1" }, { GIT_GLOB_PATHSPECS: "1" }, { GIT_NOGLOB_PATHSPECS: "1" }, { GIT_GLOB_PATHSPECS: "1", GIT_NOGLOB_PATHSPECS: "1" }]) {
+    const d = depot();
+    const env = { ...ENV, ...reglage };
+    const lancerAvec = (...args) => spawnSync(process.execPath, [SCRIPT, ...args], { cwd: d, encoding: "utf8", env });
+    ecrire(d, "src/a.js", "a-T4\n");
+    ecrire(d, "src/[x].js", "x\n");
+    const avant = statut(d);
+    let r = lancerAvec("mettre-de-cote", "T4", "--", "src/a.js", "src/[x].js");
+    assert.strictEqual(r.status, 0, JSON.stringify(reglage) + r.stdout + r.stderr);
+    assert.strictEqual(statut(d), "");
+    r = lancerAvec("remettre", "T4");
+    assert.strictEqual(r.status, 0, JSON.stringify(reglage) + r.stdout + r.stderr);
+    assert.strictEqual(statut(d), avant);
+    nettoyer(d);
+  }
+});
+
+// Un dossier suivi remplacé par un lien symbolique : `git check-ignore` refuse le chemin (« beyond a symbolic link », code 128).
+// Windows demande un droit particulier pour créer un lien symbolique : ce test tourne sous Linux et macOS (CI Ubuntu).
+test("mettre-de-cote : check-ignore en échec (chemin derrière un lien symbolique) : refus d'avance, rien ne change", { skip: process.platform === "win32" && "Windows demande un droit particulier pour créer un lien symbolique" }, () => {
+  const d = depot();
+  ecrire(d, "lien/x.js", "x\n");
+  fs.mkdirSync(path.join(d, "autre"));
+  git(d, "add", "lien/x.js");
+  git(d, "commit", "-q", "-m", "lien");
+  fs.rmSync(path.join(d, "lien"), { recursive: true });
+  fs.symlinkSync("autre", path.join(d, "lien"));
+  const avant = statut(d);
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "lien");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.deepStrictEqual(lignes(r, "etat"), ["refuse"]);
+  assert.ok(lignes(r, "refuse").includes("lien/x.js (impossible de vérifier s'il est ignoré)"), r.stdout);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
   nettoyer(d);
 });
