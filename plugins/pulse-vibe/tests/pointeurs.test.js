@@ -66,7 +66,8 @@ const BASE = {
 const EXCEPTIONS = {
   init: ["references/fichiers-projet.md"],
   guide: ["references/fichiers-projet.md"],
-  ui: [MEMOIRE],
+  // phase 8 (web et aide) : les motifs servent aux agents designer et ui-critic, qui les chargent ; la conversation de /pulse:ui ne les emploie pas
+  ui: [MEMOIRE, "skills/ui/references/motifs.md"],
   status: ["references/cycle.md"],
   deploy: ["templates/ci-verifications.yml.template"],
   // refactoring d'optimisation, tâche 5.5 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
