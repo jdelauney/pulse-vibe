@@ -127,6 +127,28 @@ test("lecture-entiere : la même expression dans les trois cas qui lisent des r�
   assert.match(motifs[0], /realisation etape/);
 });
 
+test("implement-tache : la fiche du pack et le marqueur devant vous précèdent le premier fichier de code (tests exclus)", () => {
+  const graders = direct.lireCas(path.join(CAS, "implement-tache")).verifications;
+  const g = (nom) => graders.find((v) => v.nom === nom);
+  const note = (appels) => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "devant-")), "trace.jsonl");
+    const lignes = appels.map(([name, input], i) => ({ type: "assistant", message: { content: [{ type: "tool_use", id: `t${i}`, name, input }] } }));
+    fs.writeFileSync(f, lignes.map((l) => JSON.stringify(l)).join(LF) + LF);
+    return Object.fromEntries(direct.noter(f, [g("pack-avant-code"), g("devant-avant-code")]).details.map((d) => [d.nom, d.reussi]));
+  };
+  const debut = ["Bash", { command: "pulse-aidd realisation debut US-001 --commande implement --rythme complet --devant" }];
+  const debutSans = ["Bash", { command: "pulse-aidd realisation debut US-001 --commande implement --rythme complet" }];
+  const etape = ["Bash", { command: "pulse-aidd realisation etape T1 realisation" }];
+  const pile = ["Bash", { command: "pulse-aidd pile contexte implement" }];
+  const test = ["Write", { file_path: "/p/src/lib/__tests__/somme.test.ts", content: "x" }];
+  const code = ["Write", { file_path: "/p/src/lib/somme.ts", content: "x" }];
+  assert.deepStrictEqual(note([debut, test, etape, code]), { "pack-avant-code": true, "devant-avant-code": true });
+  assert.deepStrictEqual(note([debut, pile, code]), { "pack-avant-code": true, "devant-avant-code": true });
+  assert.deepStrictEqual(note([debutSans, etape, code]), { "pack-avant-code": true, "devant-avant-code": false });
+  assert.deepStrictEqual(note([debut, code, etape]), { "pack-avant-code": false, "devant-avant-code": true });
+  assert.deepStrictEqual(note([code, debut, etape, code]), { "pack-avant-code": false, "devant-avant-code": false });
+});
+
 test("tool_order strict : un appel « after » avant le premier « before » fait échouer", () => {
   const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "ordre-")), "trace.jsonl");
   const appel = (id, name, input) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name, input }] } });
