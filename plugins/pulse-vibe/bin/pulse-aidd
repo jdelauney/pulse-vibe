@@ -20,7 +20,8 @@
 #   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
 #   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
 #   pulse-aidd preuve lancer [--portee suite | --portee tache <fichiers de test…>] [--construire]  lance les contrôles automatiques, les tests (toute la suite ou les fichiers donnés) et, avec --construire, la construction ; garde la preuve, liée au contenu des fichiers
-#   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1)
+#   pulse-aidd preuve construire     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests (code 2 sans preuve à jour : rien n'est lancé)
+#   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1) ; « Tester » à « aucune » (choix du projet) satisfait --exiger suite
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
