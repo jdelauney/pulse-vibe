@@ -111,4 +111,4 @@ Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il
 
 !`pulse-aidd contexte perf`
 
-Le modèle cité dans cette commande figure dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
+Ce contexte contient aussi « La vitesse vécue par les visiteurs », « Modèle : docs/performance.md » et « Modèle : docs/lexique.md » ; la clé Google (`pulse-aidd reference perf/cle.md`), la vérification en CI (`pulse-aidd reference perf/ci-vitesse.md`) et le modèle de confidentialité (`pulse-aidd modele confidentialite.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.

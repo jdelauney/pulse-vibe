@@ -84,4 +84,4 @@ Terminer avec le bloc de fin de commande ; « Prochaine étape » donne la date 
 
 !`pulse-aidd contexte search-console`
 
-La référence « Search Console : relier, lire, suivre », le modèle du rapport et les consignes du pack de pile, s'il y en a un, figurent dans ce contexte ; `relier.md` et le modèle du travail en cours se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte search-console` et lire sa sortie.
+Ce contexte contient aussi « Search Console : relier, lire, suivre », « Modèle : docs/referencement/search-console-<date>.md », « Modèle : docs/lexique.md » et, avec un pack de pile, ses consignes ; `relier.md` et le modèle du travail en cours se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte search-console` et lire sa sortie.

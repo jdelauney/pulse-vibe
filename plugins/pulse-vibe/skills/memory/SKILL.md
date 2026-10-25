@@ -108,4 +108,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande où vou
 
 !`pulse-aidd contexte memory`
 
-Les règles de la mémoire figurent dans ce contexte ; chaque modèle s'affiche avec `pulse-aidd modele <fichier>` à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.
+Ce contexte contient aussi « Règles de la mémoire projet » ; chaque modèle s'affiche avec `pulse-aidd modele <fichier>` à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.

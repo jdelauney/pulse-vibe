@@ -2484,3 +2484,24 @@ test("cicd : règles communes seules dans son contexte, vitesse par perf/ci-vite
     assert.ok(!motifs.includes(retire), `cicd : Bash(${retire}) sans emploi`);
   assert.ok(motifs.some((m) => couvre(m, "pulse-aidd perf installer")), "cicd : la copie du script de mesure (ci-vitesse.md)");
 });
+
+test("contexte annoncé : chaque titre dit « dans ce contexte » ou « en fin de fichier » est affiché par pulse-aidd contexte <commande>", () => {
+  const ecarts = [];
+  for (const skill of [...SKILLS].sort()) {
+    const texte = lire(RACINE, "skills", skill, "SKILL.md");
+    const charge = contexteCharge(skill);
+    const affiche = (titre) => charge.includes(`===== ${titre} =====`);
+    // « Références de la commande » : chaque phrase qui annonce le contenu du contexte nomme ses titres entre « ».
+    const references = texte.split(/^## Références de la commande\s*$/m)[1] || "";
+    for (const phrase of references.split(/(?<=[.;])\s+/)) {
+      if (!/ce contexte/i.test(phrase) || /Si ce contexte est absent/.test(phrase)) continue;
+      const titres = [...phrase.matchAll(/«\s*([^»]+?)\s*»/g)].map((m) => m[1]);
+      if (!titres.length) ecarts.push(`skills/${skill} : « ${phrase} » annonce le contexte sans nommer ce qu'il contient (ses titres entre « »)`);
+      for (const titre of titres) if (!affiche(titre)) ecarts.push(`skills/${skill} : « ${titre} » annoncé dans ce contexte, absent de pulse-aidd contexte ${skill}`);
+    }
+    // Dans le corps : « <titre> » (chargé en fin de fichier…) ou « <titre> » (en fin de fichier).
+    for (const m of texte.matchAll(/«\s*([^»]+?)\s*»\s*\((?:chargée?s? )?en fin de fichier/g))
+      if (!affiche(m[1])) ecarts.push(`skills/${skill} : « ${m[1]} » dit en fin de fichier, absent de pulse-aidd contexte ${skill}`);
+  }
+  assert.deepStrictEqual(ecarts, []);
+});

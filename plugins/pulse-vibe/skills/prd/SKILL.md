@@ -78,4 +78,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour 
 
 !`pulse-aidd contexte prd`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire » et « Modèle : docs/prd.md ». Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.

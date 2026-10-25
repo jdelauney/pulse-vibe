@@ -110,4 +110,4 @@ Terminer avec le bloc de fin de commande.
 
 !`pulse-aidd contexte commit`
 
-Les références citées dans cette commande figurent dans ce contexte, sauf celles lancées à leur étape (`pulse-aidd modele gitignore.template`, `pulse-aidd reference worktree-dossier.md`). Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
+Ce contexte contient aussi « Conventions Git » et « L'envoi du travail » ; le modèle `.gitignore` (`pulse-aidd modele gitignore.template`) et la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.

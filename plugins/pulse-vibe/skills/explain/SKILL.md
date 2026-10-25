@@ -62,4 +62,4 @@ Pour cette commande, le bloc de fin de commande est facultatif.
 
 !`pulse-aidd contexte explain`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/lexique.md ». Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.

@@ -132,4 +132,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : projet existant : `
 
 !`pulse-aidd contexte tech`
 
-Les règles de la mémoire et les modèles cités figurent dans ce contexte ; la démarche de choix (projet neuf) et l'organisation des fichiers se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie ; chemin B : relancer aussi `pulse-aidd reference tech/choix-techniques.md` si la démarche n'est plus dans la conversation.
+Ce contexte contient aussi « Règles de la mémoire projet », « Modèle : docs/technical.md », « Modèle : .gitignore », « Modèle : .env.example » et « Modèle : décision (ADR) » ; la démarche de choix (projet neuf) et l'organisation des fichiers se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie ; chemin B : relancer aussi `pulse-aidd reference tech/choix-techniques.md` si la démarche n'est plus dans la conversation.

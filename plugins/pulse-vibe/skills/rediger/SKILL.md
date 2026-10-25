@@ -72,4 +72,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : une autre page avec
 
 !`pulse-aidd contexte rediger`
 
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte rediger` et lire sa sortie.
+Ce contexte contient aussi « Rédiger les textes des pages », « Modèle : docs/voix.md » et « Modèle : docs/lexique.md » ; le modèle du texte de page est chargé par le redacteur. Si ce contexte est absent, lancer `pulse-aidd contexte rediger` et lire sa sortie.
