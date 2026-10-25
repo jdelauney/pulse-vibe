@@ -149,7 +149,7 @@ test("contexte implement et fix : règles de qualité chargées à la demande", 
   assert.ok(sansFamille.includes("Relancez avec les familles utiles"));
   assert.ok(lancer("qualite", "--tout").stdout.includes("===== Clean code ====="), "--tout garde l'ancien comportement");
   const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
-  assert.match(lireSkill("implement"), /\*\*Devant vous\*\* : lancer `pulse-aidd agent implementer` et appliquer, dans cette conversation, ses « Règles absolues », son « Pack de pile » et sa « Méthode » \(règles de qualité par famille comprises\)/);
+  assert.match(lireSkill("implement"), /Puis lancer `pulse-aidd agent implementer` et appliquer, dans cette conversation, ses « Règles absolues », sa « Méthode » \(règles de qualité par famille comprises\)/);
   assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour chaque famille utile des fichiers à corriger, chaque sortie lue en entier[^\n]*règle commune 12\), puis évaluer/);
   const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
@@ -397,9 +397,11 @@ test("contexte review : la conversation principale sans les consignes du pack, q
 
 test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'écrire du code, et les règles communes le disent", () => {
   const lireSkill = (nom) => fsP.readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
-  assert.match(lireSkill("spirc"), /sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code/);
+  // spirc -d et implement devant vous : l'étape de réalisation affiche la fiche (pulse-aidd realisation etape, marqueur --devant).
+  assert.match(lireSkill("spirc"), /ou sans agent disponible ; marqueur lancé avec `--devant`\) : la sortie de `pulse-aidd realisation etape <Tn> realisation`, fiche du pack de pile comprise, se lit en entier avant le premier fichier écrit/);
+  assert.match(lireSkill("spirc"), /avec `-d`, corriger ici : `pulse-aidd pile contexte implement` s'il ne figure pas dans la conversation/);
   assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
-  assert.match(lireSkill("implement"), /Avec un pack de pile, `pulse-aidd pile contexte implement`, lu en entier, passe avant le premier fichier écrit et avant toute correction faite par cette conversation elle-même/);
+  assert.match(lireSkill("implement"), /Une correction faite par cette conversation hors de cette étape commence par `pulse-aidd pile contexte implement`, lu en entier, s'il ne figure pas dans la conversation/);
   for (const agent of ["implementer", "fixer"]) assert.match(fsP.readFileSync(path.join(RACINE, "agents", agent + ".md"), "utf8"), /pack n'est pas installé, le signaler dans « À signaler »/);
   const communes = fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.match(communes, /review, spirc, implement, auto-fix : les agents qui codent ou relisent les chargent eux-mêmes/);
