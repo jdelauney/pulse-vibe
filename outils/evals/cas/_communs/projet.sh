@@ -170,6 +170,13 @@ ecrire aidd_docs/memory/technical.md <<<'# Technique'
 ecrire aidd_docs/memory/glossary.md <<<'# Glossaire'
 ecrire index.html <<<'<!doctype html><title>Liste de courses</title><ul id="liste"></ul>'
 
+# État que laissent /pulse:init et /pulse:tech : bloc mémoire de CLAUDE.md rempli, autorisations du projet écrites
+# (sinon le crochet de mémoire modifie CLAUDE.md au démarrage et /pulse:spirc s'arrête pour demander).
+if command -v pulse-aidd >/dev/null 2>&1; then
+  pulse-aidd memoire >/dev/null 2>&1 || true
+  pulse-aidd autorisations --ecrire >/dev/null 2>&1 || true
+fi
+
 git init -q
 # Nom d'auteur des commits de l'essai : pendant l'essai, le bac à sable protège .git/config en écriture.
 git config user.name essai
