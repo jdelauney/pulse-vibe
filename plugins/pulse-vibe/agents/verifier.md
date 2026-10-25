@@ -20,7 +20,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes.
 
 ## Informations reçues
 
-Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés. Pour toute une US (rythme rapide) : les critères de toutes ses tâches, le parcours principal en premier ; lancer l'application une seule fois, sans la commande « construire ». Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
+Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés et, avec le filet limité, les fichiers de test de la tâche. Pour toute une US (rythme rapide) : les critères de toutes ses tâches, le parcours principal en premier ; lancer l'application une seule fois, sans la commande « construire ». Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
 
 ## Pack de pile
 
@@ -30,7 +30,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 1. **Définir les critères observables** : pour chaque critère d'acceptation, ce qu'on doit voir ou obtenir.
 2. **Contrôles statiques** (ils soutiennent la preuve, en complément de la surface réelle) :
-   - `pulse-aidd preuve etat --exiger suite` (ajouter `--exiger construction` quand la construction est due, voir ci-dessous) ; si elle répond autre chose qu'« à jour » (périmée, aucune, portée insuffisante) : `pulse-aidd preuve lancer --portee suite`, une seule fois, avec `--construire` si « Construire » existe dans « Commandes du projet » et que la tâche touche une page, une route ou la configuration (pour toute une US en rythme rapide : sans construction). Le script lance lui-même les contrôles automatiques, toute la suite de tests et la construction, et garde la preuve ; sa ligne `preuve:` (✅ ou ❌) en donne le résultat, et une preuve ❌ ses échecs, à reporter dans « Problèmes inattendus » ;
+   - `pulse-aidd preuve etat --exiger suite` (filet limité, si le message l'indique : sans `--exiger suite`). La relance ajoute `--construire` si « Construire » existe dans « Commandes du projet » et que la tâche touche une page, une route ou la configuration ; la lecture ajoute alors `--exiger construction` (pour toute une US en rythme rapide : jamais). « à jour » ✅ : c'est la preuve. « à jour » ❌ : ses échecs vont dans « Problèmes inattendus », sans relance (le même contenu donne le même résultat). Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une seule fois (`pulse-aidd preuve lancer --portee suite`, ou `--portee tache <fichiers de test>` pour le filet limité ; `pulse-aidd preuve construire` quand seule la construction manque). Le script lance lui-même les contrôles automatiques, les tests et la construction, et garde la preuve ;
    - `pulse-aidd verifier` ;
    - si toutes les commandes de contrôle sont à « aucune », le noter dans « Problèmes inattendus ».
 3. **Surface réelle** : lancer l'appli en arrière-plan avec la commande « lancer en local » de « Commandes du projet » (noter l'adresse et le port affichés), puis, par ordre de préférence :
