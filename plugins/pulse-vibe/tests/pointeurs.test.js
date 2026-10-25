@@ -66,7 +66,10 @@ const BASE = {
 const EXCEPTIONS = {
   init: ["references/fichiers-projet.md"],
   guide: ["references/fichiers-projet.md"],
-  ui: [MEMOIRE],
+  // phase 8 (web et aide) : les motifs servent aux agents designer et ui-critic, qui les chargent ; la conversation de /pulse:ui ne les emploie pas
+  ui: [MEMOIRE, "skills/ui/references/motifs.md"],
+  // phase 8 (web et aide) : le redacteur charge le modèle du texte de page ; le repli sans agent passe par pulse-aidd agent redacteur, dont la méthode le charge
+  rediger: ["skills/rediger/assets/texte-page.md"],
   status: ["references/cycle.md"],
   // refactoring d'optimisation, tâche 7.4 : l'exemple de CI est copié dans le projet par pulse-aidd installer-ci (scripts/ci-verifications.exemple.yml, lu à l'étape 3)
   cicd: ["templates/ci-verifications.yml.template"],

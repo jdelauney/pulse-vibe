@@ -702,6 +702,18 @@ test("init et status ne citent que des clés et des valeurs réellement émises 
     const cites = [...skillTexte(skill).matchAll(/`(prochaine|raison|regle|fondation|attente|ancien|dossier|aussi|etapes|mvp)(?::[^`]*)?`/g)].map((m) => m[1]);
     for (const c of cites) assert.ok(emises.has(c), `${skill} cite la clé ${c}, absente de etat.js`);
   }
+  // Le tableau de /pulse:status (pulse-aidd etat --tableau) : chaque clé est émise par etat-tableau.js, et status s'appuie dessus.
+  const sourceTableau = lire(RACINE, "scripts", "etat-tableau.js");
+  const CLES_TABLEAU = ["projet", "pile", "rythme", "groupe", "tache", "plan", "git", "sessions", "worktree", "branche-fusionnee", "ci", "en-ligne", "referencement", "seo-suivi", "revue", "securite", "memoire", "en-cours-sans-trace"];
+  for (const c of CLES_TABLEAU) assert.ok(sourceTableau.includes(`\`${c}: `), `etat-tableau.js n'émet pas ${c}`);
+  const status = skillTexte("status");
+  assert.match(status, /`pulse-aidd etat --tableau`/);
+  assert.match(status, /^Sécurité : dernier audit le … \(ou « pas encore »\)   \(ligne `securite`\)$/m, "la ligne securite s'affiche");
+  assert.match(status, /^Tâches – US-XXX <titre>   \(lignes `tache`, titre de la ligne `plan`\)$/m, "le titre de l'US vient du tableau");
+  assert.match(status, /`tableau: illisible`[^\n]*`suivi: illisible`/, "status sait quoi faire d'une ligne illisible");
+  assert.match(skillTexte("guide"), /lancer `pulse-aidd etat`[^\n]*`prochaine`/, "guide présente l'étape à jour de pulse-aidd etat");
+  for (const c of CLES_TABLEAU.filter((x) => x !== "en-cours-sans-trace")) assert.match(status, new RegExp(`\`${c}[\`:= ]`), `status s'appuie sur la ligne ${c}`);
+  assert.match(skillTexte("guide"), /`en-cours-sans-trace` de `pulse-aidd etat --tableau`/, "guide repère une tâche en cours sans trace avec le tableau");
 });
 
 test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour chaque chemin", () => {
@@ -995,7 +1007,7 @@ test("modèles et sorties des outils lus par la personne sans « MVP », « epic
       if (m) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")}:${i + 1} : ${m[0]}`);
     });
   }
-  for (const script of ["etat.js", "guide.js", "garde-commandes.js"]) {
+  for (const script of ["etat.js", "etat-tableau.js", "guide.js", "garde-commandes.js"]) {
     // Une chaîne d'un seul mot (« worktrees », « --worktree ») est du code : un nom de dossier ou une option de Git.
     // Seul le mot « worktree » y est permis ; les autres mots de méthode restent cherchés.
     for (const chaine of chainesDuScript(lire(RACINE, "scripts", script))) {
@@ -1204,8 +1216,13 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   // Hors d'une commande, aucune règle commune n'est chargée : le modèle n'y renvoie pas.
   assert.doesNotMatch(claude, /règles communes Pulse, § 1|règles de réalisation de Pulse/);
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
-  assert.match(skillTexte("ui"), /quatre références de design/);
-  assert.doesNotMatch(skillTexte("ui"), /trois références/);
+  for (const r of ["ui/registres.md", "ui/regles-ui.md", "ui/anti-patterns.md"]) assert.ok(skillTexte("ui").includes(`pulse-aidd reference ${r}`), `ui : pointeur ${r}`);
+  assert.doesNotMatch(skillTexte("ui"), /trois références|quatre références/);
+  // Après un compactage, les références chargées à une étape précédente se rechargent, action par action (dans les premières lignes, gardées).
+  const rechargement = skillTexte("ui").split("\n").find((l) => /compactage/.test(l)) || "";
+  assert.ok(skillTexte("ui").indexOf(rechargement) < 3000, "ui : rechargement des références dans le haut du fichier");
+  for (const attendu of ["identite", "polish", "pulse-aidd reference ui/registres.md", "pulse-aidd reference ui/regles-ui.md", "pulse-aidd reference ui/anti-patterns.md"])
+    assert.ok(rechargement.includes(attendu), `ui : rechargement après compactage : ${attendu}`);
 });
 
 test("la règle deny se propose en clair : le bloc JSON se montre seulement sur demande", () => {
@@ -1641,6 +1658,86 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
   }
 });
 
+test("Search Console : la liaison est écrite une fois (search-console/relier.md), lue par /pulse:search-console relier et par /pulse:seo lancer", () => {
+  const relier = lire(RACINE, "skills", "search-console", "references", "relier.md");
+  for (const etape of ["1a", "1b", "1c", "1d", "1e", "1f", "1g"]) assert.match(relier, new RegExp(`^## ${etape}\\. `, "m"), `relier.md : étape ${etape}`);
+  for (const fait of [/réellement servie après redirection/, /vérifier d'abord, partager ensuite/i, /« découvertes »/, /msvalidate\.01/, /IndexNow/, /webmasters\.readonly/, /Compte de service/i])
+    assert.match(relier, fait, `relier.md : ${fait}`);
+  assert.doesNotMatch(relier, /pulse-aidd etape|in-progress\.md/, "relier.md vaut pour les deux commandes : la mise en ligne et l'étape en attente se disent dans chacune");
+  const sc = lire(RACINE, "skills", "search-console", "SKILL.md");
+  assert.match(sc, /`pulse-aidd reference search-console\/relier\.md`/);
+  assert.doesNotMatch(sc, /^#### 1[a-g]\./m, "les étapes de liaison ne sont plus recopiées dans le SKILL.md");
+  assert.doesNotMatch(sc, /Ce qui reste à la personne/, "§ 5 retiré : il redisait les étapes 1a à 1f");
+  assert.match(sc, /`pulse-aidd modele in-progress\.md`/, "le modèle du travail en cours se charge quand une étape attend");
+  assert.match(sc, /`pulse-aidd etape commit --sans-communes`[\s\S]*`pulse-aidd etape deploy --sans-communes`/, "mise en ligne de la balise (1b) par les étapes enchaînées");
+  const ref = lire(RACINE, "skills", "search-console", "references", "search-console.md");
+  for (const parti of [/^## \d+\. Propriété et vérification/m, /^## \d+\. Sitemap/m, /^## \d+\. Bing Webmaster Tools/m, /Google Auth Platform/, /^### .*Compte de service/m])
+    assert.doesNotMatch(ref, parti, `search-console.md sans ${parti} (déplacé dans relier.md)`);
+  assert.match(ref, /`pulse-aidd reference search-console\/relier\.md`, § 1f/, "codes 2 et 3 : la connexion se refait d'après relier.md § 1f");
+  const lancer = lire(RACINE, "skills", "seo", "references", "lancer.md");
+  assert.match(lancer, /`pulse-aidd reference search-console\/relier\.md`, étapes 1a à 1e puis 1g/);
+  assert.doesNotMatch(lancer, /Ajouter une propriété|Search generative AI/, "lancer.md renvoie à relier.md ; le choix C se règle dans /pulse:seo ia");
+});
+
+test("Search Console : une seule règle d'avancement pour relier.md, lue à la reprise par /pulse:search-console, /pulse:seo lancer et /pulse:status", () => {
+  const relier = lire(RACINE, "skills", "search-console", "references", "relier.md");
+  const avancement = relier.slice(relier.indexOf("## Avancement"), relier.indexOf("## 1a. "));
+  assert.ok(relier.indexOf("## Avancement") > -1, "relier.md : section « Avancement » avant 1a");
+  assert.match(avancement, /dès qu'elle est faite[^\n]*« Référencement » de `docs\/technical\.md`/, "chaque étape notée dès qu'elle est faite, au même endroit pour les deux commandes");
+  assert.match(avancement, /« à relier »/, "tant que la propriété n'est pas vérifiée, la ligne garde « à relier »");
+  assert.match(avancement, /balise déjà dans le code[^\n]*`pulse-aidd sonder <adresse> --texte "google-site-verification"`[^\n]*« Vérifier »/, "reprise après la mise en ligne de la balise : la preuve, puis « Vérifier »");
+  assert.match(avancement, /vérification DNS en attente[^\n]*« Vérifier »[^\n]*1d, 1e et 1g attendent/, "reprise d'une attente DNS : « Vérifier », le reste attend");
+  assert.match(relier.slice(relier.indexOf("## 1g. ")), /« à relier »/, "1g remplace « à relier » par la propriété vérifiée");
+  const sc = lire(RACINE, "skills", "search-console", "SKILL.md");
+  assert.match(sc, /Search Console notée « à relier » → `relier`/, "search-console sans argument reprend la liaison en cours");
+  const status = lire(RACINE, "skills", "status", "SKILL.md");
+  // La liaison en cours (« à relier ») devient un signal de suivi calculé par pulse-aidd etat (etat-tableau.test.js), que status reprend.
+  assert.match(lire(RACINE, "scripts", "etat-tableau.js"), /à relier/, "etat-tableau.js reconnaît une liaison en cours");
+  assert.match(status, /règle R24[^\n]*`\/pulse:search-console relier`/, "status reprend les signaux de suivi de pulse-aidd etat");
+  const seo = lire(RACINE, "skills", "seo", "SKILL.md");
+  const lancer = seo.slice(seo.indexOf("### lancer\n"), seo.indexOf("\n## Exemples"));
+  assert.match(lancer, /« Avancement »/, "seo lancer note l'avancement de relier.md avant de rendre la main");
+  for (const [nom, texte] of [["search-console", sc], ["seo", lancer]])
+    assert.match(texte, /[Aa]près un compactage, recharger `pulse-aidd reference search-console\/relier\.md`/, `${nom} : relier.md rechargé après un compactage`);
+  assert.match(sc, /[Aa]près un compactage[^\n]*par son chemin, jamais par son contenu/, "search-console : la règle des fichiers d'identifiants reste dans la commande");
+  assert.doesNotMatch(sc, /\(`relier\.md`, § 1f\)/, "pointeur complet vers relier.md");
+  assert.ok(!motifsBash(path.join(RACINE, "skills", "search-console", "SKILL.md")).includes("pulse-aidd contexte *"), "search-console : seulement les contextes qu'elle charge");
+  const wiki = lire(DEPOT, "docs", "commandes", "seo.html");
+  assert.match(wiki, /<code>lancer<\/code>[^\n]*<code>\/pulse:commit push<\/code>[^\n]*<code>\/pulse:deploy<\/code>/, "wiki : l'aller-retour pour mettre la balise en ligne");
+});
+
+test("seo : contrôles IA dans les règles, politique IA chargée en mode ia, modèle d'audit et textes à l'audit, liaison par relier.md au lancement", () => {
+  const regles = lire(RACINE, "skills", "seo", "references", "regles.md");
+  for (let n = 1; n <= 12; n++) assert.match(regles, new RegExp(`\\bIA${n} `), `regles.md : IA${n}`);
+  assert.match(regles, /IA4 imite un robot/, "regles.md : la mise en garde IA4");
+  const ia = lire(RACINE, "skills", "seo", "references", "ia.md");
+  assert.doesNotMatch(ia, /IA2 groupe nommé/, "ia.md : les contrôles IA vivent dans regles.md § 4");
+  const seo = lire(RACINE, "skills", "seo", "SKILL.md");
+  const section = (titre) => seo.slice(seo.indexOf(`### ${titre}\n`), seo.indexOf("\n### ", seo.indexOf(`### ${titre}\n`) + 4));
+  assert.doesNotMatch(seo.slice(seo.indexOf("## Règles"), seo.indexOf("## Contexte")), /assistants IA/, "seo : la politique IA n'est plus chargée pour toute la commande");
+  assert.match(section("audit"), /`pulse-aidd modele seo\/seo-audit\.md`/);
+  assert.match(section("audit"), /`pulse-aidd reference seo\/textes\.md`[^\n]*§ 3/);
+  assert.match(section("ia"), /`pulse-aidd reference seo\/ia\.md`/);
+  assert.match(section("ia"), /`pulse-aidd reference search-console\/search-console\.md`, § 6/, "choix C : le réglage décrit une fois, dans search-console.md");
+  assert.match(section("lancer"), /`pulse-aidd reference search-console\/relier\.md`/);
+  assert.doesNotMatch(section("lancer"), /vérification minimale/, "seo lancer suit la procédure complète de relier.md");
+});
+
+test("perf : la clé Google dans perf/cle.md, chargée pour la créer ; règles de la commande résumées ; lectures de références par un seul motif", () => {
+  const cle = lire(RACINE, "skills", "perf", "references", "cle.md");
+  for (const fait of [/PageSpeed Insights API/, /Chrome UX Report API/, /PULSE_PSI_CLE/, /Clé compromise/, /pulse-aidd perf cle/]) assert.match(cle, fait, `cle.md : ${fait}`);
+  const ref = lire(RACINE, "skills", "perf", "references", "performance.md");
+  assert.doesNotMatch(ref, /La clé Google \(PageSpeed Insights et CrUX\)|Clé compromise/, "performance.md : la clé est dans cle.md");
+  const perf = lire(RACINE, "skills", "perf", "SKILL.md");
+  assert.match(perf, /`pulse-aidd reference perf\/cle\.md`[^\n]*« Clé compromise »/);
+  const regles = perf.slice(perf.indexOf("## Règles"), perf.indexOf("## Contexte"));
+  assert.doesNotMatch(regles, /deux tableaux distincts|\*\*Frontières\*\*/, "les règles de la commande renvoient aux §§ 3, 4 et 8 au lieu de les recopier");
+  assert.match(regles, /§ 3[\s\S]*§ 4[\s\S]*§ 8 \(Frontières\)/);
+  assert.match(lire(RACINE, "skills", "perf", "references", "performance.md"), /^## 8\. Frontières/m);
+  const motifs = motifsBash(path.join(RACINE, "skills", "perf", "SKILL.md")).filter((m) => m.startsWith("pulse-aidd reference"));
+  assert.deepStrictEqual(motifs, ["pulse-aidd reference *"]);
+});
+
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
   const worktree = lire(RACINE, "references", "worktree-dossier.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
@@ -1697,13 +1794,14 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
     deploy: ["Edit(docs/technical.md)", "Edit(./CLAUDE.md)", "Edit(./README.md)", "Edit(aidd_docs/tasks/**)", ...PERF],
     "get-help": ["Write(docs/aide/**)", "Edit(docs/aide/**)"],
     guide: ["Edit(aidd_docs/tasks/**)"],
+    learn: ["Write(docs/apprentissage.md)", "Edit(docs/apprentissage.md)", ...LEXIQUE],
     memory: [...MEMOIRE, "Edit(./CLAUDE.md)"],
     perf: [...PERF, "Edit(docs/technical.md)", ...LEXIQUE],
     rediger: ["Write(docs/voix.md)", "Edit(docs/voix.md)", "Write(docs/textes/**)", "Edit(docs/textes/**)"],
     "search-console": ["Edit(docs/technical.md)", "Write(docs/referencement/**)", "Edit(docs/referencement/**)", "Write(aidd_docs/tasks/in-progress.md)"],
     secrets: ["Write(docs/secrets.md)", "Edit(docs/secrets.md)", "Write(docs/incidents/**)", "Edit(docs/incidents/**)", ...LEXIQUE],
     security: ["Write(docs/securite.md)", "Edit(docs/securite.md)"],
-    seo: ["Write(docs/seo.md)", "Edit(docs/seo.md)", "Write(docs/seo/**)", "Edit(docs/seo/**)"],
+    seo: ["Write(docs/seo.md)", "Edit(docs/seo.md)", "Write(docs/seo/**)", "Edit(docs/seo/**)", "Edit(docs/technical.md)"],
     tech: [...TECH, "Edit(./README.md)", "Write(aidd_docs/tasks/in-progress.md)"],
     ui: [...DESIGN, "Edit(aidd_docs/tasks/**)", "Write(aidd_docs/tasks/in-progress.md)"],
     brainstorm: [...MEMOIRE, "Edit(./CLAUDE.md)", ...LEXIQUE],
@@ -1718,6 +1816,10 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
     for (const outil of outils) if (!jetons.includes(outil)) manquants.push(`${skill} : ${outil}`);
   }
   assert.deepStrictEqual(manquants, []);
+  // explain répond au code du projet ; une notion générale part vers learn, qui l'enseigne et la note au carnet.
+  assert.match(skillTexte("explain"), /question générale sur une notion[^\n]*`\/pulse:learn <notion>`/, "frontière explain / learn écrite côté explain");
+  // learn part du niveau du profil, confirmé par une question.
+  assert.match(skillTexte("learn"), /« Jamais programmé » et « Quelques notions » → Débutant, « Développeur » → Avancé/, "learn : niveau tiré du profil");
   // pr et status n'écrivent aucun fichier : aucune écriture autorisée d'avance.
   for (const skill of ["pr", "status"]) assert.doesNotMatch((skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1], /\b(Write|Edit)\(/, skill);
 });

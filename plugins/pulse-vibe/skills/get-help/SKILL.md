@@ -2,7 +2,7 @@
 description: Préparer une demande d'aide claire et sans secret, à transmettre à une personne qui programme (forum, communauté de la technologie, freelance) quand Pulse n'arrive pas à débloquer la situation
 argument-hint: "[\"ce qui bloque\"] (facultatif)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte get-help) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile contexte *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Write(docs/aide/**) Edit(docs/aide/**)
+allowed-tools: Bash(pulse-aidd contexte get-help) Bash(pulse-aidd reference *) Bash(pulse-aidd revue *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile contexte *) Read Glob Grep Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(git rev-parse *) Write(docs/aide/**) Edit(docs/aide/**)
 ---
 
 # /pulse:get-help – Préparer une demande d'aide
@@ -25,23 +25,24 @@ Fichiers de cette commande : [assets/demande-aide.md](assets/demande-aide.md).
 
 ## Rôle
 
-La conversation principale orchestre : elle comprend le blocage, nettoie les secrets, écrit la fiche et aide la personne à choisir où l'envoyer. S'il y a du code, l'agent `pulse:explorer` apporte la recherche dans le projet (pile, tâche concernée, erreur exacte, essais déjà faits, fichiers concernés) ; sans code, la conversation principale la fait elle-même.
+La conversation principale orchestre : elle comprend le blocage, nettoie les secrets, écrit la fiche et aide à choisir où l'envoyer ; s'il y a du code, l'agent `pulse:explorer` cherche dans le projet (étape 2).
 
 ## Processus
 
 ### 1. Comprendre
 
-Reprendre ce que la conversation, la description reçue et le projet disent déjà (dernier blocage expliqué par `/pulse:fix`, `/pulse:review`, `/pulse:implement` ou `/pulse:spirc`). Poser seulement ce qui manque, en une ronde (règle commune 5) : ce que la personne voulait faire, ce qui se passe à la place, si elle accepte de partager l'adresse du dépôt.
+Reprendre ce que la conversation, la description reçue et le projet disent déjà (dernier blocage expliqué par `/pulse:fix`, `/pulse:review`, `/pulse:implement` ou `/pulse:spirc`). Poser seulement ce qui manque : ce que la personne voulait faire et ce qui se passe à la place (réponse libre, en texte), puis, si besoin, le partage de l'adresse du dépôt (AskUserQuestion).
 
 ### 2. Rassembler
 
-S'il y a du code, confier la recherche au sous-agent **`pulse:explorer`** (sinon, la faire soi-même) :
+Relever d'abord la **ligne décisive** de l'erreur (message, console ou journal) et les corrections déjà tentées dans la conversation, qu'un sous-agent ne voit pas, puis la dernière relecture de la tâche en cours (`pulse-aidd revue <Tn>`). S'il y a du code, les transmettre au sous-agent **`pulse:explorer`** et lui confier (sans code, faire ces recherches soi-même) :
 - la pile et ses versions (« Pile retenue » de `docs/technical.md`, fichier de dépendances) ;
 - l'US et la tâche concernées (plan `[~]`, fichier de l'US) ;
-- l'erreur exacte : la **ligne décisive** du message, de la console ou du journal ;
-- les étapes pour reproduire, avec des données fictives ;
-- ce qui a déjà été essayé : Journal du plan, rapports de relecture de la tâche, `git log --oneline -10`, corrections tentées dans la conversation ;
+- le Journal du plan et `git log --oneline -10` ;
+- les étapes pour reproduire d'après la spec, avec des données fictives ;
 - les fichiers concernés, avec leur rôle.
+
+« Déjà essayé » réunit les corrections relevées dans la conversation et ce que rapporte l'explorer.
 
 ### 3. Nettoyer
 

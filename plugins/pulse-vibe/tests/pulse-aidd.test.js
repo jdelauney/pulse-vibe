@@ -11,11 +11,11 @@ const RACINE = path.join(__dirname, "..");
 // Chemin relatif et cwd = racine du plugin : fonctionne avec Git Bash, Cygwin, macOS et Linux.
 const lancer = (...args) => spawnSync("bash", ["bin/pulse-aidd", ...args], { cwd: RACINE, encoding: "utf8" });
 
-test("contexte ui : règles communes, quatre références de design et trois modèles", () => {
+test("contexte ui : les règles communes seules (références et modèles chargés à l'étape qui les cite)", () => {
   const r = lancer("contexte", "ui");
   assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
   for (const titre of [
-    "===== Règles communes Pulse =====",
     "===== Registres d'interface =====",
     "===== Règles d'interface =====",
     "===== Anti-patterns d'interface =====",
@@ -23,7 +23,7 @@ test("contexte ui : règles communes, quatre références de design et trois mod
     "===== Modèle : docs/design.md =====",
     "===== Modèle : note de variante =====",
     "===== Modèle : rapport d'audit d'interface =====",
-  ]) assert.ok(r.stdout.includes(titre), titre);
+  ]) assert.ok(!r.stdout.includes(titre), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -105,17 +105,19 @@ test("contexte deploy : les règles communes seules, chaque mode lance sa réfé
     assert.ok(!security.includes(`===== ${titre}`), `security sans « ${titre} »`);
 });
 
-test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique", () => {
+test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique ; la politique IA, le modèle d'audit et le modèle du travail en cours se chargent à l'étape qui les cite", () => {
   const attendus = {
-    seo: ["Référencement : les règles", "Référencement : assistants IA", "Modèle : docs/seo.md", "Modèle : rapport d'audit de référencement"],
+    seo: ["Référencement : les règles", "Modèle : docs/seo.md"],
     perf: ["La vitesse vécue par les visiteurs", "Modèle : docs/performance.md"],
-    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md", "Modèle : travail en cours"],
+    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md"],
   };
+  const absents = { seo: ["Référencement : assistants IA", "Modèle : rapport d'audit de référencement"], "search-console": ["Modèle : travail en cours"] };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, commande);
     assert.doesNotMatch(r.stdout, /commande inconnue/, commande);
     for (const titre of [...titres, "Modèle : docs/lexique.md"]) assert.ok(r.stdout.includes(`===== ${titre} =====`), `${commande} : ${titre}`);
+    for (const titre of absents[commande] || []) assert.ok(!r.stdout.includes(`===== ${titre} =====`), `${commande} sans « ${titre} »`);
   }
 });
 
@@ -135,7 +137,7 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte init : la bannière seule ; guide : fichiers du projet et cycle Pulse ; status : le cycle seul", () => {
+test("contexte init : la bannière seule ; guide : le cycle Pulse seul ; status : ni l'un ni l'autre (le tableau vient de pulse-aidd etat --tableau)", () => {
   const init = lancer("contexte", "init");
   assert.strictEqual(init.status, 0, init.stderr);
   const communes = /^Règles (communes Pulse|des tâches|de relecture|de réalisation)$/; // noyau et modules
@@ -144,8 +146,9 @@ test("contexte init : la bannière seule ; guide : fichiers du projet et cycle P
   for (const commande of ["guide", "status"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
-    for (const titre of ["===== Règles communes Pulse =====", "===== Le cycle Pulse ====="]) assert.ok(r.stdout.includes(titre), `${commande} : ${titre}`);
-    assert.strictEqual(r.stdout.includes("===== Les fichiers du projet ====="), commande !== "status", `${commande} : fichiers du projet`);
+    assert.ok(r.stdout.includes("===== Règles communes Pulse ====="), commande);
+    assert.strictEqual(r.stdout.includes("===== Le cycle Pulse ====="), commande !== "status", `${commande} : cycle Pulse`);
+    assert.ok(!r.stdout.includes("===== Les fichiers du projet ====="), `${commande} : fichiers du projet`);
   }
   assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
 });
@@ -490,11 +493,12 @@ test("pile <sous-commande> : sans pack déclaré ou pack absent, message et code
   assert.match(absent.stdout + absent.stderr, /pulse-essai@pulseia/);
 });
 
-test("contexte rediger : règles communes, règles de rédaction, modèles de la voix et du texte de page", () => {
+test("contexte rediger : règles communes, règles de rédaction, modèle de la voix (le texte de page : chargé par le redacteur)", () => {
   const r = lancer("contexte", "rediger");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md =====", "===== Modèle : docs/textes/<page>.md ====="])
+  for (const titre of ["===== Règles communes Pulse =====", "===== Rédiger les textes des pages =====", "===== Modèle : docs/voix.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
+  assert.ok(!r.stdout.includes("===== Modèle : docs/textes/<page>.md ====="));
 });
 
 test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () => {
@@ -503,8 +507,9 @@ test("textes verifier : relaie vers le contrôle des tics d'écriture IA", () =>
   assert.match(r.stdout, /LEX-001/);
 });
 
-test("contexte ui et plan : les motifs d'écrans", () => {
-  for (const commande of ["ui", "plan"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Motifs d'écrans ====="), commande);
+test("contexte plan : les motifs d'écrans (ui les laisse à ses agents)", () => {
+  assert.ok(lancer("contexte", "plan").stdout.includes("===== Motifs d'écrans ====="));
+  assert.ok(!lancer("contexte", "ui").stdout.includes("===== Motifs d'écrans ====="));
 });
 
 test("identite extraire et maquettes verifier : relaient vers leurs scripts", () => {
@@ -516,6 +521,14 @@ test("identite extraire et maquettes verifier : relaient vers leurs scripts", ()
   const m = lancer("maquettes", "verifier", path.join(vide, "p.html"));
   assert.strictEqual(m.status, 1, m.stdout + m.stderr);
   assert.match(m.stdout, /Texte en dégradé de couleur/);
+});
+
+test("comparer : relaie ses options de rangement (--ranger, --retenir) vers son script", () => {
+  const r = lancer("comparer", "docs/design/identite", "--ranger"); // absent de la racine du plugin : rien à ranger
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^prochain: 1$/m);
+  assert.strictEqual(lancer("comparer", "docs/design/identite", "--retenir").status, 1);
+  assert.strictEqual(lancer("comparer", "skills", "--ranger").status, 2, "hors des dossiers de design : refusé");
 });
 
 const fs = require("fs");

@@ -14,7 +14,9 @@
 //   aussi: /pulse:… — …                  alternatives utiles (zéro, une ou plusieurs lignes)
 //   etapes: brief=fait prd=fait technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non
 //   mvp: 2/6                             tâches terminées / tâches des plans des US Indispensables
-// Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests).
+// Options : --sans-git (ne lit pas Git), --aujourdhui AAAA-MM-JJ (date de référence, pour les tests),
+// --tableau (ajoute le tableau de bord de /pulse:status, scripts/etat-tableau.js). R24 : un signal de suivi du référencement
+// (etat-tableau.js) passe devant R21 à R23.
 // --revue <Tn> [<Tn>…] (`pulse-aidd revue <Tn>`) : la dernière relecture de chaque tâche et où reprendre (tache, statut, plan,
 // etat, rapport, reprendre) ; plusieurs tâches : un bloc par tâche, séparés par une ligne vide. --revue <US-XXX> : la relecture
 // de toute l'US (rythme rapide), même format sans « statut ». `reprendre: decision` : la tâche porte la sous-ligne « En pause : Q<n> ».
@@ -380,7 +382,8 @@ const libelle = (u) => LIBELLES[u.priorite] || "priorité à préciser";
 /** Applique les règles R1 à R23 dans l'ordre : la première qui s'applique donne la prochaine étape. */
 function decider(f) {
   const aussi = [];
-  const verdict = (regle, prochaine, raison, extra = {}) => ({ regle, prochaine, raison, aussi, ...extra });
+  // Signaux de suivi du référencement (faits « suivi », lus par etat-tableau.js) : R24 ou tête de « aussi ».
+  const verdict = (regle, prochaine, raison, extra = {}) => require("./etat-tableau.js").appliquerSuivi(f, { regle, prochaine, raison, aussi, ...extra }, bilan(f).pret);
   if (f.claude === "pulse") {
     if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
     else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
@@ -560,13 +563,14 @@ function sortieIllisible(message) {
   return `prochaine: /pulse:get-help\nraison: l'état du projet n'a pas pu être lu (${message}) : décrivez le problème à /pulse:get-help\nregle: R0`;
 }
 
-const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --revue <Tn> [<Tn>…]";
+const OPTIONS = "options : --sans-git, --aujourdhui AAAA-MM-JJ, --tableau, --revue <Tn> [<Tn>…]";
 
-/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --revue <Tn> [<Tn>…]. Toute autre option est une erreur de la consigne qui appelle l'outil. */
+/** Options : --sans-git, --aujourdhui AAAA-MM-JJ (tests), --tableau, --revue <Tn> [<Tn>…]. Toute autre option est une erreur de la consigne qui appelle l'outil. */
 function lireOptions(args) {
   const options = { git: true, aujourdhui: Date.now() };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--sans-git") options.git = false;
+    else if (args[i] === "--tableau") options.tableau = true;
     else if (args[i] === "--revue") {
       // Les tâches qui suivent, jusqu'à l'option suivante ; aucune tâche : réponse « inconnue », jamais une erreur.
       options.revue = [];
@@ -603,8 +607,24 @@ if (require.main === module) {
     console.log(blocs.join("\n\n"));
   } else {
     try {
+      // Faits de suivi et tableau lus à part : une erreur n'y dégrade que leurs lignes, jamais le verdict d'init.
+      const { lireSuivi, tableau } = require("./etat-tableau.js");
       const faits = lireFaits(process.cwd(), options);
-      console.log(formater(faits, decider(faits), process.cwd()));
+      const pannes = [];
+      try {
+        faits.suivi = lireSuivi(process.cwd(), options.aujourdhui);
+      } catch (e) {
+        pannes.push(`suivi: illisible (${e.message})`);
+      }
+      const lignes = [formater(faits, decider(faits), process.cwd()), ...pannes];
+      if (options.tableau) {
+        try {
+          lignes.push(...tableau(process.cwd(), faits, { ...options, derniereRevue }));
+        } catch (e) {
+          lignes.push(`tableau: illisible (${e.message})`);
+        }
+      }
+      console.log(lignes.join("\n"));
     } catch (e) {
       console.log(sortieIllisible(e.message));
     }
