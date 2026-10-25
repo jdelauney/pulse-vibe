@@ -2,7 +2,7 @@
 description: Relier le site à Google Search Console (et Bing), puis lire ce que Google voit vraiment, en lecture seule — chiffres, requêtes à potentiel, pages oubliées, indexation — et suivre l'évolution tous les 28 jours
 argument-hint: "[relier | lire [28j|3m] | suivre | inspecter <adresse>] (détecté si vide)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Edit(docs/technical.md) Write(docs/referencement/**) Edit(docs/referencement/**) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd agent *) Bash(pulse-aidd qualite *) Bash(pulse-aidd perf *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd preuve *)
+allowed-tools: Bash(pulse-aidd contexte search-console) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(pulse-aidd search-console lire*) Bash(pulse-aidd search-console suivre*) Bash(pulse-aidd search-console inspecter *) Bash(pulse-aidd search-console proprietes*) Bash(pulse-aidd search-console connecter *) Bash(git status *) Bash(git log *) Bash(pulse-aidd travail-fini) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Edit(docs/technical.md) Write(docs/referencement/**) Edit(docs/referencement/**) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte perf) Bash(pulse-aidd sessions *) Bash(pulse-aidd revue *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd agent *) Bash(pulse-aidd qualite *) Bash(pulse-aidd perf *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd preuve *)
 ---
 
 # /pulse:search-console – Ce que Google voit de votre site
@@ -37,10 +37,10 @@ Annoncer le calendrier dès la première utilisation (référence, § 1).
 
 ### 1. `relier` – une étape à la fois
 
-Charger `pulse-aidd reference search-console/relier.md` et le suivre, étapes 1a à 1g, une à la fois. Deux gestes propres à cette commande :
+Charger `pulse-aidd reference search-console/relier.md` et le suivre, étapes 1a à 1g, une à la fois, en notant l'avancement comme il le dit (« Avancement »). Après un compactage, recharger `pulse-aidd reference search-console/relier.md` avant de reprendre l'étape en cours ; un fichier d'identifiants se donne toujours par son chemin, jamais par son contenu. Deux gestes propres à cette commande :
 
 - 1b, pour mettre la balise en ligne : `pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier) (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour).
-- 1c, quand une étape attend (propagation DNS) : la noter dans `aidd_docs/tasks/in-progress.md` (règle commune 16, modèle `pulse-aidd modele in-progress.md`), puis l'effacer avec `pulse-aidd travail-fini` une fois la propriété vérifiée.
+- 1c, quand une étape attend (propagation DNS) : en plus de l'avancement noté dans « Référencement », la noter dans `aidd_docs/tasks/in-progress.md` (règle commune 16, modèle `pulse-aidd modele in-progress.md`), puis l'effacer avec `pulse-aidd travail-fini` une fois la propriété vérifiée.
 
 ### 2. `lire [28j | 3m]`
 
@@ -64,7 +64,7 @@ Charger `pulse-aidd reference search-console/relier.md` et le suivre, étapes 1a
 
 ### 4. `inspecter <adresse>`
 
-1. Adresse complète d'une page du site. Connexion absente : expliquer que l'inspection passe par la connexion en lecture seule (`relier.md`, § 1f), ou guider l'inspection dans l'interface (barre en haut de Search Console).
+1. Adresse complète d'une page du site. Connexion absente : expliquer que l'inspection passe par la connexion en lecture seule (`pulse-aidd reference search-console/relier.md`, § 1f), ou guider l'inspection dans l'interface (barre en haut de Search Console).
 2. `pulse-aidd search-console inspecter <adresse>`, puis expliquer l'état (référence, § 4) : ce qu'il veut dire, et quoi faire.
 3. Rappeler que c'est l'état de la version déjà indexée, et que la demande d'indexation se fait dans l'interface (Inspection de l'URL → Demander l'indexation), page par page.
 
