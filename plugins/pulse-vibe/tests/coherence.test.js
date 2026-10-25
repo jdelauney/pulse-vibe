@@ -1207,6 +1207,12 @@ test("devant vous : le marqueur porte --devant et la sortie de l'étape de réal
   }
 });
 
+test("devant vous : la fiche donnée par l'étape de réalisation tient lieu de l'appel pile contexte implement de l'implementer", () => {
+  const pack = (lire(RACINE, "agents", "implementer.md").match(/## Pack de pile\n\n([^\n]*)\n/) || [])[1] || "";
+  assert.match(pack, /`pulse-aidd pile contexte implement`/);
+  assert.match(pack, /Devant vous, la sortie de l'étape de réalisation \(`realisation etape <Tn> realisation`, lancée par la commande\) donne déjà cette fiche : elle tient lieu de cet appel\./);
+});
+
 test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
   assert.ok(!fs.existsSync(path.join(RACINE, "skills", "implement", "references", "boucle.md")), "boucle.md supprimée");
   const implement = skillTexte("implement");
