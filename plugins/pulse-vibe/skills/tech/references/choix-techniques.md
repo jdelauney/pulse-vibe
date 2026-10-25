@@ -12,14 +12,13 @@ Pulse laisse chaque technologie ouverte au choix : toute proposition part du bes
 - **Lisible avant d'être malin.** Des fonctions courtes, des noms explicites, des commentaires en français qui expliquent le *pourquoi*. Identifiants en anglais simple, textes affichés en français.
 - **Tout vérifier à la source.** Chaque affirmation sur une technologie (offre gratuite, limite, prix, fonctionnalité, API, région d'hébergement) est vérifiée sur sa documentation officielle et sa page de tarifs actuelles.
 
-## Projet existant ou projet neuf
+## Projet neuf
 
-- **Projet existant** (du code est déjà là) : **documenter la pile observée** dans le code (fichiers de configuration, dépendances déclarées, organisation des dossiers, commandes déjà définies), en s'en tenant aux faits. Remplir `docs/technical.md` avec ce qui existe. Proposer un changement seulement si le besoin l'exige vraiment (exigence du PRD impossible à tenir, faille de sécurité, coût disproportionné), en expliquant le coût du changement.
-- **Projet neuf** : partir du besoin (`docs/brief.md`, `docs/prd.md`), poser les questions ci-dessous, puis construire 2 à 3 options.
+Partir du besoin (`docs/brief.md`, `docs/prd.md`), poser les questions ci-dessous, puis construire 2 à 3 options.
 
 ## Les questions à se poser
 
-Chercher d'abord les réponses dans `docs/brief.md` et `docs/prd.md` ; poser à la personne seulement les questions restées ouvertes (une à la fois, ou une ronde de 4 au plus).
+Chercher d'abord les réponses dans `docs/brief.md` et `docs/prd.md` ; poser à la personne seulement les questions restées ouvertes, par rondes (règle commune 5).
 
 1. **Utilisateurs et volume** : combien de personnes utiliseront l'outil (une, une équipe, le public) ? Combien de données, à quelle fréquence ?
 2. **Partage de données** : les données restent-elles sur un seul appareil, ou doivent-elles être partagées entre personnes ou appareils ?
@@ -65,27 +64,19 @@ Pour chaque option, évaluer :
 - **Services payants** (email, IA, SMS) : vérifier les tarifs, fixer une limite de dépense si le service le permet, empêcher le déclenchement en boucle.
 - **Visibilité sur les moteurs de recherche importante** : les pages publiques sont servies en HTML complet par le serveur (rendu serveur ou pages statiques) ; une page construite seulement dans le navigateur reste vide pour la plupart des robots (assistants IA, robots de partage). Critère de choix, à vérifier dans la documentation de chaque option.
 - **1 à 2 services externes au plus** pour un MVP. Les autres attendent une version suivante.
+- **Données personnelles** : en collecter le moins possible ; pour des données sensibles, la région d'hébergement exigée par la loi de protection des données qui s'applique au projet, vérifiée dans l'offre du service.
 - **Confidentialité** : noter où sont hébergées les données personnelles ; ce sera repris dans la mention de confidentialité (`pulse-aidd modele confidentialite.md`). Un outil de statistiques de visite respectueux de la vie privée, sans cookies, est préférable.
 
 ## Anti-complaisance
 
-- Juger chaque choix de la personne sur les faits, avec franchise : si la technologie demandée est surdimensionnée, coûteuse ou risquée pour ses données, le dire avec les faits vérifiés, puis respecter sa décision.
+- Juger chaque choix de la personne sur les faits, avec franchise : si la technologie demandée est surdimensionnée, coûteuse ou risquée pour ses données, le dire avec tact et les faits vérifiés, montrer le coût (pièces à comprendre, temps, verrouillage), demander si elle a une raison que l'on ignore, puis respecter sa décision.
 - Recommander la technologie qui sert le mieux le besoin, même si Claude en connaît mieux une autre.
 - Signaler ce qu'on ne sait pas, et ce qui coûtera plus tard (migration, montée en charge).
 
-## Ce que `/pulse:tech` écrit dans `docs/technical.md`
+## Choisir l'outil de test
 
-Suivre le modèle `pulse-aidd modele tech/technical.md`, avec les sections suivantes (noms exacts) :
+Choix technique (règle commune « La personne décide ») : l'outil de test recommandé par la documentation officielle de la pile retenue, version fixée, vérifié à l'étape 4 avec le reste ; sinon le lanceur de tests intégré au langage s'il en a un (`unittest` pour Python ; `node --test` pour JavaScript avec Node.js, et pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile) ; à défaut, s'il y a du code à tester, l'outil de test le plus répandu pour ce langage, version fixée. Un outil de bout en bout seulement si `docs/prd.md` montre un parcours critique qui le justifie, sinon « aucun ».
 
-- « Les besoins qui guident le choix » : les réponses aux questions, en phrases courtes.
-- « Les options comparées » : les 2-3 options, coût, points forts, risques, sources vérifiées.
-- « Pile retenue » : langage, framework éventuel, données, connexion, code serveur, hébergement, services, avec les versions.
-- « Organisation des fichiers » : observée (projet existant) ou décidée (projet neuf, selon `qualite/organisation.md` : palier, nommage, suffixes, tests) ; où va le code client, le code serveur, les fichiers publiés, ce qui reste privé (`docs/` reste toujours privé).
-- « Commandes du projet » : installer, lancer en local, tester, contrôles automatiques (lint, format, types), construire, déployer. Une commande absente s'écrit « aucune ». Chaque commande est vérifiée dans la documentation officielle ou dans les fichiers du projet.
-- « Données et contrôle d'accès » : où sont les données, qui peut lire et écrire quoi, et où c'est vérifié côté serveur ou dans la base.
-- « Secrets et variables d'environnement » : le fichier local non versionné, les noms des variables (lesquelles sont publiques, lesquelles sont secrètes), où les saisir en production.
-- « Hébergement et mise en ligne » : hébergeur, région, dépôt distant, CI éventuelle.
-- « Mise en place » : les étapes de départ, dans l'ordre.
-- « Ce qu'on a écarté » : les options non retenues et pourquoi.
+## Ce que `/pulse:tech` écrit
 
-Une décision difficile à défaire (hébergement des données, service de connexion) se propose aussi en fichier de décision (modèle « décision (ADR) », déjà dans le contexte de tech).
+Le modèle `tech/technical.md` donne les sections ; « Ce qu'on a écarté » garde les options non retenues et leur raison.

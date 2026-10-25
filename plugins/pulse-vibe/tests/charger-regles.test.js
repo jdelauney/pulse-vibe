@@ -184,10 +184,12 @@ test("pack non installé : organisation gardée", () => {
   assert.ok(r.stdout.includes("## 5. Le code : des paliers progressifs"));
 });
 
-test("contexte tech : organisation chargée même avec un pack", { skip: !fs.existsSync(PACK_BIN) }, () => {
-  const r = dansLeProjet(["contexte", "tech"]);
+test("contexte tech : l'organisation se charge à l'étape 6.1, projet neuf sans pack, plutôt qu'au lancement", () => {
+  const r = dansLeProjet(["contexte", "tech"], { avecPack: false });
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes("===== Organisation des fichiers et nommage ====="));
+  assert.ok(!r.stdout.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte de tech");
+  const tech = fs.readFileSync(path.join(RACINE, "skills", "tech", "SKILL.md"), "utf8");
+  assert.match(tech, /Projet neuf sans pack : lancer `pulse-aidd reference qualite\/organisation\.md`/);
 });
 
 test("un pack remplace seulement l'organisation, jamais la sécurité du code", () => {

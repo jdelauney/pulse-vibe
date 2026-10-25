@@ -1047,14 +1047,17 @@ test("tests automatiques : installer un outil de test est recommandé quand la p
   const sansTests = texte.split("\n").filter((l) => l.includes("« Sans tests automatiques (Recommandé) »"));
   assert.strictEqual(sansTests.length, 1, "un seul cas recommande de se passer de tests");
   assert.match(sansTests[0], /aucun code à tester automatiquement/);
-  assert.match(skillTexte("tech"), /sinon le lanceur de tests intégré au langage/);
+  const choix = lire(RACINE, "skills", "tech", "references", "choix-techniques.md");
+  assert.match(choix, /sinon le lanceur de tests intégré au langage/);
   assert.match(texte, /« Utiliser le lanceur de tests intégré \(Recommandé\) » \(l'outil de test fourni avec le langage, rien à installer ;/);
   assert.match(texte, /ni lanceur intégré au langage : « Installer un outil de test \(Recommandé\) »/, "repli : du code, ni outil documenté ni lanceur intégré");
   assert.match(texte, /1\. Choisir l'outil recommandé [^\n]*ou le lanceur intégré au langage \(§ 2\)/);
-  // TypeScript : mêmes conditions dans la référence et dans tech.
+  // TypeScript : mêmes conditions dans la référence des tests et dans « Choisir l'outil de test » de la démarche de tech, écrite une fois.
   const ts = "pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile";
   assert.ok(texte.includes(ts), "référence : TypeScript");
-  assert.ok(skillTexte("tech").includes(ts), "tech : TypeScript");
+  assert.ok(choix.includes(ts), "tech/choix-techniques.md : TypeScript");
+  assert.match(choix, /^## Choisir l'outil de test$/m);
+  assert.ok(!lire(RACINE, "skills", "tech", "SKILL.md").includes(ts), "tech/SKILL.md renvoie à la démarche");
 });
 
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
@@ -1605,6 +1608,28 @@ test("tech : une fois le pack choisi, seules ses consignes se chargent ; review 
   // Les corrections de review se codent avec les consignes du pack, chargées en entier avant la première correction.
   assert.match(skillTexte("review"), /avant la première correction faite par cette conversation elle-même \(un agent qui corrige charge le pack lui-même\), lancer `pulse-aidd pile contexte implement`, lu en entier/);
   assert.ok(motifsBash(path.join(RACINE, "skills", "review", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte implement")), "review : pile contexte implement autorisé");
+});
+
+test("tech : démarche de choix et organisation chargées à l'étape qui les sert ; squelette décrit une fois ; pile écrite à un seul endroit", () => {
+  const tech = lire(RACINE, "skills", "tech", "SKILL.md");
+  const contexte = contexteCharge("tech");
+  assert.ok(!contexte.includes("===== Aider à choisir la technologie ====="), "démarche hors du contexte");
+  assert.ok(!contexte.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte");
+  const projetNeuf = tech.split("### B. Projet neuf")[1] || "";
+  assert.match(projetNeuf.split("#### 2.")[0], /Avant la première question : lancer `pulse-aidd reference tech\/choix-techniques\.md` et l'appliquer jusqu'à l'étape 5\./);
+  assert.match(tech, /Projet neuf sans pack : lancer `pulse-aidd reference qualite\/organisation\.md`/);
+  // Squelette : la règle des fichiers gardés vit dans « Mise en place » du modèle, lue par tech, plan et l'implementer.
+  const modele = lire(RACINE, "skills", "tech", "assets", "technical.md");
+  assert.match(modele.split("## Mise en place")[1], /dossier temporaire[^\n]*`CLAUDE\.md`, `README\.md` et `\.gitignore`/);
+  assert.match(tech, /Appliquer les étapes de « Mise en place » de `docs\/technical\.md`/);
+  assert.doesNotMatch(tech, /dossier temporaire/);
+  // Pile : docs/technical.md et le bloc « Stack technique » ; la mémoire technique garde les décisions datées.
+  assert.match(tech, /une ligne datée par décision dans « Décisions techniques »\. La pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
+  assert.doesNotMatch(tech, /résumé de la pile retenue/);
+  assert.doesNotMatch(tech, /Pulse 0\.3/);
+  assert.match(tech, /Prochaine étape : projet existant : `\/pulse:memory creer`/);
+  // La liste des sections du modèle : une seule fois, dans le modèle.
+  assert.doesNotMatch(lire(RACINE, "skills", "tech", "references", "choix-techniques.md"), /« Les besoins qui guident le choix » :/);
 });
 
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
