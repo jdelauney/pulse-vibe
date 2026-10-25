@@ -7,7 +7,7 @@
 //   prochaine: /pulse:spec US-003       la commande conseillée
 //   raison: …                            pourquoi, en une phrase
 //   regle: R20                           la règle appliquée
-//   fondation: profil                    R2 à R8 : ce que /pulse:init prépare ou met à niveau (dossier, documents, profil, memoire, git, pile)
+//   fondation: profil                    R2 à R8 : ce que /pulse:init prépare (dossier, profil, memoire, git, pile)
 //   attente: … / ancien: oui / dossier: …   R1 : la décision en attente, si elle date de plus de 7 jours, son dossier
 //   questions: 2                         questions ouvertes (« - [ ] Q<n> ») sous « ## Questions en attente » des plans (ligne absente à zéro)
 //   realisation: perimee                le marqueur aidd_docs/tasks/realisation.json n'a pas bougé depuis plus de 6 heures (ligne absente sinon)
@@ -293,12 +293,17 @@ function codeExistant(racine) {
   );
 }
 
-/** Un projet Pulse créé avec un modèle plus ancien : ancien CLAUDE.md (dont la trame d'avant « Résumé du projet »), .gitignore sans le travail en cours ni les captures, contrôle avant commit absent. */
+/**
+ * Des contrôles du projet à remettre à jour : les signes de skills/init/references/controles.md (un fait, un seul endroit),
+ * hors notes du pack, que /pulse:init lit lui-même. CLAUDE.md sans la ligne des commandes à proposer (/pulse:refine dans
+ * « Commandes »), .gitignore incomplet, copie de Pulse ancienne, contrôle avant commit absent ou ancien.
+ */
 function modeleAncien(racine, texteClaude) {
   const p = (...x) => path.join(racine, ...x);
-  if (texteClaude !== null && (!/^## Résumé du projet\s*$/m.test(texteClaude) || /AI-Driven/.test(texteClaude) || /Commit et envoi[^\n]*uniquement sur demande/.test(texteClaude) || /traces de travail par session/.test(texteClaude))) return true;
+  const commandes = texteClaude === null ? "" : (texteClaude.split(/^## Commandes\s*$/m)[1] || "").split(/^## /m)[0];
+  if (texteClaude !== null && !commandes.includes("/pulse:refine")) return true;
   const gitignore = lireSi(p(".gitignore"));
-  if (gitignore !== null && (!gitignore.includes("aidd_docs/tasks/in-progress.md") || !gitignore.includes("aidd_docs/captures/"))) return true;
+  if (gitignore !== null && ["aidd_docs/tasks/in-progress.md", "aidd_docs/tasks/realisation.json", "aidd_docs/captures/"].some((l) => !gitignore.includes(l))) return true;
   // Une copie de Pulse (contrôle des secrets, ligne d'état) intacte mais posée par une version plus ancienne.
   const { etatDe } = require("./copies.js");
   if (etatDe("verifier", p("scripts", "verifier.js")) === "ancienne" || etatDe("ligne-etat", p(".claude", "pulse-ligne-etat.js")) === "ancienne") return true;
@@ -323,8 +328,6 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
       lireAttente(p(".claude", "worktrees", w, "aidd_docs", "tasks", "in-progress.md"), aujourdhui, `.claude/worktrees/${w}`),
     ),
   ].filter(Boolean);
-  const anciens = [p("docs", "spec.md"), p("docs", "plan.md")].some(existe) ||
-    ["specs", "plans", "revues"].some((d) => fichiersDe(p("docs", d)).some((f) => /\.md$/i.test(f)));
   const relie = (faitsGit && faitsGit.remote) || claude.distant === "adresse";
   return {
     claude: claude.etat,
@@ -338,7 +341,6 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
     controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite *)"), // la forme sans argument ne couvre pas « qualite <familles> » (pulse 0.49)
     depotDistant: relie ? "relie" : claude.distant === "aucun" ? "aucun" : "a-decider",
-    ancienFormat: anciens,
     enAttente: attentes[0] || null,
     docs: {
       brief: existe(p("docs", "brief.md")),
@@ -374,7 +376,7 @@ function decider(f) {
     if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
     else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
     else if (!f.controlesAutorises) aussi.push("/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois");
-    if (f.modeleAncien) aussi.push("/pulse:init — mettre à niveau le projet (modèles et contrôles)");
+    if (f.modeleAncien) aussi.push("/pulse:init — remettre les contrôles du projet à jour");
     if (f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
   }
 
@@ -388,7 +390,6 @@ function decider(f) {
   }
   if (f.claude === "absent") return verdict("R2", "/pulse:init", "le projet n'est pas encore préparé pour Pulse", { fondation: "dossier" });
   if (f.claude === "sans-pulse") return verdict("R3", "/pulse:init", "CLAUDE.md existe sans les règles de Pulse", { fondation: "dossier" });
-  if (f.ancienFormat) return verdict("R4", "/pulse:init", "des documents sont à l'ancien format : ils se rangent maintenant par groupe", { fondation: "documents" });
   if (!f.profil || /pr[ée]ciser/i.test(f.profil)) return verdict("R5", "/pulse:init", "votre profil (niveau, explications) reste à préciser", { fondation: "profil" });
   if (!f.memoire) return verdict("R6", "/pulse:memory creer", "la mémoire du projet n'est pas branchée", { fondation: "memoire" });
   if (f.git && (!f.git.depot || !f.git.commits)) {

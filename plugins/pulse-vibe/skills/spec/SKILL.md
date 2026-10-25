@@ -31,7 +31,6 @@ Fichiers de cette commande : [assets/spec.md](assets/spec.md).
 ### Prérequis
 
 - `docs/user-stories.md` (le référentiel) et `docs/prd.md` sont nécessaires. Sinon, proposer `/pulse:us`.
-- Ancien format (`docs/specs/`, ou US détaillées dans `docs/user-stories.md` sans fichiers dans `aidd_docs/tasks/`) : proposer `/pulse:init`, qui réorganise les documents, et s'arrêter.
 
 ## Processus
 

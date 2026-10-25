@@ -89,7 +89,7 @@
 <li><strong>Tout au début</strong>, dans un dossier vide, pour créer le projet.</li>
 <li><strong>À chaque reprise</strong>, après une pause ou le lendemain, pour retrouver le fil.</li>
 <li><strong>Dans un projet qui a déjà du code</strong>, pour y ajouter Pulse.</li>
-<li><strong>Après une mise à jour de Pulse</strong> : elle repère ce qui a changé et propose de mettre votre projet à niveau.</li>
+<li><strong>Après une mise à jour de Pulse</strong> : elle repère les contrôles du projet à remettre à jour (secrets, fichiers ignorés, notes du pack) et vous les propose un par un.</li>
 </ul>
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour savoir où vous en êtes sans rien lancer, <a href="status.html"><code>/pulse:status</code></a> fait le même calcul, en lecture seule.</p></aside>
 </section>
@@ -136,7 +136,7 @@
 <details class="probleme"><summary>« Git n'est pas installé »</summary><p>Git enregistre l'historique de vos versions. Installez-le depuis <a href="https://git-scm.com/downloads" target="_blank" rel="noopener noreferrer">git-scm.com/downloads</a>, fermez puis relancez Claude Code, et relancez <code>/pulse:init</code>.</p></details>
 <details class="probleme"><summary>« Node.js est absent ou trop ancien »</summary><p>Node.js fait tourner les garde-fous de Pulse. Installez la version LTS (22.19 ou plus) depuis <a href="https://nodejs.org" target="_blank" rel="noopener noreferrer">nodejs.org</a>. Puis <strong>fermez et relancez Claude Code</strong>, pas seulement le terminal : Claude Code lit la liste des programmes installés à son démarrage.</p></details>
 <details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>Chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et un e-mail (celui de votre compte GitHub convient). C'est demandé une seule fois sur cet ordinateur.</p></details>
-<details class="probleme"><summary>Pulse propose de « mettre à niveau » mon projet</summary><p>Votre projet a été créé avec une version plus ancienne de Pulse. La mise à niveau range les fichiers au nouveau format sans rien perdre ; elle vous montre ce qui change et attend votre accord.</p></details>
+<details class="probleme"><summary>Pulse propose de « remettre les contrôles du projet à jour »</summary><p>Votre projet a été créé avec une version plus ancienne de Pulse. Pulse remet à jour les contrôles du projet (secrets, fichiers ignorés, notes du pack) : il explique chaque point en une phrase et attend votre accord. Vous pouvez refuser un point : la suite continue.</p></details>
 <details class="probleme"><summary>La conversation devient longue et lente</summary><p>Après une étape longue, tapez <code>/clear</code>, puis relancez la commande proposée : vous repartez avec une conversation légère, et Pulse retrouve tout grâce à la mémoire du projet.</p></details>
 </section>
 
@@ -168,7 +168,7 @@ Méthode : ✅ brief · ✅ PRD · ✅ choix techniques · ✅ US · [spec] · �
 <li><a href="express.html"><code>/pulse:express</code></a> : démarrer vite, en une seule conversation, juste après <code>/pulse:init</code>.</li>
 <li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : la première étape du parcours complet.</li>
 <li><a href="status.html"><code>/pulse:status</code></a> : savoir où vous en êtes, sans rien lancer.</li>
-<li><a href="memory.html"><code>/pulse:memory</code></a> : remplir la mémoire d'un projet qui a déjà du code.</li>
+<li><a href="memory.html"><code>/pulse:memory</code></a> : remplir la mémoire d'un projet qui a déjà du code, après <code>/pulse:tech</code>.</li>
 <li><a href="tech.html"><code>/pulse:tech</code></a> : choisir les outils de votre appli.</li>
 </ul>
 </section>

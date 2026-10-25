@@ -235,12 +235,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
   [ "$2" = "--sans-communes" ] || [ "$2" = "--sans-noyau" ] || afficher "Règles communes Pulse" "$REF/regles-communes.md"
   [ "$2" = "--sans-communes" ] || modules "$1"
   case "$1" in
-    init)
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
-      afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
-      afficher "Le cycle Pulse" "$REF/cycle.md"
-      afficher "Bannière" "$SK/init/assets/banniere.txt"
-      afficher "Modèle : CLAUDE.md" "$TPL/CLAUDE.md" ;;
+    init) # dépôt distant, cycle et modèle CLAUDE.md : chargés à l'action qui les cite
+      afficher "Bannière" "$SK/init/assets/banniere.txt" ;;
     brainstorm)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
       afficher "Règles de la mémoire projet" "$REF/memoire.md"

@@ -21,7 +21,6 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 - `docs/prd.md` est nécessaire (à défaut `docs/brief.md`, en le signalant). Sinon, proposer `/pulse:prd`.
 - Si `docs/user-stories.md` existe : demander s'il faut le compléter ou le refaire. Le compléter garde les numéros des US existantes. Le refaire conserve les fichiers de `aidd_docs/tasks/` qui ont déjà une spec ou un plan : le signaler et demander.
-- Si `docs/user-stories.md` contient encore le détail des US (ancien format, sans fichiers dans `aidd_docs/tasks/`) : proposer `/pulse:init`, qui réorganise les documents.
 
 ## Processus
 
