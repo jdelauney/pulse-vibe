@@ -1780,6 +1780,20 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
   assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
 });
 
+test("décision 5 : projet existant, tech puis memory creer ; la pile écrite seulement dans docs/technical.md et « Stack technique »", () => {
+  const memory = lire(RACINE, "skills", "memory", "SKILL.md");
+  assert.match(memory, /code sans `docs\/technical\.md`[^\n]*taper d'abord `\/pulse:tech`/, "memory creer : tech d'abord");
+  assert.match(memory, /les fichiers créés, et ceux encore au modèle/, "creer remplit aussi les fichiers restés au modèle");
+  assert.match(memory, /la pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
+  assert.doesNotMatch(memory, /pile et conventions depuis/);
+  const memoire = lire(RACINE, "references", "memoire.md");
+  assert.match(memoire, /\| Conventions de code propres au projet, sécurité propre, pièges et leçons techniques, décisions techniques \(la pile : bloc « Stack technique » de `CLAUDE\.md` et `docs\/technical\.md`\) \| `aidd_docs\/memory\/technical\.md` \|/);
+  assert.match(lire(RACINE, "skills", "init", "SKILL.md"), /`\/pulse:tech` \(documenter les outils observés dans le code\), puis `\/pulse:memory creer`/);
+  // Les seuils de taille sont écrits dans les règles de la mémoire et dans l'action compacter, pas ailleurs dans la commande.
+  assert.strictEqual((memory.match(/140/g) || []).length, 1, "cible écrite une fois dans memory");
+  assert.strictEqual((memory.match(/95 %/g) || []).length, 1, "seuil écrit une fois dans memory");
+});
+
 test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, --tout ni --checklists", () => {
   const sansNom = /pulse-aidd (qualite|tests)`/;
   const textes = [];

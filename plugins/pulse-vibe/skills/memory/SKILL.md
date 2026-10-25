@@ -25,10 +25,10 @@ Action demandée : `$ARGUMENTS`
 
 ### Choisir l'action
 
-- `creer` : la mémoire est absente ou incomplète.
+- `creer` : la mémoire est absente, incomplète ou encore au modèle.
 - `actualiser` : vérifier que la mémoire correspond encore au projet, puis corriger.
 - `retenir "…"` : noter une leçon, une convention, un mot du métier ou une décision.
-- `compacter` : la mémoire chargée à chaque session approche de sa limite de taille (le démarrage ou `pulse-aidd memoire` le signale à 95 %) ; un agent la resserre et la remet à jour.
+- `compacter` : la mémoire chargée à chaque session approche de sa limite de taille (signalée par le démarrage ou `pulse-aidd memoire`) ; un agent la resserre et la remet à jour.
 - Argument vide : si `aidd_docs/memory/` est absent, faire `creer`. Sinon, demander (AskUserQuestion) : « Noter quelque chose (retenir) » / « Vérifier qu'elle est à jour (actualiser) » / « Compléter ce qui manque (creer) » ; si la limite de taille est signalée, mettre « La resserrer (compacter) (Recommandé) » en premier.
 
 Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s'arrêter.
@@ -36,24 +36,17 @@ Prérequis commun : `CLAUDE.md` doit exister. Sinon, proposer `/pulse:init` et s
 ## Rôle
 
 La conversation principale lit le projet, montre chaque ajout ou correction et écrit après l'accord de la personne.
-- **`pulse:memory-compactor`** (action `compacter`) : resserre la mémoire sous la cible (140 lignes) et la remet à jour ; s'il est indisponible, la conversation principale suit **strictement** ses consignes (`pulse-aidd agent memory-compactor`).
+- **`pulse:memory-compactor`** (action `compacter`) : resserre la mémoire sous la cible et la remet à jour ; s'il est indisponible, la conversation principale suit **strictement** ses consignes (`pulse-aidd agent memory-compactor`).
 
 ## Processus
 
 ### Action `creer`
 
+**Projet qui contient du code sans `docs/technical.md`** : proposer de taper d'abord `/pulse:tech` (il documente les outils observés dans le code), puis de relancer `/pulse:memory creer` ; continuer ici seulement si la personne le demande.
+
 1. **Lire le projet** : `CLAUDE.md`, les documents de `docs/` (brief, PRD, user stories, spec, plan), `docs/technical.md` s'il existe, le code du projet en suivant son « Organisation des fichiers » (ou, à défaut, les dossiers de code observés : sources, schéma des données, code serveur, configuration), `git log --oneline -20`. Tirer de ces fichiers tout ce qu'ils permettent de savoir, plutôt que le demander.
-2. **Créer ce qui manque**, en gardant l'existant tel quel :
-
-   | À créer s'il manque | Modèle |
-   |---|---|
-   | `aidd_docs/memory/README.md` | Modèle : aidd_docs/memory/README.md |
-   | `aidd_docs/memory/project.md` | Modèle : aidd_docs/memory/project.md |
-   | `aidd_docs/memory/technical.md` | Modèle : aidd_docs/memory/technical.md |
-   | `aidd_docs/memory/glossary.md` | Modèle : aidd_docs/memory/glossary.md |
-   | `aidd_docs/memory/internal/.gitkeep`, `aidd_docs/memory/external/.gitkeep` | fichiers vides |
-
-3. **Remplir** les fichiers créés à partir de ce qui a été lu, selon les règles de la mémoire : vision et périmètre depuis le brief et le PRD, pile et conventions depuis `docs/technical.md`, la conception technique des plans et le code, mots du métier depuis le brief. Écrire uniquement ce que disent les fichiers et omettre le reste (y compris les `{{…}}`) ; signaler ces manques à la fin.
+2. **Créer ce qui manque**, en gardant l'existant tel quel. Seulement pour un fichier absent, afficher son modèle et le créer d'après lui : `aidd_docs/memory/README.md` (`pulse-aidd modele aidd-memory-readme.md`), `aidd_docs/memory/project.md` (`pulse-aidd modele aidd-memory-project.md`), `aidd_docs/memory/technical.md` (`pulse-aidd modele aidd-memory-technical.md`), `aidd_docs/memory/glossary.md` (`pulse-aidd modele aidd-memory-glossary.md`) ; `aidd_docs/memory/internal/.gitkeep` et `aidd_docs/memory/external/.gitkeep` sont des fichiers vides.
+3. **Remplir** les fichiers créés, et ceux encore au modèle (sections vides, `{{…}}`), à partir de ce qui a été lu, selon les règles de la mémoire : la vision et le périmètre depuis le brief et le PRD ; dans `technical.md`, les conventions propres au projet, la sécurité propre et les pièges, observés dans le code et la conception des plans (la pile reste dans `docs/technical.md` et le bloc « Stack technique », écrits par `/pulse:tech`) ; les mots du métier depuis le brief et le code. Écrire uniquement ce que disent les fichiers et omettre le reste (y compris les `{{…}}`) ; signaler ces manques à la fin.
 4. **Montrer** le contenu proposé, fichier par fichier, en version courte. Demander (AskUserQuestion) : « Écrire tel quel (Recommandé) » / « Modifier quelque chose ».
 5. **Brancher la mémoire** : voir « Brancher et synchroniser » ci-dessous.
 
@@ -77,7 +70,7 @@ Modifier seulement après l'accord de la personne.
 
 1. **Comprendre** ce qui est à retenir (l'argument, ou à défaut la conversation en cours). Si c'est flou, poser **une** question.
 2. **Écarter** ce qui sort du rôle de la mémoire : une préférence passagère, une note de travail, une chose que le code montre déjà, un secret. L'expliquer en une phrase.
-3. **Choisir la destination** avec le tableau « Où va chaque information » des règles. Pour une décision, vérifier les **3 conditions** d'un fichier de décision ; sinon, une ligne datée suffit.
+3. **Choisir la destination** avec le tableau « Où va chaque information » des règles. Pour une décision, vérifier les **3 conditions** d'un fichier de décision : seulement si elles sont réunies, l'écrire d'après son modèle (`pulse-aidd modele aidd-memory-decision.md`) ; sinon, une ligne datée suffit.
 4. **Vérifier les doublons et contradictions** : si la mémoire dit déjà la même chose, la garder telle quelle ; si elle dit le contraire, proposer de **remplacer** l'ancienne ligne.
 5. **Montrer** la ligne exacte (ou le fichier de décision) et sa destination. Demander : « Ajouter (Recommandé) » / « Modifier » / « Abandonner ».
 6. Écrire, puis « Brancher et synchroniser ».
@@ -88,7 +81,7 @@ La mémoire chargée à chaque session occupe le contexte de chaque conversation
 
 1. **Mettre la version actuelle à l'abri** : `git status --short -- aidd_docs/memory/` doit être vide, pour pouvoir revenir en arrière. Sinon, dire en une phrase que des changements de la mémoire ne sont pas encore enregistrés, proposer de taper `/pulse:commit` d'abord, et s'arrêter.
 2. **Mesurer** : `wc -l aidd_docs/memory/*.md` (hors `README.md`).
-3. **Déléguer** au sous-agent **`pulse:memory-compactor`** : la limite (200), la cible (140), le nombre de lignes de chaque fichier. S'il est indisponible, faire le travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent memory-compactor`), et le signaler.
+3. **Déléguer** au sous-agent **`pulse:memory-compactor`** : la limite et la cible (ci-dessus), le nombre de lignes de chaque fichier. S'il est indisponible, faire le travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent memory-compactor`), et le signaler.
 4. **Présenter** en langage simple : lignes avant → après, puis les changements regroupés (resserré, déplacé, corrigé, retiré), en commençant par les retraits et les corrections ; montrer `git diff --stat -- aidd_docs/memory/` et les fichiers créés. Signaler en premier un secret retiré ou une contradiction à trancher.
 5. **Faire valider** (AskUserQuestion) : « Garder la mémoire compactée (Recommandé) » / « Voir le détail d'abord » / « Revenir à la version d'avant ». Pour revenir : `git restore -- aidd_docs/memory/`, puis supprimer les fichiers créés par l'agent (listés dans sa réponse) en le disant.
 6. « Brancher et synchroniser », puis prochaine étape : `/pulse:commit` (message `docs: mémoire compactée`).
@@ -96,10 +89,10 @@ La mémoire chargée à chaque session occupe le contexte de chaque conversation
 ### Brancher et synchroniser (fin de chaque action)
 
 1. Lancer `pulse-aidd memoire`.
-2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon l'ajouter dans la section « Architecture » (sinon en fin de fichier), avec le « Modèle : bloc mémoire de CLAUDE.md ». Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
+2. Si la sortie indique que **le bloc mémoire est absent** de `CLAUDE.md` : remplacer l'ancienne section « Gestion de la mémoire (AIDD) » si elle existe, sinon l'ajouter dans la section « Architecture » (sinon en fin de fichier), d'après le modèle affiché seulement à ce moment (`pulse-aidd modele claude-bloc-memoire.md`). Laisser le reste de `CLAUDE.md` intact. Relancer `pulse-aidd memoire`.
 3. Si la sortie indique **un seul marqueur** : remettre la paire de marqueurs telle que dans le modèle, puis relancer.
 4. Vérifier que la liste affichée correspond aux fichiers de `aidd_docs/memory/`.
-5. Si la sortie signale la limite de taille (95 %) et que l'action n'était pas `compacter` : proposer `/pulse:memory compacter`.
+5. Si la sortie signale la limite de taille et que l'action n'était pas `compacter` : proposer `/pulse:memory compacter`.
 
 Expliquer en une phrase : « À la prochaine session, l'IA chargera automatiquement ces fichiers. »
 
@@ -115,4 +108,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande où vou
 
 !`pulse-aidd contexte memory`
 
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.
+Les règles de la mémoire figurent dans ce contexte ; chaque modèle s'affiche avec `pulse-aidd modele <fichier>` à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.

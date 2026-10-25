@@ -316,6 +316,12 @@ function modeleAncien(racine, texteClaude) {
   return false;
 }
 
+/** Aucune convention notée dans « ## Conventions propres au projet » de la mémoire technique (section absente comprise). */
+function conventionsVides(texte) {
+  const section = ((texte || "").split(/^## Conventions propres au projet\s*$/m)[1] || "").split(/^## /m)[0];
+  return !/^- /m.test(section);
+}
+
 /** Tous les faits utiles à la décision. */
 function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
   const p = (...x) => path.join(racine, ...x);
@@ -337,6 +343,7 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     memoire: claude.memoireBloc && ["project.md", "technical.md", "glossary.md"].every((f) => existe(p("aidd_docs", "memory", f))),
     modeleAncien: claude.etat === "pulse" && modeleAncien(racine, texteClaude),
     codeExistant: codeExistant(racine),
+    conventionsVides: conventionsVides(lireSi(p("aidd_docs", "memory", "technical.md"))),
     secretsProteges: (lireSi(p(".claude", "settings.json")) || "").includes("Read(./.env)"),
     gitAutorise: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(git commit -m *)"),
     controlesAutorises: (lireSi(p(".claude", "settings.json")) || "").includes("Bash(pulse-aidd qualite *)"), // la forme sans argument ne couvre pas « qualite <familles> » (pulse 0.49)
@@ -403,6 +410,10 @@ function decider(f) {
   const d = f.docs;
   if (f.codeExistant && !d.brief && !d.prd && !d.userStories && !d.technical) {
     return verdict("R8c", "/pulse:tech", "le projet existant a déjà du code : documenter les outils qu'il utilise (Chemin A) avant de continuer");
+  }
+  if (f.codeExistant && !d.brief && !d.prd && !d.userStories && d.technical && f.conventionsVides) {
+    aussi.unshift("/pulse:prd — passer directement au périmètre de la première version");
+    return verdict("R8d", "/pulse:memory creer", "les outils du projet existant sont documentés : noter dans la mémoire les conventions et les pièges propres à son code");
   }
   if (!d.brief && !d.prd && !d.userStories && !d.technical) {
     aussi.unshift("/pulse:express — démarrer vite : l'idée, le PRD et les user stories en une conversation");

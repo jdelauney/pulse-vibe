@@ -251,14 +251,8 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : .gitignore" "$TPL/gitignore.template"
       afficher "Modèle : .env.example" "$TPL/env.example.template"
       afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md" ;;
-    memory)
-      afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Modèle : aidd_docs/memory/README.md" "$TPL/aidd-memory-readme.md"
-      afficher "Modèle : aidd_docs/memory/project.md" "$TPL/aidd-memory-project.md"
-      afficher "Modèle : aidd_docs/memory/technical.md" "$TPL/aidd-memory-technical.md"
-      afficher "Modèle : aidd_docs/memory/glossary.md" "$TPL/aidd-memory-glossary.md"
-      afficher "Modèle : décision (ADR)" "$TPL/aidd-memory-decision.md"
-      afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
+    memory) # les modèles s'affichent à l'action qui les cite (pulse-aidd modele)
+      afficher "Règles de la mémoire projet" "$REF/memoire.md" ;;
     spirc)
       afficher "Examiner une tâche" "$REF/examen.md"
       afficher "Déléguer à l'implementer" "$REF/deleguer.md"
