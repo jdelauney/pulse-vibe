@@ -19,7 +19,7 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 Action demandée (facultative) : `$ARGUMENTS`
 
-Fichiers de cette commande : [references/search-console.md](references/search-console.md), [assets/rapport-search-console.md](assets/rapport-search-console.md), [scripts/search-console.js](scripts/search-console.js).
+Fichiers de cette commande : [references/search-console.md](references/search-console.md), [references/relier.md](references/relier.md), [assets/rapport-search-console.md](assets/rapport-search-console.md), [scripts/search-console.js](scripts/search-console.js).
 
 ### 0. Prérequis et choix de l'action
 
@@ -37,65 +37,21 @@ Annoncer le calendrier dès la première utilisation (référence, § 1).
 
 ### 1. `relier` – une étape à la fois
 
-Relire d'abord la section « Référencement » de `docs/technical.md` : chaque étape déjà notée comme faite se saute (« déjà fait le … »).
+Charger `pulse-aidd reference search-console/relier.md` et le suivre, étapes 1a à 1g, une à la fois. Deux gestes propres à cette commande :
 
-#### 1a. Choisir le type de propriété
-
-- Adresse sur un sous-domaine d'hébergeur (`*.vercel.app`, `*.netlify.app`…) → **préfixe d'URL** (`https://<adresse>/`) vérifié par **balise meta** (1b).
-- Domaine personnel → **propriété de domaine** vérifiée par **DNS** (1c). Où est géré le DNS : chez l'hébergeur (consignes du pack de pile, s'il y en a un) ou chez le registraire (OVH, Gandi, IONOS…) ? Demander à la personne si `docs/technical.md` ne le dit pas.
-- Personne bloquée sur le DNS → repli sur le préfixe d'URL avec balise meta (1b), en expliquant que la propriété ne couvrira que cette adresse exacte.
-
-La personne ouvre Search Console (search.google.com/search-console) avec **son** compte Google, choisit « Ajouter une propriété » et le type retenu. Les libellés de l'interface changent souvent : guider d'après ce qu'elle voit à l'écran et d'après l'aide officielle (règle 15).
-
-#### 1b. Balise meta (préfixe d'URL)
-
-1. La personne copie **le contenu** de la balise que montre Search Console et le colle ici. Le dire : ce code est public, il s'écrit dans le code du site.
-2. L'écrire à l'endroit indiqué par le pack de pile ; sans pack, dans le `<head>` de la page d'accueil, d'après la documentation officielle de la technologie retenue.
-3. Enregistrer et mettre en ligne : `pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier) (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour). Prouver que la balise est servie : `pulse-aidd sonder <adresse> --texte "google-site-verification"`.
-4. Seulement alors, la personne clique « Vérifier ». Expliquer que la balise reste en place pour toujours (sinon la propriété se perd).
-
-#### 1c. Enregistrement DNS (domaine)
-
-1. La personne copie la valeur TXT que montre Search Console (elle n'est pas secrète).
-2. DNS chez l'hébergeur : suivre les consignes du pack de pile (tableau de bord, ou commande de l'hébergeur avec l'accord de la personne). DNS chez le registraire : guider pas à pas d'après sa documentation officielle.
-3. La propagation peut prendre jusqu'à 24 heures. Si « Vérifier » échoue, noter l'étape dans `aidd_docs/tasks/in-progress.md` (règle commune 16 ; effacé avec `pulse-aidd travail-fini` une fois la propriété vérifiée) et proposer de reprendre plus tard avec `/pulse:search-console relier`.
-
-#### 1d. Sitemap
-
-1. `pulse-aidd sonder <adresse>/sitemap.xml --texte "<urlset"` (ou `"<sitemapindex"`) : le sitemap est servi. Lire quelques adresses : elles portent **le domaine définitif**. Sitemap absent ou faux : proposer `/pulse:seo bases`, puis revenir ici.
-2. `pulse-aidd sonder <adresse>/robots.txt --texte "Sitemap:"` : la ligne `Sitemap:` est présente ; sinon proposer de l'ajouter.
-3. La personne déclare le sitemap dans Search Console (Sitemaps → adresse → Envoyer). Statut attendu : « Réussi » (parfois après quelques heures).
-
-#### 1e. Bing
-
-Proposer l'import dans Bing Webmaster Tools (deux minutes) : bing.com/webmasters → connexion → importer depuis Google Search Console. Signaler le rapport « AI Performance » (citations dans Copilot). Si le pack de pile propose IndexNow, le présenter comme facultatif.
-
-#### 1f. Accès aux données pour Pulse (facultatif)
-
-Présenter les deux façons (AskUserQuestion) :
-
-- « Un fichier exporté de Search Console, quand vous voulez un rapport (Recommandé pour commencer) » : aucun secret, rien à installer ;
-- « Connexion Google en lecture seule » : rapport sans export manuel, avec sitemap et inspection ; demande une configuration d'environ 15 minutes dans la console Google Cloud ;
-- « Plus tard ».
-
-Connexion choisie : guider la procédure de la référence (§ 4.2), une étape à la fois. Demander **le chemin** du fichier `client_secret_….json` téléchargé, jamais son contenu, puis lancer `pulse-aidd search-console connecter --client <chemin>`. La personne clique « Autoriser » dans son navigateur ; l'accès va directement du script à son dossier de configuration, hors du projet. Ensuite, `pulse-aidd search-console proprietes` montre les propriétés visibles. Pour retirer l'accès plus tard : `pulse-aidd search-console deconnecter` (Claude Code demande l'autorisation, car le fichier est supprimé).
-
-#### 1g. Noter
-
-Écrire ou compléter la section « Référencement » de `docs/technical.md` : propriété, méthode de vérification et emplacement de la balise, date, sitemap, Bing, mode d'accès choisi, dossier des rapports. Proposer `/pulse:memory retenir "balise de vérification Google à garder dans <fichier>"` si une balise a été posée.
-
-Clore avec le calendrier : premières données dans 2 à 3 jours, premier vrai rapport dans 28 jours (`/pulse:search-console lire`).
+- 1b, pour mettre la balise en ligne : `pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier) (argument `push`), puis `pulse-aidd etape deploy --sans-communes` (mise à jour).
+- 1c, quand une étape attend (propagation DNS) : la noter dans `aidd_docs/tasks/in-progress.md` (règle commune 16, modèle `pulse-aidd modele in-progress.md`), puis l'effacer avec `pulse-aidd travail-fini` une fois la propriété vérifiée.
 
 ### 2. `lire [28j | 3m]`
 
 1. Source des données :
    - connexion enregistrée → `pulse-aidd search-console lire --periode <28j|3m> --ecrire` ;
-   - sinon, guider l'export (référence, § 4.1), demander le chemin de l'archive, puis `pulse-aidd search-console lire --fichier <chemin> --ecrire` ; proposer la connexion seulement si la personne veut éviter l'export à chaque fois.
+   - sinon, guider l'export (référence, § 2.1), demander le chemin de l'archive, puis `pulse-aidd search-console lire --fichier <chemin> --ecrire` ; proposer la connexion seulement si la personne veut éviter l'export à chaque fois.
 2. Le script écrit `docs/referencement/search-console-<date>.md` et l'instantané `docs/referencement/donnees/<date>.json`. Un rapport du même jour existe déjà : demander avant de le remplacer.
-3. Selon le code de sortie (tableau de la référence, § 4) : 6 → « pas encore de données, c'est normal », date de retour ; 2, 3, 4, 5 → expliquer simplement et proposer la suite indiquée.
+3. Selon le code de sortie (tableau de la référence, § 2) : 6 → « pas encore de données, c'est normal », date de retour ; 2, 3, 4, 5 → expliquer simplement et proposer la suite indiquée.
 4. Présenter le rapport : d'abord « En bref », puis les **3 actions prioritaires**. Relire chaque action avec le code réel (la page qui répond à la requête existe-t-elle ? son titre ?) ; la reformuler ou la remplacer si le code montre mieux, et mettre à jour le rapport. Chaque chiffre cité est suivi de son sens et de ce qu'il faut faire, ou de « rien à faire, c'est normal ».
 5. Échantillon d'indexation : le présenter comme un échantillon, et renvoyer au rapport « Indexation des pages » de l'interface pour la vue complète.
-6. Rappeler ce que l'API ne montre pas (référence, § 8 et 9) : rapport IA générative, réglage « Search generative AI » (décision de la personne, à relier à `/pulse:seo ia`), Bing AI Performance.
+6. Rappeler ce que l'API ne montre pas (référence, § 6) : rapport IA générative, réglage « Search generative AI » (décision de la personne, à relier à `/pulse:seo ia`), et le rapport « AI Performance » de Bing, à ouvrir dans son interface.
 7. Première écriture dans `docs/referencement/donnees/` d'un dépôt public : proposer de l'ajouter au `.gitignore` (données personnelles possibles dans les requêtes).
 8. Proposer d'enregistrer : `/pulse:commit`.
 
@@ -108,16 +64,11 @@ Clore avec le calendrier : premières données dans 2 à 3 jours, premier vrai r
 
 ### 4. `inspecter <adresse>`
 
-1. Adresse complète d'une page du site. Connexion absente : expliquer que l'inspection passe par la connexion en lecture seule (§ 1f), ou guider l'inspection dans l'interface (barre en haut de Search Console).
-2. `pulse-aidd search-console inspecter <adresse>`, puis expliquer l'état (référence, § 6) : ce qu'il veut dire, et quoi faire.
+1. Adresse complète d'une page du site. Connexion absente : expliquer que l'inspection passe par la connexion en lecture seule (`relier.md`, § 1f), ou guider l'inspection dans l'interface (barre en haut de Search Console).
+2. `pulse-aidd search-console inspecter <adresse>`, puis expliquer l'état (référence, § 4) : ce qu'il veut dire, et quoi faire.
 3. Rappeler que c'est l'état de la version déjà indexée, et que la demande d'indexation se fait dans l'interface (Inspection de l'URL → Demander l'indexation), page par page.
 
-### 5. Ce qui reste à la personne
-
-- Se connecter à Google, ajouter la propriété, cliquer « Vérifier », déclarer le sitemap, importer dans Bing, régler « Search generative AI » : dans l'interface, avec son compte.
-- Le contenu des fichiers d'identifiants va du téléchargement au script par son chemin ; la conversation reçoit seulement des chemins et des codes publics (balise, TXT).
-
-### 6. Clore
+### 5. Clore
 
 Transformer les actions retenues en demandes (`/pulse:spirc "…"` ou `/pulse:seo textes <page>`). Une page qui change d'adresse reçoit une redirection permanente (301).
 
@@ -133,4 +84,4 @@ Terminer avec le bloc de fin de commande ; « Prochaine étape » donne la date 
 
 !`pulse-aidd contexte search-console`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte (« Search Console : relier, lire, suivre », modèle du rapport, et les consignes du pack de pile s'il y en a un). Si ce contexte est absent, lancer `pulse-aidd contexte search-console`, puis `pulse-aidd reference search-console/search-console.md`, et lire leur sortie.
+La référence « Search Console : relier, lire, suivre », le modèle du rapport et les consignes du pack de pile, s'il y en a un, figurent dans ce contexte ; `relier.md` et le modèle du travail en cours se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte search-console` et lire sa sortie.

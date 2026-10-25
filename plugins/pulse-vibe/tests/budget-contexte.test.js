@@ -53,7 +53,7 @@ const PLAFONDS = {
   rediger: 20000, // mesure 18 877 (phase 8 : le modèle du texte de page laissé au redacteur) ; avant, mesure 19 057 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 26 875
   seo: 45500, // mesure 43 163 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 49 096
   perf: 36000, // mesure 33 884 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 707
-  "search-console": 35500, // mesure 33 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 273
+  "search-console": 29500, // mesure 28 083 (phase 8 : la liaison dans relier.md et le modèle du travail en cours, chargés à l'étape qui les cite) ; avant, mesure 33 465 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 41 273
   learn: 28000, // mesure 26 412 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 226
   explain: 15500, // mesure 14 585 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 22 408
   test: 24500, // mesure 23 227 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 36 794 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 43 019 (pulse 0.49 : règles de qualité et de tests chargées par famille ; le chargement de chaque agent baisse, plafonné à part) ; avant, 40 581 (pulse 0.42 : rythme rapide, option -f, gestes)
@@ -97,7 +97,7 @@ const PLAFONDS_COMMANDE = {
   rediger: 24500, // mesure 23 255 (phase 8 : modèle du texte de page laissé au redacteur, qualité chargée pour intégrer, questions libres en texte) ; avant, mesure 23 144 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 32 639 (pulse 0.40 : règle commune 19 et fiche de test)
   refine: 51500, // mesure 48 849 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 808 (pulse 0.45 : le plan écrit « à valider » et contrôlé par verifier-plan, dans les règles du plan)
   review: 37500, // mesure 35 291 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport, délégations au reviewer et au verifier sans recopie, preuve unique) ; avant, mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 avec le pack (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
-  "search-console": 47000, // mesure 44 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 989
+  "search-console": 36500, // mesure 34 590 (phase 8 : la liaison écrite une fois dans relier.md, chargée à l'étape ; § 5 retiré) ; avant, mesure 44 549 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 52 989
   secrets: 41500, // mesure 39 337 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 47 290
   security: 24000, // mesure 22 835 (refactoring d'optimisation, tâche 5.5 : contexte réduit au modèle, délégation sans recopie) ; avant, mesure 37 842 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 46 122 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (règles communes § 4, règles 1, 6 et 11, étapes fix et auto-fix chaînées)) ; avant, mesure 43 499
   seo: 54500, // mesure 51 696 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 741

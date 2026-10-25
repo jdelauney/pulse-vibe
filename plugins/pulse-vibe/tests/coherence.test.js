@@ -1495,6 +1495,27 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
   }
 });
 
+test("Search Console : la liaison est écrite une fois (search-console/relier.md), lue par /pulse:search-console relier et par /pulse:seo lancer", () => {
+  const relier = lire(RACINE, "skills", "search-console", "references", "relier.md");
+  for (const etape of ["1a", "1b", "1c", "1d", "1e", "1f", "1g"]) assert.match(relier, new RegExp(`^## ${etape}\\. `, "m"), `relier.md : étape ${etape}`);
+  for (const fait of [/réellement servie après redirection/, /vérifier d'abord, partager ensuite/i, /« découvertes »/, /msvalidate\.01/, /IndexNow/, /webmasters\.readonly/, /Compte de service/i])
+    assert.match(relier, fait, `relier.md : ${fait}`);
+  assert.doesNotMatch(relier, /pulse-aidd etape|in-progress\.md/, "relier.md vaut pour les deux commandes : la mise en ligne et l'étape en attente se disent dans chacune");
+  const sc = lire(RACINE, "skills", "search-console", "SKILL.md");
+  assert.match(sc, /`pulse-aidd reference search-console\/relier\.md`/);
+  assert.doesNotMatch(sc, /^#### 1[a-g]\./m, "les étapes de liaison ne sont plus recopiées dans le SKILL.md");
+  assert.doesNotMatch(sc, /Ce qui reste à la personne/, "§ 5 retiré : il redisait les étapes 1a à 1f");
+  assert.match(sc, /`pulse-aidd modele in-progress\.md`/, "le modèle du travail en cours se charge quand une étape attend");
+  assert.match(sc, /`pulse-aidd etape commit --sans-communes`[\s\S]*`pulse-aidd etape deploy --sans-communes`/, "mise en ligne de la balise (1b) par les étapes enchaînées");
+  const ref = lire(RACINE, "skills", "search-console", "references", "search-console.md");
+  for (const parti of [/^## \d+\. Propriété et vérification/m, /^## \d+\. Sitemap/m, /^## \d+\. Bing Webmaster Tools/m, /Google Auth Platform/, /^### .*Compte de service/m])
+    assert.doesNotMatch(ref, parti, `search-console.md sans ${parti} (déplacé dans relier.md)`);
+  assert.match(ref, /`pulse-aidd reference search-console\/relier\.md`, § 1f/, "codes 2 et 3 : la connexion se refait d'après relier.md § 1f");
+  const lancer = lire(RACINE, "skills", "seo", "references", "lancer.md");
+  assert.match(lancer, /`pulse-aidd reference search-console\/relier\.md`, étapes 1a à 1e puis 1g/);
+  assert.doesNotMatch(lancer, /Ajouter une propriété|Search generative AI/, "lancer.md renvoie à relier.md ; le choix C se règle dans /pulse:seo ia");
+});
+
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
   const worktree = lire(RACINE, "references", "worktree-dossier.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));

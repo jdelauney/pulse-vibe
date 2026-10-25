@@ -82,7 +82,7 @@ Suivre « Référencement : assistants IA » (en fin de fichier).
 1. Afficher la politique actuelle de `docs/seo.md` (choix et date), ou « à décider ».
 2. Expliquer en trois lignes les trois familles de robots, puis poser **une** question à quatre réponses (A, B, C, D) avec leurs conséquences, sans recommandation ; B porte la mention « (le plus courant pour un site vitrine) ». Les options (Content-Signal, Amazonbot, `nosnippet`) se proposent seulement si la personne s'y intéresse.
 3. Écrire la décision dans `docs/seo.md` (section « Assistants IA » et bloc `pulse-seo`), puis robots.txt selon la pile (consignes du pack, ou `pulse-aidd seo robots <choix> --sitemap <adresse>`), montré avant d'être écrit.
-4. Preuve : `pulse-aidd seo <adresse> --ia` (IA1, IA4). Choix C : guider le réglage Search Console (`pulse-aidd reference seo/lancer.md`, § 5).
+4. Preuve : `pulse-aidd seo <adresse> --ia` (IA1, IA4). Choix C : guider le réglage Search Console d'après `pulse-aidd reference search-console/search-console.md`, § 6.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:seo audit`, ou `/pulse:seo lancer` si le site est en ligne.
 

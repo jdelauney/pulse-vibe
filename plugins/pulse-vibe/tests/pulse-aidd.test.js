@@ -100,17 +100,19 @@ test("contexte deploy : saisie des secrets hors conversation ; contexte security
     assert.ok(!security.includes(`===== ${titre}`), `security sans « ${titre} »`);
 });
 
-test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique", () => {
+test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique ; le modèle du travail en cours se charge à l'étape qui attend", () => {
   const attendus = {
     seo: ["Référencement : les règles", "Référencement : assistants IA", "Modèle : docs/seo.md", "Modèle : rapport d'audit de référencement"],
     perf: ["La vitesse vécue par les visiteurs", "Modèle : docs/performance.md"],
-    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md", "Modèle : travail en cours"],
+    "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md"],
   };
+  const absents = { "search-console": ["Modèle : travail en cours"] };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, commande);
     assert.doesNotMatch(r.stdout, /commande inconnue/, commande);
     for (const titre of [...titres, "Modèle : docs/lexique.md"]) assert.ok(r.stdout.includes(`===== ${titre} =====`), `${commande} : ${titre}`);
+    for (const titre of absents[commande] || []) assert.ok(!r.stdout.includes(`===== ${titre} =====`), `${commande} sans « ${titre} »`);
   }
 });
 
