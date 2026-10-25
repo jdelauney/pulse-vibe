@@ -1233,6 +1233,10 @@ test("rappel après compaction : chaque commande pulse-aidd qu'il peut écrire p
   assert.deepStrictEqual(problemes, []);
 });
 
+test("la réalisation dans la conversation s'appelle « devant vous » (`-d`) partout, plus « mode direct »", () => {
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /mode direct/i.test(texte)).map(({ fichier }) => fichier), []);
+});
+
 test("implement relancé sur une tâche [~] au code commencé : le marqueur fait reprendre la réalisation, pas la relecture", () => {
   const prerequis = skillTexte("implement").split("\n").find((l) => l.startsWith("- Tâche déjà `[~]`")) || "";
   assert.match(prerequis, /`pulse-aidd realisation` montre `commande: implement`, `tache: <Tn>` et `etape: realisation` ou `test`, sans `perime: oui`/);
