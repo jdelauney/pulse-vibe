@@ -13,6 +13,8 @@ const RACINE = path.join(__dirname, "..");
 const ETAT = path.join(RACINE, "scripts", "etat.js");
 const { lireFaits, decider, sortieIllisible } = require(ETAT);
 
+// La ligne des commandes à proposer (décision 4), lue dans le modèle de CLAUDE.md pour rester alignée.
+const LIGNE_COMMANDES = fs.readFileSync(path.join(RACINE, "templates", "CLAUDE.md"), "utf8").split("\n").find((l) => l.includes("/pulse:refine <US-XXX>"));
 const CLAUDE = (options = {}) => `# TodoIt
 
 ## Résumé du projet
@@ -37,7 +39,7 @@ ${options.pile || "Pile non choisie : lancer `/pulse:tech`."}
 
 ## Commandes
 
-- Quand la personne demande où elle en est ou quoi faire ensuite, proposez-lui de taper \`/pulse:status\`. Quand elle veut changer l'ordre ou le contenu d'un plan, proposez \`/pulse:refine <US-XXX>\`.
+${LIGNE_COMMANDES}
 
 ## Adresses
 
@@ -421,7 +423,8 @@ test("projet existant : du code sans brief ni choix techniques, documenter l'exi
 
 test("projet existant après tech : noter les conventions propres au code (R8d), puis la suite normale", () => {
   const MEMOIRE_VIDE = "# Mémoire technique\n\n## Conventions propres au projet\n\n<!-- Une ligne par convention. -->\n\n## Pièges et leçons\n\n- Un piège déjà noté.\n";
-  const existant = (fichiers) => etat(projet({ "package.json": "{}", "docs/technical.md": "x", ...fichiers }, PILE_CHOISIE));
+  const OBSERVEE = "## Les options comparées\n\nProjet existant : pile observée, pas de comparaison.\n";
+  const existant = (fichiers) => etat(projet({ "package.json": "{}", "docs/technical.md": OBSERVEE, ...fichiers }, PILE_CHOISIE));
   const r = existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE });
   assert.deepStrictEqual([r.regle, r.prochaine], ["R8d", "/pulse:memory creer"]);
   assert.match(r.raison, /conventions/);
@@ -431,6 +434,11 @@ test("projet existant après tech : noter les conventions propres au code (R8d),
   assert.strictEqual(existant({ "aidd_docs/memory/technical.md": remplie }).regle, "R10", "conventions notées : le périmètre ensuite");
   assert.strictEqual(existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE, "docs/brief.md": "x" }).regle, "R10", "avec un brief, la suite normale");
   assert.strictEqual(etat(projet({ "docs/technical.md": "x", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }, PILE_CHOISIE)).regle, "R10", "sans code, rien à observer");
+  // Projet neuf : tech a comparé des options puis posé le squelette (du code), sans brief : le périmètre d'abord.
+  assert.strictEqual(existant({ "docs/technical.md": "## Les options comparées\n\n| Option | Coût |\n", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R10", "projet neuf : pas de R8d");
+  // creer sans convention à noter l'écrit : R8d ne revient pas.
+  const aucune = MEMOIRE_VIDE.replace("<!-- Une ligne par convention. -->", "- Aucune convention propre relevée (2026-10-25).");
+  assert.strictEqual(existant({ "aidd_docs/memory/technical.md": aucune }).regle, "R10", "aucune convention relevée : la suite");
 });
 
 test("contrôles à remettre à jour : une ligne « aussi », jamais un blocage du parcours", () => {
@@ -466,6 +474,14 @@ test("contrôles à remettre à jour : une ligne « aussi », jamais un blocage 
   assert.ok(a({ "scripts/verifier.js": "x", ".git/hooks": "<dossier>" }), "crochet absent");
   assert.ok(!a({ ...crochet, ".git/config": "[core]\n\thooksPath = .husky\n" }), "Husky range ses contrôles ailleurs");
   assert.ok(!a({ "scripts/verifier.js": "x" }), "sans dépôt, pas de crochet à vérifier");
+  // Une copie intacte d'un ancien contrôle des secrets (sans la partie « Scénarios ») est vue « ancienne » : à remettre à jour.
+  const { empreinte } = require(path.join(RACINE, "scripts", "copies.js"));
+  const modeleVerifier = fs.readFileSync(path.join(RACINE, "templates", "verifier.js"), "utf8").replace(/\r\n/g, "\n");
+  const vieux = modeleVerifier.split("\n").filter((l) => !l.includes("Scénarios")).join("\n");
+  assert.notStrictEqual(vieux, modeleVerifier, "le modèle a bien une partie « Scénarios »");
+  const lignes = vieux.split("\n");
+  lignes.splice(1, 0, `// pulse-copie: ${empreinte(vieux)}`);
+  assert.ok(a({ "scripts/verifier.js": lignes.join("\n") }), "ancien verifier.js intact, sans « Scénarios »");
   // la décision en attente et les autres fondations gardent leur place
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/tasks/in-progress.md": "" }).regle, "R1");
   assert.strictEqual(modele({ ".gitignore": ".env\n", "aidd_docs/memory/glossary.md": null }).regle, "R6");
