@@ -288,6 +288,9 @@ test("contexte implement : la procédure des tests automatiques ; contexte test 
 test("contexte spec : Gherkin, sans checklist (le comment va au plan) ; contexte plan : stratégie de tests et checklist", () => {
   assert.ok(lancer("contexte", "spec").stdout.includes("===== Scénarios Gherkin ====="));
   assert.ok(!lancer("contexte", "spec").stdout.includes("===== Checklist sécurité ====="));
+  // La présentation des écrans sert à chaque spec ; le modèle d'US, seulement à une US créée (pulse-aidd modele us.md).
+  assert.ok(lancer("contexte", "spec").stdout.includes("===== Présentation des écrans ====="));
+  assert.ok(!lancer("contexte", "spec").stdout.includes("US-XXX-<nom>.md (pour une nouvelle US)"));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Stratégie de tests ====="));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ====="));
 });

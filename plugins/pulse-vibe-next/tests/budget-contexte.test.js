@@ -113,7 +113,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   secrets: 62500, // mesure 59 103 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 67 057
   security: 30500, // mesure 28 768 (refactoring d'optimisation, tâche 5.5 : contexte du cœur réduit au modèle de docs/securite.md) ; avant, mesure 44 263 (pulse 0.50 : la fiche et l'architecture à la demande, `pile contexte security` passe sous le seuil de lecture de 30 000) ; avant, mesure 72 074 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
   seo: 59000, // mesure 55 761 (pulse 0.50 : consignes pour écrire du code à la place de la fiche, de l'architecture et de la liste des recettes) ; avant, mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
-  spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
+  spec: 45500, // mesure 43 267 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
   tech: 57000, // mesure 54 265 (refactoring d'optimisation, tâche 6.2 : démarche de choix et organisation chargées à l'étape, squelette décrit une fois dans le modèle) ; avant, mesure 80 113 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 32500, // mesure 30 863 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 83500, // mesure 79 522 (pulse 0.50 : consignes pour écrire du code à la place du thème complet, section « Pour les maquettes » gardée) ; avant, mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
@@ -197,7 +197,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "pr --sans-noyau": 22000, // mesure 20 495
   "refine --sans-communes": 36500, // mesure 34 590 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 728
-  "spec --sans-communes": 29500, // mesure 27 839
+  "spec --sans-communes": 28000, // mesure 26 320 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, 27 839
   "tech --sans-communes": 43000, // mesure 40 864 (tâche 6.2 : démarche et organisation chargées à l'étape) ; avant, 66 375 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "ui --sans-communes": 63500, // mesure 60 343 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "ui --sans-noyau": 69500, // mesure 65 802 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
