@@ -189,6 +189,39 @@ test("échec rattrapé quand la principale ne peut pas être remise : retour sur
   assert.strictEqual(git(d, "status", "--porcelain"), "");
 });
 
+// Le crochet reference-transaction (Git 2.28 ou plus) déplace la nouvelle branche juste après la remise de la principale :
+// tous les gestes réussissent, seul le contrôle final voit l'écart.
+const versionGit = (spawnSync("git", ["--version"], { encoding: "utf8" }).stdout.match(/(\d+)\.(\d+)/) || []).slice(1).map(Number);
+const sansCrochetReferences = versionGit.length && (versionGit[0] > 2 || (versionGit[0] === 2 && versionGit[1] >= 28)) ? false : "Git 2.28 ou plus requis";
+
+test("contrôle final en échec : principale remise à son commit de départ, retour sur elle, code 3", { skip: sansCrochetReferences }, () => {
+  const { d } = projet();
+  const depart = git(d, "rev-parse", "HEAD");
+  const crochet = path.join(d, ".git", "hooks", "reference-transaction");
+  fs.mkdirSync(path.dirname(crochet), { recursive: true });
+  fs.writeFileSync(
+    crochet,
+    [
+      "#!/bin/sh",
+      '[ "$1" = committed ] || exit 0',
+      'marque="$(git rev-parse --git-dir)/deplace-une-fois"',
+      '[ -f "$marque" ] && exit 0',
+      "while read ancien nouveau ref; do",
+      '  if [ "$ref" = refs/heads/main ]; then touch "$marque"; git update-ref refs/heads/feat/x "$nouveau"; fi',
+      "done",
+      "",
+    ].join("\n")
+  );
+  fs.chmodSync(crochet, 0o755);
+  const r = lancer(d, "feat/x");
+  fs.rmSync(crochet);
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(r.premier("etat"), "controle-final-echoue");
+  assert.strictEqual(git(d, "branch", "--show-current"), "main");
+  assert.strictEqual(git(d, "rev-parse", "main"), depart, "principale à son commit de départ : aucun commit perdu");
+  assert.match(r.premier("principale"), /^main, à son commit de départ /);
+});
+
 test("relais : pulse-aidd deplacer-commits lance le script", () => {
   const { d } = projet();
   const r = spawnSync("bash", [path.join(RACINE, "bin", "pulse-aidd").split(path.sep).join("/"), "deplacer-commits", "feat/us-003-liste"], { cwd: d, encoding: "utf8" });

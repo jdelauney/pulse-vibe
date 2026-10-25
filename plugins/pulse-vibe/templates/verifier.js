@@ -162,20 +162,41 @@ function listerFichiers() {
   return resultat;
 }
 
-function fichiersIndexes() {
+const gitSortie = (args) => execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+
+/** La racine du dépôt Git, ou null hors d'un dépôt. */
+function racineDepot() {
   try {
-    const sortie = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-    return sortie.split("\u0000").filter(Boolean);
+    return gitSortie(["rev-parse", "--show-toplevel"]).trim() || null;
   } catch (e) {
-    return [];
+    return null;
   }
 }
 
+/** Les fichiers préparés pour le commit (ajoutés, copiés, modifiés, renommés, changés de type), ou null si Git ne répond pas. */
+function fichiersIndexes() {
+  try {
+    return gitSortie(["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMRT"]).split("\u0000").filter(Boolean);
+  } catch (e) {
+    return null;
+  }
+}
+
+// Au-delà, un fichier texte préparé est refusé plutôt que lu (même limite que le garde-fou des commandes).
+const TAILLE_MAX_INDEX = 20 * 1024 * 1024;
+
+/** Le contenu préparé d'un fichier : { contenu } (binaire : contenu vide), ou { probleme } quand il ne peut pas être contrôlé. */
 function contenuIndexe(f) {
   try {
-    return execFileSync("git", ["show", `:${f}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 1024 * 1024 });
+    const taille = Number(gitSortie(["cat-file", "-s", `:${f}`]).trim());
+    if (taille > TAILLE_MAX_INDEX) {
+      if (/^-\t-\t/.test(gitSortie(["diff", "--cached", "--numstat", "--", f]))) return { contenu: "" };
+      return { probleme: `${f} : fichier trop gros pour être contrôlé (plus de 20 Mo). Un fichier de cette taille n'a pas sa place dans le dépôt : rangez-le hors du projet, ou ajoutez-le au .gitignore.` };
+    }
+    const brut = execFileSync("git", ["show", `:${f}`], { stdio: ["ignore", "pipe", "ignore"], maxBuffer: taille + 1024 * 1024 });
+    return { contenu: brut.includes(0) ? "" : brut.toString("utf8") };
   } catch (e) {
-    return "";
+    return { probleme: `${f} : contenu préparé illisible, non contrôlé. Préparez-le de nouveau (git add ${f}), puis relancez le contrôle.` };
   }
 }
 
@@ -375,11 +396,19 @@ function controlerRegles(lus, erreurs) {
 }
 
 function principal() {
+  // Depuis un sous-dossier, le contrôle porte sur tout le dépôt, avec les règles du projet (aidd_docs/ à la racine).
+  const racine = racineDepot();
+  if (racine) process.chdir(racine);
   if (process.argv.includes("--scenarios")) return afficherCouverture();
   const index = process.argv.includes("--index");
   const erreurs = [];
-  const fichiers = index ? fichiersIndexes() : listerFichiers();
+  const fichiers = index ? (racine ? fichiersIndexes() : null) : listerFichiers();
+  if (fichiers === null) {
+    console.error("❌ Contrôle impossible : Git ne donne pas la liste des fichiers préparés (dossier hors d'un dépôt Git, ou dépôt illisible). Le commit attend : lancez le contrôle depuis le dossier du projet.");
+    process.exit(1);
+  }
   const lus = [];
+  let nonControles = 0;
 
   for (const f of fichiers) {
     if (estFichierEnv(f)) {
@@ -387,8 +416,15 @@ function principal() {
       continue;
     }
     let contenu = "";
-    if (index) contenu = contenuIndexe(f);
-    else {
+    if (index) {
+      const lu = contenuIndexe(f);
+      if (lu.probleme) {
+        erreurs.push(lu.probleme);
+        nonControles++;
+        continue;
+      }
+      contenu = lu.contenu;
+    } else {
       try {
         const st = fs.statSync(f);
         if (!st.isFile() || st.size > 512 * 1024) continue;
@@ -403,7 +439,7 @@ function principal() {
     if (secrets.length) erreurs.push(`${f} : contient une ${secrets.join(", ")}. Déplacez-la dans les variables d'environnement.`);
   }
 
-  const secretsTrouves = erreurs.length > 0;
+  const secretsTrouves = erreurs.length > nonControles;
   const bilanScenarios = index ? "" : controlerScenarios(erreurs);
   const avantRegles = erreurs.length;
   controlerRegles(lus, erreurs);
@@ -411,7 +447,11 @@ function principal() {
   if (erreurs.length) {
     const entete = !index
       ? "❌ Vérification échouée, la mise en ligne est annulée :\n"
-      : secretsTrouves ? "❌ Commit annulé : un secret allait être enregistré.\n" : "❌ Commit annulé : une règle du projet n'est pas respectée.\n";
+      : secretsTrouves
+        ? "❌ Commit annulé : un secret allait être enregistré.\n"
+        : nonControles
+          ? "❌ Commit annulé : un fichier préparé n'a pas pu être contrôlé.\n"
+          : "❌ Commit annulé : une règle du projet n'est pas respectée.\n";
     console.error(entete);
     for (const e of erreurs) console.error("  - " + e);
     if (secretsTrouves) console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");

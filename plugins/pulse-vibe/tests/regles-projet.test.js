@@ -88,6 +88,9 @@ test("avant commit (--index) : seuls les fichiers prêts à être enregistrés, 
   assert.match(r.stderr, /Commit annulé : une règle du projet n'est pas respectée/);
   assert.match(r.stderr, /src\/neuf\.js : enfreint/);
   assert.doesNotMatch(r.stderr, /ancien\.js/, "fichier non préparé : hors du contrôle avant commit");
+  const sousDossier = lancer(path.join(d, "src"), "--index");
+  assert.strictEqual(sousDossier.status, 1, "lancé depuis un sous-dossier : les règles du projet comptent aussi");
+  assert.match(sousDossier.stderr, /src\/neuf\.js : enfreint/);
 });
 
 const REGLES = path.join(__dirname, "..", "scripts", "regles.js");
