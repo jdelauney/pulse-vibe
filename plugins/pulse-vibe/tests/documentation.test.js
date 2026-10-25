@@ -74,6 +74,15 @@ test("chaque agent et chaque fichier de scripts/ figure dans le README de son pl
   for (const { dossier, readme: fichier } of PLUGINS) for (const s of lister(dossier, "scripts")) assert.ok(texte(fichier).includes(s), `${fichier} : script ${s}`);
 });
 
+test("README du cœur, bloc skills/ : chaque script d'une commande (skills/<commande>/scripts/), avec sa commande", options, () => {
+  const bloc = blocStructure(texte("plugins/pulse-vibe/README.md"), "skills/<commande>/");
+  for (const s of lister(RACINE, "skills"))
+    for (const f of lister(RACINE, "skills", s, "scripts")) {
+      assert.ok(bloc.includes(f), `README du cœur, bloc skills/ : ${s}/scripts/${f}`);
+      assert.match(bloc, new RegExp(`(^|[\\s,])${s} \\([^)]*${f.replace(/\./g, "\\.")}`, "m"), `README du cœur : ${f} cité avec ${s}`);
+    }
+});
+
 test("chaque recette du pack figure dans son README", options, () => {
   const readme = texte("plugins/pulse-vibe-next/README.md");
   for (const r of lister(NEXT, "references", "recettes").map((f) => f.replace(/\.md$/, ""))) assert.ok(readme.includes(`\`${r}\``), `README du pack : recette ${r}`);
@@ -90,6 +99,14 @@ test("README de chaque plugin : chaque fichier de bin/, et chaque sous-commande 
       for (const s of sousCommandes(path.join(dossier, "bin", f))) assert.ok(cite(ligne, s), `${readme}, ligne bin/${f} : ${s}`);
     }
   }
+});
+
+test("aide de pulse-aidd : chaque option de « realisation debut » lue dans l'en-tête de realisation.js", options, () => {
+  const usage = lire(RACINE, "scripts", "realisation.js").split("\n").find((l) => /^\/\/\s+pulse-aidd realisation debut /.test(l)) || "";
+  const aide = lire(RACINE, "bin", "pulse-aidd").split("\n").find((l) => /^#\s+pulse-aidd realisation /.test(l)) || "";
+  const opts = [...usage.matchAll(/--[a-z]+/g)].map((m) => m[0]);
+  assert.ok(opts.includes("--devant"), "en-tête de realisation.js : --devant");
+  for (const o of opts) assert.ok(aide.includes(o), `aide de pulse-aidd, ligne realisation : ${o}`);
 });
 
 test("README de chaque plugin : chaque fichier et dossier de premier niveau de references/", options, () => {

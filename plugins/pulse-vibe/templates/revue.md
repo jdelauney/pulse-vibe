@@ -1,7 +1,7 @@
 # Revue – {{TACHE}} – {{DATE}}
 
 **Verdict** : ✅ Validé | ⚠️ À corriger | ⛔ Bloquant
-**Mode** : {{/pulse:review | /pulse:implement | /pulse:spirc avec points de validation | /pulse:spirc autonome | /pulse:spirc rapide (toute l'US)}}{{ · contrôle de sécurité à chaque tâche}}
+**Mode** : {{/pulse:review | /pulse:spirc avec points de validation | /pulse:spirc autonome | /pulse:spirc rapide (toute l'US)}}{{ · contrôle de sécurité à chaque tâche}}
 
 ## Critères d'acceptation
 
@@ -14,7 +14,7 @@
 <!-- Verdict et tableau du verifier : chaque critère essayé sur l'application en marche. -->
 
 - **Verdict** : {{✅ Prouvé | ❓ Partiellement prouvé | ❌ Échoue}}
-- **Filet anti-régression** : {{N tests, tous verts | — (rythme rapide ou express : fin d'US)}}
+- **Filet anti-régression** : {{N tests, tous verts (preuve à jour) | N tests de la tâche, tous verts (filet limité) | — (aucun test automatique) | — (aucun test écrit pour l'instant) | — (rythme rapide ou express : fin d'US)}}
 
 | Critère | Attendu | Obtenu | Résultat | Preuve |
 |---|---|---|---|---|
@@ -32,6 +32,16 @@
 | Critère | Tests | Résultat |
 |---|---|---|
 | | | ✅ / ❌ / non couvert |
+
+## Audit de sécurité
+
+<!-- Seulement avec le contrôle de sécurité à chaque tâche (option -x) ; sinon supprimer cette section, avec ce commentaire. Réponse de l'auditeur, portée tache ; ses tests du cambrioleur vont dans la fiche de test. -->
+
+- **Niveau** : {{🟢 Bon | 🟠 À améliorer | 🔴 Failles importantes}} · {{n}} bloquant(s)
+
+| Point | Résultat | Constat | Correction proposée |
+|---|---|---|---|
+| | ✅ / ⚠️ / ⛔ / — hors de la tâche | | |
 
 ## Sécurité
 

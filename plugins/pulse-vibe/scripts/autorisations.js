@@ -25,8 +25,9 @@ const DENY = ["Read(./.env)", "Read(./.env.local)", "Read(./.env.*.local)", "Rea
 const GIT = ["Bash(git status *)", "Bash(git diff *)", "Bash(git log *)", "Bash(git add *)", "Bash(git commit -m *)"];
 // Sous-commandes de pulse-aidd qui lisent, contrôlent ou tiennent les documents de suivi. Les autres (secrets generer,
 // envoyer, elaguer, redeployer, installer-ci, installer-hook, ligne-etat, nouveau…) passent par la demande d'accord.
+// preuve lance seulement les contrôles de « Commandes du projet » déjà autorisés ici (raisonRefus).
 const PULSE = [
-  "qualite *", "tests *", "scenarios", "verifier", "verifier-spec *", "bilan", "memoire", "guide", "travail-fini",
+  "qualite *", "tests *", "scenarios", "verifier", "preuve *", "verifier-spec *", "bilan", "memoire", "guide", "travail-fini",
   "reference *", "modele *", "agent *", "contexte *", "etape *", "etat *", "revue *", "verifier-plan *", "sessions *",
   "pile contexte *", "pile reference *", "pile recette *",
   "maquettes verifier *", "textes verifier *", "contraste *", "comparer *", "seo *", "sonder *",
@@ -44,17 +45,67 @@ const lireSi = (f) => {
   }
 };
 
-/** Les commandes de contrôle de « Commandes du projet » (entre backticks), sans celles qui installent ou déploient. */
+/**
+ * Les lignes du tableau « Commandes du projet » de docs/technical.md : [{ libelle, cellule }], ou null sans section.
+ * Espaces en tête et `|` final facultatifs. Lu aussi par preuve.js (pulse-aidd preuve) : une seule lecture du tableau.
+ */
+function lignesCommandes(racine) {
+  const texte = lireSi(path.join(racine, "docs", "technical.md"));
+  const morceaux = texte === null ? [] : texte.split(/^## Commandes du projet\s*$/m);
+  if (morceaux.length < 2) return null;
+  const lignes = [];
+  for (const ligne of morceaux[1].split(/^## /m)[0].split(/\r?\n/)) {
+    const m = /^\s*\|\s*([^|]+?)\s*\|(.*)$/.exec(ligne);
+    if (m) lignes.push({ libelle: m[1], cellule: m[2].replace(/\|\s*$/, "") });
+  }
+  return lignes;
+}
+
+// Une cellule qui ne donne aucune commande : « aucune », ou un tiret (« — », « – », « - »).
+const SANS_COMMANDE = /^(aucune|[—–-])$/i;
+// Plusieurs commandes dans une cellule sans accents graves, hors guillemets : séparateurs du shell, virgule suivie d'une
+// espace, « et », « puis », « ou ».
+const PLUSIEURS = /[;&|]|,\s|\s(?:et|puis|ou|and|then)\s/i;
+const horsGuillemets = (texte) => texte.replace(/"[^"]*"|'[^']*'/g, '""');
+
+/**
+ * Une cellule de « Commandes du projet » sans accents graves : « aucune » ou un tiret (choix du projet, parenthèses et
+ * guillemets ignorés) → { aucune: true } ; vide → {} ; sinon la cellule elle-même, sans ses parenthèses (« $( » gardé, pour
+ * le refus), est la commande → { commande }, avec { refus } quand elle en contient plusieurs. Avec des accents graves : null (les commandes sont
+ * entre eux). Lu aussi par preuve.js et fin-de-tour.js.
+ */
+function celluleNue(cellule) {
+  if (cellule.includes("`")) return null;
+  const texte = cellule.replace(/(^|[^$])\([^)]*\)/g, "$1").replace(/[«»]/g, "").trim();
+  if (!texte) return {};
+  if (SANS_COMMANDE.test(texte)) return { aucune: true };
+  if (PLUSIEURS.test(horsGuillemets(texte)))
+    return { commande: texte, refus: "plusieurs commandes dans une cellule : écrivez une commande par cellule, entre accents graves, dans docs/technical.md" };
+  return { commande: texte };
+}
+
+/** Pourquoi une commande du projet reste hors des autorisations, ou null quand elle est autorisée. */
+function raisonRefus(commande) {
+  if (/\$\(|`|[\r\n]/.test(commande)) return "contient une substitution de commande ($(…), accents graves ou retour à la ligne) : écrivez une seule commande simple entre accents graves dans docs/technical.md";
+  if (/[;&|<>]/.test(commande)) return "enchaîne plusieurs commandes (&&, |, ;…) : écrivez une seule commande par paire d'accents graves dans docs/technical.md";
+  if (RISQUE.test(commande)) return "installe, envoie, migre ou efface : elle reste hors des autorisations du projet, à lancer par la personne";
+  if (/^https?:/i.test(commande)) return "est une adresse, pas une commande";
+  return null;
+}
+
+/** Les commandes de contrôle de « Commandes du projet » (entre backticks, ou la cellule nue), sans celles qui installent ou déploient. */
 function commandesDuProjet(racine) {
-  const texte = lireSi(path.join(racine, "docs", "technical.md")) || "";
-  const section = (texte.split(/^## Commandes du projet\s*$/m)[1] || "").split(/^## /m)[0];
   const commandes = new Set();
-  for (const ligne of section.split(/\r?\n/)) {
-    const m = /^\|\s*([^|]+?)\s*\|(.*)\|\s*$/.exec(ligne);
-    if (!m || !LIGNES.test(m[1].trim())) continue;
-    for (const [, c] of m[2].matchAll(/`([^`]+)`/g)) {
+  for (const { libelle, cellule } of lignesCommandes(racine) || []) {
+    if (!LIGNES.test(libelle)) continue;
+    const nue = celluleNue(cellule);
+    if (nue) {
+      if (nue.commande && !nue.refus && !raisonRefus(nue.commande)) commandes.add(nue.commande);
+      continue;
+    }
+    for (const [, c] of cellule.matchAll(/`([^`]+)`/g)) {
       const commande = c.trim();
-      if (commande && !RISQUE.test(commande) && !/^https?:/i.test(commande) && !/[;&|<>]/.test(commande)) commandes.add(commande);
+      if (commande && !raisonRefus(commande)) commandes.add(commande);
     }
   }
   return [...commandes];
@@ -143,4 +194,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { attendues, manquantes, ecrire, commandesDuProjet, repriseAuto };
+module.exports = { attendues, manquantes, ecrire, commandesDuProjet, lignesCommandes, celluleNue, raisonRefus, repriseAuto };

@@ -81,3 +81,15 @@ test("hors d'un projet Pulse, les garde-fous laissent tout passer", () => {
   for (const c of ["git add -A", "git add .", "git push --force", "cat .env"]) assert.strictEqual(lancer(bash(c, AUTRE)), null, c);
   assert.strictEqual(lancer({ tool_name: "Read", tool_input: { file_path: "/p/.env" }, cwd: AUTRE }), null);
 });
+
+test("une sortie de règles coupée par un tube est relancée en entier (updatedInput), hors projet Pulse rien ne change", () => {
+  const entree = { tool_name: "Bash", tool_input: { command: "pulse-aidd qualite clean-code | head -80", description: "Lire", timeout: 5000 }, cwd: PULSE };
+  const r = lancer(entree);
+  assert.strictEqual(r.permissionDecision, "allow");
+  assert.deepStrictEqual(r.updatedInput, { command: "pulse-aidd qualite clean-code", description: "Lire", timeout: 5000 });
+  assert.match(r.additionalContext, /lisez ce fichier en entier/);
+  assert.strictEqual(lancer({ ...entree, cwd: AUTRE }), null);
+  // Une autre coupure (suite après ;) reste refusée ; un refus d'un autre garde-fou l'emporte aussi.
+  assert.strictEqual(lancer(bash("pulse-aidd qualite clean-code | head -80; cat x")).permissionDecision, "deny");
+  assert.strictEqual(lancer(bash("pulse-aidd qualite clean-code | head -80 && git push --force")).permissionDecision, "deny");
+});

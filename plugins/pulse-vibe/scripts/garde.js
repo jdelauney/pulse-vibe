@@ -3,7 +3,8 @@
 //
 // Lit l'entrée une fois et la passe au garde-fou anti-secrets (garde-secrets.js) puis au garde-fou
 // des commandes (garde-commandes.js, Bash et PowerShell seulement). Retient la décision la plus stricte :
-// refus, puis demande d'accord ; les raisons d'un même niveau s'additionnent.
+// refus, puis demande d'accord ; les raisons d'un même niveau s'additionnent. Sans refus ni demande, une commande
+// réécrite par le garde-fou des commandes (sortie de règles coupée par un tube) passe, tube retiré (updatedInput).
 // Les garde-fous servent les projets Pulse seulement : ailleurs (un CLAUDE.md sans bloc « <!-- pulse_ » du modèle,
 // du dossier courant jusqu'à la racine du dépôt), l'outil passe sans contrôle.
 // Fail-open : en cas d'erreur, l'outil passe. Désactivation de chaque garde-fou : voir son en-tête.
@@ -56,7 +57,10 @@ function principal() {
     }
   }
   const d = combiner(decisions);
-  if (d) fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: d.decision, permissionDecisionReason: d.raison } }));
+  if (d) return fs.writeSync(1, JSON.stringify({ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: d.decision, permissionDecisionReason: d.raison } }));
+  // Aucun refus ni demande d'accord : une commande réécrite (accord limité à elle) est transmise telle quelle.
+  const reecrite = decisions.find((x) => x && x.decision === "allow");
+  if (reecrite) fs.writeSync(1, require("./garde-commandes").sortieHook(reecrite, entree));
 }
 
 module.exports = { combiner, projetPulse };

@@ -694,9 +694,11 @@ test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour ch
   const examen = lire(RACINE, "references", "examen.md");
   for (const agent of ["**`pulse:reviewer`**", "**`pulse:security-auditor`**"]) assert.ok(examen.includes(agent), agent);
   for (const skill of ["review", "spirc"]) assert.match(skillTexte(skill), /référence « Examiner une tâche »/, skill);
-  assert.match(skillTexte("implement"), /`pulse:reviewer` et `pulse:verifier`/, "la boucle d'implement annonce la vérification");
+  assert.match(skillTexte("implement"), /`\/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche/, "implement renvoie la vérification indépendante à review");
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
-  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
+  assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /surface réelle/);
+  for (const { fichier, texte } of TEXTES) assert.doesNotMatch(texte, /boucle de `?\/pulse:implement|`?\/pulse:implement`? et sa boucle|boucle d'implement/, `${fichier} : implement n'a plus de boucle`);
+  assert.doesNotMatch(lire(RACINE, "agents", "verifier.md"), /boucle de \/pulse:implement/);
 });
 
 test("examen d'une tâche : chaque agent nommé par la référence est repliable par `pulse-aidd agent <nom>` dans les skills qui la chargent", () => {
@@ -760,11 +762,14 @@ test("spirc : en autonome, une décision arrête seulement sa tâche ; petits ch
   assert.doesNotMatch(texte, /interrompt aussi le mode autonome/);
   const section = texte.split("### Questions en attente (mode autonome)")[1].split("\n### ")[0];
   assert.match(section, /En pause : Q<n> \(votre décision\)/);
-  assert.match(section, /git stash push -u -m "pulse: T4 en attente" -- <fichiers de T4>/);
-  assert.match(section, /git stash pop stash@\{k\}/);
+  assert.match(section, /pulse-aidd attente mettre-de-cote T4 -- <fichiers de T4>/);
+  assert.match(section, /pulse-aidd attente remettre T4/);
   assert.match(section, /retirer la sous-ligne `En pause : Q<n>`/);
   assert.match(section, /4 par ronde/);
   assert.doesNotMatch(section, /git stash (drop|clear)/);
+  const [mise, remise] = [/^2\. \*\*Mettre de côté/m, /^5\. \*\*Remettre/m].map((debut) => section.split("\n").find((l) => debut.test(l)));
+  for (const etat of ["fait", "rien-a-mettre-de-cote", "refuse", "echec", "mise-de-cote-orpheline"]) assert.match(mise, new RegExp("`" + etat + "`"), etat);
+  for (const etat of ["remis", "absente", "echec", "arbre-occupe", "conflit", "conflit-non-nettoye", "remis-sans-nettoyage"]) assert.match(remise, new RegExp("`" + etat + "`"), etat);
   assert.match(texte, /`decision` → elle attend une réponse/);
   assert.match(texte, /Vous pouvez faire autre chose : je note mes questions et vous les pose toutes ensemble/);
   assert.match(texte, /« Garder ce choix \(Recommandé\) » \/ « Changer ce choix »/);
@@ -955,7 +960,7 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
     [["skills", "pr", "SKILL.md"], /Claude Code va vous demander l'accord pour \x60git pull\x60[\s\S]*Claude Code va vous demander l'accord pour envoyer/],
     [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. Annoncer : « Claude Code va vous demander/],
     [["skills", "cicd", "SKILL.md"], /Annoncer : « Claude Code va vous demander[^\n]*Puis l'envoyer \(\x60git push\x60/],
-    [["references", "worktree.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
+    [["references", "worktree-dossier.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
   ]) {
     const texte = lire(RACINE, ...fichier);
     assert.match(texte, ANNONCE, fichier.join("/"));
@@ -969,8 +974,8 @@ test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa sect
   for (const s of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord|accord annoncé au § 3/, s.slice(0, 30));
 });
 
-test("commit et annuler nomment la forme `git commit -m`, et commit utilise `git remote -v`", () => {
-  for (const s of ["commit", "annuler"]) assert.match(lire(RACINE, "skills", s, "SKILL.md"), /git commit -m "<sujet>" -m "<corps>"|git commit -m "revert\(/, s);
+test("commit nomme la forme `git commit -m`, annuler passe par `pulse-aidd annuler`, et commit utilise `git remote -v`", () => {
+  assert.match(lire(RACINE, "skills", "annuler", "SKILL.md"), /pulse-aidd annuler defaire/);
   const commit = lire(RACINE, "skills", "commit", "SKILL.md");
   assert.match(commit, /git commit -m "<sujet>" -m "<corps>"/);
   assert.doesNotMatch(commit, /`git remote`/);
@@ -1045,7 +1050,8 @@ test("tests automatiques : installer un outil de test est recommandé quand la p
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   const claude = lire(RACINE, "templates", "CLAUDE.md");
   assert.doesNotMatch(claude, /uniquement sur demande/);
-  assert.match(claude, /boucles de `\/pulse:implement` et `\/pulse:spirc`/);
+  assert.match(claude, /par la boucle de `\/pulse:spirc`/);
+  assert.doesNotMatch(claude, /boucles de `\/pulse:implement`/);
   assert.doesNotMatch(claude, /traces de travail par session/);
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
   assert.match(skillTexte("ui"), /quatre références de design/);
@@ -1182,17 +1188,171 @@ test("checklist sécurité : chargée par les agents qui relisent, plus recopié
     assert.doesNotMatch(lire(RACINE, ...fichier), /checklist sécurité complète/, fichier.join("/"));
 });
 
-test("boucles d'implement et de spirc : review et commit chargés une seule fois", () => {
-  const boucle = lire(RACINE, "skills", "implement", "references", "boucle.md");
-  assert.match(lire(RACINE, "skills", "implement", "SKILL.md"), /### 6\. Boucle sur tout le plan \(sans tâche\)\n\nSans tâche donnée : lancer `pulse-aidd reference implement\/boucle\.md`/);
-  assert.match(boucle, /\*\*Avant la première tâche\*\*/);
-  assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
-  assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
+test("auditeur de sécurité : deux portées, projet (/pulse:security) ou tache (-x), données par la délégation", () => {
+  const auditeur = lire(RACINE, "agents", "security-auditor.md");
+  assert.match(auditeur.match(/^description:.*$/m)[0], /le projet, ou une tâche/);
+  assert.match(auditeur.match(/^description:.*$/m)[0], /\/pulse:spirc/);
+  const portee = (auditeur.split(/^## Portée$/m)[1] || "").split(/^## /m)[0];
+  assert.ok(portee, "section « ## Portée »");
+  assert.match(portee, /\*\*`projet`\*\*/);
+  const tache = portee.split("**`tache`**")[1] || "";
+  assert.ok(tache, "portée `tache`");
+  for (const point of ["S3", "S4", "S9", "S11", "S12", "S13"]) assert.ok(tache.includes(point), `portée tache : ${point} en premier`);
+  assert.match(tache, /les points que ces fichiers touchent/);
+  assert.match(tache, /« — hors de la tâche »/);
+  assert.match(auditeur, /S1 à S13, tous présents ; en portée `tache`, « — hors de la tâche »/);
+  assert.match(portee, /sans portée indiquée : `projet`/, "portée par défaut");
+  assert.match(tache, /à l'étape 2, l'inventaire de ces fichiers et de leur chemin d'appel/, "portée tache : inventaire limité");
+  const texteExamen = lire(RACINE, "references", "examen.md");
+  const fiche = texteExamen.split("## 3 bis.")[1].split(/\n## /)[0];
+  assert.match(fiche, /contrôle de sécurité[^\n]*« Fiche du cambrioleur » de l'auditeur[^\n]*s'ajoutent à la fiche/, "§ 3 bis : les tests de l'auditeur rejoignent la fiche de test");
+  const controle = texteExamen.split("## 4. Relecture de contrôle")[1].split(/\n## /)[0];
+  assert.match(controle, /l'auditeur en portée `tache`/, "§ 4 : relecture de contrôle en portée tache");
+  const examen = lire(RACINE, "references", "examen.md").split("\n").find((l) => l.includes("**`pulse:security-auditor`**"));
+  assert.match(examen, /portée `tache`/);
+  assert.doesNotMatch(examen, /checklist/, "examen.md : l'agent charge la checklist lui-même");
+  const security = lire(RACINE, "skills", "security", "SKILL.md");
+  const delegation = security.split("\n").find((l) => l.includes("outil Agent avec **`pulse:security-auditor`**"));
+  assert.match(delegation, /portée `projet`/);
+  assert.doesNotMatch(delegation, /checklist-securite\.md|PLAN-SPEC/, "security : l'agent lit lui-même les documents et la checklist");
+});
+
+test("la boucle sur le plan vit dans spirc seule : commit chargée une fois par déroulé", () => {
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
   // Deux emplois : aux prérequis (modifications à enregistrer d'abord) et au démarrage de la réalisation ; le second se saute si le premier a eu lieu.
   assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 2, "spirc : commit chargée une fois par déroulé");
-  for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference memoire.md"])
+  for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference worktree-dossier.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference tests-dabord.md", "pulse-aidd reference memoire.md"])
     assert.ok(spirc.includes(ref), ref);
+});
+
+test("devant vous : le marqueur porte --devant et la sortie de l'étape de réalisation (fiche du pack comprise) se lit avant le premier fichier", () => {
+  const ligne = (texte, motif) => texte.split("\n").find((l) => motif.test(l)) || "";
+  for (const [skill, motifDevant] of [["implement", /^\*\*Devant vous\*\*/], ["spirc", /Avec `-d`, ou quand l'agent est indisponible \(dans les deux cas, marqueur lancé avec `--devant`\) :/]]) {
+    const texte = lire(RACINE, "skills", skill, "SKILL.md");
+    assert.match(ligne(texte, /^\*\*Marqueur de réalisation\*\*/), /`--devant`/, `${skill} : la ligne du marqueur cite --devant`);
+    const devant = ligne(texte, motifDevant);
+    assert.match(devant, /`--devant`/, `${skill} : la ligne « devant vous » cite --devant`);
+    assert.match(devant, /`pulse-aidd realisation etape <Tn> realisation`[^.]*fiche du pack[^.]*en entier[^.]*avant le premier fichier écrit/, `${skill} : la sortie de l'étape se lit en entier avant le premier fichier`);
+  }
+});
+
+test("devant vous : la fiche donnée par l'étape de réalisation tient lieu de l'appel pile contexte implement de l'implementer", () => {
+  const pack = (lire(RACINE, "agents", "implementer.md").match(/## Pack de pile\n\n([^\n]*)\n/) || [])[1] || "";
+  assert.match(pack, /`pulse-aidd pile contexte implement`/);
+  assert.match(pack, /Devant vous, la sortie de l'étape de réalisation \(`realisation etape <Tn> realisation`, lancée par la commande\) donne déjà cette fiche : elle tient lieu de cet appel\./);
+});
+
+test("rappel après compaction : chaque commande pulse-aidd qu'il peut écrire pour spirc et implement est autorisée d'avance", () => {
+  const { ecrire, rappel } = require(path.join(RACINE, "scripts", "realisation.js"));
+  const os = require("os");
+  const maintenant = new Date().toISOString();
+  const problemes = [];
+  for (const commande of ["spirc", "implement"]) {
+    const motifs = motifsBash(path.join(RACINE, "skills", commande, "SKILL.md"));
+    for (const devant of [false, true])
+      for (const [tache, etape] of [["", ""], ["T2", "test"], ["T2", "realisation"], ["T2", "examen"], ["T2", "commit"], ["US-004", "test-groupe"]]) {
+        const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-rappel-"));
+        ecrire(d, { us: "US-004", commande, rythme: "complet", autonome: false, devant, tache, etape, questions: 0, debut: maintenant, maj: maintenant });
+        const cites = citationsOutil(rappel(d));
+        if (!cites.length) problemes.push(`${commande} : rappel sans commande à relancer`);
+        for (const c of cites) if (!motifs.some((m) => couvre(m, c))) problemes.push(`${commande} (devant ${devant}, ${etape || "aucune étape"}) : « ${c} » non autorisée`);
+        fs.rmSync(d, { recursive: true, force: true });
+      }
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("la réalisation dans la conversation s'appelle « devant vous » (`-d`) partout, plus « mode direct »", () => {
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /mode direct/i.test(texte)).map(({ fichier }) => fichier), []);
+});
+
+test("implement relancé sur une tâche [~] au code commencé : le marqueur fait reprendre la réalisation, pas la relecture", () => {
+  const prerequis = skillTexte("implement").split("\n").find((l) => l.startsWith("- Tâche déjà `[~]`")) || "";
+  assert.match(prerequis, /`pulse-aidd realisation` montre `commande: implement`, `us: <US-XXX>`, `tache: <Tn>` et `etape: realisation` ou `test`, sans `perime: oui`/);
+  assert.match(prerequis, /reprendre au § 2/);
+  assert.ok(prerequis.indexOf("pulse-aidd realisation") < prerequis.indexOf("pulse-aidd revue <Tn>"), "le marqueur se lit avant pulse-aidd revue");
+  // Reprise au § 2, § 0 sauté : les tests figés à l'index rappellent les tests d'abord, la phase « Vert » n'est pas sautée.
+  assert.match(prerequis, /fichiers de test déjà à l'index \(`git diff --cached --name-only`\) sont les tests figés des tests d'abord : reprendre alors à « Vert : réaliser »/);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "implement", "SKILL.md")).some((m) => couvre(m, "git diff --cached --name-only")), "implement : git diff autorisé");
+  // Filet quoi qu'il arrive : l'examen exige une preuve de toute la suite à jour et verte.
+  assert.match(lire(RACINE, "references", "examen.md"), /une preuve « à jour » et ✅ \(code 0\) : une preuve ❌, périmée ou absente n'est jamais une preuve/);
+});
+
+test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
+  assert.ok(!fs.existsSync(path.join(RACINE, "skills", "implement", "references", "boucle.md")), "boucle.md supprimée");
+  const implement = skillTexte("implement");
+  assert.match(implement, /\*\*Sans tâche\*\* : dire en une phrase que tout le plan s'enchaîne avec `\/pulse:spirc <US-XXX>`, à taper par la personne/);
+  assert.match(implement, /« Réaliser seulement <Tn> – <titre> ici »/);
+  assert.match(implement, /« Je tape \/pulse:spirc US-XXX pour enchaîner tout le plan \(Recommandé\) »/);
+  assert.doesNotMatch(implement, /boucle\.md|Boucle sur tout le plan|sans tâche, boucler/);
+  const entete = lire(RACINE, "skills", "implement", "SKILL.md").match(/^allowed-tools:.*$/m)[0];
+  assert.doesNotMatch(entete, /pulse-aidd (etape|contexte) (commit|review)|pulse-aidd contexte pr|git commit|gh pr ready|glab mr update/, "implement n'enchaîne plus ni relecture ni commit");
+  // Décision 10 : en coulisse, le rapport de l'implementer et le contrôle de fin de tour font foi ; une erreur lui revient (deleguer.md), deux essais.
+  assert.match(implement, /\*\*En coulisse\*\* : s'appuyer sur « Vérifications lancées » et « Tests » du rapport de l'implementer et sur le contrôle de fin de tour ; ne pas relancer/);
+  assert.match(implement, /relancer l'implementer avec la liste \(« Déléguer à l'implementer », une correction\), deux essais au plus/);
+  assert.match(implement, /la preuve indépendante viendra de `\/pulse:review`/);
+  const problemes = [];
+  for (const { fichier, texte } of TEXTES) {
+    if (texte.split("\n").some((l) => /\/pulse:implement[^\n]{0,80}(boucle|tout le plan|toutes les tâches)/i.test(l) && !l.includes("/pulse:spirc"))) problemes.push(fichier);
+    if (/implement\/boucle\.md/.test(texte)) problemes.push(`${fichier} (boucle.md)`);
+  }
+  assert.deepStrictEqual(problemes, []);
+});
+
+test("auto-fix : la règle anti-affaiblissement reste aux consignes du fixer, le message n'a pas à la recopier ; autorisations réduites à l'emploi", () => {
+  const autofix = lire(RACINE, "skills", "auto-fix", "SKILL.md");
+  assert.doesNotMatch(autofix, /Rappeler dans chaque message/);
+  assert.doesNotMatch(autofix, /restent interdites les « corrections » qui les affaiblissent/);
+  assert.match(lire(RACINE, "agents", "fixer.md"), /Corriger la cause elle-même, à sa source\*\*, en gardant intacts les règles du lint/);
+  const entete = autofix.match(/^allowed-tools:.*$/m)[0];
+  assert.doesNotMatch(entete, /pulse-aidd (modele|tests|scenarios|pile recette|pile reference)/, "motifs sans emploi retirés (reference * reste : les règles communes citent des références ; qualite sert à la section « Correction de comportement » du fixer)");
+});
+
+test("fixer : la réponse a sa place pour la preuve et pour une autre solution ; fix relit aussi ses changements", () => {
+  const format = (lire(RACINE, "agents", "fixer.md").match(/## Format de votre réponse\n\n```\n([\s\S]*?)```/) || [])[1] || "";
+  assert.match(format, /^## Preuve\n- `<commande>` → <résultat copié> \(ou « preuve à refaire par la personne »\)$/m);
+  assert.match(format, /## À signaler\n- <seulement si besoin : pack de pile non installé, code corrigé sans la fiche ; « Une autre solution paraît nécessaire : … »>/);
+  const fix = lire(RACINE, "skills", "fix", "SKILL.md");
+  assert.match(fix, /Relire son rapport et ses changements \(`git diff -- <fichiers>`\) : ils s'en tiennent à la solution retenue\./);
+  assert.match(fix.match(/^allowed-tools:.*$/m)[0], /Bash\(git diff \*\)/);
+});
+
+test("fix confie la correction décidée au fixer, élargi aux corrections de comportement (décision 17)", () => {
+  const fixer = lire(RACINE, "agents", "fixer.md");
+  const fix = lire(RACINE, "skills", "fix", "SKILL.md");
+  const description = fixer.match(/^description: (.*)$/m)[1];
+  assert.match(description, /correction de comportement déjà décidée/);
+  assert.match(description, /\/pulse:fix/);
+  const section = (fixer.match(/## Correction de comportement[^\n]*\n([\s\S]*?)(?=\n## |$)/) || [])[1] || "";
+  assert.match(section, /la cause trouvée, la solution retenue avec la personne/);
+  assert.match(section, /pulse-aidd qualite <famille>/);
+  assert.match(section, /Une autre solution vous paraît nécessaire : la signaler sans l'appliquer/);
+  assert.match(fixer, /Corriger la cause elle-même, à sa source/, "règle anti-affaiblissement gardée pour tous les cas");
+  assert.match(fixer.match(/## Informations reçues\n\n([^\n]*)\n/)[1], /cause trouvée|solution retenue/, "champs de la correction de comportement annoncés");
+  assert.match(fix.match(/^allowed-tools:.*$/m)[0], /Bash\(pulse-aidd agent fixer\)/);
+  assert.match(fixer, /change le comportement de l'appli, la signaler au lieu de l'appliquer, sauf si le message la donne comme solution retenue avec la personne \(section « Correction de comportement »\)/);
+  assert.match(section, /sans commande de preuve, ou si la preuve est un parcours, rendre « preuve à refaire par la personne »/);
+  assert.doesNotMatch(fixer.match(/^disallowedTools: .*$/m)[0], /\bWrite\b/, "un nouveau fichier peut être demandé par la solution retenue");
+  assert.match(section, /créer un fichier seulement quand la solution retenue le nomme ; sinon, la signaler/);
+  assert.match(section, /Les corrections de `\/pulse:auto-fix` restent des modifications de fichiers existants/);
+  assert.match(section, /« Une autre solution paraît nécessaire : … »/);
+  assert.match(fix, /chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin/);
+  assert.match(fix, /confiée à `pulse:fixer` \(outil Agent, `model: "sonnet"`\)/);
+  assert.match(fix, /Agent indisponible : `pulse-aidd agent fixer`/);
+  assert.doesNotMatch(fix, /Une correction complexe se fait dans la conversation principale/);
+  const symptomes = (fix.match(/\| Symptôme \| Cause habituelle \|\n\|---\|---\|\n((?:\|[^\n]*\n)+)/) || [])[1] || "";
+  assert.strictEqual(symptomes.trim().split("\n").length, 5, "tableau des symptômes ramené aux cinq lignes propres à Pulse");
+});
+
+test("fix et fixer : le même plafond de 5 fichiers", () => {
+  const fixer = lire(RACINE, "agents", "fixer.md");
+  const fix = lire(RACINE, "skills", "fix", "SKILL.md");
+  const cote = (texte, motif) => (texte.match(motif) || [])[1];
+  assert.strictEqual(cote(fix, /tient en (\d+) fichiers au plus/), "5");
+  const plafond = cote(fixer, /dans (\d+) fichiers au plus/);
+  assert.strictEqual(cote(fix, /une demande par groupe de (\d+) au plus/), plafond, "groupes de fix = plafond du fixer");
+  assert.strictEqual(cote(fixer, /Pour chaque fichier \((\d+) au plus\)/), plafond);
+  assert.strictEqual(cote(fixer, /les fichiers \((\d+) au plus\)/), plafond);
 });
 
 test("chaque agent a un modèle explicite (model:)", () => {
@@ -1212,10 +1372,34 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   assert.match(spirc, /y compris une reprise[^\n]*ne figurent pas dans la conversation, lancer les commandes de « Choisir la façon de travailler »/);
   assert.match(spirc, /avant la première tâche, le test groupé ou la fin/);
   const groupe = spirc.slice(spirc.indexOf("## Test groupé"), spirc.indexOf("## Références de la commande"));
-  assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 2, "test groupé et fin rappellent le rechargement");
+  // Une seule règle de rechargement (la boucle par tâche) : ni le test groupé ni la fin ne la répètent.
+  assert.equal((spirc.match(/ne figurent (?:pas|plus) dans la conversation/g) || []).length, 1, "une seule règle de rechargement");
+  assert.equal((groupe.match(/Choisir la façon de travailler/g) || []).length, 0, "ni le test groupé ni la fin ne rappellent le rechargement");
+  assert.doesNotMatch(spirc, /Références de la réalisation chargées ; sinon les relancer/);
   const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
   assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
+});
+
+test("spirc : l'analyse d'une demande libre est une référence, -d est un raccourci, chaque référence de la réalisation se charge par son appel", () => {
+  const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
+  const analyse = spirc.slice(spirc.indexOf("### [A] Analyser"), spirc.indexOf("### [S] Spécifier"));
+  assert.match(analyse, /pulse-aidd reference spirc\/analyser\.md/);
+  assert.ok(analyse.length < 600, "l'analyse détaillée n'est plus dans le SKILL.md");
+  const analyser = lire(RACINE, "skills", "spirc", "references", "analyser.md");
+  for (const t of ["Situer la demande", "Clarifier ce qui change ce qui sera construit", "Écrire le contrat"]) assert.ok(analyser.includes(t), t);
+  assert.match(analyser, /éléguer la demande à `pulse:explorer`/);
+  // -d : raccourci seulement, absent de la ronde de départ.
+  assert.match(spirc, /^- `-d` \*\*devant vous\*\*/m);
+  const ronde = spirc.split("**Ronde de départ**")[1].split("\n\n**Portée**")[0];
+  assert.doesNotMatch(ronde, /`-d`/, "-d n'est pas une question de la ronde de départ");
+  assert.match(spirc, /coder une tâche soi-même, sauf avec `-d`/);
+  // Chaque référence de la réalisation : son propre appel, pas de chaîne.
+  const charge = spirc.split("**Charger une seule fois les références de la réalisation**")[1].split("\n")[0];
+  for (const ref of ["pulse-aidd etape commit --sans-communes", "pulse-aidd reference worktree.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference tests-dabord.md"])
+    assert.ok(charge.includes("`" + ref + "`"), ref);
+  assert.match(charge, /chacune par son propre appel/);
+  assert.doesNotMatch(charge, /&&|\|/, "aucune chaîne ni tube");
 });
 
 // ---------------------------------------------------------------- Références atteignables
@@ -1268,18 +1452,15 @@ test("reprise après une interruption : commit, implement, spirc et review suive
   assert.match(verification, /- `correction` ou `aide` : [^\n]*S'arrêter/);
   assert.doesNotMatch(verification, /`test`[^\n]*Enregistrer quand même/, "l'enregistrement sans test n'est pas proposé");
   const implement = skillTexte("implement");
-  assert.match(implement, /\*\*Reprendre une tâche en cours\*\* : [^\n]*`pulse-aidd revue <Tn>`/);
-  assert.match(implement, /- `test` : au test manuel/);
+  assert.match(implement, /Tâche déjà `\[~\]` : sauf si `aidd_docs\/tasks\/in-progress\.md` concerne cette commande et cette tâche \(reprendre à son étape, règle commune 16\), ou si `pulse-aidd realisation` montre [^\n]*?\(code commencé : reprendre au § 2[^\n]*?\), lancer `pulse-aidd revue <Tn>` : `examen`, `test`, `correction` ou `aide` → proposer de taper `\/pulse:review <Tn>` ; `commit` → proposer de taper `\/pulse:commit` ; `decision` → proposer de taper `\/pulse:spirc <US-XXX>`/);
   assert.doesNotMatch(implement, /reprend à la correction ou au commit/);
   const spirc = skillTexte("spirc");
   assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
   assert.doesNotMatch(spirc, /reprendre à l'examen\)/);
   assert.match(skillTexte("review"), /`pulse-aidd revue <Tn>` : `test` → passer directement au § 5/);
   // Les boucles passent à l'enregistrement sur la réponse du § 2 de commit, pas sur la seule existence d'un rapport.
-  for (const [nom, texte] of [["implement", implement], ["spirc", spirc]]) {
-    assert.match(texte, /Le § 2 de l'étape commit donne `commit`/, nom);
-    assert.doesNotMatch(texte, /Le rapport de revue existe : la relecture est faite/, nom);
-  }
+  assert.match(spirc, /Le § 2 de l'étape commit donne `commit`/);
+  assert.doesNotMatch(spirc, /Le rapport de revue existe : la relecture est faite/);
   // Le résultat du test s'écrit avec les choix du modèle, que pulse-aidd revue sait lire.
   for (const nom of ["review", "spirc"]) assert.match(skillTexte(nom), /« ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> »/, nom);
 });
@@ -1310,7 +1491,7 @@ test("règle 16 : chaque commande qui attend une décision structurante la sauve
 });
 
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
-  const worktree = lire(RACINE, "references", "worktree.md");
+  const worktree = lire(RACINE, "references", "worktree-dossier.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
   const pr = fin.split("\n").find((l) => l.startsWith("- **Envoi : version parallèle**"));
   assert.ok(pr, "cas « Envoi : version parallèle »");
@@ -1557,7 +1738,7 @@ test("tests essentiels : intégration et sécurité nécessaires seulement, ceux
   assert.ok(auto.includes("**Seulement les contrôles rapides**") && auto.includes("`next build`"), "pas de construction en rythme rapide");
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("tests essentiels : jamais de « construire »"));
   assert.ok(lire(RACINE, "agents", "implementer.md").includes("seulement les fichiers de test de la tâche, et rien si la tâche n'en a pas"));
-  assert.ok(lire(RACINE, "skills", "spirc", "references", "examen-us.md").includes("**Tests** : lancer une fois toute la suite (commande « Tester »)"));
+  assert.ok(lire(RACINE, "skills", "spirc", "references", "examen-us.md").includes("**Tests** : lancer une fois toute la suite, avec les contrôles automatiques, par `pulse-aidd preuve lancer --portee suite`"));
 });
 
 test("série : deux US indépendantes en même temps, avec accord, dossiers à part rassemblés dès la fin de leur construction", () => {
@@ -1617,7 +1798,7 @@ test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   for (const nom of ["implementer", "reviewer", "test-writer", "test-runner"]) {
     assert.doesNotMatch(agent(nom), /`pulse-aidd (?:qualite|tests)`/, `${nom} : chargement complet`);
   }
-  assert.match(lire(RACINE, "references", "tests-automatiques.md"), /`pulse-aidd tests ecrire gherkin/);
+  assert.match(lire(RACINE, "references", "tests-dabord.md"), /`pulse-aidd tests ecrire gherkin/);
 });
 
 test("règles de Pulse lues en entier : consigne dans travail-sobre.md, aucun agent ne coupe la sortie", () => {
@@ -1644,12 +1825,14 @@ test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 
 
 test("correction ciblée : l'implementer reçoit les constats et charge leurs familles de qualité", () => {
   for (const [nom, texte] of [
-    ["boucle.md", lire(RACINE, "skills", "implement", "references", "boucle.md")],
     ["examen.md", lire(RACINE, "references", "examen.md")],
     ["spirc", lire(RACINE, "skills", "spirc", "SKILL.md")],
+    ["deleguer.md", lire(RACINE, "references", "deleguer.md")],
   ]) assert.match(texte, /familles de qualité (?:qu'ils|que les constats) concernent/, nom);
-  assert.match(lire(RACINE, "references", "examen.md"), /`pulse-aidd qualite --checklists`/);
-  for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /familles de qualité de la tâche/, skill);
+  assert.match(lire(RACINE, "agents", "reviewer.md"), /`pulse-aidd qualite --checklists`/, "le reviewer charge lui-même les checklists de qualité");
+  // Le message de délégation est écrit une fois (deleguer.md) ; les deux commandes y renvoient.
+  assert.match(lire(RACINE, "references", "deleguer.md"), /familles de qualité de la tâche/);
+  for (const skill of ["implement", "spirc"]) assert.match(lire(RACINE, "skills", skill, "SKILL.md"), /selon « Déléguer à l'implementer »/, skill);
 });
 
 // Aucune commande n'en lance une autre : les commandes /pulse:* ont disable-model-invocation: true.
@@ -1694,7 +1877,9 @@ test("spirc : le bout en bout se lance aussi en autonome, le rythme rapide est t
   assert.match(groupe, /\*\*En rythme complet\*\* : lancer d.abord « Tester de bout en bout »/, "Test groupé");
   assert.match(spirc.slice(spirc.indexOf("### Fin")), /Rythme complet hors autonome, US faite : lancer « Tester de bout en bout »/, "Fin");
   assert.doesNotMatch(spirc, /^Hors autonome, US faite/m);
-  assert.match(spirc, /Déléguer à \*\*`pulse:implementer`\*\*[^\n]*rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
+  // Le rythme rapide est transmis à l'implementer par le texte de délégation, écrit une fois.
+  assert.match(spirc, /Déléguer à \*\*`pulse:implementer`\*\* selon « Déléguer à l'implementer »/);
+  assert.match(lire(RACINE, "references", "deleguer.md"), /rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
   assert.match(spirc, /le rythme est celui du profil \(« rapide » vaut `-f`\)/);
 });
 
@@ -1704,6 +1889,15 @@ test("implementer : [I] Implémenter, en coulisse ; un secret à inventer est re
   assert.match(description, /\/pulse:spirc \(\[I\] Implémenter\) et \/pulse:implement \(en coulisse\)/);
   assert.doesNotMatch(description, /phase Exécuter|mode sous-agent/);
   assert.match(texte, /un secret à inventer : son NOM, que l'appelant génère avec l'accord de la personne/);
+});
+
+test("explorer sans numéro de checklist inventé, implementer sans doublon de la méthode", () => {
+  const explorer = lire(RACINE, "agents", "explorer.md");
+  assert.doesNotMatch(explorer, /point S… de la checklist|\bS\d+\b/, "l'explorer ne charge pas la checklist : pas de numéro");
+  assert.match(explorer, /sécurité \(donnée personnelle, accès réservé, saisie affichée, clé secrète\), régression possible, cas limite/);
+  const implementer = lire(RACINE, "agents", "implementer.md");
+  assert.doesNotMatch(implementer, /Toujours appliquer les règles de qualité de code, chargées par famille \(étape 3 de la méthode\)/);
+  assert.match(implementer, /code-concepts\.md/, "le pointeur vers les concepts de code reste, avec son quand");
 });
 
 test("agents : aucun ne cite les gestes qui touchent la production comme un geste à faire lui-même", () => {
@@ -1723,4 +1917,135 @@ test("aucun motif allowed-tools ne finit par un guillemet isolé", () => {
     }
   }
   assert.deepStrictEqual(problemes, []);
+});
+
+// ---------------------------------------------------------------- Preuve unique (pulse-aidd preuve)
+
+test("preuve unique : le verifier et le test-runner la produisent, l'implementer et le reviewer la laissent, le test-runner juge avec les checklists", () => {
+  const agent = (nom) => lire(RACINE, "agents", `${nom}.md`);
+  for (const nom of ["verifier", "test-runner"]) assert.match(agent(nom), /`pulse-aidd preuve lancer --portee suite/, `${nom} produit la preuve`);
+  assert.match(agent("verifier"), /`pulse-aidd preuve etat --exiger suite/, "le verifier lit d'abord la preuve");
+  assert.match(agent("verifier"), /`--construire` si « Construire » existe[^.]*page, une route ou la configuration/, "construction seulement pour une page, une route ou la configuration");
+  assert.doesNotMatch(agent("verifier"), /lancé pendant cette vérification/, "un test compte s'il a été lancé sur le contenu actuel des fichiers");
+  for (const nom of ["implementer", "reviewer"]) assert.doesNotMatch(agent(nom), /preuve lancer/, `${nom} ne produit pas la preuve`);
+  assert.match(agent("test-runner"), /`pulse-aidd tests ecrire --checklists/, "le test-runner juge avec les checklists");
+  assert.doesNotMatch(agent("test-runner"), /surtout `tests\/ecrire-un-test\.md`/);
+  assert.match(agent("test-writer"), /mode « corriger » : `pulse-aidd tests ecrire <niveau> --checklists`/, "test-writer : mode corriger avec les checklists");
+  for (const nom of ["verifier", "test-runner", "test-writer"]) assert.doesNotMatch(agent(nom).match(/^description:.*$/m)[0], /Utilisé par/, `${nom} : description sans « Utilisé par »`);
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  assert.match(auto, /`pulse-aidd preuve etat --exiger suite`/, "le filet lit la preuve");
+  assert.match(auto, /`pulse-aidd preuve lancer --portee suite`/, "le filet relance la preuve si besoin");
+  assert.doesNotMatch(auto, /après la dernière modification de fichier/, "l'empreinte décide, plus le jugement du modèle");
+  const dabord = lire(RACINE, "references", "tests-dabord.md");
+  assert.doesNotMatch(dabord, /\(recopiés\)|\(recopiées\)/, "délégation au test-writer sans recopie");
+  assert.match(dabord, /L'agent lit lui-même[^.]*`docs\/technical\.md`/);
+  assert.match(dabord, /relancer le test-runner en phase « vert attendu » \*\*avant\*\* la relecture de contrôle/);
+});
+
+test("examen : rapport au modèle chargé à l'étape, délégations sans recopie de docs/technical.md, preuve unique lue et exigée", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  assert.match(examen, /`pulse-aidd modele revue\.md`/, "le modèle de rapport se charge à l'étape du rapport");
+  assert.match(examen, /`pulse-aidd preuve etat --exiger suite`/, "la ligne « Filet anti-régression » vient de la preuve");
+  assert.match(examen, /constat 🟠 Haute/, "un échec de la preuve devient un constat Haute");
+  const ligne = (agent) => examen.split("\n").find((l) => l.startsWith(`- **\`pulse:${agent}\`** :`)) || "";
+  for (const agent of ["reviewer", "verifier"]) {
+    assert.ok(ligne(agent), agent);
+    assert.doesNotMatch(ligne(agent), /sections? « (Pile retenue|Commandes du projet) »/, `${agent} : docs/technical.md non recopié`);
+    assert.match(ligne(agent), /L'agent lit lui-même/, `${agent} lit lui-même ses documents`);
+  }
+  assert.match(ligne("reviewer"), /sans verifier \(rythme rapide\), la consigne d'écrire la section « Test manuel »/);
+  assert.match(examen, /test-runner en phase « vert attendu » d'abord/, "relecture de contrôle : le test-runner d'abord");
+  for (const skill of ["review", "spirc"]) {
+    assert.match(skillTexte(skill), /`pulse-aidd modele revue\.md`/, `${skill} : pointeur du modèle de rapport`);
+    assert.ok(motifsBash(path.join(RACINE, "skills", skill, "SKILL.md")).some((m) => couvre(m, "pulse-aidd preuve etat --exiger suite")), `${skill} : preuve autorisée`);
+  }
+  assert.doesNotMatch(skillTexte("review"), /Les références et modèles cités dans cette commande figurent dans ce contexte/);
+  const reviewer = lire(RACINE, "agents", "reviewer.md");
+  assert.doesNotMatch(reviewer, /Lancer les contrôles automatiques/, "le reviewer ne relance pas les contrôles");
+  for (const phrase of reviewer.split(/(?<=[.;])\s/).filter((x) => /contrôles automatiques de « Commandes du projet »/.test(x)))
+    assert.match(phrase, /^Sans verifier dans l'examen/, "le reviewer lance les contrôles seulement sans verifier dans l'examen");
+  assert.doesNotMatch(reviewer.match(/^description:.*$/m)[0], /Utilisé par/);
+  assert.match(reviewer, /## Test manuel à faire par la personne \(seulement si le message l'indique : examen sans verifier\)/);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /1\. \*\*Tests\*\* : lancer une fois toute la suite[^\n]*`pulse-aidd preuve lancer --portee suite`/);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse-aidd modele revue\.md`/);
+});
+
+test("test : références des tests chargées à la demande, délégation au test-writer sans recopie de docs/technical.md", () => {
+  const t = skillTexte("test");
+  assert.match(t, /Quand elle vaut « aucune » : lancer `pulse-aidd reference tests-automatiques\.md` et appliquer son § 3/);
+  assert.match(t, /Seulement pour une spec sans scénarios[^\n]*`pulse-aidd tests gherkin`/);
+  assert.match(t, /Pour écrire des tests \*\*avant\*\* le code d'une nouvelle tâche : `\/pulse:implement -t` ou `\/pulse:spirc -t`\.\n/);
+  const delegation = t.split("\n").find((l) => l.startsWith("2. Déléguer à **`pulse:test-writer`**")) || "";
+  assert.ok(delegation, "délégation au test-writer");
+  assert.doesNotMatch(delegation, /« Pile retenue »|contrat recopié/);
+  assert.match(delegation, /L'agent lit lui-même `docs\/technical\.md`/);
+  assert.doesNotMatch(t, /Les références citées dans cette commande figurent dans ce contexte/);
+  assert.match(t, /`pulse-aidd etape fix --sans-communes`/, "échec dû au code : l'étape fix enchaînée");
+  assert.ok(!motifsBash(path.join(RACINE, "skills", "test", "SKILL.md")).some((m) => m.startsWith("git add")), "test n'autorise pas git add");
+});
+
+test("preuve : relance seulement pour périmée, aucune ou portée insuffisante ; rouge à jour = échecs à corriger ; filet limité sans boucle", () => {
+  const examen = lire(RACINE, "references", "examen.md");
+  const auto = lire(RACINE, "references", "tests-automatiques.md");
+  const verifier = lire(RACINE, "agents", "verifier.md");
+  for (const [nom, texte] of [["examen.md", examen], ["tests-automatiques.md", auto], ["verifier.md", verifier]]) {
+    assert.match(texte, /« à jour » ❌[^.]*sans relance/, `${nom} : une preuve rouge à jour se corrige, sans relance`);
+    assert.match(texte, /la relance indiquée par sa ligne/, `${nom} : la relance vient de la ligne de la preuve`);
+    assert.match(texte, /--portee tache|preuve de portée tâche/, `${nom} : le filet limité se lit en portée tâche`);
+    assert.doesNotMatch(texte, /ne prouve rien : relancer|« à jour » et ✅ ; sinon, relancer/, `${nom} : pas de relance d'une preuve rouge`);
+  }
+  assert.match(examen, /filet limité/, "examen : le message au verifier dit le filet limité");
+  assert.match(auto, /toute la suite tourne une fois à la fin de l'US/, "filet limité : toute la suite à la fin de l'US");
+  assert.doesNotMatch(lire(RACINE, "agents", "reviewer.md"), /extraits du message de délégation/);
+  assert.match(lire(RACINE, "agents", "test-runner.md"), /contrôle automatique en échec[^.]*« code »/, "test-runner : un contrôle rouge se classe code");
+  assert.match(lire(RACINE, "README.md"), /produite par le test-runner, le verifier ou, à défaut, la conversation au moment de décider ; jamais par l'implementer/);
+  assert.doesNotMatch(lire(DEPOT, "docs", "commandes", "review.html"), /Deux assistants qui n'ont pas écrit le code vont l'examiner/);
+});
+
+test("filet limité : le test-runner est prévenu, la portée tâche se lance (pas une option de etat), tâche sans test : contrôles seuls", () => {
+  assert.match(lire(RACINE, "references", "tests-dabord.md"), /phase « vert attendu »[^\n]*filet limité/, "délégation vert : le filet limité est transmis");
+  assert.doesNotMatch(lire(RACINE, "references", "examen.md"), /`--portee tache`, lue sans/, "--portee tache appartient à preuve lancer");
+  assert.match(lire(RACINE, "references", "tests-automatiques.md"), /tâche sans test : `pulse-aidd preuve lancer --portee tache` sans fichier/);
+});
+
+test("preuve : délai de l'outil Bash donné à chaque lancement ; preuve rouge due à l'environnement relancée une fois la cause réparée ; aucun test écrit non bloquant", () => {
+  const textes = {
+    "verifier.md": lire(RACINE, "agents", "verifier.md"),
+    "test-runner.md": lire(RACINE, "agents", "test-runner.md"),
+    "tests-automatiques.md": lire(RACINE, "references", "tests-automatiques.md"),
+    "examen.md": lire(RACINE, "references", "examen.md"),
+    "examen-us.md": lire(RACINE, "skills", "spirc", "references", "examen-us.md"),
+  };
+  for (const [nom, texte] of Object.entries(textes)) assert.match(texte, /outil Bash[^\n]*`timeout` 600000/, `${nom} : délai de l'outil Bash`);
+  assert.match(textes["examen.md"], /sans relance, sauf cause hors des fichiers réparée \(relance indiquée par la preuve\)/);
+  assert.match(textes["verifier.md"], /dû à l'environnement[^.]*la cause réparée, se relance une fois/);
+  assert.match(lire(RACINE, "references", "tests-dabord.md"), /dû à l'environnement\*\*[^\n]*guider pas à pas, puis relancer le test-runner une fois/);
+  assert.match(textes["tests-automatiques.md"], /aucun test écrit pour l'instant/);
+  assert.match(lire(RACINE, "templates", "revue.md"), /— \(aucun test écrit pour l'instant\)/);
+  for (const nom of ["examen.md", "tests-automatiques.md"]) assert.match(textes[nom], /filet limité : (avec les )?fichiers de test de cette tâche/, `${nom} : relance du filet limité avec les tests de la tâche`);
+});
+
+test("examen sans verifier (rythme rapide, tout) : le reviewer lance les contrôles qui laissent les fichiers intacts ; rythme rapide avec -x : l'auditeur en portée tâche ; examens parallèles : une seule preuve", () => {
+  const reviewer = lire(RACINE, "agents", "reviewer.md");
+  assert.match(reviewer, /Sans verifier dans l'examen \(le message le dit : rythme rapide, ou `tout`\), lancer aussi les contrôles automatiques de « Commandes du projet » qui laissent les fichiers intacts \(pas les tests\) et signaler leurs erreurs/);
+  const examen = lire(RACINE, "references", "examen.md");
+  assert.match(examen, /sans verifier \(rythme rapide\), la consigne d'écrire la section « Test manuel » et de lancer les contrôles/);
+  const review = skillTexte("review");
+  assert.match(review, /Avec `tout` : seulement `pulse:reviewer`[^\n]*examen sans verifier/, "tout : le message dit l'examen sans verifier");
+  assert.match(review, /avant des examens en parallèle[^\n]*`pulse-aidd preuve etat --exiger suite`[^\n]*une seule preuve/, "une US : une seule preuve avant les examens parallèles");
+  const us = lire(RACINE, "skills", "spirc", "references", "examen-us.md");
+  assert.match(us, /avec `-x` : `pulse:security-auditor`, portée `tache`/, "rythme rapide avec -x : l'auditeur");
+  assert.match(us, /« Audit de sécurité »/);
+  assert.match(lire(RACINE, "templates", "revue.md"), /^## Audit de sécurité$/m, "le modèle de rapport a sa section « Audit de sécurité »");
+});
+
+test("commit : le filet anti-régression se lit dans la preuve, sans référence absente de son contexte ; filet limité : toute la suite au commit de la dernière tâche de l'US hors spirc", () => {
+  const commit = skillTexte("commit");
+  const ligne = commit.split("\n").find((l) => l.startsWith("- `commit` :")) || "";
+  assert.match(ligne, /En rythme complet : `pulse-aidd preuve etat --exiger suite`/, "commit lit la preuve");
+  assert.match(ligne, /❌ : s'arrêter, dire les échecs et proposer de taper `\/pulse:review <Tn>`/);
+  assert.match(ligne, /la relance indiquée, une fois \(outil Bash : `timeout` 600000\)/);
+  assert.match(ligne, /dernière tâche de l'US hors `\/pulse:spirc`/, "filet limité : toute la suite à la dernière tâche");
+  assert.doesNotMatch(commit, /référence « Tests automatiques »/, "aucune référence hors du contexte de commit");
+  assert.ok(motifsBash(path.join(RACINE, "skills", "commit", "SKILL.md")).some((m) => couvre(m, "pulse-aidd preuve etat --exiger suite")), "commit : preuve autorisée");
 });

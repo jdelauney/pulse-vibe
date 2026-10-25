@@ -198,9 +198,9 @@ window.PULSE_WIKI = {
     {
       "nom": "implement",
       "etape": "construire",
-      "description": "Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; sans tâche, boucler sur tout le plan (réaliser, relire et vérifier, corriger, enregistrer, tâche suivante)",
-      "forme": "<US-XXX> [T3]",
-      "note": "sans tâche : tout le plan"
+      "description": "Réaliser une tâche d'un plan et l'expliquer, en coulisse ou devant vous, au besoin dans un dossier à part ; pour enchaîner tout le plan, /pulse:spirc",
+      "forme": "<US-XXX> <T3>",
+      "note": ""
     },
     {
       "nom": "init",

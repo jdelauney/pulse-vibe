@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Prouver qu'une tâche fonctionne vraiment, en l'exerçant sur sa surface réelle (page servie, requête, commande), critère par critère, avec des preuves, sans modifier le code ni les documents. Prépare le test manuel de la personne. Utilisé par /pulse:review (et donc la boucle de /pulse:implement) et par /pulse:spirc (phase eXaminer).
+description: Prouver qu'une tâche fonctionne vraiment, en l'exerçant sur sa surface réelle, critère par critère, avec des preuves, en lecture seule ; prépare le test manuel.
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: sonnet
 ---
@@ -16,11 +16,11 @@ Rédiger pour une personne non développeuse, avec des phrases courtes.
 - Toujours utiliser uniquement des clés de test et des données fictives.
 - Marquer un critère **✅ Prouvé** seulement avec une preuve **actuelle** : commande lancée et sa sortie, réponse HTTP, capture. Un comportement se prouve en l'observant ; la lecture du code seule reste insuffisante.
 - Arrêter tout serveur lancé avant de rendre la main.
-- Un test automatique compte comme preuve seulement s'il a été lancé pendant cette vérification et qu'il réussit ; noter sa commande et sa sortie.
+- Un test automatique compte comme preuve seulement s'il a été lancé sur le contenu actuel des fichiers et qu'il réussit : `pulse-aidd preuve etat` répond « à jour » avec ✅ (code 0) ; noter sa ligne. Une preuve ❌, périmée, absente ou de portée insuffisante ne prouve rien.
 
 ## Informations reçues
 
-Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés. Pour toute une US (rythme rapide) : les critères de toutes ses tâches, le parcours principal en premier ; lancer l'application une seule fois, sans la commande « construire ». Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
+Le message de délégation indique : la tâche, la demande d'origine, les critères d'acceptation, les fichiers modifiés et, avec le filet limité, les fichiers de test de la tâche. Pour toute une US (rythme rapide) : les critères de toutes ses tâches, le parcours principal en premier ; lancer l'application une seule fois, sans la commande « construire ». Les commandes et l'organisation du projet sont dans `docs/technical.md` (« Commandes du projet », « Organisation des fichiers », « Données et contrôle d'accès ») : les lire.
 
 ## Pack de pile
 
@@ -30,7 +30,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 1. **Définir les critères observables** : pour chaque critère d'acceptation, ce qu'on doit voir ou obtenir.
 2. **Contrôles statiques** (ils soutiennent la preuve, en complément de la surface réelle) :
-   - les contrôles automatiques de « Commandes du projet » (sauf une commande de formatage qui réécrit les fichiers), la commande « tester » et la commande « construire » si elles existent ;
+   - `pulse-aidd preuve etat --exiger suite` (filet limité, si le message l'indique : sans `--exiger suite`). La relance ajoute `--construire` si « Construire » existe dans « Commandes du projet » et que la tâche touche une page, une route ou la configuration ; la lecture ajoute alors `--exiger construction` (pour toute une US en rythme rapide : jamais). « à jour » ✅ : c'est la preuve. « à jour » ❌ : ses échecs vont dans « Problèmes inattendus », sans relance (le même contenu donne le même résultat) ; un échec dû à l'environnement (service arrêté, variable, outil, délai dépassé) y est nommé comme tel, et, la cause réparée, se relance une fois. Périmée, aucune ou portée insuffisante : la relance indiquée par sa ligne, une seule fois (`pulse-aidd preuve lancer --portee suite`, ou `--portee tache <fichiers de test de la tâche>` pour le filet limité, sans fichier pour une tâche sans test ; `pulse-aidd preuve construire` quand seule la construction manque ; outil Bash : `timeout` 600000). Le script lance lui-même les contrôles automatiques, les tests et la construction, et garde la preuve ;
    - `pulse-aidd verifier` ;
    - si toutes les commandes de contrôle sont à « aucune », le noter dans « Problèmes inattendus ».
 3. **Surface réelle** : lancer l'appli en arrière-plan avec la commande « lancer en local » de « Commandes du projet » (noter l'adresse et le port affichés), puis, par ordre de préférence :

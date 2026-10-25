@@ -47,7 +47,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 - <US> : <critère> — <source>
 
 ## Risques
-- <sécurité (point S… de la checklist), régression possible, cas limite>
+- <sécurité (donnée personnelle, accès réservé, saisie affichée, clé secrète), régression possible, cas limite>
 
 ## Questions que les fichiers ne tranchent pas
 - <question de besoin ou de périmètre, à poser à la personne>

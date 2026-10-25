@@ -205,6 +205,27 @@ test("travail en cours : reprendre la décision en attente, d'abord (R1)", () =>
   assert.deepStrictEqual([worktree.regle, worktree.dossier], ["R1", ".claude/worktrees/us-001-creer-tache"]);
 });
 
+test("travail en cours : une reprise d'implement sans tâche conseille spirc, avec une tâche elle reste", () => {
+  const attente = (reprise) => `# Travail en cours
+
+- **Commande** : \`/pulse:implement\`
+- **Étape** : test manuel
+- **Mis à jour le** : 2026-10-07 18:00
+- **Pour reprendre** : \`${reprise}\`
+`;
+  const sans = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement US-002") }));
+  assert.deepStrictEqual([sans.regle, sans.prochaine], ["R1", "/pulse:spirc US-002"]);
+  const avec = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement US-002 T3") }));
+  assert.deepStrictEqual([avec.regle, avec.prochaine], ["R1", "/pulse:implement US-002 T3"]);
+  // Les options (-d, -t…) ne cachent pas l'absence de tâche ; -s, propre à implement, n'est pas repris.
+  const options = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement -dt US-002") }));
+  assert.deepStrictEqual([options.regle, options.prochaine], ["R1", "/pulse:spirc -dt US-002"]);
+  const coulisse = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement -s US-002") }));
+  assert.strictEqual(coulisse.prochaine, "/pulse:spirc US-002");
+  const optionsEtTache = etat(projet({ "aidd_docs/tasks/in-progress.md": attente("/pulse:implement -d US-002 T3") }));
+  assert.strictEqual(optionsEtTache.prochaine, "/pulse:implement -d US-002 T3");
+});
+
 test("projet neuf : raconter l'idée, ou démarrer vite (R9)", () => {
   const r = etat(projet());
   assert.deepStrictEqual([r.regle, r.prochaine], ["R9", "/pulse:brainstorm"]);

@@ -59,8 +59,9 @@ function avecControles(d, commandes, plan = PLAN_EN_COURS, { realisation = true 
   ecrire(d, "docs/technical.md", technique(commandes));
   if (realisation) marqueur(d);
 }
-// Un contrôle qui échoue en nommant un fichier dans sa sortie.
-const echoue = (fichier) => `\`node -e "console.log('${fichier}:1:1 erreur'); process.exit(1)"\``;
+// Un contrôle qui échoue en nommant un fichier dans sa sortie. Les commandes des tests évitent « ; », « & », « | », « < »
+// et « > » : une commande hors des autorisations du projet n'est jamais lancée (raisonRefus d'autorisations.js).
+const echoue = (fichier) => `\`node -e "console.log('${fichier}:1:1 erreur'), process.exit(1)"\``;
 
 test("hors projet Pulse : aucune sortie", () => {
   const d = projet({ pulse: false });
@@ -192,7 +193,7 @@ test("SubagentStop : troisième blocage → contexte de l'agent, son relevé eff
 test("contrôles rapides : tâche en cours et contrôle qui échoue → bloqué avec les 40 dernières lignes", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "for (let i = 1; i <= 60; i++) console.log(\'src/ok.js ligne \' + i); process.exit(1)"` (corriger : `node -e "process.exit(1)"`)');
+  avecControles(d, '`node -e "Array.from({ length: 60 }, function (_, i) { console.log(\'src/ok.js ligne \' + (i + 1)) }), process.exit(1)"` (corriger : `node -e "process.exit(1)"`)');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   const s = lancer(d, e);
@@ -238,7 +239,7 @@ test("contrôles rapides : « aucune » ou relevé vide → rien n'est lancé", 
 test("contrôles rapides : commande introuvable (code 127 ou script manquant) → sautée", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "process.exit(127)"` et `node -e "console.error(\'npm error Missing script: check\'); process.exit(1)"` et `commande-pulse-inexistante-xyz`');
+  avecControles(d, '`node -e "process.exit(127)"` et `node -e "console.error(\'npm error Missing script: check\'), process.exit(1)"` et `commande-pulse-inexistante-xyz`');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   assert.strictEqual(lancer(d, e), null);
@@ -247,7 +248,7 @@ test("contrôles rapides : commande introuvable (code 127 ou script manquant) �
 test("contrôles rapides : commande plus longue que le délai → sautée", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "setTimeout(() => process.exit(1), 10000)"`');
+  avecControles(d, '`node -e "setTimeout(function () { process.exit(1) }, 10000)"`');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   const debut = Date.now();
@@ -318,7 +319,7 @@ test("blocage, puis écriture faite après ce premier blocage : reprise au Stop 
 test("contrôles rapides : « Missing script » loin de la fin de la sortie → bloqué", () => {
   const d = projet();
   const e = { session_id: session() };
-  avecControles(d, '`node -e "console.log(\'Missing script: x\'); for (let i = 0; i < 10; i++) console.log(\'src/ok.js erreur \' + i); process.exit(1)"`');
+  avecControles(d, '`node -e "console.log(\'Missing script: x\'), Array.from({ length: 10 }, function (_, i) { console.log(\'src/ok.js erreur \' + i) }), process.exit(1)"`');
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   assert.strictEqual(lancer(d, e).decision, "block");
@@ -348,7 +349,7 @@ test("contrôles rapides : échec qui nomme un fichier du tour → bloqué (chem
   // Sous Windows, le chemin absolu avec des \ (doublés dans la chaîne JavaScript) ; ailleurs, tel quel.
   const brut = path.join(tour.racineGit(d), "src", "ok.js");
   const absolu = process.platform === "win32" ? brut.split("\\").join("\\\\") : brut;
-  avecControles(d, `\`node -e "console.log('${absolu}'); console.log('  3:5  error  x'); process.exit(1)"\``);
+  avecControles(d, `\`node -e "console.log('${absolu}'), console.log('  3:5  error  x'), process.exit(1)"\``);
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
   assert.strictEqual(lancer(d, e).decision, "block");
@@ -420,7 +421,7 @@ test("contrôles rapides : une commande qui réécrit les fichiers est sautée",
   const d = projet();
   const e = { session_id: session() };
   const trace = path.join(d, "trace.txt").split("\\").join("/");
-  const ecrit = (suite) => `\`node -e "require('fs').appendFileSync('${trace}', 'x')" && echo ${suite}\``;
+  const ecrit = (suite) => `\`node -e "require('fs').appendFileSync('${trace}', 'x')" -- ${suite}\``;
   avecControles(d, [ecrit("--write"), ecrit("--fix"), ecrit("format"), ecrit("fmt"), ecrit("lint:fix")].join(" et "));
   ecrire(d, "src/ok.js", "const a = 1;\n");
   noter(d, e, "src/ok.js");
@@ -443,4 +444,25 @@ test("worktree noté depuis la session principale : règles du worktree, chemin 
   assert.strictEqual(s.decision, "block");
   assert.match(s.reason, /Les montants/);
   assert.match(s.reason, /^- src\/prix\.js, ligne 1/m);
+});
+
+test("contrôles rapides : lus comme la preuve (cellule sans accents graves = la commande, « — » = aucune) ; une commande hors des autorisations n'est jamais lancée", () => {
+  const controle = "require('fs').appendFileSync('trace.txt', 'x'), console.log('src/ok.js:1:1 erreur'), process.exit(1)\n";
+  const essai = (cellule) => {
+    const d = projet();
+    const e = { session_id: session() };
+    avecControles(d, cellule);
+    ecrire(d, "controle.js", controle);
+    ecrire(d, "src/ok.js", "const a = 1;\n");
+    noter(d, e, "src/ok.js");
+    return { s: lancer(d, e), lance: fs.existsSync(path.join(d, "trace.txt")) };
+  };
+  const nue = essai("node controle.js");
+  assert.strictEqual(nue.s && nue.s.decision, "block", "cellule sans accents graves : la commande est lancée");
+  assert.ok(nue.lance);
+  for (const cellule of ["—", "node controle.js et node controle.js", "`node controle.js && node controle.js`", "`node controle.js $(node controle.js)`"]) {
+    const r = essai(cellule);
+    assert.strictEqual(r.s, null, cellule);
+    assert.ok(!r.lance, `${cellule} : rien n'est lancé`);
+  }
 });

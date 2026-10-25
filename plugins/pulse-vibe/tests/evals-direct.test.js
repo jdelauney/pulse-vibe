@@ -49,7 +49,14 @@ test("noter : outils appelés (sous-agents compris), ordre, texte de la dernièr
   assert.strictEqual(notes.score, 5 / 8);
 });
 
-test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, réussit sinon", () => {
+// L'expression seule, sans la réécriture du garde-fou (testée à part) : sinon chaque coupure réécrivable serait lancée en entier.
+function sansReecriture(t) {
+  process.env.PULSE_GARDE_COMMANDES_OFF = "1";
+  t.after(() => delete process.env.PULSE_GARDE_COMMANDES_OFF);
+}
+
+test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, réussit sinon", (t) => {
+  sansReecriture(t);
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   assert.strictEqual(g.type, "tool_not_used");
   const trace = (commande) => {
@@ -63,13 +70,16 @@ test("lecture-entiere : échoue sur une commande de règles suivie d'un tube, r�
   assert.strictEqual(note('pulse-aidd reference "a/b.md" 2>&1 | tail -5'), false);
   assert.strictEqual(note("pulse-aidd pile contexte realisation | head"), false);
   assert.strictEqual(note("pulse-aidd tests x 2>&1 | head -5"), false);
+  assert.strictEqual(note("pulse-aidd realisation etape T1 realisation | head -40"), false);
+  assert.strictEqual(note("pulse-aidd realisation | head -5"), true);
   assert.strictEqual(note("pulse-aidd qualite regles"), true);
   assert.strictEqual(note("pulse-aidd tests x && git log | head"), true);
   assert.strictEqual(note("pulse-aidd tests x || echo echec"), true);
   assert.strictEqual(note("git log | head; pulse-aidd etat"), true);
 });
 
-test("lecture-entiere : un appel coupé par un tube mais refusé par le garde-fou ne compte pas", () => {
+test("lecture-entiere : un appel coupé par un tube mais refusé par le garde-fou ne compte pas", (t) => {
+  sansReecriture(t);
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   const trace = (resultat) => {
     const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "refus-")), "trace.jsonl");
@@ -99,7 +109,57 @@ test("tool_used et tool_order : un appel refusé n'a rien fait", () => {
   assert.deepStrictEqual(notes.details.map((d) => d.reussi), [false, true, false]);
 });
 
-test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", () => {
+test("lecture-entiere : une coupure que le garde-fou réécrit (tube retiré) n'est pas comptée", () => {
+  const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "reecrit-")), "trace.jsonl");
+  const appel = (id, command) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name: "Bash", input: { command } }] } });
+  fs.writeFileSync(f, JSON.stringify(appel("a", "pulse-aidd qualite clean-code 2>&1 | head -50")) + LF);
+  assert.strictEqual(direct.noter(f, [g]).details[0].reussi, true);
+  fs.writeFileSync(f, JSON.stringify(appel("b", "pulse-aidd qualite clean-code | head -50; ls")) + LF);
+  assert.strictEqual(direct.noter(f, [g]).details[0].reussi, false);
+  fs.writeFileSync(f, JSON.stringify(appel("c", "pulse-aidd realisation etape T1 realisation | head -40")) + LF);
+  assert.strictEqual(direct.noter(f, [g]).details[0].reussi, true);
+});
+
+test("lecture-entiere : la même expression dans les trois cas qui lisent des règles", () => {
+  const motifs = ["implement-tache", "realisation-boucle", "relecture-defaut"].map((cas) => direct.lireCas(path.join(CAS, cas)).verifications.find((v) => v.nom === "lecture-entiere").input_match);
+  assert.strictEqual(new Set(motifs).size, 1);
+  assert.match(motifs[0], /realisation etape/);
+});
+
+test("implement-tache : la fiche du pack et le marqueur devant vous précèdent le premier fichier de code (tests exclus)", () => {
+  const graders = direct.lireCas(path.join(CAS, "implement-tache")).verifications;
+  const g = (nom) => graders.find((v) => v.nom === nom);
+  const note = (appels) => {
+    const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "devant-")), "trace.jsonl");
+    const lignes = appels.map(([name, input], i) => ({ type: "assistant", message: { content: [{ type: "tool_use", id: `t${i}`, name, input }] } }));
+    fs.writeFileSync(f, lignes.map((l) => JSON.stringify(l)).join(LF) + LF);
+    return Object.fromEntries(direct.noter(f, [g("pack-avant-code"), g("devant-avant-code")]).details.map((d) => [d.nom, d.reussi]));
+  };
+  const debut = ["Bash", { command: "pulse-aidd realisation debut US-001 --commande implement --rythme complet --devant" }];
+  const debutSans = ["Bash", { command: "pulse-aidd realisation debut US-001 --commande implement --rythme complet" }];
+  const etape = ["Bash", { command: "pulse-aidd realisation etape T1 realisation" }];
+  const pile = ["Bash", { command: "pulse-aidd pile contexte implement" }];
+  const test = ["Write", { file_path: "/p/src/lib/__tests__/somme.test.ts", content: "x" }];
+  const code = ["Write", { file_path: "/p/src/lib/somme.ts", content: "x" }];
+  assert.deepStrictEqual(note([debut, test, etape, code]), { "pack-avant-code": true, "devant-avant-code": true });
+  assert.deepStrictEqual(note([debut, pile, code]), { "pack-avant-code": true, "devant-avant-code": true });
+  assert.deepStrictEqual(note([debutSans, etape, code]), { "pack-avant-code": true, "devant-avant-code": false });
+  assert.deepStrictEqual(note([debut, code, etape]), { "pack-avant-code": false, "devant-avant-code": true });
+  assert.deepStrictEqual(note([code, debut, etape, code]), { "pack-avant-code": false, "devant-avant-code": false });
+});
+
+test("tool_order strict : un appel « after » avant le premier « before » fait échouer", () => {
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "ordre-")), "trace.jsonl");
+  const appel = (id, name, input) => ({ type: "assistant", message: { content: [{ type: "tool_use", id, name, input }] } });
+  fs.writeFileSync(f, [appel("a", "Write", { file_path: "src/a.ts" }), appel("b", "Bash", { command: "pulse-aidd qualite clean-code" }), appel("c", "Write", { file_path: "src/b.ts" })].map((l) => JSON.stringify(l)).join(LF) + LF);
+  const ordre = { type: "tool_order", before: { tool: "Bash", input_match: "qualite" }, after: { tool: "Write", input_match: "src" } };
+  const notes = direct.noter(f, [{ nom: "souple", ...ordre }, { nom: "strict", ...ordre, strict: "true" }]);
+  assert.deepStrictEqual(notes.details.map((d) => d.reussi), [true, false]);
+});
+
+test("lecture-entiere : le contenu d'un résultat en blocs de texte se lit comme du texte", (t) => {
+  sansReecriture(t);
   const g = direct.lireCas(path.join(CAS, "relecture-defaut")).verifications.find((v) => v.nom === "lecture-entiere");
   const note = (texte) => {
     const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "blocs-")), "trace.jsonl");

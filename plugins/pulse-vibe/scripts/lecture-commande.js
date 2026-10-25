@@ -9,6 +9,10 @@
 "use strict";
 
 const PROFONDEUR_MAX = 6;
+// Sous PowerShell, ces caractères séparent deux mots comme une espace (vérifié avec son analyseur, versions 5.1 et 7) :
+// tabulation verticale, saut de page, U+0085, U+00A0, U+1680, U+2000 à U+200A, U+2028, U+2029, U+202F, U+205F, U+3000.
+// Sous Bash, seuls l'espace, la tabulation et le retour à la ligne séparent : ces caractères y restent dans le mot.
+const ESPACES_POWERSHELL = /^[\u000b\u000c\u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]$/;
 const MOTS_CLES = new Set(["if", "then", "else", "elif", "fi", "do", "done", "while", "until", "!", "{", "}", "time"]);
 const SHELLS_POSIX = new Set(["sh", "bash", "zsh", "dash", "ksh"]);
 const GESTIONNAIRES = new Set(["npm", "pnpm", "yarn", "bun"]);
@@ -173,11 +177,12 @@ function decouper(script, dialecte = "bash") {
       }
     } else if (c === "#" && mot === null && dialecte !== "cmd") {
       while (i < n && script[i] !== "\n") i++;
-    } else if (c === "\n") {
+    } else if (c === "\n" || (dialecte === "powershell" && c === "\r")) {
+      // PowerShell lit aussi un retour chariot seul comme une fin d'instruction.
       finirSegment();
       i++;
       lireHeredocs();
-    } else if (c === " " || c === "\t" || c === "\r") {
+    } else if (c === " " || c === "\t" || c === "\r" || (dialecte === "powershell" && ESPACES_POWERSHELL.test(c))) {
       finirMot();
       i++;
     } else if (c === ";" || c === "&" || c === "|" || c === "(" || c === ")" || (dialecte === "powershell" && (c === "{" || c === "}") && !(mot || "").endsWith("$"))) {
@@ -187,8 +192,15 @@ function decouper(script, dialecte = "bash") {
         i += script[i + 2] === ">" ? 3 : 2;
         continue;
       }
+      // Bash : « |& » est un tube qui envoie aussi les erreurs.
+      const tubeErreurs = posix && c === "|" && script[i + 1] === "&";
       const double = (c === "&" || c === "|" || c === ";") && script[i + 1] === c;
       finirSegment();
+      if (tubeErreurs) {
+        apresTube = true;
+        i += 2;
+        continue;
+      }
       if (c === "|" && !double) apresTube = true;
       i += double ? 2 : 1;
     } else if (c === "<" && script.startsWith("<<<", i) && dialecte !== "cmd") {

@@ -86,18 +86,6 @@ Exemples : `feat/us-03-filtre-par-date`, `fix/formulaire-vide`. À éviter : `ma
 - **Description** : le modèle du dépôt s'il en a un (`.github/pull_request_template.md`, `.github/PULL_REQUEST_TEMPLATE/`, `.gitlab/merge_request_templates/`), sinon le modèle Pulse.
 - La fusion se fait sur le site du dépôt, par la personne ; la commande ne fusionne jamais.
 
-## 7. Annuler (/pulse:annuler)
+## 7. Annuler
 
-Annuler, c'est ajouter une nouvelle version qui défait une ancienne : l'historique reste entier, et chaque annulation peut elle-même être annulée.
-
-| Cas | Opération | Filet de sécurité |
-|---|---|---|
-| Changements non enregistrés | `git stash push -u -m "pulse-annuler <date> <résumé>"` (ou `… -- <fichiers>`) | Mis de côté, récupérable avec `git stash apply` |
-| Une tâche (ou toute une US) enregistrée | `git revert --no-commit <commit>` pour chaque commit, du plus récent au plus ancien (`-m 1` pour un commit de fusion), puis `git commit` (`revert(<Tâche ou US>): annule <description>`) | Historique conservé ; fonctionne même si les commits sont déjà envoyés |
-| Revenir à une version | `git branch sauvegarde/<AAAA-MM-JJ-HHMM>`, puis défaire de même chaque commit de `git rev-list --first-parent <version>..HEAD`, et un seul commit (`revert: revient à la version du <date>`) | Branche de sauvegarde sur l'état d'avant |
-| Récupérer | `git stash apply <entrée>` (puis `git stash drop <entrée>` avec accord), ou défaire le commit d'annulation de la même façon, puis commit `revert: rétablit <description>` | — |
-
-- Toujours passer par ces opérations réversibles. **Jamais** `git reset --hard`, `git checkout -- .`, `git restore` sans mise de côté préalable, `git clean`, ni `--force`.
-- Les fichiers ignorés (`.env`, fichiers d'environnement locaux) restent en place : `git stash -u` ne les prend pas.
-- Conflit sur un plan seulement (le Journal, mis à jour par une tâche plus récente) : garder la version actuelle du plan (`git checkout --ours -- <plan>`, puis `git add <plan>`) et le mettre à jour à la main. C'est la seule reprise de fichier permise, et elle porte sur ce plan uniquement.
-- Tout autre conflit, ou toute autre erreur pendant un revert : `git revert --abort` remet tout en l'état ; expliquer simplement et proposer de taper `/pulse:get-help`.
+Se fait par `/pulse:annuler` : chaque annulation ajoute une version qui défait l'ancienne, l'historique reste entier.
