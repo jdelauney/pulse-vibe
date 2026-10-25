@@ -195,7 +195,6 @@ const PLAFONDS_FORMES = {
   "fix --sans-communes": 11500, // mesure 10 479
   "fix --sans-noyau": 18000, // mesure 16 746
   "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles affichés à l'action) ; avant, 17 463
-  "perf --sans-communes": 31000, // mesure 29 296 (refactoring d'optimisation, phases 7 et 8 : vérification de la vitesse en CI dans perf/ci-vitesse.md, clé Google dans perf/cle.md ; sous la limite de lecture, sortie de DEPASSEMENTS_CONNUS) ; avant, 30 590 (phase 8) ; avant, 33 120
   "plan --sans-communes": 44000, // mesure 41 683 (tâche 6.6 : règles de découpage dédoublonnées) ; avant, 42 033 : dépasse la limite
   "pr --sans-communes": 15000, // mesure 13 840 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 16 829
   "pr --sans-noyau": 18500, // mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 393
