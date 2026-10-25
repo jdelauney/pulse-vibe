@@ -2064,3 +2064,21 @@ test("commit : le filet anti-régression se lit dans la preuve, sans référence
   assert.doesNotMatch(commit, /référence « Tests automatiques »/, "aucune référence hors du contexte de commit");
   assert.ok(motifsBash(path.join(RACINE, "skills", "commit", "SKILL.md")).some((m) => couvre(m, "pulse-aidd preuve etat --exiger suite")), "commit : preuve autorisée");
 });
+
+test("commit : clés et règles contrôlées par pulse-aidd verifier --index après git add ; push envoie seulement et propose /pulse:deploy pour un site en ligne", () => {
+  const commit = skillTexte("commit");
+  const controles = commit.slice(commit.indexOf("### 1."), commit.indexOf("### 2."));
+  assert.doesNotMatch(controles, /git diff/, "plus de lecture du diff à la recherche d'une clé");
+  assert.match(controles, /se fait à l'enregistrement \(étape 6\)/);
+  assert.match(controles, /seulement dans ce cas, lancer `pulse-aidd modele gitignore\.template`/, "modèle .gitignore à la demande");
+  const enregistrer = commit.slice(commit.indexOf("### 6."), commit.indexOf("### 7."));
+  assert.match(enregistrer, /`git add <fichiers du sujet>`[^\n]*, puis `pulse-aidd verifier --index`[^\n]*« Quand un contrôle refuse le commit »[^\n]*, puis `git commit`/);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "commit", "SKILL.md")).includes("pulse-aidd verifier --index"), "commit : verifier --index autorisé");
+  const envoyer = commit.slice(commit.indexOf("### 7."), commit.indexOf("### 8."));
+  assert.match(envoyer, /Envoi refusé : Conventions Git § 4\./);
+  assert.doesNotMatch(envoyer, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
+  assert.match(envoyer, /site déjà en ligne[^\n]*règle commune 17[^\n]*hors d'une boucle de `\/pulse:spirc` ou de `\/pulse:implement`, proposer ensuite `\/pulse:deploy`/);
+  assert.match(commit.slice(commit.indexOf("### Suite")), /plan est terminé et envoyé sur la branche principale d'un site en ligne : prochaine étape `\/pulse:deploy`/);
+  assert.match(lire(DEPOT, "docs", "commandes", "commit.html"), /Pour publier et vérifier le site : <a href="deploy\.html"><code>\/pulse:deploy<\/code><\/a>/);
+  assert.match(lire(DEPOT, "docs", "memo-commandes.md"), /`\/pulse:commit push` l'envoie sur le dépôt en ligne, après votre accord ; `\/pulse:deploy` publie et vérifie/);
+});

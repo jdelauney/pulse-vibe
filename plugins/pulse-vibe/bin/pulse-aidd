@@ -301,8 +301,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     review) afficher "Examiner une tâche" "$REF/examen.md" ;;
     commit)
       afficher "Conventions Git" "$REF/git.md"
-      afficher "L'envoi du travail" "$REF/envoi.md"
-      afficher "Modèle : .gitignore" "$TPL/gitignore.template" ;;
+      afficher "L'envoi du travail" "$REF/envoi.md" ;; # le modèle .gitignore : lancé seulement s'il manque (étape 1)
     pr)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Modèle : description de demande de fusion" "$SK/pr/assets/pull-request.md" ;;
