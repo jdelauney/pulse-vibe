@@ -100,13 +100,13 @@ test("contexte deploy : saisie des secrets hors conversation ; contexte security
     assert.ok(!security.includes(`===== ${titre}`), `security sans « ${titre} »`);
 });
 
-test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique ; le modèle du travail en cours se charge à l'étape qui attend", () => {
+test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique ; la politique IA, le modèle d'audit et le modèle du travail en cours se chargent à l'étape qui les cite", () => {
   const attendus = {
-    seo: ["Référencement : les règles", "Référencement : assistants IA", "Modèle : docs/seo.md", "Modèle : rapport d'audit de référencement"],
+    seo: ["Référencement : les règles", "Modèle : docs/seo.md"],
     perf: ["La vitesse vécue par les visiteurs", "Modèle : docs/performance.md"],
     "search-console": ["Search Console : relier, lire, suivre", "Modèle : docs/referencement/search-console-<date>.md"],
   };
-  const absents = { "search-console": ["Modèle : travail en cours"] };
+  const absents = { seo: ["Référencement : assistants IA", "Modèle : rapport d'audit de référencement"], "search-console": ["Modèle : travail en cours"] };
   for (const [commande, titres] of Object.entries(attendus)) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, commande);

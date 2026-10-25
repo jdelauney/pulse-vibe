@@ -1516,6 +1516,23 @@ test("Search Console : la liaison est écrite une fois (search-console/relier.md
   assert.doesNotMatch(lancer, /Ajouter une propriété|Search generative AI/, "lancer.md renvoie à relier.md ; le choix C se règle dans /pulse:seo ia");
 });
 
+test("seo : contrôles IA dans les règles, politique IA chargée en mode ia, modèle d'audit et textes à l'audit, liaison par relier.md au lancement", () => {
+  const regles = lire(RACINE, "skills", "seo", "references", "regles.md");
+  for (let n = 1; n <= 12; n++) assert.match(regles, new RegExp(`\\bIA${n} `), `regles.md : IA${n}`);
+  assert.match(regles, /IA4 imite un robot/, "regles.md : la mise en garde IA4");
+  const ia = lire(RACINE, "skills", "seo", "references", "ia.md");
+  assert.doesNotMatch(ia, /IA2 groupe nommé/, "ia.md : les contrôles IA vivent dans regles.md § 4");
+  const seo = lire(RACINE, "skills", "seo", "SKILL.md");
+  const section = (titre) => seo.slice(seo.indexOf(`### ${titre}\n`), seo.indexOf("\n### ", seo.indexOf(`### ${titre}\n`) + 4));
+  assert.doesNotMatch(seo.slice(seo.indexOf("## Règles"), seo.indexOf("## Contexte")), /assistants IA/, "seo : la politique IA n'est plus chargée pour toute la commande");
+  assert.match(section("audit"), /`pulse-aidd modele seo\/seo-audit\.md`/);
+  assert.match(section("audit"), /`pulse-aidd reference seo\/textes\.md`[^\n]*§ 3/);
+  assert.match(section("ia"), /`pulse-aidd reference seo\/ia\.md`/);
+  assert.match(section("ia"), /`pulse-aidd reference search-console\/search-console\.md`, § 6/, "choix C : le réglage décrit une fois, dans search-console.md");
+  assert.match(section("lancer"), /`pulse-aidd reference search-console\/relier\.md`/);
+  assert.doesNotMatch(section("lancer"), /vérification minimale/, "seo lancer suit la procédure complète de relier.md");
+});
+
 test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; mode découverte sur la version principale", () => {
   const worktree = lire(RACINE, "references", "worktree-dossier.md");
   const fin = worktree.slice(worktree.indexOf("## 3. Terminer"), worktree.indexOf("**Fusionner** :"));
@@ -1578,7 +1595,7 @@ test("chaque commande écrit ses documents sans demande d'autorisation (W13)", (
     "search-console": ["Edit(docs/technical.md)", "Write(docs/referencement/**)", "Edit(docs/referencement/**)", "Write(aidd_docs/tasks/in-progress.md)"],
     secrets: ["Write(docs/secrets.md)", "Edit(docs/secrets.md)", "Write(docs/incidents/**)", "Edit(docs/incidents/**)", ...LEXIQUE],
     security: ["Write(docs/securite.md)", "Edit(docs/securite.md)"],
-    seo: ["Write(docs/seo.md)", "Edit(docs/seo.md)", "Write(docs/seo/**)", "Edit(docs/seo/**)"],
+    seo: ["Write(docs/seo.md)", "Edit(docs/seo.md)", "Write(docs/seo/**)", "Edit(docs/seo/**)", "Edit(docs/technical.md)"],
     tech: [...TECH, "Edit(./README.md)", "Write(aidd_docs/tasks/in-progress.md)"],
     ui: [...DESIGN, "Edit(aidd_docs/tasks/**)", "Write(aidd_docs/tasks/in-progress.md)"],
     brainstorm: [...MEMOIRE, "Edit(./CLAUDE.md)", ...LEXIQUE],
