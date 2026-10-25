@@ -196,11 +196,26 @@ test("contexte tech : l'organisation se charge à l'étape 6.1, projet neuf sans
   assert.match(tech, /Projet neuf avec pack : les valeurs du pack/);
 });
 
-test("contexte tech avec le pack : l'organisation reste hors du contexte, le pack donne ses valeurs", { skip: !fs.existsSync(PACK_BIN) }, () => {
+test("contexte tech avec le pack : l'organisation reste hors du contexte ; les valeurs du pack se chargent à l'étape 6, en un appel séparé", { skip: !fs.existsSync(PACK_BIN) }, () => {
   const r = dansLeProjet(["contexte", "tech"]);
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes("===== Pack de pile"), "consignes du pack présentes");
   assert.ok(!r.stdout.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte de tech");
+  // Relecture finale de la phase 9, R-m1 : etape tech --sans-communes faisait 41 206 caractères avec le pack, au-delà de la limite
+  // de lecture (30 000). Le pack sert « une fois la pile choisie » : tech le charge à l'étape « Écrire », en un appel séparé.
+  assert.ok(!r.stdout.includes("===== Pack de pile"), "consignes du pack hors du contexte de tech");
+  const etape = dansLeProjet(["etape", "tech", "--sans-communes"]);
+  assert.ok(!etape.stdout.includes("===== Pack de pile"), "ni dans l'étape enchaînée");
+  const pack = dansLeProjet(["pile", "contexte", "tech"]);
+  assert.ok(pack.stdout.includes("Pour /pulse:tech"), "pile contexte tech donne les valeurs du pack");
+  for (const sortie of [r.stdout, etape.stdout, pack.stdout]) assert.ok(sortie.length < 30000, `${sortie.length} caractères`);
+  const tech = fs.readFileSync(path.join(RACINE, "skills", "tech", "SKILL.md"), "utf8");
+  assert.match(tech.split("### 6. Écrire")[1], /\*\*Pack de pile choisi\*\* \(ou déjà déclaré\)[^\n]*puis lancer `pulse-aidd pile contexte tech` \(un appel à part, sortie lue en entier\)/);
+});
+
+test("contexte tech, pack déclaré mais absent : l'avertissement reste", () => {
+  const r = dansLeProjet(["contexte", "tech"], { avecPack: false });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /===== Pack de pile : next \(non installé\) =====/);
 });
 
 test("un pack remplace seulement l'organisation, jamais la sécurité du code", () => {
