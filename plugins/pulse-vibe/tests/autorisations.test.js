@@ -33,6 +33,9 @@ test("commandes du projet : les contrôles, jamais l'installation, le déploieme
   }
   for (const exclue of ["npm install", "npx playwright install chromium", "npm run db:migrate", "scripts/migrer.mjs"]) assert.ok(!c.includes(exclue), exclue);
   assert.deepStrictEqual(commandesDuProjet(projet({})), []);
+  // Cellule sans accents graves : la cellule est la commande ; « aucune » n'est pas une commande.
+  const nues = commandesDuProjet(projet({ "docs/technical.md": "## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Tester | npm test |\n| Construire | aucune (site statique) |\n" }));
+  assert.deepStrictEqual(nues, ["npm test"]);
 });
 
 test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans production ni configuration", () => {

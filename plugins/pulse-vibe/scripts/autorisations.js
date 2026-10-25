@@ -61,6 +61,19 @@ function lignesCommandes(racine) {
   return lignes;
 }
 
+/**
+ * Une cellule de « Commandes du projet » sans accents graves : « aucune » (choix du projet, parenthèses et guillemets
+ * ignorés) → { aucune: true } ; vide → {} ; sinon la cellule elle-même, sans ses parenthèses, est la commande →
+ * { commande }. Avec des accents graves : null (les commandes sont entre eux). Lu aussi par preuve.js.
+ */
+function celluleNue(cellule) {
+  if (cellule.includes("`")) return null;
+  const texte = cellule.replace(/\([^)]*\)/g, "").replace(/[«»]/g, "").trim();
+  if (!texte) return {};
+  if (/^aucune$/i.test(texte)) return { aucune: true };
+  return { commande: texte };
+}
+
 /** Pourquoi une commande du projet reste hors des autorisations, ou null quand elle est autorisée. */
 function raisonRefus(commande) {
   if (/[;&|<>]/.test(commande)) return "enchaîne plusieurs commandes (&&, |, ;…) : écrivez une seule commande par paire d'accents graves dans docs/technical.md";
@@ -69,11 +82,16 @@ function raisonRefus(commande) {
   return null;
 }
 
-/** Les commandes de contrôle de « Commandes du projet » (entre backticks), sans celles qui installent ou déploient. */
+/** Les commandes de contrôle de « Commandes du projet » (entre backticks, ou la cellule nue), sans celles qui installent ou déploient. */
 function commandesDuProjet(racine) {
   const commandes = new Set();
   for (const { libelle, cellule } of lignesCommandes(racine) || []) {
     if (!LIGNES.test(libelle)) continue;
+    const nue = celluleNue(cellule);
+    if (nue) {
+      if (nue.commande && !raisonRefus(nue.commande)) commandes.add(nue.commande);
+      continue;
+    }
     for (const [, c] of cellule.matchAll(/`([^`]+)`/g)) {
       const commande = c.trim();
       if (commande && !raisonRefus(commande)) commandes.add(commande);
@@ -165,4 +183,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { attendues, manquantes, ecrire, commandesDuProjet, lignesCommandes, raisonRefus, repriseAuto };
+module.exports = { attendues, manquantes, ecrire, commandesDuProjet, lignesCommandes, celluleNue, raisonRefus, repriseAuto };
