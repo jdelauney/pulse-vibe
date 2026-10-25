@@ -69,6 +69,7 @@ const EXCEPTIONS = {
   ui: [MEMOIRE],
   status: ["references/cycle.md"],
   deploy: ["templates/ci-verifications.yml.template"],
+  annuler: [GIT], // pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
 };
 
 // Ce que « pulse-aidd contexte <commande> » affiche aujourd'hui, lu dans les lignes « afficher » de bin/pulse-aidd.
