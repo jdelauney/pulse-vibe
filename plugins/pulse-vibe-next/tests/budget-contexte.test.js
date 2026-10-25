@@ -104,7 +104,7 @@ const PLAFONDS_COMMANDE_AVEC_PACK = {
   deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
   express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 52500, // mesure 49 923 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
-  perf: 56500, // mesure 53 788 (pulse 0.50 : seo, perf, ui et rediger chargent les consignes pour écrire du code à la place de la fiche et de l'architecture) ; avant, mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
+  perf: 54000, // mesure 51 131 (phase 8 : clé Google dans perf/cle.md, règles de la commande résumées) ; avant, mesure 53 788 (pulse 0.50 : seo, perf, ui et rediger chargent les consignes pour écrire du code à la place de la fiche et de l'architecture) ; avant, mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
   plan: 83500, // mesure 79 197 (pulse 0.50 : le pack de plan sans la fiche du code) ; avant, mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
   rediger: 27000, // mesure 25 253 (phase 8 : modèle du texte de page laissé au redacteur, qualité chargée pour intégrer) ; avant, mesure 25 615 (pulse 0.50 : les consignes pour écrire du code en plus, 350 caractères ; plafond relevé avec la mesure) ; avant, mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
   refine: 57500, // mesure 54 577 (pulse 0.50 : le pack de refine sans la fiche ni l'architecture) ; avant, mesure 81 487 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
@@ -192,7 +192,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 30 759)
   "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 37 026)
   "memory --sans-communes": 18500, // mesure 17 559
-  "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "perf --sans-communes": 39500, // mesure 37 399 (phase 8 : clé Google dans perf/cle.md, règles résumées ; avant, 40 050) : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "plan --sans-communes": 62500, // mesure 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "pr --sans-communes": 18000, // mesure 16 931
   "pr --sans-noyau": 22000, // mesure 20 495

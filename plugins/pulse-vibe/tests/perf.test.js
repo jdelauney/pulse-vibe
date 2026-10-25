@@ -274,10 +274,11 @@ test("comparer (commande) : mesures réelles, verdicts lisibles", async () => {
 
 // ------------------------------------------------------------------ PageSpeed Insights (serveur de test)
 
-test("mesurer sans clé avec --source psi : code 2 et la marche à suivre", async () => {
+test("mesurer sans clé avec --source psi : code 2 et la marche à suivre (perf/cle.md)", async () => {
   const r = await lancer(["mesurer", "https://exemple.fr/", "--source", "psi"]);
   assert.strictEqual(r.code, 2);
   assert.match(r.sortie, /PULSE_PSI_CLE/);
+  assert.match(r.sortie, /pulse-aidd reference perf\/cle\.md/, "la procédure de la clé");
   assert.match(r.sortie, /--source local/);
 });
 
