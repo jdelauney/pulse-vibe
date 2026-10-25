@@ -143,6 +143,12 @@ function intransportables(racine, arbre, fichiers) {
     if (!transportes.has(e.chemin)) raisons.set(e.chemin, "préparé pour un enregistrement, hors des fichiers mis de côté");
     else if (!/^[AM] $/.test(e.xy)) raisons.set(e.chemin, "suppression ou renommage préparé, ou fichier changé depuis sa préparation");
   }
+  // Un sous-module préparé (mode 160000) : son dépôt imbriqué ne se met pas de côté avec la tâche.
+  const index = git(racine, ["ls-files", "-s", "-z", "--", ...fichiers]);
+  for (const entree of index.sortie.split("\0").filter(Boolean)) {
+    const [infos, chemin] = entree.split("\t");
+    if (infos.startsWith("160000 ") && !raisons.has(chemin)) raisons.set(chemin, "sous-module");
+  }
   // `:(top)` : chaque chemin lu tel quel, même s'il commence par « : » ; check-ignore répond 0 (certains ignorés) ou 1 (aucun).
   const c = git(racine, ["check-ignore", "--no-index", "-z", "--stdin"], fichiers.map((f) => `:(top)${f}\0`).join(""));
   const ignores = c.code === 0 || c.code === 1 ? c.sortie.split("\0").filter(Boolean).map((f) => f.replace(/^:\(top\)/, "")) : fichiers;

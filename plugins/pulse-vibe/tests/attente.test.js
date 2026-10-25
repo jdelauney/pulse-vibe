@@ -713,3 +713,18 @@ test("mettre-de-cote : check-ignore en échec (chemin derrière un lien symboliq
   assert.strictEqual(git(d, "stash", "list").stdout, "");
   nettoyer(d);
 });
+
+test("mettre-de-cote : un sous-module préparé fait refuser d'avance, rien ne change", () => {
+  const source = depot();
+  const d = depot();
+  const r0 = git(d, "-c", "protocol.file.allow=always", "submodule", "add", "-q", source.split(path.sep).join("/"), "sub");
+  assert.strictEqual(r0.status, 0, r0.stderr);
+  const avant = statut(d);
+  const r = lancer(d, "mettre-de-cote", "T4", "--", "sub", ".gitmodules");
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.ok(lignes(r, "refuse").some((l) => /^sub \(sous-module\)$/.test(l)), r.stdout);
+  assert.strictEqual(statut(d), avant);
+  assert.strictEqual(git(d, "stash", "list").stdout, "");
+  nettoyer(d);
+  nettoyer(source);
+});
