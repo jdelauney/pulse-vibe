@@ -43,14 +43,14 @@ Fichiers de cette commande : [assets/pull-request.md](assets/pull-request.md).
 
 ### A. Créer la branche de travail (`branche [<US-XXX>]`)
 
-À faire **avant** de coder, typiquement avant `/pulse:implement <US-XXX>`.
+À faire **avant** de coder, typiquement avant `/pulse:spirc <US-XXX>`.
 
 1. Modifications non enregistrées (`git status --short`) : proposer de taper d'abord `/pulse:commit`, sauf si la personne veut les emporter sur la nouvelle branche (elles suivent automatiquement).
 2. **Nom** : à partir du plan désigné (ou de la spec, ou de la demande de la personne ; argument absent : lister les plans de `aidd_docs/tasks/` et demander, règle commune « Argument absent »), selon Conventions Git § 5 : `feat/us-xxx-<nom>` par défaut (l'identifiant de l'US et son nom, en minuscules), `fix/…` pour une correction. Le faire valider (AskUserQuestion, le nom proposé avec « (Recommandé) », « Autre nom »).
 3. Partir de la branche principale à jour (Claude Code va vous demander l'accord pour `git pull` : c'est ce qui récupère la dernière version du dépôt distant) : `git switch <principale>`, `git pull`, puis `git switch -c <nom>`. Si la branche existe déjà : proposer d'y revenir (`git switch <nom>`) plutôt que d'en créer une autre.
 4. Expliquer : « Vous êtes maintenant sur `<nom>`. Vos commits y seront rangés ; le site en ligne change seulement quand sa proposition est acceptée sur le site du dépôt. »
 
-Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travail est prêt.
+Prochaine étape : `/pulse:spirc <US-XXX>`, puis `/pulse:pr` quand le travail est prêt.
 
 ### B. Ouvrir la demande de fusion
 
@@ -94,7 +94,7 @@ Prochaine étape : `/pulse:implement <US-XXX>`, puis `/pulse:pr` quand le travai
 
 ### Fin
 
-Terminer avec le bloc de fin de commande. Fichiers : « aucun » (seulement Git et le dépôt distant). Prochaine étape : selon le cas, `/pulse:implement <US-XXX>` (après A), tester la prévisualisation puis accepter la proposition sur le site du dépôt (après B).
+Terminer avec le bloc de fin de commande. Fichiers : « aucun » (seulement Git et le dépôt distant). Prochaine étape : selon le cas, `/pulse:spirc <US-XXX>` (après A), tester la prévisualisation puis accepter la proposition sur le site du dépôt (après B).
 
 ## Exemples
 

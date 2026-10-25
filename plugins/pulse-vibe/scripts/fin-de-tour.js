@@ -142,19 +142,18 @@ function commandesDe(cellule) {
   return commandes;
 }
 
-/** Les contrôles automatiques de « Commandes du projet » (docs/technical.md), ou []. */
+/**
+ * Les contrôles automatiques de « Commandes du projet » (docs/technical.md), ou [] : même lecture que la preuve
+ * (lignesCommandes et celluleNue d'autorisations.js) ; une commande hors des autorisations du projet (raisonRefus,
+ * plusieurs commandes dans une cellule) n'est jamais lancée.
+ */
 function controlesRapides(racine) {
-  let texte;
-  try {
-    texte = fs.readFileSync(path.join(racine, "docs", "technical.md"), "utf8");
-  } catch (e) {
-    return [];
-  }
-  for (const ligne of texte.split(/\r?\n/)) {
-    const m = /^\s*\|\s*Contrôles automatiques[^|]*\|(.*)$/.exec(ligne);
-    if (m) return commandesDe(m[1]);
-  }
-  return [];
+  const { lignesCommandes, celluleNue, raisonRefus } = require("./autorisations");
+  const ligne = (lignesCommandes(racine) || []).find((l) => /^contr[ôo]les automatiques\b/i.test(l.libelle));
+  if (!ligne) return [];
+  const nue = celluleNue(ligne.cellule);
+  const commandes = nue ? (nue.commande && !nue.refus ? [nue.commande] : []) : commandesDe(ligne.cellule);
+  return commandes.filter((c) => !raisonRefus(c));
 }
 
 const echapper = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -286,11 +285,16 @@ function lanceur(commande, delai) {
   });
 }
 
-if (process.argv[2] === "--lancer") lanceur(process.argv[3], Number(process.argv[4]) || DELAI_S * 1000);
-else {
-  try {
-    principal();
-  } catch (e) {
-    // silencieux
+// Lu aussi par preuve.js (pulse-aidd preuve) : mêmes commandes, même contrôle qui réécrit sauté, même lanceur.
+module.exports = { commandesDe, REECRIT, DEPASSE };
+
+if (require.main === module) {
+  if (process.argv[2] === "--lancer") lanceur(process.argv[3], Number(process.argv[4]) || DELAI_S * 1000);
+  else {
+    try {
+      principal();
+    } catch (e) {
+      // silencieux
+    }
   }
 }

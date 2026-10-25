@@ -33,6 +33,9 @@ test("commandes du projet : les contrôles, jamais l'installation, le déploieme
   }
   for (const exclue of ["npm install", "npx playwright install chromium", "npm run db:migrate", "scripts/migrer.mjs"]) assert.ok(!c.includes(exclue), exclue);
   assert.deepStrictEqual(commandesDuProjet(projet({})), []);
+  // Cellule sans accents graves : la cellule est la commande ; « aucune » n'est pas une commande.
+  const nues = commandesDuProjet(projet({ "docs/technical.md": "## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Tester | npm test |\n| Construire | aucune (site statique) |\n" }));
+  assert.deepStrictEqual(nues, ["npm test"]);
 });
 
 test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans production ni configuration", () => {
@@ -40,6 +43,7 @@ test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans prod
   assert.ok(a.deny.includes("Read(./.env)"));
   assert.ok(a.allow.includes("Bash(git commit -m *)"));
   assert.ok(a.allow.includes("Bash(pulse-aidd qualite *)") && a.allow.includes("Bash(pulse-aidd reference *)"));
+  assert.ok(a.allow.includes("Bash(pulse-aidd preuve *)"), "la preuve des tests, lancée par les agents");
   assert.ok(a.allow.includes("Bash(npm test)") && a.allow.includes("Bash(npm test *)"));
   const tout = a.allow.join("\n");
   assert.doesNotMatch(tout, /git push|secrets (generer|envoyer|elaguer|redeployer)|installer-|ligne-etat|nouveau|pulse-aidd \*\)/);
@@ -125,4 +129,24 @@ test("réglage à faux : `claude --version` n'est pas lancé", () => {
   assert.ok(fs.existsSync(marque), "le faux claude est bien lancé quand le réglage n'est pas à faux");
   assert.match(lancer('{"autoContinueAtUsageLimit":false}'), /^reprise-auto: desactivee$/m);
   assert.ok(!fs.existsSync(marque), "claude --version n'est pas lancé");
+});
+
+test("cellules nues : « — » vaut « aucune » ; plusieurs commandes, $( ou accents graves : refusées avec une raison claire", () => {
+  const { celluleNue, raisonRefus } = require(SCRIPT);
+  for (const tiret of ["—", "–", "-", " — "]) assert.deepStrictEqual(celluleNue(tiret), { aucune: true }, tiret);
+  for (const plusieurs of ["npm run lint et npm run typecheck", "npm run lint, npm run typecheck", "npm run lint puis npm test", "npm run lint && npm run typecheck", "npm run lint ; npm test"]) {
+    const nue = celluleNue(` ${plusieurs} `);
+    assert.strictEqual(nue.commande, plusieurs);
+    assert.match(nue.refus || "", /une commande par cellule, entre accents graves/, plusieurs);
+  }
+  assert.strictEqual(celluleNue('npx eslint "src, tests"').refus, undefined, "une virgule entre guillemets reste une seule commande");
+  assert.strictEqual(celluleNue("npx vitest --reporter=default,junit").refus, undefined, "virgule sans espace : une seule commande");
+  for (const substitution of ["npm test $(whoami)", "npm test `whoami`", "npm test\nwhoami"]) assert.match(raisonRefus(substitution) || "", /substitution|une seule commande/, substitution);
+  const nues = commandesDuProjet(
+    projet({
+      "docs/technical.md":
+        "## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Lancer en local | — |\n| Tester | npm test $(id) |\n| Contrôles automatiques | npm run lint et npm run typecheck |\n| Construire | npm run build |\n",
+    }),
+  );
+  assert.deepStrictEqual(nues, ["npm run build"], "ni « — », ni substitution, ni plusieurs commandes dans une cellule");
 });

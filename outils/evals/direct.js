@@ -15,13 +15,22 @@ const os = require("os");
 const path = require("path");
 const { spawnSync } = require("child_process");
 const { nomTrace } = require("./mesurer");
+const { evaluer } = require("../../plugins/pulse-vibe/scripts/garde-commandes");
 
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
 const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
 
-/** L'environnement des essais : sous-agents au premier plan, sinon une session claude -p se termine avant leur réponse. */
-function envEval(env) {
-  return { ...env, CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1" };
+/** L'environnement des essais : sous-agents au premier plan, sinon une session claude -p se termine avant leur réponse ;
+ * PATH : les bin/ des plugins essayés en tête, sans les plugins pulseia installés sur le poste (sous WSL, le PATH de Windows
+ * apporte la version installée, qui passerait avant celle du dépôt). */
+function envEval(env, bins = []) {
+  const garde = (env.PATH || "").split(path.delimiter).filter((d) => d && !/[\/]plugins[\/]cache[\/]pulseia[\/]/.test(d));
+  return { ...env, CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: "1", PATH: [...bins, ...garde].join(path.delimiter) };
+}
+
+/** Les bin/ des plugins du dépôt essayés (le pack avec PACK=next). */
+function binsDepot(depot, env) {
+  return [path.join(depot, "plugins", "pulse-vibe", "bin"), ...(env.PACK === "next" ? [path.join(depot, "plugins", "pulse-vibe-next", "bin")] : [])];
 }
 
 /** Une valeur YAML simple : nombre, texte entre apostrophes ou guillemets, liste [a, b], table { k: v }. */
@@ -104,12 +113,18 @@ function lireTrace(fichier) {
     for (const bloc of blocs) {
       if (bloc.type !== "tool_use" || vus.has(bloc.id)) continue;
       vus.add(bloc.id);
-      const appel = { outil: bloc.name, entree: JSON.stringify(bloc.input || {}), refuse: false };
+      const appel = { outil: bloc.name, entree: JSON.stringify(commandeLancee(bloc.name, bloc.input || {})), refuse: false };
       appels.push(appel);
       parId.set(bloc.id, appel);
     }
   }
   return { appels, reponse };
+}
+
+/** L'entrée réellement lancée : une commande que le garde-fou réécrit (sortie de règles coupée par un tube) se lance tube retiré. */
+function commandeLancee(outil, entree) {
+  const d = evaluer({ tool_name: outil, tool_input: entree });
+  return d && d.decision === "allow" && d.commande ? { ...entree, command: d.commande } : entree;
 }
 
 const correspond = (appel, { tool, input_match: motif }) => appel.outil === tool && (!motif || new RegExp(motif).test(appel.entree));
@@ -123,8 +138,10 @@ function noter(fichier, verifications, dossierProjet = null) {
     if (v.type === "tool_used") reussi = appels.some((a) => correspond(a, v));
     else if (v.type === "tool_not_used") reussi = !appels.some((a) => correspond(a, v));
     else if (v.type === "tool_order") {
+      // strict: true : aucun appel « after » avant le premier « before » (« avant le premier fichier écrit »).
       const avant = appels.findIndex((a) => correspond(a, v.before));
-      reussi = avant >= 0 && appels.some((a, i) => i > avant && correspond(a, v.after));
+      const apres = appels.findIndex((a) => correspond(a, v.after));
+      reussi = avant >= 0 && (String(v.strict) === "true" ? apres > avant : appels.some((a, i) => i > avant && correspond(a, v.after)));
     } else if (v.type === "regex") reussi = new RegExp(v.pattern, v.flags || "").test(reponse);
     else if (v.type === "file_exists") reussi = Boolean(dossierProjet && v.path && fs.existsSync(path.join(dossierProjet, v.path)));
     return { nom: v.nom, type: v.type, reussi };
@@ -190,7 +207,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
     for (let n = 1; n <= essaisParCas; n++) {
       const projet = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-direct-${nom}-`));
       if (cas.preparation) {
-        const p = spawnSync("bash", [cas.preparation], { cwd: projet, encoding: "utf8" });
+        const p = spawnSync("bash", [cas.preparation], { cwd: projet, encoding: "utf8", env: envEval(env, binsDepot(depot, env)) });
         if (p.status !== 0) {
           console.error(`${nom} : préparation en échec\n${(p.stderr || "").slice(-800)}`);
           continue;
@@ -199,7 +216,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
       const trace = path.join(sortie, `${nom}-${n}.jsonl`);
       const debut = Date.now();
       const r = spawnSync("claude", argumentsDirect(cas, depot, env), {
-        cwd: projet, env: envEval(env), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
+        cwd: projet, env: envEval(env, binsDepot(depot, env)), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
       });
       fs.writeFileSync(trace, r.stdout || "");
       const duree = Math.round((Date.now() - debut) / 1000);
@@ -218,4 +235,4 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
   return 0;
 }
 
-module.exports = { OUTILS_ACCORDES, OUTILS_PACK, envEval, valeur, entete, lireCas, lireTrace, noter, argumentsDirect, ecrireRapport, choisirCas, lancer };
+module.exports = { OUTILS_ACCORDES, OUTILS_PACK, envEval, binsDepot, valeur, entete, lireCas, lireTrace, noter, argumentsDirect, ecrireRapport, choisirCas, lancer };

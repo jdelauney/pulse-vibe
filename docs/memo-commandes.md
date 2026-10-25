@@ -32,12 +32,13 @@
 
 | Commande | Ce qu'elle fait |
 |---|---|
-| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : tout le plan, chaque tâche réalisée, relue, corrigée puis enregistrée avant la suivante) |
+| `/pulse:implement US-001 T3` | Réalise **une** tâche et vous explique le code, en coulisse ou devant vous : on vous demande (sans `T3` : Pulse propose de taper `/pulse:spirc`, qui enchaîne tout le plan) |
 | `/pulse:review` | Deux assistants indépendants relisent et essaient la tâche en marche ; **vous testez** ; on corrige |
 | `/pulse:commit` | Enregistre la version (une « photo » du projet), un sujet par photo ; `/pulse:commit push` l'envoie aussi en ligne, après votre accord |
 
 🔁 Recommencez pour chaque tâche. Ou laissez `/pulse:spirc US-001` enchaîner : des assistants réalisent, relisent et vérifient ; il s'arrête pour votre accord et c'est vous qui testez.
 Astuce : `/pulse:spirc US-001 "ajouter un filtre par date"` ajoute une demande précise au plan de l'US (ou crée une nouvelle US si c'est un nouveau besoin) et la traite de bout en bout.
+👀 Voir chaque tâche s'écrire dans la conversation : `/pulse:spirc -d US-001` (un raccourci, donné d'avance ; la relecture et la vérification restent faites par d'autres assistants).
 😴 Laisser Pulse travailler seul (`-a`, `-f`, `version`) : une question n'arrête que sa tâche ; Pulse vous les pose toutes ensemble et note ses petits choix pour que vous les relisiez. `/pulse:status` dit combien de questions vous attendent. Une notification du bureau peut vous prévenir (prévue pour le terminal, non confirmée dans l'extension VS Code).
 🚀 Toute la première version d'un coup : `/pulse:spirc version` prépare avec vous les specs et les plans de toutes les US Indispensables, puis les réalise à la suite ; à votre retour, les questions mises de côté, puis un test par US.
 Sans argument, chaque commande vous montre les specs ou les plans existants et vous demande lequel choisir.
@@ -46,7 +47,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 
 🌿 En équipe ou pour tester avant de publier : au démarrage de `/pulse:implement` ou `/pulse:spirc`, choisissez « Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt » : Pulse prépare la version parallèle et sa proposition (relisible sur le site du dépôt, souvent avec une adresse de prévisualisation). `/pulse:pr` permet aussi de le faire à la main.
 
-🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:implement US-002` ou `/pulse:spirc US-002` dans la deuxième. Pulse voit l'autre session et vous propose un **dossier à part** du projet (un worktree), sur sa propre version parallèle, puis rassemble le travail à la fin.
+🪟 Deux sessions Claude Code en même temps sur le même projet : lancez `/pulse:spirc US-002` (ou `/pulse:implement US-002 T1`) dans la deuxième. Pulse voit l'autre session et vous propose un **dossier à part** du projet (un worktree), sur sa propre version parallèle, puis rassemble le travail à la fin.
 
 ## 5. Mettre en ligne
 

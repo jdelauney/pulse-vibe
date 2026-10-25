@@ -92,9 +92,12 @@ test("contexte secrets : règles communes, saisie hors conversation, fuite, mod�
     assert.ok(r.stdout.includes(`===== ${titre}`), titre);
 });
 
-test("contexte deploy et security : saisie des secrets hors conversation", () => {
-  for (const commande of ["deploy", "security"])
-    assert.ok(lancer("contexte", commande).stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), commande);
+test("contexte deploy : saisie des secrets hors conversation ; contexte security : le modèle de docs/securite.md seul", () => {
+  assert.ok(lancer("contexte", "deploy").stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), "deploy");
+  const security = lancer("contexte", "security").stdout;
+  assert.ok(security.includes("===== Modèle : docs/securite.md ====="), "security : modèle");
+  for (const titre of ["Garder la valeur d'un secret hors de la conversation", "Checklist sécurité", "Modèle : mention de confidentialité"])
+    assert.ok(!security.includes(`===== ${titre}`), `security sans « ${titre} »`);
 });
 
 test("contexte seo, perf et search-console : leurs références, leurs modèles et le lexique", () => {
@@ -111,14 +114,11 @@ test("contexte seo, perf et search-console : leurs références, leurs modèles 
   }
 });
 
-test("contexte annuler : règles communes, conventions Git et envoi du travail", () => {
+test("contexte annuler : règles communes seules ; l'envoi du travail se lit à l'étape 6", () => {
   const r = lancer("contexte", "annuler");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of [
-    "===== Règles communes Pulse =====",
-    "===== Conventions Git =====",
-    "===== Le dépôt distant et l'envoi du travail =====",
-  ]) assert.ok(r.stdout.includes(titre), titre);
+  assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
+  for (const titre of ["Conventions Git", "Le dépôt distant et l'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -152,7 +152,7 @@ test("contexte implement et fix : règles de qualité chargées à la demande", 
   assert.ok(sansFamille.includes("Relancez avec les familles utiles"));
   assert.ok(lancer("qualite", "--tout").stdout.includes("===== Clean code ====="), "--tout garde l'ancien comportement");
   const lireSkill = (nom) => require("fs").readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
-  assert.match(lireSkill("implement"), /\*\*Mode direct\*\* : lancer `pulse-aidd qualite clean-code` puis les familles de la tâche, une commande par famille, une fois/);
+  assert.match(lireSkill("implement"), /Puis lancer `pulse-aidd agent implementer` et appliquer, dans cette conversation, ses « Règles absolues », sa « Méthode » \(règles de qualité par famille comprises\)/);
   assert.match(lireSkill("fix"), /Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour chaque famille utile des fichiers à corriger, chaque sortie lue en entier[^\n]*règle commune 12\), puis évaluer/);
   const communes = require("fs").readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.ok(!communes.includes("incluses dans `pulse-aidd contexte implement`"), "règles communes à jour");
@@ -254,13 +254,15 @@ test("tests --tout : affiche toute la méthode de tests, Gherkin compris", () =>
   ]) assert.ok(r.stdout.includes(titre), titre);
 });
 
-test("contexte implement et test : la procédure des tests automatiques", () => {
-  for (const commande of ["implement", "test"]) {
-    const r = lancer("contexte", commande);
-    assert.strictEqual(r.status, 0, r.stderr);
-    assert.ok(r.stdout.includes("===== Tests automatiques : tests d'abord ====="), commande);
-    assert.doesNotMatch(r.stdout, /commande inconnue/);
-  }
+test("contexte implement : la procédure des tests automatiques ; contexte test : sans elle ni Gherkin, chargés à la demande", () => {
+  const r = lancer("contexte", "implement");
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.includes("===== Tests automatiques ====="));
+  assert.doesNotMatch(r.stdout, /commande inconnue/);
+  const t = lancer("contexte", "test");
+  assert.strictEqual(t.status, 0, t.stderr);
+  for (const titre of ["===== Tests automatiques =====", "===== Scénarios Gherkin ====="]) assert.ok(!t.stdout.includes(titre), titre);
+  assert.ok(t.stdout.includes("===== Modèle : docs/lexique.md ====="));
 });
 
 test("contexte spec : Gherkin, sans checklist (le comment va au plan) ; contexte plan : stratégie de tests et checklist", () => {
@@ -400,10 +402,11 @@ test("contexte review : la conversation principale sans les consignes du pack, q
 
 test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'écrire du code, et les règles communes le disent", () => {
   const lireSkill = (nom) => fsP.readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
-  assert.match(lireSkill("spirc"), /sans agent : `pulse-aidd pile contexte implement` avant d'écrire du code/);
+  // spirc -d et implement devant vous : l'étape de réalisation affiche la fiche (pulse-aidd realisation etape, marqueur --devant).
+  assert.match(lireSkill("spirc"), /Avec `-d`, ou quand l'agent est indisponible \(dans les deux cas, marqueur lancé avec `--devant`\) : la sortie de `pulse-aidd realisation etape <Tn> realisation`, fiche du pack de pile comprise, se lit en entier avant le premier fichier écrit/);
+  assert.match(lireSkill("spirc"), /avec `-d`, corriger ici : `pulse-aidd pile contexte implement` s'il ne figure pas dans la conversation/);
   assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
-  assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant le premier fichier/);
-  assert.match(lireSkill("implement"), /avec un pack de pile : `pulse-aidd pile contexte implement`, lu en entier, avant la première correction/);
+  assert.match(lireSkill("implement"), /Une correction faite par cette conversation hors de cette étape commence par `pulse-aidd pile contexte implement`, lu en entier, s'il ne figure pas dans la conversation/);
   for (const agent of ["implementer", "fixer"]) assert.match(fsP.readFileSync(path.join(RACINE, "agents", agent + ".md"), "utf8"), /pack n'est pas installé, le signaler dans « À signaler »/);
   const communes = fsP.readFileSync(path.join(RACINE, "references", "regles-communes.md"), "utf8");
   assert.match(communes, /review, spirc, implement, auto-fix : les agents qui codent ou relisent les chargent eux-mêmes/);
@@ -620,22 +623,23 @@ test("etape --sans-communes : une ligne rappelle que les règles communes sont d
   assert.ok(!lancer("etape", "commit").stdout.includes("déjà chargées par la commande en cours"));
 });
 
-test("contexte review : modèle de rapport, checklist chargée par le reviewer", () => {
+test("contexte review : sans le modèle de rapport (chargé à l'étape du rapport) ni la checklist (chargée par le reviewer), sous 30 000 caractères", () => {
   const r = lancer("contexte", "review");
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.ok(r.stdout.includes("===== Modèle : rapport de revue ====="));
+  assert.ok(!r.stdout.includes("===== Modèle : rapport de revue ====="));
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
   assert.ok(!r.stdout.includes("===== Checklist sécurité ====="));
   assert.ok(!lancer("contexte", "spirc").stdout.includes("===== Checklist sécurité ====="), "spirc sans checklist");
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ="), "plan la garde");
-  assert.ok(lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security la garde");
+  assert.ok(!lancer("contexte", "security").stdout.includes("===== Checklist sécurité ====="), "security sans checklist : l'auditeur la charge");
 });
 
-test("contexte spirc : règles communes, modèle de revue et lexique ; références de réalisation à la demande", () => {
+test("contexte spirc : règles communes et lexique ; modèle de revue et références de réalisation à la demande", () => {
   const r = lancer("contexte", "spirc");
   assert.strictEqual(r.status, 0, r.stderr);
-  for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : rapport de revue =====", "===== Modèle : docs/lexique.md ====="])
+  for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : docs/lexique.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
-  for (const titre of ["===== Travailler dans un worktree =====", "===== Tests automatiques : tests d'abord =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
 });
 

@@ -17,7 +17,11 @@
 #   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
+#   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
 #   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
+#   pulse-aidd preuve lancer [--portee suite | --portee tache [<fichiers de test…>]] [--construire]  lance les contrôles automatiques, les tests (toute la suite ou les fichiers donnés) et, avec --construire, la construction ; garde la preuve, liée au contenu des fichiers
+#   pulse-aidd preuve construire     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests (code 2 sans preuve à jour : rien n'est lancé)
+#   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1) ; « Tester » à « aucune » (choix du projet) satisfait --exiger suite
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
@@ -27,7 +31,8 @@
 #   pulse-aidd ligne-etat [--installer [--remplacer] | --retirer]  la ligne d'état de Claude Code (US, tâche, avancement, décision en attente) ; --installer la règle dans .claude/settings.local.json (/pulse:status ligne)
 #   pulse-aidd captures effacer <US-XXX>  retire les captures d'écran gardées comme preuves (aidd_docs/captures/<US-XXX>/), une fois l'US envoyée
 #   pulse-aidd bilan                 le bilan chiffré de chaque US (tâches, relectures, corrections, tests non concluants, constats par gravité)
-#   pulse-aidd realisation [debut|etape|questions|fin]  le marqueur « réalisation en cours » (aidd_docs/tasks/realisation.json) : debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] · etape <Tn> <étape> · questions <n> · fin ; sans action : l'état
+#   pulse-aidd realisation [debut|etape|questions|fin]  le marqueur « réalisation en cours » (aidd_docs/tasks/realisation.json) : debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] [--devant] · etape <Tn> <étape> (avec --devant, realisation affiche ensuite la fiche du pack de pile) · questions <n> · fin ; sans action : l'état
+#   pulse-aidd attente <mettre-de-cote <Tn> -- <fichier…> | remettre <Tn> | liste>  met de côté le travail d'une tâche qui attend une réponse, le remet en place ensuite, ou liste les tâches en attente (/pulse:spirc, mode autonome)
 #   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
@@ -260,7 +265,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : bloc mémoire de CLAUDE.md" "$TPL/claude-bloc-memoire.md" ;;
     spirc)
       afficher "Examiner une tâche" "$REF/examen.md"
-      afficher "Modèle : rapport de revue" "$TPL/revue.md"
+      afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
     express)
       afficher "Penser avant d'écrire" "$REF/raisonnement.md"
@@ -288,13 +293,12 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
       afficher "Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md" "$TPL/plan.md" ;;
     implement)
-      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
+      afficher "Tests automatiques" "$REF/tests-automatiques.md"
       afficher "Travailler dans un worktree" "$REF/worktree.md"
+      afficher "Déléguer à l'implementer" "$REF/deleguer.md"
       lexique ;;
     fix) lexique ;;
-    review)
-      afficher "Examiner une tâche" "$REF/examen.md"
-      afficher "Modèle : rapport de revue" "$TPL/revue.md" ;;
+    review) afficher "Examiner une tâche" "$REF/examen.md" ;;
     commit)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
@@ -302,9 +306,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     pr)
       afficher "Conventions Git" "$REF/git.md"
       afficher "Modèle : description de demande de fusion" "$SK/pr/assets/pull-request.md" ;;
-    annuler)
-      afficher "Conventions Git" "$REF/git.md"
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md" ;;
+    annuler) ;; # ni conventions Git ni dépôt distant : les gestes sont dans pulse-aidd annuler, l'envoi se lit à l'étape 6
     get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
     cicd)
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
@@ -314,11 +316,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
       afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
-    security)
-      afficher "Checklist sécurité" "$REF/checklist-securite.md"
-      afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Modèle : docs/securite.md" "$SK/security/assets/securite.md"
-      afficher "Modèle : mention de confidentialité" "$TPL/confidentialite.md" ;;
+    security) afficher "Modèle : docs/securite.md" "$SK/security/assets/securite.md" ;; # la checklist : chargée par l'auditeur
     secrets)
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
       afficher "Réagir à une fuite de clé" "$SK/secrets/references/fuite.md"
@@ -362,10 +360,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       afficher "Modèle : docs/apprentissage.md" "$SK/learn/assets/apprentissage.md"
       lexique ;;
     explain) lexique ;;
-    test)
-      afficher "Tests automatiques : tests d'abord" "$REF/tests-automatiques.md"
-      afficher "Scénarios Gherkin" "$REF/tests/gherkin.md"
-      lexique ;;
+    test) lexique ;;
     guide)
       afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
       afficher "Le cycle Pulse" "$REF/cycle.md" ;;
@@ -416,11 +411,25 @@ case "$1" in
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
   realisation)
-    shift; exec node "$RACINE/scripts/realisation.js" "$@" ;;
+    shift
+    node "$RACINE/scripts/realisation.js" "$@"; code=$?
+    # Devant vous (marqueur lancé avec --devant) : l'étape realisation affiche aussitôt le contexte implement du pack déclaré
+    # (sa fiche), ou le bloc « non installé » : la conversation le lit avant le premier fichier écrit. Les tests, eux,
+    # s'écrivent par le test-writer (ou en suivant ses consignes), qui charge lui-même le contexte des tests du pack.
+    if [ "$code" -eq 0 ] && [ "${1:-}" = etape ] && [ -n "${2:-}" ] && [ "${3:-}" = realisation ] && [ -n "$(pack_declare)" ]; then
+      if node "$RACINE/scripts/realisation.js" 2>/dev/null | grep -qx 'devant: true'; then contexte_pack implement; fi
+    fi
+    exit "$code" ;;
+  attente)
+    shift; exec node "$RACINE/skills/spirc/scripts/attente.js" "$@" ;;
   sessions)
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
+  annuler)
+    shift; exec node "$RACINE/skills/annuler/scripts/annuler.js" "$@" ;;
   verifier)
     exec node "$TPL/verifier.js" ;;
+  preuve)
+    shift; exec node "$RACINE/scripts/preuve.js" "$@" ;;
   scenarios)
     exec node "$TPL/verifier.js" --scenarios ;;
   autorisations)

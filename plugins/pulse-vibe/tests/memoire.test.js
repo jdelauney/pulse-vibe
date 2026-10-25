@@ -132,6 +132,16 @@ test("hook : un travail en cours est rappelé, avec la règle « redémarrer n'e
   assert.match(r.stdout, /ne vaut pas accord/);
 });
 
+test("hook : une ancienne reprise d'implement sans tâche s'affiche avec /pulse:spirc, une reprise avec tâche reste", () => {
+  const note = (reprise) => "# Travail en cours\n\n- **Commande** : /pulse:implement\n- **Décision en attente** : votre test\n- **Pour reprendre** : `" + reprise + "`\n";
+  const bloc = `${DEBUT}\n${FIN}\n`;
+  const sans = lancer(projet({ ...BANQUE, "CLAUDE.md": bloc, [EN_COURS]: note("/pulse:implement -d US-002") }));
+  assert.match(sans.stdout, /\*\*Pour reprendre\*\* : `\/pulse:spirc -d US-002`/);
+  assert.doesNotMatch(sans.stdout, /pulse:implement -d/);
+  const avec = lancer(projet({ ...BANQUE, "CLAUDE.md": bloc, [EN_COURS]: note("/pulse:implement US-002 T3") }));
+  assert.match(avec.stdout, /\*\*Pour reprendre\*\* : `\/pulse:implement US-002 T3`/);
+});
+
 test("hook : le travail en cours est rappelé même sans mémoire projet", () => {
   const d = projet({ [EN_COURS]: TRAVAIL });
   const r = lancer(d);

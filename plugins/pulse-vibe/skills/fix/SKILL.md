@@ -2,7 +2,7 @@
 description: Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter
 argument-hint: "<message d'erreur ou description du problème> [fichier]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:fix – Corriger une erreur
@@ -23,9 +23,7 @@ Problème signalé : `$ARGUMENTS`
 
 ## Rôle
 
-La conversation principale comprend le problème, trouve la cause, choisit la correction et la fait prouver.
-- **`pulse:fixer`** : applique une correction simple (5 fichiers au plus, cause claire) à partir de l'erreur, de la ligne, de la cause et de la solution retenue pour chaque fichier ; s'il est indisponible, la conversation principale corrige en suivant ses consignes.
-- Une correction complexe se fait dans la conversation principale.
+La conversation principale comprend le problème, trouve la cause et choisit la correction avec la personne ; la correction elle-même est confiée à `pulse:fixer` (outil Agent, `model: "sonnet"`), avec le message de sa section « Correction de comportement ». Agent indisponible : `pulse-aidd agent fixer` et appliquer cette section dans la conversation. La preuve (contrôles relancés, action refaite par la personne) reste dans cette conversation.
 
 ## Processus
 
@@ -51,19 +49,11 @@ Repères fréquents :
 
 | Symptôme | Cause habituelle |
 |---|---|
-| Élément introuvable (« null », « undefined », « not found » en manipulant un élément de la page) | mauvais sélecteur ou identifiant, ou code exécuté avant que l'élément existe (ordre de chargement) |
 | Module, import ou fichier introuvable | chemin ou nom mal écrit, élément non exporté, dépendance non installée (commande « installer » de « Commandes du projet »), ou page ouverte directement depuis le disque au lieu de la commande « lancer en local » |
-| Erreur de syntaxe (« Unexpected token », « SyntaxError »…) | parenthèse, accolade, guillemet ou virgule manquant : le contrôle automatique donne la ligne |
-| « X n'est pas défini » / « X n'est pas une fonction » | nom mal écrit, élément non exporté ou non importé, portée d'une variable |
-| Un appel réseau reçoit une réponse inattendue (une page HTML au lieu de données) | mauvaise adresse, ou erreur 404/500 côté serveur : lire la réponse réelle et le journal du serveur |
 | Accès refusé par la base ou le serveur à une action légitime | règle de contrôle d'accès manquante ou trop stricte pour cette action (« Données et contrôle d'accès ») : corriger la règle, sans l'ouvrir à tous |
 | Liste vide alors que les données existent | règle de contrôle d'accès en lecture absente pour cet utilisateur, ou filtre erroné |
-| `401` / `403` | connexion absente ou expirée, ou rôle insuffisant |
-| Données perdues au rechargement | données jamais enregistrées (seulement gardées en mémoire), ou lecture d'une valeur absente non traitée |
 | Fonctionne en local, pas en ligne | variable d'environnement non saisie chez l'hébergeur (« Secrets et variables d'environnement »), fichier non publié ou hors du dossier publié (« Organisation des fichiers »), commande « construire » qui échoue |
 | Erreur de type (types incompatibles) | corriger la donnée à la source plutôt que forcer le type |
-| Valeur possiblement absente | cas « absent » non traité : vérification préalable ou valeur par défaut |
-| Rendu différent entre serveur et navigateur | valeur qui change d'un rendu à l'autre (date, nombre aléatoire, élément propre au navigateur) |
 
 ### 3. Choisir la correction
 
@@ -73,8 +63,8 @@ Si la correction **change le comportement attendu** (une règle métier, un écr
 
 ### 4. Corriger
 
-- **Simple** (5 fichiers au plus, cause claire) : déléguer à l'agent **`pulse:fixer`** avec, par fichier : l'erreur, la ligne, la cause et la solution retenue. S'il est indisponible, corriger soi-même en suivant ses consignes.
-- **Complexe** (plusieurs couches, contexte nécessaire) : corriger soi-même, avec des changements minimes, dans le style du code existant.
+- **Confier la correction à `pulse:fixer`** (outil Agent, `model: "sonnet"`) quand elle tient en 5 fichiers au plus. Le message donne : l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers, les familles de qualité de l'étape 3 et la commande qui prouve la correction (un contrôle de « Commandes du projet », ou le parcours à refaire). Plus de 5 fichiers : une demande par groupe de 5 au plus, chaque fichier à un seul groupe ; chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin. Agent indisponible : `pulse-aidd agent fixer`, puis appliquer sa section « Correction de comportement » dans cette conversation.
+- Relire son rapport et ses changements (`git diff -- <fichiers>`) : ils s'en tiennent à la solution retenue. S'il écrit « Une autre solution paraît nécessaire », ou signale une autre solution, revenir à l'étape 3 avec la personne.
 - Une action manuelle est nécessaire (appliquer une règle d'accès dans la console de la base ou du fournisseur, saisir une variable chez l'hébergeur) : guider la personne pas à pas.
 
 ### 5. Prouver

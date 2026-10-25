@@ -2,7 +2,7 @@
 description: Faire passer au vert tous les contrôles automatiques du code (syntaxe, règles d'écriture, types, formatage), en confiant les corrections à des agents en parallèle
 argument-hint: "[--detail]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Read Glob Grep Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd reference *) Bash(pulse-aidd qualite *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Bash(git status *) Bash(git diff *) Read Glob Grep Edit(aidd_docs/tasks/**)
 ---
 
 # /pulse:auto-fix – Corriger les erreurs automatiquement détectables
@@ -67,8 +67,6 @@ Revérification : <commande de « Commandes du projet », limitée à ces fichie
 <chemin/fichier2>:
 - [<outil>/<code>] <message exact> (ligne 2)
 ```
-
-Rappeler dans chaque message que chaque correction préserve la sécurité et les contrôles ; restent interdites les « corrections » qui les affaiblissent : désactiver une règle du lint ou un contrôle, ignorer ou contourner un avertissement de type, ouvrir l'accès à tous, déplacer une clé côté client, supprimer le code qui pose problème.
 
 **Confier chaque correction aux agents** : tout passe par eux. Si l'agent `pulse:fixer` est indisponible, corriger en suivant **strictement** ses consignes (`pulse-aidd agent fixer`), et le signaler. Le pack de pile est chargé par l'agent (sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code).
 
