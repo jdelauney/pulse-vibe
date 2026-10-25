@@ -7,10 +7,12 @@
 //
 // Sortie en lignes « clé: valeur ». Codes : 0 fait · 1 usage ou argument invalide · 2 refus préalable (rien n'a changé) ·
 // 3 échec Git (l'entrée mise de côté est gardée ; après une remise en conflit, l'arbre est ramené à l'état d'avant). Chemins refusés : avec « .. », absolus, ou avec une lettre de lecteur.
-// Git permis : stash push, stash apply, stash drop (seulement l'entrée qu'on vient d'appliquer), reset --merge (seulement juste après notre
-// propre stash apply en échec, sur un dossier vérifié propre au départ), lectures (status, stash list, stash show, ls-files, ls-tree, check-ignore, rev-parse).
-// `mettre-de-cote` refuse d'avance (code 2) dès qu'un fichier est déjà préparé pour un enregistrement (`git stash push` emporte toute la préparation),
-// et pour un fichier ignoré ajouté de force. Si Git échoue quand même après avoir créé une entrée, elle est signalée (`mise-de-cote-orpheline`, code 3).
+// Git permis : stash push, stash apply --index, stash drop (seulement l'entrée qu'on vient d'appliquer), reset --merge (seulement juste après notre
+// propre stash apply en échec, sur un dossier vérifié propre au départ), lectures (status, stash list, stash show, ls-files, ls-tree, check-ignore, diff, rev-parse).
+// Un fichier préparé pour un enregistrement et inchangé depuis (« A », « M » : les tests figés de « Tests d'abord ») part avec l'entrée et revient préparé.
+// `mettre-de-cote` refuse d'avance (code 2) toute autre préparation (`git stash push` emporte toute la préparation) : un fichier préparé puis changé,
+// supprimé ou renommé, une préparation hors des fichiers mis de côté ; et un fichier ignoré ajouté de force. Si Git échoue quand même après avoir
+// créé une entrée, elle est signalée (`mise-de-cote-orpheline`, code 3).
 // `remettre` n'agit que sur un dossier propre (sinon arbre-occupe, code 2) : aucun changement suivi ou enregistré, sauf une modification non enregistrée
 // d'un document de docs/ ou aidd_docs/ hors des chemins de l'entrée (le plan coché juste avant ; `reset --merge` la garde) ; aucun chemin de l'entrée
 // ni de ses dossiers déjà occupé ; aucun fichier neuf de l'entrée suivi depuis par le projet.
@@ -26,9 +28,16 @@ const sortir = (code, lignes) => {
   process.exit(code);
 };
 
-/** Lance git à `cwd` ; les chemins reçus sont pris tels quels (jamais comme motifs ; check-ignore refuse ce réglage : ses chemins portent `:(top)`). */
+const REGLAGES_CHEMINS = ["GIT_ICASE_PATHSPECS", "GIT_GLOB_PATHSPECS", "GIT_NOGLOB_PATHSPECS", "GIT_LITERAL_PATHSPECS"];
+
+/**
+ * Lance git à `cwd` ; les chemins reçus sont pris tels quels, jamais comme motifs : les réglages des chemins venus de l'environnement sont retirés,
+ * puis GIT_LITERAL_PATHSPECS=1 posé (check-ignore refuse ce réglage : ses chemins portent `:(top)`).
+ */
 function git(cwd, args, entree) {
-  const env = { ...process.env, GIT_LITERAL_PATHSPECS: args[0] === "check-ignore" ? "0" : "1" };
+  const env = { ...process.env };
+  for (const nom of Object.keys(env)) if (REGLAGES_CHEMINS.includes(nom.toUpperCase())) delete env[nom];
+  if (args[0] !== "check-ignore") env.GIT_LITERAL_PATHSPECS = "1";
   const r = spawnSync("git", args, { cwd, encoding: "utf8", env, input: entree });
   return { ok: r.status === 0, code: r.status, sortie: r.stdout || "", erreur: (r.stderr || "").trim() || (r.error ? String(r.error.message) : "") };
 }
@@ -122,12 +131,18 @@ function mettreDeCote(racine, tn, demandes) {
 const empreintes = (racine) => git(racine, ["stash", "list", "--format=%H"]).sortie.split("\n").filter(Boolean);
 
 /**
- * Ce qui empêche `git stash push` de mettre de côté ces fichiers seuls, une ligne « chemin (raison) » par chemin : tout fichier déjà préparé pour
- * un enregistrement, même d'une autre tâche (Git emporterait toute la préparation, et la remise perdrait la version préparée), et les fichiers ignorés.
+ * Ce qui empêche `git stash push` de mettre de côté ces fichiers seuls, une ligne « chemin (raison) » par chemin. Git emporte toute la préparation
+ * dans l'entrée, et `stash apply --index` la remet entière : seuls passent les fichiers mis de côté préparés tels quels (« A », « M »). Refusés :
+ * une préparation hors de ces fichiers (autre tâche, document laissé en place), un fichier préparé puis changé, supprimé ou renommé, un fichier ignoré.
  */
 function intransportables(racine, arbre, fichiers) {
   const raisons = new Map();
-  for (const e of arbre) if (!/^[ ?]/.test(e.xy) && !raisons.has(e.chemin)) raisons.set(e.chemin, "déjà préparé pour un enregistrement");
+  const transportes = new Set(fichiers);
+  for (const e of arbre) {
+    if (/^[ ?]/.test(e.xy) || raisons.has(e.chemin)) continue; // rien de préparé
+    if (!transportes.has(e.chemin)) raisons.set(e.chemin, "préparé pour un enregistrement, hors des fichiers mis de côté");
+    else if (!/^[AM] $/.test(e.xy)) raisons.set(e.chemin, "suppression ou renommage préparé, ou fichier changé depuis sa préparation");
+  }
   // `:(top)` : chaque chemin lu tel quel, même s'il commence par « : » ; check-ignore répond 0 (certains ignorés) ou 1 (aucun).
   const c = git(racine, ["check-ignore", "--no-index", "-z", "--stdin"], fichiers.map((f) => `:(top)${f}\0`).join(""));
   const ignores = c.code === 0 || c.code === 1 ? c.sortie.split("\0").filter(Boolean).map((f) => f.replace(/^:\(top\)/, "")) : fichiers;
@@ -154,6 +169,14 @@ function occupes(racine, ref, fichiers, arbre) {
     else if (neufs.has(f) && suivis.has(f)) trouves.add(f); // fichier neuf de l'entrée, suivi depuis par le projet
   }
   return [...trouves];
+}
+
+const noms = (r) => r.sortie.split("\0").filter(Boolean);
+
+/** Les fichiers préparés de l'entrée que le projet a changés depuis : la remise de leur préparation bute sur eux, avant toute écriture. */
+function preparesChanges(racine, ref) {
+  const prepares = noms(git(racine, ["diff", "--no-color", "--name-only", "--no-renames", "-z", `${ref}^1`, `${ref}^2`]));
+  return prepares.length ? noms(git(racine, ["diff", "--no-color", "--name-only", "--no-renames", "-z", `${ref}^1`, "HEAD", "--", ...prepares])) : [];
 }
 
 /** Les dossiers d'un chemin, du plus haut au plus profond : « a/b/c.js » → a, a/b. */
@@ -185,10 +208,11 @@ function remettre(racine, tn) {
   const avant = instantane(racine);
   const existaient = new Set(fichiers.filter((f) => fs.existsSync(path.join(racine, f))));
   const dossiersNeufs = dossiersAbsents(racine, fichiers.filter((f) => !existaient.has(f)));
-  const a = git(racine, ["stash", "apply", entree.ref]);
+  const a = git(racine, ["stash", "apply", "--index", entree.ref]); // --index : les fichiers préparés reviennent préparés
   if (!a.ok) {
     const message = `message: ${[a.sortie, a.erreur].join(" ").replace(/\s+/g, " ").trim()}`;
-    const enConflit = etatArbre(racine).filter((e) => EN_CONFLIT.test(e.xy)).map((e) => `fichier-en-conflit: ${e.chemin}`);
+    const fusion = etatArbre(racine).filter((e) => EN_CONFLIT.test(e.xy)).map((e) => e.chemin);
+    const enConflit = (fusion.length ? fusion : preparesChanges(racine, entree.ref)).map((f) => `fichier-en-conflit: ${f}`);
     // Départ propre : `reset --merge` ne défait ici que cette remise ; puis les fichiers neufs qu'elle a créés, et leurs dossiers restés vides.
     git(racine, ["reset", "--merge"]);
     const reste = [];
