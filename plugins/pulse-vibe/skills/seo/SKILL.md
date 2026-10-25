@@ -92,7 +92,7 @@ Prérequis : le site est en ligne sur son domaine définitif (sinon proposer `/p
 
 Suivre `pulse-aidd reference seo/lancer.md`, une étape à la fois : la personne agit sur chaque site ; demander le résultat de chaque étape (AskUserQuestion : « Fait ✅ » / « Bloqué » / « Plus tard ») et le noter dans « Suivi » de `docs/seo.md` ; une étape déjà notée « Fait » se saute. Ajouter le prochain rendez-vous (1 mois, puis 3 mois).
 
-Au moment de Search Console et Bing (§ 2 de la référence), charger `pulse-aidd reference search-console/relier.md`. Deux gestes propres à cette commande : la balise (1b) s'enregistre et se met en ligne par `/pulse:commit push`, puis `/pulse:deploy`, que la personne tape avant de relancer `/pulse:seo lancer` ; une vérification DNS qui attend (1c) se note « Plus tard » dans « Suivi ».
+Au moment de Search Console et Bing (§ 2 de la référence), charger `pulse-aidd reference search-console/relier.md` et noter l'avancement comme il le dit (« Avancement ») ; après un compactage, recharger `pulse-aidd reference search-console/relier.md` avant de reprendre l'étape en cours. Deux gestes propres à cette commande, chacun après avoir noté l'avancement : la balise (1b) s'enregistre et se met en ligne par `/pulse:commit push`, puis `/pulse:deploy`, que la personne tape avant de relancer `/pulse:seo lancer`, qui reprend à la preuve ; une vérification DNS qui attend (1c) se note aussi « Plus tard » dans « Suivi ». Le § 2 de la référence est « Fait » une fois 1g écrit.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : le rendez-vous noté et `/pulse:seo audit` ; dans 28 jours, `/pulse:search-console lire` (premier vrai rapport, avec l'accès aux données choisi à ce moment).
 

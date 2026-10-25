@@ -2,7 +2,13 @@
 
 > Procédure unique, suivie par `/pulse:search-console relier` (étapes 1a à 1g) et par `/pulse:seo lancer` (étapes 1a à 1e puis 1g). La personne fait chaque geste avec **son** compte ; Pulse guide une étape à la fois. Les libellés des interfaces changent souvent : guider d'après ce que la personne voit à l'écran et d'après l'aide officielle (règle 15).
 
-Relire d'abord la section « Référencement » de `docs/technical.md` : chaque étape déjà notée comme faite se saute (« déjà fait le … »).
+## Avancement
+
+Chaque étape se note dès qu'elle est faite, dans la section « Référencement » de `docs/technical.md` (créée au besoin) : c'est l'avancement que lisent les deux commandes. Tant que la propriété n'est pas vérifiée, la ligne « Search Console » garde « à relier », suivi des étapes faites : « à relier – préfixe d'URL `https://…/` ajouté le … ; balise posée dans `<fichier>` le … ; vérification à faire », ou « à relier – domaine `sc-domain:…` ; TXT ajouté le … ; vérification DNS en attente ». Avec cette ligne, `/pulse:search-console` sans argument reprend la liaison, et `/pulse:status` la signale.
+
+À la reprise, relire cette section ; chaque étape notée comme faite se saute (« déjà fait le … ») :
+- balise déjà dans le code (1b) : passer directement à la preuve `pulse-aidd sonder <adresse> --texte "google-site-verification"`, puis à « Vérifier » ; une preuve qui échoue renvoie à la mise en ligne ;
+- vérification DNS en attente (1c) : reprendre à « Vérifier » ; tant qu'elle échoue, 1d, 1e et 1g attendent une propriété vérifiée.
 
 ## 1a. Choisir le type de propriété
 
@@ -67,7 +73,7 @@ Où va l'accès, combien de temps il dure, comment le retirer : « Connexion enr
 
 ## 1g. Noter
 
-Écrire ou compléter la section « Référencement » de `docs/technical.md` : propriété, méthode de vérification et emplacement de la balise, date, sitemap, Bing, mode d'accès choisi, dossier des rapports. Proposer `/pulse:memory retenir "balise de vérification Google à garder dans <fichier>"` si une balise a été posée.
+Compléter la section « Référencement » de `docs/technical.md` : la ligne « Search Console » passe de « à relier » à la propriété vérifiée, avec sa méthode de vérification et sa date ; puis l'emplacement de la balise, le sitemap, Bing, le mode d'accès choisi et le dossier des rapports. Proposer `/pulse:memory retenir "balise de vérification Google à garder dans <fichier>"` si une balise a été posée.
 
 Clore avec le calendrier : premières données dans 2 à 3 jours, premier vrai rapport dans 28 jours (`/pulse:search-console lire`).
 

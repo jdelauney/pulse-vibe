@@ -1516,6 +1516,31 @@ test("Search Console : la liaison est écrite une fois (search-console/relier.md
   assert.doesNotMatch(lancer, /Ajouter une propriété|Search generative AI/, "lancer.md renvoie à relier.md ; le choix C se règle dans /pulse:seo ia");
 });
 
+test("Search Console : une seule règle d'avancement pour relier.md, lue à la reprise par /pulse:search-console, /pulse:seo lancer et /pulse:status", () => {
+  const relier = lire(RACINE, "skills", "search-console", "references", "relier.md");
+  const avancement = relier.slice(relier.indexOf("## Avancement"), relier.indexOf("## 1a. "));
+  assert.ok(relier.indexOf("## Avancement") > -1, "relier.md : section « Avancement » avant 1a");
+  assert.match(avancement, /dès qu'elle est faite[^\n]*« Référencement » de `docs\/technical\.md`/, "chaque étape notée dès qu'elle est faite, au même endroit pour les deux commandes");
+  assert.match(avancement, /« à relier »/, "tant que la propriété n'est pas vérifiée, la ligne garde « à relier »");
+  assert.match(avancement, /balise déjà dans le code[^\n]*`pulse-aidd sonder <adresse> --texte "google-site-verification"`[^\n]*« Vérifier »/, "reprise après la mise en ligne de la balise : la preuve, puis « Vérifier »");
+  assert.match(avancement, /vérification DNS en attente[^\n]*« Vérifier »[^\n]*1d, 1e et 1g attendent/, "reprise d'une attente DNS : « Vérifier », le reste attend");
+  assert.match(relier.slice(relier.indexOf("## 1g. ")), /« à relier »/, "1g remplace « à relier » par la propriété vérifiée");
+  const sc = lire(RACINE, "skills", "search-console", "SKILL.md");
+  assert.match(sc, /Search Console notée « à relier » → `relier`/, "search-console sans argument reprend la liaison en cours");
+  const status = lire(RACINE, "skills", "status", "SKILL.md");
+  assert.match(status, /Search Console notée « à relier »[^\n]*→ `\/pulse:search-console relier`/, "status signale une liaison en cours");
+  const seo = lire(RACINE, "skills", "seo", "SKILL.md");
+  const lancer = seo.slice(seo.indexOf("### lancer\n"), seo.indexOf("\n## Exemples"));
+  assert.match(lancer, /« Avancement »/, "seo lancer note l'avancement de relier.md avant de rendre la main");
+  for (const [nom, texte] of [["search-console", sc], ["seo", lancer]])
+    assert.match(texte, /[Aa]près un compactage, recharger `pulse-aidd reference search-console\/relier\.md`/, `${nom} : relier.md rechargé après un compactage`);
+  assert.match(sc, /[Aa]près un compactage[^\n]*par son chemin, jamais par son contenu/, "search-console : la règle des fichiers d'identifiants reste dans la commande");
+  assert.doesNotMatch(sc, /\(`relier\.md`, § 1f\)/, "pointeur complet vers relier.md");
+  assert.ok(!motifsBash(path.join(RACINE, "skills", "search-console", "SKILL.md")).includes("pulse-aidd contexte *"), "search-console : seulement les contextes qu'elle charge");
+  const wiki = lire(DEPOT, "docs", "commandes", "seo.html");
+  assert.match(wiki, /<code>lancer<\/code>[^\n]*<code>\/pulse:commit push<\/code>[^\n]*<code>\/pulse:deploy<\/code>/, "wiki : l'aller-retour pour mettre la balise en ligne");
+});
+
 test("seo : contrôles IA dans les règles, politique IA chargée en mode ia, modèle d'audit et textes à l'audit, liaison par relier.md au lancement", () => {
   const regles = lire(RACINE, "skills", "seo", "references", "regles.md");
   for (let n = 1; n <= 12; n++) assert.match(regles, new RegExp(`\\bIA${n} `), `regles.md : IA${n}`);
