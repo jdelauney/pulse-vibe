@@ -640,3 +640,20 @@ test("une suite de reports en cours (étape en conflit enregistrée) : défaire 
   assert.strictEqual(r.premier("operation"), "suite de reports");
   rienNaBouge(d, avant);
 });
+
+test("raisonDe : seules les lignes d'aide de Git sont écartées (hint:, « (use \"git … »), une vraie ligne en « use \"git » reste", () => {
+  const { raisonDe } = require(SCRIPT);
+  const aide = ["hint: after resolving the conflicts, mark the corrected paths", '  (use "git add <file>..." to mark resolution)', '  (use "git revert --abort" to cancel the revert operation)'];
+  assert.strictEqual(raisonDe([...aide, "error: could not revert abc1234... T3"].join("\n"), "repli"), "error: could not revert abc1234... T3");
+  assert.strictEqual(raisonDe(aide.join("\n"), "repli"), "repli");
+  assert.strictEqual(raisonDe('use "git" introuvable dans le PATH', "repli"), 'use "git" introuvable dans le PATH');
+  assert.strictEqual(raisonDe(['  (use "git restore <file>..." to discard)', 'use "git restore" refusé par le contrôle'].join("\n"), "repli"), 'use "git restore" refusé par le contrôle');
+});
+
+test("annuler, SKILL : une autre session se met en pause avant defaire (consigne positive, avec le geste)", () => {
+  const skill = fs.readFileSync(path.join(__dirname, "..", "skills", "annuler", "SKILL.md"), "utf8");
+  assert.doesNotMatch(skill, /aucune autre session ne doit/i);
+  const consigne = skill.indexOf("avec `autres-sessions` > 0 : demander à la personne de mettre l'autre session en pause");
+  assert.ok(consigne > 0, "consigne de pause absente");
+  assert.ok(consigne < skill.indexOf("`pulse-aidd annuler defaire <"), "la pause se demande avant defaire");
+});

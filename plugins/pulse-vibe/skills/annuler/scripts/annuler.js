@@ -26,10 +26,10 @@ function terminer(code) {
   if (sortie.length) fs.writeSync(1, sortie.join("\n") + "\n");
   process.exit(code);
 }
-/** La raison d'un échec, tirée de la sortie de Git : une ligne, sans les conseils de Git (« hint: », « use "git … »), la première erreur d'abord. */
+/** La raison d'un échec, tirée de la sortie de Git : une ligne, sans les lignes d'aide de Git (« hint: », « (use "git … »), la première erreur d'abord. */
 function raisonDe(texte, repli, max = 300) {
   const lignes = String(texte || "").split(/\r?\n/).map((l) => l.trim())
-    .filter((l) => l && !/^hint:/i.test(l) && !/use "git /i.test(l));
+    .filter((l) => l && !/^hint:/i.test(l) && !/^\(use "git /i.test(l));
   const premiere = lignes.find((l) => /^(error|fatal|CONFLICT)\b/i.test(l)) || lignes[0] || repli;
   return premiere.replace(/\s+/g, " ").slice(0, max);
 }
@@ -595,21 +595,29 @@ function recuperer(args) {
 
 // ---------------------------------------------------------------- Programme
 
-const [sous, ...reste] = process.argv.slice(2);
-if (!sous || !["etat", "apercu", "defaire", "mettre-de-cote", "recuperer"].includes(sous)) {
-  usage("pulse-aidd annuler etat|apercu|defaire|mettre-de-cote|recuperer");
-}
-if (!trouverRacine() || !aDesCommits()) {
-  if (sous === "etat") { dire("depot", "non"); terminer(0); }
-  refuser("pas-de-depot");
-}
 // Relevé au départ : une suite de la personne n'est jamais abandonnée par ce script.
-const SUITE_AU_DEPART = existeGit("sequencer");
-const { positionnels, options, fichiers } = lireArguments(reste);
-switch (sous) {
-  case "etat": etat(options); break;
-  case "apercu": apercu(positionnels); break;
-  case "defaire": defaire(positionnels); break;
-  case "mettre-de-cote": metteDeCote(options, fichiers); break;
-  case "recuperer": recuperer(positionnels); break;
+let SUITE_AU_DEPART = false;
+
+function main() {
+  const [sous, ...reste] = process.argv.slice(2);
+  if (!sous || !["etat", "apercu", "defaire", "mettre-de-cote", "recuperer"].includes(sous)) {
+    usage("pulse-aidd annuler etat|apercu|defaire|mettre-de-cote|recuperer");
+  }
+  if (!trouverRacine() || !aDesCommits()) {
+    if (sous === "etat") { dire("depot", "non"); terminer(0); }
+    refuser("pas-de-depot");
+  }
+  SUITE_AU_DEPART = existeGit("sequencer");
+  const { positionnels, options, fichiers } = lireArguments(reste);
+  switch (sous) {
+    case "etat": etat(options); break;
+    case "apercu": apercu(positionnels); break;
+    case "defaire": defaire(positionnels); break;
+    case "mettre-de-cote": metteDeCote(options, fichiers); break;
+    case "recuperer": recuperer(positionnels); break;
+  }
 }
+
+module.exports = { raisonDe };
+
+if (require.main === module) main();
