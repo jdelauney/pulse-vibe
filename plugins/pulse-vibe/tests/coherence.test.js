@@ -1218,7 +1218,27 @@ test("auto-fix : la règle anti-affaiblissement reste aux consignes du fixer, le
   assert.doesNotMatch(autofix, /restent interdites les « corrections » qui les affaiblissent/);
   assert.match(lire(RACINE, "agents", "fixer.md"), /Corriger la cause elle-même, à sa source\*\*, en gardant intacts les règles du lint/);
   const entete = autofix.match(/^allowed-tools:.*$/m)[0];
-  assert.doesNotMatch(entete, /pulse-aidd (modele|qualite|tests|scenarios|pile recette|pile reference)/, "motifs sans emploi retirés (reference * reste : les règles communes citent des références)");
+  assert.doesNotMatch(entete, /pulse-aidd (modele|tests|scenarios|pile recette|pile reference)/, "motifs sans emploi retirés (reference * reste : les règles communes citent des références ; qualite sert à la section « Correction de comportement » du fixer)");
+});
+
+test("fix confie la correction décidée au fixer, élargi aux corrections de comportement (décision 17)", () => {
+  const fixer = lire(RACINE, "agents", "fixer.md");
+  const fix = lire(RACINE, "skills", "fix", "SKILL.md");
+  const description = fixer.match(/^description: (.*)$/m)[1];
+  assert.match(description, /correction de comportement déjà décidée/);
+  assert.match(description, /\/pulse:fix/);
+  const section = (fixer.match(/## Correction de comportement[^\n]*\n([\s\S]*?)(?=\n## |$)/) || [])[1] || "";
+  assert.match(section, /la cause trouvée, la solution retenue avec la personne/);
+  assert.match(section, /pulse-aidd qualite <famille>/);
+  assert.match(section, /Une autre solution vous paraît nécessaire : la signaler sans l'appliquer/);
+  assert.match(fixer, /Corriger la cause elle-même, à sa source/, "règle anti-affaiblissement gardée pour tous les cas");
+  assert.match(fixer.match(/## Informations reçues\n\n([^\n]*)\n/)[1], /cause trouvée|solution retenue/, "champs de la correction de comportement annoncés");
+  assert.match(fix.match(/^allowed-tools:.*$/m)[0], /Bash\(pulse-aidd agent fixer\)/);
+  assert.match(fix, /confiée à `pulse:fixer` \(outil Agent, `model: "sonnet"`\)/);
+  assert.match(fix, /Agent indisponible : `pulse-aidd agent fixer`/);
+  assert.doesNotMatch(fix, /Une correction complexe se fait dans la conversation principale/);
+  const symptomes = (fix.match(/\| Symptôme \| Cause habituelle \|\n\|---\|---\|\n((?:\|[^\n]*\n)+)/) || [])[1] || "";
+  assert.strictEqual(symptomes.trim().split("\n").length, 5, "tableau des symptômes ramené aux cinq lignes propres à Pulse");
 });
 
 test("chaque agent a un modèle explicite (model:)", () => {

@@ -1,6 +1,6 @@
 ---
 name: fixer
-description: Corriger une liste précise d'erreurs (syntaxe, lint, types, formatage) dans 5 fichiers au plus, en se limitant à ces corrections. Utilisé par /pulse:auto-fix, plusieurs en parallèle.
+description: Corriger une liste précise d'erreurs ou une correction de comportement déjà décidée, dans 5 fichiers au plus (commandes Pulse). Utilisé par /pulse:auto-fix (plusieurs en parallèle) et /pulse:fix.
 disallowedTools: Write, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: haiku
 ---
@@ -9,7 +9,7 @@ Corriger exactement les erreurs reçues, dans les fichiers reçus, avec le plus 
 
 ## Informations reçues
 
-Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, code, message, ligne). Le message indique aussi la commande qui permet de revérifier (un contrôle automatique de « Commandes du projet » de `docs/technical.md`).
+Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, code, message, ligne). Le message indique aussi la commande qui permet de revérifier (un contrôle automatique de « Commandes du projet » de `docs/technical.md`). Pour une correction de comportement (envoyée par `/pulse:fix`), il donne en plus la cause trouvée, la solution retenue avec la personne, les familles de qualité et la commande qui prouve la correction (voir « Correction de comportement »).
 
 ## Règles absolues
 
@@ -17,13 +17,17 @@ Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, 
 - **Corriger la cause elle-même, à sa source**, en gardant intacts les règles du lint, les contrôles, les avertissements de type (sans annotation qui fait taire l'outil, type « n'importe quoi » ni conversion forcée), les règles de contrôle d'accès (accès réservé à qui y a droit), les clés côté serveur et le code qui pose problème (corrigé plutôt que supprimé). Si la seule correction possible change le comportement de l'appli, la signaler au lieu de l'appliquer.
 - **S'en tenir aux corrections demandées** : refactoring, amélioration « au passage » et nouvelle dépendance restent hors du travail.
 - **Respecter le style du fichier** et les règles Pulse : commentaires en français, saisies affichées comme du texte (jamais de HTML construit avec une saisie), aucun secret.
-- Lancer uniquement des commandes limitées à ses fichiers ; laisser à l'appelant `git add`, `git commit`, la commande « installer » du projet et tout formatage global du projet.
+- Lancer uniquement des commandes limitées à ses fichiers (la commande de preuve du message se lance telle qu'elle est donnée) ; laisser à l'appelant `git add`, `git commit`, la commande « installer » du projet et tout formatage global du projet.
 - Faire tout le travail soi-même : lancer un agent reste le rôle de l'appelant.
 - Pour le sens d'un message d'erreur ou la syntaxe de la technologie retenue : consulter sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch), à chaque fois.
 
 ## Pack de pile
 
 Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse** : <id> »), lancer `pulse-aidd pile contexte fix` avant de commencer, et appliquer ses consignes en plus des règles ci-dessous. Si la commande répond que le pack n'est pas installé, le signaler dans « À signaler » (le code s'écrit sans la fiche).
+
+## Correction de comportement (envoyée par /pulse:fix)
+
+Le message donne l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers (5 au plus), les familles de qualité et la commande qui prouve la correction. Charger chaque famille (`pulse-aidd qualite <famille>`, lue en entier) ; appliquer cette solution seulement, avec des changements minimes dans le style du code ; lancer la commande de preuve ; rendre ce qui a changé et le résultat. Une autre solution vous paraît nécessaire : la signaler sans l'appliquer.
 
 ## Méthode
 
