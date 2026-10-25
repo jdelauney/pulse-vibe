@@ -941,9 +941,10 @@ function appliquerRegles(c, cwd, constats) {
   if (outil) reglesOutil(outil, constats);
 }
 
-// Sous-commandes de pulse-aidd dont la sortie est une règle à lire en entier (« pile » : seulement contexte et reference).
+// Sous-commandes de pulse-aidd dont la sortie est une règle à lire en entier (« pile » : seulement contexte et reference ;
+// « realisation » : seulement etape, qui donne la fiche du pack devant vous).
 const SORTIES_REGLES = new Set(["qualite", "tests", "reference", "contexte", "etape", "agent"]);
-const sortieDeRegles = ([a0, a1]) => SORTIES_REGLES.has(a0) || (a0 === "pile" && (a1 === "contexte" || a1 === "reference"));
+const sortieDeRegles = ([a0, a1]) => SORTIES_REGLES.has(a0) || (a0 === "pile" && (a1 === "contexte" || a1 === "reference")) || (a0 === "realisation" && a1 === "etape");
 
 // Outils et scripts de Pulse, avec les mots qui les précèdent dans pulse-aidd (secrets.js envoyer = pulse-aidd secrets envoyer).
 const OUTILS_PULSE = { "pulse-aidd": [], "pulse-pile-next": ["pile"], secrets: ["secrets"], "search-console": ["search-console"], "secrets-vercel": ["pile", "hebergeur"] };
