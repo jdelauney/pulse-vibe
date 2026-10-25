@@ -32,6 +32,9 @@ const SCRIPTS = {
   "echec.js": `for (let i = 1; i <= 50; i++) console.log("ligne " + i); process.exit(1);`,
   "marque.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/marque", "x\\n");`,
   "reset.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/reset", "x\\n");`,
+  "e2e.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/e2e", "x\\n"); console.log("# tests 1\\n# pass 1");`,
+  "rapport.js": `require("fs").writeFileSync("rapport.xml", String(Date.now())); console.log("# tests 2\\n# pass 2");`,
+  "vide.js": `console.log("# tests 0\\n# pass 0");`,
 };
 const TECHNIQUE = {
   tester: "`node tests.js` (bout en bout : `node e2e.js`)",
@@ -186,7 +189,7 @@ test("dossier de travail à part (git worktree) : sa propre preuve", () => {
   assert.strictEqual(preuve(p, "etat").status, 0, "le dossier principal reste à jour");
 });
 
-test("commande en échec : ❌, code 1, les 30 dernières lignes ; etat garde le ❌ et ses lignes", () => {
+test("commande en échec : ❌, code 1, les 30 dernières lignes ; etat garde le ❌, ses lignes et le code 1", () => {
   const p = depot({ tester: "`node echec.js`" });
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1, r.stdout);
@@ -196,34 +199,129 @@ test("commande en échec : ❌, code 1, les 30 dernières lignes ; etat garde le
   assert.match(r.stdout, /^ligne 50$/m);
   assert.doesNotMatch(r.stdout, /^ligne 20$/m);
   const e = preuve(p, "etat");
-  assert.strictEqual(e.status, 0, "à jour : la preuve vaut pour ce contenu, même rouge");
+  assert.strictEqual(e.status, 1, "à jour mais rouge : code 1");
   assert.match(e.stdout, /^preuve: ❌ à jour/m);
   assert.match(e.stdout, /^ligne 50$/m);
 });
 
-test("commande qui réécrit (formatage) : jamais lancée ; commande qui installe ou efface : sautée et signalée", () => {
+test("commande qui réécrit (formatage) : jamais lancée ; commande qui installe ou efface : non lancée, preuve ❌ avec sa raison", () => {
   const p = depot({ controles: "`node lint.js`, `node marque.js --write`, `node marque.js format`, `npm run lint:fix` et `node reset.js`" });
   const r = preuve(p, "lancer");
-  assert.strictEqual(r.status, 0, r.stdout);
+  assert.strictEqual(r.status, 1, r.stdout);
+  assert.match(r.stdout, /^preuve: ❌ à jour · contrôles ❌ · tests 3\/3 ✅ \(suite\)/m);
   assert.ok(lance(p.traces, "lint"));
   assert.ok(!lance(p.traces, "marque"), "le formatage n'est jamais lancé");
   assert.ok(!lance(p.traces, "reset"), "une commande hors des autorisations n'est pas lancée");
-  assert.match(r.stdout, /sautée : `node reset\.js`/);
+  assert.match(r.stdout, /^❌ contrôle non lancé : `node reset\.js` installe, envoie, migre ou efface/m);
   assert.doesNotMatch(r.stdout, /marque/);
+  assert.strictEqual(preuve(p, "etat").status, 1);
 });
 
-test("sans commande « Tester » : ❌, code 1", () => {
-  const p = depot();
-  ecrire(p.d, "docs/technical.md", "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Contrôles automatiques | `node lint.js` |\n");
+test("commande qui enchaîne plusieurs commandes : non lancée, ❌ avec sa raison, code 1", () => {
+  const p = depot({ controles: "`node lint.js && node lint.js`" });
   const r = preuve(p, "lancer");
   assert.strictEqual(r.status, 1, r.stdout);
-  assert.match(r.stdout, /^preuve: ❌ /m);
-  assert.match(r.stdout, /Tester/);
+  assert.match(r.stdout, /^preuve: ❌ à jour · contrôles ❌ · /m);
+  assert.match(r.stdout, /^❌ contrôle non lancé : `node lint\.js && node lint\.js` enchaîne plusieurs commandes/m);
+  assert.ok(!lance(p.traces, "lint"));
 });
 
-test("fichiers de test refusés (.., chemin absolu, lecteur) : code 2, rien n'est lancé ; tache sans fichier : code 1", () => {
+test("« Tester » : aucune ; la ligne de bout en bout n'est jamais prise pour la suite ; --exiger suite : insuffisante", () => {
   const p = depot();
-  for (const f of ["../x.test.js", "/tmp/x.test.js", "C:/x.test.js", "src/a b.test.js"]) {
+  ecrire(
+    p.d,
+    "docs/technical.md",
+    "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n| Tester | aucune |\n| Tester de bout en bout (navigateur) | `node e2e.js` |\n| Contrôles automatiques | `node lint.js` |\n",
+  );
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · aucun test \(ligne « Tester » sans commande dans docs\/technical\.md\) · à l'instant$/m);
+  assert.ok(!lance(p.traces, "e2e"), "les tests de bout en bout ne sont pas la suite");
+  assert.strictEqual(preuve(p, "etat").status, 0);
+  const e = preuve(p, "etat", "--exiger", "suite");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /^preuve: portée insuffisante \(aucune commande « Tester »/m);
+  const tache = preuve(p, "lancer", "--portee", "tache", "src/a.test.js");
+  assert.ok(!lance(p.traces, "e2e"), "ni en portée tâche");
+  assert.match(tache.stdout, /aucun test/);
+});
+
+test("aucun test trouvé (0 test lancé) : ❌, code 1", () => {
+  const p = depot({ tester: "`node vide.js`" });
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 1, r.stdout);
+  assert.match(r.stdout, /tests 0\/0 ❌ \(suite\) \(aucun test trouvé\)/);
+});
+
+test("fichier non ignoré écrit par les tests : l'empreinte est prise après le lancement, la preuve reste à jour", () => {
+  const p = depot({ tester: "`node rapport.js`" });
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /rapport\.xml/, "le fichier écrit est signalé");
+  const e = preuve(p, "etat");
+  assert.strictEqual(e.status, 0, e.stdout);
+});
+
+test("tableau sans | final, espaces en tête : lu pareil par la preuve et par pulse-aidd autorisations", () => {
+  const p = depot();
+  ecrire(p.d, "docs/technical.md", "# Technique\n\n## Commandes du projet\n\n| Action | Commande |\n|---|---|\n  | Tester | `node tests.js`\n| Contrôles automatiques | `node lint.js`   \n");
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.ok(lance(p.traces, "tests") && lance(p.traces, "lint"));
+  const { commandesDuProjet } = require("../scripts/autorisations");
+  assert.deepStrictEqual(commandesDuProjet(p.d).sort(), ["node lint.js", "node tests.js"]);
+});
+
+test("commandes du projet changées (docs/technical.md) : périmée", () => {
+  const p = depot();
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  ecrire(p.d, "docs/technical.md", technique({ ...TECHNIQUE, tester: "`node vide.js`" }));
+  const e = preuve(p, "etat");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /périmée \(fichiers modifiés depuis : docs\/technical\.md\)/);
+});
+
+test("renommage, suppression, noms avec espace, accent ou idéogrammes : périmée et nommés", () => {
+  const p = depot();
+  ecrire(p.d, "src/mon fichier é.js", "1\n");
+  ecrire(p.d, "src/日本.js", "1\n");
+  git(p.d, "add", "--", ".");
+  git(p.d, "commit", "-q", "-m", "noms");
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  assert.strictEqual(preuve(p, "etat").status, 0, "noms particuliers : à jour");
+  git(p.d, "mv", "src/a.js", "src/c.js");
+  let e = preuve(p, "etat");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /fichiers modifiés depuis : src\/a\.js, src\/c\.js\)/);
+  git(p.d, "mv", "src/c.js", "src/a.js");
+  assert.strictEqual(preuve(p, "etat").status, 0, "renommage défait : à jour");
+  fs.unlinkSync(path.join(p.d, "src", "日本.js"));
+  e = preuve(p, "etat");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /fichiers modifiés depuis : src\/日本\.js\)/);
+  git(p.d, "checkout", "--", "src/日本.js");
+  ecrire(p.d, "src/mon fichier é.js", "2\n");
+  e = preuve(p, "etat");
+  assert.strictEqual(e.status, 1);
+  assert.match(e.stdout, /fichiers modifiés depuis : src\/mon fichier é\.js\)/);
+});
+
+test("fins de ligne CRLF avec core.autocrlf : à jour tant que le contenu ne change pas", () => {
+  const p = depot();
+  git(p.d, "config", "core.autocrlf", "true");
+  ecrire(p.d, "src/crlf.js", "a\r\nb\r\n");
+  assert.strictEqual(preuve(p, "lancer").status, 0);
+  git(p.d, "add", "--", "src/crlf.js");
+  assert.strictEqual(preuve(p, "etat").status, 0, "ajouté à l'index (en LF) : à jour");
+  git(p.d, "commit", "-q", "-m", "crlf");
+  assert.strictEqual(preuve(p, "etat").status, 0, "commité : à jour");
+  ecrire(p.d, "src/a.js", "module.exports = 1;\r\n");
+  assert.strictEqual(preuve(p, "etat").status, 0, "copie de travail passée en CRLF : à jour");
+});
+
+test("fichiers de test refusés (.., chemin absolu, lecteur, option) : code 2, rien n'est lancé ; tache sans fichier : code 1", () => {
+  const p = depot();
+  for (const f of ["../x.test.js", "/tmp/x.test.js", "C:/x.test.js", "src/a b.test.js", "-r"]) {
     const r = preuve(p, "lancer", "--portee", "tache", f);
     assert.strictEqual(r.status, 2, `${f} : ${r.stdout}`);
   }

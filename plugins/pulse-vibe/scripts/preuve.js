@@ -3,19 +3,22 @@
 // par les autres (relecture, commit, mise en ligne) : un lancement réel, valable pour un contenu précis des fichiers.
 //
 //   lancer [--portee suite | --portee tache <fichiers de test…>] [--construire]
-//     lance, lus dans « Commandes du projet » de docs/technical.md : les « Contrôles automatiques » (sauf ceux qui
-//     réécrivent les fichiers, motif REECRIT de fin-de-tour.js), « Tester » (toute la suite, ou les fichiers donnés)
-//     et « Construire » avec --construire. Seules les commandes qu'autorisations.js autorise sont lancées ; les autres
-//     sont signalées « sautée ». Code 0 si tout passe, 1 sinon, 2 si un fichier de test est refusé (rien n'est lancé).
+//     lance, lus dans « Commandes du projet » de docs/technical.md (lignesCommandes d'autorisations.js) : les
+//     « Contrôles automatiques » (sauf ceux qui réécrivent les fichiers, motif REECRIT de fin-de-tour.js), « Tester »
+//     (libellé exact : jamais « Tester de bout en bout » ; toute la suite, ou les fichiers donnés) et « Construire »
+//     avec --construire. Une commande hors des autorisations du projet (raisonRefus d'autorisations.js) n'est pas
+//     lancée : la preuve est ❌, avec la raison. « Tester » sans commande : pas de suite (la preuve le dit) ; une suite
+//     qui ne lance aucun test : ❌. Code 0 si tout passe, 1 sinon, 2 si un fichier de test est refusé (rien n'est lancé).
 //   etat [--exiger suite] [--exiger construction]
-//     « à jour » (code 0, avec la ligne de la preuve, ✅ ou ❌), « périmée (fichiers modifiés depuis : …) »,
-//     « aucune » ou « portée insuffisante » (code 1).
+//     à jour et verte : la ligne de la preuve, code 0 ; à jour et rouge (❌, avec ses lignes d'échec), « périmée
+//     (fichiers modifiés depuis : …) », « aucune » ou « portée insuffisante » : code 1.
 //
-// Empreinte : le contenu des fichiers suivis et non suivis non ignorés, hors docs/ et aidd_docs/ (blobs de
-// `git ls-files -s`, `git hash-object` des fichiers modifiés et non suivis) : un commit, un rapport ou une ligne de
-// journal ne la changent pas. Fichier : `git rev-parse --git-path pulse-preuve.json` (propre à chaque dossier de
-// travail, worktree compris ; jamais dans un commit) : date, empreinte, fichiers, portée, et pour chaque commande son
-// code de sortie, sa durée (ms) et, en échec, ses 30 dernières lignes.
+// Empreinte, prise après le lancement (un fichier écrit par les tests ne la rend pas périmée aussitôt ; il est
+// signalé) : le contenu des fichiers suivis et non suivis non ignorés, hors docs/ et aidd_docs/ mais avec
+// docs/technical.md (ses commandes), par les blobs de `git ls-files -s` et `git hash-object` des fichiers modifiés et
+// non suivis. Un commit, un rapport ou une ligne de journal ne la changent pas. Fichier : `git rev-parse --git-path
+// pulse-preuve.json` (propre à chaque dossier de travail, worktree compris ; jamais dans un commit) : date, empreinte,
+// fichiers, portée, et pour chaque commande son code de sortie, sa durée (ms) et, en échec, ses 30 dernières lignes.
 "use strict";
 
 const fs = require("fs");
@@ -24,19 +27,25 @@ const path = require("path");
 const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 const { commandesDe, REECRIT, DEPASSE } = require("./fin-de-tour");
-const { commandesDuProjet } = require("./autorisations");
+const { lignesCommandes, raisonRefus } = require("./autorisations");
 
+const VERSION = 2;
 const LANCEUR = path.join(__dirname, "fin-de-tour.js");
 const DELAI_S = 600; // par commande
 const LIGNES_ECHEC = 30;
 const CITES_MAX = 10;
 const HORS = /^(docs|aidd_docs)\//;
-const FICHIER_TEST_SUR = /^[\w@%+=,./-]+$/;
+const COMMANDES = "docs/technical.md"; // compté malgré HORS : ses commandes font la preuve
+const FICHIER_TEST_SUR = /^[\w@%+=,./][\w@%+=,./-]*$/;
 const FAMILLES = [
   { famille: "controles", libelle: /^contr[ôo]les automatiques\b/i },
-  { famille: "tests", libelle: /^tester\b/i },
+  { famille: "tests", libelle: /^tester$/i },
   { famille: "construction", libelle: /^construire\b/i },
 ];
+const ABSENTE = {
+  tests: "aucun test (ligne « Tester » sans commande dans docs/technical.md)",
+  construction: "aucune construction (ligne « Construire » sans commande dans docs/technical.md)",
+};
 const USAGE =
   "Usage : pulse-aidd preuve lancer [--portee suite | --portee tache <fichiers de test…>] [--construire]\n" +
   "        pulse-aidd preuve etat [--exiger suite] [--exiger construction]";
@@ -64,8 +73,8 @@ function etatFichiers(racine) {
     if (!HORS.test(f)) fichiers.set(f, entree.slice(0, tab).split(" ")[1]);
   }
   const aHacher = [];
-  for (const f of [...liste(git(racine, ["diff", "--name-only", "-z"])), ...liste(git(racine, ["ls-files", "-o", "--exclude-standard", "-z"]))]) {
-    if (HORS.test(f)) continue;
+  const modifies = [...liste(git(racine, ["diff", "--name-only", "-z"])), ...liste(git(racine, ["ls-files", "-o", "--exclude-standard", "-z"]))];
+  for (const f of [...modifies.filter((x) => !HORS.test(x)), COMMANDES]) {
     let st;
     try {
       st = fs.lstatSync(path.join(racine, f));
@@ -94,23 +103,14 @@ function differences(avant, apres) {
 const citer = (fichiers) =>
   fichiers.slice(0, CITES_MAX).join(", ") + (fichiers.length > CITES_MAX ? ` et ${fichiers.length - CITES_MAX} autres` : "");
 
-/** Les commandes de chaque famille dans « Commandes du projet » : { controles, tests, construction } ou null. */
+/** Les commandes de chaque famille dans « Commandes du projet » (sans celles qui réécrivent) : { controles, tests, construction } ou null. */
 function commandesParFamille(racine) {
-  let texte;
-  try {
-    texte = fs.readFileSync(path.join(racine, "docs", "technical.md"), "utf8");
-  } catch {
-    return null;
-  }
-  const morceaux = texte.split(/^## Commandes du projet\s*$/m);
-  if (morceaux.length < 2) return null;
-  const section = morceaux[1].split(/^## /m)[0];
+  const lignes = lignesCommandes(racine);
+  if (!lignes) return null;
   const resultat = { controles: [], tests: [], construction: [] };
-  for (const ligne of section.split(/\r?\n/)) {
-    const m = /^\s*\|\s*([^|]+?)\s*\|(.*)$/.exec(ligne);
-    if (!m) continue;
-    const famille = FAMILLES.find((x) => x.libelle.test(m[1]));
-    if (famille && !resultat[famille.famille].length) resultat[famille.famille] = commandesDe(m[2]);
+  for (const { libelle, cellule } of lignes) {
+    const famille = FAMILLES.find((x) => x.libelle.test(libelle));
+    if (famille && !resultat[famille.famille].length) resultat[famille.famille] = commandesDe(cellule).filter((c) => !REECRIT.test(c));
   }
   return resultat;
 }
@@ -175,23 +175,26 @@ function age(date) {
   return `il y a ${Math.floor(minutes / 1440)} jours`;
 }
 
-/** La ligne de la preuve, puis les lignes utiles de chaque échec et les commandes sautées. */
+const aucunTest = (preuve) => Boolean(preuve.tests && preuve.tests.total === 0);
+
+/** Vrai quand une famille a une commande en échec ou non lancée (ou, pour les tests, aucun test trouvé). */
+function enEchec(preuve, famille) {
+  return preuve.resultats.some((c) => c.famille === famille && c.code !== 0) || (famille === "tests" && aucunTest(preuve));
+}
+
+/** La ligne de la preuve, puis les lignes utiles de chaque échec et chaque commande non lancée, avec sa raison. */
 function resume(preuve) {
-  const de = (famille) => preuve.resultats.filter((c) => c.famille === famille);
-  const signe = (famille) => (de(famille).every((c) => c.code === 0) ? "✅" : "❌");
-  const morceaux = [];
-  morceaux.push(de("controles").length ? `contrôles ${signe("controles")}` : "aucun contrôle");
+  const signe = (famille) => (enEchec(preuve, famille) ? "❌" : "✅");
   const portee = preuve.portee === "suite" ? "(suite)" : "(tâche)";
-  if (preuve.manques.includes("tests")) morceaux.push(`tests ❌ ${portee} (aucune commande « Tester » à lancer dans docs/technical.md)`);
-  else morceaux.push(`tests${preuve.tests ? ` ${preuve.tests.passes}/${preuve.tests.total}` : ""} ${signe("tests")} ${portee}`);
-  if (preuve.construction)
-    morceaux.push(preuve.manques.includes("construction") ? "construction ❌ (aucune commande « Construire » à lancer dans docs/technical.md)" : `construction ${signe("construction")}`);
+  const morceaux = [preuve.resultats.some((c) => c.famille === "controles") ? `contrôles ${signe("controles")}` : "aucun contrôle"];
+  if (preuve.absentes.includes("tests")) morceaux.push(ABSENTE.tests);
+  else morceaux.push(`tests${preuve.tests ? ` ${preuve.tests.passes}/${preuve.tests.total}` : ""} ${signe("tests")} ${portee}${aucunTest(preuve) ? " (aucun test trouvé)" : ""}`);
+  if (preuve.construire) morceaux.push(preuve.absentes.includes("construction") ? ABSENTE.construction : `construction ${signe("construction")}`);
   const lignes = [`preuve: ${preuve.ok ? "✅" : "❌"} à jour · ${morceaux.join(" · ")} · ${age(preuve.date)}`];
   for (const c of preuve.resultats.filter((x) => x.code !== 0)) {
-    const raison = c.depasse ? `délai de ${DELAI_S} s dépassé` : `code ${c.code}, ${Math.round(c.duree / 1000)} s`;
-    lignes.push("", `❌ \`${c.commande}\` (${raison}) :`, ...c.lignes);
+    if (c.nonLance) lignes.push("", `❌ contrôle non lancé : \`${c.commande}\` ${c.nonLance}`);
+    else lignes.push("", `❌ \`${c.commande}\` (${c.depasse ? `délai de ${DELAI_S} s dépassé` : `code ${c.code}, ${Math.round(c.duree / 1000)} s`}) :`, ...c.lignes);
   }
-  for (const s of preuve.sautees) lignes.push(`sautée : \`${s}\` (hors des autorisations du projet : commande qui installe, envoie ou efface)`);
   return lignes.join("\n");
 }
 
@@ -201,55 +204,51 @@ function lancer(racine, options) {
     console.log("preuve: aucune commande (section « Commandes du projet » de docs/technical.md introuvable)");
     return 1;
   }
-  const autorisees = new Set(commandesDuProjet(racine));
-  const aLancer = [];
-  const sautees = [];
-  const manques = [];
-  for (const famille of ["controles", "tests", "construction"]) {
-    if (famille === "construction" && !options.construire) continue;
-    const commandes = familles[famille].filter((c) => !REECRIT.test(c));
-    for (const c of commandes) {
-      if (!autorisees.has(c)) sautees.push(c);
-      else aLancer.push({ famille, commande: famille === "tests" && options.portee === "tache" ? avecFichiers(c, options.fichiers) : c });
-    }
-    if (famille !== "controles" && !aLancer.some((x) => x.famille === famille)) manques.push(famille);
-  }
-
+  const retenues = ["controles", "tests", ...(options.construire ? ["construction"] : [])];
+  const absentes = retenues.filter((f) => f !== "controles" && !familles[f].length);
   const avant = etatFichiers(racine);
   const resultats = [];
   const sortiesTests = [];
-  for (const { famille, commande } of aLancer) {
-    const r = executer(racine, commande);
-    if (famille === "tests") sortiesTests.push(r.texte);
-    const resultat = { famille, commande, code: r.code, duree: r.duree };
-    if (r.depasse) resultat.depasse = true;
-    if (r.code !== 0) resultat.lignes = sansCouleurs(r.texte).replace(/\s+$/, "").split(/\r?\n/).slice(-LIGNES_ECHEC);
-    resultats.push(resultat);
+  for (const famille of retenues) {
+    for (const c of familles[famille]) {
+      const raison = raisonRefus(c);
+      if (raison) {
+        resultats.push({ famille, commande: c, code: null, nonLance: raison });
+        continue;
+      }
+      const r = executer(racine, famille === "tests" && options.portee === "tache" ? avecFichiers(c, options.fichiers) : c);
+      if (famille === "tests") sortiesTests.push(r.texte);
+      const resultat = { famille, commande: r.commande, code: r.code, duree: r.duree };
+      if (r.depasse) resultat.depasse = true;
+      if (r.code !== 0) resultat.lignes = sansCouleurs(r.texte).replace(/\s+$/, "").split(/\r?\n/).slice(-LIGNES_ECHEC);
+      resultats.push(resultat);
+    }
   }
   const comptes = sortiesTests.map(compteTests);
   const tests = comptes.length && comptes.every(Boolean) ? comptes.reduce((a, b) => ({ passes: a.passes + b.passes, total: a.total + b.total })) : null;
+  const apres = etatFichiers(racine);
   const preuve = {
-    version: 1,
+    version: VERSION,
     date: new Date().toISOString(),
-    empreinte: empreinte(avant),
+    empreinte: empreinte(apres),
     portee: options.portee,
     fichiersTest: options.portee === "tache" ? options.fichiers : [],
-    construction: options.construire,
-    ok: !manques.length && resultats.every((c) => c.code === 0),
+    construire: options.construire,
+    absentes,
     tests,
     resultats,
-    sautees,
-    manques,
-    fichiers: avant,
+    fichiers: apres,
   };
+  preuve.ok = !retenues.some((f) => enEchec(preuve, f));
   const cible = fichierPreuve(racine);
   const provisoire = `${cible}.${process.pid}.tmp`;
   fs.writeFileSync(provisoire, JSON.stringify(preuve) + "\n");
   fs.renameSync(provisoire, cible);
 
   console.log(resume(preuve));
-  const changes = differences(avant, etatFichiers(racine));
-  if (changes.length) console.log(`\nDes fichiers ont changé pendant le lancement (${citer(changes)}) : la preuve vaut pour leur contenu d'avant.`);
+  const ecrits = differences(avant, apres);
+  if (ecrits.length)
+    console.log(`\nFichiers écrits pendant le lancement : ${citer(ecrits)}. La preuve vaut pour leur contenu d'après ; s'ils sont produits par les tests, ajoutez-les à .gitignore.`);
   return preuve.ok ? 0 : 1;
 }
 
@@ -260,25 +259,29 @@ function etat(racine, exigences) {
   } catch {
     // absente ou illisible
   }
-  if (!preuve || preuve.version !== 1 || !preuve.fichiers) {
+  if (!preuve || preuve.version !== VERSION || !preuve.fichiers) {
     console.log("preuve: aucune (lancez pulse-aidd preuve lancer --portee suite)");
     return 1;
   }
-  const changes = differences(preuve.fichiers, etatFichiers(racine));
-  if (changes.length) {
-    console.log(`preuve: périmée (fichiers modifiés depuis : ${citer(changes)})`);
+  const actuels = etatFichiers(racine);
+  if (empreinte(actuels) !== preuve.empreinte) {
+    console.log(`preuve: périmée (fichiers modifiés depuis : ${citer(differences(preuve.fichiers, actuels))})`);
+    return 1;
+  }
+  if (exigences.includes("suite") && preuve.absentes.includes("tests")) {
+    console.log("preuve: portée insuffisante (aucune commande « Tester » dans docs/technical.md : pas de suite de tests ; demandée : toute la suite)");
     return 1;
   }
   if (exigences.includes("suite") && preuve.portee !== "suite") {
     console.log("preuve: portée insuffisante (tests des fichiers de la tâche seulement ; demandée : toute la suite)");
     return 1;
   }
-  if (exigences.includes("construction") && !preuve.construction) {
-    console.log("preuve: portée insuffisante (construction non lancée ; demandée : construction)");
+  if (exigences.includes("construction") && (!preuve.construire || preuve.absentes.includes("construction"))) {
+    console.log(`preuve: portée insuffisante (${preuve.construire ? "aucune commande « Construire » dans docs/technical.md" : "construction non lancée"} ; demandée : construction)`);
     return 1;
   }
   console.log(resume(preuve));
-  return 0;
+  return preuve.ok ? 0 : 1;
 }
 
 /** Les options de la ligne de commande, ou { usage } / { refus } (message). */
@@ -296,7 +299,8 @@ function lireOptions(args) {
       } else return { usage: `Option inconnue : ${reste[i]}` };
     }
     const refuse = options.fichiers.find((f) => !FICHIER_TEST_SUR.test(f) || /(^|\/)\.\.(\/|$)/.test(f) || f.startsWith("/"));
-    if (refuse !== undefined) return { refus: `fichier de test refusé : ${refuse} (donnez un chemin relatif au projet, sans « .. », sans espace ni lecteur)` };
+    if (refuse !== undefined)
+      return { refus: `fichier de test refusé : ${refuse} (donnez un chemin relatif au projet, sans « .. », sans espace, sans lecteur, sans tiret au début)` };
     return { action, options };
   }
   if (action === "etat") {
