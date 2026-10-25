@@ -25,6 +25,8 @@ const INFORMATIONS = {
   "fichiers concernés": /fichiers concernés/,
   glossaire: /mots du glossaire/,
   "conception technique": /conception technique du plan/,
+  spec: /chemin de la spec de l'US/,
+  "présentation des écrans": /pour chaque écran de la tâche, sa ligne « Présentation »/,
   "conventions de la mémoire": /conventions[^;\n]*mémoire/,
   "familles de qualité": /familles de qualité/,
   "tests essentiels": /tests essentiels/,
@@ -52,6 +54,12 @@ test("alignement : toute information de « Informations reçues » (implementer)
   // Inversement : chaque puce du message correspond à une information connue.
   const puces = message.split("\n").filter((l) => l.startsWith("- "));
   for (const puce of puces) assert.ok(Object.values(INFORMATIONS).some((m) => m.test(puce)), `puce du message sans information connue : ${puce.slice(0, 70)}`);
+});
+
+test("implementer : la Méthode lit dans la spec les écrans et les règles que la tâche réalise", () => {
+  const methode = section(lire("agents", "implementer.md"), "Méthode");
+  const etape1 = methode.slice(methode.indexOf("1. "), methode.indexOf("2. "));
+  assert.match(etape1, /dans la spec les écrans et les règles que la tâche réalise/);
 });
 
 test("la délégation s'écrit une fois : spirc et implement chargent deleguer.md, aucun des deux ne la recopie", () => {
