@@ -230,7 +230,9 @@ test("aucun plan, ancien emplacement ou plan sans tâche reconnue : message clai
     fs.writeFileSync(path.join(d, ...ancien), PLAN_US1);
     const r = lancer(d);
     assert.strictEqual(r.status, 1);
-    assert.match(r.stdout, /\/pulse:init/);
+    // Décision 6 : plus de réorganisation par /pulse:init ; chaque plan se recrée avec /pulse:plan.
+    assert.match(r.stdout, /ancien emplacement[^\n]*lit seulement aidd_docs\/tasks\/[^\n]*\/pulse:plan/);
+    assert.doesNotMatch(r.stdout, /\/pulse:init/);
   }
 
   const vide = lancer(projet({ "gerer-taches/PLAN-SPEC-US-001-vide": "# Plan\n\nRien ici.\n" }));

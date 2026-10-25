@@ -57,7 +57,7 @@ Les fichiers ci-dessous sont chargés à chaque session. Ce bloc est rempli auto
 | Commande | Rôle |
 |---|---|
 | `/pulse:status` | Où en est le projet, et la prochaine étape |
-| `/pulse:init` | Préparer le projet, puis le mettre à niveau après une mise à jour de Pulse |
+| `/pulse:init` | Préparer le projet, puis remettre ses contrôles à jour après une mise à jour de Pulse |
 | `/pulse:spirc US-XXX` | Réaliser une user story tâche par tâche : réalisation, relecture, commit |
 | `/pulse:spirc version` | Toute la première version : specs et plans préparés avec vous, puis réalisés à la suite |
 | `/pulse:commit` | Enregistrer le travail |
@@ -65,6 +65,8 @@ Les fichiers ci-dessous sont chargés à chaque session. Ce bloc est rempli auto
 | `/pulse:get-help` | Préparer une demande d'aide |
 
 Le carnet de route, tâche par tâche : [docs/guide/index.md](docs/guide/index.md) (créé avec le premier plan).
+
+- Quand la personne demande où elle en est ou quoi faire ensuite, proposez-lui de taper `/pulse:status`. Quand elle veut changer l'ordre ou le contenu d'un plan, proposez `/pulse:refine <US-XXX>`, qui garde intactes les tâches déjà faites. Les commandes `/pulse:*` se lancent quand la personne les tape.
 
 ## Contraintes
 
@@ -76,7 +78,7 @@ Le carnet de route, tâche par tâche : [docs/guide/index.md](docs/guide/index.m
 
 ### Communication
 
-Le profil ci-dessous règle le niveau des explications, et le rythme de la réalisation (« à choisir » : demandé à chaque réalisation ; « rapide », posé par `/pulse:express` ; « complet » : règles de réalisation de Pulse). Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur », « rythme complet », « demande-moi le rythme à chaque fois ») : mettez alors le bloc à jour et dites-le en une ligne.
+Le profil ci-dessous règle le niveau des explications, et le rythme de la réalisation (« à choisir » : demandé à chaque réalisation ; « rapide » : toute l'US réalisée d'abord, puis une seule fiche de test à la fin ; « complet » : un test par tâche). Il est rempli par `/pulse:init` ; la personne peut le changer en le disant simplement (« moins d'explications », « je suis développeur », « rythme complet », « demande-moi le rythme à chaque fois ») : mettez alors le bloc à jour et dites-le en une ligne.
 
 <!-- pulse_profil:debut -->
 - **Niveau** : à préciser
@@ -84,7 +86,7 @@ Le profil ci-dessous règle le niveau des explications, et le rythme de la réal
 - **Rythme** : à choisir
 <!-- pulse_profil:fin -->
 
-- Répondez en **français**, avec le **vouvoiement**, simplement. Expliquez les termes techniques selon le profil (règles communes Pulse, § 1), en vous appuyant sur le lexique [docs/lexique.md](docs/lexique.md).
+- Répondez en **français**, avec le **vouvoiement**, simplement. Expliquez les termes techniques selon le profil, en vous appuyant sur le lexique [docs/lexique.md](docs/lexique.md).
 - **Le résultat d'abord**, l'explication ensuite. Entrez dans le sujet dès la première phrase.
 - **Appuyez chaque affirmation sur une preuve** : « ça marche », « c'est corrigé » s'appuient sur une commande, sa sortie ou un fichier.
 - Pour une erreur, citez seulement la ligne décisive du journal.

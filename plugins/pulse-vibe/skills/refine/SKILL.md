@@ -2,7 +2,7 @@
 description: Ajuster le plan à partir des questions ou remarques de la personne - répondre à chaque point, modifier les tâches concernées en respectant les règles du plan, montrer ce qui change, puis faire valider
 argument-hint: "[<US-XXX>] \"vos questions ou remarques sur le plan\""
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd verifier-plan *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(git status *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte refine) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd guide) Bash(pulse-aidd verifier-plan *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd etape pr --sans-communes) Read Glob Grep Bash(git status *) Bash(git log *) Write(aidd_docs/tasks/**) Edit(aidd_docs/tasks/**) Edit(docs/prd.md) Edit(docs/user-stories.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
 
 # /pulse:refine – Ajuster le plan
@@ -34,22 +34,26 @@ Lire le plan, sa spec et son US (même dossier : `SPEC-US-XXX-<nom>.md`, `US-XXX
 |---|---|---|
 | **Question** | « Pourquoi le filtre n'est pas dans la première version ? » | répondre ; le plan reste tel quel |
 | **Ordre ou découpage** | « Je veux voir la liste avant le formulaire » | le plan |
-| **Changement de périmètre** | « Ajoutons l'export PDF à la première version » | `docs/prd.md` (MoSCoW) d'abord, puis une nouvelle US (référentiel et fichier), sa spec et son plan ; ou la priorité d'une US existante dans le référentiel |
+| **Changement de périmètre** | « Ajoutons l'export PDF à la première version » | `docs/prd.md` (MoSCoW) d'abord, avec l'accord ; puis proposer `/pulse:spec "…"` (nouvelle US et sa spec) et `/pulse:plan` ; ou la priorité d'une US existante dans le référentiel |
 | **Souci technique** | « Je ne veux pas créer de compte chez ce fournisseur » | la conception technique du plan, ou `docs/technical.md` → proposer `/pulse:tech` si la pile retenue change |
-| **Exigence manquante** | « Il faut pouvoir annuler une suppression » | une spec en brouillon : le fichier de l'US (critère d'acceptation), la spec, puis le plan ; une spec verrouillée reste telle quelle : l'exigence devient une nouvelle US (`/pulse:spec "…"`), avec sa spec et son plan ; une exigence qui relève d'une autre US va dans celle-ci |
+| **Exigence manquante** | « Il faut pouvoir annuler une suppression » | la spec du plan est verrouillée : l'exigence devient une nouvelle US, avec sa spec et son plan → proposer `/pulse:spec "…"` ; une exigence qui relève d'une autre US va dans celle-ci |
 
-Les **faits** se cherchent dans les documents et le code ; seules les **décisions** se posent à la personne. Si une remarque est ambiguë, poser une ronde de questions (AskUserQuestion, 4 au plus, réponse recommandée en premier avec « (Recommandé) »).
+Les **faits** se cherchent dans les documents et le code ; seules les **décisions** se posent à la personne. Si une remarque est ambiguë, poser une ronde de questions (règle commune 5).
 
 ### 2. Répondre et proposer
 
 Pour chaque remarque : la réponse directe, la raison (règle de découpage, priorité MoSCoW, dépendance, sécurité), et, si utile, une alternative. Pour expliquer un choix de code ou de structure, s'appuyer sur les règles de qualité (`pulse-aidd qualite clean-code`, et la famille du sujet).
 
-Appliquer les **règles du plan** (rappelées dans le modèle « plan » en fin de fichier et dans `/pulse:plan`) à toute tâche nouvelle ou modifiée : découpage vertical (visible et testable en moins de 2 minutes), 3 fichiers et 3 critères au plus, première tâche = squelette (s'il n'est pas en place), et « Mettre en ligne la première version » seulement dans le plan de la dernière US Indispensable du parcours. Un plan couvre une seule US : une tâche qui relève d'une autre US va dans le plan de celle-ci. La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2). Si les fichiers ou les dépendances des tâches changent, revérifier la ligne « En parallèle avec » (règle 9 de `/pulse:plan`) de ce plan et des plans qu'elle cite.
+Appliquer les « Règles de découpage » (chargées dans « Références de la commande ») à toute tâche nouvelle ou modifiée. Une conception technique modifiée reste fidèle à la spec ; un comportement visible en plus va dans « Ajouts proposés par Pulse ». Un plan couvre une seule US : une tâche qui relève d'une autre US va dans le plan de celle-ci.
+
+La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2).
+
+Si les fichiers ou les dépendances des tâches changent, revérifier la ligne « En parallèle avec » (règle 9 des « Règles de découpage ») de ce plan et des plans qu'elle cite.
 
 **Ce qu'on garde tel quel** :
 - une tâche `[x]` (terminée et enregistrée) : elle reste telle quelle ; un changement devient une **nouvelle tâche** ;
 - une tâche `[~]` : la modifier seulement avec l'accord explicite de la personne, en signalant le code déjà écrit ;
-- les numéros des tâches existantes : une nouvelle tâche prend le numéro qui suit le plus grand `Tn` de **tous** les plans, même si elle s'insère plus tôt dans l'ordre ;
+- les numéros des tâches existantes : une nouvelle tâche prend le numéro qui suit le plus grand `Tn` de tous les plans (règles des tâches), même si elle s'insère plus tôt dans l'ordre ;
 - le « Journal », complété d'une ligne (date, tâche « — », « plan modifié : <résumé> ») une fois les changements validés.
 
 Un plan qui dépasse 4 tâches (hors mise en place et mise en ligne) : le signaler et proposer de découper l'US en deux (`/pulse:us`).
@@ -71,7 +75,8 @@ Un plan qui dépasse 4 tâches (hors mise en place et mise en ligne) : le signal
 ### Ailleurs
 - docs/prd.md : <ligne ajoutée ou déplacée> (ou « rien »)
 - US-XXX-<nom>.md : <critère ajouté> (ou « rien »)
-- docs/user-stories.md : <US ajoutée, priorité changée> (ou « rien »)
+- docs/user-stories.md : <priorité changée> (ou « rien »)
+- Nouvelle US à écrire ensuite : `/pulse:spec "…"` (ou « aucune »)
 
 Questions restantes : <aucune ou liste>
 ```
@@ -85,7 +90,7 @@ Demander (AskUserQuestion) : « Appliquer ces changements (Recommandé) » / « 
 - Une décision durable est apparue (ex. « pas de compte utilisateur dans la première version ») : proposer de la noter dans la mémoire (`aidd_docs/memory/project.md`, section « Décisions importantes »).
 - Le guide de réalisation (`docs/guide/`) se met à jour automatiquement ; lancer `pulse-aidd guide` pour afficher la prochaine étape.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiquée par `pulse-aidd guide` (en général `/pulse:spirc <US-XXX>`, ou `/pulse:implement <US-XXX> <tâche>` pour la faire pas à pas), ou `/pulse:tech` si un choix technique est remis en cause.
+Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec "…"` si une nouvelle US a été proposée ; sinon la commande indiquée par `pulse-aidd guide` (en général `/pulse:spirc <US-XXX>`, ou `/pulse:implement <US-XXX> <tâche>` pour la faire pas à pas), ou `/pulse:tech` si un choix technique est remis en cause.
 
 ## Exemples
 
@@ -97,4 +102,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande indiqu�
 
 !`pulse-aidd contexte refine`
 
-Les modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
+Les règles de découpage du plan figurent dans ce contexte. Le plan lui-même montre le format des tâches ; lancer `pulse-aidd modele plan.md` seulement quand une section manque. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.

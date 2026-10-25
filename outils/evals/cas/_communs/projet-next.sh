@@ -51,6 +51,10 @@ Une liste de courses avec son total. Ce projet suit la **méthode Pulse** (plugi
 
 <!-- pulse_memoire:debut -->
 <!-- pulse_memoire:fin -->
+
+## Commandes
+
+- Quand la personne demande où elle en est ou quoi faire ensuite, proposez-lui de taper `/pulse:status`. Quand elle veut changer l'ordre ou le contenu d'un plan, proposez `/pulse:refine <US-XXX>`, qui garde intactes les tâches déjà faites. Les commandes `/pulse:*` se lancent quand la personne les tape.
 EOF
 
 ecrire docs/brief.md <<'EOF'

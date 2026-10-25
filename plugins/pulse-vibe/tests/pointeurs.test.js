@@ -71,6 +71,8 @@ const EXCEPTIONS = {
   deploy: ["templates/ci-verifications.yml.template"],
   // refactoring d'optimisation, tâche 5.5 : la checklist est chargée par l'auditeur (et par le repli, qui suit ses consignes) ; une clé exposée part vers secrets/fuite.md
   security: ["references/checklist-securite.md", SANS_CONVERSATION],
+  // refactoring d'optimisation, tâche 6.6 : refine n'utilisait que les règles de découpage, devenues skills/plan/references/decoupage.md (chargé)
+  refine: ["skills/plan/SKILL.md"],
   annuler: [GIT], // pulse 0.51 : ses gestes Git sont dans pulse-aidd annuler ; son § 7 ne tient plus qu'en deux lignes
 };
 

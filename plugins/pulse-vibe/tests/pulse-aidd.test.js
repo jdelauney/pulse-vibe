@@ -130,14 +130,26 @@ test("contexte get-help : règles communes et modèle de demande d'aide", () => 
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte init et guide : fichiers du projet et cycle Pulse ; status : le cycle seul", () => {
-  for (const commande of ["init", "guide", "status"]) {
+test("contexte init : la bannière seule ; guide : fichiers du projet et cycle Pulse ; status : le cycle seul", () => {
+  const init = lancer("contexte", "init");
+  assert.strictEqual(init.status, 0, init.stderr);
+  const communes = /^Règles (communes Pulse|des tâches|de relecture|de réalisation)$/; // noyau et modules
+  const titres = [...init.stdout.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]).filter((t) => !communes.test(t));
+  assert.deepStrictEqual(titres, ["Bannière"], "init : chaque référence ou modèle se charge à l'action qui le cite");
+  for (const commande of ["guide", "status"]) {
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     for (const titre of ["===== Règles communes Pulse =====", "===== Le cycle Pulse ====="]) assert.ok(r.stdout.includes(titre), `${commande} : ${titre}`);
     assert.strictEqual(r.stdout.includes("===== Les fichiers du projet ====="), commande !== "status", `${commande} : fichiers du projet`);
   }
   assert.ok(!lancer("contexte", "implement").stdout.includes("===== Les fichiers du projet ====="), "implement : à la demande");
+});
+
+test("contexte memory : les règles de la mémoire seules, chaque modèle affiché à l'action qui le cite", () => {
+  const r = lancer("contexte", "memory");
+  assert.strictEqual(r.status, 0, r.stderr);
+  const titres = [...r.stdout.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]).filter((t) => t !== "Règles communes Pulse");
+  assert.deepStrictEqual(titres, ["Règles de la mémoire projet"]);
 });
 
 test("contexte implement et fix : règles de qualité chargées à la demande", () => {
@@ -171,6 +183,14 @@ test("contexte brainstorm, prd et us : la référence « Penser avant d'écrire 
     const r = lancer("contexte", commande);
     assert.strictEqual(r.status, 0, r.stderr);
     assert.ok(r.stdout.includes("===== Penser avant d'écrire ====="), commande);
+  }
+});
+
+test("contexte us et express : les règles des user stories, écrites une fois pour us, spec et express", () => {
+  for (const commande of ["us", "express"]) {
+    const r = lancer("contexte", commande);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(r.stdout.includes("===== Les règles des user stories ====="), commande);
   }
 });
 
@@ -268,8 +288,18 @@ test("contexte implement : la procédure des tests automatiques ; contexte test 
 test("contexte spec : Gherkin, sans checklist (le comment va au plan) ; contexte plan : stratégie de tests et checklist", () => {
   assert.ok(lancer("contexte", "spec").stdout.includes("===== Scénarios Gherkin ====="));
   assert.ok(!lancer("contexte", "spec").stdout.includes("===== Checklist sécurité ====="));
+  // La présentation des écrans sert à chaque spec ; le modèle d'US, seulement à une US créée (pulse-aidd modele us.md).
+  assert.ok(lancer("contexte", "spec").stdout.includes("===== Présentation des écrans ====="));
+  assert.ok(!lancer("contexte", "spec").stdout.includes("US-XXX-<nom>.md (pour une nouvelle US)"));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Stratégie de tests ====="));
   assert.ok(lancer("contexte", "plan").stdout.includes("===== Checklist sécurité ====="));
+});
+
+test("contexte plan et refine : les règles de découpage, écrites une fois ; refine sans le SKILL de plan ni son modèle", () => {
+  for (const commande of ["plan", "refine"]) assert.ok(lancer("contexte", commande).stdout.includes("===== Règles de découpage du plan ====="), commande);
+  const refine = lancer("contexte", "refine").stdout;
+  assert.ok(!refine.includes("===== Règles du plan (/pulse:plan) ====="));
+  assert.ok(!refine.includes("===== Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md ====="));
 });
 
 test("agents test-writer et test-runner disponibles, et cités dans le message d'erreur", () => {

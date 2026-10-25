@@ -672,10 +672,24 @@ test("init et status appliquent le verdict de pulse-aidd etat, sans règles de d
   assert.doesNotMatch(skillTexte("init"), /\*\*Questions\*\* \(une ronde AskUserQuestion\) : le \*\*nom\*\*/, "nom et description : réponse libre");
 });
 
+test("décision 6 : plus de réorganisation de l'ancien format, les contrôles du projet remis à jour à la demande", () => {
+  const unix = (f) => f.split(path.sep).join("/");
+  assert.deepStrictEqual(TEXTES.filter(({ texte }) => /réorganise les documents|réorganiser \*\*en conservant|Documents à l'ancien format/.test(texte)).map(({ fichier }) => unix(fichier)), []);
+  const init = lire(RACINE, "skills", "init", "SKILL.md");
+  assert.match(init, /^#### Remettre les contrôles du projet à jour$/m);
+  assert.match(init, /`pulse-aidd reference init\/controles\.md`/);
+  assert.doesNotMatch(init.match(/^allowed-tools:.*$/m)[0], /Bash\(git mv \*\)/, "git mv servait seulement à la réorganisation");
+  assert.match(lire(RACINE, "skills", "init", "references", "controles.md"), /`CLAUDE\.md` sans la ligne des commandes à proposer \(`\/pulse:status`, `\/pulse:refine`\)/);
+  assert.match(lire(RACINE, "skills", "init", "references", "controles.md"), /section « Commandes » absente : la créer avant « Contraintes », d'après le modèle/);
+  // Le wiki cite aussi le signe le plus fréquent après une mise à jour : la ligne qui fait proposer la bonne commande.
+  const initHtml = lire(DEPOT, "docs", "commandes", "init.html");
+  assert.strictEqual((initHtml.match(/la ligne qui fait proposer la bonne commande/g) || []).length, 2, "init.html : liste et problème fréquent");
+});
+
 test("init et status ne citent que des clés et des valeurs réellement émises par etat.js", () => {
   const source = lire(RACINE, "scripts", "etat.js");
   const valeurs = [...new Set([...source.matchAll(/fondation: "([a-z]+)"/g)].map((m) => m[1]))];
-  assert.ok(valeurs.length >= 6, "valeurs de fondation lues dans etat.js");
+  assert.ok(valeurs.length >= 5, "valeurs de fondation lues dans etat.js");
   const tableau = skillTexte("init").split("| `fondation` |")[1] || "";
   for (const v of valeurs) assert.ok(tableau.includes(`| \`${v}\` |`), `init : ligne « ${v} » absente de la table des fondations`);
   const emises = new Set(["prochaine", "raison", "regle", "etapes", "mvp", "aussi"]);
@@ -720,6 +734,39 @@ test("plan : écrit « à valider », contrôlé par verifier-plan, montré, pui
   assert.match(lire(RACINE, "templates", "plan.md"), /^- \*\*Statut\*\* : à valider$/m);
 });
 
+test("découpage du plan : règles écrites une fois, chargées par plan et refine ; refine renvoie une nouvelle US à /pulse:spec", () => {
+  const decoupage = lire(RACINE, "skills", "plan", "references", "decoupage.md");
+  assert.match(decoupage, /^# Règles de découpage du plan \(`\/pulse:plan`, `\/pulse:refine`\)$/m);
+  const regles = decoupage.split("\n").filter((l) => /^\d+\. /.test(l)).map((l) => Number(l.split(".")[0]));
+  assert.deepStrictEqual(regles, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "les dix règles, règle mixte du pack comprise");
+  assert.match(decoupage, /\*\*Découpage vertical\*\*/);
+  assert.match(decoupage, /« Mise en place » de `docs\/technical\.md` l'indique « À réaliser avec la première tâche du premier plan »/);
+  assert.match(lire(RACINE, "skills", "tech", "SKILL.md"), /l'indiquer dans « Mise en place » \(« À réaliser avec la première tâche du premier plan »\)/, "tech écrit la phrase que lit le plan");
+  assert.doesNotMatch(decoupage, /dans un dossier temporaire|en préservant `CLAUDE\.md`/, "le squelette se décrit une fois, dans « Mise en place »");
+  assert.match(decoupage, /le guide lit seulement les lignes `- \[ \] \*\*Tn – …\*\*` de `## Tâches` et leurs détails/);
+  for (const commande of ["plan", "refine"]) assert.ok(contexteCharge(commande).includes("===== Règles de découpage du plan ====="), commande);
+  const plan = lire(RACINE, "skills", "plan", "SKILL.md");
+  assert.doesNotMatch(plan, /\*\*Découpage vertical\*\*/, "règles recopiées dans plan");
+  assert.match(plan, /Appliquer les « Règles de découpage » \(chargées dans « Références de la commande »\) à chaque tâche\./);
+  assert.match(plan, /Numéroter à la suite des autres plans \(règles des tâches\)\./);
+  // Option B (décision 6) : plus de branche « spec plus ancienne ».
+  assert.doesNotMatch(plan, /spec plus ancienne/i);
+  const refine = lire(RACINE, "skills", "refine", "SKILL.md");
+  assert.ok(!contexteCharge("refine").includes("# /pulse:plan – Le plan de réalisation"), "refine ne charge plus tout le SKILL de plan");
+  const ligne = (type) => refine.split("\n").find((l) => l.startsWith(`| **${type}** |`)) || "";
+  assert.match(ligne("Changement de périmètre"), /`docs\/prd\.md` \(MoSCoW\) d'abord, avec l'accord ; puis proposer `\/pulse:spec "…"`/);
+  assert.match(ligne("Exigence manquante"), /proposer `\/pulse:spec "…"`/);
+  assert.doesNotMatch(ligne("Exigence manquante"), /spec en brouillon/, "branche morte : un plan suppose une spec verrouillée");
+  assert.doesNotMatch(refine, /découpage vertical \(visible et testable en moins de 2 minutes\), 3 fichiers et 3 critères au plus/, "résumé des règles recopié");
+  assert.match(refine, /une nouvelle tâche prend le numéro qui suit le plus grand `Tn` de tous les plans \(règles des tâches\)/);
+  // Le wiki dit les écritures que refine fait sans autre demande, après « Appliquer ces changements ».
+  const refineHtml = lire(DEPOT, "docs", "commandes", "refine.html");
+  assert.doesNotMatch(refineHtml, /Seuls les fichiers des tâches s'écrivent sans demande/);
+  assert.match(refineHtml, /le plan, le PRD, la priorité des user stories et le lexique s'écrivent ensuite sans autre demande/);
+  // La phrase « Envoi » reste mot pour mot sur sa ligne (la phase 7 la fait pointer vers envoi.md à la fusion).
+  assert.ok(refine.split("\n").includes("La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2)."));
+});
+
 test("règles communes : rondes de 4 questions, réponses libres en texte, mode découverte écrit une fois", () => {
   const unix = (f) => f.split(path.sep).join("/");
   const regles = lire(RACINE, "references", "regles-communes.md");
@@ -729,6 +776,64 @@ test("règles communes : rondes de 4 questions, réponses libres en texte, mode 
   assert.doesNotMatch(regles, /`\/pulse:pr branche <US-XXX>` avant `\/pulse:implement`/);
   const definitions = TEXTES.filter(({ texte }) => /\*\*Mode découverte\*\* :/.test(texte)).map(({ fichier }) => unix(fichier));
   assert.deepStrictEqual(definitions, ["plugins/pulse-vibe/references/regles-realisation.md"]);
+});
+
+test("brainstorm et « Penser avant d'écrire » citent les règles communes 4, 5 et 10 et les règles de la mémoire au lieu de les recopier", () => {
+  const brainstorm = lire(RACINE, "skills", "brainstorm", "SKILL.md");
+  assert.match(brainstorm, /Les questions secondaires suivent la règle commune 5 ; la description de la réponse recommandée dit pourquoi\./);
+  assert.doesNotMatch(brainstorm, /2 à 4 réponses concrètes/);
+  assert.match(brainstorm, /^#### 2\. Chercher avant de demander$/m);
+  assert.doesNotMatch(brainstorm, /Les décisions appartiennent à la personne\*\* : besoin, priorités/);
+  assert.match(brainstorm, /S'en tenir à la complexité qu'elle a mentionnée/);
+  assert.match(brainstorm, /`pulse:explorer`/);
+  assert.match(brainstorm, /seulement si les 3 conditions des règles de la mémoire sont réunies/);
+  assert.doesNotMatch(brainstorm, /difficile à défaire, surprenante sans contexte/);
+  // Le test de compréhension porte le principe « la personne raisonne » : gardé mot pour mot.
+  assert.ok(brainstorm.includes("2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief."));
+  const raisonnement = lire(RACINE, "references", "raisonnement.md");
+  assert.match(raisonnement, /^# Penser avant d'écrire \(\/pulse:brainstorm, \/pulse:prd, \/pulse:us, \/pulse:express\)$/m);
+  assert.match(raisonnement, /\| AskUserQuestion selon la règle commune 5 \|/);
+});
+
+test("us : les cas limites clés posés un à un, en réponse libre ; format, INVEST, Definition of Ready et ticketing dans les règles des user stories", () => {
+  const us = lire(RACINE, "skills", "us", "SKILL.md");
+  const cles = us.split("\n").find((l) => l.startsWith("1. **Questions clés**")) || "";
+  assert.match(cles, /\(1 à 2 par groupe, « Penser avant d'écrire » § 1 à 4\)/);
+  assert.match(cles, /Chacune se pose seule, dans la conversation, en réponse libre, sous forme de scénario concret/);
+  assert.match(cles, /suivie de 2 ou 3 exemples tirés d'autres métiers ; reformuler et confronter la réponse/);
+  assert.doesNotMatch(cles, /par rondes/, "les questions clés ne passent plus par les rondes à choix");
+  assert.match(us, /\*\*Clarifier le périmètre\*\* : les questions secondaires \(ce que l'utilisateur fait, ce qu'il voit\) suivent la règle commune 5/);
+  // Les règles des US : un seul texte, chargé par us et express ; us y renvoie.
+  const regles = lire(RACINE, "skills", "us", "references", "regles-us.md");
+  assert.match(regles, /^# Les règles des user stories \(`\/pulse:us`, `\/pulse:spec`, `\/pulse:express`\)$/m);
+  for (const section of ["Format", "INVEST", "Bien rangée et US d'accès", "Definition of Ready", "Ticketing"]) assert.match(regles, new RegExp(`^## ${section}$`, "m"), section);
+  assert.match(regles, /une seule action \(une phrase sans « et » ni « ou »\), 4 critères et une règle métier au plus/);
+  assert.match(regles, /`gh issue create`/);
+  assert.doesNotMatch(us, /^\| \*\*Indépendante\*\* \|/m, "tableau INVEST recopié dans us");
+  assert.doesNotMatch(us, /`gh issue create`/, "ticketing recopié dans us");
+  assert.match(us, /selon « Ticketing » des règles des user stories/);
+  assert.doesNotMatch(us, /Cocher sa section « Prête »/, "la case « Prête » se coche selon les règles des user stories");
+  assert.match(lire(RACINE, "skills", "express", "SKILL.md"), /\(« Les règles des user stories », chargées dans « Références de la commande »\)/);
+});
+
+test("INVEST et la Definition of Ready : cités seulement par une commande qui charge ou pointe les règles des user stories", () => {
+  const cites = [];
+  for (const nom of fs.readdirSync(path.join(RACINE, "skills")).sort()) {
+    const fichier = path.join(RACINE, "skills", nom, "SKILL.md");
+    if (!fs.existsSync(fichier)) continue;
+    const texte = fs.readFileSync(fichier, "utf8");
+    if (!/\bINVEST\b|Definition of Ready/.test(texte)) continue;
+    cites.push(nom);
+    const charge = contexteCharge(nom).includes("===== Les règles des user stories =====");
+    const pointe = texte.includes("pulse-aidd reference us/regles-us.md");
+    assert.ok(charge || pointe, `${nom} cite INVEST ou la Definition of Ready sans charger ni pointer us/regles-us.md`);
+  }
+  assert.ok(cites.includes("us") && cites.includes("spec"), cites.join(","));
+  // spec crée une US (nouveau comportement, US optionnelle) : règles et modèle lancés avant de l'écrire ;
+  // la stratégie de tests, avant d'étiqueter le premier scénario.
+  const spec = lire(RACINE, "skills", "spec", "SKILL.md");
+  assert.match(spec, /avant de la rédiger, lancer `pulse-aidd reference us\/regles-us\.md` et `pulse-aidd modele us\.md`/);
+  assert.match(spec, /lancer `pulse-aidd reference tests\/strategie\.md` avant d'étiqueter le premier scénario/);
 });
 
 test("implement : questions de démarrage en clair et mode découverte", () => {
@@ -983,12 +1088,13 @@ test("commit nomme la forme `git commit -m`, annuler passe par `pulse-aidd annul
   assert.match(commit, /contrôle de sécurité à chaque tâche/);
 });
 
-test("prd, us, spec et plan lisent et écrivent leurs documents sans demande d'autorisation", () => {
+test("prd, us, spec, plan et refine lisent et écrivent leurs documents sans demande d'autorisation", () => {
   const attendus = {
     prd: ["Read", "Glob", "Grep", "Write(docs/prd.md)", "Edit(docs/prd.md)", "Write(aidd_docs/tasks/in-progress.md)", "Edit(aidd_docs/tasks/in-progress.md)"],
     us: ["Read", "Glob", "Grep", "Write(docs/user-stories.md)", "Edit(docs/user-stories.md)", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
     spec: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/user-stories.md)", "Edit(docs/prd.md)"],
     plan: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)"],
+    refine: ["Read", "Glob", "Grep", "Write(aidd_docs/tasks/**)", "Edit(aidd_docs/tasks/**)", "Edit(docs/prd.md)", "Edit(docs/user-stories.md)"],
   };
   for (const [skill, outils] of Object.entries(attendus)) {
     const ligne = (skillTexte(skill).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
@@ -1037,14 +1143,17 @@ test("tests automatiques : installer un outil de test est recommandé quand la p
   const sansTests = texte.split("\n").filter((l) => l.includes("« Sans tests automatiques (Recommandé) »"));
   assert.strictEqual(sansTests.length, 1, "un seul cas recommande de se passer de tests");
   assert.match(sansTests[0], /aucun code à tester automatiquement/);
-  assert.match(skillTexte("tech"), /sinon le lanceur de tests intégré au langage/);
+  const choix = lire(RACINE, "skills", "tech", "references", "choix-techniques.md");
+  assert.match(choix, /sinon le lanceur de tests intégré au langage/);
   assert.match(texte, /« Utiliser le lanceur de tests intégré \(Recommandé\) » \(l'outil de test fourni avec le langage, rien à installer ;/);
   assert.match(texte, /ni lanceur intégré au langage : « Installer un outil de test \(Recommandé\) »/, "repli : du code, ni outil documenté ni lanceur intégré");
   assert.match(texte, /1\. Choisir l'outil recommandé [^\n]*ou le lanceur intégré au langage \(§ 2\)/);
-  // TypeScript : mêmes conditions dans la référence et dans tech.
+  // TypeScript : mêmes conditions dans la référence des tests et dans « Choisir l'outil de test » de la démarche de tech, écrite une fois.
   const ts = "pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile";
   assert.ok(texte.includes(ts), "référence : TypeScript");
-  assert.ok(skillTexte("tech").includes(ts), "tech : TypeScript");
+  assert.ok(choix.includes(ts), "tech/choix-techniques.md : TypeScript");
+  assert.match(choix, /^## Choisir l'outil de test$/m);
+  assert.ok(!lire(RACINE, "skills", "tech", "SKILL.md").includes(ts), "tech/SKILL.md renvoie à la démarche");
 });
 
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
@@ -1053,6 +1162,13 @@ test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   assert.match(claude, /par la boucle de `\/pulse:spirc`/);
   assert.doesNotMatch(claude, /boucles de `\/pulse:implement`/);
   assert.doesNotMatch(claude, /traces de travail par session/);
+  // Décision 4 : à la fin de « Commandes », la ligne qui fait proposer /pulse:status et /pulse:refine ; les commandes restent tapées par la personne.
+  const commandes = claude.split(/^## Commandes\s*$/m)[1].split(/^## /m)[0];
+  assert.match(commandes, /proposez-lui de taper `\/pulse:status`/);
+  assert.match(commandes, /proposez `\/pulse:refine <US-XXX>`/);
+  assert.match(commandes.trim().split("\n").pop(), /Les commandes `\/pulse:\*` se lancent quand la personne les tape\.$/, "dernière ligne de « Commandes »");
+  // Hors d'une commande, aucune règle commune n'est chargée : le modèle n'y renvoie pas.
+  assert.doesNotMatch(claude, /règles communes Pulse, § 1|règles de réalisation de Pulse/);
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
   assert.match(skillTexte("ui"), /quatre références de design/);
   assert.doesNotMatch(skillTexte("ui"), /trois références/);
@@ -1590,6 +1706,34 @@ test("tech : une fois le pack choisi, seules ses consignes se chargent ; review 
   assert.ok(motifsBash(path.join(RACINE, "skills", "review", "SKILL.md")).some((m) => couvre(m, "pulse-aidd pile contexte implement")), "review : pile contexte implement autorisé");
 });
 
+test("tech : démarche de choix et organisation chargées à l'étape qui les sert ; squelette décrit une fois ; pile écrite à un seul endroit", () => {
+  const tech = lire(RACINE, "skills", "tech", "SKILL.md");
+  const contexte = contexteCharge("tech");
+  assert.ok(!contexte.includes("===== Aider à choisir la technologie ====="), "démarche hors du contexte");
+  assert.ok(!contexte.includes("===== Organisation des fichiers et nommage ====="), "organisation hors du contexte");
+  const projetNeuf = tech.split("### B. Projet neuf")[1] || "";
+  assert.match(projetNeuf.split("#### 2.")[0], /Avant la première question : lancer `pulse-aidd reference tech\/choix-techniques\.md` et l'appliquer pendant tout le chemin B\./);
+  // La démarche sert jusqu'à l'écriture (outil de test, règles transverses) : sa portée et son repli après une compaction le disent.
+  assert.match(tech, /Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, pendant tout ce chemin\./);
+  assert.doesNotMatch(tech, /jusqu'à l'étape 5|jusqu'au choix\./);
+  assert.match(tech.split("## Références de la commande")[1], /chemin B : relancer aussi `pulse-aidd reference tech\/choix-techniques\.md` si la démarche n'est plus dans la conversation/);
+  assert.match(tech, /Projet neuf sans pack : lancer `pulse-aidd reference qualite\/organisation\.md`/);
+  // Squelette : la règle des fichiers gardés vit dans « Mise en place » du modèle, lue par tech, plan et l'implementer.
+  const modele = lire(RACINE, "skills", "tech", "assets", "technical.md");
+  assert.match(modele.split("## Mise en place")[1], /dossier temporaire[^\n]*`CLAUDE\.md`, `README\.md` et `\.gitignore`/);
+  // Avec un pack, son script de squelette fait foi : la phrase générique le dit, versions fixées comprises.
+  assert.match(modele.split("## Mise en place")[1], /^Sans pack de pile : le squelette s'initialise selon la documentation officielle, versions fixées ;/m);
+  assert.match(tech, /Appliquer les étapes de « Mise en place » de `docs\/technical\.md`/);
+  assert.doesNotMatch(tech, /dossier temporaire/);
+  // Pile : docs/technical.md et le bloc « Stack technique » ; la mémoire technique garde les décisions datées.
+  assert.match(tech, /une ligne datée par décision dans « Décisions techniques »\. La pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
+  assert.doesNotMatch(tech, /résumé de la pile retenue/);
+  assert.doesNotMatch(tech, /Pulse 0\.3/);
+  assert.match(tech, /Prochaine étape : projet existant : `\/pulse:memory creer`/);
+  // La liste des sections du modèle : une seule fois, dans le modèle.
+  assert.doesNotMatch(lire(RACINE, "skills", "tech", "references", "choix-techniques.md"), /« Les besoins qui guident le choix » :/);
+});
+
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
 const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
@@ -1720,9 +1864,19 @@ test("rythme rapide : aucun test de l'interface pendant les tâches ; avec spirc
 });
 
 test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {
-  const spec = skillTexte("spec");
-  for (const t of ["### 1 bis. Choisir la présentation des écrans", "« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`"])
-    assert.ok(spec.includes(t), t);
+  // Les phrases imposées vivent dans « Présentation des écrans », chargée par contexte spec ; la spec y renvoie.
+  const presentation = lire(RACINE, "skills", "spec", "references", "presentation.md");
+  assert.match(presentation, /^La présentation est une décision de la personne : la poser, sans la choisir à sa place\.$/m);
+  for (const t of ["« Comment présenter <les factures> ? »", "« Où créer ou modifier <une facture> ? »", "« Dans une fenêtre par-dessus la liste »", "« Voir 2 ou 3 propositions d'écran à comparer avant de coder (Recommandé) »", "`/pulse:ui maquettes US-XXX`", "selon les critères entre parenthèses"])
+    assert.ok(presentation.includes(t), t);
+  assert.doesNotMatch(presentation, /ui\/motifs\.md/, "les critères entre parenthèses suffisent");
+  assert.match(presentation, /Un écran sans informations ni formulaire : « sans objet » dans la colonne « Présentation »/);
+  assert.match(lire(RACINE, "skills", "spec", "SKILL.md"), /seulement quand il ne reste aucun `TBD:` ni présentation manquante/);
+  const specSkill = lire(RACINE, "skills", "spec", "SKILL.md");
+  assert.match(specSkill, /^### 1 bis\. Choisir la présentation des écrans\n\nAppliquer « Présentation des écrans » \(chargée dans « Références de la commande »\)/m);
+  assert.doesNotMatch(specSkill, /« Comment présenter <les factures> \? »/, "questions recopiées dans le SKILL");
+  assert.match(specSkill, /`presentation-manquante`[^\n]*avant (la validation|le verrouillage)/, "une présentation manquante se pose à la personne avant le verrouillage");
+  assert.ok(contexteCharge("spec").includes("===== Présentation des écrans ====="));
   assert.match(lire(RACINE, "skills", "spec", "assets", "spec.md"), /\| Présentation \(choisie par la personne\) \|/);
   assert.match(lire(RACINE, "skills", "spec", "assets", "spec.md"), /\*\*Maquettes\*\* :/);
   assert.match(skillTexte("plan"), /sa \*\*présentation\*\*, reprise de la colonne « Présentation » de la spec/);
@@ -1761,6 +1915,27 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
   assert.match(lire(RACINE, "references", "memoire.md"), /`pulse-aidd reference regles-controlees\.md`/);
   assert.match(lire(RACINE, "templates", "aidd-memory-technical.md"), /« — Contrôle : … »/);
   assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
+});
+
+test("décision 5 : projet existant, tech puis memory creer ; la pile écrite seulement dans docs/technical.md et « Stack technique »", () => {
+  const memory = lire(RACINE, "skills", "memory", "SKILL.md");
+  assert.match(memory, /code sans `docs\/technical\.md`[^\n]*taper `\/pulse:tech`/, "memory creer : tech avant les conventions");
+  // Mémoire pas encore branchée : la brancher d'abord (pulse-aidd etat répond R6 tant qu'elle ne l'est pas), puis tech.
+  assert.match(memory, /\*\*Projet qui contient du code sans `docs\/technical\.md`\*\* : créer les fichiers qui manquent \(étape 2\) et brancher la mémoire \(étape 5\) ; puis proposer de taper `\/pulse:tech`/);
+  // creer qui ne trouve aucune convention le note, pour que pulse-aidd etat passe à la suite (R8d ne revient pas).
+  assert.match(memory, /`- Aucune convention propre relevée \(AAAA-MM-JJ\)\.`/);
+  // R8d lit le repère que tech écrit pour un projet existant (pulse-aidd etat, fait pileObservee).
+  assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée, pas de comparaison »"));
+  assert.ok(lire(RACINE, "scripts", "etat.js").includes("Projet existant : pile observée"));
+  assert.match(memory, /les fichiers créés, et ceux encore au modèle/, "creer remplit aussi les fichiers restés au modèle");
+  assert.match(memory, /la pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
+  assert.doesNotMatch(memory, /pile et conventions depuis/);
+  const memoire = lire(RACINE, "references", "memoire.md");
+  assert.match(memoire, /\| Conventions de code propres au projet, sécurité propre, pièges et leçons techniques, décisions techniques \(la pile : bloc « Stack technique » de `CLAUDE\.md` et `docs\/technical\.md`\) \| `aidd_docs\/memory\/technical\.md` \|/);
+  assert.match(lire(RACINE, "skills", "init", "SKILL.md"), /`\/pulse:tech` \(documenter les outils observés dans le code\), puis `\/pulse:memory creer`/);
+  // Les seuils de taille sont écrits dans les règles de la mémoire et dans l'action compacter, pas ailleurs dans la commande.
+  assert.strictEqual((memory.match(/140/g) || []).length, 1, "cible écrite une fois dans memory");
+  assert.strictEqual((memory.match(/95 %/g) || []).length, 1, "seuil écrit une fois dans memory");
 });
 
 test("qualite et tests : aucun texte livré ne les lance sans famille, morceau, --tout ni --checklists", () => {

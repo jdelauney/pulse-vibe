@@ -85,7 +85,7 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
   "boucle spirc de 4 tâches": { plafond: 78000, /* mesure 74 053 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport) ; avant, mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 86 453 (pulse 0.50 : le pack laissé aux agents qui codent) ; avant, 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
-  "tech, pack choisi en cours de commande": { plafond: 84500, /* mesure 80 070 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
+  "tech, pack choisi en cours de commande": { plafond: 66500, /* mesure 63 215 (phase 6, retouches de tech) ; avant, mesure 63 163, démarche de choix comprise (refactoring d'optimisation, tâche 6.2 : démarche de choix et organisation chargées à l'étape, squelette décrit une fois dans le modèle) ; avant, mesure 80 070 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetSansPack, "reference", "tech/choix-techniques.md"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
 
 for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
@@ -102,19 +102,19 @@ for (const [nom, { plafond, parties }] of Object.entries(PARCOURS_AVEC_PACK)) {
 const PLAFONDS_COMMANDE_AVEC_PACK = {
   cicd: 56500, // mesure 53 554 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 65 020 (relecture finale de la phase 1 : étapes commit et deploy chaînées, leurs commandes autorisées dans l'en-tête) ; avant, mesure 61 680
   deploy: 58000, // mesure 54 906 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 62 576
-  express: 45500, // mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
+  express: 49000, // mesure 46 656 (refactoring d'optimisation, tâche 6.4 : plafond relevé, les règles des user stories (regles-us.md, 3 648) chargées pour express, qui les citait sans les avoir) ; avant, mesure 42 894 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 48 606 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 845 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 48 733
   fix: 52500, // mesure 49 923 (pulse 0.51, étape D : fix confie la correction au fixer, tableau des symptômes ramené à cinq lignes) ; avant, mesure 50 228 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 51 889
   perf: 56500, // mesure 53 788 (pulse 0.50 : seo, perf, ui et rediger chargent les consignes pour écrire du code à la place de la fiche et de l'architecture) ; avant, mesure 81 098 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 90 334 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 95 315
-  plan: 83500, // mesure 79 197 (pulse 0.50 : le pack de plan sans la fiche du code) ; avant, mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
+  plan: 82000, // mesure 78 095 (tâche 6.6 : règles de découpage en référence, dédoublonnées) ; avant, mesure 79 197 (pulse 0.50 : le pack de plan sans la fiche du code) ; avant, mesure 94 212 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 97 652 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 100 752
   rediger: 27000, // mesure 25 615 (pulse 0.50 : les consignes pour écrire du code en plus, 350 caractères ; plafond relevé avec la mesure) ; avant, mesure 24 764 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 34 022 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 34 612 (pulse 0.42 : rythme rapide, option -f, gestes)
-  refine: 57500, // mesure 54 577 (pulse 0.50 : le pack de refine sans la fiche ni l'architecture) ; avant, mesure 81 487 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
+  refine: 38500, // mesure 36 457 (tâche 6.6 : les seules règles de découpage, sans le SKILL de plan ni le modèle de plan) ; avant, mesure 54 577 (pulse 0.50 : le pack de refine sans la fiche ni l'architecture) ; avant, mesure 81 487 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 84 457 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 86 865
   review: 37500, // mesure 35 291 (refactoring d'optimisation, tâche 5.3 : modèle de rapport chargé à l'étape du rapport) ; avant, mesure 37 526 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 39 407 (pulse 0.48 : captures gardées, examen.md ; avant, 36 785 : pulse 0.40 : règle commune 19 et fiche de test)
   "search-console": 51500, // mesure 48 616 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 57 057
   secrets: 62500, // mesure 59 103 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 67 057
   security: 30500, // mesure 28 768 (refactoring d'optimisation, tâche 5.5 : contexte du cœur réduit au modèle de docs/securite.md) ; avant, mesure 44 263 (pulse 0.50 : la fiche et l'architecture à la demande, `pile contexte security` passe sous le seuil de lecture de 30 000) ; avant, mesure 72 074 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 79 138 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 83 589
   seo: 59000, // mesure 55 761 (pulse 0.50 : consignes pour écrire du code à la place de la fiche, de l'architecture et de la liste des recettes) ; avant, mesure 84 978 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 92 297 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 96 880
-  spec: 47000, // mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
-  tech: 84500, // mesure 80 113 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
+  spec: 45500, // mesure 43 267 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, mesure 44 700 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 50 549 (pulse 0.50 : etape sans en-tête ni Exemples) ; avant, mesure 51 162 (pulse 0.44 : présentation des écrans choisie dans la spec)
+  tech: 57000, // mesure 54 317 (phase 6, retouches : portée et repli de la démarche, squelette du modèle sans pack) ; avant, mesure 54 265 (refactoring d'optimisation, tâche 6.2 : démarche de choix et organisation chargées à l'étape, squelette décrit une fois dans le modèle) ; avant, mesure 80 113 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, mesure 114 137 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 123 432 (pulse 0.50 : familles de qualité raccourcies) ; avant, mesure 124 649 (pulse 0.50 : etape sans en-tête ni Exemples), et avant encore 127 942
   test: 32500, // mesure 30 863 (refactoring d'optimisation, tâche 5.4 : Tests automatiques et Gherkin chargés à la demande) ; avant, mesure 52 330 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, mesure 49 417 (pulse 0.42 : rythme rapide, option -f, gestes)
   ui: 83500, // mesure 79 522 (pulse 0.50 : consignes pour écrire du code à la place du thème complet, section « Pour les maquettes » gardée) ; avant, mesure 83 431 (pulse 0.50 : règles communes en noyau et modules) ; avant, mesure 85 248
 };
@@ -183,28 +183,28 @@ test("structure : spirc, auto-fix et implement laissent le pack à leurs agents 
 const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES_AVEC_PACK = {
   "auto-fix --sans-noyau": 12500, // mesure 11 686
-  "brainstorm --sans-communes": 22000, // mesure 20 653
+  "brainstorm --sans-communes": 21500, // mesure 20 265 (tâche 6.3 : règles citées au lieu d'être recopiées) ; avant, 20 653
   "cicd --sans-communes": 42500, // mesure 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "commit --sans-communes": 28500, // mesure 26 896
   "deploy --sans-communes": 44000, // mesure 41 789 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "express --sans-communes": 27500, // mesure 26 109
+  "express --sans-communes": 31500, // mesure 29 709 (tâche 6.4 : plafond relevé, règles des user stories chargées ; marge de 291 sous la limite de lecture) ; avant, 26 109
   "fix --sans-communes": 32000, // mesure 30 157 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 30 759)
   "fix --sans-noyau": 38500, // mesure 36 209 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK (pulse 0.51, étape D ; avant, 37 026)
-  "memory --sans-communes": 18500, // mesure 17 559
+  "memory --sans-communes": 15000, // mesure 14 006 (tâche 6.7 : modèles de la mémoire affichés à l'action) ; avant, 17 559
   "perf --sans-communes": 42500, // mesure 40 050 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "plan --sans-communes": 62500, // mesure 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "plan --sans-communes": 61500, // mesure 58 445 (tâche 6.6) ; avant, 59 210 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "pr --sans-communes": 18000, // mesure 16 931
   "pr --sans-noyau": 22000, // mesure 20 495
-  "refine --sans-communes": 36500, // mesure 34 590 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "refine --sans-communes": 18000, // mesure 16 807 (tâche 6.6 : les seules règles de découpage, sortie de DEPASSEMENTS_CONNUS_AVEC_PACK) ; avant, 34 590
   "review --sans-communes": 14500, // mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 728
-  "spec --sans-communes": 29500, // mesure 27 839
-  "tech --sans-communes": 70000, // mesure 66 375 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
+  "spec --sans-communes": 28000, // mesure 26 320 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, 27 839
+  "tech --sans-communes": 43000, // mesure 40 916 (phase 6, retouches) ; avant, 40 864 (tâche 6.2 : démarche et organisation chargées à l'étape) ; avant, 66 375 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "ui --sans-communes": 63500, // mesure 60 343 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "ui --sans-noyau": 69500, // mesure 65 802 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
-  "us --sans-communes": 18000, // mesure 16 910
+  "us --sans-communes": 18000, // mesure 16 880 (tâche 6.4 : questions clés une à une) ; avant, 16 910
 };
 const DEPASSEMENTS_CONNUS_AVEC_PACK = new Set([
-  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "refine --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
+  "cicd --sans-communes", "deploy --sans-communes", "fix --sans-communes", "fix --sans-noyau", "perf --sans-communes", "plan --sans-communes", "tech --sans-communes", "ui --sans-communes", "ui --sans-noyau",
 ]);
 function formesCitees() {
   const formes = new Set();

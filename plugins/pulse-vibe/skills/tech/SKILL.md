@@ -11,7 +11,7 @@ allowed-tools: Bash(pulse-aidd contexte cicd) Bash(pulse-aidd contexte commit) B
 
 Jouer le rôle d'architecte technique, en langage simple. Chaque technologie proposée découle du besoin : la pile se construit **à partir du besoin** (brief, PRD), ou s'**observe** dans le code d'un projet existant. La décision appartient à la personne. Puis écrire :
 
-- `docs/technical.md`, **toutes** ses sections : « Les besoins qui guident le choix », « Les options comparées », « Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement », « Hébergement et mise en ligne », « Mise en place », « Ce qu'on a écarté » ;
+- `docs/technical.md`, **toutes** les sections de son modèle ;
 - le bloc de la section **Stack technique** de `CLAUDE.md` (entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->`) ;
 - `aidd_docs/memory/technical.md` et les décisions difficiles à défaire ;
 - la **mise en place** du squelette, avec l'accord de la personne.
@@ -20,7 +20,7 @@ Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **ap
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » et la référence `skills/tech/references/choix-techniques.md` (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, pendant tout ce chemin.
 
 ## Contexte
 
@@ -58,20 +58,19 @@ Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/` et le code s'il y en a.
 
 ### B. Projet neuf : construire et comparer les options
 
+Avant la première question : lancer `pulse-aidd reference tech/choix-techniques.md` et l'appliquer pendant tout le chemin B.
+
 #### 2. Les questions qui restent (par rondes)
 
-Poser seulement les lignes manquantes du tableau des besoins, en rondes de 4 questions au plus (AskUserQuestion), chacune avec 2 à 4 réponses concrètes, **la réponse recommandée en premier** avec « (Recommandé) ». Les questions portent sur le **besoin** (qui, combien, données partagées ou non, comptes, données personnelles, plateformes, hors ligne, budget, expérience, contraintes imposées) ; les outils viendront à l'étape 3. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »). Demander aussi si la personne ou son organisation **impose ou exclut** une technologie, et si elle en connaît déjà une.
+Poser seulement les lignes manquantes du tableau des besoins (questions de la démarche), par rondes (règle commune 5). Elles portent sur le **besoin** ; les outils viendront à l'étape 3. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »).
 
 Après la dernière ronde, **signaler les contradictions** et faire trancher : par exemple « paiement en ligne » avec « budget 0 € et aucun compte », ou « données de santé » avec « hébergement sans garantie de localisation ».
 
 #### 3. Construire 2 ou 3 options
 
-Suivre `skills/tech/references/choix-techniques.md` pour construire **2 ou 3 options réellement différentes** (approche, nature du stockage, hébergement : trois approches distinctes plutôt que trois variantes du même outil), chacune déduite des besoins seulement, plutôt que d'une habitude ou d'une technologie par défaut. Inclure systématiquement l'option **la plus simple** qui répond au besoin. Pour chaque option : pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), coût mensuel estimé (ordre de grandeur, incertitude signalée), localisation des données si elle compte, points forts, **1 à 3 risques honnêtes** (chaque option en a).
+Construire **2 ou 3 options réellement différentes**, selon « Construire 2 à 3 options » de la démarche, chacune avec sa pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), son coût mensuel estimé (incertitude signalée) et la localisation des données si elle compte.
 
 - **Packs de pile** : lancer `pulse-aidd piles`, qui affiche aussi, pour chaque pack, ce qu'il faut vérifier et dire avant le choix : l'appliquer aux étapes 3 et 4. Un pack installé dont la pile couvre les besoins devient une option à part entière, vérifiée comme les autres à l'étape 4 : « Pile Pulse <nom> : code de départ vérifié, recettes prêtes et pièges connus déjà traités ; c'est l'option qui demande le moins d'essais pour obtenir un code juste. » Quand elle convient au besoin, la recommander ; les autres options restent présentées et la personne choisit. Aucun pack installé et besoin d'une application web avec comptes et données partagées : ajouter une ligne pour dire que le plugin `pulse-next` (pile Next.js prête à l'emploi) existe, installable avec `/plugin install pulse-next@pulseia`.
-- **Services externes** : 1 ou 2 au maximum pour le MVP ; paiement d'abord en **mode test** ; le mode réel est une décision de la personne, au moment de la mise en ligne.
-- **Données personnelles** : minimiser ; pour des données sensibles, choisir la région d'hébergement exigée par la loi de protection des données qui s'applique au projet, à vérifier dans l'offre du service.
-- **Anti-complaisance** : si la personne veut un outil qui ne correspond pas à son besoin, le dire avec tact, montrer le coût (pièces à comprendre, temps, verrouillage), et demander si elle a une raison que l'on ignore.
 
 #### 4. Vérifier les options sur la documentation officielle
 
@@ -87,16 +86,16 @@ Présenter le tableau et **recommander** une option en une phrase. Avant la ques
 
 1. **`docs/technical.md`** à partir du modèle, toutes sections remplies (« aucune » ou « sans objet » si c'est le cas) :
    - « Pile retenue » : langage, framework éventuel, données, connexion, code serveur, hébergement, services, **versions** ; une phrase de « pourquoi » par élément. **Pack de pile choisi** : écrire la ligne `**Pack de pile Pulse** : <id>`, puis lancer `pulse-aidd pile contexte tech` : les consignes du pack donnent les valeurs de la pile (versions, organisation, commandes, mise en place), qui remplissent les sections suivantes (les règles et modèles de cette commande figurent déjà en fin de fichier, dans « Références de la commande ») ;
-   - « Organisation des fichiers » : **la référence unique** que suivront la spec, le plan et le code. Projet existant : l'organisation **observée** (dossiers réels, conventions de nommage, où vivent l'interface, l'accès aux données, le code serveur, le schéma). Projet neuf : l'organisation **décidée** selon la référence `qualite/organisation.md` (en fin de fichier), adaptée aux conventions de la documentation officielle de la technologie retenue (qui priment) : **palier** retenu et sa raison, arborescence, convention de nommage et exceptions imposées par le langage, **suffixes** utilisés, emplacement des tests ; en indiquant que les dossiers seront créés au fil des tâches ;
+   - « Organisation des fichiers » : **la référence unique** que suivront la spec, le plan et le code. Projet existant : l'organisation **observée** (dossiers réels, conventions de nommage, où vivent l'interface, l'accès aux données, le code serveur, le schéma). Projet neuf sans pack : lancer `pulse-aidd reference qualite/organisation.md` au moment d'écrire cette section, puis décider l'organisation selon elle, adaptée aux conventions de la documentation officielle de la technologie retenue (qui priment) : **palier** retenu et sa raison, arborescence, convention de nommage et exceptions imposées par le langage, **suffixes** utilisés, emplacement des tests ; en indiquant que les dossiers seront créés au fil des tâches. Projet neuf avec pack : les valeurs du pack ;
    - « Commandes du projet » : installer, lancer en local, tester, contrôles automatiques (lint / format / types), construire, auditer les dépendances (« Auditer les dépendances »), déployer ; une commande absente s'écrit « aucune ». Projet neuf : les commandes que fournira le squelette selon la documentation officielle, ou « aucune » ;
-   - « Tests automatiques » de « Pile retenue » : choix technique (règle commune « La personne décide ») : l'outil de test recommandé par la documentation officielle de la pile retenue, version fixée, vérifié à l'étape 4 avec le reste ; sinon le lanceur de tests intégré au langage s'il en a un (`unittest` pour Python ; `node --test` pour JavaScript avec Node.js, et pour TypeScript avec Node.js 22.19 ou plus quand le code s'en tient à la syntaxe effaçable, importe ses fichiers avec l'extension `.ts` et n'utilise pas d'alias de chemins, sinon l'outil de test recommandé pour la pile) ; à défaut, s'il y a du code à tester, l'outil de test le plus répandu pour ce langage, version fixée ; un outil de bout en bout seulement si `docs/prd.md` montre un parcours critique qui le justifie, sinon « aucun ». Projet existant : l'outil observé, ou « aucun ». Son installation fait partie de « Mise en place », et sa commande remplit « Tester » (sans les tests qui ouvrent un navigateur), et celle des tests de bout en bout remplit la ligne « Tester de bout en bout (navigateur) » ;
+   - « Tests automatiques » de « Pile retenue » : projet existant : l'outil observé, ou « aucun » ; pack de pile : celui de ses valeurs ; sinon, selon « Choisir l'outil de test » de la démarche. Son installation fait partie de « Mise en place » ; sa commande remplit « Tester » (sans les tests qui ouvrent un navigateur) et « Tester de bout en bout (navigateur) » ;
    - « Données et contrôle d'accès » : où sont les données, qui peut lire, créer, modifier, supprimer quoi, et **où c'est vérifié côté serveur** (ou « données sur l'appareil, sans partage » si c'est le cas) ;
    - « Secrets et variables d'environnement » : le fichier local non versionné, les **noms** des variables (jamais leurs valeurs), où les saisir en production ;
    - « Hébergement et mise en ligne » : hébergeur, dépôt distant, CI éventuelle ;
    - « Mise en place » : les étapes pas à pas avant la première tâche (comptes à créer, initialisation du squelette selon la documentation officielle, compléments à `.gitignore` et `.env.example`) ;
    - un schéma Mermaid simple de l'assemblage des pièces.
-2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ». Si les marqueurs sont absents (projet créé avant Pulse 0.3), remplacer la section « Pile technique » ou « Stack technique » existante par la section « Stack technique » du modèle, avec ses marqueurs, en gardant le reste intact.
-3. **`aidd_docs/memory/technical.md`** : mettre à jour le résumé de la pile retenue (une ou deux lignes et un renvoi à `docs/technical.md`, qui reste la source) et ajouter une ligne datée par décision dans « Décisions techniques ».
+2. **`CLAUDE.md`** : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ».
+3. **`aidd_docs/memory/technical.md`** : une ligne datée par décision dans « Décisions techniques ». La pile reste dans `docs/technical.md` et le bloc « Stack technique ».
 4. **Décisions difficiles à défaire** (langage ou framework, stockage des données, mécanisme de connexion, hébergement de données personnelles) : proposer un fichier de décision seulement si les 3 conditions des règles de la mémoire sont réunies. Montrer avant d'écrire.
 5. Lancer `pulse-aidd memoire`.
 
@@ -107,7 +106,7 @@ Projet existant : seulement compléter `.gitignore` et `.env.example` si des man
 Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander (AskUserQuestion) : « Préparer le code de départ maintenant (Recommandé) » / « Plus tard, avec la première tâche ».
 
 - **Maintenant** :
-  1. Initialiser le squelette de la technologie retenue **selon sa documentation officielle** (commande ou procédure d'initialisation, versions fixées). Si l'outil d'initialisation refuse un dossier non vide, ou risque d'écraser un fichier : initialiser dans un **dossier temporaire**, puis rapatrier les fichiers. Conserver `CLAUDE.md`, `README.md` et `.gitignore` (ne **jamais** les écraser) : fusionner ce qu'ils apportent d'utile, puis supprimer le dossier temporaire.
+  1. Appliquer les étapes de « Mise en place » de `docs/technical.md`.
   2. Compléter `.gitignore` selon la pile (dépendances installées, fichiers construits, caches, fichiers d'environnement locaux) et `.env.example` avec les **noms** des variables de « Secrets et variables d'environnement », sans valeurs.
   3. Vérifier que la commande « lancer en local » de « Commandes du projet » fonctionne ; corriger « Commandes du projet » et le bloc `pulse_pile` si le squelette en fournit d'autres.
   4. **Le thème** : si `docs/design.md` existe, traduire son identité en valeurs de thème dans le code (section « Dans le code » de `docs/design.md`), avec accord.
@@ -121,7 +120,7 @@ Résumé en 5 lignes : pile retenue (et pack de pile éventuel), hébergement, s
 
 Puis les autorisations des contrôles du projet, que « Commandes du projet » vient de fixer : lancer `pulse-aidd reference autorisations.md` et l'appliquer.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : si `docs/design.md` n'existe pas, proposer `/pulse:ui identite` en précisant qu'elle est **facultative** (« Définir l'apparence de votre outil maintenant permet aux user stories, specs et plans de s'y conformer ») ; sinon, ou si la personne préfère s'en passer, `/pulse:us` (puis `/pulse:spec`, qui s'appuie sur ces choix), ou `/pulse:spirc` pour enchaîner. Si un dépôt distant est relié (`git remote -v`), que le squelette est en place et qu'aucune CI n'existe : mentionner aussi `/pulse:cicd` (facultatif) pour vérifier automatiquement chaque envoi.
+Terminer avec le bloc de fin de commande. Prochaine étape : projet existant : `/pulse:memory creer` (les conventions et les pièges propres au code) ; sinon, si `docs/design.md` n'existe pas, proposer `/pulse:ui identite` en précisant qu'elle est **facultative** (« Définir l'apparence de votre outil maintenant permet aux user stories, specs et plans de s'y conformer ») ; sinon, ou si la personne préfère s'en passer, `/pulse:us` (puis `/pulse:spec`, qui s'appuie sur ces choix), ou `/pulse:spirc` pour enchaîner. Si un dépôt distant est relié (`git remote -v`), que le squelette est en place et qu'aucune CI n'existe : mentionner aussi `/pulse:cicd` (facultatif) pour vérifier automatiquement chaque envoi.
 
 ## Exemples
 
@@ -133,4 +132,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : si `docs/design.md`
 
 !`pulse-aidd contexte tech`
 
-Les références et modèles cités dans cette commande figurent dans ce contexte. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie (et `pulse-aidd reference tech/choix-techniques.md` si la référence manque).
+Les règles de la mémoire et les modèles cités figurent dans ce contexte ; la démarche de choix (projet neuf) et l'organisation des fichiers se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie ; chemin B : relancer aussi `pulse-aidd reference tech/choix-techniques.md` si la démarche n'est plus dans la conversation.
