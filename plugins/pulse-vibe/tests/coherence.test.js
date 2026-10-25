@@ -393,7 +393,7 @@ test("règles communes : chaque mention d'un module (règles de relecture, de r�
   assert.deepStrictEqual(problemes, []);
 });
 
-test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme, sont autorisées d'avance", () => {
+test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et des références qu'il nomme (partagées ou propres à une commande), sont autorisées d'avance", () => {
   const texteSkill = (s) => lire(RACINE, "skills", s, "SKILL.md").replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, ""); // le corps seul : les motifs allowed-tools ne sont pas des citations
   const enchainees = (depart) => {
     const vues = new Set([depart]);
@@ -411,18 +411,34 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
   };
   let verifies = 0;
   const manquants = [];
+  const propres = new Set(); // références propres à une commande, lues (skills/<commande>/references/)
   for (const skill of SKILLS) {
     const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
-    const textes = enchainees(skill).map(texteSkill);
+    const etapes = enchainees(skill);
+    const textes = etapes.map(texteSkill);
     const sources = new Map();
     for (const texte of textes) {
       for (const m of texte.matchAll(/(?<![\/\w-])pulse:([a-z][a-z-]*)|pulse-aidd agent ([a-z][a-z-]*)/g)) {
         const agent = m[1] || m[2];
         if (AGENTS.has(agent)) sources.set(`agent ${agent}`, lire(RACINE, "agents", `${agent}.md`));
       }
+    }
+    // Références nommées par le skill ou une étape enchaînée : partagées (references/<fichier>) ou propres à une commande
+    // (skills/<commande>/references/<fichier>, citée « <commande>/<fichier> », ou « references/<fichier> » dans le texte de cette commande).
+    for (const [commande, texte] of etapes.map((s) => [s, texteSkill(s)])) {
       for (const m of texte.matchAll(/pulse-aidd reference ([\w./-]+\.md)|references\/([\w./-]+\.md)/g)) {
         const ref = m[1] || m[2];
-        if (fs.existsSync(path.join(RACINE, "references", ref))) sources.set(`référence ${ref}`, lire(RACINE, "references", ref));
+        const [tete, ...reste] = ref.split("/");
+        const candidats = [
+          path.join(RACINE, "references", ref),
+          ...(reste.length && SKILLS.has(tete) ? [path.join(RACINE, "skills", tete, "references", ...reste)] : []),
+          path.join(RACINE, "skills", commande, "references", ref),
+        ];
+        const trouve = candidats.find((chemin) => fs.existsSync(chemin) && fs.statSync(chemin).isFile());
+        if (!trouve) continue;
+        const nom = path.relative(RACINE, trouve).split(path.sep).join("/");
+        if (nom.startsWith("skills/")) propres.add(`${skill} → ${nom}`);
+        sources.set(`référence ${nom}`, lire(trouve));
       }
     }
     // Les sous-agents ne reçoivent pas les autorisations du skill (scripts/autorisations.js) : les commandes d'un agent
@@ -441,6 +457,8 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
     }
   }
   assert.ok(verifies > 100, "lecture des agents et des références");
+  // perf * tient par deploy/premiere.md, que search-console lit en enchaînant l'étape deploy.
+  assert.ok(propres.has("search-console → skills/deploy/references/premiere.md") && propres.has("spirc → skills/spirc/references/analyser.md"), [...propres].join(", "));
   assert.deepStrictEqual([...new Set(manquants)], []);
 });
 
