@@ -1212,6 +1212,15 @@ test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus 
   assert.deepStrictEqual(problemes, []);
 });
 
+test("auto-fix : la règle anti-affaiblissement reste aux consignes du fixer, le message n'a pas à la recopier ; autorisations réduites à l'emploi", () => {
+  const autofix = lire(RACINE, "skills", "auto-fix", "SKILL.md");
+  assert.doesNotMatch(autofix, /Rappeler dans chaque message/);
+  assert.doesNotMatch(autofix, /restent interdites les « corrections » qui les affaiblissent/);
+  assert.match(lire(RACINE, "agents", "fixer.md"), /Corriger la cause elle-même, à sa source\*\*, en gardant intacts les règles du lint/);
+  const entete = autofix.match(/^allowed-tools:.*$/m)[0];
+  assert.doesNotMatch(entete, /pulse-aidd (modele|qualite|tests|scenarios|pile recette|pile reference)/, "motifs sans emploi retirés (reference * reste : les règles communes citent des références)");
+});
+
 test("chaque agent a un modèle explicite (model:)", () => {
   // Valeurs acceptées par Claude Code : https://code.claude.com/docs/en/sub-agents
   const MODELES = /^(sonnet|opus|haiku|fable|inherit|claude-[a-z0-9-]+)$/;
