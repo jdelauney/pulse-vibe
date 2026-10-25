@@ -762,11 +762,14 @@ test("spirc : en autonome, une décision arrête seulement sa tâche ; petits ch
   assert.doesNotMatch(texte, /interrompt aussi le mode autonome/);
   const section = texte.split("### Questions en attente (mode autonome)")[1].split("\n### ")[0];
   assert.match(section, /En pause : Q<n> \(votre décision\)/);
-  assert.match(section, /git stash push -u -m "pulse: T4 en attente" -- <fichiers de T4>/);
-  assert.match(section, /git stash pop stash@\{k\}/);
+  assert.match(section, /pulse-aidd attente mettre-de-cote T4 -- <fichiers de T4>/);
+  assert.match(section, /pulse-aidd attente remettre T4/);
   assert.match(section, /retirer la sous-ligne `En pause : Q<n>`/);
   assert.match(section, /4 par ronde/);
   assert.doesNotMatch(section, /git stash (drop|clear)/);
+  const [mise, remise] = [/^2\. \*\*Mettre de côté/m, /^5\. \*\*Remettre/m].map((debut) => section.split("\n").find((l) => debut.test(l)));
+  for (const etat of ["fait", "rien-a-mettre-de-cote", "refuse", "echec", "mise-de-cote-orpheline"]) assert.match(mise, new RegExp("`" + etat + "`"), etat);
+  for (const etat of ["remis", "absente", "echec", "arbre-occupe", "conflit", "conflit-non-nettoye", "remis-sans-nettoyage"]) assert.match(remise, new RegExp("`" + etat + "`"), etat);
   assert.match(texte, /`decision` → elle attend une réponse/);
   assert.match(texte, /Vous pouvez faire autre chose : je note mes questions et vous les pose toutes ensemble/);
   assert.match(texte, /« Garder ce choix \(Recommandé\) » \/ « Changer ce choix »/);
