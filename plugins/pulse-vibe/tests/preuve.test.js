@@ -35,6 +35,7 @@ const SCRIPTS = {
   "e2e.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/e2e", "x\\n"); console.log("# tests 1\\n# pass 1");`,
   "rapport.js": `require("fs").writeFileSync("rapport.xml", String(Date.now())); console.log("# tests 2\\n# pass 2");`,
   "vide.js": `console.log("# tests 0\\n# pass 0");`,
+  "sans-test.js": `console.log("No test files found, exiting with code 1"); process.exit(1);`,
   "build-ecrit.js": `require("fs").writeFileSync("sortie.txt", String(Date.now()));`,
   "env.js": `if (!require("fs").existsSync("ignore/env.txt")) { console.log("variable manquante : ignore/env.txt"); process.exit(1); } console.log("# tests 2\\n# pass 2");`,
   "attend.js": `require("fs").appendFileSync(process.env.PREUVE_TRACES + "/attend", "x\\n"); setTimeout(() => require("fs").appendFileSync(process.env.PREUVE_TRACES + "/fin", "x\\n"), 4000);`,
@@ -551,4 +552,16 @@ test("fichier de test écrit avec des barres obliques inverses (Windows) : lu av
   const r = preuve(p, "lancer", "--portee", "tache", "src\\a.test.js");
   assert.strictEqual(r.status, 0, r.stdout);
   assert.strictEqual(fs.readFileSync(path.join(p.traces, "tests"), "utf8").trim(), "src/a.test.js");
+});
+
+test("outil qui s'arrête en échec faute de test (« No test files found », Vitest, Jest) : aucun fichier de test, non bloquant ; avec un fichier de test, ❌", () => {
+  const p = depot({ tester: "`node sans-test.js`" });
+  const r = preuve(p, "lancer");
+  assert.strictEqual(r.status, 0, r.stdout);
+  assert.match(r.stdout, /^preuve: ✅ à jour · contrôles ✅ · tests : aucun test écrit pour l'instant · /m);
+  assert.doesNotMatch(r.stdout, /No test files found/, "pas d'échec affiché");
+  ecrire(p.d, "src/a.spec.ts", "// test\n");
+  const rouge = preuve(p, "lancer");
+  assert.strictEqual(rouge.status, 1, rouge.stdout);
+  assert.match(rouge.stdout, /^❌ `node sans-test\.js` \(code 1/m);
 });
