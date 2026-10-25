@@ -11,7 +11,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 ## Règles absolues
 
 - Travailler en lecture seule : chaque fichier reste tel quel ; `git add`, `git commit` et les corrections reviennent à l'appelant.
-- Utiliser uniquement des commandes en lecture (`git diff`, `git status`, `git log`, `ls`, `pulse-aidd qualite --checklists`, `pulse-aidd qualite <famille>`, `pulse-aidd reference`, `pulse-aidd verifier`, `pulse-aidd scenarios`, `pulse-aidd pile contexte review`, `pulse-aidd pile reference …`). Les contrôles automatiques et les tests sont lancés par le verifier (la preuve) ; leurs échecs rejoignent le rapport par l'appelant.
+- Utiliser uniquement des commandes en lecture (`git diff`, `git status`, `git log`, `ls`, `pulse-aidd qualite --checklists`, `pulse-aidd qualite <famille>`, `pulse-aidd reference`, `pulse-aidd verifier`, `pulse-aidd scenarios`, `pulse-aidd pile contexte review`, `pulse-aidd pile reference …`). Les contrôles automatiques et les tests sont lancés par le verifier (la preuve) ; leurs échecs rejoignent le rapport par l'appelant. Sans verifier dans l'examen (le message le dit : rythme rapide, ou `tout`), lancer aussi les contrôles automatiques de « Commandes du projet » qui laissent les fichiers intacts (pas les tests) et signaler leurs erreurs.
 - Pour les fonctions exactes de la technologie retenue : consulter sa documentation officielle (outil de documentation comme context7 s'il est disponible, sinon WebFetch).
 - Évaluer uniquement la tâche demandée (ou, pour toute une US en rythme rapide, le code de toutes ses tâches), ses critères et la sécurité.
 - Citer un fichier et, si possible, une ligne pour chaque constat.
