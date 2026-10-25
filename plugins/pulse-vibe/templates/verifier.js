@@ -162,21 +162,134 @@ function listerFichiers() {
   return resultat;
 }
 
-function fichiersIndexes() {
+const gitSortie = (args, cwd) => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 256 * 1024 * 1024 });
+const reel = (p) => {
   try {
-    const sortie = execFileSync("git", ["diff", "--cached", "--name-only", "-z", "--diff-filter=ACMR"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-    return sortie.split("\u0000").filter(Boolean);
+    return fs.realpathSync(p);
   } catch (e) {
-    return [];
+    return path.resolve(p);
+  }
+};
+
+/** La racine du dépôt Git, ou null hors d'un dépôt. */
+function racineDepot() {
+  try {
+    return gitSortie(["rev-parse", "--show-toplevel"]).trim() || null;
+  } catch (e) {
+    return null;
   }
 }
 
-function contenuIndexe(f) {
-  try {
-    return execFileSync("git", ["show", `:${f}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 1024 * 1024 });
-  } catch (e) {
-    return "";
+/** Le dossier du projet : le plus proche du dossier courant, jusqu'à la racine du dépôt, qui contient aidd_docs/ ou scripts/verifier.js ;
+ *  sinon la racine du dépôt. Un projet rangé dans un sous-dossier d'un dépôt plus grand garde ainsi ses règles et ses scénarios. */
+function dossierProjet(racine) {
+  const haut = reel(racine);
+  let dossier = reel(process.cwd());
+  for (;;) {
+    if (fs.existsSync(path.join(dossier, "aidd_docs")) || fs.existsSync(path.join(dossier, "scripts", "verifier.js"))) return dossier;
+    const rel = path.relative(haut, dossier);
+    if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) return haut;
+    dossier = path.dirname(dossier);
   }
+}
+
+/** Les fichiers préparés pour le commit (ajoutés, copiés, modifiés, renommés, changés de type) : { fichier, mode, objet },
+ *  chemins depuis la racine du dépôt ; null si Git ne répond pas. */
+function fichiersIndexes(racine) {
+  let sortie;
+  try {
+    sortie = gitSortie(["diff", "--cached", "--raw", "-z", "--no-abbrev", "--diff-filter=ACMRT"], racine);
+  } catch (e) {
+    return null;
+  }
+  const morceaux = sortie.split("\u0000");
+  const resultat = [];
+  for (let i = 0; i < morceaux.length; i++) {
+    const m = /^:\d+ (\d+) [0-9a-f]+ ([0-9a-f]+) ([A-Z])/.exec(morceaux[i]);
+    if (!m) continue;
+    if (m[3] === "R" || m[3] === "C") i++; // l'ancien chemin, puis le nouveau
+    if (morceaux[i + 1]) resultat.push({ fichier: morceaux[++i], mode: m[1], objet: m[2] });
+  }
+  return resultat;
+}
+
+/** Lance « git cat-file » en un seul processus pour tous les objets : la sortie brute, ou null si Git ne répond pas. */
+function catFile(option, objets, racine, taille = 0) {
+  try {
+    return execFileSync("git", ["cat-file", option], { cwd: racine, input: objets.join("\n") + "\n", stdio: ["pipe", "pipe", "ignore"], maxBuffer: taille + objets.length * 128 + 1024 * 1024 });
+  } catch (e) {
+    return null;
+  }
+}
+
+/** La taille de chaque objet (Map objet → octets), lue en un seul processus ; null si Git ne répond pas. */
+function taillesObjets(objets, racine) {
+  if (!objets.length) return new Map();
+  const brut = catFile("--batch-check", objets, racine);
+  if (brut === null) return null;
+  const tailles = new Map();
+  for (const ligne of brut.toString("latin1").split("\n")) {
+    const [objet, type, n] = ligne.split(" ");
+    if (n !== undefined && type !== "missing") tailles.set(objet, Number(n));
+  }
+  return tailles;
+}
+
+/** Le contenu de chaque objet (Map objet → Buffer), lu en un seul processus ; null si Git ne répond pas. */
+function lireObjets(objets, racine, taille) {
+  if (!objets.length) return new Map();
+  const brut = catFile("--batch", objets, racine, taille);
+  if (brut === null) return null;
+  const lus = new Map();
+  let pos = 0;
+  while (pos < brut.length) {
+    const fin = brut.indexOf(10, pos);
+    if (fin === -1) break;
+    const [objet, type, n] = brut.toString("latin1", pos, fin).split(" ");
+    pos = fin + 1;
+    if (n === undefined || type === "missing") continue;
+    lus.set(objet, brut.subarray(pos, pos + Number(n)));
+    pos += Number(n) + 1;
+  }
+  return lus;
+}
+
+// Au-delà, un fichier texte préparé est refusé plutôt que lu (même limite que le garde-fou des commandes).
+const TAILLE_MAX_INDEX = 20 * 1024 * 1024;
+
+/** Un fichier préparé de plus de 20 Mo est-il binaire (Git ne compte pas ses lignes) ? */
+function estBinaireIndexe(f, racine) {
+  try {
+    return /^-\t-\t/.test(gitSortie(["--literal-pathspecs", "diff", "--cached", "--numstat", "--", f], racine));
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Le contenu préparé de chaque fichier : Map fichier → { contenu } (binaire ou sous-module : contenu vide), ou { probleme }
+ *  quand il ne peut pas être contrôlé. Deux processus Git en tout, quel que soit le nombre de fichiers. */
+function contenusIndexes(entrees, racine) {
+  const resultat = new Map();
+  const illisible = (f) => ({ probleme: `${f} : contenu préparé illisible, non contrôlé. Préparez-le de nouveau (git add ${f}), puis relancez le contrôle.` });
+  // Un sous-module (mode 160000) est un lien vers un commit d'un autre dépôt : rien à lire ici.
+  const aLire = entrees.filter((e) => e.mode !== "160000");
+  for (const e of entrees) if (e.mode === "160000") resultat.set(e.fichier, { contenu: "" });
+  const tailles = taillesObjets([...new Set(aLire.map((e) => e.objet))], racine);
+  const petits = [];
+  for (const e of aLire) {
+    const taille = tailles ? tailles.get(e.objet) : undefined;
+    if (taille === undefined) resultat.set(e.fichier, illisible(e.fichier));
+    else if (taille <= TAILLE_MAX_INDEX) petits.push(e);
+    else if (estBinaireIndexe(e.fichier, racine)) resultat.set(e.fichier, { contenu: "" });
+    else resultat.set(e.fichier, { probleme: `${e.fichier} : fichier trop gros pour être contrôlé (plus de 20 Mo). Un fichier de cette taille n'a pas sa place dans le dépôt : rangez-le hors du projet, ou ajoutez-le au .gitignore.` });
+  }
+  const objets = [...new Set(petits.map((e) => e.objet))];
+  const lus = lireObjets(objets, racine, objets.reduce((somme, o) => somme + tailles.get(o), 0));
+  for (const e of petits) {
+    const brut = lus ? lus.get(e.objet) : undefined;
+    resultat.set(e.fichier, brut ? { contenu: brut.includes(0) ? "" : brut.toString("utf8") } : illisible(e.fichier));
+  }
+  return resultat;
 }
 
 // ---------------------------------------------------------------- Scénarios
@@ -375,11 +488,29 @@ function controlerRegles(lus, erreurs) {
 }
 
 function principal() {
+  // Depuis un sous-dossier, le contrôle porte sur tout le projet, avec ses règles et ses scénarios (dossierProjet) ;
+  // Git répond toujours depuis la racine du dépôt, même quand le projet est rangé dans un sous-dossier d'un dépôt plus grand.
+  const racine = racineDepot();
+  const projet = racine ? dossierProjet(racine) : process.cwd();
+  process.chdir(projet);
   if (process.argv.includes("--scenarios")) return afficherCouverture();
   const index = process.argv.includes("--index");
   const erreurs = [];
-  const fichiers = index ? fichiersIndexes() : listerFichiers();
+  const entrees = index && racine ? fichiersIndexes(racine) : null;
+  const fichiers = index ? entrees && entrees.map((e) => e.fichier) : listerFichiers();
+  if (fichiers === null) {
+    console.error("❌ Contrôle impossible : Git ne donne pas la liste des fichiers préparés (dossier hors d'un dépôt Git, ou dépôt illisible). Le commit attend : lancez le contrôle depuis le dossier du projet.");
+    process.exit(1);
+  }
+  const contenus = index ? contenusIndexes(entrees, racine) : null;
+  // Avant commit, les chemins viennent de la racine du dépôt ; les règles se lisent depuis le dossier du projet (hors du projet : secrets seulement).
+  const pourRegles = (f) => {
+    if (!index) return f;
+    const rel = path.relative(projet, path.join(reel(racine), f));
+    return rel.startsWith("..") || path.isAbsolute(rel) ? null : rel;
+  };
   const lus = [];
+  let nonControles = 0;
 
   for (const f of fichiers) {
     if (estFichierEnv(f)) {
@@ -387,8 +518,15 @@ function principal() {
       continue;
     }
     let contenu = "";
-    if (index) contenu = contenuIndexe(f);
-    else {
+    if (index) {
+      const lu = contenus.get(f);
+      if (lu.probleme) {
+        erreurs.push(lu.probleme);
+        nonControles++;
+        continue;
+      }
+      contenu = lu.contenu;
+    } else {
       try {
         const st = fs.statSync(f);
         if (!st.isFile() || st.size > 512 * 1024) continue;
@@ -398,12 +536,13 @@ function principal() {
       }
     }
     if (contenu.includes("\u0000")) continue;
-    lus.push({ fichier: f, contenu });
+    const chemin = pourRegles(f);
+    if (chemin !== null) lus.push({ fichier: chemin, contenu });
     const secrets = trouverSecrets(contenu);
     if (secrets.length) erreurs.push(`${f} : contient une ${secrets.join(", ")}. Déplacez-la dans les variables d'environnement.`);
   }
 
-  const secretsTrouves = erreurs.length > 0;
+  const secretsTrouves = erreurs.length > nonControles;
   const bilanScenarios = index ? "" : controlerScenarios(erreurs);
   const avantRegles = erreurs.length;
   controlerRegles(lus, erreurs);
@@ -411,7 +550,11 @@ function principal() {
   if (erreurs.length) {
     const entete = !index
       ? "❌ Vérification échouée, la mise en ligne est annulée :\n"
-      : secretsTrouves ? "❌ Commit annulé : un secret allait être enregistré.\n" : "❌ Commit annulé : une règle du projet n'est pas respectée.\n";
+      : secretsTrouves
+        ? "❌ Commit annulé : un secret allait être enregistré.\n"
+        : nonControles
+          ? "❌ Commit annulé : un fichier préparé n'a pas pu être contrôlé.\n"
+          : "❌ Commit annulé : une règle du projet n'est pas respectée.\n";
     console.error(entete);
     for (const e of erreurs) console.error("  - " + e);
     if (secretsTrouves) console.error("\nSi une vraie clé a été envoyée vers le dépôt distant, révoquez-la chez le fournisseur et créez-en une nouvelle : /pulse:secrets fuite vous guide.");

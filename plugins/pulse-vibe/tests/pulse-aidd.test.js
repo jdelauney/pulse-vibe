@@ -38,18 +38,19 @@ test("contexte learn : règles communes, pédagogie et modèle du carnet", () =>
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
-test("contexte commit et pr : conventions Git partagées, modèle de PR pour pr", () => {
+test("contexte commit et pr : conventions Git partagées, modèles lancés à la demande", () => {
   const commit = lancer("contexte", "commit");
   assert.strictEqual(commit.status, 0, commit.stderr);
   assert.ok(commit.stdout.includes("===== Conventions Git ====="));
-  assert.ok(commit.stdout.includes("===== Modèle : .gitignore ====="));
+  assert.ok(commit.stdout.includes("===== L'envoi du travail ====="));
+  assert.ok(!commit.stdout.includes("===== Modèle : .gitignore ====="), "le modèle .gitignore se lance seulement s'il manque");
   const pr = lancer("contexte", "pr");
   assert.strictEqual(pr.status, 0, pr.stderr);
   for (const titre of [
     "===== Règles communes Pulse =====",
     "===== Conventions Git =====",
-    "===== Modèle : description de demande de fusion =====",
   ]) assert.ok(pr.stdout.includes(titre), titre);
+  assert.ok(!pr.stdout.includes("===== Modèle : description de demande de fusion ====="), "le modèle se lance au moment de rédiger");
   assert.doesNotMatch(pr.stdout, /commande inconnue/);
 });
 
@@ -85,15 +86,19 @@ test("l'aide cite secrets, seo, perf et search-console", () => {
     assert.ok(r.stdout.includes(sc), sc);
 });
 
-test("contexte secrets : règles communes, saisie hors conversation, fuite, modèles des secrets et de l'incident", () => {
+test("contexte secrets : règles communes, saisie hors conversation, modèle des secrets ; la fuite et le journal d'incident à la demande", () => {
   const r = lancer("contexte", "secrets");
   assert.strictEqual(r.status, 0);
-  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Réagir à une fuite de clé", "Modèle : docs/secrets.md", "Modèle : journal d'incident"])
+  for (const titre of ["Règles communes Pulse", "Garder la valeur d'un secret hors de la conversation", "Modèle : docs/secrets.md", "Modèle : docs/lexique.md"])
     assert.ok(r.stdout.includes(`===== ${titre}`), titre);
+  for (const titre of ["Réagir à une fuite de clé", "Modèle : journal d'incident"]) assert.ok(!r.stdout.includes(`===== ${titre}`), `sans ${titre}`);
 });
 
-test("contexte deploy : saisie des secrets hors conversation ; contexte security : le modèle de docs/securite.md seul", () => {
-  assert.ok(lancer("contexte", "deploy").stdout.includes("===== Garder la valeur d'un secret hors de la conversation"), "deploy");
+test("contexte deploy : les règles communes seules, chaque mode lance sa référence ; contexte security : le modèle de docs/securite.md seul", () => {
+  const deploy = lancer("contexte", "deploy").stdout;
+  assert.ok(deploy.includes("===== Règles communes Pulse ====="), "deploy : règles communes");
+  assert.deepStrictEqual([...deploy.matchAll(/^===== (.+) =====$/gm)].map((m) => m[1]), ["Règles communes Pulse"], "deploy : rien d'autre");
+  for (const mode of ["premiere", "production", "variables"]) assert.strictEqual(lancer("reference", `deploy/${mode}.md`).status, 0, mode);
   const security = lancer("contexte", "security").stdout;
   assert.ok(security.includes("===== Modèle : docs/securite.md ====="), "security : modèle");
   for (const titre of ["Garder la valeur d'un secret hors de la conversation", "Checklist sécurité", "Modèle : mention de confidentialité"])
@@ -118,7 +123,7 @@ test("contexte annuler : règles communes seules ; l'envoi du travail se lit à 
   const r = lancer("contexte", "annuler");
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(r.stdout.includes("===== Règles communes Pulse ====="));
-  for (const titre of ["Conventions Git", "Le dépôt distant et l'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
+  for (const titre of ["Conventions Git", "Le dépôt distant", "L'envoi du travail"]) assert.ok(!r.stdout.includes("===== " + titre + " ====="), titre);
   assert.doesNotMatch(r.stdout, /commande inconnue/);
 });
 
@@ -240,8 +245,9 @@ test("etape --sans-communes : instructions et contexte de l'étape, sans les rè
   assert.strictEqual(sans.status, 0, sans.stderr);
   assert.ok(avec.stdout.includes("===== Règles communes Pulse ====="), "sans option : règles communes");
   assert.ok(!sans.stdout.includes("===== Règles communes Pulse ====="), "avec l'option : sans règles communes");
-  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Instructions de l'étape /pulse:commit =====", "===== Conventions Git =====", "===== L'envoi du travail ====="])
     assert.ok(sans.stdout.includes(titre), titre);
+  assert.ok(!sans.stdout.includes("===== Le dépôt distant ====="), "relier un dépôt distant : init, cicd et deploy");
 });
 
 test("etape : le SKILL.md sans son en-tête ni sa section Exemples", () => {
@@ -621,6 +627,29 @@ test("installer-hook : contrôle introuvable (ni scripts/verifier.js, ni copie) 
   assert.match(git("diff", "--cached", "--name-only").stdout, /a\.txt/);
 });
 
+test("verifier --index : seulement les fichiers préparés, avec le message d'avant commit ; verifier seul inchangé", () => {
+  const { d, git } = depotHook("pulse-verifier-index-");
+  fs.writeFileSync(path.join(d, "a.txt"), "bonjour\n");
+  git("add", "a.txt");
+  assert.strictEqual(git("commit", "-q", "-m", "x").status, 0);
+  fs.writeFileSync(path.join(d, "brouillon.js"), cleHook()); // pas préparé : hors du contrôle d'avant commit
+  fs.writeFileSync(path.join(d, "b.txt"), "propre\n");
+  git("add", "b.txt");
+  const sain = dans(d, "verifier", "--index");
+  assert.strictEqual(sain.status, 0, sain.stdout + sain.stderr);
+  assert.match(sain.stdout, /\(1 fichiers contrôlés\)/);
+  fs.writeFileSync(path.join(d, "app.js"), cleHook());
+  git("add", "app.js");
+  const refus = dans(d, "verifier", "--index");
+  assert.strictEqual(refus.status, 1, refus.stdout + refus.stderr);
+  assert.match(refus.stderr, /❌ Commit annulé : un secret allait être enregistré/);
+  assert.match(refus.stderr, /app\.js/);
+  assert.doesNotMatch(refus.stderr, /brouillon\.js/);
+  const complet = dans(d, "verifier");
+  assert.strictEqual(complet.status, 1);
+  assert.match(complet.stderr, /❌ Vérification échouée/);
+});
+
 test("installer-hook : un hooksPath réglé pour tous les projets n'est jamais modifié", () => {
   const { d } = depotHook("pulse-hook-global-");
   const globaux = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hooks-globaux-"));
@@ -669,7 +698,7 @@ test("contexte spirc : règles communes et lexique ; modèle de revue et référ
   assert.strictEqual(r.status, 0, r.stderr);
   for (const titre of ["===== Règles communes Pulse =====", "===== Modèle : docs/lexique.md ====="])
     assert.ok(r.stdout.includes(titre), titre);
-  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== Le dépôt distant et l'envoi du travail ====="])
+  for (const titre of ["===== Modèle : rapport de revue =====", "===== Travailler dans un worktree =====", "===== Tests automatiques =====", "===== Règles de la mémoire projet =====", "===== Checklist sécurité =====", "===== L'envoi du travail ====="])
     assert.ok(!r.stdout.includes(titre), titre);
 });
 

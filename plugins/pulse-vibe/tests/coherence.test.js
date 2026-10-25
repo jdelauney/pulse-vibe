@@ -257,8 +257,10 @@ const SENSIBLES = [
   "pulse-aidd search-console deconnecter",
   "pulse-aidd pile hebergeur envoyer NOM production",
   "pulse-aidd pile hebergeur redeployer production",
+  "pulse-aidd deplacer-commits feat/us-003-liste", // déplace la branche principale (règle commune 17)
+  "pulse-aidd deplacer-commits feat/us-003-liste --principale main",
 ];
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier))\b/.test(commande);
+const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
@@ -589,7 +591,7 @@ test("checklist sécurité : S13 (CSRF, sessions, cookies, webhooks), requêtes 
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /\| Auditer les dépendances \|/);
   assert.match(lire(RACINE, "templates", "ci-verifications.yml.template"), /\{\{Auditer les dépendances\}\}/);
   const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
-  assert.match(cicd, /auditer les dépendances \(« Auditer les dépendances »/);
+  assert.match(cicd, /audit des dépendances \(« Auditer les dépendances »\) fait échouer la CI sur une faille de gravité élevée ou critique/);
   assert.match(cicd, /## 8\. Mises à jour des dépendances/);
   assert.match(cicd, /Dependabot/);
   assert.match(cicd, /Renovate/);
@@ -605,6 +607,7 @@ test("checklist sécurité : sauvegarde dans le modèle technique, audit dans l'
   assert.match(cicd.split("## Objectif")[1].split("\n## ")[0], /dépendances/);
   assert.match(lire(RACINE, "README.md"), /\/pulse:cicd[^\n]*dépendances/);
   assert.match(lire(RACINE, "agents", "security-auditor.md"), /aucun fichier de dépendances[^\n]*S8 vaut « — »/);
+  assert.ok(lire(RACINE, "templates", "ci-verifications.yml.template").indexOf("Installer les dépendances") < lire(RACINE, "templates", "ci-verifications.yml.template").indexOf("Contrôler l'absence de secrets"), "modèle de CI : dépendances installées avant le contrôle des secrets, comme le wiki");
   const code = lire(RACINE, "references", "qualite", "securite-code.md");
   assert.match(code, /En-têtes de sécurité \| S12 \|/);
   assert.match(code, /\| S13 \|/);
@@ -1007,7 +1010,7 @@ test("phrases dites à la personne sans « MVP », « worktree » ni « demande 
   // Permis : un titre de section ou de référence cité (lu par l'IA), et la phrase qui explique le mot « worktree ».
   const PERMIS = /^\d+\. |^Travailler dans un worktree$|^Un worktree est /;
   const problemes = [];
-  const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md")];
+  const fichiers = [...["cicd", "pr", "prd", "refine", "status", "implement", "spirc"].map((s) => path.join("skills", s, "SKILL.md")), path.join("references", "worktree.md"), path.join("references", "depot-distant.md"), path.join("references", "envoi.md")];
   for (const f of fichiers) {
     for (const ligne of lire(RACINE, f).split("\n")) {
       for (const m of ligne.matchAll(/« ((?:[^«»]|«[^«»]*»)+) »/g)) {
@@ -1063,7 +1066,7 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
   for (const [fichier, motif] of [
     [["skills", "commit", "SKILL.md"], /### 7\. Envoyer[\s\S]*Claude Code va vous demander/],
     [["skills", "pr", "SKILL.md"], /Claude Code va vous demander l'accord pour \x60git pull\x60[\s\S]*Claude Code va vous demander l'accord pour envoyer/],
-    [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. Annoncer : « Claude Code va vous demander/],
+    [["skills", "deploy", "SKILL.md"], /## 4\. Mise à jour\s+1\. \*\*Commits à envoyer\*\*[^\n]*annoncer : « Claude Code va vous demander/],
     [["skills", "cicd", "SKILL.md"], /Annoncer : « Claude Code va vous demander[^\n]*Puis l'envoyer \(\x60git push\x60/],
     [["references", "worktree-dossier.md"], /\*\*Fusionner\*\* :[\s\S]*Claude Code va vous demander/],
   ]) {
@@ -1073,10 +1076,41 @@ test("les envois, fusions et récupérations soumis à l'accord sont annoncés e
   }
 });
 
-test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section", () => {
-  const sections = lire(RACINE, "skills", "deploy", "SKILL.md").split(/^###? /m).filter((s) => /git push/.test(s));
+test("deploy : chaque envoi est annoncé avant la demande d'accord, dans sa section, références par mode comprises", () => {
+  const fichiers = [path.join(RACINE, "skills", "deploy", "SKILL.md"), ...["premiere.md", "production.md", "variables.md"].map((f) => path.join(RACINE, "skills", "deploy", "references", f))];
+  const sections = fichiers.flatMap((f) => lire(f).split(/^#{2,4} /m).filter((s) => /git push/.test(s)).map((s) => [path.basename(f), s]));
   assert.ok(sections.length >= 4, "sections avec envoi");
-  for (const s of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord|accord annoncé au § 3/, s.slice(0, 30));
+  for (const [f, s] of sections) assert.match(s, /Claude Code va vous demander l'accord|Chaque envoi déclenche une demande d'accord/, `${f} : ${s.slice(0, 30)}`);
+});
+
+test("deploy : porte officielle chargée par mode, mise à jour qui vérifie aussi un envoi déjà fait, preuve relue, vitesse sans l'étape perf", () => {
+  const contexte = contexteCharge("deploy");
+  for (const titre of ["Le dépôt distant", "Garder la valeur d'un secret hors de la conversation", "Exemple de CI à adapter"]) assert.ok(!contexte.includes(`===== ${titre} =====`), `contexte deploy sans « ${titre} »`);
+  const deploy = lire(RACINE, "skills", "deploy", "SKILL.md");
+  const choisir = deploy.split("### 2. Choisir le mode")[1].split("\n### 3.")[0];
+  for (const attendu of ["`pulse-aidd reference deploy/premiere.md`", "`pulse-aidd pile contexte deploy-premiere`", "`pulse-aidd reference deploy/production.md`", "`pulse-aidd pile contexte deploy-production`"])
+    assert.ok(choisir.includes(attendu), `§ 2 : ${attendu}`);
+  const controles = deploy.split("### 1. Contrôles avant envoi")[1].split("\n### 2.")[0];
+  assert.match(controles, /`pulse-aidd preuve etat --exiger suite --exiger construction`[^\n]*`pulse-aidd preuve lancer --portee suite --construire`/);
+  const miseAJour = deploy.split("### 4. Mise à jour")[1].split("\n### ")[0];
+  assert.match(miseAJour, /`git status -sb`[^\n]*`\[ahead N\]`/, "commits à envoyer lus par git status, qui marche sous Bash comme sous PowerShell");
+  assert.doesNotMatch(miseAJour, /@\{u\}/, "@{u} est une table de hachage pour PowerShell");
+  assert.match(miseAJour, /Tout est déjà envoyé : le dire, et passer au point 3\./);
+  const tout = skillTexte("deploy");
+  assert.doesNotMatch(tout, /etape perf/, "la mesure de vitesse en deux commandes");
+  const premiere = lire(RACINE, "skills", "deploy", "references", "premiere.md");
+  assert.match(premiere, /`pulse-aidd perf cle`[^\n]*`pulse-aidd perf mesurer <adresse du site> --passages 3 --json docs\/performance\/mesures\/<AAAA-MM-JJ>\.json`/);
+  assert.match(premiere, /`pulse-aidd reference deploy\/variables\.md`/);
+  const variables = lire(RACINE, "skills", "deploy", "references", "variables.md");
+  assert.match(variables, /`pulse-aidd pile contexte deploy-variables`/);
+  assert.match(variables, /`pulse-aidd reference secrets\/sans-conversation\.md`/);
+  assert.match(variables, /`pulse-aidd secrets redeployer --env production`/);
+  assert.match(lire(RACINE, "skills", "deploy", "references", "production.md"), /`pulse-aidd etape cicd --sans-communes`/);
+  assert.match(deploy.split("### 6. Clore")[1], /proposer `\/pulse:seo lancer` \(il vérifie l'essentiel et relie Search Console\)/);
+  assert.doesNotMatch(deploy, /search-console relier/, "/pulse:seo lancer relie Search Console lui-même");
+  const motifs = motifsBash(path.join(RACINE, "skills", "deploy", "SKILL.md"));
+  for (const retire of ["git grep -l *", "pulse-aidd secrets historique*"]) assert.ok(!motifs.includes(retire), `deploy : Bash(${retire}) sans emploi`);
+  assert.ok(motifs.some((m) => couvre(m, "pulse-aidd pile contexte deploy-premiere")), "deploy : consignes du pack par mode");
 });
 
 test("commit nomme la forme `git commit -m`, annuler passe par `pulse-aidd annuler`, et commit utilise `git remote -v`", () => {
@@ -1185,14 +1219,15 @@ test("production : retour arrière dans le modèle technical.md et dans deploy ;
   const modele = lire(RACINE, "skills", "tech", "assets", "technical.md");
   assert.match(modele, /\n## Retour arrière\n/);
   assert.ok(modele.indexOf("## Retour arrière") < modele.indexOf("## Référencement"), "après « Hébergement et mise en ligne »");
-  const deploy = lire(RACINE, "skills", "deploy", "SKILL.md");
+  const deploy = skillTexte("deploy");
   assert.match(deploy, /section « Retour arrière » de `docs\/technical\.md`/);
-  assert.match(deploy, /propre à chaque environnement/);
+  assert.match(deploy, /`pulse-aidd reference secrets\/sans-conversation\.md`/);
+  assert.match(lire(RACINE, "references", "secrets", "sans-conversation.md"), /propre à chaque environnement/);
   assert.match(lire(RACINE, "references", "secrets", "sans-conversation.md"), /--meme-valeur/);
 });
 
 test("mise en production : une sonde de disponibilité est proposée et notée", () => {
-  assert.match(lire(RACINE, "skills", "deploy", "SKILL.md"), /\*\*Surveillance\*\*/);
+  assert.match(skillTexte("deploy"), /\*\*Surveillance\*\*/);
   assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /^- Surveillance : /m);
 });
 
@@ -1494,7 +1529,7 @@ test("reprise : spirc et implement rechargent les références de la réalisatio
   assert.doesNotMatch(spirc, /Références de la réalisation chargées ; sinon les relancer/);
   const implement = skillTexte("implement");
   assert.match(implement, /y compris à une reprise/);
-  assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference depot-distant\.md`/);
+  assert.match(implement, /dès qu'un dépôt distant existe, lancer `pulse-aidd reference envoi\.md`/);
 });
 
 test("spirc : l'analyse d'une demande libre est une référence, -d est un raccourci, chaque référence de la réalisation se charge par son appel", () => {
@@ -1614,11 +1649,11 @@ test("fin d'un dossier à part : la proposition passe « prête » en mode PR ; 
   assert.match(pr, /« Marquer la proposition comme prête à accepter »/);
   assert.match(pr, /« \(Recommandé\) » va à la première quand toutes les tâches du plan sont terminées, sinon à « Garder le dossier à part »/);
   assert.match(pr, /marquée prête, sortir du dossier à part \(outil `ExitWorktree`/);
-  assert.match(lire(RACINE, "references", "depot-distant.md"), /Chaque envoi passe toujours par la demande d'autorisation de Claude Code/);
+  assert.match(lire(RACINE, "references", "envoi.md"), /Chaque envoi passe toujours par la demande d'autorisation de Claude Code/);
   for (const skill of ["tech", "ui"]) assert.match(skillTexte(skill), /étape de `\/pulse:express`[^)]*: le réécrire plutôt pour cette commande, à son étape suivante\)/, skill);
   assert.doesNotMatch(pr, /Rassembler dans/, "pas de fusion locale proposée en mode PR");
   assert.match(fin, /- \*\*Autre envoi\*\*[^\n]*« Rassembler dans `<branche de départ>` maintenant \(Recommandé\) »/);
-  const depot = lire(RACINE, "references", "depot-distant.md");
+  const depot = lire(RACINE, "references", "envoi.md");
   assert.match(depot, /« Une version parallèle pour l'US, publiée quand vous l'acceptez sur le site du dépôt \(Recommandé\) »/);
   assert.match(depot, /En mode découverte \(règles de réalisation\)[^\n]*« Directement sur la version principale »/);
   const regles = lire(RACINE, "references", "regles-realisation.md");
@@ -1833,8 +1868,23 @@ test("rythme rapide : posé par express ou par -f, tests essentiels sans bout en
   assert.match(lire(RACINE, "references", "tests", "gherkin.md"), /en rythme rapide[^|]*seulement `@integration` \(dont `@securite`\)[^|]*parcours principal compris, est `@manuel`/);
 });
 
+test("dépôt distant et envoi : relier dans depot-distant.md, envoyer dans envoi.md, chacun chargé par ses commandes", () => {
+  const depot = lire(RACINE, "references", "depot-distant.md");
+  const envoi = lire(RACINE, "references", "envoi.md");
+  assert.match(depot, /^## 1\. Relier le projet à un dépôt distant$/m);
+  assert.doesNotMatch(depot, /Choisir comment envoyer le travail|Envoyer après chaque tâche|Fin du plan, en mode PR/);
+  for (const t of ["## 1. Choisir comment envoyer le travail d'un plan", "## 2. Envoyer après chaque tâche enregistrée", "## 3. Fin du plan, en mode PR"]) assert.ok(envoi.includes(t), t);
+  assert.doesNotMatch(envoi, /Relier le projet à un dépôt distant/);
+  // Plus aucun renvoi à l'ancien titre commun (init et refine : phase 6, corrigés à la fusion).
+  const fautifs = TEXTES.filter(({ fichier }) => !/skills[\\/](init|refine)[\\/]/.test(fichier))
+    .filter(({ texte }) => /Le dépôt distant et l'envoi du travail/.test(texte))
+    .map(({ fichier }) => fichier);
+  assert.deepStrictEqual(fautifs, []);
+  assert.match(OUTIL, /^ {4}commit\)\n(?: {6}[^\n]*\n)* {6}afficher "L'envoi du travail" "\$REF\/envoi\.md"/m);
+});
+
 test("envoi : sans suivi de la mise en ligne chez l'hébergeur, laissé à deploy et status", () => {
-  assert.match(lire(RACINE, "references", "depot-distant.md"), /\*\*Après l'envoi, passer directement à la suite\.\*\*[^\n]*`\/pulse:deploy` et `\/pulse:status`[^\n]*rythme rapide/);
+  assert.match(lire(RACINE, "references", "envoi.md"), /\*\*Après l'envoi, passer directement à la suite\.\*\*[^\n]*`\/pulse:deploy` et `\/pulse:status`[^\n]*rythme rapide/);
 });
 
 test("spirc : une ronde de départ unique (rythme, options à cocher, tests, envoi), posée même en mode découverte", () => {
@@ -2223,4 +2273,71 @@ test("commit : le filet anti-régression se lit dans la preuve, sans référence
   assert.match(ligne, /dernière tâche de l'US hors `\/pulse:spirc`/, "filet limité : toute la suite à la dernière tâche");
   assert.doesNotMatch(commit, /référence « Tests automatiques »/, "aucune référence hors du contexte de commit");
   assert.ok(motifsBash(path.join(RACINE, "skills", "commit", "SKILL.md")).some((m) => couvre(m, "pulse-aidd preuve etat --exiger suite")), "commit : preuve autorisée");
+});
+
+test("commit : clés et règles contrôlées par pulse-aidd verifier --index après git add ; push envoie seulement et propose /pulse:deploy pour un site en ligne", () => {
+  const commit = skillTexte("commit");
+  const controles = commit.slice(commit.indexOf("### 1."), commit.indexOf("### 2."));
+  assert.doesNotMatch(controles, /git diff/, "plus de lecture du diff à la recherche d'une clé");
+  assert.match(controles, /se fait à l'enregistrement \(étape 6\)/);
+  assert.match(controles, /seulement dans ce cas, lancer `pulse-aidd modele gitignore\.template`/, "modèle .gitignore à la demande");
+  const enregistrer = commit.slice(commit.indexOf("### 6."), commit.indexOf("### 7."));
+  assert.match(enregistrer, /`git add <fichiers du sujet>`[^\n]*, puis `pulse-aidd verifier --index`[^\n]*« Quand un contrôle refuse le commit »[^\n]*, puis `git commit`/);
+  assert.ok(motifsBash(path.join(RACINE, "skills", "commit", "SKILL.md")).includes("pulse-aidd verifier --index"), "commit : verifier --index autorisé");
+  const envoyer = commit.slice(commit.indexOf("### 7."), commit.indexOf("### 8."));
+  assert.match(envoyer, /Envoi refusé : Conventions Git § 4\./);
+  assert.doesNotMatch(envoyer, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
+  assert.match(envoyer, /site déjà en ligne[^\n]*règle commune 17[^\n]*hors d'une boucle de `\/pulse:spirc` ou de `\/pulse:implement`, proposer ensuite `\/pulse:deploy`/);
+  assert.match(commit.slice(commit.indexOf("### Suite")), /plan est terminé et envoyé sur la branche principale d'un site en ligne : prochaine étape `\/pulse:deploy`/);
+  assert.match(lire(DEPOT, "docs", "commandes", "commit.html"), /Pour publier et vérifier le site : <a href="deploy\.html"><code>\/pulse:deploy<\/code><\/a>/);
+  assert.match(lire(DEPOT, "docs", "memo-commandes.md"), /`\/pulse:commit push` l'envoie sur le dépôt en ligne, après votre accord ; `\/pulse:deploy` publie et vérifie/);
+});
+
+test("pr : commits déplacés par pulse-aidd deplacer-commits après accord, secrets de chaque commit envoyé contrôlés, /pulse:deploy après la fusion", () => {
+  const pr = skillTexte("pr");
+  const verifier = pr.slice(pr.indexOf("#### 1. Vérifier"), pr.indexOf("#### 2."));
+  assert.match(verifier, /Après accord explicite \(AskUserQuestion\)[^\n]*Claude Code va vous demander l'accord pour déplacer[^\n]*`pulse-aidd deplacer-commits <nom>[^`]*`[^\n]*montrer sa sortie/);
+  assert.doesNotMatch(pr, /git branch -f|git switch -c <nom>` puis/, "plus de déplacement par gestes libres");
+  assert.match(verifier, /`git fetch origin`, puis `git log --oneline origin\/<principale>\.\.HEAD`/, "état du dépôt distant récupéré avant de compter et de déplacer");
+  assert.match(verifier, /`pulse-aidd deplacer-commits <nom> --principale <principale>`/, "principale toujours passée : une seule demande d'accord");
+  assert.match(verifier, /`etat: etat-incertain`[^\n]*\/pulse:get-help/, "code 3 incertain : la principale est à vérifier");
+  const rassembler = pr.slice(pr.indexOf("#### 2."), pr.indexOf("#### 3."));
+  assert.doesNotMatch(rassembler, /simplement envoyer les nouveaux commits \(`git push`\)/, "un envoi passe toujours par le contrôle des secrets");
+  assert.match(rassembler, /§ 4, points 1 et 2/);
+  const envoyer = pr.slice(pr.indexOf("#### 4."), pr.indexOf("#### 5."));
+  assert.match(envoyer, /`pulse-aidd secrets historique --depuis origin\/<base>` \(aucune valeur affichée\) ; un ⛔ arrête l'envoi et passe par `\/pulse:secrets fuite`/);
+  assert.match(envoyer, /un ❌ \(historique illisible[^\n]*arrête aussi l'envoi/);
+  assert.doesNotMatch(envoyer, /étape 1 de `\/pulse:commit`/, "plus de renvoi à une étape non chargée");
+  assert.match(envoyer, /Envoi refusé : Conventions Git § 4\./);
+  assert.doesNotMatch(pr, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
+  assert.match(pr, /Cette commande \*\*laisse toujours la fusion à la personne\*\* et laisse le code et les documents du projet tels quels\./);
+  assert.match(pr, /\*\*Modèle\*\*, au moment de rédiger : celui du dépôt s'il existe \(Conventions Git § 6\), sinon `pulse-aidd modele pr\/pull-request\.md`/);
+  assert.doesNotMatch(pr, /Fichiers de cette commande/);
+  assert.match(pr, /`git switch <principale>` puis `git pull` ; pour publier et vérifier la version en ligne : `\/pulse:deploy`/);
+  const motifs = motifsBash(path.join(RACINE, "skills", "pr", "SKILL.md"));
+  assert.ok(motifs.some((m) => couvre(m, "pulse-aidd secrets historique --depuis origin/main")), "pr : contrôle de l'historique autorisé");
+  assert.ok(!motifs.some((m) => couvre(m, "pulse-aidd deplacer-commits feat/x")), "pr : le déplacement passe par la demande d'accord");
+  assert.match(lire(DEPOT, "docs", "commandes", "pr.html"), /<a href="deploy\.html"><code>\/pulse:deploy<\/code><\/a>/);
+});
+
+test("cicd : règles communes seules dans son contexte, vitesse par perf/ci-vitesse.md, étapes du modèle copié, commit contrôlé, essai local par la preuve", () => {
+  const contexte = contexteCharge("cicd");
+  for (const titre of ["Le dépôt distant", "Exemple de CI à adapter", "Conventions Git"]) assert.ok(!contexte.includes(`===== ${titre} =====`), `contexte cicd sans « ${titre} »`);
+  const cicd = lire(RACINE, "skills", "cicd", "SKILL.md");
+  assert.match(cicd, /`pulse-aidd reference perf\/ci-vitesse\.md`/);
+  assert.doesNotMatch(cicd, /etape perf|contexte perf/, "plus l'étape perf entière pour une option");
+  assert.match(cicd, /`scripts\/ci-verifications\.exemple\.yml`[^\n]*dans son ordre/);
+  assert.match(cicd, /`git add`[^\n]*`pulse-aidd verifier --index`[^\n]*`git commit -m/);
+  assert.match(cicd, /`pulse-aidd preuve lancer --portee suite --construire`, puis l'audit des dépendances et `node scripts\/verifier\.js`/);
+  assert.doesNotMatch(cicd, /--force/, "le garde-fou refuse l'envoi forcé : consigne morte");
+  const perf = lire(RACINE, "skills", "perf", "SKILL.md");
+  assert.match(perf, /Proposer la vérification automatique de la vitesse : `pulse-aidd reference perf\/ci-vitesse\.md`, lancé au moment de la proposer\./);
+  assert.doesNotMatch(perf, /Proposer la vérification automatique\. Vérification automatique/, "une seule fois");
+  assert.doesNotMatch(perf, /node scripts\/perf\.js mesurer/, "la vérification automatique vit dans ci-vitesse.md");
+  const vitesse = lire(RACINE, "skills", "perf", "references", "ci-vitesse.md");
+  for (const attendu of ["pulse-aidd perf installer", "--source psi", "--source local", "PULSE_PSI_CLE", "mode informatif"]) assert.ok(vitesse.includes(attendu), `ci-vitesse.md : ${attendu}`);
+  const motifs = motifsBash(path.join(RACINE, "skills", "cicd", "SKILL.md"));
+  for (const retire of ["pulse-aidd contexte perf", "pulse-aidd etape perf --sans-communes", "pulse-aidd perf *", "git branch --list *", "git branch -r *", "git branch --merged*"])
+    assert.ok(!motifs.includes(retire), `cicd : Bash(${retire}) sans emploi`);
+  assert.ok(motifs.some((m) => couvre(m, "pulse-aidd perf installer")), "cicd : la copie du script de mesure (ci-vitesse.md)");
 });

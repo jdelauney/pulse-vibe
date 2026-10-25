@@ -18,7 +18,8 @@
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
-#   pulse-aidd verifier              contrôle les secrets, les fichiers d'environnement suivis par Git et les scénarios sans test
+#   pulse-aidd deplacer-commits <nouvelle-branche> [--principale <nom>]  range les commits pas encore envoyés de la branche principale sur une nouvelle branche, puis remet la principale à l'état du dépôt distant, avec contrôles avant et après (/pulse:pr) ; toujours après l'accord de la personne
+#   pulse-aidd verifier [--index]    contrôle les secrets, les fichiers d'environnement suivis par Git, les règles du projet et les scénarios sans test ; --index : les seuls fichiers préparés (avant commit), sans les scénarios
 #   pulse-aidd preuve lancer [--portee suite | --portee tache [<fichiers de test…>]] [--construire]  lance les contrôles automatiques, les tests (toute la suite ou les fichiers donnés) et, avec --construire, la construction ; garde la preuve, liée au contenu des fichiers
 #   pulse-aidd preuve construire     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests (code 2 sans preuve à jour : rien n'est lancé)
 #   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1) ; « Tester » à « aucune » (choix du projet) satisfait --exiger suite
@@ -292,27 +293,17 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     review) afficher "Examiner une tâche" "$REF/examen.md" ;;
     commit)
       afficher "Conventions Git" "$REF/git.md"
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
-      afficher "Modèle : .gitignore" "$TPL/gitignore.template" ;;
+      afficher "L'envoi du travail" "$REF/envoi.md" ;; # le modèle .gitignore : lancé seulement s'il manque (étape 1)
     pr)
-      afficher "Conventions Git" "$REF/git.md"
-      afficher "Modèle : description de demande de fusion" "$SK/pr/assets/pull-request.md" ;;
+      afficher "Conventions Git" "$REF/git.md" ;; # le modèle de description : lancé au moment de rédiger (B.3)
     annuler) ;; # ni conventions Git ni dépôt distant : les gestes sont dans pulse-aidd annuler, l'envoi se lit à l'étape 6
     get-help) afficher "Modèle : demande d'aide" "$SK/get-help/assets/demande-aide.md" ;;
-    cicd)
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
-      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template"
-      afficher "Conventions Git" "$REF/git.md" ;;
-    deploy)
-      afficher "Le dépôt distant et l'envoi du travail" "$REF/depot-distant.md"
-      afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Exemple de CI à adapter" "$TPL/ci-verifications.yml.template" ;;
+    cicd) ;; # relier, le refus d'un commit ou d'un envoi : lancés seulement dans ce cas ; l'exemple de CI : copié dans le projet par installer-ci
+    deploy) ;; # chaque mode lance sa référence (deploy/premiere.md, deploy/production.md, deploy/variables.md) et, avec un pack, pulse-aidd pile contexte deploy-<mode>
     security) afficher "Modèle : docs/securite.md" "$SK/security/assets/securite.md" ;; # la checklist : chargée par l'auditeur
     secrets)
       afficher "Garder la valeur d'un secret hors de la conversation" "$REF/secrets/sans-conversation.md"
-      afficher "Réagir à une fuite de clé" "$SK/secrets/references/fuite.md"
       afficher "Modèle : docs/secrets.md" "$SK/secrets/assets/secrets.md"
-      afficher "Modèle : journal d'incident" "$SK/secrets/assets/incident.md"
       lexique ;;
     refine) # le plan modifié montre le format des tâches ; son modèle se lance seulement quand une section manque
       afficher "Règles de découpage du plan" "$SK/plan/references/decoupage.md" ;;
@@ -416,8 +407,13 @@ case "$1" in
     shift; exec node "$RACINE/scripts/sessions.js" "$@" ;;
   annuler)
     shift; exec node "$RACINE/skills/annuler/scripts/annuler.js" "$@" ;;
+  deplacer-commits)
+    shift; exec node "$RACINE/scripts/deplacer-commits.js" "$@" ;;
   verifier)
-    exec node "$TPL/verifier.js" ;;
+    case "${2:-}" in
+      --index) exec node "$TPL/verifier.js" --index ;;
+      *) exec node "$TPL/verifier.js" ;;
+    esac ;;
   preuve)
     shift; exec node "$RACINE/scripts/preuve.js" "$@" ;;
   scenarios)
