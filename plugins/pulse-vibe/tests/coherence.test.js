@@ -766,8 +766,8 @@ test("découpage du plan : règles écrites une fois, chargées par plan et refi
   const refineHtml = lire(DEPOT, "docs", "commandes", "refine.html");
   assert.doesNotMatch(refineHtml, /Seuls les fichiers des tâches s'écrivent sans demande/);
   assert.match(refineHtml, /le plan, le PRD, la priorité des user stories et le lexique s'écrivent ensuite sans autre demande/);
-  // La phrase « Envoi » reste mot pour mot sur sa ligne (la phase 7 la fait pointer vers envoi.md à la fusion).
-  assert.ok(refine.split("\n").includes("La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2)."));
+  // La phrase « Envoi » reste mot pour mot sur sa ligne, avec son renvoi à envoi.md (phases 6 et 7).
+  assert.ok(refine.split("\n").includes("La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « 1. Choisir comment envoyer le travail d'un plan » de la référence « L'envoi du travail » (`pulse-aidd reference envoi.md`)."));
 });
 
 test("règles communes : rondes de 4 questions, réponses libres en texte, mode découverte écrit une fois", () => {
@@ -1875,9 +1875,8 @@ test("dépôt distant et envoi : relier dans depot-distant.md, envoyer dans envo
   assert.doesNotMatch(depot, /Choisir comment envoyer le travail|Envoyer après chaque tâche|Fin du plan, en mode PR/);
   for (const t of ["## 1. Choisir comment envoyer le travail d'un plan", "## 2. Envoyer après chaque tâche enregistrée", "## 3. Fin du plan, en mode PR"]) assert.ok(envoi.includes(t), t);
   assert.doesNotMatch(envoi, /Relier le projet à un dépôt distant/);
-  // Plus aucun renvoi à l'ancien titre commun (init et refine : phase 6, corrigés à la fusion).
-  const fautifs = TEXTES.filter(({ fichier }) => !/skills[\\/](init|refine)[\\/]/.test(fichier))
-    .filter(({ texte }) => /Le dépôt distant et l'envoi du travail/.test(texte))
+  // Plus aucun renvoi à l'ancien titre commun.
+  const fautifs = TEXTES.filter(({ texte }) => /Le dépôt distant et l'envoi du travail/.test(texte))
     .map(({ fichier }) => fichier);
   assert.deepStrictEqual(fautifs, []);
   assert.match(OUTIL, /^ {4}commit\)\n(?: {6}[^\n]*\n)* {6}afficher "L'envoi du travail" "\$REF\/envoi\.md"/m);

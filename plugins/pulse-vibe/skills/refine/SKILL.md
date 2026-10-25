@@ -46,7 +46,7 @@ Pour chaque remarque : la réponse directe, la raison (règle de découpage, pri
 
 Appliquer les « Règles de découpage » (chargées dans « Références de la commande ») à toute tâche nouvelle ou modifiée. Une conception technique modifiée reste fidèle à la spec ; un comportement visible en plus va dans « Ajouts proposés par Pulse ». Un plan couvre une seule US : une tâche qui relève d'une autre US va dans le plan de celle-ci.
 
-La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « Le dépôt distant et l'envoi du travail » (`pulse-aidd reference depot-distant.md`, § 2).
+La ligne « Envoi » (version parallèle, branche principale ou local) se change ici à la demande de la personne : en passant au mode PR, préparer la branche comme le décrit « 1. Choisir comment envoyer le travail d'un plan » de la référence « L'envoi du travail » (`pulse-aidd reference envoi.md`).
 
 Si les fichiers ou les dépendances des tâches changent, revérifier la ligne « En parallèle avec » (règle 9 des « Règles de découpage ») de ce plan et des plans qu'elle cite.
 
