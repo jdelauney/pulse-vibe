@@ -61,9 +61,17 @@ function operationEnCours() {
   return "aucune";
 }
 
+// Vrai dès qu'un geste a commencé à modifier le dépôt : un refus « rien n'a changé » ne serait plus vrai.
+let modifie = false;
+
 /** Changements non enregistrés (fichiers ignorés exclus) : [{ etat, chemin }]. */
 function changements() {
   const r = git(["status", "--porcelain", "-z", "--untracked-files=all"]);
+  if (!r.ok && modifie) {
+    dire("etat", "conflit-non-nettoye");
+    dire("raison", (r.erreur || "git status a échoué").replace(/s+/g, " ").slice(0, 200));
+    terminer(3);
+  }
   if (!r.ok) refuser("lecture-impossible", ["raison", (r.erreur || "git status a échoué").slice(0, 200)]);
   const morceaux = r.sortie.split("\0").filter(Boolean);
   const res = [];
@@ -333,26 +341,47 @@ function apercu(args) {
 
 // ---------------------------------------------------------------- defaire
 
+/** L'état du dépôt à un instant : HEAD, opération en cours et changements. */
+function instantane() {
+  return { head: git(["rev-parse", "HEAD"]).sortie.trim(), operation: operationEnCours(), statut: new Map(changements().map((c) => [normal(c.chemin), c.etat])) };
+}
+
+/** Les différences entre l'état d'avant et l'état actuel (liste vide : identique). */
+function ecartsAvec(avant) {
+  const apres = instantane();
+  const ecarts = [];
+  if (apres.head !== avant.head) ecarts.push(`HEAD ${court(avant.head)} -> ${court(apres.head)}`);
+  if (apres.operation !== avant.operation) ecarts.push(`operation ${apres.operation}`);
+  for (const [p, e] of apres.statut) if (avant.statut.get(p) !== e) ecarts.push(`${e} ${p}`);
+  for (const p of avant.statut.keys()) if (!apres.statut.has(p)) ecarts.push(`absent ${p}`);
+  return ecarts;
+}
+
 /**
- * Remet le dépôt dans l'état d'avant (revert interrompu, index et fichiers suivis revenus à HEAD).
+ * Remet l'état d'avant par `reset --merge`.
  * Réservé aux gestes lancés sur un arbre vérifié propre au départ : sinon `reset --merge` effacerait le travail de la personne.
+ * `revert --abort` n'est permis que pour une annulation lancée par ce script (defaire).
  */
-function remettreEtatAvant(arbrePropreAuDepart) {
+function remettreEtatAvant(arbrePropreAuDepart, { abandonnerAnnulation = false } = {}) {
   if (arbrePropreAuDepart !== true) throw new Error("remettreEtatAvant : arbre propre au départ non établi");
-  git(["revert", "--abort"]);
+  if (abandonnerAnnulation) git(["revert", "--abort"]);
   if (changements().length || operationEnCours() !== "aucune") git(["reset", "--merge"]);
 }
 
-function echecRattrape(raison, details = []) { // seulement dans defaire, après la vérification de l'arbre propre
-  remettreEtatAvant(true);
-  signalerEchec(raison, details);
+/** Termine un geste raté : « echec » seulement si le dépôt est exactement comme avant, sinon « conflit-non-nettoye » et la liste des écarts. */
+function terminerEchec(raison, avant, details = []) {
+  const ecarts = ecartsAvec(avant);
+  dire("etat", ecarts.length ? "conflit-non-nettoye" : "echec");
+  dire("raison", raison.replace(/s+/g, " ").slice(0, 300));
+  for (const [k, v] of details) dire(k, v);
+  for (const x of ecarts) dire("fichier", x);
+  terminer(3);
 }
 
-function signalerEchec(raison, details = []) {
-  dire("etat", "echec");
-  dire("raison", raison.replace(/\s+/g, " ").slice(0, 300));
-  for (const [k, v] of details) dire(k, v);
-  terminer(3);
+let avantDefaire = null;
+function echecRattrape(raison, details = []) { // seulement dans defaire, après la vérification de l'arbre propre
+  remettreEtatAvant(true, { abandonnerAnnulation: true });
+  terminerEchec(raison, avantDefaire, details);
 }
 
 const estPlan = (f) => /^aidd_docs\/tasks\/[^/]+(\/[^/]+)?\/PLAN-SPEC-US-[^/]*\.md$/.test(f);
@@ -370,6 +399,8 @@ function defaire(args, retablissement = false) {
   const envoyes = sont_envoyes(cible.commits);
   const retablit = Boolean(cible.retablit || retablissement);
   const hashesAvant = git(["rev-parse", "HEAD"]).sortie.trim();
+  avantDefaire = instantane();
+  modifie = true;
 
   for (const c of cible.commits) {
     const fusion = c.parents.length > 1;
@@ -446,6 +477,7 @@ function metteDeCote(options, fichiers) {
   const maintenant = new Date();
   const resume = (options.resume || "").replace(/\s+/g, " ").trim();
   const message = `pulse-annuler ${aujourdhui(maintenant)} ${pad(maintenant.getHours())}:${pad(maintenant.getMinutes())}${resume ? " " + resume : ""}`;
+  modifie = true;
   const r = git(["stash", "push", "-u", "-m", message, ...(cibles ? ["--", ...cibles] : [])]);
   if (!r.ok) { dire("etat", "echec"); dire("raison", r.erreur.slice(0, 300)); terminer(3); }
   dire("etat", "fait");
@@ -475,36 +507,37 @@ const imbriques = (a, b) => a === b || a.startsWith(b + "/") || b.startsWith(a +
 const fichiersDeLEntree = (ref) => gitLignes(["stash", "show", "--include-untracked", "--name-only", "--no-renames", ref]).map(normal);
 
 /** Ce qui empêche de reprendre l'entrée : arbre occupé, ou chemin de l'entrée déjà présent sur le disque sans être suivi. */
-function obstaclesALaReprise(chemins) {
+function obstaclesALaReprise(chemins, ref) {
   const obstacles = new Set();
   for (const c of changements()) {
     if (c.etat !== "?" && c.etat !== "??") obstacles.add(normal(c.chemin)); // modifié, préparé, supprimé, en conflit
     else if (chemins.some((p) => imbriques(p, normal(c.chemin)))) obstacles.add(normal(c.chemin));
   }
   const suivis = new Set(gitLignes(["ls-files"]).map(normal));
-  for (const p of chemins) if (fs.existsSync(path.join(RACINE, p)) && !suivis.has(p)) obstacles.add(p);
+  for (const p of chemins) {
+    if (fs.existsSync(path.join(RACINE, p)) && !suivis.has(p)) obstacles.add(p);
+    // Un dossier parent de l'entrée qui existe comme fichier serait remplacé par un dossier.
+    const morceaux = p.split("/");
+    for (let k = 1; k < morceaux.length; k++) {
+      const parent = morceaux.slice(0, k).join("/");
+      try { if (!fs.statSync(path.join(RACINE, parent)).isDirectory()) obstacles.add(parent); } catch { /* absent : rien à craindre */ }
+    }
+  }
+  // Un fichier non suivi de l'entrée que HEAD suit désormais : la reprise le changerait à moitié.
+  for (const f of gitLignes(["ls-tree", "-r", "--name-only", `${ref}^3`]).map(normal)) if (suivis.has(f)) obstacles.add(f);
   return [...obstacles];
 }
 
-/** Reprise ratée sur un arbre propre au départ : tout revient comme avant, sauf ce que Git a créé, retiré ici fichier par fichier. */
+/** Reprise ratée sur un arbre propre au départ : `reset --merge`, puis retrait des seuls fichiers neufs créés par la reprise. */
 function annulerReprise(ref, chemins, avant, sortieGit) {
   const conflits = fichiersEnConflit();
   remettreEtatAvant(true);
   for (const p of chemins) {
     if (!cheminSur(p) || git(["cat-file", "-e", `HEAD:${p}`]).ok) continue; // un fichier suivi est revenu à HEAD par reset --merge
-    if (avant.has(p)) continue;
+    if (avant.statut.has(p)) continue;
     try { fs.rmSync(path.join(RACINE, p), { force: true }); } catch (e) { dire("erreur", `${p} : ${e.message}`); }
   }
-  const apres = new Map(changements().map((c) => [normal(c.chemin), c.etat]));
-  const ecarts = [...apres].filter(([p, e]) => avant.get(p) !== e).map(([p, e]) => `${e} ${p}`);
-  for (const p of avant.keys()) if (!apres.has(p)) ecarts.push(`absent ${p}`);
-  const identique = ecarts.length === 0;
-  dire("etat", identique ? "echec" : "conflit-non-nettoye");
-  dire("raison", sortieGit.replace(/\s+/g, " ").slice(0, 300));
-  dire("mise-de-cote", ref);
-  for (const f of conflits) dire("fichier-en-conflit", f);
-  for (const x of ecarts) dire("fichier", x);
-  terminer(3);
+  terminerEchec(sortieGit, avant, [["mise-de-cote", ref], ...conflits.map((f) => ["fichier-en-conflit", f])]);
 }
 
 function recuperer(args) {
@@ -516,10 +549,13 @@ function recuperer(args) {
     if (!entree) refuser("mise-de-cote-inconnue", ["mise-de-cote", ref]);
     const texte = entree.slice(1).join("\t").replace(/^On [^:]+: /, "");
     if (!/^pulse-annuler/.test(texte)) refuser("mise-de-cote-etrangere", ["mise-de-cote", `${ref} · ${texte}`]);
+    const op = operationEnCours();
+    if (op !== "aucune") refuser("operation-en-cours", ["operation", op]);
     const dedans = fichiersDeLEntree(ref);
-    const obstacles = obstaclesALaReprise(dedans);
+    const obstacles = obstaclesALaReprise(dedans, ref);
     if (obstacles.length) refuser("arbre-occupe", ...obstacles.map((f) => ["fichier", f]));
-    const avant = new Map(changements().map((c) => [normal(c.chemin), c.etat]));
+    const avant = instantane();
+    modifie = true;
     const r = git(["stash", "apply", ref]);
     if (!r.ok) annulerReprise(ref, dedans, avant, `${r.erreur} ${r.sortie}`);
     dire("etat", "fait");
