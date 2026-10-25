@@ -1,6 +1,6 @@
 # Examiner une tâche : relecture et vérification
 
-Utilisé par `/pulse:review`, par la boucle de `/pulse:implement` (lancé sans numéro de tâche, elle passe par `/pulse:review`) et par `/pulse:spirc`. Une seule façon d'examiner une tâche, quel que soit le chemin : un assistant relit le code, un autre l'essaie en marche. Aucun des deux n'a écrit le code.
+Utilisé par `/pulse:review`, et par `/pulse:spirc`. Une seule façon d'examiner une tâche, quel que soit le chemin : un assistant relit le code, un autre l'essaie en marche. Aucun des deux n'a écrit le code.
 
 À expliquer en une phrase, la première fois : « Deux assistants qui n'ont pas écrit le code l'examinent : l'un le relit, l'autre lance l'application et essaie chaque critère. »
 

@@ -26,7 +26,7 @@ const PLAFONDS_PACK = { implement: 21500, fix: 21500, review: 20000 }; // review
 const PLAFONDS_PACK_SANS_FICHE = { tech: { plafond: 13500 }, security: { plafond: 6500 }, plan: { plafond: 18000, architecture: true }, refine: { plafond: 5500 }, seo: { plafond: 4000 }, perf: { plafond: 7500 }, ui: { plafond: 4000 }, rediger: { plafond: 2500 } };
 // pulse-aidd contexte <commande> dans un projet qui déclare le pack. Mesures à la fin du plan « Corrections 4 » : implement 60 103, spirc 49 017 (plafond = mesure × 1,05, au 500 supérieur).
 // pulse 0.50 : spirc et implement laissent le pack à leurs agents, `contexte` ne le contient plus ; plafonds = mesure × 1,05 : implement 44 534 (avant 65 242), spirc 33 412 (avant 51 627).
-const PLAFONDS_AVEC_PACK = { implement: 37500, spirc: 38000 }; // pulse 0.51 : implement mesure 35 665 (tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; spirc mesure 35 779 (deleguer.md ajouté) ; avant, implement : mesure 65 242 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
+const PLAFONDS_AVEC_PACK = { spirc: 38000 }; // pulse 0.52 : implement retiré (une tâche, le contexte n'est plus enrichi par le pack ; garde-fou de structure plus bas) ; pulse 0.51 : implement mesure 35 665 (tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; spirc mesure 35 779 (deleguer.md ajouté) ; avant, implement : mesure 65 242 (refactoring d'optimisation, tâche 1.3 : une commande n'en lance plus une autre (étapes fix et auto-fix chaînées, règles communes § 4)) ; avant, 64 704 (pulse 0.48 : filet anti-régression, tests-automatiques.md § 2 ter) ; spirc : mesure 51 627 (pulse 0.42 : rythme rapide, option -f, gestes)
 
 for (const [commande, plafond] of Object.entries(PLAFONDS_PACK)) {
   test(`pack : contexte ${commande} ≤ ${plafond} caractères, fiche sans architecture`, () => {
@@ -84,7 +84,6 @@ for (const [commande, plafond] of Object.entries(PLAFONDS_AVEC_PACK)) {
 // Mesures à la fin du plan « Corrections 4 » : boucle implement 106 755, boucle spirc 98 093, tech 127 898.
 // Plafond = mesure × 1,05, au 500 supérieur.
 const PARCOURS_AVEC_PACK = {
-  "boucle implement de 4 tâches": { plafond: 91000, /* mesure 86 517 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande) ; avant, mesure 95 300 (pulse 0.50 : le pack laissé à l'agent implementer) ; avant, 119 519 (relecture finale de la phase 1 : annonce des deux accords du dépôt distant) ; avant, 119 035 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 112 943, pulse 0.42 : rythme rapide, option -f, gestes) */ parties: [[projetAvecPack, "contexte", "implement"], [projetAvecPack, "etape", "review", "--sans-communes"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "depot-distant.md"]] },
   "boucle spirc de 4 tâches": { plafond: 81500, /* mesure 77 600 (pulse 0.51 : tests-dabord.md et worktree-dossier.md chargés à la demande, deleguer.md ajouté) ; avant, mesure 86 453 (pulse 0.50 : le pack laissé aux agents qui codent) ; avant, 108 552 (même cause que commit : annonce de l'accord avant git remote add, git.md ; avant 103 017, pulse 0.43 : ronde de départ de spirc) */ parties: [[projetAvecPack, "contexte", "spirc"], [projetAvecPack, "etape", "commit", "--sans-communes"], [projetAvecPack, "reference", "worktree.md"], [projetAvecPack, "reference", "tests-automatiques.md"], [projetAvecPack, "reference", "memoire.md"]] },
   "tech, pack choisi en cours de commande": { plafond: 84500, /* mesure 80 070 (pulse 0.50 : le pack de tech sans la fiche, l'architecture ni le thème) ; avant, 114 094 (pulse 0.50 : règles communes en noyau et modules) ; avant, 123 389 (pulse 0.50 : familles de qualité raccourcies) ; avant, 124 606 */ parties: [[projetSansPack, "etape", "tech"], [projetAvecPack, "pile", "contexte", "tech"]] },
 };
@@ -182,7 +181,6 @@ test("structure : spirc, auto-fix et implement laissent le pack à leurs agents 
 // Plafond = mesure × 1,05, au 500 supérieur. Une forme au-dessus de la limite entre dans DEPASSEMENTS_CONNUS_AVEC_PACK avec sa mesure ; cette liste ne grandit pas.
 const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES_AVEC_PACK = {
-  "auto-fix --sans-communes": 6000, // mesure 5 419
   "auto-fix --sans-noyau": 12500, // mesure 11 686
   "brainstorm --sans-communes": 22000, // mesure 20 653
   "cicd --sans-communes": 42500, // mesure 40 252 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK

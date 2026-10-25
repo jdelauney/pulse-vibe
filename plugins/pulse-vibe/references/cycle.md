@@ -4,7 +4,7 @@
 /pulse:init → /pulse:brainstorm → /pulse:prd → /pulse:tech → (/pulse:ui identite) → /pulse:us
    (ou, pour démarrer vite : /pulse:init → /pulse:express, qui fait tout cela en une conversation)
    → pour chaque US : /pulse:spec <US-XXX ou demande> → (/pulse:ui maquettes <US-XXX>) → /pulse:plan <US-XXX>
-   → pour chaque tâche : /pulse:implement <US-XXX> [tâche] → /pulse:review → (correction) → /pulse:commit
+   → pour chaque tâche : /pulse:implement <US-XXX> <tâche> → /pulse:review → (correction) → /pulse:commit
      (ou tout d'un coup : /pulse:spirc <US-XXX>, ou /pulse:spirc version)
    → (/pulse:cicd) → /pulse:deploy
 ```

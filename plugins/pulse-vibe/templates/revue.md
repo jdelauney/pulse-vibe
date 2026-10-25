@@ -1,7 +1,7 @@
 # Revue – {{TACHE}} – {{DATE}}
 
 **Verdict** : ✅ Validé | ⚠️ À corriger | ⛔ Bloquant
-**Mode** : {{/pulse:review | /pulse:implement | /pulse:spirc avec points de validation | /pulse:spirc autonome | /pulse:spirc rapide (toute l'US)}}{{ · contrôle de sécurité à chaque tâche}}
+**Mode** : {{/pulse:review | /pulse:spirc avec points de validation | /pulse:spirc autonome | /pulse:spirc rapide (toute l'US)}}{{ · contrôle de sécurité à chaque tâche}}
 
 ## Critères d'acceptation
 

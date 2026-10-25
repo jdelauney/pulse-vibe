@@ -40,7 +40,7 @@ Le garde-fou automatique de Pulse bloque de toute façon un commit qui contient 
 
 ### 2. Vérifier que la tâche a été relue et testée
 
-Ce contrôle porte sur les tâches `[~]` des plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) concernées par ce commit : celles dont les fichiers en font partie (sujets triés au § 3 ; appelé par `/pulse:implement` ou `/pulse:spirc` : la tâche en cours). Pour chacune, lancer `pulse-aidd revue <Tn>` (plusieurs tâches : `pulse-aidd revue T3 T4`) et suivre sa ligne `reprendre` :
+Ce contrôle porte sur les tâches `[~]` des plans (`aidd_docs/tasks/*/PLAN-SPEC-US-*.md`) concernées par ce commit : celles dont les fichiers en font partie (sujets triés au § 3 ; appelé par `/pulse:spirc` : la tâche en cours). Pour chacune, lancer `pulse-aidd revue <Tn>` (plusieurs tâches : `pulse-aidd revue T3 T4`) et suivre sa ligne `reprendre` :
 
 - `commit` : la tâche est relue, vérifiée et testée par la personne (ou son test est reporté au test groupé du mode autonome) : continuer. En rythme complet, d'abord le filet anti-régression : référence « Tests automatiques » § 2 ter.
 - `examen` (aucun rapport), appelé par `/pulse:spirc` en rythme rapide : continuer ; toute l'US sera relue à la fin, la remarque du journal vaut « rythme rapide · relecture de l'US à la fin ».
@@ -59,7 +59,7 @@ Lire `git status --short` et `git diff --stat` (et `git diff --cached --stat` po
 - **Plusieurs sujets** : les montrer en quelques lignes (sujet → fichiers) et proposer un commit par sujet (AskUserQuestion : « Un commit par sujet (Recommandé) » / « Tout dans un seul commit » / « Seulement la tâche, le reste plus tard »). Traiter ensuite les sujets **un par un** : étapes 4 à 6 pour chacun.
 - La personne a déjà préparé des fichiers (`git add`) : les respecter, et demander avant d'en ajouter d'autres.
 - Un fichier modifié inexpliqué (par la tâche comme par la personne) : le signaler et le laisser de côté par défaut.
-- **Appelé par `/pulse:implement` ou `/pulse:spirc`** (une tâche à la fois) : le sujet est la tâche. Enregistrer ses fichiers (plus ceux de la mémoire acceptés pour ce commit) directement ; signaler en une ligne les autres fichiers laissés de côté.
+- **Appelé par `/pulse:spirc`** (une tâche à la fois) : le sujet est la tâche. Enregistrer ses fichiers (plus ceux de la mémoire acceptés pour ce commit) directement ; signaler en une ligne les autres fichiers laissés de côté.
 
 ### 4. Préparer le message
 

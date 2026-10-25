@@ -694,7 +694,7 @@ test("examen d'une tâche : décrit une seule fois, reviewer et verifier pour ch
   const examen = lire(RACINE, "references", "examen.md");
   for (const agent of ["**`pulse:reviewer`**", "**`pulse:security-auditor`**"]) assert.ok(examen.includes(agent), agent);
   for (const skill of ["review", "spirc"]) assert.match(skillTexte(skill), /référence « Examiner une tâche »/, skill);
-  assert.match(skillTexte("implement"), /`pulse:reviewer` et `pulse:verifier`/, "la boucle d'implement annonce la vérification");
+  assert.match(skillTexte("implement"), /`\/pulse:review`, où deux assistants indépendants relisent la tâche et l'essaient en marche/, "implement renvoie la vérification indépendante à review");
   assert.match(lire(RACINE, "templates", "revue.md"), /^## Vérification$/m);
   assert.match(lire(RACINE, "agents", "verifier.md").match(/^description:.*$/m)[0], /\/pulse:review/);
 });
@@ -1045,7 +1045,8 @@ test("tests automatiques : installer un outil de test est recommandé quand la p
 test("modèle CLAUDE.md, agents et références cohérents entre eux", () => {
   const claude = lire(RACINE, "templates", "CLAUDE.md");
   assert.doesNotMatch(claude, /uniquement sur demande/);
-  assert.match(claude, /boucles de `\/pulse:implement` et `\/pulse:spirc`/);
+  assert.match(claude, /par la boucle de `\/pulse:spirc`/);
+  assert.doesNotMatch(claude, /boucles de `\/pulse:implement`/);
   assert.doesNotMatch(claude, /traces de travail par session/);
   assert.match(lire(RACINE, "agents", "explorer.md").match(/^description:.*$/m)[0], /\/pulse:get-help/);
   assert.match(skillTexte("ui"), /quatre références de design/);
@@ -1182,17 +1183,33 @@ test("checklist sécurité : chargée par les agents qui relisent, plus recopié
     assert.doesNotMatch(lire(RACINE, ...fichier), /checklist sécurité complète/, fichier.join("/"));
 });
 
-test("boucles d'implement et de spirc : review et commit chargés une seule fois", () => {
-  const boucle = lire(RACINE, "skills", "implement", "references", "boucle.md");
-  assert.match(lire(RACINE, "skills", "implement", "SKILL.md"), /### 6\. Boucle sur tout le plan \(sans tâche\)\n\nSans tâche donnée : lancer `pulse-aidd reference implement\/boucle\.md`/);
-  assert.match(boucle, /\*\*Avant la première tâche\*\*/);
-  assert.strictEqual((boucle.match(/pulse-aidd etape review --sans-communes/g) || []).length, 1, "review chargée une fois");
-  assert.strictEqual((boucle.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 1, "commit chargée une fois");
+test("la boucle sur le plan vit dans spirc seule : commit chargée une fois par déroulé", () => {
   const spirc = lire(RACINE, "skills", "spirc", "SKILL.md");
   // Deux emplois : aux prérequis (modifications à enregistrer d'abord) et au démarrage de la réalisation ; le second se saute si le premier a eu lieu.
   assert.strictEqual((spirc.match(/pulse-aidd etape commit --sans-communes/g) || []).length, 2, "spirc : commit chargée une fois par déroulé");
   for (const ref of ["pulse-aidd reference worktree.md", "pulse-aidd reference worktree-dossier.md", "pulse-aidd reference tests-automatiques.md", "pulse-aidd reference tests-dabord.md", "pulse-aidd reference memoire.md"])
     assert.ok(spirc.includes(ref), ref);
+});
+
+test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
+  assert.ok(!fs.existsSync(path.join(RACINE, "skills", "implement", "references", "boucle.md")), "boucle.md supprimée");
+  const implement = skillTexte("implement");
+  assert.match(implement, /\*\*Sans tâche\*\* : dire en une phrase que tout le plan s'enchaîne avec `\/pulse:spirc <US-XXX>`, à taper par la personne/);
+  assert.match(implement, /« Réaliser seulement <Tn> – <titre> ici »/);
+  assert.match(implement, /« Je tape \/pulse:spirc US-XXX pour enchaîner tout le plan \(Recommandé\) »/);
+  assert.doesNotMatch(implement, /boucle\.md|Boucle sur tout le plan|sans tâche, boucler/);
+  const entete = lire(RACINE, "skills", "implement", "SKILL.md").match(/^allowed-tools:.*$/m)[0];
+  assert.doesNotMatch(entete, /pulse-aidd (etape|contexte) (commit|review)|pulse-aidd contexte pr|git commit|gh pr ready|glab mr update/, "implement n'enchaîne plus ni relecture ni commit");
+  // Décision 10 : en coulisse, le rapport de l'implementer et le contrôle de fin de tour font foi ; une erreur lui revient (deleguer.md), deux essais.
+  assert.match(implement, /\*\*En coulisse\*\* : s'appuyer sur « Vérifications lancées » et « Tests » du rapport de l'implementer et sur le contrôle de fin de tour ; ne pas relancer/);
+  assert.match(implement, /relancer l'implementer avec la liste \(« Déléguer à l'implementer », une correction\), deux essais au plus/);
+  assert.match(implement, /la preuve indépendante viendra de `\/pulse:review`/);
+  const problemes = [];
+  for (const { fichier, texte } of TEXTES) {
+    if (texte.split("\n").some((l) => /\/pulse:implement[^\n]{0,80}(boucle|tout le plan|toutes les tâches)/i.test(l) && !l.includes("/pulse:spirc"))) problemes.push(fichier);
+    if (/implement\/boucle\.md/.test(texte)) problemes.push(`${fichier} (boucle.md)`);
+  }
+  assert.deepStrictEqual(problemes, []);
 });
 
 test("chaque agent a un modèle explicite (model:)", () => {
@@ -1292,18 +1309,15 @@ test("reprise après une interruption : commit, implement, spirc et review suive
   assert.match(verification, /- `correction` ou `aide` : [^\n]*S'arrêter/);
   assert.doesNotMatch(verification, /`test`[^\n]*Enregistrer quand même/, "l'enregistrement sans test n'est pas proposé");
   const implement = skillTexte("implement");
-  assert.match(implement, /\*\*Reprendre une tâche en cours\*\* : [^\n]*`pulse-aidd revue <Tn>`/);
-  assert.match(implement, /- `test` : au test manuel/);
+  assert.match(implement, /Tâche déjà `\[~\]` : lancer `pulse-aidd revue <Tn>` : `examen`, `test`, `correction` ou `aide` → proposer de taper `\/pulse:review <Tn>` ; `commit` → proposer de taper `\/pulse:commit` ; `decision` → proposer de taper `\/pulse:spirc <US-XXX>`/);
   assert.doesNotMatch(implement, /reprend à la correction ou au commit/);
   const spirc = skillTexte("spirc");
   assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
   assert.doesNotMatch(spirc, /reprendre à l'examen\)/);
   assert.match(skillTexte("review"), /`pulse-aidd revue <Tn>` : `test` → passer directement au § 5/);
   // Les boucles passent à l'enregistrement sur la réponse du § 2 de commit, pas sur la seule existence d'un rapport.
-  for (const [nom, texte] of [["implement", implement], ["spirc", spirc]]) {
-    assert.match(texte, /Le § 2 de l'étape commit donne `commit`/, nom);
-    assert.doesNotMatch(texte, /Le rapport de revue existe : la relecture est faite/, nom);
-  }
+  assert.match(spirc, /Le § 2 de l'étape commit donne `commit`/);
+  assert.doesNotMatch(spirc, /Le rapport de revue existe : la relecture est faite/);
   // Le résultat du test s'écrit avec les choix du modèle, que pulse-aidd revue sait lire.
   for (const nom of ["review", "spirc"]) assert.match(skillTexte(nom), /« ✅ concluant » ou « ❌ non concluant : <ce qui ne va pas> »/, nom);
 });
@@ -1668,7 +1682,6 @@ test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 
 
 test("correction ciblée : l'implementer reçoit les constats et charge leurs familles de qualité", () => {
   for (const [nom, texte] of [
-    ["boucle.md", lire(RACINE, "skills", "implement", "references", "boucle.md")],
     ["examen.md", lire(RACINE, "references", "examen.md")],
     ["spirc", lire(RACINE, "skills", "spirc", "SKILL.md")],
     ["deleguer.md", lire(RACINE, "references", "deleguer.md")],
