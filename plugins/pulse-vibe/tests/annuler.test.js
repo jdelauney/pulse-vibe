@@ -335,3 +335,94 @@ test("le script n'emploie aucune opération Git destructrice", () => {
   const source = fs.readFileSync(SCRIPT, "utf8").replace(/^\s*\/\/.*$/gm, "");
   for (const interdit of [/"reset",\s*"--hard"/, /"clean"/, /\["push"/, /"branch",\s*"-D"/, /"stash",\s*"drop"/, /"checkout",\s*"--",\s*"\."/]) assert.doesNotMatch(source, interdit);
 });
+
+/** Une mise de côté de t1.txt, puis un commit qui change la même ligne : la reprise entre en conflit. */
+function miseDeCoteEnConflit() {
+  const d = projetDeuxTaches();
+  ecrire(d, "t1.txt", "version mise de côté\n");
+  assert.strictEqual(lancer(d, "mettre-de-cote", "--resume", "essai").code, 0);
+  ecrire(d, "t1.txt", "version du commit\n");
+  valider(d, "chore: change t1");
+  return d;
+}
+
+test("récupérer avec un fichier préparé (index occupé) : refusé d'avance, rien ne bouge", () => {
+  const d = miseDeCoteEnConflit();
+  ecrire(d, "prepare.txt", "préparé\n");
+  git(d, "add", "prepare.txt");
+  const index = git(d, "diff", "--cached");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "index-occupe");
+  assert.ok(r.cles.fichier.includes("prepare.txt"));
+  assert.strictEqual(lire(d, "prepare.txt"), "préparé\n");
+  assert.strictEqual(git(d, "diff", "--cached"), index);
+});
+
+test("récupérer en conflit : le travail sans rapport est gardé tel quel, l'entrée reste, code 3", () => {
+  const d = miseDeCoteEnConflit();
+  ecrire(d, "README.md", "projet modifié\n");
+  ecrire(d, "libre.txt", "fichier libre\n");
+  const r = lancer(d, "recuperer", "stash@{0}");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(lire(d, "README.md"), "projet modifié\n");
+  assert.strictEqual(lire(d, "libre.txt"), "fichier libre\n");
+  assert.strictEqual(lire(d, "t1.txt"), "version du commit\n", "le fichier de l'entrée revient à HEAD");
+  assert.match(git(d, "stash", "list"), /pulse-annuler/);
+  assert.strictEqual(git(d, "status", "--porcelain").split("\n").map((l) => l.trim()).sort().join("|"), "?? libre.txt|M README.md");
+  assert.strictEqual(lancer(d, "etat").premier("operation"), "aucune");
+});
+
+test("un commit refusé pendant le retour à une version : état d'avant, aucune branche de sauvegarde", () => {
+  const d = projetDeuxTaches();
+  const avant = git(d, "rev-parse", "HEAD");
+  fs.writeFileSync(path.join(d, ".git", "hooks", "pre-commit"), "#!/bin/sh\nexit 1\n", { mode: 0o755 });
+  const version = git(d, "rev-parse", "--short", "HEAD~2");
+  for (let i = 0; i < 2; i++) {
+    const r = lancer(d, "defaire", "version", version);
+    assert.strictEqual(r.code, 3, r.sortie);
+  }
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant);
+  assert.strictEqual(git(d, "branch", "--list", "sauvegarde/*"), "");
+  assert.ok(propre(d));
+});
+
+test("une US dont la seconde annulation entre en conflit sur du code : tout revient à l'état d'avant", () => {
+  const d = depot();
+  ecrire(d, "code.js", "ligne\n");
+  ecrire(d, PLAN, plan(["T1", "T2"], "x"));
+  valider(d, "chore: départ");
+  ecrire(d, "code.js", "ligne T1\n");
+  valider(d, "feat(T1): premier");
+  ecrire(d, "t2.txt", "deux\n");
+  valider(d, "feat(T2): second");
+  ecrire(d, "code.js", "ligne T9\n");
+  valider(d, "feat(T9): autre US");
+  const avant = git(d, "rev-parse", "HEAD");
+  const r = lancer(d, "defaire", "US-003");
+  assert.strictEqual(r.code, 3, r.sortie);
+  assert.strictEqual(git(d, "rev-parse", "HEAD"), avant);
+  assert.ok(fs.existsSync(path.join(d, "t2.txt")), "la première annulation, déjà faite en cours de route, est défaite");
+  assert.strictEqual(lire(d, "code.js"), "ligne T9\n");
+  assert.ok(propre(d));
+});
+
+test("rétablir une annulation ne remet pas à faite une tâche dont l'annulation a elle-même été défaite", () => {
+  const d = projetDeuxTaches();
+  lancer(d, "defaire", "T2");
+  const annulation = git(d, "rev-parse", "--short", "HEAD");
+  lancer(d, "recuperer", annulation);
+  const retablissement = git(d, "rev-parse", "--short", "HEAD");
+  // Annuler le rétablissement n'est pas un cas de défaire : seul l'aperçu de l'annulation d'origine l'est, sans tâche d'un commit d'annulation.
+  const ap = lancer(d, "apercu", "annulation", retablissement);
+  assert.strictEqual(ap.code, 0, ap.sortie);
+  assert.strictEqual(ap.premier("taches"), "—", "les commits annulés par un rétablissement sont des annulations");
+});
+
+test("la lecture de l'état Git qui échoue est un refus (code 2)", () => {
+  const d = projetDeuxTaches();
+  fs.writeFileSync(path.join(d, ".git", "index"), "pas un index");
+  const r = lancer(d, "defaire", "T2");
+  assert.strictEqual(r.code, 2, r.sortie);
+  assert.strictEqual(r.premier("etat"), "lecture-impossible");
+});

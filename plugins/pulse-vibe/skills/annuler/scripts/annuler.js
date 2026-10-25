@@ -64,7 +64,7 @@ function operationEnCours() {
 /** Changements non enregistrés (fichiers ignorés exclus) : [{ etat, chemin }]. */
 function changements() {
   const r = git(["status", "--porcelain", "-z", "--untracked-files=all"]);
-  if (!r.ok) return [];
+  if (!r.ok) refuser("lecture-impossible", ["raison", (r.erreur || "git status a échoué").slice(0, 200)]);
   const morceaux = r.sortie.split("\0").filter(Boolean);
   const res = [];
   for (let i = 0; i < morceaux.length; i++) {
@@ -224,7 +224,7 @@ function resoudreCible(args) {
     const corps = git(["log", "-1", "--format=%B", h]).sortie;
     const annules = (corps.match(/^Annule ([0-9a-f ]+)\.$/m) || [])[1];
     if (!annules) refuser("annulation-inconnue", ["annulation", valeur]);
-    const taches = [...new Set(annules.split(" ").filter(Boolean).flatMap((a) => { const x = hashSur(a); const cc = x && hist.find((y) => y.hash === x); return cc ? tachesDuSujet(cc.sujet) : []; }))];
+    const taches = [...new Set(annules.split(" ").filter(Boolean).flatMap((a) => { const x = hashSur(a); const cc = x && hist.find((y) => y.hash === x); return cc && !estAnnulation(cc.sujet) ? tachesDuSujet(cc.sujet) : []; }))];
     return { type: "annulation", libelle: `annulation ${court(h)}`, commits: [c], taches, retablit: true };
   }
   usage("annuler apercu|defaire <T3 | US-003 | version <commit> | annulation <commit>>");
@@ -333,14 +333,22 @@ function apercu(args) {
 
 // ---------------------------------------------------------------- defaire
 
-/** Remet le dépôt dans l'état d'avant (revert interrompu, index et fichiers suivis revenus à HEAD). */
-function remettreEtatAvant() {
+/**
+ * Remet le dépôt dans l'état d'avant (revert interrompu, index et fichiers suivis revenus à HEAD).
+ * Réservé aux gestes lancés sur un arbre vérifié propre au départ : sinon `reset --merge` effacerait le travail de la personne.
+ */
+function remettreEtatAvant(arbrePropreAuDepart) {
+  if (arbrePropreAuDepart !== true) throw new Error("remettreEtatAvant : arbre propre au départ non établi");
   git(["revert", "--abort"]);
   if (changements().length || operationEnCours() !== "aucune") git(["reset", "--merge"]);
 }
 
-function echecRattrape(raison, details = []) {
-  remettreEtatAvant();
+function echecRattrape(raison, details = []) { // seulement dans defaire, après la vérification de l'arbre propre
+  remettreEtatAvant(true);
+  signalerEchec(raison, details);
+}
+
+function signalerEchec(raison, details = []) {
   dire("etat", "echec");
   dire("raison", raison.replace(/\s+/g, " ").slice(0, 300));
   for (const [k, v] of details) dire(k, v);
@@ -394,18 +402,16 @@ function defaire(args, retablissement = false) {
   messages.push(sujet, `Annule ${hashes.join(" ")}.`);
   if (cible.type === "version" && cible.taches.length) messages.push(`Tâches défaites : ${cible.taches.join(" ")}`);
 
-  // Branche de sauvegarde (version) : posée juste avant le commit, sur l'état d'avant.
+  const commit = git(["commit", ...messages.flatMap((m) => ["-m", m])]);
+  if (!commit.ok) echecRattrape(commit.erreur || commit.sortie || "commit refusé");
+
+  // Branche de sauvegarde (version) : posée après le commit réussi, sur l'état d'avant (aucune branche en trop si le commit est refusé).
   let sauvegarde = "";
   if (cible.type === "version") {
     const base = `sauvegarde/${aujourdhui()}-${heureMin()}`;
     sauvegarde = base;
     for (let n = 2; git(["rev-parse", "--verify", "-q", `refs/heads/${sauvegarde}`]).ok; n++) sauvegarde = `${base}-${n}`;
-    if (!git(["branch", sauvegarde, hashesAvant]).ok) echecRattrape("branche de sauvegarde non créée");
-  }
-
-  const commit = git(["commit", ...messages.flatMap((m) => ["-m", m])]);
-  if (!commit.ok) {
-    echecRattrape(commit.erreur || commit.sortie || "commit refusé", sauvegarde ? [["sauvegarde", sauvegarde]] : []);
+    if (!git(["branch", sauvegarde, hashesAvant]).ok) { dire("avertissement", "sauvegarde non créée : l'état d'avant reste le commit " + court(hashesAvant)); sauvegarde = ""; }
   }
   dire("etat", "fait");
   dire("commit", court(git(["rev-parse", "HEAD"]).sortie.trim()));
@@ -462,6 +468,18 @@ function metteDeCote(options, fichiers) {
 
 // ---------------------------------------------------------------- recuperer
 
+/** Une reprise ratée : seuls les fichiers de l'entrée reviennent à HEAD (ou disparaissent s'ils n'existaient pas) ; le reste du dossier n'est pas touché. */
+function annulerReprise(chemins, existaient) {
+  for (const f of chemins) {
+    if (!cheminSur(f)) continue;
+    if (git(["cat-file", "-e", `HEAD:${f}`]).ok) git(["restore", "--source=HEAD", "--staged", "--worktree", "--", f]);
+    else {
+      git(["rm", "--cached", "-q", "--ignore-unmatch", "--", f]);
+      if (!existaient.has(f)) fs.rmSync(path.join(RACINE, f), { force: true });
+    }
+  }
+}
+
 function recuperer(args) {
   const [ref] = args;
   if (!ref || args.length !== 1) usage("annuler recuperer <stash@{k} | commit>");
@@ -471,12 +489,18 @@ function recuperer(args) {
     if (!entree) refuser("mise-de-cote-inconnue", ["mise-de-cote", ref]);
     const texte = entree.slice(1).join("\t").replace(/^On [^:]+: /, "");
     if (!/^pulse-annuler/.test(texte)) refuser("mise-de-cote-etrangere", ["mise-de-cote", `${ref} · ${texte}`]);
+    const prepares = gitLignes(["diff", "--cached", "--name-only"]);
+    if (prepares.length) refuser("index-occupe", ...prepares.map((f) => ["fichier", f]));
     const pris = new Set(changements().map((c) => c.chemin));
     const dedans = gitLignes(["stash", "show", "--name-only", "--include-untracked", ref]);
     const communs = dedans.filter((f) => pris.has(f));
     if (communs.length) refuser("fichiers-en-commun", ...communs.map((f) => ["fichier", f]));
+    const existaient = new Set(dedans.filter((f) => cheminSur(f) && fs.existsSync(path.join(RACINE, f))));
     const r = git(["stash", "apply", ref]);
-    if (!r.ok) echecRattrape(r.erreur || "reprise impossible");
+    if (!r.ok) {
+      annulerReprise(dedans, existaient);
+      signalerEchec(r.erreur || "reprise impossible", [["mise-de-cote", ref]]);
+    }
     dire("etat", "fait");
     dire("a-supprimer", ref);
     terminer(0);
