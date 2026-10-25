@@ -398,7 +398,7 @@ test("contexte review : la conversation principale sans les consignes du pack, q
 test("spirc, auto-fix et implement : la ligne de repli charge le pack avant d'écrire du code, et les règles communes le disent", () => {
   const lireSkill = (nom) => fsP.readFileSync(path.join(RACINE, "skills", nom, "SKILL.md"), "utf8");
   // spirc -d et implement devant vous : l'étape de réalisation affiche la fiche (pulse-aidd realisation etape, marqueur --devant).
-  assert.match(lireSkill("spirc"), /ou sans agent disponible ; marqueur lancé avec `--devant`\) : la sortie de `pulse-aidd realisation etape <Tn> realisation`, fiche du pack de pile comprise, se lit en entier avant le premier fichier écrit/);
+  assert.match(lireSkill("spirc"), /Avec `-d`, ou quand l'agent est indisponible \(dans les deux cas, marqueur lancé avec `--devant`\) : la sortie de `pulse-aidd realisation etape <Tn> realisation`, fiche du pack de pile comprise, se lit en entier avant le premier fichier écrit/);
   assert.match(lireSkill("spirc"), /avec `-d`, corriger ici : `pulse-aidd pile contexte implement` s'il ne figure pas dans la conversation/);
   assert.match(lireSkill("auto-fix"), /sans agent : `pulse-aidd pile contexte fix` avant d'écrire du code/);
   assert.match(lireSkill("implement"), /Une correction faite par cette conversation hors de cette étape commence par `pulse-aidd pile contexte implement`, lu en entier, s'il ne figure pas dans la conversation/);

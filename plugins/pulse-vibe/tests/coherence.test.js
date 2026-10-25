@@ -1198,7 +1198,7 @@ test("la boucle sur le plan vit dans spirc seule : commit chargée une fois par 
 
 test("devant vous : le marqueur porte --devant et la sortie de l'étape de réalisation (fiche du pack comprise) se lit avant le premier fichier", () => {
   const ligne = (texte, motif) => texte.split("\n").find((l) => motif.test(l)) || "";
-  for (const [skill, motifDevant] of [["implement", /^\*\*Devant vous\*\*/], ["spirc", /Avec `-d` \(ou sans agent disponible/]]) {
+  for (const [skill, motifDevant] of [["implement", /^\*\*Devant vous\*\*/], ["spirc", /Avec `-d`, ou quand l'agent est indisponible \(dans les deux cas, marqueur lancé avec `--devant`\) :/]]) {
     const texte = lire(RACINE, "skills", skill, "SKILL.md");
     assert.match(ligne(texte, /^\*\*Marqueur de réalisation\*\*/), /`--devant`/, `${skill} : la ligne du marqueur cite --devant`);
     const devant = ligne(texte, motifDevant);
