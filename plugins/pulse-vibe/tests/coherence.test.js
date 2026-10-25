@@ -1233,6 +1233,13 @@ test("rappel après compaction : chaque commande pulse-aidd qu'il peut écrire p
   assert.deepStrictEqual(problemes, []);
 });
 
+test("implement relancé sur une tâche [~] au code commencé : le marqueur fait reprendre la réalisation, pas la relecture", () => {
+  const prerequis = skillTexte("implement").split("\n").find((l) => l.startsWith("- Tâche déjà `[~]`")) || "";
+  assert.match(prerequis, /`pulse-aidd realisation` montre `commande: implement`, `tache: <Tn>` et `etape: realisation` ou `test`, sans `perime: oui`/);
+  assert.match(prerequis, /reprendre au § 2/);
+  assert.ok(prerequis.indexOf("pulse-aidd realisation") < prerequis.indexOf("pulse-aidd revue <Tn>"), "le marqueur se lit avant pulse-aidd revue");
+});
+
 test("implement réalise une tâche : sans tâche il propose /pulse:spirc, plus de boucle.md, aucun texte ne dit qu'il boucle sur un plan", () => {
   assert.ok(!fs.existsSync(path.join(RACINE, "skills", "implement", "references", "boucle.md")), "boucle.md supprimée");
   const implement = skillTexte("implement");
@@ -1398,7 +1405,7 @@ test("reprise après une interruption : commit, implement, spirc et review suive
   assert.match(verification, /- `correction` ou `aide` : [^\n]*S'arrêter/);
   assert.doesNotMatch(verification, /`test`[^\n]*Enregistrer quand même/, "l'enregistrement sans test n'est pas proposé");
   const implement = skillTexte("implement");
-  assert.match(implement, /Tâche déjà `\[~\]` : sauf si `aidd_docs\/tasks\/in-progress\.md` concerne cette commande et cette tâche \(reprendre à son étape, règle commune 16\), lancer `pulse-aidd revue <Tn>` : `examen`, `test`, `correction` ou `aide` → proposer de taper `\/pulse:review <Tn>` ; `commit` → proposer de taper `\/pulse:commit` ; `decision` → proposer de taper `\/pulse:spirc <US-XXX>`/);
+  assert.match(implement, /Tâche déjà `\[~\]` : sauf si `aidd_docs\/tasks\/in-progress\.md` concerne cette commande et cette tâche \(reprendre à son étape, règle commune 16\), ou si `pulse-aidd realisation` montre [^\n]*?\(code commencé : reprendre au § 2[^\n]*?\), lancer `pulse-aidd revue <Tn>` : `examen`, `test`, `correction` ou `aide` → proposer de taper `\/pulse:review <Tn>` ; `commit` → proposer de taper `\/pulse:commit` ; `decision` → proposer de taper `\/pulse:spirc <US-XXX>`/);
   assert.doesNotMatch(implement, /reprend à la correction ou au commit/);
   const spirc = skillTexte("spirc");
   assert.match(spirc, /Une tâche `\[~\]` est reprise là où elle en était : lancer `pulse-aidd revue <Tn>`/);
