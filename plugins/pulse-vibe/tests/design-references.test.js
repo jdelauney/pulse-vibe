@@ -72,7 +72,7 @@ test("revue motifs : chargés par le designer, cités par /pulse:ui et /pulse:pl
   const P = path.join(__dirname, "..");
   const l = (...p) => fs.readFileSync(path.join(P, ...p), "utf8");
   assert.ok(l("agents", "designer.md").includes("pulse-aidd reference ui/motifs.md"));
-  assert.ok(l("skills", "ui", "SKILL.md").includes("quatre références de design"));
+  for (const r of ["ui/regles-ui.md", "ui/anti-patterns.md"]) assert.ok(l("skills", "ui", "SKILL.md").includes(`pulse-aidd reference ${r}`), r);
   assert.ok(l("skills", "plan", "SKILL.md").includes("ui/motifs.md"));
   assert.match(l("references", "tests", "test-manuel.md"), /notifications[^\n]*erreur[^\n]*ferm/i);
 });

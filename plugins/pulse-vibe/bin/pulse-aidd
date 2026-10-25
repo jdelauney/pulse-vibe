@@ -14,7 +14,7 @@
 #   pulse-aidd reference <chemin>    affiche une référence de references/ (ex. qualite/code-concepts.md), ou d'une skill : <skill>/<fichier> (skills/<skill>/references/, ex. seo/regles.md)
 #   pulse-aidd nouveau [options]     crée ou prépare un projet Pulse (voir pulse-aidd nouveau --aide)
 #   pulse-aidd guide                 régénère le guide de réalisation docs/guide/ à partir des plans de aidd_docs/tasks/
-#   pulse-aidd comparer <dossier>    écrit <dossier>/comparer.html pour comparer des variantes (/pulse:ui)
+#   pulse-aidd comparer <dossier> [--ranger | --retenir <variante> [--mobile <variante>]]   écrit <dossier>/comparer.html pour comparer des variantes ; range les variantes avant un lot ou après le choix (/pulse:ui)
 #   pulse-aidd sessions [<session>]  indique si d'autres sessions Claude Code sont ouvertes sur ce dossier
 #   pulse-aidd sessions --ici <session>  réinscrit la session sur le dossier courant (entrée ou sortie d'un worktree)
 #   pulse-aidd annuler <etat|apercu|defaire|mettre-de-cote|recuperer>  les gestes Git de /pulse:annuler (état, aperçu, défaire une tâche, une US ou une version, mettre de côté, récupérer) ; l'état d'avant est remis si un geste échoue
@@ -24,7 +24,7 @@
 #   pulse-aidd preuve construire     ajoute la construction à la preuve à jour, sans relancer contrôles ni tests (code 2 sans preuve à jour : rien n'est lancé)
 #   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1) ; « Tester » à « aucune » (choix du projet) satisfait --exiger suite
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
-#   pulse-aidd etat [--sans-git]     état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status)
+#   pulse-aidd etat [--sans-git] [--tableau]  état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status) ; --tableau : le tableau de bord de /pulse:status (tâches, Git, dossiers à part, référencement, revue, mémoire)
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review ; revue <US-XXX> : la relecture de toute l'US (rythme rapide)
 #   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json
@@ -307,26 +307,15 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
       lexique ;;
     refine) # le plan modifié montre le format des tâches ; son modèle se lance seulement quand une section manque
       afficher "Règles de découpage du plan" "$SK/plan/references/decoupage.md" ;;
-    ui)
-      afficher "Règles de la mémoire projet" "$REF/memoire.md"
-      afficher "Registres d'interface" "$SK/ui/references/registres.md"
-      afficher "Règles d'interface" "$SK/ui/references/regles-ui.md"
-      afficher "Anti-patterns d'interface" "$SK/ui/references/anti-patterns.md"
-      afficher "Motifs d'écrans" "$SK/ui/references/motifs.md"
-      afficher "Modèle : docs/design.md" "$SK/ui/assets/design.md"
-      afficher "Modèle : note de variante" "$SK/ui/assets/maquette-note.md"
-      afficher "Modèle : rapport d'audit d'interface" "$SK/ui/assets/revue-ui.md" ;;
+    ui) ;; # références et modèles chargés à l'étape qui les cite (skills/ui/SKILL.md) ; les agents designer et ui-critic chargent les leurs
     rediger)
       afficher "Rédiger les textes des pages" "$SK/rediger/references/regles.md"
       afficher "Modèle : docs/voix.md" "$SK/rediger/assets/voix.md"
-      afficher "Modèle : docs/textes/<page>.md" "$SK/rediger/assets/texte-page.md"
-      lexique ;;
+      lexique ;; # le modèle du texte de page : chargé par le redacteur (et par le repli, qui suit ses consignes)
     seo)
       afficher "Référencement : les règles" "$SK/seo/references/regles.md"
-      afficher "Référencement : assistants IA" "$SK/seo/references/ia.md"
       afficher "Modèle : docs/seo.md" "$SK/seo/assets/seo.md"
-      afficher "Modèle : rapport d'audit de référencement" "$SK/seo/assets/seo-audit.md"
-      lexique ;;
+      lexique ;; # la politique IA (ia.md) et le modèle d'audit : chargés à l'étape qui les cite (skills/seo/SKILL.md)
     perf)
       afficher "La vitesse vécue par les visiteurs" "$SK/perf/references/performance.md"
       afficher "Modèle : docs/performance.md" "$SK/perf/assets/performance.md"
@@ -334,19 +323,15 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     search-console)
       afficher "Search Console : relier, lire, suivre" "$SK/search-console/references/search-console.md"
       afficher "Modèle : docs/referencement/search-console-<date>.md" "$SK/search-console/assets/rapport-search-console.md"
-      afficher "Modèle : travail en cours" "$TPL/in-progress.md"
-      lexique ;;
+      lexique ;; # relier.md et le modèle du travail en cours : chargés à l'étape qui les cite (skills/search-console/SKILL.md)
     learn)
       afficher "Pédagogie du professeur" "$SK/learn/references/pedagogie.md"
       afficher "Modèle : docs/apprentissage.md" "$SK/learn/assets/apprentissage.md"
       lexique ;;
     explain) lexique ;;
     test) lexique ;;
-    guide)
-      afficher "Les fichiers du projet" "$REF/fichiers-projet.md"
-      afficher "Le cycle Pulse" "$REF/cycle.md" ;;
-    status)
-      afficher "Le cycle Pulse" "$REF/cycle.md" ;;
+    guide) afficher "Le cycle Pulse" "$REF/cycle.md" ;; # les fichiers du projet : pulse-aidd reference fichiers-projet.md
+    status) ;; # le cycle Pulse : dans le contexte de /pulse:init et /pulse:guide ; le tableau vient de pulse-aidd etat --tableau
     auto-fix) ;;
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
@@ -387,8 +372,8 @@ case "$1" in
   guide)
     exec node "$RACINE/scripts/guide.js" ;;
   comparer)
-    if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes>"; exit 1; fi
-    exec node "$RACINE/skills/ui/scripts/comparer.js" "$2" ;;
+    if [ -z "$2" ]; then echo "Usage : pulse-aidd comparer <dossier de variantes> [--ranger | --retenir <variante> [--mobile <variante>]]"; exit 1; fi
+    exec node "$RACINE/skills/ui/scripts/comparer.js" "${@:2}" ;;
   memoire)
     exec node "$RACINE/scripts/memoire.js" --rapport ;;
   realisation)
