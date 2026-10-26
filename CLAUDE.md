@@ -40,6 +40,7 @@ Dans un plugin (chemins relatifs à son dossier) :
 - `node --test plugins/*/tests/*.test.js` passe (depuis la racine du dépôt). Il comprend :
   - `budget-contexte.test.js` : le contexte chargé par chaque commande reste sous son plafond ; un plafond se relève seulement avec la mesure et la raison ;
   - `documentation.test.js` : README, mémo et ce fichier suivent le code ; une fonction ajoutée s'y documente dans le même commit ;
+  - `skills-pulse.test.js` : chaque skill et chaque agent des deux plugins passe `pulse-aidd skill verifier` sans constat bloquant (règles de `references/skills/regles-skills.md`) ;
   - `wiki.test.js` : chaque commande a sa page dans le wiki, synchronisée avec son SKILL.md, dans la charte et sans jargon. Commande ajoutée, renommée ou décrite autrement : `node outils/wiki/synchroniser.js` (`--creer` pour la page d'une nouvelle commande), puis rédiger sa page. Page du wiki modifiée : `node outils/wiki/indexer.js`.
 - Avant chaque `git push` : monter `version` dans le `.claude-plugin/plugin.json` de **chaque plugin modifié** (correctif → patch, fonctionnalité ou structure → mineure), sinon `claude plugin update` ne voit pas la mise à jour. Quand la version **mineure** du cœur monte, mettre à jour la dépendance `pulse` déclarée par le pack (`^0.x` exclut la mineure suivante) et monter le pack.
 - Après l'envoi, étiqueter chaque version publiée : `pulse--v<version>` et `pulse-next--v<version>` (`claude plugin tag --push` depuis le dossier du plugin). Les dépendances entre plugins se résolvent sur ces étiquettes.

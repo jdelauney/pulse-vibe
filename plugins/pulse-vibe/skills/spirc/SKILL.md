@@ -24,6 +24,8 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 
 Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spirc` et lire sa sortie en entier) pendant toute la commande.
 
+Après une compaction, cette commande n'est plus en entier dans la conversation : recharger ses consignes avec `pulse-aidd etape spirc --sans-communes` et lire toute sa sortie (longue : Claude Code l'enregistre dans un fichier, à lire en entier), avant de reprendre l'étape en cours.
+
 ### Comment appliquer une étape de la méthode
 
 Pour les étapes Tech, US, Spec, Plan et Commit, **lancer l'étape voulue** : `pulse-aidd etape tech --sans-communes`, `pulse-aidd etape us --sans-communes`, `pulse-aidd etape spec --sans-communes`, `pulse-aidd etape plan --sans-communes`, ou l'étape Commit (décrite plus bas). Puis appliquer sa section « Processus » à l'identique (prérequis, questions, fichiers produits, garde-fous), **hors** son bloc de fin de commande. L'étape Commit se charge une seule fois, au démarrage de la réalisation (section « Choisir la façon de travailler »), et sert à chaque tâche.

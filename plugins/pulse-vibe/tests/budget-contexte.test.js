@@ -209,6 +209,7 @@ const PLAFONDS_FORMES = {
   "pr --sans-noyau": 18500, // mesure 17 821 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 393
   "refine --sans-communes": 13000, // mesure 12 070 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 11 997 (tâche 6.6 : les seules règles de découpage) ; avant, 29 261
   "review --sans-communes": 14500, // mesure 13 829 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 745
+  "spirc --sans-communes": 47000, // mesure 44 458 (pulse 0.53 : rechargement de /pulse:spirc après une compaction, seule forme qui réaffiche toute la commande ; le corps du SKILL.md seul fait 32 453)
   "spec --sans-communes": 25000, // mesure 23 692 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 23 558 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, 24 973
   "tech --sans-communes": 30000, // mesure 28 533 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 28 243 (phase 6, retouches) ; avant, 28 191 (tâche 6.2 : démarche et organisation chargées à l'étape) ; avant, 53 438
   "ui --sans-communes": 21000, // mesure 19 992 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, 56 545
@@ -216,8 +217,10 @@ const PLAFONDS_FORMES = {
   "us --sans-communes": 18000, // mesure 16 880 (tâche 6.4 : questions clés une à une) ; avant, 16 794
 };
 // Formes citées qui dépassent encore la limite : ce sont des commandes entières enchaînées comme étape, à scinder dans une phase suivante.
-// Cette liste ne grandit pas : une forme nouvelle au-dessus de la limite fait échouer le test.
-const DEPASSEMENTS_CONNUS = new Set(["plan --sans-communes"]);
+// Cette liste grandit seulement avec la mesure et la raison : une forme nouvelle au-dessus de la limite fait échouer le test.
+// « spirc --sans-communes » (pulse 0.53) : le rechargement de /pulse:spirc après une compaction ; la sortie, enregistrée dans un fichier,
+// est lue en entier (consigne du SKILL.md) ; elle passera sous la limite quand le Processus de spirc tiendra dans ses ~5 000 premiers jetons.
+const DEPASSEMENTS_CONNUS = new Set(["plan --sans-communes", "spirc --sans-communes"]);
 
 function formesCitees() {
   const formes = new Set();

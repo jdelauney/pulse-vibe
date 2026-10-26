@@ -1,5 +1,5 @@
 ---
-description: Produire le PRD - le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre
+description: "Produire le PRD - le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre"
 disable-model-invocation: true
 allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/prd.md) Edit(docs/prd.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
