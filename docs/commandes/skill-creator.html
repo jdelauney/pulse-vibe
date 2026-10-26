@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="skill-creator">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:skill-creator – Wiki Pulse</title>
+<meta name="description" content="Créer une skill Claude Code qui respecte les règles d'optimisation, après quelques questions sur son travail.">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:skill-creator</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Créer une skill Claude Code qui respecte les règles d'optimisation, après quelques questions sur son travail.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code> qui lui dit comment faire un travail. <code>/pulse:skill-creator</code> l'écrit avec vous.</p>
+<p>Pulse vous pose quelques questions, une à la fois : le travail à faire, les phrases que vous direz, qui la lance, ce qu'elle touche, à qui elle parle, où la ranger. Il vous montre le plan de la skill, puis l'écrit une fois le plan validé.</p>
+<p>Un programme contrôle ensuite la skill selon les 14 règles tirées du travail qui a allégé Pulse. La skill obtenue fonctionne seule, sans Pulse.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Une skill juste du premier coup.</strong> Une description claire (la phrase qui dit à Claude quand utiliser la skill), un déroulé court, le détail chargé seulement quand il sert.</li>
+<li><strong>Des autorisations sans surprise.</strong> Les gestes risqués (envoyer, supprimer, mettre en ligne) restent soumis à votre accord.</li>
+<li><strong>Moins de texte chargé.</strong> La taille de la skill est mesurée avant de vous la rendre.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Vous refaites souvent le même travail</strong> avec Claude Code et vous voulez lui apprendre une fois pour toutes.</li>
+<li><strong>Vous voulez partager une façon de faire</strong> avec les personnes de votre projet.</li>
+</ul>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:skill-creator [ce que la skill doit faire]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Vide : la première question vous le demande.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Rien</strong> : la première question vous demande ce que la skill doit faire.</li>
+<li><strong>Une phrase</strong> : le travail de la skill, en vos mots.</li>
+</ul>
+<pre class="commande"><code>/pulse:skill-creator rédiger un devis à partir d'une demande client</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>.claude/skills/&lt;nom&gt;/SKILL.md</code></td><td>La skill, rangée dans votre projet. Vous pouvez aussi la ranger pour vous seul, dans tous vos projets, ou dans un plugin.</td></tr>
+<tr><td><code>.claude/skills/&lt;nom&gt;/references/</code></td><td>Au besoin, le détail d'une étape, lu seulement à cette étape.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Une skill existante reste telle quelle.</strong> Si le nom est déjà pris, Pulse vous en propose un autre.</li>
+<li><strong>Hors de votre projet</strong> (vos skills personnelles, un plugin), Claude Code vous demande l'accord pour chaque fichier.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>La nouvelle skill n'apparaît pas quand je tape son nom</summary><p>Fermez puis relancez Claude Code : il lit les skills au démarrage.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : créer une skill de devis">
+<p data-role="vous">/pulse:skill-creator rédiger un devis à partir d'une demande client</p>
+<p data-role="claude">Quelles phrases direz-vous pour vous en servir ? Par exemple « fais-moi le devis de ce message ».</p>
+<p data-role="vous">« Prépare le devis » ou « devis pour ce client ».</p>
+<p data-role="claude">Voici le plan : la skill rediger-devis, rangée dans ce projet, lancée par vous seul, en 3 étapes. Je l'écris ? … C'est fait : 0 point bloquant, 2 400 caractères chargés à chaque lancement. Essayez-la en tapant /rediger-devis avec une vraie demande.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="audit-skill.html"><code>/pulse:audit-skill</code></a> : vérifier des skills déjà écrites.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

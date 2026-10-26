@@ -45,9 +45,9 @@ Pour chaque cible, lancer ces commandes et lire chaque sortie en entier. Leurs s
 
 1. `pulse-aidd skill mesurer <chemin>`, puis lire sa première ligne :
    - `introuvable:` avec un argument : le chemin donné n'existe pas. Le dire et demander le bon chemin.
-   - Sans argument, `introuvable: .claude` : le projet n'a pas encore de skill. Le dire simplement, proposer d'auditer les skills personnelles ou un autre chemin, et s'arrêter sans rapport.
+   - Sans argument, `introuvable: .claude` : le projet n'a pas encore de skill. Le dire simplement, proposer d'auditer les skills personnelles ou un autre chemin, ou d'en créer une (tapez `/pulse:skill-creator`), et s'arrêter sans rapport.
    - `hors-format:` : ce fichier n'est pas une skill Claude Code. Le dire et s'arrêter.
-   - `skills: 0` : cette cible ne contient aucune skill. Le dire en une phrase ; s'il ne reste aucune cible, proposer les skills personnelles ou un autre chemin, et s'arrêter sans rapport.
+   - `skills: 0` : cette cible ne contient aucune skill. Le dire en une phrase ; s'il ne reste aucune cible, proposer les skills personnelles, un autre chemin, ou d'en créer une (tapez `/pulse:skill-creator`), et s'arrêter sans rapport.
    - `mode: resume` : un gros dossier, une ligne par skill. Le détail d'une skill se lit avec `pulse-aidd skill mesurer <chemin d'une skill>` ; chaque assistant le demande pour son lot.
 2. `pulse-aidd skill verifier <chemin>`. Avec `installe: oui` en tête : la skill vient d'un plugin installé. L'audit continue ; une correction se fera dans le dossier source du plugin, car une mise à jour remplace ce dossier.
 3. `pulse-aidd skill empreinte <chemin>` : l'empreinte, la taille et la date de chaque fichier, pour savoir plus tard si les fichiers ont changé depuis l'audit.

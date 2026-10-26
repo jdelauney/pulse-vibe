@@ -88,6 +88,7 @@ window.PULSE_WIKI = {
         "annuler",
         "get-help",
         "memory",
+        "skill-creator",
         "audit-skill"
       ]
     }
@@ -307,6 +308,13 @@ window.PULSE_WIKI = {
       "description": "Être trouvé sur Google et par les assistants IA - audit du site servi, fondations (adresse, titres, sitemap, robots, carte de partage), textes choisis par vous, politique des robots IA, lancement (Search Console, Bing)",
       "forme": "[audit | bases | textes [page] | ia | lancer]",
       "note": "par défaut : audit"
+    },
+    {
+      "nom": "skill-creator",
+      "etape": "toujours",
+      "description": "Créer une skill Claude Code qui respecte les règles d'optimisation, après quelques questions sur son travail",
+      "forme": "[ce que la skill doit faire]",
+      "note": "vide : la première question vous le demande"
     },
     {
       "nom": "spec",
