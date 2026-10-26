@@ -1,14 +1,14 @@
 # Les règles des skills (K1 à K14)
 
-Utilisé par les commandes Pulse qui créent, auditent et optimisent une skill, et par leur agent de relecture. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte des commandes −31 %, qualité mesurée égale ou meilleure). Elles valent pour toute skill Claude Code (un dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un fichier d'un autre format (règles Cursor, `AGENTS.md`) est signalé « hors format ».
+Utilisé par les commandes Pulse qui créent, auditent et optimisent une skill, et par leur agent de relecture. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte −31 %, qualité égale ou meilleure). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
 
 ## Lire une règle
 
-- **Niveau** : *universelle* = vaut pour toute skill ; *convention* = recommandée, gravité « conseil » hors d'un plugin Pulse, « à corriger » dans un plugin Pulse (`pulse`, `pulse-next`).
-- **Gravité** : *bloquant* = la skill est fausse ou risquée, à corriger avant de s'en servir (code 1 de `pulse-aidd skill verifier`) ; *à corriger* = perte de qualité ou de contexte mesurable ; *conseil* = amélioration.
+- **Niveau** : *universelle* = vaut pour toute skill ; *convention* = recommandée : « conseil », ou « à corriger » dans un plugin Pulse (`pulse`, `pulse-next`).
+- **Gravité** : *bloquant* = skill fausse ou risquée, à corriger avant usage (code 1 de `pulse-aidd skill verifier`) ; *à corriger* = perte de qualité ou de contexte mesurable ; *conseil* = amélioration.
 - **Vérification** : *script* = `pulse-aidd skill verifier <chemin>` donne le constat (`K<n> · gravité · fichier:ligne · message`), `pulse-aidd skill mesurer <chemin>` donne les tailles ; *jugement* = la question à trancher en lisant la skill.
 - **Jetons estimés** : caractères ÷ 3,5 (une estimation, dite comme telle).
-- **Bloquant**, en tout : description absente ou de plus de 1 024 caractères (K2) ; geste sensible autorisé d'avance ou motif trop large (K4) ; fin du Processus au-delà des 5 000 premiers jetons estimés (K5) ; fichier ou sortie lue de plus de 30 000 caractères (K7) ; outil cité dans les consignes d'un agent sans lui être disponible (K11).
+- **Bloquant**, en tout : description absente ou de plus de 1 024 caractères (K2) ; geste sensible autorisé d'avance ou motif trop large (K4) ; fin du Processus au-delà des 5 000 premiers jetons estimés, sans ligne de rechargement (K5) ; fichier ou sortie lue par un outil de plus de 30 000 caractères (K7) ; outil cité dans les consignes d'un agent sans lui être disponible (K11).
 
 ## K1 – Une skill, un travail
 
@@ -24,9 +24,9 @@ Donner à chaque skill un seul travail, que son nom et sa description disent. De
 
 Universelle · bloquant si absente ou de plus de 1 024 caractères ; à corriger sans « À utiliser quand » pour une skill invocable par le modèle ; conseil au-delà de 300 caractères chargés en permanence · script et jugement.
 
-Commencer par ce que la skill fait, en une phrase. Pour une skill que le modèle peut lancer, ajouter « À utiliser quand … » (ou « Use when … ») et les mots que la personne emploie vraiment. Viser 50 à 300 caractères. La description d'une skill invocable par le modèle, et celle de chaque agent, restent chargées en permanence : chaque caractère compte. Une skill lancée seulement par la personne garde une description courte de capacité. Une description qui contient « : » s'écrit entre guillemets.
+Commencer par ce que la skill fait, en une phrase. Skill que le modèle peut lancer : ajouter « À utiliser quand … » (ou « Use when … ») et les mots de la personne. Viser 50 à 300 caractères. La description d'une skill invocable par le modèle, et celle de chaque agent, restent chargées en permanence : chaque caractère compte. Une skill lancée seulement par la personne garde une description courte de capacité. Une description qui contient « : » s'écrit entre guillemets.
 
-- Script : présence, longueur, « À utiliser quand », deux-points hors guillemets ; un en-tête illisible est signalé comme une description absente.
+- Script : présence, longueur, « À utiliser quand », deux-points hors guillemets ; en-tête illisible = description absente.
 - Jugement : « Les phrases réelles de la personne déclenchent-elles cette skill, et seulement elle ? »
 - Avant → après : descriptions des agents « … Utilisé par /pulse:review et /pulse:spirc » (1 Ko chargé en permanence) → « … en lecture seule (commandes Pulse) ».
 
@@ -45,14 +45,13 @@ Universelle · bloquant (geste sensible autorisé d'avance, motif trop large) ; 
 Écrire dans `allowed-tools` des motifs précis : `Bash(git status *)`, `Write(docs/**)`. Laisser passer par la demande d'accord de Claude Code les envois (`git push`), suppressions (`rm`, `git clean`, `git branch -D`), fusions, envois forcés, changements de configuration (`git config`, `git remote`, `.claude/settings.json`) et gestes de production (mise en ligne, secrets). Chaque commande que la skill ou ses références font lancer est couverte par un motif, et chaque motif sert.
 
 - Script : motifs trop larges (`Bash`, `Bash(*)`, `Bash(git *)`, `Bash(npm *)`, `Bash(node *)`, `Bash(pulse-aidd *)`…) et motifs qui couvrent un geste sensible.
-- Jugement : « Chaque commande citée par la skill est-elle couverte ? Chaque motif sert-il ? »
-- Avant → après : `Bash(git branch -M main)` autorisé dans deploy, qui écrase une branche `main` existante → `git branch -m`, qui échoue proprement ; `Bash(git remote add origin *)` → demande d'accord, annoncée à la personne.
+- Avant → après : `Bash(git branch -M main)` dans deploy, qui écrase une `main` existante → `git branch -m`, qui échoue proprement ; `Bash(git remote add origin *)` → demande d'accord annoncée.
 
 ## K5 – Trame et compaction
 
-Position du Processus : universelle, bloquant · trame des sections : convention · script et jugement.
+Position du Processus : universelle, bloquant (à corriger avec une ligne de rechargement placée tôt) · trame des sections : convention · script et jugement.
 
-Placer le Processus tôt : sa fin tient dans les 5 000 premiers jetons estimés du `SKILL.md`, car une compaction garde seulement le début d'une skill. Trame recommandée : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références. Une injection dynamique (``!`commande` ``) ferme le fichier, après le Processus, suivie d'une ligne de repli qui dit comment recharger ce qu'elle apporte (« Si ce contexte est absent, lancer … et lire sa sortie »).
+Placer le Processus tôt : sa fin tient dans les 5 000 premiers jetons estimés du `SKILL.md`, car une compaction en garde seulement le début. Sinon, écrire dans ce début une ligne qui parle de compaction et cite la commande qui réaffiche les consignes (dans Pulse, `pulse-aidd etape` de la commande ; ailleurs, la lecture de son `SKILL.md`). Trame recommandée : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références. Une injection dynamique (``!`commande` ``) ferme le fichier, après le Processus, suivie d'une ligne de repli qui dit comment recharger ce qu'elle apporte (« Si ce contexte est absent, lancer … et lire sa sortie »).
 
 - Script : `processus-fin:` de `mesurer` ; sections présentes ; injection placée avant la fin du Processus.
 - Jugement : « Après une compaction, la skill sait-elle encore quoi faire ? »
@@ -64,16 +63,16 @@ Universelle · à corriger · jugement, aidé des tailles de `mesurer`.
 
 Garder dans le `SKILL.md` le déroulé. Mettre le détail d'un mode ou d'une étape dans `references/`, chargé à l'étape qui le sert, avec sa condition (« Pour une première mise en ligne : lire `premiere.md` »). Ranger les modèles dans `assets/`, lus au moment d'écrire. Chaque texte chargé au lancement sert à chaque lancement.
 
-- Jugement : « Ce texte sert-il à chaque lancement ? Sinon, à quelle étape, et sous quelle condition ? »
+- Jugement : « Ce texte sert-il à chaque lancement ? Sinon, à quelle étape ? »
 - Avant → après : `/pulse:deploy` chargeait la première mise en ligne et la production à chaque mise à jour (52 861 octets) → une référence par mode, lue dans ce mode (21 766 octets).
 
 ## K7 – Sous la limite de lecture
 
-Universelle · bloquant au-delà de 30 000 caractères ; à corriger pour une règle coupée · script.
+Universelle · bloquant au-delà de 30 000 caractères lus par un outil ; à corriger pour une injection trop longue ou une règle coupée · script.
 
-Garder chaque sortie que la skill fait lire (fichier, commande, injection) sous 30 000 caractères : au-delà, Claude Code l'enregistre dans un fichier et en montre seulement un aperçu. Scinder en appels séparés. Lire les règles en entier, sans `head`, `tail` ni tube qui les coupe.
+Garder chaque sortie lue par un outil (fichier, commande) sous 30 000 caractères : au-delà, Claude Code l'enregistre dans un fichier et en montre seulement un aperçu. Scinder en appels séparés. Une injection (``!`commande` ``) se charge en entier, mais à chaque lancement : la mesurer, et la scinder si possible. Lire les règles en entier, sans `head`, `tail` ni tube qui les coupe.
 
-- Script : taille de chaque fichier de `references/` et `assets/` (un fichier de données, JSON, YAML ou CSV, souvent lu par un script seul : à corriger) et de chaque injection `!pulse-aidd …` (les autres : « non mesurée ») ; lecture coupée par `head` ou `tail`.
+- Script : taille de chaque fichier de `references/` et `assets/` (données JSON, YAML ou CSV, souvent lues par un script : à corriger) et de chaque injection `!pulse-aidd …` (les autres : « non mesurée ») ; `head` ou `tail`.
 - Avant → après : le reviewer lisait la checklist sécurité par `| head -60` (points S10 à S13 jamais lus) → une commande par famille, lue en entier.
 
 ## K8 – Un fait, un seul endroit
@@ -82,7 +81,7 @@ Universelle · à corriger · script (`recoupement:` sur un dossier) et jugement
 
 Écrire une règle partagée par plusieurs skills dans une référence commune ; chaque skill y renvoie. Une règle propre à une skill reste dans ses `references/`.
 
-- Avant → après : la délégation à l'implementer, recopiée dans spirc et implement (2,2 Ko chacune) → `references/deleguer.md`, lue par les deux.
+- Avant → après : délégation à l'implementer recopiée dans spirc et implement (2,2 Ko chacune) → `references/deleguer.md`, lu par les deux.
 
 ## K9 – Des consignes positives
 
@@ -112,7 +111,7 @@ Donner à chaque agent les outils que ses consignes citent (listés dans `tools`
 
 Universelle · à corriger ; en relecture avant / après, une perte se corrige avant le bilan · jugement.
 
-Garder chaque question clé, validation, point d'arrêt et garde-fou quand on raccourcit une skill. Poser une question clé à la fois, l'option recommandée en premier.
+Raccourcir une skill en gardant chaque question clé, validation, point d'arrêt et garde-fou. Poser une question clé à la fois, l'option recommandée en premier.
 
 - Jugement : « Comparée à l'avant, la skill pose-t-elle les mêmes questions, aux mêmes arrêts, avec les mêmes refus ? »
 - Avant → après : `/pulse:us` posait ses questions clés en bloc → une à une, en réponse libre ; aucune retirée.

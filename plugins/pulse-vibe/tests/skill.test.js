@@ -139,6 +139,31 @@ test("K5 : Processus placé après 20 000 caractères → bloquant ; sa position
   assert.ok(mesurer(path.join(d, "tot"))[0].processusFin < 500);
 });
 
+test("K5 : Processus tardif avec une ligne de rechargement après compaction, placée tôt → à corriger, pas bloquant", (t) => {
+  const d = dossierTemporaire(t);
+  const remplissage = `${"Une phrase de contexte qui allonge la skill. ".repeat(450)}\n\n## Processus`;
+  const avecLigne = (nom, ligne, tard = false) => {
+    let corps = CORPS.replace("## Processus", remplissage);
+    corps = tard ? `${corps}\n${ligne}\n` : corps.replace("- Garder les mots de l'auteur.", `- Garder les mots de l'auteur.\n- ${ligne}`);
+    ecrire(d, `${nom}/SKILL.md`, skill({ corps }));
+    return constats(verifier(path.join(d, nom)), "K5").filter((c) => /Processus à/.test(c.message)).map((c) => c.gravite);
+  };
+  assert.deepStrictEqual(avecLigne("etape", "Après une compaction, lancer `pulse-aidd etape etape` et suivre sa sortie."), ["a-corriger"]);
+  assert.deepStrictEqual(avecLigne("relire", "Après un compactage, relire `.claude/skills/relire/SKILL.md` en entier."), ["a-corriger"]);
+  assert.deepStrictEqual(avecLigne("sans-commande", "Après une compaction, se souvenir du Processus."), ["bloquant"], "une phrase sans commande qui réaffiche les consignes");
+  assert.deepStrictEqual(avecLigne("autre-skill", "Après une compaction, lancer `pulse-aidd etape commit`."), ["bloquant"], "les consignes d'une autre commande");
+  assert.deepStrictEqual(avecLigne("tardive", "Après une compaction, lancer `pulse-aidd etape tardive`.", true), ["bloquant"], "une ligne placée après la coupure serait perdue avec le reste");
+});
+
+test("K7 : une injection de plus de 30 000 caractères → à corriger (coût à chaque lancement), pas bloquant", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "injection/SKILL.md", skill({ corps: `${CORPS}\n!\`pulse-aidd reference rediger/detecteur-tics-llm.json\`\n` }));
+  const k7 = constats(verifier(path.join(d, "injection")), "K7");
+  assert.deepStrictEqual(k7.map((c) => c.gravite), ["a-corriger"], JSON.stringify(k7));
+  assert.match(k7[0].message, /à chaque lancement/);
+  assert.match(lancer("mesurer", path.join(d, "injection")).stdout, /^au-dela-30000: !pulse-aidd reference rediger\/detecteur-tics-llm\.json$/m);
+});
+
 test("K7 : references/gros.md de 31 000 caractères → bloquant ; mesurer le signale au-delà de 30 000", (t) => {
   const d = dossierTemporaire(t);
   ecrire(d, "lourde/SKILL.md", skill());
