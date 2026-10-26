@@ -33,7 +33,7 @@
 <section id="description">
 <h2>Description</h2>
 <p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code>. Plus elle est longue, plus Claude Code lit de texte à chaque lancement. <code>/pulse:optimize-skill</code> l'allège sans lui faire perdre ce qui compte.</p>
-<p>Pulse audite la skill selon ses 14 règles, puis vous propose un plan point par point : ce qui change, ce que vous y gagnez, le risque. Vous choisissez tout, une partie, ou rien. Après les changements, un assistant compare la skill avant et après, pour vérifier qu'aucune question, vérification ni protection ne s'est perdue.</p>
+<p>Pulse audite la skill selon ses 14 règles, puis vous propose un plan point par point : ce qui change, ce que vous y gagnez, le risque. Vous choisissez tout, une partie, ou rien. Pulse fait d'abord une sauvegarde de la skill. Après les changements, un assistant compare la sauvegarde et la nouvelle skill, pour vérifier qu'aucune question, vérification ni protection ne s'est perdue.</p>
 </section>
 
 <section id="pourquoi">
@@ -84,7 +84,7 @@
 <tbody>
 <tr><td>La skill elle-même</td><td>Allégée, selon les points du plan que vous avez choisis.</td></tr>
 <tr><td><code>docs/audits-skills/&lt;nom&gt;-&lt;date&gt;.md</code></td><td>Le rapport d'audit, complété par le plan et le bilan avant / après (tailles, points corrigés, verdict de la relecture).</td></tr>
-<tr><td><code>&lt;nom&gt;.avant-&lt;date&gt;/</code></td><td>Seulement pour une skill qui n'est pas enregistrée avec Git (vos skills personnelles, le plus souvent) : une copie de la skill d'avant, à côté d'elle.</td></tr>
+<tr><td><code>docs/audits-skills/sauvegardes/&lt;nom&gt;-&lt;date&gt;/</code></td><td>À chaque fois : la sauvegarde de la skill d'avant, avec ses fichiers sous leur nom d'origine. Pour une skill personnelle, elle va dans <code>~/.claude/skills-sauvegardes/&lt;nom&gt;-&lt;date&gt;/</code>.</td></tr>
 </tbody>
 </table>
 </section>
@@ -92,7 +92,7 @@
 <section id="risques">
 <h2>Risques et précautions</h2>
 <ul>
-<li><strong>L'avant est toujours gardé</strong> : dans l'historique de Git, ou dans une copie à côté de la skill. Supprimez la copie vous-même quand le résultat vous convient.</li>
+<li><strong>L'avant est toujours gardé</strong> : une sauvegarde est faite avant tout changement, à l'écart de vos skills. Supprimez-la vous-même quand le résultat vous convient.</li>
 <li><strong>Une skill d'un plugin installé reste telle quelle</strong> : la prochaine mise à jour du plugin effacerait le changement. Pulse vous indique où la corriger, dans le dossier d'origine du plugin.</li>
 <li><strong>Hors de votre projet</strong> (vos skills personnelles, un plugin), Claude Code vous demande l'accord pour chaque fichier.</li>
 </ul>
@@ -100,7 +100,7 @@
 
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
-<details class="probleme"><summary>La relecture signale une perte</summary><p>Pulse la corrige une fois. Si elle reste, elle est écrite en premier dans le bilan, avec la correction proposée : vous pouvez revenir à la copie d'avant.</p></details>
+<details class="probleme"><summary>La relecture signale une perte</summary><p>Pulse la corrige, puis fait relire une seconde fois. Si une perte reste, Pulse s'arrête, vous l'explique en mots simples et vous laisse choisir : remettre la sauvegarde, ou garder la skill ainsi.</p></details>
 <details class="probleme"><summary>Pulse dit que la skill vient d'un plugin installé</summary><p>Ouvrez le dossier d'origine du plugin, puis relancez la commande avec le chemin de la skill dans ce dossier.</p></details>
 </section>
 

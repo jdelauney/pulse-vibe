@@ -598,3 +598,28 @@ test("empreinte : chaque fichier d'une skill ou d'un agent, son empreinte (celle
   assert.strictEqual(absent.status, 1);
   assert.match(absent.stdout, /^introuvable: /m);
 });
+
+test("empreinte : « suivi-git: oui|non|ignore » par skill ou agent (git ls-files, puis git check-ignore), en lecture seule", (t) => {
+  const d = dossierTemporaire(t);
+  // Hors de tout dépôt : non.
+  ecrire(d, "hors/.claude/skills/resumer/SKILL.md", skill());
+  assert.match(lancer("empreinte", path.join(d, "hors", ".claude", "skills", "resumer")).stdout, /^suivi-git: non · SKILL\.md$/m);
+  const projet = path.join(d, "projet");
+  fs.mkdirSync(projet);
+  assert.strictEqual(spawnSync("git", ["init", "-q"], { cwd: projet }).status, 0, "git init");
+  ecrire(projet, ".claude/skills/suivie/SKILL.md", skill());
+  ecrire(projet, ".claude/skills/nouvelle/SKILL.md", skill());
+  ecrire(projet, ".claude/agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  ecrire(projet, "plugin/skills/ignoree/SKILL.md", skill());
+  ecrire(projet, ".gitignore", "plugin/\n");
+  assert.strictEqual(spawnSync("git", ["add", ".claude/skills/suivie/SKILL.md", ".gitignore"], { cwd: projet }).status, 0, "git add");
+  const avant = spawnSync("git", ["status", "--porcelain"], { cwd: projet, encoding: "utf8" }).stdout;
+  const r = lancer("empreinte", path.join(projet, ".claude"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^suivi-git: oui · skills\/suivie\/SKILL\.md$/m, "suivie par Git");
+  assert.match(r.stdout, /^suivi-git: non · skills\/nouvelle\/SKILL\.md$/m, "pas encore suivie");
+  assert.match(r.stdout, /^suivi-git: non · agents\/relecteur\.md$/m, "agent non suivi");
+  assert.match(lancer("empreinte", path.join(projet, "plugin", "skills", "ignoree")).stdout, /^suivi-git: ignore · SKILL\.md$/m, "ignorée par Git");
+  // Lecture seule : l'index et l'arbre de travail restent tels quels.
+  assert.strictEqual(spawnSync("git", ["status", "--porcelain"], { cwd: projet, encoding: "utf8" }).stdout, avant);
+});

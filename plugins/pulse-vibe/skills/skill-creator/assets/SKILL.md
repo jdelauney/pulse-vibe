@@ -1,6 +1,6 @@
 ---
 name: <nom-de-la-skill>
-description: <Ce que la skill fait, en une phrase.> <Si Claude peut la lancer : À utiliser quand <les phrases de la personne>.>
+description: "<Ce que la skill fait, en une phrase.> <Si Claude peut la lancer : À utiliser quand <les phrases de la personne>.>"
 disable-model-invocation: true
 allowed-tools: <un motif précis par commande lancée, par exemple Bash(git status *) Read Write(docs/rapports/**)>
 ---

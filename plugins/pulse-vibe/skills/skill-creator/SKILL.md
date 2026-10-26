@@ -38,14 +38,14 @@ Où ranger une skill :
 
 Poser les questions de fond une à la fois, dans cet ordre (règles communes 4 et 5), en sautant celles dont la réponse est déjà connue :
 
-1. **Le travail** : ce que la skill fait, du début à la fin, et ce qu'elle rend (réponse libre, en texte). Deux travaux distincts : proposer deux skills (K1). Chercher dans `.claude/skills/` (Glob `.claude/skills/*/SKILL.md`) une skill qui fait déjà ce travail, et le dire.
+1. **Le travail** : ce que la skill fait, du début à la fin, et ce qu'elle rend (réponse libre, en texte). Deux travaux distincts : proposer deux skills (K1).
 2. **Les phrases** que la personne dira pour s'en servir (réponse libre) : elles donnent les exemples, et les déclencheurs de la description si Claude peut la lancer.
 3. **Qui la lance** (AskUserQuestion, la réponse recommandée selon ses effets en premier, K3) : « Vous seul, en tapant /<nom> » pour une skill qui écrit, envoie, coûte ou charge beaucoup ; « Vous, et Claude quand la demande s'y prête » pour une skill sans effet, utile en plein travail.
 4. **Ce qu'elle touche** : fichiers lus et écrits, commandes lancées, services en ligne (réponse libre). Un envoi, une suppression, un changement de configuration ou une mise en ligne reste soumis à l'accord de la personne (K4).
 5. **À qui elle parle** : la langue et le ton de ce qu'elle montre (AskUserQuestion : « En français, en vouvoyant (Recommandé) » / « En français, en tutoyant » / « En anglais »).
 6. **Où la ranger** (AskUserQuestion : « Dans ce projet, `.claude/skills/` (Recommandé) » / « Pour moi, dans tous mes projets » / « Dans un plugin »). Pour vous : `~/.claude/skills/<nom>/` ; pour un plugin : demander son dossier.
 
-Proposer ensuite un nom court, tiré du travail : minuscules, chiffres et tirets, 64 caractères au plus. Si le dossier `<emplacement>/<nom>/` existe déjà, il reste tel quel : proposer un autre nom ; pour améliorer la skill existante, tapez `/pulse:optimize-skill <chemin>`.
+Chercher ensuite dans l'emplacement choisi (Glob `<emplacement>/*/SKILL.md`, et `.claude/skills/*/SKILL.md` du projet) une skill qui fait déjà ce travail, et le dire (K1). Proposer un nom court, tiré du travail : minuscules, chiffres et tirets, 64 caractères au plus. Si le dossier `<emplacement>/<nom>/` existe déjà, il reste tel quel : proposer un autre nom ; pour améliorer la skill existante, tapez `/pulse:optimize-skill <chemin>`.
 
 ### 2. Proposer le plan de la skill
 
