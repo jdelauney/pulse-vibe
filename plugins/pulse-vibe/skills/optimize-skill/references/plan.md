@@ -27,8 +27,8 @@ Mesure avant : SKILL.md <car> car · <jetons> jetons estimés ; chargé au lance
 ## Écrire le bilan
 
 - Les mesures « avant » viennent de l'étape 1, les mesures « après » de l'étape 6 ; l'écart en caractères et en pourcentage.
-- La relecture : le verdict de `pulse:skill-auditor` ; chaque perte rendue, ou restante avec sa correction proposée.
-- L'avant : la version enregistrée dans Git, ou le chemin de la copie de sauvegarde.
+- La relecture : le verdict de `pulse:skill-auditor`, après la seconde relecture s'il y en a eu une ; chaque perte rendue, ou restante avec le choix de la personne (sauvegarde remise, ou skill gardée ainsi).
+- La sauvegarde : son chemin.
 
 ```markdown
 ## Bilan avant / après
@@ -44,7 +44,7 @@ Points appliqués : <n°> ; laissés : <n°, et pourquoi>.
 | Description chargée en permanence | <car> car, ou « aucune » | | |
 | Contrôle par script | <b> bloquants · <c> à corriger · <d> conseils | | |
 
-Relecture avant / après : <aucune perte | pertes (<n>) : rendues, ou restantes avec leur correction>.
+Relecture avant / après : <aucune perte | pertes (<n>) : rendues, ou restantes (sauvegarde remise | gardée ainsi)>.
 
-L'avant : <version enregistrée dans Git | copie `<dossier>.avant-<AAAA-MM-JJ>/`>.
+Sauvegarde : `<docs/audits-skills/sauvegardes/<nom>-<AAAA-MM-JJ>/ | ~/.claude/skills-sauvegardes/<nom>-<AAAA-MM-JJ>/>`.
 ```

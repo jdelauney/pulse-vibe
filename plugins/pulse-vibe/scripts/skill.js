@@ -20,7 +20,9 @@
 //                                        plugin installé (chemin sous plugins/cache/).
 //   pulse-aidd skill empreinte <chemin>  « empreinte: <fichier> · <sha1> · <octets> octets · <date> » pour chaque fichier
 //                                        de chaque skill (tout son dossier) et de chaque agent ; sha1 = celui de
-//                                        git hash-object, calculé sans Git. Sans skill : « skills: 0 (aucune skill trouvée …) ».
+//                                        git hash-object, calculé sans Git ; puis « suivi-git: oui|non|ignore · <SKILL.md
+//                                        ou agent> » par skill et par agent (git ls-files, git check-ignore : lecture
+//                                        seule). Sans skill : « skills: 0 (aucune skill trouvée …) ».
 //   pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]
 //                                        l'usage observé dans l'historique des sessions de Claude Code (par défaut
 //                                        ~/.claude/projects, 90 derniers jours), lu en flux, ligne à ligne : periode,
@@ -686,7 +688,7 @@ async function afficherUsage(args) {
 const USAGE = [
   "Usage : pulse-aidd skill mesurer <chemin>    tailles d'une skill, d'un agent ou d'un dossier de skills",
   "        pulse-aidd skill verifier <chemin>   règles K vérifiables par script (pulse-aidd reference skills/regles-skills.md)",
-  "        pulse-aidd skill empreinte <chemin>  empreinte, taille et date de chaque fichier (une skill a-t-elle changé ?)",
+  "        pulse-aidd skill empreinte <chemin>  empreinte, taille et date de chaque fichier (une skill a-t-elle changé ?), et suivi-git: oui|non|ignore",
   "<chemin> : une skill (dossier ou SKILL.md), un agent (agents/<nom>.md), un dossier de skills (.claude/skills/),",
   "ou un dossier qui contient skills/ ou agents/ (.claude/, un plugin).",
   "        pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]   l'usage observé dans l'historique des sessions",
@@ -765,6 +767,20 @@ function fichiersUnite(u) {
 }
 
 /**
+ * Le fichier principal d'une skill (SKILL.md) ou d'un agent est-il enregistré par Git ? « oui » : dans l'index
+ * (git ls-files --error-unmatch) ; « ignore » : exclu par un .gitignore (git check-ignore) ; « non » : pas encore
+ * suivi, hors de tout dépôt, ou Git absent. Deux lectures : rien n'est écrit.
+ */
+function suiviGit(fichier) {
+  const git = (...args) => spawnSync("git", args, { cwd: path.dirname(fichier), encoding: "utf8", timeout: 10000, windowsHide: true });
+  const nom = path.basename(fichier);
+  const liste = git("ls-files", "--error-unmatch", "--", nom);
+  if (liste.error) return "non";
+  if (liste.status === 0) return "oui";
+  return git("check-ignore", "-q", "--", nom).status === 0 ? "ignore" : "non";
+}
+
+/**
  * L'empreinte de chaque fichier : celle de `git hash-object` (sans Git, calculée ici), la taille en octets et la date
  * de modification. Sert à savoir si une skill a changé depuis un audit.
  */
@@ -779,6 +795,7 @@ function afficherEmpreinte(lieu) {
       const date = fs.statSync(f).mtime.toISOString().replace(/\.\d{3}Z$/, "Z");
       lignes.push(`empreinte: ${unix(path.relative(base, f))} · ${sha} · ${contenu.length} octets · ${date}`);
     }
+  for (const u of lieu.unites) lignes.push(`suivi-git: ${suiviGit(u.fichier)} · ${unix(path.relative(base, u.fichier))}`);
   console.log(lignes.join("\n"));
   return 0;
 }
