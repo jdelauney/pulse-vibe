@@ -18,7 +18,7 @@ Phrase à dire : « Ce guide est votre carnet de route : chaque ligne est une co
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte guide` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte guide` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ### Principes
 
@@ -57,4 +57,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la `prochaine` de `
 
 !`pulse-aidd contexte guide`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte guide` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte guide` et lire sa sortie en entier, fichier enregistré compris.

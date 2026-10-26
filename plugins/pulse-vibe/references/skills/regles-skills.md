@@ -1,14 +1,14 @@
 # Les règles des skills (K1 à K14)
 
-Utilisé par `/pulse:skill-creator`, `/pulse:audit-skill`, `/pulse:optimize-skill` et l'agent `pulse:skill-auditor`. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte −31 %, qualité égale ou meilleure). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
+Utilisé par `/pulse:skill-creator`, `/pulse:audit-skill`, `/pulse:optimize-skill` et l'agent `pulse:skill-auditor`. Tirées de l'optimisation de Pulse (octobre 2026). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
 
 ## Lire une règle
 
 - **Niveau** : *universelle* = vaut pour toute skill ; *convention* = recommandée : « conseil », ou « à corriger » dans un plugin Pulse (`pulse`, `pulse-next`).
 - **Gravité** : *bloquant* = skill fausse ou risquée, à corriger avant usage (code 1 de `pulse-aidd skill verifier`) ; *à corriger* = perte de qualité ou de contexte mesurable ; *conseil* = amélioration.
-- **Vérification** : *script* = `pulse-aidd skill verifier <chemin>` donne le constat (`K<n> · gravité · fichier:ligne · message`), `pulse-aidd skill mesurer <chemin>` donne les tailles ; *jugement* = la question à trancher en lisant la skill.
+- **Vérification** : *script* = `pulse-aidd skill verifier <chemin>` donne les constats, `pulse-aidd skill mesurer <chemin>` donne les tailles ; *jugement* = la question à trancher en lisant la skill.
 - **Jetons estimés** : caractères ÷ 3,5, une estimation.
-- **Bloquant**, en tout : description absente ou de plus de 1 024 caractères (K2) ; geste sensible autorisé d'avance ou motif trop large (K4) ; fin du Processus au-delà des 5 000 premiers jetons estimés, sans ligne de rechargement (K5) ; fichier ou sortie lue par un outil de plus de 30 000 caractères (K7) ; outil cité dans les consignes d'un agent sans lui être disponible (K11).
+- **Bloquant**, en tout : description absente ou de plus de 1 024 caractères (K2) ; geste sensible autorisé d'avance ou motif trop large (K4) ; fin du Processus au-delà des 5 000 premiers jetons estimés, sans ligne de rechargement (K5) ; sortie de commande de plus de 30 000 caractères non lue en entier depuis le fichier enregistré, fichier au-delà de l'outil Read (K7) ; outil cité dans les consignes d'un agent sans lui être disponible (K11).
 
 ## K1 – Une skill, un travail
 
@@ -36,7 +36,7 @@ Convention · conseil (à corriger dans un plugin Pulse) · script (présence de
 
 Mettre `disable-model-invocation: true` à une skill qui a des effets : elle écrit, envoie, coûte ou charge beaucoup de contexte. La personne la lance par `/<nom>`. Une skill sans effet, utile au modèle en plein travail, reste invocable, avec une description qui la déclenche (K2). Une skill qu'une autre appelle comme étape reste invocable, ou se charge par un outil (dans Pulse : `pulse-aidd etape <commande> --sans-communes`).
 
-- Avant → après : `/pulse:explain` invocable aurait chargé 27 Ko à chaque « explique » d'une réalisation → lancée par la personne ; une ligne du `CLAUDE.md` du projet propose `/pulse:status` à qui se dit perdu.
+- Avant → après : `/pulse:explain` invocable aurait chargé 27 Ko à chaque « explique » d'une réalisation → lancée par la personne.
 
 ## K4 – Des autorisations précises
 
@@ -44,8 +44,8 @@ Universelle · bloquant (geste sensible autorisé d'avance, motif trop large) ; 
 
 Écrire dans `allowed-tools` des motifs précis : `Bash(git status *)`, `Write(docs/**)`. Laisser passer par la demande d'accord de Claude Code les envois (`git push`), suppressions (`rm`, `git clean`, `git branch -D`), fusions, envois forcés, changements de configuration (`git config`, `git remote`, `.claude/settings.json`) et gestes de production (mise en ligne, secrets). Chaque commande que la skill ou ses références font lancer est couverte par un motif, et chaque motif sert.
 
-- Script : motifs trop larges (`Bash`, `Bash(*)`, `Bash(git *)`, `Bash(npm *)`, `Bash(node *)`, `Bash(pulse-aidd *)`…) et motifs qui couvrent un geste sensible.
-- Avant → après : `Bash(git branch -M main)` dans deploy, qui écrase une `main` existante → `git branch -m`, qui échoue proprement ; `Bash(git remote add origin *)` → demande d'accord annoncée.
+- Script : motifs trop larges (`Bash`, `Bash(*)`, `Bash(git *)`, `Bash(pulse-aidd *)`…) et motifs qui couvrent un geste sensible.
+- Avant → après : `Bash(git branch -M main)` dans deploy, qui écrase une `main` existante → `git branch -m`, qui échoue proprement.
 
 ## K5 – Trame et compaction
 
@@ -68,11 +68,12 @@ Garder dans le `SKILL.md` le déroulé. Mettre le détail d'un mode ou d'une ét
 
 ## K7 – Sous la limite de lecture
 
-Universelle · bloquant au-delà de 30 000 caractères lus par un outil ; à corriger pour une injection trop longue ou une règle coupée · script.
+Universelle · bloquant au-delà de ce qu'un outil montre ; à corriger : lecture longue mais entière, injection trop longue, règle coupée · script et jugement.
 
-Garder chaque sortie lue par un outil (fichier, commande) sous 30 000 caractères : au-delà, Claude Code l'enregistre dans un fichier et en montre seulement un aperçu. Scinder en appels séparés. Une injection (``!`commande` ``) se charge en entier, mais à chaque lancement : la mesurer, et la scinder si possible. Lire les règles en entier, sans `head`, `tail` ni tube qui les coupe.
+Claude Code enregistre une sortie de commande de plus de 30 000 caractères dans un fichier et en montre un aperçu : bloquant, sauf si la ligne qui la cite dit de lire en entier ce fichier enregistré (à corriger : un coût). Un fichier lu par l'outil Read passe en entier jusqu'à 2 000 lignes et environ 25 000 jetons : bloquant au-delà, à corriger au-delà de 30 000 caractères. Une injection (``!`commande` ``) se charge en entier, à chaque lancement : à corriger au-delà de 30 000. Scinder en appels séparés. Lire les règles en entier, sans `head`, `tail` ni tube qui les coupe.
 
-- Script : taille de chaque fichier de `references/` et `assets/` (données JSON, YAML ou CSV, souvent lues par un script : à corriger) et de chaque injection `!pulse-aidd …` (les autres : « non mesurée ») ; `head` ou `tail`.
+- Script : chaque fichier de `references/` et `assets/` (données JSON, YAML, CSV : à corriger ; « lu par le script seul » à côté de son lien : rien), chaque injection et chaque commande `pulse-aidd` d'affichage citée (autre injection : « non mesurée ») ; `head` ou `tail`.
+- Jugement : les autres commandes citées (sortie sous 30 000 ?).
 - Avant → après : le reviewer lisait la checklist sécurité par `| head -60` (S10 à S13 jamais lus) → une commande par famille, lue en entier.
 
 ## K8 – Un fait, un seul endroit
@@ -89,7 +90,7 @@ Universelle · conseil dès 3 tournures négatives dans un fichier · script (co
 
 Dire quoi faire. Garder une interdiction pour la sécurité ou l'irréversible, avec son alternative (« Pour défaire un travail envoyé : `git revert`, l'historique reste intact »).
 
-- Avant → après : « Jamais `--force` », répété dans quatre commandes alors que le garde-fou le refuse → retiré ; la règle commune dit comment envoyer.
+- Avant → après : « Jamais `--force` », répété dans quatre commandes alors que le garde-fou le refuse → retiré.
 
 ## K10 – Le travail déterministe dans un script
 
@@ -97,7 +98,7 @@ Convention · conseil (à corriger dans un plugin Pulse) · jugement.
 
 Confier à un script ce qui se compte, se contrôle ou se déplace : contrôles, comptages, déplacements de fichiers, gestes Git. Le script refuse d'avance plutôt que de défaire après, et sort avec un code clair : 0 fait, 1 usage, 2 refus avant tout changement, 3 échec rattrapé (état d'avant remis). La skill lance le script et suit son verdict.
 
-- Avant → après : `/pulse:pr` déplaçait les commits à la main (`switch -c`, puis `branch -f`) → `pulse-aidd deplacer-commits <branche>`, qui vérifie avant et après.
+- Avant → après : `/pulse:pr` déplaçait les commits à la main → `pulse-aidd deplacer-commits <branche>`, qui vérifie avant et après.
 
 ## K11 – Les agents
 
@@ -105,7 +106,7 @@ Outils cités : universelle, bloquant · le reste : convention · script et juge
 
 Donner à chaque agent les outils que ses consignes citent (entre accents graves, ou avec le mot « outil ») : dans `tools` (`*` : tous), ou absents de `disallowedTools`. Convention : `model` écrit (`haiku`, `sonnet`, `opus`) et une liste Bash « seulement pour … » qui nomme chaque commande. Le message de délégation donne des chemins, pas des recopies. Une preuve produite par un agent (tests lancés, contrôle passé) est réutilisée par les suivants.
 
-- Avant → après : designer et ui-critic devaient lancer `pulse-aidd contraste`, absent de leur liste Bash → ajouté ; tests lancés 27 fois par essai → preuve unique (15).
+- Avant → après : designer et ui-critic devaient lancer `pulse-aidd contraste`, absent de leur liste Bash → ajouté.
 
 ## K12 – Les validations gardées
 

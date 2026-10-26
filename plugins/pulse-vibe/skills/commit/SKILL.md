@@ -13,7 +13,7 @@ Enregistrer l'état actuel du projet dans l'historique Git. Une phrase d'explica
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte commit` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte commit` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer aussi les « Conventions Git » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
@@ -110,4 +110,4 @@ Terminer avec le bloc de fin de commande.
 
 !`pulse-aidd contexte commit`
 
-Ce contexte contient aussi « Conventions Git » et « L'envoi du travail » ; le modèle `.gitignore` (`pulse-aidd modele gitignore.template`) et la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie.
+Ce contexte contient aussi « Conventions Git » et « L'envoi du travail » ; le modèle `.gitignore` (`pulse-aidd modele gitignore.template`) et la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte commit` et lire sa sortie en entier, fichier enregistré compris.

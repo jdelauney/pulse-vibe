@@ -13,7 +13,7 @@ Expliquer simplement un fichier, une fonction ou une ligne de code, en le relian
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte explain` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte explain` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Cette commande **travaille en lecture seule** sur le code ; elle écrit seulement dans le lexique `docs/lexique.md`, sans demander d'autorisation, et signale chaque ajout en une ligne (« 📘 Ajouté au lexique : **…** »). Son but : apprendre à **lire** le code, compétence clé pour relire ce que l'IA produit.
 
@@ -62,4 +62,4 @@ Pour cette commande, le bloc de fin de commande est facultatif.
 
 !`pulse-aidd contexte explain`
 
-Ce contexte contient aussi « Modèle : docs/lexique.md ». Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/lexique.md ». Si ce contexte est absent, lancer `pulse-aidd contexte explain` et lire sa sortie en entier, fichier enregistré compris.

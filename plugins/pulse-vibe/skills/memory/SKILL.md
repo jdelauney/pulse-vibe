@@ -15,7 +15,7 @@ allowed-tools: Bash(pulse-aidd contexte memory) Bash(pulse-aidd agent memory-com
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte memory` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte memory` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
@@ -108,4 +108,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : la commande où vou
 
 !`pulse-aidd contexte memory`
 
-Ce contexte contient aussi « Règles de la mémoire projet » ; chaque modèle s'affiche avec `pulse-aidd modele <fichier>` à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie.
+Ce contexte contient aussi « Règles de la mémoire projet » ; chaque modèle s'affiche avec `pulse-aidd modele <fichier>` à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte memory` et lire sa sortie en entier, fichier enregistré compris.

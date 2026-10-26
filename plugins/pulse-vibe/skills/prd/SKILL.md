@@ -14,7 +14,7 @@ Rappeler en une phrase : « La première version est la plus petite réellement 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte prd` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte prd` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -78,4 +78,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour 
 
 !`pulse-aidd contexte prd`
 
-Ce contexte contient aussi « Penser avant d'écrire » et « Modèle : docs/prd.md ». Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire » et « Modèle : docs/prd.md ». Si ce contexte est absent, lancer `pulse-aidd contexte prd` et lire sa sortie en entier, fichier enregistré compris.

@@ -15,7 +15,7 @@ Vient en complément de la relecture (`/pulse:review`) et du test par la personn
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte auto-fix` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte auto-fix` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -101,4 +101,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pou
 
 !`pulse-aidd contexte auto-fix`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte auto-fix` et lire sa sortie en entier, fichier enregistré compris.

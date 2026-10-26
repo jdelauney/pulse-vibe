@@ -22,13 +22,13 @@ demande libre ─ [A] Analyser (ajout au plan) ┘
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spirc` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spirc` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
-Après une compaction, cette commande n'est plus en entier dans la conversation : recharger ses consignes avec `pulse-aidd etape spirc --sans-communes` et lire toute sa sortie (longue : Claude Code l'enregistre dans un fichier, à lire en entier), avant de reprendre l'étape en cours.
+Après une compaction, cette commande n'est plus en entier dans la conversation : avant de reprendre l'étape en cours, recharger ses règles avec `pulse-aidd contexte spirc`, puis ses consignes avec `pulse-aidd etape spirc --sans-communes` (toutes ses sections s'appliquent : l'en-tête « appliquer seulement le Processus » vaut pour un enchaînement), chaque sortie lue en entier, fichier enregistré compris.
 
 ### Comment appliquer une étape de la méthode
 
-Pour les étapes Tech, US, Spec, Plan et Commit, **lancer l'étape voulue** : `pulse-aidd etape tech --sans-communes`, `pulse-aidd etape us --sans-communes`, `pulse-aidd etape spec --sans-communes`, `pulse-aidd etape plan --sans-communes`, ou l'étape Commit (décrite plus bas). Puis appliquer sa section « Processus » à l'identique (prérequis, questions, fichiers produits, garde-fous), **hors** son bloc de fin de commande. L'étape Commit se charge une seule fois, au démarrage de la réalisation (section « Choisir la façon de travailler »), et sert à chaque tâche.
+Pour les étapes Tech, US, Spec, Plan et Commit, **lancer l'étape voulue** : `pulse-aidd etape tech --sans-communes`, `pulse-aidd etape us --sans-communes`, `pulse-aidd etape spec --sans-communes`, `pulse-aidd etape plan --sans-communes`, ou l'étape Commit (décrite plus bas), et lire sa sortie en entier, fichier enregistré compris. Puis appliquer sa section « Processus » à l'identique (prérequis, questions, fichiers produits, garde-fous), **hors** son bloc de fin de commande. L'étape Commit se charge une seule fois, au démarrage de la réalisation (section « Choisir la façon de travailler »), et sert à chaque tâche.
 
 ## Contexte
 
@@ -239,4 +239,4 @@ Puis le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si la premi�
 
 !`pulse-aidd contexte spirc`
 
-Ce contexte contient aussi « Examiner une tâche », « Déléguer à l'implementer » et le lexique ; le modèle de rapport de revue se lance à l'écriture du rapport ([R] étape 2). Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation : section « Choisir la façon de travailler ». Trois autres se lancent à la demande : `pulse-aidd reference tests-dabord.md` (tests d'abord), `pulse-aidd reference worktree-dossier.md` (dossier à part) et `pulse-aidd reference spirc/analyser.md` (demande libre). Les règles de la mémoire projet se chargent à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie.
+Ce contexte contient aussi « Examiner une tâche », « Déléguer à l'implementer » et le lexique ; le modèle de rapport de revue se lance à l'écriture du rapport ([R] étape 2). Les références de la réalisation (worktree, tests automatiques, conventions Git, envoi du travail) se chargent une seule fois, au démarrage de la réalisation : section « Choisir la façon de travailler ». Trois autres se lancent à la demande : `pulse-aidd reference tests-dabord.md` (tests d'abord), `pulse-aidd reference worktree-dossier.md` (dossier à part) et `pulse-aidd reference spirc/analyser.md` (demande libre). Les règles de la mémoire projet se chargent à l'étape « Mémoire ». Si ce contexte est absent, lancer `pulse-aidd contexte spirc` et lire sa sortie en entier, fichier enregistré compris.

@@ -2100,6 +2100,58 @@ test("optimize-skill : audit réutilisé, plan validé, cache refusé, sauvegard
   assert.doesNotMatch(page, /Seulement pour une skill qui n'est pas enregistrée|\.avant-/);
 });
 
+test("optimize-skill : la sauvegarde du projet supprimée avant /pulse:commit ; les fichiers binaires listés, hors de la sauvegarde, laissés tels quels", () => {
+  const texte = lire(RACINE, "skills", "optimize-skill", "SKILL.md");
+  const processus = texte.split(/^## Processus\s*$/m)[1].split(/^## Exemples\s*$/m)[0];
+  const etape5 = processus.split(/^### 5\./m)[1].split(/^### 6\./m)[0];
+  const etape7 = processus.split(/^### 7\./m)[1].split(/^### 8\./m)[0];
+  const etape8 = processus.split(/^### 8\./m)[1];
+  // Sous docs/, la sauvegarde serait enregistrée avec la skill : la supprimer avant de taper /pulse:commit.
+  assert.match(etape8, /[Ss]upprime[rz][^\n]*sauvegarde[^\n]*avant[^\n]*`\/pulse:commit`/);
+  // Read puis Write ne copient pas un fichier binaire : listé, absent de la sauvegarde, jamais modifié ; la personne le copie si elle le souhaite.
+  assert.match(etape5, /binaire/);
+  assert.match(etape5, /`binaire`[^\n]*`pulse-aidd skill mesurer`|`pulse-aidd skill mesurer`[^\n]*`binaire`/);
+  assert.match(etape5, /binaire[^\n]*pas dans la sauvegarde/);
+  assert.match(etape5, /binaire[^\n]*tel quel/);
+  assert.match(etape5, /binaire[^\n]*vous-même/);
+  assert.match(etape7, /binaire/, "remettre la sauvegarde : les fichiers binaires sont restés en place");
+  const page = lire(DEPOT, "docs", "commandes", "optimize-skill.html");
+  assert.match(page, /binaire/);
+  assert.match(page, /[Ss]upprime[rz][^<]*sauvegarde[^<]*avant[^<]*\/pulse:commit|<a href="commit\.html"><code>\/pulse:commit<\/code><\/a>[^<]*sauvegarde/);
+});
+
+test("audit du jour repris par optimize-skill : celui de la skill seule, et le wiki le dit", () => {
+  assert.match(lire(RACINE, "skills", "optimize-skill", "SKILL.md"), /`docs\/audits-skills\/<nom>-<AAAA-MM-JJ>\.md`, le nom de la skill/);
+  const optimize = lire(DEPOT, "docs", "commandes", "optimize-skill.html");
+  const audit = lire(DEPOT, "docs", "commandes", "audit-skill.html");
+  assert.match(optimize, /audit[^<]*de cette seule skill|audit-skill.html"><code>\/pulse:audit-skill <chemin de la skill>/);
+  assert.match(audit, /skill seule|une seule skill[^<]*repris/);
+  assert.doesNotMatch(audit, /Le rapport du jour est repris tel quel si la skill n'a pas changé/);
+});
+
+test("fichiers-projet.md : les rapports d'audit des skills, les sauvegardes et les skills créées", () => {
+  const liste = lire(RACINE, "references", "fichiers-projet.md");
+  assert.match(liste, /^\| `docs\/audits-skills\/<nom>-<AAAA-MM-JJ>\.md` \| `\/pulse:audit-skill`, `\/pulse:optimize-skill` \|/m);
+  assert.match(liste, /^\| `docs\/audits-skills\/sauvegardes\/<nom>-<AAAA-MM-JJ>\/` \| `\/pulse:optimize-skill` \|/m);
+  assert.match(liste, /^\| `\.claude\/skills\/<nom>\/` \| `\/pulse:skill-creator`, `\/pulse:optimize-skill` \|/m);
+});
+
+test("spirc et ui : après une compaction, recharger les règles (contexte) puis les consignes (etape --sans-communes), chaque sortie lue en entier, fichier enregistré compris", () => {
+  for (const commande of ["spirc", "ui"]) {
+    const texte = lire(RACINE, "skills", commande, "SKILL.md");
+    const ligne = texte.split("\n").find((l) => /compact(ion|age)/.test(l) && l.includes(`pulse-aidd etape ${commande} --sans-communes`)) || "";
+    const contexte = ligne.indexOf(`\`pulse-aidd contexte ${commande}\``);
+    assert.ok(contexte >= 0, `${commande} : les règles rechargées par pulse-aidd contexte ${commande}`);
+    assert.ok(contexte < ligne.indexOf(`\`pulse-aidd etape ${commande} --sans-communes\``), `${commande} : les règles d'abord, puis les consignes`);
+    assert.match(ligne, /en entier, fichier enregistré compris/, `${commande} : chaque sortie lue en entier`);
+    // L'en-tête de etape --sans-communes dit « appliquer seulement le Processus » : vrai pour un enchaînement, pas pour un rechargement.
+    assert.match(ligne, /toutes ses sections/, `${commande} : toutes les sections s'appliquent`);
+    // Dans les ~5 000 premiers jetons, ceux que garde une compaction.
+    const corps = texte.split(/^---$/m).slice(2).join("---");
+    assert.ok(corps.indexOf(ligne) + ligne.length < 17500, `${commande} : ligne de rechargement dans le début gardé`);
+  }
+});
+
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
 const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
@@ -2127,8 +2179,10 @@ test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facult
     const regles = texte.split(/^## Règles\s*$/m)[1] || "";
     if (!/^\s*Appliquer les « Règles communes Pulse »/.test(regles)) ecarts.push(`${skill} : Règles commence par les règles communes`);
     // Le repli est dans le début conservé après une compaction, pas en fin de fichier avec les règles.
-    if (!regles.includes(`absentes de la conversation : lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier`)) ecarts.push(`${skill} : la ligne des règles donne le repli « pulse-aidd contexte ${skill} »`);
+    // Sortie de plus de 30 000 caractères (avec un pack surtout) : Claude Code l'enregistre dans un fichier, lu en entier (K7).
+    if (!regles.includes(`absentes de la conversation : lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier, fichier enregistré compris)`)) ecarts.push(`${skill} : la ligne des règles donne le repli « pulse-aidd contexte ${skill} », lu en entier`);
     const references = texte.split(/^## Références de la commande\s*$/m)[1] || "";
+    if (!references.includes(`Si ce contexte est absent, lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier, fichier enregistré compris`)) ecarts.push(`${skill} : le repli de fin de fichier, lu en entier`);
     if (!references.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Références de la commande »`);
     if ((texte.match(/!`pulse-aidd contexte /g) || []).length !== 1) ecarts.push(`${skill} : une seule injection du contexte, en fin de fichier`);
     if (/dans « Contexte »/.test(texte)) ecarts.push(`${skill} : les règles sont « chargées en fin de fichier, dans « Références de la commande » »`);
