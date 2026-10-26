@@ -87,7 +87,8 @@ window.PULSE_WIKI = {
         "fix",
         "annuler",
         "get-help",
-        "memory"
+        "memory",
+        "audit-skill"
       ]
     }
   ],
@@ -124,6 +125,13 @@ window.PULSE_WIKI = {
       "description": "Revenir en arrière sans rien perdre - abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération",
       "forme": "[T3 | US-003]",
       "note": "facultatif : la tâche ou l'US à annuler"
+    },
+    {
+      "nom": "audit-skill",
+      "etape": "toujours",
+      "description": "Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier",
+      "forme": "[chemin d'une skill, d'un dossier de skills ou d'un plugin]",
+      "note": "par défaut : .claude/skills/"
     },
     {
       "nom": "auto-fix",

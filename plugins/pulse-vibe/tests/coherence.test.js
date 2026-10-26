@@ -241,6 +241,10 @@ const { couvre, SENSIBLES, estSensible } = require(path.join(RACINE, "scripts", 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
 const citationsOutil = (texte) => [...texte.matchAll(/`(pulse-aidd [^`]+)`/g)].map((m) => essai(m[1]));
+// Lecture hors du projet (l'historique des sessions de Claude Code) : citée par une consigne, elle passe toujours par
+// la demande d'accord de Claude Code, à chaque audit (spec des commandes de skills, « Usage réel »).
+const HORS_PROJET = ["pulse-aidd skill usage", "pulse-aidd skill usage --depuis X"];
+const horsProjet = (commande) => /^pulse-aidd skill usage\b/.test(commande);
 
 test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisée d'avance", () => {
   const generer = SENSIBLES.find((c) => c.startsWith("pulse-aidd secrets generer"));
@@ -250,7 +254,7 @@ test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisé
     const skill = path.relative(DEPOT, path.dirname(fichier));
     for (const motif of motifsBash(fichier)) {
       if (motif === "pulse-aidd *") problemes.push(`${skill} : Bash(pulse-aidd *)`);
-      for (const commande of SENSIBLES) if (couvre(motif, commande)) problemes.push(`${skill} : Bash(${motif}) couvre « ${commande} »`);
+      for (const commande of [...SENSIBLES, ...HORS_PROJET]) if (couvre(motif, commande)) problemes.push(`${skill} : Bash(${motif}) couvre « ${commande} »`);
     }
   }
   assert.deepStrictEqual(problemes, []);
@@ -289,7 +293,7 @@ test("allowed-tools : chaque pulse-aidd cité par un skill, ou par une étape qu
     const motifs = motifsBash(path.join(RACINE, "skills", skill, "SKILL.md"));
     const commandes = new Set(enchainees(skill).flatMap((s) => citationsOutil(texteSkill(s))));
     for (const commande of commandes) {
-      if (estSensible(commande)) continue; // passe par la demande d'autorisation : c'est voulu
+      if (estSensible(commande) || horsProjet(commande)) continue; // passe par la demande d'autorisation : c'est voulu
       if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} : ${commande}`);
     }
     // Les citations du noyau (outils cités pour toutes les commandes) sont contrôlées dans une tâche ultérieure ; les modules ne citent aucune commande pulse-aidd.
@@ -426,7 +430,7 @@ test("allowed-tools : les commandes pulse-aidd des agents qu'un skill lance, et 
       const agent = (origine.match(/^agent (.+)$/) || [])[1];
       if (agent && !remplacable(agent)) continue;
       for (const commande of citationsOutil(texte)) {
-        if (estSensible(commande) || commande === "pulse-aidd search-console") continue; // le second est un titre de tableau, pas une commande
+        if (estSensible(commande) || horsProjet(commande) || commande === "pulse-aidd search-console") continue; // le second est un titre de tableau, pas une commande
         verifies++;
         if (!motifs.some((m) => couvre(m, commande))) manquants.push(`skills/${skill} (${origine}) : ${commande}`);
       }
@@ -1884,7 +1888,6 @@ test("tech : démarche de choix et organisation chargées à l'étape qui les se
   assert.doesNotMatch(lire(RACINE, "skills", "tech", "references", "choix-techniques.md"), /« Les besoins qui guident le choix » :/);
 });
 
-// Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
 test("skill-auditor : lecture seule, sonnet, règles des skills lues en entier, deux modes (audit, avant-apres)", () => {
   const texte = lire(RACINE, "agents", "skill-auditor.md");
   const [, entete, corps] = texte.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
@@ -1906,6 +1909,37 @@ test("skill-auditor : lecture seule, sonnet, règles des skills lues en entier, 
   assert.match(corps, /aucune perte \| pertes/);
 });
 
+test("audit-skill : constat par script, jugement par skill-auditor par lots de 5, usage lu avec accord, rapport écrit, rien de modifié", () => {
+  const texte = lire(RACINE, "skills", "audit-skill", "SKILL.md");
+  const motifs = motifsBash(path.join(RACINE, "skills", "audit-skill", "SKILL.md"));
+  const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+  for (const m of ["pulse-aidd contexte audit-skill", "pulse-aidd skill mesurer *", "pulse-aidd skill verifier *", "pulse-aidd modele audit-skill/*", "pulse-aidd reference skills/*", "pulse-aidd agent skill-auditor"])
+    assert.ok(motifs.includes(m), `allowed-tools : Bash(${m})`);
+  for (const o of ["Read", "Glob", "Grep", "Write(docs/audits-skills/**)"]) assert.ok(ligne.split(/\s+/).includes(o), `allowed-tools : ${o}`);
+  // Rien n'est modifié : aucune écriture autorisée d'avance hors du dossier des rapports.
+  assert.deepStrictEqual([...ligne.matchAll(/\b(?:Write|Edit|MultiEdit)\(([^)]*)\)/g)].map((m) => m[1]), ["docs/audits-skills/**"]);
+  // L'historique des sessions : lu seulement avec l'accord de la personne (Claude Code le demande à chaque audit).
+  assert.ok(!motifs.some((m) => couvre(m, "pulse-aidd skill usage")), "skill usage passe par la demande d'accord");
+  assert.match(texte, /`pulse-aidd skill usage[^`]*`/);
+  assert.match(texte, /accord/);
+  assert.match(texte, /non observée sur la période/);
+  assert.match(texte, /`pulse:skill-auditor`[^\n]*`audit`/);
+  assert.match(texte, /5 skills/);
+  assert.match(texte, /en parallèle/);
+  assert.match(texte, /`pulse-aidd agent skill-auditor`/, "repli si l'assistant est indisponible");
+  assert.match(texte, /docs\/audits-skills\/<nom>-<AAAA-MM-JJ>\.md/);
+  assert.match(texte, /`pulse-aidd modele audit-skill\/rapport\.md`/);
+  assert.match(texte, /`\.claude\/skills\/`/, "cible par défaut");
+  assert.match(texte, /`~\/\.claude\/skills\/`/, "proposition : les skills de la personne");
+  assert.match(texte, /[Rr]ien n'est modifié/);
+  // Le contexte charge les règles des skills.
+  assert.ok(contexteCharge("audit-skill").includes("===== Règles des skills ====="), "contexte : regles-skills.md");
+  const rapport = lire(RACINE, "skills", "audit-skill", "assets", "rapport.md");
+  for (const partie of ["Empreinte", "Mesures", "Usage observé", "non lu", "Verdict par règle", "Constats", "Bloquants", "À corriger", "Conseils", "Gain estimé"]) assert.ok(rapport.includes(partie), `rapport : ${partie}`);
+  for (let k = 1; k <= 14; k++) assert.match(rapport, new RegExp(`\\| K${k} `), `rapport : K${k}`);
+});
+
+// Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
 const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
 

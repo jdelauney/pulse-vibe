@@ -335,6 +335,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     guide) afficher "Le cycle Pulse" "$REF/cycle.md" ;; # les fichiers du projet : pulse-aidd reference fichiers-projet.md
     status) ;; # le cycle Pulse : dans le contexte de /pulse:guide ; le tableau vient de pulse-aidd etat --tableau
     auto-fix) ;;
+    audit-skill) afficher "Règles des skills" "$REF/skills/regles-skills.md" ;; # les règles K1 à K14, aussi lues en entier par skill-auditor
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
   # review, spirc, auto-fix, implement : les agents qui relisent ou codent chargent eux-mêmes les consignes du pack (pulse-aidd pile contexte <commande>) ; la conversation principale orchestre.

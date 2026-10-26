@@ -914,7 +914,7 @@ test("contexte de chaque commande du cœur : reconnue", () => {
 // Modules des règles communes (tâches T, relecture C, réalisation R) : chaque commande reçoit ceux de sa ligne de la matrice.
 const MODULES = { T: "===== Règles des tâches =====", C: "===== Règles de relecture =====", R: "===== Règles de réalisation =====" };
 const MATRICE = {
-  "": ["brainstorm", "cicd", "deploy", "explain", "learn", "memory", "perf", "prd", "rediger", "search-console", "secrets", "tech"],
+  "": ["audit-skill", "brainstorm", "cicd", "deploy", "explain", "learn", "memory", "perf", "prd", "rediger", "search-console", "secrets", "tech"],
   T: ["us", "spec", "guide", "get-help", "pr", "nouveau", "init"],
   C: ["security", "seo"],
   TC: ["ui"],

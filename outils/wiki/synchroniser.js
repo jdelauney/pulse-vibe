@@ -22,7 +22,7 @@ const ETAPES = [
   { id: "construire", numero: 4, nom: "Construire", couleur: 3, commandes: ["implement", "spirc", "review", "test", "auto-fix", "commit", "pr"] },
   { id: "en-ligne", numero: 5, nom: "Mettre en ligne", couleur: 4, commandes: ["cicd", "deploy", "security", "secrets"] },
   { id: "visible", numero: 6, nom: "Être trouvé", couleur: 4, commandes: ["seo", "rediger", "perf", "search-console"] },
-  { id: "toujours", numero: 7, nom: "À tout moment", couleur: 0, commandes: ["status", "explain", "learn", "fix", "annuler", "get-help", "memory"] },
+  { id: "toujours", numero: 7, nom: "À tout moment", couleur: 0, commandes: ["status", "explain", "learn", "fix", "annuler", "get-help", "memory", "audit-skill"] },
 ];
 
 // Les pages de la navigation principale (chemins depuis docs/). Chaque page citée doit exister.
