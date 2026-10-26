@@ -14,7 +14,7 @@ const RACINE = path.join(__dirname, "..");
 const SCRIPT = path.join(RACINE, "scripts", "skill.js");
 const { mesurer, verifier } = require(SCRIPT);
 
-const lancer = (...args) => spawnSync(process.execPath, [SCRIPT, ...args], { encoding: "utf8" });
+const lancer = (...args) => spawnSync(process.execPath, [SCRIPT, ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 
 function dossierTemporaire(t) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-skill-"));
@@ -578,6 +578,55 @@ test("mesurer sur un dossier de 200 skills : résumé sous 30 000 caractères, u
   const petit = lancer("mesurer", path.join(d, "skills", "s1"));
   assert.doesNotMatch(petit.stdout, /^mode: /m);
   assert.match(petit.stdout, /^reference: references\/a\.md \d+ car$/m);
+});
+
+// Un très gros dossier : des noms longs, des skills qui se recoupent toutes, et une autorisation trop large.
+function grosDossier(t, nombre = 120) {
+  const d = dossierTemporaire(t);
+  const nom = (i) => `s${String(i).padStart(3, "0")}-${"n".repeat(110)}`;
+  for (let i = 0; i < nombre; i++) ecrire(d, `skills/${nom(i)}/SKILL.md`, skill({ entete: { name: nom(i), ...(i === nombre - 1 ? { "allowed-tools": "Bash(*)" } : {}) } }));
+  return { d, nom, nombre };
+}
+
+test("mesurer sur un très gros dossier : le résumé lui-même reste sous 30 000 caractères (unites-autres), --detail donne tout", (t) => {
+  const { d, nombre } = grosDossier(t);
+  const r = lancer("mesurer", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume /m);
+  const listees = (r.stdout.match(/^skill: /gm) || []).length;
+  assert.ok(listees > 0 && listees < nombre, `${listees} skills listées`);
+  assert.match(r.stdout, new RegExp(`^unites-autres: ${nombre - listees} `, "m"));
+  assert.match(r.stdout, /^descriptions-total: /m, "les lignes du dossier restent");
+  assert.match(r.stdout, /--detail/);
+  const tout = lancer("mesurer", d, "--detail");
+  assert.strictEqual(tout.status, 0, tout.stderr);
+  assert.doesNotMatch(tout.stdout, /^mode: /m);
+  assert.strictEqual((tout.stdout.match(/^skill: /gm) || []).length, nombre);
+  assert.ok(tout.stdout.length > 30000);
+});
+
+test("verifier sur un très gros dossier : résumé sous 30 000 caractères (bloquants d'abord, compte par règle, constats-autres), même code ; --detail donne tout", (t) => {
+  const { d, nom, nombre } = grosDossier(t);
+  const r = lancer("verifier", d);
+  assert.strictEqual(r.status, 1, "un bloquant : code 1, comme sans résumé");
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume \(\d+ constats ; /m);
+  assert.match(r.stdout, /--detail/);
+  assert.match(r.stdout, /^regle: K4 · 1 bloquants · 0 à corriger · 0 conseils$/m);
+  assert.match(r.stdout, /^regle: K8 · 0 bloquants · \d+ à corriger · 0 conseils$/m);
+  const lignes = r.stdout.split("\n");
+  const premier = lignes.findIndex((l) => /^K\d+ · /.test(l));
+  assert.match(lignes[premier], new RegExp(`^K4 · bloquant · .*${nom(nombre - 1)}/SKILL\\.md:`), "le bloquant vient en premier");
+  assert.match(r.stdout, /^constats-autres: \d+ /m);
+  assert.match(lignes.at(-2), /^bilan: 1 bloquants · \d+ à corriger · \d+ conseils$/);
+  const tout = lancer("verifier", d, "--detail");
+  assert.strictEqual(tout.status, 1);
+  assert.doesNotMatch(tout.stdout, /^(mode|constats-autres): /m);
+  assert.strictEqual((tout.stdout.match(/^K8 · /gm) || []).length, (nombre * (nombre - 1)) / 2);
+  // Un petit dossier : le détail, sans résumé.
+  assert.doesNotMatch(lancer("verifier", path.join(d, "skills", nom(0))).stdout, /^mode: /m);
+  assert.strictEqual(lancer("verifier", d, "--inconnu").status, 1, "option inconnue : usage");
 });
 
 test("empreinte : chaque fichier d'une skill ou d'un agent, son empreinte (celle de git hash-object), sa taille et sa date ; sans Git", (t) => {

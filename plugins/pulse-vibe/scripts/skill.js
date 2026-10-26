@@ -14,10 +14,16 @@
 //                                        skills invocables par le modèle et agents) et recoupement: <a> <b> <n> lignes.
 //                                        Détail au-delà de 30 000 caractères : « mode: resume », une ligne par skill et
 //                                        par agent (chemin relatif au dossier), puis « detail: » (le détail d'une skill),
-//                                        les 50 plus longs recoupements et « recoupements-autres: <n> ».
+//                                        les 50 plus longs recoupements et « recoupements-autres: <n> » ; le résumé reste
+//                                        lui-même sous 30 000 : au-delà, « unites-autres: <n> » compte les lignes non listées.
 //   pulse-aidd skill verifier <chemin>   une ligne par constat « K<n> · bloquant|a-corriger|conseil · fichier:ligne ·
 //                                        message », puis « bilan: … » ; « installe: oui » en tête pour une skill d'un
-//                                        plugin installé (chemin sous plugins/cache/).
+//                                        plugin installé (chemin sous plugins/cache/). Détail au-delà de 30 000 caractères :
+//                                        « mode: resume », « detail: », « regle: K<n> · <b> bloquants · <c> à corriger ·
+//                                        <d> conseils » par règle, les constats (bloquants d'abord) tant qu'ils tiennent,
+//                                        « constats-autres: <n> », puis « bilan: » ; même code de sortie.
+//   --detail (après le chemin, pour mesurer et verifier) : tout le détail, même au-delà de 30 000 caractères (Claude
+//                                        Code enregistre alors la sortie dans un fichier, à lire en entier).
 //   pulse-aidd skill empreinte <chemin>  « empreinte: <fichier> · <sha1> · <octets> octets · <date> » pour chaque fichier
 //                                        de chaque skill (tout son dossier) et de chaque agent ; sha1 = celui de
 //                                        git hash-object, calculé sans Git ; puis « suivi-git: oui|non|ignore · <SKILL.md
@@ -691,6 +697,7 @@ const USAGE = [
   "        pulse-aidd skill empreinte <chemin>  empreinte, taille et date de chaque fichier (une skill a-t-elle changé ?), et suivi-git: oui|non|ignore",
   "<chemin> : une skill (dossier ou SKILL.md), un agent (agents/<nom>.md), un dossier de skills (.claude/skills/),",
   "ou un dossier qui contient skills/ ou agents/ (.claude/, un plugin).",
+  "Au-delà de 30 000 caractères, mesurer et verifier donnent un résumé ; --detail (après le chemin) donne tout.",
   "        pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]   l'usage observé dans l'historique des sessions",
   "(par défaut ~/.claude/projects, 90 derniers jours).",
 ].join("\n");
@@ -719,6 +726,23 @@ function formaterMesures(mesures) {
   return blocs.join("\n\n");
 }
 
+const MARGE_RESUME = 1000; // caractères gardés sous la limite de lecture
+/**
+ * Des lignes qui tiennent sous la limite de lecture : la tête et le pied entiers, puis, du corps, les premières lignes
+ * tant qu'elles tiennent ; les autres sont comptées par la ligne autres(<n>).
+ */
+function borner(tete, corps, pied, autres) {
+  let taille = [...tete, ...pied, autres(corps.length)].reduce((s, l) => s + l.length + 1, 0);
+  const gardees = [];
+  for (const l of corps) {
+    if (taille + l.length + 1 > LIMITE_LECTURE - MARGE_RESUME) break;
+    gardees.push(l);
+    taille += l.length + 1;
+  }
+  const reste = corps.length - gardees.length;
+  return [...tete, ...gardees, ...(reste ? [autres(reste)] : []), ...pied].join("\n");
+}
+
 /**
  * Le résumé d'un gros dossier, quand le détail dépasserait la limite de lecture : une ligne par skill et par agent
  * (chemin relatif au dossier donné), puis les lignes du dossier ; le détail d'une skill se demande à part.
@@ -727,10 +751,11 @@ const RECOUPEMENTS_RESUME = 50; // les plus longs ; les autres sont comptés (re
 function formaterResume(mesures, lieu, cheminBrut) {
   const relatif = (m) => unix(path.relative(lieu.cible, m.type === "skill" ? path.dirname(m.fichier) : m.fichier));
   const unites = mesures.filter((m) => m.type !== "dossier");
-  const lignes = [
+  const tete = [
     `mode: resume (${unites.length} skills et agents ; le détail dépasserait ${LIMITE_LECTURE} caractères)`,
-    `detail: pulse-aidd skill mesurer <chemin d'une skill> (${cheminBrut.replace(/[\\/]+$/, "")}/<chemin de sa ligne>)`,
+    `detail: pulse-aidd skill mesurer <chemin d'une skill> (${cheminBrut.replace(/[\\/]+$/, "")}/<chemin de sa ligne>), ou --detail après le chemin (tout, enregistré dans un fichier)`,
   ];
+  const lignes = [];
   for (const m of unites) {
     if (m.type === "agent") {
       lignes.push(`agent: ${m.nom} · ${relatif(m)} · agent-md ${m.agentMd.car} car · description ${m.description === null ? "absente" : `${m.description} car`}`);
@@ -742,13 +767,14 @@ function formaterResume(mesures, lieu, cheminBrut) {
     if (m.auDela30000.length) morceaux.push(`au-dela-30000 ${m.auDela30000.length}`);
     lignes.push(morceaux.join(" · "));
   }
+  const pied = [];
   const dossier = mesures.find((m) => m.type === "dossier");
   if (dossier) {
     const plusLongs = [...dossier.recoupements].sort((a, b) => b.lignes - a.lignes).slice(0, RECOUPEMENTS_RESUME);
-    lignes.push(`descriptions-total: ${dossier.descriptionsTotal} car`, ...plusLongs.map((r) => `recoupement: ${r.a} ${r.b} ${r.lignes} lignes`));
-    if (dossier.recoupements.length > plusLongs.length) lignes.push(`recoupements-autres: ${dossier.recoupements.length - plusLongs.length}`);
+    pied.push(`descriptions-total: ${dossier.descriptionsTotal} car`, ...plusLongs.map((r) => `recoupement: ${r.a} ${r.b} ${r.lignes} lignes`));
+    if (dossier.recoupements.length > plusLongs.length) pied.push(`recoupements-autres: ${dossier.recoupements.length - plusLongs.length}`);
   }
-  return lignes.join("\n");
+  return borner(tete, lignes, pied, (n) => `unites-autres: ${n} (skills et agents non listés : mesurer un sous-dossier, ou --detail)`);
 }
 
 /** Les fichiers d'une skill (tout son dossier : SKILL.md, references/, assets/, scripts/…) ou d'un agent, triés. */
@@ -801,8 +827,10 @@ function afficherEmpreinte(lieu) {
 }
 
 function main(argv) {
-  const [action, cheminBrut] = argv;
-  if (!["mesurer", "verifier", "empreinte"].includes(action) || !cheminBrut) {
+  const [action, cheminBrut, ...options] = argv;
+  const toutVoir = options.includes("--detail");
+  const optionsValides = options.every((o) => o === "--detail") && !(toutVoir && action === "empreinte");
+  if (!["mesurer", "verifier", "empreinte"].includes(action) || !cheminBrut || cheminBrut.startsWith("--") || !optionsValides) {
     console.log(USAGE);
     return 1;
   }
@@ -818,7 +846,7 @@ function main(argv) {
   }
   try {
     if (action === "empreinte") return afficherEmpreinte(lieu);
-    return action === "mesurer" ? afficherMesures(chemin, lieu, cheminBrut) : afficherConstats(chemin, lieu);
+    return action === "mesurer" ? afficherMesures(chemin, lieu, cheminBrut, toutVoir) : afficherConstats(chemin, lieu, cheminBrut, toutVoir);
   } catch (e) {
     console.log(`erreur: ${e.message}`);
     return 1;
@@ -827,23 +855,36 @@ function main(argv) {
 
 const aucune = (lieu) => `skills: 0 (aucune skill trouvée dans ${montrer(lieu.cible)})`;
 
-function afficherMesures(chemin, lieu, cheminBrut) {
+function afficherMesures(chemin, lieu, cheminBrut, toutVoir) {
   if (!lieu.unites.length) return console.log(aucune(lieu)), 0;
   const mesures = mesurer(chemin);
   const detail = formaterMesures(mesures);
-  console.log(detail.length < LIMITE_LECTURE ? detail : formaterResume(mesures, lieu, cheminBrut));
+  console.log(toutVoir || detail.length < LIMITE_LECTURE ? detail : formaterResume(mesures, lieu, cheminBrut));
   return 0;
 }
 
-function afficherConstats(chemin, lieu) {
+function afficherConstats(chemin, lieu, cheminBrut, toutVoir) {
   const constats = verifier(chemin);
-  const lignes = [];
-  if (unix(lieu.cible).includes("/plugins/cache/")) lignes.push("installe: oui");
-  if (!lieu.unites.length) lignes.push(aucune(lieu));
-  for (const c of constats) lignes.push(`${c.regle} · ${c.gravite} · ${c.fichier}:${c.ligne} · ${c.message}`);
-  const n = (g) => constats.filter((c) => c.gravite === g).length;
-  lignes.push(`bilan: ${n("bloquant")} bloquants · ${n("a-corriger")} à corriger · ${n("conseil")} conseils`);
-  console.log(lignes.join("\n"));
+  const tete = [];
+  if (unix(lieu.cible).includes("/plugins/cache/")) tete.push("installe: oui");
+  if (!lieu.unites.length) tete.push(aucune(lieu));
+  const lignes = constats.map((c) => `${c.regle} · ${c.gravite} · ${c.fichier}:${c.ligne} · ${c.message}`);
+  const n = (g, liste = constats) => liste.filter((c) => c.gravite === g).length;
+  const compte = (liste) => `${n("bloquant", liste)} bloquants · ${n("a-corriger", liste)} à corriger · ${n("conseil", liste)} conseils`;
+  const pied = [`bilan: ${compte(constats)}`];
+  const entier = [...tete, ...lignes, ...pied].join("\n");
+  if (toutVoir || entier.length < LIMITE_LECTURE) console.log(entier);
+  else {
+    // Résumé : le compte par règle, puis les constats dans leur ordre (bloquants d'abord) tant qu'ils tiennent.
+    const regles = [...new Set(constats.map((c) => c.regle))].sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
+    const enTete = [
+      `mode: resume (${constats.length} constats ; le détail dépasserait ${LIMITE_LECTURE} caractères)`,
+      `detail: pulse-aidd skill verifier <chemin d'une skill> (${cheminBrut.replace(/[\\/]+$/, "")}/<chemin de sa ligne>), ou --detail après le chemin (tout, enregistré dans un fichier)`,
+      ...tete,
+      ...regles.map((r) => `regle: ${r} · ${compte(constats.filter((c) => c.regle === r))}`),
+    ];
+    console.log(borner(enTete, lignes, pied, (k) => `constats-autres: ${k} (non listés : verifier une skill à la fois, ou --detail)`));
+  }
   return n("bloquant") ? 1 : 0;
 }
 
