@@ -1,4 +1,4 @@
-// Tests de `pulse-aidd skill mesurer|verifier` (scripts/skill.js) : tailles d'une skill et règles K vérifiables
+// Tests de `pulse-aidd skill mesurer|verifier|usage` (scripts/skill.js) : tailles d'une skill, règles K vérifiables
 // par script (references/skills/regles-skills.md), sur des skills fabriquées dans un dossier temporaire.
 // Lancer : node --test plugins/pulse-vibe/tests/skill.test.js
 "use strict";
@@ -281,7 +281,9 @@ test("pulse-aidd skill relaie vers scripts/skill.js", (t) => {
   const r = spawnSync("bash", ["bin/pulse-aidd", "skill", "mesurer", path.join(d, "resumer").split(path.sep).join("/")], { cwd: RACINE, encoding: "utf8" });
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /^skill: resumer$/m);
-  assert.match(spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8" }).stdout, /pulse-aidd skill mesurer\|verifier/);
+  const aide = spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8" }).stdout;
+  assert.match(aide, /pulse-aidd skill mesurer\|verifier <chemin>/);
+  assert.match(aide, /pulse-aidd skill usage \[--depuis AAAA-MM-JJ\] \[--projets <dossier>\]/);
 });
 
 test("regles-skills.md : K1 à K14, chacune avec son niveau, sa gravité et un avant → après ; sous 12 000 caractères", () => {
@@ -296,4 +298,65 @@ test("regles-skills.md : K1 à K14, chacune avec son niveau, sa gravité et un a
     assert.match(s, /\b(script|jugement)\b/, `${id} : vérification`);
     assert.match(s, /^- Avant → après : .+ → .+$/m, `${id} : exemple`);
   }
+});
+
+// ---------------------------------------------------------------- pulse-aidd skill usage : l'historique des sessions
+
+const ligneJson = (o) => JSON.stringify(o);
+const commande = (nom, quand, enBlocs = false) => {
+  const texte = `<command-message>${nom} is running…</command-message>\n<command-name>/${nom}</command-name>\n<command-args>T3</command-args>`;
+  return ligneJson({ type: "user", timestamp: quand, message: { role: "user", content: enBlocs ? [{ type: "text", text: texte }] : texte } });
+};
+const appelSkill = (nom, quand) => ligneJson({ type: "assistant", timestamp: quand, message: { role: "assistant", content: [{ type: "text", text: "Je lance la skill." }, { type: "tool_use", id: "t1", name: "Skill", input: { skill: nom } }] } });
+
+const lancerAsync = (...args) =>
+  new Promise((resoudre) => {
+    const enfant = require("child_process").spawn(process.execPath, [SCRIPT, ...args]);
+    let stdout = "";
+    let stderr = "";
+    enfant.stdout.on("data", (d) => (stdout += d));
+    enfant.stderr.on("data", (d) => (stderr += d));
+    enfant.on("close", (status) => resoudre({ status, stdout, stderr }));
+  });
+
+test("usage : lancements par la personne et par le modèle, ligne cassée ignorée, période bornée", async (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "projets/p1/s1.jsonl", [
+    commande("pulse:review", "2026-10-20T10:00:00.000Z"),
+    "{ ceci n'est pas du JSON",
+    appelSkill("superpowers:brainstorming", "2026-10-20T11:00:00.000Z"),
+    commande("pulse:plan", "2019-03-01T10:00:00.000Z"), // avant --depuis : hors période
+    ligneJson({ type: "user", timestamp: "2026-10-20T12:00:00.000Z", message: { role: "user", content: "Parlons de /pulse:spec sans la lancer" } }),
+  ].join("\n") + "\n");
+  ecrire(d, "projets/p2/s2.jsonl", [appelSkill("superpowers:brainstorming", "2026-10-21T09:00:00.000Z"), commande("pulse:review", "2026-10-19T08:00:00.000Z", true)].join("\n"));
+  const vieux = ecrire(d, "projets/p2/vieux.jsonl", commande("pulse:review", "2019-06-01T10:00:00.000Z") + "\n");
+  fs.utimesSync(vieux, new Date("2019-06-01T10:00:00Z"), new Date("2019-06-01T10:00:00Z"));
+  const r = await lancerAsync("usage", "--depuis", "2020-01-01", "--projets", path.join(d, "projets"));
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^periode: 2020-01-01 → \d{4}-\d{2}-\d{2}$/m);
+  assert.match(r.stdout, /^fichiers-lus: 2$/m, "le fichier daté d'avant --depuis n'est pas lu");
+  assert.match(r.stdout, /^usage: pulse:review · personne 2 · modele 0 · dernier 2026-10-20$/m);
+  assert.match(r.stdout, /^usage: superpowers:brainstorming · personne 0 · modele 2 · dernier 2026-10-21$/m);
+  assert.doesNotMatch(r.stdout, /pulse:plan|pulse:spec/);
+  assert.strictEqual(r.stderr, "");
+});
+
+test("usage : historique absent → « historique: absent », code 0 ; date mal écrite → code 1", async (t) => {
+  const d = dossierTemporaire(t);
+  const absent = await lancerAsync("usage", "--projets", path.join(d, "rien"));
+  assert.strictEqual(absent.status, 0, absent.stderr);
+  assert.match(absent.stdout, /^historique: absent$/m);
+  const mauvaise = await lancerAsync("usage", "--depuis", "26/10/2026", "--projets", d);
+  assert.strictEqual(mauvaise.status, 1);
+  assert.match(mauvaise.stdout, /AAAA-MM-JJ/);
+});
+
+test("usage : période par défaut de 90 jours", async (t) => {
+  const d = dossierTemporaire(t);
+  fs.mkdirSync(path.join(d, "projets"));
+  const r = await lancerAsync("usage", "--projets", path.join(d, "projets"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  const [, du, au] = r.stdout.match(/^periode: (\S+) → (\S+)$/m);
+  assert.strictEqual(Math.round((new Date(au) - new Date(du)) / 86400000), 90);
+  assert.match(r.stdout, /^fichiers-lus: 0$/m);
 });
