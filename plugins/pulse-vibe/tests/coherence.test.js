@@ -233,44 +233,18 @@ function motifsBash(fichier) {
   return [...ligne.matchAll(/Bash\(([^)]*)\)/g)].map((m) => m[1]);
 }
 
-// Règle de Claude Code : « * » remplace n'importe quel texte ; un « * » final précédé d'une espace,
-// seul joker du motif, couvre aussi la commande sans argument (Bash(ls *) couvre ls).
-function couvre(motif, commande) {
-  if (/^[^*]+ \*$/.test(motif)) {
-    const base = motif.slice(0, -2);
-    return commande === base || commande.startsWith(`${base} `);
-  }
-  const echappe = (s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`^${motif.split("*").map(echappe).join(".*")}$`, "s").test(commande);
-}
-
-// Ce qui change la production, crée ou retire un secret, ou coupe un accès : toujours par la demande d'autorisation.
-const SENSIBLES = [
-  "pulse-aidd secrets generer NOM",
-  "pulse-aidd secrets generer NOM --envoyer production,preview",
-  "pulse-aidd secrets envoyer NOM --env production",
-  "pulse-aidd secrets elaguer NOM",
-  "pulse-aidd secrets redeployer",
-  "pulse-aidd secrets redeployer --env production",
-  "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
-  "pulse-aidd ligne-etat --installer", // change les réglages de Claude Code du projet
-  "pulse-aidd ligne-etat --retirer",
-  "pulse-aidd autorisations --ecrire", // change les réglages de Claude Code du projet
-  "pulse-aidd copies --mettre-a-jour", // remplace des fichiers du projet
-  "pulse-aidd search-console deconnecter",
-  "pulse-aidd pile hebergeur envoyer NOM production",
-  "pulse-aidd pile hebergeur redeployer production",
-  "pulse-aidd deplacer-commits feat/us-003-liste", // déplace la branche principale (règle commune 17)
-  "pulse-aidd deplacer-commits feat/us-003-liste --principale main",
-];
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
+// Règle de Claude Code (« * » remplace n'importe quel texte ; un « * » final précédé d'une espace couvre aussi la commande
+// sans argument) et gestes sensibles, toujours par la demande d'autorisation : une seule source, scripts/skill.js,
+// partagée avec pulse-aidd skill verifier (règle K4).
+const { couvre, SENSIBLES, estSensible, verifier: verifierSkills } = require(path.join(RACINE, "scripts", "skill.js"));
 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
 const citationsOutil = (texte) => [...texte.matchAll(/`(pulse-aidd [^`]+)`/g)].map((m) => essai(m[1]));
 
 test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisée d'avance", () => {
-  assert.ok(couvre("pulse-aidd *", SENSIBLES[0]) && !couvre("pulse-aidd secrets inventaire *", SENSIBLES[0]), "règle de correspondance");
+  const generer = SENSIBLES.find((c) => c.startsWith("pulse-aidd secrets generer"));
+  assert.ok(couvre("pulse-aidd *", generer) && !couvre("pulse-aidd secrets inventaire *", generer), "règle de correspondance");
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const skill = path.relative(DEPOT, path.dirname(fichier));
@@ -1207,14 +1181,17 @@ test("les commandes qui écrivent des documents, ou enchaînent des étapes qui 
 });
 
 // Un nom de fichier seul (Edit(CLAUDE.md)) vaut à toute profondeur ; ./ l'ancre à la racine du projet. Edit couvre aussi la création.
-test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus ./CLAUDE.md et ./README.md à la racine (écriture autorisée)", () => {
+// Les commandes qui écrivent une skill (skill-creator, optimize-skill) écrivent aussi dans .claude/skills/ du projet.
+const ECRIVENT_SKILLS = ["skill-creator", "optimize-skill"];
+test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus ./CLAUDE.md et ./README.md à la racine (écriture autorisée), et .claude/skills/ pour les commandes qui écrivent une skill", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const ligne = (lire(fichier).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
     for (const [, outil, motif] of ligne.matchAll(/\b(Write|Edit|MultiEdit)\(([^)]*)\)/g)) {
       const document = /^(docs|aidd_docs)\/\S+$/.test(motif) && !motif.split("/").includes("..");
       const racine = outil === "Edit" && /^\.\/(CLAUDE|README)\.md$/.test(motif);
-      if (!document && !racine) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
+      const skills = motif === ".claude/skills/**" && ECRIVENT_SKILLS.includes(path.basename(path.dirname(fichier)));
+      if (!document && !racine && !skills) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
     }
   }
   assert.deepStrictEqual(problemes, []);
@@ -1910,6 +1887,271 @@ test("tech : démarche de choix et organisation chargées à l'étape qui les se
   assert.doesNotMatch(lire(RACINE, "skills", "tech", "references", "choix-techniques.md"), /« Les besoins qui guident le choix » :/);
 });
 
+test("skill-auditor : lecture seule, sonnet, règles des skills lues en entier, deux modes (audit, avant-apres)", () => {
+  const texte = lire(RACINE, "agents", "skill-auditor.md");
+  const [, entete, corps] = texte.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
+  assert.ok(entete, "en-tête");
+  assert.match(entete, /^tools: Read, Grep, Glob, Bash$/m, "lecture seule : Read, Grep, Glob, Bash");
+  assert.match(entete, /^model: sonnet$/m);
+  // La liste Bash « seulement pour » nomme chaque commande que l'agent lance.
+  const phrase = (corps.match(/^- Utiliser Bash seulement[^\n]*$/m) || [])[0] || "";
+  for (const c of ["pulse-aidd skill mesurer", "pulse-aidd skill verifier", "pulse-aidd reference skills/regles-skills.md"]) assert.ok(phrase.includes(c), `liste Bash : ${c}`);
+  assert.doesNotMatch(corps, /pulse-aidd skill usage/, "l'usage observé est lu par la commande, avec l'accord de la personne");
+  assert.match(corps, /`pulse-aidd reference skills\/regles-skills\.md`[^\n]*en entier/, "règles lues en entier");
+  // Mode audit : les règles de jugement, un verdict par règle, des constats avec correction et gain.
+  assert.match(corps, /`audit`/);
+  for (const k of ["K1", "K3", "K6", "K8", "K12", "K13"]) assert.match(corps, new RegExp(`\\b${k}\\b`), k);
+  assert.match(corps, /K<n> · gravité · fichier:ligne · message · correction proposée · gain estimé/);
+  // Mode avant-apres : ce qui a disparu, et un verdict.
+  assert.match(corps, /`avant-apres`/);
+  for (const perte of ["règle", "validation", "question clé", "garde-fou", "étape"]) assert.match(corps, new RegExp(perte), perte);
+  assert.match(corps, /aucune perte \| pertes/);
+});
+
+test("audit-skill : constat par script, jugement par skill-auditor par lots de 5, usage lu avec accord, rapport écrit, rien de modifié", () => {
+  const texte = lire(RACINE, "skills", "audit-skill", "SKILL.md");
+  const motifs = motifsBash(path.join(RACINE, "skills", "audit-skill", "SKILL.md"));
+  const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+  const processus = texte.split(/^## Processus\s*$/m)[1].split(/^## Exemples\s*$/m)[0];
+  for (const m of ["pulse-aidd contexte audit-skill", "pulse-aidd skill mesurer *", "pulse-aidd skill verifier *", "pulse-aidd skill empreinte *", "pulse-aidd modele audit-skill/*", "pulse-aidd reference skills/*", "pulse-aidd agent skill-auditor"])
+    assert.ok(motifs.includes(m), `allowed-tools : Bash(${m})`);
+  for (const o of ["Read", "Glob", "Grep", "Write(docs/audits-skills/**)"]) assert.ok(ligne.split(/\s+/).includes(o), `allowed-tools : ${o}`);
+  // Rien n'est modifié : aucune écriture autorisée d'avance hors du dossier des rapports, aucune commande git (l'empreinte vient du script).
+  assert.deepStrictEqual([...ligne.matchAll(/\b(?:Write|Edit|MultiEdit)\(([^)]*)\)/g)].map((m) => m[1]), ["docs/audits-skills/**"]);
+  assert.deepStrictEqual(motifs.filter((m) => /^git\b/.test(m)), []);
+  assert.match(processus, /`pulse-aidd skill empreinte <chemin>`[^\n]*(taille|octets)[^\n]*date/);
+  // Cible par défaut, une seule formulation : les skills et agents du projet (.claude/).
+  assert.match(texte, /^argument-hint: .*\(par défaut : les skills et agents du projet, \.claude\/\)"$/m);
+  assert.match(texte.split(/^## Contexte\s*$/m)[1], /vide = les skills et agents du projet, `\.claude\/`/);
+  assert.doesNotMatch(texte, /\.claude\/skills\/`?\)/, "plus de « .claude/skills/ » comme cible par défaut");
+  assert.match(processus, /`~\/\.claude\/skills\/`/, "proposition : les skills personnelles");
+  // Aucune skill trouvée : réponse claire, sans rapport, jamais « chemin inexistant » sans argument.
+  assert.match(processus, /`skills: 0`[^\n]*sans rapport/);
+  assert.match(processus, /[Ss]ans argument[^\n]*`introuvable: \.claude`[^\n]*sans rapport/);
+  // Les lignes de l'outil, lues à la bonne étape : introuvable et hors-format au départ, installe après verifier.
+  assert.match(processus, /`introuvable:`/);
+  assert.match(processus, /`hors-format:`/);
+  assert.ok(processus.indexOf("`installe: oui`") > processus.indexOf("`pulse-aidd skill verifier <chemin>`"), "installe: oui traité après verifier");
+  assert.match(processus, /`mode: resume`/, "mesurer résumé sur un gros dossier");
+  // L'historique des sessions : lu seulement avec l'accord de la personne (Claude Code le demande à chaque audit).
+  assert.ok(!motifs.some((m) => couvre(m, "pulse-aidd skill usage")), "skill usage passe par la demande d'accord");
+  assert.ok(estSensible("pulse-aidd skill usage"), "skill usage : geste soumis à l'accord, dans scripts/skill.js");
+  assert.match(processus, /AskUserQuestion : « Oui, lire l'historique \(Recommandé\) »/);
+  assert.match(processus, /accord[^\n]*`pulse-aidd skill usage`/, "skill usage lancé après l'accord");
+  assert.match(processus, /non observée sur la période/);
+  assert.match(processus, /`note:`[^\n]*assistant/, "la note sur l'historique des assistants est transmise");
+  // Le jugement : skill-auditor, mode audit, lots de 5 en parallèle, repli.
+  assert.match(processus, /`pulse:skill-auditor`[^\n]*`audit`/);
+  assert.match(processus, /lots de 5 skills[^\n]*en parallèle|en parallèle[^\n]*lots de 5 skills/);
+  assert.match(processus, /`pulse-aidd agent skill-auditor`/, "repli si l'assistant est indisponible");
+  // Le rapport : un par cible (projet, personnelles), au modèle, rien d'autre de modifié.
+  assert.match(processus, /docs\/audits-skills\/<nom>-<AAAA-MM-JJ>\.md/);
+  assert.match(processus, /`pulse-aidd modele audit-skill\/rapport\.md`/);
+  assert.match(processus, /un rapport par cible[^\n]*`skills-projet`[^\n]*`skills-personnelles`/);
+  assert.match(processus, /[Rr]ien n'est modifié/);
+  // Le contexte charge les règles des skills.
+  assert.ok(contexteCharge("audit-skill").includes("===== Règles des skills ====="), "contexte : regles-skills.md");
+  const rapport = lire(RACINE, "skills", "audit-skill", "assets", "rapport.md");
+  for (const partie of ["## Empreinte", "## Mesures", "## Usage observé", "non lu", "## Verdict par règle", "## Constats", "### Bloquants", "### À corriger", "### Conseils", "## Gain estimé"]) assert.ok(rapport.includes(partie), `rapport : ${partie}`);
+  assert.match(rapport, /\| Fichier \| Empreinte \| Taille \| Date \|/);
+  for (let k = 1; k <= 14; k++) assert.match(rapport, new RegExp(`^\\| K${k} `, "m"), `rapport : K${k}`);
+  // L'agent reprend tous les constats du script (K3 et K8 compris) et la note sur l'historique.
+  const agent = lire(RACINE, "agents", "skill-auditor.md");
+  assert.match(agent, /tous les constats de `verifier`/);
+  assert.match(agent, /`note:`/);
+  // Aucune skill trouvée : la création d'une skill est proposée, à taper par la personne.
+  for (const ligne of processus.split("\n").filter((l) => /`skills: 0`|`introuvable: \.claude`/.test(l)))
+    assert.match(ligne, /tapez `\/pulse:skill-creator`/, `aucune skill : création proposée (${ligne.slice(0, 40)})`);
+});
+
+test("skill-creator : questions une à une, plan validé, skill ordinaire écrite au modèle, verifier jusqu'à zéro bloquant, essai proposé", () => {
+  const texte = lire(RACINE, "skills", "skill-creator", "SKILL.md");
+  const motifs = motifsBash(path.join(RACINE, "skills", "skill-creator", "SKILL.md"));
+  const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+  const processus = texte.split(/^## Processus\s*$/m)[1].split(/^## Exemples\s*$/m)[0];
+  assert.match(texte, /^disable-model-invocation: true$/m);
+  for (const m of ["pulse-aidd contexte skill-creator", "pulse-aidd skill mesurer *", "pulse-aidd skill verifier *", "pulse-aidd modele skill-creator/*", "pulse-aidd reference skills/*"])
+    assert.ok(motifs.includes(m), `allowed-tools : Bash(${m})`);
+  for (const o of ["Read", "Glob", "Grep", "Write(.claude/skills/**)", "Edit(.claude/skills/**)"]) assert.ok(ligne.split(/\s+/).includes(o), `allowed-tools : ${o}`);
+  // Écrit seulement dans les skills du projet sans demande ; ailleurs (skills personnelles, plugin), Claude Code demande l'accord.
+  assert.deepStrictEqual([...ligne.matchAll(/\b(?:Write|Edit|MultiEdit)\(([^)]*)\)/g)].map((m) => m[1]), [".claude/skills/**", ".claude/skills/**"]);
+  assert.deepStrictEqual(motifs.filter((m) => /^git\b/.test(m) || /^pulse-aidd skill (?:usage|empreinte)/.test(m)), []);
+  // Questions de fond, une à la fois : travail, phrases, qui la lance, effets, destinataire, emplacement (projet par défaut).
+  assert.match(processus, /une à la fois/);
+  for (const q of ["travail", "phrases", "Qui la lance", "touche", "À qui elle parle", "Où la ranger"]) assert.match(processus, new RegExp(q), `question : ${q}`);
+  assert.match(processus, /« Dans ce projet, `\.claude\/skills\/` \(Recommandé\) »/);
+  assert.match(processus, /`~\/\.claude\/skills\/<nom>\/`/);
+  // Un dossier déjà là n'est pas écrasé.
+  assert.match(processus, /existe déjà/);
+  // Plan de la skill validé avant d'écrire.
+  assert.match(processus, /« Écrire cette skill \(Recommandé\) »/);
+  assert.ok(processus.indexOf("« Écrire cette skill (Recommandé) »") < processus.indexOf("`pulse-aidd modele skill-creator/SKILL.md`"), "plan validé avant l'écriture");
+  // Une skill ordinaire : aucun outil Pulse dans le projet de la personne ; conventions Pulse seulement dans un plugin Pulse.
+  assert.match(texte, /sans `pulse-aidd`/);
+  assert.match(processus, /plugin Pulse[^\n]*`CLAUDE\.md` du dépôt/);
+  // Contrôle par script jusqu'à zéro bloquant, puis mesure.
+  assert.match(processus, /`pulse-aidd skill verifier <chemin>`[^\n]*jusqu'à[^\n]*bloquant/);
+  assert.match(processus, /`pulse-aidd skill mesurer <chemin>`/);
+  assert.ok(processus.indexOf("`pulse-aidd skill verifier <chemin>`") < processus.indexOf("`pulse-aidd skill mesurer <chemin>`"), "verifier puis mesurer");
+  // Résultat montré et essai proposé (la personne tape la skill).
+  assert.match(processus, /essai/i);
+  assert.match(processus, /tapez `\/<nom>/);
+  assert.ok(contexteCharge("skill-creator").includes("===== Règles des skills ====="), "contexte : regles-skills.md");
+  // Le modèle : une skill ordinaire, à la trame recommandée, sans outil Pulse.
+  const modele = lire(RACINE, "skills", "skill-creator", "assets", "SKILL.md");
+  assert.match(modele, /^---\nname: <[^>]+>\ndescription: /);
+  assert.match(modele, /^disable-model-invocation: true$/m);
+  assert.match(modele, /^allowed-tools: /m);
+  assert.deepStrictEqual(titres2(modele), ["Objectif", "Règles", "Contexte", "Processus", "Exemples", "Références"]);
+  assert.doesNotMatch(modele, /pulse-aidd|\/pulse:/, "aucun outil Pulse dans une skill ordinaire");
+  // La description du modèle est entre guillemets : une skill écrite d'après lui passe verifier sans aucun constat.
+  assert.match(modele, /^description: "[^\n]*"$/m);
+  const essai = fs.mkdtempSync(path.join(require("os").tmpdir(), "pulse-modele-"));
+  try {
+    fs.mkdirSync(path.join(essai, ".claude", "skills", "essai"), { recursive: true });
+    fs.writeFileSync(path.join(essai, ".claude", "skills", "essai", "SKILL.md"), modele);
+    assert.deepStrictEqual(verifierSkills(path.join(essai, ".claude", "skills", "essai")).map((c) => `${c.regle} · ${c.gravite} · ${c.message}`), []);
+  } finally {
+    fs.rmSync(essai, { recursive: true, force: true });
+  }
+  // Doublons (K1) cherchés dans l'emplacement choisi, une fois l'emplacement connu.
+  assert.match(processus, /Glob `<emplacement>\/\*\/SKILL\.md`/);
+  assert.ok(processus.indexOf("Glob `<emplacement>/*/SKILL.md`") > processus.indexOf("**Où la ranger**"), "doublons cherchés après le choix de l'emplacement");
+});
+
+test("optimize-skill : audit réutilisé, plan validé, cache refusé, sauvegarde toujours faite hors des skills, relecture avant / après (opus) refaite après correction, commit proposé seulement si suivi par Git", () => {
+  const fichier = path.join(RACINE, "skills", "optimize-skill", "SKILL.md");
+  const texte = lire(fichier);
+  const motifs = motifsBash(fichier);
+  const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+  const processus = texte.split(/^## Processus\s*$/m)[1].split(/^## Exemples\s*$/m)[0];
+  const lignes = processus.split("\n");
+  const position = (re) => lignes.findIndex((l) => re.test(l));
+  assert.match(texte, /^disable-model-invocation: true$/m);
+  for (const m of ["pulse-aidd contexte optimize-skill", "pulse-aidd skill mesurer *", "pulse-aidd skill verifier *", "pulse-aidd skill empreinte *", "pulse-aidd modele audit-skill/*", "pulse-aidd reference skills/*", "pulse-aidd reference optimize-skill/*", "pulse-aidd agent skill-auditor"])
+    assert.ok(motifs.includes(m), `allowed-tools : Bash(${m})`);
+  // Aucune commande git : le suivi par Git vient de `pulse-aidd skill empreinte`, l'avant de la sauvegarde.
+  assert.deepStrictEqual(motifs.filter((m) => /^git\b/.test(m)), []);
+  assert.doesNotMatch(texte, /git (?:diff|status)/);
+  for (const o of ["Read", "Glob", "Grep"]) assert.ok(ligne.split(/\s+/).includes(o), `allowed-tools : ${o}`);
+  // Écritures sans demande : les skills du projet et le rapport ; ailleurs (skills personnelles, plugins), l'accord de Claude Code.
+  assert.deepStrictEqual([...ligne.matchAll(/\b(?:Write|Edit|MultiEdit)\(([^)]*)\)/g)].map((m) => m[1]).sort(), [".claude/skills/**", ".claude/skills/**", "docs/audits-skills/**", "docs/audits-skills/**"]);
+  assert.ok(!motifs.some((m) => couvre(m, "pulse-aidd skill usage")), "l'historique des sessions reste soumis à l'accord");
+  // Aucun enchaînement de commit : ni git add ni git commit autorisés, ni étape commit chargée ; /pulse:commit seulement à taper, sous Git.
+  assert.deepStrictEqual(motifs.filter((m) => /^git (?:add|commit|checkout|restore|reset|stash)\b/.test(m)), []);
+  assert.doesNotMatch(texte, /pulse-aidd etape commit/);
+  const commits = texte.split("\n").filter((l) => l.includes("`/pulse:commit`"));
+  assert.ok(commits.length >= 1, "l'enregistrement est proposé");
+  for (const l of commits) assert.match(l, /`suivi-git: oui`[^\n]*tapez `\/pulse:commit`/, `commit à taper, seulement avec suivi-git: oui : ${l.slice(0, 60)}`);
+  assert.match(processus, /`pulse-aidd skill empreinte <chemin>`[^\n]*`suivi-git:`/);
+  // Plugin installé (cache de Claude Code) : la skill reste telle quelle, le dossier source est indiqué.
+  const cache = lignes.find((l) => l.includes("`installe: oui`")) || "";
+  assert.match(cache, /plugins\/cache/);
+  assert.match(cache, /telle quelle/);
+  assert.match(cache, /mise à jour/);
+  assert.match(cache, /dossier source/);
+  // Toujours une sauvegarde, avant toute modification, hors des dossiers de skills (ni chargée ni enregistrée par mégarde),
+  // avec les noms de fichiers d'origine : projet → docs/audits-skills/sauvegardes/, sans demande ; personnelle → ~/.claude/skills-sauvegardes/, avec l'accord.
+  const copie = position(/^### 5\. .*toujours/i);
+  assert.ok(copie >= 0, "étape 5 : la sauvegarde, toujours");
+  const etape5 = processus.split(/^### 5\./m)[1].split(/^### 6\./m)[0];
+  assert.match(etape5, /[Aa]vant toute modification/);
+  assert.match(etape5, /`docs\/audits-skills\/sauvegardes\/<nom>-<AAAA-MM-JJ>\/`[^\n]*sans demande/);
+  assert.match(etape5, /`~\/\.claude\/skills-sauvegardes\/<nom>-<AAAA-MM-JJ>\/`[^\n]*accord/);
+  assert.match(etape5, /noms d'origine/);
+  assert.doesNotMatch(texte, /SKILL\.md\.avant|\.avant-</, "plus de copie à côté de la skill");
+  assert.ok(ligne.split(/\s+/).includes("Write(docs/audits-skills/**)"), "sauvegarde du projet écrite sans demande");
+  // Le rapport d'audit du jour est réutilisé si l'empreinte est la même.
+  assert.match(processus, /du jour[^\n]*empreinte|empreinte[^\n]*du jour/);
+  assert.match(processus, /`pulse-aidd modele audit-skill\/rapport\.md`/);
+  // Audit court : l'audit complet (usage observé compris) reste à taper.
+  assert.match(processus, /pour un audit complet[^\n]*tapez `\/pulse:audit-skill <chemin>`/i);
+  // Plan point par point, validation tout / partie / rien, avant toute modification.
+  assert.match(processus, /`pulse-aidd reference optimize-skill\/plan\.md`/);
+  const validation = position(/« Tout appliquer \(Recommandé\) » \/ « Une partie » \/ « Rien »/);
+  assert.ok(validation >= 0, "validation : tout, une partie, rien");
+  assert.ok(validation < copie, "validation avant la copie et l'application");
+  // Relecture avant / après par skill-auditor, avec le modèle opus ; pertes corrigées une fois.
+  const relecture = lignes.find((l) => /`pulse:skill-auditor`/.test(l) && /`avant-apres`/.test(l)) || "";
+  assert.match(relecture, /`opus`/);
+  assert.ok(position(/`avant-apres`/) > copie, "relecture après l'application");
+  // L'avant de la relecture est la sauvegarde, jamais un diff.
+  const etape7 = processus.split(/^### 7\./m)[1].split(/^### 8\./m)[0];
+  assert.match(etape7, /sauvegarde/);
+  // Pertes : corrigées une fois, puis une seconde relecture ; s'il en reste, arrêt, pertes dites simplement, choix de la personne.
+  assert.match(etape7, /pertes?[^\n]*une fois/);
+  assert.match(etape7, /relire une seconde fois|seconde relecture/i);
+  assert.match(etape7, /s'arrêter/);
+  assert.match(etape7, /mots de tous les jours/);
+  assert.match(etape7, /AskUserQuestion : « Remettre la sauvegarde \(Recommandé\) » \/ « Garder ainsi »/);
+  assert.match(etape7, /Remettre la sauvegarde[^\n]*recopier/);
+  assert.match(processus, /`pulse-aidd agent skill-auditor`/, "repli si l'assistant est indisponible");
+  assert.ok(contexteCharge("optimize-skill").includes("===== Règles des skills ====="), "contexte : regles-skills.md");
+  // La forme du plan et du bilan.
+  const plan = lire(RACINE, "skills", "optimize-skill", "references", "plan.md");
+  for (const partie of ["## Plan d'optimisation", "## Bilan avant / après", "Gardé tel quel", "| N° | Règle | Changement | Gain attendu | Risque pour la qualité |", "| Mesure | Avant | Après | Écart |"]) assert.ok(plan.includes(partie), `plan.md : ${partie}`);
+  // audit-skill renvoie à optimize-skill ; les règles des skills nomment les trois commandes.
+  assert.match(lire(RACINE, "skills", "audit-skill", "SKILL.md"), /Prochaine étape : [^\n]*tapez `\/pulse:optimize-skill <chemin>`/);
+  const utilise = (lire(RACINE, "references", "skills", "regles-skills.md").match(/^Utilisé par [^\n]*/m) || [""])[0];
+  for (const c of ["`/pulse:skill-creator`", "`/pulse:audit-skill`", "`/pulse:optimize-skill`", "`pulse:skill-auditor`"]) assert.ok(utilise.includes(c), `regles-skills.md, « Utilisé par » : ${c}`);
+  // Le wiki dit la même chose : une sauvegarde à chaque fois.
+  const page = lire(DEPOT, "docs", "commandes", "optimize-skill.html");
+  assert.match(page, /docs\/audits-skills\/sauvegardes\//);
+  assert.doesNotMatch(page, /Seulement pour une skill qui n'est pas enregistrée|\.avant-/);
+});
+
+test("optimize-skill : la sauvegarde du projet supprimée avant /pulse:commit ; les fichiers binaires listés, hors de la sauvegarde, laissés tels quels", () => {
+  const texte = lire(RACINE, "skills", "optimize-skill", "SKILL.md");
+  const processus = texte.split(/^## Processus\s*$/m)[1].split(/^## Exemples\s*$/m)[0];
+  const etape5 = processus.split(/^### 5\./m)[1].split(/^### 6\./m)[0];
+  const etape7 = processus.split(/^### 7\./m)[1].split(/^### 8\./m)[0];
+  const etape8 = processus.split(/^### 8\./m)[1];
+  // Sous docs/, la sauvegarde serait enregistrée avec la skill : la supprimer avant de taper /pulse:commit.
+  assert.match(etape8, /[Ss]upprime[rz][^\n]*sauvegarde[^\n]*avant[^\n]*`\/pulse:commit`/);
+  // Read puis Write ne copient pas un fichier binaire : listé, absent de la sauvegarde, jamais modifié ; la personne le copie si elle le souhaite.
+  assert.match(etape5, /binaire/);
+  assert.match(etape5, /`binaire`[^\n]*`pulse-aidd skill mesurer`|`pulse-aidd skill mesurer`[^\n]*`binaire`/);
+  assert.match(etape5, /binaire[^\n]*pas dans la sauvegarde/);
+  assert.match(etape5, /binaire[^\n]*tel quel/);
+  assert.match(etape5, /binaire[^\n]*vous-même/);
+  assert.match(etape7, /binaire/, "remettre la sauvegarde : les fichiers binaires sont restés en place");
+  const page = lire(DEPOT, "docs", "commandes", "optimize-skill.html");
+  assert.match(page, /binaire/);
+  assert.match(page, /[Ss]upprime[rz][^<]*sauvegarde[^<]*avant[^<]*\/pulse:commit|<a href="commit\.html"><code>\/pulse:commit<\/code><\/a>[^<]*sauvegarde/);
+});
+
+test("audit du jour repris par optimize-skill : celui de la skill seule, et le wiki le dit", () => {
+  assert.match(lire(RACINE, "skills", "optimize-skill", "SKILL.md"), /`docs\/audits-skills\/<nom>-<AAAA-MM-JJ>\.md`, le nom de la skill/);
+  const optimize = lire(DEPOT, "docs", "commandes", "optimize-skill.html");
+  const audit = lire(DEPOT, "docs", "commandes", "audit-skill.html");
+  assert.match(optimize, /audit[^<]*de cette seule skill|audit-skill.html"><code>\/pulse:audit-skill <chemin de la skill>/);
+  assert.match(audit, /skill seule|une seule skill[^<]*repris/);
+  assert.doesNotMatch(audit, /Le rapport du jour est repris tel quel si la skill n'a pas changé/);
+});
+
+test("fichiers-projet.md : les rapports d'audit des skills, les sauvegardes et les skills créées", () => {
+  const liste = lire(RACINE, "references", "fichiers-projet.md");
+  assert.match(liste, /^\| `docs\/audits-skills\/<nom>-<AAAA-MM-JJ>\.md` \| `\/pulse:audit-skill`, `\/pulse:optimize-skill` \|/m);
+  assert.match(liste, /^\| `docs\/audits-skills\/sauvegardes\/<nom>-<AAAA-MM-JJ>\/` \| `\/pulse:optimize-skill` \|/m);
+  assert.match(liste, /^\| `\.claude\/skills\/<nom>\/` \| `\/pulse:skill-creator`, `\/pulse:optimize-skill` \|/m);
+});
+
+test("spirc et ui : après une compaction, recharger les règles (contexte) puis les consignes (etape --sans-communes), chaque sortie lue en entier, fichier enregistré compris", () => {
+  for (const commande of ["spirc", "ui"]) {
+    const texte = lire(RACINE, "skills", commande, "SKILL.md");
+    const ligne = texte.split("\n").find((l) => /compact(ion|age)/.test(l) && l.includes(`pulse-aidd etape ${commande} --sans-communes`)) || "";
+    const contexte = ligne.indexOf(`\`pulse-aidd contexte ${commande}\``);
+    assert.ok(contexte >= 0, `${commande} : les règles rechargées par pulse-aidd contexte ${commande}`);
+    assert.ok(contexte < ligne.indexOf(`\`pulse-aidd etape ${commande} --sans-communes\``), `${commande} : les règles d'abord, puis les consignes`);
+    assert.match(ligne, /en entier, fichier enregistré compris/, `${commande} : chaque sortie lue en entier`);
+    // L'en-tête de etape --sans-communes dit « appliquer seulement le Processus » : vrai pour un enchaînement, pas pour un rechargement.
+    assert.match(ligne, /toutes ses sections/, `${commande} : toutes les sections s'appliquent`);
+    // Dans les ~5 000 premiers jetons, ceux que garde une compaction.
+    const corps = texte.split(/^---$/m).slice(2).join("---");
+    assert.ok(corps.indexOf(ligne) + ligne.length < 17500, `${commande} : ligne de rechargement dans le début gardé`);
+  }
+});
+
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
 const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
@@ -1937,8 +2179,10 @@ test("chaque SKILL.md suit la trame : Objectif, Règles, Contexte, Rôle (facult
     const regles = texte.split(/^## Règles\s*$/m)[1] || "";
     if (!/^\s*Appliquer les « Règles communes Pulse »/.test(regles)) ecarts.push(`${skill} : Règles commence par les règles communes`);
     // Le repli est dans le début conservé après une compaction, pas en fin de fichier avec les règles.
-    if (!regles.includes(`absentes de la conversation : lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier`)) ecarts.push(`${skill} : la ligne des règles donne le repli « pulse-aidd contexte ${skill} »`);
+    // Sortie de plus de 30 000 caractères (avec un pack surtout) : Claude Code l'enregistre dans un fichier, lu en entier (K7).
+    if (!regles.includes(`absentes de la conversation : lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier, fichier enregistré compris)`)) ecarts.push(`${skill} : la ligne des règles donne le repli « pulse-aidd contexte ${skill} », lu en entier`);
     const references = texte.split(/^## Références de la commande\s*$/m)[1] || "";
+    if (!references.includes(`Si ce contexte est absent, lancer \`pulse-aidd contexte ${skill}\` et lire sa sortie en entier, fichier enregistré compris`)) ecarts.push(`${skill} : le repli de fin de fichier, lu en entier`);
     if (!references.includes(`!\`pulse-aidd contexte ${skill}\``)) ecarts.push(`${skill} : contexte chargé dans « Références de la commande »`);
     if ((texte.match(/!`pulse-aidd contexte /g) || []).length !== 1) ecarts.push(`${skill} : une seule injection du contexte, en fin de fichier`);
     if (/dans « Contexte »/.test(texte)) ecarts.push(`${skill} : les règles sont « chargées en fin de fichier, dans « Références de la commande » »`);

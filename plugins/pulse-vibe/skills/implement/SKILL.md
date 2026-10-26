@@ -13,7 +13,7 @@ Réaliser **une tâche** d'un plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<no
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte implement` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte implement` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -106,4 +106,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review`, o�
 
 !`pulse-aidd contexte implement`
 
-Ce contexte contient aussi « Tests automatiques », « Travailler dans un worktree », « Déléguer à l'implementer » et « Modèle : docs/lexique.md ». Se lancent à leur étape : « L'envoi du travail » (`pulse-aidd reference envoi.md`, au choix de l'envoi), « Tests d'abord » (`pulse-aidd reference tests-dabord.md`, avec `-t`), la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`, avec un dossier à part), les consignes de l'implementer (`pulse-aidd agent implementer`, devant vous, § 2) et la fiche de test (`pulse-aidd modele smoke-test.md` et `pulse-aidd reference tests/test-manuel.md`, à « À vous de tester »). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie.
+Ce contexte contient aussi « Tests automatiques », « Travailler dans un worktree », « Déléguer à l'implementer » et « Modèle : docs/lexique.md ». Se lancent à leur étape : « L'envoi du travail » (`pulse-aidd reference envoi.md`, au choix de l'envoi), « Tests d'abord » (`pulse-aidd reference tests-dabord.md`, avec `-t`), la suite de la référence worktree (`pulse-aidd reference worktree-dossier.md`, avec un dossier à part), les consignes de l'implementer (`pulse-aidd agent implementer`, devant vous, § 2) et la fiche de test (`pulse-aidd modele smoke-test.md` et `pulse-aidd reference tests/test-manuel.md`, à « À vous de tester »). Si ce contexte est absent, lancer `pulse-aidd contexte implement` et lire sa sortie en entier, fichier enregistré compris.

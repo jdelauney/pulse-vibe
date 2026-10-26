@@ -13,7 +13,7 @@ Donner à la personne le tableau de bord que Google lui tend, en trois temps : *
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte search-console` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte search-console` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -84,4 +84,4 @@ Terminer avec le bloc de fin de commande ; « Prochaine étape » donne la date 
 
 !`pulse-aidd contexte search-console`
 
-Ce contexte contient aussi « Search Console : relier, lire, suivre », « Modèle : docs/referencement/search-console-<date>.md », « Modèle : docs/lexique.md » et, avec un pack de pile, ses consignes ; `relier.md` et le modèle du travail en cours se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte search-console` et lire sa sortie.
+Ce contexte contient aussi « Search Console : relier, lire, suivre », « Modèle : docs/referencement/search-console-<date>.md », « Modèle : docs/lexique.md » et, avec un pack de pile, ses consignes ; `relier.md` et le modèle du travail en cours se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte search-console` et lire sa sortie en entier, fichier enregistré compris.

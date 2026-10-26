@@ -16,7 +16,7 @@ Analogie à donner : « C'est comme un document partagé qui se met à jour tout
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte deploy` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte deploy` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -89,4 +89,4 @@ Terminer avec le bloc de fin de commande, en indiquant l'adresse du site, le ré
 
 !`pulse-aidd contexte deploy`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte deploy` et lire sa sortie en entier, fichier enregistré compris.

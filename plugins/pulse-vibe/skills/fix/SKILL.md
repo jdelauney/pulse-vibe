@@ -15,7 +15,7 @@ Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-f
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte fix` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte fix` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -99,4 +99,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si 
 
 !`pulse-aidd contexte fix`
 
-Les règles de qualité du code se chargent à l'étape 3, par famille. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie.
+Les règles de qualité du code se chargent à l'étape 3, par famille. Si ce contexte est absent, lancer `pulse-aidd contexte fix` et lire sa sortie en entier, fichier enregistré compris.

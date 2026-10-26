@@ -13,7 +13,7 @@ Revenir en arrière **sans rien perdre** : chaque annulation est elle-même rév
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte annuler` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte annuler` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer aussi « L'envoi du travail » à l'étape 6 (`pulse-aidd reference envoi.md`).
 
@@ -83,4 +83,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:status`, ou
 
 !`pulse-aidd contexte annuler`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte annuler` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte annuler` et lire sa sortie en entier, fichier enregistré compris.

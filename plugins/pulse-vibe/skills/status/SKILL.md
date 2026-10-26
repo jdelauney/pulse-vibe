@@ -13,7 +13,7 @@ Répondre à « Où en suis-je ? » : les étapes faites, les tâches à faire, 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte status` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte status` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Cette commande **lit et résume**. Elle modifie seulement quatre choses, chaque fois avec l'accord de la personne : elle efface un travail en cours devenu sans objet (ligne `ancien: oui` de `pulse-aidd etat`), retire le repère d'une réalisation interrompue (ligne `realisation: perimee`), supprime les worktrees dont le travail est déjà fusionné (§ Worktrees) et, avec l'argument `ligne`, règle la ligne d'état (§ La ligne d'état).
 
@@ -91,4 +91,4 @@ Avec `ligne` ou `ligne retirer` : lancer `pulse-aidd reference status/ligne.md` 
 
 !`pulse-aidd contexte status`
 
-Ce contexte contient « Règles communes Pulse », « Règles des tâches » et « Règles de réalisation » ; le tableau de bord vient de `pulse-aidd etat --tableau`, la ligne d'état de `pulse-aidd reference status/ligne.md`. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie.
+Ce contexte contient « Règles communes Pulse », « Règles des tâches » et « Règles de réalisation » ; le tableau de bord vient de `pulse-aidd etat --tableau`, la ligne d'état de `pulse-aidd reference status/ligne.md`. Si ce contexte est absent, lancer `pulse-aidd contexte status` et lire sa sortie en entier, fichier enregistré compris.

@@ -13,7 +13,7 @@ Faire examiner la tâche par deux assistants qui ne l'ont pas écrite (l'un reli
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte review` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte review` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -85,4 +85,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:commit`.
 
 !`pulse-aidd contexte review`
 
-Ce contexte contient « Examiner une tâche » ; le modèle de rapport s'affiche au § 3. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie.
+Ce contexte contient « Examiner une tâche » ; le modèle de rapport s'affiche au § 3. Avec un pack de pile, ses consignes de relecture servent au reviewer : le reviewer les charge lui-même (`pulse-aidd pile contexte review`) ; pour confronter un constat Basse à une règle du pack, la lire avec `pulse-aidd pile reference fiche.md`. Si ce contexte est absent, lancer `pulse-aidd contexte review` et lire sa sortie en entier, fichier enregistré compris.

@@ -13,7 +13,7 @@ Phrase à dire la première fois : « Une branche, c'est une version parallèle 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte pr` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte pr` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer aussi les « Conventions Git » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
@@ -103,4 +103,4 @@ Terminer avec le bloc de fin de commande. Fichiers : « aucun » (seulement Git 
 
 !`pulse-aidd contexte pr`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte pr` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte pr` et lire sa sortie en entier, fichier enregistré compris.

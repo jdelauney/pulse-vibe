@@ -13,7 +13,7 @@ Produire `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md`, à côté du fichier de 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spec` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte spec` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ### Les quatre règles de la spec
 
@@ -102,4 +102,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:ui maquette
 
 !`pulse-aidd contexte spec`
 
-Ce contexte contient aussi « Présentation des écrans », « Scénarios Gherkin » et « Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md » ; les règles et le modèle d'US et la stratégie de tests se lancent au moment qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie.
+Ce contexte contient aussi « Présentation des écrans », « Scénarios Gherkin » et « Modèle : aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md » ; les règles et le modèle d'US et la stratégie de tests se lancent au moment qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte spec` et lire sa sortie en entier, fichier enregistré compris.

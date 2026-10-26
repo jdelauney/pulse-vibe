@@ -184,7 +184,7 @@ test("structure : spirc, auto-fix et implement laissent le pack à leurs agents 
 });
 
 // Les formes « pulse-aidd etape <commande> --sans-communes|--sans-noyau » citées par le cœur, mesurées avec le pack (limite de lecture : 30 000 caractères).
-// Plafond = mesure × 1,05, au 500 supérieur. Une forme au-dessus de la limite entre dans DEPASSEMENTS_CONNUS_AVEC_PACK avec sa mesure ; cette liste ne grandit pas.
+// Plafond = mesure × 1,05, au 500 supérieur. Une forme au-dessus de la limite entre dans DEPASSEMENTS_CONNUS_AVEC_PACK avec sa mesure ; cette liste grandit seulement avec la mesure et la raison.
 const LIMITE_LECTURE = 30000;
 const PLAFONDS_FORMES_AVEC_PACK = {
   "auto-fix --sans-noyau": 12000, // mesure 11 328 (phase 9 : cliquet, plafond abaissé à mesure × 1,05 après les phases 6 à 9) ; avant, mesure 11 686
@@ -201,6 +201,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
   "pr --sans-noyau": 18500, // mesure 17 821 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 17 404 (tâche 7.3 : modèle de description lancé au moment de rédiger, déplacement par pulse-aidd deplacer-commits) ; avant, 20 495
   "refine --sans-communes": 18000, // mesure 16 880 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 16 807 (tâche 6.6 : les seules règles de découpage, sortie de DEPASSEMENTS_CONNUS_AVEC_PACK) ; avant, 34 590
   "review --sans-communes": 14500, // mesure 13 829 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 13 415 (tâche 5.3 : modèle de rapport chargé à l'étape) ; avant, 15 728
+  "spirc --sans-communes": 47000, // mesure 44 666 (skills, vague finale : rechargement des règles puis des consignes, chaque sortie lue en entier) ; avant, mesure 44 458 (pulse 0.53 : rechargement de /pulse:spirc après une compaction, seule forme qui réaffiche toute la commande ; dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK)
   "spec --sans-communes": 28000, // mesure 26 454 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 26 320 (tâche 6.5 : présentation des écrans en référence, modèle d'US à la demande) ; avant, 27 839
   "tech --sans-communes": 30500, // mesure 28 603 (relecture finale de la phase 9, R-m1 : les valeurs du pack chargées à l'étape « Écrire » par pulse-aidd pile contexte tech, en un appel à part ; sous la limite de lecture, sortie de DEPASSEMENTS_CONNUS_AVEC_PACK) ; avant, mesure 41 206 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 40 916 (phase 6, retouches) ; avant, 40 864 (tâche 6.2 : démarche et organisation chargées à l'étape) ; avant, 66 375 : dépasse la limite, voir DEPASSEMENTS_CONNUS_AVEC_PACK
   "ui --sans-communes": 24500, // mesure 23 771 (phase 9 : mesure reprise après les phases 6 à 9) ; avant, mesure 23 612 (phase 8 : références et modèles de design chargés à l'étape qui les cite, les agents chargent les leurs) ; avant, 60 343
@@ -209,6 +210,7 @@ const PLAFONDS_FORMES_AVEC_PACK = {
 };
 const DEPASSEMENTS_CONNUS_AVEC_PACK = new Set([
   "fix --sans-communes", "fix --sans-noyau", "plan --sans-communes",
+  "spirc --sans-communes", // pulse 0.53 : rechargement après une compaction ; la sortie, enregistrée dans un fichier, est lue en entier
 ]);
 function formesCitees() {
   const formes = new Set();

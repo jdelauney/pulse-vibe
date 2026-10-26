@@ -13,7 +13,7 @@ Produire le **référentiel** `docs/user-stories.md` (les groupes, la vue d'ense
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte us` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi « Les règles des user stories » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte us` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande. Appliquer aussi « Les règles des user stories » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
 
@@ -72,4 +72,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec <US-XX
 
 !`pulse-aidd contexte us`
 
-Ce contexte contient aussi « Penser avant d'écrire », « Les règles des user stories », « Modèle : docs/user-stories.md (référentiel) » et « Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md ». Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire », « Les règles des user stories », « Modèle : docs/user-stories.md (référentiel) » et « Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md ». Si ce contexte est absent, lancer `pulse-aidd contexte us` et lire sa sortie en entier, fichier enregistré compris.

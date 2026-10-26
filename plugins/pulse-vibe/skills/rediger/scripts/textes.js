@@ -3,7 +3,7 @@
 //
 //   pulse-aidd textes verifier <fichier|-> [--json]
 //
-// Règles : references/redaction/detecteur-tics-llm.json, seule source des listes.
+// Règles : skills/rediger/references/detecteur-tics-llm.json, seule source des listes.
 // Un fichier au modèle docs/textes/<page>.md n'est contrôlé qu'entre <!-- texte --> et <!-- /texte -->
 // (chaque bloc). Un constat faux se garde sur sa ligne : <!-- garder LEX-007 : sens littéral -->.
 // Codes de sortie : 0 aucune erreur ; 1 au moins une erreur ; 2 usage ou fichier illisible.
