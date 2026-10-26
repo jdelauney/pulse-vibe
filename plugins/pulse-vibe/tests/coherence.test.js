@@ -1181,14 +1181,17 @@ test("les commandes qui écrivent des documents, ou enchaînent des étapes qui 
 });
 
 // Un nom de fichier seul (Edit(CLAUDE.md)) vaut à toute profondeur ; ./ l'ancre à la racine du projet. Edit couvre aussi la création.
-test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus ./CLAUDE.md et ./README.md à la racine (écriture autorisée)", () => {
+// Les commandes qui écrivent une skill (skill-creator, optimize-skill) écrivent aussi dans .claude/skills/ du projet.
+const ECRIVENT_SKILLS = ["skill-creator", "optimize-skill"];
+test("allowed-tools : les écritures autorisées d'avance restent dans docs/ et aidd_docs/, plus ./CLAUDE.md et ./README.md à la racine (écriture autorisée), et .claude/skills/ pour les commandes qui écrivent une skill", () => {
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const ligne = (lire(fichier).match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
     for (const [, outil, motif] of ligne.matchAll(/\b(Write|Edit|MultiEdit)\(([^)]*)\)/g)) {
       const document = /^(docs|aidd_docs)\/\S+$/.test(motif) && !motif.split("/").includes("..");
       const racine = outil === "Edit" && /^\.\/(CLAUDE|README)\.md$/.test(motif);
-      if (!document && !racine) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
+      const skills = motif === ".claude/skills/**" && ECRIVENT_SKILLS.includes(path.basename(path.dirname(fichier)));
+      if (!document && !racine && !skills) problemes.push(`${path.relative(DEPOT, fichier).split(path.sep).join("/")} : ${outil}(${motif})`);
     }
   }
   assert.deepStrictEqual(problemes, []);
@@ -1956,6 +1959,51 @@ test("audit-skill : constat par script, jugement par skill-auditor par lots de 5
   const agent = lire(RACINE, "agents", "skill-auditor.md");
   assert.match(agent, /tous les constats de `verifier`/);
   assert.match(agent, /`note:`/);
+  // Aucune skill trouvée : la création d'une skill est proposée, à taper par la personne.
+  for (const ligne of processus.split("\n").filter((l) => /`skills: 0`|`introuvable: \.claude`/.test(l)))
+    assert.match(ligne, /tapez `\/pulse:skill-creator`/, `aucune skill : création proposée (${ligne.slice(0, 40)})`);
+});
+
+test("skill-creator : questions une à une, plan validé, skill ordinaire écrite au modèle, verifier jusqu'à zéro bloquant, essai proposé", () => {
+  const texte = lire(RACINE, "skills", "skill-creator", "SKILL.md");
+  const motifs = motifsBash(path.join(RACINE, "skills", "skill-creator", "SKILL.md"));
+  const ligne = (texte.match(/^allowed-tools:\s*(.*)$/m) || [])[1] || "";
+  const processus = texte.split(/^## Processus\s*$/m)[1].split(/^## Exemples\s*$/m)[0];
+  assert.match(texte, /^disable-model-invocation: true$/m);
+  for (const m of ["pulse-aidd contexte skill-creator", "pulse-aidd skill mesurer *", "pulse-aidd skill verifier *", "pulse-aidd modele skill-creator/*", "pulse-aidd reference skills/*"])
+    assert.ok(motifs.includes(m), `allowed-tools : Bash(${m})`);
+  for (const o of ["Read", "Glob", "Grep", "Write(.claude/skills/**)", "Edit(.claude/skills/**)"]) assert.ok(ligne.split(/\s+/).includes(o), `allowed-tools : ${o}`);
+  // Écrit seulement dans les skills du projet sans demande ; ailleurs (skills personnelles, plugin), Claude Code demande l'accord.
+  assert.deepStrictEqual([...ligne.matchAll(/\b(?:Write|Edit|MultiEdit)\(([^)]*)\)/g)].map((m) => m[1]), [".claude/skills/**", ".claude/skills/**"]);
+  assert.deepStrictEqual(motifs.filter((m) => /^git\b/.test(m) || /^pulse-aidd skill (?:usage|empreinte)/.test(m)), []);
+  // Questions de fond, une à la fois : travail, phrases, qui la lance, effets, destinataire, emplacement (projet par défaut).
+  assert.match(processus, /une à la fois/);
+  for (const q of ["travail", "phrases", "Qui la lance", "touche", "À qui elle parle", "Où la ranger"]) assert.match(processus, new RegExp(q), `question : ${q}`);
+  assert.match(processus, /« Dans ce projet, `\.claude\/skills\/` \(Recommandé\) »/);
+  assert.match(processus, /`~\/\.claude\/skills\/<nom>\/`/);
+  // Un dossier déjà là n'est pas écrasé.
+  assert.match(processus, /existe déjà/);
+  // Plan de la skill validé avant d'écrire.
+  assert.match(processus, /« Écrire cette skill \(Recommandé\) »/);
+  assert.ok(processus.indexOf("« Écrire cette skill (Recommandé) »") < processus.indexOf("`pulse-aidd modele skill-creator/SKILL.md`"), "plan validé avant l'écriture");
+  // Une skill ordinaire : aucun outil Pulse dans le projet de la personne ; conventions Pulse seulement dans un plugin Pulse.
+  assert.match(texte, /sans `pulse-aidd`/);
+  assert.match(processus, /plugin Pulse[^\n]*`CLAUDE\.md` du dépôt/);
+  // Contrôle par script jusqu'à zéro bloquant, puis mesure.
+  assert.match(processus, /`pulse-aidd skill verifier <chemin>`[^\n]*jusqu'à[^\n]*bloquant/);
+  assert.match(processus, /`pulse-aidd skill mesurer <chemin>`/);
+  assert.ok(processus.indexOf("`pulse-aidd skill verifier <chemin>`") < processus.indexOf("`pulse-aidd skill mesurer <chemin>`"), "verifier puis mesurer");
+  // Résultat montré et essai proposé (la personne tape la skill).
+  assert.match(processus, /essai/i);
+  assert.match(processus, /tapez `\/<nom>/);
+  assert.ok(contexteCharge("skill-creator").includes("===== Règles des skills ====="), "contexte : regles-skills.md");
+  // Le modèle : une skill ordinaire, à la trame recommandée, sans outil Pulse.
+  const modele = lire(RACINE, "skills", "skill-creator", "assets", "SKILL.md");
+  assert.match(modele, /^---\nname: <[^>]+>\ndescription: /);
+  assert.match(modele, /^disable-model-invocation: true$/m);
+  assert.match(modele, /^allowed-tools: /m);
+  assert.deepStrictEqual(titres2(modele), ["Objectif", "Règles", "Contexte", "Processus", "Exemples", "Références"]);
+  assert.doesNotMatch(modele, /pulse-aidd|\/pulse:/, "aucun outil Pulse dans une skill ordinaire");
 });
 
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
