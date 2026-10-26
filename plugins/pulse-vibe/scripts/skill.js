@@ -405,12 +405,35 @@ function constatsAutorisations(m, ajouter) {
   }
 }
 
+/**
+ * La ligne (numéro dans le fichier) qui recharge les consignes de la skill après une compaction : elle parle de
+ * compaction (ou de compactage) et cite une commande qui réaffiche ces consignes (`pulse-aidd etape <cette skill>`,
+ * ou la lecture de son SKILL.md). Elle compte seulement placée dans les premiers jetons, ceux que la compaction garde.
+ */
+function ligneRechargement(m) {
+  const { entete: e } = m.interne;
+  let position = 0;
+  const lignes = e.corps.split("\n");
+  for (let i = 0; i < lignes.length; i++) {
+    position += lignes[i].length + 1;
+    if (jetons(position) > LIMITE_PROCESSUS) return null;
+    if (!/compact(ion|age)/i.test(lignes[i])) continue;
+    const commandes = [...lignes[i].matchAll(/`([^`\n]+)`/g)].map((c) => c[1]);
+    if (commandes.some((c) => (/^pulse-aidd etape (\S+)/.exec(c) || [])[1] === m.nom || /SKILL\.md\b/.test(c))) return i + e.ligneCorps;
+  }
+  return null;
+}
+
 function constatsTrame(m, ajouter, convention) {
   const { entete: e, section, injections } = m.interne;
   const corps = e.corps;
   if (section) {
-    if (m.processusFin > LIMITE_PROCESSUS)
-      ajouter("K5", "bloquant", section.ligne + e.ligneCorps, `fin du Processus à ${m.processusFin} jetons estimés (au-delà des ${LIMITE_PROCESSUS} premiers) : une compaction garde seulement le début de la skill ; avancer le Processus, sortir le détail vers references/`);
+    if (m.processusFin > LIMITE_PROCESSUS) {
+      const fin = `fin du Processus à ${m.processusFin} jetons estimés (au-delà des ${LIMITE_PROCESSUS} premiers) : une compaction garde seulement le début de la skill`;
+      const rechargement = ligneRechargement(m);
+      if (rechargement) ajouter("K5", "a-corriger", section.ligne + e.ligneCorps, `${fin} ; la ligne ${rechargement} recharge les consignes après une compaction ; avancer le Processus reste conseillé`);
+      else ajouter("K5", "bloquant", section.ligne + e.ligneCorps, `${fin} ; avancer le Processus, sortir le détail vers references/, ou écrire tôt dans le fichier une ligne qui recharge les consignes après une compaction`);
+    }
     const tot = injections.find((inj) => inj.index < section.fin);
     if (tot) ajouter("K5", convention, tot.ligne, `injection !\`${tot.commande}\` avant la fin du Processus : la placer en dernière section, avec une ligne de repli`);
   } else if (jetons(corps.length) > LIMITE_PROCESSUS) {
@@ -429,7 +452,8 @@ function constatsLecture(m, ajouter) {
     else ajouter("K7", "bloquant", 1, `${r.car} caractères (plus de ${LIMITE_LECTURE}) : Claude Code n'en montrerait qu'un aperçu ; scinder le fichier`, r.chemin);
   }
   for (const inj of m.injections)
-    if (inj.car > LIMITE_LECTURE) ajouter("K7", "bloquant", inj.ligne, `l'injection !\`${inj.commande}\` affiche ${inj.car} caractères (plus de ${LIMITE_LECTURE}) : la scinder en appels séparés`);
+    // Une injection se charge au lancement de la skill, sans passer par un outil : pas de coupure, mais un coût à chaque lancement.
+    if (inj.car > LIMITE_LECTURE) ajouter("K7", "a-corriger", inj.ligne, `l'injection !\`${inj.commande}\` affiche ${inj.car} caractères (plus de ${LIMITE_LECTURE}), chargés à chaque lancement : mesurer ce qui sert, et la scinder si possible (le reste chargé à l'étape qui le sert)`);
   const textes = [{ chemin: m.fichier, texte: m.interne.texte }, ...m.interne.references.filter((r) => r.car !== null && r.fichier.endsWith(".md")).map((r) => ({ chemin: r.chemin, texte: lireTexte(r.chemin) }))];
   for (const { chemin, texte } of textes)
     texte.split("\n").forEach((l, i) => {
