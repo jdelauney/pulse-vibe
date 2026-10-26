@@ -43,6 +43,7 @@ Tout est en français. Chaque commande pose ses questions (une à la fois, ou en
 | `/pulse:annuler [T3 \| US-003]` | Revenir en arrière sans rien perdre : abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu calculé et accord avant toute opération, gestes lancés par `pulse-aidd annuler` (état d'avant remis si un geste échoue) | un commit d'annulation, ou une mise de côté |
 | `/pulse:get-help ["…"]` | Quand Pulse bloque : prépare une demande d'aide claire et sans secret (message court et fiche complète) et indique où la poser | `docs/aide/demande-<date>-<sujet>.md` |
 | `/pulse:memory` | Créer, actualiser, enrichir ou compacter la mémoire du projet (`creer`, `actualiser`, `retenir "…"`, `compacter`) | `aidd_docs/memory/` |
+| `/pulse:audit-skill [chemin]` | Auditer une skill Claude Code, un dossier de skills ou un plugin selon les règles K1 à K14 (`references/skills/regles-skills.md`) : contrôle par script (`pulse-aidd skill mesurer` et `verifier`), usage observé dans l'historique des sessions avec votre accord, jugement par l'agent skill-auditor ; rien n'est modifié | `docs/audits-skills/<nom>-<date>.md` |
 
 Le chemin des commandes, et celles qui s'utilisent à tout moment : [`references/cycle.md`](references/cycle.md).
 
@@ -84,7 +85,7 @@ Profil « Jamais programmé » : `/pulse:implement` et `/pulse:spirc` prennent l
   - `pulse:memory-compactor` resserre et remet à jour la mémoire quand elle atteint 95 % de sa limite, pour `/pulse:memory compacter` (écrit seulement dans `aidd_docs/memory/`) ;
   - `pulse:fixer` corrige une liste précise d'erreurs dans 5 fichiers au plus (utilisé par `/pulse:auto-fix`), ou un comportement dont `/pulse:fix` a trouvé la cause avec vous ;
   - `pulse:redacteur` écrit le texte d'une page dans la voix du site, puis le corrige jusqu'à ce que le contrôle des tics d'écriture IA passe (pour `/pulse:rediger`) ;
-  - `pulse:skill-auditor` juge des skills Claude Code selon les règles K1 à K14 (doublons, utilité, chargement, validations), ou compare une skill avant et après son optimisation, en lecture seule.
+  - `pulse:skill-auditor` juge des skills Claude Code selon les règles K1 à K14 (doublons, utilité, chargement, validations), ou compare une skill avant et après son optimisation, en lecture seule (pour `/pulse:audit-skill`).
 
   Chaque agent a son modèle d'IA fixé (léger pour chercher et corriger, plus capable pour réaliser et relire) et charge lui-même ses règles, par exemple la checklist de sécurité.
 - **Aucune technologie imposée** : Pulse ne choisit ni langage, ni framework, ni base de données, ni hébergeur. La personne choisit avec `/pulse:tech` ; tout le reste (spec, plan, code, contrôles, mise en ligne) s'appuie sur `docs/technical.md`, et l'IA consulte la documentation officielle de la technologie retenue.

@@ -1,13 +1,13 @@
 # Les règles des skills (K1 à K14)
 
-Utilisé par les commandes Pulse qui créent, auditent et optimisent une skill, et par leur agent de relecture. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte −31 %, qualité égale ou meilleure). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
+Utilisé par `/pulse:audit-skill`, par l'agent `pulse:skill-auditor` et par les commandes Pulse qui créent et optimisent une skill. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte −31 %, qualité égale ou meilleure). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
 
 ## Lire une règle
 
 - **Niveau** : *universelle* = vaut pour toute skill ; *convention* = recommandée : « conseil », ou « à corriger » dans un plugin Pulse (`pulse`, `pulse-next`).
 - **Gravité** : *bloquant* = skill fausse ou risquée, à corriger avant usage (code 1 de `pulse-aidd skill verifier`) ; *à corriger* = perte de qualité ou de contexte mesurable ; *conseil* = amélioration.
 - **Vérification** : *script* = `pulse-aidd skill verifier <chemin>` donne le constat (`K<n> · gravité · fichier:ligne · message`), `pulse-aidd skill mesurer <chemin>` donne les tailles ; *jugement* = la question à trancher en lisant la skill.
-- **Jetons estimés** : caractères ÷ 3,5 (une estimation, dite comme telle).
+- **Jetons estimés** : caractères ÷ 3,5, une estimation.
 - **Bloquant**, en tout : description absente ou de plus de 1 024 caractères (K2) ; geste sensible autorisé d'avance ou motif trop large (K4) ; fin du Processus au-delà des 5 000 premiers jetons estimés, sans ligne de rechargement (K5) ; fichier ou sortie lue par un outil de plus de 30 000 caractères (K7) ; outil cité dans les consignes d'un agent sans lui être disponible (K11).
 
 ## K1 – Une skill, un travail
