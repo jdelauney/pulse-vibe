@@ -13,6 +13,12 @@
 //   pulse-aidd skill verifier <chemin>   une ligne par constat « K<n> · bloquant|a-corriger|conseil · fichier:ligne ·
 //                                        message », puis « bilan: … » ; « installe: oui » en tête pour une skill d'un
 //                                        plugin installé (chemin sous plugins/cache/).
+//   pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]
+//                                        l'usage observé dans l'historique des sessions de Claude Code (par défaut
+//                                        ~/.claude/projects, 90 derniers jours), lu en flux, ligne à ligne : periode,
+//                                        fichiers-lus, puis « usage: <nom> · personne <n> · modele <n> · dernier <date> »
+//                                        par skill vue (personne : /<nom> tapé ; modèle : outil Skill) ; « historique:
+//                                        absent » sans dossier. Rien n'est envoyé ailleurs ; lancé après l'accord de la personne.
 //
 // <chemin> : une skill (dossier ou SKILL.md), un agent (agents/<nom>.md), un dossier de skills (.claude/skills/),
 // ou un dossier qui contient skills/ ou agents/ (.claude/, un plugin). Les conventions (K3, trame de K5, K11 model)
@@ -23,6 +29,7 @@
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
+const readline = require("readline");
 const { spawnSync } = require("child_process");
 
 const LIMITE_LECTURE = 30000; // caractères : au-delà, Claude Code enregistre la sortie dans un fichier (aperçu seul)
@@ -490,6 +497,98 @@ function verifier(chemin, options = {}) {
   return constats.sort((a, b) => ordre[a.gravite] - ordre[b.gravite] || a.fichier.localeCompare(b.fichier) || a.ligne - b.ligne || a.regle.localeCompare(b.regle));
 }
 
+// ---------------------------------------------------------------- Usage observé (historique des sessions)
+
+const JOUR = 86400000;
+const PERIODE_DEFAUT = 90; // jours
+const jourDe = (d) => d.toISOString().slice(0, 10);
+
+/** Les lancements d'une ligne de l'historique : [{ nom, par: "personne" | "modele" }]. */
+function lancementsDe(entree) {
+  const message = entree && entree.message;
+  if (!message) return [];
+  const blocs = typeof message.content === "string" ? [{ type: "text", text: message.content }] : Array.isArray(message.content) ? message.content : [];
+  const trouves = [];
+  for (const b of blocs) {
+    if (!b || typeof b !== "object") continue;
+    if (entree.type === "user" && b.type === "text" && typeof b.text === "string")
+      for (const m of b.text.matchAll(/<command-name>\/?([^<\s]+)<\/command-name>/g)) trouves.push({ nom: m[1], par: "personne" });
+    if (b.type === "tool_use" && b.name === "Skill" && b.input && typeof b.input.skill === "string") trouves.push({ nom: b.input.skill.replace(/^\//, ""), par: "modele" });
+  }
+  return trouves;
+}
+
+/** Lit un fichier .jsonl en flux, ligne à ligne, et ajoute au compte ses lancements de la période. */
+async function lireHistorique(fichier, debut, compte) {
+  const dateFichier = fs.statSync(fichier).mtime;
+  const lignes = readline.createInterface({ input: fs.createReadStream(fichier, { encoding: "utf8" }), crlfDelay: Infinity });
+  for await (const ligne of lignes) {
+    if (!ligne.includes("command-name>") && !ligne.includes('"Skill"')) continue; // la plupart des lignes : aucun lancement
+    let entree;
+    try {
+      entree = JSON.parse(ligne);
+    } catch {
+      continue; // ligne cassée (session interrompue) : ignorée
+    }
+    const quand = entree.timestamp && !Number.isNaN(Date.parse(entree.timestamp)) ? new Date(entree.timestamp) : dateFichier;
+    if (quand < debut) continue;
+    for (const { nom, par } of lancementsDe(entree)) {
+      const c = compte.get(nom) || { nom, personne: 0, modele: 0, dernier: quand };
+      c[par]++;
+      if (quand > c.dernier) c.dernier = quand;
+      compte.set(nom, c);
+    }
+  }
+}
+
+/** L'usage observé : { absent, periode: { du, au }, fichiersLus, skills: [{ nom, personne, modele, dernier }] }. */
+async function usage({ depuis, projets = path.join(os.homedir(), ".claude", "projects"), maintenant = new Date() } = {}) {
+  const debut = depuis ? new Date(`${depuis}T00:00:00.000Z`) : new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), maintenant.getUTCDate()) - PERIODE_DEFAUT * JOUR);
+  const periode = { du: jourDe(debut), au: jourDe(maintenant) };
+  if (!fs.existsSync(projets) || !fs.statSync(projets).isDirectory()) return { absent: true, periode, fichiersLus: 0, skills: [] };
+  // Un fichier modifié pour la dernière fois avant la période ne contient rien de plus récent : sauté.
+  const fichiers = fs
+    .readdirSync(projets, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .flatMap((e) => fs.readdirSync(path.join(projets, e.name)).filter((f) => f.endsWith(".jsonl")).map((f) => path.join(projets, e.name, f)))
+    .filter((f) => fs.statSync(f).isFile() && fs.statSync(f).mtime >= debut);
+  const compte = new Map();
+  for (const f of fichiers) await lireHistorique(f, debut, compte);
+  const skills = [...compte.values()].map((c) => ({ ...c, dernier: jourDe(c.dernier) })).sort((a, b) => b.personne + b.modele - (a.personne + a.modele) || a.nom.localeCompare(b.nom));
+  return { absent: false, periode, fichiersLus: fichiers.length, skills };
+}
+
+async function afficherUsage(args) {
+  const options = {};
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--depuis") options.depuis = args[++i] || "";
+    else if (args[i] === "--projets") options.projets = deplier(args[++i] || "");
+    else {
+      console.log(USAGE);
+      return 1;
+    }
+  }
+  if (options.depuis !== undefined && !(/^\d{4}-\d{2}-\d{2}$/.test(options.depuis) && !Number.isNaN(Date.parse(options.depuis)))) {
+    console.log(`erreur: --depuis attend une date AAAA-MM-JJ (reçu : ${options.depuis || "rien"})\n${USAGE}`);
+    return 1;
+  }
+  let r;
+  try {
+    r = await usage(options);
+  } catch (e) {
+    console.log(`erreur: l'historique n'a pas pu être lu (${e.message})`);
+    return 1;
+  }
+  const lignes = [`periode: ${r.periode.du} → ${r.periode.au}`];
+  if (r.absent) lignes.push("historique: absent");
+  else {
+    lignes.push(`fichiers-lus: ${r.fichiersLus}`);
+    for (const s of r.skills) lignes.push(`usage: ${s.nom} · personne ${s.personne} · modele ${s.modele} · dernier ${s.dernier}`);
+  }
+  console.log(lignes.join("\n"));
+  return 0;
+}
+
 // ---------------------------------------------------------------- Ligne de commande
 
 const USAGE = [
@@ -497,6 +596,8 @@ const USAGE = [
   "        pulse-aidd skill verifier <chemin>   règles K vérifiables par script (pulse-aidd reference skills/regles-skills.md)",
   "<chemin> : une skill (dossier ou SKILL.md), un agent (agents/<nom>.md), un dossier de skills (.claude/skills/),",
   "ou un dossier qui contient skills/ ou agents/ (.claude/, un plugin).",
+  "        pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]   l'usage observé dans l'historique des sessions",
+  "(par défaut ~/.claude/projects, 90 derniers jours).",
 ].join("\n");
 
 const deplier = (p) => (p === "~" || /^~[\\/]/.test(p) ? path.join(os.homedir(), p.slice(1)) : p);
@@ -564,6 +665,10 @@ function afficherConstats(chemin, lieu) {
   return n("bloquant") ? 1 : 0;
 }
 
-if (require.main === module) process.exitCode = main(process.argv.slice(2));
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  if (args[0] === "usage") afficherUsage(args.slice(1)).then((code) => (process.exitCode = code));
+  else process.exitCode = main(args);
+}
 
-module.exports = { mesurer, verifier, lireEntete, listeOutils, couvre, main };
+module.exports = { mesurer, verifier, usage, lireEntete, listeOutils, couvre, main };
