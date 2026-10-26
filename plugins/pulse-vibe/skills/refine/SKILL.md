@@ -13,7 +13,7 @@ Quand la personne a des questions ou veut des changements sur un plan (`aidd_doc
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte refine` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte refine` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -102,4 +102,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spec "…"`
 
 !`pulse-aidd contexte refine`
 
-Ce contexte contient aussi « Règles de découpage du plan ». Le plan lui-même montre le format des tâches ; lancer `pulse-aidd modele plan.md` seulement quand une section manque. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie.
+Ce contexte contient aussi « Règles de découpage du plan ». Le plan lui-même montre le format des tâches ; lancer `pulse-aidd modele plan.md` seulement quand une section manque. Si ce contexte est absent, lancer `pulse-aidd contexte refine` et lire sa sortie en entier, fichier enregistré compris.

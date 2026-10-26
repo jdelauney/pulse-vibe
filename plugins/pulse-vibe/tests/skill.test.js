@@ -1,0 +1,739 @@
+// Tests de `pulse-aidd skill mesurer|verifier|usage` (scripts/skill.js) : tailles d'une skill, règles K vérifiables
+// par script (references/skills/regles-skills.md), sur des skills fabriquées dans un dossier temporaire.
+// Lancer : node --test plugins/pulse-vibe/tests/skill.test.js
+"use strict";
+
+const test = require("node:test");
+const assert = require("node:assert");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { spawnSync } = require("child_process");
+
+const RACINE = path.join(__dirname, "..");
+const SCRIPT = path.join(RACINE, "scripts", "skill.js");
+const { mesurer, verifier } = require(SCRIPT);
+
+const lancer = (...args) => spawnSync(process.execPath, [SCRIPT, ...args], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+
+function dossierTemporaire(t) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-skill-"));
+  t.after(() => fs.rmSync(d, { recursive: true, force: true }));
+  return d;
+}
+
+function ecrire(racine, fichier, contenu) {
+  const chemin = path.join(racine, ...fichier.split("/"));
+  fs.mkdirSync(path.dirname(chemin), { recursive: true });
+  fs.writeFileSync(chemin, contenu);
+  return chemin;
+}
+
+const CORPS = `# Résumer
+
+## Objectif
+
+Résumer un fichier texte en cinq points.
+
+## Règles
+
+- Garder les mots de l'auteur.
+
+## Contexte
+
+Le fichier est donné par la personne.
+
+## Processus
+
+1. Lire le fichier.
+2. Écrire cinq points.
+
+## Exemples
+
+« Résume notes.txt » → cinq points.
+
+## Références
+
+Aucune.
+`;
+
+const skill = ({ entete = {}, corps = CORPS } = {}) => {
+  const champs = { name: "resumer", description: "Résume un fichier texte en cinq points. À utiliser quand la personne demande un résumé.", "allowed-tools": "Read Bash(wc -l *)", ...entete };
+  const lignes = Object.entries(champs).filter(([, v]) => v !== undefined).map(([k, v]) => `${k}: ${v}`);
+  return `---\n${lignes.join("\n")}\n---\n\n${corps}`;
+};
+
+const constats = (liste, regle, gravite) => liste.filter((c) => c.regle === regle && (!gravite || c.gravite === gravite));
+
+test("skill saine : aucun constat bloquant, code 0", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "resumer/SKILL.md", skill());
+  assert.deepStrictEqual(verifier(path.join(d, "resumer")).filter((c) => c.gravite === "bloquant"), []);
+  const r = lancer("verifier", path.join(d, "resumer"));
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^bilan: 0 bloquants · \d+ à corriger · \d+ conseils$/m);
+});
+
+test("K4 : Bash(*) et Bash(git push *) autorisés d'avance → bloquant, code 1", (t) => {
+  const d = dossierTemporaire(t);
+  for (const [nom, motif] of [["tout", "Bash(*)"], ["envoi", "Read Bash(git push *)"], ["git", "Bash(git *)"], ["nu", "Read Bash"]]) {
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    const k4 = constats(verifier(path.join(d, nom)), "K4", "bloquant");
+    assert.strictEqual(k4.length, 1, `${motif} : ${JSON.stringify(k4)}`);
+    assert.match(k4[0].fichier, /SKILL\.md$/);
+    assert.strictEqual(k4[0].ligne, 4, "la ligne de allowed-tools");
+  }
+  const r = lancer("verifier", path.join(d, "envoi"));
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /^K4 · bloquant · .*SKILL\.md:4 · .*git push/m);
+  // Un motif précis reste permis.
+  ecrire(d, "precis/SKILL.md", skill({ entete: { "allowed-tools": "Bash(git status *) Bash(git diff *) Write(docs/**)" } }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "precis")), "K4"), []);
+});
+
+test("K2 : description de 1 100 caractères, absente, sans en-tête ou en-tête invalide → bloquant, jamais une exception", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "longue/SKILL.md", skill({ entete: { description: "a".repeat(1100) } }));
+  ecrire(d, "absente/SKILL.md", skill({ entete: { description: undefined } }));
+  ecrire(d, "sans-entete/SKILL.md", CORPS);
+  ecrire(d, "invalide/SKILL.md", `---\nname: invalide\ndescription: Résume un fichier.\nceci n'est pas une clé\n---\n\n${CORPS}`);
+  ecrire(d, "non-fermee/SKILL.md", `---\nname: ouverte\ndescription: Résume un fichier.\n\n${CORPS}`);
+  for (const nom of ["longue", "absente", "sans-entete", "invalide", "non-fermee"]) {
+    let liste;
+    assert.doesNotThrow(() => (liste = verifier(path.join(d, nom))), nom);
+    assert.strictEqual(constats(liste, "K2", "bloquant").length, 1, `${nom} : ${JSON.stringify(liste)}`);
+    const r = lancer("verifier", path.join(d, nom));
+    assert.strictEqual(r.status, 1, nom);
+    assert.strictEqual(r.stderr, "", `${nom} : sans erreur Node`);
+  }
+});
+
+test("K2 : skill invocable par le modèle sans « À utiliser quand » → à corriger ; lancée par la personne seule → rien", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "invocable/SKILL.md", skill({ entete: { description: "Résume un fichier texte en cinq points." } }));
+  ecrire(d, "personne/SKILL.md", skill({ entete: { description: "Résume un fichier texte en cinq points.", "disable-model-invocation": "true" } }));
+  ecrire(d, "anglais/SKILL.md", skill({ entete: { description: "Summarise a text file in five points. Use when the user asks for a summary." } }));
+  assert.strictEqual(constats(verifier(path.join(d, "invocable")), "K2", "a-corriger").length, 1);
+  assert.deepStrictEqual(constats(verifier(path.join(d, "personne")), "K2"), []);
+  assert.deepStrictEqual(constats(verifier(path.join(d, "anglais")), "K2"), []);
+});
+
+test("en-tête : valeurs sur plusieurs lignes (> et |) et entre guillemets lues", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "pliee/SKILL.md", `---\nname: pliee\ndescription: >\n  Résume un fichier texte en cinq points.\n  À utiliser quand la personne demande un résumé.\nallowed-tools: "Read"\n---\n\n${CORPS}`);
+  ecrire(d, "litterale/SKILL.md", `---\nname: litterale\ndescription: |\n  Résume un fichier texte.\n  Use when asked.\n---\n\n${CORPS}`);
+  for (const nom of ["pliee", "litterale"]) assert.deepStrictEqual(constats(verifier(path.join(d, nom)), "K2"), [], nom);
+  const [m] = mesurer(path.join(d, "pliee"));
+  assert.strictEqual(m.description, "Résume un fichier texte en cinq points. À utiliser quand la personne demande un résumé.".length);
+});
+
+test("K5 : Processus placé après 20 000 caractères → bloquant ; sa position est mesurée", (t) => {
+  const d = dossierTemporaire(t);
+  const long = CORPS.replace("## Processus", `${"Une phrase de contexte qui allonge la skill. ".repeat(450)}\n\n## Processus`);
+  ecrire(d, "tardive/SKILL.md", skill({ corps: long }));
+  const k5 = constats(verifier(path.join(d, "tardive")), "K5", "bloquant");
+  assert.strictEqual(k5.length, 1, JSON.stringify(k5));
+  assert.ok(mesurer(path.join(d, "tardive"))[0].processusFin > 5000);
+  ecrire(d, "tot/SKILL.md", skill());
+  assert.deepStrictEqual(constats(verifier(path.join(d, "tot")), "K5", "bloquant"), []);
+  assert.ok(mesurer(path.join(d, "tot"))[0].processusFin < 500);
+});
+
+test("K5 : Processus tardif avec une ligne de rechargement après compaction, placée tôt → à corriger, pas bloquant", (t) => {
+  const d = dossierTemporaire(t);
+  const remplissage = `${"Une phrase de contexte qui allonge la skill. ".repeat(450)}\n\n## Processus`;
+  const avecLigne = (nom, ligne, tard = false) => {
+    let corps = CORPS.replace("## Processus", remplissage);
+    corps = tard ? `${corps}\n${ligne}\n` : corps.replace("- Garder les mots de l'auteur.", `- Garder les mots de l'auteur.\n- ${ligne}`);
+    ecrire(d, `${nom}/SKILL.md`, skill({ corps }));
+    return constats(verifier(path.join(d, nom)), "K5").filter((c) => /Processus à/.test(c.message)).map((c) => c.gravite);
+  };
+  assert.deepStrictEqual(avecLigne("etape", "Après une compaction, lancer `pulse-aidd etape etape` et suivre sa sortie."), ["a-corriger"]);
+  assert.deepStrictEqual(avecLigne("relire", "Après un compactage, relire `.claude/skills/relire/SKILL.md` en entier."), ["a-corriger"]);
+  assert.deepStrictEqual(avecLigne("sans-commande", "Après une compaction, se souvenir du Processus."), ["bloquant"], "une phrase sans commande qui réaffiche les consignes");
+  assert.deepStrictEqual(avecLigne("autre-skill", "Après une compaction, lancer `pulse-aidd etape commit`."), ["bloquant"], "les consignes d'une autre commande");
+  assert.deepStrictEqual(avecLigne("tardive", "Après une compaction, lancer `pulse-aidd etape tardive`.", true), ["bloquant"], "une ligne placée après la coupure serait perdue avec le reste");
+});
+
+test("K7 : une injection de plus de 30 000 caractères → à corriger (coût à chaque lancement), pas bloquant", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "injection/SKILL.md", skill({ corps: `${CORPS}\n!\`pulse-aidd reference rediger/detecteur-tics-llm.json\`\n` }));
+  const k7 = constats(verifier(path.join(d, "injection")), "K7");
+  assert.deepStrictEqual(k7.map((c) => c.gravite), ["a-corriger"], JSON.stringify(k7));
+  assert.match(k7[0].message, /à chaque lancement/);
+  assert.match(lancer("mesurer", path.join(d, "injection")).stdout, /^au-dela-30000: !pulse-aidd reference rediger\/detecteur-tics-llm\.json$/m);
+});
+
+test("K7 : un fichier lu par l'outil Read est bloquant seulement au-delà de sa limite (2 000 lignes, ~25 000 jetons) ; au-delà de 30 000 caractères : à corriger", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "lourde/SKILL.md", skill());
+  ecrire(d, "lourde/references/gros.md", "é".repeat(31000));
+  ecrire(d, "lourde/assets/modele.md", "# Modèle\n");
+  const k7 = constats(verifier(path.join(d, "lourde")), "K7");
+  assert.deepStrictEqual(k7.map((c) => c.gravite), ["a-corriger"], JSON.stringify(k7));
+  assert.match(k7[0].fichier, /references\/gros\.md$/);
+  assert.match(k7[0].message, /outil Read/);
+  const r = lancer("mesurer", path.join(d, "lourde"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^reference: references\/gros\.md 31000 car$/m);
+  assert.match(r.stdout, /^reference: assets\/modele\.md 9 car$/m);
+  assert.match(r.stdout, /^au-dela-30000: references\/gros\.md$/m);
+  // Au-delà de ce que l'outil Read montre : 2 001 lignes, ou environ 25 000 jetons (90 000 caractères) → bloquant.
+  ecrire(d, "lignes/SKILL.md", skill());
+  ecrire(d, "lignes/references/long.md", "ligne\n".repeat(2001));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "lignes")), "K7").map((c) => c.gravite), ["bloquant"]);
+  ecrire(d, "jetons/SKILL.md", skill());
+  ecrire(d, "jetons/references/dense.md", "é".repeat(90000));
+  const dense = constats(verifier(path.join(d, "jetons")), "K7");
+  assert.deepStrictEqual(dense.map((c) => c.gravite), ["bloquant"]);
+  assert.match(dense[0].message, /2 000 lignes|25 000 jetons/);
+  // Un fichier de données : à corriger, pas bloquant ; dit « lu par le script seul » à côté de son lien : aucun constat.
+  ecrire(d, "donnees/SKILL.md", skill());
+  ecrire(d, "donnees/references/listes.json", JSON.stringify({ mots: "x".repeat(31000) }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "donnees")), "K7").map((c) => c.gravite), ["a-corriger"]);
+  ecrire(d, "donnees/SKILL.md", skill({ corps: CORPS.replace("Aucune.", "[references/listes.json](references/listes.json) (lu par le script seul).") }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "donnees")), "K7"), []);
+});
+
+test("K7 : une commande pulse-aidd d'affichage citée, de plus de 30 000 caractères → bloquant, sauf si la ligne dit de lire en entier le fichier enregistré (à corriger)", (t) => {
+  const d = dossierTemporaire(t);
+  const cite = (consigne) => skill({ corps: CORPS.replace("1. Lire le fichier.", `1. ${consigne}`) });
+  // 46 816 caractères : Claude Code enregistre la sortie dans un fichier et n'en montre qu'un aperçu.
+  ecrire(d, "apercu/SKILL.md", cite("Lancer `pulse-aidd reference rediger/detecteur-tics-llm.json` et lire sa sortie."));
+  const apercu = constats(verifier(path.join(d, "apercu")), "K7");
+  assert.deepStrictEqual(apercu.map((c) => c.gravite), ["bloquant"], JSON.stringify(apercu));
+  assert.match(apercu[0].message, /aperçu/);
+  assert.strictEqual(apercu[0].ligne, 23, "la ligne qui cite la commande");
+  assert.match(lancer("mesurer", path.join(d, "apercu")).stdout, /^au-dela-30000: pulse-aidd reference rediger\/detecteur-tics-llm\.json$/m);
+  ecrire(d, "entier/SKILL.md", cite("Lancer `pulse-aidd reference rediger/detecteur-tics-llm.json` et lire sa sortie en entier, fichier enregistré compris."));
+  const entier = constats(verifier(path.join(d, "entier")), "K7");
+  assert.deepStrictEqual(entier.map((c) => c.gravite), ["a-corriger"], JSON.stringify(entier));
+  assert.match(entier[0].message, /coût/);
+  // Dans une référence de la skill aussi.
+  ecrire(d, "reference/SKILL.md", skill());
+  ecrire(d, "reference/references/etape.md", "Lancer `pulse-aidd reference rediger/detecteur-tics-llm.json`.\n");
+  const ref = constats(verifier(path.join(d, "reference")), "K7");
+  assert.deepStrictEqual(ref.map((c) => [c.gravite, c.fichier.endsWith("references/etape.md"), c.ligne]), [["bloquant", true, 1]]);
+  // Sous la limite, avec une forme à compléter (<…>), ou une autre commande : rien (les autres commandes citées : jugement).
+  ecrire(d, "autres/SKILL.md", cite("Lancer `pulse-aidd reference git.md`, `pulse-aidd contexte <commande>` et `cat gros.txt`."));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "autres")), "K7"), []);
+});
+
+test("K9 : « Ne jamais » trois fois → conseil", (t) => {
+  const d = dossierTemporaire(t);
+  const negatif = CORPS.replace("- Garder les mots de l'auteur.", "- Ne jamais inventer.\n- Ne jamais couper.\n- Ne jamais traduire.");
+  ecrire(d, "negative/SKILL.md", skill({ corps: negatif }));
+  const k9 = constats(verifier(path.join(d, "negative")), "K9");
+  assert.strictEqual(k9.length, 1, JSON.stringify(k9));
+  assert.strictEqual(k9[0].gravite, "conseil");
+  ecrire(d, "positive/SKILL.md", skill());
+  assert.deepStrictEqual(constats(verifier(path.join(d, "positive")), "K9"), []);
+});
+
+const AGENT = (entete, corps = "Relire le code en lecture seule.\n") => `---\nname: relecteur\ndescription: Relire le code d'une tâche en lecture seule.\n${entete}---\n\n${corps}`;
+
+test("K11 : agent qui cite Write avec disallowedTools: Write → bloquant ; outil présent dans tools → rien", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "agents/relecteur.md", AGENT("disallowedTools: Write, Edit\nmodel: sonnet\n", "Écrire le rapport dans docs/ avec l'outil Write.\n"));
+  const k11 = constats(verifier(path.join(d, "agents", "relecteur.md")), "K11", "bloquant");
+  assert.strictEqual(k11.length, 1, JSON.stringify(k11));
+  assert.match(k11[0].message, /Write/);
+  assert.strictEqual(k11[0].ligne, 8);
+  ecrire(d, "agents2/agents/lecteur.md", AGENT("tools: Read, Grep\nmodel: sonnet\n", "Chercher avec `Grep`, puis lancer `Bash`.\n"));
+  const k11b = constats(verifier(path.join(d, "agents2")), "K11", "bloquant");
+  assert.deepStrictEqual(k11b.map((c) => /Bash/.test(c.message)), [true], "Bash cité, absent de tools ; Grep présent");
+});
+
+test("K11 : agent sans model → conseil hors Pulse, à corriger dans un plugin pulse", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "projet/agents/relecteur.md", AGENT("tools: Read\n"));
+  const hors = constats(verifier(path.join(d, "projet")), "K11");
+  assert.deepStrictEqual(hors.map((c) => c.gravite), ["conseil"]);
+  ecrire(d, "plugin/.claude-plugin/plugin.json", JSON.stringify({ name: "pulse", version: "0.53.0" }));
+  ecrire(d, "plugin/agents/relecteur.md", AGENT("tools: Read\n"));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "plugin")), "K11").map((c) => c.gravite), ["a-corriger"], "plugin pulse reconnu par son manifeste");
+  assert.deepStrictEqual(constats(verifier(path.join(d, "projet"), { pulse: true }), "K11").map((c) => c.gravite), ["a-corriger"], "option pulse");
+});
+
+test("CRLF et BOM : mêmes mesures qu'en LF", (t) => {
+  const d = dossierTemporaire(t);
+  const texte = skill();
+  ecrire(d, "lf/SKILL.md", texte);
+  ecrire(d, "lf/references/regles.md", "Règle accentuée : élève.\nDeuxième ligne.\n");
+  ecrire(d, "crlf/SKILL.md", "﻿" + texte.replace(/\n/g, "\r\n"));
+  ecrire(d, "crlf/references/regles.md", "﻿Règle accentuée : élève.\r\nDeuxième ligne.\r\n");
+  const [a] = mesurer(path.join(d, "lf"));
+  const [b] = mesurer(path.join(d, "crlf"));
+  for (const cle of ["skillMd", "frontmatter", "description", "processusFin", "references"]) assert.deepStrictEqual(b[cle], a[cle], cle);
+  assert.deepStrictEqual(verifier(path.join(d, "crlf")).map((c) => c.regle), verifier(path.join(d, "lf")).map((c) => c.regle));
+});
+
+test("dossier de deux skills avec 6 lignes identiques → recoupement, et la somme des descriptions", (t) => {
+  const d = dossierTemporaire(t);
+  const commun = ["Lire le fichier en entier.", "Noter chaque titre.", "Garder les chiffres.", "Citer la source.", "Relire le résumé.", "Montrer le résultat."].join("\n");
+  ecrire(d, "skills/alpha/SKILL.md", skill({ corps: CORPS.replace("Aucune.", commun) }));
+  ecrire(d, "skills/beta/SKILL.md", skill({ entete: { name: "beta" }, corps: `# Bêta\n\n## Processus\n\n${commun}\n` }));
+  ecrire(d, "skills/gamma/SKILL.md", skill({ entete: { name: "gamma" }, corps: `# Gamma\n\n## Étapes\n\n${commun.split("\n").slice(0, 5).join("\n")}\n` }));
+  const r = lancer("mesurer", path.join(d, "skills"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^skill: alpha$/m);
+  assert.match(r.stdout, /^skill: beta$/m);
+  assert.match(r.stdout, /^recoupement: alpha beta 6 lignes$/m);
+  assert.doesNotMatch(r.stdout, /^recoupement: .*gamma/m, "5 lignes : en dessous du seuil");
+  const description = "Résume un fichier texte en cinq points. À utiliser quand la personne demande un résumé.".length;
+  assert.match(r.stdout, new RegExp(`^descriptions-total: ${description * 3} car$`, "m"));
+  assert.strictEqual(constats(verifier(path.join(d, "skills")), "K8").length, 1);
+});
+
+test("plugin : chaque skill et chaque agent, avec leur description", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, ".claude-plugin/plugin.json", JSON.stringify({ name: "outils", version: "1.0.0" }));
+  ecrire(d, "skills/resumer/SKILL.md", skill({ entete: { "disable-model-invocation": "true" } }));
+  ecrire(d, "agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  const r = lancer("mesurer", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^skill: resumer$/m);
+  assert.match(r.stdout, /^agent: relecteur$/m);
+  assert.match(r.stdout, new RegExp(`^descriptions-total: ${"Relire le code d'une tâche en lecture seule.".length} car$`, "m"), "seuls les textes chargés en permanence");
+  assert.match(r.stdout, /^skill-md: \d+ car · \d+ jetons estimés$/m);
+  assert.match(r.stdout, /^processus-fin: \d+ jetons estimés$/m);
+});
+
+test("injections : !pulse-aidd … mesurée, une autre commande « non mesurée »", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "injectee/SKILL.md", skill({ corps: `${CORPS}\n!\`pulse-aidd modele lexique.md\`\n\n!\`ls -la\`\n` }));
+  const r = lancer("mesurer", path.join(d, "injectee"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^injection: pulse-aidd modele lexique\.md [1-9]\d* car$/m);
+  assert.match(r.stdout, /^injection: ls -la non mesurée$/m);
+});
+
+test("chemin inexistant → code 1 et usage ; action inconnue → code 1", () => {
+  for (const action of ["mesurer", "verifier"]) {
+    const r = lancer(action, path.join(os.tmpdir(), "pulse-skill-inexistant", "rien"));
+    assert.strictEqual(r.status, 1, action);
+    assert.match(r.stdout, /introuvable/);
+    assert.match(r.stdout, /Usage : pulse-aidd skill/);
+  }
+  assert.strictEqual(lancer().status, 1);
+  assert.strictEqual(lancer("ranger", ".").status, 1);
+});
+
+test("fichier hors format (règle Cursor) → signalé, code 1", (t) => {
+  const d = dossierTemporaire(t);
+  const f = ecrire(d, "regle.mdc", "---\ndescription: x\n---\nTexte.\n");
+  const r = lancer("verifier", f);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /^hors-format: /m);
+});
+
+test("chemin sous plugins/cache/ → installe: oui en tête", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "plugins/cache/pulseia/outils/1.0.0/skills/resumer/SKILL.md", skill());
+  const r = lancer("verifier", path.join(d, "plugins", "cache", "pulseia", "outils", "1.0.0", "skills", "resumer"));
+  assert.strictEqual(r.stdout.split("\n")[0], "installe: oui");
+  ecrire(d, "projet/resumer/SKILL.md", skill());
+  assert.doesNotMatch(lancer("verifier", path.join(d, "projet", "resumer")).stdout, /installe:/);
+});
+
+test("pulse-aidd skill relaie vers scripts/skill.js", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "resumer/SKILL.md", skill());
+  const r = spawnSync("bash", ["bin/pulse-aidd", "skill", "mesurer", path.join(d, "resumer").split(path.sep).join("/")], { cwd: RACINE, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^skill: resumer$/m);
+  const aide = spawnSync("bash", ["bin/pulse-aidd"], { cwd: RACINE, encoding: "utf8" }).stdout;
+  assert.match(aide, /pulse-aidd skill mesurer\|verifier <chemin>/);
+  assert.match(aide, /pulse-aidd skill usage \[--depuis AAAA-MM-JJ\] \[--projets <dossier>\]/);
+});
+
+test("regles-skills.md : K1 à K14, chacune avec son niveau, sa gravité et un avant → après ; sous 12 000 caractères", () => {
+  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  assert.ok(texte.length < 12000, `${texte.length} caractères`);
+  const sections = texte.split(/^## (?=K\d+ )/m).slice(1);
+  assert.deepStrictEqual(sections.map((s) => s.match(/^K\d+/)[0]), Array.from({ length: 14 }, (_, i) => `K${i + 1}`));
+  for (const s of sections) {
+    const id = s.match(/^K\d+/)[0];
+    assert.match(s, /\b(Universelle|universelle|Convention|convention)\b/, `${id} : niveau`);
+    assert.match(s, /(bloquant|à corriger|conseil)/, `${id} : gravité`);
+    assert.match(s, /\b(script|jugement)\b/, `${id} : vérification`);
+    assert.match(s, /^- Avant → après : .+ → .+$/m, `${id} : exemple`);
+  }
+});
+
+// ---------------------------------------------------------------- pulse-aidd skill usage : l'historique des sessions
+
+const ligneJson = (o) => JSON.stringify(o);
+const commande = (nom, quand, enBlocs = false) => {
+  const texte = `<command-message>${nom} is running…</command-message>\n<command-name>/${nom}</command-name>\n<command-args>T3</command-args>`;
+  return ligneJson({ type: "user", timestamp: quand, message: { role: "user", content: enBlocs ? [{ type: "text", text: texte }] : texte } });
+};
+const appelSkill = (nom, quand) => ligneJson({ type: "assistant", timestamp: quand, message: { role: "assistant", content: [{ type: "text", text: "Je lance la skill." }, { type: "tool_use", id: "t1", name: "Skill", input: { skill: nom } }] } });
+
+const lancerAsync = (...args) =>
+  new Promise((resoudre) => {
+    const enfant = require("child_process").spawn(process.execPath, [SCRIPT, ...args]);
+    let stdout = "";
+    let stderr = "";
+    enfant.stdout.on("data", (d) => (stdout += d));
+    enfant.stderr.on("data", (d) => (stderr += d));
+    enfant.on("close", (status) => resoudre({ status, stdout, stderr }));
+  });
+
+test("usage : lancements par la personne et par le modèle, ligne cassée ignorée, période bornée", async (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "projets/p1/s1.jsonl", [
+    commande("pulse:review", "2026-10-20T10:00:00.000Z"),
+    "{ ceci n'est pas du JSON",
+    appelSkill("superpowers:brainstorming", "2026-10-20T11:00:00.000Z"),
+    commande("pulse:plan", "2019-03-01T10:00:00.000Z"), // avant --depuis : hors période
+    ligneJson({ type: "user", timestamp: "2026-10-20T12:00:00.000Z", message: { role: "user", content: "Parlons de /pulse:spec sans la lancer" } }),
+  ].join("\n") + "\n");
+  ecrire(d, "projets/p2/s2.jsonl", [appelSkill("superpowers:brainstorming", "2026-10-21T09:00:00.000Z"), commande("pulse:review", "2026-10-19T08:00:00.000Z", true)].join("\n"));
+  const vieux = ecrire(d, "projets/p2/vieux.jsonl", commande("pulse:review", "2019-06-01T10:00:00.000Z") + "\n");
+  fs.utimesSync(vieux, new Date("2019-06-01T10:00:00Z"), new Date("2019-06-01T10:00:00Z"));
+  const r = await lancerAsync("usage", "--depuis", "2020-01-01", "--projets", path.join(d, "projets"));
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^periode: 2020-01-01 → \d{4}-\d{2}-\d{2}$/m);
+  assert.match(r.stdout, /^fichiers-lus: 2$/m, "le fichier daté d'avant --depuis n'est pas lu");
+  assert.match(r.stdout, /^usage: pulse:review · personne 2 · modele 0 · dernier 2026-10-20$/m);
+  assert.match(r.stdout, /^usage: superpowers:brainstorming · personne 0 · modele 2 · dernier 2026-10-21$/m);
+  assert.doesNotMatch(r.stdout, /pulse:plan|pulse:spec/);
+  assert.strictEqual(r.stderr, "");
+});
+
+test("usage : historique absent → « historique: absent », code 0 ; date mal écrite → code 1", async (t) => {
+  const d = dossierTemporaire(t);
+  const absent = await lancerAsync("usage", "--projets", path.join(d, "rien"));
+  assert.strictEqual(absent.status, 0, absent.stderr);
+  assert.match(absent.stdout, /^historique: absent$/m);
+  const mauvaise = await lancerAsync("usage", "--depuis", "26/10/2026", "--projets", d);
+  assert.strictEqual(mauvaise.status, 1);
+  assert.match(mauvaise.stdout, /AAAA-MM-JJ/);
+});
+
+test("usage : période par défaut de 90 jours", async (t) => {
+  const d = dossierTemporaire(t);
+  fs.mkdirSync(path.join(d, "projets"));
+  const r = await lancerAsync("usage", "--projets", path.join(d, "projets"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  const [, du, au] = r.stdout.match(/^periode: (\S+) → (\S+)$/m);
+  assert.strictEqual(Math.round((new Date(au) - new Date(du)) / 86400000), 90);
+  assert.match(r.stdout, /^fichiers-lus: 0$/m);
+});
+
+// ---------------------------------------------------------------- Correctifs, tour 1
+
+test("lecture seule : une injection qui écrit (pulse-aidd installer-ci) n'est jamais lancée ; la taille mesurée ne dépend pas du dossier courant", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "skill/ecrit/SKILL.md", skill({ corps: `${CORPS}\n!\`pulse-aidd installer-ci\`\n\n!\`pulse-aidd travail-fini\`\n\n!\`pulse-aidd modele lexique.md\`\n` }));
+  const vide = path.join(d, "courant");
+  fs.mkdirSync(vide);
+  const r = spawnSync(process.execPath, [SCRIPT, "mesurer", path.join(d, "skill", "ecrit")], { cwd: vide, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^injection: pulse-aidd installer-ci non mesurée$/m);
+  assert.match(r.stdout, /^injection: pulse-aidd travail-fini non mesurée$/m);
+  assert.deepStrictEqual(fs.readdirSync(vide), [], "rien d'écrit dans le dossier courant");
+  assert.deepStrictEqual(fs.readdirSync(path.join(d, "skill", "ecrit")), ["SKILL.md"], "rien d'écrit à côté de la skill");
+  const taille = (cwd) => spawnSync(process.execPath, [SCRIPT, "mesurer", path.join(d, "skill", "ecrit")], { cwd, encoding: "utf8" }).stdout.match(/^injection: pulse-aidd modele lexique\.md (\d+) car$/m)[1];
+  ecrire(d, "avec-pack/docs/technical.md", "**Pack de pile Pulse** : next\n");
+  assert.strictEqual(taille(path.join(d, "avec-pack")), taille(vide));
+  const { injectionLisible } = require(SCRIPT);
+  for (const c of ["pulse-aidd contexte review", "pulse-aidd etape commit --sans-communes", "pulse-aidd reference git.md", "pulse-aidd modele us.md", "pulse-aidd agent reviewer", "pulse-aidd qualite clean-code", "pulse-aidd tests strategie", "pulse-aidd piles", "pulse-aidd pile contexte tech", "pulse-aidd pile reference fiche.md"])
+    assert.ok(injectionLisible(c), c);
+  for (const c of ["pulse-aidd installer-ci", "pulse-aidd preuve lancer", "pulse-aidd sonder https://exemple.fr", "pulse-aidd pile hebergeur envoyer X", "pulse-aidd pile recette connexion", "pulse-aidd secrets inventaire", "pulse-aidd contexte review; rm -rf x", "ls -la"])
+    assert.ok(!injectionLisible(c), c);
+});
+
+test("K5 : une ligne « # commentaire » dans un bloc de code ne ferme pas le Processus", (t) => {
+  const d = dossierTemporaire(t);
+  const corps = CORPS.replace("2. Écrire cinq points.", `2. Installer :\n\n\`\`\`bash\n# install deps\nnpm install\n## encore un commentaire\n\`\`\`\n\n${"Une étape longue du déroulé, détaillée pas à pas. ".repeat(500)}`);
+  ecrire(d, "code/SKILL.md", skill({ corps }));
+  assert.ok(mesurer(path.join(d, "code"))[0].processusFin > 5000);
+  assert.strictEqual(constats(verifier(path.join(d, "code")), "K5", "bloquant").length, 1);
+});
+
+test("K11 : verbes anglais hors contexte d'outil ignorés ; tools: \"*\" ; un motif de disallowedTools retire ce motif seul", (t) => {
+  const d = dossierTemporaire(t);
+  const k11 = (nom, entete, corps) => {
+    ecrire(d, `${nom}/agents/a.md`, AGENT(`${entete}model: sonnet\n`, corps));
+    return constats(verifier(path.join(d, nom)), "K11", "bloquant").map((c) => c.message.split(" ")[0]);
+  };
+  assert.deepStrictEqual(k11("anglais", "tools: Read, Grep, Glob\n", "Write a concise report of your findings. Edit nothing. Read the diff.\n"), []);
+  assert.deepStrictEqual(k11("etoile", 'tools: "*"\n', "Use `Write` and the Edit tool.\n"), []);
+  assert.deepStrictEqual(k11("motif", "disallowedTools: Bash(git push *)\n", "Lancer les tests avec `Bash`.\n"), []);
+  assert.deepStrictEqual(k11("outil-fr", "disallowedTools: Write\n", "Écrire le rapport avec l'outil Write.\n"), ["Write"]);
+  assert.deepStrictEqual(k11("tool-en", "tools: Read\n", "Save it with the Write tool, then call `Bash(git status)`.\n"), ["Write", "Bash"]);
+});
+
+test("liste des gestes sensibles et règle de correspondance : une seule source, partagée avec les tests de cohérence", (t) => {
+  const { SENSIBLES, couvre, estSensible } = require(SCRIPT);
+  for (const c of ["pulse-aidd ligne-etat --retirer", "pulse-aidd pile hebergeur redeployer production", "pulse-aidd copies --copier verifier scripts/verifier.js", "git checkout -- fichier", "git restore fichier", "git commit --amend", "pulse-aidd secrets generer NOM --envoyer production,preview", "pulse-aidd deplacer-commits feat/us-003-liste --principale main"])
+    assert.ok(SENSIBLES.includes(c), c);
+  for (const c of SENSIBLES.filter((x) => x.startsWith("pulse-aidd "))) assert.ok(estSensible(c), `estSensible : ${c}`);
+  assert.ok(couvre("git push:*", "git push origin main") && couvre("ls *", "ls") && !couvre("git commit -m *", "git commit --amend"));
+  for (const f of ["coherence.test.js", "autorisations.test.js"]) {
+    const source = fs.readFileSync(path.join(__dirname, f), "utf8");
+    assert.match(source, /require\([^)]*skill\.js/, `${f} : importe skill.js`);
+    assert.doesNotMatch(source, /^\s*(function couvre|const couvre =)/m, `${f} : plus de copie locale de couvre`);
+  }
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "coherence.test.js"), "utf8"), /^const SENSIBLES = \[/m);
+  const d = dossierTemporaire(t);
+  for (const motif of ["Bash(pulse-aidd ligne-etat --retirer)", "Bash(pulse-aidd pile hebergeur redeployer *)", "Bash(pulse-aidd copies --copier *)", "Bash(git checkout *)", "Bash(git restore *)", "Bash(git commit --amend *)"]) {
+    const nom = motif.replace(/\W+/g, "-");
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    assert.strictEqual(constats(verifier(path.join(d, nom)), "K4", "bloquant").length, 1, motif);
+  }
+});
+
+test("petits correctifs : Déroulé, « should be used when », Write et Edit(**) au même niveau, réglages de l'utilisateur", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "deroule/SKILL.md", skill({ corps: CORPS.replace("## Processus", "## Déroulé") }));
+  assert.ok(mesurer(path.join(d, "deroule"))[0].processusFin !== null, "## Déroulé reconnu");
+  ecrire(d, "should/SKILL.md", skill({ entete: { description: "Summarise a text file. This skill should be used when the user asks for a summary." } }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "should")), "K2"), []);
+  const k4 = (nom, motif) => {
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    return constats(verifier(path.join(d, nom)), "K4").map((c) => c.gravite);
+  };
+  assert.deepStrictEqual(k4("write-nu", "Read Write"), ["a-corriger"]);
+  assert.deepStrictEqual(k4("edit-tout", "Read Edit(**)"), ["a-corriger"]);
+  assert.deepStrictEqual(k4("reglages", "Write(~/.claude/settings.json)"), ["bloquant"]);
+  assert.deepStrictEqual(k4("reglages-projet", "Edit(.claude/**)"), ["bloquant"]);
+});
+
+test("dossier vide ou racine de projet sans skill → « aucune skill trouvée » ; racine avec .claude/skills → ses skills", (t) => {
+  const d = dossierTemporaire(t);
+  fs.mkdirSync(path.join(d, "vide"));
+  ecrire(d, "projet/src/index.js", "console.log(1);\n");
+  for (const cible of ["vide", "projet"])
+    for (const action of ["mesurer", "verifier"]) {
+      const r = lancer(action, path.join(d, cible));
+      assert.strictEqual(r.status, 0, `${cible} ${action}`);
+      assert.match(r.stdout, /aucune skill trouvée/, `${cible} ${action}`);
+    }
+  ecrire(d, "projet/.claude/skills/resumer/SKILL.md", skill());
+  assert.match(lancer("mesurer", path.join(d, "projet")).stdout, /^skill: resumer$/m);
+});
+
+test("en-tête : bloc |2- et commentaire en fin de valeur", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "indent/SKILL.md", `---\nname: indent\ndescription: |2-\n  Résume un fichier texte.\n   Use when asked.\nallowed-tools: Read # lecture seule\nmodel: "sonnet" # explicite\n---\n\n${CORPS}`);
+  const [m] = mesurer(path.join(d, "indent"));
+  assert.strictEqual(m.descriptionTexte, "Résume un fichier texte.\n Use when asked.", "indentation de 2 donnée par l'indicateur");
+  const { lireEntete } = require(SCRIPT);
+  const e = lireEntete(fs.readFileSync(path.join(d, "indent", "SKILL.md"), "utf8"));
+  assert.strictEqual(e.champs["allowed-tools"].valeur, "Read");
+  assert.strictEqual(e.champs.model.valeur, "sonnet");
+});
+
+test("K5 : la ligne de rechargement doit nommer cette skill (son SKILL.md ou son étape)", (t) => {
+  const d = dossierTemporaire(t);
+  const corps = (ligne) => CORPS.replace("## Processus", `${"Une phrase de contexte qui allonge la skill. ".repeat(450)}\n\n## Processus`).replace("- Garder les mots de l'auteur.", `- ${ligne}`);
+  ecrire(d, "moi/SKILL.md", skill({ corps: corps("Après une compaction, relire `.claude/skills/autre/SKILL.md`.") }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "moi")), "K5").filter((c) => /Processus à/.test(c.message)).map((c) => c.gravite), ["bloquant"]);
+});
+
+test("usage : historique des assistants signalé non lu ; CLAUDE_CONFIG_DIR respecté", async (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "config/projects/p1/s1.jsonl", commande("pulse:review", new Date().toISOString()) + "\n");
+  const r = await new Promise((resoudre) => {
+    const enfant = require("child_process").spawn(process.execPath, [SCRIPT, "usage"], { env: { ...process.env, CLAUDE_CONFIG_DIR: path.join(d, "config") } });
+    let stdout = "";
+    enfant.stdout.on("data", (x) => (stdout += x));
+    enfant.on("close", (status) => resoudre({ status, stdout }));
+  });
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /^usage: pulse:review · personne 1 · modele 0 · dernier /m);
+  assert.match(r.stdout, /historique des assistants non lu/);
+});
+
+test("regles-skills.md : K5 rappelle --sans-communes dans Pulse ; K11 sépare l'universel (outils) de la convention (model, liste Bash)", () => {
+  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const section = (id) => texte.split(/^## /m).find((s) => s.startsWith(`${id} `));
+  assert.match(section("K5"), /--sans-communes/);
+  const k11 = section("K11");
+  const corps = k11.split("\n").slice(2).join("\n"); // après la ligne de niveau
+  const convention = corps.slice(corps.search(/Convention|convention/));
+  assert.ok(corps.search(/Convention|convention/) > 0, "K11 : une partie convention dans le texte");
+  assert.match(convention, /`model`/);
+  assert.match(convention, /seulement pour/);
+});
+
+// ---------------------------------------------------------------- Correctifs du groupe B (audit-skill)
+
+test("K4 : lire l'historique des sessions (pulse-aidd skill usage) autorisé d'avance → bloquant, lecture hors du projet ; une seule source", (t) => {
+  const { estSensible } = require(SCRIPT);
+  assert.ok(estSensible("pulse-aidd skill usage") && estSensible("pulse-aidd skill usage --depuis 2026-01-01"), "skill usage passe par l'accord");
+  assert.ok(!estSensible("pulse-aidd skill mesurer X") && !estSensible("pulse-aidd skill verifier X") && !estSensible("pulse-aidd skill empreinte X"));
+  const d = dossierTemporaire(t);
+  for (const motif of ["Bash(pulse-aidd skill *)", "Bash(pulse-aidd skill usage*)", "Bash(pulse-aidd skill usage --depuis *)"]) {
+    const nom = motif.replace(/\W+/g, "-");
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    const k4 = constats(verifier(path.join(d, nom)), "K4", "bloquant");
+    assert.strictEqual(k4.length, 1, motif);
+    assert.match(k4[0].message, /hors du projet/, motif);
+  }
+  ecrire(d, "lecture/SKILL.md", skill({ entete: { "allowed-tools": "Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd skill empreinte *)" } }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "lecture")), "K4"), []);
+  // Les tests de cohérence et des autorisations lisent la règle dans skill.js, sans copie.
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "coherence.test.js"), "utf8"), /HORS_PROJET|horsProjet/);
+  const autorisations = fs.readFileSync(path.join(__dirname, "autorisations.test.js"), "utf8");
+  assert.match(autorisations, /estSensible/);
+  assert.doesNotMatch(autorisations, /const sensibles = \//);
+});
+
+test("aucune skill : dossier .claude avec ses réglages seulement → « skills: 0 (aucune skill trouvée …) », code 0, pour mesurer, verifier et empreinte", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, ".claude/settings.json", "{}\n");
+  for (const action of ["mesurer", "verifier", "empreinte"]) {
+    const r = lancer(action, path.join(d, ".claude"));
+    assert.strictEqual(r.status, 0, action);
+    assert.match(r.stdout, /^skills: 0 \(aucune skill trouvée dans /m, action);
+  }
+});
+
+test("mesurer sur un dossier de 200 skills : résumé sous 30 000 caractères, une ligne par skill, détail sur demande ; petit dossier : détail", (t) => {
+  const d = dossierTemporaire(t);
+  for (let i = 0; i < 200; i++) {
+    ecrire(d, `skills/s${i}/SKILL.md`, skill({ entete: { name: `s${i}` } }));
+    for (const r of ["a", "b", "c"]) ecrire(d, `skills/s${i}/references/${r}.md`, "Une règle.\n".repeat(20));
+  }
+  ecrire(d, "agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  const r = lancer("mesurer", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume /m);
+  assert.match(r.stdout, /^detail: pulse-aidd skill mesurer <chemin d'une skill>/m);
+  assert.strictEqual((r.stdout.match(/^skill: s\d+ · skills\/s\d+ · /gm) || []).length, 200);
+  assert.match(r.stdout, /^agent: relecteur · agents\/relecteur\.md · /m);
+  assert.match(r.stdout, /^descriptions-total: /m);
+  // 200 skills identiques : 19 900 paires qui se recoupent ; le résumé garde les plus longues et compte les autres.
+  assert.ok((r.stdout.match(/^recoupement: /gm) || []).length <= 50, "recoupements bornés");
+  assert.match(r.stdout, /^recoupements-autres: \d+$/m);
+  const petit = lancer("mesurer", path.join(d, "skills", "s1"));
+  assert.doesNotMatch(petit.stdout, /^mode: /m);
+  assert.match(petit.stdout, /^reference: references\/a\.md \d+ car$/m);
+});
+
+// Un très gros dossier : des noms longs, des skills qui se recoupent toutes, et une autorisation trop large.
+function grosDossier(t, nombre = 120) {
+  const d = dossierTemporaire(t);
+  const nom = (i) => `s${String(i).padStart(3, "0")}-${"n".repeat(110)}`;
+  for (let i = 0; i < nombre; i++) ecrire(d, `skills/${nom(i)}/SKILL.md`, skill({ entete: { name: nom(i), ...(i === nombre - 1 ? { "allowed-tools": "Bash(*)" } : {}) } }));
+  return { d, nom, nombre };
+}
+
+test("mesurer sur un très gros dossier : le résumé lui-même reste sous 30 000 caractères (unites-autres), --detail donne tout", (t) => {
+  const { d, nombre } = grosDossier(t);
+  const r = lancer("mesurer", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume /m);
+  const listees = (r.stdout.match(/^skill: /gm) || []).length;
+  assert.ok(listees > 0 && listees < nombre, `${listees} skills listées`);
+  assert.match(r.stdout, new RegExp(`^unites-autres: ${nombre - listees} `, "m"));
+  assert.match(r.stdout, /^descriptions-total: /m, "les lignes du dossier restent");
+  assert.match(r.stdout, /--detail/);
+  const tout = lancer("mesurer", d, "--detail");
+  assert.strictEqual(tout.status, 0, tout.stderr);
+  assert.doesNotMatch(tout.stdout, /^mode: /m);
+  assert.strictEqual((tout.stdout.match(/^skill: /gm) || []).length, nombre);
+  assert.ok(tout.stdout.length > 30000);
+});
+
+test("verifier sur un très gros dossier : résumé sous 30 000 caractères (bloquants d'abord, compte par règle, constats-autres), même code ; --detail donne tout", (t) => {
+  const { d, nom, nombre } = grosDossier(t);
+  const r = lancer("verifier", d);
+  assert.strictEqual(r.status, 1, "un bloquant : code 1, comme sans résumé");
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume \(\d+ constats ; /m);
+  assert.match(r.stdout, /--detail/);
+  assert.match(r.stdout, /^regle: K4 · 1 bloquants · 0 à corriger · 0 conseils$/m);
+  assert.match(r.stdout, /^regle: K8 · 0 bloquants · \d+ à corriger · 0 conseils$/m);
+  const lignes = r.stdout.split("\n");
+  const premier = lignes.findIndex((l) => /^K\d+ · /.test(l));
+  assert.match(lignes[premier], new RegExp(`^K4 · bloquant · .*${nom(nombre - 1)}/SKILL\\.md:`), "le bloquant vient en premier");
+  assert.match(r.stdout, /^constats-autres: \d+ /m);
+  assert.match(lignes.at(-2), /^bilan: 1 bloquants · \d+ à corriger · \d+ conseils$/);
+  const tout = lancer("verifier", d, "--detail");
+  assert.strictEqual(tout.status, 1);
+  assert.doesNotMatch(tout.stdout, /^(mode|constats-autres): /m);
+  assert.strictEqual((tout.stdout.match(/^K8 · /gm) || []).length, (nombre * (nombre - 1)) / 2);
+  // Un petit dossier : le détail, sans résumé.
+  assert.doesNotMatch(lancer("verifier", path.join(d, "skills", nom(0))).stdout, /^mode: /m);
+  assert.strictEqual(lancer("verifier", d, "--inconnu").status, 1, "option inconnue : usage");
+});
+
+test("empreinte sur un très gros dossier : résumé sous 30 000 caractères, skill par skill (ses empreintes et son suivi-git), unites-autres ; --detail donne tout", (t) => {
+  const { d, nombre } = grosDossier(t);
+  const r = lancer("empreinte", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume /m);
+  assert.match(r.stdout, /--detail/);
+  const empreintes = (r.stdout.match(/^empreinte: /gm) || []).length;
+  const suivis = (r.stdout.match(/^suivi-git: /gm) || []).length;
+  assert.ok(suivis > 0 && suivis < nombre, `${suivis} skills listées`);
+  assert.strictEqual(empreintes, suivis, "chaque skill listée a toutes ses lignes : ses empreintes et son suivi-git");
+  assert.match(r.stdout, new RegExp(`^unites-autres: ${nombre - suivis} `, "m"));
+  const tout = lancer("empreinte", d, "--detail");
+  assert.strictEqual(tout.status, 0, tout.stderr);
+  assert.doesNotMatch(tout.stdout, /^mode: /m);
+  assert.strictEqual((tout.stdout.match(/^suivi-git: /gm) || []).length, nombre);
+  assert.ok(tout.stdout.length > 30000);
+});
+
+test("regles-skills.md, K7 : sortie de commande (fichier enregistré, aperçu), outil Read (2 000 lignes, ~25 000 jetons), injection, commandes citées", () => {
+  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const k7 = texte.split(/^## /m).find((s) => s.startsWith("K7 "));
+  for (const attendu of [/aperçu/, /fichier enregistré/, /à corriger/, /outil Read/, /2 000 lignes/, /25 000 jetons/, /injection/, /citée/, /jugement/, /lu par le script seul/])
+    assert.match(k7, attendu, `K7 : ${attendu}`);
+  const bloquants = texte.match(/^- \*\*Bloquant\*\*[^\n]*/m)[0];
+  assert.match(bloquants, /fichier enregistré[^;]*\(K7\)|\(K7\)/);
+  assert.match(bloquants, /outil Read/, "la liste des bloquants suit K7");
+});
+
+test("empreinte : chaque fichier d'une skill ou d'un agent, son empreinte (celle de git hash-object), sa taille et sa date ; sans Git", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "skills/resumer/SKILL.md", skill());
+  ecrire(d, "skills/resumer/references/a.md", "hi\n");
+  ecrire(d, "skills/resumer/scripts/compter.js", "console.log(1);\n");
+  ecrire(d, "agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  const r = lancer("empreinte", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^empreinte: skills\/resumer\/references\/a\.md · 45b983be36b73c0788dc9cbcb76cbb80fc7bb057 · 3 octets · \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/m);
+  for (const f of ["skills/resumer/SKILL.md", "skills/resumer/scripts/compter.js", "agents/relecteur.md"]) assert.match(r.stdout, new RegExp(`^empreinte: ${f.replace(/\./g, "\\.")} · [0-9a-f]{40} · \\d+ octets · `, "m"), f);
+  // Même taille, autre contenu : l'empreinte change.
+  ecrire(d, "skills/resumer/references/a.md", "ho\n");
+  assert.doesNotMatch(lancer("empreinte", path.join(d, "skills", "resumer")).stdout, /45b983be36b73c0788dc9cbcb76cbb80fc7bb057/);
+  assert.match(lancer("empreinte", path.join(d, "skills", "resumer")).stdout, /^empreinte: references\/a\.md · [0-9a-f]{40} · 3 octets · /m);
+  const absent = lancer("empreinte", path.join(d, "rien"));
+  assert.strictEqual(absent.status, 1);
+  assert.match(absent.stdout, /^introuvable: /m);
+});
+
+test("empreinte : « suivi-git: oui|non|ignore » par skill ou agent (git ls-files, puis git check-ignore), en lecture seule", (t) => {
+  const d = dossierTemporaire(t);
+  // Hors de tout dépôt : non.
+  ecrire(d, "hors/.claude/skills/resumer/SKILL.md", skill());
+  assert.match(lancer("empreinte", path.join(d, "hors", ".claude", "skills", "resumer")).stdout, /^suivi-git: non · SKILL\.md$/m);
+  const projet = path.join(d, "projet");
+  fs.mkdirSync(projet);
+  assert.strictEqual(spawnSync("git", ["init", "-q"], { cwd: projet }).status, 0, "git init");
+  ecrire(projet, ".claude/skills/suivie/SKILL.md", skill());
+  ecrire(projet, ".claude/skills/nouvelle/SKILL.md", skill());
+  ecrire(projet, ".claude/agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  ecrire(projet, "plugin/skills/ignoree/SKILL.md", skill());
+  ecrire(projet, ".gitignore", "plugin/\n");
+  assert.strictEqual(spawnSync("git", ["add", ".claude/skills/suivie/SKILL.md", ".gitignore"], { cwd: projet }).status, 0, "git add");
+  const avant = spawnSync("git", ["status", "--porcelain"], { cwd: projet, encoding: "utf8" }).stdout;
+  const r = lancer("empreinte", path.join(projet, ".claude"));
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^suivi-git: oui · skills\/suivie\/SKILL\.md$/m, "suivie par Git");
+  assert.match(r.stdout, /^suivi-git: non · skills\/nouvelle\/SKILL\.md$/m, "pas encore suivie");
+  assert.match(r.stdout, /^suivi-git: non · agents\/relecteur\.md$/m, "agent non suivi");
+  assert.match(lancer("empreinte", path.join(projet, "plugin", "skills", "ignoree")).stdout, /^suivi-git: ignore · SKILL\.md$/m, "ignorée par Git");
+  // Lecture seule : l'index et l'arbre de travail restent tels quels.
+  assert.strictEqual(spawnSync("git", ["status", "--porcelain"], { cwd: projet, encoding: "utf8" }).stdout, avant);
+});

@@ -15,7 +15,7 @@ Le **déploiement continu (CD)**, la mise en ligne automatique à chaque envoi, 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte cicd` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte cicd` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -108,4 +108,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:deploy` si 
 
 !`pulse-aidd contexte cicd`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte cicd` et lire sa sortie en entier, fichier enregistré compris.

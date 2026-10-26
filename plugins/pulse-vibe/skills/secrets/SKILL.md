@@ -13,7 +13,7 @@ Tenir l'inventaire des secrets du projet dans `docs/secrets.md`, sans aucune val
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte secrets` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte secrets` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ### Principe
 
@@ -85,4 +85,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : après `inventaire`
 
 !`pulse-aidd contexte secrets`
 
-Ce contexte contient aussi « Garder la valeur d'un secret hors de la conversation », « Modèle : docs/secrets.md » et « Modèle : docs/lexique.md » ; la branche fuite lance `pulse-aidd reference secrets/fuite.md` et `pulse-aidd modele secrets/incident.md` à son premier geste. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie.
+Ce contexte contient aussi « Garder la valeur d'un secret hors de la conversation », « Modèle : docs/secrets.md » et « Modèle : docs/lexique.md » ; la branche fuite lance `pulse-aidd reference secrets/fuite.md` et `pulse-aidd modele secrets/incident.md` à son premier geste. Si ce contexte est absent, lancer `pulse-aidd contexte secrets` et lire sa sortie en entier, fichier enregistré compris.

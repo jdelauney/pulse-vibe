@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="audit-skill">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:audit-skill – Wiki Pulse</title>
+<meta name="description" content="Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier.">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:audit-skill</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code> qui lui dit comment faire un travail. <code>/pulse:audit-skill</code> relit une skill, toutes celles d'un dossier, ou celles d'un plugin, et vous dit ce qui peut être mieux écrit.</p>
+<p>Pulse s'appuie sur 14 règles, tirées du travail qui a allégé Pulse lui-même. Un programme fait d'abord les mesures : la taille de chaque fichier, les autorisations données d'avance, la longueur de la description (la phrase qui dit à Claude quand utiliser la skill). Puis un assistant juge le reste : doublons, utilité, questions gardées, mots adaptés à qui lira. Pour un grand dossier, plusieurs assistants se partagent les skills, cinq chacun, en même temps.</p>
+<p>Le résultat est un rapport, rangé du plus grave au plus léger. Vos skills restent telles quelles : pour appliquer les corrections, c'est <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Moins de texte chargé à chaque usage.</strong> Le rapport chiffre ce que chaque correction ferait gagner.</li>
+<li><strong>Des autorisations sans surprise.</strong> Une skill qui autoriserait d'avance un geste risqué (supprimer, envoyer) est signalée en premier.</li>
+<li><strong>Des skills qui servent.</strong> Avec votre accord, Pulse compte combien de fois chaque skill a été lancée ces 90 derniers jours.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Vous avez écrit ou récupéré des skills</strong> et vous voulez savoir si elles sont bien faites.</li>
+<li><strong>Claude Code vous semble lent ou distrait</strong> quand vos skills sont chargées.</li>
+<li><strong>Avant de partager un plugin</strong> avec d'autres personnes.</li>
+</ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> lancez l'audit avant <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>. Le rapport du jour d'une skill seule (<code>/pulse:audit-skill &lt;chemin de la skill&gt;</code>) est repris tel quel si elle n'a pas changé entre-temps.</p></aside>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:audit-skill [chemin d'une skill, d'un dossier de skills ou d'un plugin]</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Par défaut : les skills et agents du projet, .claude/.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Rien</strong> : les skills et les assistants de votre projet, dans <code>.claude/</code>. Pulse vous propose d'ajouter vos skills personnelles, avec leur propre rapport. Un projet sans skill vous est signalé, sans rapport.</li>
+<li><strong>Le chemin d'une skill</strong> : cette skill seule.</li>
+<li><strong>Le chemin d'un dossier ou d'un plugin</strong> : toutes ses skills et ses assistants.</li>
+</ul>
+<pre class="commande"><code>/pulse:audit-skill .claude/skills/rediger-devis</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td><code>docs/audits-skills/&lt;nom&gt;-&lt;date&gt;.md</code></td><td>Le rapport, un par ensemble audité (votre projet, vos skills personnelles, un plugin) : les mesures, un avis par règle, les points à corriger rangés du plus grave au plus léger, et le gain estimé.</td></tr>
+</tbody>
+</table>
+<p>Les points sont de trois sortes : <strong>bloquant</strong> (à corriger d'abord : un geste risqué autorisé d'avance, une lecture trop longue pour être lue en entier, une description absente), <strong>à corriger</strong>, et <strong>conseil</strong>.</p>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>Vos skills restent telles quelles.</strong> Seul le rapport est écrit, dans <code>docs/audits-skills/</code>.</li>
+<li><strong>L'historique de vos conversations</strong> est lu seulement si vous le demandez, sur votre ordinateur. Rien n'est envoyé ailleurs.</li>
+<li><strong>Une skill jamais lancée</strong> est signalée, jamais supprimée.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>Pulse dit que le chemin n'existe pas</summary><p>Vérifiez le chemin du dossier de la skill, puis relancez la commande avec le bon chemin.</p></details>
+<details class="probleme"><summary>Pulse dit qu'il n'a trouvé aucune skill</summary><p>Votre projet n'a pas encore de skill dans <code>.claude/skills/</code>. Pulse vous propose d'auditer vos skills personnelles, un autre chemin, ou d'en créer une avec <a href="skill-creator.html"><code>/pulse:skill-creator</code></a>.</p></details>
+<details class="probleme"><summary>Pulse dit que ce n'est pas une skill Claude Code</summary><p>La commande lit les skills au format de Claude Code : un dossier avec un fichier <code>SKILL.md</code>. Les règles d'autres outils ne sont pas lues.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : auditer les skills du projet">
+<p data-role="vous">/pulse:audit-skill</p>
+<p data-role="claude">J'ai relu vos 3 skills. 1 point bloquant : la skill « publier » autorise d'avance l'envoi sur le dépôt en ligne. 2 points à corriger, 1 conseil. Si tout est corrigé, chaque lancement chargerait environ 4 000 caractères de moins. Le rapport est dans docs/audits-skills/skills-projet-2026-10-26.md.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a> : appliquer les corrections d'une skill, avec un plan à valider.</li>
+<li><a href="skill-creator.html"><code>/pulse:skill-creator</code></a> : créer une skill qui suit ces règles dès le départ.</li>
+<li><a href="get-help.html"><code>/pulse:get-help</code></a> : demander de l'aide si une skill vous bloque.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>

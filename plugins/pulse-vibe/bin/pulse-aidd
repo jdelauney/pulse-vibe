@@ -7,7 +7,7 @@
 #   pulse-aidd etape <commande> [--sans-communes]   idem, précédé des instructions de la commande ; --sans-communes : sans les règles communes ni leurs modules, déjà chargés par la commande qui enchaîne l'étape
 #   pulse-aidd etape <commande> --sans-noyau   idem, sans le noyau des règles communes, déjà chargé ; garde les modules de l'étape (tâches, relecture, réalisation)
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/, ou d'une skill : <skill>/<fichier> (skills/<skill>/assets/)
-#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
+#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor, skill-auditor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
 #   pulse-aidd qualite <famille…> [--tout] [--checklists]  affiche les familles nommées des règles de qualité du code (clean-code, organisation, composants, securite) ; sans nom : la règle de choix ; --tout : toutes ; --checklists : leurs checklists seules
 #   pulse-aidd tests <morceau…> [--tout] [--checklists]  affiche les morceaux nommés de la méthode de tests (strategie, ecrire, unitaire, integration, bout-en-bout, tdd, gherkin) ; sans nom : le sommaire ; --tout : toute ; --checklists : leurs listes de contrôle seules
@@ -36,6 +36,9 @@
 #   pulse-aidd attente <mettre-de-cote <Tn> -- <fichier…> | remettre <Tn> | liste>  met de côté le travail d'une tâche qui attend une réponse, le remet en place ensuite, ou liste les tâches en attente (/pulse:spirc, mode autonome)
 #   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
+#   pulse-aidd skill mesurer|verifier <chemin>  mesure une skill Claude Code, un agent ou un dossier de skills (tailles, jetons estimés, fin du Processus, références, injections et commandes pulse-aidd d'affichage citées, recoupements), ou contrôle ses règles vérifiables par script (K1 à K14 de references/skills/regles-skills.md : une ligne par constat, code 1 si un constat bloque), en lecture seule ; au-delà de 30 000 caractères, mesurer et verifier donnent un résumé (mode: resume) qui reste sous cette limite ; --detail après le chemin donne tout
+#   pulse-aidd skill empreinte <chemin>  l'empreinte (celle de git hash-object, sans Git), la taille et la date de chaque fichier d'une skill ou d'un agent, puis suivi-git: oui|non|ignore (enregistrée par Git, pas encore, ou exclue) ; au-delà de 30 000 caractères, un résumé skill par skill (mode: resume) ; --detail après le chemin donne tout
+#   pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]  compte, par skill, les lancements par la personne et par le modèle dans l'historique des sessions de Claude Code (par défaut ~/.claude/projects, 90 derniers jours), sans rien envoyer ailleurs ; toujours après l'accord de la personne
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
@@ -333,6 +336,7 @@ contexte() { # contexte <commande> [--sans-communes | --sans-noyau]
     guide) afficher "Le cycle Pulse" "$REF/cycle.md" ;; # les fichiers du projet : pulse-aidd reference fichiers-projet.md
     status) ;; # le cycle Pulse : dans le contexte de /pulse:guide ; le tableau vient de pulse-aidd etat --tableau
     auto-fix) ;;
+    audit-skill|skill-creator|optimize-skill) afficher "Règles des skills" "$REF/skills/regles-skills.md" ;; # les règles K1 à K14, aussi lues en entier par skill-auditor
     *) ;; # commande du cœur sans référence propre : les règles communes suffisent
   esac
   # review, spirc, auto-fix, implement : les agents qui relisent ou codent chargent eux-mêmes les consignes du pack (pulse-aidd pile contexte <commande>) ; la conversation principale orchestre.
@@ -360,7 +364,7 @@ case "$1" in
   modele)
     if nom_sur "$2" && chemin="$(trouver assets "$2")"; then cat "$chemin"; else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
   agent)
-    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
+    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor, skill-auditor)"; exit 1; fi ;;
   qualite) shift; qualite "$@"; exit $? ;;
   tests) shift; tests "$@"; exit $? ;;
   reference)
@@ -395,6 +399,8 @@ case "$1" in
     shift; exec node "$RACINE/skills/annuler/scripts/annuler.js" "$@" ;;
   deplacer-commits)
     shift; exec node "$RACINE/scripts/deplacer-commits.js" "$@" ;;
+  skill)
+    shift; exec node "$RACINE/scripts/skill.js" "$@" ;;
   verifier)
     case "${2:-}" in
       --index) exec node "$TPL/verifier.js" --index ;;

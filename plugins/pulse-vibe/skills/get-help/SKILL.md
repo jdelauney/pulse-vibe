@@ -13,7 +13,7 @@ Quand Pulse n'arrive pas à débloquer une situation, préparer une **demande d'
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte get-help` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte get-help` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Cette commande écrit seulement la fiche `docs/aide/demande-<AAAA-MM-JJ>-<sujet>.md`. Elle ne publie rien : c'est la personne qui choisit où l'envoyer.
 
@@ -72,4 +72,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : une fois la répons
 
 !`pulse-aidd contexte get-help`
 
-Ce contexte contient aussi « Modèle : demande d'aide » ; la réaction à une fuite (`pulse-aidd reference secrets/fuite.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie.
+Ce contexte contient aussi « Modèle : demande d'aide » ; la réaction à une fuite (`pulse-aidd reference secrets/fuite.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte get-help` et lire sa sortie en entier, fichier enregistré compris.

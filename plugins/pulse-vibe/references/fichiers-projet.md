@@ -25,6 +25,9 @@ Dans le projet de la personne, ce que produit chaque commande :
 | `docs/voix.md` | `/pulse:rediger` | La voix du site : vous ou tu, ton, promesse, mots à employer et à éviter, exemples. Lue avant chaque texte |
 | `docs/textes/<page>.md` | `/pulse:rediger` | Le texte d'une page, validé : fiche (objectif, public, action attendue, faits), texte entre `<!-- texte -->` et `<!-- /texte -->`, résultat du contrôle des tics d'écriture IA |
 | `docs/seo/audits/` | `/pulse:seo audit` | Les audits de référencement : `seo-<AAAA-MM-JJ>.md` |
+| `docs/audits-skills/<nom>-<AAAA-MM-JJ>.md` | `/pulse:audit-skill`, `/pulse:optimize-skill` | L'audit des skills (une skill, un dossier ou un plugin) selon les règles K1 à K14 ; pour une optimisation, son plan et son bilan avant / après |
+| `docs/audits-skills/sauvegardes/<nom>-<AAAA-MM-JJ>/` | `/pulse:optimize-skill` | La skill d'avant l'optimisation, fichiers sous leur nom d'origine, sans les fichiers binaires (images, polices). À supprimer quand le résultat convient, avant `/pulse:commit` ; une skill personnelle se sauvegarde dans `~/.claude/skills-sauvegardes/` |
+| `.claude/skills/<nom>/` | `/pulse:skill-creator`, `/pulse:optimize-skill` | Une skill du projet : son `SKILL.md`, et au besoin `references/`, `assets/`, `scripts/` |
 | `docs/referencement/search-console-<AAAA-MM-JJ>.md` | `/pulse:search-console` | Ce que Google voit du site sur une période : chiffres, requêtes à potentiel, pages sans impression, 3 actions ; `docs/referencement/donnees/<AAAA-MM-JJ>.json` garde l'instantané qui sert à la comparaison suivante |
 | `docs/performance.md`, `docs/performance/mesures/` | `/pulse:perf` | La vitesse du site : pages suivies, dernière mesure (simulation) et vrais visiteurs, priorités, budget, historique ; chaque mesure détaillée dans un fichier JSON daté |
 | `docs/aide/demande-<AAAA-MM-JJ>-<sujet>.md` | `/pulse:get-help` | Une demande d'aide prête à transmettre, sans secret |

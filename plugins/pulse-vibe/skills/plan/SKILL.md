@@ -13,7 +13,7 @@ Produire `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`, à côté de la spe
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte plan` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte plan` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ### Règles de découpage
 
@@ -69,4 +69,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape recommandée : `/puls
 
 !`pulse-aidd contexte plan`
 
-Ce contexte contient aussi « Règles de découpage du plan », « Checklist sécurité », « Stratégie de tests », « Motifs d'écrans » et « Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md ». Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie.
+Ce contexte contient aussi « Règles de découpage du plan », « Checklist sécurité », « Stratégie de tests », « Motifs d'écrans » et « Modèle : aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md ». Si ce contexte est absent, lancer `pulse-aidd contexte plan` et lire sa sortie en entier, fichier enregistré compris.

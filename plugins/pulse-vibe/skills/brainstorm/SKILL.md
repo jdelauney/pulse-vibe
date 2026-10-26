@@ -19,7 +19,7 @@ On parle du **métier** : la technique (base de données, framework, écrans dé
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte brainstorm` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte brainstorm` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ### Les principes de l'entretien
 
@@ -121,4 +121,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:prd`, pour 
 
 !`pulse-aidd contexte brainstorm`
 
-Ce contexte contient aussi « Penser avant d'écrire », « Règles de la mémoire projet », « Modèle : docs/brief.md », « Modèle : aidd_docs/memory/glossary.md » et « Modèle : décision (ADR) » ; la référence des documents de départ (`pulse-aidd reference documents-depart.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire », « Règles de la mémoire projet », « Modèle : docs/brief.md », « Modèle : aidd_docs/memory/glossary.md » et « Modèle : décision (ADR) » ; la référence des documents de départ (`pulse-aidd reference documents-depart.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte brainstorm` et lire sa sortie en entier, fichier enregistré compris.

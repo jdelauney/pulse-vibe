@@ -87,7 +87,10 @@ window.PULSE_WIKI = {
         "fix",
         "annuler",
         "get-help",
-        "memory"
+        "memory",
+        "skill-creator",
+        "audit-skill",
+        "optimize-skill"
       ]
     }
   ],
@@ -124,6 +127,13 @@ window.PULSE_WIKI = {
       "description": "Revenir en arrière sans rien perdre - abandonner les changements en cours, annuler une tâche enregistrée, revenir à une version précédente, ou récupérer ce qui a été annulé ; aperçu et accord avant toute opération",
       "forme": "[T3 | US-003]",
       "note": "facultatif : la tâche ou l'US à annuler"
+    },
+    {
+      "nom": "audit-skill",
+      "etape": "toujours",
+      "description": "Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier",
+      "forme": "[chemin d'une skill, d'un dossier de skills ou d'un plugin]",
+      "note": "par défaut : les skills et agents du projet, .claude/"
     },
     {
       "nom": "auto-fix",
@@ -224,6 +234,13 @@ window.PULSE_WIKI = {
       "note": ""
     },
     {
+      "nom": "optimize-skill",
+      "etape": "toujours",
+      "description": "Optimiser une skill Claude Code (moins de texte chargé) en gardant sa qualité, avec un plan à valider et une relecture avant / après",
+      "forme": "<chemin d'une skill>",
+      "note": "vide : la question vous le demande"
+    },
+    {
       "nom": "perf",
       "etape": "visible",
       "description": "Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique",
@@ -299,6 +316,13 @@ window.PULSE_WIKI = {
       "description": "Être trouvé sur Google et par les assistants IA - audit du site servi, fondations (adresse, titres, sitemap, robots, carte de partage), textes choisis par vous, politique des robots IA, lancement (Search Console, Bing)",
       "forme": "[audit | bases | textes [page] | ia | lancer]",
       "note": "par défaut : audit"
+    },
+    {
+      "nom": "skill-creator",
+      "etape": "toujours",
+      "description": "Créer une skill Claude Code qui respecte les règles d'optimisation, après quelques questions sur son travail",
+      "forme": "[ce que la skill doit faire]",
+      "note": "vide : la première question vous le demande"
     },
     {
       "nom": "spec",
