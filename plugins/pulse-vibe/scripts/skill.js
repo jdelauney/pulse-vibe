@@ -6,7 +6,9 @@
 //   pulse-aidd skill mesurer <chemin>    lignes « clé: valeur » par skill : skill, chemin, skill-md, frontmatter,
 //                                        description, processus-fin (jetons estimés, dans le corps du SKILL.md, sans
 //                                        l'en-tête ; ou « absent »), reference (une par fichier de references/ et assets/),
-//                                        injection (!`pulse-aidd …` lancée et mesurée ; une autre : « non mesurée »),
+//                                        injection (!`pulse-aidd …` d'affichage seulement : contexte, etape, reference,
+//                                        modele, agent, qualite, tests, piles, pile contexte|reference, lancée dans un
+//                                        dossier temporaire vide ; toute autre : « non mesurée »),
 //                                        au-dela-30000 ; par agent : agent, chemin, agent-md, description.
 //                                        Sur un dossier : puis descriptions-total (les textes chargés en permanence :
 //                                        skills invocables par le modèle et agents) et recoupement: <a> <b> <n> lignes.
@@ -89,11 +91,15 @@ function lireEntete(texte) {
     const debut = i;
     const suite = [];
     i++;
-    while (i < fin && (/^\s+\S/.test(lignes[i]) || (brut === "" && /^-\s/.test(lignes[i])) || (/^\s*$/.test(lignes[i]) && /^[>|]/.test(brut)))) suite.push(lignes[i++]);
-    const v = brut.trim();
+    while (i < fin && (/^\s+\S/.test(lignes[i]) || (brut === "" && /^-\s/.test(lignes[i])) || (/^\s*$/.test(lignes[i]) && /^[>|]/.test(brut.trim())))) suite.push(lignes[i++]);
+    // Un commentaire en fin de valeur (« valeur # note », « "valeur" # note ») n'en fait pas partie.
+    const cite = /^("(?:[^"\\]|\\.)*"|'(?:[^']|'')*')\s*(?:#.*)?$/.exec(brut.trim());
+    const v = cite ? cite[1] : brut.trim().replace(/(^|\s+)#.*$/, "");
+    const bloc = /^([>|])([1-9]?)[+-]?([1-9]?)$/.exec(v);
     let valeur;
-    if (/^[>|][+-]?$/.test(v)) {
-      const marge = Math.min(...suite.filter((l) => l.trim()).map((l) => l.match(/^\s*/)[0].length));
+    if (bloc) {
+      const indicateur = Number(bloc[2] || bloc[3]);
+      const marge = indicateur || Math.min(...suite.filter((l) => l.trim()).map((l) => l.match(/^\s*/)[0].length));
       const texteBloc = suite.map((l) => l.slice(marge)).join("\n").trim();
       valeur = v.startsWith(">") ? texteBloc.replace(/([^\n])\n(?!\n)/g, "$1 ") : texteBloc;
     } else if (v === "" && suite.length && suite.every((l) => /^\s*-\s/.test(l) || !l.trim())) {
@@ -155,19 +161,35 @@ function localiser(chemin) {
   const skillsDe = (d) => sousDossiers(d).map((n) => path.join(d, n, "SKILL.md")).filter((f) => fs.existsSync(f)).map((f) => unite("skill", f));
   const agentsDe = (d) => (fs.existsSync(d) ? fs.readdirSync(d).filter((f) => f.endsWith(".md")).sort().map((f) => unite("agent", path.join(d, f))) : []);
   if (path.basename(cible) === "agents") return { unites: agentsDe(cible), collection: true, cible };
-  const unites = fs.existsSync(path.join(cible, "skills")) || fs.existsSync(path.join(cible, "agents")) ? [...skillsDe(path.join(cible, "skills")), ...agentsDe(path.join(cible, "agents"))] : skillsDe(cible);
+  const avecSkills = (d) => fs.existsSync(path.join(d, "skills")) || fs.existsSync(path.join(d, "agents"));
+  // La racine d'un projet : ses skills et ses agents sont dans .claude/.
+  const racine = !avecSkills(cible) && avecSkills(path.join(cible, ".claude")) ? path.join(cible, ".claude") : cible;
+  const unites = avecSkills(racine) ? [...skillsDe(path.join(racine, "skills")), ...agentsDe(path.join(racine, "agents"))] : skillsDe(racine);
   return { unites, collection: true, cible };
 }
 
 // ---------------------------------------------------------------- Mesures
 
+// Les seules sous-commandes de pulse-aidd lancées pour mesurer une injection : elles affichent un texte et n'écrivent rien.
+const LISIBLES = /^pulse-aidd (contexte|etape|reference|modele|agent|qualite|tests|piles|pile (contexte|reference))(\s|$)/;
+/** Vrai pour une injection que `mesurer` peut lancer sans rien changer : une sous-commande d'affichage, sans signe du shell. */
+const injectionLisible = (commande) => LISIBLES.test(commande) && !/[;&|<>$`\\(){}]/.test(commande);
+
 const injectionsMesurees = new Map();
-/** Lance une injection `pulse-aidd …` (lecture seule) et rend la taille de sa sortie ; null pour une autre commande. */
+/**
+ * La taille de la sortie d'une injection `pulse-aidd …` d'affichage, lancée dans un dossier temporaire vide (retiré
+ * ensuite) : rien n'est écrit dans le projet, et la taille ne dépend pas du dossier courant. null pour toute autre commande.
+ */
 function mesurerInjection(commande) {
-  if (!/^pulse-aidd(\s|$)/.test(commande)) return null;
+  if (!injectionLisible(commande)) return null;
   if (!injectionsMesurees.has(commande)) {
-    const r = spawnSync("bash", [unix(PULSE_AIDD), ...commande.split(/\s+/).slice(1)], { cwd: process.cwd(), encoding: "utf8", timeout: 60000 });
-    injectionsMesurees.set(commande, r.error || r.stdout === undefined ? null : r.stdout.replace(/\r\n?/g, "\n").length);
+    const vide = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-skill-mesure-"));
+    try {
+      const r = spawnSync("bash", [unix(PULSE_AIDD), ...commande.split(/\s+/).slice(1)], { cwd: vide, encoding: "utf8", timeout: 60000 });
+      injectionsMesurees.set(commande, r.error || r.stdout === undefined ? null : r.stdout.replace(/\r\n?/g, "\n").length);
+    } finally {
+      fs.rmSync(vide, { recursive: true, force: true });
+    }
   }
   return injectionsMesurees.get(commande);
 }
@@ -178,17 +200,30 @@ const fichiersDe = (d) => {
 };
 const estBinaire = (fichier) => fs.readFileSync(fichier).subarray(0, 8000).includes(0);
 
-const SECTION_PROCESSUS = /^(#{1,3})\s+(Processus|Process|Workflow|Déroulé|Procédure|Procedure|Étapes|Steps)\b/i;
+const SECTION_PROCESSUS = /^(#{1,3})\s+(Processus|Process|Workflow|Déroulé|Procédure|Procedure|Étapes|Steps)(?![\p{L}\p{N}_])/iu;
+
+/** Les titres d'un texte, hors blocs de code (une ligne « # commentaire » d'un bloc bash n'est pas un titre). */
+function titresHorsCode(lignes) {
+  let bloc = false;
+  return lignes.map((l) => {
+    if (/^\s*```/.test(l)) {
+      bloc = !bloc;
+      return null;
+    }
+    return bloc ? null : /^(#{1,6})\s/.exec(l);
+  });
+}
 
 /** Début et fin (index de caractère dans le corps) de la section Processus, et sa ligne ; null sans section. */
 function sectionProcessus(corps) {
   const lignes = corps.split("\n");
+  const titres = titresHorsCode(lignes);
   let position = 0;
   let debut = null;
   for (let i = 0; i < lignes.length; i++) {
-    const titre = /^(#{1,6})\s/.exec(lignes[i]);
+    const titre = titres[i];
     if (debut && titre && titre[1].length <= debut.niveau) return { ...debut, fin: position };
-    const m = SECTION_PROCESSUS.exec(lignes[i]);
+    const m = titre && SECTION_PROCESSUS.exec(lignes[i]);
     if (!debut && m) debut = { niveau: m[1].length, debut: position, ligne: i };
     position += lignes[i].length + 1;
   }
@@ -316,25 +351,41 @@ function couvre(motif, commande) {
   return new RegExp(`^${m.split("*").map(echappe).join(".*")}$`, "s").test(commande);
 }
 
-// Des commandes qui envoient, suppriment, fusionnent, forcent, changent la configuration ou touchent la production.
+// Des commandes qui envoient, suppriment, écrasent du travail, fusionnent, forcent, changent la configuration ou touchent
+// la production : toujours par la demande d'accord de Claude Code. Seule source de cette liste : les tests de cohérence
+// du plugin la lisent ici (« allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisée d'avance »).
 const SENSIBLES = [
   "git push", "git push origin main", "git push --force origin main", "git reset --hard HEAD~1", "git clean -fd",
   "git branch -D essai", "git branch -f main HEAD", "git branch -M main", "git merge essai", "git rebase main", "git pull",
   "git remote add origin X", "git remote remove origin", "git remote set-url origin X", "git config core.hooksPath X",
-  "git rm fichier", "git stash drop", "git tag -d v1",
+  "git rm fichier", "git stash drop", "git tag -d v1", "git checkout -- fichier", "git checkout .", "git restore fichier", "git commit --amend",
   "rm fichier", "rm -rf dossier", "rmdir dossier", "del fichier", "Remove-Item fichier",
   "npm publish", "gh pr merge 1", "glab mr merge 1", "gh repo create X", "gh repo delete X", "gh release create v1",
   "vercel --prod", "vercel deploy --prod", "netlify deploy --prod", "curl -X POST https://exemple.fr", "sudo X",
-  "pulse-aidd secrets generer NOM", "pulse-aidd secrets envoyer NOM --env production", "pulse-aidd secrets elaguer NOM",
-  "pulse-aidd secrets redeployer", "pulse-aidd deplacer-commits feat/x", "pulse-aidd autorisations --ecrire",
-  "pulse-aidd ligne-etat --installer", "pulse-aidd copies --mettre-a-jour", "pulse-aidd installer-ci --forcer",
-  "pulse-aidd search-console deconnecter", "pulse-aidd pile hebergeur envoyer NOM production",
+  "pulse-aidd secrets generer NOM", "pulse-aidd secrets generer NOM --envoyer production,preview", "pulse-aidd secrets envoyer NOM --env production",
+  "pulse-aidd secrets elaguer NOM", "pulse-aidd secrets redeployer", "pulse-aidd secrets redeployer --env production",
+  "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
+  "pulse-aidd ligne-etat --installer", "pulse-aidd ligne-etat --retirer", // changent les réglages de Claude Code du projet
+  "pulse-aidd autorisations --ecrire", // change les réglages de Claude Code du projet
+  "pulse-aidd copies --mettre-a-jour", "pulse-aidd copies --copier verifier scripts/verifier.js", // remplacent des fichiers du projet
+  "pulse-aidd search-console deconnecter",
+  "pulse-aidd pile hebergeur envoyer NOM production", "pulse-aidd pile hebergeur redeployer production",
+  "pulse-aidd deplacer-commits feat/us-003-liste", "pulse-aidd deplacer-commits feat/us-003-liste --principale main", // déplace la branche principale
 ];
+/** Une commande pulse-aidd qui passe toujours par la demande d'accord (citée par une consigne sans être autorisée d'avance). */
+const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
 // Des programmes à tout faire : « Bash(<programme> *) » autorise aussi leurs gestes sensibles.
 const LARGES = new Set(["git", "npm", "npx", "pnpm", "yarn", "bun", "bunx", "node", "deno", "python", "python3", "py", "pip", "pip3", "bash", "sh", "zsh", "pwsh", "powershell", "cmd", "gh", "glab", "docker", "kubectl", "sudo", "rm", "curl", "wget", "make", "cargo", "go", "vercel", "netlify", "pulse-aidd", "find", "xargs", "env", "eval", "ssh", "scp", "rsync", "mv", "cp"]);
 const DONNEES = /\.(json|ya?ml|csv|tsv|xml)$/i;
-const CONFIGURATION = [".claude/settings.json", ".claude/settings.local.json", ".git/config", ".git/hooks/pre-commit"];
-const OUTILS_CITES = /\b(Read|Write|Edit|MultiEdit|Glob|Grep|Bash|PowerShell|WebFetch|WebSearch|NotebookEdit|TodoWrite)\b|`(Agent|Task|Skill)`/g;
+const CONFIGURATION = [".claude/settings.json", ".claude/settings.local.json", "~/.claude/settings.json", "~/.claude/settings.local.json", ".git/config", ".git/hooks/pre-commit"];
+// Un outil est cité entre accents graves (`Write`, `Bash(git status)`) ou à côté du mot « outil » ou « tool » ;
+// ailleurs, « Write a report » ou « Edit nothing » sont des verbes.
+const NOMS_OUTILS = "Read|Write|Edit|MultiEdit|Glob|Grep|Bash|PowerShell|WebFetch|WebSearch|NotebookEdit|TodoWrite|Agent|Task|Skill";
+const OUTILS_CITES = [
+  new RegExp("`(" + NOMS_OUTILS + ")(?:\\([^`]*\\))?`", "g"),
+  new RegExp("\\b(?:[Oo]utils?|[Tt]ools?)\\s+`?(" + NOMS_OUTILS + ")\\b", "g"),
+  new RegExp("\\b(" + NOMS_OUTILS + ")`?\\s+(?:[Oo]utils?|[Tt]ools?)\\b", "g"),
+];
 const SECTIONS_TRAME = [
   ["Objectif", /^(Objectif|Goal|Objective|Purpose)/i],
   ["Règles", /^(Règles|Rules)/i],
@@ -371,7 +422,7 @@ function constatsDescription(m, ajouter) {
   if (!champ || !String(champ.valeur).trim()) return ajouter("K2", "bloquant", 1, "description absente : écrire ce que la skill fait, en une phrase");
   const texte = String(champ.valeur);
   if (texte.length > DESCRIPTION_MAX) return ajouter("K2", "bloquant", champ.ligne, `description de ${texte.length} caractères (plafond ${DESCRIPTION_MAX}) : la raccourcir`);
-  if (m.type === "skill" && m.permanente && !/(à|a) utiliser quand|use (this skill )?when/i.test(texte))
+  if (m.type === "skill" && m.permanente && !/(à|a) utiliser (quand|lorsque|pour)|use (this skill )?(when|for)|should be used when/i.test(texte))
     ajouter("K2", "a-corriger", champ.ligne, "skill invocable par le modèle sans « À utiliser quand … » (ou « Use when … ») : dire quand la lancer, avec les mots de la personne");
   if (m.permanente && texte.length > DESCRIPTION_CONSEIL) ajouter("K2", "conseil", champ.ligne, `description de ${texte.length} caractères, chargée en permanence : viser 300 au plus`);
   if (typeof champ.valeur === "string" && !/^["'>|]/.test(champ.brut) && /:\s/.test(champ.brut)) ajouter("K2", "conseil", champ.ligne, "description avec « : » hors guillemets : l'écrire entre guillemets pour un lecteur YAML strict");
@@ -395,8 +446,9 @@ function constatsAutorisations(m, ajouter) {
       const sensible = SENSIBLES.find((c) => couvre(m2, c));
       if (sensible) ajouter("K4", "bloquant", champ.ligne, `${texte} autorise d'avance « ${sensible} » : laisser ce geste à la demande d'accord de Claude Code`);
     } else if (["Write", "Edit", "MultiEdit", "NotebookEdit"].includes(outil)) {
-      if (!motif) {
-        ajouter("K4", "a-corriger", champ.ligne, `${outil} sans chemin autorise l'écriture partout : préciser le dossier (${outil}(docs/**))`);
+      // Sans chemin précis (Write, Edit(**)) : à corriger, quel que soit l'outil ; un motif qui vise la configuration : bloquant.
+      if (!motif || /^(\.?\/)?(\*\*?\/?)+$/.test(motif)) {
+        ajouter("K4", "a-corriger", champ.ligne, `${texte} autorise l'écriture partout : préciser le dossier (${outil}(docs/**))`);
         continue;
       }
       const config = CONFIGURATION.find((f) => globVersRegex(motif).test(f));
@@ -417,9 +469,10 @@ function ligneRechargement(m) {
   for (let i = 0; i < lignes.length; i++) {
     position += lignes[i].length + 1;
     if (jetons(position) > LIMITE_PROCESSUS) return null;
-    if (!/compact(ion|age)/i.test(lignes[i])) continue;
+    if (!/compact(ion|age|ed)/i.test(lignes[i])) continue;
     const commandes = [...lignes[i].matchAll(/`([^`\n]+)`/g)].map((c) => c[1]);
-    if (commandes.some((c) => (/^pulse-aidd etape (\S+)/.exec(c) || [])[1] === m.nom || /SKILL\.md\b/.test(c))) return i + e.ligneCorps;
+    const sonSkillMd = (c) => c.split(/[\s/\\]+/).some((x, k, t) => x === "SKILL.md" && t[k - 1] === m.nom);
+    if (commandes.some((c) => (/^pulse-aidd etape (\S+)/.exec(c) || [])[1] === m.nom || sonSkillMd(c))) return i + e.ligneCorps;
   }
   return null;
 }
@@ -439,7 +492,8 @@ function constatsTrame(m, ajouter, convention) {
   } else if (jetons(corps.length) > LIMITE_PROCESSUS) {
     ajouter("K5", "a-corriger", e.ligneCorps, `aucune section Processus repérable dans un SKILL.md de ${jetons(corps.length)} jetons estimés : la fin du déroulé risque d'être perdue après une compaction`);
   }
-  const titres = corps.split("\n").filter((l) => /^##\s/.test(l)).map((l) => l.replace(/^##\s+/, ""));
+  const lignesCorps = corps.split("\n");
+  const titres = titresHorsCode(lignesCorps).map((t, i) => t && t[1] === "##" && lignesCorps[i].replace(/^##\s+/, "")).filter(Boolean);
   const manquantes = SECTIONS_TRAME.filter(([, re]) => !titres.some((t) => re.test(t))).map(([nom]) => nom);
   if (manquantes.length) ajouter("K5", convention, e.ligneCorps, `sections absentes de la trame (Objectif, Règles, Contexte, Processus, Exemples, Références) : ${manquantes.join(", ")}`);
 }
@@ -472,16 +526,18 @@ function constatsNegations(chemin, texte, decalage, ajouter) {
 function constatsAgent(m, ajouter, convention) {
   const { entete: e } = m.interne;
   if (!e.valide) return;
-  const noms = (cle) => (e.champs[cle] ? listeOutils(e.champs[cle].valeur).map((x) => x.outil) : null);
-  const outils = noms("tools");
-  const refuses = noms("disallowedTools") || [];
+  const entrees = (cle) => (e.champs[cle] ? listeOutils(e.champs[cle].valeur) : null);
+  const tous = e.champs.tools && [].concat(e.champs.tools.valeur).some((v) => String(v).trim() === "*"); // tools: "*" : tous les outils
+  const outils = !tous && e.champs.tools ? entrees("tools").map((x) => x.outil) : null;
+  // Un motif de disallowedTools (Bash(git push *)) retire ce motif seul, pas l'outil.
+  const refuses = (entrees("disallowedTools") || []).filter((x) => x.motif === null).map((x) => x.outil);
   const vus = new Set();
   for (const { texte: l, ligne } of lignesHorsCode(e.corps, e.ligneCorps))
-    for (const c of l.matchAll(OUTILS_CITES)) {
-      const outil = c[1] || c[2];
+    for (const c of OUTILS_CITES.flatMap((re) => [...l.matchAll(re)]).sort((a, b) => a.index - b.index)) {
+      const outil = NOMS_OUTILS.split("|").find((n) => n.toLowerCase() === c[1].toLowerCase());
       if (vus.has(outil)) continue;
       vus.add(outil);
-      const absent = refuses.includes(outil) || (outils && !outils.includes(outil) && !outils.includes("*"));
+      const absent = refuses.includes(outil) || (outils && !outils.includes(outil));
       if (absent) ajouter("K11", "bloquant", ligne, `${outil} est cité dans les consignes mais indisponible pour l'agent (${refuses.includes(outil) ? "disallowedTools" : "absent de tools"}) : l'ajouter à tools, ou changer la consigne`);
     }
   if (!e.champs.model) ajouter("K11", convention, 1, "model absent : l'écrire (haiku, sonnet ou opus) pour un coût et une qualité prévisibles");
@@ -566,7 +622,7 @@ async function lireHistorique(fichier, debut, compte) {
 }
 
 /** L'usage observé : { absent, periode: { du, au }, fichiersLus, skills: [{ nom, personne, modele, dernier }] }. */
-async function usage({ depuis, projets = path.join(os.homedir(), ".claude", "projects"), maintenant = new Date() } = {}) {
+async function usage({ depuis, projets = path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), ".claude"), "projects"), maintenant = new Date() } = {}) {
   const debut = depuis ? new Date(`${depuis}T00:00:00.000Z`) : new Date(Date.UTC(maintenant.getUTCFullYear(), maintenant.getUTCMonth(), maintenant.getUTCDate()) - PERIODE_DEFAUT * JOUR);
   const periode = { du: jourDe(debut), au: jourDe(maintenant) };
   if (!fs.existsSync(projets) || !fs.statSync(projets).isDirectory()) return { absent: true, periode, fichiersLus: 0, skills: [] };
@@ -606,7 +662,7 @@ async function afficherUsage(args) {
   const lignes = [`periode: ${r.periode.du} → ${r.periode.au}`];
   if (r.absent) lignes.push("historique: absent");
   else {
-    lignes.push(`fichiers-lus: ${r.fichiersLus}`);
+    lignes.push(`fichiers-lus: ${r.fichiersLus}`, "note: historique des assistants non lu (<projet>/<session>/subagents/) : une skill lancée seulement par un assistant peut paraître non observée");
     for (const s of r.skills) lignes.push(`usage: ${s.nom} · personne ${s.personne} · modele ${s.modele} · dernier ${s.dernier}`);
   }
   console.log(lignes.join("\n"));
@@ -665,16 +721,18 @@ function main(argv) {
     return 1;
   }
   try {
-    return action === "mesurer" ? afficherMesures(chemin) : afficherConstats(chemin, lieu);
+    return action === "mesurer" ? afficherMesures(chemin, lieu) : afficherConstats(chemin, lieu);
   } catch (e) {
     console.log(`erreur: ${e.message}`);
     return 1;
   }
 }
 
-function afficherMesures(chemin) {
-  const mesures = mesurer(chemin);
-  console.log(mesures.length ? formaterMesures(mesures) : "skills: 0");
+const aucune = (lieu) => `skills: 0 (aucune skill trouvée dans ${montrer(lieu.cible)})`;
+
+function afficherMesures(chemin, lieu) {
+  if (!lieu.unites.length) return console.log(aucune(lieu)), 0;
+  console.log(formaterMesures(mesurer(chemin)));
   return 0;
 }
 
@@ -682,6 +740,7 @@ function afficherConstats(chemin, lieu) {
   const constats = verifier(chemin);
   const lignes = [];
   if (unix(lieu.cible).includes("/plugins/cache/")) lignes.push("installe: oui");
+  if (!lieu.unites.length) lignes.push(aucune(lieu));
   for (const c of constats) lignes.push(`${c.regle} · ${c.gravite} · ${c.fichier}:${c.ligne} · ${c.message}`);
   const n = (g) => constats.filter((c) => c.gravite === g).length;
   lignes.push(`bilan: ${n("bloquant")} bloquants · ${n("a-corriger")} à corriger · ${n("conseil")} conseils`);
@@ -695,4 +754,4 @@ if (require.main === module) {
   else process.exitCode = main(args);
 }
 
-module.exports = { mesurer, verifier, usage, lireEntete, listeOutils, couvre, main };
+module.exports = { mesurer, verifier, usage, lireEntete, listeOutils, couvre, SENSIBLES, estSensible, injectionLisible, main };
