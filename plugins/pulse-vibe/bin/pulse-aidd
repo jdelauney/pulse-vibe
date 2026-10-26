@@ -36,6 +36,7 @@
 #   pulse-aidd attente <mettre-de-cote <Tn> -- <fichier…> | remettre <Tn> | liste>  met de côté le travail d'une tâche qui attend une réponse, le remet en place ensuite, ou liste les tâches en attente (/pulse:spirc, mode autonome)
 #   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
 #   pulse-aidd verifier-plan <US-XXX>  contrôle le plan d'une US avant la réalisation (critères, scénarios, dépendances, fichiers, taille), pour /pulse:plan et /pulse:spirc
+#   pulse-aidd skill mesurer|verifier <chemin>  mesure une skill Claude Code, un agent ou un dossier de skills (tailles, jetons estimés, fin du Processus, références, injections, recoupements), ou contrôle ses règles vérifiables par script (K1 à K14 de references/skills/regles-skills.md : une ligne par constat, code 1 si un constat bloque), en lecture seule
 #   pulse-aidd installer-ci [--forcer]  copie le contrôle des secrets et un exemple de CI à adapter dans le projet (garde un verifier.js adapté, sauf --forcer)
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
@@ -395,6 +396,8 @@ case "$1" in
     shift; exec node "$RACINE/skills/annuler/scripts/annuler.js" "$@" ;;
   deplacer-commits)
     shift; exec node "$RACINE/scripts/deplacer-commits.js" "$@" ;;
+  skill)
+    shift; exec node "$RACINE/scripts/skill.js" "$@" ;;
   verifier)
     case "${2:-}" in
       --index) exec node "$TPL/verifier.js" --index ;;
