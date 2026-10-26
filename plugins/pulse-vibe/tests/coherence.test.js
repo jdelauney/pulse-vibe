@@ -1885,6 +1885,27 @@ test("tech : démarche de choix et organisation chargées à l'étape qui les se
 });
 
 // Trames imposées : une skill = un dossier (SKILL.md, et au besoin assets/, references/, scripts/) ; titres des SKILL.md et du CLAUDE.md des projets.
+test("skill-auditor : lecture seule, sonnet, règles des skills lues en entier, deux modes (audit, avant-apres)", () => {
+  const texte = lire(RACINE, "agents", "skill-auditor.md");
+  const [, entete, corps] = texte.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/) || [];
+  assert.ok(entete, "en-tête");
+  assert.match(entete, /^tools: Read, Grep, Glob, Bash$/m, "lecture seule : Read, Grep, Glob, Bash");
+  assert.match(entete, /^model: sonnet$/m);
+  // La liste Bash « seulement pour » nomme chaque commande que l'agent lance.
+  const phrase = (corps.match(/^- Utiliser Bash seulement[^\n]*$/m) || [])[0] || "";
+  for (const c of ["pulse-aidd skill mesurer", "pulse-aidd skill verifier", "pulse-aidd reference skills/regles-skills.md"]) assert.ok(phrase.includes(c), `liste Bash : ${c}`);
+  assert.doesNotMatch(corps, /pulse-aidd skill usage/, "l'usage observé est lu par la commande, avec l'accord de la personne");
+  assert.match(corps, /`pulse-aidd reference skills\/regles-skills\.md`[^\n]*en entier/, "règles lues en entier");
+  // Mode audit : les règles de jugement, un verdict par règle, des constats avec correction et gain.
+  assert.match(corps, /`audit`/);
+  for (const k of ["K1", "K3", "K6", "K8", "K12", "K13"]) assert.match(corps, new RegExp(`\\b${k}\\b`), k);
+  assert.match(corps, /K<n> · gravité · fichier:ligne · message · correction proposée · gain estimé/);
+  // Mode avant-apres : ce qui a disparu, et un verdict.
+  assert.match(corps, /`avant-apres`/);
+  for (const perte of ["règle", "validation", "question clé", "garde-fou", "étape"]) assert.match(corps, new RegExp(perte), perte);
+  assert.match(corps, /aucune perte \| pertes/);
+});
+
 const TRAME_SKILL = ["Objectif", "Règles", "Contexte", "Rôle", "Processus", "Exemples", "Références de la commande"];
 const titres2 = (texte) => [...texte.replace(/```[\s\S]*?```/g, "").matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1]);
 
