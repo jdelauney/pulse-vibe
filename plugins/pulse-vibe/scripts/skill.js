@@ -12,9 +12,15 @@
 //                                        au-dela-30000 ; par agent : agent, chemin, agent-md, description.
 //                                        Sur un dossier : puis descriptions-total (les textes chargés en permanence :
 //                                        skills invocables par le modèle et agents) et recoupement: <a> <b> <n> lignes.
+//                                        Détail au-delà de 30 000 caractères : « mode: resume », une ligne par skill et
+//                                        par agent (chemin relatif au dossier), puis « detail: » (le détail d'une skill),
+//                                        les 50 plus longs recoupements et « recoupements-autres: <n> ».
 //   pulse-aidd skill verifier <chemin>   une ligne par constat « K<n> · bloquant|a-corriger|conseil · fichier:ligne ·
 //                                        message », puis « bilan: … » ; « installe: oui » en tête pour une skill d'un
 //                                        plugin installé (chemin sous plugins/cache/).
+//   pulse-aidd skill empreinte <chemin>  « empreinte: <fichier> · <sha1> · <octets> octets · <date> » pour chaque fichier
+//                                        de chaque skill (tout son dossier) et de chaque agent ; sha1 = celui de
+//                                        git hash-object, calculé sans Git. Sans skill : « skills: 0 (aucune skill trouvée …) ».
 //   pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]
 //                                        l'usage observé dans l'historique des sessions de Claude Code (par défaut
 //                                        ~/.claude/projects, 90 derniers jours), lu en flux, ligne à ligne : periode,
@@ -28,6 +34,7 @@
 // Codes : 0 fait (verifier : aucun bloquant) ; 1 usage, chemin introuvable, fichier hors format, ou (verifier) un bloquant.
 "use strict";
 
+const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -371,9 +378,12 @@ const SENSIBLES = [
   "pulse-aidd search-console deconnecter",
   "pulse-aidd pile hebergeur envoyer NOM production", "pulse-aidd pile hebergeur redeployer production",
   "pulse-aidd deplacer-commits feat/us-003-liste", "pulse-aidd deplacer-commits feat/us-003-liste --principale main", // déplace la branche principale
+  "pulse-aidd skill usage", "pulse-aidd skill usage --depuis 2026-01-01", // lit l'historique des sessions, hors du projet : accord à chaque audit
 ];
+/** Une lecture hors du projet (l'historique des sessions de Claude Code) : rien ne change, mais la personne donne son accord à chaque fois. */
+const HORS_PROJET = /^pulse-aidd skill usage\b/;
 /** Une commande pulse-aidd qui passe toujours par la demande d'accord (citée par une consigne sans être autorisée d'avance). */
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
+const estSensible = (commande) => HORS_PROJET.test(commande) || /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
 // Des programmes à tout faire : « Bash(<programme> *) » autorise aussi leurs gestes sensibles.
 const LARGES = new Set(["git", "npm", "npx", "pnpm", "yarn", "bun", "bunx", "node", "deno", "python", "python3", "py", "pip", "pip3", "bash", "sh", "zsh", "pwsh", "powershell", "cmd", "gh", "glab", "docker", "kubectl", "sudo", "rm", "curl", "wget", "make", "cargo", "go", "vercel", "netlify", "pulse-aidd", "find", "xargs", "env", "eval", "ssh", "scp", "rsync", "mv", "cp"]);
 const DONNEES = /\.(json|ya?ml|csv|tsv|xml)$/i;
@@ -444,7 +454,9 @@ function constatsAutorisations(m, ajouter) {
         continue;
       }
       const sensible = SENSIBLES.find((c) => couvre(m2, c));
-      if (sensible) ajouter("K4", "bloquant", champ.ligne, `${texte} autorise d'avance « ${sensible} » : laisser ce geste à la demande d'accord de Claude Code`);
+      if (sensible && HORS_PROJET.test(sensible))
+        ajouter("K4", "bloquant", champ.ligne, `${texte} autorise d'avance « ${sensible} », qui lit l'historique des sessions de Claude Code, hors du projet : laisser cette lecture à l'accord de la personne, à chaque fois`);
+      else if (sensible) ajouter("K4", "bloquant", champ.ligne, `${texte} autorise d'avance « ${sensible} » : laisser ce geste à la demande d'accord de Claude Code`);
     } else if (["Write", "Edit", "MultiEdit", "NotebookEdit"].includes(outil)) {
       // Sans chemin précis (Write, Edit(**)) : à corriger, quel que soit l'outil ; un motif qui vise la configuration : bloquant.
       if (!motif || /^(\.?\/)?(\*\*?\/?)+$/.test(motif)) {
@@ -674,6 +686,7 @@ async function afficherUsage(args) {
 const USAGE = [
   "Usage : pulse-aidd skill mesurer <chemin>    tailles d'une skill, d'un agent ou d'un dossier de skills",
   "        pulse-aidd skill verifier <chemin>   règles K vérifiables par script (pulse-aidd reference skills/regles-skills.md)",
+  "        pulse-aidd skill empreinte <chemin>  empreinte, taille et date de chaque fichier (une skill a-t-elle changé ?)",
   "<chemin> : une skill (dossier ou SKILL.md), un agent (agents/<nom>.md), un dossier de skills (.claude/skills/),",
   "ou un dossier qui contient skills/ ou agents/ (.claude/, un plugin).",
   "        pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]   l'usage observé dans l'historique des sessions",
@@ -704,9 +717,75 @@ function formaterMesures(mesures) {
   return blocs.join("\n\n");
 }
 
+/**
+ * Le résumé d'un gros dossier, quand le détail dépasserait la limite de lecture : une ligne par skill et par agent
+ * (chemin relatif au dossier donné), puis les lignes du dossier ; le détail d'une skill se demande à part.
+ */
+const RECOUPEMENTS_RESUME = 50; // les plus longs ; les autres sont comptés (recoupements-autres)
+function formaterResume(mesures, lieu, cheminBrut) {
+  const relatif = (m) => unix(path.relative(lieu.cible, m.type === "skill" ? path.dirname(m.fichier) : m.fichier));
+  const unites = mesures.filter((m) => m.type !== "dossier");
+  const lignes = [
+    `mode: resume (${unites.length} skills et agents ; le détail dépasserait ${LIMITE_LECTURE} caractères)`,
+    `detail: pulse-aidd skill mesurer <chemin d'une skill> (${cheminBrut.replace(/[\\/]+$/, "")}/<chemin de sa ligne>)`,
+  ];
+  for (const m of unites) {
+    if (m.type === "agent") {
+      lignes.push(`agent: ${m.nom} · ${relatif(m)} · agent-md ${m.agentMd.car} car · description ${m.description === null ? "absente" : `${m.description} car`}`);
+      continue;
+    }
+    const lectures = [...m.references, ...m.injections].filter((x) => x.car !== null);
+    const plusGrande = lectures.reduce((max, x) => Math.max(max, x.car), 0);
+    const morceaux = [`skill: ${m.nom}`, relatif(m), `skill-md ${m.skillMd.car} car`, `processus-fin ${m.processusFin === null ? "absent" : `${m.processusFin} jetons estimés`}`, `lectures ${lectures.length}${lectures.length ? `, la plus grande ${plusGrande} car` : ""}`];
+    if (m.auDela30000.length) morceaux.push(`au-dela-30000 ${m.auDela30000.length}`);
+    lignes.push(morceaux.join(" · "));
+  }
+  const dossier = mesures.find((m) => m.type === "dossier");
+  if (dossier) {
+    const plusLongs = [...dossier.recoupements].sort((a, b) => b.lignes - a.lignes).slice(0, RECOUPEMENTS_RESUME);
+    lignes.push(`descriptions-total: ${dossier.descriptionsTotal} car`, ...plusLongs.map((r) => `recoupement: ${r.a} ${r.b} ${r.lignes} lignes`));
+    if (dossier.recoupements.length > plusLongs.length) lignes.push(`recoupements-autres: ${dossier.recoupements.length - plusLongs.length}`);
+  }
+  return lignes.join("\n");
+}
+
+/** Les fichiers d'une skill (tout son dossier : SKILL.md, references/, assets/, scripts/…) ou d'un agent, triés. */
+function fichiersUnite(u) {
+  if (u.type === "agent") return [u.fichier];
+  const tous = [];
+  const parcourir = (d) => {
+    for (const e of fs.readdirSync(d, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) parcourir(p);
+      else if (e.isFile()) tous.push(p);
+    }
+  };
+  parcourir(u.dossier);
+  return tous;
+}
+
+/**
+ * L'empreinte de chaque fichier : celle de `git hash-object` (sans Git, calculée ici), la taille en octets et la date
+ * de modification. Sert à savoir si une skill a changé depuis un audit.
+ */
+function afficherEmpreinte(lieu) {
+  if (!lieu.unites.length) return console.log(aucune(lieu)), 0;
+  const base = fs.statSync(lieu.cible).isFile() ? path.dirname(lieu.cible) : lieu.cible;
+  const lignes = [];
+  for (const u of lieu.unites)
+    for (const f of fichiersUnite(u)) {
+      const contenu = fs.readFileSync(f);
+      const sha = crypto.createHash("sha1").update(`blob ${contenu.length}\0`).update(contenu).digest("hex");
+      const date = fs.statSync(f).mtime.toISOString().replace(/\.\d{3}Z$/, "Z");
+      lignes.push(`empreinte: ${unix(path.relative(base, f))} · ${sha} · ${contenu.length} octets · ${date}`);
+    }
+  console.log(lignes.join("\n"));
+  return 0;
+}
+
 function main(argv) {
   const [action, cheminBrut] = argv;
-  if (!["mesurer", "verifier"].includes(action) || !cheminBrut) {
+  if (!["mesurer", "verifier", "empreinte"].includes(action) || !cheminBrut) {
     console.log(USAGE);
     return 1;
   }
@@ -721,7 +800,8 @@ function main(argv) {
     return 1;
   }
   try {
-    return action === "mesurer" ? afficherMesures(chemin, lieu) : afficherConstats(chemin, lieu);
+    if (action === "empreinte") return afficherEmpreinte(lieu);
+    return action === "mesurer" ? afficherMesures(chemin, lieu, cheminBrut) : afficherConstats(chemin, lieu);
   } catch (e) {
     console.log(`erreur: ${e.message}`);
     return 1;
@@ -730,9 +810,11 @@ function main(argv) {
 
 const aucune = (lieu) => `skills: 0 (aucune skill trouvée dans ${montrer(lieu.cible)})`;
 
-function afficherMesures(chemin, lieu) {
+function afficherMesures(chemin, lieu, cheminBrut) {
   if (!lieu.unites.length) return console.log(aucune(lieu)), 0;
-  console.log(formaterMesures(mesurer(chemin)));
+  const mesures = mesurer(chemin);
+  const detail = formaterMesures(mesures);
+  console.log(detail.length < LIMITE_LECTURE ? detail : formaterResume(mesures, lieu, cheminBrut));
   return 0;
 }
 
@@ -754,4 +836,4 @@ if (require.main === module) {
   else process.exitCode = main(args);
 }
 
-module.exports = { mesurer, verifier, usage, lireEntete, listeOutils, couvre, SENSIBLES, estSensible, injectionLisible, main };
+module.exports = { mesurer, verifier, usage, lireEntete, listeOutils, couvre, SENSIBLES, HORS_PROJET, estSensible, injectionLisible, main };

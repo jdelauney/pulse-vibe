@@ -53,11 +53,10 @@ test("règles attendues : clés interdites, Git sans envoi, pulse-aidd sans prod
 test("chaque sous-commande citée par un agent est autorisée, sauf celles qui passent par l'accord", () => {
   const allow = attendues(projet({})).allow;
   // Comme Claude Code : « X * » couvre aussi « X » seul (la règle de scripts/skill.js, seule source).
-  const { couvre } = require(path.join(RACINE, "scripts", "skill.js"));
+  const { couvre, estSensible } = require(path.join(RACINE, "scripts", "skill.js"));
   const agents = fs.readdirSync(path.join(RACINE, "agents")).map((f) => fs.readFileSync(path.join(RACINE, "agents", f), "utf8")).join("\n");
-  const sensibles = /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|installer-|ligne-etat|nouveau)/;
   const oubliees = [...new Set([...agents.matchAll(/`(pulse-aidd [^`]+)`/g)].map((m) => m[1].replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").trim()))]
-    .filter((c) => !sensibles.test(c))
+    .filter((c) => !estSensible(c))
     .filter((c) => !allow.some((r) => couvre(r.slice(5, -1), c)));
   assert.deepStrictEqual(oubliees, []);
 });

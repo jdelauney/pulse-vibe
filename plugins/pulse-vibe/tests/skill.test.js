@@ -523,3 +523,78 @@ test("regles-skills.md : K5 rappelle --sans-communes dans Pulse ; K11 sépare l'
   assert.match(convention, /`model`/);
   assert.match(convention, /seulement pour/);
 });
+
+// ---------------------------------------------------------------- Correctifs du groupe B (audit-skill)
+
+test("K4 : lire l'historique des sessions (pulse-aidd skill usage) autorisé d'avance → bloquant, lecture hors du projet ; une seule source", (t) => {
+  const { estSensible } = require(SCRIPT);
+  assert.ok(estSensible("pulse-aidd skill usage") && estSensible("pulse-aidd skill usage --depuis 2026-01-01"), "skill usage passe par l'accord");
+  assert.ok(!estSensible("pulse-aidd skill mesurer X") && !estSensible("pulse-aidd skill verifier X") && !estSensible("pulse-aidd skill empreinte X"));
+  const d = dossierTemporaire(t);
+  for (const motif of ["Bash(pulse-aidd skill *)", "Bash(pulse-aidd skill usage*)", "Bash(pulse-aidd skill usage --depuis *)"]) {
+    const nom = motif.replace(/\W+/g, "-");
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    const k4 = constats(verifier(path.join(d, nom)), "K4", "bloquant");
+    assert.strictEqual(k4.length, 1, motif);
+    assert.match(k4[0].message, /hors du projet/, motif);
+  }
+  ecrire(d, "lecture/SKILL.md", skill({ entete: { "allowed-tools": "Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd skill empreinte *)" } }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "lecture")), "K4"), []);
+  // Les tests de cohérence et des autorisations lisent la règle dans skill.js, sans copie.
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "coherence.test.js"), "utf8"), /HORS_PROJET|horsProjet/);
+  const autorisations = fs.readFileSync(path.join(__dirname, "autorisations.test.js"), "utf8");
+  assert.match(autorisations, /estSensible/);
+  assert.doesNotMatch(autorisations, /const sensibles = \//);
+});
+
+test("aucune skill : dossier .claude avec ses réglages seulement → « skills: 0 (aucune skill trouvée …) », code 0, pour mesurer, verifier et empreinte", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, ".claude/settings.json", "{}\n");
+  for (const action of ["mesurer", "verifier", "empreinte"]) {
+    const r = lancer(action, path.join(d, ".claude"));
+    assert.strictEqual(r.status, 0, action);
+    assert.match(r.stdout, /^skills: 0 \(aucune skill trouvée dans /m, action);
+  }
+});
+
+test("mesurer sur un dossier de 200 skills : résumé sous 30 000 caractères, une ligne par skill, détail sur demande ; petit dossier : détail", (t) => {
+  const d = dossierTemporaire(t);
+  for (let i = 0; i < 200; i++) {
+    ecrire(d, `skills/s${i}/SKILL.md`, skill({ entete: { name: `s${i}` } }));
+    for (const r of ["a", "b", "c"]) ecrire(d, `skills/s${i}/references/${r}.md`, "Une règle.\n".repeat(20));
+  }
+  ecrire(d, "agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  const r = lancer("mesurer", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume /m);
+  assert.match(r.stdout, /^detail: pulse-aidd skill mesurer <chemin d'une skill>/m);
+  assert.strictEqual((r.stdout.match(/^skill: s\d+ · skills\/s\d+ · /gm) || []).length, 200);
+  assert.match(r.stdout, /^agent: relecteur · agents\/relecteur\.md · /m);
+  assert.match(r.stdout, /^descriptions-total: /m);
+  // 200 skills identiques : 19 900 paires qui se recoupent ; le résumé garde les plus longues et compte les autres.
+  assert.ok((r.stdout.match(/^recoupement: /gm) || []).length <= 50, "recoupements bornés");
+  assert.match(r.stdout, /^recoupements-autres: \d+$/m);
+  const petit = lancer("mesurer", path.join(d, "skills", "s1"));
+  assert.doesNotMatch(petit.stdout, /^mode: /m);
+  assert.match(petit.stdout, /^reference: references\/a\.md \d+ car$/m);
+});
+
+test("empreinte : chaque fichier d'une skill ou d'un agent, son empreinte (celle de git hash-object), sa taille et sa date ; sans Git", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "skills/resumer/SKILL.md", skill());
+  ecrire(d, "skills/resumer/references/a.md", "hi\n");
+  ecrire(d, "skills/resumer/scripts/compter.js", "console.log(1);\n");
+  ecrire(d, "agents/relecteur.md", AGENT("tools: Read\nmodel: haiku\n"));
+  const r = lancer("empreinte", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^empreinte: skills\/resumer\/references\/a\.md · 45b983be36b73c0788dc9cbcb76cbb80fc7bb057 · 3 octets · \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/m);
+  for (const f of ["skills/resumer/SKILL.md", "skills/resumer/scripts/compter.js", "agents/relecteur.md"]) assert.match(r.stdout, new RegExp(`^empreinte: ${f.replace(/\./g, "\\.")} · [0-9a-f]{40} · \\d+ octets · `, "m"), f);
+  // Même taille, autre contenu : l'empreinte change.
+  ecrire(d, "skills/resumer/references/a.md", "ho\n");
+  assert.doesNotMatch(lancer("empreinte", path.join(d, "skills", "resumer")).stdout, /45b983be36b73c0788dc9cbcb76cbb80fc7bb057/);
+  assert.match(lancer("empreinte", path.join(d, "skills", "resumer")).stdout, /^empreinte: references\/a\.md · [0-9a-f]{40} · 3 octets · /m);
+  const absent = lancer("empreinte", path.join(d, "rien"));
+  assert.strictEqual(absent.status, 1);
+  assert.match(absent.stdout, /^introuvable: /m);
+});

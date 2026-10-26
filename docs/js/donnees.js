@@ -131,7 +131,7 @@ window.PULSE_WIKI = {
       "etape": "toujours",
       "description": "Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier",
       "forme": "[chemin d'une skill, d'un dossier de skills ou d'un plugin]",
-      "note": "par défaut : .claude/skills/"
+      "note": "par défaut : les skills et agents du projet, .claude/"
     },
     {
       "nom": "auto-fix",
