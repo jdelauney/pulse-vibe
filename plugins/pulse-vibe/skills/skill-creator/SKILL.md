@@ -13,7 +13,7 @@ allowed-tools: Bash(pulse-aidd contexte skill-creator) Bash(pulse-aidd skill mes
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte skill-creator` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte skill-creator` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 - Appliquer à la skill écrite les règles des skills (« Règles des skills », dans le même contexte) : K1 à K14.
 - Écrire une skill ordinaire, sans `pulse-aidd` : ses consignes citent les outils de Claude Code et ceux du projet. Dans un plugin Pulse, suivre en plus les conventions du dépôt (étape 3).
@@ -94,4 +94,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : tapez `/<nom>` avec
 
 !`pulse-aidd contexte skill-creator`
 
-Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte skill-creator` et lire sa sortie.
+Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte skill-creator` et lire sa sortie en entier, fichier enregistré compris.

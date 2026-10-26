@@ -20,7 +20,7 @@ Phrase à dire : « On comprend d'abord le besoin, et on choisit les outils **ap
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, pendant tout ce chemin.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte tech` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande. Appliquer aussi les « Règles de la mémoire projet » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande. Projet neuf : appliquer la démarche « Choisir la pile technique », chargée en tête du chemin B, pendant tout ce chemin.
 
 ## Contexte
 
@@ -132,4 +132,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : projet existant : `
 
 !`pulse-aidd contexte tech`
 
-Ce contexte contient aussi « Règles de la mémoire projet », « Modèle : docs/technical.md », « Modèle : .gitignore », « Modèle : .env.example » et « Modèle : décision (ADR) » ; la démarche de choix (projet neuf), l'organisation des fichiers et les valeurs du pack de pile se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie ; chemin B : relancer aussi `pulse-aidd reference tech/choix-techniques.md` si la démarche n'est plus dans la conversation.
+Ce contexte contient aussi « Règles de la mémoire projet », « Modèle : docs/technical.md », « Modèle : .gitignore », « Modèle : .env.example » et « Modèle : décision (ADR) » ; la démarche de choix (projet neuf), l'organisation des fichiers et les valeurs du pack de pile se chargent à l'étape qui les cite. Si ce contexte est absent, lancer `pulse-aidd contexte tech` et lire sa sortie en entier, fichier enregistré compris ; chemin B : relancer aussi `pulse-aidd reference tech/choix-techniques.md` si la démarche n'est plus dans la conversation.

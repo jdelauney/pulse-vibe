@@ -13,7 +13,7 @@ Alléger une skill Claude Code (moins de texte chargé, donc moins de jetons à 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte optimize-skill` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte optimize-skill` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 - Appliquer les règles des skills (« Règles des skills », dans le même contexte) : chaque point du plan cite sa règle `K<n>`.
 - Garder chaque question clé, validation, point d'arrêt, refus et garde-fou de la skill (K12). Un texte déplacé dans `references/` se charge à l'étape qui le sert, avec sa condition (K6).
@@ -62,6 +62,8 @@ Avant toute modification, copier tout le dossier de la skill, avec les noms d'or
 - skill du projet (dans le dossier du projet) : `docs/audits-skills/sauvegardes/<nom>-<AAAA-MM-JJ>/`, écrite sans demande, fichier par fichier (Read puis Write) ;
 - skill personnelle (`~/.claude/skills/`), ou toute skill hors du projet : `~/.claude/skills-sauvegardes/<nom>-<AAAA-MM-JJ>/` ; dire en une phrase que Claude Code demande l'accord pour cette écriture.
 
+Un fichier binaire (image, police, PDF : `binaire` dans les lignes `reference:` de `pulse-aidd skill mesurer`, ou à son extension) ne se copie pas par Read puis Write : le lister, et dire à la personne qu'il n'est pas dans la sauvegarde et reste tel quel, car l'optimisation ne le modifie jamais ; elle peut le copier elle-même (« copiez-le vous-même si vous le souhaitez »).
+
 Une sauvegarde du même jour existe déjà : la garder, c'est l'état d'avant la première optimisation du jour.
 
 ### 6. Appliquer
@@ -76,7 +78,7 @@ Utiliser l'outil Agent avec **`pulse:skill-auditor`** en mode `avant-apres`, ave
 
 - `Verdict : aucune perte` : passer au bilan.
 - `Verdict : pertes (<n>)` : rendre chaque perte selon la correction proposée, une fois, puis relire une seconde fois avec le même assistant (même mode, même modèle).
-- Des pertes restent après la seconde relecture : s'arrêter, et dire chaque perte en mots de tous les jours (ce que la skill faisait avant, ce qu'elle ne fait plus). Choisir (AskUserQuestion : « Remettre la sauvegarde (Recommandé) » / « Garder ainsi »). Remettre la sauvegarde : recopier chaque fichier de la sauvegarde à sa place dans la skill ; un fichier ajouté par l'optimisation se retire avec l'accord de la personne (Claude Code le demande). Garder ainsi : les pertes vont en tête du bilan.
+- Des pertes restent après la seconde relecture : s'arrêter, et dire chaque perte en mots de tous les jours (ce que la skill faisait avant, ce qu'elle ne fait plus). Choisir (AskUserQuestion : « Remettre la sauvegarde (Recommandé) » / « Garder ainsi »). Remettre la sauvegarde : recopier chaque fichier de la sauvegarde à sa place dans la skill (un fichier binaire, jamais modifié, est resté en place) ; un fichier ajouté par l'optimisation se retire avec l'accord de la personne (Claude Code le demande). Garder ainsi : les pertes vont en tête du bilan.
 
 Si l'assistant est indisponible, faire la comparaison en suivant strictement le mode `avant-apres` de `pulse-aidd agent skill-auditor`, en lecture seule.
 
@@ -86,9 +88,9 @@ Ajouter au rapport le « Bilan avant / après » de `plan.md` : les tailles et l
 
 - le gain : caractères et jetons estimés en moins, au lancement et à chaque lecture ;
 - le verdict de la relecture ;
-- le lien du rapport et celui de la sauvegarde (à supprimer vous-même quand le résultat vous convient).
+- le lien du rapport et celui de la sauvegarde (à supprimer quand le résultat vous convient).
 
-Terminer avec le bloc de fin de commande. Prochaine étape : avec `suivi-git: oui` (étape 1), tapez `/pulse:commit` pour enregistrer la skill optimisée ; sinon, tapez `/<nom>` avec un exemple réel, pour l'essayer.
+Terminer avec le bloc de fin de commande. Prochaine étape : avec `suivi-git: oui` (étape 1), supprimez la sauvegarde du projet quand le résultat vous convient, avant l'enregistrement (sous `docs/`, elle serait enregistrée avec la skill ; Claude Code demande l'accord pour la supprimer), puis tapez `/pulse:commit` pour enregistrer la skill optimisée ; sinon, tapez `/<nom>` avec un exemple réel, pour l'essayer.
 
 ## Exemples
 
@@ -99,4 +101,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : avec `suivi-git: ou
 
 !`pulse-aidd contexte optimize-skill`
 
-Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte optimize-skill` et lire sa sortie.
+Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte optimize-skill` et lire sa sortie en entier, fichier enregistré compris.

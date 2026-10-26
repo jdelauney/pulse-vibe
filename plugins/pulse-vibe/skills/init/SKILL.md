@@ -19,7 +19,7 @@ lire l'état → décider la prochaine étape → montrer l'écran → agir sur 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte init` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte init` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Règles de la boucle :
 - **Guider, en restant bref.** Un écran court, une seule action recommandée.
@@ -146,4 +146,4 @@ Quand la personne arrête la boucle (ou après une étape lancée), terminer ave
 
 !`pulse-aidd contexte init`
 
-Ce contexte contient aussi « Bannière » ; chaque référence ou modèle se charge à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie.
+Ce contexte contient aussi « Bannière » ; chaque référence ou modèle se charge à l'action qui le cite. Si ce contexte est absent, lancer `pulse-aidd contexte init` et lire sa sortie en entier, fichier enregistré compris.

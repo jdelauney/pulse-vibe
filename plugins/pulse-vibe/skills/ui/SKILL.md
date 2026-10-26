@@ -13,9 +13,9 @@ Aider la personne à **voir** et choisir l'apparence de son outil, puis à la so
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte ui` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte ui` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
-Les références de design se chargent à l'étape qui les cite (`pulse-aidd reference ui/<fichier>`, `pulse-aidd modele ui/<fichier>`) ; la « liste noire » désigne `ui/anti-patterns.md`. Les agents `pulse:designer` et `pulse:ui-critic` chargent eux-mêmes les leurs. Après un compactage, recharger d'abord les consignes entières de cette commande avec `pulse-aidd etape ui --sans-communes` (sortie lue en entier), puis, avant l'étape en cours, les références de l'action qui ne sont plus dans la conversation : identite, `pulse-aidd reference ui/registres.md` et `pulse-aidd reference ui/regles-ui.md` ; correction d'une maquette et polish, `pulse-aidd reference ui/regles-ui.md` et `pulse-aidd reference ui/anti-patterns.md`.
+Les références de design se chargent à l'étape qui les cite (`pulse-aidd reference ui/<fichier>`, `pulse-aidd modele ui/<fichier>`) ; la « liste noire » désigne `ui/anti-patterns.md`. Les agents `pulse:designer` et `pulse:ui-critic` chargent eux-mêmes les leurs. Après un compactage, recharger d'abord les règles avec `pulse-aidd contexte ui`, puis les consignes entières de cette commande avec `pulse-aidd etape ui --sans-communes` (toutes ses sections s'appliquent : l'en-tête « appliquer seulement le Processus » vaut pour un enchaînement), chaque sortie lue en entier, fichier enregistré compris, puis, avant l'étape en cours, les références de l'action qui ne sont plus dans la conversation : identite, `pulse-aidd reference ui/registres.md` et `pulse-aidd reference ui/regles-ui.md` ; correction d'une maquette et polish, `pulse-aidd reference ui/regles-ui.md` et `pulse-aidd reference ui/anti-patterns.md`.
 
 Questions : règle commune 5.
 
@@ -165,4 +165,4 @@ En cas d'échec, afficher le chemin complet et dire : « Double-cliquez sur ce f
 
 !`pulse-aidd contexte ui`
 
-Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie.
+Si ce contexte est absent, lancer `pulse-aidd contexte ui` et lire sa sortie en entier, fichier enregistré compris.

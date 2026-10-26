@@ -13,7 +13,7 @@ Faire vivre à la personne ce que vit son visiteur, puis l'améliorer, chiffres 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte perf` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte perf` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer aussi la référence « La vitesse vécue par les visiteurs » (chargée en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
@@ -111,4 +111,4 @@ Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il
 
 !`pulse-aidd contexte perf`
 
-Ce contexte contient aussi « La vitesse vécue par les visiteurs », « Modèle : docs/performance.md » et « Modèle : docs/lexique.md » ; la clé Google (`pulse-aidd reference perf/cle.md`), la vérification en CI (`pulse-aidd reference perf/ci-vitesse.md`) et le modèle de confidentialité (`pulse-aidd modele confidentialite.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie.
+Ce contexte contient aussi « La vitesse vécue par les visiteurs », « Modèle : docs/performance.md » et « Modèle : docs/lexique.md » ; la clé Google (`pulse-aidd reference perf/cle.md`), la vérification en CI (`pulse-aidd reference perf/ci-vitesse.md`) et le modèle de confidentialité (`pulse-aidd modele confidentialite.md`) se lancent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte perf` et lire sa sortie en entier, fichier enregistré compris.

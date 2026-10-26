@@ -15,7 +15,7 @@ La rapidité vient du regroupement des questions et des déductions que Pulse fa
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte nouveau` et lire sa sortie en entier) pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte nouveau` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande. Appliquer aussi « Penser avant d'écrire » et les « Règles de la mémoire projet » (chargés en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
 ## Contexte
 
@@ -118,4 +118,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:spirc versi
 
 !`pulse-aidd contexte nouveau`
 
-Ce contexte contient aussi « Penser avant d'écrire », « Règles de la mémoire projet », « Les règles des user stories », « Modèle : docs/brief.md », « Modèle : docs/prd.md », « Modèle : docs/user-stories.md (référentiel) », « Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md », « Modèle : aidd_docs/memory/glossary.md » et « Modèle : travail en cours » ; la référence des documents de départ (`pulse-aidd reference documents-depart.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte nouveau` et lire sa sortie.
+Ce contexte contient aussi « Penser avant d'écrire », « Règles de la mémoire projet », « Les règles des user stories », « Modèle : docs/brief.md », « Modèle : docs/prd.md », « Modèle : docs/user-stories.md (référentiel) », « Modèle : aidd_docs/tasks/<epic>/US-XXX-<nom>.md », « Modèle : aidd_docs/memory/glossary.md » et « Modèle : travail en cours » ; la référence des documents de départ (`pulse-aidd reference documents-depart.md`) se lance à l'étape qui la cite. Si ce contexte est absent, lancer `pulse-aidd contexte nouveau` et lire sa sortie en entier, fichier enregistré compris.

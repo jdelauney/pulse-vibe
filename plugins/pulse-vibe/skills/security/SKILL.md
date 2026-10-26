@@ -13,7 +13,7 @@ Vérifier la sécurité du projet : audit complet S1 à S13 avec le test du camb
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte security` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte security` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -93,4 +93,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` pui
 
 !`pulse-aidd contexte security`
 
-Ce contexte contient aussi « Modèle : docs/securite.md » ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/securite.md » ; chaque action charge sa référence dans le tableau « Choisir l'action ». Si ce contexte est absent, lancer `pulse-aidd contexte security` et lire sa sortie en entier, fichier enregistré compris.

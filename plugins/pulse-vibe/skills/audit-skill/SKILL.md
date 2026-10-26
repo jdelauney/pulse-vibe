@@ -13,7 +13,7 @@ Dire si une ou plusieurs skills Claude Code respectent les règles K1 à K14 (ti
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte audit-skill` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte audit-skill` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 - Appliquer les règles des skills (« Règles des skills », dans le même contexte) : chaque constat cite sa règle `K<n>`.
 - Travailler en lecture seule : la seule écriture est le rapport.
@@ -50,7 +50,7 @@ Pour chaque cible, lancer ces commandes et lire chaque sortie en entier. Leurs s
    - `skills: 0` : cette cible ne contient aucune skill. Le dire en une phrase ; s'il ne reste aucune cible, proposer les skills personnelles, un autre chemin, ou d'en créer une (tapez `/pulse:skill-creator`), et s'arrêter sans rapport.
    - `mode: resume` : un gros dossier, une ligne par skill. Le détail d'une skill se lit avec `pulse-aidd skill mesurer <chemin d'une skill>` ; chaque assistant le demande pour son lot.
 2. `pulse-aidd skill verifier <chemin>`. Avec `mode: resume` (gros dossier) : le compte par règle, puis les premiers constats, bloquants d'abord ; chaque assistant demande le détail des skills de son lot. Avec `installe: oui` en tête : la skill vient d'un plugin installé. L'audit continue ; une correction se fera dans le dossier source du plugin, car une mise à jour remplace ce dossier.
-3. `pulse-aidd skill empreinte <chemin>` : l'empreinte, la taille et la date de chaque fichier, pour savoir plus tard si les fichiers ont changé depuis l'audit.
+3. `pulse-aidd skill empreinte <chemin>` : l'empreinte, la taille et la date de chaque fichier, pour savoir plus tard si les fichiers ont changé depuis l'audit. Avec `mode: resume` (gros dossier) : les skills qui tiennent, chacune en entier ; pour une autre, lancer `pulse-aidd skill empreinte <chemin de cette skill>`.
 
 ### 3. L'usage observé, avec votre accord
 
@@ -98,4 +98,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : pour appliquer les 
 
 !`pulse-aidd contexte audit-skill`
 
-Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte audit-skill` et lire sa sortie.
+Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte audit-skill` et lire sa sortie en entier, fichier enregistré compris.

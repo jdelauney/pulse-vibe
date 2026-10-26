@@ -13,7 +13,7 @@ Donner à chaque page un texte qui parle au public du site, dans la voix du proj
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte rediger` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte rediger` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer « Rédiger les textes des pages » (chargé en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
@@ -72,4 +72,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : une autre page avec
 
 !`pulse-aidd contexte rediger`
 
-Ce contexte contient aussi « Rédiger les textes des pages », « Modèle : docs/voix.md » et « Modèle : docs/lexique.md » ; le modèle du texte de page est chargé par le redacteur. Si ce contexte est absent, lancer `pulse-aidd contexte rediger` et lire sa sortie.
+Ce contexte contient aussi « Rédiger les textes des pages », « Modèle : docs/voix.md » et « Modèle : docs/lexique.md » ; le modèle du texte de page est chargé par le redacteur. Si ce contexte est absent, lancer `pulse-aidd contexte rediger` et lire sa sortie en entier, fichier enregistré compris.

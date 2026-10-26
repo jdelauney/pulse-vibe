@@ -18,7 +18,7 @@ Pour écrire des tests **avant** le code d'une nouvelle tâche : `/pulse:impleme
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte test` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte test` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 ## Contexte
 
@@ -84,4 +84,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:fix "<éche
 
 !`pulse-aidd contexte test`
 
-Ce contexte contient aussi « Modèle : docs/lexique.md » et, avec un pack de pile, ses consignes de test. « Tests automatiques » et la méthode Gherkin se lancent à la demande (prérequis, et étape 1 d'« Écrire »). Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie.
+Ce contexte contient aussi « Modèle : docs/lexique.md » et, avec un pack de pile, ses consignes de test. « Tests automatiques » et la méthode Gherkin se lancent à la demande (prérequis, et étape 1 d'« Écrire »). Si ce contexte est absent, lancer `pulse-aidd contexte test` et lire sa sortie en entier, fichier enregistré compris.

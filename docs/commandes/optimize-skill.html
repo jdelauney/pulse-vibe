@@ -35,7 +35,7 @@
 <p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code>. Plus elle est longue, plus Claude Code lit de texte à chaque lancement. <code>/pulse:optimize-skill</code> l'allège sans lui faire perdre ce qui compte.</p>
 <p>Pulse procède en cinq temps :</p>
 <ol>
-<li><strong>L'audit</strong> de la skill selon les 14 règles (le rapport du jour de <a href="audit-skill.html"><code>/pulse:audit-skill</code></a> est repris si la skill n'a pas changé).</li>
+<li><strong>L'audit</strong> de la skill selon les 14 règles (l'audit du jour de cette seule skill, fait par <a href="audit-skill.html"><code>/pulse:audit-skill</code></a>, est repris si elle n'a pas changé).</li>
 <li><strong>Le plan</strong>, point par point : ce qui change, ce que vous y gagnez, le risque pour la qualité, et ce qui reste tel quel.</li>
 <li><strong>Votre choix</strong> : tout, une partie, ou rien.</li>
 <li><strong>La sauvegarde</strong> de la skill, puis les changements choisis, et eux seuls.</li>
@@ -69,7 +69,7 @@
 <li><strong>Après un audit</strong> : <code>/pulse:audit-skill</code> a trouvé des points à corriger.</li>
 <li><strong>Une skill vous semble lourde</strong> ou lente à démarrer.</li>
 </ul>
-<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> une skill à la fois. Pour repérer celles qui gagnent le plus, auditez d'abord le dossier entier avec <a href="audit-skill.html"><code>/pulse:audit-skill</code></a>.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> une skill à la fois. Pour repérer celles qui gagnent le plus, auditez d'abord le dossier entier avec <a href="audit-skill.html"><code>/pulse:audit-skill</code></a>. L'optimisation refait ensuite un audit court de la skill choisie, sauf si vous l'avez déjà auditée seule le même jour.</p></aside>
 </section>
 
 <section id="arguments">
@@ -101,7 +101,8 @@
 <h2>Risques et précautions</h2>
 <ul>
 <li><strong>Votre accord vient d'abord</strong> : la skill change seulement après votre choix sur le plan, et seulement sur les points choisis.</li>
-<li><strong>L'avant est toujours gardé</strong> : une sauvegarde est faite avant tout changement, à l'écart de vos skills. Supprimez-la vous-même quand le résultat vous convient.</li>
+<li><strong>L'avant est toujours gardé</strong> : une sauvegarde est faite avant tout changement, à l'écart de vos skills. Supprimez-la quand le résultat vous convient, avant d'enregistrer avec <code>/pulse:commit</code> : sinon elle serait enregistrée avec la skill.</li>
+<li><strong>Les images et les polices de la skill</strong> (fichiers binaires, qui ne sont pas du texte) ne sont pas copiées dans la sauvegarde : elles restent telles quelles, car l'optimisation ne les modifie pas. Copiez-les vous-même si vous le souhaitez.</li>
 <li><strong>Une skill d'un plugin installé reste telle quelle</strong> : la prochaine mise à jour du plugin effacerait le changement. Pulse vous indique où la corriger, dans le dossier d'origine du plugin.</li>
 <li><strong>Hors de votre projet</strong> (vos skills personnelles, un plugin), Claude Code vous demande l'accord pour chaque fichier.</li>
 </ul>
@@ -129,7 +130,7 @@
 <ul>
 <li><a href="audit-skill.html"><code>/pulse:audit-skill</code></a> : auditer des skills sans rien modifier.</li>
 <li><a href="skill-creator.html"><code>/pulse:skill-creator</code></a> : créer une skill qui suit ces règles dès le départ.</li>
-<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer la skill optimisée, dans un projet suivi par Git.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer la skill optimisée, dans un projet suivi par Git, une fois la sauvegarde supprimée.</li>
 </ul>
 </section>
 

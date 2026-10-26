@@ -15,7 +15,7 @@ Le script `pulse-aidd seo` lit le site **servi**, comme un robot. Les textes son
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte seo` et lire sa sortie en entier) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte seo` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 Appliquer aussi « Référencement : les règles » (chargées en fin de fichier, dans « Références de la commande ») pendant toute la commande.
 
@@ -106,4 +106,4 @@ Terminer avec le bloc de fin de commande. Prochaine étape : le rendez-vous not�
 
 !`pulse-aidd contexte seo`
 
-Ce contexte contient aussi « Référencement : les règles », « Modèle : docs/seo.md » et « Modèle : docs/lexique.md » ; la politique IA, le modèle d'audit et les autres références se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie.
+Ce contexte contient aussi « Référencement : les règles », « Modèle : docs/seo.md » et « Modèle : docs/lexique.md » ; la politique IA, le modèle d'audit et les autres références se chargent à leur étape. Si ce contexte est absent, lancer `pulse-aidd contexte seo` et lire sa sortie en entier, fichier enregistré compris.

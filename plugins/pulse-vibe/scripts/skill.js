@@ -9,7 +9,9 @@
 //                                        injection (!`pulse-aidd …` d'affichage seulement : contexte, etape, reference,
 //                                        modele, agent, qualite, tests, piles, pile contexte|reference, lancée dans un
 //                                        dossier temporaire vide ; toute autre : « non mesurée »),
-//                                        au-dela-30000 ; par agent : agent, chemin, agent-md, description.
+//                                        au-dela-30000 (fichiers, injections, et commandes pulse-aidd d'affichage citées
+//                                        entre accents graves, mesurées de la même façon ; les autres commandes citées :
+//                                        jugement) ; par agent : agent, chemin, agent-md, description.
 //                                        Sur un dossier : puis descriptions-total (les textes chargés en permanence :
 //                                        skills invocables par le modèle et agents) et recoupement: <a> <b> <n> lignes.
 //                                        Détail au-delà de 30 000 caractères : « mode: resume », une ligne par skill et
@@ -22,13 +24,15 @@
 //                                        « mode: resume », « detail: », « regle: K<n> · <b> bloquants · <c> à corriger ·
 //                                        <d> conseils » par règle, les constats (bloquants d'abord) tant qu'ils tiennent,
 //                                        « constats-autres: <n> », puis « bilan: » ; même code de sortie.
-//   --detail (après le chemin, pour mesurer et verifier) : tout le détail, même au-delà de 30 000 caractères (Claude
-//                                        Code enregistre alors la sortie dans un fichier, à lire en entier).
+//   --detail (après le chemin, pour mesurer, verifier et empreinte) : tout le détail, même au-delà de 30 000 caractères
+//                                        (Claude Code enregistre alors la sortie dans un fichier, à lire en entier).
 //   pulse-aidd skill empreinte <chemin>  « empreinte: <fichier> · <sha1> · <octets> octets · <date> » pour chaque fichier
 //                                        de chaque skill (tout son dossier) et de chaque agent ; sha1 = celui de
 //                                        git hash-object, calculé sans Git ; puis « suivi-git: oui|non|ignore · <SKILL.md
 //                                        ou agent> » par skill et par agent (git ls-files, git check-ignore : lecture
-//                                        seule). Sans skill : « skills: 0 (aucune skill trouvée …) ».
+//                                        seule). Sans skill : « skills: 0 (aucune skill trouvée …) ». Détail au-delà de
+//                                        30 000 caractères : « mode: resume », « detail: », puis skill par skill (ses
+//                                        empreintes et son suivi-git) tant qu'elles tiennent, et « unites-autres: <n> ».
 //   pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]
 //                                        l'usage observé dans l'historique des sessions de Claude Code (par défaut
 //                                        ~/.claude/projects, 90 derniers jours), lu en flux, ligne à ligne : periode,
@@ -49,7 +53,9 @@ const path = require("path");
 const readline = require("readline");
 const { spawnSync } = require("child_process");
 
-const LIMITE_LECTURE = 30000; // caractères : au-delà, Claude Code enregistre la sortie dans un fichier (aperçu seul)
+const LIMITE_LECTURE = 30000; // caractères : au-delà, Claude Code enregistre la sortie d'une commande dans un fichier (aperçu seul)
+const LIMITE_READ_LIGNES = 2000; // l'outil Read montre au plus 2 000 lignes d'un fichier
+const LIMITE_READ_JETONS = 25000; // et refuse un fichier d'environ 25 000 jetons ou plus (lecture par morceaux)
 const LIMITE_PROCESSUS = 5000; // jetons estimés : une compaction garde seulement le début d'une skill
 const DESCRIPTION_MAX = 1024;
 const DESCRIPTION_CONSEIL = 300;
@@ -245,6 +251,16 @@ function sectionProcessus(corps) {
   return debut ? { ...debut, fin: corps.length } : null;
 }
 
+/** Les commandes `pulse-aidd …` citées dans un texte (hors injections !`…`) : { commande, ligne (à partir de 0), texteLigne }. */
+const commandesCitees = (texte) =>
+  texte.split("\n").flatMap((l, i) => [...l.matchAll(/(?<!!)`(pulse-aidd [^`\n]+)`/g)].map((m) => ({ commande: m[1].trim(), ligne: i, texteLigne: l })));
+/** Vrai pour une ligne qui dit de lire en entier la sortie que Claude Code enregistre dans un fichier. */
+const litFichierEnregistre = (ligne) =>
+  /en entier|toute sa sortie|in full|entirely/i.test(ligne) && /fichier enregistré|enregistr\p{L}* dans un fichier|saved (?:to |in )?(?:a )?file/iu.test(ligne);
+/** Une ligne qui dit qu'un fichier sert seulement à un script (« lu par le script seul »). */
+const LU_PAR_SCRIPT = /\blue?s? (?:seulement )?par (?:le|un|son|ses|les) scripts?\b|\b(?:read|used) (?:only )?by (?:the|a) script/i;
+const milliers = (n) => String(n).replace(/\B(?=(\d{3})+$)/g, " ");
+
 /** Les injections !`commande` d'un texte : { commande, index, ligne (dans ce texte, à partir de 0) }. */
 const injectionsDe = (texte) => [...texte.matchAll(/!`([^`\n]+)`/g)].map((m) => ({ commande: m[1].trim(), index: m.index, ligne: texte.slice(0, m.index).split("\n").length - 1 }));
 
@@ -264,9 +280,29 @@ function mesurerSkill(u) {
     processusFin = jetons(section.fin + avant);
   }
   const references = ["references", "assets"].flatMap((d) =>
-    fichiersDe(path.join(u.dossier, d)).map((f) => ({ fichier: unix(path.relative(u.dossier, f)), chemin: f, car: estBinaire(f) ? null : lireTexte(f).length })),
+    fichiersDe(path.join(u.dossier, d)).map((f) => {
+      const fichier = unix(path.relative(u.dossier, f));
+      if (estBinaire(f)) return { fichier, chemin: f, car: null, lignes: null };
+      const t = lireTexte(f);
+      return { fichier, chemin: f, car: t.length, lignes: t.split("\n").length - (t.endsWith("\n") ? 1 : 0) };
+    }),
   );
-  const auDela30000 = [...references.filter((r) => r.car > LIMITE_LECTURE).map((r) => r.fichier), ...injections.filter((inj) => inj.car > LIMITE_LECTURE).map((inj) => `!${inj.commande}`)];
+  // Les textes lus par le modèle : le corps du SKILL.md et les références .md de la skill.
+  const textes = [
+    { chemin: u.fichier, texte: entete.corps, decalage: entete.ligneCorps },
+    ...references.filter((r) => r.car !== null && r.fichier.endsWith(".md")).map((r) => ({ chemin: r.chemin, texte: lireTexte(r.chemin), decalage: 1 })),
+  ];
+  // Les commandes pulse-aidd d'affichage citées, mesurées comme les injections (les autres commandes citées : jugement).
+  const citees = textes.flatMap((t) =>
+    commandesCitees(t.texte)
+      .filter((c) => injectionLisible(c.commande))
+      .map((c) => ({ ...c, chemin: t.chemin, ligne: c.ligne + t.decalage, car: mesurerInjection(c.commande) })),
+  );
+  const auDela30000 = [
+    ...references.filter((r) => r.car > LIMITE_LECTURE).map((r) => r.fichier),
+    ...injections.filter((inj) => inj.car > LIMITE_LECTURE).map((inj) => `!${inj.commande}`),
+    ...new Set(citees.filter((c) => c.car > LIMITE_LECTURE).map((c) => c.commande)),
+  ];
   return cacher(
     {
       type: "skill",
@@ -283,7 +319,7 @@ function mesurerSkill(u) {
       injections: injections.map(({ commande, car, ligne }) => ({ commande, car, ligne })),
       auDela30000,
     },
-    { texte, entete, section, injections, references },
+    { texte, entete, section, injections, references, textes, citees },
   );
 }
 
@@ -519,17 +555,38 @@ function constatsTrame(m, ajouter, convention) {
 }
 
 function constatsLecture(m, ajouter) {
+  const { textes, citees } = m.interne;
   for (const r of m.interne.references) {
-    if (!(r.car > LIMITE_LECTURE)) continue;
+    if (!(r.car > LIMITE_LECTURE) && !(r.lignes > LIMITE_READ_LIGNES)) continue;
+    // Dit « lu par le script seul » à côté de son lien : le modèle ne le lit pas.
+    const nom = path.basename(r.fichier);
+    if (textes.some((t) => t.texte.split("\n").some((l) => l.includes(nom) && LU_PAR_SCRIPT.test(l)))) continue;
     // Un fichier de données (JSON, YAML, CSV) sert souvent à un script seul : à corriger, pas bloquant.
-    if (DONNEES.test(r.fichier)) ajouter("K7", "a-corriger", 1, `${r.car} caractères (plus de ${LIMITE_LECTURE}) : lu par le modèle, il serait coupé ; s'il sert seulement à un script, le dire à côté de son lien`, r.chemin);
-    else ajouter("K7", "bloquant", 1, `${r.car} caractères (plus de ${LIMITE_LECTURE}) : Claude Code n'en montrerait qu'un aperçu ; scinder le fichier`, r.chemin);
+    if (DONNEES.test(r.fichier))
+      ajouter("K7", "a-corriger", 1, `${r.car} caractères, ${r.lignes} lignes : lu par le modèle, il coûte à chaque lecture, et l'outil Read le coupe au-delà de ${milliers(LIMITE_READ_LIGNES)} lignes ou d'environ ${milliers(LIMITE_READ_JETONS)} jetons ; s'il sert seulement à un script, l'écrire à côté de son lien (« lu par le script seul »)`, r.chemin);
+    // L'outil Read montre au plus 2 000 lignes et refuse un fichier d'environ 25 000 jetons : au-delà, la lecture est coupée.
+    else if (r.lignes > LIMITE_READ_LIGNES || jetons(r.car) >= LIMITE_READ_JETONS)
+      ajouter("K7", "bloquant", 1, `${r.car} caractères, ${r.lignes} lignes : l'outil Read en montre au plus ${milliers(LIMITE_READ_LIGNES)} lignes et refuse au-delà d'environ ${milliers(LIMITE_READ_JETONS)} jetons ; scinder le fichier`, r.chemin);
+    else ajouter("K7", "a-corriger", 1, `${r.car} caractères (plus de ${LIMITE_LECTURE}) : l'outil Read le lit en entier, mais il coûte à chaque lecture, et affiché par une commande il dépasserait la limite (aperçu seul) ; le scinder si possible`, r.chemin);
   }
   for (const inj of m.injections)
     // Une injection se charge au lancement de la skill, sans passer par un outil : pas de coupure, mais un coût à chaque lancement.
     if (inj.car > LIMITE_LECTURE) ajouter("K7", "a-corriger", inj.ligne, `l'injection !\`${inj.commande}\` affiche ${inj.car} caractères (plus de ${LIMITE_LECTURE}), chargés à chaque lancement : mesurer ce qui sert, et la scinder si possible (le reste chargé à l'étape qui le sert)`);
-  const textes = [{ chemin: m.fichier, texte: m.interne.texte }, ...m.interne.references.filter((r) => r.car !== null && r.fichier.endsWith(".md")).map((r) => ({ chemin: r.chemin, texte: lireTexte(r.chemin) }))];
-  for (const { chemin, texte } of textes)
+  // Une commande citée au-delà de la limite : Claude Code enregistre sa sortie dans un fichier et n'en montre qu'un aperçu,
+  // sauf si la ligne dit de lire ce fichier en entier (alors un coût, signalé une fois, ou avec l'injection de la même commande).
+  const injectees = new Set(m.injections.map((inj) => inj.commande));
+  const signalees = new Set();
+  for (const c of citees) {
+    if (!(c.car > LIMITE_LECTURE)) continue;
+    if (!litFichierEnregistre(c.texteLigne))
+      ajouter("K7", "bloquant", c.ligne, `\`${c.commande}\` affiche ${c.car} caractères (plus de ${LIMITE_LECTURE}) : Claude Code enregistre la sortie dans un fichier et n'en montre qu'un aperçu ; la scinder en appels séparés, ou dire sur cette ligne de lire en entier le fichier enregistré`, c.chemin);
+    else if (!injectees.has(c.commande) && !signalees.has(c.commande)) {
+      signalees.add(c.commande);
+      ajouter("K7", "a-corriger", c.ligne, `\`${c.commande}\` affiche ${c.car} caractères (plus de ${LIMITE_LECTURE}), lus en entier depuis le fichier enregistré, comme le dit la ligne : un coût à chaque lecture ; la scinder si possible`, c.chemin);
+    }
+  }
+  const tous = [{ chemin: m.fichier, texte: m.interne.texte }, ...textes.slice(1)];
+  for (const { chemin, texte } of tous)
     texte.split("\n").forEach((l, i) => {
       for (const c of l.matchAll(/`([^`\n]+)`/g))
         if (/\|\s*(head|tail)\b/.test(c[1])) ajouter("K7", "a-corriger", i + 1, `« ${c[1]} » coupe la sortie : lire les règles en entier, en appels séparés au besoin`, chemin);
@@ -697,7 +754,7 @@ const USAGE = [
   "        pulse-aidd skill empreinte <chemin>  empreinte, taille et date de chaque fichier (une skill a-t-elle changé ?), et suivi-git: oui|non|ignore",
   "<chemin> : une skill (dossier ou SKILL.md), un agent (agents/<nom>.md), un dossier de skills (.claude/skills/),",
   "ou un dossier qui contient skills/ ou agents/ (.claude/, un plugin).",
-  "Au-delà de 30 000 caractères, mesurer et verifier donnent un résumé ; --detail (après le chemin) donne tout.",
+  "Au-delà de 30 000 caractères, mesurer, verifier et empreinte donnent un résumé ; --detail (après le chemin) donne tout.",
   "        pulse-aidd skill usage [--depuis AAAA-MM-JJ] [--projets <dossier>]   l'usage observé dans l'historique des sessions",
   "(par défaut ~/.claude/projects, 90 derniers jours).",
 ].join("\n");
@@ -808,28 +865,37 @@ function suiviGit(fichier) {
 
 /**
  * L'empreinte de chaque fichier : celle de `git hash-object` (sans Git, calculée ici), la taille en octets et la date
- * de modification. Sert à savoir si une skill a changé depuis un audit.
+ * de modification. Sert à savoir si une skill a changé depuis un audit. Au-delà de la limite de lecture (sans --detail) :
+ * un résumé, skill par skill (ses empreintes, puis son suivi-git) tant qu'elles tiennent ; les autres sont comptées.
  */
-function afficherEmpreinte(lieu) {
+function afficherEmpreinte(lieu, cheminBrut, toutVoir) {
   if (!lieu.unites.length) return console.log(aucune(lieu)), 0;
   const base = fs.statSync(lieu.cible).isFile() ? path.dirname(lieu.cible) : lieu.cible;
-  const lignes = [];
-  for (const u of lieu.unites)
-    for (const f of fichiersUnite(u)) {
+  const blocs = lieu.unites.map((u) => ({
+    empreintes: fichiersUnite(u).map((f) => {
       const contenu = fs.readFileSync(f);
       const sha = crypto.createHash("sha1").update(`blob ${contenu.length}\0`).update(contenu).digest("hex");
       const date = fs.statSync(f).mtime.toISOString().replace(/\.\d{3}Z$/, "Z");
-      lignes.push(`empreinte: ${unix(path.relative(base, f))} · ${sha} · ${contenu.length} octets · ${date}`);
-    }
-  for (const u of lieu.unites) lignes.push(`suivi-git: ${suiviGit(u.fichier)} · ${unix(path.relative(base, u.fichier))}`);
-  console.log(lignes.join("\n"));
+      return `empreinte: ${unix(path.relative(base, f))} · ${sha} · ${contenu.length} octets · ${date}`;
+    }),
+    suivi: `suivi-git: ${suiviGit(u.fichier)} · ${unix(path.relative(base, u.fichier))}`,
+  }));
+  const entier = [...blocs.flatMap((b) => b.empreintes), ...blocs.map((b) => b.suivi)].join("\n");
+  if (toutVoir || entier.length < LIMITE_LECTURE) console.log(entier);
+  else {
+    const tete = [
+      `mode: resume (${blocs.length} skills et agents ; le détail dépasserait ${LIMITE_LECTURE} caractères)`,
+      `detail: pulse-aidd skill empreinte <chemin d'une skill> (${cheminBrut.replace(/[\\/]+$/, "")}/<chemin de sa ligne suivi-git>), ou --detail après le chemin (tout, enregistré dans un fichier)`,
+    ];
+    console.log(borner(tete, blocs.map((b) => [...b.empreintes, b.suivi].join("\n")), [], (n) => `unites-autres: ${n} (skills et agents non listés : empreinte d'une skill à la fois, ou --detail)`));
+  }
   return 0;
 }
 
 function main(argv) {
   const [action, cheminBrut, ...options] = argv;
   const toutVoir = options.includes("--detail");
-  const optionsValides = options.every((o) => o === "--detail") && !(toutVoir && action === "empreinte");
+  const optionsValides = options.every((o) => o === "--detail");
   if (!["mesurer", "verifier", "empreinte"].includes(action) || !cheminBrut || cheminBrut.startsWith("--") || !optionsValides) {
     console.log(USAGE);
     return 1;
@@ -845,7 +911,7 @@ function main(argv) {
     return 1;
   }
   try {
-    if (action === "empreinte") return afficherEmpreinte(lieu);
+    if (action === "empreinte") return afficherEmpreinte(lieu, cheminBrut, toutVoir);
     return action === "mesurer" ? afficherMesures(chemin, lieu, cheminBrut, toutVoir) : afficherConstats(chemin, lieu, cheminBrut, toutVoir);
   } catch (e) {
     console.log(`erreur: ${e.message}`);

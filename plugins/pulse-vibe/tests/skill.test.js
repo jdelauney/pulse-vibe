@@ -164,23 +164,59 @@ test("K7 : une injection de plus de 30 000 caractères → à corriger (coût à
   assert.match(lancer("mesurer", path.join(d, "injection")).stdout, /^au-dela-30000: !pulse-aidd reference rediger\/detecteur-tics-llm\.json$/m);
 });
 
-test("K7 : references/gros.md de 31 000 caractères → bloquant ; mesurer le signale au-delà de 30 000", (t) => {
+test("K7 : un fichier lu par l'outil Read est bloquant seulement au-delà de sa limite (2 000 lignes, ~25 000 jetons) ; au-delà de 30 000 caractères : à corriger", (t) => {
   const d = dossierTemporaire(t);
   ecrire(d, "lourde/SKILL.md", skill());
   ecrire(d, "lourde/references/gros.md", "é".repeat(31000));
   ecrire(d, "lourde/assets/modele.md", "# Modèle\n");
-  const k7 = constats(verifier(path.join(d, "lourde")), "K7", "bloquant");
-  assert.strictEqual(k7.length, 1);
+  const k7 = constats(verifier(path.join(d, "lourde")), "K7");
+  assert.deepStrictEqual(k7.map((c) => c.gravite), ["a-corriger"], JSON.stringify(k7));
   assert.match(k7[0].fichier, /references\/gros\.md$/);
+  assert.match(k7[0].message, /outil Read/);
   const r = lancer("mesurer", path.join(d, "lourde"));
   assert.strictEqual(r.status, 0, r.stderr);
   assert.match(r.stdout, /^reference: references\/gros\.md 31000 car$/m);
   assert.match(r.stdout, /^reference: assets\/modele\.md 9 car$/m);
   assert.match(r.stdout, /^au-dela-30000: references\/gros\.md$/m);
-  // Un fichier de données lu par un script : à corriger, pas bloquant.
+  // Au-delà de ce que l'outil Read montre : 2 001 lignes, ou environ 25 000 jetons (90 000 caractères) → bloquant.
+  ecrire(d, "lignes/SKILL.md", skill());
+  ecrire(d, "lignes/references/long.md", "ligne\n".repeat(2001));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "lignes")), "K7").map((c) => c.gravite), ["bloquant"]);
+  ecrire(d, "jetons/SKILL.md", skill());
+  ecrire(d, "jetons/references/dense.md", "é".repeat(90000));
+  const dense = constats(verifier(path.join(d, "jetons")), "K7");
+  assert.deepStrictEqual(dense.map((c) => c.gravite), ["bloquant"]);
+  assert.match(dense[0].message, /2 000 lignes|25 000 jetons/);
+  // Un fichier de données : à corriger, pas bloquant ; dit « lu par le script seul » à côté de son lien : aucun constat.
   ecrire(d, "donnees/SKILL.md", skill());
   ecrire(d, "donnees/references/listes.json", JSON.stringify({ mots: "x".repeat(31000) }));
   assert.deepStrictEqual(constats(verifier(path.join(d, "donnees")), "K7").map((c) => c.gravite), ["a-corriger"]);
+  ecrire(d, "donnees/SKILL.md", skill({ corps: CORPS.replace("Aucune.", "[references/listes.json](references/listes.json) (lu par le script seul).") }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "donnees")), "K7"), []);
+});
+
+test("K7 : une commande pulse-aidd d'affichage citée, de plus de 30 000 caractères → bloquant, sauf si la ligne dit de lire en entier le fichier enregistré (à corriger)", (t) => {
+  const d = dossierTemporaire(t);
+  const cite = (consigne) => skill({ corps: CORPS.replace("1. Lire le fichier.", `1. ${consigne}`) });
+  // 46 816 caractères : Claude Code enregistre la sortie dans un fichier et n'en montre qu'un aperçu.
+  ecrire(d, "apercu/SKILL.md", cite("Lancer `pulse-aidd reference rediger/detecteur-tics-llm.json` et lire sa sortie."));
+  const apercu = constats(verifier(path.join(d, "apercu")), "K7");
+  assert.deepStrictEqual(apercu.map((c) => c.gravite), ["bloquant"], JSON.stringify(apercu));
+  assert.match(apercu[0].message, /aperçu/);
+  assert.strictEqual(apercu[0].ligne, 23, "la ligne qui cite la commande");
+  assert.match(lancer("mesurer", path.join(d, "apercu")).stdout, /^au-dela-30000: pulse-aidd reference rediger\/detecteur-tics-llm\.json$/m);
+  ecrire(d, "entier/SKILL.md", cite("Lancer `pulse-aidd reference rediger/detecteur-tics-llm.json` et lire sa sortie en entier, fichier enregistré compris."));
+  const entier = constats(verifier(path.join(d, "entier")), "K7");
+  assert.deepStrictEqual(entier.map((c) => c.gravite), ["a-corriger"], JSON.stringify(entier));
+  assert.match(entier[0].message, /coût/);
+  // Dans une référence de la skill aussi.
+  ecrire(d, "reference/SKILL.md", skill());
+  ecrire(d, "reference/references/etape.md", "Lancer `pulse-aidd reference rediger/detecteur-tics-llm.json`.\n");
+  const ref = constats(verifier(path.join(d, "reference")), "K7");
+  assert.deepStrictEqual(ref.map((c) => [c.gravite, c.fichier.endsWith("references/etape.md"), c.ligne]), [["bloquant", true, 1]]);
+  // Sous la limite, avec une forme à compléter (<…>), ou une autre commande : rien (les autres commandes citées : jugement).
+  ecrire(d, "autres/SKILL.md", cite("Lancer `pulse-aidd reference git.md`, `pulse-aidd contexte <commande>` et `cat gros.txt`."));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "autres")), "K7"), []);
 });
 
 test("K9 : « Ne jamais » trois fois → conseil", (t) => {
@@ -627,6 +663,35 @@ test("verifier sur un très gros dossier : résumé sous 30 000 caractères (blo
   // Un petit dossier : le détail, sans résumé.
   assert.doesNotMatch(lancer("verifier", path.join(d, "skills", nom(0))).stdout, /^mode: /m);
   assert.strictEqual(lancer("verifier", d, "--inconnu").status, 1, "option inconnue : usage");
+});
+
+test("empreinte sur un très gros dossier : résumé sous 30 000 caractères, skill par skill (ses empreintes et son suivi-git), unites-autres ; --detail donne tout", (t) => {
+  const { d, nombre } = grosDossier(t);
+  const r = lancer("empreinte", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(r.stdout.length < 30000, `${r.stdout.length} caractères`);
+  assert.match(r.stdout, /^mode: resume /m);
+  assert.match(r.stdout, /--detail/);
+  const empreintes = (r.stdout.match(/^empreinte: /gm) || []).length;
+  const suivis = (r.stdout.match(/^suivi-git: /gm) || []).length;
+  assert.ok(suivis > 0 && suivis < nombre, `${suivis} skills listées`);
+  assert.strictEqual(empreintes, suivis, "chaque skill listée a toutes ses lignes : ses empreintes et son suivi-git");
+  assert.match(r.stdout, new RegExp(`^unites-autres: ${nombre - suivis} `, "m"));
+  const tout = lancer("empreinte", d, "--detail");
+  assert.strictEqual(tout.status, 0, tout.stderr);
+  assert.doesNotMatch(tout.stdout, /^mode: /m);
+  assert.strictEqual((tout.stdout.match(/^suivi-git: /gm) || []).length, nombre);
+  assert.ok(tout.stdout.length > 30000);
+});
+
+test("regles-skills.md, K7 : sortie de commande (fichier enregistré, aperçu), outil Read (2 000 lignes, ~25 000 jetons), injection, commandes citées", () => {
+  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const k7 = texte.split(/^## /m).find((s) => s.startsWith("K7 "));
+  for (const attendu of [/aperçu/, /fichier enregistré/, /à corriger/, /outil Read/, /2 000 lignes/, /25 000 jetons/, /injection/, /citée/, /jugement/, /lu par le script seul/])
+    assert.match(k7, attendu, `K7 : ${attendu}`);
+  const bloquants = texte.match(/^- \*\*Bloquant\*\*[^\n]*/m)[0];
+  assert.match(bloquants, /fichier enregistré[^;]*\(K7\)|\(K7\)/);
+  assert.match(bloquants, /outil Read/, "la liste des bloquants suit K7");
 });
 
 test("empreinte : chaque fichier d'une skill ou d'un agent, son empreinte (celle de git hash-object), sa taille et sa date ; sans Git", (t) => {
