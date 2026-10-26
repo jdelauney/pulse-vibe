@@ -70,10 +70,10 @@
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
 <pre class="commande"><code>/pulse:audit-skill [chemin d'une skill, d'un dossier de skills ou d'un plugin]</code></pre>
-<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Par défaut : .claude/skills/.</p>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Par défaut : les skills et agents du projet, .claude/.</p>
 <!-- /auto:forme -->
 <ul>
-<li><strong>Rien</strong> : les skills de votre projet, dans <code>.claude/skills/</code>. Pulse vous propose d'ajouter vos skills personnelles.</li>
+<li><strong>Rien</strong> : les skills et les assistants de votre projet, dans <code>.claude/</code>. Pulse vous propose d'ajouter vos skills personnelles, avec leur propre rapport. Un projet sans skill vous est signalé, sans rapport.</li>
 <li><strong>Le chemin d'une skill</strong> : cette skill seule.</li>
 <li><strong>Le chemin d'un dossier ou d'un plugin</strong> : toutes ses skills et ses assistants.</li>
 </ul>
@@ -85,7 +85,7 @@
 <table>
 <thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
 <tbody>
-<tr><td><code>docs/audits-skills/&lt;nom&gt;-&lt;date&gt;.md</code></td><td>Le rapport : les mesures, un avis par règle, les points à corriger rangés du plus grave au plus léger, et le gain estimé.</td></tr>
+<tr><td><code>docs/audits-skills/&lt;nom&gt;-&lt;date&gt;.md</code></td><td>Le rapport, un par ensemble audité (votre projet, vos skills personnelles, un plugin) : les mesures, un avis par règle, les points à corriger rangés du plus grave au plus léger, et le gain estimé.</td></tr>
 </tbody>
 </table>
 </section>

@@ -9,9 +9,11 @@
 
 Sert à savoir si les fichiers ont changé depuis l'audit (un rapport du jour se réutilise seulement si l'empreinte est la même).
 
-| Fichier | Empreinte |
-|---|---|
-| `<skill>/SKILL.md` | <sortie de git hash-object, ou taille en caractères si Git manque> |
+Lignes de `pulse-aidd skill empreinte`.
+
+| Fichier | Empreinte | Taille | Date |
+|---|---|---|---|
+| `<skill>/SKILL.md` | <empreinte> | <octets> octets | <AAAA-MM-JJTHH:MM:SSZ> |
 
 ## Mesures
 
