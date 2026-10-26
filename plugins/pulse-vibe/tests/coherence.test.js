@@ -233,44 +233,18 @@ function motifsBash(fichier) {
   return [...ligne.matchAll(/Bash\(([^)]*)\)/g)].map((m) => m[1]);
 }
 
-// Règle de Claude Code : « * » remplace n'importe quel texte ; un « * » final précédé d'une espace,
-// seul joker du motif, couvre aussi la commande sans argument (Bash(ls *) couvre ls).
-function couvre(motif, commande) {
-  if (/^[^*]+ \*$/.test(motif)) {
-    const base = motif.slice(0, -2);
-    return commande === base || commande.startsWith(`${base} `);
-  }
-  const echappe = (s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`^${motif.split("*").map(echappe).join(".*")}$`, "s").test(commande);
-}
-
-// Ce qui change la production, crée ou retire un secret, ou coupe un accès : toujours par la demande d'autorisation.
-const SENSIBLES = [
-  "pulse-aidd secrets generer NOM",
-  "pulse-aidd secrets generer NOM --envoyer production,preview",
-  "pulse-aidd secrets envoyer NOM --env production",
-  "pulse-aidd secrets elaguer NOM",
-  "pulse-aidd secrets redeployer",
-  "pulse-aidd secrets redeployer --env production",
-  "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
-  "pulse-aidd ligne-etat --installer", // change les réglages de Claude Code du projet
-  "pulse-aidd ligne-etat --retirer",
-  "pulse-aidd autorisations --ecrire", // change les réglages de Claude Code du projet
-  "pulse-aidd copies --mettre-a-jour", // remplace des fichiers du projet
-  "pulse-aidd search-console deconnecter",
-  "pulse-aidd pile hebergeur envoyer NOM production",
-  "pulse-aidd pile hebergeur redeployer production",
-  "pulse-aidd deplacer-commits feat/us-003-liste", // déplace la branche principale (règle commune 17)
-  "pulse-aidd deplacer-commits feat/us-003-liste --principale main",
-];
-const estSensible = (commande) => /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
+// Règle de Claude Code (« * » remplace n'importe quel texte ; un « * » final précédé d'une espace couvre aussi la commande
+// sans argument) et gestes sensibles, toujours par la demande d'autorisation : une seule source, scripts/skill.js,
+// partagée avec pulse-aidd skill verifier (règle K4).
+const { couvre, SENSIBLES, estSensible } = require(path.join(RACINE, "scripts", "skill.js"));
 
 // Une citation `pulse-aidd …` devient une commande d'essai : <x> → X ; […] retiré ; … → X.
 const essai = (citation) => citation.replace(/<[^>]*>/g, "X").replace(/\[[^\]]*\]/g, "").replace(/…/g, "X").replace(/\s+/g, " ").trim();
 const citationsOutil = (texte) => [...texte.matchAll(/`(pulse-aidd [^`]+)`/g)].map((m) => essai(m[1]));
 
 test("allowed-tools : ni Bash(pulse-aidd *), ni sous-commande sensible autorisée d'avance", () => {
-  assert.ok(couvre("pulse-aidd *", SENSIBLES[0]) && !couvre("pulse-aidd secrets inventaire *", SENSIBLES[0]), "règle de correspondance");
+  const generer = SENSIBLES.find((c) => c.startsWith("pulse-aidd secrets generer"));
+  assert.ok(couvre("pulse-aidd *", generer) && !couvre("pulse-aidd secrets inventaire *", generer), "règle de correspondance");
   const problemes = [];
   for (const fichier of SKILLS_PAR_PLUGIN) {
     const skill = path.relative(DEPOT, path.dirname(fichier));

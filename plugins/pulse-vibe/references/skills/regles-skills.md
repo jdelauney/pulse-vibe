@@ -27,7 +27,7 @@ Universelle · bloquant si absente ou de plus de 1 024 caractères ; à corriger
 Commencer par ce que la skill fait, en une phrase. Skill que le modèle peut lancer : ajouter « À utiliser quand … » (ou « Use when … ») et les mots de la personne. Viser 50 à 300 caractères. La description d'une skill invocable par le modèle, et celle de chaque agent, restent chargées en permanence : chaque caractère compte. Une skill lancée seulement par la personne garde une description courte de capacité. Une description qui contient « : » s'écrit entre guillemets.
 
 - Script : présence, longueur, « À utiliser quand », deux-points hors guillemets ; en-tête illisible = description absente.
-- Jugement : « Les phrases réelles de la personne déclenchent-elles cette skill, et seulement elle ? »
+- Jugement : « Les phrases de la personne déclenchent-elles cette skill, et elle seule ? »
 - Avant → après : descriptions des agents « … Utilisé par /pulse:review et /pulse:spirc » (1 Ko chargé en permanence) → « … en lecture seule (commandes Pulse) ».
 
 ## K3 – Qui lance la skill
@@ -40,7 +40,7 @@ Mettre `disable-model-invocation: true` à une skill qui a des effets : elle éc
 
 ## K4 – Des autorisations précises
 
-Universelle · bloquant (geste sensible autorisé d'avance, motif trop large) ; à corriger (`Write` ou `Edit` sans chemin) · script et jugement.
+Universelle · bloquant (geste sensible autorisé d'avance, motif trop large) ; à corriger (`Write`, `Edit(**)` : sans chemin précis) · script et jugement.
 
 Écrire dans `allowed-tools` des motifs précis : `Bash(git status *)`, `Write(docs/**)`. Laisser passer par la demande d'accord de Claude Code les envois (`git push`), suppressions (`rm`, `git clean`, `git branch -D`), fusions, envois forcés, changements de configuration (`git config`, `git remote`, `.claude/settings.json`) et gestes de production (mise en ligne, secrets). Chaque commande que la skill ou ses références font lancer est couverte par un motif, et chaque motif sert.
 
@@ -51,10 +51,10 @@ Universelle · bloquant (geste sensible autorisé d'avance, motif trop large) ; 
 
 Position du Processus : universelle, bloquant (à corriger avec une ligne de rechargement placée tôt) · trame des sections : convention · script et jugement.
 
-Placer le Processus tôt : sa fin tient dans les 5 000 premiers jetons estimés du `SKILL.md`, car une compaction en garde seulement le début. Sinon, écrire dans ce début une ligne qui parle de compaction et cite la commande qui réaffiche les consignes (dans Pulse, `pulse-aidd etape` de la commande ; ailleurs, la lecture de son `SKILL.md`). Trame recommandée : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références. Une injection dynamique (``!`commande` ``) ferme le fichier, après le Processus, suivie d'une ligne de repli qui dit comment recharger ce qu'elle apporte (« Si ce contexte est absent, lancer … et lire sa sortie »).
+Placer le Processus tôt : sa fin tient dans les 5 000 premiers jetons estimés du `SKILL.md`, car une compaction en garde seulement le début. Sinon, écrire dans ce début une ligne qui parle de compaction et cite la commande qui réaffiche les consignes (son `SKILL.md` ; dans Pulse, son étape avec `--sans-communes`). Trame recommandée : Objectif, Règles, Contexte, Rôle (facultatif), Processus, Exemples, Références. Une injection dynamique (``!`commande` ``) ferme le fichier, après le Processus, suivie d'une ligne de repli qui dit comment recharger ce qu'elle apporte (« Si ce contexte est absent, lancer … et lire sa sortie »).
 
 - Script : `processus-fin:` de `mesurer` ; sections présentes ; injection placée avant la fin du Processus.
-- Jugement : « Après une compaction, la skill sait-elle encore quoi faire ? »
+- Jugement : « Après une compaction, la skill sait-elle quoi faire ? »
 - Avant → après : 22,9 k de règles communes injectés avant le Processus → injection `!pulse-aidd contexte <commande>` en dernière section, Processus dans les premiers jetons.
 
 ## K6 – Charger à l'étape qui sert
@@ -73,7 +73,7 @@ Universelle · bloquant au-delà de 30 000 caractères lus par un outil ; à cor
 Garder chaque sortie lue par un outil (fichier, commande) sous 30 000 caractères : au-delà, Claude Code l'enregistre dans un fichier et en montre seulement un aperçu. Scinder en appels séparés. Une injection (``!`commande` ``) se charge en entier, mais à chaque lancement : la mesurer, et la scinder si possible. Lire les règles en entier, sans `head`, `tail` ni tube qui les coupe.
 
 - Script : taille de chaque fichier de `references/` et `assets/` (données JSON, YAML ou CSV, souvent lues par un script : à corriger) et de chaque injection `!pulse-aidd …` (les autres : « non mesurée ») ; `head` ou `tail`.
-- Avant → après : le reviewer lisait la checklist sécurité par `| head -60` (points S10 à S13 jamais lus) → une commande par famille, lue en entier.
+- Avant → après : le reviewer lisait la checklist sécurité par `| head -60` (S10 à S13 jamais lus) → une commande par famille, lue en entier.
 
 ## K8 – Un fait, un seul endroit
 
@@ -101,11 +101,11 @@ Confier à un script ce qui se compte, se contrôle ou se déplace : contrôles,
 
 ## K11 – Les agents
 
-Outils cités : universelle, bloquant · `model` explicite : convention · script et jugement.
+Outils cités : universelle, bloquant · le reste : convention · script et jugement.
 
-Donner à chaque agent les outils que ses consignes citent (listés dans `tools`, ou absents de `disallowedTools`), et une liste Bash « seulement pour … » qui nomme chaque commande demandée. Écrire `model` (`haiku`, `sonnet`, `opus`). Le message de délégation donne des chemins, pas des recopies. Une preuve produite par un agent (tests lancés, contrôle passé) est réutilisée par les suivants.
+Donner à chaque agent les outils que ses consignes citent (entre accents graves, ou avec le mot « outil ») : dans `tools` (`*` : tous), ou absents de `disallowedTools`. Convention : `model` écrit (`haiku`, `sonnet`, `opus`) et une liste Bash « seulement pour … » qui nomme chaque commande. Le message de délégation donne des chemins, pas des recopies. Une preuve produite par un agent (tests lancés, contrôle passé) est réutilisée par les suivants.
 
-- Avant → après : designer et ui-critic devaient lancer `pulse-aidd contraste`, absent de leur liste Bash → ajouté ; tests lancés 27 fois par essai → preuve unique réutilisée (15).
+- Avant → après : designer et ui-critic devaient lancer `pulse-aidd contraste`, absent de leur liste Bash → ajouté ; tests lancés 27 fois par essai → preuve unique (15).
 
 ## K12 – Les validations gardées
 
@@ -114,7 +114,7 @@ Universelle · à corriger ; en relecture avant / après, une perte se corrige a
 Raccourcir une skill en gardant chaque question clé, validation, point d'arrêt et garde-fou. Poser une question clé à la fois, l'option recommandée en premier.
 
 - Jugement : « Comparée à l'avant, la skill pose-t-elle les mêmes questions, aux mêmes arrêts, avec les mêmes refus ? »
-- Avant → après : `/pulse:us` posait ses questions clés en bloc → une à une, en réponse libre ; aucune retirée.
+- Avant → après : `/pulse:us` posait ses questions clés en bloc → une à une, en réponse libre, aucune retirée.
 
 ## K13 – Parler au destinataire
 

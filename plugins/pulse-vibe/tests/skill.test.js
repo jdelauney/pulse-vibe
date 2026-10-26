@@ -198,12 +198,12 @@ const AGENT = (entete, corps = "Relire le code en lecture seule.\n") => `---\nna
 
 test("K11 : agent qui cite Write avec disallowedTools: Write → bloquant ; outil présent dans tools → rien", (t) => {
   const d = dossierTemporaire(t);
-  ecrire(d, "agents/relecteur.md", AGENT("disallowedTools: Write, Edit\nmodel: sonnet\n", "Écrire le rapport avec Write dans docs/.\n"));
+  ecrire(d, "agents/relecteur.md", AGENT("disallowedTools: Write, Edit\nmodel: sonnet\n", "Écrire le rapport dans docs/ avec l'outil Write.\n"));
   const k11 = constats(verifier(path.join(d, "agents", "relecteur.md")), "K11", "bloquant");
   assert.strictEqual(k11.length, 1, JSON.stringify(k11));
   assert.match(k11[0].message, /Write/);
   assert.strictEqual(k11[0].ligne, 8);
-  ecrire(d, "agents2/agents/lecteur.md", AGENT("tools: Read, Grep\nmodel: sonnet\n", "Chercher avec `Grep`, puis lancer Bash.\n"));
+  ecrire(d, "agents2/agents/lecteur.md", AGENT("tools: Read, Grep\nmodel: sonnet\n", "Chercher avec `Grep`, puis lancer `Bash`.\n"));
   const k11b = constats(verifier(path.join(d, "agents2")), "K11", "bloquant");
   assert.deepStrictEqual(k11b.map((c) => /Bash/.test(c.message)), [true], "Bash cité, absent de tools ; Grep présent");
 });
@@ -384,4 +384,142 @@ test("usage : période par défaut de 90 jours", async (t) => {
   const [, du, au] = r.stdout.match(/^periode: (\S+) → (\S+)$/m);
   assert.strictEqual(Math.round((new Date(au) - new Date(du)) / 86400000), 90);
   assert.match(r.stdout, /^fichiers-lus: 0$/m);
+});
+
+// ---------------------------------------------------------------- Correctifs, tour 1
+
+test("lecture seule : une injection qui écrit (pulse-aidd installer-ci) n'est jamais lancée ; la taille mesurée ne dépend pas du dossier courant", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "skill/ecrit/SKILL.md", skill({ corps: `${CORPS}\n!\`pulse-aidd installer-ci\`\n\n!\`pulse-aidd travail-fini\`\n\n!\`pulse-aidd modele lexique.md\`\n` }));
+  const vide = path.join(d, "courant");
+  fs.mkdirSync(vide);
+  const r = spawnSync(process.execPath, [SCRIPT, "mesurer", path.join(d, "skill", "ecrit")], { cwd: vide, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^injection: pulse-aidd installer-ci non mesurée$/m);
+  assert.match(r.stdout, /^injection: pulse-aidd travail-fini non mesurée$/m);
+  assert.deepStrictEqual(fs.readdirSync(vide), [], "rien d'écrit dans le dossier courant");
+  assert.deepStrictEqual(fs.readdirSync(path.join(d, "skill", "ecrit")), ["SKILL.md"], "rien d'écrit à côté de la skill");
+  const taille = (cwd) => spawnSync(process.execPath, [SCRIPT, "mesurer", path.join(d, "skill", "ecrit")], { cwd, encoding: "utf8" }).stdout.match(/^injection: pulse-aidd modele lexique\.md (\d+) car$/m)[1];
+  ecrire(d, "avec-pack/docs/technical.md", "**Pack de pile Pulse** : next\n");
+  assert.strictEqual(taille(path.join(d, "avec-pack")), taille(vide));
+  const { injectionLisible } = require(SCRIPT);
+  for (const c of ["pulse-aidd contexte review", "pulse-aidd etape commit --sans-communes", "pulse-aidd reference git.md", "pulse-aidd modele us.md", "pulse-aidd agent reviewer", "pulse-aidd qualite clean-code", "pulse-aidd tests strategie", "pulse-aidd piles", "pulse-aidd pile contexte tech", "pulse-aidd pile reference fiche.md"])
+    assert.ok(injectionLisible(c), c);
+  for (const c of ["pulse-aidd installer-ci", "pulse-aidd preuve lancer", "pulse-aidd sonder https://exemple.fr", "pulse-aidd pile hebergeur envoyer X", "pulse-aidd pile recette connexion", "pulse-aidd secrets inventaire", "pulse-aidd contexte review; rm -rf x", "ls -la"])
+    assert.ok(!injectionLisible(c), c);
+});
+
+test("K5 : une ligne « # commentaire » dans un bloc de code ne ferme pas le Processus", (t) => {
+  const d = dossierTemporaire(t);
+  const corps = CORPS.replace("2. Écrire cinq points.", `2. Installer :\n\n\`\`\`bash\n# install deps\nnpm install\n## encore un commentaire\n\`\`\`\n\n${"Une étape longue du déroulé, détaillée pas à pas. ".repeat(500)}`);
+  ecrire(d, "code/SKILL.md", skill({ corps }));
+  assert.ok(mesurer(path.join(d, "code"))[0].processusFin > 5000);
+  assert.strictEqual(constats(verifier(path.join(d, "code")), "K5", "bloquant").length, 1);
+});
+
+test("K11 : verbes anglais hors contexte d'outil ignorés ; tools: \"*\" ; un motif de disallowedTools retire ce motif seul", (t) => {
+  const d = dossierTemporaire(t);
+  const k11 = (nom, entete, corps) => {
+    ecrire(d, `${nom}/agents/a.md`, AGENT(`${entete}model: sonnet\n`, corps));
+    return constats(verifier(path.join(d, nom)), "K11", "bloquant").map((c) => c.message.split(" ")[0]);
+  };
+  assert.deepStrictEqual(k11("anglais", "tools: Read, Grep, Glob\n", "Write a concise report of your findings. Edit nothing. Read the diff.\n"), []);
+  assert.deepStrictEqual(k11("etoile", 'tools: "*"\n', "Use `Write` and the Edit tool.\n"), []);
+  assert.deepStrictEqual(k11("motif", "disallowedTools: Bash(git push *)\n", "Lancer les tests avec `Bash`.\n"), []);
+  assert.deepStrictEqual(k11("outil-fr", "disallowedTools: Write\n", "Écrire le rapport avec l'outil Write.\n"), ["Write"]);
+  assert.deepStrictEqual(k11("tool-en", "tools: Read\n", "Save it with the Write tool, then call `Bash(git status)`.\n"), ["Write", "Bash"]);
+});
+
+test("liste des gestes sensibles et règle de correspondance : une seule source, partagée avec les tests de cohérence", (t) => {
+  const { SENSIBLES, couvre, estSensible } = require(SCRIPT);
+  for (const c of ["pulse-aidd ligne-etat --retirer", "pulse-aidd pile hebergeur redeployer production", "pulse-aidd copies --copier verifier scripts/verifier.js", "git checkout -- fichier", "git restore fichier", "git commit --amend", "pulse-aidd secrets generer NOM --envoyer production,preview", "pulse-aidd deplacer-commits feat/us-003-liste --principale main"])
+    assert.ok(SENSIBLES.includes(c), c);
+  for (const c of SENSIBLES.filter((x) => x.startsWith("pulse-aidd "))) assert.ok(estSensible(c), `estSensible : ${c}`);
+  assert.ok(couvre("git push:*", "git push origin main") && couvre("ls *", "ls") && !couvre("git commit -m *", "git commit --amend"));
+  for (const f of ["coherence.test.js", "autorisations.test.js"]) {
+    const source = fs.readFileSync(path.join(__dirname, f), "utf8");
+    assert.match(source, /require\([^)]*skill\.js/, `${f} : importe skill.js`);
+    assert.doesNotMatch(source, /^\s*(function couvre|const couvre =)/m, `${f} : plus de copie locale de couvre`);
+  }
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, "coherence.test.js"), "utf8"), /^const SENSIBLES = \[/m);
+  const d = dossierTemporaire(t);
+  for (const motif of ["Bash(pulse-aidd ligne-etat --retirer)", "Bash(pulse-aidd pile hebergeur redeployer *)", "Bash(pulse-aidd copies --copier *)", "Bash(git checkout *)", "Bash(git restore *)", "Bash(git commit --amend *)"]) {
+    const nom = motif.replace(/\W+/g, "-");
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    assert.strictEqual(constats(verifier(path.join(d, nom)), "K4", "bloquant").length, 1, motif);
+  }
+});
+
+test("petits correctifs : Déroulé, « should be used when », Write et Edit(**) au même niveau, réglages de l'utilisateur", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "deroule/SKILL.md", skill({ corps: CORPS.replace("## Processus", "## Déroulé") }));
+  assert.ok(mesurer(path.join(d, "deroule"))[0].processusFin !== null, "## Déroulé reconnu");
+  ecrire(d, "should/SKILL.md", skill({ entete: { description: "Summarise a text file. This skill should be used when the user asks for a summary." } }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "should")), "K2"), []);
+  const k4 = (nom, motif) => {
+    ecrire(d, `${nom}/SKILL.md`, skill({ entete: { "allowed-tools": motif } }));
+    return constats(verifier(path.join(d, nom)), "K4").map((c) => c.gravite);
+  };
+  assert.deepStrictEqual(k4("write-nu", "Read Write"), ["a-corriger"]);
+  assert.deepStrictEqual(k4("edit-tout", "Read Edit(**)"), ["a-corriger"]);
+  assert.deepStrictEqual(k4("reglages", "Write(~/.claude/settings.json)"), ["bloquant"]);
+  assert.deepStrictEqual(k4("reglages-projet", "Edit(.claude/**)"), ["bloquant"]);
+});
+
+test("dossier vide ou racine de projet sans skill → « aucune skill trouvée » ; racine avec .claude/skills → ses skills", (t) => {
+  const d = dossierTemporaire(t);
+  fs.mkdirSync(path.join(d, "vide"));
+  ecrire(d, "projet/src/index.js", "console.log(1);\n");
+  for (const cible of ["vide", "projet"])
+    for (const action of ["mesurer", "verifier"]) {
+      const r = lancer(action, path.join(d, cible));
+      assert.strictEqual(r.status, 0, `${cible} ${action}`);
+      assert.match(r.stdout, /aucune skill trouvée/, `${cible} ${action}`);
+    }
+  ecrire(d, "projet/.claude/skills/resumer/SKILL.md", skill());
+  assert.match(lancer("mesurer", path.join(d, "projet")).stdout, /^skill: resumer$/m);
+});
+
+test("en-tête : bloc |2- et commentaire en fin de valeur", (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "indent/SKILL.md", `---\nname: indent\ndescription: |2-\n  Résume un fichier texte.\n   Use when asked.\nallowed-tools: Read # lecture seule\nmodel: "sonnet" # explicite\n---\n\n${CORPS}`);
+  const [m] = mesurer(path.join(d, "indent"));
+  assert.strictEqual(m.descriptionTexte, "Résume un fichier texte.\n Use when asked.", "indentation de 2 donnée par l'indicateur");
+  const { lireEntete } = require(SCRIPT);
+  const e = lireEntete(fs.readFileSync(path.join(d, "indent", "SKILL.md"), "utf8"));
+  assert.strictEqual(e.champs["allowed-tools"].valeur, "Read");
+  assert.strictEqual(e.champs.model.valeur, "sonnet");
+});
+
+test("K5 : la ligne de rechargement doit nommer cette skill (son SKILL.md ou son étape)", (t) => {
+  const d = dossierTemporaire(t);
+  const corps = (ligne) => CORPS.replace("## Processus", `${"Une phrase de contexte qui allonge la skill. ".repeat(450)}\n\n## Processus`).replace("- Garder les mots de l'auteur.", `- ${ligne}`);
+  ecrire(d, "moi/SKILL.md", skill({ corps: corps("Après une compaction, relire `.claude/skills/autre/SKILL.md`.") }));
+  assert.deepStrictEqual(constats(verifier(path.join(d, "moi")), "K5").filter((c) => /Processus à/.test(c.message)).map((c) => c.gravite), ["bloquant"]);
+});
+
+test("usage : historique des assistants signalé non lu ; CLAUDE_CONFIG_DIR respecté", async (t) => {
+  const d = dossierTemporaire(t);
+  ecrire(d, "config/projects/p1/s1.jsonl", commande("pulse:review", new Date().toISOString()) + "\n");
+  const r = await new Promise((resoudre) => {
+    const enfant = require("child_process").spawn(process.execPath, [SCRIPT, "usage"], { env: { ...process.env, CLAUDE_CONFIG_DIR: path.join(d, "config") } });
+    let stdout = "";
+    enfant.stdout.on("data", (x) => (stdout += x));
+    enfant.on("close", (status) => resoudre({ status, stdout }));
+  });
+  assert.strictEqual(r.status, 0);
+  assert.match(r.stdout, /^usage: pulse:review · personne 1 · modele 0 · dernier /m);
+  assert.match(r.stdout, /historique des assistants non lu/);
+});
+
+test("regles-skills.md : K5 rappelle --sans-communes dans Pulse ; K11 sépare l'universel (outils) de la convention (model, liste Bash)", () => {
+  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const section = (id) => texte.split(/^## /m).find((s) => s.startsWith(`${id} `));
+  assert.match(section("K5"), /--sans-communes/);
+  const k11 = section("K11");
+  const corps = k11.split("\n").slice(2).join("\n"); // après la ligne de niveau
+  const convention = corps.slice(corps.search(/Convention|convention/));
+  assert.ok(corps.search(/Convention|convention/) > 0, "K11 : une partie convention dans le texte");
+  assert.match(convention, /`model`/);
+  assert.match(convention, /seulement pour/);
 });
