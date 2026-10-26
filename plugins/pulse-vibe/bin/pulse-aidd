@@ -7,7 +7,7 @@
 #   pulse-aidd etape <commande> [--sans-communes]   idem, précédé des instructions de la commande ; --sans-communes : sans les règles communes ni leurs modules, déjà chargés par la commande qui enchaîne l'étape
 #   pulse-aidd etape <commande> --sans-noyau   idem, sans le noyau des règles communes, déjà chargé ; garde les modules de l'étape (tâches, relecture, réalisation)
 #   pulse-aidd modele <fichier>      affiche un modèle de templates/, ou d'une skill : <skill>/<fichier> (skills/<skill>/assets/)
-#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)
+#   pulse-aidd agent <nom>           affiche les consignes d'un agent (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor, skill-auditor)
 #   pulse-aidd memoire               synchronise la mémoire projet (aidd_docs/memory/) dans CLAUDE.md
 #   pulse-aidd qualite <famille…> [--tout] [--checklists]  affiche les familles nommées des règles de qualité du code (clean-code, organisation, composants, securite) ; sans nom : la règle de choix ; --tout : toutes ; --checklists : leurs checklists seules
 #   pulse-aidd tests <morceau…> [--tout] [--checklists]  affiche les morceaux nommés de la méthode de tests (strategie, ecrire, unitaire, integration, bout-en-bout, tdd, gherkin) ; sans nom : le sommaire ; --tout : toute ; --checklists : leurs listes de contrôle seules
@@ -362,7 +362,7 @@ case "$1" in
   modele)
     if nom_sur "$2" && chemin="$(trouver assets "$2")"; then cat "$chemin"; else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
   agent)
-    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
+    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor, skill-auditor)"; exit 1; fi ;;
   qualite) shift; qualite "$@"; exit $? ;;
   tests) shift; tests "$@"; exit $? ;;
   reference)
