@@ -21,7 +21,7 @@ Appliquer « Rédiger les textes des pages » (chargé en fin de fichier, dans �
 
 Demande : `$ARGUMENTS` (une page, éventuellement suivie de `--humaniser`)
 
-Fichiers de cette commande : [references/regles.md](references/regles.md), [references/detecteur-tics-llm.json](references/detecteur-tics-llm.json), [assets/voix.md](assets/voix.md), [assets/texte-page.md](assets/texte-page.md), [scripts/textes.js](scripts/textes.js).
+Fichiers de cette commande : [references/regles.md](references/regles.md), [references/detecteur-tics-llm.json](references/detecteur-tics-llm.json) (lu par le script seul), [assets/voix.md](assets/voix.md), [assets/texte-page.md](assets/texte-page.md), [scripts/textes.js](scripts/textes.js).
 
 ## Rôle
 

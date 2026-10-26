@@ -34,7 +34,7 @@
 <h2>Description</h2>
 <p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code> qui lui dit comment faire un travail. <code>/pulse:skill-creator</code> l'écrit avec vous.</p>
 <p>Pulse vous pose quelques questions, une à la fois : le travail à faire, les phrases que vous direz, qui la lance, ce qu'elle touche, à qui elle parle, où la ranger. Il vous montre le plan de la skill, puis l'écrit une fois le plan validé.</p>
-<p>Un programme contrôle ensuite la skill selon les 14 règles tirées du travail qui a allégé Pulse. La skill obtenue fonctionne seule, sans Pulse.</p>
+<p>Un programme contrôle ensuite la skill selon les 14 règles tirées du travail qui a allégé Pulse, et Pulse corrige jusqu'à ce qu'aucun point bloquant ne reste. Puis il mesure ce qu'elle chargera à chaque lancement. La skill obtenue fonctionne seule, sans Pulse.</p>
 </section>
 
 <section id="pourquoi">
@@ -63,6 +63,7 @@
 <li><strong>Vous refaites souvent le même travail</strong> avec Claude Code et vous voulez lui apprendre une fois pour toutes.</li>
 <li><strong>Vous voulez partager une façon de faire</strong> avec les personnes de votre projet.</li>
 </ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> une skill, un travail. Si votre demande en contient deux, Pulse vous propose deux skills. Pour améliorer une skill qui existe déjà, c'est <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>.</p></aside>
 </section>
 
 <section id="arguments">
@@ -85,6 +86,7 @@
 <tbody>
 <tr><td><code>.claude/skills/&lt;nom&gt;/SKILL.md</code></td><td>La skill, rangée dans votre projet. Vous pouvez aussi la ranger pour vous seul, dans tous vos projets, ou dans un plugin.</td></tr>
 <tr><td><code>.claude/skills/&lt;nom&gt;/references/</code></td><td>Au besoin, le détail d'une étape, lu seulement à cette étape.</td></tr>
+<tr><td><code>.claude/skills/&lt;nom&gt;/assets/</code>, <code>scripts/</code></td><td>Au besoin, les modèles des fichiers que la skill écrit, et un programme pour le travail qui se compte ou se contrôle.</td></tr>
 </tbody>
 </table>
 </section>
@@ -92,6 +94,7 @@
 <section id="risques">
 <h2>Risques et précautions</h2>
 <ul>
+<li><strong>Rien n'est écrit avant votre accord sur le plan</strong> de la skill.</li>
 <li><strong>Une skill existante reste telle quelle.</strong> Si le nom est déjà pris, Pulse vous en propose un autre.</li>
 <li><strong>Hors de votre projet</strong> (vos skills personnelles, un plugin), Claude Code vous demande l'accord pour chaque fichier.</li>
 </ul>
@@ -100,6 +103,7 @@
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
 <details class="probleme"><summary>La nouvelle skill n'apparaît pas quand je tape son nom</summary><p>Fermez puis relancez Claude Code : il lit les skills au démarrage.</p></details>
+<details class="probleme"><summary>La skill ne fait pas tout à fait ce que je voulais</summary><p>Essayez-la sur un vrai exemple, puis dites à Claude ce qui ne va pas, avec vos mots. Pour l'alléger plus tard, lancez <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>.</p></details>
 </section>
 
 <section id="exemples">

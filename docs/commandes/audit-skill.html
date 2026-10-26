@@ -33,8 +33,8 @@
 <section id="description">
 <h2>Description</h2>
 <p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code> qui lui dit comment faire un travail. <code>/pulse:audit-skill</code> relit une skill, toutes celles d'un dossier, ou celles d'un plugin, et vous dit ce qui peut être mieux écrit.</p>
-<p>Pulse s'appuie sur 14 règles, tirées du travail qui a allégé Pulse lui-même. Un programme fait d'abord les mesures (tailles, autorisations, longueur de la description, la phrase qui dit à Claude quand utiliser la skill). Puis un assistant juge le reste : doublons, utilité, questions gardées, mots adaptés à qui lira.</p>
-<p>Le résultat est un rapport. Vos skills ne sont pas modifiées.</p>
+<p>Pulse s'appuie sur 14 règles, tirées du travail qui a allégé Pulse lui-même. Un programme fait d'abord les mesures : la taille de chaque fichier, les autorisations données d'avance, la longueur de la description (la phrase qui dit à Claude quand utiliser la skill). Puis un assistant juge le reste : doublons, utilité, questions gardées, mots adaptés à qui lira. Pour un grand dossier, plusieurs assistants se partagent les skills, cinq chacun, en même temps.</p>
+<p>Le résultat est un rapport, rangé du plus grave au plus léger. Vos skills restent telles quelles : pour appliquer les corrections, c'est <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>.</p>
 </section>
 
 <section id="pourquoi">
@@ -64,6 +64,7 @@
 <li><strong>Claude Code vous semble lent ou distrait</strong> quand vos skills sont chargées.</li>
 <li><strong>Avant de partager un plugin</strong> avec d'autres personnes.</li>
 </ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> lancez l'audit avant <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>. Le rapport du jour est repris tel quel si la skill n'a pas changé entre-temps.</p></aside>
 </section>
 
 <section id="arguments">
@@ -88,12 +89,13 @@
 <tr><td><code>docs/audits-skills/&lt;nom&gt;-&lt;date&gt;.md</code></td><td>Le rapport, un par ensemble audité (votre projet, vos skills personnelles, un plugin) : les mesures, un avis par règle, les points à corriger rangés du plus grave au plus léger, et le gain estimé.</td></tr>
 </tbody>
 </table>
+<p>Les points sont de trois sortes : <strong>bloquant</strong> (à corriger d'abord : un geste risqué autorisé d'avance, une lecture trop longue pour être lue en entier, une description absente), <strong>à corriger</strong>, et <strong>conseil</strong>.</p>
 </section>
 
 <section id="risques">
 <h2>Risques et précautions</h2>
 <ul>
-<li><strong>Vos skills restent telles quelles.</strong> Seul le rapport est écrit.</li>
+<li><strong>Vos skills restent telles quelles.</strong> Seul le rapport est écrit, dans <code>docs/audits-skills/</code>.</li>
 <li><strong>L'historique de vos conversations</strong> est lu seulement si vous le demandez, sur votre ordinateur. Rien n'est envoyé ailleurs.</li>
 <li><strong>Une skill jamais lancée</strong> est signalée, jamais supprimée.</li>
 </ul>
@@ -102,6 +104,7 @@
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
 <details class="probleme"><summary>Pulse dit que le chemin n'existe pas</summary><p>Vérifiez le chemin du dossier de la skill, puis relancez la commande avec le bon chemin.</p></details>
+<details class="probleme"><summary>Pulse dit qu'il n'a trouvé aucune skill</summary><p>Votre projet n'a pas encore de skill dans <code>.claude/skills/</code>. Pulse vous propose d'auditer vos skills personnelles, un autre chemin, ou d'en créer une avec <a href="skill-creator.html"><code>/pulse:skill-creator</code></a>.</p></details>
 <details class="probleme"><summary>Pulse dit que ce n'est pas une skill Claude Code</summary><p>La commande lit les skills au format de Claude Code : un dossier avec un fichier <code>SKILL.md</code>. Les règles d'autres outils ne sont pas lues.</p></details>
 </section>
 
