@@ -89,7 +89,8 @@ window.PULSE_WIKI = {
         "get-help",
         "memory",
         "skill-creator",
-        "audit-skill"
+        "audit-skill",
+        "optimize-skill"
       ]
     }
   ],
@@ -231,6 +232,13 @@ window.PULSE_WIKI = {
       "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser",
       "forme": "[votre idée en une phrase | vos documents]",
       "note": ""
+    },
+    {
+      "nom": "optimize-skill",
+      "etape": "toujours",
+      "description": "Optimiser une skill Claude Code (moins de texte chargé) en gardant sa qualité, avec un plan à valider et une relecture avant / après",
+      "forme": "<chemin d'une skill>",
+      "note": "vide : la question vous le demande"
     },
     {
       "nom": "perf",

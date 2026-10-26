@@ -86,7 +86,7 @@ Rien n'est modifié en dehors de ces rapports.
 - Les 3 constats qui comptent le plus, chacun en une phrase de tous les jours, avec ce que la correction apporte.
 - Le gain estimé si tout est corrigé, et le lien vers chaque rapport.
 
-Terminer avec le bloc de fin de commande. Prochaine étape : corriger les constats bloquants, en suivant la correction proposée par le rapport.
+Terminer avec le bloc de fin de commande. Prochaine étape : pour appliquer les corrections d'une skill avec un plan à valider, tapez `/pulse:optimize-skill <chemin>`.
 
 ## Exemples
 

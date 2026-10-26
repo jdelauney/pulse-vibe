@@ -82,6 +82,7 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:memory compacter` | « Pulse me dit que la mémoire est presque pleine » |
 | `/pulse:skill-creator "…"` | « Je veux apprendre une nouvelle tâche à Claude Code » : une skill écrite avec vous, contrôlée, prête à essayer |
 | `/pulse:audit-skill` | « Mes skills Claude Code sont-elles bien écrites ? » Un rapport des corrections et de leur gain, sans rien modifier (un chemin : une skill, un dossier ou un plugin) |
+| `/pulse:optimize-skill <chemin>` | « Cette skill charge trop de texte » : un plan d'allègement à valider, appliqué puis relu pour que rien d'important ne se perde |
 
 ## Les 4 réflexes
 

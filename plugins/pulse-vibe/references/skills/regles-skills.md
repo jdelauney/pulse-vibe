@@ -1,6 +1,6 @@
 # Les règles des skills (K1 à K14)
 
-Utilisé par `/pulse:audit-skill`, par l'agent `pulse:skill-auditor` et par les commandes Pulse qui créent et optimisent une skill. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte −31 %, qualité égale ou meilleure). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
+Utilisé par `/pulse:skill-creator`, `/pulse:audit-skill`, `/pulse:optimize-skill` et l'agent `pulse:skill-auditor`. Tirées du refactoring d'optimisation de Pulse (octobre 2026 : contexte −31 %, qualité égale ou meilleure). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
 
 ## Lire une règle
 

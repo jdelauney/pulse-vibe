@@ -45,7 +45,7 @@ Poser les questions de fond une à la fois, dans cet ordre (règles communes 4 e
 5. **À qui elle parle** : la langue et le ton de ce qu'elle montre (AskUserQuestion : « En français, en vouvoyant (Recommandé) » / « En français, en tutoyant » / « En anglais »).
 6. **Où la ranger** (AskUserQuestion : « Dans ce projet, `.claude/skills/` (Recommandé) » / « Pour moi, dans tous mes projets » / « Dans un plugin »). Pour vous : `~/.claude/skills/<nom>/` ; pour un plugin : demander son dossier.
 
-Proposer ensuite un nom court, tiré du travail : minuscules, chiffres et tirets, 64 caractères au plus. Si le dossier `<emplacement>/<nom>/` existe déjà, il reste tel quel : proposer un autre nom.
+Proposer ensuite un nom court, tiré du travail : minuscules, chiffres et tirets, 64 caractères au plus. Si le dossier `<emplacement>/<nom>/` existe déjà, il reste tel quel : proposer un autre nom ; pour améliorer la skill existante, tapez `/pulse:optimize-skill <chemin>`.
 
 ### 2. Proposer le plan de la skill
 

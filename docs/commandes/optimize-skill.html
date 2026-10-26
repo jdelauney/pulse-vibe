@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr" data-racine="../" data-commande="optimize-skill">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/pulse:optimize-skill – Wiki Pulse</title>
+<meta name="description" content="Optimiser une skill Claude Code (moins de texte chargé) en gardant sa qualité, avec un plan à valider et une relecture avant / après.">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/animations.css">
+<script src="../js/donnees.js" defer></script>
+<script src="../js/gabarit.js" defer></script>
+<script src="../js/animations.js" defer></script>
+<script src="../js/console.js" defer></script>
+</head>
+<body>
+<main id="contenu" class="conteneur-large">
+<div class="mise-en-page">
+<nav class="laterale" aria-label="Les commandes" data-laterale></nav>
+<article class="typographie">
+
+<header class="entete-page">
+<!-- auto:etape -->
+<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<!-- /auto:etape -->
+<h1><code>/pulse:optimize-skill</code></h1>
+<!-- auto:chapo -->
+<p class="chapo">Optimiser une skill Claude Code (moins de texte chargé) en gardant sa qualité, avec un plan à valider et une relecture avant / après.</p>
+<!-- /auto:chapo -->
+</header>
+
+<ul class="sommaire" aria-label="Sur cette page" data-sommaire></ul>
+
+<section id="description">
+<h2>Description</h2>
+<p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code>. Plus elle est longue, plus Claude Code lit de texte à chaque lancement. <code>/pulse:optimize-skill</code> l'allège sans lui faire perdre ce qui compte.</p>
+<p>Pulse audite la skill selon ses 14 règles, puis vous propose un plan point par point : ce qui change, ce que vous y gagnez, le risque. Vous choisissez tout, une partie, ou rien. Après les changements, un assistant compare la skill avant et après, pour vérifier qu'aucune question, vérification ni protection ne s'est perdue.</p>
+</section>
+
+<section id="pourquoi">
+<h2>Pourquoi l'utiliser</h2>
+<ul>
+<li><strong>Moins de texte chargé à chaque lancement.</strong> Le gain est mesuré, avant et après.</li>
+<li><strong>La même qualité.</strong> Chaque question et chaque vérification de la skill sont gardées, et une relecture le contrôle.</li>
+<li><strong>Vous décidez.</strong> Rien ne change sans votre accord sur le plan.</li>
+</ul>
+</section>
+
+<section id="quand">
+<h2>Quand l'utiliser</h2>
+<!-- auto:parcours -->
+<ol class="parcours" aria-label="Le parcours Pulse, cette commande à l'étape mise en avant">
+  <li data-couleur="1"><span class="parcours-numero">1</span> Démarrer</li>
+  <li data-couleur="1"><span class="parcours-numero">2</span> Décrire</li>
+  <li data-couleur="2"><span class="parcours-numero">3</span> Préparer</li>
+  <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
+  <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
+  <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+</ol>
+<!-- /auto:parcours -->
+<ul>
+<li><strong>Après un audit</strong> : <code>/pulse:audit-skill</code> a trouvé des points à corriger.</li>
+<li><strong>Une skill vous semble lourde</strong> ou lente à démarrer.</li>
+</ul>
+</section>
+
+<section id="arguments">
+<h2>Comment la lancer</h2>
+<!-- auto:forme -->
+<pre class="commande"><code>/pulse:optimize-skill &lt;chemin d'une skill&gt;</code></pre>
+<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Vide : la question vous le demande.</p>
+<!-- /auto:forme -->
+<ul>
+<li><strong>Le chemin d'une skill</strong> : son dossier, par exemple <code>.claude/skills/rediger-devis</code>.</li>
+<li><strong>Rien</strong> : Pulse vous demande laquelle, parmi celles du projet.</li>
+</ul>
+<pre class="commande"><code>/pulse:optimize-skill .claude/skills/rediger-devis</code></pre>
+</section>
+
+<section id="produit">
+<h2>Ce qu'elle produit</h2>
+<table>
+<thead><tr><th>Fichier</th><th>À quoi il sert</th></tr></thead>
+<tbody>
+<tr><td>La skill elle-même</td><td>Allégée, selon les points du plan que vous avez choisis.</td></tr>
+<tr><td><code>docs/audits-skills/&lt;nom&gt;-&lt;date&gt;.md</code></td><td>Le rapport d'audit, complété par le plan et le bilan avant / après (tailles, points corrigés, verdict de la relecture).</td></tr>
+<tr><td><code>&lt;nom&gt;.avant-&lt;date&gt;/</code></td><td>Seulement pour une skill qui n'est pas enregistrée avec Git (vos skills personnelles, le plus souvent) : une copie de la skill d'avant, à côté d'elle.</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="risques">
+<h2>Risques et précautions</h2>
+<ul>
+<li><strong>L'avant est toujours gardé</strong> : dans l'historique de Git, ou dans une copie à côté de la skill. Supprimez la copie vous-même quand le résultat vous convient.</li>
+<li><strong>Une skill d'un plugin installé reste telle quelle</strong> : la prochaine mise à jour du plugin effacerait le changement. Pulse vous indique où la corriger, dans le dossier d'origine du plugin.</li>
+<li><strong>Hors de votre projet</strong> (vos skills personnelles, un plugin), Claude Code vous demande l'accord pour chaque fichier.</li>
+</ul>
+</section>
+
+<section id="problemes">
+<h2>Problèmes et solutions</h2>
+<details class="probleme"><summary>La relecture signale une perte</summary><p>Pulse la corrige une fois. Si elle reste, elle est écrite en premier dans le bilan, avec la correction proposée : vous pouvez revenir à la copie d'avant.</p></details>
+<details class="probleme"><summary>Pulse dit que la skill vient d'un plugin installé</summary><p>Ouvrez le dossier d'origine du plugin, puis relancez la commande avec le chemin de la skill dans ce dossier.</p></details>
+</section>
+
+<section id="exemples">
+<h2>Exemples</h2>
+<div class="conversation" data-titre="Exemple : alléger une skill de devis">
+<p data-role="vous">/pulse:optimize-skill .claude/skills/rediger-devis</p>
+<p data-role="claude">Voici le plan en 3 points. Le premier : le détail des remises sera lu seulement quand il y a une remise, soit 3 000 caractères en moins à chaque devis. Tout appliquer ?</p>
+<p data-role="vous">Oui.</p>
+<p data-role="claude">C'est fait. La relecture ne trouve aucune perte : les mêmes questions, aux mêmes moments. La skill charge 38 % de texte en moins. Le bilan est dans docs/audits-skills/rediger-devis-2026-10-26.md.</p>
+</div>
+</section>
+
+<section id="liees">
+<h2>Commandes liées</h2>
+<ul>
+<li><a href="audit-skill.html"><code>/pulse:audit-skill</code></a> : auditer des skills sans rien modifier.</li>
+<li><a href="skill-creator.html"><code>/pulse:skill-creator</code></a> : créer une skill qui suit ces règles dès le départ.</li>
+<li><a href="commit.html"><code>/pulse:commit</code></a> : enregistrer la skill optimisée, dans un projet suivi par Git.</li>
+</ul>
+</section>
+
+<nav class="suite" aria-label="Commande précédente et suivante" data-suite></nav>
+</article>
+</div>
+</main>
+</body>
+</html>
