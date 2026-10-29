@@ -25,6 +25,7 @@
 #   pulse-aidd preuve etat [--exiger suite] [--exiger construction]  la preuve est à jour et verte (code 0), ou rouge, périmée, absente, de portée insuffisante (code 1) ; « Tester » à « aucune » (choix du projet) satisfait --exiger suite
 #   pulse-aidd scenarios             état de couverture des scénarios des specs (testés, sans test, manuels)
 #   pulse-aidd etat [--sans-git] [--tableau]  état du projet et prochaine étape conseillée (lignes « clé: valeur », pour /pulse:init et /pulse:status) ; --tableau : le tableau de bord de /pulse:status (tâches, Git, dossiers à part, référencement, revue, mémoire)
+#   pulse-aidd copier-env <dossier>  copie les fichiers d'environnement locaux (.env, .env.local…) du dossier principal dans un worktree du projet, sans afficher leur contenu ; garde ceux déjà présents, refuse ceux que Git n'y ignore pas
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review ; revue <US-XXX> : la relecture de toute l'US (rythme rapide)
 #   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json
@@ -460,6 +461,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/etat.js" "$@" ;;
   revue)
     shift; exec node "$RACINE/scripts/etat.js" --revue "$@" ;;
+  copier-env)
+    shift; exec node "$RACINE/scripts/copier-env.js" "$@" ;;
   travail-fini)
     dossier="${2:-.}"
     case "/$dossier/" in
