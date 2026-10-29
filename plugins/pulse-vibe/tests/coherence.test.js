@@ -2317,9 +2317,20 @@ test("rythme rapide : aucun test de l'interface pendant les tâches ; avec spirc
   assert.ok(lire(RACINE, "references", "tests-automatiques.md").includes("**Aucun test de l'interface pendant les tâches**"));
   assert.ok(!lire(RACINE, "agents", "verifier.md").includes("Vérification légère"));
   const spirc = skillTexte("spirc");
-  assert.ok(spirc.includes("**Rythme rapide** : pas de [R] par tâche ; après [I] et ses contrôles, passer à [C]."));
+  assert.ok(spirc.includes("**Rythme rapide** : pas de [R] par tâche ; après [I] et ses contrôles (pour une tâche maquettée, le contrôle de la maquette : `pulse-aidd reference fidelite-maquette.md` § 3), passer à [C]."));
   assert.ok(spirc.includes("puis lancer `pulse-aidd reference spirc/examen-us.md` et l'appliquer"));
   assert.match(skillTexte("commit"), /appelé par `\/pulse:spirc` en rythme rapide : continuer/);
+});
+
+test("maquette retenue : reproduite (HTML et CSS lus en entier), comparée zone par zone, captures regardées par l'appelant, même en rythme rapide", () => {
+  const fidelite = lire(RACINE, "references", "fidelite-maquette.md");
+  for (const t of ["lire **en entier** `desktop.html` et `mobile.html`", "Reprendre sa **structure**", "Reprendre ses **valeurs**", "Comparer **zone par zone**", "`| Zone | Maquette | Écran | Écart |`", "même si les couleurs et les textes correspondent", "**Contrôler chaque tâche maquettée avant son commit**, même en rythme rapide", "**Regarder soi-même les captures**", "« Conforme à la maquette » seul ne suffit pas"])
+    assert.ok(fidelite.includes(t), t);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /`pulse-aidd reference fidelite-maquette\.md` et appliquer son § 1/);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /^## Maquette$/m);
+  assert.match(lire(RACINE, "agents", "verifier.md"), /« L'écran reproduit la maquette retenue »[^\n]*fidelite-maquette\.md` § 2/);
+  assert.match(lire(RACINE, "references", "examen.md"), /sauf le contrôle d'une tâche maquettée/);
+  assert.match(lire(RACINE, "references", "deleguer.md"), /fidelite-maquette\.md` § 3/);
 });
 
 test("écrans : la présentation se choisit dans la spec, les maquettes se proposent, plan et implementer la suivent", () => {

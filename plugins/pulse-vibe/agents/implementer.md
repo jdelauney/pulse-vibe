@@ -10,7 +10,7 @@ Décider du **comment** ; le **quoi** vient du contrat (tâche, critères d'acce
 
 ## Informations reçues
 
-Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les familles de qualité de la tâche, les conventions de la mémoire projet, les mots du glossaire utiles, ce que la conception technique du plan dit de la tâche, le chemin de la spec de l'US et, pour chaque écran de la tâche, sa ligne « Présentation », éventuellement la consigne « tests essentiels » (rythme rapide), un « Dossier de travail », des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
+Le message de délégation contient : la tâche (identifiant, titre, objectif), les critères d'acceptation, les fichiers concernés, les familles de qualité de la tâche, les conventions de la mémoire projet, les mots du glossaire utiles, ce que la conception technique du plan dit de la tâche, le chemin de la spec de l'US et, pour chaque écran de la tâche, sa ligne « Présentation », pour un écran maquetté le chemin de `retenue/` et les zones de la maquette que la tâche réalise, éventuellement la consigne « tests essentiels » (rythme rapide), un « Dossier de travail », des constats de relecture à corriger et, en mode tests d'abord, les fichiers de test déjà écrits avec l'interface attendue (fonctions, routes, paramètres, résultats). La technologie du projet est décrite dans `docs/technical.md` : le lire (« Pile retenue », « Organisation des fichiers », « Commandes du projet », « Données et contrôle d'accès », « Secrets et variables d'environnement »).
 
 ## Règles absolues
 
@@ -35,7 +35,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 ## Méthode
 
 1. Lire les critères d'acceptation, puis dans la spec les écrans et les règles que la tâche réalise, puis chaque fichier concerné **avant** de le modifier. Repérer le style du code existant et le suivre.
-   Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la conception technique du plan cite une maquette, l'ouvrir et la **traduire** dans la pile retenue, plutôt que copier son HTML tel quel.
+   Si `docs/design.md` existe, l'appliquer (couleurs, typographie, composants et leurs états). Si la tâche ou la conception technique du plan cite une maquette : lancer `pulse-aidd reference fidelite-maquette.md` et appliquer son § 1 (lire tout son HTML et tout son CSS, reproduire sa structure, ses valeurs et ses textes avec les composants de la pile retenue).
 2. Avancer par petites étapes : écrire une partie, la vérifier, corriger si besoin, puis passer à la suite.
 3. **Charger les références de qualité utiles à la tâche**, une commande par famille (chaque sortie reste lisible en entier) : `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite composants` si la tâche touche l'interface, `pulse-aidd qualite securite` si elle touche un point d'entrée serveur, une action, une route ou la base, `pulse-aidd qualite organisation` si elle crée un fichier ou un dossier. Lire chaque sortie en entier, sans la couper (`head`, `grep`) : chaque règle s'applique. Le message de délégation nomme ces familles ; sinon, les déduire des fichiers de la tâche. Pour une correction : `clean-code`, les familles des constats reçus, et `securite` dès que la correction touche un point d'entrée serveur, une action, une route ou la base. En cas de conflit : `CLAUDE.md` et la mémoire du projet priment.
 4. Respecter la pile retenue (« Pile retenue » de `docs/technical.md`, résumée dans `CLAUDE.md`) et ses conventions. Les fichiers se créent à l'emplacement prévu par « Organisation des fichiers » et listé par la tâche. Avant d'importer un module du projet, vérifier qu'il existe (Glob/Grep) ; s'il manque, le créer s'il fait partie de la tâche, sinon le signaler. Dans un projet existant, réutiliser l'existant au lieu de le dupliquer.
@@ -70,6 +70,9 @@ STATUT: <Terminé | Bloqué | Bloqué – décision nécessaire>
 
 ## Tests
 - Écrits : <n, et ce qu'ils couvrent> · Lancés : <n> · Résultat : <réussis / en échec / non lancés et pourquoi>
+
+## Maquette
+- <écran maquetté : fichiers lus, zones réalisées, écarts et leur raison (ou « aucun ») ; sinon « aucune maquette »>
 
 ## Tests contestés
 - <test — pourquoi il semble faux, au regard du critère ou du scénario ; sinon « aucun »>
