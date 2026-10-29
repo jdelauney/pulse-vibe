@@ -163,4 +163,4 @@ function estControleAvantCommit(chemin) {
   });
 }
 
-module.exports = { candidats, motifVersRegex, designeEnv, globCouvreEnv, contientEnv, envDuDossier, estControleAvantCommit, MESSAGE_CONTROLE, NOMS_ENV_COURANTS };
+module.exports = { candidats, motifVersRegex, designeEnv, globCouvreEnv, contientEnv, envDuDossier, estControleAvantCommit, MESSAGE_CONTROLE, NOMS_ENV_COURANTS, DOSSIERS_IGNORES };
