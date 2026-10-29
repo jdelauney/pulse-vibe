@@ -17,7 +17,7 @@ Lancer **en parallèle** (plusieurs appels Agent dans le même message) :
   Le verifier démarre lui-même l'application (commande « Lancer en local » de « Commandes du projet »), note l'adresse, puis l'arrête à la fin. Claude Code demande alors l'accord de la personne pour démarrer l'application : l'annoncer d'avance en une phrase (« Claude Code va vous demander l'accord pour lancer l'application et l'essayer : c'est ainsi que je prouve que chaque critère fonctionne. »).
 - Avec le **contrôle de sécurité à chaque tâche** (option `-x` de `/pulse:spirc`) : **`pulse:security-auditor`**, portée `tache` : la tâche, les documents de référence (§ 1) et les fichiers modifiés (`git status`, `git diff --stat`).
 
-**Rythme rapide** (règles de réalisation) : avec `/pulse:spirc`, aucun examen par tâche : toute l'US s'examine une fois, à la fin (`spirc/examen-us.md`). Sinon : `pulse:reviewer` seul, sur le code de la tâche ; ni verifier, ni application lancée ou interrogée, ni test de l'interface pendant les tâches. Les tests de la tâche sont ceux lancés à la fin de sa réalisation. Chaque critère qui se voit à l'écran passe en ❓, vers la fiche de test de fin d'US ; la section « Vérification » du rapport porte « — (rythme rapide) ».
+**Rythme rapide** (règles de réalisation) : avec `/pulse:spirc`, aucun examen par tâche : toute l'US s'examine une fois, à la fin (`spirc/examen-us.md`). Sinon : `pulse:reviewer` seul, sur le code de la tâche ; ni verifier, ni application lancée ou interrogée, ni test de l'interface pendant les tâches, sauf le contrôle d'une tâche maquettée (`pulse-aidd reference fidelite-maquette.md` § 3). Les tests de la tâche sont ceux lancés à la fin de sa réalisation. Chaque critère qui se voit à l'écran passe en ❓, vers la fiche de test de fin d'US ; la section « Vérification » du rapport porte « — (rythme rapide) ».
 
 Un agent indisponible : faire son travail soi-même en suivant **strictement** ses consignes (`pulse-aidd agent <nom>`), en lecture seule, et le signaler. La relecture se fait de préférence dans un autre contexte que celui qui a écrit le code ; sinon, le dire à la personne.
 
@@ -29,7 +29,7 @@ Un rapport par tâche, à côté du plan : `aidd_docs/tasks/<epic>/revues/PLAN-S
 
 - la ligne `Mode` (la commande, et « contrôle de sécurité à chaque tâche » s'il y a lieu) ;
 - le rapport du reviewer ;
-- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images, comme le dit le modèle), puis la ligne « Filet anti-régression », tirée de la preuve (« Lire la preuve » ci-dessous) ;
+- la section `## Vérification` : le verdict et le tableau du verifier (les captures de la colonne « Preuve » s'y affichent en images, comme le dit le modèle ; pour la maquette, captures regardées soi-même d'abord : `fidelite-maquette.md` § 3), puis la ligne « Filet anti-régression », tirée de la preuve (« Lire la preuve » ci-dessous) ;
 - avec les tests d'abord, la section `## Tests automatiques` (verdicts et tableaux du test-runner, rouge puis vert) ;
 - avec le contrôle de sécurité, la section `## Audit de sécurité`.
 

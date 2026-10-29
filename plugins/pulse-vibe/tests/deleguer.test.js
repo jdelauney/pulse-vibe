@@ -27,6 +27,7 @@ const INFORMATIONS = {
   "conception technique": /conception technique du plan/,
   spec: /chemin de la spec de l'US/,
   "présentation des écrans": /pour chaque écran de la tâche, sa ligne « Présentation »/,
+  maquette: /chemin de `retenue\/`,? (et )?les zones de la maquette que la tâche réalise/,
   "conventions de la mémoire": /conventions[^;\n]*mémoire/,
   "familles de qualité": /familles de qualité/,
   "tests essentiels": /tests essentiels/,

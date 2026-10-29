@@ -144,7 +144,7 @@ Lancer `pulse-aidd reference tests-dabord.md` s'il ne figure pas dans la convers
 
 #### [R] Relire et vérifier (eXaminer)
 
-**Rythme rapide** : pas de [R] par tâche ; après [I] et ses contrôles, passer à [C]. Toute l'US s'examine à la fin (§ « Test groupé »), et la notion du jour s'y donne une fois.
+**Rythme rapide** : pas de [R] par tâche ; après [I] et ses contrôles (pour une tâche maquettée, le contrôle de la maquette : `pulse-aidd reference fidelite-maquette.md` § 3), passer à [C]. Toute l'US s'examine à la fin (§ « Test groupé »), et la notion du jour s'y donne une fois.
 
 1. **Examiner** : appliquer le § 2 de la référence « Examiner une tâche » (`pulse:reviewer` et `pulse:verifier` en parallèle ; avec `-t`, le reviewer reçoit aussi les fichiers de test et le dernier rapport du test-runner ; avec `-x`, l'audit de sécurité).
 2. **Écrire le rapport** : § 3 de la même référence (avec `-t`, la section `## Tests automatiques` ; avec `-x`, `## Audit de sécurité`) ; au moment de l'écrire, lancer `pulse-aidd modele revue.md` (le modèle de rapport) s'il ne figure pas dans la conversation.
