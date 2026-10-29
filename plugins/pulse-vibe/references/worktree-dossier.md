@@ -14,7 +14,7 @@ Un worktree par user story. Noms : dossier `.claude/worktrees/us-xxx-<nom>`, bra
    - branche absente : `git worktree add .claude/worktrees/us-xxx-<nom> -b feat/us-xxx-<nom>` ;
    - branche déjà présente : `git worktree add .claude/worktrees/us-xxx-<nom> feat/us-xxx-<nom>`.
 6. **Préparer le dossier** : un worktree contient seulement les fichiers suivis par Git.
-   - Copier les fichiers d'environnement locaux du dossier principal (`.env`, `.env.local`, `.env.*` sauf `.env.example`) dans le worktree, en gardant leur contenu confidentiel (jamais affiché ni lu à voix haute) : ils restent locaux et ignorés par Git.
+   - Copier les fichiers d'environnement locaux du dossier principal (`.env`, `.env.local`, `.env.*` sauf `.env.example`) : `pulse-aidd copier-env .claude/worktrees/us-xxx-<nom>`, lancé depuis le dossier principal. L'outil les copie sans afficher leur contenu (les garde-fous refusent `cp` ou `Copy-Item` sur ces fichiers) ; il garde ceux déjà présents dans le worktree. Un fichier signalé « non copié » : suivre l'indication affichée.
    - Lancer la commande « installer » de « Commandes du projet » (`docs/technical.md`) dans le worktree, si elle existe.
 7. **Entrer** : outil `EnterWorktree` avec `path` = le dossier du worktree, puis `pulse-aidd sessions --ici <session>`. Annoncer en une ligne : « Je travaille dans le dossier à part `us-xxx-<nom>` (version parallèle `feat/us-xxx-<nom>`). »
 8. Si `EnterWorktree` manque : travailler dans le dossier du worktree en préfixant chaque commande par `cd .claude/worktrees/us-xxx-<nom> &&` et en écrivant les fichiers sous ce chemin ; le dire à la personne.
