@@ -165,7 +165,7 @@ function listerFichiers() {
 const gitSortie = (args, cwd) => execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 256 * 1024 * 1024 });
 const reel = (p) => {
   try {
-    return fs.realpathSync(p);
+    return fs.realpathSync.native(p);
   } catch (e) {
     return path.resolve(p);
   }
