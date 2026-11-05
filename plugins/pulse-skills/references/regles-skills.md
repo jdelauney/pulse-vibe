@@ -1,10 +1,10 @@
 # Les règles des skills (K1 à K14)
 
-Utilisé par `/pulse:skill-creator`, `/pulse:audit-skill`, `/pulse:optimize-skill` et l'agent `pulse:skill-auditor`. Tirées de l'optimisation de Pulse (octobre 2026). Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
+Utilisé par `/pulse-skills:skill-creator`, `/pulse-skills:audit-skill`, `/pulse-skills:optimize-skill` et l'agent `pulse-skills:skill-auditor`. Tirées de l'optimisation de Pulse. Elles valent pour toute skill Claude Code (dossier avec son `SKILL.md`) : du projet (`.claude/skills/`), de l'utilisateur (`~/.claude/skills/`) ou d'un plugin (`skills/`, avec ses `agents/`). Un autre format (règles Cursor, `AGENTS.md`) est « hors format ».
 
 ## Lire une règle
 
-- **Niveau** : *universelle* = vaut pour toute skill ; *convention* = recommandée : « conseil », ou « à corriger » dans un plugin Pulse (`pulse`, `pulse-next`).
+- **Niveau** : *universelle* = vaut pour toute skill ; *convention* = recommandée : « conseil », ou « à corriger » dans un plugin Pulse (`pulse`, `pulse-next`, `pulse-skills`).
 - **Gravité** : *bloquant* = skill fausse ou risquée, à corriger avant usage (code 1 de `pulse-aidd skill verifier`) ; *à corriger* = perte de qualité ou de contexte mesurable ; *conseil* = amélioration.
 - **Vérification** : *script* = `pulse-aidd skill verifier <chemin>` donne les constats, `pulse-aidd skill mesurer <chemin>` donne les tailles ; *jugement* = la question à trancher en lisant la skill.
 - **Jetons estimés** : caractères ÷ 3,5, une estimation.

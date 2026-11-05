@@ -14,6 +14,11 @@
       "name": "pulse-next",
       "source": "./plugins/pulse-vibe-next",
       "description": "Pack de pile Next.js pour la méthode Pulse : code de départ vérifié, conventions, pièges connus et recettes prêtes. Installe aussi pulse. En français."
+    },
+    {
+      "name": "pulse-skills",
+      "source": "./plugins/pulse-skills",
+      "description": "Créer, auditer et optimiser des skills Claude Code selon les règles de la méthode Pulse. Installe aussi pulse. En français."
     }
   ],
   "renames": {

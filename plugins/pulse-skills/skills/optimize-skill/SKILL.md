@@ -2,10 +2,10 @@
 description: Optimiser une skill Claude Code (moins de texte chargé) en gardant sa qualité, avec un plan à valider et une relecture avant / après
 argument-hint: "<chemin d'une skill> (vide : la question vous le demande)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte optimize-skill) Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd skill empreinte *) Bash(pulse-aidd modele audit-skill/*) Bash(pulse-aidd reference skills/*) Bash(pulse-aidd reference optimize-skill/*) Bash(pulse-aidd agent skill-auditor) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd reference secrets/fuite.md) Read Glob Grep Write(.claude/skills/**) Edit(.claude/skills/**) Write(docs/audits-skills/**) Edit(docs/audits-skills/**)
+allowed-tools: Bash(pulse-skills contexte optimize-skill) Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd skill empreinte *) Bash(pulse-skills modele audit-skill/*) Bash(pulse-skills reference *) Bash(pulse-skills reference optimize-skill/*) Bash(pulse-skills agent skill-auditor) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd reference secrets/fuite.md) Read Glob Grep Write(.claude/skills/**) Edit(.claude/skills/**) Write(docs/audits-skills/**) Edit(docs/audits-skills/**)
 ---
 
-# /pulse:optimize-skill – Optimiser une skill
+# /pulse-skills:optimize-skill – Optimiser une skill
 
 ## Objectif
 
@@ -13,7 +13,7 @@ Alléger une skill Claude Code (moins de texte chargé, donc moins de jetons à 
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte optimize-skill` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-skills contexte optimize-skill` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 - Appliquer les règles des skills (« Règles des skills », dans le même contexte) : chaque point du plan cite sa règle `K<n>`.
 - Garder chaque question clé, validation, point d'arrêt, refus et garde-fou de la skill (K12). Un texte déplacé dans `references/` se charge à l'étape qui le sert, avec sa condition (K6).
@@ -24,19 +24,19 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 
 Skill : `$ARGUMENTS` (vide : demander laquelle, en listant celles du projet, Glob `.claude/skills/*/SKILL.md`).
 
-Une skill à la fois : son dossier ou son `SKILL.md`. Pour un dossier de skills, demander laquelle optimiser. Un audit sans modification : `/pulse:audit-skill`.
+Une skill à la fois : son dossier ou son `SKILL.md`. Pour un dossier de skills, demander laquelle optimiser. Un audit sans modification : `/pulse-skills:audit-skill`.
 
 ## Rôle
 
 - La conversation principale orchestre : elle mesure, fait le plan, le fait valider, applique, fait relire et écrit le bilan.
-- L'agent **`pulse:skill-auditor`** juge en lecture seule : l'audit de la skill, puis la comparaison avant / après.
+- L'agent **`pulse-skills:skill-auditor`** juge en lecture seule : l'audit de la skill, puis la comparaison avant / après.
 
 ## Processus
 
 ### 1. Vérifier la cible
 
 1. Lancer `pulse-aidd skill mesurer <chemin>` et lire sa première ligne : `introuvable:` → le chemin n'existe pas, le dire et demander le bon ; `hors-format:` → ce n'est pas une skill Claude Code, le dire et s'arrêter ; plusieurs lignes `skill:` → demander laquelle optimiser.
-2. Lancer `pulse-aidd skill verifier <chemin>`. Avec `installe: oui` en tête (chemin sous `plugins/cache/`, le dossier où Claude Code range les plugins installés) : laisser la skill telle quelle, car la prochaine mise à jour du plugin effacerait le changement ; indiquer le dossier source du plugin s'il est connu (catalogue local de `~/.claude/plugins/known_marketplaces.json`), sinon dire que la correction se fait chez l'auteur du plugin ; puis s'arrêter. Prochaine étape : tapez `/pulse:optimize-skill <chemin dans le dossier source>` depuis ce dossier.
+2. Lancer `pulse-aidd skill verifier <chemin>`. Avec `installe: oui` en tête (chemin sous `plugins/cache/`, le dossier où Claude Code range les plugins installés) : laisser la skill telle quelle, car la prochaine mise à jour du plugin effacerait le changement ; indiquer le dossier source du plugin s'il est connu (catalogue local de `~/.claude/plugins/known_marketplaces.json`), sinon dire que la correction se fait chez l'auteur du plugin ; puis s'arrêter. Prochaine étape : tapez `/pulse-skills:optimize-skill <chemin dans le dossier source>` depuis ce dossier.
 3. Lancer `pulse-aidd skill empreinte <chemin>` : l'empreinte de chaque fichier, puis la ligne `suivi-git:` (`oui` : la skill est enregistrée par Git ; `non` : pas encore, ou hors de tout dépôt ; `ignore` : exclue par Git).
 
 Ces trois sorties sont la mesure « avant » : les garder pour le bilan.
@@ -44,12 +44,12 @@ Ces trois sorties sont la mesure « avant » : les garder pour le bilan.
 ### 2. L'audit
 
 - Un rapport du jour existe (`docs/audits-skills/<nom>-<AAAA-MM-JJ>.md`, le nom de la skill) et sa section « Empreinte » donne la même empreinte pour chaque fichier : le reprendre, et le dire.
-- Sinon : utiliser l'outil Agent avec **`pulse:skill-auditor`** en mode `audit`, avec le chemin de la skill, les lignes de `mesurer` et de `verifier`, l'usage « non lu », et si la skill est dans un plugin Pulse (`pulse`, `pulse-next`). Écrire ensuite le rapport d'après `pulse-aidd modele audit-skill/rapport.md`. Si l'assistant est indisponible, faire le jugement en suivant strictement `pulse-aidd agent skill-auditor`, en lecture seule.
-- Cet audit est court (sans l'usage observé). Pour un audit complet, tapez `/pulse:audit-skill <chemin>`.
+- Sinon : utiliser l'outil Agent avec **`pulse-skills:skill-auditor`** en mode `audit`, avec le chemin de la skill, les lignes de `mesurer` et de `verifier`, l'usage « non lu », et si la skill est dans un plugin Pulse (`pulse`, `pulse-next`, `pulse-skills`). Écrire ensuite le rapport d'après `pulse-skills modele audit-skill/rapport.md`. Si l'assistant est indisponible, faire le jugement en suivant strictement `pulse-skills agent skill-auditor`, en lecture seule.
+- Cet audit est court (sans l'usage observé). Pour un audit complet, tapez `/pulse-skills:audit-skill <chemin>`.
 
 ### 3. Le plan, point par point
 
-Lancer `pulse-aidd reference optimize-skill/plan.md` et lire sa sortie en entier. Tirer du rapport un plan numéroté, les bloquants d'abord : pour chaque point, la règle, le changement, le gain mesuré attendu, le risque pour la qualité ; puis ce qui reste tel quel, et pourquoi. L'ajouter au rapport (« Plan d'optimisation »). Un rapport sans constat : dire que la skill est déjà optimisée, et s'arrêter.
+Lancer `pulse-skills reference optimize-skill/plan.md` et lire sa sortie en entier. Tirer du rapport un plan numéroté, les bloquants d'abord : pour chaque point, la règle, le changement, le gain mesuré attendu, le risque pour la qualité ; puis ce qui reste tel quel, et pourquoi. L'ajouter au rapport (« Plan d'optimisation »). Un rapport sans constat : dire que la skill est déjà optimisée, et s'arrêter.
 
 ### 4. Votre validation
 
@@ -74,13 +74,13 @@ Une sauvegarde du même jour existe déjà : la garder, c'est l'état d'avant la
 
 ### 7. La relecture avant / après
 
-Utiliser l'outil Agent avec **`pulse:skill-auditor`** en mode `avant-apres`, avec le paramètre `model` à `opus` (la comparaison demande le jugement le plus fin). Le message donne deux chemins, l'avant (la sauvegarde) et l'après (la skill), et les points appliqués.
+Utiliser l'outil Agent avec **`pulse-skills:skill-auditor`** en mode `avant-apres`, avec le paramètre `model` à `opus` (la comparaison demande le jugement le plus fin). Le message donne deux chemins, l'avant (la sauvegarde) et l'après (la skill), et les points appliqués.
 
 - `Verdict : aucune perte` : passer au bilan.
 - `Verdict : pertes (<n>)` : rendre chaque perte selon la correction proposée, une fois, puis relire une seconde fois avec le même assistant (même mode, même modèle).
 - Des pertes restent après la seconde relecture : s'arrêter, et dire chaque perte en mots de tous les jours (ce que la skill faisait avant, ce qu'elle ne fait plus). Choisir (AskUserQuestion : « Remettre la sauvegarde (Recommandé) » / « Garder ainsi »). Remettre la sauvegarde : recopier chaque fichier de la sauvegarde à sa place dans la skill (un fichier binaire, jamais modifié, est resté en place) ; un fichier ajouté par l'optimisation se retire avec l'accord de la personne (Claude Code le demande). Garder ainsi : les pertes vont en tête du bilan.
 
-Si l'assistant est indisponible, faire la comparaison en suivant strictement le mode `avant-apres` de `pulse-aidd agent skill-auditor`, en lecture seule.
+Si l'assistant est indisponible, faire la comparaison en suivant strictement le mode `avant-apres` de `pulse-skills agent skill-auditor`, en lecture seule.
 
 ### 8. Le bilan
 
@@ -94,11 +94,11 @@ Terminer avec le bloc de fin de commande. Prochaine étape : avec `suivi-git: ou
 
 ## Exemples
 
-- `/pulse:optimize-skill .claude/skills/rediger-devis` : un plan en 4 points (« le détail des remises lu seulement quand il y a une remise : 3 000 caractères en moins à chaque devis »), vous validez, la skill est allégée, puis relue pour vérifier qu'aucune question ni vérification ne s'est perdue.
-- `/pulse:optimize-skill ~/.claude/skills/resumer-reunion` : une skill personnelle ; sa sauvegarde va dans `~/.claude/skills-sauvegardes/`, avant tout changement.
+- `/pulse-skills:optimize-skill .claude/skills/rediger-devis` : un plan en 4 points (« le détail des remises lu seulement quand il y a une remise : 3 000 caractères en moins à chaque devis »), vous validez, la skill est allégée, puis relue pour vérifier qu'aucune question ni vérification ne s'est perdue.
+- `/pulse-skills:optimize-skill ~/.claude/skills/resumer-reunion` : une skill personnelle ; sa sauvegarde va dans `~/.claude/skills-sauvegardes/`, avant tout changement.
 
 ## Références de la commande
 
-!`pulse-aidd contexte optimize-skill`
+!`pulse-skills contexte optimize-skill`
 
-Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte optimize-skill` et lire sa sortie en entier, fichier enregistré compris.
+Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-skills contexte optimize-skill` et lire sa sortie en entier, fichier enregistré compris.

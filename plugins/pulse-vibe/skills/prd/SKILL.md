@@ -1,7 +1,7 @@
 ---
 description: "Produire le PRD - le besoin, les objectifs et le périmètre de la première version, décidés avec vous : ce qui est indispensable, ce qui peut attendre"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/prd.md) Edit(docs/prd.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(docs/lexique.md) Edit(docs/lexique.md)
+allowed-tools: Bash(pulse-aidd contexte prd) Bash(pulse-aidd verifier-brief) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd travail-fini) Read Glob Grep Write(docs/prd.md) Edit(docs/prd.md) Write(aidd_docs/tasks/in-progress.md) Edit(aidd_docs/tasks/in-progress.md) Write(docs/lexique.md) Edit(docs/lexique.md)
 ---
 
 # /pulse:prd – Le besoin produit et le périmètre du MVP
@@ -65,7 +65,7 @@ Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'êt
 
 ### 4. Écrire et valider
 
-Écrire `docs/prd.md` à partir du modèle `docs/prd.md`. Montrer le tableau MoSCoW et la définition du MVP, demander validation.
+Écrire `docs/prd.md` à partir du modèle `docs/prd.md`. Lancer `pulse-aidd verifier-brief` : chaque constat se dit en une phrase, avec sa conséquence. Montrer le tableau MoSCoW et la définition du MVP, demander validation ; les points laissés de côté vont dans « Risques et questions ouvertes ».
 
 Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:tech` pour choisir les outils adaptés au besoin (puis, facultatif, `/pulse:ui identite`, et `/pulse:us`), ou `/pulse:spirc` pour enchaîner choix techniques, user stories, spec, plan et réalisation avec des points de validation.
 

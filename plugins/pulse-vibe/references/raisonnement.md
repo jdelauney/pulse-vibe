@@ -34,7 +34,7 @@ Une réponse qui contredit une réponse antérieure ou un document se signale au
 ## 4. Ne jamais bloquer
 
 À une question clé, la personne peut toujours répondre :
-- **« Je ne sais pas »** : présenter 2 ou 3 options avec leurs conséquences ; elle choisit (une recommandation est alors permise, en le disant) ;
+- **« Je ne sais pas »** : présenter 2 ou 3 options avec leurs conséquences ; elle choisit (une recommandation est alors permise, en le disant). Sur ce que l'outil doit être, ces options partent de formes courantes, proposées seulement à ce moment : une page qui présente une activité, une prise de rendez-vous, un suivi interne, une vente en ligne ;
 - **« Décider plus tard »** : noter la question dans les « Questions ouvertes » du document, avec son impact, et continuer.
 
 Une réponse courte ou hésitante est une vraie réponse : la reformuler, sans insister.

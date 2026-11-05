@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>/pulse:audit-skill – Wiki Pulse</title>
+<title>/pulse-skills:audit-skill – Wiki Pulse</title>
 <meta name="description" content="Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier.">
 <link rel="stylesheet" href="../css/base.css">
 <link rel="stylesheet" href="../css/animations.css">
@@ -20,9 +20,9 @@
 
 <header class="entete-page">
 <!-- auto:etape -->
-<p class="pastille pastille-etape" data-couleur="0">Étape 7 · À tout moment</p>
+<p class="pastille pastille-etape" data-couleur="0">Étape 8 · Vos propres skills</p>
 <!-- /auto:etape -->
-<h1><code>/pulse:audit-skill</code></h1>
+<h1><code>/pulse-skills:audit-skill</code></h1>
 <!-- auto:chapo -->
 <p class="chapo">Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier.</p>
 <!-- /auto:chapo -->
@@ -32,9 +32,10 @@
 
 <section id="description">
 <h2>Description</h2>
-<p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code> qui lui dit comment faire un travail. <code>/pulse:audit-skill</code> relit une skill, toutes celles d'un dossier, ou celles d'un plugin, et vous dit ce qui peut être mieux écrit.</p>
+<aside class="encadre encadre-conseil"><p><strong>Un plugin à part :</strong> cette commande sert à écrire vos propres skills. Elle vient du plugin <code>pulse-skills</code>, à installer avec <code>/plugin install pulse-skills@pulseia</code>. Construire un projet avec Pulse n'en a pas besoin.</p></aside>
+<p>Une skill est une compétence que vous ajoutez à Claude Code : un dossier avec un fichier <code>SKILL.md</code> qui lui dit comment faire un travail. <code>/pulse-skills:audit-skill</code> relit une skill, toutes celles d'un dossier, ou celles d'un plugin, et vous dit ce qui peut être mieux écrit.</p>
 <p>Pulse s'appuie sur 14 règles, tirées du travail qui a allégé Pulse lui-même. Un programme fait d'abord les mesures : la taille de chaque fichier, les autorisations données d'avance, la longueur de la description (la phrase qui dit à Claude quand utiliser la skill). Puis un assistant juge le reste : doublons, utilité, questions gardées, mots adaptés à qui lira. Pour un grand dossier, plusieurs assistants se partagent les skills, cinq chacun, en même temps.</p>
-<p>Le résultat est un rapport, rangé du plus grave au plus léger. Vos skills restent telles quelles : pour appliquer les corrections, c'est <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>.</p>
+<p>Le résultat est un rapport, rangé du plus grave au plus léger. Vos skills restent telles quelles : pour appliquer les corrections, c'est <a href="optimize-skill.html"><code>/pulse-skills:optimize-skill</code></a>.</p>
 </section>
 
 <section id="pourquoi">
@@ -56,7 +57,8 @@
   <li data-couleur="3"><span class="parcours-numero">4</span> Construire</li>
   <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
   <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
-  <li data-couleur="0" aria-current="step"><span class="parcours-numero">7</span> À tout moment</li>
+  <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+  <li data-couleur="0" aria-current="step"><span class="parcours-numero">8</span> Vos propres skills</li>
 </ol>
 <!-- /auto:parcours -->
 <ul>
@@ -64,13 +66,13 @@
 <li><strong>Claude Code vous semble lent ou distrait</strong> quand vos skills sont chargées.</li>
 <li><strong>Avant de partager un plugin</strong> avec d'autres personnes.</li>
 </ul>
-<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> lancez l'audit avant <a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a>. Le rapport du jour d'une skill seule (<code>/pulse:audit-skill &lt;chemin de la skill&gt;</code>) est repris tel quel si elle n'a pas changé entre-temps.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> lancez l'audit avant <a href="optimize-skill.html"><code>/pulse-skills:optimize-skill</code></a>. Le rapport du jour d'une skill seule (<code>/pulse-skills:audit-skill &lt;chemin de la skill&gt;</code>) est repris tel quel si elle n'a pas changé entre-temps.</p></aside>
 </section>
 
 <section id="arguments">
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
-<pre class="commande"><code>/pulse:audit-skill [chemin d'une skill, d'un dossier de skills ou d'un plugin]</code></pre>
+<pre class="commande"><code>/pulse-skills:audit-skill [chemin d'une skill, d'un dossier de skills ou d'un plugin]</code></pre>
 <p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles. Par défaut : les skills et agents du projet, .claude/.</p>
 <!-- /auto:forme -->
 <ul>
@@ -78,7 +80,7 @@
 <li><strong>Le chemin d'une skill</strong> : cette skill seule.</li>
 <li><strong>Le chemin d'un dossier ou d'un plugin</strong> : toutes ses skills et ses assistants.</li>
 </ul>
-<pre class="commande"><code>/pulse:audit-skill .claude/skills/rediger-devis</code></pre>
+<pre class="commande"><code>/pulse-skills:audit-skill .claude/skills/rediger-devis</code></pre>
 </section>
 
 <section id="produit">
@@ -104,14 +106,14 @@
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
 <details class="probleme"><summary>Pulse dit que le chemin n'existe pas</summary><p>Vérifiez le chemin du dossier de la skill, puis relancez la commande avec le bon chemin.</p></details>
-<details class="probleme"><summary>Pulse dit qu'il n'a trouvé aucune skill</summary><p>Votre projet n'a pas encore de skill dans <code>.claude/skills/</code>. Pulse vous propose d'auditer vos skills personnelles, un autre chemin, ou d'en créer une avec <a href="skill-creator.html"><code>/pulse:skill-creator</code></a>.</p></details>
+<details class="probleme"><summary>Pulse dit qu'il n'a trouvé aucune skill</summary><p>Votre projet n'a pas encore de skill dans <code>.claude/skills/</code>. Pulse vous propose d'auditer vos skills personnelles, un autre chemin, ou d'en créer une avec <a href="skill-creator.html"><code>/pulse-skills:skill-creator</code></a>.</p></details>
 <details class="probleme"><summary>Pulse dit que ce n'est pas une skill Claude Code</summary><p>La commande lit les skills au format de Claude Code : un dossier avec un fichier <code>SKILL.md</code>. Les règles d'autres outils ne sont pas lues.</p></details>
 </section>
 
 <section id="exemples">
 <h2>Exemples</h2>
 <div class="conversation" data-titre="Exemple : auditer les skills du projet">
-<p data-role="vous">/pulse:audit-skill</p>
+<p data-role="vous">/pulse-skills:audit-skill</p>
 <p data-role="claude">J'ai relu vos 3 skills. 1 point bloquant : la skill « publier » autorise d'avance l'envoi sur le dépôt en ligne. 2 points à corriger, 1 conseil. Si tout est corrigé, chaque lancement chargerait environ 4 000 caractères de moins. Le rapport est dans docs/audits-skills/skills-projet-2026-10-26.md.</p>
 </div>
 </section>
@@ -119,8 +121,8 @@
 <section id="liees">
 <h2>Commandes liées</h2>
 <ul>
-<li><a href="optimize-skill.html"><code>/pulse:optimize-skill</code></a> : appliquer les corrections d'une skill, avec un plan à valider.</li>
-<li><a href="skill-creator.html"><code>/pulse:skill-creator</code></a> : créer une skill qui suit ces règles dès le départ.</li>
+<li><a href="optimize-skill.html"><code>/pulse-skills:optimize-skill</code></a> : appliquer les corrections d'une skill, avec un plan à valider.</li>
+<li><a href="skill-creator.html"><code>/pulse-skills:skill-creator</code></a> : créer une skill qui suit ces règles dès le départ.</li>
 <li><a href="get-help.html"><code>/pulse:get-help</code></a> : demander de l'aide si une skill vous bloque.</li>
 </ul>
 </section>

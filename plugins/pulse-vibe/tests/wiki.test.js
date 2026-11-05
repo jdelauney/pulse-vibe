@@ -33,7 +33,7 @@ function fichiers(dossier, extension) {
 }
 
 const PAGES = DANS_LE_DEPOT ? fichiers(WIKI, ".html") : [];
-const SKILLS = fs.readdirSync(path.join(RACINE, "skills")).filter((s) => fs.existsSync(path.join(RACINE, "skills", s, "SKILL.md")));
+const SKILLS = [RACINE, path.join(DEPOT, "plugins", "pulse-skills")].flatMap((p) => fs.readdirSync(path.join(p, "skills")).filter((s) => fs.existsSync(path.join(p, "skills", s, "SKILL.md"))));
 const SECTIONS = ["description", "pourquoi", "quand", "arguments", "produit", "risques", "problemes", "exemples", "liees"];
 
 // Texte visible d'une page : sans scripts, styles, dessins, commentaires, code, ni termes définis (<dfn>).

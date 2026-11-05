@@ -389,11 +389,15 @@ function decider(f) {
   // Signaux de suivi du référencement (faits « suivi », lus par etat-tableau.js) : R24 ou tête de « aussi ».
   const verdict = (regle, prochaine, raison, extra = {}) => require("./etat-tableau.js").appliquerSuivi(f, { regle, prochaine, raison, aussi, ...extra }, bilan(f).pret);
   if (f.claude === "pulse") {
-    if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
-    else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
-    else if (!f.controlesAutorises) aussi.push("/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois");
+    // Autorisations et dépôt distant : proposés une fois la pile choisie, au moment où ils servent (references/preparer-projet.md).
+    const pileChoisie = f.docs && f.docs.technical;
+    if (pileChoisie) {
+      if (!f.secretsProteges) aussi.push("/pulse:init — protéger vos clés : la règle qui empêche l'IA de lire .env manque");
+      else if (!f.gitAutorise) aussi.push("/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois");
+      else if (!f.controlesAutorises) aussi.push("/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois");
+    }
     if (f.modeleAncien) aussi.push("/pulse:init — remettre les contrôles du projet à jour");
-    if (f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
+    if (pileChoisie && f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
   }
 
   const a = f.enAttente;

@@ -11,6 +11,7 @@ const path = require("path");
 const RACINE = path.join(__dirname, "..");
 const DEPOT = path.join(RACINE, "..", "..");
 const NEXT = path.join(DEPOT, "plugins", "pulse-vibe-next");
+const SKILLS_EXT = path.join(DEPOT, "plugins", "pulse-skills");
 const lire = (...p) => fs.readFileSync(path.join(...p), "utf8");
 const existe = (...p) => fs.existsSync(path.join(...p));
 const lister = (...p) => (existe(...p) ? fs.readdirSync(path.join(...p)) : []);
@@ -19,13 +20,14 @@ const lister = (...p) => (existe(...p) ? fs.readdirSync(path.join(...p)) : []);
 const DANS_LE_DEPOT = existe(DEPOT, ".claude-plugin", "marketplace.json") && existe(NEXT);
 const options = { skip: !DANS_LE_DEPOT && "hors du dépôt des plugins" };
 
-const DOCUMENTS = ["README.md", "CLAUDE.md", "docs/memo-commandes.md", "plugins/pulse-vibe/README.md", "plugins/pulse-vibe-next/README.md", "plugins/pulse-vibe/templates/CLAUDE.md", "plugins/pulse-vibe/templates/README-projet.md"];
+const DOCUMENTS = ["README.md", "CLAUDE.md", "docs/memo-commandes.md", "plugins/pulse-vibe/README.md", "plugins/pulse-vibe-next/README.md", "plugins/pulse-skills/README.md", "plugins/pulse-vibe/templates/CLAUDE.md", "plugins/pulse-vibe/templates/README-projet.md"];
 const texte = (f) => lire(DEPOT, f);
 
 // Chaque plugin et son README.
 const PLUGINS = [
   { dossier: RACINE, readme: "plugins/pulse-vibe/README.md" },
   { dossier: NEXT, readme: "plugins/pulse-vibe-next/README.md" },
+  { dossier: SKILLS_EXT, readme: "plugins/pulse-skills/README.md" },
 ];
 
 // Sous-commandes de premier niveau d'un outil bash : étiquettes « nom) » du dernier « case "$1" in ».
@@ -49,7 +51,7 @@ const cite = (texteCherche, mot) => new RegExp(`(^|[\\s|(\`])${mot.replace(/[.*+
 
 test("installation : noms du catalogue égaux aux noms de manifeste, et seuls cités", options, () => {
   const catalogue = JSON.parse(lire(DEPOT, ".claude-plugin", "marketplace.json"));
-  assert.deepStrictEqual(catalogue.plugins.map((p) => p.name).sort(), ["pulse", "pulse-next"]);
+  assert.deepStrictEqual(catalogue.plugins.map((p) => p.name).sort(), ["pulse", "pulse-next", "pulse-skills"]);
   for (const p of catalogue.plugins) assert.strictEqual(JSON.parse(lire(DEPOT, p.source, ".claude-plugin", "plugin.json")).name, p.name, p.source);
   // Les README du dépôt et du cœur citent les anciens noms une fois, sur la ligne qui explique la redirection ;
   // cette ligne donne la commande avec le nouveau nom et jamais une installation sous l'ancien.
