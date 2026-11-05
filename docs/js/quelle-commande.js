@@ -117,15 +117,15 @@
   // Un conseil : { commande, arguments, pourquoi, note (facultative), autre: { commande, arguments, pourquoi } }.
   var CONSEILS = {
     "init-nouveau": {
-      commande: "init", arguments: "mon-projet",
-      pourquoi: "Elle prépare votre dossier de projet : les règles lues par l'IA, la mémoire du projet et l'historique des versions. Puis elle vous propose de démarrer vite.",
-      note: "Remplacez mon-projet par le nom de votre projet, ou tapez la commande seule : Pulse vous le demandera.",
-      autre: { commande: "nouveau", arguments: "\"un carnet de réservations pour mon salon\"", pourquoi: "Juste après, une seule conversation transforme votre idée en documents prêts, jusqu'à la première fonctionnalité à réaliser." }
+      commande: "nouveau", arguments: "\"un carnet de réservations pour mon salon\"",
+      pourquoi: "Dans un dossier vide, elle prépare le projet, puis une seule conversation transforme votre idée en documents prêts, jusqu'à la première fonctionnalité à réaliser.",
+      note: "Remplacez la phrase entre guillemets par votre idée, ou tapez la commande seule : Pulse vous la demandera.",
+      autre: { commande: "init", arguments: "", pourquoi: "Le même départ, avec le choix entre démarrer vite et le parcours complet." }
     },
     "init-complet": {
       commande: "init", arguments: "mon-projet",
-      pourquoi: "Elle prépare votre dossier de projet, puis vous guide étape par étape, en vous disant toujours quoi faire ensuite.",
-      note: "Remplacez mon-projet par le nom de votre projet, ou tapez la commande seule : Pulse vous le demandera.",
+      pourquoi: "Elle vous demande votre idée et votre niveau, prépare votre dossier de projet, puis vous guide étape par étape, en vous disant toujours quoi faire ensuite.",
+      note: "Remplacez mon-projet par le nom de votre projet, ou tapez la commande seule : Pulse en proposera un.",
       autre: { commande: "brainstorm", arguments: "", pourquoi: "La première étape du parcours complet : un entretien guidé pour raconter votre idée en détail." }
     },
     "init-existant": {

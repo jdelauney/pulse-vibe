@@ -147,13 +147,16 @@ Votre outil doit-il être trouvé sur Google ? → Oui, par les gens qui cherche
 <h3 id="s1-tech">Choisir les outils : <code>/pulse:tech</code></h3>
 <p><strong>Objectif :</strong> retenir la pile Next.js du pack et préparer le projet de départ. <span class="duree">Environ 45 min, comptes compris</span></p>
 <pre class="commande"><code>/pulse:tech</code></pre>
-<p>Pulse remplit ce qu'il sait déjà, pose les questions qui restent sur votre besoin, puis compare 2 ou 3 options vérifiées sur la documentation officielle. Avec le pack installé, la pile Next.js en fait partie : un projet de départ vérifié, des recettes prêtes, les pièges connus déjà traités. Pulse la recommande quand elle convient ; le choix vous appartient. Voir <a href="../commandes/tech.html"><code>/pulse:tech</code></a>.</p>
-<p>Ensuite, Pulse propose de préparer le code de départ. Il vous guide pour créer un compte Neon (la base de données, rangée à Francfort), avec une base de développement pour vos essais, et un compte Vercel (l'hébergeur). Puis il propose de mettre en ligne la page de départ dès aujourd'hui : acceptez, vous découvrez les réglages de l'hébergeur tant que l'enjeu est petit.</p>
+<p>Pulse remplit ce qu'il sait déjà, pose les questions qui restent sur votre besoin, puis compare 2 ou 3 options vérifiées sur la documentation officielle. Avec le pack installé, et quand la pile Next.js convient, il vérifie cette pile et vous la recommande directement : un projet de départ vérifié, des recettes prêtes, les pièges connus déjà traités. Le choix vous appartient : « Voir d'autres options » lance la comparaison. Voir <a href="../commandes/tech.html"><code>/pulse:tech</code></a>.</p>
+<p>Ensuite, Pulse propose la règle qui protège vos clés, puis de préparer le code de départ. Il vous guide pour créer un compte Neon (la base de données, rangée à Francfort), avec une base de développement pour vos essais, et un compte Vercel (l'hébergeur). Puis il propose de mettre en ligne la page de départ dès aujourd'hui, et crée alors la copie privée du projet sur GitHub : acceptez, vous découvrez les réglages de l'hébergeur tant que l'enjeu est petit.</p>
 <div class="conversation" data-titre="Séance 1 : choisir les outils">
-<p data-role="claude">Option A : Pile Pulse next (Next.js, base Neon à Francfort, hébergement Vercel) : code de départ vérifié, recettes prêtes. ✅
-Option B : un site plus léger avec un service de réservation tiers. ⚠️ moins de contrôle sur les données.
-Je recommande l'option A : elle couvre les comptes, les données et les e-mails.</p>
-<p data-role="vous">Option A (Recommandé)</p>
+<p data-role="claude">Je vous recommande la pile Pulse next : elle couvre les comptes, les données et les e-mails.
+Ce que vous obtenez : un site avec vos données à Francfort, et un code de départ déjà vérifié.
+Coût à 6 mois : l'offre payante de l'hébergeur, pour un vrai salon.
+Risque principal : changer d'hébergeur demandera quelques réglages.
+→ Cette pile (Recommandé) / Voir d'autres options / Revoir un besoin</p>
+<p data-role="vous">Cette pile</p>
+<p data-role="claude">Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Écrire ces règles (Recommandé)</p>
 <p data-role="outil"><code>pulse-aidd pile squelette --nom "salon-lila" --description "Un carnet de réservations pour le Salon Lila"</code></p>
 <p data-role="claude">Le code de départ est prêt : la page d'accueil affiche « salon-lila ».
 Mettre en ligne la page de départ maintenant (Recommandé) ?</p>
@@ -162,6 +165,8 @@ Mettre en ligne la page de départ maintenant (Recommandé) ?</p>
 <aside class="encadre encadre-risque"><p><strong>Risque :</strong> l'adresse de la base de données contient son mot de passe. Copiez-la vous-même, depuis Neon, dans le fichier <code>.env</code> ouvert dans VS Code, enregistrez, puis fermez l'onglet. Gardez-la hors de la conversation : Pulse n'en a pas besoin, il travaille avec les noms des variables.</p></aside>
 <aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/technical.md</code> contient la ligne <code>Pack de pile Pulse : next</code>. La commande « lancer en local » ouvre la page de départ sur <code>http://localhost:3000</code>, et, si vous avez accepté, la même page est déjà en ligne.</p></aside>
 <details class="probleme"><summary>Pulse ne propose pas la pile Next.js</summary><p>Le pack n'est pas installé, ou pas encore chargé. Tapez <code>/plugins</code> dans le panneau Claude Code, vérifiez que <code>pulse-next</code> est installé et activé (sinon <strong>Install</strong>), redémarrez Claude si la fenêtre le propose, puis relancez <code>/pulse:tech</code>.</p></details>
+<details class="probleme"><summary>Pulse n'arrive pas à créer le dépôt sur GitHub</summary><p>Sans l'outil GitHub en ligne de commande, Pulse vous guide sur le site : nouveau dépôt, nom du projet, visibilité <strong>privée</strong>, dépôt laissé vide. Collez ensuite son adresse dans la conversation : Pulse relie le projet.</p></details>
+<details class="probleme"><summary>Je veux relier le dépôt plus tard</summary><p>Répondez « Plus tard ». Tout reste sur votre ordinateur. La question reviendra au moment de la mise en ligne.</p></details>
 <details class="probleme"><summary>La branche de développement a disparu de Neon</summary><p>À sa création, la case « Automatically delete branch after » est cochée par défaut. Pulse vous demande de la décocher : recréez la branche <code>dev</code> en suivant ses consignes.</p></details>
 
 <h3 id="s1-ui">Choisir l'apparence : <code>/pulse:ui identite</code></h3>
