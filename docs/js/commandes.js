@@ -45,7 +45,7 @@
     boutons.appendChild(b);
   }
   bouton("Toutes", null);
-  etapes.forEach(function (e) { bouton(e.numero + ". " + e.nom, e.id); });
+  etapes.forEach(function (e) { bouton((e.numero ? e.numero + ". " : "") + e.nom, e.id); });
 
   champ.addEventListener("input", filtrer);
   zone.hidden = false;

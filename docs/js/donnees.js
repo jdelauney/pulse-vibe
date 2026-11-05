@@ -92,7 +92,7 @@ window.PULSE_WIKI = {
     },
     {
       "id": "skills",
-      "numero": 8,
+      "horsParcours": true,
       "nom": "Vos propres skills",
       "couleur": 0,
       "commandes": [

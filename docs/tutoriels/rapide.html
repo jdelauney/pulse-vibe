@@ -42,7 +42,7 @@
 <figure class="capture capture-a-venir" data-capture="captures/rapide-vscode-panneau.png"><div class="capture-cadre">Capture à venir : VS Code avec le dossier vide carnet-reservations ouvert dans l'explorateur, et le panneau Claude Code ouvert sur sa zone de saisie</div><figcaption>VS Code, le dossier vide à gauche et le panneau Claude Code : c'est le point de départ.</figcaption></figure>
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> vous préférez le terminal ou Claude Desktop ? Tout le tutoriel fonctionne aussi : dans le terminal, placez-vous dans le dossier, lancez <code>claude</code> et tapez les mêmes commandes ; dans Claude Desktop, ouvrez l'onglet <strong>Code</strong> sur ce dossier.</p></aside>
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> gardez une heure devant vous pour les étapes 1 à 4, puis une heure pour les étapes 5 et 6. Entre les deux, vous pouvez faire une pause : Pulse retrouve le fil tout seul.</p></aside>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le panneau Claude Code est ouvert à côté de votre dossier, et la commande <code>/pulse:init</code> apparaît dans la liste quand vous tapez <code>/pulse</code> dans sa zone de saisie.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le panneau Claude Code est ouvert à côté de votre dossier, et la commande <code>/pulse:nouveau</code> apparaît dans la liste quand vous tapez <code>/pulse</code> dans sa zone de saisie.</p></aside>
 <details class="probleme"><summary>Les commandes <code>/pulse:…</code> n'apparaissent pas</summary><p>Les plugins ne sont pas installés, ou VS Code n'a pas été relancé après l'installation. Suivez la page <a href="../prerequis.html">Prérequis</a>, puis fermez et rouvrez VS Code.</p></details>
 <details class="probleme"><summary>Je ne trouve ni « ✻ Claude Code » ni l'étincelle</summary><p>L'extension n'est pas installée, ou VS Code ne l'a pas encore chargée. Ouvrez la palette de commandes (<kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>P</kbd>, ou <kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>P</kbd> sur Mac), tapez <strong>Developer: Reload Window</strong> (recharger la fenêtre) et validez. Sinon, installez l'extension avec la page <a href="../prerequis.html">Prérequis</a>.</p></details>
 </section>
@@ -50,33 +50,31 @@
 <!-- ===================================================================================================== -->
 <section id="init" class="etape-tuto">
 <h2><span class="etape-numero">1</span> Créer le projet <span class="duree">5 minutes</span></h2>
-<p><strong>Objectif :</strong> préparer le dossier (règles du projet, mémoire, historique des versions) et choisir de démarrer vite avec <code>/pulse:nouveau</code>.</p>
-<pre class="commande"><code>/pulse:init carnet-reservations</code></pre>
-<p>Pulse vous demande votre idée en une phrase et votre niveau. Répondez « Jamais programmé » si c'est votre cas : Pulse prendra alors lui-même les réglages techniques conseillés, sans vous poser de questions de développeur. La protection de vos clés et la copie en ligne du projet viendront avec le choix des outils, au moment où elles servent.</p>
+<p><strong>Objectif :</strong> donner votre idée à Pulse, qui prépare le dossier (règles du projet, mémoire, historique des versions) sans rien vous demander de technique.</p>
+<pre class="commande"><code>/pulse:nouveau "un carnet de réservations pour mon salon de coiffure"</code></pre>
+<p>Votre idée est déjà dite : Pulse vous demande seulement votre niveau. Répondez « Jamais programmé » si c'est votre cas : Pulse prendra alors lui-même les réglages techniques conseillés, sans vous poser de questions de développeur. La protection de vos clés et la copie en ligne du projet viendront avec le choix des outils, au moment où elles servent.</p>
 <div class="conversation" data-titre="Créer le projet">
-<p data-role="vous">/pulse:init carnet-reservations</p>
-<p data-role="claude">👋 Bienvenue ! On commence par votre idée. Racontez-la en une phrase.</p>
-<p data-role="vous">Un carnet de réservations en ligne pour un salon de coiffure.</p>
+<p data-role="vous">/pulse:nouveau "un carnet de réservations pour mon salon de coiffure"</p>
 <p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé</p>
-<p data-role="outil">pulse-aidd nouveau "carnet-reservations" --ici --description "Un carnet de réservations en ligne pour un salon de coiffure." --oui</p>
-<p data-role="claude">Votre dossier est prêt. Parlons de votre idée.
-Pour la suite : démarrer vite avec /pulse:nouveau, ou parcours complet, étape par étape ?</p>
-<p data-role="vous">Démarrer vite avec /pulse:nouveau</p>
+<p data-role="claude">Je nomme le projet « carnet-reservations ». Dites-le si vous en préférez un autre.</p>
+<p data-role="outil">pulse-aidd nouveau "carnet-reservations" --ici --description "Un carnet de réservations pour mon salon de coiffure" --oui</p>
+<p data-role="claude">Votre dossier est prêt. Parlons de votre idée.</p>
 </div>
-<figure class="capture capture-a-venir" data-capture="captures/rapide-accueil-pulse.png"><div class="capture-cadre">Capture à venir : VS Code avec le panneau Claude Code ouvert sur l'accueil de Pulse (bannière et question sur votre idée)</div><figcaption>L'accueil de Pulse : il commence par votre idée.</figcaption></figure>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-accueil-pulse.png"><div class="capture-cadre">Capture à venir : VS Code avec le panneau Claude Code ouvert sur la préparation du projet par /pulse:nouveau (question sur votre niveau)</div><figcaption>Le départ : votre idée est reprise, et Pulse prépare le dossier.</figcaption></figure>
 <p>Les nouveaux fichiers apparaissent dans l'explorateur de VS Code, à gauche. S'il est caché, cliquez sur l'icône des deux feuilles en haut de la barre de gauche, ou appuyez sur <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>E</kbd> (<kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>E</kbd> sur Mac).</p>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; la conversation enchaîne sur <code>/pulse:nouveau</code>.</p></aside>
-<details class="probleme"><summary>« Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Installez l'outil indiqué (page <a href="../prerequis.html">Prérequis</a>), puis <strong>fermez et rouvrez VS Code</strong> (il lit la liste des programmes installés à son démarrage), et relancez <code>/pulse:init carnet-reservations</code>. Plus de détails sur la page <a href="../commandes/init.html">/pulse:init</a>.</p></details>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; la conversation enchaîne sur les quatre blocs de questions.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> <a href="../commandes/init.html"><code>/pulse:init</code></a> fait le même départ, puis vous laisse choisir entre démarrer vite et le parcours complet. Il sert aussi à reprendre un projet.</p></aside>
+<details class="probleme"><summary>« Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Installez l'outil indiqué (page <a href="../prerequis.html">Prérequis</a>), puis <strong>fermez et rouvrez VS Code</strong> (il lit la liste des programmes installés à son démarrage), et relancez la commande. Plus de détails sur la page <a href="../commandes/init.html">/pulse:init</a>, que Pulse vous propose dans ce cas.</p></details>
 <details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>Chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et l'e-mail de votre compte GitHub. C'est demandé une seule fois sur cet ordinateur.</p></details>
-<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:init</code> dans le dossier. Pour voir où vous en êtes sans rien lancer, tapez <code>/pulse:status</code>.</p></aside>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code> dans le dossier. Pour voir où vous en êtes sans rien lancer, tapez <code>/pulse:status</code>.</p></aside>
 </section>
 
 <!-- ===================================================================================================== -->
 <section id="nouveau" class="etape-tuto">
 <h2><span class="etape-numero">2</span> Décrire l'idée en une conversation <span class="duree">20 minutes</span></h2>
 <p><strong>Objectif :</strong> transformer votre idée en documents clairs (brief, PRD, user stories) grâce à quatre blocs de questions et un seul écran de validation.</p>
-<p>Vous avez choisi de démarrer vite : la conversation continue d'elle-même, sans rien taper. La commande ci-dessous sert seulement à le relancer, par exemple après une pause. Le détail est sur la page <a href="../commandes/nouveau.html">/pulse:nouveau</a>.</p>
-<pre class="commande"><code>/pulse:nouveau "un carnet de réservations pour mon salon de coiffure"</code></pre>
+<p>La conversation continue d'elle-même, sans rien taper. La commande ci-dessous sert seulement à la relancer, par exemple après une pause. Le détail est sur la page <a href="../commandes/nouveau.html">/pulse:nouveau</a>.</p>
+<pre class="commande"><code>/pulse:nouveau</code></pre>
 
 <figure class="anim" data-etapes="4" data-duree="1300">
 <svg viewBox="0 0 640 300" role="img" aria-labelledby="rapide-nouveau-titre">

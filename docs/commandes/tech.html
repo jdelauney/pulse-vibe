@@ -35,14 +35,17 @@
 <p>Cette commande choisit avec vous les outils de votre appli : le langage, l'endroit où sont gardées les données, la connexion des utilisateurs, l'hébergement. On appelle cet ensemble la <dfn>pile technique</dfn>. Pulse joue le rôle d'un architecte qui parle simplement : « On comprend d'abord le besoin, et on choisit les outils <strong>après</strong>. Le plus simple qui répond au besoin est le meilleur choix. »</p>
 <p>Dans un projet neuf, Pulse lit votre brief et votre PRD, pose seulement les questions qui restent, puis construit 2 ou 3 options vraiment différentes. Des assistants vérifient chacune en parallèle sur la documentation officielle et les pages de prix. Chaque option vous est présentée en mots simples : ce que vous obtenez, le coût à 6 mois, quand elle convient, son principal risque, et s'il sera facile d'en changer. Le tableau et les noms des technologies s'affichent sur demande. Vous choisissez.</p>
 <p>Dans un projet qui a déjà du code, Pulse décrit simplement les outils déjà utilisés, avec les manques constatés, et vous demande de confirmer. Dans les deux cas, il peut ensuite préparer le code de départ, et même mettre en ligne une première page dès aujourd'hui.</p>
-<pre class="commande"><code>Les options comparées
-A · Pile Pulse next   ✅ code de départ vérifié, recettes prêtes
-B · Service géré      ⚠️ offre gratuite limitée
-C · Serveur à soi     ✅ plus de pièces à comprendre
+<pre class="commande"><code>Option A : un site avec vos données chez un service spécialisé
+Ce que vous obtenez : des comptes et des données partagées, sans serveur à gérer
+Coût à 6 mois       : 0 à 20 € par mois
+Convient si         : vous avez quelques centaines d'utilisateurs
+Moins adapté si     : vos données doivent rester chez vous
+Risque principal    : l'offre gratuite a des limites
+Changer plus tard   : coûteux, parce que vos données y sont rangées
 
-➡️ Je recommande A : c'est l'option qui demande le moins d'essais.
+➡️ Je recommande A : elle couvre votre besoin avec le moins de pièces.
 → Option A (Recommandé) / Option B / Option C / Revoir un besoin</code></pre>
-<p class="legende">Un exemple de comparaison, avec le verdict de vérification de chaque option.</p>
+<p class="legende">Un exemple de carte d'option. Chaque option a la sienne, vérifiée sur ses sources.</p>
 </section>
 
 <section id="pourquoi">
@@ -66,7 +69,6 @@ C · Serveur à soi     ✅ plus de pièces à comprendre
   <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
   <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
   <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
-  <li data-couleur="0"><span class="parcours-numero">8</span> Vos propres skills</li>
 </ol>
 <!-- /auto:parcours -->
 <ul>
@@ -122,6 +124,8 @@ C · Serveur à soi     ✅ plus de pièces à comprendre
 <section id="problemes">
 <h2>Problèmes et solutions</h2>
 <details class="probleme"><summary>Pulse me dit qu'il manque le PRD</summary><p>Le PRD décrit la première version, qui guide le choix. Lancez <a href="prd.html"><code>/pulse:prd</code></a> ; vous pouvez aussi continuer sans, Pulse le signalera dans ses choix.</p></details>
+<details class="probleme"><summary>Pulse ne me propose qu'une seule pile</summary><p>Un pack installé couvre votre besoin : Pulse le recommande directement. Répondez « Voir d'autres options » pour obtenir une comparaison complète, vérifiée de la même façon.</p></details>
+<details class="probleme"><summary>Pulse a supposé une réponse que je n'ai pas donnée</summary><p>Si vous avez répondu « Jamais programmé », Pulse prend la réponse la plus courante pour le nombre d'utilisateurs, les appareils et la connexion, et il vous le dit. Corrigez-le simplement si c'est différent.</p></details>
 <details class="probleme"><summary>Pulse me signale une contradiction</summary><p>Deux de vos réponses ne vont pas ensemble, par exemple « paiement en ligne » avec « budget 0 € et aucun compte ». Tranchez : Pulse construit ensuite les options sur votre réponse.</p></details>
 <details class="probleme"><summary>Aucune option ne passe la vérification</summary><p>Pulse vous explique le blocage commun et revient aux besoins. Assouplir une contrainte (budget, hébergement) ouvre souvent de nouvelles options.</p></details>
 <details class="probleme"><summary>J'avais déjà fait mes choix techniques</summary><p>Pulse vous demande s'il faut les <strong>revoir</strong> (un besoin a changé) ou les <strong>garder</strong>. Gardez-les si rien n'a bougé.</p></details>
@@ -138,10 +142,11 @@ Combien de rendez-vous par semaine ? → Une centaine (Recommandé) / Quelques-u
 Quel budget par mois acceptez-vous ? → 0 à 10 € (Recommandé) / 10 à 50 € / Plus</p>
 <p data-role="vous">Une centaine · 0 à 10 €</p>
 <p data-role="outil">pulse-aidd piles</p>
-<p data-role="claude">Trois options vérifiées sur leur documentation officielle. Je recommande la pile Pulse next : c'est l'option qui demande le moins d'essais pour obtenir un code juste.
-→ Option A (Recommandé) / Option B / Option C / Revoir un besoin</p>
-<p data-role="vous">Option A</p>
+<p data-role="claude">Le pack installé couvre votre besoin, et sa pile est vérifiée. Je vous la recommande : c'est celle qui demande le moins d'essais pour obtenir un code juste.
+→ Cette pile (Recommandé) / Voir d'autres options / Revoir un besoin</p>
+<p data-role="vous">Cette pile</p>
 <p data-role="claude">docs/technical.md est écrit.
+Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Écrire ces règles (Recommandé)
 → Préparer le code de départ maintenant (Recommandé) / Plus tard, avec la première tâche</p>
 </div>
 <div class="conversation" data-titre="Exemple : un projet qui a déjà du code">
