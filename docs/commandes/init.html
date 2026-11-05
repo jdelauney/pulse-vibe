@@ -32,7 +32,7 @@
 
 <section id="description">
 <h2>Description</h2>
-<p>C'est la porte d'entrée de Pulse. Lancée dans un dossier vide, elle prépare votre projet : les règles que l'IA lira à chaque session (<code>CLAUDE.md</code>), la mémoire du projet, l'historique des versions (Git) et une protection pour vos clés secrètes.</p>
+<p>C'est la porte d'entrée de Pulse. Lancée dans un dossier vide, elle vous demande votre idée en une phrase et votre niveau, puis prépare votre projet : les règles que l'IA lira à chaque session (<code>CLAUDE.md</code>), la mémoire du projet, l'historique des versions (Git) et un contrôle des secrets. Le reste vient au moment où il sert : les autorisations avec le choix des outils, la copie en ligne avec la mise en ligne.</p>
 <p>Lancée plus tard, dans un projet en cours, elle fait le point : ce qui est fait, ce qui reste, et la prochaine étape conseillée. Elle tourne en boucle : vous choisissez une action, elle l'exécute, relit l'état du projet, puis vous montre l'écran suivant.</p>
 <pre class="commande"><code>Votre projet :
   Dossier      ✅ CLAUDE.md Pulse
@@ -83,7 +83,6 @@
   <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
   <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
   <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
-  <li data-couleur="0"><span class="parcours-numero">8</span> Vos propres skills</li>
 </ol>
 <!-- /auto:parcours -->
 <ul>
@@ -92,6 +91,7 @@
 <li><strong>Dans un projet qui a déjà du code</strong>, pour y ajouter Pulse.</li>
 <li><strong>Après une mise à jour de Pulse</strong> : elle repère les contrôles du projet à remettre à jour (secrets, fichiers ignorés, la ligne qui fait proposer la bonne commande) et vous les propose un par un ; elle lit alors aussi les notes de mise à niveau du pack de pile.</li>
 </ul>
+<aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> vous partez de zéro et voulez aller vite ? <a href="nouveau.html"><code>/pulse:nouveau</code></a> fait le même départ, sans passer par le choix du parcours.</p></aside>
 <aside class="encadre encadre-conseil"><p><strong>Conseil :</strong> pour savoir où vous en êtes sans rien lancer, <a href="status.html"><code>/pulse:status</code></a> fait le même calcul, en lecture seule.</p></aside>
 </section>
 
@@ -163,7 +163,7 @@ Méthode : ✅ brief · ✅ PRD · ✅ choix techniques · ✅ US · [spec] · �
 <section id="liees">
 <h2>Commandes liées</h2>
 <ul>
-<li><a href="nouveau.html"><code>/pulse:nouveau</code></a> : démarrer vite, en une seule conversation, juste après <code>/pulse:init</code>.</li>
+<li><a href="nouveau.html"><code>/pulse:nouveau</code></a> : démarrer vite, en une seule conversation, directement dans un dossier vide.</li>
 <li><a href="brainstorm.html"><code>/pulse:brainstorm</code></a> : la première étape du parcours complet.</li>
 <li><a href="status.html"><code>/pulse:status</code></a> : savoir où vous en êtes, sans rien lancer.</li>
 <li><a href="memory.html"><code>/pulse:memory</code></a> : remplir la mémoire d'un projet qui a déjà du code, après <code>/pulse:tech</code>.</li>

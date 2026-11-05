@@ -26,7 +26,7 @@ const ETAPES = [
   { id: "en-ligne", numero: 5, nom: "Mettre en ligne", couleur: 4, commandes: ["cicd", "deploy", "security", "secrets"] },
   { id: "visible", numero: 6, nom: "Être trouvé", couleur: 4, commandes: ["seo", "rediger", "perf", "search-console"] },
   { id: "toujours", numero: 7, nom: "À tout moment", couleur: 0, commandes: ["status", "explain", "learn", "fix", "annuler", "get-help", "memory"] },
-  { id: "skills", numero: 8, nom: "Vos propres skills", couleur: 0, commandes: ["skill-creator", "audit-skill", "optimize-skill"] },
+  { id: "skills", horsParcours: true, nom: "Vos propres skills", couleur: 0, commandes: ["skill-creator", "audit-skill", "optimize-skill"] },
 ];
 
 // Les pages de la navigation principale (chemins depuis docs/). Chaque page citée doit exister.
@@ -99,11 +99,12 @@ function blocForme(c) {
 
 function blocEtape(c) {
   const etape = ETAPES.find((e) => e.id === c.etape);
-  return `<p class="pastille pastille-etape" data-couleur="${etape.couleur}">Étape ${etape.numero} · ${echapper(etape.nom)}</p>`;
+  return `<p class="pastille pastille-etape" data-couleur="${etape.couleur}">${etape.horsParcours ? "Plugin à part" : `Étape ${etape.numero}`} · ${echapper(etape.nom)}</p>`;
 }
 
 function blocParcours(c) {
-  const items = ETAPES.map((e) => {
+  if (ETAPES.find((e) => e.id === c.etape).horsParcours) return "<p>Cette commande vient d'un plugin à part : elle sert à tout moment, hors du parcours d'un projet.</p>";
+  const items = ETAPES.filter((e) => !e.horsParcours).map((e) => {
     const actuelle = e.id === c.etape;
     return `  <li data-couleur="${e.couleur}"${actuelle ? ' aria-current="step"' : ""}><span class="parcours-numero">${e.numero}</span> ${echapper(e.nom)}</li>`;
   });
@@ -118,7 +119,7 @@ function blocCartes(liste) {
     });
     return [
       `<section class="groupe-etape" id="etape-${e.id}" data-etape="${e.id}">`,
-      `  <h2><span class="pastille pastille-etape" data-couleur="${e.couleur}">Étape ${e.numero}</span> ${echapper(e.nom)}</h2>`,
+      `  <h2><span class="pastille pastille-etape" data-couleur="${e.couleur}">${e.horsParcours ? "Plugin à part" : `Étape ${e.numero}`}</span> ${echapper(e.nom)}</h2>`,
       `  <ul class="grille-cartes">`,
       ...cartes,
       `  </ul>`,
