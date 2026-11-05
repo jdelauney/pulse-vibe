@@ -1,5 +1,5 @@
 // Tests de `pulse-aidd skill mesurer|verifier|usage` (scripts/skill.js) : tailles d'une skill, règles K vérifiables
-// par script (references/skills/regles-skills.md), sur des skills fabriquées dans un dossier temporaire.
+// par script (references/regles-skills.md de pulse-skills), sur des skills fabriquées dans un dossier temporaire.
 // Lancer : node --test plugins/pulse-vibe/tests/skill.test.js
 "use strict";
 
@@ -348,7 +348,7 @@ test("pulse-aidd skill relaie vers scripts/skill.js", (t) => {
 });
 
 test("regles-skills.md : K1 à K14, chacune avec son niveau, sa gravité et un avant → après ; sous 12 000 caractères", () => {
-  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const texte = fs.readFileSync(path.join(RACINE, "..", "pulse-skills", "references", "regles-skills.md"), "utf8");
   assert.ok(texte.length < 12000, `${texte.length} caractères`);
   const sections = texte.split(/^## (?=K\d+ )/m).slice(1);
   assert.deepStrictEqual(sections.map((s) => s.match(/^K\d+/)[0]), Array.from({ length: 14 }, (_, i) => `K${i + 1}`));
@@ -549,7 +549,7 @@ test("usage : historique des assistants signalé non lu ; CLAUDE_CONFIG_DIR resp
 });
 
 test("regles-skills.md : K5 rappelle --sans-communes dans Pulse ; K11 sépare l'universel (outils) de la convention (model, liste Bash)", () => {
-  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const texte = fs.readFileSync(path.join(RACINE, "..", "pulse-skills", "references", "regles-skills.md"), "utf8");
   const section = (id) => texte.split(/^## /m).find((s) => s.startsWith(`${id} `));
   assert.match(section("K5"), /--sans-communes/);
   const k11 = section("K11");
@@ -685,7 +685,7 @@ test("empreinte sur un très gros dossier : résumé sous 30 000 caractères, sk
 });
 
 test("regles-skills.md, K7 : sortie de commande (fichier enregistré, aperçu), outil Read (2 000 lignes, ~25 000 jetons), injection, commandes citées", () => {
-  const texte = fs.readFileSync(path.join(RACINE, "references", "skills", "regles-skills.md"), "utf8");
+  const texte = fs.readFileSync(path.join(RACINE, "..", "pulse-skills", "references", "regles-skills.md"), "utf8");
   const k7 = texte.split(/^## /m).find((s) => s.startsWith("K7 "));
   for (const attendu of [/aperçu/, /fichier enregistré/, /à corriger/, /outil Read/, /2 000 lignes/, /25 000 jetons/, /injection/, /citée/, /jugement/, /lu par le script seul/])
     assert.match(k7, attendu, `K7 : ${attendu}`);

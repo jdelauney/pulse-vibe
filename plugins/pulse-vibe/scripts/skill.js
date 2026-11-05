@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Pulse – mesure et contrôle des skills Claude Code (`pulse-aidd skill mesurer|verifier <chemin>`), pour
-// /pulse:skill-creator, /pulse:audit-skill et /pulse:optimize-skill. Lecture seule, sans réseau.
-// Les règles K1 à K14, leurs niveaux et leurs gravités : references/skills/regles-skills.md.
+// /pulse-skills:skill-creator, /pulse-skills:audit-skill et /pulse-skills:optimize-skill. Lecture seule, sans réseau.
+// Les règles K1 à K14, leurs niveaux et leurs gravités : references/regles-skills.md de pulse-skills.
 //
 //   pulse-aidd skill mesurer <chemin>    lignes « clé: valeur » par skill : skill, chemin, skill-md, frontmatter,
 //                                        description, processus-fin (jetons estimés, dans le corps du SKILL.md, sans

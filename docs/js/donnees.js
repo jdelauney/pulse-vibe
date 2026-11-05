@@ -87,7 +87,15 @@ window.PULSE_WIKI = {
         "fix",
         "annuler",
         "get-help",
-        "memory",
+        "memory"
+      ]
+    },
+    {
+      "id": "skills",
+      "numero": 8,
+      "nom": "Vos propres skills",
+      "couleur": 0,
+      "commandes": [
         "skill-creator",
         "audit-skill",
         "optimize-skill"
@@ -130,7 +138,7 @@ window.PULSE_WIKI = {
     },
     {
       "nom": "audit-skill",
-      "etape": "toujours",
+      "etape": "skills",
       "description": "Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier",
       "forme": "[chemin d'une skill, d'un dossier de skills ou d'un plugin]",
       "note": "par défaut : les skills et agents du projet, .claude/"
@@ -229,13 +237,13 @@ window.PULSE_WIKI = {
     {
       "nom": "nouveau",
       "etape": "demarrer",
-      "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis les choix techniques et l'identité visuelle, jusqu'à la première US prête à réaliser",
+      "description": "Démarrer vite - en une seule conversation, l'idée, les écrans, l'apparence et les contraintes deviennent le brief, le PRD et les user stories ; puis l'identité visuelle et les choix techniques, jusqu'à la première US prête à réaliser",
       "forme": "[votre idée en une phrase | vos documents]",
       "note": ""
     },
     {
       "nom": "optimize-skill",
-      "etape": "toujours",
+      "etape": "skills",
       "description": "Optimiser une skill Claude Code (moins de texte chargé) en gardant sa qualité, avec un plan à valider et une relecture avant / après",
       "forme": "<chemin d'une skill>",
       "note": "vide : la question vous le demande"
@@ -319,7 +327,7 @@ window.PULSE_WIKI = {
     },
     {
       "nom": "skill-creator",
-      "etape": "toujours",
+      "etape": "skills",
       "description": "Créer une skill Claude Code qui respecte les règles d'optimisation, après quelques questions sur son travail",
       "forme": "[ce que la skill doit faire]",
       "note": "vide : la première question vous le demande"

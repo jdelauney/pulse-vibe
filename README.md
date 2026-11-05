@@ -6,6 +6,7 @@ Ce dépôt est le catalogue **`pulseia`** : il contient les plugins de la métho
 |---|---|---|
 | `pulse` | La méthode Pulse : du brief à la mise en ligne, avec garde-fous de sécurité, agents indépendants et mémoire projet. Aucune technologie imposée | [plugins/pulse-vibe/README.md](plugins/pulse-vibe/README.md) |
 | `pulse-next` | Le pack de pile Next.js (Drizzle + Neon, better-auth, shadcn/ui, Vercel) : code de départ vérifié, conventions, pièges connus et recettes prêtes. Installe aussi `pulse` | [plugins/pulse-vibe-next/README.md](plugins/pulse-vibe-next/README.md) |
+| `pulse-skills` | Créer, auditer et optimiser vos propres skills Claude Code. Installe aussi `pulse` | [plugins/pulse-skills/README.md](plugins/pulse-skills/README.md) |
 
 **Les noms** : le dépôt GitHub s'appelle `jdelauney/pulse-vibe` et le catalogue `pulseia`. Chaque plugin porte le même nom dans le catalogue et dans son manifeste : `pulse` (dossier `plugins/pulse-vibe/`, commandes `/pulse:*`) et `pulse-next` (dossier `plugins/pulse-vibe-next/`). Les anciens noms `pulse-vibe` et `pulse-vibe-next` sont redirigés automatiquement vers ces noms.
 
@@ -24,7 +25,7 @@ Dans une session Claude Code :
 /plugin install pulse@pulseia
 ```
 
-Pour la pile Next.js prête à l'emploi : `/plugin install pulse-next@pulseia` (installe aussi `pulse`).
+Pour la pile Next.js prête à l'emploi : `/plugin install pulse-next@pulseia` (installe aussi `pulse`). Pour écrire vos propres skills Claude Code : `/plugin install pulse-skills@pulseia` (ces commandes s'appelaient `/pulse:skill-creator`, `/pulse:audit-skill` et `/pulse:optimize-skill`).
 
 ## Mettre à jour
 
@@ -36,6 +37,7 @@ Dans un terminal :
 claude plugin marketplace update pulseia
 claude plugin update pulse@pulseia
 claude plugin update pulse-next@pulseia   # seulement avec la pile Next.js
+claude plugin update pulse-skills@pulseia # seulement pour écrire vos propres skills
 ```
 
 Puis fermez et relancez Claude Code : la nouvelle version se charge au démarrage.

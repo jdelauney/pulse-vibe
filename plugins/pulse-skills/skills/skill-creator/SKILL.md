@@ -2,10 +2,10 @@
 description: Créer une skill Claude Code qui respecte les règles d'optimisation, après quelques questions sur son travail
 argument-hint: "[ce que la skill doit faire] (vide : la première question vous le demande)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte skill-creator) Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd modele skill-creator/*) Bash(pulse-aidd reference skills/*) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd reference secrets/fuite.md) Read Glob Grep Write(.claude/skills/**) Edit(.claude/skills/**)
+allowed-tools: Bash(pulse-skills contexte skill-creator) Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-skills modele skill-creator/*) Bash(pulse-skills reference *) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd reference secrets/fuite.md) Read Glob Grep Write(.claude/skills/**) Edit(.claude/skills/**)
 ---
 
-# /pulse:skill-creator – Créer une skill
+# /pulse-skills:skill-creator – Créer une skill
 
 ## Objectif
 
@@ -13,7 +13,7 @@ allowed-tools: Bash(pulse-aidd contexte skill-creator) Bash(pulse-aidd skill mes
 
 ## Règles
 
-Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-aidd contexte skill-creator` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
+Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans « Références de la commande » ; absentes de la conversation : lancer `pulse-skills contexte skill-creator` et lire sa sortie en entier, fichier enregistré compris) pendant toute la commande.
 
 - Appliquer à la skill écrite les règles des skills (« Règles des skills », dans le même contexte) : K1 à K14.
 - Écrire une skill ordinaire, sans `pulse-aidd` : ses consignes citent les outils de Claude Code et ceux du projet. Dans un plugin Pulse, suivre en plus les conventions du dépôt (étape 3).
@@ -45,7 +45,7 @@ Poser les questions de fond une à la fois, dans cet ordre (règles communes 4 e
 5. **À qui elle parle** : la langue et le ton de ce qu'elle montre (AskUserQuestion : « En français, en vouvoyant (Recommandé) » / « En français, en tutoyant » / « En anglais »).
 6. **Où la ranger** (AskUserQuestion : « Dans ce projet, `.claude/skills/` (Recommandé) » / « Pour moi, dans tous mes projets » / « Dans un plugin »). Pour vous : `~/.claude/skills/<nom>/` ; pour un plugin : demander son dossier.
 
-Chercher ensuite dans l'emplacement choisi (Glob `<emplacement>/*/SKILL.md`, et `.claude/skills/*/SKILL.md` du projet) une skill qui fait déjà ce travail, et le dire (K1). Proposer un nom court, tiré du travail : minuscules, chiffres et tirets, 64 caractères au plus. Si le dossier `<emplacement>/<nom>/` existe déjà, il reste tel quel : proposer un autre nom ; pour améliorer la skill existante, tapez `/pulse:optimize-skill <chemin>`.
+Chercher ensuite dans l'emplacement choisi (Glob `<emplacement>/*/SKILL.md`, et `.claude/skills/*/SKILL.md` du projet) une skill qui fait déjà ce travail, et le dire (K1). Proposer un nom court, tiré du travail : minuscules, chiffres et tirets, 64 caractères au plus. Si le dossier `<emplacement>/<nom>/` existe déjà, il reste tel quel : proposer un autre nom ; pour améliorer la skill existante, tapez `/pulse-skills:optimize-skill <chemin>`.
 
 ### 2. Proposer le plan de la skill
 
@@ -60,7 +60,7 @@ Valider (AskUserQuestion : « Écrire cette skill (Recommandé) » / « Changer 
 
 ### 3. Écrire
 
-Lancer `pulse-aidd modele skill-creator/SKILL.md` et partir de ce modèle :
+Lancer `pulse-skills modele skill-creator/SKILL.md` et partir de ce modèle :
 
 - **En-tête** : `name` ; `description` qui commence par ce que la skill fait, puis, si Claude peut la lancer, « À utiliser quand … » avec les phrases de la personne ; 50 à 300 caractères ; entre guillemets si elle contient « : » ; `disable-model-invocation: true` si la personne seule la lance ; `allowed-tools` du plan.
 - **Corps** : Objectif, Règles, Contexte, Processus, Exemples, Références. Le Processus se termine dans les 5 000 premiers jetons estimés du fichier (environ 17 500 caractères), car une compaction (le résumé automatique d'une longue conversation) garde seulement le début d'une skill (K5). Une question clé à la fois, la réponse recommandée en premier (K12). Des consignes dites positivement (K9), dans la langue et le ton choisis (K13).
@@ -87,11 +87,11 @@ Terminer avec le bloc de fin de commande. Prochaine étape : tapez `/<nom>` avec
 
 ## Exemples
 
-- `/pulse:skill-creator rédiger un devis à partir d'une demande client` : quelques questions (vos phrases, qui la lance, où la ranger), un plan à valider, puis la skill écrite dans `.claude/skills/rediger-devis/` et contrôlée.
-- `/pulse:skill-creator` : Claude vous demande d'abord ce que la skill doit faire.
+- `/pulse-skills:skill-creator rédiger un devis à partir d'une demande client` : quelques questions (vos phrases, qui la lance, où la ranger), un plan à valider, puis la skill écrite dans `.claude/skills/rediger-devis/` et contrôlée.
+- `/pulse-skills:skill-creator` : Claude vous demande d'abord ce que la skill doit faire.
 
 ## Références de la commande
 
-!`pulse-aidd contexte skill-creator`
+!`pulse-skills contexte skill-creator`
 
-Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-aidd contexte skill-creator` et lire sa sortie en entier, fichier enregistré compris.
+Ce contexte contient « Règles des skills » (K1 à K14). Si ce contexte est absent, lancer `pulse-skills contexte skill-creator` et lire sa sortie en entier, fichier enregistré compris.

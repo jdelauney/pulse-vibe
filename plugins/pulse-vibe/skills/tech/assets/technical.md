@@ -23,10 +23,10 @@
 
 ## Les options comparées
 
-| Option | Pile | Hébergement | Coût / mois | Points forts | Risques | Verdict |
-|---|---|---|---|---|---|---|
-| **A** | | | | | | ✅ / ⚠️ / ❌ |
-| **B** | | | | | | ✅ / ⚠️ / ❌ |
+| Option | Pile | Hébergement | Coût / mois | Points forts | Risques | Changer plus tard | Verdict |
+|---|---|---|---|---|---|---|---|
+| **A** | | | | | | facile / coûteux | ✅ / ⚠️ / ❌ |
+| **B** | | | | | | facile / coûteux | ✅ / ⚠️ / ❌ |
 
 ## Pile retenue
 
