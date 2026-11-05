@@ -193,7 +193,7 @@ test("le rapport du mode direct se lit avec mesurer.js, comme celui de claude pl
   const rapport = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-direct-"));
   direct.ecrireRapport(rapport, [{ cas: "statut-prochaine-etape", essais: [{ trace: TRACE, duree: 42, notes: { score: 0.5, details: [] } }] }]);
   const [e] = mesure.lireResultats(rapport);
-  assert.deepStrictEqual(e, { cas: "statut-prochaine-etape", score: 0.5, duree: 42, entree: 1, sortie: 2, cacheLu: 3, cacheEcrit: 4, outils: 3, sousAgents: 0 });
+  assert.deepStrictEqual(e, { cas: "statut-prochaine-etape", score: 0.5, duree: 42, entree: 1, sortie: 2, cacheLu: 3, cacheEcrit: 4, outils: 3, questions: 0, sousAgents: 0 });
 });
 
 test("choisirCas : tous les cas, ou ceux que nomme --case (motif avec *)", () => {

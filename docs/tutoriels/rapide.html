@@ -52,28 +52,22 @@
 <h2><span class="etape-numero">1</span> Créer le projet <span class="duree">5 minutes</span></h2>
 <p><strong>Objectif :</strong> préparer le dossier (règles du projet, mémoire, historique des versions) et choisir de démarrer vite avec <code>/pulse:nouveau</code>.</p>
 <pre class="commande"><code>/pulse:init carnet-reservations</code></pre>
-<p>Pulse vous demande une phrase de description, votre niveau et la quantité d'explications voulue. Répondez « Jamais programmé » si c'est votre cas : Pulse prendra alors lui-même les réglages techniques conseillés, sans vous poser de questions de développeur. Il propose ensuite de protéger vos clés et de créer la copie en ligne du projet sur GitHub.</p>
+<p>Pulse vous demande votre idée en une phrase et votre niveau. Répondez « Jamais programmé » si c'est votre cas : Pulse prendra alors lui-même les réglages techniques conseillés, sans vous poser de questions de développeur. La protection de vos clés et la copie en ligne du projet viendront avec le choix des outils, au moment où elles servent.</p>
 <div class="conversation" data-titre="Créer le projet">
 <p data-role="vous">/pulse:init carnet-reservations</p>
-<p data-role="claude">👋 Bienvenue ! Ce dossier est vide : je vous propose de préparer le projet.
-Décrivez-le en une phrase (facultatif).</p>
+<p data-role="claude">👋 Bienvenue ! On commence par votre idée. Racontez-la en une phrase.</p>
 <p data-role="vous">Un carnet de réservations en ligne pour un salon de coiffure.</p>
-<p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé
-Combien d'explications voulez-vous ? → Normales (Recommandé)</p>
+<p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé</p>
 <p data-role="outil">pulse-aidd nouveau "carnet-reservations" --ici --description "Un carnet de réservations en ligne pour un salon de coiffure." --oui</p>
-<p data-role="claude">C'est prêt : les règles du projet, la mémoire et un premier enregistrement.
-Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Protéger mes clés (Recommandé)
-Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recommandé), privé, sur GitHub.</p>
-<p data-role="claude">Pour la suite : démarrer vite avec /pulse:nouveau, ou parcours complet, étape par étape ?</p>
+<p data-role="claude">Votre dossier est prêt. Parlons de votre idée.
+Pour la suite : démarrer vite avec /pulse:nouveau, ou parcours complet, étape par étape ?</p>
 <p data-role="vous">Démarrer vite avec /pulse:nouveau</p>
 </div>
-<figure class="capture capture-a-venir" data-capture="captures/rapide-accueil-pulse.png"><div class="capture-cadre">Capture à venir : VS Code avec le panneau Claude Code ouvert sur l'écran d'accueil de Pulse (bannière et tableau « Votre projet »)</div><figcaption>L'écran d'accueil de Pulse : l'état du projet et la prochaine étape conseillée.</figcaption></figure>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-accueil-pulse.png"><div class="capture-cadre">Capture à venir : VS Code avec le panneau Claude Code ouvert sur l'accueil de Pulse (bannière et question sur votre idée)</div><figcaption>L'accueil de Pulse : il commence par votre idée.</figcaption></figure>
 <p>Les nouveaux fichiers apparaissent dans l'explorateur de VS Code, à gauche. S'il est caché, cliquez sur l'icône des deux feuilles en haut de la barre de gauche, ou appuyez sur <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>E</kbd> (<kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>E</kbd> sur Mac).</p>
-<aside class="encadre encadre-attention"><p><strong>Attention :</strong> la protection des clés et la création du dépôt passent par une demande d'autorisation de Claude Code, qui s'affiche dans le panneau. Acceptez-les : la première empêche l'IA de lire vos clés, la seconde crée une copie privée de votre projet.</p></aside>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; un dépôt privé <code>carnet-reservations</code> existe sur GitHub ; la conversation enchaîne sur <code>/pulse:nouveau</code>.</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> le dossier contient <code>CLAUDE.md</code>, <code>docs/</code>, <code>README.md</code> et la mémoire du projet ; la conversation enchaîne sur <code>/pulse:nouveau</code>.</p></aside>
 <details class="probleme"><summary>« Git n'est pas installé » ou « Node.js est absent ou trop ancien »</summary><p>Installez l'outil indiqué (page <a href="../prerequis.html">Prérequis</a>), puis <strong>fermez et rouvrez VS Code</strong> (il lit la liste des programmes installés à son démarrage), et relancez <code>/pulse:init carnet-reservations</code>. Plus de détails sur la page <a href="../commandes/init.html">/pulse:init</a>.</p></details>
 <details class="probleme"><summary>Pulse me demande mon nom et mon e-mail</summary><p>Chaque version enregistrée porte le nom de son auteur. Donnez le nom à afficher et l'e-mail de votre compte GitHub. C'est demandé une seule fois sur cet ordinateur.</p></details>
-<details class="probleme"><summary>La création du dépôt GitHub échoue</summary><p>Pulse vous guide alors sur le site de GitHub : nouveau dépôt, nom <code>carnet-reservations</code>, visibilité <strong>privée</strong>, dépôt laissé vide. Collez-lui ensuite l'adresse du dépôt. Vous pouvez aussi répondre « Non, plus tard » : <code>/pulse:deploy</code> reposera la question.</p></details>
 <aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:init</code> dans le dossier. Pour voir où vous en êtes sans rien lancer, tapez <code>/pulse:status</code>.</p></aside>
 </section>
 
@@ -126,7 +120,7 @@ Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recomman
 </table>
 
 <div class="conversation" data-titre="La conversation de /pulse:nouveau (extrait)">
-<p data-role="claude">On va droit au but : quatre blocs de questions, un seul écran de validation, puis on choisit les outils et l'apparence. Vous pourrez tout affiner ensuite.
+<p data-role="claude">On va droit au but : quatre blocs de questions, un seul écran de validation, puis on choisit l'apparence et les outils. Vous pourrez tout affiner ensuite.
 Pour qui est cet outil ? Par exemple, chez un fleuriste : « mes clients, qui commandent un bouquet ».</p>
 <p data-role="vous">Mes clients, qui réservent une coupe ou une couleur. Et moi, qui veux voir mes rendez-vous du jour.</p>
 <p data-role="claude">✔ Compris : vos clients réservent seuls un créneau libre ; vous consultez votre journée.
@@ -139,20 +133,23 @@ Budget mensuel ? → Gratuit pour commencer
 </div>
 
 <h3>L'écran de validation</h3>
-<p>Pulse déduit ensuite lui-même la première version, les user stories et ce qu'il faudra techniquement. Il vous montre tout sur un seul écran :</p>
+<p>Pulse vous demande de présenter votre outil en une phrase, comme à un client : c'est le moyen de vérifier que vous parlez de la même chose. Il déduit ensuite lui-même la première version, les user stories et ce qu'il faudra techniquement. Il vous montre tout sur un seul écran :</p>
 <pre class="commande"><code>Votre projet en un coup d'œil
 
+En une phrase : mes clients réservent seuls, et je vois ma journée d'un coup d'œil
 Pour qui      : les clients du salon, et la coiffeuse
 Le problème   : les rendez-vous pris au téléphone pendant les coupes
 Première version : US-001 Prendre rendez-vous · US-002 Voir les rendez-vous du jour
 Ensuite       : US-003 Annuler un rendez-vous · US-004 Recevoir un rappel par e-mail
 Il faudra     : données partagées · connexion (espace de la coiffeuse) · formulaire public protégé contre les robots
+Vos contraintes : nom et e-mail des clients · gratuit pour commencer · pas besoin d'être trouvé sur Google
 Proposé par Pulse : un message de confirmation après la réservation
+À confirmer   : les clients acceptent de laisser leur e-mail
 
 → Valider (Recommandé) / Modifier quelque chose</code></pre>
 <p>Lisez-le calmement. « Modifier quelque chose » permet de corriger avec vos mots, puis Pulse remontre l'écran. Quand il vous convient, choisissez « Valider » : Pulse écrit les documents.</p>
 <figure class="capture capture-a-venir" data-capture="captures/rapide-validation-nouveau.png"><div class="capture-cadre">Capture à venir : VS Code avec le panneau Claude Code ouvert sur l'écran « Votre projet en un coup d'œil », avec les deux choix Valider et Modifier</div><figcaption>L'écran de validation unique de <code>/pulse:nouveau</code>.</figcaption></figure>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> les fichiers <code>docs/brief.md</code>, <code>docs/prd.md</code> et <code>docs/user-stories.md</code> existent, avec un fichier par user story ; Pulse annonce « Maintenant, on choisit les outils. »</p></aside>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> les fichiers <code>docs/brief.md</code>, <code>docs/prd.md</code> et <code>docs/user-stories.md</code> existent, avec un fichier par user story ; Pulse annonce « Maintenant, l'apparence : vous allez en voir deux et choisir. »</p></aside>
 <p>Pour lire un document, ouvrez-le dans l'explorateur de VS Code, par exemple <code>docs/brief.md</code>, puis appuyez sur <kbd>Ctrl</kbd> + <kbd>Maj</kbd> + <kbd>V</kbd> (<kbd>Cmd</kbd> + <kbd>Maj</kbd> + <kbd>V</kbd> sur Mac) : l'aperçu le présente mis en forme, avec ses titres et ses listes.</p>
 <figure class="capture capture-a-venir" data-capture="captures/rapide-brief-apercu.png"><div class="capture-cadre">Capture à venir : VS Code avec docs/brief.md sélectionné dans l'explorateur, son aperçu mis en forme au centre, et le panneau Claude Code ouvert à droite</div><figcaption>Le brief, lu dans l'aperçu de VS Code.</figcaption></figure>
 <details class="probleme"><summary>Je ne sais pas quoi répondre à une question</summary><p>Répondez avec vos mots, même de façon approximative : Pulse reformule toujours avant d'écrire. Vous pouvez aussi demander « Donne-moi des exemples ».</p></details>
@@ -161,21 +158,48 @@ Proposé par Pulse : un message de confirmation après la réservation
 </section>
 
 <!-- ===================================================================================================== -->
+<section id="apparence" class="etape-tuto">
+<h2><span class="etape-numero">3</span> Choisir l'apparence <span class="duree">10 minutes</span></h2>
+<p><strong>Objectif :</strong> comparer deux apparences pour le carnet, dans votre navigateur, et en choisir une.</p>
+<p>Pulse part de vos 3 mots (chaleureux, simple, soigné) et pose seulement ce qui manque : où et sur quel écran l'outil sera utilisé, l'intensité des couleurs, un logo éventuel. Il fait dessiner deux apparences différentes, puis ouvre une page qui les montre côte à côte. Le détail est sur la page <a href="../commandes/ui.html">/pulse:ui</a>.</p>
+<div class="conversation" data-titre="L'identité visuelle">
+<p data-role="claude">Maintenant, l'apparence : vous allez en voir deux et choisir.
+Où vos clients réservent-ils, le plus souvent ? → Sur leur téléphone</p>
+<p data-role="outil">pulse-aidd comparer docs/design/identite</p>
+<p data-role="claude">La page de comparaison est ouverte dans votre navigateur.
+1. Douceur de salon : tons crème et terre cuite, lettres arrondies, beaucoup d'air.
+2. Net et lumineux : fond blanc, une couleur franche, grands boutons.
+Laquelle préférez-vous ? Vous pouvez aussi mélanger les deux.</p>
+<p data-role="vous">La première, avec les grands boutons de la deuxième.</p>
+<p data-role="claude">J'assemble ce mélange, puis je vérifie que les textes restent lisibles. L'apparence sera appliquée dès que le code de départ existera.</p>
+</div>
+<figure class="capture capture-a-venir" data-capture="captures/rapide-comparateur.png"><div class="capture-cadre">Capture à venir : la page de comparaison, ouverte dans le navigateur, avec les deux apparences proposées côte à côte</div><figcaption>Le comparateur : deux apparences, avec les mêmes contenus du salon, pour choisir en voyant.</figcaption></figure>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/design.md</code> décrit l'apparence choisie ; Pulse annonce « Dernière étape : les outils. »</p></aside>
+<details class="probleme"><summary>Aucune des deux apparences ne me plaît</summary><p>Dites-le avec vos mots : « aucune, je voudrais plus coloré ». Pulse repart de cette consigne et en propose de nouvelles.</p></details>
+<details class="probleme"><summary>La page de comparaison ne s'ouvre pas</summary><p>Dans l'explorateur de VS Code, ouvrez <code>docs/design/identite/</code>, faites un clic droit sur <code>comparer.html</code>, puis <strong>Reveal in File Explorer</strong> (afficher dans l'explorateur de fichiers ; <strong>Reveal in Finder</strong> sur Mac). Double-cliquez ensuite sur le fichier : il s'ouvre dans votre navigateur.</p></details>
+<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code>, ou <code>/pulse:init</code> si le parcours est terminé : l'écran vous donne la prochaine étape. <code>/pulse:status</code> fait le point sans rien lancer.</p></aside>
+</section>
+
+<!-- ===================================================================================================== -->
 <section id="outils" class="etape-tuto">
-<h2><span class="etape-numero">3</span> Choisir les outils <span class="duree">25 minutes</span></h2>
+<h2><span class="etape-numero">4</span> Choisir les outils <span class="duree">25 minutes</span></h2>
 <p><strong>Objectif :</strong> choisir la pile technique de l'appli, préparer le projet de départ et, si vous le voulez, le mettre en ligne dès aujourd'hui.</p>
-<p>Toujours dans la même conversation, Pulse remplit lui-même ce qu'il sait déjà de vos besoins, pose les questions qui restent, puis compare 2 ou 3 options. Avec le plugin <code>pulse-next</code> installé, la pile Next.js de Pulse en fait partie : c'est l'option recommandée pour une appli web avec des données partagées, car son code de départ est déjà vérifié. Le détail est sur la page <a href="../commandes/tech.html">/pulse:tech</a>.</p>
+<p>Toujours dans la même conversation, Pulse remplit lui-même ce qu'il sait déjà de vos besoins et pose les questions qui restent. Avec le plugin <code>pulse-next</code> installé, il vous recommande directement la pile Next.js de Pulse pour une appli web avec des données partagées, car son code de départ est déjà vérifié. Vous pouvez toujours demander d'autres options. Le détail est sur la page <a href="../commandes/tech.html">/pulse:tech</a>.</p>
 <div class="conversation" data-titre="Le choix des outils">
-<p data-role="claude">Maintenant, on choisit les outils.
-Combien de rendez-vous par jour, à peu près ? → Une vingtaine</p>
-<p data-role="claude">Option A : la pile Pulse Next.js (site, base de données à Francfort, hébergement Vercel). Code de départ vérifié, recettes prêtes : c'est l'option qui demande le moins d'essais pour obtenir un code juste. (Recommandé)
-Option B : un formulaire en ligne relié à un tableur. Plus simple, mais sans vraie protection des données ni espace réservé.
-À savoir : l'offre gratuite de Vercel est réservée à un usage non commercial ; pour un vrai salon, il faudra l'offre payante.</p>
-<p data-role="vous">Option A</p>
-<p data-role="claude">Préparer le code de départ maintenant ? (Recommandé)</p>
+<p data-role="claude">Dernière étape : les outils.
+J'ai supposé une centaine d'utilisateurs, sur téléphone et ordinateur. Dites-le si c'est différent.</p>
+<p data-role="claude">Je vous recommande la pile Pulse Next.js.
+Ce que vous obtenez : un site avec vos données à Francfort, et un code de départ déjà vérifié.
+Coût à 6 mois : gratuit pour un essai ; l'offre gratuite de Vercel est réservée à un usage non commercial : pour un vrai salon, il faudra l'offre payante.
+Convient si : vos clients réservent en ligne et vous avez un espace réservé.
+Risque principal : changer d'hébergeur demandera quelques réglages.
+→ Cette pile (Recommandé) / Voir d'autres options / Revoir un besoin</p>
+<p data-role="vous">Cette pile</p>
+<p data-role="claude">Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Écrire ces règles (Recommandé)
+Préparer le code de départ maintenant ? (Recommandé)</p>
 <p data-role="outil">npm install
 npm run dev</p>
-<p data-role="claude">La page de départ s'affiche sur http://localhost:3000 avec le nom du projet.
+<p data-role="claude">La page de départ s'affiche sur http://localhost:3000 avec le nom du projet, aux couleurs que vous avez choisies.
 Mettre en ligne la page de départ maintenant ? (Recommandé)</p>
 </div>
 
@@ -187,39 +211,16 @@ Mettre en ligne la page de départ maintenant ? (Recommandé)</p>
 <li><strong>Coller les adresses de la base dans <code>.env</code></strong>, vous-même : ouvrez le fichier <code>.env</code> dans l'explorateur de VS Code, collez chaque adresse sur la ligne indiquée par Pulse, puis enregistrez avec <kbd>Ctrl</kbd> + <kbd>S</kbd> (<kbd>Cmd</kbd> + <kbd>S</kbd> sur Mac) et fermez l'onglet. Ce fichier reste sur votre ordinateur.</li>
 </ol>
 <aside class="encadre encadre-risque"><p><strong>Risque :</strong> une adresse de base de données contient un mot de passe. Collez-la uniquement dans le fichier <code>.env</code>, jamais dans la conversation : Pulse n'en a pas besoin, et il ne lit pas ce fichier.</p></aside>
-<p>Pulse propose ensuite de mettre en ligne la page de départ, presque vide. Acceptez : vous découvrez aujourd'hui les réglages de l'hébergeur, avec une page simple, plutôt qu'à la fin avec tout le projet en jeu.</p>
+<p>Pulse propose ensuite de mettre en ligne la page de départ, presque vide. Acceptez : vous découvrez aujourd'hui les réglages de l'hébergeur, avec une page simple, plutôt qu'à la fin avec tout le projet en jeu. Il crée alors la copie privée du projet sur GitHub : Claude Code vous demande votre autorisation, comme pour la règle qui protège vos clés. Acceptez-les.</p>
+<details class="probleme"><summary>La création du dépôt GitHub échoue</summary><p>Pulse vous guide alors sur le site de GitHub : nouveau dépôt, nom <code>carnet-reservations</code>, visibilité <strong>privée</strong>, dépôt laissé vide. Collez-lui ensuite l'adresse du dépôt. Vous pouvez aussi répondre « Non, plus tard » : <code>/pulse:deploy</code> reposera la question.</p></details>
 <figure class="capture capture-a-venir" data-capture="captures/rapide-vercel-import.png"><div class="capture-cadre">Capture à venir : la page de Vercel pour importer le dépôt GitHub carnet-reservations</div><figcaption>Chez Vercel : relier le dépôt GitHub au projet, une seule fois.</figcaption></figure>
 <figure class="capture capture-a-venir" data-capture="captures/rapide-page-depart.png"><div class="capture-cadre">Capture à venir : la page de départ du projet dans le navigateur, à l'adresse http://localhost:3000</div><figcaption>La page de départ, sur votre ordinateur : elle affiche le nom du projet.</figcaption></figure>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/technical.md</code> décrit la pile retenue ; la page de départ s'ouvre sur <code>http://localhost:3000</code> ; si vous l'avez accepté, elle est aussi en ligne à une adresse en <code>.vercel.app</code>.</p></aside>
+<p>Pulse termine <code>/pulse:nouveau</code> par un résumé en quatre lignes : ce qui entre dans la première version, l'apparence choisie, la pile retenue et ce qui reste à faire de votre côté.</p>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/technical.md</code> décrit la pile retenue ; la page de départ s'ouvre sur <code>http://localhost:3000</code>, avec vos couleurs ; si vous l'avez accepté, elle est aussi en ligne à une adresse en <code>.vercel.app</code>. Pulse propose comme prochaine étape <code>/pulse:spirc version</code> (toute la première version), ou <code>/pulse:spirc US-001</code> pour une seule user story. Ce tutoriel prend la seconde : une user story à la fois.</p></aside>
 <details class="probleme"><summary>Neon ou Vercel affichent des boutons en anglais</summary><p>C'est normal. Pulse vous donne le nom exact du bouton à cliquer, avec sa traduction entre parenthèses. Dites-lui ce que vous voyez à l'écran si quelque chose diffère.</p></details>
 <details class="probleme"><summary>La page ne s'ouvre pas sur localhost:3000</summary><p>Le programme qui fait tourner l'appli s'est peut-être arrêté. Demandez à Pulse : « Relance l'appli en local ». S'il signale qu'une adresse manque dans <code>.env</code>, ouvrez ce fichier dans l'explorateur de VS Code et vérifiez la ligne indiquée. Si Pulse vous demande de lancer l'appli vous-même, ouvrez le terminal intégré de VS Code (menu <strong>Terminal</strong>, puis <strong>New Terminal</strong>), tapez la commande qu'il vous donne et appuyez sur <kbd>Entrée</kbd>.</p></details>
 <details class="probleme"><summary>La branche <code>dev</code> de Neon a disparu le lendemain</summary><p>La case « Automatically delete branch after » était cochée à la création. Recréez la branche en laissant cette case décochée, puis recopiez ses adresses dans <code>.env</code>.</p></details>
 <aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code> : il reprend à l'étape notée. <code>/pulse:status</code> vous indique la pile choisie et ce qui reste.</p></aside>
-</section>
-
-<!-- ===================================================================================================== -->
-<section id="apparence" class="etape-tuto">
-<h2><span class="etape-numero">4</span> Choisir l'apparence <span class="duree">10 minutes</span></h2>
-<p><strong>Objectif :</strong> comparer deux apparences pour le carnet, dans votre navigateur, et en choisir une.</p>
-<p>Pulse part de vos 3 mots (chaleureux, simple, soigné) et pose seulement ce qui manque : où et sur quel écran l'outil sera utilisé, l'intensité des couleurs, un logo éventuel. Il fait dessiner deux apparences différentes, puis ouvre une page qui les montre côte à côte. Le détail est sur la page <a href="../commandes/ui.html">/pulse:ui</a>.</p>
-<div class="conversation" data-titre="L'identité visuelle">
-<p data-role="claude">Dernière étape : l'apparence. Vous allez en voir deux et choisir.
-Où vos clients réservent-ils, le plus souvent ? → Sur leur téléphone</p>
-<p data-role="outil">pulse-aidd comparer docs/design/identite</p>
-<p data-role="claude">La page de comparaison est ouverte dans votre navigateur.
-1. Douceur de salon : tons crème et terre cuite, lettres arrondies, beaucoup d'air.
-2. Net et lumineux : fond blanc, une couleur franche, grands boutons.
-Laquelle préférez-vous ? Vous pouvez aussi mélanger les deux.</p>
-<p data-role="vous">La première, avec les grands boutons de la deuxième.</p>
-<p data-role="claude">J'assemble ce mélange, puis je vérifie que les textes restent lisibles.
-Appliquer cette identité au code maintenant ? (Recommandé)</p>
-</div>
-<figure class="capture capture-a-venir" data-capture="captures/rapide-comparateur.png"><div class="capture-cadre">Capture à venir : la page de comparaison, ouverte dans le navigateur, avec les deux apparences proposées côte à côte</div><figcaption>Le comparateur : deux apparences, avec les mêmes contenus du salon, pour choisir en voyant.</figcaption></figure>
-<p>Pulse termine <code>/pulse:nouveau</code> par un résumé en quatre lignes : ce qui entre dans la première version, la pile retenue, l'apparence choisie et ce qui reste à faire de votre côté.</p>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> <code>docs/design.md</code> décrit l'apparence choisie ; la page de départ, rechargée dans le navigateur, prend ses couleurs ; Pulse propose comme prochaine étape <code>/pulse:spirc version</code> (toute la première version), ou <code>/pulse:spirc US-001</code> pour une seule user story. Ce tutoriel prend la seconde : une user story à la fois.</p></aside>
-<details class="probleme"><summary>Aucune des deux apparences ne me plaît</summary><p>Dites-le avec vos mots : « aucune, je voudrais plus coloré ». Pulse repart de cette consigne et en propose de nouvelles.</p></details>
-<details class="probleme"><summary>La page de comparaison ne s'ouvre pas</summary><p>Dans l'explorateur de VS Code, ouvrez <code>docs/design/identite/</code>, faites un clic droit sur <code>comparer.html</code>, puis <strong>Reveal in File Explorer</strong> (afficher dans l'explorateur de fichiers ; <strong>Reveal in Finder</strong> sur Mac). Double-cliquez ensuite sur le fichier : il s'ouvre dans votre navigateur.</p></details>
-<aside class="encadre encadre-repere"><p><strong>Pour reprendre plus tard :</strong> relancez <code>/pulse:nouveau</code>, ou <code>/pulse:init</code> si le parcours est terminé : l'écran vous donne la prochaine étape. <code>/pulse:status</code> fait le point sans rien lancer.</p></aside>
 </section>
 
 <!-- ===================================================================================================== -->

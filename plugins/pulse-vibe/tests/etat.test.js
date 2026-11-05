@@ -254,7 +254,7 @@ test("projet neuf : raconter l'idée, ou démarrer vite (R9)", () => {
   const r = etat(projet());
   assert.deepStrictEqual([r.regle, r.prochaine], ["R9", "/pulse:brainstorm"]);
   assert.match(r.aussi[0], /^\/pulse:nouveau — /);
-  assert.ok(r.aussi.some((a) => a.startsWith("/pulse:init — relier")), "dépôt distant à décider");
+  assert.ok(!r.aussi.some((a) => /^\/pulse:init — (relier|régler|protéger)/.test(a)), "autorisations et dépôt distant : une fois la pile choisie");
   assert.strictEqual(r.etapes, "brief=a-faire prd=a-faire technique=a-faire design=facultatif us=a-faire spec=a-faire plan=a-faire realisation=a-faire en-ligne=non");
   assert.strictEqual(r.mvp, "0/0");
 });
@@ -713,15 +713,17 @@ test("pulse-aidd revue T2 T3 : un bloc par tâche", () => {
 
 test("autorisations : les commandes Git courantes non autorisées d'avance donnent une ligne « aussi » de /pulse:init", () => {
   const MSG = "/pulse:init — régler les autorisations : regarder et enregistrer votre travail sans vous redemander à chaque fois";
-  const sansGit = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"] } }\n' }));
+  const PILE = { "docs/technical.md": "# Choix\n" };
+  const sansGit = etat(projet({ ...PILE, ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"] } }\n' }));
   assert.ok(sansGit.aussi.includes(MSG));
-  assert.ok(!etat(projet({})).aussi.includes(MSG), "règles présentes : rien à proposer");
+  assert.ok(!etat(projet(PILE)).aussi.includes(MSG), "règles présentes : rien à proposer");
+  assert.ok(!sansGit.aussi.includes("x") && !etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"] } }\n' })).aussi.includes(MSG), "pile pas encore choisie : rien à proposer");
   const CONTROLES = "/pulse:init — régler les autorisations : laisser les assistants lancer les contrôles du projet sans vous redemander à chaque fois";
-  assert.ok(etat(projet({})).aussi.includes(CONTROLES), "Git autorisé, contrôles non autorisés");
+  assert.ok(etat(projet(PILE)).aussi.includes(CONTROLES), "Git autorisé, contrôles non autorisés");
   assert.ok(!sansGit.aussi.includes(CONTROLES), "une seule ligne d'autorisations à la fois");
-  const tout = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite)"] } }\n' }));
+  const tout = etat(projet({ ...PILE, ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite)"] } }\n' }));
   assert.ok(tout.aussi.includes(CONTROLES), "l'ancienne règle sans argument ne couvre pas pulse-aidd qualite <familles>");
-  const avecArguments = etat(projet({ ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite *)"] } }\n' }));
+  const avecArguments = etat(projet({ ...PILE, ".claude/settings.json": '{ "permissions": { "deny": ["Read(./.env)"], "allow": ["Bash(git commit -m *)", "Bash(pulse-aidd qualite *)"] } }\n' }));
   assert.ok(!avecArguments.aussi.includes(CONTROLES), "qualite * couvre qualite seul");
 });
 

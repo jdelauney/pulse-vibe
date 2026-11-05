@@ -83,10 +83,11 @@
   <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
   <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
   <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+  <li data-couleur="0"><span class="parcours-numero">8</span> Vos propres skills</li>
 </ol>
 <!-- /auto:parcours -->
 <ul>
-<li><strong>Tout au début</strong>, dans un dossier vide, pour créer le projet.</li>
+<li><strong>Tout au début</strong>, dans un dossier vide : Pulse vous demande votre idée et votre niveau, puis crée le projet.</li>
 <li><strong>À chaque reprise</strong>, après une pause ou le lendemain, pour retrouver le fil.</li>
 <li><strong>Dans un projet qui a déjà du code</strong>, pour y ajouter Pulse.</li>
 <li><strong>Après une mise à jour de Pulse</strong> : elle repère les contrôles du projet à remettre à jour (secrets, fichiers ignorés, la ligne qui fait proposer la bonne commande) et vous les propose un par un ; elle lit alors aussi les notes de mise à niveau du pack de pile.</li>
@@ -100,7 +101,7 @@
 <pre class="commande"><code>/pulse:init [nom du projet]</code></pre>
 <p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
-<p>Le nom du projet est facultatif : sans lui, Pulse vous le demande.</p>
+<p>Le nom du projet est facultatif : sans lui, Pulse en propose un, tiré de votre idée.</p>
 <pre class="commande"><code>/pulse:init carnet-reservations</code></pre>
 </section>
 
@@ -110,7 +111,7 @@
 <table>
 <thead><tr><th>Fichier ou dossier</th><th>À quoi il sert</th></tr></thead>
 <tbody>
-<tr><td><code>CLAUDE.md</code></td><td>Les règles du projet, lues par l'IA à chaque session, avec votre profil (niveau, quantité d'explications).</td></tr>
+<tr><td><code>CLAUDE.md</code></td><td>Les règles du projet, lues par l'IA à chaque session, avec votre profil (niveau, quantité d'explications, à changer quand vous voulez).</td></tr>
 <tr><td><code>docs/</code></td><td>Les documents de la méthode : brief, PRD, choix techniques, user stories.</td></tr>
 <tr><td><code>aidd_docs/</code></td><td>La mémoire du projet (choix, mots du métier, décisions) et le dossier des tâches.</td></tr>
 <tr><td><code>README.md</code></td><td>La présentation du projet.</td></tr>
@@ -126,7 +127,7 @@
 <ul>
 <li><strong>Rien ne se lance sans votre réponse.</strong> Chaque action est proposée, puis attend votre choix.</li>
 <li><strong>Vos fichiers existants sont gardés.</strong> Un <code>CLAUDE.md</code> déjà présent est complété, après vous avoir montré les ajouts.</li>
-<li>La protection des clés modifie la configuration de Claude Code, qui vous demande donc votre autorisation. Acceptez-la : c'est elle qui empêche l'IA de lire votre fichier <code>.env</code>.</li>
+<li>La protection des clés arrive avec les choix techniques, avant que vous écriviez une clé. Elle modifie la configuration de Claude Code, qui vous demande donc votre autorisation. Acceptez-la : c'est elle qui empêche l'IA de lire votre fichier <code>.env</code>.</li>
 </ul>
 <aside class="encadre encadre-attention"><p><strong>Attention :</strong> si votre dossier se trouve à l'intérieur d'un autre projet Git, Pulse vous le signale. Choisissez « Créer un historique propre à ce projet » : sinon, vos fichiers finiraient dans l'autre projet.</p></aside>
 </section>
@@ -144,14 +145,11 @@
 <h2>Exemples</h2>
 <div class="conversation" data-titre="Exemple : créer un nouveau projet">
 <p data-role="vous">/pulse:init carnet-reservations</p>
-<p data-role="claude">👋 Bienvenue ! Ce dossier est vide : je vous propose de préparer le projet.
-Décrivez-le en une phrase (facultatif).</p>
+<p data-role="claude">👋 Bienvenue ! On commence par votre idée. Racontez-la en une phrase.</p>
 <p data-role="vous">Un carnet de réservations pour mon salon de coiffure.</p>
-<p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé
-Combien d'explications voulez-vous ? → Normales (Recommandé)</p>
+<p data-role="claude">Quel est votre niveau en programmation ? → Jamais programmé</p>
 <p data-role="outil">pulse-aidd nouveau "carnet-reservations" --ici --oui</p>
-<p data-role="claude">C'est prêt : les règles du projet, la mémoire et un premier enregistrement Git.
-Ces règles laissent les assistants lancer les contrôles du projet sans vous redemander à chaque fois. L'envoi en ligne, l'installation et vos clés demandent toujours votre accord. → Écrire ces règles dans .claude/settings.json (Recommandé)
+<p data-role="claude">Votre dossier est prêt. Parlons de votre idée.
 Pour la suite : démarrer vite avec /pulse:nouveau, ou parcours complet, étape par étape ?</p>
 </div>
 <div class="conversation" data-titre="Exemple : reprendre le lendemain">

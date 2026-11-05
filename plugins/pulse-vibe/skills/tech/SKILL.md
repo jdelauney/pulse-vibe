@@ -46,7 +46,7 @@ La conversation principale joue le rôle d'architecte technique et orchestre : e
 
 ### 1. Ce que l'on sait déjà
 
-Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/` et le code s'il y en a. Remplir **soi-même** toutes les lignes du tableau « Les besoins qui guident le choix » que ces documents permettent de remplir. Réserver les questions aux lignes restantes.
+Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/`, le bloc `pulse_profil` de `CLAUDE.md` (l'expérience technique) et le code s'il y en a. Remplir **soi-même** toutes les lignes du tableau « Les besoins qui guident le choix » que ces documents permettent de remplir. Réserver les questions aux lignes restantes.
 
 ### A. Projet existant : documenter la pile observée
 
@@ -64,13 +64,17 @@ Avant la première question : lancer `pulse-aidd reference tech/choix-techniques
 
 Poser seulement les lignes manquantes du tableau des besoins (questions de la démarche), par rondes (règle commune 5). Elles portent sur le **besoin** ; les outils viendront à l'étape 3. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »).
 
+**Niveau « Jamais programmé »** : volume, plateforme et hors-ligne prennent la réponse la plus courante d'après le brief et le PRD (une centaine d'utilisateurs, téléphone et ordinateur, navigateur connecté), annoncée en une phrase : « J'ai supposé … Dites-le si c'est différent. » Poser le budget et les contraintes.
+
 Après la dernière ronde, **signaler les contradictions** et faire trancher : par exemple « paiement en ligne » avec « budget 0 € et aucun compte », ou « données de santé » avec « hébergement sans garantie de localisation ».
 
 #### 3. Construire 2 ou 3 options
 
 Construire **2 ou 3 options réellement différentes**, selon « Construire 2 à 3 options » de la démarche, chacune avec sa pile (langage, framework éventuel, données, connexion, code serveur, hébergement, services), son coût mensuel estimé (incertitude signalée) et la localisation des données si elle compte.
 
-- **Packs de pile** : lancer `pulse-aidd piles`, qui affiche aussi, pour chaque pack, ce qu'il faut vérifier et dire avant le choix : l'appliquer aux étapes 3 et 4. Un pack installé dont la pile couvre les besoins devient une option à part entière, vérifiée comme les autres à l'étape 4 : « Pile Pulse <nom> : code de départ vérifié, recettes prêtes et pièges connus déjà traités ; c'est l'option qui demande le moins d'essais pour obtenir un code juste. » Quand elle convient au besoin, la recommander ; les autres options restent présentées et la personne choisit. Aucun pack installé et besoin d'une application web avec comptes et données partagées : ajouter une ligne pour dire que le plugin `pulse-next` (pile Next.js prête à l'emploi) existe, installable avec `/plugin install pulse-next@pulseia`.
+- **Packs de pile** : lancer `pulse-aidd piles`, qui affiche aussi, pour chaque pack, ce qu'il faut vérifier et dire avant le choix : l'appliquer aux étapes 3 et 4. Un pack installé dont la pile couvre les besoins devient une option à part entière, vérifiée comme les autres à l'étape 4 : « Pile Pulse <nom> : code de départ vérifié, recettes prêtes et pièges connus déjà traités ; c'est l'option qui demande le moins d'essais pour obtenir un code juste. » Aucun pack installé et besoin d'une application web avec comptes et données partagées : ajouter une ligne pour dire que le plugin `pulse-next` (pile Next.js prête à l'emploi) existe, installable avec `/plugin install pulse-next@pulseia`.
+
+**Voie directe** : un pack installé couvre les besoins, sans contrainte ni refus que sa pile contredit : construire seulement cette option. Sinon : 2 ou 3 options, le pack parmi elles s'il convient.
 
 #### 4. Vérifier les options sur la documentation officielle
 
@@ -80,7 +84,7 @@ Reporter les verdicts dans le tableau « Les options comparées ». Si toutes le
 
 #### 5. Choisir
 
-Présenter le tableau et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait (étape de `/pulse:nouveau` ou de `/pulse:spirc` : le réécrire plutôt pour cette commande, à son étape suivante). Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». La décision appartient à la personne.
+Présenter chaque option en carte (« Présenter une option » de la démarche), le tableau sur demande, et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait (étape de `/pulse:nouveau` ou de `/pulse:spirc` : le réécrire plutôt pour cette commande, à son étape suivante). Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». Voie directe : « Cette pile (Recommandé) » / « Voir d'autres options » / « Revoir un besoin » ; « Voir d'autres options » reprend l'étape 3 avec 2 ou 3 options, vérifiées à l'étape 4 ; une fois la pile acceptée, « Ce qu'on a écarté » indique « Autres options non demandées : pile du pack recommandée, acceptée par la personne ». La décision appartient à la personne.
 
 ### 6. Écrire (projet existant ou neuf)
 
@@ -101,6 +105,8 @@ Présenter le tableau et **recommander** une option en une phrase. Avant la ques
 
 ### 7. Mise en place
 
+D'abord les autorisations, que « Commandes du projet » vient de fixer, dont la règle qui empêche de lire les fichiers de clés : lancer `pulse-aidd reference autorisations.md` et l'appliquer.
+
 Projet existant : seulement compléter `.gitignore` et `.env.example` si des manques ont été constatés (avec accord), puis passer à l'étape 8.
 
 Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander (AskUserQuestion) : « Préparer le code de départ maintenant (Recommandé) » / « Plus tard, avec la première tâche ».
@@ -116,15 +122,15 @@ Projet neuf : présenter la « Mise en place » en 3 à 5 lignes, puis demander 
 
 ### 8. Valider
 
-Résumé en 5 lignes : pile retenue (et pack de pile éventuel), hébergement, services, coût estimé, mise en place faite ou restant à faire par la personne (avec l'adresse du site s'il est déjà en ligne). Demander « Valider » / « Modifier quelque chose ».
+Résumé en 6 lignes : pile retenue (et pack de pile éventuel), hébergement, services, coût estimé, mise en place faite ou restant à faire par la personne (avec l'adresse du site s'il est déjà en ligne), et « Déjà actif » : les seuls contrôles réellement en place (par exemple le contrôle des secrets avant chaque enregistrement). Demander « Valider » / « Modifier quelque chose ».
 
-Puis les autorisations des contrôles du projet, que « Commandes du projet » vient de fixer : lancer `pulse-aidd reference autorisations.md` et l'appliquer.
+« Commandes du projet » a changé pendant la mise en place : relancer `pulse-aidd autorisations` et proposer les règles qui manquent.
 
 Terminer avec le bloc de fin de commande. Prochaine étape : projet existant : `/pulse:memory creer` (les conventions et les pièges propres au code) ; sinon, si `docs/design.md` n'existe pas, proposer `/pulse:ui identite` en précisant qu'elle est **facultative** (« Définir l'apparence de votre outil maintenant permet aux user stories, specs et plans de s'y conformer ») ; sinon, ou si la personne préfère s'en passer, `/pulse:us` (puis `/pulse:spec`, qui s'appuie sur ces choix), ou `/pulse:spirc` pour enchaîner. Si un dépôt distant est relié (`git remote -v`), que le squelette est en place et qu'aucune CI n'existe : mentionner aussi `/pulse:cicd` (facultatif) pour vérifier automatiquement chaque envoi.
 
 ## Exemples
 
-- `/pulse:tech` dans un projet neuf : quelques questions sur votre besoin, puis 2 ou 3 options comparées avec une recommandation ; vous choisissez, et `docs/technical.md` est écrit.
+- `/pulse:tech` dans un projet neuf : quelques questions sur votre besoin, puis 2 ou 3 options comparées avec une recommandation (ou la pile d'un pack installé qui convient, d'autres options à votre demande) ; vous choisissez, et `docs/technical.md` est écrit.
 - `/pulse:tech` dans un projet qui a déjà du code : les outils utilisés, résumés en quelques lignes, à confirmer ou à corriger avant l'écriture.
 - `/pulse:tech "données hébergées en France"` : cette contrainte guide les options proposées.
 

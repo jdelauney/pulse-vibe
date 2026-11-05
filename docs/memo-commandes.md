@@ -6,8 +6,8 @@
 
 | Commande | Ce qu'elle fait | Vous obtenez |
 |---|---|---|
-| `/pulse:init` | Prépare le dossier du projet, puis vous dit où vous en êtes et quoi faire ensuite | Les fichiers de base, la mémoire et l'historique Git |
-| `/pulse:nouveau` | ⚡ Pour démarrer vite : en une conversation (vos documents de départ lus d'abord, s'il y en a), votre idée, vos écrans, l'apparence et vos contraintes ; puis les outils et 2 apparences à comparer. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
+| `/pulse:init` | Vous demande votre idée et votre niveau, prépare le dossier du projet, puis vous dit où vous en êtes et quoi faire ensuite | Les fichiers de base, la mémoire et l'historique Git |
+| `/pulse:nouveau` | ⚡ Pour démarrer vite : en une conversation (vos documents de départ lus d'abord, s'il y en a), votre idée, vos écrans, l'apparence et vos contraintes ; puis 2 apparences à comparer et les outils. Prépare le dossier s'il est vide. Remplace la partie 2 ci-dessous | Tous les documents de la partie 2, et une première US prête à réaliser |
 
 ## 2. Décrire (sans technique)
 
@@ -15,7 +15,7 @@
 |---|---|---|
 | `/pulse:brainstorm` | Vous fait réfléchir à votre idée : quelques questions essentielles, auxquelles vous répondez avec vos mots (avec des exemples), puis des questions rapides à choix ; raconte enfin votre outil comme une histoire | `docs/brief.md` et le glossaire |
 | `/pulse:prd` | Trie les fonctionnalités : Indispensable / Essentiel / Optionnel / En attente | `docs/prd.md` et votre **première version** |
-| `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options (dont une pile Pulse prête à l'emploi si elle est installée), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
+| `/pulse:tech` | Choisit les outils adaptés à votre besoin, en comparant 2 ou 3 options, ou en recommandant directement une pile Pulse prête à l'emploi si elle est installée et qu'elle convient (d'autres options à votre demande), et peut mettre en ligne une page de départ dès aujourd'hui | `docs/technical.md` |
 | `/pulse:ui identite` | (Facultatif) Vous montre 2 ou 3 apparences possibles pour votre outil ; vous choisissez. À faire avant les user stories : specs et plans s'y conformeront | `docs/design.md` |
 | `/pulse:us` | Découpe le besoin en groupes et écrit les user stories : « En tant que… je souhaite… afin de… », avec des questions courtes par rondes, et les cas difficiles un à un, avec vos mots ; chaque US vérifiée et prête à spécifier, triée par ordre de réalisation, enregistrée après votre accord | `docs/user-stories.md` (le référentiel) et un fichier par US : `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` |
 
@@ -80,9 +80,9 @@ Sans argument, chaque commande vous montre les specs ou les plans existants et v
 | `/pulse:guide` | « Quelle commande je tape maintenant ? » (ouvrez aussi `docs/guide/index.md`) |
 | `/pulse:memory retenir "…"` | « Je veux que l'IA s'en souvienne la prochaine fois » |
 | `/pulse:memory compacter` | « Pulse me dit que la mémoire est presque pleine » |
-| `/pulse:skill-creator "…"` | « Je veux apprendre une nouvelle tâche à Claude Code » : une skill écrite avec vous, contrôlée, prête à essayer |
-| `/pulse:audit-skill` | « Mes skills Claude Code sont-elles bien écrites ? » Un rapport des corrections et de leur gain, sans rien modifier (un chemin : une skill, un dossier ou un plugin) |
-| `/pulse:optimize-skill <chemin>` | « Cette skill charge trop de texte » : un plan d'allègement à valider, appliqué puis relu pour que rien d'important ne se perde |
+| `/pulse-skills:skill-creator "…"` | « Je veux apprendre une nouvelle tâche à Claude Code » : une skill écrite avec vous, contrôlée, prête à essayer |
+| `/pulse-skills:audit-skill` | « Mes skills Claude Code sont-elles bien écrites ? » Un rapport des corrections et de leur gain, sans rien modifier (un chemin : une skill, un dossier ou un plugin) |
+| `/pulse-skills:optimize-skill <chemin>` | « Cette skill charge trop de texte » : un plan d'allègement à valider, appliqué puis relu pour que rien d'important ne se perde |
 
 ## Les 4 réflexes
 

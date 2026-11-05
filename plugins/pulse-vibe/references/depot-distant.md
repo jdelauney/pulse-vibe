@@ -6,7 +6,7 @@ Utilisé par `/pulse:init`, `/pulse:deploy` et `/pulse:cicd`. L'envoi du travail
 
 ## 1. Relier le projet à un dépôt distant
 
-**Quand** : `/pulse:init`, une fois le premier commit fait, si `git remote -v` est vide et que la section « Adresses » de `CLAUDE.md` n'indique pas « Dépôt distant : aucun pour l'instant » ; `/pulse:deploy`, si le dépôt distant manque toujours.
+**Quand** : `/pulse:init`, une fois la pile choisie, si `git remote -v` est vide et que la section « Adresses » de `CLAUDE.md` n'indique pas « Dépôt distant : aucun pour l'instant » ; `/pulse:deploy`, si le dépôt distant manque toujours.
 
 Demander (AskUserQuestion) « Relier le projet à un dépôt distant ? » :
 - « Oui, en créer un nouveau (Recommandé) » → § 1a ;

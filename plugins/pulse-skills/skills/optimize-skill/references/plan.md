@@ -1,6 +1,6 @@
 # Le plan d'optimisation et le bilan avant / après
 
-Utilisé par `/pulse:optimize-skill`. Les deux parties s'ajoutent, dans cet ordre, à la fin du rapport d'audit de la skill (`docs/audits-skills/<nom>-<AAAA-MM-JJ>.md`).
+Utilisé par `/pulse-skills:optimize-skill`. Les deux parties s'ajoutent, dans cet ordre, à la fin du rapport d'audit de la skill (`docs/audits-skills/<nom>-<AAAA-MM-JJ>.md`).
 
 ## Écrire le plan
 
@@ -27,7 +27,7 @@ Mesure avant : SKILL.md <car> car · <jetons> jetons estimés ; chargé au lance
 ## Écrire le bilan
 
 - Les mesures « avant » viennent de l'étape 1, les mesures « après » de l'étape 6 ; l'écart en caractères et en pourcentage.
-- La relecture : le verdict de `pulse:skill-auditor`, après la seconde relecture s'il y en a eu une ; chaque perte rendue, ou restante avec le choix de la personne (sauvegarde remise, ou skill gardée ainsi).
+- La relecture : le verdict de `pulse-skills:skill-auditor`, après la seconde relecture s'il y en a eu une ; chaque perte rendue, ou restante avec le choix de la personne (sauvegarde remise, ou skill gardée ainsi).
 - La sauvegarde : son chemin.
 
 ```markdown

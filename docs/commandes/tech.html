@@ -33,7 +33,7 @@
 <section id="description">
 <h2>Description</h2>
 <p>Cette commande choisit avec vous les outils de votre appli : le langage, l'endroit où sont gardées les données, la connexion des utilisateurs, l'hébergement. On appelle cet ensemble la <dfn>pile technique</dfn>. Pulse joue le rôle d'un architecte qui parle simplement : « On comprend d'abord le besoin, et on choisit les outils <strong>après</strong>. Le plus simple qui répond au besoin est le meilleur choix. »</p>
-<p>Dans un projet neuf, Pulse lit votre brief et votre PRD, pose seulement les questions qui restent, puis construit 2 ou 3 options vraiment différentes. Des assistants vérifient chacune en parallèle sur la documentation officielle et les pages de prix. Vous voyez un tableau, une recommandation, et vous choisissez.</p>
+<p>Dans un projet neuf, Pulse lit votre brief et votre PRD, pose seulement les questions qui restent, puis construit 2 ou 3 options vraiment différentes. Des assistants vérifient chacune en parallèle sur la documentation officielle et les pages de prix. Chaque option vous est présentée en mots simples : ce que vous obtenez, le coût à 6 mois, quand elle convient, son principal risque, et s'il sera facile d'en changer. Le tableau et les noms des technologies s'affichent sur demande. Vous choisissez.</p>
 <p>Dans un projet qui a déjà du code, Pulse décrit simplement les outils déjà utilisés, avec les manques constatés, et vous demande de confirmer. Dans les deux cas, il peut ensuite préparer le code de départ, et même mettre en ligne une première page dès aujourd'hui.</p>
 <pre class="commande"><code>Les options comparées
 A · Pile Pulse next   ✅ code de départ vérifié, recettes prêtes
@@ -66,6 +66,7 @@ C · Serveur à soi     ✅ plus de pièces à comprendre
   <li data-couleur="4"><span class="parcours-numero">5</span> Mettre en ligne</li>
   <li data-couleur="4"><span class="parcours-numero">6</span> Être trouvé</li>
   <li data-couleur="0"><span class="parcours-numero">7</span> À tout moment</li>
+  <li data-couleur="0"><span class="parcours-numero">8</span> Vos propres skills</li>
 </ol>
 <!-- /auto:parcours -->
 <ul>
@@ -74,7 +75,7 @@ C · Serveur à soi     ✅ plus de pièces à comprendre
 <li><strong>Dans un projet qui a déjà du code</strong>, pour décrire les outils en place.</li>
 <li><strong>Quand un besoin a changé</strong> : Pulse vous propose de revoir ou de garder vos choix.</li>
 </ul>
-<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> si le pack <code>pulse-next</code> est installé, sa pile devient une option du tableau : « code de départ vérifié, recettes prêtes et pièges connus déjà traités ». Pulse la recommande quand votre projet a des écrans, des comptes ou des données partagées ; pour une simple page vitrine, il vous dit qu'elle est trop lourde. Une fois choisie, le projet de départ se pose d'une seule commande, et les recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite, référencement) seront reprises par la spec et le plan. Sans le pack, Pulse vous signale qu'il s'installe avec <code>/plugin install pulse-next@pulseia</code>.</p></aside>
+<aside class="encadre encadre-conseil"><p><strong>Avec le pack Next.js :</strong> si le pack <code>pulse-next</code> est installé et que votre projet a des écrans, des comptes ou des données partagées, Pulse vérifie sa pile et vous la recommande directement : « code de départ vérifié, recettes prêtes et pièges connus déjà traités ». Vous l'acceptez, ou répondez « Voir d'autres options » pour une comparaison complète. Pour une simple page vitrine, il vous dit qu'elle est trop lourde et compare des options plus légères. Une fois choisie, le projet de départ se pose d'une seule commande, et les recettes (connexion, listes, e-mails, fichiers, paiement, langues, limite, référencement) seront reprises par la spec et le plan. Sans le pack, Pulse vous signale qu'il s'installe avec <code>/plugin install pulse-next@pulseia</code>.</p></aside>
 </section>
 
 <section id="arguments">
@@ -108,7 +109,8 @@ C · Serveur à soi     ✅ plus de pièces à comprendre
 <section id="risques">
 <h2>Risques et précautions</h2>
 <ul>
-<li><strong>Le choix vous appartient.</strong> Pulse recommande, en donnant sa raison ; vous choisissez parmi les options, ou demandez à revoir un besoin.</li>
+<li><strong>Le choix vous appartient.</strong> Pulse recommande, en donnant sa raison ; vous choisissez parmi les options, en demandez d'autres, ou demandez à revoir un besoin.</li>
+<li><strong>La protection de vos clés vient avant leur saisie.</strong> Pulse propose ses règles d'autorisation juste avant la mise en place du code de départ.</li>
 <li><strong>Vos fichiers sont gardés.</strong> Pendant la préparation du code de départ, <code>CLAUDE.md</code>, <code>README.md</code> et <code>.gitignore</code> sont complétés, jamais écrasés.</li>
 <li><strong>La mise en ligne attend votre accord</strong>, puis Claude Code vous demande d'autoriser l'enregistrement et l'envoi vers votre dépôt en ligne.</li>
 <li><strong>Un paiement reste en mode test</strong> : cartes de test, transactions fictives. Le passage en mode réel est votre décision, au moment de la mise en ligne.</li>
@@ -155,7 +157,7 @@ Manque constaté : aucun test automatique.
 <h2>Commandes liées</h2>
 <ul>
 <li><a href="prd.html"><code>/pulse:prd</code></a> : décider de la première version, qui guide le choix.</li>
-<li><a href="ui.html"><code>/pulse:ui</code></a> : l'étape suivante, facultative, pour choisir l'apparence.</li>
+<li><a href="ui.html"><code>/pulse:ui</code></a> : l'étape suivante du parcours complet, facultative, pour choisir l'apparence (<code>/pulse:nouveau</code> la fait juste avant les outils).</li>
 <li><a href="memory.html"><code>/pulse:memory creer</code></a> : juste après, pour un projet qui a déjà du code : les habitudes et les pièges propres à ce code.</li>
 <li><a href="us.html"><code>/pulse:us</code></a> : écrire les user stories.</li>
 <li><a href="deploy.html"><code>/pulse:deploy</code></a> : mettre le site en ligne et le tenir à jour.</li>

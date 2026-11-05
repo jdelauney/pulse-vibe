@@ -334,7 +334,7 @@ npm --version</code></pre>
 <pre class="commande"><code>git config --global user.name "Camille Martin"
 git config --global user.email "camille@exemple.fr"</code></pre>
 <p>Quel e-mail choisir ? Celui de votre compte GitHub. Si votre projet sera visible par d'autres et que vous préférez garder votre adresse privée, GitHub fournit une adresse de remplacement : sur github.com, cliquez sur votre photo de profil, puis <strong>Settings</strong> → <strong>Emails</strong>, cochez <strong>Keep my email addresses private</strong>, et utilisez l'adresse affichée, qui se termine par <code>@users.noreply.github.com</code>. Source : <a href="https://docs.github.com/fr/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address" target="_blank" rel="noopener noreferrer">régler l'e-mail de vos versions</a>.</p>
-<p>Si vous sautez ce réglage, <a href="commandes/init.html"><code>/pulse:init</code></a> vous demandera ces deux informations la première fois.</p>
+<p>Si vous sautez ce réglage, <a href="commandes/init.html"><code>/pulse:init</code></a> ou <a href="commandes/nouveau.html"><code>/pulse:nouveau</code></a> vous demandera ces deux informations la première fois.</p>
 <p><strong>2. La connexion à GitHub.</strong> Lancez :</p>
 <pre class="commande"><code>gh auth login</code></pre>
 <p>L'outil pose quelques questions en anglais. Choisissez avec les flèches, validez avec <kbd>Entrée</kbd> :</p>
@@ -360,7 +360,7 @@ git config --global user.email "camille@exemple.fr"</code></pre>
 <details class="probleme"><summary>VS Code reste bloqué sur « Signing in to github.com… »</summary><p>Si le navigateur ne vous ramène pas dans VS Code : copiez le code d'autorisation affiché dans le navigateur, cliquez dans VS Code sur « Signing in to github.com… » dans la barre du bas, collez le code et appuyez sur <kbd>Entrée</kbd>.</p></details>
 
 <h3>Ce que Pulse fera avec ce lien</h3>
-<p>Vous n'avez rien d'autre à préparer sur GitHub : ne créez pas de dépôt vous-même. Pendant <a href="commandes/init.html"><code>/pulse:init</code></a> (ou plus tard, à la mise en ligne avec <a href="commandes/deploy.html"><code>/pulse:deploy</code></a>), Pulse vous propose de relier le projet à GitHub. Si <code>gh</code> est connecté, il vous montre la commande qui crée un dépôt <strong>privé</strong> au nom du projet et y envoie la première version, et vous demande votre accord avant de la lancer. Ensuite, il envoie vos nouvelles versions sur GitHub au fil du travail, toujours avec votre accord.</p>
+<p>Vous n'avez rien d'autre à préparer sur GitHub : ne créez pas de dépôt vous-même. Une fois vos outils choisis, ou à la mise en ligne avec <a href="commandes/deploy.html"><code>/pulse:deploy</code></a>, Pulse vous propose de relier le projet à GitHub. Si <code>gh</code> est connecté, il vous montre la commande qui crée un dépôt <strong>privé</strong> au nom du projet et y envoie la première version, et vous demande votre accord avant de la lancer. Ensuite, il envoie vos nouvelles versions sur GitHub au fil du travail, toujours avec votre accord.</p>
 <details class="probleme"><summary>« gh n'est pas reconnu » ou « command not found: gh »</summary><p>Fermez complètement VS Code et rouvrez-le. Sur Mac, vérifiez que vous avez bien lancé les commandes « Next steps » affichées à la fin de l'installation de Homebrew.</p></details>
 <details class="probleme"><summary><code>gh auth status</code> dit « You are not logged into any GitHub hosts »</summary><p>La connexion n'a pas abouti. Relancez <code>gh auth login</code> et allez jusqu'au message de confirmation dans le terminal.</p></details>
 <details class="probleme"><summary>Git demande encore un mot de passe pour envoyer</summary><p>Lancez une fois cette commande : elle confie à l'outil <code>gh</code> la connexion de Git à GitHub.</p>
@@ -584,12 +584,9 @@ vercel login</code></pre>
 <li>Tapez cette commande dans la zone de saisie, puis <kbd>Entrée</kbd> :
 <pre class="commande"><code>/pulse:init</code></pre></li>
 </ol>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> la bannière de Pulse, puis « 👋 Bienvenue ! » et l'écran « Votre projet », qui propose de préparer un nouveau projet. Aucun message sur Git ou Node.js.</p></aside>
-<pre class="commande"><code>👋 Bienvenue !
-
-Votre projet :
-  Dossier      ❌ à préparer
-  …</code></pre>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> la bannière de Pulse, puis « 👋 Bienvenue ! On commence par votre idée. » Aucun message sur Git ou Node.js.</p></aside>
+<pre class="commande"><code>👋 Bienvenue ! On commence par votre idée.
+Racontez votre idée en une phrase.</code></pre>
 <p class="legende">Le début de l'écran d'accueil de <code>/pulse:init</code> dans un dossier vide.</p>
 <figure class="capture capture-a-venir" data-capture="captures/prerequis-init-accueil.png"><div class="capture-cadre">Capture à venir : VS Code avec le dossier essai-pulse ouvert et le panneau Claude Code affichant l'accueil de /pulse:init.</div><figcaption>Tout est prêt : Pulse vous accueille dans VS Code.</figcaption></figure>
 <h3>Ou dans les autres façons</h3>
