@@ -98,23 +98,19 @@
 <p><strong>Objectif :</strong> créer le dossier du projet et choisir le parcours complet. <span class="duree">Environ 15 min</span></p>
 <p>Créez un dossier vide <code>salon-lila</code>, ouvrez-le dans VS Code (<strong>Fichier → Ouvrir le dossier…</strong>), ouvrez le panneau Claude Code, puis tapez :</p>
 <pre class="commande"><code>/pulse:init salon-lila</code></pre>
-<p>Pulse vous demande une phrase de description, votre niveau et la quantité d'explications voulue, puis crée les règles du projet, sa mémoire et un premier enregistrement. Il propose ensuite de protéger vos clés et de relier le projet à un dépôt distant (une copie privée sur GitHub). À la fin, il vous demande quel parcours suivre : choisissez le parcours complet. Le détail est sur la page <a href="../commandes/init.html"><code>/pulse:init</code></a>.</p>
+<p>Pulse vous demande votre idée en une phrase et votre niveau, puis crée les règles du projet, sa mémoire et un premier enregistrement. La protection de vos clés et la copie privée sur GitHub viendront avec le choix des outils, au moment où elles servent. À la fin, il vous demande quel parcours suivre : choisissez le parcours complet. Le détail est sur la page <a href="../commandes/init.html"><code>/pulse:init</code></a>.</p>
 <div class="conversation" data-titre="Séance 1 : créer le projet">
 <p data-role="vous">/pulse:init salon-lila</p>
-<p data-role="claude">👋 Bienvenue ! Décrivez le projet en une phrase (facultatif).</p>
+<p data-role="claude">👋 Bienvenue ! On commence par votre idée. Racontez-la en une phrase.</p>
 <p data-role="vous">Un carnet de réservations pour le Salon Lila, un salon de coiffure.</p>
 <p data-role="claude">Votre niveau en programmation ? → Jamais programmé
-Combien d'explications ? → Normales (Recommandé)
-C'est prêt. Vos clés seront dans un fichier .env ; cette règle empêche l'IA de le lire. → Protéger mes clés (Recommandé)
-Relier le projet à un dépôt distant ? → Oui, en créer un nouveau (Recommandé)
+Votre dossier est prêt. Parlons de votre idée.
 Pour la suite : démarrer vite avec /pulse:nouveau, ou parcours complet, étape par étape ?</p>
 <p data-role="vous">Parcours complet, étape par étape</p>
 <p data-role="claude">➡️ Prochaine étape : /pulse:brainstorm, pour raconter votre idée.</p>
 </div>
 <figure class="capture capture-a-venir" data-capture="captures/production-init-parcours.png"><div class="capture-cadre">Capture à venir : l'écran « Votre projet » de <code>/pulse:init</code>, avec le choix entre « Démarrer vite avec /pulse:nouveau » et le parcours complet.</div><figcaption>Le choix du parcours, à la fin de la préparation du projet.</figcaption></figure>
-<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> l'explorateur de fichiers de VS Code montre <code>CLAUDE.md</code>, <code>docs/</code>, <code>aidd_docs/</code>, <code>README.md</code>, <code>.gitignore</code> et <code>.env.example</code>. Le projet a sa copie privée sur GitHub, et l'écran annonce <code>/pulse:brainstorm</code>.</p></aside>
-<details class="probleme"><summary>Pulse n'arrive pas à créer le dépôt sur GitHub</summary><p>Sans l'outil GitHub en ligne de commande, Pulse vous guide sur le site : nouveau dépôt, nom du projet, visibilité <strong>privée</strong>, dépôt laissé vide. Collez ensuite son adresse dans la conversation : Pulse relie le projet.</p></details>
-<details class="probleme"><summary>Je veux relier le dépôt plus tard</summary><p>Répondez « Non, plus tard ». Tout reste sur votre ordinateur. La question reviendra au moment de la mise en ligne.</p></details>
+<aside class="encadre encadre-attendu"><p><strong>Résultat attendu :</strong> l'explorateur de fichiers de VS Code montre <code>CLAUDE.md</code>, <code>docs/</code>, <code>aidd_docs/</code>, <code>README.md</code>, <code>.gitignore</code> et <code>.env.example</code>, et l'écran annonce <code>/pulse:brainstorm</code>.</p></aside>
 
 <h3 id="s1-brainstorm">Raconter l'idée : <code>/pulse:brainstorm</code></h3>
 <p><strong>Objectif :</strong> que Pulse comprenne le métier du salon, avec vos mots. <span class="duree">Environ 45 min</span></p>

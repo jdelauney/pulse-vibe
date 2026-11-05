@@ -156,13 +156,13 @@ test("mesurer : médiane", () => {
 
 test("mesurer : une transcription et ses sous-agents, chaque message compté une fois", () => {
   assert.deepStrictEqual(mesure.lireEssai(path.join(ESSAI, "session-1.jsonl")), {
-    entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, sousAgents: 1,
+    entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, questions: 0, sousAgents: 1,
   });
 });
 
 test("mesurer : la trace d'un essai (stream-json), usage de tous les modèles, sous-agents compris", () => {
   assert.deepStrictEqual(mesure.lireEssai(path.join(ESSAI, "trace.jsonl")), {
-    entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, sousAgents: 1,
+    entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, questions: 0, sousAgents: 1,
   });
 });
 
@@ -182,8 +182,8 @@ test("le lanceur garde les transcriptions des essais avec leur rapport", () => {
   assert.ok(fs.existsSync(path.join(rapport, "traces", "realisation-boucle-with-1", "subagents", "agent-x1.jsonl")));
   assert.ok(fs.existsSync(path.join(rapport, "traces", "realisation-boucle-with-2.jsonl")));
   assert.deepStrictEqual(mesure.lireResultats(rapport), [
-    { cas: "realisation-boucle", score: 1, duree: 90, entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, sousAgents: 1 },
-    { cas: "realisation-boucle", score: 0.5, duree: 80, entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, sousAgents: 1 },
+    { cas: "realisation-boucle", score: 1, duree: 90, entree: 15, sortie: 32, cacheLu: 1200, cacheEcrit: 3050, outils: 4, questions: 0, sousAgents: 1 },
+    { cas: "realisation-boucle", score: 0.5, duree: 80, entree: 11, sortie: 22, cacheLu: 330, cacheEcrit: 4400, outils: 3, questions: 0, sousAgents: 1 },
   ]);
 });
 

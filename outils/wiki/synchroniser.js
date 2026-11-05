@@ -13,6 +13,9 @@ const path = require("path");
 const DEPOT = path.join(__dirname, "..", "..");
 const WIKI = path.join(DEPOT, "docs");
 const SKILLS = path.join(DEPOT, "plugins", "pulse-vibe", "skills");
+// Les commandes du plugin à part pulse-skills, présentées avec leur propre préfixe.
+const SKILLS_EXT = path.join(DEPOT, "plugins", "pulse-skills", "skills");
+const prefixe = (nom) => (fs.existsSync(path.join(SKILLS_EXT, nom, "SKILL.md")) ? "pulse-skills" : "pulse");
 
 // Les étapes du parcours, dans l'ordre. `couleur` : pas de l'échelle de maturité (1 à 4), 0 hors parcours.
 const ETAPES = [
@@ -22,7 +25,8 @@ const ETAPES = [
   { id: "construire", numero: 4, nom: "Construire", couleur: 3, commandes: ["implement", "spirc", "review", "test", "auto-fix", "commit", "pr"] },
   { id: "en-ligne", numero: 5, nom: "Mettre en ligne", couleur: 4, commandes: ["cicd", "deploy", "security", "secrets"] },
   { id: "visible", numero: 6, nom: "Être trouvé", couleur: 4, commandes: ["seo", "rediger", "perf", "search-console"] },
-  { id: "toujours", numero: 7, nom: "À tout moment", couleur: 0, commandes: ["status", "explain", "learn", "fix", "annuler", "get-help", "memory", "skill-creator", "audit-skill", "optimize-skill"] },
+  { id: "toujours", numero: 7, nom: "À tout moment", couleur: 0, commandes: ["status", "explain", "learn", "fix", "annuler", "get-help", "memory"] },
+  { id: "skills", numero: 8, nom: "Vos propres skills", couleur: 0, commandes: ["skill-creator", "audit-skill", "optimize-skill"] },
 ];
 
 // Les pages de la navigation principale (chemins depuis docs/). Chaque page citée doit exister.
@@ -39,7 +43,7 @@ const echapper = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/
 
 // Frontmatter d'un SKILL.md : description et argument-hint (guillemets et \" retirés).
 function lireSkill(nom) {
-  const texte = fs.readFileSync(path.join(SKILLS, nom, "SKILL.md"), "utf8").replace(/\r\n/g, "\n");
+  const texte = fs.readFileSync(path.join(prefixe(nom) === "pulse" ? SKILLS : SKILLS_EXT, nom, "SKILL.md"), "utf8").replace(/\r\n/g, "\n");
   const entete = texte.split("\n---")[0];
   const valeur = (cle) => {
     const m = entete.match(new RegExp(`^${cle}: (.*)$`, "m"));
@@ -67,7 +71,7 @@ function decouperArguments(indice) {
 }
 
 function commandes() {
-  const noms = fs.readdirSync(SKILLS).filter((n) => fs.existsSync(path.join(SKILLS, n, "SKILL.md"))).sort();
+  const noms = [SKILLS, SKILLS_EXT].flatMap((d) => fs.readdirSync(d).filter((n) => fs.existsSync(path.join(d, n, "SKILL.md")))).sort();
   return noms.map((nom) => {
     const etape = ETAPES.find((e) => e.commandes.includes(nom));
     const { description, arguments: indice } = lireSkill(nom);
@@ -86,7 +90,7 @@ function blocChapo(c) {
 }
 
 function blocForme(c) {
-  const lignes = [`<pre class="commande"><code>/pulse:${c.nom}${c.forme ? " " + echapper(c.forme) : ""}</code></pre>`];
+  const lignes = [`<pre class="commande"><code>/${prefixe(c.nom)}:${c.nom}${c.forme ? " " + echapper(c.forme) : ""}</code></pre>`];
   lignes.push(c.forme
     ? `<p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.${c.note ? " " + echapper(premiereLettre(c.note)) + "." : ""}</p>`
     : `<p class="legende">Cette commande se lance sans rien après son nom.</p>`);
@@ -110,7 +114,7 @@ function blocCartes(liste) {
   return ETAPES.map((e) => {
     const cartes = e.commandes.map((nom) => {
       const c = liste.find((x) => x.nom === nom);
-      return `    <li><a class="carte carte-commande" href="${nom}.html"><span class="carte-titre"><code>/pulse:${nom}</code></span><span class="carte-texte">${echapper(phrase(c.description))}</span></a></li>`;
+      return `    <li><a class="carte carte-commande" href="${nom}.html"><span class="carte-titre"><code>/${prefixe(nom)}:${nom}</code></span><span class="carte-texte">${echapper(phrase(c.description))}</span></a></li>`;
     });
     return [
       `<section class="groupe-etape" id="etape-${e.id}" data-etape="${e.id}">`,

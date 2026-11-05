@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# pulse-skills – outil du plugin pulse-skills (créer, auditer et optimiser des skills Claude Code).
+# Claude Code place le dossier bin/ du plugin dans le PATH ; les règles communes viennent de pulse-aidd (plugin pulse, sa dépendance).
+#
+#   pulse-skills contexte <commande>    affiche les règles communes et les règles des skills, pour une commande de ce plugin
+#   pulse-skills reference <chemin>     affiche une référence : regles-skills.md, ou celle d'une commande (ex. optimize-skill/plan.md)
+#   pulse-skills modele <skill>/<fichier>   affiche le modèle d'une commande (ex. audit-skill/rapport.md)
+#   pulse-skills agent <nom>            affiche les consignes d'un agent (skill-auditor)
+#
+# Ne sort jamais en erreur pour "contexte" : un échec annulerait la commande /pulse-skills.
+
+# Relais PowerShell (bin/<outil>.ps1) : il lance ce script sans argument et passe les siens par l'environnement, tels quels.
+# Les relire seulement dans ce cas (sinon les arguments de la ligne de commande comptent), puis toujours les effacer.
+if [ $# -eq 0 ] && [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
+  _n="$PULSE_RELAIS_ARGC"
+  case "$_n" in ''|*[!0-9]*|?????*) _n=0 ;; esac # un nombre de 1 à 4 chiffres, jamais une expression
+  _n=$((10#$_n))
+  _a=()
+  for ((_i = 0; _i < _n; _i++)); do _v="PULSE_RELAIS_ARG_$_i"; _a+=("${!_v}"); done
+  if [ "${#_a[@]}" -gt 0 ]; then set -- "${_a[@]}"; fi # un seul set (pas de reconstruction à chaque tour)
+  unset _n _i _v _a
+fi
+unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
+
+RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REF="$RACINE/references"
+SK="$RACINE/skills"
+
+nom_sur() { # nom_sur <nom> : vrai si le nom reste dans son dossier (ni .., ni chemin absolu, ni lecteur Windows)
+  case "$1" in ""|*..*|/*|\\*|[A-Za-z]:*) return 1 ;; esac
+  return 0
+}
+
+lister_references() {
+  (cd "$REF" && find . -type f | sed 's|^\./||' | sort)
+  (cd "$SK" && find . -path '*/references/*' -type f | sed 's|^\./\([^/]*\)/references/|\1/|' | sort)
+}
+
+lister_modeles() {
+  (cd "$SK" && find . -path '*/assets/*' -type f | sed 's|^\./\([^/]*\)/assets/|\1/|' | sort)
+}
+
+case "$1" in
+  contexte)
+    if ! nom_sur "$2" || [ ! -f "$SK/$2/SKILL.md" ]; then
+      printf '\n(pulse-skills : commande inconnue « %s ». Commandes : %s)\n' "$2" "$(ls "$SK" | tr '\n' ' ')"
+      exit 0
+    fi
+    printf '\n===== Règles communes Pulse =====\n\n'
+    if command -v pulse-aidd >/dev/null 2>&1; then
+      pulse-aidd reference regles-communes.md
+    else
+      printf "Le plugin pulse manque sur cette machine. Proposer à la personne de l'installer : /plugin install pulse@pulseia, puis de redémarrer Claude Code.\n"
+    fi
+    printf '\n===== Règles des skills =====\n\n'
+    cat "$REF/regles-skills.md"
+    printf '\n'
+    exit 0 ;;
+  reference)
+    if nom_sur "$2" && [ -f "$REF/$2" ]; then cat "$REF/$2"
+    elif nom_sur "$2" && [ -f "$SK/${2%%/*}/references/${2#*/}" ]; then cat "$SK/${2%%/*}/references/${2#*/}"
+    else echo "Référence introuvable : $2. Disponibles :"; lister_references; exit 1; fi ;;
+  modele)
+    if nom_sur "$2" && [ -f "$SK/${2%%/*}/assets/${2#*/}" ]; then cat "$SK/${2%%/*}/assets/${2#*/}"
+    else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
+  agent)
+    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"
+    else echo "Agent introuvable : $2 (skill-auditor)"; exit 1; fi ;;
+  *)
+    echo "Usage : pulse-skills contexte <commande> | reference <chemin> | modele <skill>/<fichier> | agent <nom>"
+    exit 1 ;;
+esac

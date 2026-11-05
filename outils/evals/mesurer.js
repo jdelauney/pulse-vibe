@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Mesure ce qu'a consommé chaque essai des évaluations : tokens (entrée, sortie, cache lu, cache écrit), appels d'outils
-// et sous-agents lancés, sous-agents compris, avec la durée et le score de claude plugin eval.
+// (dont les questions à choix posées à la personne) et sous-agents lancés, sous-agents compris, avec la durée et le score de claude plugin eval.
 //
 //   node outils/evals/mesurer.js <dossier de résultats>…                       un tableau par essai
 //   node outils/evals/mesurer.js --comparer <avant>… -- <après>…               médianes par cas, avant, après, écart
@@ -15,7 +15,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const CHAMPS = ["entree", "sortie", "cacheLu", "cacheEcrit", "outils", "sousAgents"];
+const CHAMPS = ["entree", "sortie", "cacheLu", "cacheEcrit", "outils", "questions", "sousAgents"];
 
 function mediane(nombres) {
   const tries = [...nombres].sort((a, b) => a - b);
@@ -27,6 +27,7 @@ function mediane(nombres) {
 function compter(fichier, total) {
   const messages = new Set();
   const outils = new Set();
+  const questions = new Set();
   for (const ligne of fs.readFileSync(fichier, "utf8").split("\n")) {
     if (!ligne.trim()) continue;
     let o;
@@ -37,7 +38,11 @@ function compter(fichier, total) {
     }
     const m = o.message;
     if (!m || o.type !== "assistant") continue;
-    for (const bloc of Array.isArray(m.content) ? m.content : []) if (bloc.type === "tool_use") outils.add(bloc.id);
+    for (const bloc of Array.isArray(m.content) ? m.content : []) {
+      if (bloc.type !== "tool_use") continue;
+      outils.add(bloc.id);
+      if (bloc.name === "AskUserQuestion") questions.add(bloc.id);
+    }
     if (!m.usage || messages.has(m.id)) continue;
     messages.add(m.id);
     total.entree += m.usage.input_tokens || 0;
@@ -46,6 +51,7 @@ function compter(fichier, total) {
     total.cacheEcrit += m.usage.cache_creation_input_tokens || 0;
   }
   total.outils += outils.size;
+  total.questions += questions.size;
 }
 
 /** La ligne finale « result » d'une trace stream-json, ou null. */
@@ -73,9 +79,10 @@ function lireEssai(transcription) {
       total.cacheEcrit += u.cacheCreationInputTokens || 0;
     }
     // La trace contient aussi les messages des sous-agents : seuls ses appels d'outils s'y comptent.
-    const lignes = { entree: 0, sortie: 0, cacheLu: 0, cacheEcrit: 0, outils: 0 };
+    const lignes = { entree: 0, sortie: 0, cacheLu: 0, cacheEcrit: 0, outils: 0, questions: 0 };
     compter(transcription, lignes);
     total.outils = lignes.outils;
+    total.questions = lignes.questions;
     total.sousAgents = (resultat.subagent_stats && resultat.subagent_stats.spawned) || 0;
     return total;
   }
