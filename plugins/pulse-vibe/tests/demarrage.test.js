@@ -78,6 +78,19 @@ test("tech : carte d'option en mots simples ; niveau et hypothèses ; autorisati
   assert.ok(tech.indexOf("`pulse-aidd reference autorisations.md`") < tech.indexOf("Projet neuf : présenter la « Mise en place »"), "autorisations avant la mise en place");
 });
 
+test("wiki : les commandes de pulse-skills gardent leur préfixe, hors du parcours en 7 étapes", () => {
+  const { etapes } = JSON.parse(lire(DEPOT, "docs", "js", "donnees.js").replace(/^[\s\S]*?=\s*/, "").replace(/;\s*$/, ""));
+  assert.deepStrictEqual(etapes.filter((e) => e.numero).map((e) => e.numero), [1, 2, 3, 4, 5, 6, 7]);
+  assert.deepStrictEqual(etapes.filter((e) => e.horsParcours).flatMap((e) => e.commandes), ["skill-creator", "audit-skill", "optimize-skill"]);
+  const gabarit = lire(DEPOT, "docs", "js", "gabarit.js");
+  assert.doesNotMatch(gabarit, /"\/pulse:" \+ (nom|ordre)|"← \/pulse:"/, "le préfixe passe par commandeComplete");
+});
+
+test("wiki : le démarrage conseillé passe par /pulse:nouveau dans le tutoriel rapide et dans l'assistant", () => {
+  assert.match(lire(DEPOT, "docs", "tutoriels", "rapide.html"), /id="init"[\s\S]*?<pre class="commande"><code>\/pulse:nouveau "un carnet/);
+  assert.match(lire(DEPOT, "docs", "js", "quelle-commande.js"), /"init-nouveau": \{\s*commande: "nouveau"/);
+});
+
 test("wiki : le tutoriel rapide suit l'ordre de /pulse:nouveau", () => {
   const rapide = lire(DEPOT, "docs", "tutoriels", "rapide.html");
   assert.ok(rapide.indexOf('id="apparence"') < rapide.indexOf('id="outils"'));

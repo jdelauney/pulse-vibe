@@ -60,15 +60,21 @@
     document.body.insertBefore(evitement, header);
   }
 
+  // Le préfixe d'une commande : celles du groupe hors parcours viennent du plugin à part pulse-skills.
+  function commandeComplete(nom) {
+    var aPart = donnees.etapes.some(function (e) { return e.horsParcours && e.commandes.indexOf(nom) >= 0; });
+    return (aPart ? "/pulse-skills:" : "/pulse:") + nom;
+  }
+
   // Navigation latérale des pages de commandes : les commandes groupées par étape.
   function laterale() {
     var cible = document.querySelector("[data-laterale=\"\"]");
     if (!cible) return;
     donnees.etapes.forEach(function (etape) {
-      cible.appendChild(el("h2", { texte: etape.numero + ". " + etape.nom }));
+      cible.appendChild(el("h2", { texte: (etape.numero ? etape.numero + ". " : "") + etape.nom }));
       var ul = el("ul");
       etape.commandes.forEach(function (nom) {
-        var a = el("a", { href: racine + "commandes/" + nom + ".html", texte: "/pulse:" + nom });
+        var a = el("a", { href: racine + "commandes/" + nom + ".html", texte: commandeComplete(nom) });
         if (nom === commande) a.setAttribute("aria-current", "page");
         ul.appendChild(el("li", {}, [a]));
       });
@@ -150,8 +156,8 @@
     var ordre = [];
     donnees.etapes.forEach(function (e) { ordre = ordre.concat(e.commandes); });
     var i = ordre.indexOf(commande);
-    if (i > 0) cible.appendChild(el("a", { class: "bouton bouton-grand", href: ordre[i - 1] + ".html", texte: "← /pulse:" + ordre[i - 1] }));
-    if (i >= 0 && i < ordre.length - 1) cible.appendChild(el("a", { class: "bouton bouton-grand", href: ordre[i + 1] + ".html", texte: "/pulse:" + ordre[i + 1] + " →" }));
+    if (i > 0) cible.appendChild(el("a", { class: "bouton bouton-grand", href: ordre[i - 1] + ".html", texte: "← " + commandeComplete(ordre[i - 1]) }));
+    if (i >= 0 && i < ordre.length - 1) cible.appendChild(el("a", { class: "bouton bouton-grand", href: ordre[i + 1] + ".html", texte: commandeComplete(ordre[i + 1]) + " →" }));
   }
 
   function boutonsCopier() {
