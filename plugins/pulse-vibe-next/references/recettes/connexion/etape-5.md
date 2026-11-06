@@ -6,6 +6,7 @@
 import "server-only";
 import { enTetesDeSession, getAuth } from "@src/adapters/auth/auth.adapter";
 import { logger } from "@src/lib/logger";
+import { identifiantDeRequete } from "@src/lib/requete";
 import { headers } from "next/headers";
 import { createSafeActionClient, returnServerError } from "next-safe-action";
 import { z } from "zod";
@@ -36,8 +37,9 @@ export const actionPublique = createSafeActionClient({
     return MESSAGE_ERREUR_ACTION;
   },
 }).use(async ({ next, metadata }) => {
-  // x-vercel-id : l'identifiant de la requête, le même que dans les journaux de Vercel.
-  const requete = (await headers()).get("x-vercel-id") ?? undefined;
+  // L'identifiant de la requête, le même que dans les journaux de l'hébergeur.
+  const entetes = await headers();
+  const requete = identifiantDeRequete((nom) => entetes.get(nom));
   const debut = performance.now();
   const resultat = await next({ ctx: { requete } });
   logger.info(
