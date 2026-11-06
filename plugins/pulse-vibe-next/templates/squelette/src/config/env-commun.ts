@@ -8,9 +8,12 @@ export const optionsCommunes = {
   // Une ligne « NOM= » vide compte comme une variable absente.
   emptyStringAsUndefined: true,
   // La construction de vérification (CI, vérificateur du pack) se fait sans variables.
-  // Sur Vercel, la validation s'applique toujours, même si SKIP_ENV_VALIDATION y est saisie.
+  // En ligne (Vercel, ou PULSE_ENV saisie chez un autre hébergeur), la validation s'applique toujours,
+  // même si SKIP_ENV_VALIDATION y est saisie.
   skipValidation:
-    Boolean(process.env.SKIP_ENV_VALIDATION) && !process.env.VERCEL,
+    Boolean(process.env.SKIP_ENV_VALIDATION) &&
+    !process.env.VERCEL &&
+    !process.env.PULSE_ENV,
   onValidationError: (problemes: readonly Probleme[]): never => {
     const noms = problemes
       .map((p) =>

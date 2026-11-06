@@ -16,9 +16,11 @@
 //   node scripts/verifier.js --index       les fichiers prêts à être enregistrés (contrôle avant commit) : secrets et règles, sans les scénarios
 "use strict";
 
-const fs = require("fs");
-const path = require("path");
-const { execFileSync } = require("child_process");
+// Modules de Node lus par process.getBuiltinModule (Node 22.3 ou plus), sans require ni import :
+// le script marche dans tous les projets, que package.json déclare "type": "module" ou non.
+const fs = process.getBuiltinModule("fs");
+const path = process.getBuiltinModule("path");
+const { execFileSync } = process.getBuiltinModule("child_process");
 
 // DEBUT-MOTIFS
 // Valeurs d'exemple : hôte local, mot de passe de démonstration.

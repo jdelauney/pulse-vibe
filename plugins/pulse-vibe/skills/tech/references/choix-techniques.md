@@ -51,6 +51,7 @@ Pour chaque option, évaluer :
 
 - Les options doivent être **réellement différentes** (par exemple : sans serveur ni compte, avec un service de données géré, avec un serveur à soi), chacune avec sa propre approche plutôt que trois variantes de la même chose.
 - Au moins une option est **la plus simple possible** qui couvre le MVP.
+- **Hébergement** : comparer les plateformes (Vercel, Netlify, Cloudflare) et les hébergeurs généralistes à prix fixe, souvent européens (Infomaniak, Hostinger, IONOS, OVHcloud, o2switch…), selon ce que la pile demande : hébergement mutualisé, Node.js ou serveur privé. Ces noms sont des exemples : leur offre actuelle se vérifie comme le reste.
 - Pour chaque option : en une phrase, ce que c'est ; le **coût** mensuel estimé à 6 mois ; les **points forts** pour ce projet ; **1 à 3 risques honnêtes** (limite de l'offre gratuite, complexité, verrouillage, localisation des données).
 - **Vérifier chaque option** sur sa documentation officielle et sa page de tarifs actuelle (outil de documentation comme context7 s'il est disponible, sinon WebFetch) : existence et nom exact, offre gratuite et limites, région d'hébergement, fonctionnalités nécessaires. Affirmer une offre gratuite, un prix ou une API **seulement après vérification**. Signaler toute information restée invérifiable.
 - Donner une **recommandation** et sa raison en une phrase, puis laisser la personne choisir.

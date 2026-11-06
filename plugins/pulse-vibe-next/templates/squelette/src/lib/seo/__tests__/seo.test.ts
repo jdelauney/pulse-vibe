@@ -69,6 +69,18 @@ describe("Adresse du site", () => {
     expect(adresseDuSite({ SITE_URL: "" })).toBe("http://localhost:3000");
   });
 
+  test("chez un autre hébergeur (PULSE_ENV), SITE_URL est obligatoire", () => {
+    expect(() => adresseDuSite({ PULSE_ENV: "production" })).toThrow(
+      /SITE_URL manque/,
+    );
+    expect(
+      adresseDuSite({
+        PULSE_ENV: "production",
+        SITE_URL: "https://www.mon-site.fr",
+      }),
+    ).toBe("https://www.mon-site.fr");
+  });
+
   test("une adresse mal écrite arrête tout avec un message clair", () => {
     expect(() => adresseDuSite({ SITE_URL: "mon-site.fr" })).toThrow(
       /SITE_URL invalide/,

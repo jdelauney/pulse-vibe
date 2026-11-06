@@ -141,7 +141,7 @@ test("le squelette type ses variables avec t3 env et nomme son client Drizzle", 
   assert.ok(!envPublic.includes("server-only"), "env-public.ts lisible par un composant client");
   assert.ok(envPublic.includes("experimental__runtimeEnv"), "variables publiques lues en entier");
   const commun = fs.readFileSync(path.join(S, "src", "config", "env-commun.ts"), "utf8");
-  for (const attendu of ["emptyStringAsUndefined: true", "SKIP_ENV_VALIDATION", "!process.env.VERCEL"]) assert.ok(commun.includes(attendu), attendu);
+  for (const attendu of ["emptyStringAsUndefined: true", "SKIP_ENV_VALIDATION", "!process.env.VERCEL", "!process.env.PULSE_ENV"]) assert.ok(commun.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "src", "db", "db-client.ts")), "db-client.ts");
   assert.ok(!fs.existsSync(path.join(S, "src", "db", "index.ts")), "plus de src/db/index.ts");
   assert.ok(fs.existsSync(path.join(S, "tests", "helpers", "env-de-test.ts")), "aide VARIABLES_VALIDES");
@@ -223,6 +223,7 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
   assert.match(lireS("app", "api", "erreur-client", "route.ts"), /export async function POST/);
   assert.match(lireS("app", "api", "sante", "route.ts"), /await connection\(\)/);
   assert.match(lireS("src", "lib", "sante.ts"), /"public, s-maxage=900"/, "sonde gardée 15 minutes par le CDN");
+  assert.match(lireS("src", "lib", "sante.ts"), /DUREE_EN_CACHE_MS = 900_000/, "et par le serveur lui-même, sans CDN (autres hébergeurs)");
   // Page d'essai de la surveillance : posée par verifier-squelette --e2e seulement, absente du site publié.
   assert.ok(!fs.existsSync(path.join(S, "app", "essai-surveillance")));
   for (const f of ["erreur-client.spec.ts", "accessibilite.spec.ts"]) assert.doesNotMatch(lireS("e2e", f), /essai-surveillance/, f);
@@ -231,7 +232,7 @@ test("journaux et erreurs du squelette : onRequestError, masquage profond, réf�
 test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
   const action = fs.readFileSync(path.join(S, "src", "lib", "safe-action.ts"), "utf8");
-  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata, ctx })", "next({ ctx: { requete } })", "x-vercel-id", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
+  for (const attendu of ["defineMetadataSchema()", "z.object({ nom: z.string().min(1) })", "handleServerError(erreur, { metadata, ctx })", "next({ ctx: { requete } })", "identifiantDeRequete(", "export const MESSAGE_ERREUR_ACTION"]) assert.ok(action.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "src", "lib", "__tests__", "safe-action.test.ts")));
 });
 
@@ -242,8 +243,11 @@ test("migrations du squelette : construction Vercel précédée de scripts/migre
   assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "npm test && node scripts/migrer.mjs --vercel && npm run build" });
   const etapes = vercel.buildCommand.split(" && ");
   assert.ok(etapes.indexOf("npm test") < etapes.indexOf("node scripts/migrer.mjs --vercel"), "tests avant migrations");
+  // Chez un autre hébergeur, la même chaîne passe par npm run mise-en-ligne (commande de construction du panneau).
+  const { scripts } = JSON.parse(fs.readFileSync(path.join(S, "package.json"), "utf8"));
+  assert.strictEqual(scripts["mise-en-ligne"], "npm test && node scripts/migrer.mjs --en-ligne && npm run build");
   assert.match(fs.readFileSync(path.join(S, "drizzle.config.ts"), "utf8"), /process\.env\.DATABASE_URL_DIRECT \?\? process\.env\.DATABASE_URL_UNPOOLED/);
   const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
-  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'env.VERCEL_ENV === "production"', "drizzle.__drizzle_migrations", "NEON_ENDPOINT_PRODUCTION", '"ignore-production"']) assert.ok(migrer.includes(attendu), attendu);
+  for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'environnement === "production"', "--en-ligne", "DATABASE_URL_DIRECT", "drizzle.__drizzle_migrations", "NEON_ENDPOINT_PRODUCTION", '"ignore-production"']) assert.ok(migrer.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "tests", "migrer.test.ts")));
 });
