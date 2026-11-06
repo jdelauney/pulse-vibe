@@ -59,12 +59,15 @@ test("verifier-brief : lancé par brainstorm, prd et nouveau, autorisé d'avance
 });
 
 test("tech : voie directe d'un pack, la personne garde la décision et peut demander d'autres options", () => {
-  assert.match(tech, /\*\*Voie directe\*\* : un pack installé couvre les besoins/);
+  assert.match(tech, /\*\*Voie directe\*\* : un pack installé couvre les besoins, sans technologie imposée ou refusée que sa pile contredit : construire seulement cette option, et dire son coût avant le choix/);
   assert.match(tech, /« Cette pile \(Recommandé\) » \/ « Voir d'autres options » \/ « Revoir un besoin »/);
   assert.match(tech, /« Voir d'autres options » reprend l'étape 3 avec 2 ou 3 options, vérifiées à l'étape 4/);
   assert.match(tech, /La décision appartient à la personne\.\n/);
   const piles = lire(DEPOT, "plugins", "pulse-vibe-next", "references", "contexte", "piles.md");
   assert.match(piles, /\*\*voie directe\*\*/);
+  // Le pack Next couvre aussi la page vitrine : recommandé seul, les options plus légères à la demande.
+  assert.match(piles, /de la simple page vitrine avec son formulaire de contact/);
+  assert.doesNotMatch(piles, /surdimensionnée/);
   assert.match(piles, /offre Pro : le dire à la personne avant qu'elle choisisse/, "la vérification du coût reste faite avant le choix");
 });
 
