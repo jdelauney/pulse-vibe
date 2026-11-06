@@ -1,9 +1,12 @@
-// Migrations de la base, lancées par Vercel avant chaque construction (vercel.json : buildCommand).
+// Migrations de la base, lancées avant chaque construction en ligne.
 //
-//   node scripts/migrer.mjs --vercel
+//   node scripts/migrer.mjs --vercel      chez Vercel (vercel.json : buildCommand)
+//   node scripts/migrer.mjs --en-ligne    chez un autre hébergeur (npm run mise-en-ligne)
 //
-// - Hors Vercel : rien (en local, npm run db:migrate sur la branche dev de .env). Le drapeau --vercel
-//   (posé par vercel.json) rend l'absence de VERCEL_ENV bloquante dès qu'une migration existe.
+// - Sans l'un des deux drapeaux : rien (en local, npm run db:migrate sur la branche dev de .env).
+//   --vercel rend l'absence de VERCEL_ENV bloquante dès qu'une migration existe.
+// - Chez un autre hébergeur : PULSE_ENV=production et DATABASE_URL_DIRECT (adresse directe de la
+//   base Neon de production), saisies chez l'hébergeur ; pas de prévisualisation.
 // - Sur Vercel, seule DATABASE_URL_UNPOOLED (intégration Vercel–Neon) désigne la base : une adresse
 //   laissée à la main ne peut pas envoyer une prévisualisation vers la production.
 // - Prévisualisation : applique les migrations sur la branche Neon de la prévisualisation, après avoir
@@ -259,6 +262,7 @@ function appliquer(adresse) {
  *   appliquerMigrations?: (adresse: string) => void;
  *   dire?: (message: string) => void;
  *   vercel?: boolean;
+ *   enLigne?: boolean;
  * }} [options]
  */
 export async function migrer({
@@ -270,12 +274,14 @@ export async function migrer({
   appliquerMigrations = appliquer,
   dire = console.log,
   vercel = process.argv.includes("--vercel"),
+  enLigne = process.argv.includes("--en-ligne"),
 } = {}) {
-  if (!vercel && env.VERCEL !== "1") {
+  const surVercel = vercel || env.VERCEL === "1";
+  if (!surVercel && !enLigne) {
     dire(
-      "Hors Vercel : migrations non lancées (en local : npm run db:migrate).",
+      "Hors mise en ligne : migrations non lancées (en local : npm run db:migrate).",
     );
-    return "hors-vercel";
+    return "hors-ligne";
   }
   if (!journal.length) {
     dire("Aucune migration dans drizzle/ : rien à appliquer.");
@@ -286,10 +292,25 @@ export async function migrer({
       "VERCEL_ENV manque : activez l'accès aux variables système de Vercel (Settings → Environment Variables → cochez « Enable access to System Environment Variables »)",
     );
   }
-  const adresse = env.DATABASE_URL_UNPOOLED;
+  if (!surVercel && env.PULSE_ENV !== "production") {
+    throw new Error(
+      env.PULSE_ENV
+        ? `PULSE_ENV vaut « ${env.PULSE_ENV} » : chez cet hébergeur, seule la production existe (PULSE_ENV=production)`
+        : "PULSE_ENV manque : saisissez PULSE_ENV=production chez l'hébergeur (docs/technical.md, « Mise en place »)",
+    );
+  }
+  const environnement = surVercel ? env.VERCEL_ENV : env.PULSE_ENV;
+  const adresse = surVercel
+    ? env.DATABASE_URL_UNPOOLED
+    : env.DATABASE_URL_DIRECT;
+  if (!adresse && !surVercel) {
+    throw new Error(
+      "la base de production manque (DATABASE_URL_DIRECT) : saisissez chez l'hébergeur l'adresse directe de la base Neon (docs/technical.md, « Mise en place »)",
+    );
+  }
   if (!adresse) {
     throw new Error(
-      env.VERCEL_ENV === "production"
+      environnement === "production"
         ? "la base de production manque (DATABASE_URL_UNPOOLED) : reliez Neon à Vercel (intégration Vercel–Neon, docs/technical.md) puis redéployez"
         : "la base de prévisualisation manque (DATABASE_URL_UNPOOLED) : reliez Neon à Vercel (intégration Vercel–Neon, docs/technical.md) puis redéployez",
     );
@@ -301,7 +322,7 @@ export async function migrer({
     return "a-jour";
   }
   dire(`Migrations à appliquer : ${enAttente.map((m) => m.tag).join(", ")}`);
-  if (env.VERCEL_ENV === "preview") {
+  if (environnement === "preview") {
     // L'intégration Vercel–Neon donne sa branche à chaque prévisualisation ; si elle n'a pas pu la
     // créer, l'adresse peut désigner la production : on compare son point d'accès à celui de la production.
     // Dans le doute, on saute les migrations sans arrêter la construction.
@@ -324,9 +345,9 @@ export async function migrer({
       return "ignore-production";
     }
   }
-  if (env.VERCEL_ENV === "production" && derniere === null) {
+  if (environnement === "production" && derniere === null) {
     dire("Base jamais migrée : rien à sauvegarder, sauvegarde ignorée.");
-  } else if (env.VERCEL_ENV === "production") {
+  } else if (environnement === "production") {
     if (!env.NEON_API_KEY || !env.NEON_PROJECT_ID) {
       throw new Error(
         "NEON_API_KEY et NEON_PROJECT_ID manquent en Production : sans sauvegarde, la migration attend (docs/technical.md, « Mise en place »)",

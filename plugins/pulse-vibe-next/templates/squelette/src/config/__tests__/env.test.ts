@@ -33,4 +33,12 @@ describe("Construction de vérification", () => {
     vi.stubEnv("DATABASE_URL", undefined);
     await expect(import("../env")).rejects.toThrow(/DATABASE_URL/);
   });
+
+  it("chez un autre hébergeur (PULSE_ENV), SKIP_ENV_VALIDATION ne coupe pas la validation", async () => {
+    vi.stubEnv("VERCEL", undefined);
+    vi.stubEnv("PULSE_ENV", "production");
+    vi.stubEnv("SKIP_ENV_VALIDATION", "1");
+    vi.stubEnv("DATABASE_URL", undefined);
+    await expect(import("../env")).rejects.toThrow(/DATABASE_URL/);
+  });
 });

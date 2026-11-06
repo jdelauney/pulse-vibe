@@ -1,5 +1,6 @@
 import "server-only";
 import { logger } from "@src/lib/logger";
+import { identifiantDeRequete } from "@src/lib/requete";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { cheminSansRequete } from "./erreur-de-requete";
@@ -129,7 +130,7 @@ export async function recevoirErreurClient(
           ? undefined
           : sansDonneesDAdresse(lu.data.message).slice(0, MESSAGE_MAX),
       chemin: cheminSansRequete(lu.data.chemin).slice(0, MESSAGE_MAX),
-      requete: requete.headers.get("x-vercel-id") ?? undefined,
+      requete: identifiantDeRequete((nom) => requete.headers.get(nom)),
     },
     "Erreur dans le navigateur",
   );

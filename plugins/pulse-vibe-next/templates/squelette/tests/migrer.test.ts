@@ -60,9 +60,9 @@ describe("Migrations avant construction", () => {
     });
   });
 
-  it("hors Vercel : rien n'est lancé", async () => {
+  it("sans --vercel ni --en-ligne : rien n'est lancé", async () => {
     const d = dependances({}, null);
-    expect(await migrer(d)).toBe("hors-vercel");
+    expect(await migrer(d)).toBe("hors-ligne");
     expect(d.appliquerMigrations).not.toHaveBeenCalled();
   });
 
@@ -264,7 +264,53 @@ describe("Migrations avant construction", () => {
     const d = { ...dependances({ VERCEL: "1" }, null), vercel: true };
     await expect(migrer(d)).rejects.toThrow(/variables système de Vercel/);
     const local = { ...dependances({}, null), vercel: false };
-    expect(await migrer(local)).toBe("hors-vercel");
+    expect(await migrer(local)).toBe("hors-ligne");
+  });
+});
+
+describe("Migrations chez un autre hébergeur (--en-ligne)", () => {
+  const AILLEURS = {
+    PULSE_ENV: "production",
+    DATABASE_URL_DIRECT: "postgresql://production-directe",
+    NEON_API_KEY: "cle-de-test",
+    NEON_PROJECT_ID: "projet-de-test",
+  };
+
+  it("production : sauvegarde, puis migrations sur l'adresse directe", async () => {
+    const d = { ...dependances(AILLEURS, "1000"), enLigne: true };
+    expect(await migrer(d)).toBe("applique");
+    expect(d.sauvegarder).toHaveBeenCalledOnce();
+    expect(d.appliquerMigrations).toHaveBeenCalledWith(
+      "postgresql://production-directe",
+    );
+  });
+
+  it("PULSE_ENV absente : arrêt avec consigne, rien n'est lancé", async () => {
+    const { PULSE_ENV: _env, ...reste } = AILLEURS;
+    const d = { ...dependances(reste, "1000"), enLigne: true };
+    await expect(migrer(d)).rejects.toThrow(/PULSE_ENV manque/);
+    expect(d.lireDerniere).not.toHaveBeenCalled();
+  });
+
+  it("PULSE_ENV autre que production : arrêt (pas de prévisualisation ici)", async () => {
+    const d = {
+      ...dependances({ ...AILLEURS, PULSE_ENV: "preview" }, "1000"),
+      enLigne: true,
+    };
+    await expect(migrer(d)).rejects.toThrow(/seule la production existe/);
+  });
+
+  it("adresse directe absente : arrêt, même avec DATABASE_URL_UNPOOLED", async () => {
+    const { DATABASE_URL_DIRECT: _a, ...reste } = AILLEURS;
+    const d = {
+      ...dependances(
+        { ...reste, DATABASE_URL_UNPOOLED: "postgresql://x" },
+        "1000",
+      ),
+      enLigne: true,
+    };
+    await expect(migrer(d)).rejects.toThrow(/DATABASE_URL_DIRECT/);
+    expect(d.appliquerMigrations).not.toHaveBeenCalled();
   });
 });
 

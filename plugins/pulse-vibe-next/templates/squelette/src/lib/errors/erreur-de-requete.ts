@@ -1,5 +1,6 @@
 import "server-only";
 import { logger } from "@src/lib/logger";
+import { identifiantDeRequete } from "@src/lib/requete";
 import type { Instrumentation } from "next";
 
 type Parametres = Parameters<Instrumentation.onRequestError>;
@@ -19,12 +20,11 @@ export function journaliserErreurDeRequete(
     typeof erreur === "object" && erreur !== null && "digest" in erreur
       ? String(erreur.digest)
       : undefined;
-  const idVercel = requete.headers["x-vercel-id"];
   logger.error(
     {
       err: erreur,
       digest,
-      requete: Array.isArray(idVercel) ? idVercel[0] : idVercel,
+      requete: identifiantDeRequete((nom) => requete.headers[nom]),
       methode: requete.method,
       chemin: cheminSansRequete(requete.path),
       route: contexte.routePath,
