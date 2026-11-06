@@ -2012,6 +2012,16 @@ test("décision 2 : /pulse:express devient /pulse:nouveau, sans commande de renv
   assert.doesNotMatch(lire(RACINE, "templates", "revue.md"), /ou express/);
 });
 
+test("/pulse:nouveau : la technologie imposée ou refusée se demande à l'étape Outils, pas dans les contraintes", () => {
+  const nouveau = skillTexte("nouveau");
+  assert.doesNotMatch(nouveau, /technologie imposée/, "le bloc 4 parle du besoin, pas des outils");
+  assert.match(lire(RACINE, "skills", "tech", "references", "choix-techniques.md"), /\*\*Contraintes et exclusions\*\* : une technologie imposée/);
+  // Une question à réponse libre s'écrit dans le dernier message, après l'écriture du travail en cours.
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /se pose en texte, en entier, dans le dernier message du tour, après l'écriture du travail en cours/);
+  // Une réponse à choix ne renvoie pas à un « champ libre » : le seul champ de saisie est « Other ».
+  assert.match(lire(RACINE, "references", "regles-communes.md"), /se suit de cette question en texte : le seul champ de saisie de l'outil est « Other »/);
+});
+
 test("rythme rapide : posé par nouveau ou par -f, tests essentiels sans bout en bout, une fiche complète de l'US à la fin", () => {
   assert.match(lire(RACINE, "templates", "CLAUDE.md"), /- \*\*Rythme\*\* : à choisir\n<!-- pulse_profil:fin -->/);
   // Trois valeurs : « à choisir » (la question est posée), « rapide », « complet » (plus de question sur le rythme).
