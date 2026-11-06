@@ -498,7 +498,7 @@ test("chaque action des recettes et de l'architecture porte un nom (.metadata), 
   }
   assert.deepStrictEqual(sansNom, []);
   const safeAction = texteRecette("connexion").split("// src/lib/safe-action.ts")[1].split("```")[0];
-  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata, ctx })", "x-vercel-id", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
+  for (const attendu of ["defineMetadataSchema()", "handleServerError(erreur, { metadata, ctx })", "identifiantDeRequete(", "export const actionConnectee"]) assert.ok(safeAction.includes(attendu), attendu);
   // Le client public de la recette est celui du squelette, à l'identique : un seul modèle à tenir.
   const squelette = lire(RACINE, "templates", "squelette", "src", "lib", "safe-action.ts");
   for (const t of [safeAction, squelette]) assert.ok(t.includes("export const actionPublique"), "actionPublique présent");

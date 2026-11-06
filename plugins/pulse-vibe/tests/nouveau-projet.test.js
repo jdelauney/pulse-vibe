@@ -88,6 +88,18 @@ test("verifier.js : générique, réussit sans page d'accueil imposée, échoue 
   assert.strictEqual(lancer(VERIFIER, [], d).status, 1, "secret détecté");
 });
 
+test("verifier.js : se lance aussi dans un projet en mode module (package.json \"type\": \"module\")", () => {
+  for (const type of ["module", "commonjs"]) {
+    const d = tmp();
+    fs.writeFileSync(path.join(d, "package.json"), JSON.stringify({ type }));
+    fs.mkdirSync(path.join(d, "scripts"));
+    fs.copyFileSync(VERIFIER, path.join(d, "scripts", "verifier.js"));
+    const r = lancer(path.join(d, "scripts", "verifier.js"), [], d);
+    assert.strictEqual(r.status, 0, `${type} : ${r.stderr}`);
+    assert.doesNotMatch(r.stderr, /Warning|require is not defined/, type);
+  }
+});
+
 test("CLAUDE.md créé contient le bloc profil, à compléter par /pulse:init", () => {
   const parent = tmp();
   const r = lancer(NOUVEAU, ["Profil", "--oui", "--sans-git"], parent);
