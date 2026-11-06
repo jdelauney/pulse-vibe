@@ -74,7 +74,7 @@ Construire **2 ou 3 options réellement différentes**, selon « Construire 2 à
 
 - **Packs de pile** : lancer `pulse-aidd piles`, qui affiche aussi, pour chaque pack, ce qu'il faut vérifier et dire avant le choix : l'appliquer aux étapes 3 et 4. Un pack installé dont la pile couvre les besoins devient une option à part entière, vérifiée comme les autres à l'étape 4 : « Pile Pulse <nom> : code de départ vérifié, recettes prêtes et pièges connus déjà traités ; c'est l'option qui demande le moins d'essais pour obtenir un code juste. » Aucun pack installé et besoin d'une application web avec comptes et données partagées : ajouter une ligne pour dire que le plugin `pulse-next` (pile Next.js prête à l'emploi) existe, installable avec `/plugin install pulse-next@pulseia`.
 
-**Voie directe** : un pack installé couvre les besoins, sans contrainte ni refus que sa pile contredit : construire seulement cette option. Sinon : 2 ou 3 options, le pack parmi elles s'il convient.
+**Voie directe** : un pack installé couvre les besoins, sans technologie imposée ou refusée que sa pile contredit : construire seulement cette option, et dire son coût avant le choix (un budget dépassé se dit, la personne tranche). Sinon : 2 ou 3 options, le pack parmi elles s'il convient.
 
 #### 4. Vérifier les options sur la documentation officielle
 
