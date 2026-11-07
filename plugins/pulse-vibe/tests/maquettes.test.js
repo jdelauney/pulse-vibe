@@ -40,6 +40,7 @@ test("chaque anti-pattern détectable est relevé, avec sa gravité", () => {
     langue: page({ html: "<html>" }),
     police: page({ style: STYLE_PROPRE + "\nh2 { font-family: \"Fraunces\", serif; }" }),
     couleur: page({ style: STYLE_PROPRE + "\n.alerte { color: #d33; }" }),
+    oklch: page({ style: STYLE_PROPRE.replace("--texte: oklch(0.2 0.01 80)", "--texte: #2b2620") }),
     remplissage: page({ corps: CORPS_PROPRE + "\n<p>Lorem ipsum dolor sit amet</p>" }),
     rebond: page({ style: STYLE_PROPRE + "\n.c { transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1); }" }),
     animations: page({ style: STYLE_PROPRE.replace(/^@media \(prefers-reduced-motion.*$/m, "") }),
@@ -51,7 +52,7 @@ test("chaque anti-pattern détectable est relevé, avec sa gravité", () => {
   for (const [id, h] of Object.entries(cas)) assert.deepStrictEqual(ids(h), [id], id);
   const gravite = (id) => CONSTATS.find((c) => c.id === id).gravite;
   for (const id of ["degrade", "verre", "lisere", "focus", "langue"]) assert.strictEqual(gravite(id), "🔴", id);
-  for (const id of ["police", "couleur", "remplissage", "rebond", "animations"]) assert.strictEqual(gravite(id), "🟠", id);
+  for (const id of ["police", "couleur", "oklch", "remplissage", "rebond", "animations"]) assert.strictEqual(gravite(id), "🟠", id);
   for (const id of ["tiret", "emoji", "icone"]) assert.strictEqual(gravite(id), "🟢", id);
 });
 

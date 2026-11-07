@@ -1,7 +1,7 @@
 # Design – {{NOM_DU_PROJET}}
 
 > Produit par `/pulse:ui identite` le {{DATE}} à partir de `docs/prd.md`{{, docs/brief.md}}.
-> Planche retenue : `docs/design/identite/retenue/`.
+> Planche retenue : `docs/design/identite/retenue/` ; ses valeurs : `docs/design/identite/retenue/brandkit.json` (couleurs en OKLCH), la source que rechargent les maquettes et le thème du code.
 > Ce document dit **à quoi ressemble** l'outil et **pourquoi**. Les specs, le plan et le code s'y conforment.
 
 ## 1. Registre
@@ -35,45 +35,7 @@ Ce que la scène implique : {{clair ou sombre, densité, taille des cibles tacti
 2.
 3.
 
-## 6. Couleur
-
-**Stratégie** : {{Sobre avec une touche | Une couleur affirmée | Plusieurs couleurs | La couleur partout}}
-
-**Nuances** (5 par teinte, de la plus claire à la plus foncée ; règle des trois couches dans « Règles d'interface ») :
-
-| Nuance | Valeur |
-|---|---|
-| {{--<teinte>-100}} | {{oklch(…)}} |
-
-**Rôles** (la valeur cite une nuance, par exemple `var(--ocre-700)`) :
-
-| Rôle | Valeur | Contraste sur le fond | Usage |
-|---|---|---|---|
-| Fond | | — | |
-| Surface | | — | |
-| Texte | | ≥ 4,5:1 | |
-| Texte secondaire | | ≥ 4,5:1 | |
-| Accent | | | |
-| Succès | | | |
-| Alerte | | | |
-| Erreur | | | |
-
-## 7. Typographie
-
-| Niveau | Police | Taille | Graisse | Interligne |
-|---|---|---|---|---|
-| Titre principal | | | | |
-| Titre de section | | | | |
-| Texte courant | | ≥ 16 px | | |
-| Petit texte | | | | |
-
-Police de secours : {{police système}} · Longueur de ligne : 65 à 75 caractères.
-
-## 8. Espacement, arrondis, ombres
-
-- **Échelle d'espacement** : {{…}}
-- **Arrondis** : {{un ou deux rayons}}
-- **Ombres / élévation** : {{aucune | légère | …}}
+{{Sections 6 à 8 : la sortie de `pulse-aidd brandkit resume`, collée telle quelle ; elle porte leurs titres « ## 6. Couleur », « ## 7. Typographie » et « ## 8. Espacement, arrondis, ombres », avec les valeurs en OKLCH et les contrastes mesurés du brandkit retenu}}
 
 ## 9. Composants et états
 
@@ -99,7 +61,7 @@ Police de secours : {{police système}} · Longueur de ligne : 65 à 75 caractè
 
 - **Fichier du thème** : {{chemin du fichier où vivent les valeurs (couleurs par rôle, polices, rayons, espacements, ombres), d'après « Organisation des fichiers » de `docs/technical.md` ou le pack de pile ; ou « à créer à la mise en place »}}
 - **Règle** : les composants emploient ces valeurs par leur nom de rôle (fond, texte, accent…), plutôt qu'une valeur écrite en dur. Un changement d'identité se fait dans ce seul fichier.
-- **Correspondance**, en trois couches : nuances (copiées telles quelles) → rôles de la section 6 → nom de la valeur dans le code, ex. Accent → `--primary: var(--ocre-700)` ; puis les valeurs de composant s'il y en a.
+- **Correspondance**, en trois couches : nuances en OKLCH (copiées telles quelles depuis `pulse-aidd brandkit css`) → rôles de la section 6 → nom de la valeur dans le code, ex. Accent → `--primary: var(--ocre-700)` ; puis les valeurs de composant s'il y en a.
 
 ## 13. Sources
 

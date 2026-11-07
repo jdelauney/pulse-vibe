@@ -154,8 +154,9 @@ test("directions : 5 familles, 15 styles, conseil de choix", () => {
 test("trois couches : règle dans regles-ui.md, nuances dans le modèle design.md", () => {
   const r = lire("regles-ui.md");
   assert.ok(r.includes("trois couches") && r.includes("--<teinte>-100"));
+  // Les nuances et les rôles de docs/design.md viennent du brandkit (pulse-aidd brandkit resume, testé dans brandkit.test.js).
   const d = lireP("skills", "ui", "assets", "design.md");
-  assert.ok(d.includes("| Nuance |") && d.includes("var(--"));
+  assert.ok(d.includes("pulse-aidd brandkit resume") && d.includes("brandkit.json"));
 });
 
 test("génération : designer, ui-critic et skill ui emploient directions, extraction et contrôle", () => {

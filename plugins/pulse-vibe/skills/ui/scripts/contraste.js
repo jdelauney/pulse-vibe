@@ -160,4 +160,4 @@ function principal(argv) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { lireCouleur, poser, rapport, analyser, viser, tronquer };
+module.exports = { lireCouleur, poser, rapport, analyser, viser, tronquer, oklchVersRgb, horsGamme, lineaire };
