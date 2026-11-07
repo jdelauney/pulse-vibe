@@ -53,6 +53,7 @@
 #   pulse-aidd textes verifier <fichier|-> [--json]   contrôle les tics d'écriture IA d'un texte (/pulse:rediger)
 #   pulse-aidd contraste <couleur> <fond> [--viser <rapport>] [--json]   rapport de contraste WCAG exact (hex, rgb, oklch)
 #   pulse-aidd identite extraire [dossier] [--json]   relève couleurs, polices et rayons déjà écrits dans le projet (/pulse:ui)
+#   pulse-aidd brandkit planche|verifier|css|resume [fichier|dossier]   le brandkit d'une identité (brandkit.json, couleurs en OKLCH) : vérifie, écrit la planche d'après le modèle commun, donne le CSS des maquettes ou les sections 6 à 8 de docs/design.md ; brandkit oklch <couleur> convertit #hex ou rgb() (/pulse:ui)
 #   pulse-aidd maquettes verifier <fichier|dossier>   contrôle les anti-patterns détectables dans les pages HTML (/pulse:ui)
 #   pulse-aidd search-console <action>  Search Console en lecture seule : connecter, deconnecter, proprietes, lire, suivre, inspecter <adresse>
 #
@@ -446,6 +447,8 @@ case "$1" in
     shift; exec node "$RACINE/skills/ui/scripts/contraste.js" "$@" ;;
   identite)
     shift; exec node "$RACINE/skills/ui/scripts/identite.js" "$@" ;;
+  brandkit)
+    shift; exec node "$RACINE/skills/ui/scripts/brandkit.js" "$@" ;;
   maquettes)
     shift; exec node "$RACINE/skills/ui/scripts/maquettes.js" "$@" ;;
   seo)

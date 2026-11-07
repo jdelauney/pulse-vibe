@@ -22,6 +22,7 @@ const CONSTATS = [
   { id: "langue", gravite: "🔴", nom: "Langue de la page non déclarée", source: "regles-ui.md", cle: "Langue de la page" },
   { id: "police", gravite: "🟠", nom: "Police réflexe en titre", source: "anti-patterns.md", cle: "Police réflexe en titre" },
   { id: "couleur", gravite: "🟠", nom: "Couleur hors palette (valeur écrite hors d'une variable)", source: "regles-ui.md", cle: "Toute couleur vient de la palette" },
+  { id: "oklch", gravite: "🟠", nom: "Couleur de la palette écrite hors OKLCH (hexadécimal, rgb, hsl)", source: "regles-ui.md", cle: "s'écrit en OKLCH" },
   { id: "remplissage", gravite: "🟠", nom: "Texte de remplissage générique au lieu de contenus réalistes", source: "anti-patterns.md", cle: "Texte de remplissage générique" },
   { id: "rebond", gravite: "🟠", nom: "Mouvement qui rebondit (courbe qui dépasse sa cible)", source: "regles-ui.md", cle: "s'arrête net" },
   { id: "animations", gravite: "🟠", nom: "Animations sans la préférence « réduire les animations »", source: "regles-ui.md", cle: "Réduire les animations" },
@@ -110,7 +111,9 @@ function verifier(html) {
       const declaration = s.slice(borne + 1, m.index);
       const suite = s.slice(m.index).search(/[;{}]/);
       const dansSelecteur = suite >= 0 && s[m.index + suite] === "{";
-      if ((declaration.includes(":") || seg.enLigne) && !dansSelecteur && !declaration.trim().startsWith("--")) relever("couleur", a(m.index));
+      if (!(declaration.includes(":") || seg.enLigne) || dansSelecteur) continue;
+      if (!declaration.trim().startsWith("--")) relever("couleur", a(m.index));
+      else if (!/^oklch\(/i.test(m[0])) relever("oklch", a(m.index));
     }
     for (const m of s.matchAll(VARIABLE_TITRE)) if (contientReflexe(m[2])) relever("police", a(m.index));
     if (!seg.enLigne)
