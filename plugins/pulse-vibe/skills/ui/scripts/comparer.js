@@ -4,8 +4,9 @@
 // Lit les sous-dossiers directs de <dossier> qui contiennent planche.html, desktop.html ou
 // mobile.html (retenue/ et alternatives/ ignorés), prend la thèse de chaque note.md
 // (ligne « **Thèse** : … », sinon le premier titre, sinon le nom du dossier) et écrit
-// <dossier>/comparer.html : une colonne par variante, avec un cadre par fichier et un lien
-// pour l'ouvrir en grand. Page autonome, chemins relatifs : elle s'ouvre par double-clic.
+// <dossier>/comparer.html : une ligne par proposition, avec l'aperçu téléphone puis ordinateur
+// (la planche d'identité, page adaptable, est montrée aux deux largeurs) et un lien pour
+// l'ouvrir en grand. Page autonome, chemins relatifs : elle s'ouvre par double-clic.
 //
 // Rangement, sans commande de déplacement à autoriser, de docs/design/identite ou docs/design/maquettes/<spec>
 // seulement (indiqué depuis la racine du projet, liens refusés ; comparer.html retiré seulement s'il vient de ce script) :
@@ -20,10 +21,15 @@ const path = require("path");
 
 const IGNORES = new Set(["retenue", "alternatives"]);
 const CADRES = {
-  planche: { fichier: "planche.html", libelle: "Planche", largeur: 1280, hauteur: 900, echelle: 0.5 },
-  desktop: { fichier: "desktop.html", libelle: "Ordinateur", largeur: 1280, hauteur: 800, echelle: 0.4 },
   mobile: { fichier: "mobile.html", libelle: "Téléphone", largeur: 390, hauteur: 844, echelle: 0.6 },
+  desktop: { fichier: "desktop.html", libelle: "Ordinateur", largeur: 1280, hauteur: 800, echelle: 0.5 },
+  planche: { fichier: "planche.html" },
 };
+// Une planche d'identité se montre aux deux largeurs, téléphone d'abord.
+const VUES_PLANCHE = [
+  { ...CADRES.mobile, fichier: "planche.html", libelle: "Planche, téléphone" },
+  { ...CADRES.desktop, fichier: "planche.html", libelle: "Planche, ordinateur" },
+];
 
 function echapper(texte) {
   return String(texte)
@@ -66,8 +72,8 @@ function lireVariantes(dossier) {
     .sort((a, b) => a.nom.localeCompare(b.nom, "fr", { numeric: true }));
 }
 
-function cadre(variante, type) {
-  const c = CADRES[type];
+function cadre(variante, type, vue = CADRES[type]) {
+  const c = vue;
   if (!variante[type]) return `<div class="absent">Pas de version ${type}</div>`;
   const lien = `${encodeURIComponent(variante.nom)}/${c.fichier}`;
   const largeur = Math.round(c.largeur * c.echelle);
@@ -85,8 +91,8 @@ function cadre(variante, type) {
 function construirePage(titre, variantes) {
   const colonnes = variantes
     .map((v) => {
-      const cadres = v.planche ? cadre(v, "planche") : `${cadre(v, "desktop")}\n${cadre(v, "mobile")}`;
-      return `<section>\n<h2>${echapper(v.nom)}</h2>\n<p class="these">${echapper(v.these)}</p>\n${cadres}\n</section>`;
+      const cadres = v.planche ? VUES_PLANCHE.map((vue) => cadre(v, "planche", vue)) : [cadre(v, "mobile"), cadre(v, "desktop")];
+      return `<section>\n<h2>${echapper(v.nom)}</h2>\n<p class="these">${echapper(v.these)}</p>\n<div class="vues">\n${cadres.join("\n")}\n</div>\n</section>`;
     })
     .join("\n");
   return `<!doctype html>
@@ -98,21 +104,22 @@ function construirePage(titre, variantes) {
 <style>
   body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; background: #f4f4f2; color: #1d1d1b; }
   header p { max-width: 70ch; }
-  main { display: flex; gap: 24px; overflow-x: auto; align-items: flex-start; }
-  section { flex: 0 0 auto; background: #fff; border-radius: 8px; padding: 16px; }
+  main { display: grid; gap: 24px; }
+  section { background: #fff; border-radius: 8px; padding: 16px; overflow-x: auto; }
+  .vues { display: flex; gap: 24px; align-items: flex-start; }
   h2 { margin: 0 0 4px; font-size: 1.1rem; }
-  .these { margin: 0 0 12px; max-width: 52ch; }
-  figure { margin: 0 0 16px; }
+  .these { margin: 0 0 12px; max-width: 90ch; }
+  figure { margin: 0; flex: 0 0 auto; }
   figcaption { font-size: .85rem; margin-bottom: 6px; }
   .ecran { overflow: hidden; border: 1px solid #c8c8c4; border-radius: 6px; }
   iframe { border: 0; transform-origin: 0 0; background: #fff; }
-  .absent { padding: 24px; border: 1px dashed #c8c8c4; border-radius: 6px; font-size: .9rem; margin-bottom: 16px; }
+  .absent { padding: 24px; border: 1px dashed #c8c8c4; border-radius: 6px; font-size: .9rem; }
 </style>
 </head>
 <body>
 <header>
 <h1>Comparer les propositions – ${echapper(titre)}</h1>
-<p>Chaque colonne est une proposition. Ouvrez-les en grand pour les essayer, puis dites dans Claude Code laquelle vous préférez (ou ce que vous aimeriez mélanger).</p>
+<p>Chaque bloc est une proposition, vue sur téléphone puis sur ordinateur. Faites défiler chaque aperçu, ouvrez-les en grand pour les essayer, puis dites dans Claude Code laquelle vous préférez (ou ce que vous aimeriez mélanger).</p>
 </header>
 <main>
 ${colonnes}

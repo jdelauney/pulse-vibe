@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITRE}}</title>
+{{POLICES}}
+<style>
+:root {
+{{VARIABLES}}
+}
+{{STYLES_BASE}}
+{{STYLES_TYPO}}
+
+/* Planche d'identité Pulse : modèle commun à toutes les directions, rempli par « pulse-aidd brandkit planche ».
+   Téléphone d'abord ; à partir de 48rem, la mise en page d'ordinateur. */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.cadre { max-width: 72rem; margin: 0 auto; padding-inline: var(--e-4); }
+code { font-family: var(--police-mono); font-size: 0.875em; overflow-wrap: anywhere; }
+
+/* Barre de navigation */
+.barre { background: var(--surface); border-bottom: 1px solid var(--filet); }
+.barre .cadre { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--e-5); }
+.marque { font: var(--typo-titre-4-graisse) var(--typo-titre-4-taille)/1.2 var(--typo-titre-4-police); color: var(--texte); text-decoration: none; padding-block: var(--e-3); }
+.barre ul { display: flex; gap: var(--e-1); list-style: none; margin: 0 calc(var(--e-4) * -1); padding: 0 var(--e-4); overflow-x: auto; scrollbar-width: none; width: calc(100% + var(--e-4) * 2); }
+.barre a { display: inline-flex; align-items: center; min-height: var(--cible); padding-inline: var(--e-3); color: var(--texte-secondaire); text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: background-color 130ms ease-out, color 130ms ease-out; }
+.barre a:hover { color: var(--texte); background: var(--accent-doux); }
+.barre a[aria-current="page"] { color: var(--texte); font-weight: var(--bouton-graisse); border-bottom-color: var(--accent); }
+
+/* En-tête et sections */
+.intro { padding-block: var(--e-7) var(--e-6); }
+.surtitre { color: var(--texte-secondaire); margin: 0 0 var(--e-2); }
+.these { margin: var(--e-4) 0 0; max-width: 65ch; font-weight: var(--bouton-graisse); }
+.intro .texte-intro { margin: var(--e-3) 0 0; max-width: 65ch; }
+.details { margin: var(--e-3) 0 0; color: var(--texte-secondaire); }
+section.bloc { padding-block: var(--e-7); border-top: 1px solid var(--filet); }
+section.bloc h2 { margin-bottom: var(--e-2); }
+.chapeau { color: var(--texte-secondaire); max-width: 65ch; margin: 0 0 var(--e-5); }
+.groupe { margin-top: var(--e-6); }
+.groupe:first-of-type { margin-top: 0; }
+.groupe > h3, .boutons-type > h3 { margin-bottom: var(--e-3); }
+
+/* Nuances par teinte */
+.teintes { display: grid; gap: var(--e-6); }
+.teinte-nom { font: var(--typo-titre-4-graisse) var(--typo-titre-4-taille)/var(--typo-titre-4-interligne) var(--typo-titre-4-police); margin-bottom: var(--e-3); }
+.teinte-nom span { display: block; color: var(--texte-secondaire); font: var(--typo-petit-graisse) var(--typo-petit-taille)/var(--typo-petit-interligne) var(--typo-petit-police); }
+.nuances { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-2); }
+.nuance { display: grid; grid-template-columns: 3.5rem 1fr; gap: var(--e-3); align-items: center; min-width: 0; }
+.pastille { display: block; height: 3.5rem; border-radius: var(--rayon-controle); border: 1px solid var(--filet); }
+.nuance-info { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--e-3); min-width: 0; }
+.nuance-info b { min-width: 2.25rem; }
+.nuance-info code, .nuance-info small { color: var(--texte-secondaire); }
+
+/* Palette par rôle et contrastes */
+.roles { width: 100%; border-collapse: collapse; }
+.roles thead { display: none; }
+.roles tr { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--e-1) var(--e-3); padding-block: var(--e-4); border-bottom: 1px solid var(--filet); }
+.roles th, .roles td { display: block; padding: 0; text-align: left; font-weight: inherit; }
+.roles th { grid-column: 1 / -1; }
+.roles th code { font-weight: 700; color: var(--texte); }
+.roles th small { display: block; color: var(--texte-secondaire); }
+.roles .col-echantillon { grid-row: span 4; }
+.roles td[data-libelle]::before { content: attr(data-libelle) " : "; color: var(--texte-secondaire); }
+.echantillon { display: inline-grid; place-items: center; width: 4.5rem; height: 2.75rem; border-radius: var(--rayon-controle); border: 1px solid var(--filet); font-weight: 700; }
+.ok { color: var(--succes); }
+.ko { color: var(--erreur); font-weight: 700; }
+.info { color: var(--texte-secondaire); }
+
+/* Typographie et échelle */
+.typo-ligne { display: grid; gap: var(--e-2); padding-block: var(--e-4); border-bottom: 1px solid var(--filet); }
+.typo-meta { margin: 0; display: grid; color: var(--texte-secondaire); }
+.typo-meta b { color: var(--texte); }
+.typo-exemple { margin: 0; max-width: 65ch; overflow-wrap: break-word; }
+
+/* Espacements et rayons */
+.espaces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--e-4); }
+.espaces li { display: grid; justify-items: start; gap: var(--e-1); }
+.carre { display: block; background: var(--accent-doux); border: 1px solid var(--accent); }
+.rayons, .ombres { list-style: none; margin: 0 0 var(--e-4); padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--e-4); }
+.rayons li { display: grid; gap: var(--e-1); }
+.forme { display: block; height: 4.5rem; background: var(--surface); border: 2px solid var(--contour); }
+.rayons small { color: var(--texte-secondaire); }
+.ombre-boite { background: var(--surface); padding: var(--e-5) var(--e-4); border-radius: var(--rayon-carte); }
+
+/* Boutons et leurs états */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2); min-height: var(--cible); min-width: var(--cible); padding: 0 var(--e-5); border: var(--contour-epaisseur) solid transparent; border-radius: var(--rayon-bouton); font: var(--bouton-graisse) var(--typo-texte-taille)/1.2 var(--police-texte); cursor: pointer; text-decoration: none; transition: background-color 130ms ease-out, border-color 130ms ease-out, color 130ms ease-out; }
+.btn svg { width: 1.25rem; height: 1.25rem; flex: none; }
+.btn-principal { background: var(--accent); color: var(--texte-sur-accent); }
+.btn-principal:hover, .btn-principal.est-survol { background: var(--accent-survol); }
+.btn-principal:active, .btn-principal.est-actif { background: var(--accent-actif); }
+.btn-secondaire { background: var(--surface); color: var(--texte); border-color: var(--contour); }
+.btn-secondaire:hover, .btn-secondaire.est-survol { background: var(--fond); border-color: var(--texte); }
+.btn-secondaire:active, .btn-secondaire.est-actif { background: var(--accent-doux); border-color: var(--texte); }
+.btn-texte { background: transparent; color: var(--lien); text-decoration: underline; text-underline-offset: 0.2em; padding-inline: var(--e-3); }
+.btn-texte:hover, .btn-texte.est-survol { background: var(--accent-doux); }
+.btn-texte:active, .btn-texte.est-actif { background: var(--accent-doux); color: var(--texte); }
+.btn-destructif { background: var(--surface); color: var(--erreur); border-color: var(--erreur); }
+.btn-destructif:hover, .btn-destructif.est-survol { background: var(--erreur-fond); }
+.btn-destructif:active, .btn-destructif.est-actif { background: var(--erreur-fond); box-shadow: inset 0 0 0 1px var(--erreur); }
+.btn.est-focus { outline: 2px solid var(--focus); outline-offset: 2px; }
+.btn:disabled { background: var(--desactive-fond); color: var(--desactive-texte); border-color: var(--desactive-fond); box-shadow: none; text-decoration: none; cursor: not-allowed; }
+.btn[aria-busy="true"] { cursor: progress; }
+.rond { width: 1.125rem; height: 1.125rem; border-radius: 50%; border: 3px solid currentColor; border-top-color: transparent; animation: tourne 800ms linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+.boutons-type + .boutons-type { margin-top: var(--e-6); }
+.etats { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-4) var(--e-3); }
+.etats li { display: grid; gap: var(--e-1); justify-items: start; }
+.etat-nom { margin: 0; color: var(--texte-secondaire); font: var(--typo-petit-graisse) var(--typo-petit-taille)/var(--typo-petit-interligne) var(--typo-petit-police); }
+
+/* Champs et leurs états */
+.champs { display: grid; gap: var(--e-5); }
+.champ-etat { display: grid; gap: var(--e-1); align-content: start; }
+.champ { display: grid; gap: var(--e-1); }
+.champ label { font-weight: var(--bouton-graisse); }
+.champ .aide { margin: 0; color: var(--texte-secondaire); }
+.champ input { width: 100%; min-height: var(--cible); padding: 0 var(--e-3); font: var(--typo-texte-graisse) var(--typo-texte-taille)/1.2 var(--police-texte); color: var(--texte); background: var(--surface); border: var(--contour-epaisseur) solid var(--contour); border-radius: var(--rayon-controle); transition: border-color 100ms ease-out; }
+.champ input::placeholder { color: var(--texte-secondaire); opacity: 1; }
+.champ input:hover, .champ input.est-survol { border-color: var(--texte); }
+.champ input:focus-visible, .champ input.est-focus { outline: 2px solid var(--focus); outline-offset: 2px; border-color: var(--focus); }
+.champ input:disabled { background: var(--desactive-fond); color: var(--desactive-texte); border-color: var(--desactive-fond); cursor: not-allowed; }
+.champ input[aria-invalid="true"] { border-color: var(--erreur); box-shadow: inset 0 0 0 1px var(--erreur); }
+.champ input.est-valide { border-color: var(--succes); box-shadow: inset 0 0 0 1px var(--succes); }
+.champ input.court { max-width: 10rem; }
+.retour { display: flex; gap: var(--e-2); align-items: flex-start; margin: 0; font-weight: var(--bouton-graisse); }
+.retour svg { width: 1.25rem; height: 1.25rem; flex: none; margin-top: 0.15em; }
+.retour-erreur { color: var(--erreur); }
+.retour-succes { color: var(--succes); }
+
+/* Messages et état vide */
+.messages { display: grid; gap: var(--e-4); max-width: 54rem; }
+.message { display: grid; grid-template-columns: 1.5rem 1fr; gap: var(--e-3); padding: var(--e-4); border: 1px solid; border-radius: var(--rayon-carte); color: var(--texte); }
+.message .icone { width: 1.5rem; height: 1.5rem; }
+.message p { margin: 0; }
+.message .message-titre { font-weight: 700; margin-bottom: var(--e-1); }
+.message-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); }
+.message-erreur { background: var(--erreur-fond); border-color: var(--erreur); }
+.message-erreur .icone, .message-erreur .message-titre { color: var(--erreur); }
+.message-alerte { background: var(--alerte-fond); border-color: var(--alerte); }
+.message-alerte .icone, .message-alerte .message-titre { color: var(--alerte); }
+.message-succes { background: var(--succes-fond); border-color: var(--succes); }
+.message-succes .icone, .message-succes .message-titre { color: var(--succes); }
+.vide { display: grid; justify-items: start; gap: var(--e-3); max-width: 54rem; padding: var(--e-7) var(--e-5); background: var(--surface); border: 1px dashed var(--contour); border-radius: var(--rayon-carte); }
+.vide .icone-vide { width: 2.5rem; height: 2.5rem; color: var(--texte-secondaire); }
+.vide p { margin: 0; max-width: 52ch; }
+.vide .vide-titre { font: var(--typo-titre-3-graisse) var(--typo-titre-3-taille)/var(--typo-titre-3-interligne) var(--typo-titre-3-police); letter-spacing: var(--typo-titre-3-approche); }
+
+.pied { padding-block: var(--e-6); border-top: 1px solid var(--filet); color: var(--texte-secondaire); }
+.pied p { margin: 0; }
+
+@media (min-width: 30rem) {
+  .etats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 48rem) {
+  .cadre { padding-inline: var(--e-6); }
+  .barre .cadre { flex-wrap: nowrap; }
+  .barre ul { margin: 0; padding: 0; width: auto; }
+  .nuances { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); }
+  .nuance { grid-template-columns: 1fr; align-items: start; gap: var(--e-2); }
+  .pastille { height: 4.5rem; }
+  .nuance-info { flex-direction: column; gap: 0; }
+  .roles thead { display: table-header-group; }
+  .roles tr { display: table-row; }
+  .roles th, .roles td { display: table-cell; padding: var(--e-3) var(--e-3) var(--e-3) 0; border-bottom: 1px solid var(--filet); vertical-align: middle; }
+  .roles thead th { color: var(--texte-secondaire); font-weight: 600; white-space: nowrap; }
+  .roles td[data-libelle]::before { content: none; }
+  .typo-ligne { grid-template-columns: 15rem 1fr; gap: var(--e-6); align-items: baseline; }
+  .champs { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); }
+}
+@media (min-width: 64rem) {
+  .etats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .etats .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+{{ICONES}}
+<header class="barre">
+  <div class="cadre">
+    <a class="marque" href="#haut">{{MARQUE}}</a>
+    <nav aria-label="Sections de la planche">
+      <ul>
+        <li><a href="#nuances" aria-current="page">Nuances</a></li>
+        <li><a href="#roles">Rôles</a></li>
+        <li><a href="#typo">Typographie</a></li>
+        <li><a href="#espaces">Espacements</a></li>
+        <li><a href="#boutons">Boutons</a></li>
+        <li><a href="#champs">Champs</a></li>
+        <li><a href="#messages">Messages</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="haut">
+<div class="cadre intro">
+  <p class="surtitre">{{SURTITRE}}</p>
+  <h1>{{NOM}}</h1>
+  <p class="these">{{THESE}}</p>
+  <p class="texte-intro">{{INTRO}}</p>
+  <p class="details">{{DETAILS}}</p>
+</div>
+
+<section class="bloc" id="nuances" aria-labelledby="t-nuances">
+  <div class="cadre">
+    <h2 id="t-nuances">Nuances par teinte</h2>
+    <p class="chapeau">Cinq nuances par teinte, de la plus claire (100) à la plus foncée (900) : la teinte reste fixe, la luminosité change. Chaque valeur est écrite en OKLCH (luminosité, intensité, teinte) ; l'hexadécimal est donné pour information.</p>
+    <div class="teintes">
+{{NUANCES}}
+    </div>
+  </div>
+</section>
+
+<section class="bloc" id="roles" aria-labelledby="t-roles">
+  <div class="cadre">
+    <h2 id="t-roles">Palette par rôle et contrastes</h2>
+    <p class="chapeau">Chaque rôle cite une nuance ; les écrans emploient seulement les rôles. Contrastes mesurés par Pulse : 4,5:1 au moins pour le texte, 3:1 pour les contours de champs et le focus.</p>
+{{ROLES}}
+  </div>
+</section>
+
+<section class="bloc" id="typo" aria-labelledby="t-typo">
+  <div class="cadre">
+    <h2 id="t-typo">Typographie et échelle</h2>
+    <p class="chapeau">{{CHAPEAU_TYPO}}</p>
+{{TYPO}}
+  </div>
+</section>
+
+<section class="bloc" id="espaces" aria-labelledby="t-espaces">
+  <div class="cadre">
+    <h2 id="t-espaces">Espacements et rayons</h2>
+    <p class="chapeau">Les marges et les écarts prennent seulement ces valeurs ; les arrondis aussi.</p>
+{{ESPACES}}
+  </div>
+</section>
+
+<section class="bloc" id="boutons" aria-labelledby="t-boutons">
+  <div class="cadre">
+    <h2 id="t-boutons">Boutons et leurs états</h2>
+    <p class="chapeau">Un seul bouton principal par écran. Les états sont figés ici pour être comparés ; au clavier et à la souris, les vrais états fonctionnent aussi.</p>
+{{BOUTONS}}
+  </div>
+</section>
+
+<section class="bloc" id="champs" aria-labelledby="t-champs">
+  <div class="cadre">
+    <h2 id="t-champs">Champs et leurs états</h2>
+    <p class="chapeau">Une étiquette toujours visible, une aide reliée au champ, un message qui dit comment corriger. La largeur suit la saisie attendue.</p>
+    <div class="champs">
+{{CHAMPS}}
+    </div>
+  </div>
+</section>
+
+<section class="bloc" id="messages" aria-labelledby="t-messages">
+  <div class="cadre">
+    <h2 id="t-messages">Messages et état vide</h2>
+    <p class="chapeau">Un message dit ce qui s'est passé et ce que l'on peut faire. La couleur est toujours doublée d'une icône et d'un titre.</p>
+{{MESSAGES}}
+  </div>
+</section>
+</main>
+
+<footer class="pied">
+  <div class="cadre">
+    <p>Planche générée par Pulse depuis brandkit.json. Les personnes et les contenus cités sont fictifs.</p>
+  </div>
+</footer>
+</body>
+</html>
