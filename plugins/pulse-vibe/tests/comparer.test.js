@@ -84,15 +84,28 @@ test("une thèse contenant du HTML est échappée", () => {
   assert.ok(p.includes("&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; co"));
 });
 
-test("planches d'identité : un seul cadre par direction", () => {
+test("planches d'identité : chaque direction vue sur téléphone puis sur ordinateur", () => {
   const d = dossier({
     "d1-sobre": { "planche.html": html, "note.md": "**Thèse** : Sobre\n" },
     "d2-vive": { "planche.html": html, "note.md": "**Thèse** : Vive\n" },
   });
   assert.strictEqual(lancer(d).status, 0);
   const p = page(d);
-  assert.ok(p.includes('href="d1-sobre/planche.html"') && p.includes('href="d2-vive/planche.html"'));
+  for (const v of ["d1-sobre", "d2-vive"]) {
+    const bloc = p.slice(p.indexOf(`<h2>${v}</h2>`)).split("</section>")[0];
+    const telephone = bloc.indexOf("width:390px;height:844px");
+    const ordinateur = bloc.indexOf("width:1280px;height:800px");
+    assert.ok(telephone > 0 && ordinateur > telephone, `${v} : téléphone puis ordinateur`);
+    assert.strictEqual(bloc.split(`href="${v}/planche.html"`).length - 1, 2, `${v} : deux aperçus de la planche`);
+  }
   assert.doesNotMatch(p, /Pas de version (mobile|desktop)/);
+});
+
+test("maquettes : le téléphone avant l'ordinateur (téléphone d'abord)", () => {
+  const d = dossier({ "v1-liste": variante("Liste") });
+  lancer(d);
+  const p = page(d);
+  assert.ok(p.indexOf("v1-liste/mobile.html") < p.indexOf("v1-liste/desktop.html"));
 });
 
 test("noms avec espaces et accents : liens encodés", () => {
