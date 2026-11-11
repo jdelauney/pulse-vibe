@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(wsl.exe -d Ubuntu -- bash -lc 'ls -la ~/.docker ~/.docker/contexts 2>&1 | head -12')"
-    ]
-  }
-}
