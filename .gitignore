@@ -4,3 +4,5 @@ docs/superpowers/
 
 # Résultats des évaluations (claude plugin eval) : gardés en local
 outils/evals/resultats/
+/.claude/*.json
+/.claude/settings.json
