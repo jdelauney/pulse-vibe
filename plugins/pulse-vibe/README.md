@@ -180,7 +180,7 @@ references/                       partagées : regles-communes.md (le noyau), re
                                   secrets/ (saisie hors conversation), qualite/ (références de qualité du code),
                                   tests/ (stratégie de tests, test manuel, Gherkin, TDD),
                                   skills/ (regles-skills.md : les règles K1 à K14 des skills Claude Code, tirées du refactoring d'optimisation)
-templates/                        modèles partagés : CLAUDE.md du projet (Résumé du projet, Stack technique, Architecture, Commandes, Contraintes), documents, .gitignore, .env.example, CI
+templates/                        modèles partagés : CLAUDE.md du projet (Résumé du projet, Stack technique, Architecture, Commandes, Contraintes), AGENTS.md qui y renvoie hors de Claude Code (paquet pulseia), documents, .gitignore, .env.example, CI
 tests/                            tests (depuis la racine du dépôt : node --test plugins/*/tests/*.test.js)
 ```
 

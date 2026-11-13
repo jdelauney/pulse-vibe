@@ -116,3 +116,14 @@ test("prochaines étapes : les commandes d'installation exactes du catalogue pul
   assert.match(r.stdout, /claude plugin install pulse@pulseia\r?\n/);
   assert.doesNotMatch(r.stdout, /<compte>|<depot>/);
 });
+
+test("hors de Claude Code (PULSE_OUTIL posé par le relais pulseia) : AGENTS.md renvoie à CLAUDE.md ; dans Claude Code, pas d'AGENTS.md", () => {
+  for (const [outil, attendu] of [["codex", true], ["", false], ["claude", false]]) {
+    const parent = tmp();
+    const r = spawnSync("node", [NOUVEAU, "Essai", "--oui", "--sans-git"], { cwd: parent, encoding: "utf8", env: { ...process.env, PULSE_OUTIL: outil } });
+    assert.strictEqual(r.status, 0, r.stderr);
+    const d = path.join(parent, "essai");
+    assert.strictEqual(existe(d, "AGENTS.md"), attendu, `PULSE_OUTIL=${outil}`);
+    if (attendu) assert.match(lire(d, "AGENTS.md"), /\[CLAUDE\.md\]\(CLAUDE\.md\)/);
+  }
+});

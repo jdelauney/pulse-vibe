@@ -23,4 +23,4 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Tests
         shell: bash
-        run: node --test plugins/*/tests/*.test.js
+        run: node --test plugins/*/tests/*.test.js cli/tests/*.test.js

@@ -1,12 +1,12 @@
 {
   "name": "pulse-skills",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Créer, auditer et optimiser des skills Claude Code selon les règles de la méthode Pulse. Installe aussi pulse. En français.",
   "author": {
     "name": "PulseIA"
   },
   "keywords": ["pulse", "skills", "audit", "optimisation", "francais"],
   "dependencies": [
-    { "name": "pulse", "version": "^0.58" }
+    { "name": "pulse", "version": "^0.59" }
   ]
 }
