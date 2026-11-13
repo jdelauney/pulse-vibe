@@ -45,16 +45,18 @@ export const MESSAGES_FACTURE: Record<ErreurFacture, string> = {
 };
 ```
 
-Le formulaire et l'action valident avec **le même** schéma, qui réutilise les règles du métier. Le montant reste une saisie en euros ; le use-case le convertit en centimes.
+Le formulaire et l'action valident avec **le même** schéma, qui réutilise la classe de règles du métier (`ReglesMontantFacture`). Le montant reste une saisie en euros ; le use-case le convertit en centimes.
 
 <!-- fichier: src/features/factures/schemas/facture.schema.ts -->
 ```ts
 // src/features/factures/schemas/facture.schema.ts
 import {
   FORMAT_MONTANT,
-  montantEnCentimes,
+  ReglesMontantFacture,
 } from "@src/core/factures/facture.rules";
 import { z } from "zod";
+
+const regles = new ReglesMontantFacture();
 
 export const creerFactureSchema = z.object({
   client: z
@@ -67,7 +69,8 @@ export const creerFactureSchema = z.object({
     .trim()
     .regex(FORMAT_MONTANT, "Écrivez un montant en euros, par exemple 120,50.")
     .refine(
-      (valeur) => !FORMAT_MONTANT.test(valeur) || montantEnCentimes(valeur).ok,
+      (valeur) =>
+        !FORMAT_MONTANT.test(valeur) || regles.montantEnCentimes(valeur).ok,
       "Le montant doit être supérieur à 0 €.",
     ),
 });

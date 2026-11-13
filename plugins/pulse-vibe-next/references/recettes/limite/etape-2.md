@@ -1,6 +1,6 @@
 ### 2. Les fonctions pures et le limiteur en mémoire
 
-Techniques et sans service : elles vivent dans `src/lib/helpers/limite/`. Le limiteur en mémoire sert aux tests et au développement local.
+Les deux fonctions pures (lire l'adresse, écrire le message) restent des fonctions : sans état ni règle métier, elles vivent dans `src/lib/helpers/limite/`. Le limiteur en mémoire est une classe qui garde ses compteurs ; elle sert aux tests et au développement local.
 
 <!-- fichier: src/lib/helpers/limite/ip-et-message.ts -->
 ```ts
@@ -24,31 +24,46 @@ export function messageLimite(reset: number, maintenant: number): string {
 // src/lib/helpers/limite/limiteur-memoire.ts
 // Limiteur en mémoire, pour les tests et le développement local. Sur Vercel, chaque instance
 // garde ses propres compteurs : en ligne, utilisez la base (par défaut) ou Redis.
-import type { Limiteur } from "@src/core/shared/limiteur.port";
+import type {
+  Limiteur,
+  RegleLimite,
+  ResultatLimite,
+} from "@src/core/shared/limiteur.port";
 
 const TAILLE_AVANT_MENAGE = 10_000;
 
-export function limiteurMemoire(): Limiteur {
-  const compteurs = new Map<string, { compte: number; debut: number }>();
-  return {
-    async verifier(cle, { nombre, fenetreMs }, maintenant) {
-      if (compteurs.size > TAILLE_AVANT_MENAGE) {
-        for (const [c, v] of compteurs) {
-          if (v.debut <= maintenant - fenetreMs) compteurs.delete(c);
-        }
-      }
-      const actuel = compteurs.get(cle);
-      const suivant =
-        !actuel || actuel.debut <= maintenant - fenetreMs
-          ? { compte: 1, debut: maintenant }
-          : { compte: actuel.compte + 1, debut: actuel.debut };
-      compteurs.set(cle, suivant);
-      return {
-        accepte: suivant.compte <= nombre,
-        reset: suivant.debut + fenetreMs,
-      };
-    },
-  };
+/** Limiteur qui compte dans la mémoire de l'instance (patron Strategy : une façon de compter parmi trois). */
+export class LimiteurMemoire implements Limiteur {
+  private readonly compteurs = new Map<
+    string,
+    { compte: number; debut: number }
+  >();
+
+  async verifier(
+    cle: string,
+    { nombre, fenetreMs }: RegleLimite,
+    maintenant: number,
+  ): Promise<ResultatLimite> {
+    if (this.compteurs.size > TAILLE_AVANT_MENAGE) {
+      this.effacerEcoules(maintenant - fenetreMs);
+    }
+    const actuel = this.compteurs.get(cle);
+    const suivant =
+      !actuel || actuel.debut <= maintenant - fenetreMs
+        ? { compte: 1, debut: maintenant }
+        : { compte: actuel.compte + 1, debut: actuel.debut };
+    this.compteurs.set(cle, suivant);
+    return {
+      accepte: suivant.compte <= nombre,
+      reset: suivant.debut + fenetreMs,
+    };
+  }
+
+  private effacerEcoules(finDeFenetrePrecedente: number): void {
+    for (const [cle, valeur] of this.compteurs) {
+      if (valeur.debut <= finDeFenetrePrecedente) this.compteurs.delete(cle);
+    }
+  }
 }
 ```
 

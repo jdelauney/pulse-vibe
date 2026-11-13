@@ -1,20 +1,21 @@
 ### 9. Les écrans
 
-La lecture de la commande passe par une query. Le statut vient de la base, jamais de l'arrivée sur la page.
+La lecture de la commande passe par une query : elle crée le repository sur la base et renvoie des données simples à l'écran. Le statut vient de la base, jamais de l'arrivée sur la page.
 
 <!-- fichier: src/features/paiement/queries/commande-par-session.query.ts -->
 ```ts
 // src/features/paiement/queries/commande-par-session.query.ts
 import "server-only";
+import type { CommandeAffichee } from "@src/core/paiement/commande.entity";
 import { getDb } from "@src/db/db-client";
-import { commandeRepository } from "@src/db/paiement/commande.repository";
+import { DrizzleCommandeRepository } from "@src/db/paiement/commande.repository";
 
 /** La commande de cette personne pour cette session de paiement, ou null (inconnue, ou à quelqu'un d'autre). */
 export async function commandeParSession(
   sessionId: string,
   utilisateurId: string,
-) {
-  return commandeRepository(getDb()).trouverParSession(
+): Promise<CommandeAffichee | null> {
+  return new DrizzleCommandeRepository(getDb()).trouverParSession(
     sessionId,
     utilisateurId,
   );

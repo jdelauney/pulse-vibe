@@ -26,11 +26,13 @@ Une US dont la spec reste en brouillon (la personne veut réfléchir) : la noter
 
 ## 4. Construire, sans la personne
 
-Pour chaque US prête, dans l'ordre : la boucle par tâche de `/pulse:spirc` en mode autonome, avec son marqueur (`pulse-aidd realisation debut <US-XXX> … --autonome` à chaque nouvelle US, puis `pulse-aidd realisation questions <n>` avec les questions ouvertes de toute la série) ; en rythme rapide, puis l'examen de toute l'US (`pulse-aidd reference spirc/examen-us.md`). Le test groupé et l'envoi de chaque US attendent le retour de la personne (§ 5).
+Pour chaque US prête, dans l'ordre : la boucle par tâche de `/pulse:spirc` en mode autonome, avec son marqueur (`pulse-aidd realisation debut <US-XXX> … --autonome` à chaque nouvelle US, puis `pulse-aidd realisation questions <n>` avec les questions ouvertes de toute la série) ; en rythme rapide, puis l'examen de toute l'US (`pulse-aidd reference spirc/examen-us.md`), sans l'audit de sécurité. Le test groupé et l'envoi de chaque US attendent le retour de la personne (§ 5).
 
 - **Une décision revient à la personne** sur une tâche (constat Critique persistant compris) : elle attend dans le plan (§ « Questions en attente » de `/pulse:spirc`) et les autres tâches de l'US continuent. Quand plus aucune tâche de l'US ne peut avancer, noter l'US dans la section « Série » (« US-002 : en attente : <n> questions dans le plan »), puis **passer à l'US suivante qui n'en dépend pas** (« Dépend de » du référentiel, « S'appuie sur » des plans, « Dépend de » des tâches). Une US qui en dépend attend aussi. L'arrêt pour les questions se fait au § 5, pour toute la série.
 - **Entre deux US**, et à toute reprise : relire `in-progress.md`, `pulse-aidd realisation` et les documents de l'US (spec, plan et `pulse-aidd revue`, `docs/technical.md`) plutôt que s'appuyer sur la conversation.
 - **Arrêt** avant toute tâche « Mettre en ligne… » : elle se fait au retour, avec l'accord de la personne.
+
+**Audit de sécurité, une seule fois** : quand plus aucune US ne peut avancer seule, avant le § 5, l'audit de sécurité de fin de toute la série (`pulse-aidd reference audit-fin.md`), sur tout ce que la série a construit ; ses tests du cambrioleur rejoignent la fiche de la dernière US testée.
 
 ## 4 bis. Deux US en même temps
 

@@ -52,12 +52,12 @@ Liste **fermée extensible** : le suffixe se choisit dans ce catalogue. Un proje
 
 | Suffixe | Rôle | Couche (voir §5) | Exemple |
 |---|---|---|---|
-| `.entity` | Objet métier et ses invariants, indépendant de l'extérieur | `domain/` | `item.entity.ts` |
-| `.rules` | Règles et calculs métier purs | `domain/` | `item.rules.ts` |
-| `.use-case` | Un cas d'usage : orchestre le domaine et les ports | `application/` | `create-item.use-case.ts` |
+| `.entity` | Classe métier : ses données, ses invariants et les règles qui la concernent, indépendante de l'extérieur | `domain/` | `item.entity.ts` |
+| `.rules` | Classe de règles métier pures qui portent sur plusieurs entités | `domain/` | `item.rules.ts` |
+| `.use-case` | Classe d'un cas d'usage : orchestre le domaine et les ports reçus par son constructeur | `application/` | `create-item.use-case.ts` |
 | `.port` | Interface que l'application attend de l'extérieur | `application/ports/` | `item-repository.port.ts` |
-| `.repository` | Lecture et écriture des données (implémente un port) | `infrastructure/` | `item.repository.ts` |
-| `.adapter` | Connexion à un service externe (paiement, e-mail, API) | `infrastructure/adapters/` | `email.adapter.ts` |
+| `.repository` | Classe qui lit et écrit les données (implémente un port) | `infrastructure/` | `item.repository.ts` |
+| `.adapter` | Classe de connexion à un service externe (paiement, e-mail, API ; implémente un port) | `infrastructure/adapters/` | `email.adapter.ts` |
 | `.schema` | Validation des données entrantes ou schéma de la base | selon l'usage | `item.schema.ts` |
 | `.types` | Types partagés, déclarations seulement | la couche qui les définit | `item.types.ts` |
 | `.config` | Configuration lue au démarrage | `config/` ou racine | `app.config.ts` |

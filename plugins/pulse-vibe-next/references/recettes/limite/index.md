@@ -23,27 +23,27 @@
 
 | Fichier | Rôle |
 |---|---|
-| `src/core/shared/limiteur.port.ts` | Le contrat commun des limiteurs |
+| `src/core/shared/limiteur.port.ts` | L'interface `Limiteur`, commune aux trois limiteurs (patron Strategy) |
 | `src/lib/helpers/limite/ip-et-message.ts` | Lecture de l'IP et message (fonctions pures) |
-| `src/lib/helpers/limite/limiteur-memoire.ts` | Limiteur en mémoire (tests, développement local) |
+| `src/lib/helpers/limite/limiteur-memoire.ts` | Classe `LimiteurMemoire` (tests, développement local) |
 | `src/db/limite/limite.table.ts`, `drizzle/<numéro>_<nom>.sql` | Table `limites` et sa migration |
-| `src/db/limite/limite.repository.ts` | Limiteur en base (par défaut) |
-| `src/lib/limite.ts` | Les règles, le choix du limiteur, `verifierLimite` et `exigerLimite` |
+| `src/db/limite/limite.repository.ts` | Classe `DrizzleLimiteurRepository`, le limiteur en base (par défaut) |
+| `src/lib/limite.ts` | Point d'assemblage : les règles, le choix du limiteur (création de l'objet), `verifierLimite` et `exigerLimite` |
 | `src/config/env.ts` (modifié) | `LIMITE_STOCKAGE` (et les variables Upstash de l'option) |
 | `tests/helpers/contrat-limiteur.ts` | Tests communs à tous les limiteurs |
 | `src/lib/helpers/limite/__tests__/`, `src/db/limite/__tests__/`, `src/lib/__tests__/limite.test.ts`, `src/config/__tests__/env-limite.test.ts` | Tests |
 | `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `exigerLimite` en tête |
 | `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` (modifié, avec la recette `email`) | `exigerLimite("motDePasseOublie")` en tête |
-| `src/adapters/limite/upstash.adapter.ts` et son test (option Redis) | Limiteur Upstash |
+| `src/adapters/limite/upstash.adapter.ts` et son test (option Redis) | Classe `UpstashLimiteurAdapter`, le limiteur Upstash |
 
 Formulaires publics (contact, avis, lettre) : recette `formulaire-public`, qui s'appuie sur celle-ci.
 
 ## Étapes
 
-- Étape 1 – Le contrat des limiteurs : `pulse-aidd pile recette limite etape 1`
-- Étape 2 – Les fonctions pures et le limiteur en mémoire : `pulse-aidd pile recette limite etape 2`
+- Étape 1 – L'interface des limiteurs : `pulse-aidd pile recette limite etape 1`
+- Étape 2 – Les fonctions pures et la classe du limiteur en mémoire : `pulse-aidd pile recette limite etape 2`
 - Étape 3 – La table et la migration : `pulse-aidd pile recette limite etape 3`
-- Étape 4 – Le limiteur en base : `pulse-aidd pile recette limite etape 4`
+- Étape 4 – La classe du limiteur en base : `pulse-aidd pile recette limite etape 4`
 - Étape 5 – Les variables : `pulse-aidd pile recette limite etape 5`
 - Étape 6 – La garde : `pulse-aidd pile recette limite etape 6`
 - Étape 7 – Protéger la connexion, l'inscription et le mot de passe oublié : `pulse-aidd pile recette limite etape 7`

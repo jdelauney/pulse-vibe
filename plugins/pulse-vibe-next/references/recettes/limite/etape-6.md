@@ -1,6 +1,6 @@
 ### 6. La garde
 
-`src/lib/limite.ts` assemble la limite (architecture.md §3) : les règles, le choix du limiteur selon `LIMITE_STOCKAGE`, et deux fonctions pour les actions. Un limiteur injoignable est journalisé sous forme d'`ErreurService("limite", …)` dont la `cause` garde seulement des codes techniques (le texte d'une erreur réseau peut citer une adresse) ; la requête passe.
+`src/lib/limite.ts` assemble la limite (architecture.md §3) : les règles, le choix du limiteur selon `LIMITE_STOCKAGE` (c'est là que `new LimiteurMemoire()`, `new DrizzleLimiteurRepository(getDb())` ou `new UpstashLimiteurAdapter(…)` est créé), et deux fonctions pour les actions. Les actions restent des fonctions : elles ne voient que l'interface `Limiteur`. Un limiteur injoignable est journalisé sous forme d'`ErreurService("limite", …)` dont la `cause` garde seulement des codes techniques (le texte d'une erreur réseau peut citer une adresse) ; la requête passe.
 
 <!-- fichier: src/lib/limite.ts -->
 ```ts
@@ -10,10 +10,10 @@ import "server-only";
 import { env } from "@src/config/env";
 import type { Limiteur, RegleLimite } from "@src/core/shared/limiteur.port";
 import { getDb } from "@src/db/db-client";
-import { limiteurBase } from "@src/db/limite/limite.repository";
+import { DrizzleLimiteurRepository } from "@src/db/limite/limite.repository";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { ipDepuis, messageLimite } from "@src/lib/helpers/limite/ip-et-message";
-import { limiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
+import { LimiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
 import { logger } from "@src/lib/logger";
 import { headers } from "next/headers";
 import { returnServerError } from "next-safe-action";
@@ -36,7 +36,7 @@ export type Verdict =
 
 let limiteurDuProjet: Limiteur | undefined;
 
-/** Le limiteur choisi par LIMITE_STOCKAGE, créé une fois puis gardé. */
+/** Le limiteur choisi par LIMITE_STOCKAGE (patron Strategy), créé une fois puis gardé : c'est ici que les objets s'assemblent. */
 function limiteurChoisi(): Limiteur {
   if (!limiteurDuProjet) {
     const { LIMITE_STOCKAGE } = env;
@@ -46,9 +46,9 @@ function limiteurChoisi(): Limiteur {
           "LIMITE_STOCKAGE=memoire sur Vercel : chaque instance compte de son côté. Retirez la variable pour compter dans la base.",
         );
       }
-      limiteurDuProjet = limiteurMemoire();
+      limiteurDuProjet = new LimiteurMemoire();
     } else {
-      limiteurDuProjet = limiteurBase(getDb());
+      limiteurDuProjet = new DrizzleLimiteurRepository(getDb());
     }
   }
   return limiteurDuProjet;

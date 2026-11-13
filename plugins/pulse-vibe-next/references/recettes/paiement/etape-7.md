@@ -15,18 +15,18 @@ export const OFFRE: Offre = {
 };
 ```
 
-L'action assemble le use-case avec le repository et l'adapter, puis redirige vers la page de Stripe. `{SESSION_ID}` est remplacé par l'adapter avec l'identifiant de la session.
+L'action assemble les objets (racine de composition) : elle crée `OuvrirPaiement` avec le repository et l'adapter, puis redirige vers la page de Stripe. `{SESSION_ID}` est remplacé par l'adapter avec l'identifiant de la session.
 
 <!-- fichier: src/features/paiement/actions/payer.action.ts -->
 ```ts
 // src/features/paiement/actions/payer.action.ts
 "use server";
 
-import { passerellePaiement } from "@src/adapters/payment/payment.adapter";
+import { StripePaiementAdapter } from "@src/adapters/payment/payment.adapter";
 import { env } from "@src/config/env";
-import { ouvrirPaiement } from "@src/core/paiement/use-cases/ouvrir-paiement.use-case";
+import { OuvrirPaiement } from "@src/core/paiement/use-cases/ouvrir-paiement.use-case";
 import { getDb } from "@src/db/db-client";
-import { commandeRepository } from "@src/db/paiement/commande.repository";
+import { DrizzleCommandeRepository } from "@src/db/paiement/commande.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -38,16 +38,19 @@ export const payerAction = actionConnectee
     // Adresse du site qui appelle l'action (Next.js vérifie qu'elle est bien la sienne),
     // sinon l'adresse publique déclarée pour better-auth.
     const origine = (await headers()).get("origin") ?? env.BETTER_AUTH_URL;
-    const { url } = await ouvrirPaiement(
-      { commandes: commandeRepository(getDb()), paiement: passerellePaiement },
-      {
-        utilisateurId: ctx.utilisateur.id,
-        offre: OFFRE,
-        urlSucces: `${origine}/paiement/merci?session_id={SESSION_ID}`,
-        urlAnnulation: `${origine}/paiement?annule=1`,
-      },
+    const ouvrir = new OuvrirPaiement(
+      new DrizzleCommandeRepository(getDb()),
+      new StripePaiementAdapter({
+        cleSecrete: env.STRIPE_SECRET_KEY,
+        secretWebhook: env.STRIPE_WEBHOOK_SECRET,
+      }),
     );
+    const { url } = await ouvrir.executer({
+      utilisateurId: ctx.utilisateur.id,
+      offre: OFFRE,
+      urlSucces: `${origine}/paiement/merci?session_id={SESSION_ID}`,
+      urlAnnulation: `${origine}/paiement?annule=1`,
+    });
     redirect(url);
   });
 ```
-

@@ -5,7 +5,8 @@ Le Route Handler lit la session hors du `try` (sans session, `utilisateurConnect
 <!-- fichier: app/api/fichiers/[id]/route.ts -->
 ```ts
 // app/api/fichiers/[id]/route.ts
-import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
+import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { env } from "@src/config/env";
 import { utilisateurConnecte } from "@src/features/compte/queries/utilisateur-connecte.query";
 import { trouverFichier } from "@src/features/fichiers/queries/trouver-fichier.query";
 import { reponseErreur } from "@src/lib/errors/reponse-erreur";
@@ -27,7 +28,8 @@ export async function GET(
     return new Response("Fichier introuvable.", { status: 404 });
   }
   try {
-    return Response.redirect(await stockageFichiers.adresseLecture(ligne), 303);
+    const stockage = new StockageR2Adapter(env);
+    return Response.redirect(await stockage.adresseLecture(ligne), 303);
   } catch (erreur) {
     return reponseErreur(erreur, "Téléchargement d'un fichier");
   }

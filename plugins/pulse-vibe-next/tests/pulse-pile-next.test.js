@@ -372,7 +372,7 @@ test("contexte security : sources de toutes les recettes qui touchent la CSP", (
 
 test("recette limite : trois stratégies, la base par défaut, la garde dans src/lib/limite.ts", () => {
   const texte = texteRecette("limite");
-  for (const attendu of ["LIMITE_STOCKAGE", "limiteurBase", "limiteurUpstash", "limiteurMemoire", "src/core/shared/limiteur.port.ts", "src/lib/limite.ts", "onConflictDoUpdate", "verifierContratLimiteur"])
+  for (const attendu of ["LIMITE_STOCKAGE", "DrizzleLimiteurRepository", "UpstashLimiteurAdapter", "LimiteurMemoire", "src/core/shared/limiteur.port.ts", "src/lib/limite.ts", "onConflictDoUpdate", "verifierContratLimiteur"])
     assert.ok(texte.includes(attendu), attendu);
   assert.match(texte, /z\.enum\(\["base", "redis", "memoire"\]\)\.default\("base"\)/);
 });
@@ -407,7 +407,7 @@ test("recette limite : les étapes de base n'utilisent pas Upstash, l'option Red
   assert.ok(!base.includes("@src/adapters/limite/upstash.adapter"), "aucun import d'Upstash avant l'option");
   assert.ok(!base.includes("npm install @upstash"), "aucune installation d'Upstash avant l'option");
   assert.ok(base.includes('z.enum(["base", "memoire"]).default("base")'), "variables de base sans redis");
-  assert.ok(option.includes('import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";'), "la garde complète dans l'option");
+  assert.ok(option.includes('import { UpstashLimiteurAdapter } from "@src/adapters/limite/upstash.adapter";'), "la garde complète dans l'option");
   assert.ok(option.includes("verificationsCroisees.push("), "la vérification Upstash s'ajoute à verificationsCroisees");
   assert.doesNotMatch(texte, /createFinalSchema/, "plus de second createFinalSchema");
 });

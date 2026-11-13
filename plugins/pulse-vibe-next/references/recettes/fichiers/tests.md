@@ -1,91 +1,112 @@
 
 ### Unitaires
 
-Les règles et les use-cases s'essaient sans base ni réseau : le repository et le stockage sont remplacés par des doublures en mémoire.
+Les règles et les use-cases s'essaient sans base ni réseau : le repository et le stockage sont remplacés par des classes en mémoire qui implémentent les mêmes interfaces.
 
 <!-- fichier: src/core/fichiers/__tests__/fichier.rules.test.ts -->
 ```ts
 // src/core/fichiers/__tests__/fichier.rules.test.ts
 import { describe, expect, it } from "vitest";
-import { appartientA, construireCle } from "../fichier.rules";
+import { ReglesFichier } from "../fichier.rules";
 
 describe("Fichiers", () => {
   describe("La clé d'un fichier commence par l'identifiant de sa propriétaire", () => {
     it("US-XXX-3 – La clé du fichier de Camille commence par l'identifiant de Camille", () => {
-      const cle = construireCle(
+      const regles = new ReglesFichier();
+
+      const cle = regles.construireCle(
         "camille-id",
         "0f8b6c1e-6f0a-4a57-9a4e-2f1f0c7f9b10",
         "image/png",
       );
 
       expect(cle).toBe("camille-id/0f8b6c1e-6f0a-4a57-9a4e-2f1f0c7f9b10.png");
-      expect(appartientA(cle, "camille-id")).toBe(true);
-      expect(appartientA(cle, "leo-id")).toBe(false);
+      expect(regles.appartientA(cle, "camille-id")).toBe(true);
+      expect(regles.appartientA(cle, "leo-id")).toBe(false);
     });
   });
 });
 ```
 
-Les trois use-cases partagent les mêmes doublures en mémoire, rangées dans un petit fichier d'aide ; chaque use-case a son fichier de tests.
+Les trois use-cases partagent les mêmes classes en mémoire, rangées dans un petit fichier d'aide ; chaque use-case a son fichier de tests.
 
 <!-- fichier: src/core/fichiers/use-cases/__tests__/sut-fichiers.ts -->
 ```ts
 // src/core/fichiers/use-cases/__tests__/sut-fichiers.ts
-import type { Fichier } from "../../fichier.entity";
+import {
+  Fichier,
+  type FichierVue,
+  type ObjetRecu,
+} from "../../fichier.entity";
 import type { FichierRepository } from "../../fichier-repository.port";
 import type { StockageFichiers } from "../../stockage-fichiers.port";
-import { confirmerEnvoi } from "../confirmer-envoi.use-case";
-import { preparerEnvoi } from "../preparer-envoi.use-case";
-import { supprimerFichier } from "../supprimer-fichier.use-case";
+import { ConfirmerEnvoi } from "../confirmer-envoi.use-case";
+import { PreparerEnvoi } from "../preparer-envoi.use-case";
+import { SupprimerFichier } from "../supprimer-fichier.use-case";
 
 export const ID = "0f8b6c1e-6f0a-4a57-9a4e-2f1f0c7f9b10";
 
-/** Doublures en mémoire des deux ports, et les trois use-cases branchés dessus. */
-export function creerSut() {
-  const lignes = new Map<string, Fichier>();
-  const objets = new Map<string, { taille: number; typeMime: string }>();
+/** Le repository en mémoire : mêmes promesses que celui de Postgres, sans base. */
+class FichierRepositoryEnMemoire implements FichierRepository {
+  readonly lignes = new Map<string, FichierVue>();
 
-  const fichiers: FichierRepository = {
-    async reserver(donnees) {
-      lignes.set(donnees.id, {
-        ...donnees,
-        statut: "en_attente",
-        creeLe: new Date(),
-      });
-    },
-    async trouver(id, utilisateurId) {
-      const ligne = lignes.get(id);
-      return ligne?.utilisateurId === utilisateurId ? ligne : null;
-    },
-    async marquerEnvoye(id, utilisateurId) {
-      const ligne = lignes.get(id);
-      if (ligne?.utilisateurId === utilisateurId) ligne.statut = "envoye";
-    },
-    async supprimer(id, utilisateurId) {
-      const ligne = lignes.get(id);
-      if (ligne?.utilisateurId !== utilisateurId) return null;
-      lignes.delete(id);
-      return { cle: ligne.cle };
-    },
-  };
-  const stockage: StockageFichiers = {
-    async adresseEnvoi({ cle }) {
-      return `https://stockage.exemple/${cle}?signature=1`;
-    },
-    async adresseLecture({ cle }) {
-      return `https://stockage.exemple/${cle}`;
-    },
-    async lireObjet(cle) {
-      return objets.get(cle) ?? null;
-    },
-    async supprimerObjet(cle) {
-      objets.delete(cle);
-    },
-  };
-  const deps = { fichiers, stockage };
+  async reserver(donnees: Parameters<FichierRepository["reserver"]>[0]) {
+    this.lignes.set(donnees.id, {
+      ...donnees,
+      statut: "en_attente",
+      creeLe: new Date(),
+    });
+  }
+
+  async trouver(id: string, utilisateurId: string) {
+    const ligne = this.lignes.get(id);
+    return ligne?.utilisateurId === utilisateurId ? new Fichier(ligne) : null;
+  }
+
+  async marquerEnvoye(id: string, utilisateurId: string) {
+    const ligne = this.lignes.get(id);
+    if (ligne?.utilisateurId === utilisateurId) ligne.statut = "envoye";
+  }
+
+  async supprimer(id: string, utilisateurId: string) {
+    const ligne = this.lignes.get(id);
+    if (ligne?.utilisateurId !== utilisateurId) return null;
+    this.lignes.delete(id);
+    return { cle: ligne.cle };
+  }
+}
+
+/** Le stockage en mémoire : les objets « reçus » sont posés par le test. */
+class StockageEnMemoire implements StockageFichiers {
+  readonly objets = new Map<string, ObjetRecu>();
+
+  async adresseEnvoi({ cle }: { cle: string }) {
+    return `https://stockage.exemple/${cle}?signature=1`;
+  }
+
+  async adresseLecture({ cle }: { cle: string }) {
+    return `https://stockage.exemple/${cle}`;
+  }
+
+  async lireObjet(cle: string) {
+    return this.objets.get(cle) ?? null;
+  }
+
+  async supprimerObjet(cle: string) {
+    this.objets.delete(cle);
+  }
+}
+
+/** Les deux classes en mémoire, et les trois use-cases branchés dessus. */
+export function creerSut() {
+  const repository = new FichierRepositoryEnMemoire();
+  const stockage = new StockageEnMemoire();
+  const preparerEnvoi = new PreparerEnvoi(repository, stockage);
+  const confirmerEnvoi = new ConfirmerEnvoi(repository, stockage);
+  const supprimerFichier = new SupprimerFichier(repository, stockage);
 
   const preparer = (utilisateurId: string) =>
-    preparerEnvoi(deps, {
+    preparerEnvoi.executer({
       id: ID,
       utilisateurId,
       nom: "facture-mars.png",
@@ -94,19 +115,19 @@ export function creerSut() {
     });
 
   return {
-    lignes,
-    objets,
+    lignes: repository.lignes,
+    objets: stockage.objets,
     preparer,
     async givenEnvoiPrepare() {
       await preparer("camille-id");
     },
     givenObjetRecu(taille: number, typeMime: string) {
-      objets.set(`camille-id/${ID}.png`, { taille, typeMime });
+      stockage.objets.set(`camille-id/${ID}.png`, { taille, typeMime });
     },
     confirmer: (utilisateurId: string) =>
-      confirmerEnvoi(deps, { id: ID, utilisateurId }),
+      confirmerEnvoi.executer({ id: ID, utilisateurId }),
     supprimer: (utilisateurId: string) =>
-      supprimerFichier(deps, { id: ID, utilisateurId }),
+      supprimerFichier.executer({ id: ID, utilisateurId }),
   };
 }
 ```
@@ -271,13 +292,14 @@ describe("Fichiers", () => {
 });
 ```
 
-L'adapter se teste avec le SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
+L'adapter se teste avec le client du SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
 
 <!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts -->
 ```ts
 // src/adapters/storage/__tests__/storage.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { StockageR2Adapter } from "../storage.adapter";
 
 const etat = vi.hoisted(() => ({ envoi: vi.fn() }));
 
@@ -289,16 +311,14 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
   }
   return { ...reel, S3Client: S3ClientDouble };
 });
-vi.mock("@src/config/env", () => ({
-  env: {
-    R2_ACCOUNT_ID: "compte",
-    R2_ACCESS_KEY_ID: "cle-acces",
-    R2_SECRET_ACCESS_KEY: "secret-de-test",
-    R2_BUCKET: "bucket-de-test",
-  },
-}));
 
-const { stockageFichiers } = await import("../storage.adapter");
+// L'adapter reçoit sa configuration par le constructeur : aucun module de configuration à doubler.
+const stockageFichiers = new StockageR2Adapter({
+  R2_ACCOUNT_ID: "compte",
+  R2_ACCESS_KEY_ID: "cle-acces",
+  R2_SECRET_ACCESS_KEY: "secret-de-test",
+  R2_BUCKET: "bucket-de-test",
+});
 
 describe("Stockage des fichiers", () => {
   beforeEach(() => {
@@ -392,7 +412,7 @@ import { user } from "@src/db/compte/auth.table";
 import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
-import { fichierRepository } from "../fichier.repository";
+import { DrizzleFichierRepository } from "../fichier.repository";
 
 const ID_FICHIER = "0f8b6c1e-6f0a-4a57-9a4e-2f1f0c7f9b10";
 
@@ -413,7 +433,7 @@ afterEach(async () => {
 
 /** Camille réserve « facture-mars.pdf » ; `envoye` la fait passer au statut vérifié. */
 async function camilleEnvoie(envoye = true) {
-  const fichiers = fichierRepository(db);
+  const fichiers = new DrizzleFichierRepository(db);
   await fichiers.reserver({
     id: ID_FICHIER,
     utilisateurId: "camille-id",
@@ -430,7 +450,7 @@ describe("Fichiers", () => {
     it("US-XXX-4 – Camille ouvre sa facture", async () => {
       await camilleEnvoie();
 
-      const ligne = await fichierRepository(db).trouverEnvoye(
+      const ligne = await new DrizzleFichierRepository(db).trouverEnvoye(
         ID_FICHIER,
         "camille-id",
       );
@@ -441,7 +461,7 @@ describe("Fichiers", () => {
     it("US-XXX-4 – Léo ne peut pas ouvrir la facture de Camille", async () => {
       await camilleEnvoie();
 
-      const ligne = await fichierRepository(db).trouverEnvoye(
+      const ligne = await new DrizzleFichierRepository(db).trouverEnvoye(
         ID_FICHIER,
         "leo-id",
       );
@@ -452,29 +472,28 @@ describe("Fichiers", () => {
     it("US-XXX-4 – La liste de Léo ne contient pas la facture de Camille", async () => {
       await camilleEnvoie();
 
-      const liste = await fichierRepository(db).listerEnvoyes("leo-id");
+      const liste = await new DrizzleFichierRepository(db).listerEnvoyes("leo-id");
 
       expect(liste).toEqual([]);
     });
 
     it("US-XXX-4 – La base refuse à Léo de confirmer ou d'effacer la ligne de Camille", async () => {
       await camilleEnvoie(false);
-      const fichiers = fichierRepository(db);
+      const fichiers = new DrizzleFichierRepository(db);
 
       await fichiers.marquerEnvoye(ID_FICHIER, "leo-id");
       const supprime = await fichiers.supprimer(ID_FICHIER, "leo-id");
 
       expect(supprime).toBeNull();
-      expect(await fichiers.trouver(ID_FICHIER, "camille-id")).toMatchObject({
-        statut: "en_attente",
-      });
+      const fichier = await fichiers.trouver(ID_FICHIER, "camille-id");
+      expect(fichier?.versVue()).toMatchObject({ statut: "en_attente" });
     });
   });
 
   describe("Un envoi non confirmé reste invisible", () => {
     it("US-XXX-6 – Un fichier « en_attente » n'apparaît ni dans la liste ni au téléchargement", async () => {
       await camilleEnvoie(false);
-      const fichiers = fichierRepository(db);
+      const fichiers = new DrizzleFichierRepository(db);
 
       expect(await fichiers.listerEnvoyes("camille-id")).toEqual([]);
       expect(await fichiers.trouverEnvoye(ID_FICHIER, "camille-id")).toBeNull();

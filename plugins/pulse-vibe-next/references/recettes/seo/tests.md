@@ -30,7 +30,7 @@ Le repository est testé sur une base en mémoire (`creerBaseDeTest()`) : une r�
 import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
-import { realisationRepository } from "../realisation.repository";
+import { DrizzleRealisationRepository } from "../realisation.repository";
 import { realisations } from "../realisation.table";
 
 let db: Db;
@@ -66,10 +66,11 @@ afterEach(async () => {
   await fermer();
 });
 
-describe("realisationRepository", () => {
+describe("DrizzleRealisationRepository", () => {
   it("US-XXX-4 – Une réalisation publiée est trouvée avec sa date de mise à jour", async () => {
-    const realisation =
-      await realisationRepository(db).trouverPubliee("table-en-chene");
+    const realisation = await new DrizzleRealisationRepository(
+      db,
+    ).trouverPubliee("table-en-chene");
     expect(realisation).toMatchObject({
       slug: "table-en-chene",
       titre: "Table en chêne",
@@ -78,7 +79,7 @@ describe("realisationRepository", () => {
   });
 
   it("US-XXX-4 – Un brouillon et un slug inconnu n'existent pas pour le public", async () => {
-    const repository = realisationRepository(db);
+    const repository = new DrizzleRealisationRepository(db);
     expect(await repository.trouverPubliee("buffet-brouillon")).toBeNull();
     expect(await repository.existePubliee("buffet-brouillon")).toBe(false);
     expect(await repository.existePubliee("inconnu")).toBe(false);
@@ -86,7 +87,7 @@ describe("realisationRepository", () => {
   });
 
   it("US-XXX-4 – La liste ne contient que les publiées, les plus récentes d'abord", async () => {
-    const liste = await realisationRepository(db).listerPubliees();
+    const liste = await new DrizzleRealisationRepository(db).listerPubliees();
     expect(liste.map((r) => r.slug)).toEqual([
       "etagere-noyer",
       "table-en-chene",

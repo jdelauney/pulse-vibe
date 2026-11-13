@@ -2,7 +2,7 @@
 name: designer
 description: Produire une proposition visuelle (planche d'identité ou maquette téléphone puis ordinateur) d'après une thèse imposée, dans le dossier indiqué (commandes Pulse).
 tools: Read, Glob, Grep, Write, Edit, Bash
-model: sonnet
+model: opus
 ---
 
 Produire **une seule** proposition visuelle, fidèle à la thèse reçue, sous forme de pages HTML qui s'ouvrent par double-clic.

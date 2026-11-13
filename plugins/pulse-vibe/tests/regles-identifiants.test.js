@@ -5,7 +5,7 @@
 //   - marqueurs des sommaires (« Règle de choix »).
 // Une famille raccourcie garde tous ses identifiants (en ajouter est permis). Un début d'élément reformulé a un coût voulu :
 // on met l'instantané à jour en le disant (node tests/regles-identifiants.test.js --instantane).
-// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation).
+// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes).
 // Lancer : node --test plugins/pulse-vibe/tests/regles-identifiants.test.js
 "use strict";
 
@@ -72,11 +72,12 @@ const INSTANTANE = {
    "### Limites chiffrées",
    "## 2. Nommage",
    "## 3. Constantes : aucune valeur magique",
-   "## 4. Fonctions",
+   "## 4. Fonctions et méthodes",
    "## 5. Testabilité, couplage et règles métier",
    "### Règles métier : un seul endroit, sans dépendance extérieure",
    "### Testable",
    "### Faible couplage",
+   "## 5 bis. Classes, SOLID et patrons de conception",
    "## 6. Commentaires : expliquer le pourquoi",
    "## 7. Typage et contrats de données",
    "## 8. Gestion des erreurs",
@@ -94,11 +95,12 @@ const INSTANTANE = {
   "numerotes": [],
   "cases": [
    "- [ ] Chaque import pointe vers un module qui exis",
-   "- [ ] Fonctions ≤ 30 lignes, ≤ 3 niveaux d'imbrica",
+   "- [ ] Méthodes et fonctions ≤ 30 lignes, ≤ 3 nivea",
    "- [ ] Fichiers placés selon le code existant, `doc",
    "- [ ] Noms explicites, booléens `is/has/should`, c",
-   "- [ ] Chaque règle métier est une fonction nommée,",
+   "- [ ] Chaque règle métier est une méthode nommée, ",
    "- [ ] Les décisions sont des calculs purs ; heure,",
+   "- [ ] La logique est en classes (§5 bis), état enc",
    "- [ ] Les règles métier ont leurs tests (nominal, ",
    "- [ ] Les dépendances vont vers le métier ; les fo",
    "- [ ] Commentaire en tête de fichier ; commentaire",
@@ -111,9 +113,10 @@ const INSTANTANE = {
    "- [ ] Le code fait ce que la spec demande, ni plus",
    "- [ ] Chaque information à un seul endroit ; code ",
    "- [ ] Journaux limités au détail technique : aucun",
-   "- [ ] Chaque règle métier dans le module de règles",
+   "- [ ] Chaque règle métier dans le domaine, écrite ",
    "- [ ] Changer d'affichage, de stockage ou de servi",
-   "- [ ] Une personne qui débute peut lire chaque fon"
+   "- [ ] SOLID tenu : une raison de changer par class",
+   "- [ ] Une personne qui débute peut lire chaque mét"
   ],
   "balises": [],
   "securitePar": {

@@ -55,47 +55,44 @@ describe("Champ piège", () => {
 ```ts
 // src/lib/helpers/formulaire-public/__tests__/jeton.test.ts
 import { describe, expect, it } from "vitest";
-import { signerJeton, verifierJeton } from "../jeton";
+import { JetonFormulaire } from "../jeton";
 
 const SECRET = "secret-de-test-assez-long-pour-hmac-0123";
+const jetons = new JetonFormulaire(SECRET);
 const T0 = Date.UTC(2026, 9, 8, 10, 0, 0);
 
 describe("Jeton de délai", () => {
   it("US-XXX-2 – ouvert depuis 5 secondes, pour ce formulaire : valide", () => {
-    const jeton = signerJeton("contact", T0, SECRET);
-    expect(verifierJeton(jeton, "contact", T0 + 5_000, SECRET)).toBe("valide");
+    const jeton = jetons.signer("contact", T0);
+    expect(jetons.verifier(jeton, "contact", T0 + 5_000)).toBe("valide");
   });
 
   it("US-XXX-2 – envoyé moins de 3 secondes après l'ouverture : trop rapide", () => {
-    const jeton = signerJeton("contact", T0, SECRET);
-    expect(verifierJeton(jeton, "contact", T0 + 2_999, SECRET)).toBe(
-      "trop-rapide",
-    );
+    const jeton = jetons.signer("contact", T0);
+    expect(jetons.verifier(jeton, "contact", T0 + 2_999)).toBe("trop-rapide");
   });
 
   it("US-XXX-2 – ouvert depuis plus de 2 heures : expiré", () => {
-    const jeton = signerJeton("contact", T0, SECRET);
-    expect(verifierJeton(jeton, "contact", T0 + 7_200_001, SECRET)).toBe(
-      "expire",
-    );
+    const jeton = jetons.signer("contact", T0);
+    expect(jetons.verifier(jeton, "contact", T0 + 7_200_001)).toBe("expire");
   });
 
   it("US-XXX-2 – jeton d'un autre formulaire : refusé", () => {
-    const jeton = signerJeton("devis", T0, SECRET);
-    expect(verifierJeton(jeton, "contact", T0 + 5_000, SECRET)).toBe(
-      "falsifie",
-    );
+    const jeton = jetons.signer("devis", T0);
+    expect(jetons.verifier(jeton, "contact", T0 + 5_000)).toBe("falsifie");
   });
 
   it("US-XXX-2 – horodatage modifié ou autre secret : refusé", () => {
-    const jeton = signerJeton("contact", T0, SECRET);
+    const jeton = jetons.signer("contact", T0);
     const vieilli = jeton.replace(String(T0), String(T0 - 60_000));
-    expect(verifierJeton(vieilli, "contact", T0 + 5_000, SECRET)).toBe(
-      "falsifie",
-    );
-    expect(verifierJeton(jeton, "contact", T0 + 5_000, `${SECRET}-autre`)).toBe(
-      "falsifie",
-    );
+    expect(jetons.verifier(vieilli, "contact", T0 + 5_000)).toBe("falsifie");
+    expect(
+      new JetonFormulaire(`${SECRET}-autre`).verifier(
+        jeton,
+        "contact",
+        T0 + 5_000,
+      ),
+    ).toBe("falsifie");
   });
 
   it("US-XXX-2 – formes inattendues : refusées sans erreur", () => {
@@ -106,11 +103,11 @@ describe("Jeton de délai", () => {
       `${T0}.contact.`,
       "x.contact.y",
     ]) {
-      expect(verifierJeton(jeton, "contact", T0, SECRET)).toBe("falsifie");
+      expect(jetons.verifier(jeton, "contact", T0)).toBe("falsifie");
     }
-    expect(verifierJeton("", "contact", T0, SECRET)).toBe("absent");
-    expect(verifierJeton(undefined, "contact", T0, SECRET)).toBe("absent");
-    expect(verifierJeton(42, "contact", T0, SECRET)).toBe("absent");
+    expect(jetons.verifier("", "contact", T0)).toBe("absent");
+    expect(jetons.verifier(undefined, "contact", T0)).toBe("absent");
+    expect(jetons.verifier(42, "contact", T0)).toBe("absent");
   });
 });
 ```
@@ -120,7 +117,7 @@ Intégration : l'action complète, avec la limite en mémoire (`LIMITE_STOCKAGE:
 <!-- fichier: src/features/contact/actions/__tests__/envoyer-message.action.test.ts -->
 ```ts
 // src/features/contact/actions/__tests__/envoyer-message.action.test.ts
-import { signerJeton } from "@src/lib/helpers/formulaire-public/jeton";
+import { JetonFormulaire } from "@src/lib/helpers/formulaire-public/jeton";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const SECRET = "secret-de-test-assez-long-pour-hmac-0123";
@@ -150,7 +147,7 @@ beforeEach(() => {
 });
 
 const jetonDe = (age: number, formulaire = "contact") =>
-  signerJeton(formulaire, Date.now() - age, SECRET);
+  new JetonFormulaire(SECRET).signer(formulaire, Date.now() - age);
 
 describe("Formulaire public", () => {
   it("US-XXX-3 – une personne qui a pris le temps d'écrire : le message part", async () => {
@@ -302,10 +299,8 @@ import { describe, expect, it, vi } from "vitest";
 
 const journal = vi.hoisted(() => ({ error: vi.fn() }));
 vi.mock("@src/lib/logger", () => ({ logger: journal }));
-vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
-vi.mock("@src/config/env", () => ({ env: {} }));
 
-const { verifierTurnstile } = await import("../turnstile.adapter");
+const { TurnstileAdapter } = await import("../turnstile.adapter");
 
 function repondant(corps: unknown) {
   const appels: [string, RequestInit][] = [];
@@ -320,11 +315,9 @@ describe("Vérification Turnstile", () => {
   it("US-XXX-5 – réponse acceptée par Cloudflare : la personne passe", async () => {
     const { envoyer, appels } = repondant({ success: true });
     expect(
-      await verifierTurnstile(
+      await new TurnstileAdapter("secret", envoyer).verifier(
         "jeton-du-widget",
-        "secret",
         "203.0.113.7",
-        envoyer,
       ),
     ).toBe(true);
     const corps = appels[0][1].body as URLSearchParams;
@@ -337,18 +330,27 @@ describe("Vérification Turnstile", () => {
       success: false,
       "error-codes": ["invalid-input-response"],
     });
-    expect(await verifierTurnstile("x", "secret", "203.0.113.7", envoyer)).toBe(
-      false,
-    );
+    expect(
+      await new TurnstileAdapter("secret", envoyer).verifier(
+        "x",
+        "203.0.113.7",
+      ),
+    ).toBe(false);
   });
 
   it("US-XXX-5 – réponse absente ou trop longue : refusée sans appeler Cloudflare", async () => {
     const { envoyer, appels } = repondant({ success: true });
     expect(
-      await verifierTurnstile(undefined, "secret", "inconnue", envoyer),
+      await new TurnstileAdapter("secret", envoyer).verifier(
+        undefined,
+        "inconnue",
+      ),
     ).toBe(false);
     expect(
-      await verifierTurnstile("x".repeat(2049), "secret", "inconnue", envoyer),
+      await new TurnstileAdapter("secret", envoyer).verifier(
+        "x".repeat(2049),
+        "inconnue",
+      ),
     ).toBe(false);
     expect(appels).toHaveLength(0);
   });
@@ -357,15 +359,18 @@ describe("Vérification Turnstile", () => {
     const enPanne = (async () => {
       throw new TypeError("fetch failed");
     }) as unknown as typeof fetch;
-    expect(await verifierTurnstile("x", "secret", "203.0.113.7", enPanne)).toBe(
-      false,
-    );
+    expect(
+      await new TurnstileAdapter("secret", enPanne).verifier(
+        "x",
+        "203.0.113.7",
+      ),
+    ).toBe(false);
     expect(journal.error).toHaveBeenCalled();
   });
 
   it("adresse IP inconnue : elle n'est pas transmise", async () => {
     const { envoyer, appels } = repondant({ success: true });
-    await verifierTurnstile("x", "secret", "inconnue", envoyer);
+    await new TurnstileAdapter("secret", envoyer).verifier("x", "inconnue");
     expect((appels[0][1].body as URLSearchParams).has("remoteip")).toBe(false);
   });
 });

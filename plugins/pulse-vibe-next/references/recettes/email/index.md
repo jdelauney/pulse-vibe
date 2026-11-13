@@ -64,10 +64,10 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | Fichier | Rôle |
 |---|---|
 | `src/config/env.ts`, `.env.example` (modifiés) | Les cinq variables SMTP |
-| `src/core/compte/email.port.ts` | Port d'envoi : types `MessageEmail` et `EnvoyeurEmail` |
-| `src/core/compte/emails-compte.rules.ts` | Contenus des e-mails du compte (fonctions pures) |
-| `src/adapters/email/email.adapter.ts` | `envoyerEmail({ a, sujet, texte, html })` : la seule porte de sortie des e-mails ; lève `ErreurService("email", …)` si l'envoi échoue |
-| `src/adapters/auth/auth.adapter.ts` (modifié) | Vérification d'adresse, mot de passe oublié, e-mail « compte existant » ; reçoit l'envoi par ses options |
+| `src/core/compte/email.port.ts` | Port d'envoi : type `MessageEmail` et interface `EnvoyeurEmail` |
+| `src/core/compte/emails-compte.rules.ts` | Classe `EmailsCompte` : contenus des e-mails du compte (sans état) |
+| `src/adapters/email/email.adapter.ts` | Classe `NodemailerEmailAdapter` (configuration SMTP reçue par le constructeur), méthode `envoyer({ a, sujet, texte, html })` : la seule porte de sortie des e-mails ; lève `ErreurService("email", …)` si l'envoi échoue |
+| `src/adapters/auth/auth.adapter.ts` (modifié) | Configuration de better-auth (reste celle de la bibliothèque) : vérification d'adresse, mot de passe oublié, e-mail « compte existant » ; reçoit l'envoyeur d'e-mails par ses options |
 | `src/features/compte/schemas/compte.schema.ts` (modifié) | `schemaMotDePasseOublie`, `schemaNouveauMotDePasse`, `schemaChoixMotDePasse` |
 | `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `inscrire` renvoie un message ; `connecter` traduit `EMAIL_NOT_VERIFIED` |
 | `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` | Action `demanderNouveauMotDePasse` |
@@ -80,8 +80,8 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | `src/features/compte/components/containers/nouveau-mot-de-passe.container.tsx` | Branche `choisirNouveauMotDePasse` sur son formulaire, avec le jeton |
 | `src/features/compte/components/containers/lien-mot-de-passe.container.tsx` | Lit l'adresse de la page : formulaire si le lien est valable, sinon message |
 | `app/(public)/mot-de-passe-oublie/page.tsx`, `app/(public)/nouveau-mot-de-passe/page.tsx` | Les deux nouvelles pages |
-| `src/core/compte/__tests__/emails-compte.rules.test.ts` | Tests unitaires des contenus |
-| `src/adapters/email/__tests__/email.adapter.test.ts` | Test de l'échec d'envoi |
+| `src/core/compte/__tests__/emails-compte.rules.test.ts` | Tests unitaires de `EmailsCompte` |
+| `src/adapters/email/__tests__/email.adapter.test.ts` | Test de l'échec d'envoi de `NodemailerEmailAdapter` |
 | `src/adapters/auth/__tests__/auth-email.test.ts` | Tests d'intégration des e-mails du compte |
 | `src/adapters/auth/__tests__/auth.adapter.test.ts` (modifié) | Tests de la recette `connexion` adaptés à la vérification d'adresse |
 | `e2e/aides/mailpit.ts`, `e2e/aides/connexion.ts` (modifié), `e2e/email.spec.ts` | Lecture de Mailpit dans Playwright |
@@ -238,7 +238,7 @@ Le code des tests : `pulse-aidd pile recette email tests`
 - **S1 – Secrets hors du code** : `SMTP_PASSWORD` vit dans `.env` et dans Vercel ; la personne saisit le mot de passe d'application elle-même, hors de la conversation.
 - **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/adapters/email/email.adapter.ts` commence par `import "server-only"`.
 - **S5 – Validation des entrées** : chaque formulaire passe par un schéma Zod dans son action ; `disabledPaths` ferme les adresses HTTP de demande de lien et de choix du mot de passe.
-- **S6 – Affichage sans injection** : chaque valeur insérée dans le HTML d'un e-mail passe par `echapperHtml`.
+- **S6 – Affichage sans injection** : chaque valeur insérée dans le HTML d'un e-mail passe par `echapperHtml`, dans `EmailsCompte`.
 - **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton) ; l'`ErreurService` ne garde, de l'erreur du serveur SMTP, que `code`, `command` et `responseCode` : ni son texte, ni l'adresse du destinataire, ni le lien.
 - **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu. Appliquez la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
 - **S11 – Messages d'erreur** : inscription et « mot de passe oublié » répondent la même chose qu'un compte existe ou non ; l'envoi part après la réponse (`after()`).
@@ -252,8 +252,8 @@ Le code des tests : `pulse-aidd pile recette email tests`
 - **Comptes créés avant la recette** : leur adresse n'est pas confirmée ; ils ne peuvent plus se connecter. En développement, supprimez-les. En ligne, la connexion leur envoie un e-mail de confirmation (`sendOnSignIn`).
 - **`authClient.forgetPassword` ou `requestPasswordReset` répond 404** : ces adresses sont fermées par `disabledPaths`. Passez par les actions `demanderNouveauMotDePasse` et `choisirNouveauMotDePasse`.
 - **`after()` hors d'une requête** : `tacheDeFond` reste absent dans `creerAuth` pour les tests ; seul `getAuth()` le fournit.
-- **`creerAuth` sans `envoyerEmail`** : l'option est obligatoire. Un test qui appelle `creerAuth` passe une doublure (`envoyerEmail: async () => {}`).
-- **`npm run check` signale `noRestrictedImports` dans `src/core/compte/`** : les contenus d'e-mails n'importent rien hors de `src/core/`. Gardez-les sans Next, sans Nodemailer, sans `@src/lib`.
+- **`creerAuth` sans `envoyeur`** : l'option est obligatoire. Un test qui appelle `creerAuth` passe une doublure (`envoyeur: { async envoyer() {} }`).
+- **`npm run check` signale `noRestrictedImports` dans `src/core/compte/`** : les contenus d'e-mails (`EmailsCompte`) n'importent rien hors de `src/core/`. Gardez-les sans Next, sans Nodemailer, sans `@src/lib`.
 - **E-mails rangés dans les indésirables** : avec un domaine à soi, configurez SPF, DKIM et DMARC chez le fournisseur.
 - **`@types/nodemailer`** : il entre en conflit avec les types fournis par Nodemailer 10 ; désinstallez-le.
 - **Langues** : avec la recette `langues`, les deux nouvelles pages vont sous `app/[locale]/(public)/`, et leur `PageProps` prend la clé `"/[locale]/nouveau-mot-de-passe"`.

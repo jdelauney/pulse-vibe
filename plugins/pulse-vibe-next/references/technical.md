@@ -26,8 +26,8 @@ Palier : hexagonal simplifié du pack Next.js (référence « Architecture du co
 app/                      routes ; (connecte)/ pour les pages réservées ; api/ pour les Route Handlers
 proxy.ts                  redirection vers la connexion
 src/
-  core/<domaine>/         règles métier pures : entity, rules, errors, ports, use-cases/
-  db/<domaine>/           tables (.table.ts) et repositories (.repository.ts) ; db/db-client.ts : getDb()
+  core/<domaine>/         métier pur, en classes : entity (classe et ses règles), rules, errors, ports (interfaces), use-cases/ (classes)
+  db/<domaine>/           tables (.table.ts) et repositories (.repository.ts, classes qui implémentent les ports) ; db/db-client.ts : getDb()
   features/<domaine>/     actions/, queries/, schemas/, components/{containers,sections,composites,elements}/, hooks/
   adapters/<service>/     services externes (auth, e-mail, fichiers, paiement)
   components/             ui/ (shadcn), shared/

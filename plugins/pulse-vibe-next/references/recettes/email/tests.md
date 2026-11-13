@@ -1,24 +1,23 @@
 
 ### Unitaires
 
-Les contenus d'e-mails sont des fonctions pures : aucun double nécessaire.
+Les contenus d'e-mails sont composés par la classe `EmailsCompte`, sans état : aucune doublure nécessaire.
 
 <!-- fichier: src/core/compte/__tests__/emails-compte.rules.test.ts -->
 ```ts
 // src/core/compte/__tests__/emails-compte.rules.test.ts
 import { describe, expect, it } from "vitest";
-import {
-  emailMotDePasseOublie,
-  emailVerificationAdresse,
-} from "../emails-compte.rules";
+import { EmailsCompte } from "../emails-compte.rules";
 
 describe("E-mails de compte", () => {
+  const emails = new EmailsCompte();
+
   describe("Une adresse est confirmée par un lien reçu par e-mail avant la première connexion", () => {
     it("US-XXX-1 – L'e-mail de Camille contient son lien de confirmation", () => {
       const url =
         "http://localhost:3000/api/auth/verify-email?token=abc&callbackURL=%2Fcompte";
 
-      const contenu = emailVerificationAdresse({ nom: "Camille", url });
+      const contenu = emails.verificationAdresse({ nom: "Camille", url });
 
       expect(contenu.sujet).toBe("Confirmez votre adresse e-mail");
       expect(contenu.texte).toContain(url);
@@ -28,7 +27,7 @@ describe("E-mails de compte", () => {
 
   describe("Un nom saisi s'affiche comme du texte dans l'e-mail", () => {
     it("US-XXX-4 – Un nom contenant du HTML est neutralisé", () => {
-      const contenu = emailMotDePasseOublie({
+      const contenu = emails.motDePasseOublie({
         nom: "<img src=x onerror=alert(1)>",
         url: "http://localhost:3000/api/auth/reset-password/abc",
       });
@@ -42,13 +41,14 @@ describe("E-mails de compte", () => {
 
 ### Adapter `email` (Vitest, Nodemailer doublé)
 
-Nodemailer est doublé et refuse l'envoi, comme un serveur qui rejette le destinataire. L'erreur levée garde ses codes techniques, sans le texte du refus ni l'adresse.
+Nodemailer est doublé et refuse l'envoi, comme un serveur qui rejette le destinataire ; l'adapter reçoit sa configuration par le constructeur, sans variable d'environnement à doubler. L'erreur levée garde ses codes techniques, sans le texte du refus ni l'adresse.
 
 <!-- fichier: src/adapters/email/__tests__/email.adapter.test.ts -->
 ```ts
 // src/adapters/email/__tests__/email.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { describe, expect, it, vi } from "vitest";
+import { NodemailerEmailAdapter } from "../email.adapter";
 
 // Serveur SMTP doublé : l'envoi échoue, comme avec un serveur éteint.
 vi.mock("nodemailer", () => ({
@@ -64,20 +64,17 @@ vi.mock("nodemailer", () => ({
     }),
   },
 }));
-vi.mock("@src/config/env", () => ({
-  env: {
-    SMTP_HOST: "localhost",
-    SMTP_PORT: 1025,
-    MAIL_FROM: "Mon projet <ne-pas-repondre@exemple.fr>",
-  },
-}));
 
 describe("Envoi d'e-mails", () => {
   describe("Un serveur d'e-mail en panne est signalé comme une panne de service", () => {
     it("US-XXX-5 – L'échec de l'envoi lève une erreur de service « email » sans l'adresse", async () => {
-      const { envoyerEmail } = await import("../email.adapter");
+      const adapter = new NodemailerEmailAdapter({
+        hote: "localhost",
+        port: 1025,
+        expediteur: "Mon projet <ne-pas-repondre@exemple.fr>",
+      });
 
-      const erreur = await envoyerEmail({
+      const erreur = await adapter.envoyer({
         a: "camille@exemple.fr",
         sujet: "Bonjour",
         texte: "Bonjour",
@@ -101,26 +98,36 @@ describe("Envoi d'e-mails", () => {
 
 ### Intégration (Vitest + PGlite)
 
-better-auth tourne sur une base PGlite neuve ; `creerAuth` reçoit une doublure de l'envoi qui garde les messages au lieu de les envoyer. Les liens et jetons viennent des e-mails gardés, comme pour une vraie personne.
+better-auth tourne sur une base PGlite neuve ; `creerAuth` reçoit une doublure de l'envoyeur (une classe qui implémente `EnvoyeurEmail`) qui garde les messages au lieu de les envoyer. Les liens et jetons viennent des e-mails gardés, comme pour une vraie personne.
 
 <!-- fichier: src/adapters/auth/__tests__/auth-email.test.ts -->
 ```ts
 // src/adapters/auth/__tests__/auth-email.test.ts
-import type { MessageEmail } from "@src/core/compte/email.port";
+import type {
+  EnvoyeurEmail,
+  MessageEmail,
+} from "@src/core/compte/email.port";
 import { APIError } from "better-auth/api";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import { creerAuth } from "../auth.adapter";
 
+/** Doublure du service d'e-mail : les messages sont gardés au lieu de partir. */
+class EnvoyeurEnMemoire implements EnvoyeurEmail {
+  readonly envoyes: MessageEmail[] = [];
+
+  async envoyer(message: MessageEmail): Promise<void> {
+    this.envoyes.push(message);
+  }
+}
+
 function createSut() {
-  // Doublure du service d'e-mail : les messages sont gardés au lieu de partir.
-  const envoyes: MessageEmail[] = [];
+  const envoyeur = new EnvoyeurEnMemoire();
+  const envoyes = envoyeur.envoyes;
   const optionsDeTest = {
     secret: "secret-de-test-secret-de-test-secret-de-test",
     baseURL: "http://localhost:3000",
-    envoyerEmail: async (message: MessageEmail) => {
-      envoyes.push(message);
-    },
+    envoyeur,
   };
   let auth: ReturnType<typeof creerAuth>;
   let fermer: () => Promise<void>;

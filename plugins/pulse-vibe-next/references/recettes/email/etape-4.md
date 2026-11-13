@@ -1,19 +1,15 @@
 ### 4. better-auth
 
-Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerAuth` reçoit maintenant l'envoi dans ses options (`envoyerEmail`) : l'adapter d'authentification ne connaît pas Nodemailer, et `getAuth()` lui passe l'adapter `email`.
+Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerAuth` reçoit maintenant l'envoi dans ses options (`envoyeur`, un `EnvoyeurEmail`) : l'adapter d'authentification ne connaît pas Nodemailer, et `getAuth()` lui passe un `NodemailerEmailAdapter`. La configuration de better-auth reste celle de la bibliothèque : seul l'expéditeur d'e-mails est une classe.
 
 <!-- fichier: src/adapters/auth/auth.adapter.ts -->
 ```ts
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
-import { envoyerEmail } from "@src/adapters/email/email.adapter";
+import { NodemailerEmailAdapter } from "@src/adapters/email/email.adapter";
 import { env } from "@src/config/env";
 import type { EnvoyeurEmail } from "@src/core/compte/email.port";
-import {
-  emailCompteExistant,
-  emailMotDePasseOublie,
-  emailVerificationAdresse,
-} from "@src/core/compte/emails-compte.rules";
+import { EmailsCompte } from "@src/core/compte/emails-compte.rules";
 import {
   account,
   session,
@@ -30,14 +26,15 @@ import { after } from "next/server";
 type OptionsAuth = {
   secret: string;
   baseURL: string;
-  /** Application : l'adapter `email`. Tests : une doublure qui garde les messages. */
-  envoyerEmail: EnvoyeurEmail;
+  /** Application : `NodemailerEmailAdapter`. Tests : une doublure qui garde les messages. */
+  envoyeur: EnvoyeurEmail;
   /** Application : l'e-mail part après la réponse. Tests : absent, l'envoi est attendu. */
   tacheDeFond?: (promesse: Promise<unknown>) => void;
 };
 
 /** Crée better-auth sur une base donnée : Neon dans l'application, PGlite dans les tests. */
 export function creerAuth(db: Db, options: OptionsAuth) {
+  const emails = new EmailsCompte();
   return betterAuth({
     secret: options.secret,
     baseURL: options.baseURL,
@@ -55,16 +52,16 @@ export function creerAuth(db: Db, options: OptionsAuth) {
       resetPasswordTokenExpiresIn: 60 * 60,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ user, url }) => {
-        await options.envoyerEmail({
+        await options.envoyeur.envoyer({
           a: user.email,
-          ...emailMotDePasseOublie({ nom: user.name, url }),
+          ...emails.motDePasseOublie({ nom: user.name, url }),
         });
       },
       // Inscription avec une adresse déjà prise : même réponse à l'écran, e-mail à sa propriétaire.
       onExistingUserSignUp: async ({ user }) => {
-        await options.envoyerEmail({
+        await options.envoyeur.envoyer({
           a: user.email,
-          ...emailCompteExistant({ nom: user.name }),
+          ...emails.compteExistant({ nom: user.name }),
         });
       },
     },
@@ -74,9 +71,9 @@ export function creerAuth(db: Db, options: OptionsAuth) {
       autoSignInAfterVerification: true,
       expiresIn: 60 * 60 * 24,
       sendVerificationEmail: async ({ user, url }) => {
-        await options.envoyerEmail({
+        await options.envoyeur.envoyer({
           a: user.email,
-          ...emailVerificationAdresse({ nom: user.name, url }),
+          ...emails.verificationAdresse({ nom: user.name, url }),
         });
       },
     },
@@ -109,7 +106,13 @@ export function getAuth(): Auth {
     instance = creerAuth(getDb(), {
       secret: env.BETTER_AUTH_SECRET,
       baseURL: env.BETTER_AUTH_URL,
-      envoyerEmail,
+      envoyeur: new NodemailerEmailAdapter({
+        hote: env.SMTP_HOST,
+        port: env.SMTP_PORT,
+        utilisateur: env.SMTP_USER,
+        motDePasse: env.SMTP_PASSWORD,
+        expediteur: env.MAIL_FROM,
+      }),
       // L'e-mail part après la réponse : la durée de réponse ne révèle pas si un compte existe.
       tacheDeFond: (promesse) => after(promesse),
     });

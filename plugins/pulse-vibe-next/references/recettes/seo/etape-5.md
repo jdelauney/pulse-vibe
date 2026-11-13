@@ -2,18 +2,32 @@
 
 Adresse lisible par un `slug` (« /realisations/table-en-chene »), lecture partagée en `"use cache"`, `generateStaticParams` (au moins une valeur : exigence de Cache Components), `notFound()` au premier niveau, **avant** tout `<Suspense>`, sans `loading.tsx` dans ce segment. Le contenu se lit en base : domaine `realisations` dans `core/`, `db/` et `features/`.
 
-Le type et la table (les contenus non publiés restent hors du public) :
+Le métier est une classe (`Realisation`) qui reçoit ses données en lecture seule ; `RealisationVue` est la forme simple qui traverse les frontières (le cache, l'écran). Le type, la classe et la table (les contenus non publiés restent hors du public) :
 
 <!-- fichier: src/core/realisations/realisation.entity.ts -->
 ```ts
 // src/core/realisations/realisation.entity.ts
-export type Realisation = {
+/** Les données d'une réalisation : la forme qui traverse les frontières (cache, écran, sitemap). */
+export type RealisationVue = {
   slug: string;
   titre: string;
   resume: string;
   /** Date de la dernière modification du contenu : elle alimente le sitemap. */
   misAJourLe: Date;
 };
+
+/** Une réalisation publiée : l'état reste en lecture seule. */
+export class Realisation {
+  constructor(private readonly donnees: Readonly<RealisationVue>) {}
+
+  get slug(): string {
+    return this.donnees.slug;
+  }
+
+  versVue(): RealisationVue {
+    return { ...this.donnees };
+  }
+}
 ```
 
 <!-- fichier: src/db/realisations/realisation.table.ts -->
@@ -38,13 +52,13 @@ export const realisations = pgTable("realisations", {
 
 Puis `npm run db:generate` (migration dans `drizzle/`) et `npm run db:migrate`.
 
-Le repository porte la condition « publiée » dans chaque requête ; `existePubliee` ne lit qu'une colonne indexée (elle sert au proxy de l'étape 6) :
+Le repository est une classe (`DrizzleRealisationRepository`) qui reçoit la base par le constructeur. Aucun cas d'usage n'écrit ici : toutes ses méthodes servent l'affichage et renvoient des objets simples (`RealisationVue`). Il porte la condition « publiée » dans chaque requête ; `existePubliee` ne lit qu'une colonne indexée (elle sert au proxy de l'étape 6) :
 
 <!-- fichier: src/db/realisations/realisation.repository.ts -->
 ```ts
 // src/db/realisations/realisation.repository.ts
 import "server-only";
-import type { Realisation } from "@src/core/realisations/realisation.entity";
+import type { RealisationVue } from "@src/core/realisations/realisation.entity";
 import type { Db } from "@src/db/db-client";
 import { and, desc, eq } from "drizzle-orm";
 import { realisations } from "./realisation.table";
@@ -56,35 +70,40 @@ const colonnes = {
   misAJourLe: realisations.misAJourLe,
 };
 
-export function realisationRepository(db: Db) {
-  const publiee = (slug: string) =>
-    and(eq(realisations.slug, slug), eq(realisations.publiee, true));
-  return {
-    /** Une réalisation publiée, ou null : un brouillon reste invisible. */
-    async trouverPubliee(slug: string): Promise<Realisation | null> {
-      const [ligne] = await db
-        .select(colonnes)
-        .from(realisations)
-        .where(publiee(slug));
-      return ligne ?? null;
-    },
-    /** Requête légère pour le proxy : une seule colonne indexée, jamais le contenu. */
-    async existePubliee(slug: string): Promise<boolean> {
-      const lignes = await db
-        .select({ slug: realisations.slug })
-        .from(realisations)
-        .where(publiee(slug))
-        .limit(1);
-      return lignes.length > 0;
-    },
-    async listerPubliees(): Promise<Realisation[]> {
-      return db
-        .select(colonnes)
-        .from(realisations)
-        .where(eq(realisations.publiee, true))
-        .orderBy(desc(realisations.misAJourLe));
-    },
-  };
+/** Le stockage des réalisations dans Postgres (Drizzle) : lecture publique seulement. */
+export class DrizzleRealisationRepository {
+  constructor(private readonly db: Db) {}
+
+  /** Une réalisation publiée, ou null : un brouillon reste invisible. */
+  async trouverPubliee(slug: string): Promise<RealisationVue | null> {
+    const [ligne] = await this.db
+      .select(colonnes)
+      .from(realisations)
+      .where(this.publiee(slug));
+    return ligne ?? null;
+  }
+
+  /** Requête légère pour le proxy : une seule colonne indexée, jamais le contenu. */
+  async existePubliee(slug: string): Promise<boolean> {
+    const lignes = await this.db
+      .select({ slug: realisations.slug })
+      .from(realisations)
+      .where(this.publiee(slug))
+      .limit(1);
+    return lignes.length > 0;
+  }
+
+  async listerPubliees(): Promise<RealisationVue[]> {
+    return this.db
+      .select(colonnes)
+      .from(realisations)
+      .where(eq(realisations.publiee, true))
+      .orderBy(desc(realisations.misAJourLe));
+  }
+
+  private publiee(slug: string) {
+    return and(eq(realisations.slug, slug), eq(realisations.publiee, true));
+  }
 }
 ```
 
@@ -101,7 +120,7 @@ export const TAG_REALISATIONS = "realisations";
 // src/features/realisations/queries/lire-realisation.query.ts
 import "server-only";
 import { getDb } from "@src/db/db-client";
-import { realisationRepository } from "@src/db/realisations/realisation.repository";
+import { DrizzleRealisationRepository } from "@src/db/realisations/realisation.repository";
 import { cacheLife, cacheTag } from "next/cache";
 import { TAG_REALISATIONS } from "../constants/cache-tags";
 
@@ -110,7 +129,7 @@ export async function lireRealisation(slug: string) {
   "use cache";
   cacheLife("hours");
   cacheTag(TAG_REALISATIONS);
-  return realisationRepository(getDb()).trouverPubliee(slug);
+  return new DrizzleRealisationRepository(getDb()).trouverPubliee(slug);
 }
 ```
 
@@ -119,7 +138,7 @@ export async function lireRealisation(slug: string) {
 // src/features/realisations/queries/lister-realisations.query.ts
 import "server-only";
 import { getDb } from "@src/db/db-client";
-import { realisationRepository } from "@src/db/realisations/realisation.repository";
+import { DrizzleRealisationRepository } from "@src/db/realisations/realisation.repository";
 import { cacheLife, cacheTag } from "next/cache";
 import { TAG_REALISATIONS } from "../constants/cache-tags";
 
@@ -128,7 +147,7 @@ export async function listerRealisations() {
   "use cache";
   cacheLife("hours");
   cacheTag(TAG_REALISATIONS);
-  return realisationRepository(getDb()).listerPubliees();
+  return new DrizzleRealisationRepository(getDb()).listerPubliees();
 }
 ```
 

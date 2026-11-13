@@ -5,7 +5,9 @@
 ```ts
 // src/core/factures/__tests__/facture.rules.test.ts
 import { describe, expect, it } from "vitest";
-import { eurosEnCentimes, montantEnCentimes } from "../facture.rules";
+import { ReglesMontantFacture } from "../facture.rules";
+
+const regles = new ReglesMontantFacture();
 
 describe("Règles du montant", () => {
   it.each([
@@ -14,61 +16,73 @@ describe("Règles du montant", () => {
     ["0,05", 5],
     ["45", 4500],
   ])("US-XXX-6 – « %s » vaut %i centimes", (saisie, centimes) => {
-    expect(eurosEnCentimes(saisie)).toBe(centimes);
+    expect(regles.eurosEnCentimes(saisie)).toBe(centimes);
   });
 
   it("US-XXX-6 – une saisie hors format ne donne pas de montant", () => {
-    expect(eurosEnCentimes("abc")).toBeNaN();
+    expect(regles.eurosEnCentimes("abc")).toBeNaN();
   });
 
   it("US-XXX-6 – un montant de 0 € est refusé", () => {
-    expect(montantEnCentimes("0")).toEqual({
+    expect(regles.montantEnCentimes("0")).toEqual({
       ok: false,
       raison: "montant-invalide",
     });
   });
 
   it("US-XXX-6 – un montant positif est accepté en centimes", () => {
-    expect(montantEnCentimes("120,50")).toEqual({ ok: true, valeur: 12050 });
+    expect(regles.montantEnCentimes("120,50")).toEqual({
+      ok: true,
+      valeur: 12050,
+    });
   });
 });
 ```
 
-Le use-case se teste avec une doublure du port, en mémoire : aucune base.
+Le use-case se teste avec une doublure du port, une classe en mémoire qui l'implémente : aucune base.
 
 <!-- fichier: src/core/factures/__tests__/creer-facture.use-case.test.ts -->
 ```ts
 // src/core/factures/__tests__/creer-facture.use-case.test.ts
 import { describe, expect, it } from "vitest";
+import { Facture } from "../facture.entity";
 import type { FactureRepository } from "../facture-repository.port";
-import { creerFacture } from "../use-cases/creer-facture.use-case";
+import { CreerFacture } from "../use-cases/creer-facture.use-case";
 
-function facturesEnMemoire() {
-  const enregistrees: {
+class FacturesEnMemoire implements FactureRepository {
+  readonly enregistrees: {
     utilisateurId: string;
     client: string;
     montantCentimes: number;
   }[] = [];
-  const factures: FactureRepository = {
-    async inserer(utilisateurId, donnees) {
-      enregistrees.push({ utilisateurId, ...donnees });
-      return { id: `facture-${enregistrees.length}` };
-    },
-  };
-  return { factures, enregistrees };
+
+  async inserer(
+    utilisateurId: string,
+    donnees: { client: string; montantCentimes: number },
+  ): Promise<Facture> {
+    this.enregistrees.push({ utilisateurId, ...donnees });
+    return new Facture({
+      id: `facture-${this.enregistrees.length}`,
+      utilisateurId,
+      ...donnees,
+      statut: "brouillon",
+      creeLe: new Date("2026-03-09T10:00:00Z"),
+    });
+  }
 }
 
-describe("creerFacture", () => {
+describe("CreerFacture", () => {
   it("US-XXX-6 – « 120,50 » est enregistré en 12050 centimes pour la personne", async () => {
-    const { factures, enregistrees } = facturesEnMemoire();
+    const factures = new FacturesEnMemoire();
 
-    const resultat = await creerFacture(
-      { factures },
-      { utilisateurId: "camille", client: "Atelier Dupont", montant: "120,50" },
-    );
+    const resultat = await new CreerFacture(factures).executer({
+      utilisateurId: "camille",
+      client: "Atelier Dupont",
+      montant: "120,50",
+    });
 
     expect(resultat).toEqual({ ok: true, valeur: { id: "facture-1" } });
-    expect(enregistrees).toEqual([
+    expect(factures.enregistrees).toEqual([
       {
         utilisateurId: "camille",
         client: "Atelier Dupont",
@@ -78,15 +92,16 @@ describe("creerFacture", () => {
   });
 
   it("US-XXX-6 – un montant de 0 € est refusé et rien n'est enregistré", async () => {
-    const { factures, enregistrees } = facturesEnMemoire();
+    const factures = new FacturesEnMemoire();
 
-    const resultat = await creerFacture(
-      { factures },
-      { utilisateurId: "camille", client: "Atelier Dupont", montant: "0" },
-    );
+    const resultat = await new CreerFacture(factures).executer({
+      utilisateurId: "camille",
+      client: "Atelier Dupont",
+      montant: "0",
+    });
 
     expect(resultat).toEqual({ ok: false, raison: "montant-invalide" });
-    expect(enregistrees).toEqual([]);
+    expect(factures.enregistrees).toEqual([]);
   });
 });
 ```
@@ -206,8 +221,8 @@ import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import {
+  DrizzleFactureRepository,
   type FiltresListeFactures,
-  factureRepository,
 } from "../facture.repository";
 import { factures } from "../facture.table";
 
@@ -245,12 +260,12 @@ async function ajouter(
     .values({ utilisateurId, client, montantCentimes, statut });
 }
 
-describe("factureRepository.lister", () => {
+describe("DrizzleFactureRepository.lister", () => {
   it("US-XXX-1 – Camille ne voit pas les factures de Léo", async () => {
     await ajouter("camille", "Atelier Dupont", 12050);
     await ajouter("leo", "Boulangerie Martin", 4500);
 
-    const { factures: liste, total } = await factureRepository(db).lister(
+    const { factures: liste, total } = await new DrizzleFactureRepository(db).lister(
       "camille",
       FILTRES_PAR_DEFAUT,
     );
@@ -263,7 +278,7 @@ describe("factureRepository.lister", () => {
     await ajouter("camille", "Atelier Dupont", 12050, "payee");
     await ajouter("camille", "Café Leroy", 8000, "brouillon");
 
-    const { factures: liste } = await factureRepository(db).lister("camille", {
+    const { factures: liste } = await new DrizzleFactureRepository(db).lister("camille", {
       ...FILTRES_PAR_DEFAUT,
       statut: "payee",
     });
@@ -274,7 +289,7 @@ describe("factureRepository.lister", () => {
   it("US-XXX-2 – la recherche ignore les majuscules", async () => {
     await ajouter("camille", "Atelier Dupont", 12050);
 
-    const { factures: liste } = await factureRepository(db).lister("camille", {
+    const { factures: liste } = await new DrizzleFactureRepository(db).lister("camille", {
       ...FILTRES_PAR_DEFAUT,
       recherche: "dupont",
     });
@@ -286,7 +301,7 @@ describe("factureRepository.lister", () => {
     await ajouter("camille", "Remise 100%", 1000);
     await ajouter("camille", "Atelier Dupont", 12050);
 
-    const { factures: liste } = await factureRepository(db).lister("camille", {
+    const { factures: liste } = await new DrizzleFactureRepository(db).lister("camille", {
       ...FILTRES_PAR_DEFAUT,
       recherche: "100%",
     });
@@ -298,7 +313,7 @@ describe("factureRepository.lister", () => {
     await ajouter("camille", "Client_1", 1000);
     await ajouter("camille", "Client11", 2000);
 
-    const { factures: liste } = await factureRepository(db).lister("camille", {
+    const { factures: liste } = await new DrizzleFactureRepository(db).lister("camille", {
       ...FILTRES_PAR_DEFAUT,
       recherche: "Client_1",
     });
@@ -310,7 +325,7 @@ describe("factureRepository.lister", () => {
     await ajouter("camille", "Atelier\\Dupont", 1000);
     await ajouter("camille", "Atelier Dupont", 2000);
 
-    const { factures: liste } = await factureRepository(db).lister("camille", {
+    const { factures: liste } = await new DrizzleFactureRepository(db).lister("camille", {
       ...FILTRES_PAR_DEFAUT,
       recherche: "Atelier\\Dupont",
     });
@@ -323,7 +338,7 @@ describe("factureRepository.lister", () => {
     await ajouter("camille", "Atelier Dupont", 12050);
     await ajouter("camille", "Café Leroy", 8000);
 
-    const { factures: liste } = await factureRepository(db).lister("camille", {
+    const { factures: liste } = await new DrizzleFactureRepository(db).lister("camille", {
       ...FILTRES_PAR_DEFAUT,
       tri: "montant-desc",
     });
@@ -336,7 +351,7 @@ describe("factureRepository.lister", () => {
       await ajouter("camille", `Client ${numero}`, numero * 100);
     }
 
-    const { factures: liste, total } = await factureRepository(db).lister(
+    const { factures: liste, total } = await new DrizzleFactureRepository(db).lister(
       "camille",
       { ...FILTRES_PAR_DEFAUT, page: 2 },
     );
@@ -346,9 +361,9 @@ describe("factureRepository.lister", () => {
   });
 });
 
-describe("factureRepository.inserer", () => {
+describe("DrizzleFactureRepository.inserer", () => {
   it("US-XXX-6 – la facture créée appartient à la personne indiquée", async () => {
-    const repository = factureRepository(db);
+    const repository = new DrizzleFactureRepository(db);
     const { id } = await repository.inserer("camille", {
       client: "Atelier Dupont",
       montantCentimes: 12050,

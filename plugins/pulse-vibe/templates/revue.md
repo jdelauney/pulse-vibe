@@ -1,7 +1,7 @@
 # Revue – {{TACHE}} – {{DATE}}
 
 **Verdict** : ✅ Validé | ⚠️ À corriger | ⛔ Bloquant
-**Mode** : {{/pulse:review | /pulse:spirc avec points de validation | /pulse:spirc autonome | /pulse:spirc rapide (toute l'US)}}{{ · contrôle de sécurité à chaque tâche}}
+**Mode** : {{/pulse:review | /pulse:spirc avec points de validation | /pulse:spirc autonome | /pulse:spirc rapide (toute l'US)}}
 
 ## Critères d'acceptation
 
@@ -32,22 +32,6 @@
 | Critère | Tests | Résultat |
 |---|---|---|
 | | | ✅ / ❌ / non couvert |
-
-## Audit de sécurité
-
-<!-- Seulement avec le contrôle de sécurité à chaque tâche (option -x) ; sinon supprimer cette section, avec ce commentaire. Réponse de l'auditeur, portée tache ; ses tests du cambrioleur vont dans la fiche de test. -->
-
-- **Niveau** : {{🟢 Bon | 🟠 À améliorer | 🔴 Failles importantes}} · {{n}} bloquant(s)
-
-| Point | Résultat | Constat | Correction proposée |
-|---|---|---|---|
-| | ✅ / ⚠️ / ⛔ / — hors de la tâche | | |
-
-## Sécurité
-
-| Point | Résultat | Détail |
-|---|---|---|
-| S1 Secrets | ✅ / ⚠️ / ⛔ / — | |
 
 ## Qualité et lisibilité
 

@@ -2,6 +2,7 @@
 description: Produire le guide de réalisation pas à pas (docs/guide/) à partir du plan - pour chaque tâche, dans l'ordre, les commandes à copier-coller, ce qu'il faut vérifier et les actions manuelles
 argument-hint: "[expliquer] (facultatif : présenter le guide pas à pas)"
 disable-model-invocation: true
+model: haiku
 allowed-tools: Bash(pulse-aidd contexte guide) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd guide) Bash(pulse-aidd etat *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Edit(aidd_docs/tasks/**)
 ---
 

@@ -43,27 +43,27 @@ export default function Layout({ children }: LayoutProps<"/factures">) {
 }
 ```
 
-Ajoutez cette méthode à l'objet renvoyé par `factureRepository` (`src/db/factures/facture.repository.ts`), et `ne`, `sql` à son import de `"drizzle-orm"` :
+Ajoutez cette méthode à la classe `DrizzleFactureRepository` (`src/db/factures/facture.repository.ts`), et `ne`, `sql` à son import de `"drizzle-orm"`. Elle sert seulement l'affichage : elle renvoie un nombre, pas une entité.
 
 <!-- sans-verification: exemple facultatif, hors chaîne -->
 ```ts
-    async totalImpaye(utilisateurId: string): Promise<number> {
-      const [ligne] = await db
-        .select({
-          total:
-            sql<number>`coalesce(sum(${factures.montantCentimes}), 0)`.mapWith(
-              Number,
-            ),
-        })
-        .from(factures)
-        .where(
-          and(
-            eq(factures.utilisateurId, utilisateurId),
-            ne(factures.statut, "payee"),
+  async totalImpaye(utilisateurId: string): Promise<number> {
+    const [ligne] = await this.db
+      .select({
+        total:
+          sql<number>`coalesce(sum(${factures.montantCentimes}), 0)`.mapWith(
+            Number,
           ),
-        );
-      return ligne?.total ?? 0;
-    },
+      })
+      .from(factures)
+      .where(
+        and(
+          eq(factures.utilisateurId, utilisateurId),
+          ne(factures.statut, "payee"),
+        ),
+      );
+    return ligne?.total ?? 0;
+  }
 ```
 
 <!-- sans-verification: exemple facultatif, hors chaîne -->
@@ -71,10 +71,10 @@ Ajoutez cette méthode à l'objet renvoyé par `factureRepository` (`src/db/fact
 // src/features/factures/queries/total-impaye.query.ts
 import "server-only";
 import { getDb } from "@src/db/db-client";
-import { factureRepository } from "@src/db/factures/facture.repository";
+import { DrizzleFactureRepository } from "@src/db/factures/facture.repository";
 
 export async function totalImpaye(utilisateurId: string): Promise<number> {
-  return factureRepository(getDb()).totalImpaye(utilisateurId);
+  return new DrizzleFactureRepository(getDb()).totalImpaye(utilisateurId);
 }
 ```
 

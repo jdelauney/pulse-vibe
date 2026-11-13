@@ -57,28 +57,28 @@ Le secret de webhook du poste et celui du site en ligne sont **différents** : c
 | Fichier | Rôle |
 |---|---|
 | `src/config/env.ts`, `.env.example` (modifiés) | Les deux variables Stripe |
-| `src/core/paiement/commande.entity.ts` | Statuts, offre, événement de paiement, résultat de confirmation |
+| `src/core/paiement/commande.entity.ts` | Classe `Commande` (et `CommandeVue`), statuts, offre, événement de paiement, résultat de confirmation |
 | `src/core/paiement/paiement.errors.ts` | Code de l'erreur attendue (signature invalide) |
-| `src/core/paiement/commande-repository.port.ts` | Ce que les use-cases attendent de la base |
-| `src/core/paiement/passerelle-paiement.port.ts` | Ce que les use-cases attendent de Stripe |
-| `src/core/paiement/use-cases/ouvrir-paiement.use-case.ts` | Crée la commande, ouvre la page de paiement, relie les deux |
-| `src/core/paiement/use-cases/confirmer-paiement.use-case.ts` | Ne retient qu'un paiement encaissé, une fois par événement |
+| `src/core/paiement/commande-repository.port.ts` | Interface `CommandeRepository` : ce que les use-cases attendent de la base |
+| `src/core/paiement/passerelle-paiement.port.ts` | Interface `PasserellePaiement` : ce que les use-cases attendent de Stripe |
+| `src/core/paiement/use-cases/ouvrir-paiement.use-case.ts` | Classe `OuvrirPaiement` : crée la commande, ouvre la page de paiement, relie les deux |
+| `src/core/paiement/use-cases/confirmer-paiement.use-case.ts` | Classe `ConfirmerPaiement` : ne retient qu'un paiement encaissé, une fois par événement |
 | `src/db/paiement/commande.table.ts`, `src/db/paiement/evenement-stripe.table.ts` | Tables `commande` et `evenement_stripe` |
 | `drizzle/<numéro>_<nom>.sql` | Migration générée |
-| `src/db/paiement/commande.repository.ts` | `commandeRepository(db)` : écritures, lecture, condition de propriété |
-| `src/adapters/payment/payment.adapter.ts` | Client Stripe, session de paiement, vérification de signature, pannes en `ErreurService` |
+| `src/db/paiement/commande.repository.ts` | Classe `DrizzleCommandeRepository` (la base reçue par le constructeur) : écritures, lecture, condition de propriété |
+| `src/adapters/payment/payment.adapter.ts` | Classe `StripePaiementAdapter` (les clés reçues par le constructeur) : client Stripe, session de paiement, vérification de signature, pannes en `ErreurService` |
 | `src/features/paiement/constants/offre.ts` | Libellé et prix, côté serveur |
-| `src/features/paiement/actions/payer.action.ts` | Action `payerAction` |
-| `src/features/paiement/webhooks/stripe-paiement.webhook.ts` | Reçoit le message de Stripe, vérifie la signature, déclenche le use-case |
-| `src/features/paiement/queries/commande-par-session.query.ts` | La commande de la personne pour une session (`server-only`) |
+| `src/features/paiement/actions/payer.action.ts` | Action `payerAction` : assemble `OuvrirPaiement` avec son repository et son adapter |
+| `src/features/paiement/webhooks/stripe-paiement.webhook.ts` | Reçoit le message de Stripe, vérifie la signature, déclenche `ConfirmerPaiement` |
+| `src/features/paiement/queries/commande-par-session.query.ts` | La commande de la personne pour une session, en données simples (`server-only`) |
 | `src/features/paiement/components/sections/bouton-payer.tsx`, `statut-paiement.tsx` | Bouton « Payer » et message de la page « Merci » (props) |
 | `src/features/paiement/components/containers/bouton-payer.container.tsx` | Branche l'action `payerAction` |
 | `src/features/paiement/components/containers/statut-paiement.container.tsx` | Lit la session et la commande |
 | `app/api/stripe/webhook/route.ts` | Réception des webhooks (délègue à `features/paiement/webhooks/`) |
 | `app/(connecte)/paiement/page.tsx`, `app/(connecte)/paiement/merci/page.tsx` | Pages « Paiement » et « Merci » |
 | `proxy.ts` (modifié) | `"/paiement/:path*"` dans le `matcher` |
-| `src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts`, `confirmer-paiement.use-case.test.ts` | Tests unitaires des use-cases (doublures en mémoire) |
-| `src/adapters/payment/__tests__/payment.adapter.test.ts` | Tests de l'adapter (Stripe doublé, signatures réelles) |
+| `src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts`, `confirmer-paiement.use-case.test.ts` | Tests unitaires des use-cases (doublures qui implémentent les interfaces) |
+| `src/adapters/payment/__tests__/payment.adapter.test.ts` | Tests de `StripePaiementAdapter` (Stripe doublé, signatures réelles) |
 | `src/db/paiement/__tests__/commande.repository.test.ts` | Tests d'intégration avec PGlite |
 | `src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts` | Tests du webhook (réponses, journal) |
 
@@ -88,11 +88,11 @@ Le secret de webhook du poste et celui du site en ligne sont **différents** : c
 
 Le parcours :
 
-1. La personne clique sur « Payer 19,00 € ». L'action `payerAction` crée une commande `en_attente`, puis une session Stripe Checkout, et redirige vers la page de Stripe.
+1. La personne clique sur « Payer 19,00 € ». L'action `payerAction` (par `OuvrirPaiement`) crée une commande `en_attente`, puis une session Stripe Checkout, et redirige vers la page de Stripe.
 2. Après le paiement, Stripe renvoie la personne sur `/paiement/merci`, **et** envoie un webhook signé à `/api/stripe/webhook`.
-3. Le webhook vérifie la signature, note l'identifiant de l'événement (une seule fois), et passe la commande en `payee`. **Seul le webhook décide qu'une commande est payée** : la page « Merci » lit seulement le statut.
+3. Le webhook vérifie la signature, puis `ConfirmerPaiement` note l'identifiant de l'événement (une seule fois) et passe la commande en `payee`. **Seul le webhook décide qu'une commande est payée** : la page « Merci » lit seulement le statut.
 
-Le domaine s'appelle `paiement` : `src/core/paiement/` (les règles et les ports), `src/db/paiement/` (le stockage en base), `src/features/paiement/` (l'action, le webhook, l'écran). Le service Stripe vit dans `src/adapters/payment/`. Le Route Handler `app/api/stripe/webhook/route.ts` reste fin : il passe la requête au webhook de la feature (architecture.md §7).
+Le domaine s'appelle `paiement` : `src/core/paiement/` (les règles et les ports), `src/db/paiement/` (le stockage en base), `src/features/paiement/` (l'action, le webhook, l'écran). Le service Stripe vit dans `src/adapters/payment/` (classe `StripePaiementAdapter`). Le Route Handler `app/api/stripe/webhook/route.ts` reste fin : il passe la requête au webhook de la feature (architecture.md §7).
 
 - Étape 1 – Les variables : `pulse-aidd pile recette paiement etape 1`
 - Étape 2 – Le métier : entité, erreur et ports : `pulse-aidd pile recette paiement etape 2`

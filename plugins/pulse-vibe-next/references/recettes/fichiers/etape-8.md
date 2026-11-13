@@ -1,6 +1,6 @@
 ### 8. Les actions et les lectures
 
-L'identifiant de la propriétaire vient **de la session** (`ctx.utilisateur.id`), jamais de la saisie. Chaque action assemble le use-case avec le repository et l'adapter, traduit un échec en message, puis appelle `refresh()`.
+L'identifiant de la propriétaire vient **de la session** (`ctx.utilisateur.id`), jamais de la saisie. Chaque action assemble les objets (racine de composition) : le use-case reçoit le repository et l'adapter par son constructeur. Elle traduit un échec en message, puis appelle `refresh()`.
 
 <!-- fichier: src/features/fichiers/actions/preparer-envoi.action.ts -->
 ```ts
@@ -8,10 +8,11 @@ L'identifiant de la propriétaire vient **de la session** (`ctx.utilisateur.id`)
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
-import { preparerEnvoi } from "@src/core/fichiers/use-cases/preparer-envoi.use-case";
+import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { env } from "@src/config/env";
+import { PreparerEnvoi } from "@src/core/fichiers/use-cases/preparer-envoi.use-case";
 import { getDb } from "@src/db/db-client";
-import { fichierRepository } from "@src/db/fichiers/fichier.repository";
+import { DrizzleFichierRepository } from "@src/db/fichiers/fichier.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { demandeEnvoiSchema } from "../schemas/fichier.schema";
 
@@ -19,12 +20,17 @@ import { demandeEnvoiSchema } from "../schemas/fichier.schema";
 export const preparerEnvoiAction = actionConnectee
   .metadata({ nom: "preparerEnvoi" })
   .inputSchema(demandeEnvoiSchema)
-  .action(async ({ parsedInput, ctx }) =>
-    preparerEnvoi(
-      { fichiers: fichierRepository(getDb()), stockage: stockageFichiers },
-      { ...parsedInput, id: randomUUID(), utilisateurId: ctx.utilisateur.id },
-    ),
-  );
+  .action(async ({ parsedInput, ctx }) => {
+    const preparer = new PreparerEnvoi(
+      new DrizzleFichierRepository(getDb()),
+      new StockageR2Adapter(env),
+    );
+    return preparer.executer({
+      ...parsedInput,
+      id: randomUUID(),
+      utilisateurId: ctx.utilisateur.id,
+    });
+  });
 ```
 
 <!-- fichier: src/features/fichiers/actions/confirmer-envoi.action.ts -->
@@ -32,10 +38,11 @@ export const preparerEnvoiAction = actionConnectee
 // src/features/fichiers/actions/confirmer-envoi.action.ts
 "use server";
 
-import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
-import { confirmerEnvoi } from "@src/core/fichiers/use-cases/confirmer-envoi.use-case";
+import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { env } from "@src/config/env";
+import { ConfirmerEnvoi } from "@src/core/fichiers/use-cases/confirmer-envoi.use-case";
 import { getDb } from "@src/db/db-client";
-import { fichierRepository } from "@src/db/fichiers/fichier.repository";
+import { DrizzleFichierRepository } from "@src/db/fichiers/fichier.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { refresh } from "next/cache";
 import { returnServerError } from "next-safe-action";
@@ -47,10 +54,14 @@ export const confirmerEnvoiAction = actionConnectee
   .metadata({ nom: "confirmerEnvoi" })
   .inputSchema(idFichierSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const resultat = await confirmerEnvoi(
-      { fichiers: fichierRepository(getDb()), stockage: stockageFichiers },
-      { id: parsedInput.id, utilisateurId: ctx.utilisateur.id },
+    const confirmer = new ConfirmerEnvoi(
+      new DrizzleFichierRepository(getDb()),
+      new StockageR2Adapter(env),
     );
+    const resultat = await confirmer.executer({
+      id: parsedInput.id,
+      utilisateurId: ctx.utilisateur.id,
+    });
     if (!resultat.ok) returnServerError(MESSAGES_FICHIER[resultat.raison]);
     refresh();
     return { id: resultat.valeur.id };
@@ -62,10 +73,11 @@ export const confirmerEnvoiAction = actionConnectee
 // src/features/fichiers/actions/supprimer-fichier.action.ts
 "use server";
 
-import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
-import { supprimerFichier } from "@src/core/fichiers/use-cases/supprimer-fichier.use-case";
+import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { env } from "@src/config/env";
+import { SupprimerFichier } from "@src/core/fichiers/use-cases/supprimer-fichier.use-case";
 import { getDb } from "@src/db/db-client";
-import { fichierRepository } from "@src/db/fichiers/fichier.repository";
+import { DrizzleFichierRepository } from "@src/db/fichiers/fichier.repository";
 import { actionConnectee } from "@src/lib/safe-action";
 import { refresh } from "next/cache";
 import { returnServerError } from "next-safe-action";
@@ -76,27 +88,31 @@ export const supprimerFichierAction = actionConnectee
   .metadata({ nom: "supprimerFichier" })
   .inputSchema(idFichierSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const resultat = await supprimerFichier(
-      { fichiers: fichierRepository(getDb()), stockage: stockageFichiers },
-      { id: parsedInput.id, utilisateurId: ctx.utilisateur.id },
+    const supprimer = new SupprimerFichier(
+      new DrizzleFichierRepository(getDb()),
+      new StockageR2Adapter(env),
     );
+    const resultat = await supprimer.executer({
+      id: parsedInput.id,
+      utilisateurId: ctx.utilisateur.id,
+    });
     if (!resultat.ok) returnServerError(MESSAGES_FICHIER[resultat.raison]);
     refresh();
     return { ok: true };
   });
 ```
 
-Les lectures passent directement par le repository, sans use-case (architecture.md §6).
+Les lectures passent directement par le repository, sans use-case (architecture.md §6) ; elles renvoient des données simples, jamais une instance.
 
 <!-- fichier: src/features/fichiers/queries/lister-fichiers.query.ts -->
 ```ts
 // src/features/fichiers/queries/lister-fichiers.query.ts
 import "server-only";
 import { getDb } from "@src/db/db-client";
-import { fichierRepository } from "@src/db/fichiers/fichier.repository";
+import { DrizzleFichierRepository } from "@src/db/fichiers/fichier.repository";
 
 export async function listerFichiers(utilisateurId: string) {
-  return fichierRepository(getDb()).listerEnvoyes(utilisateurId);
+  return new DrizzleFichierRepository(getDb()).listerEnvoyes(utilisateurId);
 }
 ```
 
@@ -105,11 +121,14 @@ export async function listerFichiers(utilisateurId: string) {
 // src/features/fichiers/queries/trouver-fichier.query.ts
 import "server-only";
 import { getDb } from "@src/db/db-client";
-import { fichierRepository } from "@src/db/fichiers/fichier.repository";
+import { DrizzleFichierRepository } from "@src/db/fichiers/fichier.repository";
 
 /** Le fichier envoyé de cette personne, ou null (inconnu, en attente, ou à quelqu'un d'autre). */
 export async function trouverFichier(id: string, utilisateurId: string) {
-  return fichierRepository(getDb()).trouverEnvoye(id, utilisateurId);
+  return new DrizzleFichierRepository(getDb()).trouverEnvoye(
+    id,
+    utilisateurId,
+  );
 }
 ```
 
