@@ -1,6 +1,6 @@
 {
   "name": "pulseia",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Installe la méthode Pulse (plugins pulse et pulse-next) dans Codex, Cursor, OpenCode et GitHub Copilot. En français.",
   "license": "MIT",
   "author": "PulseIA",

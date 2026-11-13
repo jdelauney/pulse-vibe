@@ -66,8 +66,13 @@ Les règles de Pulse sont écrites pour Claude Code. Dans votre outil :
 - **Outils cités** (Read, Write, Edit, Glob, Grep, Bash, PowerShell, WebFetch, TodoWrite, Agent) : leurs équivalents dans votre environnement.
 - **Sortie en plusieurs parties** (« Partie 1/3 ») : lancer la commande \`pulse-aidd suite\` indiquée pour chaque partie suivante, et tout lire avant de continuer.
 - **Instructions du projet** : \`CLAUDE.md\` (\`AGENTS.md\` y renvoie) ; chaque ligne \`@chemin\` de son bloc mémoire est un fichier à lire.
-- **Garde-fous automatiques** (clés secrètes, commandes qui détruisent ou publient) : réservés pour l'instant à Claude Code. Appliquer soi-même les règles de sécurité de Pulse, et demander l'accord de la personne avant toute commande qui supprime, écrase, envoie ou publie.
 `;
+
+/** Ligne de la note sur les garde-fous, selon qu'ils sont installés dans l'outil (pulseia installer --gardes). */
+const noteGardes = (actifs) =>
+  actifs
+    ? "- **Garde-fous automatiques** de Pulse actifs : un appel refusé par « 🔒 Pulse » s'explique simplement à la personne, puis l'alternative indiquée s'applique. Une commande qui demande l'accord de la personne se lance seulement après son « oui » explicite.\n"
+    : "- **Garde-fous automatiques** de Pulse absents de cet outil : appliquer soi-même les règles de sécurité de Pulse, et demander l'accord de la personne avant toute commande qui supprime, écrase, envoie ou publie.\n";
 
 /** Ligne d'injection de Claude Code qui ferme chaque SKILL.md : !`pulse-aidd contexte <commande>`. */
 const INJECTION = /^!`((?:pulse-aidd|pulse-pile-[a-z0-9-]+) contexte [a-z0-9-]+)`\s*$/m;
@@ -94,4 +99,4 @@ function skillPortable(commande, texte) {
   return `${lignes.join("\n")}\n${reecrire(c).replace(/^\n+/, "")}`;
 }
 
-module.exports = { lireFrontmatter, valeur, yaml, reecrire, appel, skillPortable, NOTE_OUTILS, INJECTION };
+module.exports = { lireFrontmatter, valeur, yaml, reecrire, appel, skillPortable, NOTE_OUTILS, noteGardes, INJECTION };

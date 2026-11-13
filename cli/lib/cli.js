@@ -2,6 +2,7 @@
 "use strict";
 
 const { spawnSync } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 const { PACKS, COEUR, versionPaquet, versionPlugin, racineContenu } = require("./chemins");
 const { CIBLES, IDS, cible } = require("./cibles");
@@ -18,10 +19,12 @@ const AIDE = `pulseia ${versionPaquet()} – la méthode Pulse dans votre outil 
       --pack next | --sans-pack   ajoute ou retire le pack Next.js
       --oui                       sans question (réponses par défaut)
       --sans-global               sans installer l'outil pulse-aidd sur l'ordinateur
+      --sans-gardes | --gardes    sans les garde-fous, ou avec même si pulseia n'est pas dans le PATH
   pulseia mettre-a-jour [--oui]   réinstalle les mêmes outils avec cette version
   pulseia desinstaller [--outil …] retire Pulse de ces outils (tous par défaut)
   pulseia etat                    versions, outils équipés, prérequis et fichiers modifiés
   pulseia aide                    cette aide
+  pulseia hook <outil> <événement> garde-fous, appelé par les hooks des outils (pas à la main)
 `;
 
 const CLAUDE = `Claude Code utilise les plugins Pulse directement. Dans une session Claude Code :
@@ -30,7 +33,7 @@ const CLAUDE = `Claude Code utilise les plugins Pulse directement. Dans une sess
   /plugin install pulse-next@pulseia   (pack Next.js, facultatif)`;
 
 function lireOptions(args) {
-  const o = { commande: null, outils: null, pack: undefined, oui: false, global: true };
+  const o = { commande: null, outils: null, pack: undefined, oui: false, global: true, gardes: undefined };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     const valeurSuivante = () => {
@@ -43,6 +46,8 @@ function lireOptions(args) {
     else if (a === "--sans-pack") o.pack = null;
     else if (a === "--oui" || a === "-y") o.oui = true;
     else if (a === "--sans-global") o.global = false;
+    else if (a === "--sans-gardes") o.gardes = false;
+    else if (a === "--gardes") o.gardes = true;
     else if (a === "--aide" || a === "-h" || a === "--help") o.commande = "aide";
     else if (a === "--version" || a === "-v") o.commande = "version";
     else if (!a.startsWith("-") && !o.commande) o.commande = a;
@@ -92,13 +97,30 @@ function afficherRapport(rapport) {
   for (const g of rapport.gardes) console.log(`  gardé : ${g.chemin} (${g.raison})`);
 }
 
-function afficherSuite(outils) {
+/**
+ * Garde-fous voulus et possibles : leurs hooks lancent « pulseia hook », qui doit être dans le PATH
+ * (sinon Copilot bloquerait chaque appel d'outil). --gardes force, --sans-gardes retire.
+ */
+function gardesActifs(options, precedent) {
+  if (options.gardes === false) return false;
+  if (options.gardes === true) return true;
+  if (!surPath("pulseia")) {
+    if (precedent !== false) console.log("Garde-fous non installés : pulseia n'est pas dans le PATH de cet ordinateur (npm install -g pulseia, puis pulseia mettre-a-jour --gardes).");
+    return false;
+  }
+  return precedent !== false;
+}
+
+function afficherSuite(outils, gardes) {
   console.log("\nC'est prêt. Pour commencer :");
   console.log("  1. Redémarrez votre outil d'IA (fermez-le puis rouvrez-le).");
   console.log("  2. Ouvrez-y le dossier de votre projet (un dossier vide pour un nouveau projet).");
   console.log("  3. Tapez la commande de départ : la première pour un nouveau projet, la seconde pour un projet existant.");
   for (const id of outils) console.log(`     ${cible(id).libelle} : ${cible(id).appel("nouveau")} ou ${cible(id).appel("init")}`);
-  console.log("\nÀ savoir : les garde-fous automatiques de Pulse (clés secrètes, commandes qui suppriment ou publient) fonctionnent pour l'instant seulement dans Claude Code.");
+  if (gardes) {
+    console.log("\nGarde-fous de Pulse installés (clés secrètes, fichiers .env, commandes qui suppriment ou publient, contrôle de fin de tour).");
+    if (outils.includes("codex")) console.log("  Codex : tapez /hooks et approuvez les hooks de Pulse (une fois, puis après chaque mise à jour de Pulse).");
+  } else console.log("\nÀ savoir : sans les garde-fous automatiques de Pulse, appliquez vous-même ses règles de sécurité (pulseia mettre-a-jour --gardes pour les ajouter).");
   console.log("Chaque commande pulse-aidd lancée par l'IA peut vous demander une autorisation : acceptez-la pour pulse-aidd.");
 }
 
@@ -142,9 +164,10 @@ async function installer(options, questions) {
   for (const m of manques) console.log(`À faire : ${m}`);
   const global = await installerGlobal(options, questions);
   const tous = [...new Set([...installation.outils, ...outils])];
-  afficherRapport(installation.appliquer({ outils: tous, packs }));
+  const gardes = gardesActifs(options, installation.outils.length ? installation.gardes : undefined);
+  afficherRapport(installation.appliquer({ outils: tous, packs, gardes }));
   console.log(`Pulse ${versionPlugin(COEUR)}${packs.length ? ` et le pack ${packs.join(", ")}` : ""} installés pour : ${tous.map((o) => cible(o).libelle).join(", ")}.`);
-  afficherSuite(outils);
+  afficherSuite(outils, gardes);
   return manques.length || !global ? 1 : 0;
 }
 
@@ -155,7 +178,7 @@ async function mettreAJour(options, questions) {
     return 1;
   }
   const global = await installerGlobal(options, questions);
-  afficherRapport(installation.appliquer({ outils: installation.outils, packs: installation.packs }));
+  afficherRapport(installation.appliquer({ outils: installation.outils, packs: installation.packs, gardes: gardesActifs(options, installation.gardes) }));
   console.log(`Pulse ${versionPlugin(COEUR)} à jour pour : ${installation.outils.map((o) => cible(o).libelle).join(", ")}. Redémarrez votre outil d'IA.`);
   return global ? 0 : 1;
 }
@@ -164,7 +187,7 @@ function desinstaller(options) {
   const installation = new Installation();
   const retires = options.outils || installation.outils;
   const restants = installation.outils.filter((o) => !retires.includes(o));
-  afficherRapport(installation.appliquer({ outils: restants, packs: restants.length ? installation.packs : [] }));
+  afficherRapport(installation.appliquer({ outils: restants, packs: restants.length ? installation.packs : [], gardes: restants.length > 0 && installation.gardes }));
   if (restants.length) console.log(`Pulse reste installé pour : ${restants.map((o) => cible(o).libelle).join(", ")}.`);
   else console.log("Pulse est retiré de vos outils. Pour retirer aussi l'outil pulse-aidd : npm uninstall -g pulseia");
   return 0;
@@ -176,7 +199,7 @@ function etat() {
   console.log(`Contenu : ${path.relative(process.cwd(), racineContenu()) || "."}`);
   console.log(`Installé pour : ${installation.outils.map((o) => cible(o).libelle).join(", ") || "aucun outil"}${installation.packs.length ? ` (pack ${installation.packs.join(", ")})` : ""}`);
   if (installation.registre.version && installation.registre.version !== versionPaquet()) console.log(`Version installée : ${installation.registre.version} (pulseia mettre-a-jour pour passer à ${versionPaquet()})`);
-  console.log(`Fichiers posés : ${Object.keys(installation.registre.fichiers).length}`);
+  console.log(`Fichiers posés : ${Object.keys(installation.registre.fichiers).length} ; garde-fous : ${installation.gardes ? "oui" : "non"}`);
   for (const f of installation.modifies()) console.log(`  modifié depuis son installation : ${f}`);
   console.log(`Outils trouvés sur cet ordinateur : ${CIBLES.filter((c) => c.detecter()).map((c) => c.libelle).join(", ") || "aucun"}${surPath("claude") ? ", Claude Code" : ""}`);
   console.log(`pulse-aidd dans le PATH : ${surPath("pulse-aidd") ? "oui" : "non (npm install -g pulseia)"}`);
@@ -186,6 +209,20 @@ function etat() {
 }
 
 async function principal(args) {
+  // Appelé par les hooks des outils : aucune option, réponse sur la sortie standard, jamais d'erreur bloquante.
+  if (args[0] === "hook") {
+    const { hook } = require("./gardes");
+    let texte = "";
+    try {
+      texte = fs.readFileSync(0, "utf8");
+    } catch {
+      // pas d'entrée
+    }
+    const r = hook(args[1], args[2], texte);
+    if (r.sortie) fs.writeSync(1, r.sortie);
+    if (r.erreur) fs.writeSync(2, r.erreur);
+    return r.code;
+  }
   const options = lireOptions(args);
   const commande = options.commande || "installer";
   if (commande === "aide") {

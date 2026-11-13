@@ -12,7 +12,7 @@ const path = require("path");
 const { spawn, spawnSync } = require("child_process");
 const { StringDecoder } = require("string_decoder");
 const { racineContenu, COEUR, PACKS } = require("./chemins");
-const { reecrire, NOTE_OUTILS } = require("./textes");
+const { reecrire, NOTE_OUTILS, noteGardes } = require("./textes");
 const { Installation } = require("./installation");
 
 /** Sous-commandes qui affichent des règles ou des modèles : sortie entière, réécrite et découpée au besoin. */
@@ -167,7 +167,7 @@ async function lancer(args) {
     }
     if (r.stderr) process.stderr.write(reecrire(r.stderr));
     let sortie = reecrire(r.stdout || "");
-    if (args[0] === "contexte" || args[0] === "etape") sortie += NOTE_OUTILS;
+    if (args[0] === "contexte" || args[0] === "etape") sortie += NOTE_OUTILS + noteGardes(new Installation().gardes);
     afficher(sortie);
     return r.status ?? 1;
   }
