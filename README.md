@@ -27,6 +27,20 @@ Dans une session Claude Code :
 
 Pour la pile Next.js prête à l'emploi : `/plugin install pulse-next@pulseia` (installe aussi `pulse`). Pour écrire vos propres skills Claude Code : `/plugin install pulse-skills@pulseia` (ces commandes s'appelaient `/pulse:skill-creator`, `/pulse:audit-skill` et `/pulse:optimize-skill`).
 
+### Avec Codex, Cursor, OpenCode ou GitHub Copilot
+
+Prérequis : Node.js 22.19 ou plus, Git, et Git for Windows sous Windows. Dans un terminal :
+
+```bash
+npx pulseia
+```
+
+L'assistant repère les outils installés sur votre ordinateur, vous demande lesquels équiper et si vous voulez le pack Next.js, puis installe Pulse pour vous (une seule fois, valable dans tous vos projets). Redémarrez ensuite votre outil : les commandes s'appellent `/pulse-nouveau`, `/pulse-spec`… (dans Codex : `$pulse-nouveau`, `$pulse-spec`…).
+
+Sans question : `npx pulseia installer --outil codex,cursor --pack next --oui`. Ensuite : `pulseia mettre-a-jour`, `pulseia desinstaller`, `pulseia etat` (voir `pulseia aide`).
+
+À savoir : les garde-fous automatiques de Pulse (clés secrètes, commandes qui suppriment ou publient) fonctionnent pour l'instant seulement dans Claude Code.
+
 ## Mettre à jour
 
 Les corrections de Pulse arrivent chez vous seulement après une mise à jour. Faites-la au début de chaque semaine de travail, et dès qu'un message de Pulse semble dépassé.

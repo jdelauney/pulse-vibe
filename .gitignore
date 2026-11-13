@@ -6,3 +6,7 @@ docs/superpowers/
 outils/evals/resultats/
 /.claude/*.json
 /.claude/settings.json
+
+# Paquet pulseia : plugins copiés au npm pack (cli/lib/preparer-contenu.js)
+cli/contenu/
+*.tgz

@@ -126,6 +126,8 @@ function ecrireFichiers(dest, opts) {
       .replace(/\{\{Description en une phrase\.\}\}/g, description || "À compléter après `/pulse:brainstorm`.");
 
   e.ecrire("CLAUDE.md", remplir(lireModele("CLAUDE.md")));
+  // Hors de Claude Code (relais pulse-aidd du paquet pulseia, qui pose PULSE_OUTIL) : AGENTS.md, lu par Codex, Cursor, OpenCode et Copilot, renvoie à CLAUDE.md.
+  if (process.env.PULSE_OUTIL && process.env.PULSE_OUTIL !== "claude") e.ecrire("AGENTS.md", lireModele("AGENTS.md"));
   e.fusionnerGitignore(lireModele("gitignore.template"));
   e.ecrire(".env.example", lireModele("env.example.template"));
   e.ecrire("README.md", remplir(lireModele("README-projet.md")).replace("{{TESTER_EN_LOCAL}}", TESTER_EN_LOCAL));
