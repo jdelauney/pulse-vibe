@@ -57,47 +57,53 @@ verificationsCroisees.push((valeurs, ctx) => {
 ```
 
    Avec `LIMITE_STOCKAGE=redis` sans les deux variables Upstash, le site s'arrête au chargement avec un message qui les nomme.
-6. Créer l'adapter :
+6. Créer l'adapter, une classe qui implémente `Limiteur` comme les deux autres :
 
 <!-- fichier: src/adapters/limite/upstash.adapter.ts -->
 ```ts
 // src/adapters/limite/upstash.adapter.ts
 import "server-only";
-import type { Limiteur, RegleLimite } from "@src/core/shared/limiteur.port";
+import type {
+  Limiteur,
+  RegleLimite,
+  ResultatLimite,
+} from "@src/core/shared/limiteur.port";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-/** Limiteur rangé dans Redis (Upstash), sur une fenêtre glissante. Pour les sites à fort trafic. */
-export function limiteurUpstash(acces: {
-  url: string;
-  token: string;
-}): Limiteur {
-  const redis = new Redis(acces);
+/**
+ * Limiteur rangé dans Redis (Upstash), sur une fenêtre glissante. Pour les sites à fort trafic.
+ * Adapter de la bibliothèque `@upstash/ratelimit` (patron Adapter) et façon de compter interchangeable (Strategy).
+ */
+export class UpstashLimiteurAdapter implements Limiteur {
+  private readonly redis: Redis;
   // Un limiteur Upstash par règle, gardé d'une requête à l'autre (son cache local reste actif).
-  const parRegle = new Map<string, Ratelimit>();
+  private readonly parRegle = new Map<string, Ratelimit>();
 
-  function pour({ nombre, fenetreMs }: RegleLimite): Ratelimit {
+  constructor(acces: { url: string; token: string }) {
+    this.redis = new Redis(acces);
+  }
+
+  async verifier(cle: string, regle: RegleLimite): Promise<ResultatLimite> {
+    const { success, reset } = await this.pour(regle).limit(cle);
+    return { accepte: success, reset };
+  }
+
+  private pour({ nombre, fenetreMs }: RegleLimite): Ratelimit {
     const id = `${nombre}/${fenetreMs}`;
-    let limiteur = parRegle.get(id);
+    let limiteur = this.parRegle.get(id);
     if (!limiteur) {
       limiteur = new Ratelimit({
-        redis,
+        redis: this.redis,
         limiter: Ratelimit.slidingWindow(nombre, `${fenetreMs} ms`),
         prefix: "limite",
         // Upstash lent : la requête passe au bout de 2 secondes au lieu d'attendre.
         timeout: 2000,
       });
-      parRegle.set(id, limiteur);
+      this.parRegle.set(id, limiteur);
     }
     return limiteur;
   }
-
-  return {
-    async verifier(cle, regle) {
-      const { success, reset } = await pour(regle).limit(cle);
-      return { accepte: success, reset };
-    },
-  };
 }
 ```
 
@@ -108,14 +114,14 @@ export function limiteurUpstash(acces: {
 // src/lib/limite.ts
 // Limite de requêtes : règles, choix du limiteur (LIMITE_STOCKAGE) et garde des actions.
 import "server-only";
-import { limiteurUpstash } from "@src/adapters/limite/upstash.adapter";
+import { UpstashLimiteurAdapter } from "@src/adapters/limite/upstash.adapter";
 import { env } from "@src/config/env";
 import type { Limiteur, RegleLimite } from "@src/core/shared/limiteur.port";
 import { getDb } from "@src/db/db-client";
-import { limiteurBase } from "@src/db/limite/limite.repository";
+import { DrizzleLimiteurRepository } from "@src/db/limite/limite.repository";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { ipDepuis, messageLimite } from "@src/lib/helpers/limite/ip-et-message";
-import { limiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
+import { LimiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
 import { logger } from "@src/lib/logger";
 import { headers } from "next/headers";
 import { returnServerError } from "next-safe-action";
@@ -138,7 +144,7 @@ export type Verdict =
 
 let limiteurDuProjet: Limiteur | undefined;
 
-/** Le limiteur choisi par LIMITE_STOCKAGE, créé une fois puis gardé. */
+/** Le limiteur choisi par LIMITE_STOCKAGE (patron Strategy), créé une fois puis gardé : c'est ici que les objets s'assemblent. */
 function limiteurChoisi(): Limiteur {
   if (!limiteurDuProjet) {
     const {
@@ -148,16 +154,16 @@ function limiteurChoisi(): Limiteur {
     } = env;
     // env.ts exige les deux variables Upstash quand LIMITE_STOCKAGE vaut redis.
     if (LIMITE_STOCKAGE === "redis" && url && token) {
-      limiteurDuProjet = limiteurUpstash({ url, token });
+      limiteurDuProjet = new UpstashLimiteurAdapter({ url, token });
     } else if (LIMITE_STOCKAGE === "memoire") {
       if (process.env.VERCEL) {
         logger.warn(
           "LIMITE_STOCKAGE=memoire sur Vercel : chaque instance compte de son côté. Retirez la variable pour compter dans la base.",
         );
       }
-      limiteurDuProjet = limiteurMemoire();
+      limiteurDuProjet = new LimiteurMemoire();
     } else {
-      limiteurDuProjet = limiteurBase(getDb());
+      limiteurDuProjet = new DrizzleLimiteurRepository(getDb());
     }
   }
   return limiteurDuProjet;

@@ -68,7 +68,7 @@ Hors tâche en cours, omettre la parenthèse ou mettre une zone courte. Si la pe
 
 ### 5. Mettre à jour le plan
 
-Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles de réalisation : mode autonome ou contrôle de sécurité à chaque tâche (lus dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
+Pour chaque tâche `[~]` concernée par ce commit : la faire passer à `[x]` dans son plan (`aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md`) et ajouter une ligne au tableau « Journal » de ce plan (date, tâche, message, remarque). La remarque suit « Garder la trace » des règles de réalisation : mode autonome (lu dans la ligne `Mode` du rapport), test reporté ou non concluant, constats laissés sans correction, relecture absente. Le plan fait partie des fichiers de ce commit.
 
 ### 6. Enregistrer
 
@@ -92,6 +92,7 @@ En deux lignes : identifiant court et message de chaque commit, nombre de fichie
 ### Suite
 
 - S'il reste des tâches dans le plan : prochaine étape recommandée `/pulse:spirc <US-XXX>` (elle enchaîne la suite du plan), ou, pour la faire pas à pas, `/pulse:implement <US-XXX> <tâche suivante>`.
+- Si ce commit termine le plan hors de `/pulse:spirc` (tâches menées une à une) : la sécurité se contrôle une fois, maintenant ; prochaine étape recommandée `/pulse:security` (audit de sécurité), puis la suite ci-dessous.
 - Si le plan est terminé et que son « Envoi » est **version parallèle** (ou **PR**, dans un plan plus ancien) : appliquer « 3. Fin du plan, en mode PR » de la référence « L'envoi du travail ». Plan terminé sur une **branche de travail** autre que la branche principale : prochaine étape `/pulse:pr`, pour proposer la fusion.
 - Si le plan est terminé et que des US attendent encore leur spec : prochaine étape `/pulse:spec <US-XXX suivante du parcours>`.
 - Si toutes les US Indispensables (le MVP) sont terminées, si la tâche suivante est « Mettre en ligne… », ou si le plan est terminé et envoyé sur la branche principale d'un site en ligne : prochaine étape `/pulse:deploy` (vérification en ligne).

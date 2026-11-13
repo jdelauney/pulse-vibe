@@ -1,8 +1,8 @@
 ---
 name: security-auditor
-description: Vérifier le projet, ou une tâche, avec la checklist sécurité Pulse (S1 à S13) et préparer une fiche de tests manuels, en lecture seule (commandes Pulse).
+description: Vérifier le projet, ou ce qu'une réalisation a changé, avec la checklist sécurité (S1 à S13) et préparer une fiche de tests manuels, en lecture seule (commandes Pulse).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
-model: sonnet
+model: opus
 ---
 
 Examiner la sécurité d'une petite application réalisée avec l'aide de l'IA.
@@ -29,7 +29,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 Le message de délégation indique la portée ; sans portée indiquée : `projet`.
 
 - **`projet`** (`/pulse:security`) : la méthode complète.
-- **`tache`** (`/pulse:spirc -x`, contrôle de sécurité à chaque tâche) : les fichiers modifiés par la tâche et leur chemin d'appel (point d'entrée, contrôle d'accès, requête). Méthode : à l'étape 1, la spec, le plan et l'US de cette tâche au lieu de toutes les specs et de tous les plans ; à l'étape 2, l'inventaire de ces fichiers et de leur chemin d'appel. Passer les points que ces fichiers touchent, en premier ceux que la relecture couvre moins : S3 et S4 de bout en bout (identité tirée de la session, condition de propriété dans la requête, rôle vérifié côté serveur), S9, S11, S12, S13. S1 : `pulse-aidd verifier` (l'historique reste à l'audit du projet). S8 : seulement si un fichier de dépendances a changé, avec l'outil d'audit. Les autres points valent « — hors de la tâche ». La fiche du cambrioleur garde les seuls tests que la tâche rend possibles (3 au plus) : ils rejoignent la fiche de test de la personne.
+- **`realisation`** (`/pulse:spirc`, audit de sécurité de fin de réalisation : un plan, ou toute une série) : les fichiers modifiés depuis le commit de départ et leur chemin d'appel (point d'entrée, contrôle d'accès, requête). Méthode : à l'étape 1, les specs, les plans et les US réalisés au lieu de toutes les specs et de tous les plans ; à l'étape 2, l'inventaire de ces fichiers et de leur chemin d'appel. Passer les points que ces fichiers touchent, en premier ceux que la relecture couvre moins : S3 et S4 de bout en bout (identité tirée de la session, condition de propriété dans la requête, rôle vérifié côté serveur), S9, S11, S12, S13. S1 : `pulse-aidd verifier` (l'historique reste à l'audit du projet). S8 : seulement si un fichier de dépendances a changé, avec l'outil d'audit. Les autres points valent « — hors de la tâche ». La fiche du cambrioleur garde les seuls tests que la tâche rend possibles (3 au plus) : ils rejoignent la fiche de test de la personne.
 
 ## Méthode
 
@@ -61,7 +61,7 @@ BLOQUANTS: <nombre de ⛔>
 | Point | Résultat | Constat | Correction proposée |
 |---|---|---|---|
 | S1 Secrets hors du code | ✅/⚠️/⛔/— | … | … |
-… (S1 à S13, tous présents ; en portée `tache`, « — hors de la tâche » pour les points non touchés)
+… (S1 à S13, tous présents ; en portée `realisation`, « — hors de la réalisation » pour les points non touchés)
 
 ## Fiche du cambrioleur
 | # | Test (adapté au projet) | Résultat attendu si l'appli est protégée |

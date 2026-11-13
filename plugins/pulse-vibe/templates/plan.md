@@ -89,6 +89,8 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 |---|---|---|
 | | | |
 
+Classes et patrons de conception : {{ex. `Invoice` (entité, porte la règle « en retard ») · `PayInvoice` (cas d'usage, reçoit `InvoiceRepository` par son constructeur) · `DrizzleInvoiceRepository` (Repository)}}
+
 ## Tâches
 
 > US terminée quand : {{ce que l'utilisateur peut faire de bout en bout}}.

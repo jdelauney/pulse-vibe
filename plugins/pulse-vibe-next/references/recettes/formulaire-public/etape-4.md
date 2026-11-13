@@ -8,7 +8,7 @@ Le navigateur demande le jeton à l'ouverture du formulaire : la page reste stat
 // Jeton de délai d'un formulaire public, demandé par le navigateur à l'ouverture du formulaire.
 import { env } from "@src/config/env";
 import { NOM_FORMULAIRE } from "@src/lib/helpers/formulaire-public/champs";
-import { signerJeton } from "@src/lib/helpers/formulaire-public/jeton";
+import { JetonFormulaire } from "@src/lib/helpers/formulaire-public/jeton";
 import { connection } from "next/server";
 
 export async function GET(request: Request) {
@@ -18,7 +18,10 @@ export async function GET(request: Request) {
   if (!NOM_FORMULAIRE.test(formulaire)) {
     return Response.json({ erreur: "Formulaire inconnu." }, { status: 400 });
   }
-  const jeton = signerJeton(formulaire, Date.now(), env.FORMULAIRE_SECRET);
+  const jeton = new JetonFormulaire(env.FORMULAIRE_SECRET).signer(
+    formulaire,
+    Date.now(),
+  );
   return Response.json({ jeton }, { headers: { "Cache-Control": "no-store" } });
 }
 ```

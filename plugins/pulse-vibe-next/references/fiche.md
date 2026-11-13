@@ -60,7 +60,7 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 
 ## 5. Base de données (Drizzle + Neon)
 
-23. **Les repositories reçoivent la base en paramètre** : `factureRepository(db: Db)`. L'application passe `getDb()` (Neon) ; les tests passent la base de `creerBaseDeTest()` (PGlite).
+23. **Les repositories reçoivent la base par leur constructeur** : `new DrizzleFactureRepository(db)`. L'application passe `getDb()` (Neon) ; les tests passent la base de `creerBaseDeTest()` (PGlite).
 24. **Deux adresses Neon** : `DATABASE_URL` (« pooled », avec `-pooler`) pour l'application, `DATABASE_URL_DIRECT` pour drizzle-kit.
 25. **Changer le schéma** : modifier `src/db/<domaine>/<sujet>.table.ts`, puis `npm run db:generate` (crée la migration dans `drizzle/`), la relire, puis `npm run db:migrate`. `drizzle-kit push` est réservé à une base jetable (le garde-fou de Pulse demande confirmation).
 26. **Types** : montants en centimes (`integer`), dates en `timestamp("…", { withTimezone: true })`, identifiants en `uuid` ou `text` selon la table, colonne `utilisateurId` sur chaque table qui appartient à une personne.

@@ -108,17 +108,17 @@
 <li><code>T3</code> : seulement cette tâche ;</li>
 <li><code>"une demande"</code> entre guillemets : un seul changement, cadré puis ajouté au plan.</li>
 </ul></li>
-<li><strong>Les raccourcis</strong> (facultatifs), placés avant l'US et regroupables (<code>-axw</code>) :
+<li><strong>Les raccourcis</strong> (facultatifs), placés avant l'US et regroupables (<code>-atw</code>) :
 <ul>
 <li><code>-a</code> : autonome. Les tâches s'enchaînent, les corrections se font seules, et vous testez tout à la fin, en un seul parcours. Une question sur votre besoin n'arrête que sa tâche : elle est mise « en pause », les autres tâches continuent, et toutes les questions vous sont posées ensemble. Les petits choix sont tranchés par Pulse et notés pour que vous les relisiez. Voir <a href="../concepts.html#travailler-seul">Laisser Pulse travailler seul</a>.</li>
 <li><code>-f</code> : rapide. L'essentiel des tests, les tâches s'enchaînent, une seule relecture et une seule vérification pour toute l'US, puis vous testez toute l'US à la fin avec une seule fiche. Sans ce raccourci, la question « rapide ou complet » vous est posée au début (sauf après <code>/pulse:nouveau</code>, qui règle déjà le rythme sur rapide).</li>
 <li><code>-d</code> : devant vous. Chaque tâche est réalisée dans la conversation, sous vos yeux ; la relecture et la vérification restent faites par des assistants qui n'ont pas écrit le code. Ce raccourci n'est pas une question du début : il se donne d'avance. Avec <code>-a</code> ou <code>-f</code>, Pulse vous demande lequel garder.</li>
 <li><code>-t</code> : tests d'abord. Les tests de chaque tâche sont écrits avant son code.</li>
-<li><code>-x</code> : un contrôle de sécurité en plus, à chaque tâche.</li>
 <li><code>-w</code> : dans un dossier à part, sur sa propre branche.</li>
 </ul></li>
 </ul>
-<p>Sans raccourci, Pulse vous pose dès le début une seule série de questions : le rythme (« Rapide » ou « Complet »), les options à cocher (enchaîner les tâches sans arrêt, un contrôle de sécurité à chaque tâche, un dossier à part), les tests si vous prenez « Complet », et la façon d'envoyer le travail.</p>
+<p>Sans raccourci, Pulse vous pose dès le début une seule série de questions : le rythme (« Rapide » ou « Complet »), les options à cocher (enchaîner les tâches sans arrêt, un dossier à part), les tests si vous prenez « Complet », et la façon d'envoyer le travail.</p>
+<p>La sécurité se contrôle une seule fois, à la fin : quand toutes les tâches sont faites (ou, avec <code>version</code>, toute la série), un assistant spécialisé passe en revue la sécurité de tout ce qui vient d'être construit. Ce qu'il trouve est corrigé, et ses tests « du cambrioleur » rejoignent votre test de fin. Son rapport est rangé dans <code>aidd_docs/securite/</code>.</p>
 <pre class="commande"><code>/pulse:spirc US-001</code></pre>
 <pre class="commande"><code>/pulse:spirc -a US-001</code></pre>
 <pre class="commande"><code>/pulse:spirc US-002 "le bouton Supprimer ne marche pas"</code></pre>
@@ -135,6 +135,7 @@
 <tr><td>Les fichiers de chaque tâche</td><td>Le code de l'appli.</td></tr>
 <tr><td><code>aidd_docs/tasks/&lt;groupe&gt;/revues/…</code></td><td>Un rapport de relecture par tâche ; en rythme rapide, un seul pour toute l'US.</td></tr>
 <tr><td>Le plan, sections « Questions en attente » et « Choix faits par Pulse »</td><td>En mode autonome : les questions qui vous attendent et les petits choix faits par Pulse, à relire au test groupé.</td></tr>
+<tr><td><code>aidd_docs/securite/&lt;date&gt;-US-XXX.md</code></td><td>Le rapport de l'audit de sécurité de fin : ce qui est solide, ce qui a été corrigé.</td></tr>
 <tr><td><code>aidd_docs/captures/US-XXX/</code></td><td>Les captures d'écran gardées comme preuves par la vérification, sur votre ordinateur seulement ; effacées quand l'US est envoyée.</td></tr>
 <tr><td><code>docs/user-stories.md</code>, <code>US-XXX-&lt;nom&gt;.md</code></td><td>Pour une demande qui est un nouveau besoin : la nouvelle US.</td></tr>
 <tr><td><code>docs/prd.md</code></td><td>Une idée hors du périmètre, notée « En attente ».</td></tr>

@@ -16,6 +16,7 @@ Dans le projet de la personne, ce que produit chaque commande :
 | `aidd_docs/tasks/<epic>/PLAN-SPEC-US-XXX-<nom>.md` | `/pulse:plan` | Le plan d'une spec (une spec = un plan) : les tâches ordonnées, avec leur statut (à faire, en cours, terminé) |
 | `aidd_docs/tasks/<epic>/SMOKE-TEST-US-XXX-<Tâche>-<titre>.md` | `/pulse:review`, `/pulse:implement`, `/pulse:spirc` | La fiche de test d'une tâche (ou `SMOKE-TEST-US-XXX-<nom>.md` : toute l'US, à la fin, en test groupé), faite par la personne : chaque geste dans l'application et ce qu'elle doit voir, sans commande à taper |
 | `aidd_docs/tasks/<epic>/revues/PLAN-SPEC-US-XXX-<nom>/` | `/pulse:review`, `/pulse:spirc` | Les rapports de relecture des tâches de ce plan, un par tâche : `<Tâche>-<AAAA-MM-JJ>.md` |
+| `aidd_docs/securite/<AAAA-MM-JJ>-<US-XXX>.md` | `/pulse:spirc` | Le rapport de l'audit de sécurité de fin de réalisation (un plan, ou toute une série), avec le contrôle après correction |
 | `docs/revue-projet-<AAAA-MM-JJ>.md` | `/pulse:review tout` | La relecture de l'ensemble du projet |
 | `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |

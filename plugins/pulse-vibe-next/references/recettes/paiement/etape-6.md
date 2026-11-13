@@ -1,6 +1,6 @@
 ### 6. L'adapter de paiement
 
-Le client Stripe et la vérification de signature vivent dans `src/adapters/payment/`. Le client est créé à la première utilisation : la construction du site n'a pas besoin de la clé. Toute panne de Stripe devient une `ErreurService("paiement", …)` : son message est sans secret ni donnée personnelle, et sa `cause` garde seulement des champs techniques (`name`, `type`, `code`, `requestId`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine, qui peut citer une adresse e-mail ou une clé (architecture.md §8). `safe-action` journalise et affiche un message générique ; le webhook de l'étape 8 utilise `reponseErreur()`.
+`StripePaiementAdapter` implémente le port `PasserellePaiement` : le client Stripe et la vérification de signature vivent dans `src/adapters/payment/`. Les deux clés lui arrivent par le constructeur (l'action et le webhook les lisent dans `env`). Le client est créé à la première utilisation : la construction du site n'a pas besoin de la clé. Toute panne de Stripe devient une `ErreurService("paiement", …)` : son message est sans secret ni donnée personnelle, et sa `cause` garde seulement des champs techniques (`name`, `type`, `code`, `requestId`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine, qui peut citer une adresse e-mail ou une clé (architecture.md §8). `safe-action` journalise et affiche un message générique ; le webhook de l'étape 8 utilise `reponseErreur()`.
 
 `lireEvenement` reçoit le corps **brut** : la signature porte sur ces octets exacts. Une signature fausse donne `echec("signature-invalide")`, sans lever d'exception.
 
@@ -8,20 +8,15 @@ Le client Stripe et la vérification de signature vivent dans `src/adapters/paym
 ```ts
 // src/adapters/payment/payment.adapter.ts
 import "server-only";
-import { env } from "@src/config/env";
-import type { EvenementPaiement } from "@src/core/paiement/commande.entity";
+import type {
+  EvenementPaiement,
+  Offre,
+} from "@src/core/paiement/commande.entity";
+import type { ErreurPaiement } from "@src/core/paiement/paiement.errors";
 import type { PasserellePaiement } from "@src/core/paiement/passerelle-paiement.port";
-import { echec, ok } from "@src/core/shared/result";
+import { echec, ok, type Result } from "@src/core/shared/result";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import Stripe from "stripe";
-
-let client: Stripe | undefined;
-
-// Client créé à la première utilisation : la construction du site n'a pas besoin de la clé.
-function obtenirClient(): Stripe {
-  client ??= new Stripe(env.STRIPE_SECRET_KEY);
-  return client;
-}
 
 const EVENEMENTS_DE_PAIEMENT = new Set([
   "checkout.session.completed",
@@ -69,15 +64,36 @@ function panneDePaiement(erreur: unknown): ErreurService {
   });
 }
 
+/** Les deux clés de Stripe, lues dans `env` par celui qui assemble les objets. */
+export type ConfigStripe = {
+  cleSecrete: string;
+  secretWebhook: string;
+};
+
 /**
  * La seule porte de sortie vers Stripe. Toute panne devient une ErreurService("paiement", …)
  * sans secret ni donnée personnelle.
  */
-export const passerellePaiement: PasserellePaiement = {
-  async creerSession(params) {
+export class StripePaiementAdapter implements PasserellePaiement {
+  private client: Stripe | undefined;
+
+  constructor(private readonly config: ConfigStripe) {}
+
+  // Client créé à la première utilisation : la construction du site n'a pas besoin de la clé.
+  private obtenirClient(): Stripe {
+    this.client ??= new Stripe(this.config.cleSecrete);
+    return this.client;
+  }
+
+  async creerSession(params: {
+    commandeId: string;
+    offre: Offre;
+    urlSucces: string;
+    urlAnnulation: string;
+  }): Promise<{ id: string; url: string }> {
     let session: Stripe.Checkout.Session;
     try {
-      session = await obtenirClient().checkout.sessions.create({
+      session = await this.obtenirClient().checkout.sessions.create({
         mode: "payment",
         line_items: [
           {
@@ -108,15 +124,21 @@ export const passerellePaiement: PasserellePaiement = {
       );
     }
     return { id: session.id, url: session.url };
-  },
+  }
 
   // La signature porte sur les octets exacts du corps : il arrive brut, jamais relu ni transformé.
-  lireEvenement(corps, signature) {
-    const stripe = obtenirClient();
-    const secret = env.STRIPE_WEBHOOK_SECRET;
+  lireEvenement(
+    corps: string,
+    signature: string,
+  ): Result<EvenementPaiement, ErreurPaiement> {
+    const stripe = this.obtenirClient();
     let evenement: Stripe.Event;
     try {
-      evenement = stripe.webhooks.constructEvent(corps, signature, secret);
+      evenement = stripe.webhooks.constructEvent(
+        corps,
+        signature,
+        this.config.secretWebhook,
+      );
     } catch {
       return echec("signature-invalide");
     }
@@ -125,7 +147,6 @@ export const passerellePaiement: PasserellePaiement = {
       type: evenement.type,
       confirmation: confirmationDe(evenement),
     });
-  },
-};
+  }
+}
 ```
-

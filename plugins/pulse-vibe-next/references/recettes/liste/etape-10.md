@@ -15,7 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@src/components/ui/table";
-import type { Facture, StatutFacture } from "@src/core/factures/facture.entity";
+import type {
+  FactureVue,
+  StatutFacture,
+} from "@src/core/factures/facture.entity";
 import { formaterDate, formaterMontant } from "@src/lib/helpers/format/format";
 import { LIBELLES_STATUT } from "../../constants/factures";
 
@@ -29,7 +32,7 @@ const VARIANTE_STATUT: Record<
 };
 
 type Props = {
-  factures: Facture[];
+  factures: FactureVue[];
   total: number;
   filtresActifs: boolean;
 };

@@ -1,6 +1,6 @@
 # Pack Pulse Next.js – pour relire
 
-Contrôles propres à la pile, en plus de la checklist Pulse :
+Contrôles propres à la pile, en plus des checklists de qualité Pulse :
 
 - **Chaque action** de `actions/` est construite sur `actionConnectee` (ou `actionPublique` pour une page publique, avec sa raison) avec `.metadata({ nom: "…" })` (le nom de l'action, avant `.action(…)`) et `.inputSchema(...)`, et sa requête d'écriture filtre par `ctx.utilisateur.id` (condition de propriété). Une action qui prend l'identifiant de l'utilisateur dans ses entrées : 🔴 Critique.
 - **Chaque lecture** de données personnelles filtre par la personne connectée (`utilisateurConnecte()`), sans `"use cache"` (ou selon le modèle documenté de mise en cache par personne).

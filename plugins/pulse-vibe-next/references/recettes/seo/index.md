@@ -37,10 +37,10 @@ Le squelette contient déjà les fichiers marqués « squelette » ; les étapes
 | `app/(connecte)/layout.tsx` | Pages connectées hors de Google (si la recette `connexion` est appliquée) |
 | `app/(public)/<page>/page.tsx` (modifiés) | Métadonnées de chaque page publique |
 | `app/(public)/tarifs/__tests__/metadonnees.test.ts` | Test des métadonnées d'une page (exemple) |
-| `src/core/realisations/realisation.entity.ts` | Type `Realisation` |
+| `src/core/realisations/realisation.entity.ts` | Type `RealisationVue` et classe `Realisation` |
 | `src/db/realisations/realisation.table.ts` | Table Drizzle `realisations` |
 | `drizzle/<numéro>_<nom>.sql` | Migration générée par `npm run db:generate` |
-| `src/db/realisations/realisation.repository.ts` | `realisationRepository(db)` : `trouverPubliee`, `existePubliee`, `listerPubliees` |
+| `src/db/realisations/realisation.repository.ts` | Classe `DrizzleRealisationRepository` (la base arrive par le constructeur) : `trouverPubliee`, `existePubliee`, `listerPubliees` |
 | `src/features/realisations/constants/cache-tags.ts` | Étiquette de cache `realisations` |
 | `src/features/realisations/queries/lire-realisation.query.ts` | Lecture d'une réalisation en `"use cache"` |
 | `src/features/realisations/queries/lister-realisations.query.ts` | Liste des réalisations en `"use cache"` (pages générées, sitemap) |
@@ -158,7 +158,7 @@ Le code des tests : `pulse-aidd pile recette seo tests`
 - **S6 – Affichage** : les données structurées passent par `<JsonLd>`, qui échappe `<` ; jamais `JSON.stringify` nu dans `dangerouslySetInnerHTML`.
 - **S4 – Pages réservées** : robots.txt est public et ne cache rien ; une page privée est protégée par la connexion, et `noindex` la garde hors de Google.
 - `SITE_URL` et le jeton de vérification Search Console ne sont pas des secrets ; aucune clé n'est nécessaire au référencement.
-- Le proxy de l'étape 6 lit seulement l'existence d'un contenu publié (`existePubliee`, requête légère et paramétrée) ; la décision d'accès reste dans chaque page et chaque action. Le repository ne renvoie jamais un contenu non publié.
+- Le proxy de l'étape 6 lit seulement l'existence d'un contenu publié (`existePubliee`, requête légère et paramétrée) ; la décision d'accès reste dans chaque page et chaque action. `DrizzleRealisationRepository` ne renvoie jamais un contenu non publié.
 
 ## Pièges connus
 

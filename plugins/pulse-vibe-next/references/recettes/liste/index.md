@@ -23,17 +23,17 @@ Aucune nouvelle variable. La recette utilise la base déjà configurée par le s
 
 | Fichier | Rôle |
 |---|---|
-| `src/core/factures/facture.entity.ts` | Type `Facture`, statuts et tris possibles |
+| `src/core/factures/facture.entity.ts` | Classe `Facture`, type `FactureVue`, statuts et tris possibles |
 | `src/core/factures/facture.errors.ts` | Codes des erreurs attendues |
-| `src/core/factures/facture.rules.ts` | Règles du montant : format, conversion en centimes, montant positif |
-| `src/core/factures/facture-repository.port.ts` | Ce dont le use-case a besoin pour enregistrer une facture |
-| `src/core/factures/use-cases/creer-facture.use-case.ts` | Use-case « créer une facture » |
+| `src/core/factures/facture.rules.ts` | `ReglesMontantFacture` : format, conversion en centimes, montant positif |
+| `src/core/factures/facture-repository.port.ts` | Interface `FactureRepository` : ce dont le use-case a besoin |
+| `src/core/factures/use-cases/creer-facture.use-case.ts` | Use-case `CreerFacture` |
 | `src/lib/helpers/pagination/pagination.ts` | Page valide, décalage, nombre de pages |
 | `src/lib/helpers/format/format.ts` | Montant en euros et date à l'heure de Paris |
 | `src/lib/helpers/formulaire/erreurs-de-champs.ts` | Erreurs de validation du serveur → erreurs de champ |
 | `src/db/factures/facture.table.ts` | Table Drizzle `factures` |
 | `drizzle/<numéro>_<nom>.sql` | Migration générée par `npm run db:generate` |
-| `src/db/factures/facture.repository.ts` | `factureRepository(db)` : `lister`, `inserer`, condition de propriété |
+| `src/db/factures/facture.repository.ts` | `DrizzleFactureRepository` : `lister`, `inserer`, condition de propriété |
 | `src/features/factures/constants/factures.ts` | Libellés des statuts et des tris, filtres de statut, taille de page, noms des champs |
 | `src/features/factures/constants/erreur-messages.ts` | Message affiché pour chaque code d'erreur |
 | `src/features/factures/schemas/facture.schema.ts` | Schéma Zod partagé par le formulaire et l'action |
@@ -260,9 +260,9 @@ Fonctionnalité: Consulter et créer mes factures
 Le code des tests : `pulse-aidd pile recette liste tests`
 ## Points de sécurité
 
-- **S3 – Contrôle d'accès aux données** : chaque requête de `facture.repository.ts` commence par la condition `utilisateurId`. L'identifiant vient de la session : `ctx.utilisateur.id` dans l'action, `utilisateurConnecte()` dans `ListeFacturesContainer`. Le test « Camille ne voit pas les factures de Léo » le prouve.
+- **S3 – Contrôle d'accès aux données** : chaque requête de `DrizzleFactureRepository` commence par la condition `utilisateurId`. L'identifiant vient de la session : `ctx.utilisateur.id` dans l'action, `utilisateurConnecte()` dans `ListeFacturesContainer`. Le test « Camille ne voit pas les factures de Léo » le prouve.
 - **S4 – Pages et actions réservées** : l'action utilise `actionConnectee`, car une Server Action est joignable par une requête directe. La liste appelle `utilisateurConnecte()`, qui renvoie vers `/connexion` sans session. La route API du mini-exemple répond 401 sans session.
-- **S5 – Validation des entrées** : l'action revalide avec le schéma Zod, même après la validation du formulaire, et le use-case applique encore la règle du montant. Les filtres de l'adresse passent par les parseurs nuqs : un statut ou un tri inconnu revient à sa valeur par défaut, une page invalide revient à 1. La recherche reste un paramètre de requête Drizzle, avec `%`, `_` et `\` échappés.
+- **S5 – Validation des entrées** : l'action revalide avec le schéma Zod, même après la validation du formulaire, et le use-case `CreerFacture` applique encore la règle du montant. Les filtres de l'adresse passent par les parseurs nuqs : un statut ou un tri inconnu revient à sa valeur par défaut, une page invalide revient à 1. La recherche reste un paramètre de requête Drizzle, avec `%`, `_` et `\` échappés.
 - **S6 – Affichage sans injection** : les textes s'affichent par JSX, en texte simple.
 - **S9 – Données personnelles** : `error.tsx` journalise l'erreur dans le navigateur ; les journaux serveur gardent le nom du client hors des messages.
 - **S11 – Messages d'erreur** : la personne voit un message en français, sans détail technique (`erreur-messages.ts` pour une erreur attendue, message générique de `safe-action` sinon). En production, Next.js remplace le message d'une erreur serveur par un identifiant (`digest`).

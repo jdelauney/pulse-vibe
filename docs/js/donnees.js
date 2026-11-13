@@ -293,7 +293,7 @@ window.PULSE_WIKI = {
     {
       "nom": "review",
       "etape": "construire",
-      "description": "Relecture et vérification indépendantes d'une tâche (critères d'acceptation, sécurité, essai de l'application en marche), test manuel, puis corrections",
+      "description": "Relecture et vérification indépendantes d'une tâche (critères d'acceptation, qualité du code, essai de l'application en marche), test manuel, puis corrections",
       "forme": "[T3 | <US-XXX> | tout]",
       "note": ""
     },

@@ -1,6 +1,6 @@
 ### 3. Les aides techniques génériques
 
-Pagination, affichage des montants et des dates, erreurs de formulaire : rien de propre aux factures. Elles vont dans `src/lib/helpers/<catégorie>/` et servent à toutes les listes du projet.
+Pagination, affichage des montants et des dates, erreurs de formulaire : rien de propre aux factures, sans état et sans règle métier. Ce sont de petites fonctions, dans `src/lib/helpers/<catégorie>/`, au service de toutes les listes du projet.
 
 <!-- fichier: src/lib/helpers/pagination/pagination.ts -->
 ```ts

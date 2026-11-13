@@ -48,15 +48,16 @@ FORMULAIRE_SECRET=
 | `src/config/env-public.ts` (modifié, option Turnstile) | La clé de site Turnstile, publique |
 | `tests/helpers/env-de-test.ts` (modifié) | Valeur de test de `FORMULAIRE_SECRET` dans `VARIABLES_VALIDES` |
 | `src/lib/helpers/formulaire-public/champs.ts` | Noms des champs de protection, contrôle du champ piège |
-| `src/lib/helpers/formulaire-public/jeton.ts` | Jeton de délai signé (fonctions pures) |
+| `src/lib/helpers/formulaire-public/jeton.ts` | Classe `JetonFormulaire` : signe et vérifie le jeton de délai |
 | `app/api/jeton-formulaire/route.ts` | Donne un jeton au navigateur à l'ouverture du formulaire |
 | `src/hooks/use-protection-formulaire.ts` | Protection côté navigateur, appelée par le container |
 | `src/components/shared/elements/champ-piege.tsx` | Le champ piège invisible |
-| `src/lib/formulaire-public.ts` | `actionFormulairePublic` : les contrôles avant l'action |
+| `src/lib/formulaire-public.ts` | `actionFormulairePublic` : les contrôles avant l'action, point d'assemblage des objets qu'ils utilisent |
 | `src/features/contact/…` (schéma, action, section, container), `app/(public)/contact/page.tsx` | Exemple : formulaire de contact protégé |
 | `src/components/ui/textarea.tsx` | Zone de texte de shadcn (exemple) |
 | Tests : `src/lib/helpers/formulaire-public/__tests__/`, `src/features/contact/actions/__tests__/`, `e2e/formulaire-public.spec.ts` | Unitaires, intégration, bout en bout |
-| `src/adapters/turnstile/turnstile.adapter.ts` et ses tests (option Turnstile) | Vérification de la réponse du widget auprès de Cloudflare ; les deux clés vont ensemble |
+| `src/core/shared/verification-robot.port.ts` (option Turnstile) | L'interface `VerificationRobot` |
+| `src/adapters/turnstile/turnstile.adapter.ts` et ses tests (option Turnstile) | Classe `TurnstileAdapter` : vérifie la réponse du widget auprès de Cloudflare ; les deux clés vont ensemble |
 | `e2e/turnstile.spec.ts` (option Turnstile) | Le widget en vrai, avec les clés de test de Cloudflare |
 | `src/components/shared/elements/widget-turnstile.tsx` (option Turnstile) | Le widget |
 | `next.config.ts` (modifié, option Turnstile) | Le script et le cadre du widget autorisés par la CSP |
@@ -75,7 +76,7 @@ Turnstile, en option, ajoute une vérification de Cloudflare pour les formulaire
 
 - Étape 1 – La variable `FORMULAIRE_SECRET` : `pulse-aidd pile recette formulaire-public etape 1`
 - Étape 2 – Les noms des champs : `pulse-aidd pile recette formulaire-public etape 2`
-- Étape 3 – Le jeton signé : `pulse-aidd pile recette formulaire-public etape 3`
+- Étape 3 – La classe du jeton signé : `pulse-aidd pile recette formulaire-public etape 3`
 - Étape 4 – La route du jeton : `pulse-aidd pile recette formulaire-public etape 4`
 - Étape 5 – Le hook de protection : `pulse-aidd pile recette formulaire-public etape 5`
 - Étape 6 – Le champ piège : `pulse-aidd pile recette formulaire-public etape 6`
@@ -85,7 +86,7 @@ Turnstile, en option, ajoute une vérification de Cloudflare pour les formulaire
 - Étape 10 – Mettre en ligne : `pulse-aidd pile recette formulaire-public etape 10`
 - Étape option-turnstile – Option : Turnstile : `pulse-aidd pile recette formulaire-public etape option-turnstile`
 - Étape 11 – Le widget Cloudflare et les variables : `pulse-aidd pile recette formulaire-public etape 11`
-- Étape 12 – La vérification côté serveur : `pulse-aidd pile recette formulaire-public etape 12`
+- Étape 12 – L'interface et la classe de vérification côté serveur : `pulse-aidd pile recette formulaire-public etape 12`
 - Étape 13 – Brancher Turnstile dans les contrôles : `pulse-aidd pile recette formulaire-public etape 13`
 - Étape 14 – Le widget : `pulse-aidd pile recette formulaire-public etape 14`
 - Étape 15 – Hook, section et container : `pulse-aidd pile recette formulaire-public etape 15`
@@ -225,7 +226,7 @@ Fonctionnalité: Protection des formulaires publics
 - [ ] **Tn+2 (facultative) – Ajouter Turnstile** · US-XXX
   - Objectif : les formulaires visés par les robots passent aussi par la vérification de Cloudflare
   - Dépend de : Tn+1
-  - Fichiers : à créer : `src/adapters/turnstile/turnstile.adapter.ts`, `src/adapters/turnstile/__tests__/turnstile.adapter.test.ts`, `src/adapters/turnstile/__tests__/variables-turnstile.test.ts`, `src/components/shared/elements/widget-turnstile.tsx`, `e2e/turnstile.spec.ts` · à modifier : `src/lib/formulaire-public.ts`, `src/hooks/use-protection-formulaire.ts`, la section et le container du formulaire, `src/config/env.ts`, `.env.example`, `next.config.ts`
+  - Fichiers : à créer : `src/core/shared/verification-robot.port.ts`, `src/adapters/turnstile/turnstile.adapter.ts`, `src/adapters/turnstile/__tests__/turnstile.adapter.test.ts`, `src/adapters/turnstile/__tests__/variables-turnstile.test.ts`, `src/components/shared/elements/widget-turnstile.tsx`, `e2e/turnstile.spec.ts` · à modifier : `src/lib/formulaire-public.ts`, `src/hooks/use-protection-formulaire.ts`, la section et le container du formulaire, `src/config/env.ts`, `.env.example`, `next.config.ts`
   - Vérification : US-XXX critère 5 – `npm test` passe ; essai avec les clés de test de l'étape 17
   - Tests : « Turnstile actif et réponse absente : refusé », « Cloudflare injoignable… », « clé secrète sans clé de site… » (intégration) ; « widget bloqué : la page explique quoi faire » (bout en bout, avec les clés de test)
   - Action manuelle : créer le widget Turnstile, saisir les deux clés dans `.env` et dans Vercel, puis redéployer

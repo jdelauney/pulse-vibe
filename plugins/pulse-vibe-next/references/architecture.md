@@ -1,6 +1,6 @@
 # Architecture du code (pack Next.js)
 
-Hexagonal simplifié : le métier au centre, la base et les services autour, Next.js au bord. Chaque fichier a une place unique ; Biome et le test `tests/structure.test.ts` le vérifient.
+Hexagonal simplifié : le métier au centre, la base et les services autour, Next.js au bord. Le métier, le stockage et les services sont des **classes** (SOLID, patrons nommés : `pulse-aidd qualite clean-code`, §5 bis) : entités, cas d'usage, repositories et adapters ; les ports sont des `interface`. Actions, queries, Route Handlers, composants, hooks et stores suivent les conventions de Next.js et de React (fonctions). Chaque fichier a une place unique ; Biome et le test `tests/structure.test.ts` le vérifient.
 
 ## 1. Arborescence
 
@@ -14,10 +14,10 @@ proxy.ts                          renvoi rapide vers /connexion (à côté d'app
 src/
 ├── core/                         métier pur
 │   ├── shared/result.ts          Result, ok(), echec()
-│   └── <domaine>/                <sujet>.entity.ts, .rules.ts, .errors.ts, <sujet>-repository.port.ts, use-cases/
+│   └── <domaine>/                <sujet>.entity.ts (classe), .rules.ts, .errors.ts, <sujet>-repository.port.ts (interface), use-cases/ (classes)
 ├── db/
 │   ├── db-client.ts              getDb(), type Db
-│   └── <domaine>/                <sujet>.table.ts, <sujet>.repository.ts
+│   └── <domaine>/                <sujet>.table.ts, <sujet>.repository.ts (classe qui implémente le port)
 ├── features/<domaine>/
 │   ├── actions/                  <action>.action.ts (écritures)
 │   ├── queries/                  <lecture>.query.ts (lectures)
@@ -25,7 +25,7 @@ src/
 │   ├── components/               containers/, sections/, composites/, elements/
 │   ├── hooks/                    hooks des containers
 │   └── constants/  types/  webhooks/
-├── adapters/<service>/           <service>.adapter.ts : auth, e-mail, fichiers, paiement
+├── adapters/<service>/           <service>.adapter.ts (classe qui implémente le port) : e-mail, fichiers, paiement ; auth : configuration de Better Auth
 ├── components/ui/                primitives shadcn
 ├── components/shared/            elements/, composites/, sections/ communs à plusieurs features
 ├── providers/  hooks/  stores/  types/  constants/
@@ -95,7 +95,7 @@ container (client) → actions/<action>.action.ts → [core/<d>/use-cases/<actio
 
 1. L'action valide l'entrée (`actionConnectee.inputSchema(schema)`) et prend l'identité dans `ctx.utilisateur.id`.
 2. **Use-case seulement s'il y a au moins une règle métier ou au moins deux ports** ; sinon l'action appelle directement le repository.
-3. Assemblage par paramètre : l'action passe le repository au use-case (`payerFacture({ factures: factureRepository(getDb()) }, entree)`).
+3. Assemblage par constructeur : l'action crée les objets et passe le repository au use-case (`new PayerFacture(new DrizzleFactureRepository(getDb())).executer(entree)`) ; c'est le seul endroit qui choisit une implémentation.
 4. Le use-case renvoie un `Result` ; l'action traduit un échec en message (`returnServerError(MESSAGES[resultat.raison])`).
 5. L'action rafraîchit l'écran (`refresh()`, `updateTag(tag)`) puis renvoie seulement ce que l'écran affiche.
 6. Le repository pose la condition de propriété dans la requête : `where(and(eq(table.id, id), eq(table.utilisateurId, utilisateurId)))`.
@@ -108,6 +108,7 @@ page (app/) → <Suspense> → container (serveur) → queries/<lecture>.query.t
 
 - La query est `server-only` ; elle porte ce qui est propre à Next : `"use cache"`, `cacheLife`, `cacheTag`, `notFound()`.
 - Une lecture va directement au repository, sans use-case.
+- L'écran reçoit des **données simples** : une méthode de lecture pour l'affichage renvoie des objets simples (le type `<Sujet>Vue` de l'entité), ou la query convertit l'entité par `versVue()`. Une instance de classe reste côté serveur (un composant client ne reçoit que des objets simples).
 - Une query mise en cache (`"use cache"`) renvoie `null` quand la donnée manque ; le container (et `generateMetadata`) appelle `notFound()`, hors du cache.
 - Tags de cache d'un domaine : `features/<d>/constants/cache-tags.ts`.
 - La session : `utilisateurConnecte()` dans `features/compte/queries/utilisateur-connecte.query.ts`.

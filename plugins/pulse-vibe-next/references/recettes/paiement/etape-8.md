@@ -1,14 +1,15 @@
 ### 8. Le webhook
 
-Dans un Route Handler de Next.js 16, le corps brut s'obtient avec `await requete.text()`, lu **une seule fois**, avant toute autre lecture. Le fichier du webhook vérifie la signature par l'adapter, puis appelle le use-case. Une signature fausse répond 400, sans rien écrire du message dans le journal. Une panne (base, Stripe) répond avec `reponseErreur()` : Stripe renvoie alors le message plus tard.
+Dans un Route Handler de Next.js 16, le corps brut s'obtient avec `await requete.text()`, lu **une seule fois**, avant toute autre lecture. Le fichier du webhook assemble les objets : l'adapter vérifie la signature, puis le use-case `ConfirmerPaiement` traite l'événement. Une signature fausse répond 400, sans rien écrire du message dans le journal. Une panne (base, Stripe) répond avec `reponseErreur()` : Stripe renvoie alors le message plus tard.
 
 <!-- fichier: src/features/paiement/webhooks/stripe-paiement.webhook.ts -->
 ```ts
 // src/features/paiement/webhooks/stripe-paiement.webhook.ts
-import { passerellePaiement } from "@src/adapters/payment/payment.adapter";
-import { confirmerPaiement } from "@src/core/paiement/use-cases/confirmer-paiement.use-case";
+import { StripePaiementAdapter } from "@src/adapters/payment/payment.adapter";
+import { env } from "@src/config/env";
+import { ConfirmerPaiement } from "@src/core/paiement/use-cases/confirmer-paiement.use-case";
 import { getDb } from "@src/db/db-client";
-import { commandeRepository } from "@src/db/paiement/commande.repository";
+import { DrizzleCommandeRepository } from "@src/db/paiement/commande.repository";
 import { reponseErreur } from "@src/lib/errors/reponse-erreur";
 import { logger } from "@src/lib/logger";
 
@@ -24,17 +25,21 @@ export async function recevoirWebhookStripe(
   const corps = await requete.text();
 
   try {
-    const lecture = passerellePaiement.lireEvenement(corps, signature);
+    const paiement = new StripePaiementAdapter({
+      cleSecrete: env.STRIPE_SECRET_KEY,
+      secretWebhook: env.STRIPE_WEBHOOK_SECRET,
+    });
+    const lecture = paiement.lireEvenement(corps, signature);
     if (!lecture.ok) {
       // Le journal ne reçoit ni le corps ni la signature.
       logger.warn("Webhook Stripe refusé : signature invalide");
       return new Response("Signature invalide.", { status: 400 });
     }
     const evenement = lecture.valeur;
-    const resultat = await confirmerPaiement(
-      { commandes: commandeRepository(getDb()) },
-      evenement,
+    const confirmer = new ConfirmerPaiement(
+      new DrizzleCommandeRepository(getDb()),
     );
+    const resultat = await confirmer.executer(evenement);
     logger.info(
       { evenementId: evenement.id, type: evenement.type, resultat },
       "Webhook Stripe traité",
@@ -56,4 +61,3 @@ export async function POST(requete: Request) {
   return recevoirWebhookStripe(requete);
 }
 ```
-

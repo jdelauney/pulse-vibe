@@ -1,5 +1,5 @@
 
-Un même jeu de tests vérifie chaque limiteur (`verifierContratLimiteur`) : la mémoire en unitaire, la base sur PGlite avec les vraies migrations.
+Un même jeu de tests vérifie chaque limiteur (`verifierContratLimiteur`, qui prend une fabrique de n'importe quelle classe implémentant `Limiteur`) : la mémoire en unitaire, la base sur PGlite avec les vraies migrations. La doublure en panne de la garde est un objet littéral typé par `Limiteur`.
 
 <!-- fichier: tests/helpers/contrat-limiteur.ts -->
 ```ts
@@ -70,10 +70,10 @@ export function verifierContratLimiteur(
 // src/lib/helpers/limite/__tests__/limiteur-memoire.test.ts
 import { describe } from "vitest";
 import { verifierContratLimiteur } from "../../../../../tests/helpers/contrat-limiteur";
-import { limiteurMemoire } from "../limiteur-memoire";
+import { LimiteurMemoire } from "../limiteur-memoire";
 
 describe("Limiteur en mémoire", () => {
-  verifierContratLimiteur(() => limiteurMemoire());
+  verifierContratLimiteur(() => new LimiteurMemoire());
 });
 ```
 
@@ -84,7 +84,7 @@ import type { Db } from "@src/db/db-client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import { verifierContratLimiteur } from "../../../../tests/helpers/contrat-limiteur";
-import { limiteurBase } from "../limite.repository";
+import { DrizzleLimiteurRepository } from "../limite.repository";
 import { limites } from "../limite.table";
 
 let db: Db;
@@ -99,7 +99,7 @@ afterEach(async () => {
 });
 
 describe("Limiteur en base", () => {
-  verifierContratLimiteur(() => limiteurBase(db, { nettoyer: () => false }));
+  verifierContratLimiteur(() => new DrizzleLimiteurRepository(db, () => false));
 
   it("efface au passage les compteurs de plus d'un jour", async () => {
     const T0 = Date.UTC(2026, 9, 8, 10, 0, 0);
@@ -112,7 +112,7 @@ describe("Limiteur en base", () => {
       { cle: "connexion:recente", compte: 1, debut: new Date(T0 - 60_000) },
     ]);
 
-    await limiteurBase(db, { nettoyer: () => true }).verifier(
+    await new DrizzleLimiteurRepository(db, () => true).verifier(
       "connexion:nouvelle",
       { nombre: 5, fenetreMs: 60_000 },
       T0,
@@ -158,8 +158,9 @@ La garde : verdict, choix du limiteur, panne d'un limiteur et contenu du journal
 <!-- fichier: src/lib/__tests__/limite.test.ts -->
 ```ts
 // src/lib/__tests__/limite.test.ts
+import type { Limiteur } from "@src/core/shared/limiteur.port";
 import { ErreurService } from "@src/lib/errors/erreur-service";
-import { limiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
+import { LimiteurMemoire } from "@src/lib/helpers/limite/limiteur-memoire";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const journal = vi.hoisted(() => ({ error: vi.fn(), warn: vi.fn() }));
@@ -179,7 +180,7 @@ describe("Limite de requêtes", () => {
 
   describe("Au-delà de la limite, la personne reçoit un message clair", () => {
     it("US-XXX-1 – Sixième tentative de connexion en une minute : refusée avec un message en français", async () => {
-      const limiteur = limiteurMemoire();
+      const limiteur = new LimiteurMemoire();
       for (let i = 0; i < 5; i++) {
         await verifierLimite("connexion", "203.0.113.7", limiteur);
       }
@@ -207,7 +208,7 @@ describe("Limite de requêtes", () => {
 
   describe("Limiteur indisponible : le site reste utilisable", () => {
     it("US-XXX-3 – L'incident est journalisé sans l'adresse IP", async () => {
-      const enPanne = {
+      const enPanne: Limiteur = {
         verifier: async () => {
           throw Object.assign(new Error("connexion à 203.0.113.7 impossible"), {
             name: "TypeError",
@@ -271,12 +272,12 @@ vi.mock("@src/config/env", () => ({
 }));
 
 const { verifierLimite } = await import("@src/lib/limite");
-const { limiteurUpstash } = await import("../upstash.adapter");
+const { UpstashLimiteurAdapter } = await import("../upstash.adapter");
 
 describe("Limite de requêtes, option Redis", () => {
   it("US-XXX-3 – Upstash injoignable : la tentative est laissée passer", async () => {
     // Adresse volontairement injoignable : simule une panne d'Upstash.
-    const enPanne = limiteurUpstash({
+    const enPanne = new UpstashLimiteurAdapter({
       url: "http://127.0.0.1:9",
       token: "jeton-de-test",
     });

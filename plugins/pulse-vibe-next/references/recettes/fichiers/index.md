@@ -81,18 +81,18 @@ Dans Vercel, saisissez-les pour Production et Preview.
 |---|---|
 | `src/config/env.ts`, `.env.example` (modifiés) | Les quatre variables R2 |
 | `next.config.ts` (modifié) | L'adresse R2 dans `connect-src` de la CSP |
-| `src/core/fichiers/fichier.entity.ts` | Types autorisés, taille maximale, statuts, type `Fichier` |
+| `src/core/fichiers/fichier.entity.ts` | Types autorisés, taille maximale, statuts, `FichierVue` (données simples) et classe `Fichier` (règle de l'envoi conforme) |
 | `src/core/fichiers/fichier.errors.ts` | Codes des erreurs attendues |
-| `src/core/fichiers/fichier.rules.ts` | Clé d'objet, propriété de la clé, envoi conforme (fonctions pures) |
-| `src/core/fichiers/fichier-repository.port.ts` | Ce que les use-cases attendent de la base |
-| `src/core/fichiers/stockage-fichiers.port.ts` | Ce que les use-cases attendent du stockage |
-| `src/core/fichiers/use-cases/preparer-envoi.use-case.ts` | Réserve une ligne, signe l'adresse d'envoi |
-| `src/core/fichiers/use-cases/confirmer-envoi.use-case.ts` | Compare ce que R2 a reçu, valide ou efface |
-| `src/core/fichiers/use-cases/supprimer-fichier.use-case.ts` | Supprime la ligne, puis l'objet |
+| `src/core/fichiers/fichier.rules.ts` | Classe `ReglesFichier` : clé d'objet, propriété de la clé |
+| `src/core/fichiers/fichier-repository.port.ts` | Interface `FichierRepository` : ce que les use-cases attendent de la base |
+| `src/core/fichiers/stockage-fichiers.port.ts` | Interface `StockageFichiers` : ce que les use-cases attendent du stockage |
+| `src/core/fichiers/use-cases/preparer-envoi.use-case.ts` | Classe `PreparerEnvoi` : réserve une ligne, signe l'adresse d'envoi |
+| `src/core/fichiers/use-cases/confirmer-envoi.use-case.ts` | Classe `ConfirmerEnvoi` : compare ce que R2 a reçu, valide ou efface |
+| `src/core/fichiers/use-cases/supprimer-fichier.use-case.ts` | Classe `SupprimerFichier` : supprime la ligne, puis l'objet |
 | `src/db/fichiers/fichier.table.ts` | Table `fichiers` |
 | `drizzle/<numéro>_<nom>.sql` | Migration générée |
-| `src/db/fichiers/fichier.repository.ts` | `fichierRepository(db)` : écritures et lectures, condition de propriété |
-| `src/adapters/storage/storage.adapter.ts` | Client R2, adresses signées, pannes en `ErreurService` |
+| `src/db/fichiers/fichier.repository.ts` | Classe `DrizzleFichierRepository` : écritures et lectures, condition de propriété |
+| `src/adapters/storage/storage.adapter.ts` | Classe `StockageR2Adapter` : client R2, adresses signées, pannes en `ErreurService` |
 | `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts` | Message d'échec, message de chaque code d'erreur |
 | `src/features/fichiers/schemas/fichier.schema.ts` | Types et taille autorisés (Zod) |
 | `src/features/fichiers/actions/preparer-envoi.action.ts`, `confirmer-envoi.action.ts`, `supprimer-fichier.action.ts` | Les trois actions |
@@ -104,11 +104,11 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | `app/api/fichiers/[id]/route.ts` | Téléchargement par adresse signée |
 | `app/(connecte)/fichiers/page.tsx` | Page « Mes fichiers » |
 | `proxy.ts` (modifié) | `"/fichiers/:path*"` dans le `matcher` |
-| `src/core/fichiers/__tests__/fichier.rules.test.ts` | Tests unitaires des règles |
-| `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts` | Doublures en mémoire des deux ports, partagées par les tests des use-cases |
+| `src/core/fichiers/__tests__/fichier.rules.test.ts` | Tests unitaires de `ReglesFichier` |
+| `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts` | Classes en mémoire qui implémentent les deux ports, partagées par les tests des use-cases |
 | `src/core/fichiers/use-cases/__tests__/preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts` | Tests unitaires des trois use-cases, un fichier chacun |
 | `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` | Tests unitaires du schéma |
-| `src/adapters/storage/__tests__/storage.adapter.test.ts` | Tests de l'adapter (SDK doublé) |
+| `src/adapters/storage/__tests__/storage.adapter.test.ts` | Tests de l'adapter (client du SDK doublé) |
 | `src/db/fichiers/__tests__/fichier.repository.test.ts` | Tests d'intégration avec PGlite |
 | `e2e/fichiers.spec.ts` | Tests de bout en bout Playwright |
 
@@ -124,14 +124,14 @@ Le parcours d'un envoi :
 4. Le navigateur appelle `confirmerEnvoiAction` : le serveur demande à R2 ce qu'il a reçu, compare, puis passe la ligne en `envoye`.
 5. Pour lire, le lien `/api/fichiers/<id>` vérifie la session et la propriétaire, puis redirige vers une adresse **GET** signée de 5 minutes.
 
-Le domaine s'appelle `fichiers` : `src/core/fichiers/` (les règles), `src/db/fichiers/` (le stockage en base), `src/features/fichiers/` (l'écran, les actions, les lectures). Le service R2 vit dans `src/adapters/storage/`.
+Le domaine s'appelle `fichiers` : `src/core/fichiers/` (le métier : l'entité `Fichier`, les règles, les ports, les use-cases), `src/db/fichiers/` (le stockage en base), `src/features/fichiers/` (l'écran, les actions, les lectures). Le service R2 vit dans `src/adapters/storage/`. Le métier, le stockage et le service sont des classes ; chaque action assemble les objets dont elle a besoin.
 
 - Étape 1 – Cloudflare et les variables : `pulse-aidd pile recette fichiers etape 1`
 - Étape 2 – Le métier : entité, erreurs, règles et ports : `pulse-aidd pile recette fichiers etape 2`
-- Étape 3 – Les use-cases : `pulse-aidd pile recette fichiers etape 3`
+- Étape 3 – Les use-cases (classes) : `pulse-aidd pile recette fichiers etape 3`
 - Étape 4 – La table et sa migration : `pulse-aidd pile recette fichiers etape 4`
-- Étape 5 – Le repository : `pulse-aidd pile recette fichiers etape 5`
-- Étape 6 – L'adapter de stockage : `pulse-aidd pile recette fichiers etape 6`
+- Étape 5 – Le repository (classe) : `pulse-aidd pile recette fichiers etape 5`
+- Étape 6 – L'adapter de stockage (classe) : `pulse-aidd pile recette fichiers etape 6`
 - Étape 7 – Les constantes et le schéma : `pulse-aidd pile recette fichiers etape 7`
 - Étape 8 – Les actions et les lectures : `pulse-aidd pile recette fichiers etape 8`
 - Étape 9 – Le téléchargement : `pulse-aidd pile recette fichiers etape 9`
@@ -322,17 +322,17 @@ Fonctionnalité: Fichiers
 - [ ] **Tn – Relier le projet à R2** · US-XXX
   - Objectif : le projet a un bucket R2 privé, en Europe, une table pour ses fichiers et un adapter de stockage
   - Dépend de : —
-  - Fichiers : à créer : `src/core/fichiers/fichier.entity.ts`, `fichier.errors.ts`, `fichier.rules.ts`, `fichier-repository.port.ts`, `stockage-fichiers.port.ts`, `src/db/fichiers/fichier.table.ts`, `src/db/fichiers/fichier.repository.ts`, `src/adapters/storage/storage.adapter.ts`, `src/adapters/storage/__tests__/storage.adapter.test.ts`, `src/db/fichiers/__tests__/fichier.repository.test.ts`, migration dans `drizzle/` · à modifier : `src/config/env.ts`, `.env.example`
+  - Fichiers : à créer : `src/core/fichiers/fichier.entity.ts` (classe `Fichier`), `fichier.errors.ts`, `fichier.rules.ts` (classe `ReglesFichier`), `fichier-repository.port.ts` et `stockage-fichiers.port.ts` (interfaces), `src/db/fichiers/fichier.table.ts`, `src/db/fichiers/fichier.repository.ts` (classe `DrizzleFichierRepository`), `src/adapters/storage/storage.adapter.ts` (classe `StockageR2Adapter`), `src/adapters/storage/__tests__/storage.adapter.test.ts`, `src/db/fichiers/__tests__/fichier.repository.test.ts`, migration dans `drizzle/` · à modifier : `src/config/env.ts`, `.env.example`
   - Vérification : US-XXX critères 4 et 6 – `npm test` passe ; `npm run db:migrate` crée la table `fichiers`
   - Tests : « Camille ouvre sa facture », « Léo ne peut pas ouvrir la facture de Camille », « La liste de Léo ne contient pas la facture de Camille », « La base refuse à Léo de confirmer ou d'effacer la ligne de Camille », « Un fichier « en_attente » n'apparaît ni dans la liste ni au téléchargement » (intégration) ; « Un refus de R2 lève une erreur de service « stockage » sans la clé de l'objet », « Un objet absent n'est pas une panne : le stockage répond « rien reçu » », « L'adresse d'envoi signe le type et la taille exacts », « L'adresse de lecture force le téléchargement sous un nom nettoyé » (unitaires)
   - Action manuelle : créer le bucket (juridiction UE), le jeton R2 et la règle CORS dans Cloudflare ; remplir `.env`
 - [ ] **Tn+1 – Envoyer un fichier** · US-XXX
   - Objectif : une personne connectée envoie une image ou un PDF, contrôlé par le serveur, puis confirmé après vérification dans R2
   - Dépend de : Tn
-  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts`, `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` · à modifier : `next.config.ts` (CSP, étape 12)
+  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts` (classes `PreparerEnvoi`, `ConfirmerEnvoi`, `SupprimerFichier`), `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` · à modifier : `next.config.ts` (CSP, étape 12)
   - Vérification : US-XXX critères 1 à 3 – une image PNG passe ; un `.exe` et un PDF de 6 Mo sont refusés avec le message prévu
   - Tests : « Une photo PNG de 2 Mo est acceptée », « Un fichier interdit ou trop lourd est refusé avec un message clair », « La clé du fichier de Camille commence par l'identifiant de Camille », « Camille reçoit une adresse d'envoi et une ligne en attente est réservée », « L'envoi conforme passe la ligne à « envoye » », « Un envoi différent de l'annonce est effacé avec sa ligne », « Léo ne peut pas confirmer l'envoi de Camille », « Camille supprime son fichier : la ligne et l'objet disparaissent », « Léo ne peut pas supprimer le fichier de Camille » (unitaires)
-  - Attention : le serveur contrôle le type et la taille, même si le champ `accept` filtre déjà ; un fichier d'`actions/` commence par `"use server"` et n'exporte que son action
+  - Attention : le serveur contrôle le type et la taille, même si le champ `accept` filtre déjà ; un fichier d'`actions/` commence par `"use server"` et n'exporte que son action ; l'action crée les objets du use-case (`new PreparerEnvoi(new DrizzleFichierRepository(getDb()), new StockageR2Adapter(env))`)
 - [ ] **Tn+2 – Retrouver et télécharger ses fichiers** · US-XXX
   - Objectif : une personne voit ses fichiers et les télécharge par un lien temporaire
   - Dépend de : Tn+1
@@ -347,7 +347,7 @@ Le code des tests : `pulse-aidd pile recette fichiers tests`
 
 - **S1, S2 – Secrets** : les quatre variables R2 restent côté serveur (`server-only`, sans `NEXT_PUBLIC_`). Le navigateur reçoit seulement des adresses signées de 5 minutes. Les pannes du stockage sortent sans secret ni clé d'objet (`ErreurService` à `cause` technique).
 - **S3 – Contrôle d'accès** : chaque requête du repository et chaque action filtrent par `utilisateurId` (venu de la session) ; la clé d'objet commence par l'identifiant de la propriétaire.
-- **S5, S7 – Fichiers** : type (liste blanche) et taille (5 Mo) contrôlés par le schéma Zod de l'action ; la signature PUT fige le type et la taille ; `confirmerEnvoi` compare ce que R2 a reçu et efface tout écart.
+- **S5, S7 – Fichiers** : type (liste blanche) et taille (5 Mo) contrôlés par le schéma Zod de l'action ; la signature PUT fige le type et la taille ; `ConfirmerEnvoi` compare ce que R2 a reçu et efface tout écart.
 - **S6 – Affichage** : le nom du fichier s'affiche comme du texte ; il n'entre jamais dans la clé d'objet ; il est nettoyé avant l'en-tête de téléchargement.
 - **S7 – Stockage privé** : bucket privé ; le Route Handler vérifie la session et la propriétaire avant de signer une adresse GET de 5 minutes. Le fichier est téléchargé (`attachment`), jamais affiché sur le domaine du site.
 - **S9 – Données personnelles** : la suppression d'un compte efface ses lignes (`onDelete: "cascade"`) ; prévoyez aussi la suppression des objets R2 du préfixe `<id utilisateur>/`.
@@ -359,7 +359,7 @@ Le code des tests : `pulse-aidd pile recette fichiers tests`
 - **Bucket UE** : il répond seulement à `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`. Sans juridiction, retirez `.eu` dans `src/adapters/storage/storage.adapter.ts` et dans `connect-src` de `next.config.ts`.
 - **Envoi bloqué, console « Refused to connect … violates the following Content Security Policy directive: connect-src »** : l'adresse R2 manque à `connect-src`. Vérifiez l'étape « La CSP autorise R2 », la présence de `R2_BUCKET` et `R2_ACCOUNT_ID` au moment de la construction (Vercel : Production et Preview), puis reconstruisez. L'hôte bloqué, affiché dans le message, doit être identique à celui écrit dans `connect-src`.
 - **Clé secrète perdue** : Cloudflare l'affiche une seule fois. Créez un nouveau jeton, puis supprimez l'ancien.
-- **Objet orphelin à la suppression** : `supprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
+- **Objet orphelin à la suppression** : `SupprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
 - **Lignes « en_attente »** : un envoi abandonné laisse une ligne sans fichier. Elle reste invisible ; une tâche de ménage pourra les effacer plus tard.
 - **Type déclaré par le navigateur** : `File.type` vient de l'extension ; le contenu n'est pas inspecté. Le téléchargement forcé (`attachment`) évite qu'un fichier piégé s'exécute dans le site.
 - **Les quatre variables R2 deviennent obligatoires** : `env` les valide au chargement ; la construction, le site et les tests de bout en bout les exigent. Renseignez-les dans `.env` (une valeur factice suffit tant qu'aucun envoi réel n'a lieu). Construction de vérification sans elles (CI) : `SKIP_ENV_VALIDATION=1 npm run build`.

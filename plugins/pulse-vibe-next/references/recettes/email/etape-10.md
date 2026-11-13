@@ -9,7 +9,7 @@ Avec la vérification d'adresse, `src/adapters/auth/__tests__/auth.adapter.test.
 import { account, user } from "@src/db/compte/auth.table";
 ```
 
-2. `creerAuth` reçoit maintenant `envoyerEmail` : doublez l'envoi dans `optionsDeTest`, aucun e-mail ne part pendant les tests.
+2. `creerAuth` reçoit maintenant `envoyeur` (un `EnvoyeurEmail`) : doublez l'envoi dans `optionsDeTest`, aucun e-mail ne part pendant les tests.
 
 <!-- remplacer: src/adapters/auth/__tests__/auth.adapter.test.ts -->
 ```ts
@@ -17,7 +17,7 @@ const optionsDeTest = {
   secret: "secret-de-test-secret-de-test-secret-de-test",
   baseURL: "http://localhost:3000",
   // Recette email : aucun e-mail ne part pendant les tests.
-  envoyerEmail: async () => {},
+  envoyeur: { async envoyer() {} },
 };
 ```
 

@@ -7,7 +7,8 @@ En cas de doute : **lisible avant d'être malin**. Ces règles valent pour tout 
 - **KISS** : la solution la plus simple qui marche ; une abstraction quand le besoin est là, une optimisation face à un problème constaté.
 - **DRY** : une information à un seul endroit (constante, fonction, module). Fusionner les vraies répétitions ; deux codes qui se ressemblent mais servent des buts différents restent séparés.
 - **YAGNI** : coder exactement ce que la spec demande. Paramètre, option, couche, fichier ou dépendance s'ajoutent le jour où le besoin existe.
-- **Responsabilité unique** : une fonction fait une chose, un fichier a un sujet. Un nom qui contient « et » (`saveAndRender`) se coupe en deux.
+- **Conception orientée objet** : la logique s'écrit en classes, selon SOLID et avec les patrons de conception reconnus (§5 bis) ; l'interface suit la convention de son framework.
+- **Responsabilité unique** : une classe, une méthode ou une fonction fait une chose, un fichier a un sujet. Un nom qui contient « et » (`saveAndRender`) se coupe en deux.
 - **Séparer les rôles** : les données (lecture, calcul, écriture), l'affichage, la configuration.
 - **Règles métier isolées, code testable, faible couplage** : §5. Évolutif veut dire facile à changer demain, construit pour le besoin d'aujourd'hui.
 - **Vérifier avant d'utiliser** : un fichier, un module, une fonction, une table ou une bibliothèque existe une fois vu dans le projet. Le chercher avant de l'utiliser ; s'il manque, le créer si la tâche le prévoit, sinon le signaler.
@@ -16,9 +17,9 @@ En cas de doute : **lisible avant d'être malin**. Ces règles valent pour tout 
 
 | Mesure | Limite | Si on dépasse |
 |---|---|---|
-| Lignes par fonction (ou composant) | ≤ 30 | Extraire des sous-fonctions bien nommées |
+| Lignes par méthode, fonction ou composant | ≤ 30 | Extraire des sous-fonctions bien nommées |
 | Niveaux d'imbrication (conditions, boucles) | ≤ 3 | Retours anticipés, extraction de fonction |
-| Paramètres par fonction | ≤ 4 | Passer un objet (ou une structure) nommé |
+| Paramètres par méthode ou fonction | ≤ 4 | Passer un objet (ou une structure) nommé |
 | Lignes par fichier | ≤ 300 | Découper en modules à responsabilité unique |
 | Branches d'une chaîne « si / sinon si » | ≤ 3 | Table de correspondance avec valeur de repli |
 
@@ -40,11 +41,11 @@ STATUS_LABELS = { draft: "Brouillon", published: "Publié" }
 label = STATUS_LABELS[item.status] SINON "Inconnu"
 ```
 
-## 4. Fonctions
+## 4. Fonctions et méthodes
 
-- Une seule responsabilité, un seul niveau d'abstraction ; **retours anticipés** plutôt qu'imbrication.
-- Une fonction **calcule** (retourne une valeur) **ou** **agit** (écrit, affiche, envoie).
-- Un paramètre booléen « drapeau » (`render(true)`) devient deux fonctions explicites ou un objet d'options nommées.
+- Une seule responsabilité, un seul niveau d'abstraction par méthode ou fonction ; **retours anticipés** plutôt qu'imbrication.
+- Une méthode **calcule** (retourne une valeur) **ou** **agit** (écrit, affiche, envoie).
+- Un paramètre booléen « drapeau » (`render(true)`) devient deux méthodes explicites ou un objet d'options nommées.
 - Retourner une nouvelle valeur ; les paramètres reçus restent intacts. Variables immuables par défaut si le langage le permet, chacune dans la portée la plus courte.
 - Une condition complexe devient une variable nommée : `isLate = dueDate < today ET NON item.isClosed`.
 - Expressions conditionnelles à un seul niveau ; le code exécuté est celui des sources, jamais du code construit à partir d'une chaîne.
@@ -55,33 +56,37 @@ Une règle métier isolée se teste facilement, et un code facile à tester est 
 
 ### Règles métier : un seul endroit, sans dépendance extérieure
 
-- Une règle métier (calcul, statut, droit, seuil, validation métier) vit dans **le module de règles** de la fonctionnalité (`item.rules`, ou `domain/` aux paliers 2 et 3), à l'écart des composants d'affichage, gestionnaires de route, requêtes à la base et scripts de migration.
-- Ce module est **pur** : il reçoit des valeurs et retourne un résultat, indépendant de l'interface, des données, du réseau et du framework ; l'heure courante, le hasard et les variables d'environnement lui sont passés en paramètre.
-- **Une règle = une fonction nommée avec les mots du glossaire** (`canPublish`, `computeLateFee`) ; ses seuils sont des constantes nommées du même module (§3).
-- **Une seule version** : si la règle sert à l'écran (confort) et au serveur (protection, S5), les deux appellent la même fonction quand le langage le permet ; sinon la version serveur fait foi et l'autre la cite en commentaire.
+- Une règle métier (calcul, statut, droit, seuil, validation métier) vit dans **le domaine** de la fonctionnalité : méthode de l'entité qu'elle concerne (`invoice.isOverdue(today)`), ou classe de règles (`.rules`) quand elle porte sur plusieurs entités ; `domain/` aux paliers 2 et 3. Elle reste à l'écart des composants d'affichage, gestionnaires de route, requêtes à la base et scripts de migration.
+- Le domaine est **pur** : ses classes reçoivent des valeurs et retournent un résultat, indépendantes de l'interface, des données, du réseau et du framework ; l'heure courante, le hasard et les variables d'environnement leur sont passés en paramètre.
+- **Une règle = une méthode nommée avec les mots du glossaire** (`canPublish`, `computeLateFee`) ; ses seuils sont des constantes nommées du même module (§3).
+- **Une seule version** : si la règle sert à l'écran (confort) et au serveur (protection, S5), les deux appellent la même méthode quand le langage le permet ; sinon la version serveur fait foi et l'autre la cite en commentaire.
 - Une règle qui change se modifie **à un seul endroit** ; si elle oblige à toucher plusieurs fichiers, la regrouper.
 
 ### Testable
 
 - **Séparer décider et agir** : le calcul pur, couvert par des tests unitaires ; les effets (écrire, envoyer, afficher) dans une fine couche qui l'appelle.
-- **Les dépendances entrent par la porte** : données, date du jour, fonction d'envoi, accès au stockage arrivent en paramètre ou à la construction, au lieu d'un import direct d'un client de base, de l'heure système ou d'une variable globale. Un test passe alors une doublure, sans application lancée ni base, réseau ou horloge réels.
-- Tout état modifiable est explicite et passé en paramètre, plutôt que global ou caché dans un singleton : deux tests donnent le même résultat dans n'importe quel ordre.
-- Une fonction difficile à tester signale une conception à revoir : la redécouper, puis la tester.
+- **Les dépendances entrent par la porte** : données, date du jour, service d'envoi, accès au stockage arrivent par le constructeur (ou en paramètre), au lieu d'un import direct d'un client de base, de l'heure système ou d'une variable globale. Un test passe alors une doublure, sans application lancée ni base, réseau ou horloge réels.
+- Tout état modifiable vit dans une instance (champs privés) ou est passé en paramètre, plutôt que global ou caché dans un singleton : deux tests donnent le même résultat dans n'importe quel ordre.
+- Une classe ou une méthode difficile à tester signale une conception à revoir : la redécouper, puis la tester.
 - Chaque règle métier a ses tests : cas nominal, limites (seuil exact, valeur vide, zéro), cas refusés. Emplacement : `qualite/organisation.md` §7.
 
 ```
-// invoice.rules : la règle, pure, écrite une fois
-fonction isOverdue(invoice, today) :
-  RETOURNER invoice.dueDate < today ET invoice.status != InvoiceStatus.PAID
+// invoice.entity : la règle, pure, écrite une fois, dans l'objet qu'elle concerne
+classe Invoice :
+  constructeur(dueDate, status, email)   // vérifie ses invariants
+  méthode isOverdue(today) :
+    RETOURNER this.dueDate < today ET this.status != InvoiceStatus.PAID
 
 // L'affichage l'appelle, au lieu de recopier la condition
 composant InvoiceRow(invoice, today) :
-  SI isOverdue(invoice, today) ALORS afficher badge "En retard"
+  SI invoice.isOverdue(today) ALORS afficher badge "En retard"
 
-// La décision est pure, les effets sont reçus en paramètre
-fonction sendReminders({ loadInvoices, sendEmail, today }) :
-  POUR CHAQUE invoice DANS filtrer(loadInvoices(), i => isOverdue(i, today))
-    sendEmail(invoice.email, ...)
+// Le cas d'usage reçoit ses dépendances (interfaces) par le constructeur
+classe SendReminders :
+  constructeur(invoices: InvoiceRepository, mailer: Mailer, clock: Clock)
+  méthode execute() :
+    POUR CHAQUE invoice DANS filtrer(this.invoices.findOpen(), i => i.isOverdue(this.clock.today()))
+      this.mailer.send(invoice.email, ...)
 ```
 
 ### Faible couplage
@@ -91,7 +96,36 @@ fonction sendReminders({ loadInvoices, sendEmail, today }) :
 - **Les détails techniques restent au bord** : le format d'un service externe, d'une table ou d'une bibliothèque est traduit dans le seul module qui lui parle ; le reste du code manipule les types du projet.
 - Une fonctionnalité passe par ce qu'une autre expose (son `index`, ou les dossiers ouverts quand le framework déconseille l'`index`).
 - Demander une valeur au module qui la possède, plutôt qu'une chaîne d'accès qui traverse plusieurs objets (`order.customer.account.settings.currency`).
-- **Abstraction minimale** : interface, port ou fabrique s'ajoutent quand deux implémentations existent déjà, ou qu'un test en a besoin pour passer une doublure (YAGNI). Passer une fonction en paramètre suffit souvent.
+- **Dépendre d'abstractions** (D de SOLID) : un service ou un cas d'usage reçoit chaque accès extérieur (stockage, envoi, horloge, service externe) sous forme d'interface (port). Au-delà, une interface ou une fabrique s'ajoute quand deux implémentations existent déjà, ou qu'un test en a besoin pour passer une doublure (YAGNI).
+
+## 5 bis. Classes, SOLID et patrons de conception
+
+La logique s'écrit **en classes** : entités et objets-valeurs du métier, règles, cas d'usage et services, moteurs et calculs qui gardent un état, dépôts et adaptateurs de services externes. L'interface suit la convention de son framework (par exemple, composants et hooks React restent des fonctions) et confie sa logique à ces classes. Un choix contraire écrit dans `docs/technical.md` ou la mémoire du projet l'emporte. Dans un projet existant écrit autrement, le nouveau code suit cette section ; l'ancien change par une tâche de refactoring du plan.
+
+- **Encapsuler** : l'état d'un objet est privé ou en lecture seule ; il change par des méthodes nommées avec les mots du glossaire, qui gardent ses invariants (vérifiés dès le constructeur).
+- **SOLID** (détail, odeurs et remèdes : `pulse-aidd reference qualite/code-concepts.md`) :
+  - **S**, responsabilité unique : une classe, une seule raison de changer ;
+  - **O**, ouvert à l'extension : un nouveau cas s'ajoute par une nouvelle classe (stratégie, effet, format), l'existant reste tel quel ;
+  - **L**, substitution : chaque implémentation tient toutes les promesses de son type ;
+  - **I**, interfaces courtes, taillées pour qui les utilise ;
+  - **D**, dépendances reçues par le constructeur, sous forme d'interfaces ; l'assemblage des objets se fait à un seul endroit (point d'entrée, conteneur).
+- **Composition d'abord** : un objet en reçoit un autre ; l'héritage sert une vraie relation « est un », sur un seul niveau.
+- **Patrons de conception** : quand le problème correspond à un patron reconnu, l'employer et le nommer (nom de la classe ou commentaire de tête). Un patron répond à un problème présent (YAGNI) : un cas unique reste une classe simple.
+
+| Problème | Patron |
+|---|---|
+| Plusieurs façons interchangeables de faire une même chose (calcul, effet, format) | Strategy |
+| Créer le bon objet selon un type ou un format | Factory |
+| Lire et écrire les données d'un type | Repository |
+| Parler à une bibliothèque ou un service externe avec les mots du projet | Adapter |
+| Un comportement qui change selon l'état de l'objet | State |
+| Prévenir plusieurs parties d'un changement | Observer |
+| Une action à rejouer, annuler ou mettre en file | Command |
+| Un déroulé fixe aux étapes variables | Template Method |
+| Un accès simple à un sous-système (moteur, bibliothèque) | Facade |
+
+- **Aux frontières** (réseau, serveur vers navigateur, stockage, worker) : des objets simples (DTO), produits par une méthode de conversion de la classe ; chaque instance reste de son côté.
+- **Petites aides sans état** (formater une date ou un montant, convertir une unité), sans règle métier : des fonctions, dans le module d'aides du projet ; une classe qui n'aurait que des méthodes statiques devient un module de fonctions.
 
 ## 6. Commentaires : expliquer le pourquoi
 
@@ -158,18 +192,19 @@ Commentaires en français qui expliquent le *pourquoi* (intention, contrainte, p
 
 ## 15. Anti-patterns
 
-Pièges fréquents du code généré, chacun corrigé par sa règle : module, bibliothèque ou dossier supposés exister (§1, §10) ; compilateur ou règle d'analyse réduits au silence (§7, §14) ; couche, option ou interface « pour plus tard » (§1, §5) ; règle métier recopiée dans un composant, une route ou une requête (§5) ; fonction qui lit elle-même l'heure, la base ou le réseau (§5) ; format d'un service externe qui circule dans tout le code (§5) ; bloc de capture vide ou message brut affiché (§8) ; secret dans le code client (§11).
+Pièges fréquents du code généré, chacun corrigé par sa règle : module, bibliothèque ou dossier supposés exister (§1, §10) ; compilateur ou règle d'analyse réduits au silence (§7, §14) ; couche, option ou interface « pour plus tard » (§1, §5) ; règle métier recopiée dans un composant, une route ou une requête (§5) ; classe ou fonction qui lit elle-même l'heure, la base ou le réseau (§5) ; logique en fonctions libres là où une classe la porterait, état exposé, `switch` sur un type qui grossit à chaque cas au lieu d'une stratégie (§5 bis) ; format d'un service externe qui circule dans tout le code (§5) ; bloc de capture vide ou message brut affiché (§8) ; secret dans le code client (§11).
 
 ## 16. Checklist
 
 ### À l'implémentation
 
 - [ ] Chaque import pointe vers un module qui existe ou une dépendance présente dans le projet.
-- [ ] Fonctions ≤ 30 lignes, ≤ 3 niveaux d'imbrication, ≤ 4 paramètres ; fichiers ≤ 300 lignes.
+- [ ] Méthodes et fonctions ≤ 30 lignes, ≤ 3 niveaux d'imbrication, ≤ 4 paramètres ; fichiers ≤ 300 lignes.
 - [ ] Fichiers placés selon le code existant, `docs/technical.md` et le plan ; conventions existantes respectées.
 - [ ] Noms explicites, booléens `is/has/should`, chaque valeur à sens métier nommée en constante.
-- [ ] Chaque règle métier est une fonction nommée, écrite une seule fois dans le module de règles, indépendante de l'interface, des données, du réseau et du framework.
-- [ ] Les décisions sont des calculs purs ; heure, hasard, accès aux données et services externes sont reçus en paramètre.
+- [ ] Chaque règle métier est une méthode nommée, écrite une seule fois dans le domaine, indépendante de l'interface, des données, du réseau et du framework.
+- [ ] Les décisions sont des calculs purs ; heure, hasard, accès aux données et services externes sont reçus par le constructeur ou en paramètre, sous forme d'interfaces.
+- [ ] La logique est en classes (§5 bis), état encapsulé ; l'interface suit son framework et confie sa logique aux classes ; chaque patron employé est nommé.
 - [ ] Les règles métier ont leurs tests (nominal, limites, refus), qui passent sans base, réseau ni interface.
 - [ ] Les dépendances vont vers le métier ; les formats externes sont traduits au bord ; chaque fonctionnalité passe par ce que les autres exposent (index public, ou dossiers ouverts).
 - [ ] Commentaire en tête de fichier ; commentaires en français sur le *pourquoi* (sauf règle contraire du `CLAUDE.md`).
@@ -185,6 +220,7 @@ Pièges fréquents du code généré, chacun corrigé par sa règle : module, bi
 - [ ] Le code fait ce que la spec demande, ni plus ni moins (YAGNI).
 - [ ] Chaque information à un seul endroit ; code mort, code commenté et traces de débogage supprimés.
 - [ ] Journaux limités au détail technique : aucune donnée personnelle ni jeton (S11).
-- [ ] Chaque règle métier dans le module de règles, écrite une seule fois (hors affichage, routes et requêtes).
+- [ ] Chaque règle métier dans le domaine, écrite une seule fois (hors affichage, routes et requêtes).
 - [ ] Changer d'affichage, de stockage ou de service externe ne toucherait qu'un module.
-- [ ] Une personne qui débute peut lire chaque fonction et dire ce qu'elle fait.
+- [ ] SOLID tenu : une raison de changer par classe ; un nouveau cas ajouté sans modifier l'existant ; aucune dépendance concrète créée dans un service ou un cas d'usage.
+- [ ] Une personne qui débute peut lire chaque méthode et dire ce qu'elle fait.

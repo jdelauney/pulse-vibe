@@ -1,6 +1,6 @@
 ### 2. Le métier : entité, erreurs, règles et ports
 
-Le métier ne dépend que de `src/core/`. Les deux ports décrivent ce dont les use-cases ont besoin : le repository de l'étape 5 et l'adapter de l'étape 6 les fournissent, et un test passe des doublures en mémoire.
+Le métier ne dépend que de `src/core/`. L'entité `Fichier` porte la règle qui la concerne seule (l'envoi reçu correspond-il à l'annonce ?) ; la clé d'objet, qui se calcule à partir de simples valeurs, vit dans une classe de règles. Les deux ports (des `interface`) décrivent ce dont les use-cases ont besoin : le repository de l'étape 5 et l'adapter de l'étape 6 les remplissent, et un test passe des doublures en mémoire.
 
 <!-- fichier: src/core/fichiers/fichier.entity.ts -->
 ```ts
@@ -21,7 +21,11 @@ export const TAILLE_MAX = 5 * 1024 * 1024; // 5 Mo
 export const STATUTS_FICHIER = ["en_attente", "envoye"] as const;
 export type StatutFichier = (typeof STATUTS_FICHIER)[number];
 
-export type Fichier = {
+/** Ce que le stockage a réellement reçu pour un objet. */
+export type ObjetRecu = { taille: number; typeMime: string };
+
+/** Les données d'un fichier : la forme qui traverse les frontières (base, écran). */
+export type FichierVue = {
   id: string;
   utilisateurId: string;
   /** Clé de l'objet dans le stockage : « <id utilisateur>/<id fichier>.<extension> ». */
@@ -32,6 +36,32 @@ export type Fichier = {
   statut: StatutFichier;
   creeLe: Date;
 };
+
+/** Un fichier et sa règle : l'état reste en lecture seule. */
+export class Fichier {
+  constructor(private readonly donnees: Readonly<FichierVue>) {}
+
+  get id(): string {
+    return this.donnees.id;
+  }
+
+  get cle(): string {
+    return this.donnees.cle;
+  }
+
+  /** L'objet reçu par le stockage est celui qui était annoncé : même taille, même type. */
+  envoiConforme(recu: ObjetRecu | null): boolean {
+    return (
+      recu !== null &&
+      recu.taille === this.donnees.taille &&
+      recu.typeMime === this.donnees.typeMime
+    );
+  }
+
+  versVue(): FichierVue {
+    return { ...this.donnees };
+  }
+}
 ```
 
 <!-- fichier: src/core/fichiers/fichier.errors.ts -->
@@ -43,35 +73,22 @@ export type ErreurFichier = "fichier-introuvable" | "envoi-incomplet";
 <!-- fichier: src/core/fichiers/fichier.rules.ts -->
 ```ts
 // src/core/fichiers/fichier.rules.ts
-import {
-  type Fichier,
-  TYPES_AUTORISES,
-  type TypeAutorise,
-} from "./fichier.entity";
+import { TYPES_AUTORISES, type TypeAutorise } from "./fichier.entity";
 
-// La clé ne reprend jamais le nom donné par la personne : pas de caractère piégé, pas de collision.
-export function construireCle(
-  utilisateurId: string,
-  idFichier: string,
-  typeMime: TypeAutorise,
-): string {
-  return `${utilisateurId}/${idFichier}.${TYPES_AUTORISES[typeMime]}`;
-}
+/** Les règles de la clé d'objet : elles portent sur des valeurs, pas sur une seule entité. */
+export class ReglesFichier {
+  // La clé ne reprend jamais le nom donné par la personne : pas de caractère piégé, pas de collision.
+  construireCle(
+    utilisateurId: string,
+    idFichier: string,
+    typeMime: TypeAutorise,
+  ): string {
+    return `${utilisateurId}/${idFichier}.${TYPES_AUTORISES[typeMime]}`;
+  }
 
-export function appartientA(cle: string, utilisateurId: string): boolean {
-  return cle.startsWith(`${utilisateurId}/`);
-}
-
-/** L'objet reçu par le stockage est celui qui était annoncé : même taille, même type. */
-export function envoiConforme(
-  fichier: Pick<Fichier, "taille" | "typeMime">,
-  recu: { taille: number; typeMime: string } | null,
-): boolean {
-  return (
-    recu !== null &&
-    recu.taille === fichier.taille &&
-    recu.typeMime === fichier.typeMime
-  );
+  appartientA(cle: string, utilisateurId: string): boolean {
+    return cle.startsWith(`${utilisateurId}/`);
+  }
 }
 ```
 
@@ -80,8 +97,8 @@ export function envoiConforme(
 // src/core/fichiers/fichier-repository.port.ts
 import type { Fichier, TypeAutorise } from "./fichier.entity";
 
-/** Ce dont les use-cases ont besoin pour ranger les fichiers en base. Chaque méthode filtre par propriétaire. */
-export type FichierRepository = {
+/** Ce dont les use-cases ont besoin pour ranger les fichiers en base (patron Repository). Chaque méthode filtre par propriétaire. */
+export interface FichierRepository {
   reserver(donnees: {
     id: string;
     utilisateurId: string;
@@ -94,14 +111,16 @@ export type FichierRepository = {
   marquerEnvoye(id: string, utilisateurId: string): Promise<void>;
   /** Supprime la ligne et rend sa clé d'objet ; null si elle n'existe pas ou appartient à quelqu'un d'autre. */
   supprimer(id: string, utilisateurId: string): Promise<{ cle: string } | null>;
-};
+}
 ```
 
 <!-- fichier: src/core/fichiers/stockage-fichiers.port.ts -->
 ```ts
 // src/core/fichiers/stockage-fichiers.port.ts
+import type { ObjetRecu } from "./fichier.entity";
+
 /** Le stockage des objets (Cloudflare R2). L'adapter `storage` l'implémente ; un test passe une doublure. */
-export type StockageFichiers = {
+export interface StockageFichiers {
   /** Adresse d'envoi courte, pour ce type exact et cette taille exacte. */
   adresseEnvoi(params: {
     cle: string;
@@ -111,8 +130,7 @@ export type StockageFichiers = {
   /** Adresse de lecture courte, téléchargement sous le nom d'origine. */
   adresseLecture(params: { cle: string; nom: string }): Promise<string>;
   /** Ce que le stockage a réellement reçu (null si rien). */
-  lireObjet(cle: string): Promise<{ taille: number; typeMime: string } | null>;
+  lireObjet(cle: string): Promise<ObjetRecu | null>;
   supprimerObjet(cle: string): Promise<void>;
-};
+}
 ```
-

@@ -1,6 +1,6 @@
 ### 6. L'adapter de stockage
 
-Le client R2 et les adresses signées vivent dans `src/adapters/storage/`. Toute panne du SDK devient une `ErreurService("stockage", …)` : son message est sans secret ni clé d'objet (la clé commence par l'identifiant d'une personne), et sa `cause` garde seulement trois champs techniques (`name`, `Code`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine (architecture.md §8). `safe-action` journalise et affiche un message générique ; le Route Handler de l'étape 9 utilise `reponseErreur()`.
+Le client R2 et les adresses signées vivent dans `src/adapters/storage/`, dans la classe `StockageR2Adapter` : elle implémente le port `StockageFichiers` (patron Adapter) et reçoit sa configuration par le constructeur (les actions et le Route Handler lui passent l'objet `env`). Toute panne du SDK devient une `ErreurService("stockage", …)` : son message est sans secret ni clé d'objet (la clé commence par l'identifiant d'une personne), et sa `cause` garde seulement trois champs techniques (`name`, `Code`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine (architecture.md §8). `safe-action` journalise et affiche un message générique ; le Route Handler de l'étape 9 utilise `reponseErreur()`.
 
 <!-- fichier: src/adapters/storage/storage.adapter.ts -->
 ```ts
@@ -14,31 +14,19 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { env } from "@src/config/env";
+import type { ObjetRecu } from "@src/core/fichiers/fichier.entity";
 import type { StockageFichiers } from "@src/core/fichiers/stockage-fichiers.port";
 import { ErreurService } from "@src/lib/errors/erreur-service";
 
 const DUREE_ADRESSE_SECONDES = 5 * 60;
 
-let client: S3Client | undefined;
-
-function obtenirClient(): S3Client {
-  if (!client) {
-    client = new S3Client({
-      region: "auto",
-      // Bucket créé avec la juridiction UE : adresse en ".eu.". Sans juridiction : retirer ".eu".
-      endpoint: `https://${env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: env.R2_ACCESS_KEY_ID,
-        secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-      },
-      // R2 et les adresses signées : pas de somme de contrôle ajoutée d'office.
-      requestChecksumCalculation: "WHEN_REQUIRED",
-      responseChecksumValidation: "WHEN_REQUIRED",
-    });
-  }
-  return client;
-}
+/** Ce que l'adapter lit de la configuration : l'objet `env` du squelette convient tel quel. */
+export type ConfigurationR2 = {
+  R2_ACCOUNT_ID: string;
+  R2_ACCESS_KEY_ID: string;
+  R2_SECRET_ACCESS_KEY: string;
+  R2_BUCKET: string;
+};
 
 /**
  * Champs techniques de l'erreur du SDK, sans son texte : le texte peut citer une clé d'objet,
@@ -63,17 +51,39 @@ function panneDeStockage(erreur: unknown): ErreurService {
 }
 
 /**
- * La seule porte de sortie vers R2 (stockage privé). Toute panne devient une
+ * La seule porte de sortie vers R2 (stockage privé), patron Adapter : elle traduit le SDK en
+ * mots du projet (le port StockageFichiers). Toute panne devient une
  * ErreurService("stockage", …) sans secret ni donnée personnelle.
  */
-export const stockageFichiers: StockageFichiers = {
+export class StockageR2Adapter implements StockageFichiers {
+  private readonly client: S3Client;
+
+  constructor(private readonly config: ConfigurationR2) {
+    this.client = new S3Client({
+      region: "auto",
+      // Bucket créé avec la juridiction UE : adresse en ".eu.". Sans juridiction : retirer ".eu".
+      endpoint: `https://${config.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
+      credentials: {
+        accessKeyId: config.R2_ACCESS_KEY_ID,
+        secretAccessKey: config.R2_SECRET_ACCESS_KEY,
+      },
+      // R2 et les adresses signées : pas de somme de contrôle ajoutée d'office.
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
+    });
+  }
+
   // Adresse d'envoi : valable 5 minutes, pour ce type exact et cette taille exacte.
-  async adresseEnvoi(params) {
+  async adresseEnvoi(params: {
+    cle: string;
+    typeMime: string;
+    taille: number;
+  }): Promise<string> {
     try {
       return await getSignedUrl(
-        obtenirClient(),
+        this.client,
         new PutObjectCommand({
-          Bucket: env.R2_BUCKET,
+          Bucket: this.config.R2_BUCKET,
           Key: params.cle,
           ContentType: params.typeMime,
           ContentLength: params.taille,
@@ -86,16 +96,16 @@ export const stockageFichiers: StockageFichiers = {
     } catch (erreur) {
       throw panneDeStockage(erreur);
     }
-  },
+  }
 
   // Adresse de lecture : valable 5 minutes, téléchargement sous le nom d'origine.
-  async adresseLecture(params) {
+  async adresseLecture(params: { cle: string; nom: string }): Promise<string> {
     const nomSur = params.nom.replace(/[^\w.\- ]/g, "_");
     try {
       return await getSignedUrl(
-        obtenirClient(),
+        this.client,
         new GetObjectCommand({
-          Bucket: env.R2_BUCKET,
+          Bucket: this.config.R2_BUCKET,
           Key: params.cle,
           ResponseContentDisposition: `attachment; filename="${nomSur}"`,
         }),
@@ -104,13 +114,13 @@ export const stockageFichiers: StockageFichiers = {
     } catch (erreur) {
       throw panneDeStockage(erreur);
     }
-  },
+  }
 
   // Ce que R2 a réellement reçu (null si rien).
-  async lireObjet(cle) {
+  async lireObjet(cle: string): Promise<ObjetRecu | null> {
     try {
-      const reponse = await obtenirClient().send(
-        new HeadObjectCommand({ Bucket: env.R2_BUCKET, Key: cle }),
+      const reponse = await this.client.send(
+        new HeadObjectCommand({ Bucket: this.config.R2_BUCKET, Key: cle }),
       );
       return {
         taille: reponse.ContentLength ?? 0,
@@ -120,18 +130,18 @@ export const stockageFichiers: StockageFichiers = {
       if (erreur instanceof Error && erreur.name === "NotFound") return null;
       throw panneDeStockage(erreur);
     }
-  },
+  }
 
-  async supprimerObjet(cle) {
+  async supprimerObjet(cle: string): Promise<void> {
     try {
-      await obtenirClient().send(
-        new DeleteObjectCommand({ Bucket: env.R2_BUCKET, Key: cle }),
+      await this.client.send(
+        new DeleteObjectCommand({ Bucket: this.config.R2_BUCKET, Key: cle }),
       );
     } catch (erreur) {
       throw panneDeStockage(erreur);
     }
-  },
-};
+  }
+}
 ```
 
 Vérifié avec `@aws-sdk/client-s3` 3.1147.0 : sans `requestChecksumCalculation: "WHEN_REQUIRED"`, l'adresse PUT contient une somme de contrôle de fichier vide (`x-amz-checksum-crc32=AAAAAA==`) ; avec `signableHeaders`, `content-type` et `content-length` font partie de la signature (`X-Amz-SignedHeaders=content-length;content-type;host`).

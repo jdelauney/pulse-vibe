@@ -4,7 +4,7 @@ Conception technique (section du plan) :
 
 - **Écrans** : la route de chaque écran (`/factures`, `/factures/[id]`), publique ou dans `app/(connecte)/`. Écran public : métadonnées par `metadonneesDePage()` (`src/lib/seo/seo.ts`), entrée dans `app/sitemap.ts` ; une page de détail publique suit l'étape 5 de la recette `seo`.
 - **Données** : pour chaque table, ses colonnes (montants en centimes, dates avec fuseau), son propriétaire (`utilisateurId`) et la condition de propriété vérifiée dans chaque action d'écriture.
-- **Fichiers** : d'après « Architecture du code » (affichée avec ces consignes pour `/pulse:plan` ; pour `/pulse:refine`, `pulse-aidd pile reference architecture.md` avant d'écrire la ligne « Fichiers » d'une tâche nouvelle) : `src/core/<domaine>/` (règles, ports, use-cases), `src/db/<domaine>/` (table, repository), `src/features/<domaine>/` (`actions/`, `queries/`, `schemas/`, `components/`), la page dans `app/`.
+- **Fichiers** : d'après « Architecture du code » (affichée avec ces consignes pour `/pulse:plan` ; pour `/pulse:refine`, `pulse-aidd pile reference architecture.md` avant d'écrire la ligne « Fichiers » d'une tâche nouvelle) : `src/core/<domaine>/` (entités et règles, ports, use-cases : classes et interfaces), `src/db/<domaine>/` (table, repository), `src/features/<domaine>/` (`actions/`, `queries/`, `schemas/`, `components/`), la page dans `app/`.
 - **Recettes** : citer chaque recette utilisée (« Recette : connexion ») dans la conception et dans les tâches concernées.
 
 Découpage mixte. Une tâche tirée d'une recette (titre « Recette : <nom> » ou ligne « Recette : <nom> ») garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur : une tranche visible et testable, 3 fichiers au plus, le stockage dans la première tranche qui en a besoin.
@@ -12,7 +12,7 @@ Découpage mixte. Une tâche tirée d'une recette (titre « Recette : <nom> » o
 Ordre des tâches à l'intérieur d'une recette, chacune livrant quelque chose de testé :
 
 1. **Table et migration** : `src/db/<domaine>/<sujet>.table.ts`, `npm run db:generate`, migration relue ; la personne applique `npm run db:migrate` sur sa base (ligne « Action manuelle »).
-2. **Règle métier** : `src/core/<domaine>/<sujet>.rules.ts` (et `.errors.ts`), tests unitaires des scénarios `@unitaire` dans `__tests__/`.
+2. **Règle métier** : l'entité `src/core/<domaine>/<sujet>.entity.ts` (classe, une méthode par règle ; `<sujet>.rules.ts` pour une règle qui porte sur plusieurs entités) et `.errors.ts`, tests unitaires des scénarios `@unitaire` dans `__tests__/`.
 3. **Lecture** : repository (`src/db/<domaine>/<sujet>.repository.ts`, test d'intégration PGlite), query (`queries/<lecture>.query.ts`), container et sections ; puis la page et ses états (vide, chargement, erreur).
 4. **Écriture** : schéma Zod (`schemas/<sujet>.schema.ts`), use-case s'il y a une règle métier, action (`actions/<action>.action.ts`, `actionConnectee`), test d'intégration du repository ; puis le formulaire (section + container).
 5. **Parcours** : test de bout en bout du scénario principal (`e2e/`).

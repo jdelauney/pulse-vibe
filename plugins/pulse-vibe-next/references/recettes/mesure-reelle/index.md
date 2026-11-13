@@ -30,18 +30,18 @@ Aucune nouvelle variable.
 |---|---|---|
 | `app/layout.tsx` (modifié) | A et B | Ajoute `<SpeedInsights />` (A) ou `<MesureVitesse />` (B) |
 | `next.config.ts` (modifié) | A | Script de diagnostic de Speed Insights autorisé par la CSP, en développement |
-| `src/core/vitesse/mesure.entity.ts` | B | Mesures et notes acceptées, durée de conservation, types |
-| `src/core/vitesse/mesure.rules.ts` | B | Chemin sans identifiant, date limite de conservation (fonctions pures) |
-| `src/core/vitesse/mesure-repository.port.ts` | B | Ce dont le use-case a besoin : enregistrer, effacer les anciennes |
-| `src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts` | B | Use-case « enregistrer une mesure » |
+| `src/core/vitesse/mesure.entity.ts` | B | Mesures et notes acceptées, durée de conservation, `MesureVitesseVue` (données simples) et classe `MesureVitesse` |
+| `src/core/vitesse/mesure.rules.ts` | B | Classe `ReglesMesure` : chemin sans identifiant, effacement au plus une fois par heure, date limite de conservation |
+| `src/core/vitesse/mesure-repository.port.ts` | B | Interface `MesureVitesseRepository` : ce dont le use-case a besoin (enregistrer, effacer les anciennes) |
+| `src/core/vitesse/use-cases/enregistrer-mesure.use-case.ts` | B | Classe `EnregistrerMesure` (use-case « enregistrer une mesure ») |
 | `src/db/vitesse/mesure-vitesse.table.ts` | B | Table `mesures_vitesse` |
 | `drizzle/<numéro>_<nom>.sql` | B | Migration générée par `npm run db:generate` |
-| `src/db/vitesse/mesure-vitesse.repository.ts` | B | `mesureVitesseRepository(db)` : `enregistrer`, `effacerAvant`, `p75ParPage` |
+| `src/db/vitesse/mesure-vitesse.repository.ts` | B | Classe `DrizzleMesureVitesseRepository` : `enregistrer`, `effacerAvant`, `p75ParPage` |
 | `src/features/vitesse/schemas/mesure.schema.ts` | B | Schéma Zod d'une mesure reçue |
-| `src/features/vitesse/webhooks/recevoir-mesure.webhook.ts` | B | Contrôles de la requête, puis use-case |
+| `src/features/vitesse/webhooks/recevoir-mesure.webhook.ts` | B | Contrôles de la requête, puis use-case (le webhook assemble les objets) |
 | `app/api/vitesse/route.ts` | B | Route qui reçoit les mesures des navigateurs |
 | `src/components/shared/elements/mesure-vitesse.tsx` | B | Composant client qui mesure et envoie |
-| `src/core/vitesse/__tests__/mesure.rules.test.ts`, `src/core/vitesse/__tests__/enregistrer-mesure.use-case.test.ts` | B | Tests unitaires des règles et du use-case |
+| `src/core/vitesse/__tests__/mesure.rules.test.ts`, `src/core/vitesse/__tests__/enregistrer-mesure.use-case.test.ts` | B | Tests unitaires de `ReglesMesure` et du use-case (repository en mémoire) |
 | `src/features/vitesse/schemas/__tests__/mesure.schema.test.ts`, `src/features/vitesse/webhooks/__tests__/recevoir-mesure.webhook.test.ts` | B | Tests unitaires du schéma et de la réception |
 | `src/db/vitesse/__tests__/mesure-vitesse.repository.test.ts` | B | Tests d'intégration avec PGlite |
 | Mention de confidentialité du site (modifiée) | A et B | Mesure de la vitesse, anonyme |

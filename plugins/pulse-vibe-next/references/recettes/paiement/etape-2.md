@@ -1,6 +1,6 @@
 ### 2. Le métier : entité, erreur et ports
 
-Le métier ne dépend que de `src/core/`. Les deux ports décrivent ce dont les use-cases ont besoin : le repository de l'étape 5 et l'adapter de l'étape 6 les fournissent, et un test passe des doublures en mémoire.
+Le métier ne dépend que de `src/core/`. La commande est une classe (`Commande`) construite sur des données simples (`CommandeVue`) ; les deux ports sont des `interface` qui décrivent ce dont les use-cases ont besoin : le repository de l'étape 5 et l'adapter de l'étape 6 les implémentent, et un test passe des doublures en mémoire.
 
 Le prix vit côté serveur (`OFFRE`, étape 7) : le navigateur ne choisit jamais le montant. L'`EvenementPaiement` décrit un message de Stripe déjà vérifié, sans vocabulaire Stripe : l'adapter décide si l'événement est un paiement encaissé et remplit `confirmation` dans ce cas seulement.
 
@@ -18,6 +18,39 @@ export type Offre = {
   montantCentimes: number;
   devise: string;
 };
+
+/** Les données d'une commande : la forme qui traverse les frontières (base, écran). */
+export type CommandeVue = {
+  id: string;
+  utilisateurId: string;
+  libelle: string;
+  montantCentimes: number;
+  devise: string;
+  statut: StatutCommande;
+};
+
+/** Ce que la page « Merci » affiche d'une commande. */
+export type CommandeAffichee = Pick<
+  CommandeVue,
+  "libelle" | "statut" | "montantCentimes"
+>;
+
+/** Une commande : son état reste en lecture seule. */
+export class Commande {
+  constructor(private readonly donnees: Readonly<CommandeVue>) {}
+
+  get id(): string {
+    return this.donnees.id;
+  }
+
+  get estPayee(): boolean {
+    return this.donnees.statut === "payee";
+  }
+
+  versVue(): CommandeVue {
+    return { ...this.donnees };
+  }
+}
 
 /**
  * Message reçu du service de paiement, déjà vérifié. `confirmation` n'existe que pour un
@@ -42,15 +75,16 @@ export type ErreurPaiement = "signature-invalide";
 <!-- fichier: src/core/paiement/commande-repository.port.ts -->
 ```ts
 // src/core/paiement/commande-repository.port.ts
-import type { Offre, ResultatConfirmation } from "./commande.entity";
+import type {
+  Commande,
+  Offre,
+  ResultatConfirmation,
+} from "./commande.entity";
 
-/** Ce dont les use-cases ont besoin pour ranger les commandes en base. */
-export type CommandeRepository = {
+/** Ce dont les use-cases ont besoin pour ranger les commandes en base (patron Repository). */
+export interface CommandeRepository {
   /** Crée une commande « en_attente » pour cette personne. */
-  creer(donnees: {
-    utilisateurId: string;
-    offre: Offre;
-  }): Promise<{ id: string }>;
+  creer(donnees: { utilisateurId: string; offre: Offre }): Promise<Commande>;
   /** Relie la commande de cette personne à la session de paiement. */
   attacherSession(
     id: string,
@@ -67,7 +101,7 @@ export type CommandeRepository = {
     commandeId: string;
     montantCentimes: number;
   }): Promise<ResultatConfirmation>;
-};
+}
 ```
 
 <!-- fichier: src/core/paiement/passerelle-paiement.port.ts -->
@@ -78,7 +112,7 @@ import type { EvenementPaiement, Offre } from "./commande.entity";
 import type { ErreurPaiement } from "./paiement.errors";
 
 /** Le service de paiement (Stripe). L'adapter `payment` l'implémente ; un test passe une doublure. */
-export type PasserellePaiement = {
+export interface PasserellePaiement {
   /**
    * Ouvre une page de paiement hébergée. `{SESSION_ID}` dans `urlSucces` est remplacé
    * par l'identifiant de la session.
@@ -94,6 +128,5 @@ export type PasserellePaiement = {
     corps: string,
     signature: string,
   ): Result<EvenementPaiement, ErreurPaiement>;
-};
+}
 ```
-

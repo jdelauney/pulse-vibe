@@ -7,10 +7,10 @@ Les use-cases s'essaient sans base ni réseau : le repository et la passerelle d
 ```ts
 // src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts
 import { describe, expect, it } from "vitest";
-import type { Offre } from "../../commande.entity";
+import { Commande, type Offre } from "../../commande.entity";
 import type { CommandeRepository } from "../../commande-repository.port";
 import type { PasserellePaiement } from "../../passerelle-paiement.port";
-import { ouvrirPaiement } from "../ouvrir-paiement.use-case";
+import { OuvrirPaiement } from "../ouvrir-paiement.use-case";
 
 const OFFRE: Offre = {
   libelle: "Accès complet",
@@ -18,17 +18,22 @@ const OFFRE: Offre = {
   devise: "eur",
 };
 
-/** Doublures en mémoire des deux ports. */
+/** Doublures en mémoire des deux ports : des objets qui implémentent les interfaces. */
 function createSut() {
   const commandes: { id: string; utilisateurId: string; sessionId?: string }[] =
     [];
   const sessionsCreees: { commandeId: string; urlSucces: string }[] = [];
 
   const repository: CommandeRepository = {
-    async creer({ utilisateurId }) {
+    async creer({ utilisateurId, offre }) {
       const id = `commande-${commandes.length + 1}`;
       commandes.push({ id, utilisateurId });
-      return { id };
+      return new Commande({
+        id,
+        utilisateurId,
+        ...offre,
+        statut: "en_attente",
+      });
     },
     async attacherSession(id, utilisateurId, sessionId) {
       const ligne = commandes.find(
@@ -52,15 +57,12 @@ function createSut() {
 
   return {
     async whenCamilleOuvreLePaiement() {
-      return ouvrirPaiement(
-        { commandes: repository, paiement },
-        {
-          utilisateurId: "camille-id",
-          offre: OFFRE,
-          urlSucces: "https://site.exemple/paiement/merci",
-          urlAnnulation: "https://site.exemple/paiement",
-        },
-      );
+      return new OuvrirPaiement(repository, paiement).executer({
+        utilisateurId: "camille-id",
+        offre: OFFRE,
+        urlSucces: "https://site.exemple/paiement/merci",
+        urlAnnulation: "https://site.exemple/paiement",
+      });
     },
     thenCommandeReliee() {
       expect(commandes).toEqual([
@@ -100,9 +102,9 @@ describe("Paiement", () => {
 import { describe, expect, it } from "vitest";
 import type { ResultatConfirmation } from "../../commande.entity";
 import type { CommandeRepository } from "../../commande-repository.port";
-import { confirmerPaiement } from "../confirmer-paiement.use-case";
+import { ConfirmerPaiement } from "../confirmer-paiement.use-case";
 
-/** Doublure en mémoire du repository. */
+/** Doublure en mémoire du repository : un objet qui implémente l'interface. */
 function createSut() {
   const confirmations: { evenementId: string; commandeId: string }[] = [];
 
@@ -121,16 +123,13 @@ function createSut() {
 
   return {
     async whenStripeEnvoie(confirmation: boolean) {
-      return confirmerPaiement(
-        { commandes },
-        {
-          id: "evt_001",
-          type: "checkout.session.completed",
-          confirmation: confirmation
-            ? { commandeId: "commande-1", montantCentimes: 1900 }
-            : null,
-        },
-      );
+      return new ConfirmerPaiement(commandes).executer({
+        id: "evt_001",
+        type: "checkout.session.completed",
+        confirmation: confirmation
+          ? { commandeId: "commande-1", montantCentimes: 1900 }
+          : null,
+      });
     },
     thenConfirmationsTransmises(attendu: number) {
       expect(confirmations).toHaveLength(attendu);
@@ -163,7 +162,7 @@ describe("Paiement", () => {
 
 ### Unitaires : adapter
 
-Le SDK de Stripe est doublé pour la création de session : l'erreur du service est choisie par le test. Les messages de webhook sont signés avec `generateTestHeaderString` de la bibliothèque Stripe, donc la vérification de signature est réelle. Le secret de test est une simple phrase, sans rapport avec une vraie clé.
+Le SDK de Stripe est doublé pour la création de session : l'erreur du service est choisie par le test. L'adapter reçoit ses clés par le constructeur : aucune variable d'environnement à doubler. Les messages de webhook sont signés avec `generateTestHeaderString` de la bibliothèque Stripe, donc la vérification de signature est réelle. Le secret de test est une simple phrase, sans rapport avec une vraie clé.
 
 <!-- fichier: src/adapters/payment/__tests__/payment.adapter.test.ts -->
 ```ts
@@ -171,6 +170,7 @@ Le SDK de Stripe est doublé pour la création de session : l'erreur du service 
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import Stripe from "stripe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { StripePaiementAdapter } from "../payment.adapter";
 
 const SECRET_DE_TEST = "secret-de-test-du-webhook";
 
@@ -186,15 +186,11 @@ vi.mock("stripe", async (importOriginal) => {
   }
   return { ...reel, default: StripeDouble };
 });
-vi.mock("@src/config/env", () => ({
-  env: {
-    STRIPE_SECRET_KEY: "sk_test_cle-de-test",
-    STRIPE_WEBHOOK_SECRET: SECRET_DE_TEST,
-  },
-}));
 
-const { passerellePaiement } = await import("../payment.adapter");
-
+const adapter = new StripePaiementAdapter({
+  cleSecrete: "sk_test_cle-de-test",
+  secretWebhook: SECRET_DE_TEST,
+});
 const outils = new Stripe("sk_test_cle-de-test");
 
 function messageSigne(evenement: object, secret = SECRET_DE_TEST) {
@@ -232,7 +228,7 @@ describe("Paiement", () => {
     it("US-XXX-4 – Un message correctement signé est accepté", () => {
       const { corps, signature } = messageSigne(paiement("paid"));
 
-      const lecture = passerellePaiement.lireEvenement(corps, signature);
+      const lecture = adapter.lireEvenement(corps, signature);
 
       expect(lecture).toEqual({
         ok: true,
@@ -250,7 +246,7 @@ describe("Paiement", () => {
         "autre-secret",
       );
 
-      const lecture = passerellePaiement.lireEvenement(corps, signature);
+      const lecture = adapter.lireEvenement(corps, signature);
 
       expect(lecture).toEqual({ ok: false, raison: "signature-invalide" });
     });
@@ -258,7 +254,7 @@ describe("Paiement", () => {
     it("US-XXX-4 – Un corps modifié après la signature est refusé", () => {
       const { corps, signature } = messageSigne(paiement("paid"));
 
-      const lecture = passerellePaiement.lireEvenement(
+      const lecture = adapter.lireEvenement(
         corps.replace("1900", "100"),
         signature,
       );
@@ -271,7 +267,7 @@ describe("Paiement", () => {
     it("US-XXX-8 – Un paiement différé (non payé) ne confirme rien", () => {
       const { corps, signature } = messageSigne(paiement("unpaid"));
 
-      const lecture = passerellePaiement.lireEvenement(corps, signature);
+      const lecture = adapter.lireEvenement(corps, signature);
 
       expect(lecture.ok && lecture.valeur.confirmation).toBeNull();
     });
@@ -281,7 +277,7 @@ describe("Paiement", () => {
         paiement("paid", "checkout.session.async_payment_succeeded"),
       );
 
-      const lecture = passerellePaiement.lireEvenement(corps, signature);
+      const lecture = adapter.lireEvenement(corps, signature);
 
       expect(lecture.ok && lecture.valeur.confirmation).toEqual({
         commandeId: "commande-1",
@@ -292,7 +288,7 @@ describe("Paiement", () => {
     it("US-XXX-8 – Un autre type d'événement ne confirme rien", () => {
       const { corps, signature } = messageSigne(paiement("paid", "ping"));
 
-      const lecture = passerellePaiement.lireEvenement(corps, signature);
+      const lecture = adapter.lireEvenement(corps, signature);
 
       expect(lecture.ok && lecture.valeur.confirmation).toBeNull();
     });
@@ -314,7 +310,7 @@ describe("Paiement", () => {
         ),
       );
 
-      const erreur = await passerellePaiement
+      const erreur = await adapter
         .creerSession({
           commandeId: "commande-1",
           offre: {
@@ -346,7 +342,7 @@ describe("Paiement", () => {
     it("US-XXX-7 – Une session sans adresse de paiement est une panne de service", async () => {
       etat.creerSession.mockResolvedValue({ id: "cs_test_1", url: null });
 
-      const erreur = await passerellePaiement
+      const erreur = await adapter
         .creerSession({
           commandeId: "commande-1",
           offre: {
@@ -368,7 +364,7 @@ describe("Paiement", () => {
         url: "https://checkout.stripe.com/c/pay/cs_test_1",
       });
 
-      const session = await passerellePaiement.creerSession({
+      const session = await adapter.creerSession({
         commandeId: "commande-1",
         offre: {
           libelle: "Accès complet",
@@ -410,7 +406,7 @@ import type { Db } from "@src/db/db-client";
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
-import { commandeRepository } from "../commande.repository";
+import { DrizzleCommandeRepository } from "../commande.repository";
 import { commande } from "../commande.table";
 
 const OFFRE = {
@@ -420,7 +416,7 @@ const OFFRE = {
 };
 
 function createSut(db: Db) {
-  const commandes = commandeRepository(db);
+  const commandes = new DrizzleCommandeRepository(db);
   let commandeId = "";
   let resultats: ResultatConfirmation[] = [];
 
@@ -536,7 +532,7 @@ describe("Paiement", () => {
 
 ### Unitaires : webhook
 
-Le test appelle le webhook de la feature avec de vraies signatures. La base, le journal et le use-case sont doublés : le test vérifie les réponses, et que le journal ne reçoit ni le contenu du message ni sa signature.
+Le test appelle le webhook de la feature avec de vraies signatures. La base, le journal et le use-case (sa méthode `executer`) sont doublés : le test vérifie les réponses, et que le journal ne reçoit ni le contenu du message ni sa signature.
 
 <!-- fichier: src/features/paiement/webhooks/__tests__/stripe-paiement.webhook.test.ts -->
 ```ts
@@ -559,8 +555,11 @@ vi.mock("@src/config/env", () => ({
 }));
 vi.mock("@src/db/db-client", () => ({ getDb: () => ({}) }));
 vi.mock("@src/lib/logger", () => ({ logger: etat.journal }));
+// Le use-case est doublé : sa méthode executer est celle du test.
 vi.mock("@src/core/paiement/use-cases/confirmer-paiement.use-case", () => ({
-  confirmerPaiement: etat.confirmer,
+  ConfirmerPaiement: class {
+    executer = etat.confirmer;
+  },
 }));
 
 const { recevoirWebhookStripe } = await import("../stripe-paiement.webhook");

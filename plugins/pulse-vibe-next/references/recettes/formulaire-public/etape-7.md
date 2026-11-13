@@ -12,7 +12,7 @@ import {
   CHAMP_JETON,
   estPiegeRempli,
 } from "@src/lib/helpers/formulaire-public/champs";
-import { verifierJeton } from "@src/lib/helpers/formulaire-public/jeton";
+import { JetonFormulaire } from "@src/lib/helpers/formulaire-public/jeton";
 import { exigerLimite, type NomLimite } from "@src/lib/limite";
 import { logger } from "@src/lib/logger";
 import { actionPublique } from "@src/lib/safe-action";
@@ -38,11 +38,10 @@ export function actionFormulairePublic(
     const jeton = (clientInput as Record<string, unknown> | null)?.[
       CHAMP_JETON
     ];
-    const etat = verifierJeton(
+    const etat = new JetonFormulaire(env.FORMULAIRE_SECRET).verifier(
       jeton,
       formulaire,
       Date.now(),
-      env.FORMULAIRE_SECRET,
     );
     if (etat !== "valide") {
       logger.warn({ formulaire, etat }, "Formulaire public : jeton refusé");
