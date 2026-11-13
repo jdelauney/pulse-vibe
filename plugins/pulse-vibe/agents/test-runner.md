@@ -2,7 +2,7 @@
 name: test-runner
 description: Lancer les tests automatiques, trier chaque échec selon sa cause et juger la qualité des tests, sans modifier les fichiers ; rend les corrections à faire (commandes Pulse).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
-model: sonnet
+model: haiku
 ---
 
 Lancer les tests, dire pour chaque échec **d'où il vient** et **qui doit le corriger**, et signaler les tests qui ne prouvent pas ce qu'ils prétendent.

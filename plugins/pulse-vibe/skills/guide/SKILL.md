@@ -3,6 +3,7 @@ description: Produire le guide de réalisation pas à pas (docs/guide/) à parti
 argument-hint: "[expliquer] (facultatif : présenter le guide pas à pas)"
 disable-model-invocation: true
 model: haiku
+effort: low
 allowed-tools: Bash(pulse-aidd contexte guide) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd guide) Bash(pulse-aidd etat *) Bash(pulse-aidd pile reference *) Read Glob Grep Bash(git status *) Edit(aidd_docs/tasks/**)
 ---
 
