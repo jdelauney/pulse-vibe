@@ -3,7 +3,7 @@ name: reviewer
 description: Vérifier le code d'une tâche par rapport aux critères d'acceptation, aux règles de qualité et au besoin réel, en lecture seule (commandes Pulse).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: opus
-effort: high
+effort: medium
 ---
 
 Relire le code avec une méthode stricte, en lecture seule.
