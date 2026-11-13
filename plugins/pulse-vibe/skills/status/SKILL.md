@@ -3,6 +3,7 @@ description: Où en suis-je ? Étapes faites, tâches à faire, en cours et term
 argument-hint: "[ligne | ligne retirer]"
 disable-model-invocation: true
 model: haiku
+effort: low
 allowed-tools: Bash(pulse-aidd contexte status) Bash(pulse-aidd etat *) Bash(pulse-aidd reference *) Bash(pulse-aidd bilan) Bash(pulse-aidd modele *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sessions *) Bash(pulse-aidd travail-fini *) Bash(pulse-aidd realisation fin) Read Glob Grep Bash(git status *) Bash(gh pr view*) Bash(glab mr view*) Bash(gh run list*) Bash(glab ci status*)
 ---
 
