@@ -58,10 +58,35 @@ class Cible {
     return [];
   }
 
+  /** Fichiers des hooks des garde-fous : [{ chemin, contenu }] ou [{ chemin, fusion }] (fichier partagé, fusions.js). */
+  fichiersHooks() {
+    return [];
+  }
+
   /** Fichiers propres à l'outil pour une commande, en plus du skill commun : [{ chemin, contenu }]. */
   fichiersCommande(_commande) {
     return [];
   }
 }
 
-module.exports = { Cible, surPath };
+/** Le nom Claude Code de l'outil shell : PowerShell sous Windows (shell des outils d'IA), Bash ailleurs. */
+const shellClaude = () => (process.platform === "win32" ? "PowerShell" : "Bash");
+
+/** Réponse vide d'un hook : l'appel passe. */
+const PASSE = Object.freeze({ sortie: "", code: 0 });
+
+/** Un objet d'arguments d'outil : tel quel, ou lu dans une chaîne JSON. */
+function args(valeur) {
+  if (valeur && typeof valeur === "object") return valeur;
+  if (typeof valeur === "string") {
+    try {
+      const o = JSON.parse(valeur);
+      return o && typeof o === "object" ? o : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+module.exports = { Cible, surPath, shellClaude, PASSE, args };

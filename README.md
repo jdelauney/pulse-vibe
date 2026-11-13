@@ -39,7 +39,7 @@ L'assistant repère les outils installés sur votre ordinateur, vous demande les
 
 Sans question : `npx pulseia installer --outil codex,cursor --pack next --oui`. Ensuite : `pulseia mettre-a-jour`, `pulseia desinstaller`, `pulseia etat` (voir `pulseia aide`).
 
-À savoir : les garde-fous automatiques de Pulse (clés secrètes, commandes qui suppriment ou publient) fonctionnent pour l'instant seulement dans Claude Code.
+Les garde-fous de Pulse (clés secrètes, fichiers `.env`, commandes qui suppriment ou publient, contrôle de fin de tour) sont installés avec, dès que `pulseia` est sur l'ordinateur. Dans Codex, approuvez-les une fois avec `/hooks` (et après chaque mise à jour). Sans eux : `--sans-gardes`.
 
 ## Mettre à jour
 

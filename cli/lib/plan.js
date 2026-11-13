@@ -59,14 +59,15 @@ function lireCommandes() {
 
 /**
  * Plan pour une liste d'outils : Map<chemin absolu, { contenu, outils: string[] }>.
- * Les skills sont communs ; agents et fichiers propres à chaque outil s'y ajoutent.
+ * Les skills sont communs ; agents et fichiers propres à chaque outil s'y ajoutent, et ses hooks avec `gardes`.
  */
-function planifier(outils) {
+function planifier(outils, { gardes = false } = {}) {
   const plan = new Map();
   const ajouter = (fichiers, outil) => {
     for (const f of fichiers) {
       const existant = plan.get(f.chemin);
-      if (existant) existant.outils = [...new Set([...existant.outils, outil])];
+      if (f.fusion) plan.set(f.chemin, { fusion: f.fusion, outils: [outil] });
+      else if (existant) existant.outils = [...new Set([...existant.outils, outil])];
       else plan.set(f.chemin, { contenu: f.contenu, outils: [outil] });
     }
   };
@@ -81,6 +82,7 @@ function planifier(outils) {
       ajouter(c.fichiersCommande(commande), id);
     }
     for (const agent of agents) ajouter(c.fichiersAgent(agent), id);
+    if (gardes) ajouter(c.fichiersHooks(), id);
   }
   return plan;
 }
