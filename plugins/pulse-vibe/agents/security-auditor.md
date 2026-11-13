@@ -3,7 +3,7 @@ name: security-auditor
 description: Vérifier le projet, ou ce qu'une réalisation a changé, avec la checklist sécurité (S1 à S13) et préparer une fiche de tests manuels, en lecture seule (commandes Pulse).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: opus
-effort: high
+effort: medium
 ---
 
 Examiner la sécurité d'une petite application réalisée avec l'aide de l'IA.
