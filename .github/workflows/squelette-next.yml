@@ -4,6 +4,9 @@
 #   types, tests, construction) ; toutes si le squelette ou l'outillage des recettes changent (verifier-recettes.js --depuis).
 # - Chaque semaine et à la demande (workflow_dispatch) : les jobs dernieres-versions et versions-majeures vérifient toutes
 #   les chaînes (--toutes).
+# - Le générateur d'entité (verifier-entite.js : deux entités posées sur le squelette et la recette connexion, de bout en
+#   bout) : à chaque envoi qui touche le générateur, le squelette ou les recettes connexion et liste, et chaque semaine avec les
+#   dernières versions.
 # - Chaque semaine, sous Windows : le squelette aux versions du dépôt, de bout en bout (la plateforme du public).
 # - Chaque semaine : toutes les dépendances à leur dernière version, sauf les versions majeures ; si tout
 #   passe, une demande de fusion propose la mise à jour. Les versions majeures passent à part, dans leur
@@ -57,6 +60,17 @@ jobs:
           # Demande de fusion : la branche visée ; envoi sur main : le commit d'avant l'envoi (passé par l'environnement, jamais
           # écrit dans la commande). Premier envoi d'une branche (pas de commit d'avant) : le script vérifie toutes les chaînes.
           BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+      - name: Vérifier le générateur d'entité, s'il est touché par l'envoi
+        run: |
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null \
+            && ! git diff --name-only "$BASE" HEAD | grep -qE '^plugins/pulse-vibe-next/(scripts/(entite|entite-modeles|verifier-entite|verifier-recettes)\.js|templates/squelette/|references/recettes/(connexion|liste)/)'; then
+            echo "Ni le générateur, ni le squelette, ni les recettes connexion et liste ne changent : rien à vérifier."
+          else
+            node plugins/pulse-vibe-next/scripts/verifier-entite.js --e2e
+          fi
+        env:
+          CI: "true"
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
 
   windows:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
@@ -90,6 +104,10 @@ jobs:
           CI: "true"
       - name: Vérifier les recettes balisées avec ces versions
         run: node plugins/pulse-vibe-next/scripts/verifier-recettes.js --toutes
+      - name: Vérifier le générateur d'entité avec ces versions
+        run: node plugins/pulse-vibe-next/scripts/verifier-entite.js --e2e
+        env:
+          CI: "true"
       - name: Proposer la mise à jour
         uses: peter-evans/create-pull-request@v8.1.1
         with:
@@ -98,7 +116,7 @@ jobs:
           title: "chore(next): squelette aux dernières versions"
           body: |
             Mise à jour automatique des dépendances du squelette de pulse-vibe-next, hors versions majeures.
-            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; toutes les chaînes de recettes (CHAINES de verifier-recettes.js) aussi.
+            Le squelette s'installe, passe Biome, TypeScript, Vitest, la construction et les tests de bout en bout avec ces versions ; toutes les chaînes de recettes (CHAINES de verifier-recettes.js) et le générateur d'entité aussi.
             Avant de fusionner : monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (correctif).
           add-paths: plugins/pulse-vibe-next/templates/squelette
 
@@ -119,6 +137,10 @@ jobs:
           CI: "true"
       - name: Vérifier les recettes balisées avec ces versions
         run: node plugins/pulse-vibe-next/scripts/verifier-recettes.js --toutes
+      - name: Vérifier le générateur d'entité avec ces versions
+        run: node plugins/pulse-vibe-next/scripts/verifier-entite.js --e2e
+        env:
+          CI: "true"
       - name: Proposer la mise à jour majeure
         uses: peter-evans/create-pull-request@v8.1.1
         with:
@@ -127,5 +149,5 @@ jobs:
           title: "chore(next): squelette aux dernières versions majeures"
           body: |
             Versions majeures des dépendances du squelette de pulse-vibe-next (liste : journal de l'étape « Vérifier le squelette »).
-            Le squelette et les recettes balisées passent avec ces versions. Avant de fusionner : lire les notes de version de chaque paquet, adapter la fiche, l'architecture et les recettes non balisées si besoin, puis monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (mineure).
+            Le squelette, les recettes balisées et le générateur d'entité passent avec ces versions. Avant de fusionner : lire les notes de version de chaque paquet, adapter la fiche, l'architecture et les recettes non balisées si besoin, puis monter la version de plugins/pulse-vibe-next/.claude-plugin/plugin.json (mineure).
           add-paths: plugins/pulse-vibe-next/templates/squelette
