@@ -3,17 +3,8 @@ import { projet } from "@src/config/projet";
 import { adresseDuSite } from "@src/config/site";
 import { partageCommun } from "@src/lib/seo/seo";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
-
-// La variable porte le nom attendu par globals.css (--font-sans) : sans elle, le navigateur
-// retombe sur sa police par défaut.
-const policeTexte = Geist({ variable: "--font-sans", subsets: ["latin"] });
-const policeCode = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 // Métadonnées communes. metadataBase complète les adresses relatives (adresse officielle, image de
 // partage) ; chaque page publique ajoute les siennes avec metadonneesDePage() de src/lib/seo/seo.ts.
@@ -31,10 +22,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="fr"
-      className={`${policeTexte.variable} ${policeCode.variable} h-full antialiased`}
-    >
+    // Les polices sont servies par le site : app/polices.css (pulse-aidd pile police).
+    <html lang="fr" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         {/* Lien d'évitement : le premier élément atteint au clavier mène droit au contenu. */}
         <a

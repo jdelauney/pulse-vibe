@@ -289,6 +289,16 @@ function analyser(bk) {
 
 const pile = (p) => `"${p.famille.trim()}", ${p.secours.trim()}`;
 
+/** Nom d'une famille chez Bunny Fonts : minuscules, mots séparés par des tirets (« Space Mono » → space-mono). */
+const identifiantBunny = (famille) =>
+  famille
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 function lienPolices(bk) {
   const parFamille = new Map();
   for (const p of Object.values(bk.typographie.polices)) {
@@ -299,12 +309,12 @@ function lienPolices(bk) {
   }
   if (!parFamille.size) return "";
   const familles = [...parFamille]
-    .map(([f, g]) => `family=${encodeURIComponent(f.trim()).replace(/%20/g, "+")}:wght@${[...g].sort((a, b) => a - b).join(";")}`)
-    .join("&");
+    .map(([f, g]) => `${identifiantBunny(f)}:${[...g].sort((a, b) => a - b).join(",")}`)
+    .join("|");
+  // Bunny Fonts : même catalogue que Google Fonts, sans suivi des visiteurs.
   return [
-    `<link rel="preconnect" href="https://fonts.googleapis.com">`,
-    `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`,
-    `<link href="https://fonts.googleapis.com/css2?${familles}&display=swap" rel="stylesheet">`,
+    `<link rel="preconnect" href="https://fonts.bunny.net">`,
+    `<link href="https://fonts.bunny.net/css?family=${familles}&display=swap" rel="stylesheet">`,
   ].join("\n");
 }
 

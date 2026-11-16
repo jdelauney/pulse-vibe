@@ -42,7 +42,7 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 
 ```
 .claude-plugin/plugin.json   manifeste ; dépend de pulse
-bin/pulse-pile-next          info | contexte <libellé> (une commande, une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`, `perf-code`), `piles` ou `code` ; un libellé inconnu ne renvoie rien) | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | entite <description.json> [--essai] [--us <US-XXX>] | squelette | seo-code | secrets | hebergeur
+bin/pulse-pile-next          info | contexte <libellé> (une commande, une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`, `perf-code`), `piles` ou `code` ; un libellé inconnu ne renvoie rien) | reference <chemin> | recettes | recette <nom> [etape <id> | tests] | entite <description.json> [--essai] [--us <US-XXX>] | squelette | seo-code | police | secrets | hebergeur
 bin/pulse-pile-next.ps1      relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-pile-next.cmd : relais pour l'invite de commandes (cmd)
 references/                  fiche.md (règles de la pile), technical.md (valeurs de docs/technical.md),
                              theme.md (de docs/design.md à shadcn), react.md (état, effets, serveur et client, composition : les réflexes React corrigés, chargé pour chaque composant), architecture.md (structure hexagonale et règles de dépendance), modeles-code.md (un exemple de chaque couche, à la demande), contexte/ (consignes par commande ; cicd.md : les étapes de la CI, audit des dépendances compris ; deploy.md commun à toute mise en ligne, deploy-premiere.md et deploy-production.md lus par mode ; variables-vercel.md : les variables chez Vercel, pour la mise en ligne et pour /pulse:secrets ; secrets.md : l'index des variables ; secrets-fiches.md : une fiche par variable, lue à la demande), recettes/<nom>/ (index.md, une étape par fichier, tests.md),
@@ -50,7 +50,7 @@ references/                  fiche.md (règles de la pile), technical.md (valeur
                              migrations.md (mettre à niveau un projet plus ancien), readme.md (section « Tester en local » du README du projet)
 templates/squelette/         le projet de départ
 scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi sur un port libre, mise à jour des versions ; un test instable fait échouer ; dossier temporaire retiré, sauf --garder),
-                             seo-code.js (contrôles du code pour le référencement), sondes-secrets.js (règles, tests réels des secrets envoyés seulement aux serveurs reconnus, et variables déduites : « suites »),
+                             seo-code.js (contrôles du code pour le référencement), police.js (police servie par le site, récupérée sur Bunny Fonts), sondes-secrets.js (règles, tests réels des secrets envoyés seulement aux serveurs reconnus, et variables déduites : « suites »),
                              secrets-vercel.js (adaptateur Vercel de pulse-aidd secrets),
                              decouper-recette.js (découpe une recette rédigée d'un seul tenant en index, étapes et tests ; vérifie la recomposition exacte),
                              entite.js (le générateur d'entité : description validée, fichiers écrits sans rien remplacer, gestes suivants) et entite-modeles.js (ses modèles de code, tirés de la recette liste),
