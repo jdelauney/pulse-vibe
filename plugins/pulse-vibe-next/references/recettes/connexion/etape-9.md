@@ -1,6 +1,6 @@
 ### 9. Les formulaires : sections (TanStack Form + Field)
 
-Chaque formulaire est une section : les champs, et le **même** schéma Zod que l'action en `validators.onSubmit` (validation dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Un `form.Field` par champ ; les `id` sont préfixés par `useId()` (voir « Pièges connus »).
+Chaque formulaire est une section : les champs, et le **même** schéma Zod que l'action en `validators.onDynamic`, validé à la sortie du champ puis à chaque frappe après le premier envoi (`revalidateLogic`) ; un envoi refusé place le focus sur le premier champ en erreur. Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Un `form.Field` par champ ; les `id` sont préfixés par `useId()` (voir « Pièges connus »).
 
 <!-- fichier: src/features/compte/components/sections/formulaire-inscription.tsx -->
 ```tsx
@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { useId } from "react";
 import {
@@ -54,7 +54,18 @@ export function FormulaireInscription({
 
   const form = useForm({
     defaultValues: { nom: "", email: "", motDePasse: "" },
-    validators: { onSubmit: schemaInscription },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: schemaInscription },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value }) => {
       await envoyer(value);
     },
@@ -129,7 +140,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { useId } from "react";
 import { type Connexion, schemaConnexion } from "../../schemas/compte.schema";
@@ -164,7 +175,18 @@ export function FormulaireConnexion({
 
   const form = useForm({
     defaultValues: { email: "", motDePasse: "" },
-    validators: { onSubmit: schemaConnexion },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: schemaConnexion },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value }) => {
       await envoyer(value);
     },
@@ -240,7 +262,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { useId } from "react";
 import {
   type ChangementMotDePasse,
@@ -285,7 +307,18 @@ export function FormulaireMotDePasse({
       nouveauMotDePasse: "",
       confirmation: "",
     },
-    validators: { onSubmit: schemaChangementMotDePasse },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: schemaChangementMotDePasse },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value, formApi }) => {
       if (await envoyer(value)) {
         formApi.reset();
