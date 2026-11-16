@@ -6,6 +6,8 @@ Utilisé par `/pulse:spirc`, une seule fois, quand la réalisation est finie : �
 
 Ces relectures partent ensemble : l'audit de sécurité (§ 2), pour chaque US la relecture de la simplicité (§ 2 ter) et, pour chaque US dont la réalisation a changé un écran, la relecture de l'expérience (§ 2 bis). Toutes suivent les mêmes règles que l'audit pour le moment (§ 1), le tri et les corrections (§ 4).
 
+**Rythme rapide** (règles de réalisation) : seul l'audit de sécurité part ; les relectures de l'expérience et de la simplicité sont réservées au rythme complet, pour aller vite au premier résultat. Le dire en une phrase dans le récapitulatif de fin (« Les relectures de l'expérience et de la simplicité se font en rythme complet. »).
+
 ## 1. Quand
 
 - Toutes les tâches de la portée sont passées (celles restées en pause en sont exclues), avant le test groupé ou la « Fin », et avant toute tâche « Mettre en ligne… ».

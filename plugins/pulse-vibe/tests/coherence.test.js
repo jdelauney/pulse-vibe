@@ -2588,7 +2588,8 @@ test("expérience de l'interface : famille chargée pour une tâche d'interface,
   const fin = lire(RACINE, "references", "audit-fin.md");
   for (const attendu of ["## 2 bis. Lancer la relecture de l'expérience", "**`pulse:ux-reviewer`**", "`pulse-aidd agent ux-reviewer`", "experience-<AAAA-MM-JJ>.md", "« relecture de l'expérience de fin", "`fix(experience): …`", "À vérifier à la main"])
     assert.ok(fin.includes(attendu), `audit-fin.md : ${attendu}`);
-  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse:ux-reviewer`/);
+  assert.match(lire(RACINE, "references", "audit-fin.md"), /\*\*Rythme rapide\*\* \(règles de réalisation\) : seul l'audit de sécurité part/);
+  assert.doesNotMatch(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /ux-reviewer|simplicity-reviewer/);
   assert.match(lire(RACINE, "skills", "spirc", "references", "serie.md"), /celle de l'expérience de chaque US/);
   assert.match(lire(RACINE, "skills", "spirc", "SKILL.md"), /`pulse:ux-reviewer`/);
   // Une seule fois par US : ni l'examen d'une tâche, ni le reviewer ne relisent l'expérience.
@@ -2613,7 +2614,6 @@ test("simplicité : clean-code §5 bis assoupli, simplicity-reviewer une seule f
   const fin = lire(RACINE, "references", "audit-fin.md");
   for (const attendu of ["## 2 ter. Lancer la relecture de la simplicité", "**`pulse:simplicity-reviewer`**", "`pulse-aidd agent simplicity-reviewer`", "simplicite-<AAAA-MM-JJ>.md", "`refactor(simplicite): …`"])
     assert.ok(fin.includes(attendu), `audit-fin.md : ${attendu}`);
-  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse:simplicity-reviewer`/);
   assert.match(lire(RACINE, "skills", "spirc", "SKILL.md"), /`pulse:simplicity-reviewer`/);
   const reviewer = lire(RACINE, "agents", "reviewer.md");
   assert.match(reviewer, /une relecture sans constat est un résultat valable/);
