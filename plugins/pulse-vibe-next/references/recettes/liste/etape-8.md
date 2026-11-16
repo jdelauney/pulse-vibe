@@ -16,7 +16,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useId, useState } from "react";
 import type { ChampFacture } from "../../constants/factures";
 import {
@@ -63,6 +63,11 @@ export function FormulaireFacture({
       }
     },
   });
+  // Erreur d'un champ : affichée une fois le champ modifié puis quitté, ou après un premier envoi
+  // (jamais pendant la première saisie, où elle ferait bouger la page sous le pointeur).
+  const envois = useStore(form.store, (etat) => etat.submissionAttempts);
+  const montrerErreur = (meta: { isBlurred: boolean; isDirty: boolean }) =>
+    (meta.isBlurred && meta.isDirty) || envois > 0;
 
   return (
     <form
@@ -80,7 +85,7 @@ export function FormulaireFacture({
                 ? erreursChamps?.[field.name]
                 : undefined;
             const invalide =
-              (field.state.meta.isTouched && !field.state.meta.isValid) ||
+              (montrerErreur(field.state.meta) && !field.state.meta.isValid) ||
               Boolean(erreurChamp);
             return (
               <Field data-invalid={invalide}>
@@ -113,7 +118,7 @@ export function FormulaireFacture({
                 ? erreursChamps?.[field.name]
                 : undefined;
             const invalide =
-              (field.state.meta.isTouched && !field.state.meta.isValid) ||
+              (montrerErreur(field.state.meta) && !field.state.meta.isValid) ||
               Boolean(erreurChamp);
             return (
               <Field data-invalid={invalide}>
