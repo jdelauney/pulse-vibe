@@ -93,7 +93,7 @@ Projet créé avant cette organisation : il garde la sienne (« Organisation des
 44. **Sitemap et robots** : `lastModified` = vraie date de mise à jour du contenu, jamais `new Date()` ; ni `priority` ni `changeFrequency` ; un seul robots.txt (`app/robots.ts`, pas de `public/robots.txt`).
 45. **Données structurées** : `<JsonLd>` (`src/components/shared/elements/json-ld.tsx`) avec les fonctions de `src/lib/seo/donnees-structurees.ts`, jamais `JSON.stringify` nu dans `dangerouslySetInnerHTML`.
 46. **Images sur l'offre Hobby de Vercel** : 5 000 transformations d'images par mois ; au-delà, les nouvelles images répondent 402 et `next/image` affiche seulement le texte alternatif. Images du site en import statique ; pour un site très illustré, prévoir l'offre Pro (`pulse-aidd pile reference contexte/perf.md`).
-47. **Pages d'authentification** (connexion, inscription, mot de passe oublié, nouveau mot de passe) : `robots: { index: false, follow: false }`, hors du sitemap, accessibles à robots.txt pour que Google lise la consigne.
+47. **Pages d'authentification** (connexion, inscription, mot de passe oublié, nouveau mot de passe, adresse vérifiée, code de connexion) : `robots: { index: false, follow: false }`, hors du sitemap, accessibles à robots.txt pour que Google lise la consigne.
 
 ## 9. Avant de rendre la main
 
