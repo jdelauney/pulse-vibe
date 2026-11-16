@@ -32,12 +32,12 @@ test("qualite sans famille : la règle de choix, sans aucune famille, sous 4 000
   assert.ok(r.stdout.length < 4000, String(r.stdout.length));
   assert.ok(dansLOrdre(r.stdout, ["Travailler sobrement", "Règles de qualité du code"]), r.stdout.slice(0, 300));
   assert.ok(r.stdout.includes("Relancez avec les familles utiles"));
-  for (const nom of ["clean-code", "composants", "securite", "organisation"]) assert.ok(r.stdout.includes(nom), nom);
-  assert.match(r.stdout, /`clean-code` toujours ; `composants` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier/);
-  for (const titre of ["Clean code", "Composants d'interface", "Sécurité du code", "Organisation des fichiers et nommage"]) assert.ok(!r.stdout.includes(`===== ${titre} =====`), titre);
+  for (const nom of ["clean-code", "composants", "experience", "securite", "organisation"]) assert.ok(r.stdout.includes(nom), nom);
+  assert.match(r.stdout, /`clean-code` toujours ; `composants` et `experience` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier/);
+  for (const titre of ["Clean code", "Composants d'interface", "Expérience de l'interface", "Sécurité du code", "Organisation des fichiers et nommage"]) assert.ok(!r.stdout.includes(`===== ${titre} =====`), titre);
 });
 
-test("qualite --tout : les quatre familles, dans l'ordre, et la règle sobre en tête", () => {
+test("qualite --tout : toutes les familles, dans l'ordre, et la règle sobre en tête", () => {
   const r = lancer(["qualite", "--tout"]);
   assert.strictEqual(r.status, 0, r.stderr);
   assert.ok(!r.stdout.includes("Relancez avec"));
@@ -48,6 +48,7 @@ test("qualite --tout : les quatre familles, dans l'ordre, et la règle sobre en 
       "Clean code",
       "Organisation des fichiers et nommage",
       "Composants d'interface",
+      "Expérience de l'interface",
       "Sécurité du code",
     ]),
     r.stdout.slice(0, 500),
@@ -67,7 +68,7 @@ test("qualite --checklists : une checklist par famille, bien plus court", () => 
   const complet = lancer(["qualite", "--tout"]).stdout;
   const r = lancer(["qualite", "--checklists"]);
   assert.strictEqual(r.status, 0, r.stderr);
-  assert.strictEqual((r.stdout.match(/ : checklist =====/g) || []).length, 4, r.stdout.slice(0, 800));
+  assert.strictEqual((r.stdout.match(/ : checklist =====/g) || []).length, 5, r.stdout.slice(0, 800));
   assert.ok(r.stdout.length < complet.length * 0.25, `${r.stdout.length} / ${complet.length}`);
   assert.ok(!r.stdout.includes("## 1. Principes"));
 });
@@ -83,7 +84,7 @@ test("chaque famille a exactement une section Checklist", () => {
 test("nom inconnu : liste des noms valides", () => {
   const r = lancer(["qualite", "secu"]);
   assert.strictEqual(r.status, 1);
-  assert.match(r.stdout + r.stderr, /clean-code, organisation, composants, securite/);
+  assert.match(r.stdout + r.stderr, /clean-code, organisation, composants, experience, securite/);
   assert.ok(!r.stdout.includes("===== Clean code ====="));
 });
 

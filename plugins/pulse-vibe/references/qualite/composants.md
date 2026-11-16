@@ -53,35 +53,20 @@ Une fonction qui parle seulement d'affichage est un composant de présentation ;
 - Écouteurs globaux regroupés en un seul endroit ; chaque écouteur est ajouté une seule fois, même après un nouvel affichage.
 - Pour une longue liste, quand la technologie laisse ce soin au code : un seul écouteur sur le conteneur, qui retrouve l'élément par son identifiant, plutôt qu'un écouteur par ligne.
 
-## 6. Les quatre états d'interface
+## 6. Les états d'une vue
 
-Chaque écran qui dépend de données prévoit les quatre états. L'orchestration choisit l'état ; un composant de présentation l'affiche.
-
-| État | Ce qu'on affiche | Exemple de message |
-|---|---|---|
-| Chargement | Texte ou indicateur ; bouton d'envoi désactivé | « Chargement des éléments… » |
-| Vide | Message utile + invitation à agir | « Aucun élément pour l'instant. Ajoutez-en un ci-dessus. » |
-| Erreur | Message clair (détail technique réservé au journal), avec une piste ou un bouton « Réessayer » | « Impossible de charger les éléments. Vérifiez votre connexion puis réessayez. » |
-| Succès | Confirmation brève, annoncée aux technologies d'assistance | « Élément ajouté. » |
+Les cinq états de chaque vue qui charge des données (chargement, vide, erreur, partiel, succès), ce qu'ils disent et quand ils s'affichent : `qualite/experience.md` § 1 à 3. L'orchestration choisit l'état ; un composant de présentation l'affiche.
 
 ## 7. Formulaires
 
-- **Validation côté client pour le confort** (message immédiat, champ obligatoire, longueur maximale, format) ; **validation côté serveur pour la sécurité**, toujours, avec les mêmes règles, même quand la première existe (S5).
-- **Conserver la saisie après une erreur** : le résultat d'un envoi refusé renvoie les valeurs saisies et les erreurs par champ.
-- **Désactiver l'envoi pendant le traitement** (libellé « Envoi… ») pour qu'il parte une seule fois ; le réactiver quoi qu'il arrive.
-- Erreur affichée **à côté du champ concerné**, reliée à lui pour les technologies d'assistance ; champ marqué comme invalide.
-- Message de succès bref, puis formulaire remis à zéro et focus replacé dans le premier champ.
-- Écouter l'**envoi du formulaire** plutôt que le clic sur le bouton : la touche Entrée fonctionne.
-- Types de champ adaptés (email, téléphone, date) et indications de remplissage automatique.
+Moment de la validation, focus, saisie conservée, bouton d'envoi : `qualite/experience.md` § 5. Côté structure : la section porte les champs et la validation du navigateur, pour le confort ; l'orchestration envoie et reçoit les erreurs par champ ; la validation côté serveur, avec les mêmes règles, protège (S5).
 
 ## 8. Accessibilité
 
 - **Structure** : éléments sémantiques de la plateforme (titres hiérarchisés niveau après niveau, listes, zones principales) ; un seul titre principal par écran.
 - **Action ou navigation** : une action est un vrai bouton, un changement d'écran un vrai lien, plutôt qu'un bloc rendu cliquable.
 - **Libellés** : chaque champ a un libellé visible et associé ; un bouton au texte ambigu reçoit un nom accessible précis (« Supprimer l'élément « <titre> » ») ; une image porte un texte alternatif utile, ou vide si elle est décorative.
-- **Messages annoncés** : une zone d'annonce toujours présente pour les succès (annonce polie) et les erreurs (annonce immédiate), remplie avec du texte.
-- **Focus** : visible en permanence ; après un ajout, il revient dans le champ ; après une suppression ou un nouvel affichage, il se place sur un élément logique ; une fenêtre modale garde le focus et le rend à l'élément d'origine à la fermeture.
-- **Clavier** : tout est utilisable au clavier (tabulation, Entrée, Espace, Échap pour fermer), dans l'ordre naturel de l'écran.
+- **Clavier, focus et messages annoncés** : `qualite/experience.md` § 6.
 - **Contrastes** suffisants en mode clair et sombre ; l'information passe aussi par autre chose que la couleur ; les animations respectent la préférence « réduire les animations ».
 
 ## 9. Nommage
@@ -116,7 +101,7 @@ La casse (des composants, des fichiers) suit la convention de la technologie ret
 
 ## 12. Tests
 
-- Le **test manuel des quatre états** (chargement, vide, erreur, succès) par la personne reste obligatoire.
+- Le **test manuel des états** de chaque vue (`qualite/experience.md` § 1) par la personne reste obligatoire.
 - Tests automatisés **seulement si** un outil de test figure dans « Commandes du projet » de `docs/technical.md`.
 - Tester d'abord la **logique pure** (validation, calculs, préparation des données) : le plus simple et le plus utile.
 - Un composant de présentation se teste avec des **données factices**, sur ce que la personne perçoit (textes, rôles, noms accessibles), plutôt que sur le style.
@@ -137,9 +122,9 @@ La casse (des composants, des fichiers) suit la convention de la technologie ret
 - [ ] Source unique de vérité ; état dérivé calculé ; chaque donnée à un seul endroit.
 - [ ] Accès aux données centralisé par fonctionnalité ; client de service créé une seule fois.
 - [ ] Données descendantes, événements montants par callbacks ; éléments identifiés par l'identifiant de leur donnée.
-- [ ] Les quatre états (chargement, vide, erreur, succès) sont traités, en français, détail technique réservé au journal.
-- [ ] Formulaires : validation client et serveur, saisie conservée après erreur, envoi désactivé pendant le traitement.
-- [ ] Accessibilité : libellés, noms accessibles précis, messages annoncés, focus géré, clavier, contrastes.
+- [ ] Chaque vue qui charge des données branche ses états (choisis par l'orchestration, affichés par la présentation) ; leur comportement suit `qualite/experience.md`, relu en fin de plan par `pulse:ux-reviewer`.
+- [ ] Formulaires : validation du navigateur et du serveur avec les mêmes règles, erreurs reçues par champ.
+- [ ] Accessibilité : structure sémantique, libellés, noms accessibles précis, contrastes.
 - [ ] Saisies affichées comme du texte, jamais insérées comme du balisage (S6).
 - [ ] Découpage proportionné, regroupé par fonctionnalité ; nommage conforme.
-- [ ] Contrôles automatiques de « Commandes du projet » de `docs/technical.md` passés ; test manuel des quatre états fait.
+- [ ] Contrôles automatiques de « Commandes du projet » de `docs/technical.md` passés ; test manuel des états fait.

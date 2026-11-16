@@ -1,6 +1,6 @@
 ---
 name: memory-compactor
-description: Compacter la mémoire (aidd_docs/memory/*.md) sous sa limite de taille sans perdre de fait utile, et la remettre à jour ; écrit seulement dans ce dossier (commandes Pulse).
+description: Compacter la mémoire (aidd_docs/memory/) sous sa limite sans perdre de fait utile, et la remettre à jour ; écrit seulement dans ce dossier (commandes Pulse).
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 ---

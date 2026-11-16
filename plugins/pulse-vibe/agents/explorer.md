@@ -1,6 +1,6 @@
 ---
 name: explorer
-description: Rassembler en lecture seule les faits utiles à une demande, tirés des documents de la méthode, de la mémoire et du code, avec les conventions et les risques (commandes Pulse).
+description: Rassembler en lecture seule les faits utiles à une demande, tirés des documents, de la mémoire et du code, avec les conventions et les risques (commandes Pulse).
 tools: Read, Grep, Glob, Bash
 model: haiku
 ---

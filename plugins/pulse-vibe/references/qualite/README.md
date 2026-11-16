@@ -10,10 +10,11 @@ Ces références décrivent **comment écrire** le code, quelle que soit **la te
 |---|---|---|
 | `qualite/clean-code.md` | Principes, limites, nommage, testabilité, couplage, règles métier isolées, classes, SOLID et patrons de conception, erreurs, dépendances | `pulse-aidd qualite clean-code` |
 | `qualite/organisation.md` | Nommage des fichiers, suffixes, structure des dossiers par paliers, règles de dépendance, emplacement des tests | `pulse-aidd qualite organisation` ; `/pulse:tech` la lit à l'étape 6.1, projet neuf sans pack |
-| `qualite/composants.md` | Présentation / orchestration, état, quatre états, formulaires, accessibilité | `pulse-aidd qualite composants` |
+| `qualite/composants.md` | Présentation / orchestration, état, flux de données, structure des formulaires, accessibilité | `pulse-aidd qualite composants` |
+| `qualite/experience.md` | Comportement de l'interface : états d'une vue, messages d'erreur, attente, annuler plutôt que confirmer, formulaires, clavier et focus, données réelles, mots de l'interface | `pulse-aidd qualite experience` |
 | `qualite/securite-code.md` | Points d'entrée sécurisés, contrôle d'accès, anti-abus (S1–S13) | `pulse-aidd qualite securite` |
 | `qualite/code-concepts.md` | Code smells, SOLID, refactorings | `pulse-aidd reference qualite/code-concepts.md` |
 
-**Règle de choix** (un appel par famille) : `clean-code` toujours ; `composants` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier. Exemple : `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite securite`, chaque sortie lue en entier (deux familles ensemble dépassent 30 000 caractères). Les déduire des fichiers de la tâche.
+**Règle de choix** (un appel par famille) : `clean-code` toujours ; `composants` et `experience` si la tâche touche l'interface ; `securite` pour un point d'entrée serveur, une action, une route ou la base ; `organisation` pour un nouveau fichier ou dossier. Exemple : `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite securite`, chaque sortie lue en entier (deux familles ensemble dépassent 30 000 caractères). Les déduire des fichiers de la tâche.
 
-Chaque famille se termine par sa checklist ; `pulse-aidd qualite <famille> --checklists` affiche les checklists seules, pour relire. `pulse-aidd qualite --tout` charge les quatre familles d'un coup.
+Chaque famille se termine par sa checklist ; `pulse-aidd qualite <famille> --checklists` affiche les checklists seules, pour relire. `pulse-aidd qualite --tout` charge toutes les familles d'un coup.

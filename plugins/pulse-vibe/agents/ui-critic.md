@@ -1,6 +1,6 @@
 ---
 name: ui-critic
-description: Auditer une interface ou une maquette (fidélité à docs/design.md, hiérarchie, usage, états manquants, accessibilité, textes), en lecture seule (commandes Pulse).
+description: Auditer une interface ou une maquette (fidélité au design, hiérarchie, usage, états, accessibilité, textes), en lecture seule (commandes Pulse).
 tools: Read, Grep, Glob, Bash
 model: opus
 ---

@@ -1,6 +1,6 @@
 # Motifs d'écrans
 
-**Des solutions éprouvées pour les situations qui reviennent d'un écran à l'autre.** Elles décrivent des comportements, quelle que soit la technologie ; le pack de pile donne le composant correspondant. Les durées d'animation, les contrastes et l'accessibilité sont dans `regles-ui.md` ; les formulaires et le comportement au clavier dans `qualite/composants.md`.
+**Des solutions éprouvées pour les situations qui reviennent d'un écran à l'autre.** Elles décrivent des comportements, quelle que soit la technologie ; le pack de pile donne le composant correspondant. Les durées d'animation, les contrastes et l'accessibilité sont dans `regles-ui.md` ; le comportement des états, des formulaires et du clavier dans `qualite/experience.md`.
 
 ## 1. Messages et retours
 
@@ -22,7 +22,7 @@ Chaque choix passe par un vrai contrôle de formulaire, utilisable au clavier et
 ## 3. Panneaux et fenêtres
 
 - **Panneau latéral** (un volet qui glisse sur le côté) : pour voir ou modifier un élément sans quitter la liste. À droite sur ordinateur, depuis le bas sur téléphone.
-- **Fenêtre modale** (elle s'ouvre par-dessus la page et bloque le reste) : pour une décision courte qui demande toute l'attention (confirmer, choisir). Clavier et focus : `qualite/composants.md` § 8.
+- **Fenêtre modale** (elle s'ouvre par-dessus la page et bloque le reste) : pour une décision courte qui demande toute l'attention (confirmer, choisir). Clavier et focus : `qualite/experience.md` § 6.
 - **Formulaire courant** (créer, modifier) : en place, ou sur une page dédiée.
 
 ## 4. Tableaux de données
