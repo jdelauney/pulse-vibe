@@ -7,7 +7,7 @@ En cas de doute : **lisible avant d'être malin**. Ces règles valent pour tout 
 - **KISS** : la solution la plus simple qui marche ; une abstraction quand le besoin est là, une optimisation face à un problème constaté.
 - **DRY** : une information à un seul endroit (constante, fonction, module). Fusionner les vraies répétitions ; deux codes qui se ressemblent mais servent des buts différents restent séparés.
 - **YAGNI** : coder exactement ce que la spec demande. Paramètre, option, couche, fichier ou dépendance s'ajoutent le jour où le besoin existe.
-- **Conception orientée objet** : la logique s'écrit en classes, selon SOLID et avec les patrons de conception reconnus (§5 bis) ; l'interface suit la convention de son framework.
+- **Conception orientée objet** : la logique s'écrit en classes, selon SOLID, avec un patron de conception quand son problème est présent (§5 bis) ; l'interface suit la convention de son framework.
 - **Responsabilité unique** : une classe, une méthode ou une fonction fait une chose, un fichier a un sujet. Un nom qui contient « et » (`saveAndRender`) se coupe en deux.
 - **Séparer les rôles** : les données (lecture, calcul, écriture), l'affichage, la configuration.
 - **Règles métier isolées, code testable, faible couplage** : §5. Évolutif veut dire facile à changer demain, construit pour le besoin d'aujourd'hui.
@@ -96,7 +96,7 @@ classe SendReminders :
 - **Les détails techniques restent au bord** : le format d'un service externe, d'une table ou d'une bibliothèque est traduit dans le seul module qui lui parle ; le reste du code manipule les types du projet.
 - Une fonctionnalité passe par ce qu'une autre expose (son `index`, ou les dossiers ouverts quand le framework déconseille l'`index`).
 - Demander une valeur au module qui la possède, plutôt qu'une chaîne d'accès qui traverse plusieurs objets (`order.customer.account.settings.currency`).
-- **Dépendre d'abstractions** (D de SOLID) : un service ou un cas d'usage reçoit chaque accès extérieur (stockage, envoi, horloge, service externe) sous forme d'interface (port). Au-delà, une interface ou une fabrique s'ajoute quand deux implémentations existent déjà, ou qu'un test en a besoin pour passer une doublure (YAGNI).
+- **Une abstraction quand elle sert** (D de SOLID) : un cas d'usage reçoit ses accès extérieurs (stockage, envoi, horloge, service externe) par son constructeur, sous forme d'interface (port) quand un test les remplace par une doublure ou que deux implémentations existent. Une lecture ou une écriture sans règle métier appelle directement son accès aux données. Par défaut, le code généré ajoute interface, fabrique et cas d'usage partout « pour plus tard » ; ici, chacun s'ajoute quand une règle métier, une seconde implémentation ou un test le demande, parce qu'une couche qui relaie seulement un appel double le code à lire et à changer (YAGNI).
 
 ## 5 bis. Classes, SOLID et patrons de conception
 
@@ -105,24 +105,24 @@ La logique s'écrit **en classes** : entités et objets-valeurs du métier, règ
 - **Encapsuler** : l'état d'un objet est privé ou en lecture seule ; il change par des méthodes nommées avec les mots du glossaire, qui gardent ses invariants (vérifiés dès le constructeur).
 - **SOLID** (détail, odeurs et remèdes : `pulse-aidd reference qualite/code-concepts.md`) :
   - **S**, responsabilité unique : une classe, une seule raison de changer ;
-  - **O**, ouvert à l'extension : un nouveau cas s'ajoute par une nouvelle classe (stratégie, effet, format), l'existant reste tel quel ;
+  - **O**, ouvert à l'extension : quand les cas se multiplient (un `switch` sur un type qui grossit), un nouveau cas s'ajoute par une nouvelle classe (stratégie, effet, format), l'existant reste tel quel ;
   - **L**, substitution : chaque implémentation tient toutes les promesses de son type ;
   - **I**, interfaces courtes, taillées pour qui les utilise ;
-  - **D**, dépendances reçues par le constructeur, sous forme d'interfaces ; l'assemblage des objets se fait à un seul endroit (point d'entrée, conteneur).
+  - **D**, dépendances reçues par le constructeur, sous forme d'interface quand un test ou une seconde implémentation le demande (§5) ; l'assemblage des objets se fait à un seul endroit (point d'entrée, conteneur).
 - **Composition d'abord** : un objet en reçoit un autre ; l'héritage sert une vraie relation « est un », sur un seul niveau.
-- **Patrons de conception** : quand le problème correspond à un patron reconnu, l'employer et le nommer (nom de la classe ou commentaire de tête). Un patron répond à un problème présent (YAGNI) : un cas unique reste une classe simple.
+- **Patrons de conception** : un patron répond à un problème déjà présent dans le code, plutôt qu'à un problème possible. L'employer et le nommer (nom de la classe ou commentaire de tête) quand sa colonne « Se justifie quand » est vraie ; sinon, écrire la version simple de la dernière colonne. Une abstraction attend la troisième répétition réelle : deux cas restent écrits deux fois.
 
-| Problème | Patron |
-|---|---|
-| Plusieurs façons interchangeables de faire une même chose (calcul, effet, format) | Strategy |
-| Créer le bon objet selon un type ou un format | Factory |
-| Lire et écrire les données d'un type | Repository |
-| Parler à une bibliothèque ou un service externe avec les mots du projet | Adapter |
-| Un comportement qui change selon l'état de l'objet | State |
-| Prévenir plusieurs parties d'un changement | Observer |
-| Une action à rejouer, annuler ou mettre en file | Command |
-| Un déroulé fixe aux étapes variables | Template Method |
-| Un accès simple à un sous-système (moteur, bibliothèque) | Facade |
+| Problème | Patron | Se justifie quand | Sinon |
+|---|---|---|---|
+| Plusieurs façons interchangeables de faire une même chose (calcul, effet, format) | Strategy | deux façons existent déjà, ou un `switch` sur un type grossit à chaque cas | une méthode |
+| Créer le bon objet selon un type ou un format | Factory | le type n'est connu qu'à l'exécution, et deux produits au moins existent | `new` à l'endroit de l'assemblage |
+| Lire et écrire les données d'un type | Repository | le type est stocké dans une base ou un service | — |
+| Parler à une bibliothèque ou un service externe avec les mots du projet | Adapter | toujours, au bord du code | — |
+| Un comportement qui change selon l'état de l'objet | State | trois états ou plus, aux transitions différentes | un statut et des conditions nommées |
+| Prévenir plusieurs parties d'un changement | Observer | plusieurs parties réagissent, inconnues de celle qui change | un appel direct |
+| Une action à rejouer, annuler ou mettre en file | Command | l'action est réellement rejouée, annulée ou mise en file | une fonction |
+| Un déroulé fixe aux étapes variables | Template Method | deux déroulés réels partagent leurs étapes | une fonction |
+| Un accès simple à un sous-système (moteur, bibliothèque) | Facade | le sous-système sert à plusieurs endroits, par plusieurs modules | l'appel direct |
 
 - **Aux frontières** (réseau, serveur vers navigateur, stockage, worker) : des objets simples (DTO), produits par une méthode de conversion de la classe ; chaque instance reste de son côté.
 - **Petites aides sans état** (formater une date ou un montant, convertir une unité), sans règle métier : des fonctions, dans le module d'aides du projet ; une classe qui n'aurait que des méthodes statiques devient un module de fonctions.
@@ -192,7 +192,7 @@ Commentaires en français qui expliquent le *pourquoi* (intention, contrainte, p
 
 ## 15. Anti-patterns
 
-Pièges fréquents du code généré, chacun corrigé par sa règle : module, bibliothèque ou dossier supposés exister (§1, §10) ; compilateur ou règle d'analyse réduits au silence (§7, §14) ; couche, option ou interface « pour plus tard » (§1, §5) ; règle métier recopiée dans un composant, une route ou une requête (§5) ; classe ou fonction qui lit elle-même l'heure, la base ou le réseau (§5) ; logique en fonctions libres là où une classe la porterait, état exposé, `switch` sur un type qui grossit à chaque cas au lieu d'une stratégie (§5 bis) ; format d'un service externe qui circule dans tout le code (§5) ; bloc de capture vide ou message brut affiché (§8) ; secret dans le code client (§11).
+Pièges fréquents du code généré, chacun corrigé par sa règle : module, bibliothèque ou dossier supposés exister (§1, §10) ; compilateur ou règle d'analyse réduits au silence (§7, §14) ; couche, option ou interface « pour plus tard » (§1, §5) ; règle métier recopiée dans un composant, une route ou une requête (§5) ; classe ou fonction qui lit elle-même l'heure, la base ou le réseau (§5) ; logique en fonctions libres là où une classe la porterait, état exposé, `switch` sur un type qui grossit à chaque cas au lieu d'une stratégie (§5 bis) ; interface à une seule implémentation sans doublure de test, fabrique qui crée un seul type, cas d'usage qui relaie un appel sans règle, patron sans son problème (§5, §5 bis) ; format d'un service externe qui circule dans tout le code (§5) ; bloc de capture vide ou message brut affiché (§8) ; secret dans le code client (§11).
 
 ## 16. Checklist
 
@@ -203,7 +203,7 @@ Pièges fréquents du code généré, chacun corrigé par sa règle : module, bi
 - [ ] Fichiers placés selon le code existant, `docs/technical.md` et le plan ; conventions existantes respectées.
 - [ ] Noms explicites, booléens `is/has/should`, chaque valeur à sens métier nommée en constante.
 - [ ] Chaque règle métier est une méthode nommée, écrite une seule fois dans le domaine, indépendante de l'interface, des données, du réseau et du framework.
-- [ ] Les décisions sont des calculs purs ; heure, hasard, accès aux données et services externes sont reçus par le constructeur ou en paramètre, sous forme d'interfaces.
+- [ ] Les décisions sont des calculs purs ; heure, hasard, accès aux données et services externes sont reçus par le constructeur ou en paramètre (interface quand un test ou une seconde implémentation le demande).
 - [ ] La logique est en classes (§5 bis), état encapsulé ; l'interface suit son framework et confie sa logique aux classes ; chaque patron employé est nommé.
 - [ ] Les règles métier ont leurs tests (nominal, limites, refus), qui passent sans base, réseau ni interface.
 - [ ] Les dépendances vont vers le métier ; les formats externes sont traduits au bord ; chaque fonctionnalité passe par ce que les autres exposent (index public, ou dossiers ouverts).
@@ -222,5 +222,5 @@ Pièges fréquents du code généré, chacun corrigé par sa règle : module, bi
 - [ ] Journaux limités au détail technique : aucune donnée personnelle ni jeton (S11).
 - [ ] Chaque règle métier dans le domaine, écrite une seule fois (hors affichage, routes et requêtes).
 - [ ] Changer d'affichage, de stockage ou de service externe ne toucherait qu'un module.
-- [ ] SOLID tenu : une raison de changer par classe ; un nouveau cas ajouté sans modifier l'existant ; aucune dépendance concrète créée dans un service ou un cas d'usage.
+- [ ] SOLID tenu sans sur-construction : une raison de changer par classe ; chaque interface, fabrique, cas d'usage et patron répond à une règle métier, une seconde implémentation ou un test (§5, §5 bis) ; aucune dépendance concrète créée dans un cas d'usage.
 - [ ] Une personne qui débute peut lire chaque méthode et dire ce qu'elle fait.

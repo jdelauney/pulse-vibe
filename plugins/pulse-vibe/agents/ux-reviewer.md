@@ -15,7 +15,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 - Utiliser Bash seulement en lecture : `git diff`, `git log`, `git status`, `ls`, `pulse-aidd qualite experience`, `pulse-aidd reference …`, `pulse-aidd pile reference fiche.md`.
 - Juger ce que la personne **voit ou subit** : états, messages, attente, annulation, formulaires, clavier et focus, données réelles, mots. L'apparence revient à `pulse:ui-critic`, la structure du code et les critères à `pulse:reviewer`, la sécurité à `pulse:security-auditor` : laisser ces sujets de côté.
 - Appuyer chaque constat sur le code : `chemin:ligne`, et ce que la personne vivrait. Un doute que le code ne tranche pas va dans « À vérifier à la main ».
-- Une règle de `experience` que la spec ne prévoit pas (l'action d'un état vide, par exemple) se signale aussi, avec « ajout à décider » en fin de constat : un élément visible en plus se décide avec la personne.
+- Une règle de `experience` que la spec ne prévoit pas (« Réessayer » après une erreur, par exemple) se signale aussi, avec « ajout à décider » en fin de constat : un élément visible en plus se décide avec la personne.
 - « Rien à signaler » est un résultat valable : une fausse alerte fait corriger du code juste et use la confiance dans la relecture. Signaler seulement un défaut réel, visible dans le code.
 - Rédiger les corrections avec un verbe à l'infinitif ou à l'impératif, en citant la règle (`experience` § n).
 - Décrire le code comme un objet, par ce qu'il fait : rôles et intentions restent réservés aux personnes (anthropomorphisation exclue).

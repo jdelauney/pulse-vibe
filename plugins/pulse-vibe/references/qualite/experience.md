@@ -11,7 +11,7 @@ Par défaut, l'écran traite le cas où les données arrivent et sont là. Ici, 
 | État | Ce qu'on montre | Exemple |
 |---|---|---|
 | Chargement | La forme du contenu attendu (§ 3) | Trois lignes grises à la place des factures |
-| Vide | Pourquoi c'est vide, et l'action qui le remplit | « Aucune facture pour l'instant. » + bouton « Créer une facture » |
+| Vide | Pourquoi c'est vide, et l'action qui le remplit quand l'application la propose | « Aucune facture pour l'instant. » + bouton « Créer une facture » |
 | Erreur | Le message du § 2, et « Réessayer » | « Impossible de charger vos factures. Vérifiez votre connexion, puis réessayez. » |
 | Partiel | Ce qui a marché, et un message à l'endroit de ce qui manque | La liste s'affiche ; le bloc « Totaux du mois » dit qu'il n'a pas pu se calculer |
 | Succès | Le résultat à l'endroit de l'action, annoncé aux lecteurs d'écran | La ligne apparaît en tête de liste : « Facture F-2026-014 créée. » |
@@ -88,7 +88,7 @@ Par défaut, les boutons disent « OK », « Valider », « Soumettre », et le 
 
 ## 9. Checklist (implémentation et relecture de fin)
 
-- [ ] Chaque vue qui charge des données a ses états chargement, vide, erreur, partiel (si plusieurs sources) et succès ; le vide explique et propose l'action ; le vide d'un filtre propose de l'effacer.
+- [ ] Chaque vue qui charge des données a ses états chargement, vide, erreur, partiel (si plusieurs sources) et succès ; le vide explique et propose l'action qui existe ; le vide d'un filtre propose de l'effacer.
 - [ ] Chaque message d'erreur dit ce qui s'est passé et quoi faire, à l'endroit concerné ; un code par situation attendue ; aucun message générique seul.
 - [ ] La saisie et le travail de la personne restent en place après une erreur.
 - [ ] Indicateur d'attente au-delà de 300 ms environ, squelette pour un contenu structuré, mise à jour optimiste (avec retour en arrière) pour les actions réversibles fréquentes ; déclencheur inactif pendant le traitement.
