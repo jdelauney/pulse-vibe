@@ -119,7 +119,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Textarea } from "@src/components/ui/textarea";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { type Ref, useId } from "react";
 import {
   type MessageContact,
@@ -161,7 +161,18 @@ export function FormulaireContact({
   const prefixe = useId();
   const form = useForm({
     defaultValues: { message: "" },
-    validators: { onSubmit: schemaMessage },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: schemaMessage },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value, formApi }) => {
       if (await envoyer(value)) formApi.reset();
     },

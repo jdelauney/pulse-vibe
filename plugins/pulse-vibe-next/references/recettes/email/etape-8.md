@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { useId } from "react";
 import {
   type MotDePasseOublie,
@@ -40,7 +40,18 @@ export function FormulaireMotDePasseOublie({
 
   const form = useForm({
     defaultValues: { email: "" },
-    validators: { onSubmit: schemaMotDePasseOublie },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: schemaMotDePasseOublie },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value }) => {
       await envoyer(value);
     },
@@ -113,7 +124,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { useId } from "react";
 import {
@@ -144,7 +155,18 @@ export function FormulaireNouveauMotDePasse({
 
   const form = useForm({
     defaultValues: { nouveauMotDePasse: "", confirmation: "" },
-    validators: { onSubmit: schemaNouveauMotDePasse },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: schemaNouveauMotDePasse },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value }) => {
       await envoyer(value);
     },

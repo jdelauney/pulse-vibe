@@ -1,6 +1,6 @@
 ### 8. Le formulaire : section et container
 
-La section porte les champs et le schéma Zod (`validators.onSubmit`, dans le navigateur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreursChamps` (erreurs de champ renvoyées par le serveur, affichées sous les champs concernés, jusqu'à la modification du champ), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmit` appelle `envoyer` ; le formulaire se vide après une création réussie.
+La section porte les champs et le schéma Zod (`validators.onDynamic`, dans le navigateur : à la sortie du champ, puis à chaque frappe après le premier envoi ; un envoi refusé place le focus sur le premier champ en erreur). Elle reçoit tout par props : `envoyer(valeurs)` (qui répond `true` si l'action a réussi, `false` sinon : voir architecture.md §4), `erreursChamps` (erreurs de champ renvoyées par le serveur, affichées sous les champs concernés, jusqu'à la modification du champ), `erreurServeur` (affiché sous les champs) et `enCours` (bouton désactivé pendant l'envoi). Si la validation du navigateur passe, `onSubmit` appelle `envoyer` ; le formulaire se vide après une création réussie.
 
 <!-- fichier: src/features/factures/components/sections/formulaire-facture.tsx -->
 ```tsx
@@ -16,7 +16,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { useId, useState } from "react";
 import type { ChampFacture } from "../../constants/factures";
 import {
@@ -44,7 +44,18 @@ export function FormulaireFacture({
 
   const form = useForm({
     defaultValues: { client: "", montant: "" },
-    validators: { onSubmit: creerFactureSchema },
+    validationLogic: revalidateLogic({
+      mode: "blur",
+      modeAfterSubmission: "change",
+    }),
+    validators: { onDynamic: creerFactureSchema },
+    // Envoi refusé : le focus va au premier champ en erreur (experience § 5).
+    onSubmitInvalid: ({ formApi }) => {
+      const champ = Object.entries(formApi.state.fieldMeta).find(
+        ([, meta]) => meta?.errors.length,
+      )?.[0];
+      if (champ) document.getElementById(`${prefixe}-${champ}`)?.focus();
+    },
     onSubmit: async ({ value, formApi }) => {
       setEnvoyees(value);
       if (await envoyer(value)) {
