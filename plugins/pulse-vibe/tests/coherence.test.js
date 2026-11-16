@@ -2627,3 +2627,27 @@ test("simplicité : clean-code §5 bis assoupli, simplicity-reviewer une seule f
   assert.match(pack("references", "contexte", "review.md"), /`pulse-aidd pile reference react\.md`/);
   assert.ok(!fs.existsSync(path.join(RACINE, "references", "qualite", "react.md")), "le cœur reste agnostique");
 });
+
+// pulse 0.62 : les cas limites au plan, prouvés à la réalisation ; la vitesse du code mesurée avant et après.
+test("cas limites : section du plan contrôlée, transmise à la réalisation et relue ; perf-auditor : mesure d'abord, seuil, une optimisation", () => {
+  const ref = lire(RACINE, "references", "tests", "cas-limites.md");
+  for (const famille of ["**Entrées**", "**Temps**", "**Concurrence**", "**Réseau et services**", "**Droits**", "**Parcours**"]) assert.ok(ref.includes(famille), famille);
+  assert.match(ref, /comportement observable/);
+  assert.match(lire(RACINE, "templates", "plan.md"), /### Cas limites et états à couvrir\n[\s\S]*\| Cas \| Ce que vit la personne \| Tâche \| Preuve \|/);
+  assert.match(lire(RACINE, "skills", "plan", "SKILL.md"), /`pulse-aidd reference tests\/cas-limites\.md`/);
+  assert.match(lire(RACINE, "scripts", "verifier-plan.js"), /function casLimites/);
+  assert.match(lire(RACINE, "references", "deleguer.md"), /cas limites de la tâche/);
+  for (const agent of ["implementer", "test-writer", "reviewer", "ux-reviewer"]) assert.match(lire(RACINE, "agents", `${agent}.md`), /[Cc]as limites?/, agent);
+  const code = lire(RACINE, "skills", "perf", "references", "code.md");
+  for (const attendu of ["**aucune optimisation sans mesure de départ**", "**médiane**", "**20 % de la métrique, ou 50 ms sur une action de la personne**", "**Une seule optimisation à la fois**", "docs/performance/code-<AAAA-MM-JJ>.md"]) assert.ok(code.includes(attendu), attendu);
+  const agent = lire(RACINE, "agents", "perf-auditor.md");
+  assert.match(agent, /^disallowedTools: Write, Edit,/m);
+  for (const attendu of ["`pulse-aidd reference perf/code.md`", "`mktemp -d`", "jamais sur la base de production", "**une seule** optimisation", "`pulse-aidd pile contexte perf-code`", "↩️ Retirer"]) assert.ok(agent.includes(attendu), `perf-auditor : ${attendu}`);
+  const perf = lire(RACINE, "skills", "perf", "SKILL.md");
+  assert.match(perf, /^argument-hint: "\[mesurer \| corriger \| suivre \| code <cible>\]/m);
+  assert.match(perf, /### code\n/);
+  assert.match(perf, /`pulse:perf-auditor`, mode `mesurer`/);
+  assert.match(perf, /`pulse:perf-auditor`, mode `controler`/);
+  const outil = fs.readFileSync(path.join(RACINE, "..", "pulse-vibe-next", "bin", "pulse-pile-next"), "utf8");
+  assert.match(outil, /perf-code\)\n\s+afficher "Pour mesurer la vitesse du code" "\$REF\/contexte\/perf-code\.md"/);
+});

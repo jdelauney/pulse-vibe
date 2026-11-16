@@ -133,4 +133,5 @@ Mesures reconnues : LCP, CLS, TBT, FCP, SI, TTFB, Poids, Requêtes, Score. Une l
 | Vitesse, stabilité, réactivité, poids de ce que le visiteur télécharge | `/pulse:perf` |
 | Accessibilité réelle, apparence, textes de l'interface | `/pulse:ui audit` (le score d'accessibilité de Lighthouse n'en est qu'un indice) |
 | En-têtes de sécurité (CSP, HSTS…) | `/pulse:security entetes` |
-| Coût et lenteur côté serveur (requêtes en base, quotas) | ligne « côté serveur » du rapport, puis `/pulse:fix` ou une user story |
+| Lenteur d'une partie du code (requêtes en base, calcul, action, mémoire) | `/pulse:perf code <cible>` |
+| Quotas et coût du serveur | ligne « côté serveur » du rapport, puis une user story |
