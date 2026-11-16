@@ -376,4 +376,4 @@ function principal() {
 
 if (require.main === module) principal();
 
-module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies };
+module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, lancer, sansInterpreteur, CHAINES, chainesTouchees, fichiersModifies };

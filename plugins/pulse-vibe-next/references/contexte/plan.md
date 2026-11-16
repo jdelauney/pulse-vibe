@@ -6,6 +6,7 @@ Conception technique (section du plan) :
 - **Données** : pour chaque table, ses colonnes (montants en centimes, dates avec fuseau), son propriétaire (`utilisateurId`) et la condition de propriété vérifiée dans chaque action d'écriture.
 - **Fichiers** : d'après « Architecture du code » (affichée avec ces consignes pour `/pulse:plan` ; pour `/pulse:refine`, `pulse-aidd pile reference architecture.md` avant d'écrire la ligne « Fichiers » d'une tâche nouvelle) : `src/core/<domaine>/` (entités et règles, ports, use-cases : classes et interfaces), `src/db/<domaine>/` (table, repository), `src/features/<domaine>/` (`actions/`, `queries/`, `schemas/`, `components/`), la page dans `app/`.
 - **Recettes** : citer chaque recette utilisée (« Recette : connexion ») dans la conception et dans les tâches concernées.
+- **Entités** : un type d'information qui se liste, se crée, se modifie et se supprime fait une tâche « Entité : <sujet> », écrite par le générateur, qui garde son découpage : `pulse-aidd pile reference entite.md` § 5.
 
 Découpage mixte. Une tâche tirée d'une recette (titre « Recette : <nom> » ou ligne « Recette : <nom> ») garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur : une tranche visible et testable, 3 fichiers au plus, le stockage dans la première tranche qui en a besoin.
 

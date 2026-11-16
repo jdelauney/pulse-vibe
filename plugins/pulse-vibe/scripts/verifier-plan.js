@@ -9,7 +9,7 @@
 //                   Indispensable du parcours, cas limite sans ce que vit la personne, sans preuve ou rattaché à une
 //                   tâche absente du plan ;
 //   avertissement : section « Cas limites et états à couvrir » absente, fichier « à modifier » absent (et créé par aucune tâche), fichier « à créer » déjà présent,
-//                   tâche de plus de 3 fichiers (sauf une tâche de recette) ou 3 critères, plan de plus de 4 tâches, mise en ligne manquante.
+//                   tâche de plus de 3 fichiers (sauf une tâche de recette ou d'entité générée) ou 3 critères, plan de plus de 4 tâches, mise en ligne manquante.
 // Affiche des lignes « clé: valeur », puis un constat par ligne (« - à corriger · T4 · … ») :
 //   plan: aidd_docs/tasks/<epic>/PLAN-SPEC-US-003-<nom>.md
 //   statut: à valider | validé
@@ -251,8 +251,10 @@ function verifierPlan(racine, idUs) {
       for (const x of f.creer) if (fs.existsSync(path.join(racine, x))) avertir(t.id, `« ${x} » est à créer, mais il existe déjà : à modifier ?`);
     }
     const total = f.creer.length + f.modifier.length;
-    // Une tâche de recette (titre « Recette : <nom> » ou ligne « Recette : <nom> ») garde le découpage vérifié de sa recette (plusieurs fichiers d'un seul tenant).
-    if (total > 3 && !/^Recette\s*:/i.test(t.titre) && !t.details.recette) avertir(t.id, `${total} fichiers : au-delà de 3, découper la tâche`);
+    // Une tâche de recette (titre ou ligne « Recette : <nom> ») ou d'entité générée par un pack (titre ou ligne
+    // « Entité : <sujet> ») garde le découpage vérifié de sa recette ou du générateur (plusieurs fichiers d'un seul tenant).
+    const decoupageVerifie = /^(Recette|Entit[ée])\s*:/i.test(t.titre) || Boolean(t.details.recette || t.details.entite);
+    if (total > 3 && !decoupageVerifie) avertir(t.id, `${total} fichiers : au-delà de 3, découper la tâche`);
     const criteres = criteresCites(t.details.verification || "", us).size;
     if (criteres > 3) avertir(t.id, `${criteres} critères : au-delà de 3, découper la tâche`);
   }
