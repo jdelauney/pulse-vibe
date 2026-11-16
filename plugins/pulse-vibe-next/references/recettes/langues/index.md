@@ -129,7 +129,7 @@ Fonctionnalité: Langues
   - Fichiers : à créer : `src/config/i18n.ts`, `src/lib/i18n/request.ts`, `navigation.ts`, `chemins.ts`, `src/lib/i18n/messages/fr.json`, `en.json`, `src/lib/i18n/__tests__/chemins.test.ts`, `src/components/shared/elements/choix-langue.tsx`, `src/features/langues/components/containers/choix-langue.container.tsx`, `app/[locale]/layout.tsx`, `app/[locale]/[...reste]/page.tsx` · à modifier : `next.config.ts`, `proxy.ts` · à déplacer : les pages sous `app/[locale]/`
   - Vérification : US-XXX critères 1 et 3 – `npm run build` passe et liste `/fr` et `/en` ; `/en/compte` sans session mène à `/en/connexion`
   - Tests : « Une adresse donne sa langue et sa page », « La page de connexion se trouve dans la langue courante » (unitaires)
-  - Attention : `app/api/` reste hors de `[locale]` ; reprendre polices, `NuqsAdapter` et `Toaster` de l'ancien layout ; ajouter `[locale]` aux clés de `PageProps` et `LayoutProps`
+  - Attention : `app/api/` reste hors de `[locale]` ; reprendre `NuqsAdapter` et `Toaster` de l'ancien layout ; ajouter `[locale]` aux clés de `PageProps` et `LayoutProps`
 - [ ] **Tn+1 – Choisir sa langue** · US-XXX
   - Objectif : le sélecteur de langue (créé par Tn) permet de passer du français à l'anglais sur chaque page, et les parcours le prouvent
   - Dépend de : Tn

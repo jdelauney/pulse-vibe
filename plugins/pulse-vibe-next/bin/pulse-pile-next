@@ -11,6 +11,7 @@
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
 #   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
 #   pulse-pile-next seo-code [--pages] [--json] [--dossier <projet>]   contrôles du code pour le référencement
+#   pulse-pile-next police <famille> [--role texte|titres|code] [--graisses 400,600]   pose une police servie par le site (fichiers récupérés sur Bunny Fonts)
 #   pulse-pile-next secrets regles|tester <NOM>|suites <NOM>|fiche <NOM>   règles, test réel et variables déduites (valeurs en JSON sur l'entrée standard), fiche d'une variable (pour pulse-aidd secrets)
 #   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur Vercel de pulse-aidd secrets (valeur sur l'entrée standard)
 #
@@ -162,6 +163,8 @@ case "$1" in
     shift; exec node "$RACINE/scripts/squelette.js" "$@" ;;
   seo-code)
     shift; exec node "$RACINE/scripts/seo-code.js" "$@" ;;
+  police)
+    shift; exec node "$RACINE/scripts/police.js" "$@" ;;
   secrets)
     shift; exec node "$RACINE/scripts/sondes-secrets.js" "$@" ;;
   hebergeur)

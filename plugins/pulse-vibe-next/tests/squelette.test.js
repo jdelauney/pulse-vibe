@@ -151,7 +151,7 @@ test("fins de ligne LF et versions exactes : .gitattributes et .npmrc posés, co
   const d = dossierVide();
   fs.writeFileSync(path.join(d, ".gitattributes"), "*.png binary\n");
   assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
-  const attendu = "*.png binary\n\n# Ajouté par Pulse Next.js\n* text=auto eol=lf\n";
+  const attendu = "*.png binary\n\n# Ajouté par Pulse Next.js\n* text=auto eol=lf\n*.woff2 binary\n";
   assert.strictEqual(lire(d, ".gitattributes"), attendu);
   assert.strictEqual(lire(d, ".npmrc"), "save-exact=true\n");
   for (const modele of ["gitattributes.template", "npmrc.template"]) assert.ok(!fs.existsSync(path.join(d, modele)), modele);

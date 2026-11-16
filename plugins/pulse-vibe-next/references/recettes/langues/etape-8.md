@@ -12,20 +12,11 @@ import { adresseDuSite } from "@src/config/site";
 import { ChoixLangueContainer } from "@src/features/langues/components/containers/choix-langue.container";
 import { partageCommun } from "@src/lib/seo/seo";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "../globals.css";
-
-// La variable porte le nom attendu par globals.css (--font-sans) : sans elle, le navigateur
-// retombe sur sa police par défaut.
-const policeTexte = Geist({ variable: "--font-sans", subsets: ["latin"] });
-const policeCode = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 // Métadonnées communes du squelette, inchangées (adresse du site, modèle de titre, carte de partage).
 export const metadata: Metadata = {
@@ -55,10 +46,7 @@ export default async function RootLayout({
   }
   const t = await getTranslations({ locale, namespace: "Accessibilite" });
   return (
-    <html
-      lang={locale}
-      className={`${policeTexte.variable} ${policeCode.variable} h-full antialiased`}
-    >
+    <html lang={locale} className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         {/* Lien d'évitement du squelette, traduit : le premier arrêt au clavier mène au contenu. */}
         <a
