@@ -10,6 +10,7 @@ Contrôles propres à la pile, en plus des checklists de qualité Pulse :
 - `proxy.ts` (racine) : `matcher` présent, aucune décision d'accès qui ne soit pas répétée côté serveur ; une seule lecture en base permise : l'existence d'un contenu publié pour un vrai 404 (requête légère, recette `seo`, étape 6).
 - Lectures dynamiques sous `Suspense` ; pas d'`export const dynamic`, `revalidate` ni `runtime` ; `error.tsx` avec `retry`.
 - Journaux sans mot de passe, jeton ni donnée personnelle.
+- Composants React : checklist de `react.md` (`pulse-aidd pile reference react.md`, § 7) pour chaque composant du diff.
 - Couleurs par rôle du thème, aucune couleur Tailwind brute dans les composants (hors `src/components/ui/`).
 - Migrations de `drizzle/` cohérentes avec les tables de `src/db/<domaine>/*.table.ts` (pas de `drizzle-kit push` sur la base partagée).
 - Architecture : chaque fichier à sa place (« Architecture du code ») ; `npm run check` (imports entre couches et niveaux de composants) et `npm test` (structure : 20 fichiers par dossier, tests dans `__tests__/`) passent.

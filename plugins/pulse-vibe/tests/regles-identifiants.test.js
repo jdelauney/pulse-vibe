@@ -5,7 +5,7 @@
 //   - marqueurs des sommaires (« Règle de choix »).
 // Une famille raccourcie garde tous ses identifiants (en ajouter est permis). Un début d'élément reformulé a un coût voulu :
 // on met l'instantané à jour en le disant (node tests/regles-identifiants.test.js --instantane).
-// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes) ; composants et experience le 2026-11-16 (pulse 0.60 : les états d'une vue, le comportement des formulaires, le clavier et le focus passent de composants.md § 6 à 8 à la nouvelle famille experience.md, composants.md y renvoie).
+// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes) ; composants et experience le 2026-11-16 (pulse 0.60 : les états d'une vue, le comportement des formulaires, le clavier et le focus passent de composants.md § 6 à 8 à la nouvelle famille experience.md, composants.md y renvoie) ; clean-code le 2026-11-16 (pulse 0.61 : § 5 et § 5 bis assouplis, abstraction et patron quand leur problème est présent ; checklist de relecture « SOLID tenu sans sur-construction »).
 // Lancer : node --test plugins/pulse-vibe/tests/regles-identifiants.test.js
 "use strict";
 
@@ -115,7 +115,7 @@ const INSTANTANE = {
    "- [ ] Journaux limités au détail technique : aucun",
    "- [ ] Chaque règle métier dans le domaine, écrite ",
    "- [ ] Changer d'affichage, de stockage ou de servi",
-   "- [ ] SOLID tenu : une raison de changer par class",
+   "- [ ] SOLID tenu sans sur-construction : une raiso",
    "- [ ] Une personne qui débute peut lire chaque mét"
   ],
   "balises": [],

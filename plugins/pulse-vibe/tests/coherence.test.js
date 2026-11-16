@@ -1989,7 +1989,7 @@ test("gestes de la personne : faire soi-même d'abord, fichier d'environnement e
   for (const a of ["implementer", "test-writer", "test-runner", "verifier"]) assert.match(lire(RACINE, "agents", `${a}.md`), /pulse-aidd reference gestes\.md/, a);
 });
 
-test("agents : une phrase de capacité de 160 caractères au plus, suivie de « (commandes Pulse) » ; moins de 2 000 caractères en tout (chargés dans chaque session)", () => {
+test("agents : une phrase de capacité de 160 caractères au plus, suivie de « (commandes Pulse) » ; moins de 2 300 caractères en tout (chargés dans chaque session)", () => {
   const descriptions = AGENTS_PAR_PLUGIN.map((f) => ({ f: path.basename(f), d: (lire(f).match(/^description: (.*)$/m) || [])[1] || "" }));
   assert.ok(descriptions.length >= 12, "les 12 agents du cœur");
   for (const { f, d } of descriptions) {
@@ -1999,7 +1999,9 @@ test("agents : une phrase de capacité de 160 caractères au plus, suivie de « 
     assert.doesNotMatch(d, /Utilisé par|\/pulse:/, `${f} : ni « Utilisé par », ni liste de commandes`);
   }
   const total = descriptions.reduce((s, { d }) => s + d.length, 0);
-  assert.ok(total < 2000, `descriptions des agents : ${total} caractères (moins de 2 000)`);
+  // Plafond relevé de 2 000 à 2 300 (pulse 0.61, mesure 2 103) : ux-reviewer et simplicity-reviewer ajoutés, sept descriptions
+  // raccourcies d'environ 150 caractères ; la marge restante sert à perf-auditor.
+  assert.ok(total < 2300, `descriptions des agents : ${total} caractères (moins de 2 300)`);
 });
 
 test("décision 2 : /pulse:express devient /pulse:nouveau, sans commande de renvoi ; la reprise accepte l'ancien nom", () => {
@@ -2587,7 +2589,7 @@ test("expérience de l'interface : famille chargée pour une tâche d'interface,
   for (const attendu of ["## 2 bis. Lancer la relecture de l'expérience", "**`pulse:ux-reviewer`**", "`pulse-aidd agent ux-reviewer`", "experience-<AAAA-MM-JJ>.md", "« relecture de l'expérience de fin", "`fix(experience): …`", "À vérifier à la main"])
     assert.ok(fin.includes(attendu), `audit-fin.md : ${attendu}`);
   assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse:ux-reviewer`/);
-  assert.match(lire(RACINE, "skills", "spirc", "references", "serie.md"), /relecture de l'expérience de chaque US/);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "serie.md"), /celle de l'expérience de chaque US/);
   assert.match(lire(RACINE, "skills", "spirc", "SKILL.md"), /`pulse:ux-reviewer`/);
   // Une seule fois par US : ni l'examen d'une tâche, ni le reviewer ne relisent l'expérience.
   assert.doesNotMatch(lire(RACINE, "references", "examen.md"), /ux-reviewer/);
@@ -2595,4 +2597,33 @@ test("expérience de l'interface : famille chargée pour une tâche d'interface,
   // Le pack donne l'outil de chaque règle.
   const fiche = fs.readFileSync(path.join(RACINE, "..", "pulse-vibe-next", "references", "fiche.md"), "utf8");
   for (const attendu of ["revalidateLogic", "onSubmitInvalid", "useOptimistic", "`experience` § 1"]) assert.ok(fiche.includes(attendu), `fiche du pack : ${attendu}`);
+});
+
+// pulse 0.61 : la simplicité, relue une fois en fin de réalisation ; §5 bis assoupli ; « rien à signaler » pour le reviewer aussi.
+test("simplicité : clean-code §5 bis assoupli, simplicity-reviewer une seule fois en fin de réalisation, reviewer sans fausse alerte", () => {
+  const cc = lire(RACINE, "references", "qualite", "clean-code.md");
+  assert.match(cc, /\| Problème \| Patron \| Se justifie quand \| Sinon \|/);
+  assert.match(cc, /troisième répétition réelle/);
+  assert.match(cc, /quand une règle métier, une seconde implémentation ou un test le demande/);
+  assert.doesNotMatch(cc, /reçoit chaque accès extérieur \(stockage, envoi, horloge, service externe\) sous forme d'interface \(port\)\. Au-delà/);
+  const agent = lire(RACINE, "agents", "simplicity-reviewer.md");
+  assert.match(agent, /^tools: Read, Grep, Glob, Bash$/m);
+  for (const attendu of ["`pulse-aidd qualite clean-code`", "✅ Rien à signaler", "version plus simple", "une seule implémentation", "erreur avalée", "`pulse-aidd pile reference architecture.md`"])
+    assert.ok(agent.includes(attendu), `simplicity-reviewer : ${attendu}`);
+  const fin = lire(RACINE, "references", "audit-fin.md");
+  for (const attendu of ["## 2 ter. Lancer la relecture de la simplicité", "**`pulse:simplicity-reviewer`**", "`pulse-aidd agent simplicity-reviewer`", "simplicite-<AAAA-MM-JJ>.md", "`refactor(simplicite): …`"])
+    assert.ok(fin.includes(attendu), `audit-fin.md : ${attendu}`);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse:simplicity-reviewer`/);
+  assert.match(lire(RACINE, "skills", "spirc", "SKILL.md"), /`pulse:simplicity-reviewer`/);
+  const reviewer = lire(RACINE, "agents", "reviewer.md");
+  assert.match(reviewer, /une relecture sans constat est un résultat valable/);
+  assert.doesNotMatch(reviewer, /une fausse alerte coûte moins cher/);
+  assert.match(reviewer, /`pulse:simplicity-reviewer` : les laisser de côté ici/);
+  // React : dans le pack seulement, chargé par la réalisation et la relecture.
+  const pack = (...p) => fs.readFileSync(path.join(RACINE, "..", "pulse-vibe-next", ...p), "utf8");
+  const react = pack("references", "react.md");
+  for (const attendu of ["## 1. Serveur par défaut, client au plus bas", "`key={id}`", "## 3. Effets", "React Compiler", "`cva`", "## 7. Checklist"]) assert.ok(react.includes(attendu), `react.md : ${attendu}`);
+  assert.match(pack("references", "contexte", "implement.md"), /`pulse-aidd pile reference react\.md`/);
+  assert.match(pack("references", "contexte", "review.md"), /`pulse-aidd pile reference react\.md`/);
+  assert.ok(!fs.existsSync(path.join(RACINE, "references", "qualite", "react.md")), "le cœur reste agnostique");
 });
