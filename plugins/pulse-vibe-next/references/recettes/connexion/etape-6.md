@@ -8,7 +8,7 @@ import { enTetesDeSession, getAuth } from "@src/adapters/auth/auth.adapter";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
-export type UtilisateurConnecte = { id: string; nom: string };
+export type UtilisateurConnecte = { id: string; nom: string; email: string };
 
 /** La personne connectée ; sans session, renvoie vers /connexion. Une seule lecture par requête. */
 export const utilisateurConnecte = cache(
@@ -18,7 +18,11 @@ export const utilisateurConnecte = cache(
     if (!session) {
       redirect("/connexion");
     }
-    return { id: session.user.id, nom: session.user.name };
+    return {
+      id: session.user.id,
+      nom: session.user.name,
+      email: session.user.email,
+    };
   },
 );
 ```

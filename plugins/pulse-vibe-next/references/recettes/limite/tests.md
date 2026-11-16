@@ -176,6 +176,7 @@ const { verifierLimite } = await import("../limite");
 describe("Limite de requêtes", () => {
   beforeEach(() => {
     journal.error.mockClear();
+    journal.warn.mockClear();
   });
 
   describe("Au-delà de la limite, la personne reçoit un message clair", () => {
@@ -203,6 +204,46 @@ describe("Limite de requêtes", () => {
       }
       const verdict = await verifierLimite("formulairePublic", "198.51.100.1");
       expect(verdict.autorise).toBe(false);
+    });
+  });
+
+  describe("Chaque refus est journalisé sans l'adresse IP", () => {
+    it("US-XXX-5 – Le refus est journalisé avec la règle et une empreinte courte", async () => {
+      const limiteur = new LimiteurMemoire();
+      for (let i = 0; i < 6; i++) {
+        await verifierLimite("connexion", "203.0.113.7", limiteur);
+      }
+
+      expect(journal.warn).toHaveBeenCalledTimes(1);
+      const [contexte] = journal.warn.mock.calls[0] as [
+        { limite: string; cle: string },
+      ];
+      expect(contexte.limite).toBe("connexion");
+      expect(contexte.cle).toMatch(/^[0-9a-f]{12}$/);
+      expect(JSON.stringify(journal.warn.mock.calls)).not.toContain(
+        "203.0.113.7",
+      );
+    });
+
+    it("US-XXX-5 – Par compte : deux personnes derrière la même adresse ont chacune leur limite", async () => {
+      const limiteur = new LimiteurMemoire();
+      for (let i = 0; i < 5; i++) {
+        await verifierLimite("changementMotDePasse", "compte-a", limiteur);
+      }
+
+      const verdictA = await verifierLimite(
+        "changementMotDePasse",
+        "compte-a",
+        limiteur,
+      );
+      const verdictB = await verifierLimite(
+        "changementMotDePasse",
+        "compte-b",
+        limiteur,
+      );
+
+      expect(verdictA.autorise).toBe(false);
+      expect(verdictB.autorise).toBe(true);
     });
   });
 

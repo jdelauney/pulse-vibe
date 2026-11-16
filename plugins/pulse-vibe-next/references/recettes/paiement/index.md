@@ -73,6 +73,7 @@ Le secret de webhook du poste et celui du site en ligne sont **différents** : c
 | `src/features/paiement/queries/commande-par-session.query.ts` | La commande de la personne pour une session, en données simples (`server-only`) |
 | `src/features/paiement/components/sections/bouton-payer.tsx`, `statut-paiement.tsx` | Bouton « Payer » et message de la page « Merci » (props) |
 | `src/features/paiement/components/containers/bouton-payer.container.tsx` | Branche l'action `payerAction` |
+| `src/features/paiement/components/containers/offre-paiement.container.tsx` | Lit la session (page réservée), puis rend le bouton |
 | `src/features/paiement/components/containers/statut-paiement.container.tsx` | Lit la session et la commande |
 | `app/api/stripe/webhook/route.ts` | Réception des webhooks (délègue à `features/paiement/webhooks/`) |
 | `app/(connecte)/paiement/page.tsx`, `app/(connecte)/paiement/merci/page.tsx` | Pages « Paiement » et « Merci » |
@@ -288,7 +289,7 @@ Fonctionnalité: Paiement
 - [ ] **Tn+1 – Payer sur la page de Stripe** · US-XXX
   - Objectif : une personne connectée clique sur « Payer » et arrive sur la page de paiement de Stripe
   - Dépend de : Tn
-  - Fichiers : à créer : `src/core/paiement/passerelle-paiement.port.ts`, `src/core/paiement/use-cases/ouvrir-paiement.use-case.ts`, `src/adapters/payment/payment.adapter.ts`, `src/features/paiement/constants/offre.ts`, `actions/payer.action.ts`, `components/sections/bouton-payer.tsx`, `components/containers/bouton-payer.container.tsx`, `app/(connecte)/paiement/page.tsx`, `src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts`, `src/adapters/payment/__tests__/payment.adapter.test.ts` · à modifier : `proxy.ts`
+  - Fichiers : à créer : `src/core/paiement/passerelle-paiement.port.ts`, `src/core/paiement/use-cases/ouvrir-paiement.use-case.ts`, `src/adapters/payment/payment.adapter.ts`, `src/features/paiement/constants/offre.ts`, `actions/payer.action.ts`, `components/sections/bouton-payer.tsx`, `components/containers/bouton-payer.container.tsx`, `components/containers/offre-paiement.container.tsx`, `app/(connecte)/paiement/page.tsx`, `src/core/paiement/use-cases/__tests__/ouvrir-paiement.use-case.test.ts`, `src/adapters/payment/__tests__/payment.adapter.test.ts` · à modifier : `proxy.ts`
   - Vérification : US-XXX critère 6 – « Payer 19,00 € » ouvre la page Stripe avec « Accès complet » et 19,00 €
   - Tests : « Camille ouvre le paiement… », « La session est ouverte avec le prix du serveur… », « Un refus de Stripe lève une erreur de service « paiement »… » (unitaires) ; le parcours Stripe se vérifie à la main (« Camille paie avec la carte de test 4242… »)
 - [ ] **Tn+2 – Confirmer le paiement par webhook** · US-XXX

@@ -1,11 +1,12 @@
 ### 2. Les fonctions pures et le limiteur en mémoire
 
-Les deux fonctions pures (lire l'adresse, écrire le message) restent des fonctions : sans état ni règle métier, elles vivent dans `src/lib/helpers/limite/`. Le limiteur en mémoire est une classe qui garde ses compteurs ; elle sert aux tests et au développement local.
+Les fonctions pures (lire l'adresse, écrire le message, l'empreinte courte d'un identifiant pour le journal) restent des fonctions : sans état ni règle métier, elles vivent dans `src/lib/helpers/limite/`. Le limiteur en mémoire est une classe qui garde ses compteurs ; elle sert aux tests et au développement local.
 
 <!-- fichier: src/lib/helpers/limite/ip-et-message.ts -->
 ```ts
 // src/lib/helpers/limite/ip-et-message.ts
 // Fonctions pures de la limite de requêtes, testées en unitaire.
+import { createHash } from "node:crypto";
 
 // Sur Vercel, x-forwarded-for est réécrit par la plateforme : la première adresse est celle du visiteur.
 export function ipDepuis(entetes: Headers): string {
@@ -16,6 +17,11 @@ export function ipDepuis(entetes: Headers): string {
 export function messageLimite(reset: number, maintenant: number): string {
   const minutes = Math.max(1, Math.ceil((reset - maintenant) / 60_000));
   return `Trop de tentatives. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
+}
+
+/** Empreinte courte d'un identifiant (adresse IP, compte) pour le journal : relie les refus d'une même source sans l'écrire en clair. */
+export function empreinteCourte(identifiant: string): string {
+  return createHash("sha256").update(identifiant).digest("hex").slice(0, 12);
 }
 ```
 

@@ -1,23 +1,31 @@
-
 ### Intégration (Vitest + PGlite)
 
-better-auth tourne sur une base PGlite neuve, avec les migrations du projet. `creerAuth` reçoit cette base : aucune variable d'environnement n'est lue.
+better-auth tourne sur une base PGlite neuve, avec les migrations du projet. `creerAuth` reçoit cette base et une doublure du service des mots de passe compromis : aucune variable d'environnement n'est lue, aucun appel réseau ne part.
 
 <!-- fichier: src/adapters/auth/__tests__/auth.adapter.test.ts -->
 ```ts
 // src/adapters/auth/__tests__/auth.adapter.test.ts
 import { account } from "@src/db/compte/auth.table";
+import { logger } from "@src/lib/logger";
 import { APIError } from "better-auth/api";
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { creerBaseDeTest } from "../../../../tests/helpers/base-de-test";
 import { type Auth, creerAuth } from "../auth.adapter";
 
 type BaseDeTest = Awaited<ReturnType<typeof creerBaseDeTest>>;
 
+/** Doublure de Have I Been Pwned : seul « motdepasse-compromis » a fui. */
+const motsDePasseDeTest = {
+  async estCompromis(motDePasse: string) {
+    return motDePasse === "motdepasse-compromis";
+  },
+};
+
 const optionsDeTest = {
   secret: "secret-de-test-secret-de-test-secret-de-test",
   baseURL: "http://localhost:3000",
+  motsDePasse: motsDePasseDeTest,
 };
 
 describe("connexion par e-mail et mot de passe", () => {
@@ -95,6 +103,19 @@ describe("connexion par e-mail et mot de passe", () => {
       .catch((e: unknown) => e);
     expect((mauvais as APIError).body?.code).toBe("INVALID_PASSWORD");
 
+    // US-XXX-6 : un nouveau mot de passe paru dans une fuite est refusé.
+    const compromis = await auth.api
+      .changePassword({
+        body: {
+          currentPassword: "motdepasse-solide",
+          newPassword: "motdepasse-compromis",
+          revokeOtherSessions: true,
+        },
+        headers: enTetes,
+      })
+      .catch((e: unknown) => e);
+    expect((compromis as APIError).body?.code).toBe("PASSWORD_COMPROMISED");
+
     await auth.api.changePassword({
       body: {
         currentPassword: "motdepasse-solide",
@@ -116,26 +137,161 @@ describe("connexion par e-mail et mot de passe", () => {
   });
 });
 
+describe("mots de passe compromis", () => {
+  let base: BaseDeTest;
+  beforeEach(async () => {
+    base = await creerBaseDeTest();
+  });
+  afterEach(async () => {
+    await base.fermer();
+    vi.restoreAllMocks();
+  });
+
+  it("US-XXX-6 – un mot de passe paru dans une fuite est refusé à l'inscription", async () => {
+    const auth = creerAuth(base.db, optionsDeTest);
+    const erreur = await auth.api
+      .signUpEmail({
+        body: {
+          name: "Camille Martin",
+          email: "camille@exemple.fr",
+          password: "motdepasse-compromis",
+        },
+      })
+      .catch((e: unknown) => e);
+    expect((erreur as APIError).body?.code).toBe("PASSWORD_COMPROMISED");
+  });
+
+  it("US-XXX-6 – service injoignable : l'inscription passe, et l'incident est journalisé sans le mot de passe", async () => {
+    const avertissement = vi.spyOn(logger, "warn").mockImplementation(() => {});
+    const auth = creerAuth(base.db, {
+      ...optionsDeTest,
+      motsDePasse: {
+        async estCompromis() {
+          throw new Error("service injoignable");
+        },
+      },
+    });
+
+    const resultat = await auth.api.signUpEmail({
+      body: {
+        name: "Camille Martin",
+        email: "camille@exemple.fr",
+        password: "motdepasse-solide",
+      },
+    });
+
+    expect(resultat.user.email).toBe("camille@exemple.fr");
+    expect(avertissement).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(avertissement.mock.calls)).not.toContain(
+      "motdepasse-solide",
+    );
+  });
+});
+
 describe("chemins HTTP fermés", () => {
-  it("US-XXX-2 – l'inscription directe par l'adresse HTTP de better-auth est refusée", async () => {
+  // Lecture de la session (auth-client.ts), et deux chemins sans écriture.
+  const OUVERTS = ["/error", "/get-session", "/ok"];
+
+  it("US-XXX-2 – seuls les chemins de lecture restent ouverts", async () => {
     const { db, fermer } = await creerBaseDeTest();
     const auth = creerAuth(db, optionsDeTest);
-    const reponse = await auth.handler(
-      new Request("http://localhost:3000/api/auth/sign-up/email", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          origin: "http://localhost:3000",
-        },
-        body: JSON.stringify({
-          name: "x".repeat(10_000),
-          email: "b@exemple.fr",
-          password: "motdepasse-solide",
-        }),
-      }),
-    );
-    expect(reponse.status).toBe(404);
+    const fermes = auth.options.disabledPaths ?? [];
+    // Les chemins à paramètre (/callback/:id) ne se ferment pas par disabledPaths.
+    const ouverts = Object.values(auth.api)
+      .map((point) => (point as { path?: string }).path)
+      .filter((chemin): chemin is string => !!chemin && !chemin.includes(":"))
+      .filter((chemin) => !fermes.includes(chemin));
+    expect([...new Set(ouverts)].sort()).toEqual(OUVERTS);
     await fermer();
+  });
+
+  it("US-XXX-2 – un chemin fermé répond 404, même pour une inscription directe", async () => {
+    const { db, fermer } = await creerBaseDeTest();
+    const auth = creerAuth(db, optionsDeTest);
+    for (const chemin of auth.options.disabledPaths ?? []) {
+      const reponse = await auth.handler(
+        new Request(`http://localhost:3000/api/auth${chemin}`, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            origin: "http://localhost:3000",
+          },
+          body: JSON.stringify({
+            name: "x".repeat(10_000),
+            email: "b@exemple.fr",
+            password: "motdepasse-solide",
+          }),
+        }),
+      );
+      expect(reponse.status, chemin).toBe(404);
+    }
+    await fermer();
+  });
+});
+```
+
+### Adapter `hibp` (Vitest, service simulé)
+
+Le service est remplacé par une fonction `fetch` de test, passée au constructeur : aucun appel réseau.
+
+<!-- fichier: src/adapters/hibp/__tests__/hibp.adapter.test.ts -->
+```ts
+// src/adapters/hibp/__tests__/hibp.adapter.test.ts
+import { createHash } from "node:crypto";
+import { ErreurService } from "@src/lib/errors/erreur-service";
+import { describe, expect, it } from "vitest";
+import { HibpMotDePasseAdapter } from "../hibp.adapter";
+
+const empreinte = createHash("sha1")
+  .update("motdepasse-compromis")
+  .digest("hex")
+  .toUpperCase();
+
+/** Service simulé : garde l'adresse appelée et répond le texte donné. */
+function serviceSimule(texte: string, statut = 200) {
+  const appels: string[] = [];
+  const recuperer = (async (adresse: string | URL | Request) => {
+    appels.push(String(adresse));
+    return new Response(texte, { status: statut });
+  }) as typeof fetch;
+  return { appels, recuperer };
+}
+
+describe("Mots de passe compromis (Have I Been Pwned)", () => {
+  it("US-XXX-6 – seuls les 5 premiers caractères de l'empreinte partent ; suite trouvée : compromis", async () => {
+    const { appels, recuperer } = serviceSimule(
+      `0000000000000000000000000000000000A:0\r\n${empreinte.slice(5)}:42\r\n`,
+    );
+
+    const compromis = await new HibpMotDePasseAdapter(recuperer).estCompromis(
+      "motdepasse-compromis",
+    );
+
+    expect(compromis).toBe(true);
+    expect(appels).toEqual([
+      `https://api.pwnedpasswords.com/range/${empreinte.slice(0, 5)}`,
+    ]);
+  });
+
+  it("US-XXX-6 – une ligne de remplissage (nombre 0) ne compte pas", async () => {
+    const { recuperer } = serviceSimule(`${empreinte.slice(5)}:0\r\n`);
+
+    expect(
+      await new HibpMotDePasseAdapter(recuperer).estCompromis(
+        "motdepasse-compromis",
+      ),
+    ).toBe(false);
+  });
+
+  it("US-XXX-6 – service en panne : erreur de service « hibp »", async () => {
+    const { recuperer } = serviceSimule("", 503);
+
+    const erreur = await new HibpMotDePasseAdapter(recuperer)
+      .estCompromis("motdepasse-compromis")
+      .catch((e: unknown) => e);
+
+    expect(erreur).toBeInstanceOf(ErreurService);
+    expect((erreur as ErreurService).service).toBe("hibp");
   });
 });
 ```
@@ -191,6 +347,56 @@ describe("Schéma de changement de mot de passe", () => {
 });
 ```
 
+### Pages réservées (Vitest)
+
+Chaque page de `app/(connecte)/` lit la session dans un de ses containers, avec `utilisateurConnecte()` : `proxy.ts` ne voit que la présence du cookie. Le test lit le code des pages et des containers qu'elles importent ; il échoue pour une page qui l'oublie.
+
+<!-- fichier: tests/pages-connectees.test.ts -->
+```ts
+// tests/pages-connectees.test.ts
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+/** Les page.tsx placées sous un dossier (connecte), à toute profondeur d'app/. */
+function pagesConnectees(dossier = "app", connecte = false): string[] {
+  return readdirSync(dossier, { withFileTypes: true }).flatMap((entree) => {
+    const chemin = path.join(dossier, entree.name);
+    if (entree.isDirectory()) {
+      return pagesConnectees(chemin, connecte || entree.name === "(connecte)");
+    }
+    return connecte && entree.name === "page.tsx" ? [chemin] : [];
+  });
+}
+
+/** Les fichiers des containers importés par une page (alias @src/ ou chemin relatif). */
+function containersImportes(page: string): string[] {
+  const source = readFileSync(page, "utf8");
+  return [...source.matchAll(/from "([^"]+\.container)"/g)]
+    .map(([, cible]) =>
+      cible.startsWith("@src/")
+        ? `${cible.replace("@src/", "src/")}.tsx`
+        : path.join(path.dirname(page), `${cible}.tsx`),
+    )
+    .filter((fichier) => existsSync(fichier));
+}
+
+describe("Pages réservées", () => {
+  it("US-XXX-3 – chaque page de (connecte) lit la session dans un container, par utilisateurConnecte()", () => {
+    const sansSession = pagesConnectees().filter(
+      (page) =>
+        !containersImportes(page).some((container) =>
+          readFileSync(container, "utf8").includes("utilisateurConnecte()"),
+        ),
+    );
+    expect(
+      sansSession,
+      "Ajoutez à ces pages un container, sous <Suspense>, qui appelle utilisateurConnecte().",
+    ).toEqual([]);
+  });
+});
+```
+
 ### Bout en bout (Playwright)
 
 L'aide `connecterNouvelUtilisateur(page)` sert aussi aux autres recettes (`liste`, par exemple).
@@ -200,7 +406,8 @@ L'aide `connecterNouvelUtilisateur(page)` sert aussi aux autres recettes (`liste
 // e2e/aides/connexion.ts
 import { expect, type Page } from "@playwright/test";
 
-export const MOT_DE_PASSE_DE_TEST = "motdepasse-de-test";
+// Mot de passe absent des fuites connues : l'application vérifie chaque nouveau mot de passe.
+export const MOT_DE_PASSE_DE_TEST = "essai-Pulse-7k2m-9vq4";
 
 /**
  * Champ visible désigné par son libellé exact.
@@ -258,9 +465,9 @@ test.describe("Compte", () => {
   }) => {
     const { email, motDePasse } = await connecterNouvelUtilisateur(page);
     await champ(page, "Mot de passe actuel").fill(motDePasse);
-    await champ(page, "Nouveau mot de passe").fill("nouveau-mot-de-passe");
+    await champ(page, "Nouveau mot de passe").fill("nouveau-Pulse-3h8w-5zt1");
     await champ(page, "Confirmez le nouveau mot de passe").fill(
-      "nouveau-mot-de-passe",
+      "nouveau-Pulse-3h8w-5zt1",
     );
     await page
       .getByRole("button", { name: "Changer mon mot de passe" })
@@ -270,7 +477,7 @@ test.describe("Compte", () => {
     await page.getByRole("button", { name: "Se déconnecter" }).click();
     await expect(page).toHaveURL(/\/connexion$/);
     await champ(page, "Adresse e-mail").fill(email);
-    await champ(page, "Mot de passe").fill("nouveau-mot-de-passe");
+    await champ(page, "Mot de passe").fill("nouveau-Pulse-3h8w-5zt1");
     await page.getByRole("button", { name: "Se connecter" }).click();
     await expect(page).toHaveURL(/\/compte$/);
   });

@@ -5,7 +5,7 @@
 ## Prérequis
 
 - La base Neon du squelette : par défaut, les compteurs y sont rangés (aucun compte ni aucune clé en plus).
-- Pour protéger la connexion et l'inscription : recette `connexion` appliquée (actions `inscrire` et `connecter`, `actionPublique` de `src/lib/safe-action.ts`).
+- Pour protéger le compte : recette `connexion` appliquée (actions `inscrire`, `connecter` et `changerMotDePasse`) ; avec les recettes `email` et `double-authentification`, leurs actions aussi (étape 7).
 - Pour un formulaire ouvert à tous (contact, devis, avis) : cette recette, puis la recette `formulaire-public` (`pulse-aidd pile recette formulaire-public`).
 - Option Redis (site à fort trafic) : voir « Option : Redis (Upstash) » en fin d'étapes.
 - Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,limite,formulaire-public` de `verifier-recettes.js`), option Redis comprise : contrôles, types, tests unitaires et d'intégration (PGlite ; panne d'Upstash simulée par une adresse locale injoignable), construction. `npm run db:migrate` n'est pas lancé : PGlite applique les migrations dans les tests. Upstash n'est jamais appelé : le fonctionnement avec un vrai compte Upstash reste un essai à la main.
@@ -24,7 +24,7 @@
 | Fichier | Rôle |
 |---|---|
 | `src/core/shared/limiteur.port.ts` | L'interface `Limiteur`, commune aux trois limiteurs (patron Strategy) |
-| `src/lib/helpers/limite/ip-et-message.ts` | Lecture de l'IP et message (fonctions pures) |
+| `src/lib/helpers/limite/ip-et-message.ts` | Lecture de l'IP, message, empreinte courte pour le journal (fonctions pures) |
 | `src/lib/helpers/limite/limiteur-memoire.ts` | Classe `LimiteurMemoire` (tests, développement local) |
 | `src/db/limite/limite.table.ts`, `drizzle/<numéro>_<nom>.sql` | Table `limites` et sa migration |
 | `src/db/limite/limite.repository.ts` | Classe `DrizzleLimiteurRepository`, le limiteur en base (par défaut) |
@@ -32,8 +32,8 @@
 | `src/config/env.ts` (modifié) | `LIMITE_STOCKAGE` (et les variables Upstash de l'option) |
 | `tests/helpers/contrat-limiteur.ts` | Tests communs à tous les limiteurs |
 | `src/lib/helpers/limite/__tests__/`, `src/db/limite/__tests__/`, `src/lib/__tests__/limite.test.ts`, `src/config/__tests__/env-limite.test.ts` | Tests |
-| `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `exigerLimite` en tête |
-| `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` (modifié, avec la recette `email`) | `exigerLimite("motDePasseOublie")` en tête |
+| `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts`, `changer-mot-de-passe.action.ts` (modifiés) | `exigerLimite` en tête |
+| Actions des recettes `email` et `double-authentification` (modifiées, si elles sont appliquées) | `exigerLimite` en tête (tableau de l'étape 7) |
 | `src/adapters/limite/upstash.adapter.ts` et son test (option Redis) | Classe `UpstashLimiteurAdapter`, le limiteur Upstash |
 
 Formulaires publics (contact, avis, lettre) : recette `formulaire-public`, qui s'appuie sur celle-ci.
@@ -46,7 +46,7 @@ Formulaires publics (contact, avis, lettre) : recette `formulaire-public`, qui s
 - Étape 4 – La classe du limiteur en base : `pulse-aidd pile recette limite etape 4`
 - Étape 5 – Les variables : `pulse-aidd pile recette limite etape 5`
 - Étape 6 – La garde : `pulse-aidd pile recette limite etape 6`
-- Étape 7 – Protéger la connexion, l'inscription et le mot de passe oublié : `pulse-aidd pile recette limite etape 7`
+- Étape 7 – Protéger les actions du compte : `pulse-aidd pile recette limite etape 7`
 - Étape 8 – Essayer : `pulse-aidd pile recette limite etape 8`
 - Étape 9 – Mettre en ligne : `pulse-aidd pile recette limite etape 9`
 - Étape option-redis – Option : Redis (Upstash), pour un site à fort trafic : `pulse-aidd pile recette limite etape option-redis`
@@ -84,6 +84,20 @@ Fonctionnalité: Limite de requêtes
       Quand l'adresse du visiteur est lue
       Alors l'adresse retenue est « 203.0.113.7 »
 
+  Règle: Chaque refus est journalisé sans l'adresse IP
+
+    @US-XXX-5 @unitaire @securite
+    Exemple: Le refus est journalisé avec la règle et une empreinte courte
+      Étant donné 5 tentatives de connexion depuis l'adresse 203.0.113.7 dans la dernière minute
+      Quand une sixième tentative arrive
+      Alors le journal note la règle « connexion » et une empreinte, sans « 203.0.113.7 »
+
+    @US-XXX-5 @unitaire
+    Exemple: Par compte : deux personnes derrière la même adresse ont chacune leur limite
+      Étant donné le compte A a changé 5 fois son mot de passe dans la minute
+      Quand le compte B change le sien depuis la même adresse
+      Alors le compte A est refusé et le compte B accepté
+
   Règle: Limiteur indisponible : le site reste utilisable
 
     @US-XXX-3 @integration
@@ -110,9 +124,9 @@ Fonctionnalité: Limite de requêtes
   - Vérification : US-XXX critères 1 à 4 – `npm test` passe (base PGlite et mémoire)
   - Tests : « Sixième tentative de connexion en une minute… », « Attente de 9 minutes et demie… », « L'adresse retenue est la première de x-forwarded-for » (unitaires) ; « L'incident est journalisé sans l'adresse IP », « des envois simultanés ne dépassent jamais la limite » (intégration)
 - [ ] **Tn+1 – Freiner les essais en rafale** · US-XXX
-  - Objectif : la connexion, l'inscription et le mot de passe oublié refusent les essais en rafale
+  - Objectif : la connexion, l'inscription, le changement de mot de passe (et les actions des recettes `email` et `double-authentification`) refusent les essais en rafale
   - Dépend de : Tn
-  - Fichiers : à modifier : `src/features/compte/actions/inscrire.action.ts`, `src/features/compte/actions/connecter.action.ts` (et `demander-nouveau-mot-de-passe.action.ts` avec la recette `email`)
+  - Fichiers : à modifier : `src/features/compte/actions/inscrire.action.ts`, `src/features/compte/actions/connecter.action.ts`, `src/features/compte/actions/changer-mot-de-passe.action.ts` (et les actions du tableau de l'étape 7 selon les recettes appliquées)
   - Vérification : US-XXX critère 1 – six mots de passe faux en moins d'une minute : le message s'affiche
   - Tests : « Six mots de passe faux de suite sur le site… » (manuel)
 - [ ] **Tn+2 (facultative) – Passer les compteurs sur Redis** · US-XXX
@@ -127,8 +141,8 @@ Le code des tests : `pulse-aidd pile recette limite tests`
 ## Points de sécurité
 
 - **S1, S2 – Secrets** : avec l'option Redis, `UPSTASH_REDIS_REST_TOKEN` reste côté serveur (`server-only`, sans `NEXT_PUBLIC_`).
-- **S10 – Abus et coûts** : connexion (5 par minute), inscription et mot de passe oublié (3 par 10 minutes), formulaires publics (5 par minute), comptés par IP. Les e-mails déclenchés par un inconnu restent bornés.
-- **S9 – Données personnelles** : la table `limites` garde des adresses IP, au plus un jour (effacées au passage) ; avec Redis, elles sont effacées à la fin de chaque fenêtre. À citer dans la mention de confidentialité (hébergement Neon, ou Upstash, à Francfort). Le journal note la règle et des codes techniques, sans l'adresse IP ni le texte de l'erreur.
+- **S10 – Abus et coûts** : comptés par IP : connexion, nouveau mot de passe, code de connexion (5 par minute), inscription, mot de passe oublié, renvoi du code (3 par 10 minutes), formulaires publics (5 par minute) ; comptés par personne : changement de mot de passe et réglage de la double authentification (5 par minute), changement d'adresse et suppression du compte (3 par 10 minutes). Les e-mails déclenchés par un inconnu restent bornés.
+- **S9 – Données personnelles** : la table `limites` garde des adresses IP, au plus un jour (effacées au passage) ; avec Redis, elles sont effacées à la fin de chaque fenêtre. À citer dans la mention de confidentialité (hébergement Neon, ou Upstash, à Francfort). Le journal note chaque refus (la règle et une empreinte SHA-256 tronquée de l'identifiant) et chaque panne (la règle et des codes techniques), jamais l'adresse IP en clair ni le texte de l'erreur. L'empreinte relie les refus d'une même source ; elle reste une donnée pseudonyme.
 - **S11 – Messages d'erreur** : le message dit seulement d'attendre, et pour combien de temps.
 - La limite s'ajoute aux autres protections : la session et le schéma Zod restent vérifiés dans chaque action.
 
