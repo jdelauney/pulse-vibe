@@ -1,8 +1,8 @@
 ---
-description: Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique
-argument-hint: "[mesurer | corriger | suivre] (vide : mesurer)"
+description: Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique ; et la vitesse d'une partie du code, mesurée avant et après chaque optimisation
+argument-hint: "[mesurer | corriger | suivre | code <cible>] (vide : mesurer)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse-aidd modele perf/performance.md) Bash(pulse-aidd modele lexique.md) Bash(pulse-aidd modele confidentialite.md) Bash(pulse-aidd qualite *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd sonder *) Bash(git status *) Bash(git log *) Bash(git branch --show-current) Read Glob Grep Write(docs/performance.md) Edit(docs/performance.md) Edit(docs/technical.md) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd sessions *) Bash(pulse-aidd copier-env *) Bash(pulse-aidd revue *) Bash(pulse-aidd reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd modele *) Bash(pulse-aidd agent *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd preuve *) Bash(pulse-aidd verifier --index) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *)
+allowed-tools: Bash(pulse-aidd contexte perf) Bash(pulse-aidd perf *) Bash(pulse-aidd modele perf/performance.md) Bash(pulse-aidd modele lexique.md) Bash(pulse-aidd modele confidentialite.md) Bash(pulse-aidd qualite *) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd pile contexte perf-code) Bash(pulse-aidd agent perf-auditor) Write(docs/performance/code-*.md) Bash(pulse-aidd sonder *) Bash(git status *) Bash(git log *) Bash(git branch --show-current) Read Glob Grep Write(docs/performance.md) Edit(docs/performance.md) Edit(docs/technical.md) Write(docs/lexique.md) Edit(docs/lexique.md) Bash(pulse-aidd etape *) Bash(pulse-aidd contexte commit) Bash(pulse-aidd contexte deploy) Bash(pulse-aidd contexte fix) Bash(pulse-aidd contexte auto-fix) Bash(pulse-aidd contexte cicd) Bash(pulse-aidd sessions *) Bash(pulse-aidd copier-env *) Bash(pulse-aidd revue *) Bash(pulse-aidd reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd seo *) Bash(pulse-aidd secrets inventaire *) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd installer-ci) Bash(pulse-aidd installer-hook) Bash(pulse-aidd modele *) Bash(pulse-aidd agent *) Bash(pulse-aidd guide) Bash(pulse-aidd pile contexte *) Bash(git diff *) Bash(git remote -v) Bash(git remote get-url *) Bash(pulse-aidd preuve *) Bash(pulse-aidd verifier --index) Bash(pulse-aidd secrets historique *) Bash(pulse-aidd secrets verifier *) Bash(pulse-aidd secrets journal *) Bash(pulse-aidd pile secrets fiche *)
 ---
 
 # /pulse:perf – La vitesse vécue par vos visiteurs
@@ -32,11 +32,12 @@ Fichiers de cette commande : [references/performance.md](references/performance.
 | `mesurer` (défaut) | « Mon site est-il rapide ? » | « mesurer » |
 | `corriger` | « Que faut-il changer, et ça a marché ? » | « corriger » |
 | `suivre` | « Mes vrais visiteurs vivent-ils la même chose, et comment le garder ? » | « suivre » |
+| `code <cible>` | « Cette partie est lente : peut-on l'accélérer, chiffres à l'appui ? » | « code » |
 
 ### Prérequis (toutes les actions)
 
 1. `docs/technical.md` : pile, « Commandes du projet », « Hébergement et mise en ligne » (ligne « Site en ligne »). Absent : proposer `/pulse:tech` et s'arrêter.
-2. Le site à mesurer, construit pour la production :
+2. Le site à mesurer, construit pour la production (sauf pour `code`) :
    - **en ligne** : l'adresse de « Adresses » dans `CLAUDE.md` ou de « Site en ligne » ;
    - **sinon, en local** : la commande « Construire », puis servir le résultat en mode production d'après les consignes du pack de pile ou la documentation officielle de la pile (le mode développement donne des chiffres sans rapport avec la réalité). Lancer ce serveur en arrière-plan sur un port libre, noter son numéro de processus, et l'arrêter à la fin de la commande, lui seul.
    - Ni l'un ni l'autre possible (rien à construire encore) : proposer `/pulse:deploy` ou la première tâche du plan, et s'arrêter.
@@ -97,6 +98,18 @@ Trois volets, proposés un par un (AskUserQuestion), chacun facultatif.
    - Proposer la vérification automatique de la vitesse : `pulse-aidd reference perf/ci-vitesse.md`, lancé au moment de la proposer.
    - Montrer le fichier de CI complet, l'écrire avec accord, essayer les deux commandes en local, puis l'enregistrer et l'envoyer (`pulse-aidd etape commit --sans-communes`, puis `pulse-aidd reference regles-taches.md` et `pulse-aidd reference regles-realisation.md` (trois appels séparés, chaque sortie lue en entier), argument `push`). Mettre à jour « Mesure réelle et suivi » de `docs/performance.md` et la ligne CI de `docs/technical.md`.
 
+### code
+
+Une partie précise du code : une fonction, une requête, une action, un calcul. Au début, charger `pulse-aidd reference perf/code.md` (procédure, seuil, rapport) ; dire en une phrase : « On mesure d'abord ; on garde une optimisation seulement si elle se voit dans les chiffres. »
+
+1. **La cible et la métrique** : la cible donnée, sinon la demander (« Qu'est-ce qui vous paraît lent ? »). L'objectif vient de la spec quand elle en donne un (ligne « Performance » d'une tâche du plan), sinon de la personne (AskUserQuestion, une proposition chiffrée recommandée).
+2. **Mesurer** : lancer le sous-agent `pulse:perf-auditor`, mode `mesurer`, avec la cible, la métrique et l'objectif (sans sous-agent : `pulse-aidd agent perf-auditor`, consignes appliquées soi-même, sans modifier le projet). Présenter en 3 lignes la mesure de départ (médiane, écart), le goulot et l'optimisation proposée. « Rien d'utile à optimiser » : le dire et passer à l'étape 5.
+3. **Appliquer**, avec l'accord de la personne : une seule optimisation, par `pulse:implementer` (une correction, famille `clean-code`, l'optimisation et son fichier dans le message), puis les contrôles automatiques et les tests de « Commandes du projet ».
+4. **Contrôler** : `pulse:perf-auditor`, mode `controler`, avec le rapport de départ. « Retirer » (gain sous le seuil pour un code plus compliqué, gain dans le bruit, test en échec) : le dire avec les chiffres, puis remettre le code d'avant avec l'accord de la personne.
+5. **Écrire** le rapport `docs/performance/code-<AAAA-MM-JJ>.md` (modèle : `perf/code.md` § 4) et une ligne d'« Historique » dans `docs/performance.md` s'il existe. Proposer `/pulse:commit`.
+
+Une seconde optimisation repasse par les étapes 2 à 5 : une à la fois.
+
 ### Fin
 
 Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il y en a un. Terminer avec le bloc de fin de commande, en citant la source et la médiane des mesures présentées (« LCP 2,1 s, médiane de 3 passages, simulation PageSpeed Insights »).
@@ -105,6 +118,7 @@ Arrêter le serveur local lancé pour la mesure (son numéro de processus), s'il
 
 - `/pulse:perf` : 3 à 5 pages de votre site mesurées comme sur un téléphone moyen, une phrase de verdict par page et 3 priorités au plus, notées dans `docs/performance.md`.
 - `/pulse:perf corriger` : vous choisissez les priorités ; après la correction, la comparaison avant/après annonce seulement ce qui va vraiment mieux.
+- `/pulse:perf code src/features/factures` : la vitesse de cette partie mesurée d'abord, une seule optimisation proposée, puis gardée seulement si les chiffres la justifient.
 - `/pulse:perf suivre` : un budget proposé à partir de la dernière mesure, puis, si vous l'acceptez, une vérification automatique chaque semaine.
 
 ## Références de la commande

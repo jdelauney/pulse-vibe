@@ -31,7 +31,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 ## Méthode
 
 1. Lancer `pulse-aidd qualite experience` et lire sa sortie en entier : ses règles et sa checklist (§ 9) sont la grille de cette relecture.
-2. Lire, dans chaque spec, « Ce que l'utilisateur voit et fait », « Situations à prévoir » et les scénarios ; dans chaque plan, la conception des écrans et les lignes « Attention » des tâches ; puis `docs/voix.md` et le glossaire.
+2. Lire, dans chaque spec, « Ce que l'utilisateur voit et fait », « Situations à prévoir » et les scénarios ; dans chaque plan, la conception des écrans, la section « Cas limites et états à couvrir » et les lignes « Attention » des tâches ; puis `docs/voix.md` et le glossaire.
 3. Lister les fichiers changés : `git diff --stat <départ>..HEAD`. Lire en entier chaque fichier d'interface changé (écrans, composants, formulaires), puis les actions et le module d'accès aux données qu'ils appellent, pour connaître chaque erreur qu'ils peuvent renvoyer.
 4. Pour chaque écran, répondre à trois questions, d'après le code : que voit la personne **quand ça rate** (chaque erreur renvoyée a-t-elle son message, à sa place, saisie gardée ?), **quand c'est vide** (les deux vides du § 1), **quand c'est lent** (§ 3) ? Puis passer chaque point de la checklist, en ne retenant que les écarts réels.
 5. Classer chaque constat :

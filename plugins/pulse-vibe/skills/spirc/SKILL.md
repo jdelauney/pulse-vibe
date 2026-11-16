@@ -221,7 +221,7 @@ Présenter un récapitulatif :
 | T1 – … | 6 ✅ (ou —) | ✅ Validé · ✅ Prouvé | 3 / 1 | ✅ | abc1234 |
 ```
 
-Ajouter, si c'est le cas : les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi, les questions encore ouvertes, le travail encore mis de côté (`pulse-aidd attente liste`).
+Ajouter, si c'est le cas : `/pulse:perf code <fichiers>` pour chaque tâche qui porte une ligne « Performance », les ajouts à la mémoire, les idées notées « En attente » dans le PRD, les tâches restées `[~]` et pourquoi, les questions encore ouvertes, le travail encore mis de côté (`pulse-aidd attente liste`).
 
 **Dans un worktree** : lancer `pulse-aidd reference worktree-dossier.md` et appliquer « 3. Terminer : rassembler le travail » (fusion, demande de fusion ou worktree gardé).
 

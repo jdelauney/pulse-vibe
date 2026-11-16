@@ -34,6 +34,7 @@ const INFORMATIONS = {
   "tests d'abord": /interface attendue/,
   "dossier de travail": /Dossier de travail/,
   correction: /constats/,
+  "cas limites": /cas limites de la tâche/,
 };
 
 test("deleguer.md existe, nomme les familles de qualité et les tests essentiels du rythme rapide", () => {

@@ -251,8 +251,8 @@ window.PULSE_WIKI = {
     {
       "nom": "perf",
       "etape": "visible",
-      "description": "Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique",
-      "forme": "[mesurer | corriger | suivre]",
+      "description": "Mesurer et améliorer la vitesse vécue par les visiteurs - chargement simulé en plusieurs passages (médiane), données des vrais visiteurs, 3 priorités corrigées avec avant/après, mesure réelle, budget et suivi automatique ; et la vitesse d'une partie du code, mesurée avant et après chaque optimisation",
+      "forme": "[mesurer | corriger | suivre | code <cible>]",
       "note": "vide : mesurer"
     },
     {

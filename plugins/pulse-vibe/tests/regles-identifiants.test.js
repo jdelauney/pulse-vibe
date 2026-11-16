@@ -5,7 +5,7 @@
 //   - marqueurs des sommaires (« Règle de choix »).
 // Une famille raccourcie garde tous ses identifiants (en ajouter est permis). Un début d'élément reformulé a un coût voulu :
 // on met l'instantané à jour en le disant (node tests/regles-identifiants.test.js --instantane).
-// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes) ; composants et experience le 2026-11-16 (pulse 0.60 : les états d'une vue, le comportement des formulaires, le clavier et le focus passent de composants.md § 6 à 8 à la nouvelle famille experience.md, composants.md y renvoie) ; clean-code le 2026-11-16 (pulse 0.61 : § 5 et § 5 bis assouplis, abstraction et patron quand leur problème est présent ; checklist de relecture « SOLID tenu sans sur-construction »).
+// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes) ; composants et experience le 2026-11-16 (pulse 0.60 : les états d'une vue, le comportement des formulaires, le clavier et le focus passent de composants.md § 6 à 8 à la nouvelle famille experience.md, composants.md y renvoie) ; clean-code le 2026-11-16 (pulse 0.61 : § 5 et § 5 bis assouplis, abstraction et patron quand leur problème est présent ; checklist de relecture « SOLID tenu sans sur-construction ») ; tests/cas-limites.md le 2026-11-16 (pulse 0.62 : les familles de cas limites du plan).
 // Lancer : node --test plugins/pulse-vibe/tests/regles-identifiants.test.js
 "use strict";
 
@@ -499,6 +499,28 @@ const INSTANTANE = {
   ],
   "balises": [],
   "securitePar": {},
+  "marqueurs": []
+ },
+ "tests/cas-limites.md": {
+  "titres": [
+   "## 1. Les familles",
+   "## 2. Retenir et prouver",
+   "## 3. Liste de contrôle"
+  ],
+  "numerotes": [],
+  "cases": [
+   "- [ ] Chaque famille du § 1 a été passée pour l'US",
+   "- [ ] Chaque cas dit ce que vit la personne ; une ",
+   "- [ ] Chaque cas a sa tâche et sa preuve (test du ",
+   "- [ ] Chaque test d'un cas vérifie un comportement"
+  ],
+  "balises": [],
+  "securitePar": {
+   "## 1. Les familles": [
+    "S3",
+    "S4"
+   ]
+  },
   "marqueurs": []
  },
  "tests/ecrire-un-test.md": {

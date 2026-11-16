@@ -91,6 +91,14 @@ Organisation générale : voir « Organisation des fichiers » dans `docs/techni
 
 Classes et patrons de conception : {{ex. `Invoice` (entité, porte la règle « en retard ») · `PayInvoice` (cas d'usage, reçoit `InvoiceRepository` par son constructeur) · `DrizzleInvoiceRepository` (Repository)}}
 
+### Cas limites et états à couvrir
+
+> Les cas qui peuvent réellement arriver dans cette US (référence « Cas limites ») : ce que vit la personne, la tâche qui le traite, sa preuve.
+
+| Cas | Ce que vit la personne | Tâche | Preuve |
+|---|---|---|---|
+| {{ex. deux clics rapides sur « Créer la facture »}} | {{ex. une seule facture créée ; le bouton reste inactif pendant l'envoi}} | {{Tn}} | {{ex. test d'intégration « US-003-4 – … » · @manuel}} |
+
 ## Tâches
 
 > US terminée quand : {{ce que l'utilisateur peut faire de bout en bout}}.

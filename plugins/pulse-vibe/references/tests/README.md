@@ -17,6 +17,7 @@ Ces références décrivent **quoi tester, comment écrire un test et dans quel 
 | `tests/bout-en-bout.md` | Parcours critiques, repérage des éléments, objets page, stabilité, tests après déploiement |
 | `tests/gherkin.md` | Scénarios de la spec au format Gherkin : mots-clés français, écriture, étiquettes, passage au test |
 | `tests/tdd.md` | Cycle rouge / vert / remaniement, les 5 étapes pour écrire un exemple, ordre des exemples |
+| `tests/cas-limites.md` | Les familles de cas limites à passer pour une US, ce que vit la personne, la preuve de chaque cas (`/pulse:plan`) |
 | `tests/test-manuel.md` | Fiche de test manuel à adapter à chaque fonctionnalité, passe préalable dans le navigateur |
 
 `pulse-aidd tests <morceau>…` affiche seulement les morceaux nommés (sans morceau : ce sommaire seul ; `--tout` : toute la méthode, sans le test manuel ; `<morceaux> --checklists` : leurs listes de contrôle et signaux d'alerte seuls) : `strategie`, `ecrire`, `unitaire`, `integration`, `bout-en-bout`, `tdd`, `gherkin` (les niveaux portent le nom des étiquettes des scénarios, sans `@`).

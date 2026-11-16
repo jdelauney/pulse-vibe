@@ -6,8 +6,9 @@
 //   à corriger    : critère d'acceptation vérifié par aucune tâche, scénario automatisé cité par aucune ligne
 //                   « Tests », dépendance vers une tâche inconnue ou en boucle, spec absente ou en brouillon,
 //                   champ du modèle resté à remplir, mise en ligne dans le plan d'une autre US que la dernière
-//                   Indispensable du parcours ;
-//   avertissement : fichier « à modifier » absent (et créé par aucune tâche), fichier « à créer » déjà présent,
+//                   Indispensable du parcours, cas limite sans ce que vit la personne, sans preuve ou rattaché à une
+//                   tâche absente du plan ;
+//   avertissement : section « Cas limites et états à couvrir » absente, fichier « à modifier » absent (et créé par aucune tâche), fichier « à créer » déjà présent,
 //                   tâche de plus de 3 fichiers (sauf une tâche de recette) ou 3 critères, plan de plus de 4 tâches, mise en ligne manquante.
 // Affiche des lignes « clé: valeur », puis un constat par ligne (« - à corriger · T4 · … ») :
 //   plan: aidd_docs/tasks/<epic>/PLAN-SPEC-US-003-<nom>.md
@@ -167,6 +168,19 @@ function boucle(taches) {
   return null;
 }
 
+/** Les lignes du tableau « Cas limites et états à couvrir » ({ cas, vit, tache, preuve }), ou null sans la section. */
+function casLimites(texte) {
+  const debut = texte.search(/^#{2,4} Cas limites et [ée]tats [àa] couvrir\s*$/im);
+  if (debut < 0) return null;
+  const apres = texte.slice(debut).split(/\r?\n/).slice(1);
+  const fin = apres.findIndex((l) => /^#{2,4} /.test(l));
+  const lignes = (fin < 0 ? apres : apres.slice(0, fin)).filter((l) => /^\s*\|/.test(l) && !/^\s*\|\s*-/.test(l));
+  return lignes.slice(1).map((l) => {
+    const [cas = "", vit = "", tache = "", preuve = ""] = l.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+    return { cas, vit, tache, preuve };
+  });
+}
+
 /** Le contrôle complet : { plan, statut, taches, constats: [{ gravite, ou, message }] }, ou null si le plan est introuvable. */
 function verifierPlan(racine, idUs) {
   const us = normaliserUs(idUs);
@@ -245,6 +259,21 @@ function verifierPlan(racine, idUs) {
   const utiles = taches.filter((t) => !t.miseEnLigne && !/mise en place|squelette/i.test(t.titre));
   if (utiles.length > 4) avertir("plan", `${utiles.length} tâches (hors mise en place et mise en ligne) : au-delà de 4, proposer de découper l'US`);
 
+  // Cas limites : chacun dit ce que vit la personne, a sa preuve et sa tâche dans ce plan (référence tests/cas-limites.md).
+  const cas = casLimites(textePlan);
+  if (!cas) avertir("cas limites", "la section « Cas limites et états à couvrir » manque à la conception technique (référence tests/cas-limites.md)");
+  else {
+    const ids = new Set(taches.map((t) => t.id));
+    for (const c of cas.filter((x) => x.cas && !/\{\{/.test(x.cas + x.vit + x.tache + x.preuve))) {
+      const nom = `le cas « ${c.cas.slice(0, 60)} »`;
+      if (!c.vit) corriger("cas limites", `${nom} ne dit pas ce que vit la personne`);
+      if (!c.preuve) corriger("cas limites", `${nom} n'a pas de preuve (test ou @manuel)`);
+      const t = (c.tache.toUpperCase().match(/T\d+/g) || []);
+      if (!t.length) corriger("cas limites", `${nom} n'est rattaché à aucune tâche`);
+      for (const x of t) if (!ids.has(x)) corriger("cas limites", `${nom} est rattaché à ${x}, absente de ce plan`);
+    }
+  }
+
   // Mise en ligne : seulement dans le plan de la dernière US Indispensable du parcours.
   const indispensables = lireUs(racine).filter((u) => u.priorite === 0);
   const derniere = indispensables.length ? indispensables[indispensables.length - 1].id : null;
@@ -265,4 +294,4 @@ function formater(r, us) {
 
 if (require.main === module) lancerControle("du plan", "pulse-aidd verifier-plan US-003", verifierPlan, formater);
 
-module.exports = { verifierPlan, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs };
+module.exports = { verifierPlan, casLimites, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs };

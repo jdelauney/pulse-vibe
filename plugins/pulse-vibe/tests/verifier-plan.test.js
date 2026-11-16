@@ -55,13 +55,22 @@ const TACHE = (id, { titre = "Voir la liste", depend = "—", fichiers = "à cr�
   - Tests : ${tests}
 ${recette ? `  - Recette : ${recette}\n` : ""}`;
 
-const PLAN = (taches, statut = "validé le 2026-10-11") => `# Plan – TodoIt – US-002 Voir la liste
+const CAS_OK = "| liste vide | le message « Aucune tâche pour l'instant » | T1 | @manuel |";
+const PLAN = (taches, statut = "validé le 2026-10-11", cas = CAS_OK) => `# Plan – TodoIt – US-002 Voir la liste
 
 ## Vue d'ensemble
 
 - **US** : US-002 – Voir la liste · **Groupe** : Gérer · **Priorité** : Indispensable
 - **Statut** : ${statut}
 
+## Conception technique
+${cas === null ? "" : `
+### Cas limites et états à couvrir
+
+| Cas | Ce que vit la personne | Tâche | Preuve |
+|---|---|---|---|
+${cas}
+`}
 ## Tâches
 
 > US terminée quand : je vois mes tâches.
@@ -248,4 +257,16 @@ test("sections « Questions en attente » et « Choix faits par Pulse » et sous
   const racine = projet({ [planFichier]: plan });
   assert.deepStrictEqual(constats(racine), []);
   assert.strictEqual(verifierPlan(racine, "US-002").taches, 3);
+});
+
+test("cas limites : section absente en avertissement ; cas sans ce que vit la personne, sans preuve ou hors du plan à corriger", () => {
+  const sans = projet({ [planFichier]: PLAN([TACHE("T1"), TACHE("T2", { titre: "Liste vide", depend: "T1", fichiers: "à modifier : `src/liste.js`", verification: "US-002 critère 2", tests: "aucun" }), MISE_EN_LIGNE], undefined, null) });
+  assert.deepStrictEqual(constats(sans), ["avertissement · cas limites · la section « Cas limites et états à couvrir » manque à la conception technique (référence tests/cas-limites.md)"]);
+  const cas = ["| double clic sur Ajouter | une seule tâche ajoutée | T2 | |", "| coupure du réseau | | T9 | @manuel |"].join("\n");
+  const faux = projet({ [planFichier]: PLAN([TACHE("T1"), TACHE("T2", { titre: "Liste vide", depend: "T1", fichiers: "à modifier : `src/liste.js`", verification: "US-002 critère 2", tests: "aucun" }), MISE_EN_LIGNE], undefined, cas) });
+  assert.deepStrictEqual(constats(faux), [
+    "à corriger · cas limites · le cas « double clic sur Ajouter » n'a pas de preuve (test ou @manuel)",
+    "à corriger · cas limites · le cas « coupure du réseau » ne dit pas ce que vit la personne",
+    "à corriger · cas limites · le cas « coupure du réseau » est rattaché à T9, absente de ce plan",
+  ]);
 });
