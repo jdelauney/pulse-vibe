@@ -60,7 +60,7 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 | Toute zone qui charge ou envoie (formulaire, action) | | | | | | oui | | oui | oui |
 | Toute liste ou zone de contenu | | | | | | oui | oui | oui | |
 
-- Un **état vide** explique quoi faire et propose l'action. Il contient toujours cette phrase et cette action, en plus d'une éventuelle icône.
+- Ce que dit et fait chaque état (vide, erreur, partiel, attente) : `qualite/experience.md` § 1 à 3. Un **état vide** explique quoi faire et propose l'action. Il contient toujours cette phrase et cette action, en plus d'une éventuelle icône.
 - Le **focus visible** est le contour qui montre où l'on se trouve au clavier.
 
 > Livrez chaque composant avec tous ses états.

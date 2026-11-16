@@ -5,7 +5,7 @@
 //   - marqueurs des sommaires (« Règle de choix »).
 // Une famille raccourcie garde tous ses identifiants (en ajouter est permis). Un début d'élément reformulé a un coût voulu :
 // on met l'instantané à jour en le disant (node tests/regles-identifiants.test.js --instantane).
-// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes).
+// Relevé le 2026-10-24 (pulse 0.50, tâche 2.3 du refactoring d'optimisation) ; clean-code mis à jour le 2026-11-13 (conception en classes, SOLID et patrons de conception, § 5 bis : « Fonctions » devient « Fonctions et méthodes », règles métier en méthodes) ; composants et experience le 2026-11-16 (pulse 0.60 : les états d'une vue, le comportement des formulaires, le clavier et le focus passent de composants.md § 6 à 8 à la nouvelle famille experience.md, composants.md y renvoie).
 // Lancer : node --test plugins/pulse-vibe/tests/regles-identifiants.test.js
 "use strict";
 
@@ -237,7 +237,7 @@ const INSTANTANE = {
    "## 3. État",
    "## 4. Accès aux données centralisé",
    "## 5. Flux de données",
-   "## 6. Les quatre états d'interface",
+   "## 6. Les états d'une vue",
    "## 7. Formulaires",
    "## 8. Accessibilité",
    "## 9. Nommage",
@@ -255,9 +255,9 @@ const INSTANTANE = {
    "- [ ] Source unique de vérité ; état dérivé calcul",
    "- [ ] Accès aux données centralisé par fonctionnal",
    "- [ ] Données descendantes, événements montants pa",
-   "- [ ] Les quatre états (chargement, vide, erreur, ",
-   "- [ ] Formulaires : validation client et serveur, ",
-   "- [ ] Accessibilité : libellés, noms accessibles p",
+   "- [ ] Chaque vue qui charge des données branche se",
+   "- [ ] Formulaires : validation du navigateur et du",
+   "- [ ] Accessibilité : structure sémantique, libell",
    "- [ ] Saisies affichées comme du texte, jamais ins",
    "- [ ] Découpage proportionné, regroupé par fonctio",
    "- [ ] Contrôles automatiques de « Commandes du pro"
@@ -272,6 +272,41 @@ const INSTANTANE = {
    ],
    "## 14. Checklist (implémentation et relecture)": [
     "S6"
+   ]
+  },
+  "marqueurs": []
+ },
+ "qualite/experience.md": {
+  "titres": [
+   "## 1. Les états de chaque vue",
+   "## 2. Messages d'erreur",
+   "## 3. Latence perçue",
+   "## 4. Annuler plutôt que confirmer",
+   "## 5. Formulaires",
+   "## 6. Clavier et focus",
+   "## 7. Données réelles",
+   "## 8. Les mots de l'interface",
+   "## 9. Checklist (implémentation et relecture de fin)"
+  ],
+  "numerotes": [],
+  "cases": [
+   "- [ ] Chaque vue qui charge des données a ses état",
+   "- [ ] Chaque message d'erreur dit ce qui s'est pas",
+   "- [ ] La saisie et le travail de la personne reste",
+   "- [ ] Indicateur d'attente au-delà de 300 ms envir",
+   "- [ ] Action réversible : « Annuler » plutôt qu'un",
+   "- [ ] Formulaires : validation à la sortie du cham",
+   "- [ ] Tout se fait au clavier ; Échap ferme ; focu",
+   "- [ ] Vues vérifiées avec 0, 1 et beaucoup d'éléme",
+   "- [ ] Boutons en verbe + objet ; mots du glossaire"
+  ],
+  "balises": [],
+  "securitePar": {
+   "## 2. Messages d'erreur": [
+    "S11"
+   ],
+   "## 5. Formulaires": [
+    "S5"
    ]
   },
   "marqueurs": []

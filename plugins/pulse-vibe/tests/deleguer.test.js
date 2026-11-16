@@ -36,10 +36,10 @@ const INFORMATIONS = {
   correction: /constats/,
 };
 
-test("deleguer.md existe, nomme les quatre familles de qualité et les tests essentiels du rythme rapide", () => {
+test("deleguer.md existe, nomme les familles de qualité et les tests essentiels du rythme rapide", () => {
   const texte = lire("references", "deleguer.md");
   const message = section(texte, "Le message");
-  for (const famille of ["clean-code", "composants", "securite", "organisation"]) assert.match(message, new RegExp(`\`${famille}\``), famille);
+  for (const famille of ["clean-code", "composants", "experience", "securite", "organisation"]) assert.match(message, new RegExp(`\`${famille}\``), famille);
   assert.match(message, /rythme rapide : « tests essentiels » \(référence « Tests automatiques », § 2 bis\)/);
   assert.match(texte, /^## Au retour$/m);
   assert.match(texte, /pulse-aidd pile reference fiche\.md/);

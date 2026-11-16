@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Affiche les règles de qualité du code ou la méthode de tests, en entier ou par morceaux (pulse-aidd qualite, pulse-aidd tests).
 //
-//   node scripts/charger-regles.js qualite [clean-code|organisation|composants|securite]… [--tout] [--checklists]
+//   node scripts/charger-regles.js qualite [clean-code|organisation|composants|experience|securite]… [--tout] [--checklists]
 //   node scripts/charger-regles.js tests [strategie|ecrire|unitaire|integration|bout-en-bout|tdd|gherkin]… [--tout] [--checklists]
 //
 // Avec des noms : seulement ces familles, dans l'ordre ci-dessus, après la règle de travail sobre (sans le sommaire). Sans nom :
@@ -27,6 +27,7 @@ const TYPES = {
       { nom: "clean-code", titre: "Clean code", fichier: "qualite/clean-code.md" },
       { nom: "organisation", titre: "Organisation des fichiers et nommage", fichier: "qualite/organisation.md" },
       { nom: "composants", titre: "Composants d'interface", fichier: "qualite/composants.md" },
+      { nom: "experience", titre: "Expérience de l'interface", fichier: "qualite/experience.md" },
       { nom: "securite", titre: "Sécurité du code", fichier: "qualite/securite-code.md" },
     ],
   },

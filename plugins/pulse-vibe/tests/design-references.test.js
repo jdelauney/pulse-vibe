@@ -62,7 +62,7 @@ test("motifs d'écrans : neuf sections et renvoi aux formulaires", () => {
   const t = lire("motifs.md");
   for (const titre of ["## 1. Messages et retours", "## 2. Choisir dans une liste", "## 3. Panneaux et fenêtres", "## 4. Tableaux de données", "## 5. Indicateurs", "## 6. Navigation", "## 7. Page vitrine", "## 8. Graphiques", "## 9. Icônes, logo et images de partage"])
     assert.ok(t.includes(titre), titre);
-  assert.ok(t.includes("qualite/composants.md"));
+  assert.ok(t.includes("qualite/experience.md"));
   assert.ok(!t.includes("—"), "aucun tiret cadratin");
 });
 
@@ -81,9 +81,9 @@ test("revue motifs : pas de chevauchement, squelette selon le registre, renvois 
   const t = lire("motifs.md");
   assert.ok(t.includes("| 2 à 6 |") && t.includes("| 7 à 15 |"), "tranches 2 à 6 puis 7 à 15");
   assert.match(t, /en registre outil[^\n]*squelette/i);
-  for (const attendu of ["1 à 20 sur 134", "5 au plus", "quelques étapes", "Histogramme (", "Anneau (", "regles-ui.md` § 7", "composants.md` § 8"])
+  for (const attendu of ["1 à 20 sur 134", "5 au plus", "quelques étapes", "Histogramme (", "Anneau (", "regles-ui.md` § 7", "experience.md` § 6"])
     assert.ok(t.includes(attendu), attendu);
-  assert.ok(!t.includes("La touche Échap la ferme"), "le comportement de la modale reste dans composants.md");
+  assert.ok(!t.includes("La touche Échap la ferme"), "le comportement de la modale reste dans experience.md");
 });
 
 // --- Lot 3 : critique élargie ---

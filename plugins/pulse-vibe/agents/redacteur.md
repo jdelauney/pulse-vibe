@@ -1,6 +1,6 @@
 ---
 name: redacteur
-description: Écrire ou réécrire le texte d'une page (docs/textes/<page>.md) dans la voix de docs/voix.md, jusqu'à ce que le contrôle des tics d'écriture IA passe (commandes Pulse).
+description: Écrire ou réécrire le texte d'une page dans la voix de docs/voix.md, jusqu'à ce que le contrôle des tics d'écriture IA passe (commandes Pulse).
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 ---

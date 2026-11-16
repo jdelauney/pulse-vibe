@@ -1,6 +1,6 @@
 ---
 name: test-runner
-description: Lancer les tests automatiques, trier chaque échec selon sa cause et juger la qualité des tests, sans modifier les fichiers ; rend les corrections à faire (commandes Pulse).
+description: Lancer les tests, trier chaque échec selon sa cause et juger la qualité des tests, en lecture seule ; rend les corrections à faire (commandes Pulse).
 disallowedTools: Write, Edit, NotebookEdit, Agent, MultiEdit, EnterWorktree, ExitWorktree
 model: haiku
 ---

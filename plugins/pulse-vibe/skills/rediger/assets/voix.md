@@ -1,6 +1,6 @@
 # Voix du site
 
-> Lue par /pulse:rediger avant chaque texte. Modifiable à tout moment.
+> Lue par /pulse:rediger avant chaque texte, et pour les textes de l'interface (`qualite/experience.md` § 8). Modifiable à tout moment.
 
 ## Adresse
 
@@ -18,6 +18,11 @@ Trois traits : {{trait 1}}, {{trait 2}}, {{trait 3}}
 ## Mots à employer
 
 {{mots du métier, tirés du glossaire}}
+
+## Mots de l'interface
+
+- Boutons : {{verbe + objet, ex. « Enregistrer la facture »}}
+- Un nom par chose, sur tous les écrans : {{ex. « facture », plutôt que « note » ou « document »}}
 
 ## Mots à éviter
 

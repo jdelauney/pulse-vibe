@@ -2202,7 +2202,7 @@ test("agents de la boucle : chacun charge seulement les règles utiles", () => {
   assert.match(implementer, /une commande par famille/);
   assert.match(implementer, /Lire chaque sortie en entier, sans la couper/);
   const choix = lire(RACINE, "references", "qualite", "README.md");
-  for (const famille of ["clean-code", "composants", "securite", "organisation"]) assert.match(choix, new RegExp(`\`${famille}\``), famille);
+  for (const famille of ["clean-code", "composants", "experience", "securite", "organisation"]) assert.match(choix, new RegExp(`\`${famille}\``), famille);
   assert.match(agent("reviewer"), /`pulse-aidd qualite clean-code --checklists`/);
   assert.match(agent("test-writer"), /`pulse-aidd tests ecrire gherkin/);
   assert.match(agent("test-runner"), /`pulse-aidd tests ecrire/);
@@ -2224,7 +2224,7 @@ test("règles de Pulse lues en entier : consigne dans travail-sobre.md, aucun ag
 // Garde les tâches de raccourcissement des familles (2.3b et 2.3c du refactoring d'optimisation).
 test("qualite <famille> et tests <morceau> : chaque sortie fait moins de 30 000 caractères", () => {
   const { spawnSync } = require("child_process");
-  const sorties = [["qualite", ["clean-code", "organisation", "composants", "securite"]], ["tests", ["strategie", "ecrire", "unitaire", "integration", "bout-en-bout", "tdd", "gherkin"]]];
+  const sorties = [["qualite", ["clean-code", "organisation", "composants", "experience", "securite"]], ["tests", ["strategie", "ecrire", "unitaire", "integration", "bout-en-bout", "tdd", "gherkin"]]];
   for (const [type, noms] of sorties) {
     for (const nom of noms) {
       const r = spawnSync("bash", ["bin/pulse-aidd", type, nom], { cwd: RACINE, encoding: "utf8" });
@@ -2570,4 +2570,29 @@ test("reports des phases 6 à 8 : marqueurs de pile, notes du pack, US d'une dem
   assert.match(envoi, /Envoi refusé \(le dépôt distant a des changements plus récents\) : Conventions Git § 4 \(absentes de la conversation : `pulse-aidd reference git\.md`\)\./);
   for (const skill of ["annuler", "implement", "refine"]) assert.ok(motifsBash(path.join(RACINE, "skills", skill, "SKILL.md")).some((m) => couvre(m, "pulse-aidd reference git.md")), `${skill} : reference git.md autorisé`);
   assert.match(envoi.split("## 3. Fin du plan")[1], /3\. Après la fusion :[^\n]*pour publier et vérifier la version en ligne : `\/pulse:deploy`\./);
+});
+
+// pulse 0.60 : l'expérience de l'interface, famille de qualité chargée à l'implémentation, relue une fois en fin de réalisation.
+test("expérience de l'interface : famille chargée pour une tâche d'interface, relue une seule fois en fin de réalisation par ux-reviewer", () => {
+  const exp = lire(RACINE, "references", "qualite", "experience.md");
+  for (const attendu of ["## 1. Les états de chaque vue", "| Partiel |", "## 2. Messages d'erreur", "300 ms", "**Mise à jour optimiste**", "## 4. Annuler plutôt que confirmer", "premier champ en erreur", "**Échap**", "`Intl`", "`docs/voix.md`", "vouvoiement", "`/pulse:ui`"])
+    assert.ok(exp.includes(attendu), attendu);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /`pulse-aidd qualite experience` si la tâche touche l'interface/);
+  const agent = lire(RACINE, "agents", "ux-reviewer.md");
+  assert.match(agent, /^tools: Read, Grep, Glob, Bash$/m);
+  assert.match(agent, /^model: opus$/m);
+  for (const attendu of ["`pulse-aidd qualite experience`", "✅ Rien à signaler", "quand ça rate", "quand c'est vide", "quand c'est lent", "`pulse-aidd pile reference fiche.md`"])
+    assert.ok(agent.includes(attendu), `ux-reviewer : ${attendu}`);
+  const fin = lire(RACINE, "references", "audit-fin.md");
+  for (const attendu of ["## 2 bis. Lancer la relecture de l'expérience", "**`pulse:ux-reviewer`**", "`pulse-aidd agent ux-reviewer`", "experience-<AAAA-MM-JJ>.md", "« relecture de l'expérience de fin", "`fix(experience): …`", "À vérifier à la main"])
+    assert.ok(fin.includes(attendu), `audit-fin.md : ${attendu}`);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "examen-us.md"), /`pulse:ux-reviewer`/);
+  assert.match(lire(RACINE, "skills", "spirc", "references", "serie.md"), /relecture de l'expérience de chaque US/);
+  assert.match(lire(RACINE, "skills", "spirc", "SKILL.md"), /`pulse:ux-reviewer`/);
+  // Une seule fois par US : ni l'examen d'une tâche, ni le reviewer ne relisent l'expérience.
+  assert.doesNotMatch(lire(RACINE, "references", "examen.md"), /ux-reviewer/);
+  assert.doesNotMatch(lire(RACINE, "agents", "reviewer.md"), /qualite experience/);
+  // Le pack donne l'outil de chaque règle.
+  const fiche = fs.readFileSync(path.join(RACINE, "..", "pulse-vibe-next", "references", "fiche.md"), "utf8");
+  for (const attendu of ["revalidateLogic", "onSubmitInvalid", "useOptimistic", "`experience` § 1"]) assert.ok(fiche.includes(attendu), `fiche du pack : ${attendu}`);
 });
