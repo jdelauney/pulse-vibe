@@ -255,3 +255,16 @@ test("l'aide de pulse-aidd montre --tout pour qualite et tests", () => {
   assert.ok(aide.includes("#   pulse-aidd qualite <famille…> [--tout] [--checklists]"));
   assert.ok(aide.includes("#   pulse-aidd tests <morceau…> [--tout] [--checklists]"));
 });
+
+test("--checklists-de-l-entree : les sections de contrôle d'une référence reçue (pulse-aidd pile reference <f> --checklists)", () => {
+  const { spawnSync } = require("child_process");
+  const script = path.join(__dirname, "..", "scripts", "charger-regles.js");
+  const texte = "# Réf\n\n## 1. Règle\n\nDétail long.\n\n## 2. Checklist (implémentation)\n\n- [ ] Un point.\n";
+  const r = spawnSync(process.execPath, [script, "--checklists-de-l-entree"], { input: texte, encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^## 2\. Checklist/);
+  assert.ok(!r.stdout.includes("Détail long."));
+  const sans = spawnSync(process.execPath, [script, "--checklists-de-l-entree"], { input: "# Réf\n\n## 1. Règle\n", encoding: "utf8" });
+  assert.strictEqual(sans.status, 1);
+  assert.match(sans.stdout, /la lire en entier/);
+});

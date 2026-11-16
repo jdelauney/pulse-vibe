@@ -2579,7 +2579,7 @@ test("expérience de l'interface : famille chargée pour une tâche d'interface,
   const exp = lire(RACINE, "references", "qualite", "experience.md");
   for (const attendu of ["## 1. Les états de chaque vue", "| Partiel |", "## 2. Messages d'erreur", "300 ms", "**Mise à jour optimiste**", "## 4. Annuler plutôt que confirmer", "premier champ en erreur", "**Échap**", "`Intl`", "`docs/voix.md`", "vouvoiement", "`/pulse:ui`"])
     assert.ok(exp.includes(attendu), attendu);
-  assert.match(lire(RACINE, "agents", "implementer.md"), /`pulse-aidd qualite experience` si la tâche touche l'interface/);
+  assert.match(lire(RACINE, "agents", "implementer.md"), /`pulse-aidd qualite experience --checklists` si la tâche touche l'interface/);
   const agent = lire(RACINE, "agents", "ux-reviewer.md");
   assert.match(agent, /^tools: Read, Grep, Glob, Bash$/m);
   assert.match(agent, /^model: opus$/m);

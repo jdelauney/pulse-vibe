@@ -117,6 +117,21 @@ function principal(argv) {
   return 0;
 }
 
-if (require.main === module) process.exitCode = principal(process.argv.slice(2));
+/** --checklists-de-l-entree : les sections de contrôle du texte reçu sur l'entrée (une référence d'un pack de pile). */
+function checklistsDeLEntree() {
+  const texte = fs.readFileSync(0, "utf8");
+  const sections = checklist(texte);
+  if (!sections) {
+    process.stdout.write("Aucune section de contrôle (titre « ## … Checklist ») dans cette référence : la lire en entier.\n");
+    return 1;
+  }
+  process.stdout.write(sections);
+  return 0;
+}
+
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  process.exitCode = args[0] === "--checklists-de-l-entree" ? checklistsDeLEntree() : principal(args);
+}
 
 module.exports = { familles, checklist, composer };
