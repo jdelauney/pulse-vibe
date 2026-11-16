@@ -43,6 +43,7 @@ const CHAINES = [
   ["connexion", "fichiers"],
   ["connexion", "paiement"],
   ["connexion", "email"],
+  ["connexion", "email", "double-authentification"],
   ["connexion", "limite", "formulaire-public"],
   ["connexion", "langues"],
   ["connexion", "seo"],

@@ -12,7 +12,7 @@ const { spawnSync } = require("child_process");
 const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes qui créent une table : leur chaîne génère la migration.
-const AVEC_MIGRATION = ["connexion", "liste", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
+const AVEC_MIGRATION = ["connexion", "liste", "double-authentification", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";
 const { texteRecette } = require("../scripts/decouper-recette.js");
 

@@ -25,7 +25,8 @@ Next.js 16 (App Router, Cache Components, React Compiler), React 19, TypeScript,
 |---|---|
 | `connexion` | Inscription, connexion, déconnexion, page « mon compte » (better-auth), actions et pages réservées |
 | `liste` | Liste filtrée, triée et paginée (état dans l'adresse), états vide / chargement / erreur, formulaire de création |
-| `email` | Envoi d'e-mails (nodemailer, SMTP), Mailpit en local, vérification d'adresse et mot de passe oublié |
+| `email` | Envoi d'e-mails (nodemailer, SMTP), Mailpit en local, vérification d'adresse, mot de passe oublié, changement d'adresse, suppression du compte |
+| `double-authentification` | Code à 6 chiffres reçu par e-mail à chaque connexion, activé ou désactivé par chacun dans « Mon compte » |
 | `fichiers` | Dépôt de fichiers sur Cloudflare R2 par adresse signée, type et taille contrôlés |
 | `paiement` | Stripe Checkout en mode test, webhook vérifié |
 | `langues` | Plusieurs langues avec next-intl |
