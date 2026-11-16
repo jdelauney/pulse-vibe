@@ -81,7 +81,7 @@ test("planche : modèle commun rempli, hexadécimal et OKLCH affichés, sans ant
   for (const id of ["nuances", "roles", "typo", "espaces", "boutons", "champs", "messages"]) assert.ok(html.includes(`id="${id}"`), id);
   assert.ok(html.includes("<code>oklch(0.45 0.075 200)</code>") && /<code>#[0-9a-f]{6}<\/code>/.test(html));
   assert.ok(html.includes("btn-destructif est-actif") && html.includes('aria-invalid="true"') && html.includes('class="vide"'));
-  assert.ok(html.includes("fonts.googleapis.com/css2?family=Literata:wght@600;700&family=Figtree:wght@400;600;700"));
+  assert.ok(html.includes("fonts.bunny.net/css?family=literata:600,700|figtree:400,600,700&display=swap"));
   assert.deepStrictEqual(verifier(html), []);
 });
 
