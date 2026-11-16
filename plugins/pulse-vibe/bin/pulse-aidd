@@ -45,7 +45,8 @@
 #   pulse-aidd installer-hook        installe le contrôle des secrets avant chaque commit Git (.git/hooks/pre-commit)
 #   pulse-aidd piles                 liste les packs de pile installés (plugins qui fournissent pulse-pile-<id>)
 #   pulse-aidd pile                  indique le pack de pile déclaré par le projet (docs/technical.md) et s'il est installé
-#   pulse-aidd pile <sous-commande>  relaie vers l'outil du pack déclaré (ex. pulse-aidd pile recette connexion)
+#   pulse-aidd pile <sous-commande>  relaie vers l'outil du pack déclaré (ex. pulse-aidd pile recette connexion) ;
+#                                    pile reference <fichier> --checklists : les sections de contrôle seules de cette référence
 #   pulse-aidd sonder <adresse> [--texte "…"] [--entetes]  vérifie qu'un site en ligne répond (code 200, texte attendu) ; --entetes : les en-têtes servis
 #   pulse-aidd secrets [action]      les secrets du projet, sans jamais afficher une valeur (inventaire, preparer, generer, elaguer, verifier, envoyer, redeployer, historique, journal ; voir pulse-aidd secrets aide)
 #   pulse-aidd seo <adresse> [options]   audit de référencement du site servi (options : pulse-aidd seo) ; pulse-aidd seo robots <A|B|C|D> : robots.txt d'une politique IA
@@ -435,6 +436,11 @@ case "$1" in
     if [ "$1" = contexte ]; then
       [ -n "$(pack_declare)" ] || exit 0
       command -v "pulse-pile-$(pack_declare)" >/dev/null 2>&1 || { indication_pack_absent "$(pack_declare)"; exit 0; }
+    fi
+    if [ "$1" = reference ] && [ "${3:-}" = --checklists ]; then
+      # Comme pulse-aidd qualite <famille> --checklists : la référence du pack, réduite à ses sections de contrôle.
+      ( relais_pack reference "$2" ) | node "$RACINE/scripts/charger-regles.js" --checklists-de-l-entree
+      exit "${PIPESTATUS[1]}"
     fi
     relais_pack "$@" ;;
   sonder)

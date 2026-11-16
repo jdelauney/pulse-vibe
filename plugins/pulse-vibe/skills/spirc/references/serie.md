@@ -32,7 +32,7 @@ Pour chaque US prête, dans l'ordre : la boucle par tâche de `/pulse:spirc` en 
 - **Entre deux US**, et à toute reprise : relire `in-progress.md`, `pulse-aidd realisation` et les documents de l'US (spec, plan et `pulse-aidd revue`, `docs/technical.md`) plutôt que s'appuyer sur la conversation.
 - **Arrêt** avant toute tâche « Mettre en ligne… » : elle se fait au retour, avec l'accord de la personne.
 
-**Audit de sécurité, une seule fois** : quand plus aucune US ne peut avancer seule, avant le § 5, l'audit de sécurité de fin de toute la série (`pulse-aidd reference audit-fin.md`), sur tout ce que la série a construit, avec la relecture de la simplicité de chaque US et celle de l'expérience de chaque US qui a changé un écran ; ses tests du cambrioleur rejoignent la fiche de la dernière US testée, les gestes à vérifier de chaque US sa propre fiche.
+**Audit de sécurité, une seule fois** : quand plus aucune US ne peut avancer seule, avant le § 5, l'audit de sécurité de fin de toute la série (`pulse-aidd reference audit-fin.md`), sur tout ce que la série a construit, avec, en rythme complet, la relecture de la simplicité de chaque US et celle de l'expérience de chaque US qui a changé un écran ; ses tests du cambrioleur rejoignent la fiche de la dernière US testée, les gestes à vérifier de chaque US sa propre fiche.
 
 ## 4 bis. Deux US en même temps
 

@@ -190,7 +190,7 @@ Pour une question en attente :
 
 ### Audit de sécurité de fin
 
-La sécurité se contrôle **une seule fois**, quand toutes les tâches de la portée sont passées, avant le test groupé ou la « Fin » : lancer `pulse-aidd reference audit-fin.md` et l'appliquer (`pulse:security-auditor`, `pulse:simplicity-reviewer` et, pour chaque US qui a changé un écran, `pulse:ux-reviewer`, en parallèle ; rapports, corrections, fiche du cambrioleur et gestes à vérifier). En rythme rapide, il part en même temps que l'examen de l'US ; dans une série, une seule fois à la fin de toute la série.
+La sécurité se contrôle **une seule fois**, quand toutes les tâches de la portée sont passées, avant le test groupé ou la « Fin » : lancer `pulse-aidd reference audit-fin.md` et l'appliquer (`pulse:security-auditor` et, en rythme complet, `pulse:simplicity-reviewer` et, pour chaque US qui a changé un écran, `pulse:ux-reviewer`, en parallèle ; rapports, corrections, fiche du cambrioleur et gestes à vérifier). En rythme rapide, il part en même temps que l'examen de l'US ; dans une série, une seule fois à la fin de toute la série.
 
 ### Test groupé (mode autonome)
 
