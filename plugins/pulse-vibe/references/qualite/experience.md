@@ -49,7 +49,7 @@ Par défaut, chaque action demande « Êtes-vous sûr ? ». Ici, une action **r�
 
 Par défaut, la validation tombe d'un bloc à l'envoi, ou crie dès la première lettre tapée. Ici, parce que la personne a besoin d'un retour au bon moment, sans être interrompue :
 
-- **Quand valider** : à la sortie du champ ; puis, une fois une erreur affichée ou le formulaire envoyé une première fois, à chaque frappe, pour que l'erreur disparaisse dès que le champ est juste. Toujours aussi côté serveur, avec les mêmes règles (S5).
+- **Quand valider** : à la sortie du champ, et l'erreur s'affiche seulement pour un champ modifié puis quitté (jamais pendant la première saisie : le texte qui apparaît et disparaît fait bouger le bouton sous le pointeur) ; puis, une fois une erreur affichée ou le formulaire envoyé une première fois, à chaque frappe, pour que l'erreur disparaisse dès que le champ est juste. Toujours aussi côté serveur, avec les mêmes règles (S5).
 - **À l'envoi refusé** : le focus va au premier champ en erreur ; un long formulaire affiche en plus, en tête, la liste des erreurs, chacune reliée à son champ.
 - **Rien ne se perd** : saisie gardée après un refus du serveur, une coupure du réseau ou un retour en arrière dans le parcours.
 - **Bouton d'envoi actif** : au clic, le formulaire montre ce qui manque. Il devient inactif seulement pendant le traitement, ou avec la raison écrite à côté (« Acceptez les conditions pour continuer »), parce qu'un bouton grisé sans explication ressemble à une panne.

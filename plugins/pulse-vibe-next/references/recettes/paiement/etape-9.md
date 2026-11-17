@@ -149,13 +149,35 @@ export function formaterMontant(centimes: number): string {
 }
 ```
 
+Le container serveur de la page de paiement lit la session (chaque page de `app/(connecte)/` le fait, recette `connexion`), puis rend le bouton.
+
+<!-- fichier: src/features/paiement/components/containers/offre-paiement.container.tsx -->
+```tsx
+// src/features/paiement/components/containers/offre-paiement.container.tsx
+import { utilisateurConnecte } from "@src/features/compte/queries/utilisateur-connecte.query";
+import { formaterMontant } from "@src/lib/helpers/format/format";
+import { OFFRE } from "../../constants/offre";
+import { BoutonPayerContainer } from "./bouton-payer.container";
+
+export async function OffrePaiementContainer() {
+  await utilisateurConnecte();
+  return (
+    <BoutonPayerContainer
+      libelle={`Payer ${formaterMontant(OFFRE.montantCentimes)}`}
+    />
+  );
+}
+```
+
 <!-- fichier: app/(connecte)/paiement/page.tsx -->
 ```tsx
 // app/(connecte)/paiement/page.tsx
-import { BoutonPayerContainer } from "@src/features/paiement/components/containers/bouton-payer.container";
+import { Skeleton } from "@src/components/ui/skeleton";
+import { OffrePaiementContainer } from "@src/features/paiement/components/containers/offre-paiement.container";
 import { OFFRE } from "@src/features/paiement/constants/offre";
 import { formaterMontant } from "@src/lib/helpers/format/format";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Paiement" };
 
@@ -164,9 +186,9 @@ export default function PagePaiement() {
     <main className="mx-auto flex max-w-sm flex-col gap-6 p-6">
       <h1 className="text-2xl font-semibold">{OFFRE.libelle}</h1>
       <p>Prix : {formaterMontant(OFFRE.montantCentimes)}, paiement unique.</p>
-      <BoutonPayerContainer
-        libelle={`Payer ${formaterMontant(OFFRE.montantCentimes)}`}
-      />
+      <Suspense fallback={<Skeleton className="h-11 w-full" />}>
+        <OffrePaiementContainer />
+      </Suspense>
     </main>
   );
 }

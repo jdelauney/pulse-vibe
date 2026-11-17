@@ -195,6 +195,22 @@ test("fichiers : une tâche au titre descriptif et à la ligne « Recette : <nom
   assert.ok(!c.some((l) => /^avertissement · T1 · \d+ fichiers/.test(l)), c.join("\n"));
 });
 
+test("fichiers : une tâche « Entité : » (générateur d'un pack) garde son découpage, par son titre ou par sa ligne", () => {
+  const huit = Array.from({ length: 8 }, (_, i) => `\`src/e${i}.ts\``).join(", ");
+  const parLigne = `${TACHE("T2", { titre: "Gérer les clients", depend: "T1", verification: "US-002 critère 2", fichiers: `à créer : ${huit}` })}  - Entité : client\n`;
+  const racine = projet({
+    [planFichier]: PLAN([
+      TACHE("T1", { titre: "Entité : facture", verification: "US-002 critère 1", fichiers: `à créer : ${huit}` }),
+      parLigne,
+      TACHE("T3", { titre: "Voir le détail", depend: "T2", verification: "US-002 critère 1", fichiers: `à créer : ${huit}` }),
+      MISE_EN_LIGNE,
+    ]),
+  });
+  const c = constats(racine);
+  assert.ok(!c.some((l) => /^avertissement · T[12] · \d+ fichiers/.test(l)), c.join("\n"));
+  assert.ok(c.some((l) => /^avertissement · T3 · 8 fichiers/.test(l)), c.join("\n"));
+});
+
 test("un fichier à modifier créé par une autre tâche, dans ce plan ou un autre, ne déclenche rien", () => {
   const racine = projet({
     [planFichier]: PLAN([TACHE("T1"), TACHE("T2", { depend: "T1", fichiers: "à modifier : `src/liste.js`", verification: "US-002 critère 2", tests: "aucun" }), MISE_EN_LIGNE]),

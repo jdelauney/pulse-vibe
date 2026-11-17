@@ -54,7 +54,7 @@ export const actionPublique = createSafeActionClient({
   return resultat;
 });
 
-/** Action réservée aux personnes connectées : fournit ctx.utilisateur = { id, nom }. */
+/** Action réservée aux personnes connectées : fournit ctx.utilisateur = { id, nom, email }. */
 export const actionConnectee = actionPublique.use(async ({ next }) => {
   const enTetes = await enTetesDeSession();
   const session = await getAuth().api.getSession({ headers: enTetes });
@@ -62,7 +62,13 @@ export const actionConnectee = actionPublique.use(async ({ next }) => {
     returnServerError("Connexion requise");
   }
   return next({
-    ctx: { utilisateur: { id: session.user.id, nom: session.user.name } },
+    ctx: {
+      utilisateur: {
+        id: session.user.id,
+        nom: session.user.name,
+        email: session.user.email,
+      },
+    },
   });
 });
 ```

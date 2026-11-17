@@ -35,7 +35,18 @@ export const schemaChoixMotDePasse = champsNouveauMotDePasse
   .extend({ token: z.string().min(1).max(200) })
   .refine(memesMotsDePasse.verifier, memesMotsDePasse.erreur);
 
+/** Formulaire « Changer d'adresse e-mail ». */
+export const schemaChangementAdresse = z.object({
+  email: z.email("Adresse e-mail invalide.").max(254),
+});
+
+/** Action « Supprimer définitivement » : le jeton du lien reçu par e-mail. */
+export const schemaConfirmationSuppression = z.object({
+  token: z.string().min(1).max(200),
+});
+
 export type MotDePasseOublie = z.infer<typeof schemaMotDePasseOublie>;
 export type NouveauMotDePasse = z.infer<typeof schemaNouveauMotDePasse>;
+export type ChangementAdresse = z.infer<typeof schemaChangementAdresse>;
 ```
 

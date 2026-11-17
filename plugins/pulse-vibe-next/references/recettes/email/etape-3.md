@@ -39,13 +39,19 @@ export class EmailsCompte {
     };
   }
 
-  verificationAdresse({ nom, url }: { nom: string; url: string }): ContenuEmail {
+  verificationAdresse({
+    nom,
+    url,
+  }: {
+    nom: string;
+    url: string;
+  }): ContenuEmail {
     return this.composer(
       "Confirmez votre adresse e-mail",
       [
         `Bonjour ${nom},`,
-        "Cliquez sur le lien ci-dessous pour confirmer votre adresse. Le lien reste valable 24 heures.",
-        "Si vous n'avez pas créé de compte, ignorez cet e-mail.",
+        "Cliquez sur le lien ci-dessous pour confirmer votre adresse. Le lien reste valable 1 heure.",
+        "Si vous n'avez rien demandé, ignorez cet e-mail.",
       ],
       { libelle: "Confirmer mon adresse", url },
     );
@@ -60,6 +66,32 @@ export class EmailsCompte {
         "Si vous n'avez rien demandé, ignorez cet e-mail : votre mot de passe reste le même.",
       ],
       { libelle: "Choisir un nouveau mot de passe", url },
+    );
+  }
+
+  alerteChangementAdresse({ nom }: { nom: string }): ContenuEmail {
+    return this.composer("Changement de votre adresse e-mail", [
+      `Bonjour ${nom},`,
+      "Une demande de changement de l'adresse e-mail de votre compte vient d'être faite. Le changement se fera seulement si quelqu'un ouvre le lien envoyé à la nouvelle adresse.",
+      "Si c'est vous, il n'y a rien à faire ici. Sinon, connectez-vous et changez votre mot de passe tout de suite.",
+    ]);
+  }
+
+  confirmationSuppression({
+    nom,
+    url,
+  }: {
+    nom: string;
+    url: string;
+  }): ContenuEmail {
+    return this.composer(
+      "Confirmez la suppression de votre compte",
+      [
+        `Bonjour ${nom},`,
+        "Cliquez sur le lien ci-dessous pour supprimer votre compte et toutes vos données. Ouvrez-le dans le navigateur où vous êtes connecté. Le lien reste valable 1 heure.",
+        "Si vous n'avez rien demandé, ignorez cet e-mail : votre compte reste tel quel.",
+      ],
+      { libelle: "Supprimer mon compte", url },
     );
   }
 

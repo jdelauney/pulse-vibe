@@ -7,9 +7,11 @@ Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerA
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
 import { NodemailerEmailAdapter } from "@src/adapters/email/email.adapter";
+import { HibpMotDePasseAdapter } from "@src/adapters/hibp/hibp.adapter";
 import { env } from "@src/config/env";
 import type { EnvoyeurEmail } from "@src/core/compte/email.port";
 import { EmailsCompte } from "@src/core/compte/emails-compte.rules";
+import type { DetecteurMotsDePasseCompromis } from "@src/core/compte/mot-de-passe-compromis.port";
 import {
   account,
   session,
@@ -19,18 +21,55 @@ import {
 import { type Db, getDb } from "@src/db/db-client";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware, isAPIError } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { cookies, headers } from "next/headers";
 import { after } from "next/server";
+import { refuserMotDePasseCompromis } from "./mot-de-passe-compromis";
 
 type OptionsAuth = {
   secret: string;
   baseURL: string;
+  /** Application : `HibpMotDePasseAdapter`. Tests : une doublure, sans appel réseau. */
+  motsDePasse: DetecteurMotsDePasseCompromis;
   /** Application : `NodemailerEmailAdapter`. Tests : une doublure qui garde les messages. */
   envoyeur: EnvoyeurEmail;
   /** Application : l'e-mail part après la réponse. Tests : absent, l'envoi est attendu. */
   tacheDeFond?: (promesse: Promise<unknown>) => void;
 };
+
+/**
+ * Chemins HTTP de better-auth fermés (réponse 404) : toutes ses écritures. Le site écrit seulement par
+ * les actions validées de src/features/compte/actions/, qui appellent getAuth().api.
+ * Restent ouverts : /get-session (lecture de la session par auth-client.ts), /ok, /error, et les deux
+ * liens reçus par e-mail : /verify-email et /reset-password/<jeton>.
+ */
+const CHEMINS_FERMES = [
+  "/account-info",
+  "/change-email",
+  "/change-password",
+  "/delete-user",
+  "/delete-user/callback",
+  "/get-access-token",
+  "/link-social",
+  "/list-accounts",
+  "/list-sessions",
+  "/refresh-token",
+  "/request-password-reset",
+  "/reset-password",
+  "/revoke-other-sessions",
+  "/revoke-session",
+  "/revoke-sessions",
+  "/send-verification-email",
+  "/sign-in/email",
+  "/sign-in/social",
+  "/sign-out",
+  "/sign-up/email",
+  "/unlink-account",
+  "/update-session",
+  "/update-user",
+  "/verify-password",
+];
 
 /** Crée better-auth sur une base donnée : Neon dans l'application, PGlite dans les tests. */
 export function creerAuth(db: Db, options: OptionsAuth) {
@@ -68,8 +107,10 @@ export function creerAuth(db: Db, options: OptionsAuth) {
     emailVerification: {
       sendOnSignUp: true,
       sendOnSignIn: true,
-      autoSignInAfterVerification: true,
-      expiresIn: 60 * 60 * 24,
+      // Le lien confirme l'adresse sans ouvrir de session : la personne se connecte ensuite.
+      autoSignInAfterVerification: false,
+      expiresIn: 60 * 60,
+      // Sert aussi au changement d'adresse : le lien part vers la nouvelle adresse.
       sendVerificationEmail: async ({ user, url }) => {
         await options.envoyeur.envoyer({
           a: user.email,
@@ -77,16 +118,46 @@ export function creerAuth(db: Db, options: OptionsAuth) {
         });
       },
     },
-    // Ces écritures passent seulement par les actions validées de src/features/compte/actions/.
-    // Restent ouverts : /verify-email et /reset-password/<jeton>, les liens reçus par e-mail.
-    disabledPaths: [
-      "/sign-up/email",
-      "/sign-in/email",
-      "/change-password",
-      "/request-password-reset",
-      "/reset-password",
-      "/send-verification-email",
-    ],
+    user: {
+      // Nouvelle adresse confirmée par le lien qu'elle reçoit ; adresse déjà prise : même réponse, aucun e-mail.
+      changeEmail: { enabled: true },
+      deleteUser: {
+        enabled: true,
+        deleteTokenExpiresIn: 60 * 60,
+        // Le lien mène à la page de confirmation du site, qui appelle l'action confirmerSuppressionCompte.
+        sendDeleteAccountVerification: async ({ user, token }) => {
+          const url = `${options.baseURL}/compte/supprimer?token=${encodeURIComponent(token)}`;
+          await options.envoyeur.envoyer({
+            a: user.email,
+            ...emails.confirmationSuppression({ nom: user.name, url }),
+          });
+        },
+      },
+    },
+    hooks: {
+      // Inscription, changement, nouveau mot de passe : un mot de passe déjà paru dans une fuite est refusé.
+      before: createAuthMiddleware(async (ctx) => {
+        await refuserMotDePasseCompromis(ctx, options.motsDePasse);
+      }),
+      // Changement d'adresse demandé : l'ancienne adresse est prévenue, que la nouvelle soit libre ou déjà prise.
+      after: createAuthMiddleware(async (ctx) => {
+        const personne = ctx.context.session?.user;
+        if (
+          ctx.path !== "/change-email" ||
+          !personne ||
+          isAPIError(ctx.context.returned)
+        ) {
+          return;
+        }
+        await ctx.context.runInBackgroundOrAwait(
+          options.envoyeur.envoyer({
+            a: personne.email,
+            ...emails.alerteChangementAdresse({ nom: personne.name }),
+          }),
+        );
+      }),
+    },
+    disabledPaths: CHEMINS_FERMES,
     advanced: options.tacheDeFond
       ? { backgroundTasks: { handler: options.tacheDeFond } }
       : undefined,
@@ -106,6 +177,7 @@ export function getAuth(): Auth {
     instance = creerAuth(getDb(), {
       secret: env.BETTER_AUTH_SECRET,
       baseURL: env.BETTER_AUTH_URL,
+      motsDePasse: new HibpMotDePasseAdapter(),
       envoyeur: new NodemailerEmailAdapter({
         hote: env.SMTP_HOST,
         port: env.SMTP_PORT,
@@ -133,12 +205,13 @@ export async function enTetesDeSession(): Promise<Headers> {
 }
 ```
 
-Ce que changent ces options (noms vérifiés dans better-auth 1.7.7) :
+Ce que changent ces options (noms vérifiés dans le code de better-auth 1.7.25) :
 
 - `requireEmailVerification: true` : pas de session tant que l'adresse n'est pas confirmée ; la connexion lève l'erreur `EMAIL_NOT_VERIFIED`. Une inscription avec une adresse déjà prise reçoit la même réponse qu'une nouvelle (pas d'erreur « compte existant »), et `onExistingUserSignUp` prévient la propriétaire par e-mail.
-- `sendOnSignUp` : e-mail de confirmation à l'inscription. `sendOnSignIn` : nouvel e-mail si la personne se connecte sans avoir confirmé. `autoSignInAfterVerification` : le lien ouvre la session.
-- `expiresIn` (24 heures) et `resetPasswordTokenExpiresIn` (1 heure) : durée des liens, en secondes.
+- `sendOnSignUp` : e-mail de confirmation à l'inscription. `sendOnSignIn` : nouvel e-mail si la personne se connecte sans avoir confirmé. `autoSignInAfterVerification: false` : le lien confirme l'adresse sans ouvrir de session ; better-auth renvoie vers `/adresse-verifiee`, où la personne se connecte. Un lien volé ne donne donc pas accès au compte.
+- `expiresIn` et `resetPasswordTokenExpiresIn` (1 heure chacun) : durée des liens, en secondes.
 - `revokeSessionsOnPasswordReset` : un nouveau mot de passe ferme les sessions ouvertes ailleurs.
-- `disabledPaths` : les demandes de lien et le choix du mot de passe passent par les actions validées ; les deux liens reçus par e-mail (`/verify-email`, `/reset-password/<jeton>`) restent ouverts.
+- `user.changeEmail` : la nouvelle adresse reçoit le lien de confirmation (`sendVerificationEmail`) ; l'adresse ne change qu'au clic. Adresse déjà prise : better-auth répond pareil et n'envoie rien. Le crochet `hooks.after` prévient l'ancienne adresse dans les deux cas.
+- `user.deleteUser` : la demande envoie un lien (1 heure) vers `/compte/supprimer?token=…` ; la page demande une dernière confirmation, puis l'action supprime le compte. better-auth efface la ligne `user` ; la base efface avec elle sessions, comptes et chaque table métier qui référence `user.id` avec `onDelete: "cascade"`.
+- `disabledPaths` : toutes les écritures passent par les actions validées ; restent ouverts les deux liens reçus par e-mail (`/verify-email`, `/reset-password/<jeton>`).
 - `tacheDeFond` : dans l'application, better-auth confie l'envoi à `after()` de Next.js ; la réponse part sans attendre le serveur SMTP, et sa durée ne révèle pas si un compte existe. Dans les tests, l'option est absente : l'envoi est attendu.
-

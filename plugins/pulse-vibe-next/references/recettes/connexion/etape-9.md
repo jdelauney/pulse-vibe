@@ -15,7 +15,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import Link from "next/link";
 import { useId } from "react";
 import {
@@ -70,6 +70,11 @@ export function FormulaireInscription({
       await envoyer(value);
     },
   });
+  // Erreur d'un champ : affichée une fois le champ modifié puis quitté, ou après un premier envoi
+  // (jamais pendant la première saisie, où elle ferait bouger la page sous le pointeur).
+  const envois = useStore(form.store, (etat) => etat.submissionAttempts);
+  const montrerErreur = (meta: { isBlurred: boolean; isDirty: boolean }) =>
+    (meta.isBlurred && meta.isDirty) || envois > 0;
 
   return (
     <form
@@ -84,7 +89,7 @@ export function FormulaireInscription({
           <form.Field key={c.name} name={c.name}>
             {(field) => {
               const invalide =
-                field.state.meta.isTouched && !field.state.meta.isValid;
+                montrerErreur(field.state.meta) && !field.state.meta.isValid;
               return (
                 <Field data-invalid={invalide}>
                   <FieldLabel htmlFor={`${prefixe}-${field.name}`}>
@@ -140,7 +145,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import Link from "next/link";
 import { useId } from "react";
 import { type Connexion, schemaConnexion } from "../../schemas/compte.schema";
@@ -191,6 +196,11 @@ export function FormulaireConnexion({
       await envoyer(value);
     },
   });
+  // Erreur d'un champ : affichée une fois le champ modifié puis quitté, ou après un premier envoi
+  // (jamais pendant la première saisie, où elle ferait bouger la page sous le pointeur).
+  const envois = useStore(form.store, (etat) => etat.submissionAttempts);
+  const montrerErreur = (meta: { isBlurred: boolean; isDirty: boolean }) =>
+    (meta.isBlurred && meta.isDirty) || envois > 0;
 
   return (
     <form
@@ -205,7 +215,7 @@ export function FormulaireConnexion({
           <form.Field key={c.name} name={c.name}>
             {(field) => {
               const invalide =
-                field.state.meta.isTouched && !field.state.meta.isValid;
+                montrerErreur(field.state.meta) && !field.state.meta.isValid;
               return (
                 <Field data-invalid={invalide}>
                   <FieldLabel htmlFor={`${prefixe}-${field.name}`}>
@@ -262,7 +272,7 @@ import {
   FieldLabel,
 } from "@src/components/ui/field";
 import { Input } from "@src/components/ui/input";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useId } from "react";
 import {
   type ChangementMotDePasse,
@@ -325,6 +335,11 @@ export function FormulaireMotDePasse({
       }
     },
   });
+  // Erreur d'un champ : affichée une fois le champ modifié puis quitté, ou après un premier envoi
+  // (jamais pendant la première saisie, où elle ferait bouger la page sous le pointeur).
+  const envois = useStore(form.store, (etat) => etat.submissionAttempts);
+  const montrerErreur = (meta: { isBlurred: boolean; isDirty: boolean }) =>
+    (meta.isBlurred && meta.isDirty) || envois > 0;
 
   return (
     <form
@@ -339,7 +354,7 @@ export function FormulaireMotDePasse({
           <form.Field key={c.name} name={c.name}>
             {(field) => {
               const invalide =
-                field.state.meta.isTouched && !field.state.meta.isValid;
+                montrerErreur(field.state.meta) && !field.state.meta.isValid;
               return (
                 <Field data-invalid={invalide}>
                   <FieldLabel htmlFor={`${prefixe}-${field.name}`}>

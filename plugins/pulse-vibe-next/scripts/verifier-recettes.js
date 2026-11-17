@@ -43,6 +43,7 @@ const CHAINES = [
   ["connexion", "fichiers"],
   ["connexion", "paiement"],
   ["connexion", "email"],
+  ["connexion", "email", "double-authentification"],
   ["connexion", "limite", "formulaire-public"],
   ["connexion", "langues"],
   ["connexion", "seo"],
@@ -376,4 +377,4 @@ function principal() {
 
 if (require.main === module) principal();
 
-module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies };
+module.exports = { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, lancer, sansInterpreteur, CHAINES, chainesTouchees, fichiersModifies };
