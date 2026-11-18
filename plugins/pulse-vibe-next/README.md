@@ -50,7 +50,8 @@ references/                  fiche.md (règles de la pile), technical.md (valeur
                              entite.md (le générateur d'entité : format de la description, fichiers écrits, limites),
                              migrations.md (mettre à niveau un projet plus ancien), readme.md (section « Tester en local » du README du projet)
 templates/squelette/         le projet de départ
-scripts/                     squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi sur un port libre, mise à jour des versions ; un test instable fait échouer ; dossier temporaire retiré, sauf --garder),
+hooks/hooks.json             garde-fou du pack avant chaque écriture et chaque commande (scripts/garde.js)
+scripts/                     garde.js (garde-fou du pack : refuse de modifier, déplacer ou supprimer une migration de drizzle/ déjà enregistrée dans Git, dans un projet qui déclare ce pack ; lancé aussi par pulseia dans les autres outils), squelette.js (pose le squelette), verifier-squelette.js (vérification, référencement du squelette servi sur un port libre, mise à jour des versions ; un test instable fait échouer ; dossier temporaire retiré, sauf --garder),
                              seo-code.js (contrôles du code pour le référencement), police.js (police servie par le site, récupérée sur Bunny Fonts), sondes-secrets.js (règles, tests réels des secrets envoyés seulement aux serveurs reconnus, et variables déduites : « suites »),
                              secrets-vercel.js (adaptateur Vercel de pulse-aidd secrets),
                              decouper-recette.js (découpe une recette rédigée d'un seul tenant en index, étapes et tests ; vérifie la recomposition exacte),
