@@ -76,7 +76,7 @@ test("tech : carte d'option en mots simples ; niveau et hypothèses ; autorisati
   const carte = demarche.split("## Présenter une option")[1].split("\n## ")[0];
   for (const champ of ["Ce que vous obtenez", "Coût à 6 mois", "Convient si", "Moins adapté si", "Risque principal", "Changer plus tard"]) assert.ok(carte.includes(champ), champ);
   assert.strictEqual(jargon(carte), null, "carte d'option sans jargon");
-  assert.match(lire(RACINE, "skills", "tech", "assets", "technical.md"), /\| Changer plus tard \|/);
+  assert.match(demarche, /\| Changer plus tard \|/, "le tableau comparatif, montré sur demande, vit dans la démarche");
   assert.match(tech, /\*\*Niveau « Jamais programmé »\*\*[^\n]*« J'ai supposé … Dites-le si c'est différent\. »/);
   assert.ok(tech.indexOf("`pulse-aidd reference autorisations.md`") < tech.indexOf("Projet neuf : présenter la « Mise en place »"), "autorisations avant la mise en place");
 });

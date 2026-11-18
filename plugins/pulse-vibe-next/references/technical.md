@@ -4,17 +4,17 @@
 
 ## Pile retenue
 
-| Élément | Choix | Pourquoi (en une phrase) |
-|---|---|---|
-| Langage | TypeScript (strict) | Le code est vérifié avant de tourner : beaucoup d'erreurs sont signalées dès l'écriture. |
-| Framework | Next.js (App Router), React | Pages, logique serveur et mise en ligne dans un seul projet, très bien documenté. |
-| Interface | Tailwind CSS et shadcn/ui | Des composants accessibles, prêts à l'emploi, habillés par le thème du projet. |
-| Données | Neon (Postgres), région Francfort ; Drizzle ORM | Une vraie base de données, gratuite au démarrage, en Europe ; les tables sont décrites en TypeScript. |
-| Connexion des utilisateurs | better-auth (e-mail et mot de passe) | Une connexion éprouvée, dont les données restent dans votre base. |
-| Code serveur | Server Actions (next-safe-action, Zod) | Chaque écriture est validée et vérifiée côté serveur. |
-| Hébergement | Vercel, fonctions à Francfort (`fra1`) | Mise en ligne automatique à chaque envoi, proche de la base. |
-| Services externes | selon les recettes retenues (e-mail, fichiers, paiement…) | |
-| Tests automatiques | Vitest (unitaires et intégration, base PGlite en mémoire) ; Playwright (bout en bout) | Les scénarios de la spec deviennent des tests, sans toucher à la vraie base. |
+| Élément | Choix |
+|---|---|
+| Langage | TypeScript (strict) |
+| Framework | Next.js (App Router), React |
+| Interface | Tailwind CSS et shadcn/ui |
+| Données | Neon (Postgres), région Francfort ; Drizzle ORM |
+| Connexion des utilisateurs | better-auth (e-mail et mot de passe) |
+| Code serveur | Server Actions (next-safe-action, Zod) |
+| Hébergement | Vercel, fonctions à Francfort (`fra1`) |
+| Services externes | selon les recettes retenues (e-mail, fichiers, paiement…) |
+| Tests automatiques | Vitest (unitaires et intégration, base PGlite en mémoire) ; Playwright (bout en bout) |
 
 **Pack de pile Pulse** : next
 

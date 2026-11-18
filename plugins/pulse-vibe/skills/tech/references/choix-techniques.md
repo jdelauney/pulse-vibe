@@ -70,6 +70,12 @@ Risque principal    : …
 Changer plus tard   : facile | coûteux, parce que …
 ```
 
+Le tableau comparatif, sur demande :
+
+| Option | Pile | Hébergement | Coût / mois | Points forts | Risques | Changer plus tard | Verdict |
+|---|---|---|---|---|---|---|---|
+| **A** | | | | | | facile / coûteux | ✅ / ⚠️ / ❌ |
+
 ## Règles transverses, quelle que soit la technologie
 
 - **Secrets** : uniquement dans des variables d'environnement, jamais dans le code envoyé au client (navigateur, application installée) ni dans une variable exposée au client. Où les placer : en local dans un fichier d'environnement non versionné (listé dans `.gitignore`), en production dans les réglages de l'hébergeur. `.env.example` liste les noms, sans valeur.
@@ -94,4 +100,4 @@ Choix technique (règle commune « La personne décide ») : l'outil de test rec
 
 ## Ce que `/pulse:tech` écrit
 
-Le modèle `tech/technical.md` donne les sections ; « Ce qu'on a écarté » garde les options non retenues et leur raison.
+Le modèle `tech/technical.md` donne les sections : la pile retenue, sans les besoins ni les options comparées. Le choix, sa raison et les options écartées tiennent en une ligne datée dans « Décisions techniques » de `aidd_docs/memory/technical.md`.

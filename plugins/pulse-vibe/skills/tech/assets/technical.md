@@ -1,45 +1,23 @@
 # Choix techniques – {{NOM_DU_PROJET}}
 
-> Produit par `/pulse:tech` le {{DATE}}. Ce document explique **avec quoi** l'outil est construit, et **pourquoi**. C'est la source unique pour la spec, le plan et le code. Il reste lisible par une personne non technique.
+> Produit par `/pulse:tech` le {{DATE}}. Ce document dit **avec quoi** l'outil est construit : c'est la source unique pour la spec, le plan et le code. Il reste lisible par une personne non technique.
 
 ## En une phrase
 
 {{NOM_DU_PROJET}} est construit avec {{pile retenue, en mots simples}}, hébergé sur {{hébergeur}}, pour un coût mensuel estimé de {{montant}}.
 
-## Les besoins qui guident le choix
-
-| Question | Réponse | Ce que ça implique |
-|---|---|---|
-| Qui utilise l'outil, et combien de personnes dans 6 mois ? | | |
-| Les données sont-elles partagées entre plusieurs personnes ? | | |
-| Faut-il des comptes (connexion) ? Des rôles (admin) ? | | |
-| Données personnelles ou sensibles ? (loi applicable) | | |
-| Services externes (email, paiement, carte, IA…) | | |
-| Plateforme (ordinateur, téléphone, hors ligne) | | |
-| Visibilité sur les moteurs de recherche importante ? | | |
-| Budget mensuel pour les services | | |
-| Expérience technique de la personne ou de l'équipe | | |
-| Contraintes (localisation des données, outil imposé, exclusion) | | |
-
-## Les options comparées
-
-| Option | Pile | Hébergement | Coût / mois | Points forts | Risques | Changer plus tard | Verdict |
-|---|---|---|---|---|---|---|---|
-| **A** | | | | | | facile / coûteux | ✅ / ⚠️ / ❌ |
-| **B** | | | | | | facile / coûteux | ✅ / ⚠️ / ❌ |
-
 ## Pile retenue
 
-| Élément | Choix | Version | Pourquoi (en une phrase) |
-|---|---|---|---|
-| Langage(s) | | | |
-| Framework (ou aucun) | | | |
-| Données (stockage) | | | |
-| Connexion des utilisateurs (ou aucune) | | | |
-| Code serveur (ou aucun) | | | |
-| Hébergement | | | |
-| Services externes | | | |
-| Tests automatiques | {{outil unitaire et intégration ; bout en bout : outil ou « aucun »}} | | |
+| Élément | Choix | Version |
+|---|---|---|
+| Langage(s) | | |
+| Framework (ou aucun) | | |
+| Données (stockage) | | |
+| Connexion des utilisateurs (ou aucune) | | |
+| Code serveur (ou aucun) | | |
+| Hébergement | | |
+| Services externes | | |
+| Tests automatiques | {{outil unitaire et intégration ; bout en bout : outil ou « aucun »}} | |
 
 <!-- Seulement si la pile retenue est celle d'un pack de pile Pulse (pulse-aidd piles) ; sinon supprimer la ligne suivante, avec ce commentaire. -->
 **Pack de pile Pulse** : {{id du pack, ex. next}}
@@ -121,7 +99,3 @@ Ce qu'il faut créer ou installer avant la première tâche (comptes, squelette 
 Sans pack de pile : le squelette s'initialise selon la documentation officielle, versions fixées ; si l'outil refuse un dossier non vide ou risque d'écraser un fichier, il s'initialise dans un dossier temporaire, puis ses fichiers sont rapatriés en gardant `CLAUDE.md`, `README.md` et `.gitignore` (ce qu'ils apportent d'utile y est fusionné), et le dossier temporaire est supprimé.
 
 1. {{étape}}
-
-## Ce qu'on a écarté
-
-- {{option}} : {{pourquoi}}

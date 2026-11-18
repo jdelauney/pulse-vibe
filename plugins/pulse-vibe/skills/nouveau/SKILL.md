@@ -92,11 +92,11 @@ Demander (AskUserQuestion) : « Valider (Recommandé) » / « Modifier quelque c
 Avec les modèles (en fin de fichier), en appliquant « Qui a décidé quoi » (`raisonnement.md` § 5) :
 
 - `docs/brief.md` (blocs 1 et 2) et `aidd_docs/memory/glossary.md` (les mots du métier employés par la personne) ;
-- `docs/prd.md` : objectifs, utilisateurs, MVP en MoSCoW, contraintes (bloc 4), questions ouvertes ;
+- `docs/prd.md` : objectifs, utilisateurs, MVP en MoSCoW, contraintes (bloc 4), risques ;
 - `docs/user-stories.md` (référentiel ; au moment de l'écrire, lancer `pulse-aidd modele user-stories.md`) et un fichier `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` par US ; si la mémoire projet indique un outil de ticketing, les tickets aussi (« Ticketing » des règles des user stories) ;
 - les réponses du bloc 3 dans la section « Décisions prises » du brief, sur une ligne « Apparence souhaitée : <3 mots> ; références : … », pour l'étape 6.
 
-Les lignes « À confirmer » vont dans « Hypothèses à vérifier » du brief et du PRD. Lancer `pulse-aidd verifier-brief` : chaque constat se dit en une phrase, avec sa conséquence ; puis, s'il y en a, demander (AskUserQuestion) « Compléter maintenant (Recommandé) » / « Continuer, on verra plus tard ». Continuer : noter ces points dans les « Questions ouvertes » du brief.
+Les lignes « À confirmer » vont dans « Hypothèses à vérifier » du brief. Lancer `pulse-aidd verifier-brief` : chaque constat se dit en une phrase, avec sa conséquence ; puis, s'il y en a, demander (AskUserQuestion) « Compléter maintenant (Recommandé) » / « Continuer, on verra plus tard ». Continuer : noter ces points dans les « Questions ouvertes » du brief.
 
 Dans le bloc `pulse_profil` de `CLAUDE.md`, écrire « - **Rythme** : rapide » (ajouter la ligne si elle manque), et le dire en une phrase : « J'ai réglé la réalisation sur le rythme rapide : l'essentiel des tests, et un seul test complet par vous à la fin de chaque user story. Dites « rythme complet » si vous voulez tout le détail. »
 
@@ -108,7 +108,7 @@ Annoncer : « Maintenant, l'apparence : vous allez en voir deux et choisir. » L
 
 ### 7. Les outils (choix techniques)
 
-Annoncer : « Dernière étape : les outils. » Lancer `pulse-aidd etape tech --sans-communes` et appliquer sa section « Processus » à l'identique, hors son bloc de fin de commande. Les besoins de l'étape 3 remplissent d'office le tableau « Les besoins qui guident le choix » : poser seulement les questions restantes.
+Annoncer : « Dernière étape : les outils. » Lancer `pulse-aidd etape tech --sans-communes` et appliquer sa section « Processus » à l'identique, hors son bloc de fin de commande. Les besoins de l'étape 3 répondent d'office aux questions de la démarche : poser seulement les questions restantes.
 
 ### Fin
 

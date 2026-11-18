@@ -1881,7 +1881,7 @@ test("tech : démarche de choix et organisation chargées à l'étape qui les se
   assert.match(tech, /Appliquer les étapes de « Mise en place » de `docs\/technical\.md`/);
   assert.doesNotMatch(tech, /dossier temporaire/);
   // Pile : docs/technical.md et le bloc « Stack technique » ; la mémoire technique garde les décisions datées.
-  assert.match(tech, /une ligne datée par décision dans « Décisions techniques »\. La pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
+  assert.match(tech, /une ligne datée par décision dans « Décisions techniques » \([^)]*\)\. La pile reste dans `docs\/technical\.md` et le bloc « Stack technique »/);
   assert.doesNotMatch(tech, /résumé de la pile retenue/);
   assert.doesNotMatch(tech, /Pulse 0\.3/);
   assert.match(tech, /Prochaine étape : projet existant : `\/pulse:memory creer`/);
@@ -2154,6 +2154,24 @@ test("règles contrôlées : décrites une fois, citées par la mémoire et le m
   assert.match(lire(RACINE, "templates", "verifier.js"), /function controlerRegles\(/);
 });
 
+test("documents produits sans bruit : technical.md dit la pile retenue, hypothèses et questions ouvertes seulement dans le brief", () => {
+  // Les besoins, les options comparées et les raisons du choix restent dans la conversation et dans « Décisions techniques ».
+  const technical = lire(RACINE, "skills", "tech", "assets", "technical.md");
+  for (const titre of ["## Les besoins qui guident le choix", "## Les options comparées", "## Ce qu'on a écarté"]) {
+    assert.ok(!technical.includes(titre), `technical.md : ${titre} retiré`);
+  }
+  assert.doesNotMatch(technical, /Pourquoi/);
+  assert.doesNotMatch(lire(DEPOT, "plugins", "pulse-vibe-next", "references", "technical.md"), /Pourquoi/);
+  assert.match(lire(RACINE, "skills", "tech", "SKILL.md"), /une ligne datée par décision dans « Décisions techniques » \(le choix et sa raison/);
+  // Un fait, un seul endroit : le brief garde les hypothèses et les questions ouvertes, le PRD y renvoie.
+  const brief = lire(RACINE, "templates", "brief.md");
+  const prd = lire(RACINE, "templates", "prd.md");
+  assert.match(brief, /^## Hypothèses à vérifier$/m);
+  assert.match(brief, /^## Questions ouvertes$/m);
+  assert.doesNotMatch(prd, /^## .*(Hypothèses|questions ouvertes)/im);
+  assert.match(prd, /Les hypothèses à vérifier et les questions ouvertes sont dans `docs\/brief\.md`\./);
+});
+
 test("décision 5 : projet existant, tech puis memory creer ; la pile écrite seulement dans docs/technical.md et « Stack technique »", () => {
   const memory = lire(RACINE, "skills", "memory", "SKILL.md");
   assert.match(memory, /code sans `docs\/technical\.md`[^\n]*taper `\/pulse:tech`/, "memory creer : tech avant les conventions");
@@ -2162,8 +2180,8 @@ test("décision 5 : projet existant, tech puis memory creer ; la pile écrite se
   // creer qui ne trouve aucune convention le note, pour que pulse-aidd etat passe à la suite (R8d ne revient pas).
   assert.match(memory, /`- Aucune convention propre relevée \(AAAA-MM-JJ\)\.`/);
   // R8d lit le repère que tech écrit pour un projet existant (pulse-aidd etat, fait pileObservee).
-  assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée, pas de comparaison »"));
-  // Changement de pile décidé : le repère reste, la comparaison suit (R8d toujours proposé).
+  assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée »"));
+  // Changement de pile décidé : le repère reste (R8d toujours proposé).
   assert.ok(lire(RACINE, "skills", "tech", "SKILL.md").includes("« Projet existant : pile observée, changement décidé »"));
   assert.ok(lire(RACINE, "scripts", "etat.js").includes("Projet existant : pile observée"));
   assert.match(memory, /les fichiers créés, et ceux encore au modèle/, "creer remplit aussi les fichiers restés au modèle");

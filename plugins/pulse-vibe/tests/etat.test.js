@@ -439,7 +439,7 @@ test("projet existant : du code sans brief ni choix techniques, documenter l'exi
 
 test("projet existant après tech : noter les conventions propres au code (R8d), puis la suite normale", () => {
   const MEMOIRE_VIDE = "# Mémoire technique\n\n## Conventions propres au projet\n\n<!-- Une ligne par convention. -->\n\n## Pièges et leçons\n\n- Un piège déjà noté.\n";
-  const OBSERVEE = "## Les options comparées\n\nProjet existant : pile observée, pas de comparaison.\n";
+  const OBSERVEE = "## Pile retenue\n\nProjet existant : pile observée\n";
   const existant = (fichiers) => etat(projet({ "package.json": "{}", "docs/technical.md": OBSERVEE, ...fichiers }, PILE_CHOISIE));
   const r = existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE });
   assert.deepStrictEqual([r.regle, r.prochaine], ["R8d", "/pulse:memory creer"]);
@@ -450,10 +450,10 @@ test("projet existant après tech : noter les conventions propres au code (R8d),
   assert.strictEqual(existant({ "aidd_docs/memory/technical.md": remplie }).regle, "R10", "conventions notées : le périmètre ensuite");
   assert.strictEqual(existant({ "aidd_docs/memory/technical.md": MEMOIRE_VIDE, "docs/brief.md": "x" }).regle, "R10", "avec un brief, la suite normale");
   assert.strictEqual(etat(projet({ "docs/technical.md": "x", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }, PILE_CHOISIE)).regle, "R10", "sans code, rien à observer");
-  // Projet neuf : tech a comparé des options puis posé le squelette (du code), sans brief : le périmètre d'abord.
-  assert.strictEqual(existant({ "docs/technical.md": "## Les options comparées\n\n| Option | Coût |\n", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R10", "projet neuf : pas de R8d");
-  // Projet existant dont la pile change (comparaison faite) : tech garde le repère, R8d reste proposé.
-  const change = "## Les options comparées\n\nProjet existant : pile observée, changement décidé.\n\n| Option | Coût |\n";
+  // Projet neuf : tech a choisi une pile puis posé le squelette (du code), sans brief : le périmètre d'abord.
+  assert.strictEqual(existant({ "docs/technical.md": "## Pile retenue\n\n| Élément | Choix | Version |\n", "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R10", "projet neuf : pas de R8d");
+  // Projet existant dont la pile change : tech garde le repère, R8d reste proposé.
+  const change = "## Pile retenue\n\nProjet existant : pile observée, changement décidé\n\n| Élément | Choix | Version |\n";
   assert.strictEqual(existant({ "docs/technical.md": change, "aidd_docs/memory/technical.md": MEMOIRE_VIDE }).regle, "R8d", "changement décidé : R8d");
   // creer sans convention à noter l'écrit : R8d ne revient pas.
   const aucune = MEMOIRE_VIDE.replace("<!-- Une ligne par convention. -->", "- Aucune convention propre relevée (2026-10-25).");

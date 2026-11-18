@@ -81,13 +81,13 @@ ecrire docs/technical.md <<'EOF'
 
 ## Pile retenue
 
-| Élément | Choix | Pourquoi (en une phrase) |
-|---|---|---|
-| Langage | TypeScript (strict) | Le code est vérifié avant de tourner. |
-| Framework | Next.js (App Router), React | Pages et logique serveur dans un seul projet. |
-| Interface | Tailwind CSS et shadcn/ui | Des composants accessibles, habillés par le thème. |
-| Données | aucune pour la première version | La liste d'exemple est écrite dans le code. |
-| Tests automatiques | Vitest | Les scénarios de la spec deviennent des tests. |
+| Élément | Choix |
+|---|---|
+| Langage | TypeScript (strict) |
+| Framework | Next.js (App Router), React |
+| Interface | Tailwind CSS et shadcn/ui |
+| Données | aucune pour la première version |
+| Tests automatiques | Vitest |
 
 **Pack de pile Pulse** : next
 
