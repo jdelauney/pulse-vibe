@@ -824,3 +824,11 @@ test("pulse-aidd etat : « realisation: perimee » quand le marqueur n'a pas bou
   assert.strictEqual(etat(projet({ ...base, "aidd_docs/tasks/realisation.json": marqueur(1) }, PILE_CHOISIE)).realisation, undefined);
   assert.strictEqual(etat(projet(base, PILE_CHOISIE)).realisation, undefined);
 });
+
+test("site en ligne : essayer le retour arrière est conseillé tant qu'il n'a pas été essayé depuis moins de 6 mois", () => {
+  const conseil = (technique) => etat(projet({ "docs/technical.md": technique }, { site: "https://exemple.fr" })).aussi.some((a) => a.startsWith("/pulse:deploy production — essayer une fois le retour arrière"));
+  assert.ok(conseil("# Technique\n\n## Retour arrière\n\n- Répété le : jamais\n"), "jamais essayé");
+  assert.ok(conseil("# Technique\n\n## Retour arrière\n\n- **Répété le** : 2026-01-02\n"), "essayé il y a plus de 6 mois");
+  assert.ok(!conseil("# Technique\n\n## Retour arrière\n\n- **Répété le** : 2026-09-30\n"), "essayé récemment");
+  assert.ok(!etat(projet({ "docs/technical.md": "# Technique\n" })).aussi.some((a) => a.includes("retour arrière")), "site pas encore en ligne");
+});
