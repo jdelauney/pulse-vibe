@@ -1,6 +1,6 @@
 # Mémoire technique
 
-La pile et ses règles générales sont dans la section « Stack technique » de `CLAUDE.md`, et leurs raisons dans `docs/technical.md`. Ce fichier garde seulement ce qui est **propre à ce projet** et invisible à la seule lecture du code.
+La pile et ses règles générales sont dans la section « Stack technique » de `CLAUDE.md` et dans `docs/technical.md` ; les raisons des choix, dans « Décisions techniques » ci-dessous. Ce fichier garde seulement ce qui est **propre à ce projet** et invisible à la seule lecture du code.
 
 ## Conventions propres au projet
 

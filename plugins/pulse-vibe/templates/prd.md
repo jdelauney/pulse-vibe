@@ -52,14 +52,10 @@ Ce que l'outil **ne fera pas**, pour que chacun en ait la même idée.
 
 - …
 
-## 8. Hypothèses à vérifier
+## 8. Risques
 
-Ce que nous croyons vrai sans l'avoir encore vérifié auprès de vrais utilisateurs.
+Les hypothèses à vérifier et les questions ouvertes sont dans `docs/brief.md`.
 
-- [ ] {{hypothèse}} – {{comment la vérifier simplement}}
-
-## 9. Risques et questions ouvertes
-
-| Risque ou question | Impact | Piste |
+| Risque | Impact | Piste |
 |---|---|---|
 | | | |

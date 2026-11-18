@@ -46,7 +46,7 @@ La conversation principale joue le rôle d'architecte technique et orchestre : e
 
 ### 1. Ce que l'on sait déjà
 
-Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/`, le bloc `pulse_profil` de `CLAUDE.md` (l'expérience technique) et le code s'il y en a. Remplir **soi-même** toutes les lignes du tableau « Les besoins qui guident le choix » que ces documents permettent de remplir. Réserver les questions aux lignes restantes.
+Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/`, le bloc `pulse_profil` de `CLAUDE.md` (l'expérience technique) et le code s'il y en a. Relever **soi-même** ce que ces documents disent déjà du besoin : utilisateurs et volume, partage des données, comptes et rôles, données sensibles, services externes, plateforme, référencement, budget, expérience, contraintes. Réserver les questions à ce qui manque.
 
 ### A. Projet existant : documenter la pile observée
 
@@ -54,7 +54,7 @@ Lire `docs/brief.md`, `docs/prd.md`, `aidd_docs/memory/`, le bloc `pulse_profil`
 2. **Commandes du projet** : relever celles que le projet déclare (installer, lancer en local, tester, contrôles automatiques : lint / format / types, construire, auditer les dépendances, déployer). Une commande absente s'écrit « aucune » ; noter uniquement les commandes déclarées.
 3. **Vérifier les points incertains** sur la documentation officielle des technologies observées (outil de documentation comme context7 s'il est disponible, sinon WebFetch) : version maintenue ou non, mécanisme de contrôle d'accès, gestion des secrets.
 4. **Présenter** la pile observée en 5 à 8 lignes, avec les manques constatés (pas de contrôle automatique, contrôle d'accès seulement dans le navigateur, secret dans le code…). Proposer un changement de technologie seulement si le besoin l'exige, en expliquant le coût (réécriture). Demander « C'est bien ça » / « Corriger quelque chose ».
-5. Passer à l'étape 6 (« Écrire ») : les tableaux « Les options comparées » et « Ce qu'on a écarté » indiquent « Projet existant : pile observée, pas de comparaison » ; si un changement a été décidé, ils présentent la comparaison, précédée de la ligne « Projet existant : pile observée, changement décidé ».
+5. Passer à l'étape 6 (« Écrire ») : sous le titre « Pile retenue », écrire la ligne « Projet existant : pile observée » (repère du suivi d'avancement) ; si un changement a été décidé : « Projet existant : pile observée, changement décidé ».
 
 ### B. Projet neuf : construire et comparer les options
 
@@ -62,7 +62,7 @@ Avant la première question : lancer `pulse-aidd reference tech/choix-techniques
 
 #### 2. Les questions qui restent (par rondes)
 
-Poser seulement les lignes manquantes du tableau des besoins (questions de la démarche), par rondes (règle commune 5). Elles portent sur le **besoin** ; les outils viendront à l'étape 3. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »).
+Poser seulement les questions de la démarche restées sans réponse à l'étape 1, par rondes (règle commune 5). Elles portent sur le **besoin** ; les outils viendront à l'étape 3. Une réponse floue (« beaucoup d'utilisateurs ») appelle une précision chiffrée (« une dizaine ? une centaine ? »).
 
 **Niveau « Jamais programmé »** : volume, plateforme et hors-ligne prennent la réponse la plus courante d'après le brief et le PRD (une centaine d'utilisateurs, téléphone et ordinateur, navigateur connecté), annoncée en une phrase : « J'ai supposé … Dites-le si c'est différent. » Poser le budget et les contraintes.
 
@@ -80,16 +80,16 @@ Construire **2 ou 3 options réellement différentes**, selon « Construire 2 à
 
 Avant de recommander quoi que ce soit, vérifier chaque option : lancer **en parallèle** un sous-agent `general-purpose` par option, avec `model: "sonnet"` (plusieurs appels Agent dans le même message), avec pour consigne de consulter la **documentation officielle** et les pages de tarifs (outil de documentation comme context7 s'il est disponible, sinon WebFetch ou recherche web) : version actuelle maintenue, compatibilité des pièces entre elles, offre gratuite ou tarif annoncé, région d'hébergement si elle compte, façon officielle d'initialiser un projet, pièges connus récents. Chacun rend : verdict ✅ / ⚠️ / ❌, trois puces justifiées avec leurs sources. Si les sous-agents ne sont pas disponibles, faire ces vérifications soi-même, option par option.
 
-Reporter les verdicts dans le tableau « Les options comparées ». Si toutes les options sont ❌ : expliquer le blocage commun et revenir à l'étape 2 ou 3.
+Reporter les verdicts sur les cartes des options (étape 5). Si toutes les options sont ❌ : expliquer le blocage commun et revenir à l'étape 2 ou 3.
 
 #### 5. Choisir
 
-Présenter chaque option en carte (« Présenter une option » de la démarche), le tableau sur demande, et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait (étape de `/pulse:nouveau` ou de `/pulse:spirc` : le réécrire plutôt pour cette commande, à son étape suivante). Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». Voie directe : « Cette pile (Recommandé) » / « Voir d'autres options » / « Revoir un besoin » ; « Voir d'autres options » reprend l'étape 3 avec 2 ou 3 options, vérifiées à l'étape 4 ; une fois la pile acceptée, « Ce qu'on a écarté » indique « Autres options non demandées : pile du pack recommandée, acceptée par la personne ». La décision appartient à la personne.
+Présenter chaque option en carte (« Présenter une option » de la démarche), le tableau comparatif sur demande, et **recommander** une option en une phrase. Avant la question, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16) : les options (une ligne chacune) et la recommandation ; l'effacer avec `pulse-aidd travail-fini` une fois le choix fait (étape de `/pulse:nouveau` ou de `/pulse:spirc` : le réécrire plutôt pour cette commande, à son étape suivante). Demander (AskUserQuestion) : « Option A (Recommandé) » / « Option B » / (« Option C ») / « Revoir un besoin ». Voie directe : « Cette pile (Recommandé) » / « Voir d'autres options » / « Revoir un besoin » ; « Voir d'autres options » reprend l'étape 3 avec 2 ou 3 options, vérifiées à l'étape 4. La décision appartient à la personne.
 
 ### 6. Écrire (projet existant ou neuf)
 
-1. **`docs/technical.md`** à partir du modèle, toutes sections remplies (« aucune » ou « sans objet » si c'est le cas) :
-   - « Pile retenue » : langage, framework éventuel, données, connexion, code serveur, hébergement, services, **versions** ; une phrase de « pourquoi » par élément. **Pack de pile choisi** (ou déjà déclaré) : écrire (ou garder) la ligne `**Pack de pile Pulse** : <id>`, puis lancer `pulse-aidd pile contexte tech` (un appel à part, sortie lue en entier) : les consignes du pack donnent les valeurs de la pile (versions, organisation, commandes, mise en place), qui remplissent les sections suivantes (les règles et modèles de cette commande figurent déjà en fin de fichier, dans « Références de la commande ») ;
+1. **`docs/technical.md`** à partir du modèle, toutes sections remplies (« aucune » ou « sans objet » si c'est le cas). Il dit ce qui est retenu ; les besoins, les options comparées et les raisons du choix restent dans la conversation et dans la mémoire (point 3) :
+   - « Pile retenue » : langage, framework éventuel, données, connexion, code serveur, hébergement, services, **versions**. **Pack de pile choisi** (ou déjà déclaré) : écrire (ou garder) la ligne `**Pack de pile Pulse** : <id>`, puis lancer `pulse-aidd pile contexte tech` (un appel à part, sortie lue en entier) : les consignes du pack donnent les valeurs de la pile (versions, organisation, commandes, mise en place), qui remplissent les sections suivantes (les règles et modèles de cette commande figurent déjà en fin de fichier, dans « Références de la commande ») ;
    - « Organisation des fichiers » : **la référence unique** que suivront la spec, le plan et le code. Projet existant : l'organisation **observée** (dossiers réels, conventions de nommage, où vivent l'interface, l'accès aux données, le code serveur, le schéma). Projet neuf sans pack : lancer `pulse-aidd reference qualite/organisation.md` au moment d'écrire cette section, puis décider l'organisation selon elle, adaptée aux conventions de la documentation officielle de la technologie retenue (qui priment) : **palier** retenu et sa raison, arborescence, convention de nommage et exceptions imposées par le langage, **suffixes** utilisés, emplacement des tests ; en indiquant que les dossiers seront créés au fil des tâches. Projet neuf avec pack : les valeurs du pack ;
    - « Commandes du projet » : installer, lancer en local, tester, contrôles automatiques (lint / format / types), construire, auditer les dépendances (« Auditer les dépendances »), déployer ; une commande absente s'écrit « aucune ». Projet neuf : les commandes que fournira le squelette selon la documentation officielle, ou « aucune » ;
    - « Tests automatiques » de « Pile retenue » : projet existant : l'outil observé, ou « aucun » ; pack de pile : celui de ses valeurs ; sinon, selon « Choisir l'outil de test » de la démarche. Son installation fait partie de « Mise en place » ; sa commande remplit « Tester » (sans les tests qui ouvrent un navigateur) et « Tester de bout en bout (navigateur) » ;
@@ -99,7 +99,7 @@ Présenter chaque option en carte (« Présenter une option » de la démarche),
    - « Mise en place » : les étapes pas à pas avant la première tâche (comptes à créer, initialisation du squelette selon la documentation officielle, compléments à `.gitignore` et `.env.example`) ;
    - un schéma Mermaid simple de l'assemblage des pièces.
 2. **`CLAUDE.md`** (marqueurs absents : ajouter d'abord la section « Stack technique » du modèle, avec ses marqueurs (`pulse-aidd modele CLAUDE.md`, seulement à ce moment), le reste du fichier intact) : remplacer **uniquement** le contenu entre `<!-- pulse_pile:debut -->` et `<!-- pulse_pile:fin -->` (y compris la phrase « Pile non choisie… ») par : un résumé court de « Pile retenue » (5 lignes au plus), les commandes de « Commandes du projet » (une par ligne, « aucune » si absente), puis la ligne « Détails : `docs/technical.md` ».
-3. **`aidd_docs/memory/technical.md`** : une ligne datée par décision dans « Décisions techniques ». La pile reste dans `docs/technical.md` et le bloc « Stack technique ».
+3. **`aidd_docs/memory/technical.md`** : une ligne datée par décision dans « Décisions techniques » (le choix et sa raison, en quelques mots ; les options écartées tiennent dans la même ligne). La pile reste dans `docs/technical.md` et le bloc « Stack technique ».
 4. **Décisions difficiles à défaire** (langage ou framework, stockage des données, mécanisme de connexion, hébergement de données personnelles) : proposer un fichier de décision seulement si les 3 conditions des règles de la mémoire sont réunies. Montrer avant d'écrire.
 5. Lancer `pulse-aidd memoire`.
 
