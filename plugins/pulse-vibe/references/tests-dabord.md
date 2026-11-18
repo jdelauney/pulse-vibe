@@ -26,7 +26,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
    - **🔴 Rouge confirmé** (chaque test échoue parce que le comportement manque) : continuer.
    - **⚠️ Rouge pour une mauvaise raison** (erreur dans le test lui-même) ou test qui passe déjà : renvoyer au test-writer la liste du test-runner, puis relancer le test-runner. Deux cycles au plus.
    - **⛔ Impossible à lancer** (outil absent ou cassé) : « 3. Si l'outil de test manque » de « Tests automatiques », ou expliquer le blocage.
-3. **Figer les tests** : `git add <fichiers de test>` (ajout à l'index, sans commit). Toute modification ultérieure de ces fichiers apparaîtra dans `git diff -- <fichiers de test>`.
+3. **Figer les tests** : `git add <fichiers de test>` (ajout à l'index, sans commit), puis `pulse-aidd tests-figes figer <fichiers de test>` : le garde-fou refuse ensuite de les modifier, par un outil comme par une commande. Toute modification qui passerait quand même apparaîtra dans `git diff -- <fichiers de test>`.
 
 ### Vert : réaliser
 
@@ -39,7 +39,7 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 |---|---|---|
 | ✅ Vert, tests intacts | — | passer à la relecture (et, dans `/pulse:implement`, à « Vérifier ») |
 | ❌ échec **dû au code** | `pulse:implementer`, avec la liste des échecs | relancer le test-runner |
-| ❌ échec **dû au test** (ou test contesté confirmé) | `pulse:test-writer`, mode « corriger », avec la liste | `git add` des fichiers corrigés, puis relancer le test-runner |
+| ❌ échec **dû au test** (ou test contesté confirmé) | `pulse:test-writer`, mode « corriger », avec la liste | avant de déléguer, `pulse-aidd tests-figes liberer <fichiers transmis>` ; après, `git add` des fichiers corrigés et `pulse-aidd tests-figes figer <les mêmes>`, puis relancer le test-runner |
 | Tests modifiés pendant la réalisation (`git diff -- <fichiers de test>` non vide) | — | constat Critique : remettre les tests figés (`git restore -- <fichiers de test>`, avec l'accord demandé par Claude Code), puis renvoyer à l'implementer |
 | ⛔ échec **dû à l'environnement** (base de test, variable, outil, délai dépassé) | la personne ou la commande | guider pas à pas, puis relancer le test-runner une fois : la cause est hors des fichiers, sa preuve rouge se relance |
 | Test **instable** | `pulse:test-writer` | corriger la cause (`tests/strategie.md` §4) |
@@ -54,4 +54,5 @@ Une tâche dont la ligne `Tests` du plan vaut « aucun » (mise en place, mise e
 - **Rapport de revue** : section « Tests automatiques », remplie avec le verdict et les tableaux du test-runner (rouge, puis vert).
 - **Rapport de réalisation** : la ligne « Contrôles » donne les tests écrits, lancés et leur résultat (`tests : 6 écrits, 6 lancés, tous réussis`).
 - **Journal du plan** : remarque « tests d'abord » sur la ligne de la tâche ; « tests figés modifiés puis restaurés » si c'est arrivé.
+- **Fin de la tâche** : `pulse-aidd tests-figes liberer` après son commit (la liste se vide aussi à `pulse-aidd realisation fin`, et ne vit que 6 heures sans mise à jour).
 - **Commit** : les tests font partie du commit de la tâche (`feat(T3): …`). Des tests ajoutés seuls, sur du code existant (`/pulse:test ecrire`) : `test(T3): …` ou `test: …`.

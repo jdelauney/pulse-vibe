@@ -2,14 +2,14 @@
 description: Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter
 argument-hint: "<message d'erreur ou description du problème> [fichier]"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Edit(aidd_docs/tasks/**)
+allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd agent test-writer) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd tests-figes *) Bash(pulse-aidd preuve *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git add *) Edit(aidd_docs/tasks/**) Bash(pulse-aidd secrets preparer *)
 ---
 
 # /pulse:fix – Corriger une erreur
 
 ## Objectif
 
-Trouver la **vraie cause** d'un problème précis, la corriger avec le plus petit changement possible, le **prouver**, puis expliquer à la personne ce qui s'est passé et comment l'éviter. Phrase à dire : « Une erreur est une étape normale. On va d'abord comprendre pourquoi, avant de toucher au code. »
+Trouver la **vraie cause** d'un problème précis, la reproduire par un test quand c'est possible, la corriger avec le plus petit changement possible, le **prouver**, puis expliquer à la personne ce qui s'est passé et comment l'éviter. Phrase à dire : « Une erreur est une étape normale. On va d'abord comprendre pourquoi, avant de toucher au code. »
 
 Pour une liste d'erreurs de lint ou de types sur tout le projet : `/pulse:auto-fix`. Pour un comportement **nouveau** (c'est une demande, plutôt qu'une erreur) : le noter dans `docs/prd.md` (« En attente ») ou proposer `/pulse:spirc <US-XXX> "<demande>"`.
 
@@ -23,7 +23,7 @@ Problème signalé : `$ARGUMENTS`
 
 ## Rôle
 
-La conversation principale comprend le problème, trouve la cause et choisit la correction avec la personne ; la correction elle-même est confiée à `pulse:fixer` (outil Agent, `model: "sonnet"`), avec le message de sa section « Correction de comportement ». Agent indisponible : `pulse-aidd agent fixer` et appliquer cette section dans la conversation. La preuve (contrôles relancés, action refaite par la personne) reste dans cette conversation.
+La conversation principale comprend le problème, trouve la cause et choisit la correction avec la personne ; le test qui la reproduit, à `pulse:test-writer` et `pulse:test-runner` ; la correction elle-même est confiée à `pulse:fixer` (outil Agent, `model: "sonnet"`), avec le message de sa section « Correction de comportement ». Agent indisponible : `pulse-aidd agent fixer` et appliquer cette section dans la conversation. La preuve (contrôles relancés, action refaite par la personne) reste dans cette conversation.
 
 ## Processus
 
@@ -61,26 +61,31 @@ Lancer `pulse-aidd qualite clean-code`, puis `pulse-aidd qualite <famille>` pour
 
 Si la correction **change le comportement attendu** (une règle métier, un écran) : cela devient une décision, au-delà d'une correction. La poser à la personne (AskUserQuestion), et proposer de mettre à jour la user story.
 
-### 4. Corriger
+### 4. Reproduire par un test
 
-- **Confier la correction à `pulse:fixer`** (outil Agent, `model: "sonnet"`) quand elle tient en 5 fichiers au plus. Le message donne : l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers, les familles de qualité de l'étape 3 et la commande qui prouve la correction (un contrôle de « Commandes du projet », ou le parcours à refaire). Plus de 5 fichiers : une demande par groupe de 5 au plus, chaque fichier à un seul groupe ; chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin. Agent indisponible : `pulse-aidd agent fixer`, puis appliquer sa section « Correction de comportement » dans cette conversation.
+Appliquer `pulse-aidd reference fix/test-regression.md`, lu en entier : un test qui échoue à cause de l'erreur, vérifié rouge puis figé, quand la cause tient dans une règle.
+
+### 5. Corriger
+
+- **Confier la correction à `pulse:fixer`** (outil Agent, `model: "sonnet"`) quand elle tient en 5 fichiers au plus. Le message donne : l'erreur ou le symptôme, la cause trouvée, la solution retenue avec la personne, les fichiers, les familles de qualité de l'étape 3, les tests figés de l'étape 4 et la commande qui prouve la correction (ce test, un contrôle de « Commandes du projet », ou le parcours à refaire). Plus de 5 fichiers : une demande par groupe de 5 au plus, chaque fichier à un seul groupe ; chaque message redonne toute la cause et toute la solution retenue, les groupes se lancent l'un après l'autre, et la relecture du résultat se fait à la fin. Agent indisponible : `pulse-aidd agent fixer`, puis appliquer sa section « Correction de comportement » dans cette conversation.
 - Relire son rapport et ses changements (`git diff -- <fichiers>`) : ils s'en tiennent à la solution retenue. S'il écrit « Une autre solution paraît nécessaire », ou signale une autre solution, revenir à l'étape 3 avec la personne.
 - Une action manuelle est nécessaire (appliquer une règle d'accès dans la console de la base ou du fournisseur, saisir une variable chez l'hébergeur) : guider la personne pas à pas.
 
-### 5. Prouver
+### 6. Prouver
 
+- Test de l'étape 4 : vert, puis libéré (`fix/test-regression.md` § 2).
 - Relancer les diagnostics de l'étape 2 sur les fichiers touchés : zéro erreur, ancienne ou nouvelle.
 - **La personne refait l'action** qui échouait (même parcours, mêmes données fictives) : « Est-ce que ça fonctionne maintenant ? » → « Oui » / « Toujours le même problème » / « Un autre problème est apparu ».
 - Échec : revenir à l'étape 2 avec ce nouvel élément. **Deux tentatives au maximum** ; ensuite, arrêter, expliquer simplement où l'on en est, et proposer de taper `/pulse:get-help`, qui prépare une demande d'aide à transmettre.
 
-### 6. Expliquer et retenir
+### 7. Expliquer et retenir
 
 ```
 🩺 Correction
 Problème : <ce qui se passait, en une phrase simple>
 Cause    : <pourquoi, en une phrase>
 Correction : <ce qui a changé> — <fichier:ligne>
-Preuve   : <✅ commande et résultat · 🧪 test refait par la personne · ⚪ non vérifié, et pourquoi>
+Preuve   : <✅ test rouge avant, vert après · ✅ commande et résultat · 🧪 test refait par la personne · ⚪ non vérifié, et pourquoi>
 Pour l'éviter : <réflexe à retenir>
 ```
 
@@ -93,6 +98,7 @@ Terminer avec le bloc de fin de commande. Prochaine étape : `/pulse:review` si 
 ## Exemples
 
 - `/pulse:fix "le bouton Ajouter ne fait rien"` : la cause dite en une phrase, la correction, puis vous refaites l'action pour confirmer que tout fonctionne.
+- `/pulse:fix "le total oublie la remise"` : un test montre l'erreur, la correction le fait passer, il reste dans le projet.
 - `/pulse:fix` sans argument : une seule ronde de questions (« Que faisiez-vous ? », « Y a-t-il un message en rouge ? ») avant toute recherche.
 
 ## Références de la commande

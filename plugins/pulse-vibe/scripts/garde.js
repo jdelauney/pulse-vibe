@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Pulse – point d'entrée unique des garde-fous (hook PreToolUse) : un seul processus Node par appel d'outil.
 //
-// Lit l'entrée une fois et la passe au garde-fou anti-secrets (garde-secrets.js) puis au garde-fou
-// des commandes (garde-commandes.js, Bash et PowerShell seulement). Retient la décision la plus stricte :
+// Lit l'entrée une fois et la passe au garde-fou des commandes (garde-commandes.js, Bash et PowerShell seulement),
+// au verrou des tests figés (tests-figes.js) puis au garde-fou anti-secrets (garde-secrets.js). Retient la décision la plus stricte :
 // refus, puis demande d'accord ; les raisons d'un même niveau s'additionnent. Sans refus ni demande, une commande
 // réécrite par le garde-fou des commandes (sortie de règles coupée par un tube) passe, tube retiré (updatedInput).
 // Les garde-fous servent les projets Pulse seulement : ailleurs (un CLAUDE.md sans bloc « <!-- pulse_ » du modèle,
@@ -47,7 +47,7 @@ function principal() {
   if (!projetPulse(cwd)) return;
   const decisions = [];
   // Les commandes d'abord (rapide) : un refus est la décision la plus stricte, on s'arrête là.
-  for (const module of ["./garde-commandes", "./garde-secrets"]) {
+  for (const module of ["./garde-commandes", "./tests-figes", "./garde-secrets"]) {
     try {
       const d = require(module).evaluer(entree);
       decisions.push(d);

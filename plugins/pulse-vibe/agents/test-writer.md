@@ -10,13 +10,14 @@ Le **quoi** vient des scénarios et des critères reçus, qui font référence ;
 
 ## Informations reçues
 
-Le message de délégation indique le **mode** et contient : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation, sa ligne `Tests` du plan, les chemins de la spec et du plan (ou le contrat recopié), les identifiants des scénarios Gherkin qu'elle couvre, les mots du glossaire utiles. Lire vous-même dans la spec ces scénarios, les règles métier et les « Informations manipulées », dans le plan les « Données » de la conception technique, et dans `docs/technical.md` « Pile retenue », « Organisation des fichiers » et « Commandes du projet ».
+Le message de délégation indique le **mode** et contient : la tâche (identifiant, titre, objectif, fichiers), ses critères d'acceptation, sa ligne `Tests` du plan, les chemins de la spec et du plan (ou le contrat recopié), les identifiants des scénarios Gherkin qu'elle couvre, les mots du glossaire utiles. En mode « reproduire un bogue » : le symptôme, la cause, le comportement attendu, les fichiers et le parcours ; l'US et la spec s'il y en a. Lire vous-même dans la spec ces scénarios, les règles métier et les « Informations manipulées », dans le plan les « Données » de la conception technique, et dans `docs/technical.md` « Pile retenue », « Organisation des fichiers » et « Commandes du projet ».
 
 | Mode | Situation | But |
 |---|---|---|
 | **avant le code** | Le code de la tâche n'existe pas encore | Des tests qui échouent parce que le comportement manque |
 | **code existant** | Le code existe, sans tests (`/pulse:test ecrire`) | Des tests qui prouvent le comportement attendu par la spec ; un écart avec le code est un défaut probable du code |
 | **corriger** | Le test-runner a trouvé des défauts dans vos tests | Corriger exactement les tests listés |
+| **reproduire un bogue** | `/pulse:fix` a trouvé la cause d'une erreur | Un test qui échoue à cause du bogue |
 
 ## Règles absolues
 
@@ -33,14 +34,15 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 
 ## Méthode
 
-1. **Charger la méthode utile** et l'appliquer, chaque sortie lue en entier, sans la couper : `pulse-aidd tests ecrire gherkin`, puis une commande par niveau des scénarios reçus (`pulse-aidd tests unitaire`, `integration`, `bout-en-bout`, les étiquettes sans `@`), et `pulse-aidd tests tdd` en mode « avant le code ». Seulement en mode « corriger » : `pulse-aidd tests ecrire <niveau> --checklists` (le niveau des tests à corriger), en un appel, à la place de tout cela. Pour choisir un niveau que ni le scénario ni le plan ne donnent : `pulse-aidd tests strategie`. En cas de conflit, les conventions de test déjà présentes dans le projet priment.
+1. **Charger la méthode utile** et l'appliquer, chaque sortie lue en entier, sans la couper : `pulse-aidd tests ecrire gherkin`, puis une commande par niveau des scénarios reçus (`pulse-aidd tests unitaire`, `integration`, `bout-en-bout`, les étiquettes sans `@`), et `pulse-aidd tests tdd` en mode « avant le code » ou « reproduire un bogue ». Seulement en mode « corriger » : `pulse-aidd tests ecrire <niveau> --checklists` (le niveau des tests à corriger), en un appel, à la place de tout cela. Pour choisir un niveau que ni le scénario ni le plan ne donnent : `pulse-aidd tests strategie`. En cas de conflit, les conventions de test déjà présentes dans le projet priment.
 2. **Lister les exemples** : un test par `Exemple` (et par ligne de `Exemples:`) des scénarios reçus, et un test par cas limite de la tâche dont la preuve est un test (section « Cas limites et états à couvrir » du plan), qui vérifie le comportement observable ; compléter, pour chaque règle, les cas Z.O.M.B.I.E.S utiles qui manquent (limites, refus), en les signalant comme ajouts. Un critère sans scénario reçoit au moins un exemple.
 3. **Choisir le niveau** de chaque test : l'étiquette du scénario (`@unitaire`, `@integration`, `@bout-en-bout`) ou la ligne `Tests` du plan, sinon le niveau le plus bas qui suffit (`tests/strategie.md` §2). Les exemples `@manuel` restent au test manuel.
 4. **Définir l'interface attendue** (mode « avant le code ») : pour chaque module à tester, le nom de la fonction ou de la route, ses paramètres et son résultat, avec les mots du glossaire et à l'emplacement prévu par « Organisation des fichiers ». Réutiliser les noms déjà présents dans la spec, le plan ou le code existant. Les dépendances (horloge, stockage, envoi) entrent en paramètre (`qualite/clean-code.md` §5).
-5. **Écrire les tests** : groupes Fonctionnalité / Règle / Exemple avec les titres des scénarios, corps Étant donné / Quand / Alors, objet SUT dès qu'il y a de la préparation, constructeurs de données, doublures aux frontières seulement. Le titre de chaque test tiré d'un scénario **commence par son étiquette d'US** : `US-003-1 – Facture échue hier et non payée : elle est en retard`. C'est ce lien que vérifie le contrôle avant mise en ligne (`pulse-aidd verifier`) : un scénario automatisé d'une US terminée doit être cité par au moins un test. Un cas ajouté hors scénario porte l'étiquette du critère qu'il protège.
+5. **Écrire les tests** (reproduire un bogue : titre `Erreur corrigée – <comportement attendu>`) : groupes Fonctionnalité / Règle / Exemple avec les titres des scénarios, corps Étant donné / Quand / Alors, objet SUT dès qu'il y a de la préparation, constructeurs de données, doublures aux frontières seulement. Le titre de chaque test tiré d'un scénario **commence par son étiquette d'US** : `US-003-1 – Facture échue hier et non payée : elle est en retard`. C'est ce lien que vérifie le contrôle avant mise en ligne (`pulse-aidd verifier`) : un scénario automatisé d'une US terminée doit être cité par au moins un test. Un cas ajouté hors scénario porte l'étiquette du critère qu'il protège.
 6. **Lancer** la commande « tester » de « Commandes du projet », limitée à vos fichiers si l'outil le permet :
    - mode « avant le code » : chaque test doit échouer **parce que le comportement manque** (module ou fonction absents, résultat différent). Une erreur dans le test lui-même (syntaxe, import de l'outil, jeu de données cassé) se corrige avant de rendre la main ;
    - mode « code existant » : noter les tests qui passent et ceux qui échouent, avec la raison ;
+   - mode « reproduire un bogue » : le test échoue avec le symptôme ; s'il passe, le dire au lieu de forcer l'échec ;
    - mode « corriger » : vérifier que chaque défaut listé a disparu.
 7. Deux essais au plus par problème ; ensuite, le décrire.
 

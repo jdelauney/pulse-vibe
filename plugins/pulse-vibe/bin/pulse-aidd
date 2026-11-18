@@ -34,6 +34,7 @@
 #   pulse-aidd captures effacer <US-XXX>  retire les captures d'écran gardées comme preuves (aidd_docs/captures/<US-XXX>/), une fois l'US envoyée
 #   pulse-aidd bilan                 le bilan chiffré de chaque US (tâches, relectures, corrections, tests non concluants, constats par gravité)
 #   pulse-aidd realisation [debut|etape|questions|fin]  le marqueur « réalisation en cours » (aidd_docs/tasks/realisation.json) : debut <US-XXX> --commande <spirc|implement> --rythme <complet|rapide> [--autonome] [--devant] · etape <Tn> <étape> (avec --devant, realisation affiche ensuite la fiche du pack de pile) · questions <n> · fin ; sans action : l'état
+#   pulse-aidd tests-figes [figer <fichier…> | liberer [<fichier…>]]  les tests figés que le code doit faire passer sans les modifier (le garde-fou refuse de les changer) ; liberer sans fichier vide la liste ; sans action : la liste
 #   pulse-aidd attente <mettre-de-cote <Tn> -- <fichier…> | remettre <Tn> | liste>  met de côté le travail d'une tâche qui attend une réponse, le remet en place ensuite, ou liste les tâches en attente (/pulse:spirc, mode autonome)
 #   pulse-aidd verifier-brief        contrôle le brief et le PRD (sections vides, modèle resté à remplir, première version), sans bloquer, pour /pulse:brainstorm, /pulse:prd et /pulse:nouveau
 #   pulse-aidd verifier-spec <US-XXX>  contrôle la spec d'une US avant son verrouillage (critères illustrés, niveaux des scénarios, sections, TBD), pour /pulse:spec
@@ -393,6 +394,8 @@ case "$1" in
       if node "$RACINE/scripts/realisation.js" 2>/dev/null | grep -qx 'devant: true'; then contexte_pack implement; fi
     fi
     exit "$code" ;;
+  tests-figes)
+    shift; exec node "$RACINE/scripts/tests-figes.js" "$@" ;;
   attente)
     shift; exec node "$RACINE/skills/spirc/scripts/attente.js" "$@" ;;
   sessions)
