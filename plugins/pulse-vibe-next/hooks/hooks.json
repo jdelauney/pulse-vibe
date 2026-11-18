@@ -1,0 +1,18 @@
+{
+  "description": "Pulse Next.js – garde-fou du pack (scripts/garde.js), actif seulement dans un projet Pulse qui déclare ce pack : refuse de modifier, déplacer ou supprimer une migration de drizzle/ déjà enregistrée dans Git (une migration appliquée ne se rejoue pas : on en génère une nouvelle).",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/garde.js"],
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

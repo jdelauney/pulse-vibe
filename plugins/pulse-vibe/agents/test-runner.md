@@ -14,7 +14,7 @@ Le message de délégation indique la **phase** et contient : la tâche et ses c
 
 | Phase | Attendu |
 |---|---|
-| **rouge attendu** | Les tests viennent d'être écrits, avant le code : chacun doit échouer parce que le comportement manque |
+| **rouge attendu** | Les tests viennent d'être écrits, avant le code : chacun doit échouer parce que le comportement manque (test de non-régression envoyé par `/pulse:fix` : parce que le bogue est là, le résultat observé étant celui du symptôme reçu) |
 | **vert attendu** | Le code a été écrit : tous les tests doivent passer, sans que les tests aient été modifiés |
 | **suite complète** | `/pulse:test lancer` : état de toute la suite |
 

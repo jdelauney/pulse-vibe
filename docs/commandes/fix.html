@@ -33,7 +33,8 @@
 <section id="description">
 <h2>Description</h2>
 <p>Une erreur est une étape normale. Avec cette commande, Pulse commence par comprendre <strong>pourquoi</strong> elle arrive, avant de toucher au code. Il relie le message au bon fichier, cherche la vraie cause et la dit en une phrase.</p>
-<p>Il choisit ensuite la plus petite correction qui règle la cause, sans casser ce qui fonctionne. Puis il le prouve : les contrôles automatiques repassent, et vous refaites vous-même l'action qui échouait.</p>
+<p>Quand l'erreur vient d'une règle (un calcul, un droit d'accès, une donnée mal enregistrée), Pulse écrit d'abord un petit test qui la montre : il échoue tant que l'erreur est là. Ce test est ensuite protégé : personne ne peut le modifier pour le faire passer.</p>
+<p>Il choisit ensuite la plus petite correction qui règle la cause, sans casser ce qui fonctionne. Puis il le prouve : le test passe, les contrôles automatiques repassent, et vous refaites vous-même l'action qui échouait. Le test reste dans le projet : si l'erreur revient un jour, il prévient.</p>
 <p>Pour finir, il vous explique ce qui s'est passé, comment l'éviter, et une notion de programmation liée à l'erreur.</p>
 <pre class="commande"><code>🩺 Correction
 Problème : le bouton « Réserver » ne faisait rien
@@ -48,7 +49,8 @@ Pour l'éviter : chercher un élément de la page seulement une fois la page cha
 <h2>Pourquoi l'utiliser</h2>
 <ul>
 <li><strong>La vraie cause est réglée.</strong> Pulse distingue le symptôme de la cause, et cherche si le même oubli se répète ailleurs.</li>
-<li><strong>La correction est prouvée.</strong> Vous refaites l'action avec les mêmes données fictives, et vous confirmez que tout fonctionne.</li>
+<li><strong>La correction est prouvée.</strong> Un test montre l'erreur avant la correction et passe après ; vous refaites l'action avec les mêmes données fictives, et vous confirmez que tout fonctionne.</li>
+<li><strong>L'erreur ne revient pas en silence.</strong> Le test écrit pour elle reste dans le projet et se relance à chaque contrôle.</li>
 <li><strong>La sécurité reste intacte.</strong> Une « correction » qui ouvrirait l'accès à tous ou désactiverait un contrôle est écartée.</li>
 <li><strong>Vous apprenez à chaque erreur.</strong> Le réflexe à retenir et la notion du jour vous sont expliqués.</li>
 </ul>
@@ -97,6 +99,7 @@ Pour l'éviter : chercher un élément de la page seulement une fois la page cha
 <thead><tr><th>Fichier</th><th>Ce qui change</th></tr></thead>
 <tbody>
 <tr><td>Les fichiers de code en cause</td><td>La plus petite correction possible, dans le style du code existant.</td></tr>
+<tr><td>Un fichier de test</td><td>Le test qui montre l'erreur, quand elle vient d'une règle : rouge avant la correction, vert après.</td></tr>
 <tr><td><code>docs/lexique.md</code></td><td>La notion du jour, si elle est nouvelle pour vous.</td></tr>
 <tr><td>Le plan de la tâche, dans <code>aidd_docs/tasks/</code></td><td>Une ligne de journal, si la correction touche une tâche d'un plan.</td></tr>
 <tr><td><code>aidd_docs/memory/technical.md</code></td><td>Un piège qui peut revenir, seulement si vous acceptez la ligne proposée.</td></tr>

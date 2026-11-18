@@ -14,7 +14,7 @@
 //     Avec --devant (la conversation code elle-même), bin/pulse-aidd affiche ensuite, pour realisation, le contexte
 //     du pack de pile déclaré (pulse-pile-<id> contexte implement), ou le bloc « non installé » : la fiche avant le code.
 //   pulse-aidd realisation questions <n>        le nombre de questions qui attendent la personne
-//   pulse-aidd realisation fin                  supprime le marqueur
+//   pulse-aidd realisation fin                  supprime le marqueur et vide la liste des tests figés (tests-figes.js)
 //   pulse-aidd realisation                      affiche « clé: valeur » (plus « perime: oui » s'il est périmé), rien si absent
 //   pulse-aidd realisation --rappel             hook SessionStart : le texte « où on en est » (marqueur cherché comme trouver())
 //
@@ -151,6 +151,7 @@ function main(args, racine) {
     if (Number.isFinite(n) && n >= 0) mettreAJour(racine, { questions: n });
   } else if (action === "fin") {
     try { fs.rmSync(fichier(racine), { force: true }); } catch { /* déjà absent */ }
+    try { require("./tests-figes").vider(racine); } catch { /* pas de dépôt */ }
   } else if (action === "--rappel") {
     // Hook SessionStart (compact) : le cwd de l'entrée du hook d'abord, puis le dossier du projet donné par Claude Code.
     const trouve = trouver(entreeHook().cwd, require("./garde").projetPulse);

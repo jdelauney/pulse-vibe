@@ -1,14 +1,15 @@
 // Garde-fous de Pulse hors de Claude Code : `pulseia hook <outil> <événement>`, appelé par les hooks de chaque outil.
 // L'entrée de l'outil est traduite au format Claude Code (classe de l'outil, entreeHook), passée sans modification
 // aux scripts du cœur (garde.js avant un appel d'outil, apres-ecriture.js après une écriture, fin-de-tour.js
-// quand l'agent rend la main), puis leur réponse est traduite pour l'outil (sortieHook).
+// quand l'agent rend la main) et, avant un appel d'outil, au garde-fou de chaque pack qui en a un (scripts/garde.js du pack,
+// qui ne s'active que dans un projet qui le déclare), puis leur réponse, la plus stricte, est traduite pour l'outil (sortieHook).
 // Fail-open, comme le cœur : une erreur ici laisse passer l'appel.
 "use strict";
 
 const fs = require("fs");
 const path = require("path");
 const { spawnSync } = require("child_process");
-const { racineContenu, COEUR } = require("./chemins");
+const { racineContenu, COEUR, PACKS } = require("./chemins");
 const { reecrire } = require("./textes");
 
 const SCRIPTS = { avant: "garde.js", apres: "apres-ecriture.js", fin: "fin-de-tour.js" };
@@ -51,6 +52,19 @@ function lancerScript(etape, entree, outil) {
   if (entree.cwd) env.CLAUDE_PROJECT_DIR = entree.cwd;
   const r = spawnSync(process.execPath, [script], { input: JSON.stringify(entree), encoding: "utf8", env, cwd: entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : undefined, timeout: DELAI_MS[etape], windowsHide: true });
   return r.stdout || "";
+}
+
+/** Avant un appel d'outil : la sortie du garde-fou de chaque pack embarqué qui en a un (scripts/garde.js). */
+function lancerPacks(entree, outil) {
+  const sorties = [];
+  for (const dossier of Object.values(PACKS)) {
+    const script = path.join(racineContenu(), dossier, "scripts", "garde.js");
+    if (!fs.existsSync(script)) continue;
+    const env = { ...process.env, PULSE_OUTIL: outil };
+    const r = spawnSync(process.execPath, [script], { input: JSON.stringify(entree), encoding: "utf8", env, cwd: entree.cwd && fs.existsSync(entree.cwd) ? entree.cwd : undefined, timeout: DELAI_MS.avant, windowsHide: true });
+    sorties.push(r.stdout || "");
+  }
+  return sorties;
 }
 
 /**
@@ -133,11 +147,11 @@ function hook(outil, evenement, texte) {
     // entreeHook : { etape, entrees: [entrée Claude Code…] }, ou null quand l'événement ne concerne pas Pulse.
     const traduite = c.entreeHook(evenement, brut);
     if (!traduite || !traduite.entrees.length) return c.sortieHook(evenement, lireResultat(""), brut);
-    const resultats = traduite.entrees.map((e) => lireResultat(lancerScript(traduite.etape, e, outil)));
+    const resultats = traduite.entrees.flatMap((e) => [lancerScript(traduite.etape, e, outil), ...(traduite.etape === "avant" ? lancerPacks(e, outil) : [])].map(lireResultat));
     return c.sortieHook(evenement, combiner(resultats), brut);
   } catch {
     return { sortie: "", code: 0 };
   }
 }
 
-module.exports = { hook, lireResultat, lancerScript, refusReecriture, refusAccord, idSur, combiner, lirePatch, entreesPatch, SCRIPTS };
+module.exports = { hook, lireResultat, lancerScript, lancerPacks, refusReecriture, refusAccord, idSur, combiner, lirePatch, entreesPatch, SCRIPTS };

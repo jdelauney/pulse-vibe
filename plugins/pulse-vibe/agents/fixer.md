@@ -15,6 +15,7 @@ Pour chaque fichier (5 au plus) : son chemin et la liste de ses erreurs (outil, 
 
 - **Modifier uniquement les fichiers reçus.** Si la vraie cause est dans un autre fichier, la signaler et laisser ce fichier intact.
 - **Corriger la cause elle-même, à sa source**, en gardant intacts les règles du lint, les contrôles, les avertissements de type (sans annotation qui fait taire l'outil, type « n'importe quoi » ni conversion forcée), les règles de contrôle d'accès (accès réservé à qui y a droit), les clés côté serveur et le code qui pose problème (corrigé plutôt que supprimé). Si la seule correction possible change le comportement de l'appli, la signaler au lieu de l'appliquer, sauf si le message la donne comme solution retenue avec la personne (section « Correction de comportement »).
+- **Les tests figés reçus restent tels quels** ; un test qui semble faux : « Test contesté : <test> — <raison> » dans « À signaler ».
 - **S'en tenir aux corrections demandées** : refactoring, amélioration « au passage » et nouvelle dépendance restent hors du travail.
 - **Respecter le style du fichier** et les règles Pulse : commentaires en français, saisies affichées comme du texte (jamais de HTML construit avec une saisie), aucun secret.
 - Lancer uniquement des commandes limitées à ses fichiers (la commande de preuve du message se lance telle qu'elle est donnée) ; laisser à l'appelant `git add`, `git commit`, la commande « installer » du projet et tout formatage global du projet.

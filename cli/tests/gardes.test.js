@@ -131,6 +131,22 @@ test("avant un appel d'outil : refus, demande d'accord et commande réécrite, t
   assert.strictEqual(r.stdout, "");
 });
 
+test("avant un appel d'outil : le garde-fou du pack déclaré s'ajoute à celui du cœur (migration enregistrée protégée)", () => {
+  const maison = tmp();
+  const p = projet();
+  fs.mkdirSync(path.join(p, "docs"), { recursive: true });
+  fs.writeFileSync(path.join(p, "docs", "technical.md"), "# Technique\n\n**Pack de pile Pulse** : next\n");
+  fs.mkdirSync(path.join(p, "drizzle"), { recursive: true });
+  fs.writeFileSync(path.join(p, "drizzle", "0000_debut.sql"), "CREATE TABLE a (id int);\n");
+  const git = (...args) => spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@t", ...args], { cwd: p, encoding: "utf8" });
+  git("add", "drizzle/0000_debut.sql");
+  git("commit", "-q", "--no-verify", "-m", "migration");
+  const patch = "*** Begin Patch\n*** Update File: drizzle/0000_debut.sql\n@@\n-CREATE TABLE a (id int);\n+CREATE TABLE a (id bigint);\n*** End Patch";
+  assert.match(hook(maison, "codex", "PreToolUse", { session_id: "s", cwd: p, tool_name: "apply_patch", tool_input: { command: patch } }).hookSpecificOutput.permissionDecisionReason, /db:generate/);
+  assert.strictEqual(hook(maison, "cursor", "preToolUse", { conversation_id: "c", cwd: p, tool_name: "Write", tool_input: { file_path: path.join(p, "drizzle", "0000_debut.sql"), content: "x" } }).permission, "deny");
+  assert.deepStrictEqual(hook(maison, "codex", "PreToolUse", { session_id: "s", cwd: p, tool_name: "Bash", tool_input: { command: "npm run db:generate" } }), {});
+});
+
 test("fin de tour : un fichier écrit avec une clé relance l'agent, dans le format de chaque outil", () => {
   const maison = tmp();
   const p = projet();

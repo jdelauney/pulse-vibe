@@ -31,7 +31,7 @@ const PULSE = [
   "reference *", "modele *", "agent *", "contexte *", "etape *", "etat *", "revue *", "verifier-plan *", "sessions *", "copier-env *",
   "pile contexte *", "pile reference *", "pile recette *",
   "maquettes verifier *", "textes verifier *", "contraste *", "brandkit *", "comparer *", "seo *", "sonder *",
-  "secrets inventaire *", "secrets historique *", "secrets preparer *", "skill mesurer *", "skill verifier *",
+  "secrets inventaire *", "secrets historique *", "secrets preparer *", "skill mesurer *", "skill verifier *", "paquets verifier *", "tests-figes *",
 ].map((s) => `Bash(pulse-aidd ${s})`);
 // Lignes de « Commandes du projet » dont les commandes sont sans effet hors du projet.
 const LIGNES = /^(lancer en local|tester|contr[ôo]les automatiques|auditer les d[ée]pendances|construire)\b/i;
