@@ -70,7 +70,10 @@ function migrationsTouchees(entree, racine, cwd) {
   const candidats = [];
   if (OUTILS_ECRITURE.has(entree.tool_name)) candidats.push(ti.file_path);
   else if ((entree.tool_name === "Bash" || entree.tool_name === "PowerShell") && typeof ti.command === "string" && ECRIT.test(ti.command)) {
-    for (const mot of ti.command.split(/[\s;&|()<>"'`]+/)) if (/drizzle[\\/]/i.test(mot)) candidats.push(mot.replace(/^[^\w.\\/~-]+/, ""));
+    // PowerShell prend « \ » pour séparateur sous Linux et macOS aussi : le chemin se relit en « / ».
+    const ps = entree.tool_name === "PowerShell";
+    for (const mot of ti.command.split(/[\s;&|()<>"'`]+/))
+      if (/drizzle[\\/]/i.test(mot)) candidats.push((ps ? mot.replace(/\\/g, "/") : mot).replace(/^[^\w.\\/~-]+/, ""));
   }
   return candidats
     .map((c) => relatif(racine, c, cwd))
