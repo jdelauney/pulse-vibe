@@ -26,9 +26,9 @@ export function ListeCourses({ articles }: { articles: readonly Article[] }) {
         {articles.map((article) => (
           <li key={article.id} className="flex justify-between gap-4">
             <span className="min-w-0 break-words">
-              {article.nom} ×{article.quantite}
+              {article.nom} × {article.quantite}
             </span>
-            <span>{euros.format(article.prixCentimes / 100)}</span>
+            <span>{euros.format(article.prixCentimes / 100)} l’unité</span>
           </li>
         ))}
       </ul>

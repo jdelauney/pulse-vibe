@@ -83,7 +83,7 @@ EOF
   tache_enregistree T1 "feat(T1): calculer le total d'une liste"
 }
 
-# t2_enregistree <props de la liste vide> : la page affiche la liste, le test de la liste vide, puis T2 enregistrée.
+# t2_enregistree <props de la liste> : la page affiche la liste, les tests de la liste d'exemple et de la liste vide, puis T2 enregistrée.
 # La section src/features/courses/components/sections/liste-courses.tsx est écrite avant par le cas.
 t2_enregistree() {
   local props="$1"
@@ -94,7 +94,21 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ListeCourses } from "../liste-courses";
 
+// Intl sépare le montant et « € » par une espace insécable : le test la lit comme une espace.
+const texte = (html: string) => html.replace(/[\u00A0\u202F]/g, " ");
+
 describe("Voir le total de sa liste", () => {
+  it("US-001-1 – La liste d'exemple affiche ses articles et leur total", () => {
+    const articles = [
+      { id: "a1", nom: "Pain", prixCentimes: 120, quantite: 2 },
+      { id: "a2", nom: "Lait", prixCentimes: 95, quantite: 1 },
+    ];
+    const html = texte(renderToStaticMarkup(<ListeCourses articles={articles}$props />));
+    expect(html).toContain("Pain");
+    expect(html).toContain("Lait");
+    expect(html).toContain("Total : 3,35 €");
+  });
+
   it("US-001-2 – Une liste vide affiche un message et aucun total", () => {
     const html = renderToStaticMarkup(<ListeCourses articles={[]}$props />);
     expect(html).toContain("Votre liste est vide");

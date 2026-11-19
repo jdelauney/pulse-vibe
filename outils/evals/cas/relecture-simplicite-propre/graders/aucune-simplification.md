@@ -1,7 +1,6 @@
 ---
-type: tool_not_used
-tool: Edit
-input_match: "src/"
+type: command
+run: '! git log --format=%s | grep -qi "refactor(simplicite)"'
 ---
 
-Aucun fichier de `src/` n'est modifié : le code est déjà juste, aucune relecture ne pousse à le corriger.
+Aucune simplification n'est faite : le code est déjà la version simple. (Une petite correction de l'expérience reste permise : ce cas juge la relecture de la simplicité.)
