@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: paquet-invente
+tags: [garde-fous]
+context:
+  scaffold_script: projet.sh

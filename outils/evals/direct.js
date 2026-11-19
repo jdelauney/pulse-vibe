@@ -2,12 +2,15 @@
 // Mode direct des évaluations (node outils/evals/lancer.js --direct [--case <motif>]) : chaque cas de outils/evals/cas/
 // tourne avec claude -p, dans un dossier temporaire et le bac à sable de Claude Code, avec les plugins du dépôt ; ses
 // vérifications automatiques (tool_used, tool_not_used, tool_order, regex, file_exists) sont notées sur la trace de
-// l'essai, et les vérifications par juge IA (llm) sont signalées « non notées ».
+// l'essai, command (« run: '<commande bash>' », réussie si elle sort avec le code 0) dans le dossier du projet une fois
+// l'essai fini, et les vérifications par juge IA (llm) sont signalées « non notées ».
 //
 // Pourquoi : dans claude plugin eval (2.1.309), chaque commande `!` d'un skill est déclarée en échec, même réussie
 // (le shell ne peut pas écrire son fichier de suivi, …/tmp/claude-<uid>/cwd-…, monté en lecture seule) : aucune
 // commande Pulse ne peut y démarrer. Le rapport s'écrit dans outils/evals/resultats/direct-<date>/ au format que lit
-// mesurer.js. Variables : RUNS (essais par cas, 1), PLAFOND (dollars par essai, 5), PACK (next : ajoute le pack).
+// mesurer.js. Variables : RUNS (essais par cas, 1), PLAFOND (dollars par essai, 5), PACK (next : ajoute le pack),
+// MODELES_AGENTS (« reviewer=sonnet,ux-reviewer=sonnet » : les essais tournent sur une copie des plugins où ces agents
+// changent de modèle, pour comparer deux séries avec mesurer.js --comparer).
 "use strict";
 
 const fs = require("fs");
@@ -144,6 +147,7 @@ function noter(fichier, verifications, dossierProjet = null) {
       reussi = avant >= 0 && (String(v.strict) === "true" ? apres > avant : appels.some((a, i) => i > avant && correspond(a, v.after)));
     } else if (v.type === "regex") reussi = new RegExp(v.pattern, v.flags || "").test(reponse);
     else if (v.type === "file_exists") reussi = Boolean(dossierProjet && v.path && fs.existsSync(path.join(dossierProjet, v.path)));
+    else if (v.type === "command") reussi = Boolean(dossierProjet && v.run) && spawnSync("bash", ["-c", v.run], { cwd: dossierProjet, encoding: "utf8", timeout: 120000 }).status === 0;
     return { nom: v.nom, type: v.type, reussi };
   });
   const notees = details.filter((d) => d.reussi !== null);
@@ -166,8 +170,33 @@ function argumentsDirect(cas, depot, env) {
   ];
 }
 
+/** Les modèles demandés par MODELES_AGENTS : { reviewer: "sonnet", … } (noms d'agents et de modèles vérifiés). */
+function lireModeles(texte) {
+  const modeles = {};
+  for (const paire of String(texte || "").split(",").map((x) => x.trim()).filter(Boolean)) {
+    const m = /^([a-z][a-z-]*)=(opus|sonnet|haiku|fable)$/.exec(paire);
+    if (!m) throw new Error(`MODELES_AGENTS : « ${paire} » n'a pas la forme agent=opus|sonnet|haiku|fable`);
+    modeles[m[1]] = m[2];
+  }
+  return modeles;
+}
+
+/** Le dépôt des essais : le dépôt lui-même, ou, avec MODELES_AGENTS, une copie de plugins/ où ces agents changent de modèle. */
+function depotEssai(depot, env) {
+  const modeles = lireModeles(env.MODELES_AGENTS);
+  if (!Object.keys(modeles).length) return depot;
+  const copie = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-modeles-"));
+  fs.cpSync(path.join(depot, "plugins"), path.join(copie, "plugins"), { recursive: true, filter: (f) => !/[\\/](node_modules|\.git)([\\/]|$)/.test(f) });
+  for (const [agent, modele] of Object.entries(modeles)) {
+    const fichier = path.join(copie, "plugins", "pulse-vibe", "agents", `${agent}.md`);
+    if (!fs.existsSync(fichier)) throw new Error(`MODELES_AGENTS : agent inconnu « ${agent} »`);
+    fs.writeFileSync(fichier, fs.readFileSync(fichier, "utf8").replace(/^model:\s*\S+$/m, `model: ${modele}`));
+  }
+  return copie;
+}
+
 /** Écrit le rapport au format de claude plugin eval que lit mesurer.js : aggregate-result.json et traces/. */
-function ecrireRapport(dossier, resultats) {
+function ecrireRapport(dossier, resultats, modeles = null) {
   fs.mkdirSync(path.join(dossier, "traces"), { recursive: true });
   const cases = resultats.map(({ cas, essais }) => ({
     name: cas,
@@ -178,7 +207,7 @@ function ecrireRapport(dossier, resultats) {
       }),
     },
   }));
-  fs.writeFileSync(path.join(dossier, "aggregate-result.json"), JSON.stringify({ mode: "direct", cases }, null, 2) + "\n");
+  fs.writeFileSync(path.join(dossier, "aggregate-result.json"), JSON.stringify({ mode: "direct", ...(modeles ? { modeles } : {}), cases }, null, 2) + "\n");
 }
 
 /** Les cas à lancer : tous les dossiers qui ont un prompt.md, ou ceux que nomme le motif (* permis). */
@@ -197,6 +226,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
     console.error("Aucun cas ne correspond.");
     return 1;
   }
+  const essai = depotEssai(depot, env);
   const essaisParCas = Number(env.RUNS || 1);
   const sortie = path.join(resultats, `direct-${new Date().toISOString().replace(/[:.]/g, "-")}`);
   fs.mkdirSync(sortie, { recursive: true });
@@ -207,7 +237,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
     for (let n = 1; n <= essaisParCas; n++) {
       const projet = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-direct-${nom}-`));
       if (cas.preparation) {
-        const p = spawnSync("bash", [cas.preparation], { cwd: projet, encoding: "utf8", env: envEval(env, binsDepot(depot, env)) });
+        const p = spawnSync("bash", [cas.preparation], { cwd: projet, encoding: "utf8", env: envEval(env, binsDepot(essai, env)) });
         if (p.status !== 0) {
           console.error(`${nom} : préparation en échec\n${(p.stderr || "").slice(-800)}`);
           continue;
@@ -215,8 +245,8 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
       }
       const trace = path.join(sortie, `${nom}-${n}.jsonl`);
       const debut = Date.now();
-      const r = spawnSync("claude", argumentsDirect(cas, depot, env), {
-        cwd: projet, env: envEval(env, binsDepot(depot, env)), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
+      const r = spawnSync("claude", argumentsDirect(cas, essai, env), {
+        cwd: projet, env: envEval(env, binsDepot(essai, env)), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
       });
       fs.writeFileSync(trace, r.stdout || "");
       const duree = Math.round((Date.now() - debut) / 1000);
@@ -229,10 +259,11 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
     }
     bilan.push({ cas: nom, essais });
   }
-  ecrireRapport(sortie, bilan);
+  ecrireRapport(sortie, bilan, env.MODELES_AGENTS || null);
+  if (essai !== depot) fs.rmSync(essai, { recursive: true, force: true });
   const mesurer = require("./mesurer");
   console.log(`\n${mesurer.tableau(mesurer.lireResultats(sortie))}\n\nRapport : ${path.relative(depot, sortie)}`);
   return 0;
 }
 
-module.exports = { OUTILS_ACCORDES, OUTILS_PACK, envEval, binsDepot, valeur, entete, lireCas, lireTrace, noter, argumentsDirect, ecrireRapport, choisirCas, lancer };
+module.exports = { OUTILS_ACCORDES, OUTILS_PACK, envEval, binsDepot, valeur, entete, lireCas, lireTrace, noter, argumentsDirect, ecrireRapport, choisirCas, lancer, lireModeles, depotEssai };

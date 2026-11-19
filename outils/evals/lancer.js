@@ -228,7 +228,7 @@ function viaWsl(extra) {
   console.log(`Windows n'a pas de bac à sable pour les essais : ils se lancent dans WSL2 (${noms[0]}).`);
   const commande = `cd ${pourBash(racineWsl)} && node outils/evals/lancer.js ${extra.map(pourBash).join(" ")}`;
   // RUNS, PLAFOND et PACK passent dans WSL par WSLENV.
-  const wslenv = ["RUNS", "PLAFOND", "PACK", process.env.WSLENV].filter(Boolean).join(":");
+  const wslenv = ["RUNS", "PLAFOND", "PACK", "MODELES_AGENTS", process.env.WSLENV].filter(Boolean).join(":");
   const r = spawnSync("wsl.exe", ["--", "bash", "-lc", commande], { stdio: "inherit", env: { ...process.env, WSLENV: wslenv } });
   return r.status === null ? 1 : r.status;
 }

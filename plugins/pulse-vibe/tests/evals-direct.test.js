@@ -199,6 +199,34 @@ test("le rapport du mode direct se lit avec mesurer.js, comme celui de claude pl
 test("choisirCas : tous les cas, ou ceux que nomme --case (motif avec *)", () => {
   const tous = direct.choisirCas(CAS, null);
   assert.ok(tous.includes("plan-controle") && !tous.includes("_communs"));
-  assert.deepStrictEqual(direct.choisirCas(CAS, "plan-*"), ["plan-controle"]);
+  assert.deepStrictEqual(direct.choisirCas(CAS, "plan-*"), ["plan-controle", "plan-ecart"]);
   assert.deepStrictEqual(direct.choisirCas(CAS, "statut-prochaine-etape"), ["statut-prochaine-etape"]);
+});
+
+test("command : réussie quand la commande sort avec le code 0 dans le dossier du projet ; sans dossier, échouée", () => {
+  const projet = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-evals-command-"));
+  const trace = path.join(projet, "trace.jsonl");
+  fs.writeFileSync(trace, "");
+  fs.writeFileSync(path.join(projet, "a.txt"), "écart noté\n");
+  const v = [{ nom: "ok", type: "command", run: 'grep -q "écart" a.txt' }, { nom: "ko", type: "command", run: "test -f absent.txt" }];
+  assert.deepStrictEqual(direct.noter(trace, v, projet).details.map((d) => d.reussi), [true, false]);
+  assert.deepStrictEqual(direct.noter(trace, v, null).details.map((d) => d.reussi), [false, false]);
+  fs.rmSync(projet, { recursive: true, force: true });
+});
+
+test("MODELES_AGENTS : lecture vérifiée, copie des plugins où seuls les agents nommés changent de modèle", () => {
+  assert.deepStrictEqual(direct.lireModeles("reviewer=sonnet, ux-reviewer=haiku"), { reviewer: "sonnet", "ux-reviewer": "haiku" });
+  assert.deepStrictEqual(direct.lireModeles(""), {});
+  assert.throws(() => direct.lireModeles("reviewer=gpt"), /agent=opus\|sonnet/);
+  const depot = path.join(__dirname, "..", "..", "..");
+  assert.strictEqual(direct.depotEssai(depot, {}), depot);
+  const copie = direct.depotEssai(depot, { MODELES_AGENTS: "reviewer=sonnet" });
+  try {
+    assert.notStrictEqual(copie, depot);
+    assert.match(fs.readFileSync(path.join(copie, "plugins", "pulse-vibe", "agents", "reviewer.md"), "utf8"), /^model: sonnet$/m);
+    assert.strictEqual(fs.readFileSync(path.join(copie, "plugins", "pulse-vibe", "agents", "verifier.md"), "utf8"), fs.readFileSync(path.join(depot, "plugins", "pulse-vibe", "agents", "verifier.md"), "utf8"));
+  } finally {
+    fs.rmSync(copie, { recursive: true, force: true });
+  }
+  assert.throws(() => direct.depotEssai(depot, { MODELES_AGENTS: "inconnu=sonnet" }), /agent inconnu/);
 });

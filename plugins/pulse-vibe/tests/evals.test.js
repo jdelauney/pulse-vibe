@@ -17,10 +17,12 @@ test("au moins trois cas, chacun avec un prompt, des vérifications et son scrip
   assert.ok(cas.length >= 3, cas.join(", "));
   for (const c of cas) {
     const dossier = path.join(EVALS, c);
-    assert.match(fs.readFileSync(path.join(dossier, "prompt.md"), "utf8"), /^---\n[\s\S]*?allowed_tools: \[[^\]]*Skill[^\]]*\][\s\S]*?\n---\n\n\/pulse:/, c);
+    // Un cas essaie une commande Pulse ; un cas étiqueté garde-fous essaie un garde-fou, qui agit aussi hors commande.
+    const gardeFous = /^tags: \[[^\]]*\bgarde-fous\b/m.test(fs.readFileSync(path.join(dossier, "case.yaml"), "utf8"));
+    assert.match(fs.readFileSync(path.join(dossier, "prompt.md"), "utf8"), gardeFous ? /^---\n[\s\S]*?allowed_tools: \[[^\]]*\][\s\S]*?\n---\n\n\S/ : /^---\n[\s\S]*?allowed_tools: \[[^\]]*Skill[^\]]*\][\s\S]*?\n---\n\n\/pulse:/, c);
     const graders = fs.readdirSync(path.join(dossier, "graders"));
     assert.ok(graders.length >= 2, `${c} : au moins deux vérifications`);
-    for (const g of graders) assert.match(fs.readFileSync(path.join(dossier, "graders", g), "utf8"), /^---\ntype: (regex|tool_used|tool_not_used|tool_order|file_exists|llm)\n/, `${c}/${g}`);
+    for (const g of graders) assert.match(fs.readFileSync(path.join(dossier, "graders", g), "utf8"), /^---\ntype: (regex|tool_used|tool_not_used|tool_order|file_exists|command|llm)\n/, `${c}/${g}`);
     const yaml = fs.readFileSync(path.join(dossier, "case.yaml"), "utf8");
     assert.match(yaml, /^schema_version: "1\.1"$/m);
     assert.match(yaml, new RegExp(`^name: ${c}$`, "m"));
