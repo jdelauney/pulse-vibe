@@ -6,6 +6,7 @@
 #   pulse-skills reference <chemin>     affiche une référence : regles-skills.md, ou celle d'une commande (ex. optimize-skill/plan.md)
 #   pulse-skills modele <skill>/<fichier>   affiche le modèle d'une commande (ex. audit-skill/rapport.md)
 #   pulse-skills agent <nom>            affiche les consignes d'un agent (skill-auditor)
+#   pulse-skills declenchement preparer|lancer <dossier>   essai de déclenchement d'une skill invocable : preparer (description, exemples, format des phrases), lancer --phrases <fichier.json> (chaque phrase envoyée à claude -p, la skill chargée ou non)
 #
 # Ne sort jamais en erreur pour "contexte" : un échec annulerait la commande /pulse-skills.
 
@@ -63,10 +64,12 @@ case "$1" in
   modele)
     if nom_sur "$2" && [ -f "$SK/${2%%/*}/assets/${2#*/}" ]; then cat "$SK/${2%%/*}/assets/${2#*/}"
     else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
+  declenchement)
+    shift; exec node "$RACINE/scripts/declenchement.js" "$@" ;;
   agent)
     if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"
     else echo "Agent introuvable : $2 (skill-auditor)"; exit 1; fi ;;
   *)
-    echo "Usage : pulse-skills contexte <commande> | reference <chemin> | modele <skill>/<fichier> | agent <nom>"
+    echo "Usage : pulse-skills contexte <commande> | reference <chemin> | modele <skill>/<fichier> | agent <nom> | declenchement preparer|lancer <dossier>"
     exit 1 ;;
 esac
