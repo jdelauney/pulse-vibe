@@ -9,7 +9,10 @@
 // Le réglage proposé (.claude/settings.json, clé « sandbox ») : bac à sable actif ; écriture permise dans les caches de npm
 // et des navigateurs de test (~/.npm, ~/.cache) ; domaines du cœur (paquets, dépôt GitHub), ceux du pack de pile déclaré
 // (ligne « domaines: » de pulse-pile-<id> info, passée par PULSE_PACK_DOMAINES), l'adresse du site en ligne (CLAUDE.md) et
-// localhost quand le projet a des tests de bout en bout. Les domaines déjà présents sont gardés.
+// localhost quand le projet a des tests de bout en bout ; lecture permise des fichiers de variables que lisent la
+// construction et les tests (.env, .env.local, .env.<mode>.local). Sans elle, le bac à sable applique aux commandes la
+// règle Read(./.env…) que Pulse écrit pour l'IA, et la construction ne trouve plus ses variables (essai du 2026-11-19) ;
+// les garde-fous refusent toujours une commande qui nomme ces fichiers. Les réglages déjà présents sont gardés.
 //
 //   pulse-aidd autorisations --bac-a-sable           plateforme, état, domaines qui manquent
 //   pulse-aidd autorisations --bac-a-sable --ecrire  écrit le réglage dans .claude/settings.json
@@ -23,6 +26,7 @@ const path = require("path");
 
 const DOMAINES_COEUR = ["registry.npmjs.org", "*.npmjs.org", "pypi.org", "files.pythonhosted.org", "github.com", "*.github.com", "codeload.github.com", "objects.githubusercontent.com"];
 const ECRITURE = ["~/.npm", "~/.cache"];
+const LECTURE = [".env", ".env.local", ".env.development.local", ".env.production.local", ".env.test.local"];
 
 const actif = (env = process.env) => env.SANDBOX_RUNTIME === "1";
 
@@ -93,7 +97,11 @@ function reglage(racine, env = process.env) {
   return {
     ...actuel,
     enabled: true,
-    filesystem: { ...fichiers, allowWrite: [...new Set([...(fichiers.allowWrite || []), ...ECRITURE])] },
+    filesystem: {
+      ...fichiers,
+      allowWrite: [...new Set([...(fichiers.allowWrite || []), ...ECRITURE])],
+      allowRead: [...new Set([...(fichiers.allowRead || []), ...LECTURE])],
+    },
     network: { ...reseau, allowedDomains: [...new Set([...(reseau.allowedDomains || []), ...domaines(racine, env)])] },
   };
 }
@@ -101,11 +109,12 @@ function reglage(racine, env = process.env) {
 /** L'état : { plateforme, actif, manquants: [domaines ou chemins absents du réglage du projet] }. */
 function etat(racine, env = process.env) {
   const actuel = lireReglages(path.join(racine, ".claude", "settings.json")).sandbox || {};
-  const presents = new Set([...((actuel.network || {}).allowedDomains || []), ...((actuel.filesystem || {}).allowWrite || [])]);
+  const f = actuel.filesystem || {};
+  const presents = new Set([...((actuel.network || {}).allowedDomains || []), ...(f.allowWrite || []), ...(f.allowRead || [])]);
   return {
     plateforme: plateforme(),
     actif: actuel.enabled === true,
-    manquants: [...ECRITURE, ...domaines(racine, env)].filter((x) => !presents.has(x)),
+    manquants: [...ECRITURE, ...LECTURE, ...domaines(racine, env)].filter((x) => !presents.has(x)),
   };
 }
 
@@ -127,4 +136,4 @@ function formaterEtat(e) {
   return lignes.join("\n");
 }
 
-module.exports = { DOMAINES_COEUR, ECRITURE, actif, causeReseau, plateforme, domaines, reglage, etat, ecrire, formaterEtat };
+module.exports = { DOMAINES_COEUR, ECRITURE, LECTURE, actif, causeReseau, plateforme, domaines, reglage, etat, ecrire, formaterEtat };

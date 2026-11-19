@@ -180,7 +180,9 @@ test("argumentsDirect : claude -p avec le prompt d'abord, les plugins du dépôt
   assert.ok(!a.includes(path.join("/depot", "plugins", "pulse-vibe-next")));
   assert.deepStrictEqual(a.slice(a.indexOf("--max-turns"), a.indexOf("--max-turns") + 2), ["--max-turns", "15"]);
   assert.deepStrictEqual(a.slice(a.indexOf("--max-budget-usd"), a.indexOf("--max-budget-usd") + 2), ["--max-budget-usd", "5"]);
-  assert.strictEqual(a[a.indexOf("--settings") + 1], JSON.stringify({ sandbox: { enabled: true } }));
+  const bac = JSON.parse(a[a.indexOf("--settings") + 1]).sandbox;
+  assert.strictEqual(bac.enabled, true);
+  assert.ok(bac.filesystem.allowRead.includes(path.join(process.cwd(), ".env.local")), "la construction lit ses variables, chemin absolu");
   const outils = a.slice(a.indexOf("--allowedTools") + 1);
   for (const o of ["Read", "Skill", "Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"]) assert.ok(outils.includes(o), o);
   const avecPack = direct.argumentsDirect(c, "/depot", { PACK: "next", PLAFOND: "15" });

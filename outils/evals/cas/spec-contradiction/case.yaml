@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: spec-contradiction
+tags: [description, spec]
+context:
+  scaffold_script: projet.sh

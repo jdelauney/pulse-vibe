@@ -19,6 +19,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const { nomTrace } = require("./mesurer");
 const { evaluer } = require("../../plugins/pulse-vibe/scripts/garde-commandes");
+const { LECTURE } = require("../../plugins/pulse-vibe/scripts/bac-a-sable");
 
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
 const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
@@ -154,8 +155,12 @@ function noter(fichier, verifications, dossierProjet = null) {
   return { score: notees.length ? notees.filter((d) => d.reussi).length / notees.length : null, details };
 }
 
-/** Les arguments de claude -p pour un cas, avec les plugins du dépôt. */
-function argumentsDirect(cas, depot, env) {
+/** Le bac à sable des essais, comme celui que propose /pulse:init : les fichiers de variables du projet restent lisibles
+ * par la construction et les tests (chemins absolus : dans --settings, un chemin relatif ne part pas du projet). */
+const bacAEssai = (projet) => ({ sandbox: { enabled: true, filesystem: { allowRead: LECTURE.map((f) => path.join(projet, f)) } } });
+
+/** Les arguments de claude -p pour un cas, avec les plugins du dépôt ; `projet` : le dossier de l'essai. */
+function argumentsDirect(cas, depot, env, projet = process.cwd()) {
   const pack = env.PACK === "next";
   const outils = [...new Set([...cas.outils, ...OUTILS_ACCORDES, ...(pack ? OUTILS_PACK : [])])];
   return [
@@ -165,7 +170,7 @@ function argumentsDirect(cas, depot, env) {
     "--max-turns", String(cas.maxTours),
     "--max-budget-usd", env.PLAFOND || "5",
     "--output-format", "stream-json", "--verbose",
-    "--settings", JSON.stringify({ sandbox: { enabled: true } }),
+    "--settings", JSON.stringify(bacAEssai(projet)),
     "--allowedTools", ...outils,
   ];
 }
@@ -245,7 +250,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
       }
       const trace = path.join(sortie, `${nom}-${n}.jsonl`);
       const debut = Date.now();
-      const r = spawnSync("claude", argumentsDirect(cas, essai, env), {
+      const r = spawnSync("claude", argumentsDirect(cas, essai, env, projet), {
         cwd: projet, env: envEval(env, binsDepot(essai, env)), encoding: "utf8", maxBuffer: 1 << 30, timeout: cas.delai * 1000,
       });
       fs.writeFileSync(trace, r.stdout || "");

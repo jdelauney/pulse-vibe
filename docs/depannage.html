@@ -153,10 +153,9 @@
 <section id="en-ligne">
 <h2>Mon site en ligne ne marche plus</h2>
 <details class="probleme"><summary>Le site affiche une erreur depuis la dernière mise à jour</summary>
-<p>Commencez par décrire ce que vous voyez à <code>/pulse:fix</code> : il cherche la cause et corrige.</p>
-<pre class="commande"><code>/pulse:fix "le site en ligne affiche une erreur depuis la dernière mise à jour"</code></pre>
-<p>Pour remettre vite le site d'avant, annulez la dernière version avec <code>/pulse:annuler</code>, puis envoyez-la : le site se met à jour tout seul.</p>
-<pre class="commande"><code>/pulse:annuler</code></pre>
+<p>Décrivez ce que vivent les visiteurs à <code>/pulse:fix</code>, en mode en ligne. Pulse vous propose d'abord de remettre en ligne la version d'avant, pour que le site remarche tout de suite. Il cherche ensuite la cause au calme, corrige, puis écrit une fiche de l'incident dans <code>docs/incidents/</code>.</p>
+<pre class="commande"><code>/pulse:fix en-ligne "le site affiche une erreur depuis la dernière mise à jour"</code></pre>
+<p>Rien n'est corrigé ni envoyé sans votre accord : le site sert de vrais visiteurs.</p>
 <p>Pages des commandes : <a href="commandes/fix.html"><code>/pulse:fix</code></a>, <a href="commandes/annuler.html"><code>/pulse:annuler</code></a>.</p>
 </details>
 <details class="probleme"><summary>Je veux remettre en ligne la version précédente, tout de suite</summary>
@@ -181,7 +180,13 @@
 </ul>
 </details>
 <details class="probleme"><summary>Pulse refuse de faire une action</summary>
-<p>Le garde-fou bloque ce qui pourrait abîmer votre projet ou exposer vos clés, par exemple lire votre fichier <code>.env</code>. Lisez la raison : Pulse propose en général une autre façon d'arriver au même résultat.</p>
+<p>Le garde-fou bloque ce qui pourrait abîmer votre projet ou exposer vos clés. Lisez la raison : Pulse propose en général une autre façon d'arriver au même résultat. Les cas les plus courants :</p>
+<ul>
+<li><strong>Lire votre fichier <code>.env</code></strong> : vos clés restent hors de la conversation. Pulse les contrôle sans les afficher.</li>
+<li><strong>Installer un paquet qui n'existe pas</strong> : le nom est mal écrit ou inventé par l'IA. Pulse vérifie le nom sur le registre et propose le bon. Pour un paquet tout récent ou au nom proche d'un paquet connu, il vous demande votre accord.</li>
+<li><strong>Modifier un test pendant une correction</strong> : ce test prouve l'erreur, il reste tel quel jusqu'à la fin de la correction. Si le test lui-même est faux, Pulse le vérifie et vous explique pourquoi avant de le corriger.</li>
+<li><strong>Modifier une migration déjà enregistrée</strong> (projets Next.js) : elle a peut-être déjà changé la base de données. Pulse en écrit une nouvelle à la place.</li>
+</ul>
 </details>
 </section>
 
