@@ -12,6 +12,7 @@
 // Sans option : affiche le fichier, le nombre de règles manquantes et chacune (« - allow Bash(npm test) »).
 // --ecrire : ajoute les règles manquantes à .claude/settings.json (créé s'il manque ; règles existantes gardées).
 // Les règles déjà présentes dans .claude/settings.local.json comptent comme présentes.
+// --bac-a-sable [--ecrire] : le bac à sable de Claude Code (scripts/bac-a-sable.js) : état, puis réglage écrit.
 // Affiche aussi « reprise-auto: active|desactivee|inconnue » : Claude Code reprend seul au retour de la limite des
 // 5 heures (depuis la 2.1.234, réglage autoContinueAtUsageLimit de ~/.claude/settings.json, vrai par défaut).
 "use strict";
@@ -181,7 +182,12 @@ function ecrire(racine) {
 if (require.main === module) {
   const racine = process.cwd();
   try {
-    if (process.argv.includes("--ecrire")) console.log(`fichier: .claude/settings.json\necrites: ${ecrire(racine)}`);
+    const bac = require("./bac-a-sable");
+    if (process.argv.includes("--bac-a-sable")) {
+      const e = bac.etat(racine);
+      if (process.argv.includes("--ecrire") && e.plateforme === "proposable") console.log(`fichier: .claude/settings.json\nbac-a-sable: actif\najoutes: ${bac.ecrire(racine)}`);
+      else console.log(bac.formaterEtat(e));
+    } else if (process.argv.includes("--ecrire")) console.log(`fichier: .claude/settings.json\necrites: ${ecrire(racine)}`);
     else {
       const manque = manquantes(racine);
       const reglagesUtilisateur = lireReglagesUtilisateur();

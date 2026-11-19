@@ -1,7 +1,11 @@
-@import "tailwindcss";
+/* Tailwind lit seulement app/ et src/ : il ne parcourt pas les fichiers à point du dossier, que le bac à sable de
+   Claude Code rend illisibles (.bashrc, .profile, .mcp.json…) et sur lesquels la construction s'arrêterait. */
+@import "tailwindcss" source(none);
 @import "./polices.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@source "../app";
+@source "../src";
 
 @custom-variant dark (&:is(.dark *));
 
