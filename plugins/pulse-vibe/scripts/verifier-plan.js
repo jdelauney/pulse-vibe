@@ -321,7 +321,8 @@ function ecartsTache(racine, idUs, idTache, modifies = fichiersModifies(racine))
   const utiles = modifies.filter((x) => !HORS_ECART.test(x));
   const constats = [];
   for (const x of utiles) if (!prevus.includes(x)) constats.push({ gravite: "avertissement", ou: tache.id, message: `« ${x} » est modifié, mais n'est pas dans la ligne « Fichiers » de la tâche` });
-  for (const x of prevus) if (!modifies.includes(x)) constats.push({ gravite: "avertissement", ou: tache.id, message: `« ${x} » est prévu dans la ligne « Fichiers », mais n'a pas changé` });
+  // Un dossier cité (« __tests__/ ») ou un fichier laissé de côté (test, document) ne se contrôle pas un par un.
+  for (const x of prevus) if (!x.endsWith("/") && !HORS_ECART.test(x) && !modifies.includes(x)) constats.push({ gravite: "avertissement", ou: tache.id, message: `« ${x} » est prévu dans la ligne « Fichiers », mais n'a pas changé` });
   return { plan: rel(racine, fichiers.plan), tache: tache.id, prevus, modifies: utiles, constats };
 }
 

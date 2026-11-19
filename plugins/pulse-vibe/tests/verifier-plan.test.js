@@ -305,6 +305,8 @@ test("après la tâche (--apres) : fichier modifié non prévu, fichier prévu i
   assert.deepStrictEqual(r.modifies, ["src/liste.js", "src/autre.js"]);
   assert.deepStrictEqual(r.constats.map((c) => c.message), ["« src/autre.js » est modifié, mais n'est pas dans la ligne « Fichiers » de la tâche", "« src/menu.js » est prévu dans la ligne « Fichiers », mais n'a pas changé"]);
   assert.ok(r.constats.every((c) => c.gravite === "avertissement" && c.ou === "T1"));
+  const dossier = projet({ [planFichier]: PLAN([TACHE("T1", { fichiers: "à créer : `src/liste.js`, `__tests__/`, `src/__tests__/liste.test.js`" })]) });
+  assert.deepStrictEqual(ecartsTache(dossier, "US-002", "T1", ["src/liste.js"]).constats, [], "dossier cité et test prévu : pas d'avertissement");
   assert.strictEqual(ecartsTache(d, "US-002", "T9", []).introuvable, true);
   assert.strictEqual(ecartsTache(d, "US-009", "T1", []), null);
   const sortie = spawnSync(process.execPath, [SCRIPT, "US-002"], { cwd: d, encoding: "utf8" }).stdout;
