@@ -48,7 +48,8 @@ async function essayer(adresse, texte) {
     reponse = await fetch(adresse, { redirect: "follow", signal: AbortSignal.timeout(15000) });
   } catch (e) {
     const code = (e.cause && e.cause.code) || e.name;
-    return `le site ne répond pas : ${CAUSES[code] || "erreur réseau"} (${code})`;
+    const bac = require("./bac-a-sable").causeReseau(adresse);
+    return `le site ne répond pas : ${bac || CAUSES[code] || "erreur réseau"} (${code})`;
   }
   if (reponse.status !== 200) return `le site répond avec le code ${reponse.status} au lieu de 200`;
   if (texte) {

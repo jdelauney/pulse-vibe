@@ -28,7 +28,7 @@
 #   pulse-aidd copier-env <dossier>  copie les fichiers d'environnement locaux (.env, .env.local…) du dossier principal dans un worktree du projet, sans afficher leur contenu ; garde ceux déjà présents, refuse ceux que Git n'y ignore pas
 #   pulse-aidd travail-fini [dossier]  efface le travail en cours (aidd_docs/tasks/in-progress.md) du dossier donné (par défaut le dossier courant ; un worktree : .claude/worktrees/<nom>)
 #   pulse-aidd revue <Tn> [<Tn>…]    dernière relecture de chaque tâche et où reprendre (examen, correction, test, commit, aide), pour /pulse:commit, /pulse:implement, /pulse:spirc et /pulse:review ; revue <US-XXX> : la relecture de toute l'US (rythme rapide)
-#   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json
+#   pulse-aidd autorisations [--ecrire]  les règles d'autorisation utiles au projet (clés, Git, contrôles de Pulse et du projet) ; --ecrire les ajoute à .claude/settings.json ; --bac-a-sable [--ecrire] : le bac à sable de Claude Code (macOS, Linux, WSL2) : plateforme, état, domaines qui manquent, puis le réglage écrit
 #   pulse-aidd copies [--mettre-a-jour]  l'état des copies de Pulse dans le projet (contrôle des secrets, ligne d'état) : a-jour, ancienne, adaptee ; --mettre-a-jour remplace les anciennes intactes
 #   pulse-aidd ligne-etat [--installer [--remplacer] | --retirer]  la ligne d'état de Claude Code (US, tâche, avancement, décision en attente) ; --installer la règle dans .claude/settings.local.json (/pulse:status ligne)
 #   pulse-aidd captures effacer <US-XXX>  retire les captures d'écran gardées comme preuves (aidd_docs/captures/<US-XXX>/), une fois l'US envoyée
@@ -75,6 +75,9 @@ if [ $# -eq 0 ] && [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
   unset _n _i _v _a
 fi
 unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
+# Bac à sable de Claude Code (SANDBOX_RUNTIME=1) : le réseau passe par un proxy que fetch de Node lit seulement avec
+# NODE_USE_ENV_PROXY=1 ; sans lui, toute requête des scripts échoue, même vers un domaine autorisé (essais du 2026-11-19).
+if [ "${SANDBOX_RUNTIME:-}" = 1 ] && [ -n "${HTTPS_PROXY:-}${https_proxy:-}" ]; then export NODE_USE_ENV_PROXY=1; fi
 
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
@@ -422,7 +425,11 @@ case "$1" in
   scenarios)
     exec node "$TPL/verifier.js" --scenarios ;;
   autorisations)
-    shift; exec node "$RACINE/scripts/autorisations.js" "$@" ;;
+    shift
+    # Le pack de pile déclaré donne ses domaines (ligne « domaines: » de pulse-pile-<id> info) au réglage du bac à sable.
+    id="$(pack_declare)"
+    if [ -n "$id" ] && command -v "pulse-pile-$id" >/dev/null 2>&1; then export PULSE_PACK_DOMAINES="$(pack_info "$id" domaines)"; fi
+    exec node "$RACINE/scripts/autorisations.js" "$@" ;;
   copies)
     shift; exec node "$RACINE/scripts/copies.js" "$@" ;;
   ligne-etat)
