@@ -15,6 +15,11 @@
 //   statut: à valider | validé
 //   taches: 3
 //   bilan: ok | avertissements | à corriger | introuvable
+// `pulse-aidd verifier-plan <US-XXX> --apres <Tn>`, lancé par l'étape commit avant d'enregistrer une tâche : les fichiers
+// modifiés (index, arbre de travail, nouveaux fichiers) confrontés à la ligne « Fichiers » de la tâche ; avertissement pour
+// un fichier modifié non prévu, ou prévu et intact. Les tests, docs/, aidd_docs/, les migrations générées, les fichiers de
+// verrou et .claude/ sont laissés de côté. Lignes « plan », « tache », « prevus », « modifies », puis les constats.
+// Plan : la ligne « Ce que ce changement peut casser » de la conception technique manque → avertissement (plan plus ancien).
 // Sort toujours avec le code 0 : un échec annulerait la commande /pulse qui l'appelle.
 "use strict";
 
@@ -22,6 +27,8 @@ const fs = require("fs");
 const path = require("path");
 const { lireUs } = require("./etat.js");
 const { formaterConstats, lancerControle, normaliserUs, numero } = require("./constats.js");
+
+const { spawnSync } = require("child_process");
 
 const NIVEAUX_AUTOMATISES = ["unitaire", "integration", "bout-en-bout"];
 const STATUTS = { " ": "a-faire", "~": "en-cours", x: "terminee", X: "terminee" };
@@ -276,6 +283,10 @@ function verifierPlan(racine, idUs) {
     }
   }
 
+  // Arbitrages de la conception technique (ce qui peut casser, autre façon écartée) : un plan plus ancien ne les a pas.
+  if (/^##\s+Conception technique/m.test(textePlan) && !/Ce que ce changement peut casser/i.test(textePlan))
+    avertir("conception", "la conception technique ne dit pas « Ce que ce changement peut casser » ni l'« Autre façon envisagée » (section « Arbitrages » du modèle)");
+
   // Mise en ligne : seulement dans le plan de la dernière US Indispensable du parcours.
   const indispensables = lireUs(racine).filter((u) => u.priorite === 0);
   const derniere = indispensables.length ? indispensables[indispensables.length - 1].id : null;
@@ -289,11 +300,57 @@ function verifierPlan(racine, idUs) {
   return { plan: rel(racine, fichiers.plan), statut, taches: taches.length, constats };
 }
 
+// Fichiers laissés de côté par le contrôle d'écart : tests, documents, migrations générées, verrous, réglages de Claude Code.
+const HORS_ECART = /(^|\/)(__tests__|tests?|e2e|docs|aidd_docs|drizzle|\.claude|\.github)\/|\.(test|spec)\.[a-z0-9]+$|(^|\/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|CLAUDE\.md|README\.md)$/i;
+
+/** Les fichiers modifiés du dossier de travail : index, arbre de travail et nouveaux fichiers (chemins depuis la racine). */
+function fichiersModifies(racine) {
+  const git = (...args) => spawnSync("git", args, { cwd: racine, encoding: "utf8", windowsHide: true }).stdout || "";
+  const liste = [...git("diff", "--name-only", "HEAD").split(/\r?\n/), ...git("ls-files", "--others", "--exclude-standard").split(/\r?\n/)];
+  return [...new Set(liste.map((f) => f.trim()).filter(Boolean))].sort();
+}
+
+/** Les écarts entre la ligne « Fichiers » d'une tâche et les fichiers modifiés : { plan, tache, prevus, modifies, constats } ou null. */
+function ecartsTache(racine, idUs, idTache, modifies = fichiersModifies(racine)) {
+  const fichiers = trouverUs(racine, normaliserUs(idUs));
+  if (!fichiers) return null;
+  const tache = lireTachesDetaillees(lireSi(fichiers.plan) || "").find((t) => t.id === String(idTache).toUpperCase());
+  if (!tache) return { plan: rel(racine, fichiers.plan), tache: idTache, introuvable: true, constats: [] };
+  const f = fichiersDeTache(tache.details.fichiers);
+  const prevus = [...new Set([...f.creer, ...f.modifier])];
+  const utiles = modifies.filter((x) => !HORS_ECART.test(x));
+  const constats = [];
+  for (const x of utiles) if (!prevus.includes(x)) constats.push({ gravite: "avertissement", ou: tache.id, message: `« ${x} » est modifié, mais n'est pas dans la ligne « Fichiers » de la tâche` });
+  for (const x of prevus) if (!modifies.includes(x)) constats.push({ gravite: "avertissement", ou: tache.id, message: `« ${x} » est prévu dans la ligne « Fichiers », mais n'a pas changé` });
+  return { plan: rel(racine, fichiers.plan), tache: tache.id, prevus, modifies: utiles, constats };
+}
+
+function formaterEcarts(r, us, idTache) {
+  if (!r) return `us: ${us}\nbilan: introuvable\nraison: aucun plan PLAN-SPEC-${us}-… dans aidd_docs/tasks/`;
+  if (r.introuvable) return `plan: ${r.plan}\ntache: ${idTache}\nbilan: introuvable\nraison: la tâche ${idTache} n'est pas dans ce plan`;
+  return formaterConstats([`plan: ${r.plan}`, `tache: ${r.tache}`, `prevus: ${r.prevus.join(", ") || "aucun"}`, `modifies: ${r.modifies.join(", ") || "aucun"}`], r.constats);
+}
+
 function formater(r, us) {
   if (!r) return `us: ${us}\nbilan: introuvable\nraison: aucun plan PLAN-SPEC-${us}-… dans aidd_docs/tasks/`;
   return formaterConstats([`plan: ${r.plan}`, `statut: ${r.statut}`, `taches: ${r.taches}`], r.constats);
 }
 
-if (require.main === module) lancerControle("du plan", "pulse-aidd verifier-plan US-003", verifierPlan, formater);
+if (require.main === module) {
+  const i = process.argv.indexOf("--apres");
+  if (i < 0) lancerControle("du plan", "pulse-aidd verifier-plan US-003", verifierPlan, formater);
+  else {
+    const tache = process.argv[i + 1] || "";
+    if (!/^US-?\d+$/i.test(process.argv[2] || "") || !/^T\d+$/i.test(tache)) console.log("erreur: indiquez l'US et la tâche, par exemple : pulse-aidd verifier-plan US-003 --apres T4");
+    else {
+      const us = normaliserUs(process.argv[2]);
+      try {
+        console.log(formaterEcarts(ecartsTache(process.cwd(), us, tache), us, tache.toUpperCase()));
+      } catch (e) {
+        console.log(`us: ${us}\nbilan: introuvable\nraison: ${e.message}`);
+      }
+    }
+  }
+}
 
-module.exports = { verifierPlan, casLimites, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs };
+module.exports = { verifierPlan, ecartsTache, formaterEcarts, casLimites, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs };

@@ -81,6 +81,11 @@ erDiagram
 - **Formulaires** : {{contrôles côté serveur qui produisent le résultat décrit dans la spec}}
 - **Checklist** : {{identifiants S1 à S13 qui s'appliquent}}
 
+### Arbitrages
+
+- **Ce que ce changement peut casser** : {{écrans ou données existants touchés, et la tâche ou le test qui s'en assure ; ou « rien d'existant n'est touché »}}
+- **Autre façon envisagée** : {{une seule, en mots simples, et pourquoi elle est écartée}}
+
 ### Fichiers
 
 Organisation générale : voir « Organisation des fichiers » dans `docs/technical.md`.

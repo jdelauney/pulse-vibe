@@ -45,8 +45,8 @@ test("le bilan d'un projet : une ligne par US, puis le total", () => {
   const lignes = bilan(d);
   assert.deepStrictEqual(lignes.map((l) => [l.us, l.faites, l.total, l.relectures, l.controles, l.nonConcluants]), [["US-001", 2, 3, 2, 1, 1], ["US-002", 0, 1, 0, 0, 0]]);
   const sortie = spawnSync(process.execPath, [SCRIPT], { cwd: d, encoding: "utf8" }).stdout;
-  assert.match(sortie, /^US-001 · 2\/3 tâches · 2 relectures · 1 correction · 1 test non concluant · constats 0\/1\/0\/0 · \/pulse:spirc autonome, \/pulse:review$/m);
-  assert.match(sortie, /^total · 2\/4 tâches · 2 relectures · 1 correction · 1 test non concluant · constats 0\/1\/0\/0$/m);
+  assert.match(sortie, /^US-001 · 2\/3 tâches · 2 relectures · 1 du premier coup · 1 correction · 1 test non concluant · constats 0\/1\/0\/0 · \/pulse:spirc autonome, \/pulse:review$/m);
+  assert.match(sortie, /^total · 2\/4 tâches · 2 relectures · 1 du premier coup · 1 correction · 1 test non concluant · constats 0\/1\/0\/0$/m);
   assert.match(spawnSync(process.execPath, [SCRIPT], { cwd: projet({}), encoding: "utf8" }).stdout, /^bilan: aucun plan/);
 });
 
@@ -54,4 +54,26 @@ test("plan avec questions en attente et « En pause » : T4 compte comme à fair
   const plan = "# Plan\n\n## Tâches\n\n- [x] **T3 – C** · US-002\n- [ ] **T4 – D** · US-002\n  - En pause : Q1 (votre décision)\n\n## Questions en attente\n\n- [ ] Q1 · T4 · Garder ? · Options : oui / non · Recommandé : oui\n\n## Choix faits par Pulse\n\n- T4 · tri · Autre possibilité : nom · Raison : simple\n";
   const lignes = bilan(projet({ "aidd_docs/tasks/g/PLAN-SPEC-US-002-b.md": plan }));
   assert.deepStrictEqual(lignes.map((l) => [l.us, l.faites, l.total]), [["US-002", 1, 2]]);
+});
+
+test("un constat qui cite un chemin de fichier compte ; la ligne du modèle, non", () => {
+  const r = lireRapport(RAPPORT({ constats: ["🟠 Haute message vide — src/app/page.tsx:12 — Corriger (`experience` § 2)", "🔴 Critique / 🟠 Haute / 🟡 Moyenne / 🔵 Basse {{problème}}"] }));
+  assert.deepStrictEqual(r.parGravite, [0, 1, 0, 0]);
+  assert.deepStrictEqual(r.familles, ["experience § 2"]);
+});
+
+test("journal du plan : écarts, tests figés touchés, durée ; familles répétées dans deux relectures au moins", () => {
+  const plan = `${PLAN}\n## Journal\n\n| Date | Tâche | Commit | Remarque |\n|---|---|---|---|\n| 2026-10-14 | — | — | plan validé |\n| 2026-10-15 | T1 | abc | écart : src/b.ts ajouté au plan |\n| 2026-10-19 | T2 | def | tests figés modifiés puis restaurés |\n`;
+  const d = projet({
+    "aidd_docs/tasks/g/PLAN-SPEC-US-001-a.md": plan,
+    [`${REVUES}/T1-2026-10-16.md`]: RAPPORT({ constats: ["🟡 Moyenne fonction trop longue — src/a.ts:3 — Découper (`clean-code` § 5)", "🔵 Basse accès — src/r.ts:1 — Vérifier (S3)"] }),
+    [`${REVUES}/T2-2026-10-17.md`]: RAPPORT({ constats: ["🟡 Moyenne règle hors du domaine — src/c.ts:9 — Déplacer (`clean-code` § 5)"], controles: 1 }),
+  });
+  const [l] = bilan(d);
+  assert.deepStrictEqual([l.premierCoup, l.ecarts, l.figesTouches, l.jours], [1, 1, 1, 6]);
+  const sortie = spawnSync(process.execPath, [SCRIPT], { cwd: d, encoding: "utf8" }).stdout;
+  assert.match(sortie, /^US-001 · .* · 1 écart au plan · 1 test figé touché · 6 jours · \/pulse:spirc autonome$/m);
+  const r = spawnSync(process.execPath, [SCRIPT, "--repetes"], { cwd: d, encoding: "utf8" }).stdout;
+  assert.strictEqual(r.trim(), "repete: clean-code § 5 · 2 relectures · US-001 T1, US-001 T2");
+  assert.strictEqual(spawnSync(process.execPath, [SCRIPT, "--repetes"], { cwd: projet({}), encoding: "utf8" }).stdout.trim(), "repetes: aucun");
 });
