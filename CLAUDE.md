@@ -40,7 +40,7 @@ Dans un plugin (chemins relatifs à son dossier) :
 ## Avant de rendre la main
 
 - `node --test plugins/*/tests/*.test.js cli/tests/*.test.js` passe (depuis la racine du dépôt). Il comprend :
-  - `budget-contexte.test.js` : le contexte chargé par chaque commande reste sous son plafond ; un plafond se relève seulement avec la mesure et la raison ;
+  - `budget-contexte.test.js` : le contexte chargé par chaque commande reste sous son plafond, comme le contexte relu à chaque échange dans un projet neuf (son `CLAUDE.md` et la mémoire importée) ; un plafond se relève seulement avec la mesure et la raison ;
   - `documentation.test.js` : README, mémo et ce fichier suivent le code ; une fonction ajoutée s'y documente dans le même commit ;
   - `skills-pulse.test.js` : chaque skill et chaque agent de la méthode et du pack (ceux de `pulse-skills` : `pulse-skills.test.js`) passe `pulse-aidd skill verifier` sans constat bloquant (règles de `plugins/pulse-skills/references/regles-skills.md`) ;
   - `wiki.test.js` : chaque commande a sa page dans le wiki, synchronisée avec son SKILL.md, dans la charte et sans jargon. Commande ajoutée, renommée ou décrite autrement : `node outils/wiki/synchroniser.js` (`--creer` pour la page d'une nouvelle commande), puis rédiger sa page. Page du wiki modifiée : `node outils/wiki/indexer.js`.
