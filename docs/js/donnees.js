@@ -189,7 +189,7 @@ window.PULSE_WIKI = {
       "nom": "fix",
       "etape": "toujours",
       "description": "Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter",
-      "forme": "<message d'erreur ou description du problème> [fichier]",
+      "forme": "<message d'erreur ou description du problème> [fichier] | en-ligne \"ce qui se passe sur le site\"",
       "note": ""
     },
     {

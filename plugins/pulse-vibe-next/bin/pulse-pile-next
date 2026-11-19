@@ -105,6 +105,8 @@ contexte() {
       afficher "Pour la première mise en ligne" "$REF/contexte/deploy-premiere.md" ;;
     deploy-production)
       afficher "Pour le mode production" "$REF/contexte/deploy-production.md" ;;
+    fix-en-ligne)
+      afficher "Pour corriger un problème du site en ligne" "$REF/contexte/fix-en-ligne.md" ;;
     deploy-variables)
       afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
     cicd)
