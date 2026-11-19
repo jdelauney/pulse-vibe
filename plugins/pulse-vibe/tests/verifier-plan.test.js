@@ -10,7 +10,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const SCRIPT = path.join(__dirname, "..", "scripts", "verifier-plan.js");
-const { verifierPlan, criteresCites, fichiersDeTache } = require(SCRIPT);
+const { verifierPlan, ecartsTache, criteresCites, fichiersDeTache } = require(SCRIPT);
 
 const DOSSIER = "aidd_docs/tasks/gerer-taches";
 
@@ -64,6 +64,11 @@ const PLAN = (taches, statut = "validé le 2026-10-11", cas = CAS_OK) => `# Plan
 - **Statut** : ${statut}
 
 ## Conception technique
+
+### Arbitrages
+
+- **Ce que ce changement peut casser** : rien d'existant n'est touché
+- **Autre façon envisagée** : une liste en mémoire, écartée car elle se perd au rechargement
 ${cas === null ? "" : `
 ### Cas limites et états à couvrir
 
@@ -285,4 +290,26 @@ test("cas limites : section absente en avertissement ; cas sans ce que vit la pe
     "à corriger · cas limites · le cas « coupure du réseau » ne dit pas ce que vit la personne",
     "à corriger · cas limites · le cas « coupure du réseau » est rattaché à T9, absente de ce plan",
   ]);
+});
+
+test("arbitrages : un plan sans « Ce que ce changement peut casser » reçoit un avertissement", () => {
+  const sans = PLAN([TACHE("T1")]).replace(/### Arbitrages[\s\S]*?(?=\n### |\n## )/, "");
+  const d = projet({ [planFichier]: sans });
+  assert.ok(constats(d).some((c) => c.startsWith("avertissement · conception ·")), constats(d).join("\n"));
+});
+
+test("après la tâche (--apres) : fichier modifié non prévu, fichier prévu intact ; tests et documents laissés de côté", () => {
+  const d = projet({ [planFichier]: PLAN([TACHE("T1", { fichiers: "à créer : `src/liste.js` · à modifier : `src/menu.js`" })]) });
+  const r = ecartsTache(d, "US-002", "t1", ["src/liste.js", "src/autre.js", "src/__tests__/liste.test.js", "docs/technical.md", "aidd_docs/tasks/x.md", "package-lock.json"]);
+  assert.deepStrictEqual(r.prevus, ["src/liste.js", "src/menu.js"]);
+  assert.deepStrictEqual(r.modifies, ["src/liste.js", "src/autre.js"]);
+  assert.deepStrictEqual(r.constats.map((c) => c.message), ["« src/autre.js » est modifié, mais n'est pas dans la ligne « Fichiers » de la tâche", "« src/menu.js » est prévu dans la ligne « Fichiers », mais n'a pas changé"]);
+  assert.ok(r.constats.every((c) => c.gravite === "avertissement" && c.ou === "T1"));
+  const dossier = projet({ [planFichier]: PLAN([TACHE("T1", { fichiers: "à créer : `src/liste.js`, `__tests__/`, `src/__tests__/liste.test.js`" })]) });
+  assert.deepStrictEqual(ecartsTache(dossier, "US-002", "T1", ["src/liste.js"]).constats, [], "dossier cité et test prévu : pas d'avertissement");
+  assert.strictEqual(ecartsTache(d, "US-002", "T9", []).introuvable, true);
+  assert.strictEqual(ecartsTache(d, "US-009", "T1", []), null);
+  const sortie = spawnSync(process.execPath, [SCRIPT, "US-002"], { cwd: d, encoding: "utf8" }).stdout;
+  assert.doesNotMatch(sortie, /--apres/);
+  assert.match(spawnSync(process.execPath, [SCRIPT, "US-002", "--apres", "x"], { cwd: d, encoding: "utf8" }).stdout, /^erreur: indiquez l'US et la tâche/);
 });

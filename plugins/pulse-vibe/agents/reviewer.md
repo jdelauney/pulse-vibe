@@ -66,7 +66,7 @@ VERDICT: <✅ Validé | ⚠️ À corriger | ⛔ Bloquant>
 - <✅ conforme à l'intention | écart constaté : …> (préciser « écart de besoin » si la demande elle-même est à revoir)
 
 ## Constats
-1. <🔴 Critique | 🟠 Haute | 🟡 Moyenne | 🔵 Basse> <problème> — <fichier:ligne> — <verbe d'action à l'infinitif ou à l'impératif + correction proposée>
+1. <🔴 Critique | 🟠 Haute | 🟡 Moyenne | 🔵 Basse> <problème> — <fichier:ligne> — <verbe d'action à l'infinitif ou à l'impératif + correction proposée> (<famille et paragraphe de la règle, ex. `clean-code` § 5 ; `memoire` pour une ligne de `aidd_docs/memory/` que le code contredit>)
 
 ## Test manuel à faire par la personne (seulement si le message l'indique : examen sans verifier)
 1. <étape concrète, avec des données réalistes>

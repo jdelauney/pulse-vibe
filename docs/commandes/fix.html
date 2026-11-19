@@ -36,6 +36,7 @@
 <p>Quand l'erreur vient d'une règle (un calcul, un droit d'accès, une donnée mal enregistrée), Pulse écrit d'abord un petit test qui la montre : il échoue tant que l'erreur est là. Ce test est ensuite protégé : personne ne peut le modifier pour le faire passer.</p>
 <p>Il choisit ensuite la plus petite correction qui règle la cause, sans casser ce qui fonctionne. Puis il le prouve : le test passe, les contrôles automatiques repassent, et vous refaites vous-même l'action qui échouait. Le test reste dans le projet : si l'erreur revient un jour, il prévient.</p>
 <p>Pour finir, il vous explique ce qui s'est passé, comment l'éviter, et une notion de programmation liée à l'erreur.</p>
+<p>Le problème se voit sur le site en ligne ? Tapez <code>/pulse:fix en-ligne "ce qui se passe"</code>. Pulse vérifie d'abord si le site répond et depuis quand le problème existe. Si la dernière mise en ligne l'a cassé, il vous propose de revenir à la version d'avant, le temps de corriger. Il corrige ensuite la cause, vérifie sur le site en ligne que tout est revenu, et garde une fiche de l'incident dans <code>docs/incidents/</code>.</p>
 <pre class="commande"><code>🩺 Correction
 Problème : le bouton « Réserver » ne faisait rien
 Cause    : le code du bouton se lançait avant que le bouton existe dans la page
@@ -81,7 +82,7 @@ Pour l'éviter : chercher un élément de la page seulement une fois la page cha
 <section id="arguments">
 <h2>Comment la lancer</h2>
 <!-- auto:forme -->
-<pre class="commande"><code>/pulse:fix &lt;message d'erreur ou description du problème&gt; [fichier]</code></pre>
+<pre class="commande"><code>/pulse:fix &lt;message d'erreur ou description du problème&gt; [fichier] | en-ligne &quot;ce qui se passe sur le site&quot;</code></pre>
 <p class="legende">Entre crochets <code>[ ]</code> : facultatif. Entre chevrons <code>&lt; &gt;</code> : à remplacer par votre valeur. La barre <code>|</code> sépare les choix possibles.</p>
 <!-- /auto:forme -->
 <ul>
@@ -103,6 +104,7 @@ Pour l'éviter : chercher un élément de la page seulement une fois la page cha
 <tr><td><code>docs/lexique.md</code></td><td>La notion du jour, si elle est nouvelle pour vous.</td></tr>
 <tr><td>Le plan de la tâche, dans <code>aidd_docs/tasks/</code></td><td>Une ligne de journal, si la correction touche une tâche d'un plan.</td></tr>
 <tr><td><code>aidd_docs/memory/technical.md</code></td><td>Un piège qui peut revenir, seulement si vous acceptez la ligne proposée.</td></tr>
+<tr><td><code>docs/incidents/</code></td><td>En mode en ligne : la fiche de l'incident (ce qu'ont vécu les visiteurs, la cause, le retour arrière, la correction, la leçon).</td></tr>
 </tbody>
 </table>
 <p>La correction n'est pas encore enregistrée : la prochaine étape est <a href="review.html"><code>/pulse:review</code></a> si elle touche une tâche en cours ou plusieurs fichiers, sinon <a href="commit.html"><code>/pulse:commit</code></a>.</p>

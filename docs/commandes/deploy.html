@@ -33,7 +33,7 @@
 <section id="description">
 <h2>Description</h2>
 <p>Cette commande met votre appli en ligne, chez l'hébergeur choisi avec <a href="tech.html"><code>/pulse:tech</code></a>. La première fois, elle relie votre projet à un dépôt en ligne, puis vous guide pas à pas chez l'hébergeur. Ensuite, c'est comme un document partagé qui se met à jour tout seul : chaque fois que vous envoyez une nouvelle version, le site se met à jour en quelques minutes.</p>
-<p>Avant chaque envoi, Pulse vérifie que tout est enregistré, que vos clés restent hors du code, et que les tests et la construction passent. Après la publication, il prouve que le site répond vraiment et qu'il reste visible pour Google. Le mode production prépare enfin le site « pour de vrai » : les variables secrètes chez l'hébergeur, les services connectés, une surveillance et un plan de retour arrière.</p>
+<p>Avant chaque envoi, Pulse vérifie que tout est enregistré, que vos clés restent hors du code, et que les tests et la construction passent. Après la publication, il prouve que le site répond vraiment et qu'il reste visible pour Google. Le mode production prépare enfin le site « pour de vrai » : il commence par une liste de ce qui est prêt et de ce qui manque (tests, audit de sécurité, clés, surveillance, retour arrière), puis règle les variables secrètes chez l'hébergeur, les services connectés, une surveillance et un plan de retour arrière, que vous essayez une fois avec lui.</p>
 <pre class="commande"><code>Mise en ligne :
   Contrôles    ✅ secrets · tests · construction
   Envoi        ✅ version envoyée au dépôt distant
@@ -69,7 +69,8 @@
 <li><strong>Votre site est en ligne dès la première fois.</strong> Un guidage écran par écran chez l'hébergeur, une étape à la fois.</li>
 <li><strong>Chaque envoi met le site à jour tout seul.</strong> Vous enregistrez, vous envoyez : quelques minutes plus tard, la nouveauté est visible.</li>
 <li><strong>Une mise en ligne est prouvée, pas supposée.</strong> Pulse vérifie que le site répond et qu'il reste ouvert à Google.</li>
-<li><strong>Tout reste réparable.</strong> Le mode production écrit le chemin du retour arrière, pour le site puis pour les données.</li>
+<li><strong>Tout reste réparable.</strong> Le mode production écrit le chemin du retour arrière, pour le site puis pour les données, et vous l'essayez une fois au calme : le jour d'une panne, le geste est déjà connu.</li>
+<li><strong>Rien n'est oublié avant d'ouvrir au public.</strong> Une liste vous montre ce qui est prêt et ce qui manque, chaque manque avec sa commande. Pour un site qui encaisse des paiements ou garde des données sensibles, elle conseille aussi une relecture par une personne du métier.</li>
 </ul>
 </section>
 
@@ -117,7 +118,7 @@
 <tbody>
 <tr><td>Chez l'hébergeur</td><td>Votre site en ligne, mis à jour à chaque envoi.</td></tr>
 <tr><td><code>CLAUDE.md</code>, <code>README.md</code></td><td>L'adresse du dépôt et celle du site, dans la section « Adresses ».</td></tr>
-<tr><td><code>docs/technical.md</code></td><td>Les lignes « Site en ligne » et « Surveillance », et la section « Retour arrière ».</td></tr>
+<tr><td><code>docs/technical.md</code></td><td>Les lignes « Site en ligne » et « Surveillance », et la section « Retour arrière » avec la date de votre dernier essai.</td></tr>
 <tr><td>Fichier de configuration de l'hébergeur</td><td>Seulement si sa documentation l'exige ; montré avant d'être écrit.</td></tr>
 <tr><td><code>docs/performance.md</code></td><td>Facultatif : la première mesure de vitesse de l'accueil, point de départ.</td></tr>
 <tr><td>Le plan en cours</td><td>La tâche « Mettre en ligne… » cochée, avec une ligne dans son journal.</td></tr>

@@ -81,6 +81,7 @@ flowchart LR
 - Revenir à la version précédente du site : {{où cliquer chez l'hébergeur, ou commande ; délai}}
 - Revenir à l'état précédent des données : {{sauvegarde ou restauration de la base ; jusqu'à quand c'est possible}}
 - Après un retour arrière : {{ce qui reste à faire : remettre la mise en ligne automatique, corriger, remettre en ligne}}
+- Répété le : {{date du dernier essai guidé par /pulse:deploy production, AAAA-MM-JJ ; ou « jamais »}}
 
 ## Référencement
 

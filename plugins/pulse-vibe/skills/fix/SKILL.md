@@ -1,8 +1,8 @@
 ---
 description: Comprendre et corriger une erreur précise (message, console du navigateur, bouton qui ne marche pas), en cherchant la vraie cause, puis expliquer la correction et comment l'éviter
-argument-hint: "<message d'erreur ou description du problème> [fichier]"
+argument-hint: "<message d'erreur ou description du problème> [fichier] | en-ligne \"ce qui se passe sur le site\""
 disable-model-invocation: true
-allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd agent test-writer) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd tests-figes *) Bash(pulse-aidd preuve *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git add *) Edit(aidd_docs/tasks/**) Bash(pulse-aidd secrets preparer *)
+allowed-tools: Bash(pulse-aidd contexte fix) Bash(pulse-aidd agent fixer) Bash(pulse-aidd agent test-writer) Bash(pulse-aidd agent test-runner) Bash(pulse-aidd tests-figes *) Bash(pulse-aidd preuve *) Bash(pulse-aidd reference *) Bash(pulse-aidd modele *) Bash(pulse-aidd qualite *) Bash(pulse-aidd tests *) Bash(pulse-aidd scenarios) Bash(pulse-aidd pile recette *) Bash(pulse-aidd pile reference *) Bash(pulse-aidd verifier) Bash(pulse-aidd pile contexte *) Edit(docs/lexique.md) Write(docs/lexique.md) Read Glob Grep Bash(git status *) Bash(git diff *) Bash(git log *) Bash(git add *) Edit(aidd_docs/tasks/**) Bash(pulse-aidd secrets preparer *) Bash(pulse-aidd sonder *)
 ---
 
 # /pulse:fix – Corriger une erreur
@@ -20,6 +20,8 @@ Appliquer les « Règles communes Pulse » (chargées en fin de fichier, dans «
 ## Contexte
 
 Problème signalé : `$ARGUMENTS`
+
+Site en ligne en panne (`en-ligne`) : `pulse-aidd reference fix/en-ligne.md`, lu en entier.
 
 ## Rôle
 

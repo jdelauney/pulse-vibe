@@ -21,7 +21,7 @@ Dans le projet de la personne, ce que produit chaque commande :
 | `docs/design/audits/` | `/pulse:ui audit` | Les audits d'interface : `ui-<AAAA-MM-JJ>.md` |
 | `docs/securite.md` | `/pulse:security` | Le dernier audit de sécurité |
 | `docs/secrets.md` | `/pulse:secrets` | L'inventaire des secrets (noms, fournisseur, où les renouveler) et le journal des rotations. Jamais de valeur |
-| `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` | `/pulse:secrets fuite` | Le journal d'un incident de fuite de clé : chronologie, traces cherchées, décision sur les données personnelles. Jamais de valeur |
+| `docs/incidents/<AAAA-MM-JJ>-<sujet>.md` | `/pulse:secrets fuite`, `/pulse:fix en-ligne` | Le journal d'un incident : fuite de clé (chronologie, traces cherchées, décision sur les données personnelles), ou problème du site en ligne (ce qu'ont vécu les visiteurs, cause, retour arrière, correction, test ajouté, leçon). Jamais de valeur ni de donnée d'un visiteur |
 | `docs/seo.md` | `/pulse:seo` | La fiche de référencement : adresse officielle, titres et descriptions validés des pages publiques, pages privées, faits clés, politique des robots IA, suivi (Search Console, Bing). Source unique des textes pour le code |
 | `docs/voix.md` | `/pulse:rediger` | La voix du site : vous ou tu, ton, promesse, mots à employer et à éviter, exemples. Lue avant chaque texte |
 | `docs/textes/<page>.md` | `/pulse:rediger` | Le texte d'une page, validé : fiche (objectif, public, action attendue, faits), texte entre `<!-- texte -->` et `<!-- /texte -->`, résultat du contrôle des tics d'écriture IA |

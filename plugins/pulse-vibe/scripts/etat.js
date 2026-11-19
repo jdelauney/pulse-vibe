@@ -329,6 +329,13 @@ function conventionsVides(texte) {
 }
 
 /** Tous les faits utiles à la décision. */
+/** Le retour arrière de docs/technical.md : « recent » (essayé il y a moins de 6 mois), « ancien », ou « jamais ». */
+function retourArriere(texte, aujourdhui = Date.now()) {
+  const date = (/Répété le\**\s*:\s*(\d{4}-\d{2}-\d{2})/i.exec(texte || "") || [])[1];
+  if (!date) return "jamais";
+  return aujourdhui - Date.parse(date) <= 183 * 86400000 ? "recent" : "ancien";
+}
+
 function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
   const p = (...x) => path.join(racine, ...x);
   const texteClaude = lireSi(p("CLAUDE.md"));
@@ -367,6 +374,7 @@ function lireFaits(racine, { git = true, aujourdhui = Date.now() } = {}) {
     us: lireUs(racine),
     securite: existe(p("docs", "securite.md")),
     ci: fichiersDe(p(".github", "workflows")).length > 0 || existe(p(".gitlab-ci.yml")),
+    retourArriere: retourArriere(lireSi(p("docs", "technical.md")), aujourdhui),
     git: faitsGit,
   };
 }
@@ -398,6 +406,8 @@ function decider(f) {
     }
     if (f.modeleAncien) aussi.push("/pulse:init — remettre les contrôles du projet à jour");
     if (pileChoisie && f.depotDistant === "a-decider") aussi.push("/pulse:init — relier le projet à un dépôt distant (facultatif)");
+    // Site en ligne dont le retour arrière n'a jamais été essayé, ou pas depuis plus de 6 mois (deploy/production.md § 7).
+    if (f.enLigne && f.retourArriere !== "recent") aussi.push("/pulse:deploy production — essayer une fois le retour arrière, au calme, pour savoir le faire le jour d'une panne");
   }
 
   const a = f.enAttente;

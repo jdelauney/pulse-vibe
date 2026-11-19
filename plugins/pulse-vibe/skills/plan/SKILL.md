@@ -46,6 +46,7 @@ Avant le découpage, remplir la section « Conception technique » du modèle de
 6. **Fichiers** : renvoyer à « Organisation des fichiers » de `docs/technical.md` et lister seulement les fichiers propres à cette US, chacun marqué « à créer » ou « à modifier » après vérification dans le projet ; pour la logique, les classes et les patrons de conception retenus (`pulse-aidd qualite clean-code`, §5 bis). Présenter comme existant seulement un fichier vu dans le projet.
 7. **Cas limites et états à couvrir** : lancer `pulse-aidd reference tests/cas-limites.md`, passer ses familles une à une pour cette US, et remplir la section du modèle : chaque cas qui peut réellement arriver, ce que vit la personne, la tâche qui le traite et sa preuve. Les états de chaque écran (vide, erreur, attente) viennent des « Situations à prévoir » de la spec. Une réponse que la spec ne donne pas va dans « Ajouts proposés par Pulse ».
 8. **Points d'attention** : les risques réels de cette conception (donnée partagée, règle délicate, service externe, action manuelle) et ce qu'on prévoit, rattachés à leurs tâches ; sinon « aucun identifié ».
+9. **Arbitrages** : ce que le changement peut casser dans l'existant (et ce qui s'en assure), et l'autre façon envisagée, écartée en une phrase.
 
 Cette conception reste fidèle à la spec : elle réalise ses scénarios et ses « Qui peut », sans ajouter de comportement visible. Un comportement que la spec ne prévoit pas va dans « Ajouts proposés par Pulse ».
 
