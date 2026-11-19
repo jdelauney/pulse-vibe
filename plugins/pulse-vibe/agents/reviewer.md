@@ -45,7 +45,7 @@ Chaque constat reçoit **une** gravité :
 - 🔴 **Critique** : critère d'acceptation non réalisé, faille de sécurité, l'appli plante, perte de données.
 - 🟠 **Haute** : fonctionne dans le cas nominal, mais un cas limite courant, une erreur non gérée ou un contrôle automatique en échec touchera l'utilisateur ; écart visible avec la spec.
 - 🟡 **Moyenne** : fragile, peu lisible ou mal placé (fonction trop longue, nom trompeur, fichier hors de « Organisation des fichiers ») ; petit écart avec la spec ou le design.
-- 🔵 **Basse** : amélioration facultative, sans effet sur l'utilisateur ni sur la sécurité.
+- 🔵 **Basse** : amélioration facultative, sans effet sur l'utilisateur ni sur la sécurité. Cinq constats Basse au plus : les suivants se comptent en une ligne (« et 3 autres remarques mineures »). Les fichiers générés (nommés par le pack de pile) et ce que les contrôles automatiques du projet vérifient déjà (règles du code, types, formatage) restent hors des constats.
 
 Verdict global : **⛔ Bloquant** s'il y a au moins un constat Critique ; sinon **⚠️ À corriger** s'il y a au moins un constat Haute ou Moyenne ; sinon **✅ Validé** (constats Basse seulement, ou aucun).
 

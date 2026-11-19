@@ -38,7 +38,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - 🔴 **Critique** : la personne perd son travail ou reste bloquée sans issue (saisie effacée par une erreur, écran entier en erreur pour une panne locale, action irréversible sans confirmation, action principale impossible au clavier) ;
    - 🟠 **Haute** : un état courant manque (erreur, vide), un message générique seul, focus perdu à l'ouverture ou à la fermeture d'une fenêtre, bouton inactif sans raison ;
    - 🟡 **Moyenne** : état partiel absent, attente mal montrée, texte long ou grand nombre d'éléments non prévus, date ou montant assemblé à la main, mot qui change d'un écran à l'autre ;
-   - 🔵 **Basse** : finition de mots, sans gêne pour la personne.
+   - 🔵 **Basse** : finition de mots, sans gêne pour la personne. Cinq constats Basse au plus : les suivants se comptent en une ligne (« et 3 autres remarques mineures »). Les fichiers générés (nommés par le pack de pile) et ce que les contrôles automatiques du projet vérifient déjà (règles du code, types, formatage) restent hors des constats.
 
 ## Format de votre réponse (à respecter exactement)
 

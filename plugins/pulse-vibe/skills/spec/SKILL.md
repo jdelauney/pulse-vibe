@@ -67,7 +67,7 @@ Suivre le modèle de spec, avec `Statut : brouillon`. Relire les autres specs (`
 7. **Données personnelles et accès** : voir l'étape 2.
 8. **Ajouts proposés par Pulse** : voir l'étape 3.
 9. **Terminé quand** : 2 à 4 résultats observables par l'utilisateur, tirés des critères d'acceptation.
-10. **Questions en suspens** : chaque `TBD:` de la spec.
+10. **Questions en suspens** : chaque `TBD:` de la spec, en commençant par les **exigences qui se contredisent** (une apparence choisie contre la lisibilité ou l'accessibilité, un souhait contre une règle de sécurité ou de confidentialité, deux règles métier incompatibles), chacune avec le choix proposé et sa raison.
 
 **Relecture « intention »** avant de montrer le brouillon : chercher dans le texte tout nom de fichier, composant, route, table, bibliothèque, service technique ou verbe de construction (« créer une fonction », « stocker dans ») ; le reformuler en résultat pour l'utilisateur, ou le noter pour le plan.
 

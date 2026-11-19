@@ -44,7 +44,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
    - 🔴 **Critique** : une erreur avalée cache une perte de données ou un échec à la personne ;
    - 🟠 **Haute** : une couche, une abstraction ou un patron sans besoin traverse plusieurs fichiers et double le code à changer ;
    - 🟡 **Moyenne** : abstraction ou option locale sans besoin, code mort, erreur avalée sans perte ;
-   - 🔵 **Basse** : commentaire qui répète le code, petite simplification.
+   - 🔵 **Basse** : commentaire qui répète le code, petite simplification. Cinq constats Basse au plus : les suivants se comptent en une ligne (« et 3 autres remarques mineures »). Les fichiers générés (nommés par le pack de pile) et ce que les contrôles automatiques du projet vérifient déjà (règles du code, types, formatage) restent hors des constats.
 
 ## Format de votre réponse (à respecter exactement)
 
