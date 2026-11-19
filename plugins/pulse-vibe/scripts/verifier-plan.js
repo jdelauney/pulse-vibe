@@ -307,7 +307,18 @@ const HORS_ECART = /(^|\/)(__tests__|tests?|e2e|docs|aidd_docs|drizzle|\.claude|
 function fichiersModifies(racine) {
   const git = (...args) => spawnSync("git", args, { cwd: racine, encoding: "utf8", windowsHide: true }).stdout || "";
   const liste = [...git("diff", "--name-only", "HEAD").split(/\r?\n/), ...git("ls-files", "--others", "--exclude-standard").split(/\r?\n/)];
-  return [...new Set(liste.map((f) => f.trim()).filter(Boolean))].sort();
+  return [...new Set(liste.map((f) => f.trim()).filter(Boolean))].filter((f) => !horsFichier(path.join(racine, f))).sort();
+}
+
+/** Vrai pour ce qui n'est ni un fichier, ni un dossier, ni un lien : les fichiers spéciaux que le bac à sable de Claude
+ * Code pose à la place des réglages protégés (.zshrc, .mcp.json, .idea…). Un fichier supprimé reste compté. */
+function horsFichier(f) {
+  try {
+    const s = fs.lstatSync(f);
+    return !s.isFile() && !s.isDirectory() && !s.isSymbolicLink();
+  } catch (e) {
+    return false;
+  }
 }
 
 /** Les écarts entre la ligne « Fichiers » d'une tâche et les fichiers modifiés : { plan, tache, prevus, modifies, constats } ou null. */
@@ -354,4 +365,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { verifierPlan, ecartsTache, formaterEcarts, casLimites, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs };
+module.exports = { verifierPlan, ecartsTache, formaterEcarts, casLimites, formater, lireTachesDetaillees, criteresCites, fichiersDeTache, scenariosDeSpec, criteresDeUs, horsFichier };

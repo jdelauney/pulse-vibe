@@ -10,7 +10,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const SCRIPT = path.join(__dirname, "..", "scripts", "verifier-plan.js");
-const { verifierPlan, ecartsTache, criteresCites, fichiersDeTache } = require(SCRIPT);
+const { verifierPlan, ecartsTache, criteresCites, fichiersDeTache, horsFichier } = require(SCRIPT);
 
 const DOSSIER = "aidd_docs/tasks/gerer-taches";
 
@@ -312,4 +312,14 @@ test("après la tâche (--apres) : fichier modifié non prévu, fichier prévu i
   const sortie = spawnSync(process.execPath, [SCRIPT, "US-002"], { cwd: d, encoding: "utf8" }).stdout;
   assert.doesNotMatch(sortie, /--apres/);
   assert.match(spawnSync(process.execPath, [SCRIPT, "US-002", "--apres", "x"], { cwd: d, encoding: "utf8" }).stdout, /^erreur: indiquez l'US et la tâche/);
+});
+
+test("--apres : les fichiers spéciaux que pose le bac à sable de Claude Code ne comptent pas comme modifiés", { skip: process.platform === "win32" && "pas de fichier spécial sous Windows" }, () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-hors-fichier-"));
+  fs.writeFileSync(path.join(d, "vrai.js"), "x");
+  spawnSync("mkfifo", [path.join(d, ".zshrc")]);
+  assert.strictEqual(horsFichier(path.join(d, "vrai.js")), false);
+  assert.strictEqual(horsFichier(path.join(d, ".zshrc")), true, "fichier spécial");
+  assert.strictEqual(horsFichier(path.join(d, "supprime.js")), false, "un fichier supprimé reste compté");
+  fs.rmSync(d, { recursive: true, force: true });
 });

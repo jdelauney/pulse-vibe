@@ -57,6 +57,7 @@ test("ecrire : le réglage rejoint .claude/settings.json sans rien retirer ; l'�
   assert.strictEqual(r.sandbox.enabled, true);
   assert.ok(r.sandbox.network.allowedDomains.includes("mon-api.exemple.fr"), "un domaine du projet reste");
   assert.ok(r.sandbox.filesystem.allowWrite.includes("~/.cache"));
+  assert.ok(r.sandbox.filesystem.allowRead.includes(".env.local"), "la construction lit ses variables malgré Read(./.env.local)");
   const apres = bac.etat(d, {});
   assert.deepStrictEqual([apres.actif, apres.manquants], [true, []]);
 });
