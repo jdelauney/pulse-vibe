@@ -418,6 +418,7 @@ const SENSIBLES = [
   "pulse-aidd installer-ci --forcer", // remplace un verifier.js déjà adapté par le projet
   "pulse-aidd ligne-etat --installer", "pulse-aidd ligne-etat --retirer", // changent les réglages de Claude Code du projet
   "pulse-aidd autorisations --ecrire", // change les réglages de Claude Code du projet
+  "pulse-aidd autorisations --bac-a-sable --ecrire", // active le bac à sable de Claude Code du projet
   "pulse-aidd copies --mettre-a-jour", "pulse-aidd copies --copier verifier scripts/verifier.js", // remplacent des fichiers du projet
   "pulse-aidd search-console deconnecter",
   "pulse-aidd pile hebergeur envoyer NOM production", "pulse-aidd pile hebergeur redeployer production",
@@ -427,7 +428,7 @@ const SENSIBLES = [
 /** Une lecture hors du projet (l'historique des sessions de Claude Code) : rien ne change, mais la personne donne son accord à chaque fois. */
 const HORS_PROJET = /^pulse-aidd skill usage\b/;
 /** Une commande pulse-aidd qui passe toujours par la demande d'accord (citée par une consigne sans être autorisée d'avance). */
-const estSensible = (commande) => HORS_PROJET.test(commande) || /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
+const estSensible = (commande) => HORS_PROJET.test(commande) || /^pulse-aidd (secrets (generer|envoyer|elaguer|redeployer)|search-console deconnecter|pile hebergeur|installer-ci --forcer|ligne-etat --(installer|retirer)|autorisations( --bac-a-sable)? --ecrire|copies --(mettre-a-jour|copier)|deplacer-commits)\b/.test(commande);
 // Des programmes à tout faire : « Bash(<programme> *) » autorise aussi leurs gestes sensibles.
 const LARGES = new Set(["git", "npm", "npx", "pnpm", "yarn", "bun", "bunx", "node", "deno", "python", "python3", "py", "pip", "pip3", "bash", "sh", "zsh", "pwsh", "powershell", "cmd", "gh", "glab", "docker", "kubectl", "sudo", "rm", "curl", "wget", "make", "cargo", "go", "vercel", "netlify", "pulse-aidd", "find", "xargs", "env", "eval", "ssh", "scp", "rsync", "mv", "cp"]);
 const DONNEES = /\.(json|ya?ml|csv|tsv|xml)$/i;

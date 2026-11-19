@@ -229,9 +229,9 @@ function lireCache() {
   return c && typeof c === "object" ? c : {};
 }
 
-function ecrireCache(cache) {
+function ecrireCache(cache, maintenant = Date.now()) {
   try {
-    const limite = Date.now() - CACHE_H * 3600 * 1000;
+    const limite = maintenant - CACHE_H * 3600 * 1000;
     const garde = Object.fromEntries(Object.entries(cache).filter(([, v]) => v && v.verifie > limite));
     fs.writeFileSync(CACHE, JSON.stringify(garde), "utf8");
   } catch (e) {
@@ -270,7 +270,7 @@ function fiches(paquets, { maintenant = Date.now(), sonder = sonderRegistres } =
   const aSonder = paquets.filter((p) => !(cache[cle(p)] && cache[cle(p)].verifie > maintenant - CACHE_H * 3600 * 1000));
   const sondes = aSonder.length ? sonder(aSonder) : [];
   for (const f of sondes) if (!f.erreur) cache[cle(f)] = { ...f, verifie: maintenant };
-  if (sondes.some((f) => !f.erreur)) ecrireCache(cache);
+  if (sondes.some((f) => !f.erreur)) ecrireCache(cache, maintenant);
   return paquets.map((p) => cache[cle(p)] || sondes.find((f) => cle(f) === cle(p)) || { ...p, erreur: "registre injoignable" });
 }
 

@@ -84,6 +84,9 @@ Si l'assistant est indisponible, faire la comparaison en suivant strictement le 
 
 ### 8. Le bilan
 
+Description changée d'une skill que Claude peut lancer, avec un fichier `docs/audits-skills/<nom>-phrases.json` : relancer `pulse-skills declenchement lancer <dossier> --phrases <fichier>` (accord demandé) et comparer son bilan à celui de l'audit.
+
+
 Ajouter au rapport le « Bilan avant / après » de `plan.md` : les tailles et les constats avant et après, le verdict de la relecture, les points appliqués et laissés. Présenter :
 
 - le gain : caractères et jetons estimés en moins, au lancement et à chaque lecture ;

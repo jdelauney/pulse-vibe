@@ -94,4 +94,4 @@ Ce que cette spec ajoute au-delà de l'US et du PRD, au niveau du besoin. Chaque
 
 ## 10. Questions en suspens
 
-- {{chaque `TBD:` de la spec, repris ici ; « aucune » pour une spec verrouillée}}
+- {{d'abord les exigences qui se contredisent (« la couleur choisie rend le texte difficile à lire : garder la couleur pour les titres seulement ? »), avec le choix proposé ; puis chaque `TBD:` de la spec, repris ici ; « aucune » pour une spec verrouillée}}

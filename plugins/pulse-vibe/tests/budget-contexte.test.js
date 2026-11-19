@@ -287,3 +287,28 @@ function tableau() {
 if (process.argv.includes("--tableau")) console.log(tableau());
 
 module.exports = { PLAFONDS, PLAFONDS_ETAPES, BOUCLES, MODES, PLAFONDS_COMMANDE, AGENTS };
+
+// Contexte statique d'un projet : ce que Claude Code relit à chaque échange, toutes commandes confondues (le CLAUDE.md posé par
+// /pulse:init et les fichiers de mémoire qu'il importe, bloc rempli par memoire.js). Les guides SDLC d'Anthropic et de Google
+// demandent de le garder court (« under a page ») : chaque caractère y est payé à chaque message. La mémoire grandit ensuite
+// jusqu'à sa limite de lignes (memoire.js, LIMITE_MEMOIRE) ; le plafond porte sur le projet neuf, ce que Pulse écrit lui-même.
+const STATIQUE = { claude: 8300, total: 11000 }; // mesures 7 896 et 10 292 (pulse 0.67, lot 7 : premier plafond, mesure × 1,05)
+test(`contexte statique d'un projet neuf : CLAUDE.md ≤ ${STATIQUE.claude}, avec la mémoire importée ≤ ${STATIQUE.total} caractères`, () => {
+  const os = require("os");
+  const { spawnSync: lancerNode } = require("child_process");
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-statique-"));
+  try {
+    const r = lancerNode(process.execPath, [path.join(RACINE, "skills", "init", "scripts", "nouveau-projet.js"), "Essai", "--oui"], { cwd: d, encoding: "utf8", env: { ...process.env, PULSE_OUTIL: "" } });
+    assert.strictEqual(r.status, 0, r.stderr);
+    const projet = path.join(d, "essai");
+    lancerNode(process.execPath, [path.join(RACINE, "scripts", "memoire.js")], { cwd: projet, input: "{}", encoding: "utf8" });
+    const claude = fs.readFileSync(path.join(projet, "CLAUDE.md"), "utf8");
+    const imports = [...claude.matchAll(/^@(\S+)/gm)].map((m) => m[1]);
+    assert.ok(imports.length >= 3, `mémoire importée : ${imports.join(", ")}`);
+    const total = claude.length + imports.reduce((n, f) => n + fs.readFileSync(path.join(projet, f), "utf8").length, 0);
+    assert.ok(claude.length <= STATIQUE.claude, `CLAUDE.md : ${claude.length} > ${STATIQUE.claude}`);
+    assert.ok(total <= STATIQUE.total, `CLAUDE.md et mémoire : ${total} > ${STATIQUE.total}`);
+  } finally {
+    fs.rmSync(d, { recursive: true, force: true });
+  }
+});

@@ -2,7 +2,7 @@
 description: Auditer une skill, un dossier de skills ou un plugin selon les règles d'optimisation, avec un rapport et sans rien modifier
 argument-hint: "[chemin d'une skill, d'un dossier de skills ou d'un plugin] (par défaut : les skills et agents du projet, .claude/)"
 disable-model-invocation: true
-allowed-tools: Bash(pulse-skills contexte audit-skill) Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd skill empreinte *) Bash(pulse-skills modele audit-skill/*) Bash(pulse-skills reference *) Bash(pulse-skills agent skill-auditor) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd reference secrets/fuite.md) Read Glob Grep Write(docs/audits-skills/**)
+allowed-tools: Bash(pulse-skills contexte audit-skill) Bash(pulse-aidd skill mesurer *) Bash(pulse-aidd skill verifier *) Bash(pulse-aidd skill empreinte *) Bash(pulse-skills modele audit-skill/*) Bash(pulse-skills reference *) Bash(pulse-skills agent skill-auditor) Bash(pulse-skills declenchement preparer *) Bash(pulse-aidd reference fichiers-projet.md) Bash(pulse-aidd reference cycle.md) Bash(pulse-aidd reference gestes.md) Bash(pulse-aidd reference secrets/fuite.md) Read Glob Grep Write(docs/audits-skills/**)
 ---
 
 # /pulse-skills:audit-skill – Auditer des skills
@@ -79,6 +79,8 @@ Partir du modèle `pulse-skills modele audit-skill/rapport.md` et écrire `docs/
 - les constats du script et ceux des assistants, rangés par gravité, les bloquants d'abord, chacun avec sa correction et son gain estimé.
 
 Rien n'est modifié en dehors de ces rapports.
+
+Pour une skill seule que Claude peut lancer (`invocable: oui` de `pulse-skills declenchement preparer <dossier>`), proposer d'essayer sa description (AskUserQuestion : « Essayer le déclenchement (Recommandé) » / « Pas maintenant ») : 6 phrases que la personne dirait pour ce travail et 4 phrases voisines qui relèvent d'un autre travail, écrites d'après la description et les exemples, montrées et corrigées avec la personne, enregistrées dans `docs/audits-skills/<nom>-phrases.json`. Dire que chaque phrase est un vrai appel au modèle, puis lancer `pulse-skills declenchement lancer <dossier> --phrases <fichier>` (Claude Code demande l'accord) et ajouter son bilan au rapport, sous K2.
 
 ### 6. Présenter
 

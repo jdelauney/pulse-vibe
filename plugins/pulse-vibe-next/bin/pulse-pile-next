@@ -30,6 +30,9 @@ if [ $# -eq 0 ] && [ -n "${PULSE_RELAIS_ARGC:-}" ]; then
   unset _n _i _v _a
 fi
 unset "${!PULSE_RELAIS_ARG@}" PULSE_RELAIS_ARGC
+# Bac à sable de Claude Code (SANDBOX_RUNTIME=1) : le réseau passe par un proxy que fetch de Node lit seulement avec
+# NODE_USE_ENV_PROXY=1 ; sans lui, toute requête des scripts échoue, même vers un domaine autorisé (essais du 2026-11-19).
+if [ "${SANDBOX_RUNTIME:-}" = 1 ] && [ -n "${HTTPS_PROXY:-}${https_proxy:-}" ]; then export NODE_USE_ENV_PROXY=1; fi
 
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REF="$RACINE/references"
@@ -133,7 +136,7 @@ contexte() {
 
 case "$1" in
   info)
-    printf 'id: next\nnom: Pulse Next.js\nresume: Next.js 16, Drizzle + Neon, better-auth, next-safe-action, shadcn/ui, Vercel : code de départ vérifié et recettes prêtes.\nversion: %s\ncouvre: organisation\n' "$(version)"
+    printf 'id: next\nnom: Pulse Next.js\nresume: Next.js 16, Drizzle + Neon, better-auth, next-safe-action, shadcn/ui, Vercel : code de départ vérifié et recettes prêtes.\nversion: %s\ncouvre: organisation\ndomaines: vercel.com *.vercel.com *.vercel.app console.neon.tech *.neon.tech fonts.bunny.net cdn.playwright.dev storage.googleapis.com\n' "$(version)"
     exit 0 ;;
   contexte)
     contexte "$2"; exit 0 ;;

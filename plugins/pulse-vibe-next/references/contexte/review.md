@@ -2,6 +2,8 @@
 
 Contrôles propres à la pile, en plus des checklists de qualité Pulse :
 
+- **Fichiers générés, hors des constats** : `drizzle/meta/**` et le SQL des migrations produit par `npm run db:generate` (seule leur cohérence avec les tables se relit, ci-dessous), `src/components/ui/` (composants shadcn/ui posés tels quels), `next-env.d.ts`, `package-lock.json`.
+
 - **Chaque action** de `actions/` est construite sur `actionConnectee` (ou `actionPublique` pour une page publique, avec sa raison) avec `.metadata({ nom: "…" })` (le nom de l'action, avant `.action(…)`) et `.inputSchema(...)`, et sa requête d'écriture filtre par `ctx.utilisateur.id` (condition de propriété). Une action qui prend l'identifiant de l'utilisateur dans ses entrées : 🔴 Critique.
 - **Chaque lecture** de données personnelles filtre par la personne connectée (`utilisateurConnecte()`), sans `"use cache"` (ou selon le modèle documenté de mise en cache par personne).
 - `import "server-only"` présent dans les fichiers de `src/db/`, `src/adapters/`, `queries/`, et dans `src/config/env.ts`, `src/lib/logger.ts`.

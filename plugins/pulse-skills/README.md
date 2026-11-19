@@ -27,10 +27,11 @@ Ces commandes faisaient partie du plugin `pulse` avant sa version 0.56, sous son
 
 ```
 .claude-plugin/plugin.json   manifeste ; dépend de pulse
-bin/pulse-skills             contexte | reference | modele | agent
+bin/pulse-skills             contexte | reference | modele | agent | declenchement (essai de déclenchement d'une skill invocable)
 bin/pulse-skills.ps1         relais pour PowerShell (arguments transmis tels quels) ; bin/pulse-skills.cmd : relais pour l'invite de commandes (cmd)
 skills/                      skill-creator, audit-skill, optimize-skill
 agents/                      skill-auditor
 references/                  regles-skills.md (les règles K1 à K14)
+scripts/                     declenchement.js (pulse-skills declenchement preparer|lancer : chaque phrase envoyée à claude -p dans un dossier temporaire où seule la skill est installée ; la trace dit si l'outil Skill l'a chargée)
 tests/                       tests du plugin
 ```

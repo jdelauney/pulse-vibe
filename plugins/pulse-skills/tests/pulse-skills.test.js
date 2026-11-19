@@ -313,3 +313,51 @@ test("fichiers-projet.md : les rapports d'audit des skills, les sauvegardes et l
   assert.match(liste, /^\| `docs\/audits-skills\/sauvegardes\/<nom>-<AAAA-MM-JJ>\/` \| `\/pulse-skills:optimize-skill` \|/m);
   assert.match(liste, /^\| `\.claude\/skills\/<nom>\/` \| `\/pulse-skills:skill-creator`, `\/pulse-skills:optimize-skill` \|/m);
 });
+
+test("declenchement : préparation, skill chargée lue dans la trace, essai simulé, bilan (sans appel au modèle)", () => {
+  const dc = require("../scripts/declenchement.js");
+  const os = require("os");
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-declenchement-test-"));
+  try {
+    const skill = path.join(base, ".claude", "skills", "resumer");
+    fs.mkdirSync(skill, { recursive: true });
+    fs.writeFileSync(path.join(skill, "SKILL.md"), '---\nname: resumer\ndescription: "Résumer un document en cinq points. À utiliser quand la personne demande un résumé"\n---\n\n# Résumer\n\n## Exemples\n\n- « résume ce rapport »\n');
+    const s = dc.lireSkill(skill);
+    assert.deepStrictEqual([s.nom, s.invocable], ["resumer", true]);
+    assert.match(dc.preparer(skill), /^invocable: oui$/m);
+    assert.match(dc.preparer(skill), /résume ce rapport/);
+    assert.strictEqual(dc.racinePlugin(skill), null);
+    assert.strictEqual(dc.racinePlugin(path.join(__dirname, "..", "skills", "audit-skill")), path.resolve(__dirname, ".."));
+
+    const trace = (nom) => JSON.stringify({ type: "assistant", message: { content: [{ type: "tool_use", name: "Skill", input: { skill: nom } }] } });
+    assert.ok(dc.skillChargee(`${trace("resumer")}\n`, "resumer"));
+    assert.ok(dc.skillChargee(trace("monplugin:resumer"), "resumer"));
+    assert.ok(!dc.skillChargee(trace("autre"), "resumer"));
+    assert.ok(!dc.skillChargee("pas du json", "resumer"));
+
+    const args = dc.argumentsEssai("résume ce rapport", null, "sonnet");
+    assert.deepStrictEqual(args.slice(0, 2), ["-p", "résume ce rapport"]);
+    assert.ok(args.includes("--model") && args.includes("stream-json") && !args.includes("--plugin-dir"));
+
+    const phrases = path.join(base, "phrases.json");
+    fs.writeFileSync(phrases, JSON.stringify({ declenchent: ["résume ce rapport", "fais-moi un résumé"], ignorent: ["traduis ce texte"] }));
+    const liste = dc.lirePhrases(phrases);
+    assert.deepStrictEqual(liste.map((p) => p.attendu), ["oui", "oui", "non"]);
+    // Essai simulé : la skill se charge pour tout ce qui contient « résum », et pour la traduction (faux déclenchement).
+    const lancer = (cmd, a, o) => {
+      assert.ok(fs.existsSync(path.join(o.cwd, ".claude", "skills", "resumer", "SKILL.md")), "skill de projet copiée dans le dossier temporaire");
+      const phrase = a[1];
+      return { status: 0, stdout: /résum|tradui/.test(phrase) && phrase !== "fais-moi un résumé" ? trace("resumer") : "" };
+    };
+    const sortie = dc.lancerEssai(skill, liste, { lancer });
+    assert.match(sortie, /^phrase: oui · oui · ok · résume ce rapport$/m);
+    assert.match(sortie, /^phrase: oui · non · raté · fais-moi un résumé$/m);
+    assert.match(sortie, /^phrase: non · oui · raté · traduis ce texte$/m);
+    assert.match(sortie, /^bilan: 1\/3 · faux déclenchements 1 · oublis 1$/m);
+
+    fs.writeFileSync(path.join(skill, "SKILL.md"), "---\nname: resumer\ndescription: Résumer\ndisable-model-invocation: true\n---\n");
+    assert.match(dc.preparer(skill), /^invocable: non$/m);
+  } finally {
+    fs.rmSync(base, { recursive: true, force: true });
+  }
+});
