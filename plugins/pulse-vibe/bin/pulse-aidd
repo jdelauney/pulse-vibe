@@ -58,7 +58,7 @@
 #   pulse-aidd contraste <couleur> <fond> [--viser <rapport>] [--json]   rapport de contraste WCAG exact (hex, rgb, oklch)
 #   pulse-aidd identite extraire [dossier] [--json]   relève couleurs, polices et rayons déjà écrits dans le projet (/pulse:ui)
 #   pulse-aidd brandkit planche|verifier|css|resume [fichier|dossier]   le brandkit d'une identité (brandkit.json, couleurs en OKLCH) : vérifie, écrit la planche d'après le modèle commun, donne le CSS des maquettes ou les sections 6 à 8 de docs/design.md ; brandkit oklch <couleur> convertit #hex ou rgb() (/pulse:ui)
-#   pulse-aidd maquettes verifier <fichier|dossier>   contrôle les anti-patterns détectables dans les pages HTML (/pulse:ui)
+#   pulse-aidd maquettes verifier|capturer <fichier|dossier>   contrôle les anti-patterns détectables dans les pages HTML ; capturer : captures d'écran et contrôles du rendu dans le navigateur du poste (/pulse:ui)
 #   pulse-aidd search-console <action>  Search Console en lecture seule : connecter, deconnecter, proprietes, lire, suivre, inspecter <adresse>
 #
 # Ne sort jamais en erreur pour "contexte" et "etape" : un échec annulerait la commande /pulse.
@@ -372,7 +372,7 @@ case "$1" in
   modele)
     if nom_sur "$2" && chemin="$(trouver assets "$2")"; then cat "$chemin"; else echo "Modèle introuvable : $2. Disponibles :"; lister_modeles; exit 1; fi ;;
   agent)
-    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, redacteur, memory-compactor)"; exit 1; fi ;;
+    if nom_sur "$2" && [ -f "$RACINE/agents/$2.md" ]; then cat "$RACINE/agents/$2.md"; else echo "Agent introuvable : $2 (reviewer, security-auditor, explorer, implementer, verifier, fixer, test-writer, test-runner, designer, ui-critic, ui-juge, redacteur, memory-compactor)"; exit 1; fi ;;
   qualite) shift; qualite "$@"; exit $? ;;
   tests) shift; tests "$@"; exit $? ;;
   reference)

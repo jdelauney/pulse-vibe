@@ -20,9 +20,9 @@
 "use strict";
 
 const fs = require("fs");
-const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
+const { trouverNavigateur } = require("../../../scripts/navigateur");
 
 const LIGHTHOUSE = "13"; // version majeure : la dernière 13.x publiée ; une nouvelle majeure impose de relire skills/perf/references/performance.md
 const NODE_MIN = [22, 19];
@@ -386,63 +386,6 @@ function versionNodeSuffisante() {
   return maj > NODE_MIN[0] || (maj === NODE_MIN[0] && min >= NODE_MIN[1]);
 }
 
-function existe(f) {
-  try {
-    return fs.statSync(f).isFile();
-  } catch {
-    return false;
-  }
-}
-
-function dansLePath(noms) {
-  for (const dossier of (process.env.PATH || "").split(path.delimiter)) for (const n of noms) if (dossier && existe(path.join(dossier, n))) return path.join(dossier, n);
-  return null;
-}
-
-/** Chrome du poste (laissé à Lighthouse) ou, à défaut, le Chromium de Playwright. undefined : rien trouvé. */
-function trouverChrome() {
-  if (process.env.CHROME_PATH) return { chemin: process.env.CHROME_PATH, origine: "CHROME_PATH" };
-  const env = process.env;
-  let standards = [];
-  if (process.platform === "win32") {
-    for (const base of [env.LOCALAPPDATA, env.PROGRAMFILES, env["PROGRAMFILES(X86)"]].filter(Boolean)) {
-      standards.push(path.join(base, "Google", "Chrome", "Application", "chrome.exe"), path.join(base, "Google", "Chrome SxS", "Application", "chrome.exe"));
-    }
-  } else if (process.platform === "darwin") {
-    standards = ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", path.join(os.homedir(), "Applications/Google Chrome.app/Contents/MacOS/Google Chrome")];
-  } else {
-    const p = dansLePath(["google-chrome-stable", "google-chrome", "chromium-browser", "chromium"]);
-    if (p) standards.push(p);
-  }
-  const standard = standards.find(existe);
-  if (standard) return { chemin: null, origine: "Chrome" };
-
-  const racine =
-    env.PLAYWRIGHT_BROWSERS_PATH && env.PLAYWRIGHT_BROWSERS_PATH !== "0"
-      ? env.PLAYWRIGHT_BROWSERS_PATH
-      : process.platform === "win32"
-        ? path.join(env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local"), "ms-playwright")
-        : process.platform === "darwin"
-          ? path.join(os.homedir(), "Library", "Caches", "ms-playwright")
-          : path.join(os.homedir(), ".cache", "ms-playwright");
-  let dossiers = [];
-  try {
-    dossiers = fs.readdirSync(racine).filter((d) => /^chromium-\d+$/.test(d)).sort((x, y) => Number(y.split("-")[1]) - Number(x.split("-")[1]));
-  } catch {
-    dossiers = [];
-  }
-  const relatifs = {
-    win32: ["chrome-win64/chrome.exe", "chrome-win/chrome.exe"],
-    darwin: [
-      "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
-      "chrome-mac/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
-      "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
-    ],
-  }[process.platform] || ["chrome-linux64/chrome", "chrome-linux/chrome"];
-  for (const d of dossiers) for (const r of relatifs) if (existe(path.join(racine, d, r))) return { chemin: path.join(racine, d, r), origine: "Chromium de Playwright" };
-  return undefined;
-}
-
 /** Commande qui lance npx, sans passer par un interpréteur de commandes. */
 function commandeNpx(args) {
   if (process.env.PULSE_PERF_LIGHTHOUSE) return { cmd: process.execPath, args: [process.env.PULSE_PERF_LIGHTHOUSE, ...args.slice(2)], shell: false };
@@ -672,7 +615,7 @@ async function actionMesurer(opts) {
   if (source === "local") {
     if (!versionNodeSuffisante()) quitter(2, `❌ Lighthouse ${LIGHTHOUSE} demande Node.js ${NODE_MIN.join(".")} ou plus ; ce poste a ${process.versions.node}. Installez la version LTS de Node.js, puis relancez.`);
     if (!process.env.PULSE_PERF_LIGHTHOUSE) {
-      chrome = trouverChrome();
+      chrome = trouverNavigateur({ edge: false });
       if (chrome === undefined) quitter(2, "❌ Aucun navigateur Chrome trouvé pour Lighthouse. Installez Google Chrome, ou lancez « npx playwright install chromium », ou indiquez son chemin dans la variable CHROME_PATH.");
     }
     if (!cle && !opts.source) signaler("ℹ️ Pas de clé Google (PULSE_PSI_CLE) : mesure locale avec Lighthouse sur cette machine.");

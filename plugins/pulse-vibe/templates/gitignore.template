@@ -17,9 +17,10 @@ client_secret*.json
 # --- Travail en cours : décision en attente, propre à cette machine ---
 aidd_docs/tasks/in-progress.md
 
-# --- Réalisation en cours et captures de vérification : propres à cette machine ---
+# --- Réalisation en cours, captures de vérification et des maquettes : propres à cette machine ---
 aidd_docs/tasks/realisation.json
 aidd_docs/captures/
+docs/design/**/captures/
 
 # --- Fichiers système ---
 .DS_Store

@@ -8,9 +8,10 @@ Utilisé par `pulse:implementer`, `pulse:verifier`, `/pulse:spirc` et `/pulse:im
 2. Reprendre sa **structure** : les mêmes zones, dans le même ordre, avec la même disposition (colonnes, grille, alignements, ce qui reste fixe ou défile), et le même passage de la mise en page ordinateur à celle du téléphone.
 3. Reprendre ses **valeurs** : tailles et graisses de texte, interlignes, espacements, largeurs, arrondis, bordures, ombres, couleurs. Par la variable de `docs/design.md` quand elle existe, sinon la valeur exacte de la maquette.
 4. Reprendre ses **textes** (titres, libellés, boutons, messages) et ses **états** montrés (vide, chargement, erreur) qui relèvent de la tâche.
-5. Écrire le tout avec les composants et les classes de la pile retenue. Un composant existant sert quand son rendu correspond à la maquette ; sinon, l'adapter dans le périmètre de la tâche, ou le signaler.
-6. Un écart inévitable (limite de la pile, accessibilité, donnée absente) : prendre la solution la plus proche de la maquette et le nommer dans le rapport.
-7. Dans le rapport, section « Maquette » : les fichiers lus, les zones réalisées, les écarts (ou « aucun »).
+5. Les parties communes (en-tête, navigation, pied de page) suivent `docs/design/coquille.html` quand il existe : elles s'écrivent une fois, dans la mise en page commune de la pile, et chaque écran les reçoit de là.
+6. Écrire le tout avec les composants et les classes de la pile retenue. Un composant existant sert quand son rendu correspond à la maquette ; sinon, l'adapter dans le périmètre de la tâche, ou le signaler.
+7. Un écart inévitable (limite de la pile, accessibilité, donnée absente) : prendre la solution la plus proche de la maquette et le nommer dans le rapport.
+8. Dans le rapport, section « Maquette » : les fichiers lus, les zones réalisées, les écarts (ou « aucun »).
 
 ## 2. Comparer l'écran à la maquette (verifier)
 

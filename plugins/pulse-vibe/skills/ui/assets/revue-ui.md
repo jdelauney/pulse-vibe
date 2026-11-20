@@ -1,6 +1,6 @@
 # Revue d'interface – {{cible}} – {{DATE}}
 
-> Produit par `/pulse:ui audit` ou `/pulse:ui maquettes` (agent `ui-critic`, lecture seule). Référence : `docs/design.md`{{ et la maquette `…/retenue/`}}{{ et la spec `…`}}.
+> Produit par `/pulse:ui audit` ou `/pulse:ui maquettes` (agent `ui-critic`, lecture seule ; pour une maquette, l'évaluation d'ensemble vient de juges qui n'ont vu que les captures). Référence : `docs/design.md`{{ et la maquette `…/retenue/`}}{{ et la spec `…`}}.
 
 **Verdict** : 🔴 {{n}} bloquant(s) · 🟠 {{n}} important(s) · 🟢 {{n}} finition(s) · note {{n}} / 50
 
