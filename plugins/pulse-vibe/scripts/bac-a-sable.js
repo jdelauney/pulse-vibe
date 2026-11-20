@@ -12,7 +12,8 @@
 // localhost quand le projet a des tests de bout en bout ; lecture permise des fichiers de variables que lisent la
 // construction et les tests (.env, .env.local, .env.<mode>.local). Sans elle, le bac à sable applique aux commandes la
 // règle Read(./.env…) que Pulse écrit pour l'IA, et la construction ne trouve plus ses variables (essai du 2026-11-19) ;
-// les garde-fous refusent toujours une commande qui nomme ces fichiers. Les réglages déjà présents sont gardés.
+// les garde-fous refusent toujours une commande qui nomme ces fichiers ; captures des maquettes et relevé d'un site lancés
+// hors du bac à sable (excludedCommands), parce que le navigateur y est refusé. Les réglages déjà présents sont gardés.
 //
 //   pulse-aidd autorisations --bac-a-sable           plateforme, état, domaines qui manquent
 //   pulse-aidd autorisations --bac-a-sable --ecrire  écrit le réglage dans .claude/settings.json
@@ -27,6 +28,9 @@ const path = require("path");
 const DOMAINES_COEUR = ["registry.npmjs.org", "*.npmjs.org", "pypi.org", "files.pythonhosted.org", "github.com", "*.github.com", "codeload.github.com", "objects.githubusercontent.com"];
 const ECRITURE = ["~/.npm", "~/.cache"];
 const LECTURE = [".env", ".env.local", ".env.development.local", ".env.production.local", ".env.test.local"];
+// Commandes lancées hors du bac à sable : elles ouvrent le navigateur du poste, qui y est refusé (sockets Unix bloquées sous
+// Linux et WSL2, essai du 2026-11-20) ; hors du bac à sable, le navigateur garde son propre bac à sable.
+const HORS_BAC = ["pulse-aidd maquettes capturer *", "pulse-aidd identite site *"];
 
 const actif = (env = process.env) => env.SANDBOX_RUNTIME === "1";
 
@@ -103,6 +107,7 @@ function reglage(racine, env = process.env) {
       allowRead: [...new Set([...(fichiers.allowRead || []), ...LECTURE])],
     },
     network: { ...reseau, allowedDomains: [...new Set([...(reseau.allowedDomains || []), ...domaines(racine, env)])] },
+    excludedCommands: [...new Set([...(actuel.excludedCommands || []), ...HORS_BAC])],
   };
 }
 
@@ -110,11 +115,11 @@ function reglage(racine, env = process.env) {
 function etat(racine, env = process.env) {
   const actuel = lireReglages(path.join(racine, ".claude", "settings.json")).sandbox || {};
   const f = actuel.filesystem || {};
-  const presents = new Set([...((actuel.network || {}).allowedDomains || []), ...(f.allowWrite || []), ...(f.allowRead || [])]);
+  const presents = new Set([...((actuel.network || {}).allowedDomains || []), ...(f.allowWrite || []), ...(f.allowRead || []), ...(actuel.excludedCommands || [])]);
   return {
     plateforme: plateforme(),
     actif: actuel.enabled === true,
-    manquants: [...ECRITURE, ...LECTURE, ...domaines(racine, env)].filter((x) => !presents.has(x)),
+    manquants: [...ECRITURE, ...LECTURE, ...HORS_BAC, ...domaines(racine, env)].filter((x) => !presents.has(x)),
   };
 }
 
@@ -136,4 +141,4 @@ function formaterEtat(e) {
   return lignes.join("\n");
 }
 
-module.exports = { DOMAINES_COEUR, ECRITURE, LECTURE, actif, causeReseau, plateforme, domaines, reglage, etat, ecrire, formaterEtat };
+module.exports = { DOMAINES_COEUR, ECRITURE, LECTURE, HORS_BAC, actif, causeReseau, plateforme, domaines, reglage, etat, ecrire, formaterEtat };

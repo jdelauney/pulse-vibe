@@ -9,7 +9,9 @@
 // <page>-<largeur>-<n>.png pour l'état affiché à l'ouverture, <page>-<largeur>-<état>-<n>.png pour chaque autre état du
 // sélecteur (boutons data-etat, le premier = l'état normal ; le conteneur data-selecteur-etats est masqué sur les captures).
 // Contrôles du rendu : page plus large que l'écran (aussi à 320 px), cibles tactiles sous 44 × 44 px sur téléphone,
-// image non chargée ; police web non chargée signalée (les captures montrent alors la police de secours).
+// image non chargée, cartes dans des cartes, grille de cartes identiques, champ sans étiquette visible, petites étiquettes
+// en capitales au-dessus des titres (une pour trois sections au plus), nombres de tableau mal alignés ; police web non
+// chargée signalée (les captures montrent alors la police de secours).
 // Codes de sortie : 0 aucun 🔴 ; 1 au moins un 🔴 ; 2 usage ou chemin introuvable ; 3 aucun navigateur, ou lancement impossible.
 "use strict";
 
@@ -44,12 +46,12 @@ function pages(chemin) {
   return liste.sort();
 }
 
-// Lancé dans la page : relevés du rendu à la largeur courante.
-const RELEVES = (L) => `(() => {
-  const L = ${L};
+// Lancé dans la page (sérialisé par toString) : relevés du rendu à la largeur L.
+/* global document, getComputedStyle */
+function releverPage(L) {
   const decrire = (el) => {
-    const classes = typeof el.className === "string" ? el.className.trim().split(/\\s+/).filter(Boolean).slice(0, 2) : [];
-    const texte = (el.getAttribute("aria-label") || el.textContent || el.value || "").trim().replace(/\\s+/g, " ").slice(0, 30);
+    const classes = typeof el.className === "string" ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 2) : [];
+    const texte = (el.getAttribute("aria-label") || el.textContent || el.value || "").trim().replace(/\s+/g, " ").slice(0, 30);
     return el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (classes.length ? "." + classes.join(".") : "") + (texte ? " « " + texte + " »" : "");
   };
   const visible = (el) => {
@@ -57,10 +59,12 @@ const RELEVES = (L) => `(() => {
     const s = getComputedStyle(el);
     return r.width > 0 && r.height > 0 && s.visibility !== "hidden" && s.display !== "none" && !el.closest("[data-selecteur-etats],[aria-hidden=true],[inert]");
   };
-  const sortie = { largeur: document.documentElement.scrollWidth, depassent: [], cibles: [], images: [], polices: [] };
+  const tous = [...document.body.querySelectorAll("*")].filter(visible);
+  const sortie = { largeur: document.documentElement.scrollWidth, depassent: [], cibles: [], images: [], polices: [], etiquettes: 0, sections: 0, imbriquees: [], grilles: [], sansEtiquette: [], etiquetteCachee: [], nombresGauche: 0, nombresVariables: 0 };
+
   if (sortie.largeur > L + 1) {
-    for (const el of document.body.querySelectorAll("*")) {
-      if (!visible(el) || el.getBoundingClientRect().right <= L + 1) continue;
+    for (const el of tous) {
+      if (el.getBoundingClientRect().right <= L + 1) continue;
       const parent = el.parentElement;
       if (parent && parent !== document.body && parent.getBoundingClientRect().right > L + 1) continue;
       sortie.depassent.push(decrire(el));
@@ -68,7 +72,7 @@ const RELEVES = (L) => `(() => {
     }
   }
   if (L < 768) {
-    const cibles = 'a[href], button, input:not([type=hidden]):not([type=checkbox]):not([type=radio]), select, textarea, summary, [role=button], [role=tab], [role=menuitem]';
+    const cibles = "a[href], button, input:not([type=hidden]):not([type=checkbox]):not([type=radio]), select, textarea, summary, [role=button], [role=tab], [role=menuitem]";
     for (const el of document.querySelectorAll(cibles)) {
       if (!visible(el) || (el.tagName === "A" && el.closest("p"))) continue;
       const r = el.getBoundingClientRect();
@@ -78,8 +82,78 @@ const RELEVES = (L) => `(() => {
   for (const img of document.images) if (img.complete && img.naturalWidth === 0 && visible(img)) sortie.images.push(img.getAttribute("src") || decrire(img));
   for (const f of document.fonts) if (f.status === "error") sortie.polices.push(f.family.replace(/["']/g, ""));
   sortie.polices = [...new Set(sortie.polices)];
+
+  // Petites étiquettes en capitales espacées posées juste au-dessus d'un titre.
+  sortie.sections = Math.max(1, document.querySelectorAll("h2").length);
+  for (const el of tous) {
+    const suivant = el.nextElementSibling;
+    if (!suivant || !/^H[1-3]$/.test(suivant.tagName) || /^(A|BUTTON|H[1-6])$/.test(el.tagName)) continue;
+    const s = getComputedStyle(el);
+    const texte = el.textContent.trim();
+    const capitales = s.textTransform === "uppercase" || (/[A-ZÀ-Ý]/.test(texte) && texte === texte.toUpperCase());
+    const espacees = parseFloat(s.letterSpacing) > 0.4;
+    if (capitales && espacees && parseFloat(s.fontSize) <= 14.5 && texte && texte.split(/\s+/).length <= 5) sortie.etiquettes++;
+  }
+
+  // Cartes : blocs encadrés (bordure sur les quatre côtés, ou ombre), avec une marge intérieure.
+  const HORS_CARTE = /^(INPUT|SELECT|TEXTAREA|BUTTON|IMG|SVG|TABLE|THEAD|TBODY|TR|TD|TH|A|LABEL|UL|OL|NAV|HEADER|FOOTER|MAIN|DIALOG)$/;
+  const estCarte = (el) => {
+    if (HORS_CARTE.test(el.tagName.toUpperCase())) return false;
+    const r = el.getBoundingClientRect();
+    if (r.width < 160 || r.height < 80) return false;
+    const s = getComputedStyle(el);
+    const cote = (c) => parseFloat(s["border" + c + "Width"]) > 0 && s["border" + c + "Style"] !== "none" && !/rgba\(.*,\s*0\)$|transparent/.test(s["border" + c + "Color"]);
+    const encadre = ["Top", "Right", "Bottom", "Left"].every(cote) || (s.boxShadow && s.boxShadow !== "none");
+    return encadre && parseFloat(s.paddingTop) >= 8 && parseFloat(s.paddingLeft) >= 8;
+  };
+  const cartes = new Set(tous.filter(estCarte));
+  for (const c of cartes) {
+    for (let a = c.parentElement; a && a !== document.body; a = a.parentElement)
+      if (cartes.has(a)) {
+        sortie.imbriquees.push(decrire(c));
+        break;
+      }
+  }
+  // Grille de 3 à 6 cartes de même forme : chacune une icône, un titre, un texte court.
+  const forme = (el, n = 2) => el.tagName + (n ? "(" + [...el.children].map((e) => forme(e, n - 1)).join(",") + ")" : "");
+  for (const parent of new Set([...cartes].map((c) => c.parentElement))) {
+    if (!parent) continue;
+    const enfants = [...parent.children].filter(visible);
+    if (enfants.length < 3 || enfants.length > 6 || !enfants.every((e) => cartes.has(e))) continue;
+    const modele = forme(enfants[0]);
+    const largeur = enfants[0].getBoundingClientRect().width;
+    const pareilles = enfants.every(
+      (e) => forme(e) === modele && Math.abs(e.getBoundingClientRect().width - largeur) < 2 && e.querySelector("svg") && e.querySelector("h2, h3, h4, h5, h6, strong") && e.textContent.trim().length < 200,
+    );
+    if (pareilles) sortie.grilles.push(decrire(parent) + " (" + enfants.length + " cartes)");
+  }
+
+  // Champs : une étiquette visible pour chacun.
+  for (const el of document.querySelectorAll("input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]):not([type=image]), select, textarea")) {
+    if (!visible(el)) continue;
+    const parLabel = [...(el.labels || [])].some((l) => visible(l) && l.textContent.trim());
+    const parId = (el.getAttribute("aria-labelledby") || "").split(/\s+/).some((id) => {
+      const e = id && document.getElementById(id);
+      return e && visible(e);
+    });
+    if (parLabel || parId) continue;
+    if (el.getAttribute("aria-label")) {
+      if (el.type !== "search") sortie.etiquetteCachee.push(decrire(el));
+    } else sortie.sansEtiquette.push(decrire(el) + (el.placeholder ? " (texte d'exemple seul : « " + el.placeholder.slice(0, 30) + " »)" : ""));
+  }
+
+  // Nombres des tableaux : alignés à droite, chiffres de même largeur.
+  for (const td of document.querySelectorAll("tbody td")) {
+    if (!visible(td)) continue;
+    const t = td.textContent.trim();
+    if (!/\d/.test(t) || !/^[-+−]?[\d\s.,]+\s?(%|€|\$|£|h|min|kg|g|km|m)?$/.test(t)) continue;
+    const s = getComputedStyle(td);
+    if (!/right|end/.test(s.textAlign)) sortie.nombresGauche++;
+    if (!/tabular-nums/.test(s.fontVariantNumeric) && !/mono/i.test(s.fontFamily)) sortie.nombresVariables++;
+  }
   return JSON.stringify(sortie);
-})()`;
+}
+const RELEVES = (L) => `(${releverPage.toString()})(${L})`;
 
 async function evaluer(page, expression) {
   const r = await page.envoyer("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
@@ -127,6 +201,15 @@ function constatsDuRendu(releve, largeur) {
     constats.push({ gravite: "🔴", nom: `La page déborde en largeur (${releve.largeur} px pour un écran de ${largeur} px)${releve.depassent.length ? " : " + releve.depassent.join(" ; ") : ""}`, source: SOURCE });
   if (releve.cibles.length) constats.push({ gravite: "🟠", nom: `Cibles tactiles sous 44 × 44 px : ${releve.cibles.length} (${releve.cibles.slice(0, 3).join(" ; ")}${releve.cibles.length > 3 ? " ; …" : ""})`, source: SOURCE });
   for (const src of releve.images) constats.push({ gravite: "🟠", nom: `Image non chargée : ${src}`, source: "rendu" });
+  const exemples = (liste) => `${liste.slice(0, 3).join(" ; ")}${liste.length > 3 ? " ; …" : ""}`;
+  if (releve.imbriquees.length) constats.push({ gravite: "🔴", nom: `Cartes dans des cartes : ${releve.imbriquees.length} (${exemples(releve.imbriquees)})`, source: "anti-patterns.md" });
+  for (const g of releve.grilles) constats.push({ gravite: "🔴", nom: `Grille de cartes identiques icône + titre + texte : ${g}`, source: "anti-patterns.md" });
+  if (releve.sansEtiquette.length) constats.push({ gravite: "🔴", nom: `Champ sans étiquette : ${releve.sansEtiquette.length} (${exemples(releve.sansEtiquette)})`, source: "anti-patterns.md" });
+  if (releve.etiquetteCachee.length) constats.push({ gravite: "🟠", nom: `Champ sans étiquette visible (nom lu seulement par les lecteurs d'écran) : ${releve.etiquetteCachee.length} (${exemples(releve.etiquetteCachee)})`, source: SOURCE });
+  const permises = Math.ceil(releve.sections / 3);
+  if (releve.etiquettes > permises) constats.push({ gravite: "🟠", nom: `Petites étiquettes en capitales au-dessus des titres : ${releve.etiquettes} pour ${releve.sections} section(s), ${permises} au plus`, source: "anti-patterns.md" });
+  if (releve.nombresGauche) constats.push({ gravite: "🟢", nom: `Nombres de tableau non alignés à droite : ${releve.nombresGauche} cellule(s)`, source: "motifs.md" });
+  if (releve.nombresVariables) constats.push({ gravite: "🟢", nom: `Nombres de tableau sans chiffres de même largeur (font-variant-numeric: tabular-nums) : ${releve.nombresVariables} cellule(s)`, source: "motifs.md" });
   return constats;
 }
 
@@ -217,7 +300,7 @@ async function principal(args) {
   console.log("");
   for (const c of constats) console.log(`${c.gravite} ${c.page} (${c.largeur} px${c.etat ? `, état ${c.etat}` : ""})  ${c.nom}  (${c.source})`);
   const n = (g) => constats.filter((c) => c.gravite === g).length;
-  console.log(`\n${constats.length} constat(s) : 🔴 ${n("🔴")} · 🟠 ${n("🟠")}`);
+  console.log(`\n${constats.length} constat(s) : 🔴 ${n("🔴")} · 🟠 ${n("🟠")} · 🟢 ${n("🟢")}`);
   return n("🔴") ? 1 : 0;
 }
 

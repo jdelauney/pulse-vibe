@@ -86,6 +86,13 @@ Par défaut, un composant gagne une prop booléenne à chaque variante (`avecIco
 
 Par défaut, un `<div onClick>` fait office de bouton et des attributs ARIA compensent. Ici, l'élément HTML qui porte déjà le rôle (`<button>`, `<a>`, `<label>`, `<ul>`, `<nav>`, titres dans l'ordre) vient d'abord, parce qu'il apporte le clavier, le focus et la lecture d'écran sans code en plus. ARIA complète seulement ce que le HTML ne dit pas (`aria-label` d'un bouton-icône, `aria-invalid`, zone d'annonce). Les composants shadcn sur Base UI le font déjà : les garder plutôt que les réécrire.
 
+Les composants shadcn se composent comme leur documentation le prévoit (`npx shadcn@latest docs <composant>`), parce qu'un assemblage fait main perd leurs liens d'accessibilité :
+
+- **Champ** : `Field` contient `FieldLabel`, le contrôle, puis `FieldDescription` ou `FieldError` ; en erreur, `data-invalid` sur `Field` **et** `aria-invalid` sur le contrôle (recette `connexion`).
+- **Fenêtres** : `Dialog`, `AlertDialog`, `Sheet` et `Drawer` portent toujours leur titre (`DialogTitle`…), caché avec `sr-only` quand il ne doit pas se voir.
+- **Statut** (payée, en retard, brouillon) : un `Badge` et sa variante (`variant="destructive"`, `"secondary"`, `"outline"`) ; une couleur de rôle seulement si aucune variante ne convient.
+- **Mode sombre** : par les variables de `.dark` (`theme.md`, règle 3) ; aucune classe `dark:` hors de `src/components/ui/`.
+
 ## 7. Checklist (implémentation et relecture)
 
 - [ ] `"use client"` seulement sur le plus petit composant interactif ; pages, containers de lecture et sections sans interaction restent serveur.
@@ -94,3 +101,4 @@ Par défaut, un `<div onClick>` fait office de bouton et des attributs ARIA comp
 - [ ] Ni `useMemo`, ni `useCallback`, ni `React.memo` sans raison écrite et mesure.
 - [ ] Variantes par `cva`, contenu par `children` ou emplacements nommés ; props typées et minimales ; composants définis au niveau du module.
 - [ ] Éléments HTML porteurs du rôle (bouton, lien, libellé, liste, titres) ; ARIA seulement en complément.
+- [ ] Composants shadcn composés comme prévu : `Field` complet avec `data-invalid` et `aria-invalid` en erreur, titre de chaque fenêtre, statut par `Badge`, aucune classe `dark:` hors de `src/components/ui/`.

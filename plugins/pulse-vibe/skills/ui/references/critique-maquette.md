@@ -4,7 +4,7 @@
 
 ## 1. Capturer
 
-Lancer `pulse-aidd maquettes capturer docs/design/maquettes/<spec>/retenue`. Garder sa sortie : la liste des captures et les constats du rendu.
+Lancer `pulse-aidd maquettes capturer docs/design/maquettes/<spec>/retenue`, seule (sans `cd`, `;` ni `&&` : ainsi elle passe hors du bac à sable de Claude Code, où le navigateur est refusé). Garder sa sortie : la liste des captures et les constats du rendu.
 
 Code 3 (aucun navigateur, ou lancement impossible) : sauter les juges ; ui-critic fait aussi l'évaluation d'ensemble, et le rapport le dit sous son titre « Évaluation d'ensemble » : « Notée sans juge : aucune capture possible sur ce poste. »
 

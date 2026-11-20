@@ -27,8 +27,6 @@ Les maquettes HTML sont une **référence visuelle**, indépendante de la pile :
 
 Action demandée : `$ARGUMENTS`
 
-Fichiers de cette commande : [references/anti-patterns.md](references/anti-patterns.md), [references/directions.md](references/directions.md), [references/heuristiques.md](references/heuristiques.md), [references/motifs.md](references/motifs.md), [references/registres.md](references/registres.md), [references/regles-ui.md](references/regles-ui.md), [assets/brandkit.json](assets/brandkit.json), [assets/design.md](assets/design.md), [assets/maquette-note.md](assets/maquette-note.md), [assets/planche.html](assets/planche.html), [assets/revue-ui.md](assets/revue-ui.md), [scripts/brandkit.js](scripts/brandkit.js), [scripts/comparer.js](scripts/comparer.js), [scripts/contraste.js](scripts/contraste.js), [scripts/identite.js](scripts/identite.js), [scripts/maquettes.js](scripts/maquettes.js).
-
 ### Choisir l'action
 
 | Action | Quand | Section |
@@ -45,7 +43,7 @@ Cette commande mène l'entretien, fait choisir la personne et écrit les documen
 - `pulse:designer` : génère une direction d'identité (planche) ou une variante de maquette, un agent par proposition, et assemble un hybride ;
 - `pulse:ui-critic` : critique la maquette retenue (mode maquette) ou audite l'interface existante (mode code), en lecture seule.
 
-**Lancer les agents de génération** (`identite` et `maquettes`) : lancer **en parallèle** un sous-agent `pulse:designer` par variante (plusieurs appels Agent dans le même message). Message de délégation : type, thèse, axes de différence, dossier de sortie, écrans à couvrir, chemins de `docs/design.md` et du brandkit retenu (ou direction provisoire), de `docs/design/coquille.html`, `docs/prd.md` et `docs/brief.md` (s'ils existent), de la spec et de `docs/user-stories.md` (maquettes ; s'ils existent) et de `aidd_docs/memory/glossary.md`. Si les sous-agents ne sont pas disponibles, lancer `pulse-aidd agent designer`, lire ses consignes et produire les variantes soi-même, une par une. Chaque agent rend 3 lignes (Thèse / Ce qui la distingue / Fichiers) : les garder pour la comparaison.
+**Lancer les agents de génération** (`identite` et `maquettes`) : lancer **en parallèle** un sous-agent `pulse:designer` par variante (plusieurs appels Agent dans le même message). Message de délégation : type, thèse, axes de différence, dossier de sortie, écrans à couvrir, chemins de `docs/design.md` et du brandkit retenu (ou direction provisoire), de `docs/design/coquille.html`, `docs/design/references/`, `docs/prd.md` et `docs/brief.md` (s'ils existent), de la spec et de `docs/user-stories.md` (maquettes ; s'ils existent) et de `aidd_docs/memory/glossary.md`. Si les sous-agents ne sont pas disponibles, lancer `pulse-aidd agent designer`, lire ses consignes et produire les variantes soi-même, une par une. Chaque agent rend 3 lignes (Thèse / Ce qui la distingue / Fichiers) : les garder pour la comparaison.
 
 ## Processus
 
@@ -70,11 +68,11 @@ Cette commande mène l'entretien, fait choisir la personne et écrit les documen
 
 #### Déroulé
 
-1. **Ce que l'on sait déjà.** Au début de cette étape, charger `pulse-aidd reference ui/registres.md` et `pulse-aidd reference ui/regles-ui.md` (registres, stratégies de couleur et règles qui serviront jusqu'à l'écriture de `docs/design.md`). Déduire des documents le public, les écrans probables et l'hypothèse de registre. Affirmer puis faire confirmer, par exemple : « Votre outil sert à *utiliser*, pas à *convaincre* : je pars sur le registre outil, d'accord ? ». Si le projet contient déjà une interface : lancer `pulse-aidd identite extraire <dossier du code d'interface>`, montrer ce qui a été relevé (couleurs, polices, rayons, avec leurs fichiers) et demander s'il faut les **garder comme base** ou **repartir de zéro**. Base gardée : seules les valeurs relevées, ou fournies par la personne (charte, logo), entrent dans les directions ; une valeur « non trouvée » se demande à la personne.
+1. **Ce que l'on sait déjà.** Au début de cette étape, charger `pulse-aidd reference ui/registres.md` et `pulse-aidd reference ui/regles-ui.md` (registres, stratégies de couleur et règles qui serviront jusqu'à l'écriture de `docs/design.md`). Déduire des documents le public, les écrans probables et l'hypothèse de registre. Affirmer puis faire confirmer, par exemple : « Votre outil sert à *utiliser*, pas à *convaincre* : je pars sur le registre outil, d'accord ? ». Si le projet contient déjà une interface : lancer `pulse-aidd identite extraire <dossier du code d'interface>`, montrer ce qui a été relevé (couleurs, polices, rayons, avec leurs fichiers) et demander s'il faut les **garder comme base** ou **repartir de zéro**. Une charte déjà en ligne : `pulse-aidd identite site <adresse>` en relève les valeurs, de même. Base gardée : seules les valeurs relevées, ou fournies par la personne (charte, logo), entrent dans les directions ; une valeur « non trouvée » se demande à la personne.
 2. **Entretien**, par rondes de 4 questions au plus, en langage courant. Demander uniquement ce que les documents laissent ouvert. Sujets :
    - la scène d'usage (qui, où, quand, sur quel écran) ;
    - la personnalité en 3 mots (réponses proposées concrètes, réponse libre possible) ;
-   - 2 ou 3 outils ou sites dont la personne aime l'allure, 1 ou 2 dont elle veut se démarquer ;
+   - 2 ou 3 outils ou sites dont la personne aime l'allure (pour chacun, `pulse-aidd identite site <adresse>` : captures et relevé dans `docs/design/references/`, où elle peut aussi déposer ses captures), 1 ou 2 dont elle veut se démarquer ;
    - l'intensité de couleur (les 4 stratégies de « Règles d'interface », traduites en langage courant) ;
    - un logo, des couleurs ou une police imposés.
 

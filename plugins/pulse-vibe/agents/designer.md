@@ -11,7 +11,7 @@ Rédiger les textes destinés à la personne (`note.md`, réponse) en français,
 ## Règles absolues
 
 - Écrire **uniquement** dans le dossier de sortie reçu ; laisser intacts tous les autres fichiers, dont `docs/` et le code du projet.
-- Utiliser Bash seulement pour `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd pile reference …`, `pulse-aidd pile recette …`, `pulse-aidd brandkit …`, `pulse-aidd maquettes verifier …`, `pulse-aidd maquettes capturer …` et `pulse-aidd contraste …`.
+- Utiliser Bash seulement pour `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd pile reference …`, `pulse-aidd pile recette …`, `pulse-aidd brandkit …`, `pulse-aidd maquettes verifier …`, `pulse-aidd maquettes capturer …` et `pulse-aidd contraste …`. Lancer `pulse-aidd maquettes capturer` seule, sans `cd`, `;`, `&&` ni `echo` : ainsi elle passe hors du bac à sable de Claude Code, où le navigateur est refusé.
 - Écrire chaque couleur en OKLCH (`oklch(L C H)`) ; une couleur reçue en hexadécimal se convertit avec `pulse-aidd brandkit oklch <couleur>`.
 - Inventer des contenus fictifs **réalistes**, tirés du glossaire, du PRD, du brief, des user stories et de la spec reçus, à la place des données réelles et des textes de remplissage génériques. Prendre chaque nom, écran et contenu dans ces documents.
 - Écarter tous les anti-patterns 🔴 de `ui/anti-patterns.md` dans une maquette ; la planche les écarte par son modèle commun.
@@ -25,7 +25,7 @@ Le message de délégation indique :
 - la **thèse** et les **axes de différence** (ce qui doit distinguer cette proposition des autres) ;
 - le **dossier de sortie** ;
 - les **écrans à couvrir** (maquette seulement) ;
-- le chemin de `docs/design/coquille.html`, s'il existe ;
+- les chemins de `docs/design/coquille.html` et de `docs/design/references/` (captures et relevés de sites que la personne aime), s'ils existent ;
 - le chemin de `docs/design.md` et du brandkit retenu (`docs/design/identite/retenue/brandkit.json`), ou les éléments d'une direction provisoire s'ils n'existent pas encore ;
 - les chemins de `docs/prd.md` et `docs/brief.md` (s'ils existent), du glossaire (`aidd_docs/memory/glossary.md`), et, pour les maquettes, de la spec et de l'user story (`aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` et `US-XXX-<nom>.md`), s'ils existent ;
 - pour une **coquille** : le dossier `retenue/` d'où elle vient ; la sortie est `docs/design/coquille.html` ;
@@ -40,7 +40,7 @@ Si `docs/technical.md` déclare un pack de pile (ligne « **Pack de pile Pulse**
 ## Méthode
 
 1. Charger les références et les modèles : `pulse-aidd reference ui/regles-ui.md`, `pulse-aidd modele ui/maquette-note.md` ; pour le type `planche`, aussi `pulse-aidd reference ui/registres.md`, `pulse-aidd reference ui/directions.md` (la famille et le style cités par la thèse) et `pulse-aidd modele ui/brandkit.json` ; pour le type `maquette`, aussi `pulse-aidd reference ui/anti-patterns.md` et `pulse-aidd reference ui/motifs.md`, plus `pulse-aidd reference ui/registres.md` avec une direction provisoire (avec `docs/design.md`, le registre et la scène d'usage y sont déjà fixés).
-2. Lire `docs/design.md` (ou la direction provisoire reçue), les documents reçus (PRD, brief, spec, user stories) et le glossaire. Relever les mots du métier à employer dans les contenus fictifs.
+2. Lire `docs/design.md` (ou la direction provisoire reçue), les documents reçus (PRD, brief, spec, user stories) et le glossaire. Relever les mots du métier à employer dans les contenus fictifs. Ouvrir les images et relevés de `docs/design/references/` : viser leur niveau de soin, sans reprendre leur mise en page, leurs textes ni leurs couleurs, sauf ce que la personne garde comme base.
 3. **Ancrage** (maquette) : reprendre telles quelles les parties communes de la coquille reçue (en-tête, navigation, pied de page, icônes, logo ; seule l'entrée active change), ou, sans coquille, celles de l'interface déjà codée (Glob, Grep). La thèse joue sur le contenu de l'écran.
 4. Produire selon le type :
    - **planche** : écrire seulement `brandkit.json`, d'après le modèle `ui/brandkit.json` : nuances en OKLCH (5 par teinte au moins : 100, 300, 500, 700, 900), rôles qui citent une nuance, typographie, 8 espacements, rayons, formes, ombres et contenus fictifs tirés du projet. Lancer `pulse-aidd brandkit planche <dossier de sortie>` : l'outil vérifie le fichier, mesure chaque contraste et écrit `planche.html` d'après le modèle commun à toutes les directions. Corriger chaque 🔴 dans `brandkit.json` (une correction de luminosité est proposée), puis relancer jusqu'à n'en plus avoir. La planche s'écrit seulement par l'outil.

@@ -12,6 +12,7 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const { spawn } = require("child_process");
+const { actif: bacASable } = require("./bac-a-sable");
 
 function existe(f) {
   try {
@@ -82,9 +83,13 @@ function trouverNavigateur({ edge = true, env = process.env } = {}) {
  * Lance le navigateur sans fenêtre et ouvre une page vide. Rend { envoyer(methode, params), attendre(evenement), fermer() } :
  * envoyer parle à la page (protocole DevTools), attendre résout au prochain événement de ce nom.
  */
-async function ouvrir(chemin, { delai = 20000 } = {}) {
+async function ouvrir(chemin, { delai = 60000, env = process.env } = {}) {
   const profil = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-navigateur-"));
-  const args = ["--headless=new", "--remote-debugging-port=0", `--user-data-dir=${profil}`, "--no-first-run", "--no-default-browser-check", "--disable-extensions", "--hide-scrollbars", "--mute-audio", "about:blank"];
+  const args = ["--headless=new", "--remote-debugging-port=0", `--user-data-dir=${profil}`, "--no-first-run", "--no-default-browser-check", "--disable-extensions", "--hide-scrollbars", "--mute-audio"];
+  // Dans le bac à sable de Claude Code (Linux, WSL2), Chromium ne peut pas créer le sien et s'arrête : le bac à sable
+  // de Claude Code confine déjà le navigateur, qui se lance alors sans le sien.
+  if (bacASable(env)) args.push("--no-sandbox");
+  args.push("about:blank");
   const processus = spawn(chemin, args, { stdio: ["ignore", "ignore", "pipe"], windowsHide: true });
   const nettoyer = () => {
     try {
@@ -99,7 +104,15 @@ async function ouvrir(chemin, { delai = 20000 } = {}) {
     let erreurs = "";
     const minuteur = setTimeout(() => rejeter(new Error(`le navigateur n'a pas répondu en ${delai / 1000} s`)), delai);
     processus.on("error", (e) => (clearTimeout(minuteur), rejeter(e)));
-    processus.on("exit", (code) => (clearTimeout(minuteur), rejeter(new Error(`le navigateur s'est arrêté (code ${code}) : ${erreurs.trim().split("\n").slice(-3).join(" ")}`))));
+    processus.on("exit", (code) => {
+      clearTimeout(minuteur);
+      const aide = /error while loading shared libraries/.test(erreurs)
+        ? " ; il manque des bibliothèques du système : sous Linux, lancez « sudo npx playwright install-deps chromium », ou installez Google Chrome"
+        : bacASable(env)
+          ? " ; le bac à sable de Claude Code refuse le navigateur : lancez « pulse-aidd autorisations --bac-a-sable --ecrire », qui fait passer cette commande hors du bac à sable"
+          : "";
+      rejeter(new Error(`le navigateur s'est arrêté (code ${code}) : ${erreurs.trim().split("\n").slice(-3).join(" ")}${aide}`));
+    });
     processus.stderr.on("data", (d) => {
       erreurs += d;
       const m = erreurs.match(/DevTools listening on (ws:\/\/\S+)/);

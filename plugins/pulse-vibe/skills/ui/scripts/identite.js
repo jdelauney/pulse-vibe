@@ -2,6 +2,7 @@
 // Pulse – relevé de l'identité visuelle déjà présente dans un projet (pulse-aidd identite, /pulse:ui identite).
 //
 //   pulse-aidd identite extraire [dossier] [--json]
+//   pulse-aidd identite site <adresse> [--dossier <dossier>]   capture et relevé d'un site de référence (scripts/site.js)
 //
 // Relève seulement ce qui est écrit dans les fichiers : couleurs, polices, rayons, chacun avec fichier:ligne.
 // Sources : feuilles de style, tailwind.config, classes de couleur Tailwind et valeurs entre crochets du code,
@@ -106,9 +107,10 @@ function afficher(dossier, r) {
 
 function principal(args) {
   const json = args.includes("--json");
+  if (args[0] === "site") return require("./site").principal(args.slice(1));
   const [action, dossier = "."] = args.filter((a) => a !== "--json");
   if (action !== "extraire") {
-    console.error("Usage : pulse-aidd identite extraire [dossier] [--json]");
+    console.error("Usage : pulse-aidd identite extraire [dossier] [--json] | identite site <adresse> [--dossier <dossier>]");
     return 2;
   }
   if (!fs.existsSync(dossier) || !fs.statSync(dossier).isDirectory()) {
@@ -120,6 +122,6 @@ function principal(args) {
   return 0;
 }
 
-if (require.main === module) process.exitCode = principal(process.argv.slice(2));
+if (require.main === module) Promise.resolve(principal(process.argv.slice(2))).then((code) => (process.exitCode = code));
 
 module.exports = { extraire };
