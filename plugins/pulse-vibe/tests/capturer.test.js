@@ -71,3 +71,37 @@ test("capturer : captures par hauteur d'écran et par état, débordement et cib
   assert.match(r.stdout, /🟠 v1-essai\/mobile\.html \(390 px\)\s+Cibles tactiles sous 44 × 44 px : 1 \(button\.petit « Filtrer » 30 × 30\)/);
   assert.match(r.stdout, /état vide : v1-essai\/captures\/mobile-390-vide-1\.png/);
 });
+
+const AVEC_DEFAUTS = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>
+body{margin:0;font-family:system-ui;width:1200px}.carte{border:1px solid #ccc;padding:16px;min-height:90px;width:300px}.grande{width:900px}
+.sur{font-size:12px;text-transform:uppercase;letter-spacing:0.1em}.g{display:flex;gap:8px}td{text-align:left}</style></head><body>
+<p class="sur">Résumé</p><h2>Un</h2><p class="sur">Détail</p><h2>Deux</h2>
+<div class="carte grande"><div class="carte">Dedans</div></div>
+<div class="g"><div class="carte"><svg width="20" height="20"></svg><h3>A</h3><p>texte</p></div><div class="carte"><svg width="20" height="20"></svg><h3>B</h3><p>texte</p></div><div class="carte"><svg width="20" height="20"></svg><h3>C</h3><p>texte</p></div></div>
+<input placeholder="Votre e-mail">
+<table><tbody><tr><td>Loyer</td><td>1 250,00 €</td></tr></tbody></table></body></html>`;
+
+const SANS_DEFAUT = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><style>
+body{margin:0;font-family:system-ui;width:1200px}.carte{border:1px solid #ccc;padding:16px;min-height:90px;width:300px}
+.sur{font-size:12px;text-transform:uppercase;letter-spacing:0.1em}td.n{text-align:right;font-variant-numeric:tabular-nums}</style></head><body>
+<p class="sur">Résumé</p><h2>Un</h2><h2>Deux</h2><h2>Trois</h2>
+<div class="carte"><label for="m">Votre e-mail</label><input id="m"><input type="search" aria-label="Chercher"></div>
+<table><tbody><tr><td>Loyer</td><td class="n">1 250,00 €</td></tr></tbody></table></body></html>`;
+
+test("capturer : règles comptables du rendu, sans fausse alerte sur une page propre", { skip: !trouverNavigateur() && "aucun navigateur sur ce poste", timeout: 60000 }, () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-capturer-"));
+  fs.writeFileSync(path.join(d, "desktop.html"), AVEC_DEFAUTS);
+  fs.writeFileSync(path.join(d, "desktop-2.html"), SANS_DEFAUT);
+  const r = spawnSync(process.execPath, [MAQUETTES, "capturer", d], { encoding: "utf8", timeout: 55000 });
+  if (r.status === 3) return;
+  for (const attendu of [
+    /🔴 desktop\.html \(1280 px\)\s+Cartes dans des cartes : 1/,
+    /🔴 desktop\.html \(1280 px\)\s+Grille de cartes identiques icône \+ titre \+ texte : div\.g[^\n]*\(3 cartes\)/,
+    /🔴 desktop\.html \(1280 px\)\s+Champ sans étiquette : 1 \(input \(texte d'exemple seul : « Votre e-mail »\)\)/,
+    /🟠 desktop\.html \(1280 px\)\s+Petites étiquettes en capitales au-dessus des titres : 2 pour 2 section\(s\), 1 au plus/,
+    /🟢 desktop\.html \(1280 px\)\s+Nombres de tableau non alignés à droite : 1/,
+    /🟢 desktop\.html \(1280 px\)\s+Nombres de tableau sans chiffres de même largeur/,
+  ])
+    assert.match(r.stdout, attendu);
+  assert.doesNotMatch(r.stdout, /desktop-2\.html \(/, "page propre : aucun constat");
+});

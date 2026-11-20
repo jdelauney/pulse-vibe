@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: ui-critique-juges
+tags: [ui, maquettes, juges]
+context:
+  scaffold_script: projet.sh

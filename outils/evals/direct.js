@@ -19,7 +19,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 const { nomTrace } = require("./mesurer");
 const { evaluer } = require("../../plugins/pulse-vibe/scripts/garde-commandes");
-const { LECTURE } = require("../../plugins/pulse-vibe/scripts/bac-a-sable");
+const { LECTURE, HORS_BAC } = require("../../plugins/pulse-vibe/scripts/bac-a-sable");
 
 const OUTILS_ACCORDES = ["Write", "Edit", "Bash(pulse-aidd *)", "Bash(git *)", "Bash(node *)"];
 const OUTILS_PACK = ["Bash(npm *)", "Bash(npx *)"];
@@ -133,8 +133,9 @@ function commandeLancee(outil, entree) {
 
 const correspond = (appel, { tool, input_match: motif }) => appel.outil === tool && (!motif || new RegExp(motif).test(appel.entree));
 
-/** Les vérifications notées sur la trace : réussi true/false, ou null (juge IA, non noté) ; score sur les notées. */
-function noter(fichier, verifications, dossierProjet = null) {
+/** Les vérifications notées sur la trace : réussi true/false, ou null (juge IA, non noté) ; score sur les notées. Les
+ * vérifications « command » se lancent avec les outils du dépôt essayé (envCommandes), comme l'essai lui-même. */
+function noter(fichier, verifications, dossierProjet = null, envCommandes = process.env) {
   const { appels: tous, reponse } = lireTrace(fichier);
   const appels = tous.filter((a) => !a.refuse);
   const details = verifications.map((v) => {
@@ -148,7 +149,7 @@ function noter(fichier, verifications, dossierProjet = null) {
       reussi = avant >= 0 && (String(v.strict) === "true" ? apres > avant : appels.some((a, i) => i > avant && correspond(a, v.after)));
     } else if (v.type === "regex") reussi = new RegExp(v.pattern, v.flags || "").test(reponse);
     else if (v.type === "file_exists") reussi = Boolean(dossierProjet && v.path && fs.existsSync(path.join(dossierProjet, v.path)));
-    else if (v.type === "command") reussi = Boolean(dossierProjet && v.run) && spawnSync("bash", ["-c", v.run], { cwd: dossierProjet, encoding: "utf8", timeout: 120000 }).status === 0;
+    else if (v.type === "command") reussi = Boolean(dossierProjet && v.run) && spawnSync("bash", ["-c", v.run], { cwd: dossierProjet, env: envCommandes, encoding: "utf8", timeout: 120000 }).status === 0;
     return { nom: v.nom, type: v.type, reussi };
   });
   const notees = details.filter((d) => d.reussi !== null);
@@ -157,7 +158,7 @@ function noter(fichier, verifications, dossierProjet = null) {
 
 /** Le bac à sable des essais, comme celui que propose /pulse:init : les fichiers de variables du projet restent lisibles
  * par la construction et les tests (chemins absolus : dans --settings, un chemin relatif ne part pas du projet). */
-const bacAEssai = (projet) => ({ sandbox: { enabled: true, filesystem: { allowRead: LECTURE.map((f) => path.join(projet, f)) } } });
+const bacAEssai = (projet) => ({ sandbox: { enabled: true, filesystem: { allowRead: LECTURE.map((f) => path.join(projet, f)) }, excludedCommands: HORS_BAC } });
 
 /** Les arguments de claude -p pour un cas, avec les plugins du dépôt ; `projet` : le dossier de l'essai. */
 function argumentsDirect(cas, depot, env, projet = process.cwd()) {
@@ -255,7 +256,7 @@ function lancer(extra, env, { depot, dossierCas, resultats }) {
       });
       fs.writeFileSync(trace, r.stdout || "");
       const duree = Math.round((Date.now() - debut) / 1000);
-      const notes = noter(trace, cas.verifications, projet);
+      const notes = noter(trace, cas.verifications, projet, envEval(env, binsDepot(essai, env)));
       const echecs = notes.details.filter((d) => d.reussi === false).map((d) => d.nom);
       const nonNotees = notes.details.filter((d) => d.reussi === null).map((d) => d.nom);
       console.log(`${nom} essai ${n} : score ${notes.score === null ? "—" : notes.score.toFixed(2)} · ${duree} s` +

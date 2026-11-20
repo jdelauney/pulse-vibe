@@ -28,7 +28,7 @@ Chaque choix passe par un vrai contrôle de formulaire, utilisable au clavier et
 ## 4. Tableaux de données
 
 - **En-tête qui reste visible** quand on fait défiler ; le **tri** se signale dans l'en-tête de la colonne triée (flèche, et sens écrit pour les lecteurs d'écran).
-- **Nombres alignés à droite**, avec le même nombre de décimales dans une colonne ; textes alignés à gauche.
+- **Nombres alignés à droite**, avec le même nombre de décimales dans une colonne et des chiffres de même largeur (`font-variant-numeric: tabular-nums`) ; textes alignés à gauche.
 - **Actions d'une ligne** : sur ordinateur, elles apparaissent au survol de la ligne et dès que le focus clavier entre dans la ligne ; elles restent atteignables avec la touche Tab. Sur téléphone, elles restent toujours visibles.
 - **Pagination** (le découpage en pages, avec des boutons pour passer de l'une à l'autre) qui situe : « 1 à 20 sur 134 ».
 - **Chargement** : un squelette de 5 à 8 lignes. **État vide** : une phrase et le bouton de création.
