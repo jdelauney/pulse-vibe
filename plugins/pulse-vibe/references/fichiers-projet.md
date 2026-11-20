@@ -9,7 +9,7 @@ Dans le projet de la personne, ce que produit chaque commande :
 | `docs/prd.md` | `/pulse:prd` | Le besoin produit, le périmètre de la première version (Indispensable, Essentiel, Optionnel, En attente) |
 | `docs/technical.md` | `/pulse:tech` | La pile retenue et ses raisons, l'organisation des fichiers, les commandes du projet, les données et le contrôle d'accès, les secrets, l'hébergement. Source unique pour tout ce qui dépend de la technologie |
 | `docs/design.md` | `/pulse:ui identite` | L'identité visuelle : registre, scène d'usage, personnalité, couleurs, typographie, composants et leurs états. Facultatif ; s'il existe, les specs, le plan et le code s'y conforment |
-| `docs/design/` | `/pulse:ui` | Les planches d'identité et les maquettes d'écrans (`maquettes/US-XXX-<nom>/retenue/` = la maquette choisie pour une US). Référence visuelle, à traduire dans la pile retenue |
+| `docs/design/` | `/pulse:ui` | Les planches d'identité et les maquettes d'écrans (`maquettes/US-XXX-<nom>/retenue/` = la maquette choisie pour une US ; `coquille.html` = l'en-tête, la navigation et le pied de page communs à tous les écrans ; `captures/` = les captures d'écran, propres à cette machine). Référence visuelle, à traduire dans la pile retenue |
 | `docs/user-stories.md` | `/pulse:us` | Le référentiel des user stories : les groupes, la vue d'ensemble (priorité, taille, dépendances) et le parcours utilisateur |
 | `aidd_docs/tasks/<epic>/US-XXX-<nom>.md` | `/pulse:us` | Une user story : règles métier, exemple, critères d'acceptation |
 | `aidd_docs/tasks/<epic>/SPEC-US-XXX-<nom>.md` | `/pulse:spec` | La spécification d'une user story (une US = une spec) : l'intention seule (écrans, informations, règles, scénarios, « terminé quand »), verrouillée une fois validée |

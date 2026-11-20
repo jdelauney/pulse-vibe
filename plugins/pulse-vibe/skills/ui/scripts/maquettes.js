@@ -2,6 +2,7 @@
 // Pulse – contrôle des anti-patterns détectables dans les pages HTML de /pulse:ui (planches et maquettes).
 //
 //   pulse-aidd maquettes verifier <fichier.html|dossier>
+//   pulse-aidd maquettes capturer <fichier.html|dossier>   captures et contrôles du rendu réel (scripts/capturer.js)
 //
 // Chaque constat renvoie à une entrée de ui/anti-patterns.md ou à une règle de regles-ui.md.
 // La liste des polices « réflexes » est lue dans regles-ui.md (seule source).
@@ -166,8 +167,9 @@ function pages(chemin) {
 
 function principal(args) {
   const [action, chemin] = args;
+  if (action === "capturer") return require("./capturer").principal(args.slice(1));
   if (action !== "verifier" || !chemin) {
-    console.error("Usage : pulse-aidd maquettes verifier <fichier.html|dossier>");
+    console.error("Usage : pulse-aidd maquettes verifier|capturer <fichier.html|dossier>");
     return 2;
   }
   if (!fs.existsSync(chemin)) {
@@ -190,6 +192,6 @@ function principal(args) {
   return n("🔴") ? 1 : 0;
 }
 
-if (require.main === module) process.exitCode = principal(process.argv.slice(2));
+if (require.main === module) Promise.resolve(principal(process.argv.slice(2))).then((code) => (process.exitCode = code));
 
 module.exports = { verifier, CONSTATS, policesReflexes };

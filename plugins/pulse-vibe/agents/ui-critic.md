@@ -26,6 +26,7 @@ Le message de délégation indique :
 - le chemin de `docs/design.md`, ou « absent » (en mode maquette, il peut s'agir d'une direction provisoire décrite dans le message) ;
 - en mode code : la **maquette retenue**, s'il y en a une (dossier), et l'emplacement du code d'interface, d'après « Organisation des fichiers » de `docs/technical.md` : le lire avant de chercher ;
 - en mode maquette : la **spec** de l'US. La cible est alors le dossier `retenue/` d'une maquette (`desktop*.html`, `mobile*.html`, `note.md`) ; la fidélité se juge par rapport à `docs/design.md` et aux écrans et états demandés par la spec.
+- en mode maquette, au besoin : les **constats du rendu** (`pulse-aidd maquettes capturer`) et la consigne « Évaluation d'ensemble : faite par les juges ».
 
 Si la cible est introuvable (Glob, `ls`), s'arrêter et le dire.
 
@@ -37,8 +38,8 @@ Dans les deux modes, si `docs/technical.md` déclare un pack de pile (ligne « *
 
 1. Charger `pulse-aidd reference ui/registres.md`, `ui/regles-ui.md`, `ui/anti-patterns.md`, `ui/motifs.md`, `ui/heuristiques.md` et `pulse-aidd modele ui/revue-ui.md`.
 2. Lire `docs/design.md` ; puis la maquette retenue (mode code) ou la spec de l'US (mode maquette), s'ils existent.
-3. Lire chaque fichier de la cible. En mode maquette, lancer aussi `pulse-aidd maquettes verifier <cible>` et reporter chacun de ses constats dans sa rubrique (Anti-pattern, Accessibilité ou Fidélité au design), à sa ligne.
-4. Noter l'**Évaluation d'ensemble** : les 5 dimensions de `ui/heuristiques.md`, chacune sur 10, avec une phrase qui cite ce qui se voit ; puis le total sur 50.
+3. Lire chaque fichier de la cible. En mode maquette, lancer aussi `pulse-aidd maquettes verifier <cible>` et reporter chacun de ses constats dans sa rubrique (Anti-pattern, Accessibilité ou Fidélité au design), à sa ligne. Ouvrir aussi les captures de `<cible>/captures/` (Read), s'il y en a, et reporter chaque constat du rendu reçu dans sa rubrique (débordement : Usage ; cibles tactiles : Accessibilité ; image : Fidélité au design).
+4. Sauf consigne « Évaluation d'ensemble : faite par les juges » (laisser alors le tableau vide, et la note « — / 50 »), noter l'**Évaluation d'ensemble** : les 5 dimensions de `ui/heuristiques.md`, chacune sur 10, avec une phrase qui cite ce qui se voit ; puis le total sur 50.
 5. Passer les 7 rubriques, dans cet ordre :
    - **Fidélité au design** : fidélité à `docs/design.md` et, en mode code, à la maquette (couleurs, polices, espacements, composants, registre) ; en mode maquette, chaque écran et chaque état demandés par la spec sont montrés, et les couleurs, polices et espacements passent par les variables `:root` du fichier, aux valeurs de `docs/design.md`. En mode code, une valeur de couleur, de police ou d'espacement écrite en dur dans un composant, au lieu de la valeur du fichier du thème (section « Dans le code » de `docs/design.md`), est un constat 🟠.
    - **Hiérarchie** : poids visuels, action principale et ordre de lecture (`ui/regles-ui.md` § 5).

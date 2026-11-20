@@ -102,7 +102,8 @@ Laquelle gardez-vous ? Vous pouvez aussi mélanger : « d1 avec les titres de d3
 <tr><td><code>docs/design.md</code></td><td>Votre identité visuelle : couleurs par rôle, polices, formes, et la façon de l'appliquer au code.</td></tr>
 <tr><td><code>docs/design/identite/</code></td><td>Les planches comparées (<code>d1-…</code>, <code>d2-…</code>), toutes présentées de la même façon, à regarder sur téléphone et sur ordinateur : la planche choisie dans <code>retenue/</code>, les autres dans <code>alternatives/</code>.</td></tr>
 <tr><td><code>docs/design/identite/retenue/brandkit.json</code></td><td>Toutes les valeurs de votre identité (couleurs, polices, tailles, espacements, arrondis), gardées dans un seul fichier : chaque nouvel écran les reprend, pour rester fidèle à l'apparence choisie.</td></tr>
-<tr><td><code>docs/design/maquettes/US-XXX-&lt;nom&gt;/</code></td><td>Les versions d'écrans, dessinées pour le téléphone d'abord puis pour l'ordinateur (<code>mobile.html</code>, <code>desktop.html</code>, <code>note.md</code>), la version choisie dans <code>retenue/</code> avec sa <code>critique.md</code>, les autres dans <code>alternatives/</code>.</td></tr>
+<tr><td><code>docs/design/maquettes/US-XXX-&lt;nom&gt;/</code></td><td>Les versions d'écrans, dessinées pour le téléphone d'abord puis pour l'ordinateur (<code>mobile.html</code>, <code>desktop.html</code>, <code>note.md</code>), la version choisie dans <code>retenue/</code> avec sa <code>critique.md</code>, les autres dans <code>alternatives/</code>. Chaque version a ses images d'écran dans <code>captures/</code> : elles restent sur cet ordinateur.</td></tr>
+<tr><td><code>docs/design/coquille.html</code></td><td>Le cadre commun à tous vos écrans : l'en-tête, le menu et le pied de page, tirés de la première maquette choisie. Chaque nouvelle maquette le reprend, pour que vos écrans se ressemblent d'une user story à l'autre.</td></tr>
 <tr><td><code>docs/design/audits/ui-AAAA-MM-JJ.md</code></td><td>Le rapport d'audit : une note sur 50, les constats classés par gravité, ce qui va bien et 3 corrections rapides.</td></tr>
 </tbody>
 </table>
@@ -117,6 +118,7 @@ Laquelle gardez-vous ? Vous pouvez aussi mélanger : « d1 avec les titres de d3
 <li><strong><code>audit</code> ne touche à rien.</strong> Il lit votre interface et écrit seulement son rapport.</li>
 <li><strong><code>polish</code> modifie votre code</strong>, par petits lots, puis lance les contrôles automatiques et vous demande de vérifier dans votre navigateur.</li>
 <li>Pour ouvrir la page de comparaison, Pulse lance votre navigateur sur un fichier de votre projet.</li>
+<li>Pour regarder les maquettes, Pulse ouvre aussi Chrome ou Edge sans fenêtre et en prend des images, état par état. La note sur 50 d'une maquette vient de deux relecteurs qui n'ont vu que ces images.</li>
 </ul>
 <aside class="encadre encadre-attention"><p><strong>Attention :</strong> <code>polish</code> corrige seulement l'apparence et les textes. Un constat qui change le parcours va vers <a href="refine.html"><code>/pulse:refine</code></a>, et un bouton qui ne marche pas vers <a href="fix.html"><code>/pulse:fix</code></a> : Pulse vous le dit.</p></aside>
 </section>
@@ -126,6 +128,7 @@ Laquelle gardez-vous ? Vous pouvez aussi mélanger : « d1 avec les titres de d3
 <details class="probleme"><summary>La page de comparaison ne s'ouvre pas</summary><p>Pulse affiche le chemin complet du fichier. Double-cliquez dessus : il s'ouvre dans votre navigateur.</p></details>
 <details class="probleme"><summary>Aucune apparence ne me plaît</summary><p>Répondez « aucune », suivi de ce qui vous manque (« plus chaleureux », « moins chargé »). Pulse prépare de nouvelles propositions avec cette consigne ; les anciennes sont rangées dans <code>alternatives/</code>.</p></details>
 <details class="probleme"><summary>Deux maquettes se ressemblent trop</summary><p>Pulse le repère lui-même et propose de régénérer l'une d'elles avec une autre idée directrice. Acceptez : chaque version doit changer l'organisation de l'écran, pas seulement les couleurs.</p></details>
+<details class="probleme"><summary>Pulse dit qu'aucune capture n'est possible</summary><p>Ni Chrome ni Edge n'ont été trouvés sur cet ordinateur. Installez l'un des deux, puis relancez la commande. En attendant, les maquettes restent proposées, et leur note vient du relecteur habituel.</p></details>
 <details class="probleme"><summary>Pulse me demande de définir l'identité avant les maquettes</summary><p>Sans <code>docs/design.md</code>, les maquettes n'ont pas de base commune. Choisissez « Définir l'identité d'abord », ou continuez avec une direction provisoire, signalée dans chaque maquette.</p></details>
 <details class="probleme"><summary>Pulse me dit qu'il manque le PRD</summary><p>L'identité visuelle s'appuie sur votre projet. Lancez <a href="prd.html"><code>/pulse:prd</code></a>, puis relancez <code>/pulse:ui identite</code>.</p></details>
 </section>

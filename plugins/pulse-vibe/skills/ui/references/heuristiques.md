@@ -4,7 +4,7 @@
 
 ## Évaluation d'ensemble
 
-Chaque dimension reçoit une note sur 10, justifiée en une phrase qui cite ce qui se voit. Le total est sur 50.
+Chaque dimension reçoit une note sur 10, justifiée en une phrase qui cite ce qui se voit. Le total est sur 50. Pour une maquette, ce sont deux juges qui notent, d'après les seules captures (`ui/critique-maquette.md`).
 
 | Note | Lecture |
 |---|---|
