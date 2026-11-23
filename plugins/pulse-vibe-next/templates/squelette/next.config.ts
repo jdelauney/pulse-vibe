@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const enDeveloppement = process.env.NODE_ENV === "development";
+const autonome = process.env.PULSE_SORTIE === "standalone";
 
 // Sources autorisées par la Content-Security-Policy (CSP) : tout le reste est bloqué.
 // Une recette qui charge un service externe ajoute ici son adresse exacte.
@@ -56,10 +57,18 @@ const entetesDeSecurite = [
 ];
 
 const nextConfig: NextConfig = {
+  // Hébergement docker ou serveur : la construction produit .next/standalone, un serveur Node autonome
+  // (node server.js), demandé par PULSE_SORTIE=standalone (Dockerfile, scripts/deployer.sh). Sans elle
+  // (Vercel, npm run start en local) : la sortie habituelle de Next.js. La racine est le dossier du projet,
+  // même si un autre package-lock.json traîne plus haut (sinon server.js serait rangé dans un sous-dossier).
+  ...(autonome
+    ? { output: "standalone" as const, outputFileTracingRoot: process.cwd() }
+    : {}),
   cacheComponents: true,
   partialPrefetching: true,
   reactCompiler: true,
   turbopack: {
+    ...(autonome ? { root: process.cwd() } : {}),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],

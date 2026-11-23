@@ -1,0 +1,9 @@
+# Caddy devant le site (hébergement serveur), quand rien d'autre n'est devant lui : HTTPS automatique
+# (certificat Let's Encrypt renouvelé tout seul). Remplacer www.mon-site.fr par le domaine du site, puis
+# copier ce fichier en /etc/caddy/Caddyfile et lancer : sudo systemctl reload caddy.
+# Les ports 80 et 443 du serveur doivent être ouverts, et le nom de domaine pointer vers le serveur.
+# https://caddyserver.com/docs/quick-starts/reverse-proxy
+www.mon-site.fr {
+	encode
+	reverse_proxy 127.0.0.1:3000
+}

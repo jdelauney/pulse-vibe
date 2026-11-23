@@ -23,3 +23,9 @@ client_secret*.json
 
 # Vercel
 .vercel
+
+# Mise en ligne sur un serveur (hébergements docker et serveur) : sauvegardes de la base, versions du site
+/sauvegardes/
+/versions/
+/courante
+/courante.nouvelle

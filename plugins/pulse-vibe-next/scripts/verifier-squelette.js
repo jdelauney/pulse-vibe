@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 // Pulse Next.js – vérification du squelette (outil du dépôt : CI hebdomadaire et maintenance).
 //
-//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--base neon|postgres] [--dernieres [--majeures]] [--ecrire] [--e2e [--tolerer-instables]] [--dossier <chemin>] [--garder]
+//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--base neon|postgres] [--hebergement vercel|docker|serveur] [--dernieres [--majeures]] [--ecrire] [--e2e [--tolerer-instables]] [--dossier <chemin>] [--garder]
 //
 //   --base        variante du squelette à vérifier (neon par défaut) ; postgres : lance aussi la base du
 //                 docker-compose.yml (Docker doit tourner, port 5432 libre), y applique la migration d'essai, puis
 //                 vérifie que src/db/db-client.ts choisit node-postgres et lit cette base ; la base et son volume
 //                 sont retirés à la fin
+//   --hebergement variante d'hébergement à vérifier (vercel par défaut) ; docker : si Docker répond (docker version),
+//                 construit les images de compose.production.yml (tests compris), lance le site avec PostgreSQL sur
+//                 le serveur, sa sauvegarde et les migrations, puis vérifie que le site et sa route de santé
+//                 répondent ; conteneurs, images et volumes sont retirés à la fin ; serveur : construction
+//                 standalone, assemblée comme le fait scripts/deployer.sh, puis le serveur Node produit lancé et
+//                 interrogé (page d'accueil, route de santé : 200 avec --base postgres, 503 sans base)
 //   --dernieres   passe chaque dépendance à sa dernière version publiée (npm view) avant de vérifier,
 //                 sauf un changement de version majeure, signalé et laissé tel quel
 //   --majeures    avec --dernieres : monte aussi les versions majeures (demande de fusion à part)
@@ -29,7 +35,7 @@ const os = require("os");
 const path = require("path");
 const net = require("net");
 const { spawn, spawnSync } = require("child_process");
-const { creerSquelette, BASES } = require("./squelette");
+const { creerSquelette, BASES, HEBERGEMENTS } = require("./squelette");
 
 // Adresse de la base Docker de la variante postgres (identifiants de développement de son .env.example).
 const ADRESSE_DOCKER = "postgresql://postgres:postgres@localhost:5432/app";
@@ -71,6 +77,117 @@ function verifierBaseDocker(dossier) {
   } finally {
     fs.rmSync(path.join(dossier, "tests", "base-docker.test.ts"), { force: true });
   }
+}
+
+const PROJET_PRODUCTION = "pulse-verification-hebergement";
+
+/** Vrai si Docker répond (moteur lancé). */
+function dockerDisponible() {
+  return spawnSync("docker version", { shell: true, stdio: "ignore" }).status === 0;
+}
+
+/** Attend qu'une adresse réponde (n'importe quel code HTTP) ; rend la réponse, ou lève une erreur après le délai. */
+async function attendreReponse(adresse, { essais = 60, arret = () => null } = {}) {
+  for (let i = 0; i < essais; i++) {
+    const fin = arret();
+    if (fin !== null) throw new Error(`le serveur s'est arrêté (${fin})`);
+    try {
+      return await fetch(adresse);
+    } catch {
+      await new Promise((ok) => setTimeout(ok, 1000));
+    }
+  }
+  throw new Error(`${adresse} ne répond pas`);
+}
+
+/** Page d'accueil (200, nom du projet) et route de santé (code attendu) du site servi à cette adresse. */
+async function controlerSiteProduit(adresse, santeAttendue, arret) {
+  const accueil = await attendreReponse(adresse, { arret });
+  const texte = await accueil.text();
+  if (accueil.status !== 200 || !texte.includes("Projet de vérification")) throw new Error(`page d'accueil : code ${accueil.status}${texte.includes("Projet de vérification") ? "" : ", nom du projet absent"}`);
+  const sante = await fetch(`${adresse}/api/sante`);
+  const corps = await sante.json().catch(() => ({}));
+  if (sante.status !== santeAttendue) throw new Error(`/api/sante : code ${sante.status} (${JSON.stringify(corps)}), attendu ${santeAttendue}`);
+  console.log(`   ${adresse} : accueil 200, /api/sante ${sante.status} ${JSON.stringify(corps)}`);
+}
+
+/**
+ * Variante docker : le vrai déroulé de compose.production.yml (images construites avec leurs tests, PostgreSQL sur le
+ * serveur, sauvegarde, migrations, site), avec un .env de vérification. Tout est retiré à la sortie, même en échec.
+ */
+async function verifierHebergementDocker(dossier) {
+  if (!dockerDisponible()) {
+    console.log("\n(vérification de l'image sautée : Docker ne répond pas, docker version)");
+    return;
+  }
+  const port = await portLibre();
+  const compose = `docker compose -p ${PROJET_PRODUCTION} -f compose.production.yml`;
+  let nettoye = false;
+  // Après un succès, tout part avant le dossier ; après un échec (process.exit de lancer), à la sortie : le dossier
+  // est alors gardé, son compose.production.yml sert encore. Les images de base (postgres, node, caddy) restent.
+  const nettoyer = () => {
+    if (nettoye) return;
+    nettoye = true;
+    // Les copies de la base appartiennent à root (créées dans le conteneur) : un conteneur les retire.
+    spawnSync(`${compose} run --rm --no-deps --entrypoint rm sauvegarde -rf /sauvegardes/`, { cwd: dossier, shell: true, stdio: "ignore" });
+    spawnSync(`${compose} down --volumes --rmi local --remove-orphans`, { cwd: dossier, shell: true, stdio: "ignore" });
+    spawnSync("docker image rm projet-de-verification:courante projet-de-verification:precedente", { shell: true, stdio: "ignore" });
+  };
+  process.on("exit", nettoyer);
+  fs.writeFileSync(path.join(dossier, ".env"), ["SITE_URL=https://www.exemple.org", "PULSE_ENV=production", "COMPOSE_PROFILES=base", "POSTGRES_PASSWORD=verification-locale", `APP_PORT=${port}`, ""].join("\n"));
+  try {
+    lancer(`${compose} up -d --build --wait`, dossier);
+    const dossierCopies = path.join(dossier, "sauvegardes");
+    const copies = fs.existsSync(dossierCopies) ? fs.readdirSync(dossierCopies).filter((f) => f.endsWith(".dump")) : [];
+    if (!copies.length) throw new Error("aucune copie de la base dans sauvegardes/ (service sauvegarde)");
+    const journal = spawnSync(`${compose} logs migrations`, { cwd: dossier, shell: true, encoding: "utf8" }).stdout || "";
+    if (!/Migrations appliquées/.test(journal)) throw new Error(`migrations non appliquées :\n${journal}`);
+    console.log(`\n▶ site du conteneur\n   copie de la base : sauvegardes/${copies[0]} ; migrations appliquées`);
+    await controlerSiteProduit(`http://127.0.0.1:${port}`, 200, () => null);
+  } catch (e) {
+    console.error(`\n❌ Échec : hébergement docker (${e.message})`);
+    spawnSync(`${compose} logs --tail 80`, { cwd: dossier, shell: true, stdio: "inherit" });
+    process.exit(1);
+  }
+  nettoyer();
+  fs.rmSync(path.join(dossier, ".env"), { force: true });
+}
+
+/**
+ * Variante serveur : construction standalone, assemblée comme scripts/deployer.sh (statiques, public, sans .env),
+ * puis le serveur Node produit, lancé sur un port libre. Avec la base Docker (--base postgres), /api/sante répond 200 ;
+ * sans base, 503.
+ */
+async function verifierHebergementServeur(dossier, base) {
+  lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1", PULSE_SORTIE: "standalone" });
+  const version = path.join(dossier, "versions", "verification");
+  fs.cpSync(path.join(dossier, ".next", "standalone"), version, { recursive: true, verbatimSymlinks: true });
+  fs.cpSync(path.join(dossier, ".next", "static"), path.join(version, ".next", "static"), { recursive: true });
+  fs.cpSync(path.join(dossier, "public"), path.join(version, "public"), { recursive: true });
+  for (const f of fs.readdirSync(version)) if (f.startsWith(".env")) fs.rmSync(path.join(version, f));
+  const port = await portLibre();
+  console.log("\n▶ node server.js (sortie standalone)");
+  const adresseBase = base === "postgres" ? ADRESSE_DOCKER : "postgresql://verification:verification@127.0.0.1:1/verification";
+  const serveur = spawn(process.execPath, ["server.js"], { cwd: version, stdio: "ignore", env: { ...process.env, NODE_ENV: "production", PORT: String(port), HOSTNAME: "127.0.0.1", SKIP_ENV_VALIDATION: "1", DATABASE_URL: adresseBase } });
+  let arret = null;
+  serveur.on("exit", (code, signal) => {
+    arret = code ?? signal;
+  });
+  try {
+    await controlerSiteProduit(`http://127.0.0.1:${port}`, base === "postgres" ? 200 : 503, () => arret);
+  } catch (e) {
+    console.error(`\n❌ Échec : hébergement serveur (${e.message})`);
+    process.exitCode = 1;
+  } finally {
+    serveur.kill();
+    fs.rmSync(path.join(dossier, "versions"), { recursive: true, force: true });
+  }
+  if (process.exitCode) process.exit(1);
+}
+
+/** Le script de déploiement d'une variante se lit sans erreur de syntaxe (bash -n). */
+function controlerScriptDeDeploiement(dossier) {
+  if (fs.existsSync(path.join(dossier, "scripts", "deployer.sh"))) lancer("bash -n scripts/deployer.sh", dossier);
 }
 
 const MODELE = path.join(__dirname, "..", "templates", "squelette");
@@ -228,12 +345,15 @@ async function auditerSiteServi(dossier) {
 }
 
 function lireArguments(argv) {
-  const opts = { base: "neon", dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null, garder: false, tolererInstables: false };
+  const opts = { base: "neon", hebergement: "vercel", dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null, garder: false, tolererInstables: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--base") {
       opts.base = argv[++i];
       if (!BASES.includes(opts.base)) throw new Error(`Base inconnue : ${opts.base}. Valeurs possibles : ${BASES.join(", ")}.`);
+    } else if (a === "--hebergement") {
+      opts.hebergement = argv[++i];
+      if (!HEBERGEMENTS.includes(opts.hebergement)) throw new Error(`Hébergement inconnu : ${opts.hebergement}. Valeurs possibles : ${HEBERGEMENTS.join(", ")}.`);
     } else if (a === "--dernieres") opts.dernieres = true;
     else if (a === "--majeures") opts.majeures = true;
     else if (a === "--ecrire") opts.ecrire = true;
@@ -396,8 +516,8 @@ async function principal() {
     if (message) console.log(message);
   });
   process.on("SIGINT", () => process.exit(130));
-  creerSquelette({ nom: "Projet de vérification", description: "Vérification automatique du squelette.", base: opts.base, dossier });
-  console.log(`Squelette créé dans ${dossier} (base : ${opts.base})`);
+  creerSquelette({ nom: "Projet de vérification", description: "Vérification automatique du squelette.", base: opts.base, hebergement: opts.hebergement, dossier });
+  console.log(`Squelette créé dans ${dossier} (base : ${opts.base}, hébergement : ${opts.hebergement})`);
 
   const fichierPaquet = path.join(dossier, "package.json");
   const paquet = JSON.parse(fs.readFileSync(fichierPaquet, "utf8"));
@@ -426,6 +546,9 @@ async function principal() {
   // La construction de vérification se fait sans variables : t3 env saute alors la validation.
   lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1" });
   controlerCodeSeo(dossier);
+  controlerScriptDeDeploiement(dossier);
+  if (opts.hebergement === "serveur") await verifierHebergementServeur(dossier, opts.base);
+  if (opts.hebergement === "docker") await verifierHebergementDocker(dossier);
   if (opts.e2e) {
     // La construction de bout en bout (npm run build du webServer de Playwright, en CI) inclut la page d'essai.
     poserPageDEssai(dossier);

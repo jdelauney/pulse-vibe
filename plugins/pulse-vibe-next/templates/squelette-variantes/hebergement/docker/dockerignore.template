@@ -1,0 +1,12 @@
+# Ce qui ne part jamais dans l'image : secrets, dépendances du poste, constructions, sauvegardes.
+.env*
+!.env.example
+.git
+node_modules
+.next
+coverage
+test-results
+playwright-report
+sauvegardes
+.vercel
+npm-debug.log*
