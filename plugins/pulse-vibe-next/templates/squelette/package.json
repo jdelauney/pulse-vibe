@@ -25,7 +25,7 @@
     "class-variance-authority": "0.7.1",
     "cn": "0.5.2",
     "drizzle-orm": "0.45.4",
-    "lucide-react": "1.74.0",
+    "lucide-react": "1.77.0",
     "next": "16.4.6",
     "next-safe-action": "8.7.3",
     "nuqs": "2.10.3",
@@ -40,7 +40,7 @@
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
     "@biomejs/biome": "2.6.8",
-    "@electric-sql/pglite": "0.5.16",
+    "@electric-sql/pglite": "0.5.17",
     "@next/env": "16.4.6",
     "@playwright/test": "1.65.1",
     "@tailwindcss/turbopack": "4.3.5",
@@ -54,7 +54,7 @@
     "shadcn": "4.23.0",
     "tailwindcss": "4.3.5",
     "typescript": "7.0.2",
-    "vitest": "5.1.0"
+    "vitest": "5.1.1"
   },
   "overrides": {
     "playwright-core": "$@playwright/test"
