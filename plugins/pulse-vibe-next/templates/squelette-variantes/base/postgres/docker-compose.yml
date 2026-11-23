@@ -1,0 +1,25 @@
+# Base PostgreSQL du développement, sur ce poste seulement ; la production reste sur Neon.
+# Lancer : npm run db:up (Docker Desktop ouvert) ; arrêter : npm run db:down. Les données restent dans le volume
+# « donnees » d'un lancement à l'autre ; docker compose down --volumes les efface.
+# Identifiants de développement, pas des secrets : la base répond seulement sur ce poste (127.0.0.1).
+services:
+  db:
+    image: postgres:19-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app
+    ports:
+      - "127.0.0.1:5432:5432"
+    # Depuis PostgreSQL 18, l'image range ses données sous /var/lib/postgresql/<version>/docker : le volume
+    # se monte sur /var/lib/postgresql.
+    volumes:
+      - donnees:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  donnees:

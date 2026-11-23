@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 // Pulse Next.js – vérification du squelette (outil du dépôt : CI hebdomadaire et maintenance).
 //
-//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--dernieres [--majeures]] [--ecrire] [--e2e [--tolerer-instables]] [--dossier <chemin>] [--garder]
+//   node plugins/pulse-vibe-next/scripts/verifier-squelette.js [--base neon|postgres] [--dernieres [--majeures]] [--ecrire] [--e2e [--tolerer-instables]] [--dossier <chemin>] [--garder]
 //
+//   --base        variante du squelette à vérifier (neon par défaut) ; postgres : lance aussi la base du
+//                 docker-compose.yml (Docker doit tourner, port 5432 libre), y applique la migration d'essai, puis
+//                 vérifie que src/db/db-client.ts choisit node-postgres et lit cette base ; la base et son volume
+//                 sont retirés à la fin
 //   --dernieres   passe chaque dépendance à sa dernière version publiée (npm view) avant de vérifier,
 //                 sauf un changement de version majeure, signalé et laissé tel quel
 //   --majeures    avec --dernieres : monte aussi les versions majeures (demande de fusion à part)
@@ -25,7 +29,49 @@ const os = require("os");
 const path = require("path");
 const net = require("net");
 const { spawn, spawnSync } = require("child_process");
-const { creerSquelette } = require("./squelette");
+const { creerSquelette, BASES } = require("./squelette");
+
+// Adresse de la base Docker de la variante postgres (identifiants de développement de son .env.example).
+const ADRESSE_DOCKER = "postgresql://postgres:postgres@localhost:5432/app";
+const PROJET_COMPOSE = "pulse-verification-base";
+
+// Test posé par --base postgres dans le dossier temporaire seulement : le vrai client de l'application
+// (FabriqueDeBase de src/db/db-client.ts) sur la base Docker, après la migration de la table d'essai.
+const TEST_BASE_DOCKER = `import { FabriqueDeBase } from "@src/db/db-client";
+import { sql } from "drizzle-orm";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { expect, it } from "vitest";
+import { essais } from "../src/db/verification/essai.table";
+
+it("la base Docker se lit par node-postgres, migration appliquée", async () => {
+  const db = new FabriqueDeBase(process.env.DATABASE_URL ?? "").creer();
+  expect(db).toBeInstanceOf(NodePgDatabase);
+  await db.insert(essais).values({ id: "essai" }).onConflictDoNothing();
+  expect(await db.select().from(essais)).toEqual([{ id: "essai" }]);
+  const { rows } = await db.execute(sql\`select current_setting('server_version_num')::int as version\`);
+  expect(Number(rows[0]?.version)).toBeGreaterThan(0);
+});
+`;
+
+/**
+ * Variante postgres : lance la base du docker-compose.yml, applique la migration d'essai et lit la base par le
+ * client de l'application. La base et son volume sont retirés à la sortie du script, même en échec.
+ */
+function verifierBaseDocker(dossier) {
+  // Nom de projet Compose fixe : la base se retire sans son dossier, déjà retiré par rangerDossier à la sortie.
+  process.on("exit", () => {
+    spawnSync(`docker compose -p ${PROJET_COMPOSE} down --volumes`, { shell: true, stdio: "ignore" });
+  });
+  const env = { DATABASE_URL: ADRESSE_DOCKER, DATABASE_URL_DIRECT: ADRESSE_DOCKER };
+  lancer("npm run db:up", dossier, { COMPOSE_PROJECT_NAME: PROJET_COMPOSE });
+  lancer("npm run db:migrate", dossier, env);
+  fs.writeFileSync(path.join(dossier, "tests", "base-docker.test.ts"), TEST_BASE_DOCKER);
+  try {
+    lancer("npx vitest run tests/base-docker.test.ts", dossier, { ...env, SKIP_ENV_VALIDATION: "1" });
+  } finally {
+    fs.rmSync(path.join(dossier, "tests", "base-docker.test.ts"), { force: true });
+  }
+}
 
 const MODELE = path.join(__dirname, "..", "templates", "squelette");
 const COEUR = path.join(__dirname, "..", "..", "pulse-vibe");
@@ -182,10 +228,13 @@ async function auditerSiteServi(dossier) {
 }
 
 function lireArguments(argv) {
-  const opts = { dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null, garder: false, tolererInstables: false };
+  const opts = { base: "neon", dernieres: false, majeures: false, ecrire: false, e2e: false, dossier: null, garder: false, tolererInstables: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
-    if (a === "--dernieres") opts.dernieres = true;
+    if (a === "--base") {
+      opts.base = argv[++i];
+      if (!BASES.includes(opts.base)) throw new Error(`Base inconnue : ${opts.base}. Valeurs possibles : ${BASES.join(", ")}.`);
+    } else if (a === "--dernieres") opts.dernieres = true;
     else if (a === "--majeures") opts.majeures = true;
     else if (a === "--ecrire") opts.ecrire = true;
     else if (a === "--e2e") opts.e2e = true;
@@ -347,8 +396,8 @@ async function principal() {
     if (message) console.log(message);
   });
   process.on("SIGINT", () => process.exit(130));
-  creerSquelette({ nom: "Projet de vérification", description: "Vérification automatique du squelette.", dossier });
-  console.log(`Squelette créé dans ${dossier}`);
+  creerSquelette({ nom: "Projet de vérification", description: "Vérification automatique du squelette.", base: opts.base, dossier });
+  console.log(`Squelette créé dans ${dossier} (base : ${opts.base})`);
 
   const fichierPaquet = path.join(dossier, "package.json");
   const paquet = JSON.parse(fs.readFileSync(fichierPaquet, "utf8"));
@@ -373,6 +422,7 @@ async function principal() {
   fs.mkdirSync(path.join(dossier, "src", "db", "verification"), { recursive: true });
   fs.writeFileSync(path.join(dossier, "src", "db", "verification", "essai.table.ts"), 'import { pgTable, text } from "drizzle-orm/pg-core";\n\nexport const essais = pgTable("essais", { id: text("id").primaryKey() });\n');
   lancer("npm run db:generate", dossier, { DATABASE_URL_DIRECT: "postgresql://verification@localhost:5432/verification" });
+  if (opts.base === "postgres") verifierBaseDocker(dossier);
   // La construction de vérification se fait sans variables : t3 env saute alors la validation.
   lancer("npm run build", dossier, { SKIP_ENV_VALIDATION: "1" });
   controlerCodeSeo(dossier);

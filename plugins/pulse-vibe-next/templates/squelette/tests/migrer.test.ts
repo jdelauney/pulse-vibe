@@ -2,11 +2,18 @@ import { describe, expect, it, vi } from "vitest";
 import {
   appelNeon,
   creerSauvegarde,
+  estNeon,
   migrationsEnAttente,
   migrer,
   pointDAcces,
   sauvegardePour,
 } from "../scripts/migrer.mjs";
+
+// Adresses de la base de production Neon : celle de l'intégration Vercel–Neon, et l'adresse directe saisie ailleurs.
+const ADRESSE_PRODUCTION =
+  "postgresql://ep-principale-222222.eu-central-1.aws.neon.tech/neondb?sslmode=require";
+const ADRESSE_DIRECTE =
+  "postgresql://ep-directe-333333.eu-central-1.aws.neon.tech/neondb?sslmode=require";
 
 const JOURNAL = [
   { tag: "0000_debut", when: 1000 },
@@ -15,7 +22,7 @@ const JOURNAL = [
 const PRODUCTION = {
   VERCEL: "1",
   VERCEL_ENV: "production",
-  DATABASE_URL_UNPOOLED: "postgresql://production",
+  DATABASE_URL_UNPOOLED: ADRESSE_PRODUCTION,
   NEON_API_KEY: "cle-de-test",
   NEON_PROJECT_ID: "projet-de-test",
 };
@@ -196,9 +203,7 @@ describe("Migrations avant construction", () => {
     const d = dependances(sansCle, null);
     expect(await migrer(d)).toBe("applique");
     expect(d.sauvegarder).not.toHaveBeenCalled();
-    expect(d.appliquerMigrations).toHaveBeenCalledWith(
-      "postgresql://production",
-    );
+    expect(d.appliquerMigrations).toHaveBeenCalledWith(ADRESSE_PRODUCTION);
     expect(d.dire).toHaveBeenCalledWith(
       expect.stringMatching(/jamais migrée.*sauvegarde/),
     );
@@ -223,7 +228,7 @@ describe("Migrations avant construction", () => {
       {
         VERCEL: "1",
         VERCEL_ENV: "preview",
-        DATABASE_URL_DIRECT: "postgresql://production",
+        DATABASE_URL_DIRECT: ADRESSE_PRODUCTION,
       },
       "1000",
     );
@@ -248,7 +253,7 @@ describe("Migrations avant construction", () => {
       "2000",
     );
     await migrer(d);
-    expect(d.lireDerniere).toHaveBeenCalledWith("postgresql://production");
+    expect(d.lireDerniere).toHaveBeenCalledWith(ADRESSE_PRODUCTION);
   });
 
   it("projet sans migration : aucun arrêt, même sans VERCEL_ENV avec --vercel", async () => {
@@ -271,7 +276,7 @@ describe("Migrations avant construction", () => {
 describe("Migrations chez un autre hébergeur (--en-ligne)", () => {
   const AILLEURS = {
     PULSE_ENV: "production",
-    DATABASE_URL_DIRECT: "postgresql://production-directe",
+    DATABASE_URL_DIRECT: ADRESSE_DIRECTE,
     NEON_API_KEY: "cle-de-test",
     NEON_PROJECT_ID: "projet-de-test",
   };
@@ -280,9 +285,28 @@ describe("Migrations chez un autre hébergeur (--en-ligne)", () => {
     const d = { ...dependances(AILLEURS, "1000"), enLigne: true };
     expect(await migrer(d)).toBe("applique");
     expect(d.sauvegarder).toHaveBeenCalledOnce();
-    expect(d.appliquerMigrations).toHaveBeenCalledWith(
-      "postgresql://production-directe",
+    expect(d.appliquerMigrations).toHaveBeenCalledWith(ADRESSE_DIRECTE);
+  });
+
+  it("production sur une base hors Neon : migrations sans sauvegarde Neon, avec un message", async () => {
+    const adresse = "postgresql://app@db.exemple.fr:5432/app";
+    const d = {
+      ...dependances({ ...AILLEURS, DATABASE_URL_DIRECT: adresse }, "1000"),
+      enLigne: true,
+    };
+    expect(await migrer(d)).toBe("applique");
+    expect(d.sauvegarder).not.toHaveBeenCalled();
+    expect(d.appliquerMigrations).toHaveBeenCalledWith(adresse);
+    expect(journalDe(d)).toMatch(/Base hors Neon : pas de sauvegarde/);
+  });
+
+  it("base Neon reconnue à son hôte ….neon.tech", () => {
+    expect(estNeon(ADRESSE_DIRECTE)).toBe(true);
+    expect(estNeon("postgresql://postgres:postgres@localhost:5432/app")).toBe(
+      false,
     );
+    expect(estNeon("postgresql://u@neon.tech.exemple.fr/app")).toBe(false);
+    expect(estNeon("pas une adresse")).toBe(false);
   });
 
   it("PULSE_ENV absente : arrêt avec consigne, rien n'est lancé", async () => {

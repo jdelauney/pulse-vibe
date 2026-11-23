@@ -12,6 +12,12 @@
 5. Facultatif, pour envoyer les variables à Vercel depuis ce poste : `npm install -g vercel`, `vercel login`, puis `vercel link` dans ce dossier.
 ```
 
+Avec PostgreSQL dans Docker en développement, la ligne 2 devient :
+
+```markdown
+2. Copier `.env.example` en `.env` (ses adresses locales sont prêtes). Installer Docker Desktop une fois (« Mise en place » de `docs/technical.md`) et l'ouvrir, puis `npm run db:up` (la base de développement) et `npm run db:migrate`. Arrêter la base : `npm run db:down`.
+```
+
 ## Lignes ajoutées par les recettes
 
 Recette `envoi-email` :
