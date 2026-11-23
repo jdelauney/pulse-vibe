@@ -83,8 +83,10 @@ async function installerGlobal(options, questions) {
     console.log(`Sans lui, les commandes Pulse ne marcheront pas. Plus tard : npm install -g pulseia@${version}`);
     return false;
   }
-  // Arguments fixes (version lue dans package.json) : le shell sert seulement à trouver npm.cmd sous Windows.
-  const r = spawnSync("npm", ["install", "-g", `pulseia@${version}`], { stdio: "inherit", shell: process.platform === "win32" });
+  // Commande fixe (version lue dans package.json). Sous Windows, le shell trouve npm.cmd : la commande
+  // lui est passée en une seule chaîne, car shell + tableau d'arguments est déprécié (DEP0190).
+  const commande = `npm install -g pulseia@${version}`;
+  const r = process.platform === "win32" ? spawnSync(commande, { stdio: "inherit", shell: true }) : spawnSync("npm", ["install", "-g", `pulseia@${version}`], { stdio: "inherit" });
   if (r.status !== 0) {
     console.log(`L'installation de pulse-aidd a échoué. Relancez-la plus tard : npm install -g pulseia@${version}`);
     return false;
