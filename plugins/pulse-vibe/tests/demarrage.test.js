@@ -43,8 +43,9 @@ test("nouveau : l'apparence avant les outils, dans le déroulé comme dans la li
   assert.match(init, /à « 7\. Les outils »/, "init enchaîne jusqu'à la dernière étape");
 });
 
-test("nouveau : l'écran de validation nomme contraintes et points à confirmer, après le test de compréhension", () => {
-  assert.ok(nouveau.indexOf("Présentez votre outil en une phrase") < nouveau.indexOf("Votre projet en un coup d'œil"));
+test("nouveau : l'écran de validation nomme contraintes et points à confirmer ; phrase de synthèse écrite par Pulse, budget jamais demandé", () => {
+  assert.doesNotMatch(nouveau, /Présentez votre outil en une phrase|budget/i);
+  assert.match(nouveau, /La phrase de synthèse, Pulse l'écrit lui-même à partir des quatre blocs/);
   for (const ligne of ["En une phrase :", "Vos contraintes :", "Proposé par Pulse :", "À confirmer   :"]) assert.ok(nouveau.includes(ligne), ligne);
   assert.doesNotMatch(nouveau, /dossier <epic>\)/, "l'écran reste sans nom de dossier");
 });

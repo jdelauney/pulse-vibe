@@ -57,7 +57,7 @@ Rédiger, en vous appuyant sur le brief, et en déduisant tout ce qui peut l'êt
 - le tableau des utilisateurs ;
 - 1 à 3 **objectifs mesurables** (les proposer, faire valider) ;
 - la phrase « La première version est prête quand… » : **question clé**, formulée d'abord par la personne, puis rendue vérifiable avec elle (un constat observable, daté si possible) ;
-- les contraintes (données personnelles, budget, délai, appareils) ;
+- les contraintes (données personnelles, délai, appareils) ; le budget s'écrit seulement si la personne l'a donné : le coût de chaque option se montre au choix des outils (`/pulse:tech`) ;
 - **être trouvé** (question à choix) : « Votre outil doit-il être trouvé sur Google ou par les assistants IA ? Par qui, avec quels mots ? » ; un outil interne répond « non » (le référencement se limitera alors à rester hors de Google) ;
 - le hors périmètre (ce qui reste en dehors de l'outil) ;
 - les risques ;

@@ -99,8 +99,9 @@ Pour une application avec peu de règles métier et une seule source de données
 src/
 ├── app/                 points d'entrée : routes, pages, écran principal, démarrage
 ├── features/
-│   └── item/            tout ce qui concerne les éléments, à plat : index.ts, item-list.tsx,
-│                        item.rules.ts, item.rules.test.ts, item.repository.ts
+│   └── item/            tout ce qui concerne les éléments : index.ts, item.rules.ts,
+│                        item.rules.test.ts, item.repository.ts ; ui/ : containers/, sections/,
+│                        composites/, elements/
 ├── shared/              ce qui sert à plusieurs features (composants, fonctions utilitaires)
 └── config/
 ```
@@ -115,7 +116,7 @@ src/features/item/
 ├── domain/            item.entity.ts, item.rules.ts
 ├── application/       create-item.use-case.ts
 ├── infrastructure/    item.repository.ts
-└── ui/                item-list.tsx, item-card.tsx
+└── ui/                containers/items.container.tsx, sections/item-list.tsx, composites/item-card.tsx
 ```
 
 `app/`, `shared/` et `config/` restent comme au palier 1.
@@ -146,7 +147,7 @@ src/
 - `/pulse:tech` choisit le palier d'après les besoins et l'écrit dans « Organisation des fichiers », avec les suffixes retenus.
 - **On monte d'un palier quand le besoin est constaté** (YAGNI) ; c'est une tâche du plan, décidée avant l'implémentation. Un petit projet reste au palier le plus simple qui répond au besoin.
 - Les features d'un même projet suivent le même palier ; une feature triviale peut rester à plat si « Organisation des fichiers » le prévoit.
-- Chaque composant d'interface vit dans le `ui/` de sa feature (à plat au palier 1) ; `shared/` reçoit seulement ce qui sert **réellement** à au moins deux features, sous un nom qui dit son sujet (`shared/date-format.ts`), plutôt qu'un dossier `utils/` ou `helpers/` fourre-tout.
+- Chaque composant d'interface vit dans le `ui/` de sa feature, rangé par niveau à tous les paliers : `ui/containers/`, `ui/sections/`, `ui/composites/`, `ui/elements/` (`qualite/composants.md` § 2) ; `shared/` reçoit seulement ce qui sert **réellement** à au moins deux features, sous un nom qui dit son sujet (`shared/date-format.ts`), plutôt qu'un dossier `utils/` ou `helpers/` fourre-tout.
 
 ## 6. Règles de dépendance
 

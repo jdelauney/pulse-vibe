@@ -24,9 +24,11 @@
 | **Élément** | Brique de base générique | bouton, champ, message d'erreur, état vide | Réutilisable partout, ignore tout du métier |
 | **Composite** | Assemble 2 à 5 éléments autour d'une donnée ou d'un petit formulaire | champ avec libellé et erreur, ligne d'élément, formulaire d'ajout | Une donnée ou un formulaire ; reçoit ses données de l'extérieur |
 | **Section** | Bloc complet d'un écran | liste d'éléments, bloc de statistiques | Assemble des composites, reste Dumb : tout arrive de l'extérieur |
-| **Écran** | La section **branchée** sur les données | écran des éléments | Seul niveau qui lit l'état et déclenche les actions |
+| **Container** (écran) | La section **branchée** sur les données | écran des éléments | Seul niveau qui lit l'état et déclenche les actions |
 
-Une fonction qui parle seulement d'affichage est un composant de présentation ; une fonction qui parle de la fonctionnalité (règles, données, enchaînement) va dans son état ou son orchestration ; une fonction utile partout sans interface (formatage de date, calcul) est un utilitaire partagé. Des dossiers par niveau apparaissent quand les composants d'une fonctionnalité dépassent une poignée de fichiers.
+Une fonction qui parle seulement d'affichage est un composant de présentation ; une fonction qui parle de la fonctionnalité (règles, données, enchaînement) va dans son état ou son orchestration ; une fonction utile partout sans interface (formatage de date, calcul) est un utilitaire partagé.
+
+**Un dossier par niveau, dès le premier composant**, avec un framework de composants (React, Vue, Svelte, Angular…) : `containers/` (Smart), puis `sections/`, `composites/` et `elements/` (Dumb), dans le dossier d'interface de chaque fonctionnalité ; les éléments génériques partagés vont dans `elements/` du dossier partagé (ou dans le dossier imposé par la bibliothèque de composants, par exemple `components/ui/` de shadcn). Chaque composant est rangé au niveau que donne le tableau ; un composant de présentation qui lit des données ou déclenche une action remonte dans `containers/`. Ces dossiers s'appliquent au nouveau code, même si le code existant ou repris d'un autre projet est rangé autrement.
 
 ## 3. État
 
@@ -84,7 +86,7 @@ La casse (des composants, des fichiers) suit la convention de la technologie ret
 
 ## 10. Découpage et regroupement
 
-- **Commencer petit** : tant qu'un écran reste court et que l'application compte peu d'écrans, un seul fichier rangé en blocs (état, présentation, actions, démarrage) suffit ; la séparation Smart / Dumb existe déjà à l'intérieur.
+- **Commencer petit**, sans framework de composants (page en JavaScript simple) : tant qu'un écran reste court et que l'application compte peu d'écrans, un seul fichier rangé en blocs (état, présentation, actions, démarrage) suffit ; la séparation Smart / Dumb existe déjà à l'intérieur. Avec un framework de composants, les dossiers par niveau du § 2 valent dès le premier composant.
 - **Découper quand un signal apparaît** : fichier de plus de ~200 à 300 lignes, plusieurs écrans ou zones indépendantes, une deuxième fonctionnalité, un accès à des données distantes. Trois responsabilités se séparent alors : la présentation, l'état (et ses actions), l'accès aux données ; l'orchestration fait le lien.
 - **Regrouper par fonctionnalité** ; à part, les éléments partagés et les utilitaires sans interface. **Un point d'entrée** crée l'état une seule fois et branche chaque écran.
 - **Réutiliser avant de créer** : chercher les composants et utilitaires déjà présents ; un élément générique se partage plutôt que de se recopier d'une fonctionnalité à l'autre.
@@ -117,6 +119,7 @@ La casse (des composants, des fichiers) suit la convention de la technologie ret
 ## 14. Checklist (implémentation et relecture)
 
 - [ ] Chaque module importé existe ou a été créé dans la tâche ; les composants déjà présents sont réutilisés.
+- [ ] Avec un framework de composants : chaque composant dans le dossier de son niveau (`containers/`, `sections/`, `composites/`, `elements/`, § 2), dès le premier.
 - [ ] Composants de présentation qui reçoivent des données prêtes et laissent stockage, réseau, base et logique métier à l'orchestration.
 - [ ] Seule l'orchestration lit l'état, appelle l'accès aux données et déclenche les actions.
 - [ ] Source unique de vérité ; état dérivé calculé ; chaque donnée à un seul endroit.

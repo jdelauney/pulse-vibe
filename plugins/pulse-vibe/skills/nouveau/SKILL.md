@@ -39,7 +39,7 @@ Afficher la liste, puis la mettre à jour (⬜ → ✅) à la fin de chaque bloc
 ⬜ L'idée          pour qui, quel problème, comment on fait aujourd'hui
 ⬜ Les écrans      ce qu'on voit et ce qu'on fait sur chaque écran
 ⬜ L'apparence     l'impression que l'outil doit donner
-⬜ Les contraintes données personnelles, budget, échéance, être trouvé
+⬜ Les contraintes données personnelles, échéance, être trouvé
 ⬜ Validation      un seul écran récapitulatif
 ⬜ Identité        2 apparences à comparer, vous choisissez
 ⬜ Outils          les choix techniques
@@ -52,7 +52,7 @@ Pour chaque bloc : poser ses questions, puis reformuler en 2 lignes (« ✔ Comp
 1. **L'idée** (questions clés) : pour qui est l'outil ; quel problème il règle et comment la personne s'y prend aujourd'hui ; ce qui lui ferait dire « ça m'aide vraiment ».
 2. **Les écrans** : proposer une liste d'écrans déduite de l'idée ; la personne ajoute, retire, renomme. Pour chaque écran principal : ce qu'on y voit, ce qu'on y fait. **Noter chaque action** (réserver, payer, envoyer, se connecter, déposer un fichier…) : c'est la source des déductions de l'étape 3. Demander s'il existe un espace réservé (administration, compte client).
 3. **L'apparence** : la personnalité de l'outil en 3 mots (réponses proposées concrètes, réponse libre possible) ; 1 à 3 outils ou sites dont la personne aime l'allure. Codes couleur et polices viendront à l'étape 6.
-4. **Les contraintes** : données personnelles ou sensibles ; budget mensuel accepté ; échéance ; **être trouvé** (sur Google ou par les assistants IA : par qui, avec quels mots ; ou outil interne).
+4. **Les contraintes** : données personnelles ou sensibles ; échéance ; **être trouvé** (sur Google ou par les assistants IA : par qui, avec quels mots ; ou outil interne).
 
 Avant de rendre la main sur une question clé ou une ronde, écrire `aidd_docs/tasks/in-progress.md` (règle commune 16), puis poser la question : une question en texte s'écrit en entier dans le dernier message (règle commune 5).
 
@@ -68,19 +68,19 @@ Une ambiguïté qui change le périmètre (paiement unique ou abonnement ? une s
 
 ### 4. Un seul écran de validation
 
-D'abord, le test de compréhension (question clé) : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Une phrase déjà donnée par les documents de départ se cite. Si elle s'écarte des quatre blocs (un acteur ou un besoin absent, un autre centre de gravité), le dire et en parler avant l'écran.
+La phrase de synthèse, Pulse l'écrit lui-même à partir des quatre blocs (pour qui, quel problème, ce que l'outil change), avec les mots de la personne ; une phrase déjà donnée par l'argument ou les documents de départ se reprend telle quelle. La personne la corrige sur l'écran de validation, comme le reste.
 
 ```
 Votre projet en un coup d'œil
 
-En une phrase : …                                   (la vôtre)
+En une phrase : …                                   (écrite par Pulse avec vos mots)
 Pour qui      : …
 Le problème   : …
 Première version : US-001 … · US-002 … · US-003 …   (Indispensables, dans l'ordre du parcours)
 Ensuite       : US-004 … · US-005 …               (Essentielles, Optionnelles)
 Groupes       : « … », …
 Il faudra     : connexion · données partagées · e-mails …   (déduit de vos réponses)
-Vos contraintes : …                                 (données personnelles, budget, échéance, être trouvé)
+Vos contraintes : …                                 (données personnelles, échéance, être trouvé)
 Proposé par Pulse : …                               (ce que vous n'avez pas dit vous-même)
 À confirmer   : …                                   (ce que nous supposons sans l'avoir vérifié ; « rien » s'il n'y en a pas)
 ```

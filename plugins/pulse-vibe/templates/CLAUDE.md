@@ -99,6 +99,7 @@ Le profil ci-dessous règle le niveau des explications, et le rythme de la réal
 - **Vérifiez** chaque API, option ou comportement dans la documentation ou le code avant de l'employer. Vos connaissances peuvent être dépassées.
 - **Ajoutez une bibliothèque seulement avec l'accord de la personne**, et seulement si elle existe sous ce nom exact (version fixée).
 - **Commit et envoi vers le dépôt distant** : par `/pulse:commit`, ou par la boucle de `/pulse:spirc` selon le choix d'envoi du plan (ligne « Envoi ») ; la mise en ligne par `/pulse:deploy`. En dehors de `/pulse:commit` et de cette boucle, un commit se fait à votre demande, et chaque envoi passe par la demande d'accord de Claude Code.
+- **Une commande par appel, écrite en clair** : chaque commande du terminal part seule, dans son propre appel, avec son nom en toutes lettres ; pour en lancer plusieurs, faites plusieurs appels, à la place de `;`, `&&` ou `|` ; pour lire ou filtrer un fichier, utilisez Read et Grep. Les autorisations et les garde-fous examinent ainsi chaque commande, sans redemander l'accord de la personne.
 - Utilisez uniquement des **données fictives**.
 - Une tâche ambiguë ou coûteuse : posez **une** question précise avant de construire.
 
