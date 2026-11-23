@@ -13,7 +13,7 @@ L'index des variables du squelette et des recettes, une ligne chacune : de quoi 
 | `BETTER_AUTH_URL` | adresse du site, pas un secret ; une valeur par environnement | projet | aucune |
 | `STRIPE_SECRET_KEY` | clé de l'API de paiement (recette `paiement`) ; une valeur par environnement | Stripe | https://dashboard.stripe.com/apikeys → Roll key |
 | `STRIPE_WEBHOOK_SECRET` | vérifie les événements envoyés par Stripe ; une valeur par environnement | Stripe | https://dashboard.stripe.com/webhooks → Roll secret |
-| `SMTP_PASSWORD` | envoi des e-mails (recette `email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages) | fournisseur d'e-mail | chez le fournisseur : un nouvel identifiant d'envoi |
+| `SMTP_PASSWORD` | envoi des e-mails (recette `envoi-email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages) | fournisseur d'e-mail | chez le fournisseur : un nouvel identifiant d'envoi |
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | accès au stockage des fichiers (recette `fichiers`), avec `R2_ACCOUNT_ID` et `R2_BUCKET` (réglages) | Cloudflare R2 | Cloudflare → R2 object storage → Manage API tokens |
 | `UPSTASH_REDIS_REST_TOKEN` | limite d'envois partagée (recette `limite`, option Redis), avec `UPSTASH_REDIS_REST_URL` (adresse) | Upstash | console Upstash → la base → Reset Credentials |
 | `FORMULAIRE_SECRET` | signe le délai des formulaires publics (recette `formulaire-public`) | projet (valeur générée) | aucune : `pulse-aidd secrets generer` |

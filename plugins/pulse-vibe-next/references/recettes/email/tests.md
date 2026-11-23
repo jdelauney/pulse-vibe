@@ -50,64 +50,7 @@ describe("E-mails de compte", () => {
 });
 ```
 
-### Adapter `email` (Vitest, Nodemailer doublé)
-
-Nodemailer est doublé et refuse l'envoi, comme un serveur qui rejette le destinataire ; l'adapter reçoit sa configuration par le constructeur, sans variable d'environnement à doubler. L'erreur levée garde ses codes techniques, sans le texte du refus ni l'adresse.
-
-<!-- fichier: src/adapters/email/__tests__/email.adapter.test.ts -->
-```ts
-// src/adapters/email/__tests__/email.adapter.test.ts
-import { ErreurService } from "@src/lib/errors/erreur-service";
-import { describe, expect, it, vi } from "vitest";
-import { NodemailerEmailAdapter } from "../email.adapter";
-
-// Serveur SMTP doublé : l'envoi échoue, comme avec un serveur éteint.
-vi.mock("nodemailer", () => ({
-  default: {
-    createTransport: () => ({
-      sendMail: vi.fn().mockRejectedValue(
-        Object.assign(new Error("550 5.1.1 <camille@exemple.fr> inconnue"), {
-          code: "EENVELOPE",
-          command: "RCPT TO",
-          responseCode: 550,
-        }),
-      ),
-    }),
-  },
-}));
-
-describe("Envoi d'e-mails", () => {
-  describe("Un serveur d'e-mail en panne est signalé comme une panne de service", () => {
-    it("US-XXX-5 – L'échec de l'envoi lève une erreur de service « email » sans l'adresse", async () => {
-      const adapter = new NodemailerEmailAdapter({
-        hote: "localhost",
-        port: 1025,
-        expediteur: "Mon projet <ne-pas-repondre@exemple.fr>",
-      });
-
-      const erreur = await adapter
-        .envoyer({
-          a: "camille@exemple.fr",
-          sujet: "Bonjour",
-          texte: "Bonjour",
-        })
-        .catch((e: unknown) => e);
-
-      expect(erreur).toBeInstanceOf(ErreurService);
-      expect((erreur as ErreurService).service).toBe("email");
-      const service = erreur as ErreurService;
-      expect(service.message).not.toContain("camille@exemple.fr");
-      // La cause garde les codes techniques, sans le texte du refus ni l'adresse.
-      expect(service.cause).toEqual({
-        code: "EENVELOPE",
-        command: "RCPT TO",
-        responseCode: 550,
-      });
-      expect(JSON.stringify(service.cause)).not.toContain("camille@exemple.fr");
-    });
-  });
-});
-```
+Le test de l'échec d'envoi (« L'échec de l'envoi lève une erreur de service « email » sans l'adresse ») est celui du transport, dans la recette `envoi-email`.
 
 ### Intégration (Vitest + PGlite)
 
@@ -116,7 +59,7 @@ better-auth tourne sur une base PGlite neuve ; `creerAuth` reçoit une doublure 
 <!-- fichier: src/adapters/auth/__tests__/auth-email.test.ts -->
 ```ts
 // src/adapters/auth/__tests__/auth-email.test.ts
-import type { EnvoyeurEmail, MessageEmail } from "@src/core/compte/email.port";
+import type { EnvoyeurEmail, MessageEmail } from "@src/core/email/email.port";
 import { session, user } from "@src/db/compte/auth.table";
 import type { Db } from "@src/db/db-client";
 import { APIError } from "better-auth/api";
@@ -451,47 +394,7 @@ describe("E-mails de compte", () => {
 
 Mailpit doit tourner, et le serveur lancé par Playwright doit utiliser `SMTP_HOST=localhost` et `SMTP_PORT=1025` (valeurs de `.env` en local). En CI, ajoutez le conteneur `axllent/mailpit` comme service, ports 1025 et 8025. Chaque test utilise une adresse unique : les tests restent indépendants sans vider Mailpit.
 
-L'aide lit l'API REST de Mailpit (`GET /api/v1/search?query=to:"…"`, résultats du plus récent au plus ancien ; `GET /api/v1/message/{ID}`, champs `Subject`, `Text`, `HTML`) :
-
-<!-- fichier: e2e/aides/mailpit.ts -->
-```ts
-// e2e/aides/mailpit.ts
-// Lecture des e-mails capturés par Mailpit (API REST, http://localhost:8025 par défaut).
-const MAILPIT = process.env.MAILPIT_URL ?? "http://localhost:8025";
-
-type Resume = { ID: string; Subject: string };
-export type EmailRecu = { Subject: string; Text: string; HTML: string };
-
-/** Attend l'e-mail de ce sujet reçu par cette adresse (10 secondes au plus). */
-export async function emailPour(
-  adresse: string,
-  sujet: string,
-  delaiMs = 10_000,
-): Promise<EmailRecu> {
-  const limite = Date.now() + delaiMs;
-  const recherche = encodeURIComponent(`to:"${adresse}"`);
-  while (Date.now() < limite) {
-    const reponse = await fetch(`${MAILPIT}/api/v1/search?query=${recherche}`);
-    // Résultats triés du plus récent au plus ancien.
-    const { messages } = (await reponse.json()) as { messages: Resume[] };
-    const trouve = messages.find((m) => m.Subject === sujet);
-    if (trouve) {
-      const detail = await fetch(`${MAILPIT}/api/v1/message/${trouve.ID}`);
-      return (await detail.json()) as EmailRecu;
-    }
-    await new Promise((resoudre) => setTimeout(resoudre, 250));
-  }
-  throw new Error(`Aucun e-mail « ${sujet} » reçu par ${adresse} dans Mailpit`);
-}
-
-export function premierLien(texte: string): string {
-  const lien = texte.match(/https?:\/\/\S+/)?.[0];
-  if (!lien) {
-    throw new Error("Aucun lien dans l'e-mail");
-  }
-  return lien;
-}
-```
+L'aide `e2e/aides/mailpit.ts` (lecture de Mailpit) vient de la recette `envoi-email`.
 
 `e2e/aides/connexion.ts` remplace celui de la recette `connexion` : un nouveau compte confirme son adresse, puis se connecte, avant d'arriver sur « Mon compte ». Les tests qui appellent `connecterNouvelUtilisateur` continuent de fonctionner.
 

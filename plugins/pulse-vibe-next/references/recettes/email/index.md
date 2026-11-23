@@ -4,70 +4,19 @@
 
 ## Prérequis
 
-- Recette `connexion` appliquée (`creerAuth`, `getAuth`, actions `inscrire` et `connecter`, `CompteContainer`, aides Playwright `e2e/aides/connexion.ts`). Les composants `Field`, `Input`, `Button` et le client d'action du squelette sont ceux de `connexion`.
-- Paquet à installer : `npm install nodemailer` (dernière version ; recette vérifiée avec 10.6.0 et better-auth 1.7.25). Nodemailer 10 fournit ses propres types : si `@types/nodemailer` est présent, le désinstaller (`npm uninstall @types/nodemailer`).
-- **Mailpit** sur le poste. Il capture tous les e-mails envoyés en local : rien ne part vers de vraies adresses.
-  - Windows : `winget install --id axllent.mailpit --exact` (ou l'archive `mailpit-windows-amd64.zip` de https://github.com/axllent/mailpit/releases, à décompresser dans un dossier du PATH).
-  - macOS : `brew install mailpit`, puis `brew services start mailpit` pour le lancer en tâche de fond.
-  - Linux (et macOS) : `sudo sh < <(curl -sL https://raw.githubusercontent.com/axllent/mailpit/develop/install.sh)`.
-  - Lancement : `mailpit` dans un terminal. Il reçoit les e-mails sur le port SMTP **1025** et les affiche sur **http://localhost:8025**.
-- Pour le site en ligne, un compte SMTP :
-  - **Pour essayer en ligne** : un compte Gmail que la personne crée pour le projet (jamais son compte personnel), avec la validation en deux étapes, puis un **mot de passe d'application** créé sur https://myaccount.google.com/apppasswords. La personne le colle elle-même dans `.env`, puis dans Vercel ; il ne passe jamais par la conversation. Elle le révoque sur la même page quand il ne sert plus.
-  - **Pour un vrai lancement** : le SMTP d'un fournisseur, avec le nom de domaine du projet. Infomaniak (suisse) : `mail.infomaniak.com`, port 587, identifiant = l'adresse e-mail complète. Brevo (français) : `smtp-relay.brevo.com`, port 587, identifiant = l'adresse du compte Brevo, mot de passe = une clé SMTP créée dans « SMTP & API ».
-- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,email` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration, construction. Les tests de bout en bout (`e2e/email.spec.ts`, avec Mailpit) se lancent à la main ; l'envoi par un vrai serveur SMTP reste un essai à la main.
+- Recettes `connexion` et `envoi-email` appliquées : `creerAuth`, `getAuth`, actions `inscrire` et `connecter`, `CompteContainer`, aides Playwright `e2e/aides/connexion.ts` (recette `connexion`) ; `EnvoyeurEmail`, `getEnvoyeurEmail()`, Mailpit et l'aide Playwright `e2e/aides/mailpit.ts` (recette `envoi-email`). Les composants `Field`, `Input`, `Button` et le client d'action du squelette sont ceux de `connexion`.
+- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,envoi-email,email` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration, construction. Les tests de bout en bout (`e2e/email.spec.ts`, avec Mailpit) se lancent à la main ; l'envoi par un vrai serveur SMTP reste un essai à la main.
 
 ## Variables d'environnement
 
-| Nom | Rôle | En local (Mailpit) | Pour essayer en ligne (Gmail) |
-|---|---|---|---|
-| `SMTP_HOST` | Serveur SMTP | `localhost` | `smtp.gmail.com` |
-| `SMTP_PORT` | Port | `1025` | `587` |
-| `SMTP_USER` | Identifiant | vide | l'adresse Gmail du projet |
-| `SMTP_PASSWORD` | Mot de passe | vide | le mot de passe d'application (`VOTRE_MOT_DE_PASSE_ICI`) |
-| `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <adresse.du.projet@gmail.com>` |
-
-Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts`, après `BETTER_AUTH_URL` :
-
-<!-- ajout: src/config/env.ts après: BETTER_AUTH_URL: z.url(), -->
-```ts
-    SMTP_HOST: z.string().min(1),
-    SMTP_PORT: z.coerce.number().int().positive(),
-    SMTP_USER: z.string().optional(),
-    SMTP_PASSWORD: z.string().optional(),
-    MAIL_FROM: z.string().min(1),
-```
-
-Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
-
-<!-- ajout: tests/helpers/env-de-test.ts après: BETTER_AUTH_URL: "http://localhost:3000", -->
-```ts
-  SMTP_HOST: "localhost",
-  SMTP_PORT: "1025",
-  MAIL_FROM: "Mon projet <ne-pas-repondre@exemple.fr>",
-```
-
-Ajoutez les cinq noms, **sans valeur**, à `.env.example` :
-
-<!-- ajout: .env.example -->
-```
-SMTP_HOST=
-SMTP_PORT=
-SMTP_USER=
-SMTP_PASSWORD=
-MAIL_FROM=
-```
-
-Dans Vercel, saisissez-les pour Production et Preview.
+Aucune nouvelle variable : les e-mails du compte partent par le serveur d'e-mail de la recette `envoi-email` (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM`).
 
 ## Fichiers créés ou modifiés
 
 | Fichier | Rôle |
 |---|---|
-| `src/config/env.ts`, `.env.example` (modifiés) | Les cinq variables SMTP |
-| `src/core/compte/email.port.ts` | Port d'envoi : type `MessageEmail` et interface `EnvoyeurEmail` |
 | `src/core/compte/emails-compte.rules.ts` | Classe `EmailsCompte` : contenus des e-mails du compte (sans état), dont l'alerte de changement d'adresse et la confirmation de suppression |
-| `src/adapters/email/email.adapter.ts` | Classe `NodemailerEmailAdapter` (configuration SMTP reçue par le constructeur), méthode `envoyer({ a, sujet, texte, html })` : la seule porte de sortie des e-mails ; lève `ErreurService("email", …)` si l'envoi échoue |
-| `src/adapters/auth/auth.adapter.ts` (modifié) | Configuration de better-auth (reste celle de la bibliothèque) : vérification d'adresse, mot de passe oublié, e-mail « compte existant », changement d'adresse, suppression du compte ; reçoit l'envoyeur d'e-mails par ses options |
+| `src/adapters/auth/auth.adapter.ts` (modifié) | Configuration de better-auth (reste celle de la bibliothèque) : vérification d'adresse, mot de passe oublié, e-mail « compte existant », changement d'adresse, suppression du compte ; reçoit l'envoyeur d'e-mails (`EnvoyeurEmail` de la recette `envoi-email`) par ses options |
 | `src/features/compte/schemas/compte.schema.ts` (modifié) | `schemaMotDePasseOublie`, `schemaNouveauMotDePasse`, `schemaChoixMotDePasse`, `schemaChangementAdresse`, `schemaConfirmationSuppression` |
 | `src/features/compte/actions/inscrire.action.ts`, `connecter.action.ts` (modifiés) | `inscrire` renvoie un message ; `connecter` traduit `EMAIL_NOT_VERIFIED` |
 | `src/features/compte/actions/demander-nouveau-mot-de-passe.action.ts` | Action `demanderNouveauMotDePasse` |
@@ -87,14 +36,11 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | `src/features/compte/components/containers/compte.container.tsx` (modifié) | « Mon compte » : sections adresse et suppression |
 | `app/(public)/mot-de-passe-oublie/page.tsx`, `nouveau-mot-de-passe/page.tsx`, `adresse-verifiee/page.tsx`, `compte-supprime/page.tsx`, `app/(connecte)/compte/supprimer/page.tsx` | Les nouvelles pages |
 | `src/core/compte/__tests__/emails-compte.rules.test.ts` | Tests unitaires de `EmailsCompte` |
-| `src/adapters/email/__tests__/email.adapter.test.ts` | Test de l'échec d'envoi de `NodemailerEmailAdapter` |
 | `src/adapters/auth/__tests__/auth-email.test.ts` | Tests d'intégration des e-mails du compte |
 | `src/adapters/auth/__tests__/auth.adapter.test.ts` (modifié) | Tests de la recette `connexion` adaptés à la vérification d'adresse |
-| `e2e/aides/mailpit.ts`, `e2e/aides/connexion.ts` (modifié), `e2e/email.spec.ts` | Lecture de Mailpit dans Playwright |
+| `e2e/aides/connexion.ts` (modifié), `e2e/email.spec.ts` | Parcours avec Mailpit (aide `e2e/aides/mailpit.ts` de la recette `envoi-email`) |
 
 ## Étapes
-
-<!-- commande: npm install nodemailer -->
 
 Le parcours une fois la recette en place :
 
@@ -105,8 +51,8 @@ Le parcours une fois la recette en place :
 5. Dans « Mon compte », elle change d'adresse : la nouvelle reçoit un lien de confirmation, l'ancienne une alerte. L'adresse change au clic.
 6. Dans « Mon compte », elle demande la suppression de son compte : un lien arrive, ouvre `/compte/supprimer`, qui demande une dernière confirmation. Le compte et ses données sont effacés, puis `/compte-supprime` le confirme.
 
-- Étape 1 – Mailpit et les variables : `pulse-aidd pile recette email etape 1`
-- Étape 2 – Le port et l'envoi : `pulse-aidd pile recette email etape 2`
+- Étape 1 – Mailpit lancé : `pulse-aidd pile recette email etape 1`
+- Étape 2 – L'envoi, de la recette `envoi-email` : `pulse-aidd pile recette email etape 2`
 - Étape 3 – Les contenus des e-mails : `pulse-aidd pile recette email etape 3`
 - Étape 4 – better-auth : `pulse-aidd pile recette email etape 4`
 - Étape 5 – Les schémas : `pulse-aidd pile recette email etape 5`
@@ -244,13 +190,13 @@ Fonctionnalité: E-mails du compte
 
 ## Tâches de plan prêtes
 
-- [ ] **Tn – Envoyer des e-mails** · US-XXX
-  - Objectif : l'application sait envoyer un e-mail, visible dans Mailpit
-  - Dépend de : —
-  - Fichiers : à créer : `src/core/compte/email.port.ts`, `src/core/compte/emails-compte.rules.ts`, `src/adapters/email/email.adapter.ts`, `src/core/compte/__tests__/emails-compte.rules.test.ts`, `src/adapters/email/__tests__/email.adapter.test.ts` · à modifier : `src/config/env.ts`, `.env.example`
+- [ ] **Tn – Les contenus des e-mails du compte** · US-XXX
+  - Objectif : les e-mails du compte (confirmation, mot de passe, adresse, suppression) sont prêts à partir
+  - Dépend de : la tâche « Envoyer des e-mails » de la recette `envoi-email`
+  - Fichiers : à créer : `src/core/compte/emails-compte.rules.ts`, `src/core/compte/__tests__/emails-compte.rules.test.ts`
   - Vérification : US-XXX critères 1, 4 et 5 – `npm test` passe
-  - Tests : « L'e-mail de Camille contient son lien de confirmation » (unitaire) ; « Un nom contenant du HTML est neutralisé » (unitaire) ; « L'échec de l'envoi lève une erreur de service « email » sans l'adresse » (adapter)
-  - Action manuelle : installer et lancer Mailpit ; remplir les variables SMTP dans `.env`
+  - Tests : « L'e-mail de Camille contient son lien de confirmation » (unitaire) ; « Un nom contenant du HTML est neutralisé » (unitaire) ; « L'échec de l'envoi lève une erreur de service « email » sans l'adresse » (transport, recette `envoi-email`)
+  - Action manuelle : lancer Mailpit
 - [ ] **Tn+1 – Confirmer l'adresse à l'inscription** · US-XXX
   - Objectif : une personne confirme son adresse par e-mail avant sa première connexion
   - Dépend de : Tn
@@ -275,7 +221,7 @@ Fonctionnalité: E-mails du compte
 - [ ] **Tn+4 – Parcours de bout en bout avec Mailpit** · US-XXX
   - Objectif : les parcours avec e-mail sont vérifiés automatiquement
   - Dépend de : Tn+3
-  - Fichiers : à créer : `e2e/aides/mailpit.ts`, `e2e/email.spec.ts` · à modifier : `e2e/aides/connexion.ts`
+  - Fichiers : à créer : `e2e/email.spec.ts` · à modifier : `e2e/aides/connexion.ts`
   - Vérification : US-XXX critères 1, 3, 6 et 7 – Mailpit lancé, `npm run test:e2e` passe
   - Tests : « Camille s'inscrit, confirme son adresse, puis se connecte », « Camille choisit un nouveau mot de passe depuis l'e-mail reçu », « Camille change d'adresse… », « Camille supprime son compte » (bout en bout)
 - [ ] **Tn+5 – Envoyer les e-mails du site en ligne** · US-XXX
@@ -283,18 +229,17 @@ Fonctionnalité: E-mails du compte
   - Dépend de : Tn+4
   - Fichiers : aucun
   - Vérification : US-XXX critère 1 – s'inscrire sur le site en ligne avec sa propre adresse : l'e-mail arrive
-  - Action manuelle : saisir `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` dans Vercel (Production et Preview), puis redéployer
+  - Action manuelle : les variables de la recette `envoi-email` saisies dans Vercel (sa tâche « Envoyer les e-mails du site en ligne »), puis redéployer
 
 ## Tests
 Le code des tests : `pulse-aidd pile recette email tests`
 ## Points de sécurité
 
-- **S1 – Secrets hors du code** : `SMTP_PASSWORD` vit dans `.env` et dans Vercel ; la personne saisit le mot de passe d'application elle-même, hors de la conversation.
-- **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/adapters/email/email.adapter.ts` commence par `import "server-only"`.
+- **S1, S2 – Secrets et clés côté client** : ceux du serveur d'e-mail, réglés par la recette `envoi-email`.
 - **S5 – Validation des entrées** : chaque formulaire passe par un schéma Zod dans son action ; `disabledPaths` ferme toutes les adresses HTTP d'écriture de better-auth (lien, mot de passe, adresse, suppression) ; restent ouverts les deux liens reçus par e-mail.
 - **S6 – Affichage sans injection** : chaque valeur insérée dans le HTML d'un e-mail passe par `echapperHtml`, dans `EmailsCompte`.
-- **S9 – Données personnelles** : le journal note l'identifiant du message et le sujet, sans adresse ni lien (le lien contient un jeton) ; l'`ErreurService` ne garde, de l'erreur du serveur SMTP, que `code`, `command` et `responseCode` : ni son texte, ni l'adresse du destinataire, ni le lien.
-- **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu ; changement d'adresse et suppression, à la demande d'une personne connectée. Appliquez la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
+- **S9 – Données personnelles** : le journal de la recette `envoi-email` note l'identifiant du message, le sujet et le nombre de destinataires, sans adresse ni lien (le lien contient un jeton) ; les sujets des e-mails du compte restent fixes. L'`ErreurService` ne garde, de l'erreur du serveur SMTP, que `code`, `command` et `responseCode` : ni son texte, ni l'adresse du destinataire, ni le lien.
+- **S10 – Abus et coûts** : inscription et « mot de passe oublié » déclenchent des e-mails à la demande d'un inconnu ; changement d'adresse et suppression, à la demande d'une personne connectée. Appliquez la recette `limite` avant l'ouverture au public.
 - **S11 – Messages d'erreur** : inscription, « mot de passe oublié » et changement d'adresse répondent la même chose qu'un compte existe ou non ; l'envoi part après la réponse (`after()`). Une connexion refusée est journalisée avec son motif, sans l'adresse.
 - Liens courts : 1 heure pour la confirmation d'adresse, le mot de passe et la suppression ; ceux du mot de passe et de la suppression servent une seule fois. Le lien de confirmation n'ouvre pas de session : un lien volé ne donne pas accès au compte. Un nouveau mot de passe ferme les autres sessions.
 - **Changement d'adresse** : l'adresse change seulement quand la nouvelle confirme ; l'ancienne reçoit une alerte, que la nouvelle soit libre ou non.
@@ -302,31 +247,23 @@ Le code des tests : `pulse-aidd pile recette email tests`
 
 ## Pièges connus
 
-- **Port 25 bloqué par Vercel** : utilisez 587 (STARTTLS) ou 465 (chiffré dès la connexion). `src/adapters/email/email.adapter.ts` règle `secure` d'après le port.
-- **Mailpit éteint** : l'envoi échoue en silence côté écran (better-auth journalise « Failed to run background task », avec l'`ErreurService` de l'adapter). Lancez `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
-- **Mailpit lancé, rien n'arrive (`ETIMEDOUT`)** : Nodemailer demande `localhost` au DNS, et certaines box répondent une autre adresse. Mettez `SMTP_HOST=127.0.0.1`.
-- **Gmail** : le mot de passe d'application exige la validation en deux étapes. Changer le mot de passe du compte Google révoque d'un coup tous les mots de passe d'application. L'expéditeur reste l'adresse Gmail. Un mot de passe d'application ouvre aussi la lecture de la boîte : réservez ce compte Gmail au projet. Google peut bloquer des connexions venues de nombreux endroits à la fois, et déconseille les mots de passe d'application pour un service en production.
+- **Serveur d'e-mail (port, Mailpit, Gmail, indésirables)** : pièges de la recette `envoi-email`.
+- **Mailpit éteint** : l'envoi échoue en silence côté écran (better-auth journalise « Failed to run background task », avec l'`ErreurService` du transport). Lancez `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
 - **Comptes créés avant la recette** : leur adresse n'est pas confirmée ; ils ne peuvent plus se connecter. En développement, supprimez-les. En ligne, la connexion leur envoie un e-mail de confirmation (`sendOnSignIn`).
 - **`authClient.requestPasswordReset`, `changeEmail` ou `deleteUser` répond 404** : ces adresses sont fermées par `disabledPaths`. Passez par les actions de `src/features/compte/actions/`.
 - **Lien de suppression ouvert sans session** (autre navigateur, téléphone) : la page renvoie vers la connexion ; une fois connecté, rouvrir le lien de l'e-mail (valable 1 heure).
 - **Données d'une table métier restées après une suppression** : sa colonne `utilisateurId` doit référencer `user.id` avec `onDelete: "cascade"` (recette `connexion`, étape 2). Un fichier rangé ailleurs (stockage R2, recette `fichiers`) reste à effacer par `user.deleteUser.beforeDelete`.
 - **`after()` hors d'une requête** : `tacheDeFond` reste absent dans `creerAuth` pour les tests ; seul `getAuth()` le fournit.
-- **`creerAuth` sans `envoyeur`** : l'option est obligatoire. Un test qui appelle `creerAuth` passe une doublure (`envoyeur: { async envoyer() {} }`).
+- **`creerAuth` sans `envoyeur`** : l'option est obligatoire. `getAuth()` passe `getEnvoyeurEmail()` ; un test qui appelle `creerAuth` passe une doublure (`envoyeur: { async envoyer() {} }`).
 - **`npm run check` signale `noRestrictedImports` dans `src/core/compte/`** : les contenus d'e-mails (`EmailsCompte`) n'importent rien hors de `src/core/`. Gardez-les sans Next, sans Nodemailer, sans `@src/lib`.
-- **E-mails rangés dans les indésirables** : avec un domaine à soi, configurez SPF, DKIM et DMARC chez le fournisseur.
-- **`@types/nodemailer`** : il entre en conflit avec les types fournis par Nodemailer 10 ; désinstallez-le.
 - **Langues** : avec la recette `langues`, les nouvelles pages vont sous `app/[locale]/(public)/` (et `app/[locale]/(connecte)/`), et leur `PageProps` prend la clé `"/[locale]/…"`.
 
 ## Sources
 
 - better-auth 1.7.25, types et code du paquet (lus le 2026-11-16) : `@better-auth/core/dist/types/init-options.d.mts` (`emailVerification`, `autoSignInAfterVerification`, `emailAndPassword`, `onExistingUserSignUp`, `user.changeEmail`, `user.deleteUser`, `advanced.backgroundTasks`) ; `better-auth/dist/api/routes/update-user.mjs` (`/change-email` : adresse déjà prise → `status: true` sans e-mail ; `/delete-user` : jeton `delete-account-…`, `sendDeleteAccountVerification` reçoit `token`) ; `email-verification.mjs` (`change-email-verification` : l'adresse change au clic ; `?error=` ajouté au `callbackURL`) ; `dispatch.mjs` (`hooks.after` voit `ctx.context.session` et `returned`) ; `better-auth/dist/api/routes/password.mjs` (`/request-password-reset`, `/reset-password/:token` qui renvoie vers `?token=` ou `?error=INVALID_TOKEN`) ; `sign-up.mjs` (réponse identique pour une adresse déjà prise quand `requireEmailVerification` est actif) ; `api/index.mjs` (`disabledPaths` : chemin exact)
-- Nodemailer 10.0.16 (10.6.0 au 2026-11-16) : `README.md` et `CHANGELOG.md` du paquet (types fournis, Node.js 20, `secure` seulement pour 465) ; https://nodemailer.com/
 - Next.js 16.4, documentation embarquée : `01-app/03-api-reference/04-functions/after.md` ; `01-app/01-getting-started/08-caching.md` (lecture de `searchParams` sous `<Suspense>`)
-- Mailpit : https://mailpit.axllent.org/docs/install/ (ports 1025 et 8025) ; https://mailpit.axllent.org/docs/usage/search-filters/ ; API : `server/ui/api/v1/swagger.json` du dépôt axllent/mailpit ; paquet winget `axllent.mailpit`
-- Vercel, ports SMTP : https://vercel.com/kb/guide/serverless-functions-and-smtp
-- Google : https://support.google.com/accounts/answer/185833 (mots de passe d'application) ; https://support.google.com/mail/answer/22839 (limite de 500)
-- Infomaniak : https://www.infomaniak.com/fr/support/faq/468/ ; Brevo : https://help.brevo.com/hc/en-us/articles/10905415650322
-- Rejoué le 2026-11-16 (better-auth 1.7.25, Nodemailer 10.6.0) par `verifier-recettes.js` (chaîne `connexion,email`) : contrôles, types, tests, construction.
+- Serveur d'e-mail, Nodemailer, Mailpit et fournisseurs : sources de la recette `envoi-email`.
+- Rejoué le 2026-11-23 (better-auth 1.7.27, Nodemailer 10.6.1) par `verifier-recettes.js` (chaîne `connexion,envoi-email,email`) : contrôles, types, tests, construction.
 - Essais antérieurs : 2026-10-06 avec Mailpit 1.31 (envoi réel, lecture par `to:"…"`, `/nouveau-mot-de-passe` avec `?token=` et `?error=INVALID_TOKEN`), 2026-10-08 dans l'architecture du pack.
 - Bout en bout rejoué le 2026-11-16 (`e2e/compte.spec.ts` et `e2e/email.spec.ts`, ordinateur et téléphone, `next start`, base PGlite) avec une doublure locale de Mailpit (même API de lecture, SMTP sur 1025) : tous les parcours passent au premier essai.
 
@@ -334,5 +271,4 @@ Le code des tests : `pulse-aidd pile recette email tests`
 
 - Les tests de bout en bout avec Mailpit lui-même (rejoués le 2026-11-16 avec une doublure de son API).
 - L'envoi par `after()` sur Vercel : l'e-mail doit partir après la réponse. À constater à la tâche Tn+5 (réception, et journaux Vercel sans « Failed to run background task »).
-- La limite de 500 destinataires par jour : chiffre de l'aide Google pour un compte Gmail, susceptible de changer.
-- L'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer.
+- L'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer (recette `envoi-email`).

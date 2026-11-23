@@ -1,4 +1,3 @@
-### 1. Mailpit et les variables
+### 1. Mailpit lancé
 
-Lancez `mailpit`, ouvrez http://localhost:8025 (la boîte est vide). Remplissez `.env` avec les valeurs « En local », complétez `src/config/env.ts` et `.env.example`.
-
+Lancez `mailpit`, ouvrez http://localhost:8025 (la boîte est vide). Les variables SMTP de `.env` sont celles de la recette `envoi-email`, valeurs « En local ».

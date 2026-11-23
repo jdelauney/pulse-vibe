@@ -14,10 +14,10 @@
 
 ## Lignes ajoutées par les recettes
 
-Recette `email` :
+Recette `envoi-email` :
 
 ```markdown
-- E-mails : lancer `mailpit` dans un second terminal ; les e-mails envoyés s'affichent sur http://localhost:8025 (installation : recette email).
+- E-mails : lancer `mailpit` dans un second terminal ; les e-mails envoyés s'affichent sur http://localhost:8025 (installation : recette envoi-email).
 ```
 
 Recette `paiement` :

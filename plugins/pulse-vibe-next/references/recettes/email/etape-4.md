@@ -1,17 +1,17 @@
 ### 4. better-auth
 
-Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerAuth` reçoit maintenant l'envoi dans ses options (`envoyeur`, un `EnvoyeurEmail`) : l'adapter d'authentification ne connaît pas Nodemailer, et `getAuth()` lui passe un `NodemailerEmailAdapter`. La configuration de better-auth reste celle de la bibliothèque : seul l'expéditeur d'e-mails est une classe.
+Remplacez `src/adapters/auth/auth.adapter.ts` par la version ci-dessous. `creerAuth` reçoit maintenant l'envoi dans ses options (`envoyeur`, un `EnvoyeurEmail`) : l'adapter d'authentification ne connaît pas Nodemailer, et `getAuth()` lui passe `getEnvoyeurEmail()` (recette `envoi-email`). La configuration de better-auth reste celle de la bibliothèque : seul l'expéditeur d'e-mails est une classe.
 
 <!-- fichier: src/adapters/auth/auth.adapter.ts -->
 ```ts
 // src/adapters/auth/auth.adapter.ts
 import "server-only";
-import { NodemailerEmailAdapter } from "@src/adapters/email/email.adapter";
+import { getEnvoyeurEmail } from "@src/adapters/email/email.adapter";
 import { HibpMotDePasseAdapter } from "@src/adapters/hibp/hibp.adapter";
 import { env } from "@src/config/env";
-import type { EnvoyeurEmail } from "@src/core/compte/email.port";
 import { EmailsCompte } from "@src/core/compte/emails-compte.rules";
 import type { DetecteurMotsDePasseCompromis } from "@src/core/compte/mot-de-passe-compromis.port";
+import type { EnvoyeurEmail } from "@src/core/email/email.port";
 import {
   account,
   session,
@@ -32,7 +32,7 @@ type OptionsAuth = {
   baseURL: string;
   /** Application : `HibpMotDePasseAdapter`. Tests : une doublure, sans appel réseau. */
   motsDePasse: DetecteurMotsDePasseCompromis;
-  /** Application : `NodemailerEmailAdapter`. Tests : une doublure qui garde les messages. */
+  /** Application : `getEnvoyeurEmail()`. Tests : une doublure qui garde les messages. */
   envoyeur: EnvoyeurEmail;
   /** Application : l'e-mail part après la réponse. Tests : absent, l'envoi est attendu. */
   tacheDeFond?: (promesse: Promise<unknown>) => void;
@@ -178,13 +178,7 @@ export function getAuth(): Auth {
       secret: env.BETTER_AUTH_SECRET,
       baseURL: env.BETTER_AUTH_URL,
       motsDePasse: new HibpMotDePasseAdapter(),
-      envoyeur: new NodemailerEmailAdapter({
-        hote: env.SMTP_HOST,
-        port: env.SMTP_PORT,
-        utilisateur: env.SMTP_USER,
-        motDePasse: env.SMTP_PASSWORD,
-        expediteur: env.MAIL_FROM,
-      }),
+      envoyeur: getEnvoyeurEmail(),
       // L'e-mail part après la réponse : la durée de réponse ne révèle pas si un compte existe.
       tacheDeFond: (promesse) => after(promesse),
     });

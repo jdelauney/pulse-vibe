@@ -27,7 +27,7 @@ better-auth tourne sur une base PGlite neuve, avec le plugin et les migrations d
 <!-- fichier: src/adapters/auth/__tests__/auth-double-authentification.test.ts -->
 ```ts
 // src/adapters/auth/__tests__/auth-double-authentification.test.ts
-import type { EnvoyeurEmail, MessageEmail } from "@src/core/compte/email.port";
+import type { EnvoyeurEmail, MessageEmail } from "@src/core/email/email.port";
 import { user } from "@src/db/compte/auth.table";
 import { APIError } from "better-auth/api";
 import { eq } from "drizzle-orm";
@@ -271,7 +271,7 @@ Les chemins `/two-factor/…` du plugin sont couverts par le test « seuls les c
 
 ### Bout en bout (Playwright + Mailpit)
 
-Mailpit doit tourner (recette `email`). Le parcours active la double authentification sur un compte neuf, se reconnecte et lit le code dans Mailpit.
+Mailpit doit tourner (recette `envoi-email`). Le parcours active la double authentification sur un compte neuf, se reconnecte et lit le code dans Mailpit.
 
 <!-- fichier: e2e/double-authentification.spec.ts -->
 ```ts
