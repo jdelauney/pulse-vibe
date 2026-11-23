@@ -47,12 +47,12 @@ Un indicateur (un chiffre clé suivi dans le temps) se compose d'un libellé, d'
 
 ## 7. Page vitrine
 
-Un ordre de persuasion, dont chaque étape reste facultative :
+Un ordre de persuasion, dont chaque étape reste facultative ; chaque étape prend sa propre composition (`composition.md`), la suivante une autre :
 
 1. **Ouverture** : la promesse en une ligne, dans les mots du public, et un bouton principal.
 2. **Une preuve** : des logos de clients, ou un chiffre vérifiable (l'un ou l'autre).
 3. **Problème, puis solution.**
-4. **Fonctionnalités hiérarchisées** : une grande, deux ou trois moyennes, puis une liste courte (voir « Grille de cartes identiques » dans `anti-patterns.md`).
+4. **Fonctionnalités hiérarchisées** : une grande, deux ou trois moyennes, puis une liste courte, en bento à tailles variées ou en index à filets (voir « Grille de cartes identiques » dans `anti-patterns.md`).
 5. **Fonctionnement en quelques étapes** (3 le plus souvent) : une vraie suite, numérotée.
 6. **Témoignages réels**, avec l'accord de leur auteur : nom, fonction, photo si possible.
 7. **Tarifs** : 3 offres au plus, la recommandée mise en avant.

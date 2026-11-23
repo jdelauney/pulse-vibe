@@ -2,7 +2,8 @@
   "_aide": [
     "Modèle du brandkit d'une direction d'identité : remplacer chaque valeur par celle de la thèse reçue et chaque texte par un contenu tiré du projet (glossaire, PRD, user stories).",
     "Couleurs : toujours oklch(L C H), L de 0 à 1 ; un rôle cite une nuance sous la forme <teinte>-<rang>. Les clés qui commencent par _ sont ignorées.",
-    "Vérifier et produire la planche : pulse-aidd brandkit planche <dossier> ; chaque 🔴 se corrige dans ce fichier, la planche ne s'écrit pas à la main."
+    "Vérifier et produire la planche : pulse-aidd brandkit planche <dossier> ; chaque 🔴 se corrige dans ce fichier, la planche ne s'écrit pas à la main.",
+    "Vitrine : ajouter en tête de typographie.niveaux un niveau « affiche » (4,5 fois le texte au moins, 300 d'écart de graisse, interligne 0,9 à 1,05, approche -0.03 à -0.05). Mouvement : durées en ms, courbes sans dépassement (regles-ui.md § 6)."
   ],
   "version": 1,
   "nom": "La table de lecture",
@@ -64,6 +65,7 @@
   "rayons": { "controle": 6, "carte": 10 },
   "formes": { "cible": 48, "bouton": { "rayon": "controle", "graisse": 600 }, "champ": { "contour": 1 } },
   "ombres": { "legere": "0 1px 2px oklch(0.24 0.012 85 / 0.08)", "flottante": "0 8px 24px oklch(0.24 0.012 85 / 0.16)" },
+  "mouvement": { "durees": { "rapide": 140, "moyenne": 240, "lente": 500 }, "courbes": { "entree": "cubic-bezier(0.25, 1, 0.5, 1)", "sortie": "cubic-bezier(0.5, 0, 0.75, 0)" }, "decalage": 50 },
   "contenus": {
     "marque": "Bibliothèque des Tilleuls",
     "boutons": { "principal": "Enregistrer le prêt", "secondaire": "Prolonger", "texte": "Voir l'historique du lecteur", "destructif": "Annuler le prêt", "chargement": "Enregistrement…" },

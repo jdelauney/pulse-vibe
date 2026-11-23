@@ -11,7 +11,7 @@ const path = require("path");
 const { spawnSync } = require("child_process");
 
 const MAQUETTES = path.join(__dirname, "..", "skills", "ui", "scripts", "maquettes.js");
-const { largeurs, pages } = require(path.join(__dirname, "..", "skills", "ui", "scripts", "capturer.js"));
+const { largeurs, pages, constatsDeComposition } = require(path.join(__dirname, "..", "skills", "ui", "scripts", "capturer.js"));
 const { trouverNavigateur } = require(path.join(__dirname, "..", "scripts", "navigateur.js"));
 
 test("largeurs : téléphone à 390 px (débordement mesuré à 320), ordinateur à 1 280 px, autres pages aux deux", () => {
@@ -104,4 +104,54 @@ test("capturer : règles comptables du rendu, sans fausse alerte sur une page pr
   ])
     assert.match(r.stdout, attendu);
   assert.doesNotMatch(r.stdout, /desktop-2\.html \(/, "page propre : aucun constat");
+});
+
+// --- Composition, échelle typographique et tics d'IA du rendu ---
+
+const section = (signature, autres = {}) => ({ signature, colonnes: 1, inegales: false, centre: /centré/.test(signature), titre: true, plein: false, ...autres });
+
+test("composition : seuils de l'échelle selon le registre et la largeur", () => {
+  const noms = (r, l) => constatsDeComposition(r, l).map((c) => c.nom);
+  assert.match(noms({ registre: "vitrine", typo: { corps: 16, titre: 50 } }, 1280).join("\n"), /Échelle typographique timide : le plus grand titre fait 3,1 fois le texte \(50 px pour 16 px\), 4,5 fois au moins en vitrine/);
+  assert.deepStrictEqual(noms({ registre: "vitrine", typo: { corps: 16, titre: 50 } }, 390), [], "2,5 fois sur téléphone");
+  assert.deepStrictEqual(noms({ registre: "outil", typo: { corps: 16, titre: 39 } }, 1280), [], "outil : 2 fois");
+  assert.match(noms({ registre: "", typo: { corps: 16, titre: 24 } }, 1280).join("\n"), /1,5 fois le texte/);
+});
+
+test("composition : sections répétées, tout centré, sans rupture ; vitrine variée sans constat", () => {
+  const gabarit = { registre: "vitrine", typo: { corps: 16, titre: 80 }, compositions: [section("1 colonne(s), titre centré"), section("3 colonne(s), titre centré"), section("3 colonne(s), titre centré"), section("3 colonne(s), titre centré")] };
+  const noms = constatsDeComposition(gabarit, 1280).map((c) => c.nom).join("\n");
+  assert.match(noms, /Sections bâties sur le même modèle : sections 2 à 4 \(3 colonne\(s\), titre centré\)/);
+  assert.match(noms, /Tout est centré : 4 titres de section sur 4/);
+  assert.match(noms, /Composition sans rupture/);
+  assert.deepStrictEqual(constatsDeComposition(gabarit, 390).map((c) => c.nom), [], "sur téléphone, seule l'échelle compte");
+  const variee = { registre: "vitrine", typo: { corps: 16, titre: 110 }, compositions: [section("1 colonne(s), titre centré", { plein: true }), section("2 colonne(s)", { inegales: true }), section("1 colonne(s), image"), section("3 colonne(s)")] };
+  assert.deepStrictEqual(constatsDeComposition(variee, 1280), []);
+  assert.deepStrictEqual(constatsDeComposition({ ...variee, pastille: "span.badge « Nouveau »", iconesCarrees: 3 }, 1280).map((c) => c.nom), ["Pastille au-dessus du titre d'ouverture : span.badge « Nouveau »", "Icônes dans des carrés arrondis colorés, en série : 3"]);
+});
+
+const VITRINE_GABARIT = `<!doctype html><html lang="fr" data-registre="vitrine"><head><meta charset="utf-8"><style>
+body{margin:0;font:16px/1.5 system-ui}section{min-height:300px;padding:40px;text-align:center}h1{font-size:40px}h2{font-size:28px}
+.g{display:flex;gap:16px}.g>div{width:300px}.pastille{display:inline-block;height:28px;padding:0 12px;border-radius:14px;background:oklch(0.9 0.05 290)}
+.ic{width:48px;height:48px;border-radius:12px;background:oklch(0.9 0.05 290);display:grid;place-items:center}</style></head><body><main>
+<section><span class="pastille">Nouveau</span><h1>Gérez vos prêts</h1><p>Un outil simple pour suivre les livres prêtés, les retours et les rappels de la bibliothèque.</p></section>
+<section><h2>Un</h2><div class="g"><div><div class="ic"><svg width="20" height="20"></svg></div><p>Texte</p></div><div><div class="ic"><svg width="20" height="20"></svg></div><p>Texte</p></div><div><div class="ic"><svg width="20" height="20"></svg></div><p>Texte</p></div></div></section>
+<section><h2>Deux</h2><div class="g"><div>a</div><div>b</div><div>c</div></div></section>
+<section><h2>Trois</h2><div class="g"><div>a</div><div>b</div><div>c</div></div></section>
+</main></body></html>`;
+
+test("capturer : vitrine en gabarit relevée dans le rendu", { skip: !trouverNavigateur() && "aucun navigateur sur ce poste", timeout: 60000 }, () => {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), "pulse-capturer-"));
+  fs.writeFileSync(path.join(d, "desktop.html"), VITRINE_GABARIT);
+  const r = spawnSync(process.execPath, [MAQUETTES, "capturer", d], { encoding: "utf8", timeout: 55000 });
+  if (r.status === 3) return;
+  for (const attendu of [
+    /🟠 desktop\.html \(1280 px\)\s+Échelle typographique timide : le plus grand titre fait 2,5 fois le texte/,
+    /🟠 desktop\.html \(1280 px\)\s+Sections bâties sur le même modèle : sections 2 à 4/,
+    /🟠 desktop\.html \(1280 px\)\s+Tout est centré : 4 titres de section sur 4/,
+    /🟠 desktop\.html \(1280 px\)\s+Composition sans rupture/,
+    /🟠 desktop\.html \(1280 px\)\s+Pastille au-dessus du titre d'ouverture : span\.pastille « Nouveau »/,
+    /🟠 desktop\.html \(1280 px\)\s+Icônes dans des carrés arrondis colorés, en série : 3/,
+  ])
+    assert.match(r.stdout, attendu);
 });

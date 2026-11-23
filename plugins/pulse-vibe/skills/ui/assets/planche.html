@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-registre="{{REGISTRE}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,7 +23,7 @@ code { font-family: var(--police-mono); font-size: 0.875em; overflow-wrap: anywh
 .barre .cadre { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--e-5); }
 .marque { font: var(--typo-titre-4-graisse) var(--typo-titre-4-taille)/1.2 var(--typo-titre-4-police); color: var(--texte); text-decoration: none; padding-block: var(--e-3); }
 .barre ul { display: flex; gap: var(--e-1); list-style: none; margin: 0 calc(var(--e-4) * -1); padding: 0 var(--e-4); overflow-x: auto; scrollbar-width: none; width: calc(100% + var(--e-4) * 2); }
-.barre a { display: inline-flex; align-items: center; min-height: var(--cible); padding-inline: var(--e-3); color: var(--texte-secondaire); text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: background-color 130ms ease-out, color 130ms ease-out; }
+.barre a { display: inline-flex; align-items: center; min-height: var(--cible); padding-inline: var(--e-3); color: var(--texte-secondaire); text-decoration: none; white-space: nowrap; border-bottom: 3px solid transparent; transition: background-color var(--duree-rapide) var(--courbe-entree), color var(--duree-rapide) var(--courbe-entree); }
 .barre a:hover { color: var(--texte); background: var(--accent-doux); }
 .barre a[aria-current="page"] { color: var(--texte); font-weight: var(--bouton-graisse); border-bottom-color: var(--accent); }
 
@@ -83,7 +83,7 @@ section.bloc h2 { margin-bottom: var(--e-2); }
 .ombre-boite { background: var(--surface); padding: var(--e-5) var(--e-4); border-radius: var(--rayon-carte); }
 
 /* Boutons et leurs états */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2); min-height: var(--cible); min-width: var(--cible); padding: 0 var(--e-5); border: var(--contour-epaisseur) solid transparent; border-radius: var(--rayon-bouton); font: var(--bouton-graisse) var(--typo-texte-taille)/1.2 var(--police-texte); cursor: pointer; text-decoration: none; transition: background-color 130ms ease-out, border-color 130ms ease-out, color 130ms ease-out; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2); min-height: var(--cible); min-width: var(--cible); padding: 0 var(--e-5); border: var(--contour-epaisseur) solid transparent; border-radius: var(--rayon-bouton); font: var(--bouton-graisse) var(--typo-texte-taille)/1.2 var(--police-texte); cursor: pointer; text-decoration: none; transition: background-color var(--duree-rapide) var(--courbe-entree), border-color var(--duree-rapide) var(--courbe-entree), color var(--duree-rapide) var(--courbe-entree); }
 .btn svg { width: 1.25rem; height: 1.25rem; flex: none; }
 .btn-principal { background: var(--accent); color: var(--texte-sur-accent); }
 .btn-principal:hover, .btn-principal.est-survol { background: var(--accent-survol); }
@@ -113,7 +113,7 @@ section.bloc h2 { margin-bottom: var(--e-2); }
 .champ { display: grid; gap: var(--e-1); }
 .champ label { font-weight: var(--bouton-graisse); }
 .champ .aide { margin: 0; color: var(--texte-secondaire); }
-.champ input { width: 100%; min-height: var(--cible); padding: 0 var(--e-3); font: var(--typo-texte-graisse) var(--typo-texte-taille)/1.2 var(--police-texte); color: var(--texte); background: var(--surface); border: var(--contour-epaisseur) solid var(--contour); border-radius: var(--rayon-controle); transition: border-color 100ms ease-out; }
+.champ input { width: 100%; min-height: var(--cible); padding: 0 var(--e-3); font: var(--typo-texte-graisse) var(--typo-texte-taille)/1.2 var(--police-texte); color: var(--texte); background: var(--surface); border: var(--contour-epaisseur) solid var(--contour); border-radius: var(--rayon-controle); transition: border-color var(--duree-rapide) var(--courbe-entree); }
 .champ input::placeholder { color: var(--texte-secondaire); opacity: 1; }
 .champ input:hover, .champ input.est-survol { border-color: var(--texte); }
 .champ input:focus-visible, .champ input.est-focus { outline: 2px solid var(--focus); outline-offset: 2px; border-color: var(--focus); }

@@ -20,6 +20,8 @@ Les valeurs viennent du brandkit retenu : `pulse-aidd brandkit css` (fichier `do
 | `--rayon-controle` | `--radius` (les autres rayons en découlent) |
 | Police du texte | `pulse-aidd pile police "<famille>"` (rôle `texte` : `--font-sans`) |
 | Police des titres | `pulse-aidd pile police "<famille>" --role titres` (`--font-heading`) |
+| Mouvement (`--duree-*`, `--courbe-*`, `--decalage`) | `:root` tels quels ; `--ease-entree` et `--ease-sortie` dans `@theme inline` (`mouvement.md`) |
+| Titre d'affiche (`--typo-affiche-*`, vitrine) | `:root` tels quels ; la classe `.affiche` de `pulse-aidd brandkit css` dans `globals.css`, sous `@layer components` |
 | Police du code (s'il y en a) | `pulse-aidd pile police "<famille>" --role code` (`--font-mono`) |
 
 `--sidebar-*` : reprendre les valeurs de fond, texte, accent et bordure si le projet a une barre latérale ; `--sidebar-ring` suit toujours `--ring` (règle 2).
