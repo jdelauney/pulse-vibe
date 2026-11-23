@@ -16,6 +16,7 @@
 // - Production : si au moins une migration reste à appliquer, crée d'abord une branche Neon de
 //   sauvegarde (expire au bout de 7 jours ; NEON_API_KEY et NEON_PROJECT_ID), puis applique.
 //   Base jamais migrée (première mise en ligne) : rien à sauvegarder, la sauvegarde est ignorée.
+//   Base hors Neon (hôte autre que ….neon.tech) : lue par node-postgres, migrée sans sauvegarde, avec un message.
 //   Les sauvegardes Pulse (sauvegarde-AAAAMMJJ-HHMM) au-delà des 2 dernières sont supprimées avant (Neon limite le nombre
 //   de branches : 10 sur les offres Free et Launch).
 // Un échec arrête la construction : la version en ligne reste celle d'avant.
@@ -96,14 +97,38 @@ const PREVISUALISATION_ADRESSE_ILLISIBLE = [
   "Pour corriger : console Neon → Integrations → Vercel → Manage ; vérifiez que l'intégration donne bien sa branche à chaque prévisualisation, puis redéployez la prévisualisation.",
 ];
 
+/** Vrai si l'adresse désigne une base Neon (hôte ….neon.tech), comme le choix du pilote de src/db/db-client.ts. */
+export function estNeon(adresse) {
+  try {
+    return /\.neon\.tech$/i.test(new URL(adresse).hostname);
+  } catch {
+    return false;
+  }
+}
+
+const DERNIERE_MIGRATION =
+  "select created_at from drizzle.__drizzle_migrations order by created_at desc limit 1";
+
+/** Lignes de la requête : pilote Neon (HTTP) pour une base Neon, node-postgres pour une autre base PostgreSQL. */
+async function interroger(adresse, requete) {
+  if (estNeon(adresse)) {
+    const { neon } = await import("@neondatabase/serverless");
+    return neon(adresse).query(requete);
+  }
+  const { default: pg } = await import("pg");
+  const client = new pg.Client({ connectionString: adresse });
+  await client.connect();
+  try {
+    return (await client.query(requete)).rows;
+  } finally {
+    await client.end();
+  }
+}
+
 /** Date (created_at) de la dernière migration appliquée, ou null (base neuve). */
 async function derniereAppliquee(adresse) {
-  const { neon } = await import("@neondatabase/serverless");
-  const sql = neon(adresse);
   try {
-    const lignes = await sql.query(
-      "select created_at from drizzle.__drizzle_migrations order by created_at desc limit 1",
-    );
+    const lignes = await interroger(adresse, DERNIERE_MIGRATION);
     return lignes[0]?.created_at ?? null;
   } catch (erreur) {
     // 42P01 : table absente ; 3F000 : schéma absent. La base n'a encore reçu aucune migration.
@@ -347,6 +372,10 @@ export async function migrer({
   }
   if (environnement === "production" && derniere === null) {
     dire("Base jamais migrée : rien à sauvegarder, sauvegarde ignorée.");
+  } else if (environnement === "production" && !estNeon(adresse)) {
+    dire(
+      "Base hors Neon : pas de sauvegarde automatique avant la migration (elle passe par une branche Neon). Gardez une copie de la base avant chaque mise en ligne qui la migre (docs/technical.md, « Retour arrière »).",
+    );
   } else if (environnement === "production") {
     if (!env.NEON_API_KEY || !env.NEON_PROJECT_ID) {
       throw new Error(

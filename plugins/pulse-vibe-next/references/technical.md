@@ -1,6 +1,6 @@
 # Valeurs de `docs/technical.md` pour la pile Pulse Next.js
 
-À recopier dans `docs/technical.md` par `/pulse:tech` quand la personne choisit cette pile, en adaptant le texte au projet. Les versions exactes sont celles du `package.json` posé par le squelette (dernières versions publiées, vérifiées par la construction et les tests du pack) : les relever avec `npm ls --depth=0` après `npm install`.
+À recopier dans `docs/technical.md` par `/pulse:tech` quand la personne choisit cette pile, en adaptant le texte au projet, avec la seule base de développement choisie. Les versions exactes sont celles du `package.json` posé par le squelette (dernières versions publiées, vérifiées par la construction et les tests du pack) : les relever avec `npm ls --depth=0` après `npm install`.
 
 ## Pile retenue
 
@@ -9,7 +9,7 @@
 | Langage | TypeScript (strict) |
 | Framework | Next.js (App Router), React |
 | Interface | Tailwind CSS et shadcn/ui |
-| Données | Neon (Postgres), région Francfort ; Drizzle ORM |
+| Données | Neon (Postgres), région Francfort ; Drizzle ORM ; base de développement : {{branche `dev` de Neon | PostgreSQL dans Docker sur le poste}} |
 | Connexion des utilisateurs | better-auth (e-mail et mot de passe) |
 | Code serveur | Server Actions (next-safe-action, Zod) |
 | Hébergement | Vercel, fonctions à Francfort (`fra1`) |
@@ -47,12 +47,12 @@ drizzle/                  migrations
 | Action | Commande |
 |---|---|
 | Installer les dépendances | `npm install` (première fois aussi : `npx playwright install chromium`) |
-| Lancer en local | `npm run dev`, puis ouvrir http://localhost:3000 |
+| Lancer en local | `npm run dev`, puis ouvrir http://localhost:3000 (Docker : d'abord `npm run db:up` ; arrêt : `npm run db:down`) |
 | Tester | `npm test` (bout en bout : `npm run test:e2e`) |
 | Contrôles automatiques (lint, format, types) | `npm run check` et `npm run typecheck` (corriger le format : `npm run format`) |
 | Auditer les dépendances | `npm audit --omit=dev --audit-level=high` |
 | Construire | `npm run build` |
-| Déployer | automatique à chaque envoi sur `main` (Vercel), migrations comprises (`scripts/migrer.mjs`, sauvegarde Neon avant chaque migration de production) ; en local, sur la branche `dev` : `npm run db:migrate` |
+| Déployer | automatique à chaque envoi sur `main` (Vercel), migrations comprises (`scripts/migrer.mjs`, sauvegarde Neon avant chaque migration de production) ; en local, sur la base de développement : `npm run db:migrate` |
 
 ## Données et contrôle d'accès
 
@@ -66,7 +66,7 @@ drizzle/                  migrations
 - Fichier local non versionné : `.env` (ou `.env.local`) à la racine ; modèle versionné : `.env.example`.
 - Variables : `DATABASE_URL` (adresse « pooled » de Neon, serveur), `DATABASE_URL_DIRECT` (adresse directe, migrations), puis celles des recettes (ex. `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` pour la connexion). Toutes côté serveur ; aucune ne commence par `NEXT_PUBLIC_` sauf une clé prévue pour être publique.
 - `SITE_URL` (non secrète, Production) : l'adresse officielle du site, une fois le domaine définitif.
-- Une base par environnement : `.env` porte les adresses de la branche `dev` de Neon ; Production et chaque prévisualisation reçoivent les leurs de l'intégration Vercel–Neon (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`) ; les adresses de `.env` restent sur le poste.
+- Une base par environnement : `.env` porte les adresses de la base de développement (branche `dev` de Neon, ou Docker : celles de `.env.example`) ; Production et chaque prévisualisation reçoivent les leurs de l'intégration Vercel–Neon (`DATABASE_URL`, `DATABASE_URL_UNPOOLED`) ; les adresses de `.env` restent sur le poste.
 - `NEON_API_KEY` (clé d'API limitée au projet, secret) et `NEON_PROJECT_ID` (identifiant du projet Neon), en Production seulement : la sauvegarde avant chaque migration.
 - `NEON_ENDPOINT_PRODUCTION` (point d'accès `ep-…` de la branche principale, pas un secret), en Preview seulement, enregistré tout seul par `pulse-aidd secrets envoyer NEON_API_KEY` : `scripts/migrer.mjs` saute les migrations d'une prévisualisation qui désignerait la production, sans arrêter la construction.
 - En production : à saisir par la personne dans Vercel (Project → Settings → Environment Variables), pour Production et Preview, ou `pulse-aidd secrets envoyer` (Vercel CLI relié). Une variable propre à chaque environnement (adresse du site, clés Stripe) part en production depuis `.env.envoi`. L'inventaire et le journal des rotations : `docs/secrets.md` (`/pulse:secrets`).
@@ -80,9 +80,10 @@ drizzle/                  migrations
 ## Mise en place
 
 1. Créer un compte **Neon** (https://console.neon.tech) et un projet en région **AWS Europe Central 1 (Frankfurt)**. Sa branche principale sert la **production**. Créer la branche de développement : **Branches** → **New branch** → nom `dev`, parent la branche principale, case « Automatically delete branch after » **décochée** (cochée par défaut : la branche disparaîtrait au bout d'un jour) → **Create**. Sur la branche `dev`, bouton **Connect** : copier l'adresse « pooled » dans `DATABASE_URL` et l'adresse directe (sans `-pooler`) dans `DATABASE_URL_DIRECT` de `.env`, que la personne crée elle-même à partir de `.env.example`. Les essais et `npm run db:migrate` touchent ainsi `dev`, jamais les données réelles.
+   PostgreSQL dans Docker en local : projet Neon pour la production seulement, sans branche `dev` ; installer Docker Desktop une fois (`pulse-aidd pile reference docker.md`).
 2. Créer un compte **Vercel** (https://vercel.com), relié au compte GitHub. Le projet Vercel se crée à la première mise en ligne.
-3. Poser le squelette : `pulse-aidd pile squelette --nom "<nom du projet>" --description "<la phrase du brief>"`.
-4. `npm install` (il écrit `package-lock.json`, enregistré avec le code : les versions exactes de toutes les dépendances), puis `npx playwright install chromium`.
+3. Poser le squelette : `pulse-aidd pile squelette --nom "<nom du projet>" --description "<la phrase du brief>"` (Docker : `--base postgres`).
+4. `npm install` (il écrit `package-lock.json`, enregistré avec le code : les versions exactes de toutes les dépendances), puis `npx playwright install chromium`. Docker : copier `.env.example` en `.env` (adresses prêtes), puis `npm run db:up`.
 5. Vérifier : `npm run dev` (la page d'accueil affiche le nom du projet), `npm run check`, `npm run typecheck`, `npm test`.
 6. Si `docs/design.md` existe : appliquer le thème (`pulse-aidd pile reference theme.md`).
 7. Avant la première version qui lit la base en ligne : relier Neon à Vercel et préparer la sauvegarde avant migration (consignes « Pour mettre en ligne » du pack, `pulse-aidd pile reference contexte/deploy.md`).
