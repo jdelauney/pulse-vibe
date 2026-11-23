@@ -48,7 +48,7 @@ const ORDRE = { "🔴": 0, "🟠": 1, "🟢": 2 };
 
 const COULEUR = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\(/gi;
 const VARIABLE_TITRE = /(--(?:police|font)-(?:titres?|heading|display|title)[\w-]*)\s*:\s*([^;}]+)/gi;
-const EMOJI = /(?![©®™‼⁉])\p{Extended_Pictographic}/gu;
+const EMOJI = /(?![©®™‼⁉★☆])\p{Extended_Pictographic}/gu;
 
 let reflexes = null;
 function policesReflexes() {

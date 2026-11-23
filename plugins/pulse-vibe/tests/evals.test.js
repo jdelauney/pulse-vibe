@@ -42,9 +42,11 @@ test("chaque expression des vérifications (input_match, pattern) se compile, lu
 });
 
 test("chaque script de préparation crée son projet d'essai dans un dossier vide", { skip: bash }, () => {
+  // design.sh (cas de /pulse:ui) appelle pulse-aidd : le bin/ du cœur passe en tête du PATH, comme dans lancer.js.
+  const PATH = [path.join(__dirname, "..", "bin"), process.env.PATH].join(path.delimiter);
   for (const c of cas) {
     const d = fs.mkdtempSync(path.join(os.tmpdir(), `pulse-eval-${c}-`));
-    const r = spawnSync("bash", [path.join(EVALS, c, "projet.sh").split(path.sep).join("/")], { cwd: d, encoding: "utf8", env: { ...process.env, PULSE_EVAL_SANS_INSTALL: "1" } });
+    const r = spawnSync("bash", [path.join(EVALS, c, "projet.sh").split(path.sep).join("/")], { cwd: d, encoding: "utf8", env: { ...process.env, PATH, PULSE_EVAL_SANS_INSTALL: "1" } });
     assert.strictEqual(r.status, 0, `${c} : ${r.stderr}`);
     assert.match(fs.readFileSync(path.join(d, "CLAUDE.md"), "utf8"), /méthode Pulse/, c);
   }
