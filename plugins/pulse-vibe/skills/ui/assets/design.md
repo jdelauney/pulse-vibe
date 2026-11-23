@@ -49,7 +49,11 @@ Ce que la scène implique : {{clair ou sombre, densité, taille des cibles tacti
 
 ## 10. Mouvement
 
-{{quand et comment animer, durées ; ou « aucun »}}
+Valeurs : la ligne « Mouvement » de la section 8 (`--duree-*`, `--courbe-*`, `--decalage`). Règles : `regles-ui.md` § 6.
+
+- **Séquence d'ouverture** : {{vitrine : ordre et décalage des éléments ; outil : « aucune »}}
+- **Défilement** : {{révélations, effet lié au défilement retenu ; ou « aucun »}}
+- **Micro-interactions** : {{bouton, lien, ligne de liste, champ : ce qui répond au survol, au focus, à la pression}}
 
 ## 11. À faire / à éviter
 

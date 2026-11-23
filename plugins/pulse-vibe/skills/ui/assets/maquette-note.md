@@ -12,3 +12,11 @@
 ## Ce qui la distingue
 
 {{2 ou 3 phrases}}
+
+## Plan de composition (maquette)
+
+| Section | Composition (`composition.md`) | Pourquoi |
+|---|---|---|
+| {{ouverture}} | {{affiche typographique, plein cadre…}} | {{une ligne}} |
+
+**Mouvement** : {{séquence d'ouverture, révélations, effets liés au défilement, micro-interactions}}

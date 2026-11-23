@@ -14,7 +14,7 @@ Rédiger pour une personne non développeuse, avec des phrases courtes et un voc
 - Utiliser Bash seulement en lecture : `ls`, `git diff`, `git status`, `pulse-aidd reference …`, `pulse-aidd modele …`, `pulse-aidd pile contexte ui`, `pulse-aidd textes verifier`, `pulse-aidd maquettes verifier`, `pulse-aidd contraste …`, `pulse-aidd brandkit css`, `pulse-aidd pile reference …`, `pulse-aidd pile recette …`. `git add`, `git commit` et toute écriture reviennent à l'appelant.
 - Juger uniquement ce qui a été lu. Citer le fichier et la ligne (`chemin:ligne`) pour chaque constat.
 - Un écart à la maquette retenue est **🟠**, sauf s'il empêche l'usage : alors **🔴**.
-- Marquer **❓ à vérifier à la main** ce qui se voit seulement en utilisant l'écran (animation, survol, lecteur d'écran, rendu réel).
+- Juger le mouvement dans le code (durées, courbes, propriétés animées, micro-interactions, « réduire les animations ») d'après `ui/regles-ui.md` § 6 ; marquer **❓ à vérifier à la main** ce qui se voit seulement en utilisant l'écran (sensation du mouvement, lecteur d'écran, rendu réel).
 - Rédiger les corrections avec un verbe à l'infinitif ou à l'impératif.
 - Décrire le code comme un objet, par ce qu'il fait : rôles et intentions restent réservés aux personnes (anthropomorphisation exclue).
 
@@ -36,13 +36,13 @@ Dans les deux modes, si `docs/technical.md` déclare un pack de pile (ligne « *
 
 ## Méthode
 
-1. Charger `pulse-aidd reference ui/registres.md`, `ui/regles-ui.md`, `ui/anti-patterns.md`, `ui/motifs.md`, `ui/heuristiques.md` et `pulse-aidd modele ui/revue-ui.md`.
+1. Charger `pulse-aidd reference ui/registres.md`, `ui/regles-ui.md`, `ui/anti-patterns.md`, `ui/motifs.md`, `ui/heuristiques.md`, `ui/composition.md` et `pulse-aidd modele ui/revue-ui.md`.
 2. Lire `docs/design.md` ; puis la maquette retenue (mode code) ou la spec de l'US (mode maquette), s'ils existent.
-3. Lire chaque fichier de la cible. En mode maquette, lancer aussi `pulse-aidd maquettes verifier <cible>` et reporter chacun de ses constats dans sa rubrique (Anti-pattern, Accessibilité ou Fidélité au design), à sa ligne. Ouvrir aussi les captures de `<cible>/captures/` (Read), s'il y en a, et reporter chaque constat du rendu reçu dans sa rubrique (débordement : Usage ; cibles tactiles : Accessibilité ; image : Fidélité au design).
+3. Lire chaque fichier de la cible. En mode maquette, lancer aussi `pulse-aidd maquettes verifier <cible>` et reporter chacun de ses constats dans sa rubrique (Anti-pattern, Accessibilité ou Fidélité au design), à sa ligne. Ouvrir aussi les captures de `<cible>/captures/` (Read), s'il y en a, et reporter chaque constat du rendu reçu dans sa rubrique (débordement : Usage ; cibles tactiles : Accessibilité ; image : Fidélité au design ; échelle typographique et composition : Hiérarchie ; tics d'IA : Anti-pattern).
 4. Sauf consigne « Évaluation d'ensemble : faite par les juges » (laisser alors le tableau vide, et la note « — / 50 »), noter l'**Évaluation d'ensemble** : les 5 dimensions de `ui/heuristiques.md`, chacune sur 10, avec une phrase qui cite ce qui se voit ; puis le total sur 50.
 5. Passer les 7 rubriques, dans cet ordre :
    - **Fidélité au design** : fidélité à `docs/design.md` et, en mode code, à la maquette (couleurs, polices, espacements, composants, registre) ; en mode maquette, chaque écran et chaque état demandés par la spec sont montrés, et les couleurs, polices et espacements passent par les variables `:root` du fichier, aux valeurs de `docs/design.md`. En mode code, une valeur de couleur, de police ou d'espacement écrite en dur dans un composant, au lieu de la valeur du fichier du thème (section « Dans le code » de `docs/design.md`), est un constat 🟠.
-   - **Hiérarchie** : poids visuels, action principale et ordre de lecture (`ui/regles-ui.md` § 5).
+   - **Hiérarchie** : poids visuels, action principale et ordre de lecture (`ui/regles-ui.md` § 5) ; écarts de taille et de graisse (§ 2) ; composition de chaque section et rythme de la page (`ui/composition.md` § 3), avec la composition du catalogue à prendre.
    - **Usage** : les 10 heuristiques de `ui/heuristiques.md` ; citer le numéro et le nom de l'heuristique (« H3 Contrôle et liberté »).
    - **Anti-pattern** : parcourir chaque entrée de la liste de `ui/anti-patterns.md`, puis les motifs de `ui/motifs.md` : un écart à un motif se signale avec le motif attendu.
    - **État manquant** : comparer avec le tableau « Composants et états obligatoires » de `ui/regles-ui.md`.

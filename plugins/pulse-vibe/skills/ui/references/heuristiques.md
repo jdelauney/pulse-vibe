@@ -14,6 +14,14 @@ Chaque dimension reçoit une note sur 10, justifiée en une phrase qui cite ce q
 | 7 à 8 | Tenu partout, dans les petites décisions |
 | 9 à 10 | Chaque détail sert l'intention |
 
+**Le barème vise le niveau premium** décrit dans `composition.md` § 1 : 9 ou 10 seulement pour un écran qui figurerait dans une sélection de sites remarquables ; 7 ou 8 pour un écran soigné dont un parti pris se voit ; un écran propre et banal, construit comme un gabarit, reste à 5 ou 6. Une note de 7 ou plus cite la décision précise qui la justifie.
+
+**Plafonds**, appliqués après la note :
+- un anti-pattern 🔴 visible : Finition 4 au plus ;
+- trois signes d'un écran fait par une IA ou plus (`anti-patterns.md`) : Personnalité 4 au plus ;
+- en vitrine, sections bâties sur le même modèle, ou titre d'ouverture sans écart de taille franc avec le texte : Hiérarchie 5 au plus ;
+- en vitrine, aucune rupture d'échelle (affiche, plein cadre, chiffre en majesté) : Personnalité 5 au plus.
+
 ### Intention
 
 Peut-on dire pourquoi cet écran existe ?
@@ -25,12 +33,14 @@ Peut-on dire pourquoi cet écran existe ?
 Le regard trouve-t-il tout de suite où aller ?
 - Quel élément le regard trouve-t-il en premier ? Est-ce le bon ?
 - L'action principale se voit-elle sans chercher ? Combien d'éléments ont le même poids ?
+- Les écarts de taille et de graisse sont-ils francs (`regles-ui.md` § 2) ? Les sections changent-elles de composition (`composition.md` § 3) ?
 
 ### Finition
 
 Le soin se voit-il dans les petites choses ?
 - Espacements, rayons et ombres viennent-ils de leurs échelles ?
-- Chaque élément interactif a-t-il tous ses états (`regles-ui.md` § 4) ?
+- Chaque élément interactif a-t-il tous ses états (`regles-ui.md` § 4) et sa micro-interaction (§ 6) ?
+- Alignements sur la grille, légendes, filets, cadrages : le détail est-il décidé ?
 
 ### Usage
 
@@ -42,6 +52,7 @@ La tâche se fait-elle sans friction ?
 
 L'écran a-t-il un choix mémorable ?
 - Un détail le distingue-t-il d'un modèle générique (voir « Ce que chaque registre écarte » dans `registres.md`) ?
+- En vitrine : une composition audacieuse (asymétrie, plein cadre, superposition, rupture d'échelle) se voit-elle ?
 - En registre outil, la personnalité passe par la justesse (typographie, densité, textes) : un outil sobre et précis mérite une bonne note.
 
 ## Les 10 heuristiques

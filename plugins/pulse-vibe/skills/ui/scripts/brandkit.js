@@ -65,6 +65,16 @@ const PAIRES = [
 ];
 
 const NIVEAUX = { "titre-1": "Titre de page", "titre-2": "Titre de section", "titre-3": "Sous-titre", "titre-4": "Petit titre", texte: "Texte courant", petit: "Petit texte" };
+/** Niveau facultatif, attendu en vitrine (regles-ui.md § 2) : le titre d'affiche, classe .affiche. */
+const AFFICHE = { affiche: "Titre d'affiche" };
+const NOM_NIVEAU = { ...AFFICHE, ...NIVEAUX };
+/** Niveaux présents dans un brandkit, l'affiche en premier. */
+const niveauxDe = (bk) => [...(bk.typographie.niveaux.some((n) => n && n.id === "affiche") ? ["affiche"] : []), ...Object.keys(NIVEAUX)];
+
+/** Système de mouvement (regles-ui.md § 6) : durées en ms, courbes, décalage entre deux apparitions ; valeurs par défaut si le brandkit n'en a pas. */
+const MOUVEMENT_DEFAUT = { durees: { rapide: 150, moyenne: 300, lente: 700 }, courbes: { entree: "cubic-bezier(0.25, 1, 0.5, 1)", sortie: "cubic-bezier(0.5, 0, 0.75, 0)" }, decalage: 60 };
+const BORNES_DUREES = { rapide: [100, 200], moyenne: [200, 400], lente: [400, 1000] };
+const COURBE = /^cubic-bezier\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)$/;
 
 const CONTENUS = [
   "marque", "boutons.principal", "boutons.secondaire", "boutons.texte", "boutons.destructif", "boutons.chargement",
@@ -239,8 +249,8 @@ function analyser(bk) {
   const parId = new Map(niveaux.filter((n) => n && typeof n === "object").map((n) => [n.id, n]));
   for (const id of Object.keys(NIVEAUX)) if (!parId.has(id)) bloquant(`typographie.niveaux : niveau « ${id} » (${NIVEAUX[id]}) manquant`);
   for (const n of parId.values()) {
-    if (!NIVEAUX[n.id]) {
-      bloquant(`typographie.niveaux : niveau « ${n.id} » inconnu (${Object.keys(NIVEAUX).join(", ")})`);
+    if (!NOM_NIVEAU[n.id]) {
+      bloquant(`typographie.niveaux : niveau « ${n.id} » inconnu (${Object.keys(NOM_NIVEAU).join(", ")})`);
       continue;
     }
     if (!(typeof n.taille === "number" && n.taille > 0)) bloquant(`niveau ${n.id} : « taille » en rem, un nombre (ex. 1.25)`);
@@ -256,6 +266,37 @@ function analyser(bk) {
   if (corps && typeof corps.interligne === "number" && (corps.interligne < 1.4 || corps.interligne > 1.7)) important("niveau texte : interligne de 1,5 à 1,6 conseillé");
   const petit = parId.get("petit");
   if (petit && typeof petit.taille === "number" && petit.taille < 0.875) important("niveau petit : 0,875 rem (14 px) au moins");
+  // Écarts francs (regles-ui.md § 2) : titre de page, titre d'affiche en vitrine, contraste de graisse.
+  const fois = (n) => (corps && typeof corps.taille === "number" && corps.taille > 0 && n && typeof n.taille === "number" ? n.taille / corps.taille : null);
+  const t1 = fois(parId.get("titre-1"));
+  if (t1 !== null && t1 < 2) important(`niveau titre-1 : ${virgule(arrondi(t1, 2))} fois le texte ; 2 fois au moins (écarts de taille francs)`);
+  const affiche = parId.get("affiche");
+  if (/vitrine/i.test(bk.registre || "") && !affiche) important("vitrine : ajouter le niveau « affiche » (titre d'affiche, 4,5 fois le texte au moins)");
+  const fa = fois(affiche);
+  if (fa !== null) {
+    if (fa < 4.5) important(`niveau affiche : ${virgule(arrondi(fa, 2))} fois le texte ; 4,5 fois au moins`);
+    const ecart = Math.abs((affiche.graisse || 0) - (corps.graisse || 0));
+    if (ecart < 300 && !(affiche.graisse <= 300 && fa >= 6))
+      important(`niveau affiche : graisse ${affiche.graisse} pour ${corps.graisse} au texte ; 300 d'écart au moins, ou une affiche fine (300) à 6 fois le texte`);
+  }
+
+  // Mouvement
+  const mv = bk.mouvement;
+  if (mv === undefined) important("« mouvement » manque : durées (rapide, moyenne, lente, en ms), courbes (entree, sortie) et décalage, voir le modèle");
+  else if (!mv || typeof mv !== "object" || Array.isArray(mv)) bloquant("« mouvement » : un objet { durees, courbes, decalage }");
+  else {
+    for (const [nom, [min, max]] of Object.entries(BORNES_DUREES)) {
+      const v = lire(mv, `durees.${nom}`);
+      if (typeof v !== "number") bloquant(`mouvement.durees.${nom} : en ms, un nombre`);
+      else if (v < min || v > max) important(`mouvement.durees.${nom} : ${v} ms ; de ${min} à ${max} ms`);
+    }
+    for (const nom of ["entree", "sortie"]) {
+      const m = COURBE.exec(String(lire(mv, `courbes.${nom}`) || "").trim());
+      if (!m) bloquant(`mouvement.courbes.${nom} : cubic-bezier(x1, y1, x2, y2)`);
+      else if ([m[2], m[4]].some((y) => Number(y) < 0 || Number(y) > 1)) important(`mouvement.courbes.${nom} : la courbe dépasse sa cible (rebond) ; garder y1 et y2 entre 0 et 1`);
+    }
+    if (!(typeof mv.decalage === "number" && mv.decalage >= 30 && mv.decalage <= 120)) important("mouvement.decalage : écart entre deux apparitions en ms, de 30 à 120 (50 à 60 conseillés)");
+  }
 
   // Espacements, rayons, formes, ombres
   const e = bk.espacements;
@@ -329,7 +370,7 @@ function variables(bk, a) {
   const polices = bk.typographie.polices;
   for (const cle of ["titre", "texte", "mono"]) if (polices[cle]) l.push(`  --police-${cle}: ${pile(polices[cle])};`);
   if (!polices.mono) l.push(`  --police-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;`);
-  for (const id of Object.keys(NIVEAUX)) {
+  for (const id of niveauxDe(bk)) {
     const n = bk.typographie.niveaux.find((x) => x.id === id);
     const v = `--typo-${id}`;
     l.push(`  ${v}-police: var(--police-${n.police}); ${v}-taille: ${n.taille}rem; ${v}-graisse: ${n.graisse}; ${v}-interligne: ${n.interligne}; ${v}-approche: ${n.approche || 0}em;`);
@@ -345,12 +386,31 @@ function variables(bk, a) {
     l.push("  /* Ombres */");
     for (const [n, v] of ombres) l.push(`  --ombre-${n}: ${v};`);
   }
+  const mv = mouvement(bk);
+  l.push("  /* Mouvement (regles-ui.md § 6) */");
+  l.push(`  ${Object.entries(mv.durees).map(([n, v]) => `--duree-${n}: ${v}ms;`).join(" ")} --courbe-entree: ${mv.courbes.entree}; --courbe-sortie: ${mv.courbes.sortie}; --decalage: ${mv.decalage}ms;`);
   return l.join("\n");
 }
 
+/** Mouvement du brandkit, complété par les valeurs par défaut. */
+const mouvement = (bk) => {
+  const mv = bk.mouvement && typeof bk.mouvement === "object" ? bk.mouvement : {};
+  return {
+    durees: { ...MOUVEMENT_DEFAUT.durees, ...(mv.durees || {}) },
+    courbes: { ...MOUVEMENT_DEFAUT.courbes, ...(mv.courbes || {}) },
+    decalage: typeof mv.decalage === "number" ? mv.decalage : MOUVEMENT_DEFAUT.decalage,
+  };
+};
+
 const fonte = (id, taille) =>
   `font: var(--typo-${id}-graisse) ${taille || `var(--typo-${id}-taille)`}/var(--typo-${id}-interligne) var(--typo-${id}-police); letter-spacing: var(--typo-${id}-approche);`;
-const TAILLE_FLUIDE = { "titre-1": "min(var(--typo-titre-1-taille), calc(1.5rem + 4vw))", "titre-2": "min(var(--typo-titre-2-taille), calc(1.25rem + 3vw))" };
+const TAILLE_FLUIDE = {
+  affiche: "clamp(calc(var(--typo-affiche-taille) * 0.6), calc(1rem + 7vw), var(--typo-affiche-taille))",
+  "titre-1": "min(var(--typo-titre-1-taille), calc(1.5rem + 4vw))",
+  "titre-2": "min(var(--typo-titre-2-taille), calc(1.25rem + 3vw))",
+};
+/** Styles propres au brandkit : le titre d'affiche (classe .affiche), s'il existe. */
+const stylesAffiche = (bk) => (niveauxDe(bk).includes("affiche") ? `.affiche { margin: 0; text-wrap: balance; ${fonte("affiche", TAILLE_FLUIDE.affiche)} }` : "");
 
 /** Styles de base communs à la planche et aux maquettes (téléphone d'abord : les grands titres rétrécissent sur un petit écran). */
 const STYLES_BASE = [
@@ -369,7 +429,7 @@ const STYLES_BASE = [
 ].join("\n");
 
 function css(bk, a) {
-  return [lienPolices(bk), "<style>", ":root {", variables(bk, a), "}", STYLES_BASE, "</style>"].filter(Boolean).join("\n");
+  return [lienPolices(bk), "<style>", ":root {", variables(bk, a), "}", STYLES_BASE, stylesAffiche(bk), "</style>"].filter(Boolean).join("\n");
 }
 
 // --- Planche ---
@@ -427,11 +487,11 @@ function blocRoles(bk, a) {
 
 function blocTypo(bk) {
   const polices = bk.typographie.polices;
-  const lignes = Object.keys(NIVEAUX).map((id) => {
+  const lignes = niveauxDe(bk).map((id) => {
     const n = bk.typographie.niveaux.find((x) => x.id === id);
     const details = [`${arrondi(n.taille * 16, 1)} px`, `${virgule(n.taille)} rem`, `graisse ${n.graisse}`, `interligne ${virgule(n.interligne)}`];
     if (n.approche) details.push(`lettres ${virgule(n.approche)} em`);
-    return `<div class="typo-ligne"><p class="typo-meta"><b>${NIVEAUX[id]}</b><span>${details.join(" · ")}</span><span>${echapper(polices[n.police].famille)}</span></p><p class="typo-exemple typo-${id}">${echapper(n.exemple)}</p></div>`;
+    return `<div class="typo-ligne"><p class="typo-meta"><b>${NOM_NIVEAU[id]}</b><span>${details.join(" · ")}</span><span>${echapper(polices[n.police].famille)}</span></p><p class="typo-exemple typo-${id}">${echapper(n.exemple)}</p></div>`;
   });
   lignes.push(`<div class="typo-ligne"><p class="typo-meta"><b>Lien</b><span>couleur du lien, soulignement décalé</span></p><p class="typo-exemple"><a href="#typo">${echapper(bk.contenus.boutons.texte)}</a></p></div>`);
   return lignes.join("\n");
@@ -521,8 +581,9 @@ function planche(bk, a, modele = fs.readFileSync(MODELE, "utf8")) {
   const details = [`Stratégie de couleur : ${bk.strategie}`];
   if (texte(bk.registre)) details.push(`registre : ${bk.registre}`);
   const surtitre = ["Planche d'identité", bk.famille, texte(bk.style) ? `style ${bk.style}` : ""].filter(texte).join(" · ");
-  const typos = Object.keys(NIVEAUX).map((id) => `.typo-${id} { ${fonte(id, TAILLE_FLUIDE[id])} }`).join("\n");
+  const typos = niveauxDe(bk).map((id) => `.typo-${id} { ${fonte(id, TAILLE_FLUIDE[id])} }`).join("\n");
   const valeurs = {
+    REGISTRE: /vitrine/i.test(bk.registre || "") ? "vitrine" : "outil",
     TITRE: echapper(`${bk.nom} : planche d'identité${texte(bk.projet) ? `, ${bk.projet}` : ""}`),
     POLICES: lienPolices(bk),
     VARIABLES: variables(bk, a),
@@ -563,9 +624,9 @@ function resume(bk, a) {
   }
   const p = bk.typographie.polices;
   l.push("", "## 7. Typographie", "", "| Niveau | Police | Taille | Graisse | Interligne | Approche |", "|---|---|---|---|---|---|");
-  for (const id of Object.keys(NIVEAUX)) {
+  for (const id of niveauxDe(bk)) {
     const n = bk.typographie.niveaux.find((x) => x.id === id);
-    l.push(`| ${NIVEAUX[id]} (\`--typo-${id}-*\`) | ${p[n.police].famille} | ${n.taille} rem (${arrondi(n.taille * 16, 1)} px) | ${n.graisse} | ${n.interligne} | ${n.approche || 0} em |`);
+    l.push(`| ${NOM_NIVEAU[id]} (\`--typo-${id}-*\`) | ${p[n.police].famille} | ${n.taille} rem (${arrondi(n.taille * 16, 1)} px) | ${n.graisse} | ${n.interligne} | ${n.approche || 0} em |`);
   }
   l.push("", `Rapport de l'échelle : ${virgule(bk.typographie.rapport)}. Polices de secours : ${Object.entries(p).map(([k, v]) => `${k} → ${v.secours}`).join(" ; ")}. Longueur de ligne : 65 à 75 caractères.`);
   l.push("", "## 8. Espacement, arrondis, ombres", "");
@@ -574,6 +635,9 @@ function resume(bk, a) {
   l.push(`- **Cibles** : boutons et champs de ${bk.formes.cible} px de haut ; contour des champs : ${bk.formes.champ.contour} px ; texte des boutons en graisse ${bk.formes.bouton.graisse}`);
   const ombres = Object.entries(bk.ombres || {});
   l.push(`- **Ombres / élévation** : ${ombres.length ? ombres.map(([n, v]) => `\`--ombre-${n}\` ${v}`).join(" ; ") : "aucune"}`);
+  const mv = mouvement(bk);
+  const durees = Object.entries(mv.durees).map(([n, v]) => `\`--duree-${n}\` ${v} ms`).join(", ");
+  l.push(`- **Mouvement** : ${durees} ; entrée \`--courbe-entree\` ${mv.courbes.entree}, sortie \`--courbe-sortie\` ${mv.courbes.sortie} ; \`--decalage\` ${mv.decalage} ms entre deux apparitions${bk.mouvement ? "" : " (valeurs par défaut de Pulse)"}`);
   return l.join("\n");
 }
 
@@ -665,4 +729,4 @@ function principal(argv) {
 
 if (require.main === module) process.exitCode = principal(process.argv.slice(2));
 
-module.exports = { analyser, css, planche, resume, versOklch, lireOklch, ROLES, PAIRES, NIVEAUX, CONTENUS, principal };
+module.exports = { analyser, css, planche, resume, versOklch, lireOklch, ROLES, PAIRES, NIVEAUX, AFFICHE, MOUVEMENT_DEFAUT, CONTENUS, principal };

@@ -16,6 +16,15 @@ Un anti-pattern est un défaut fréquent, reconnaissable à l'œil. Gravités : 
 | Champ sans étiquette visible | 🔴 | Un champ avec, pour seul repère, un texte d'exemple qui disparaît à la saisie | Une étiquette visible au-dessus du champ ; le texte d'exemple montre seulement le format attendu |
 | Contraste du texte sous 4,5:1 | 🔴 | Texte gris clair sur fond blanc, texte pâle sur image | Foncer le texte ou éclaircir le fond ; vérifier chaque paire de couleurs |
 | Focus clavier invisible | 🔴 | En appuyant sur la touche de tabulation, rien ne montre où l'on est | Contour net et contrasté sur tout élément interactif |
+| Dégradé violet ou bleu-violet décoratif | 🟠 | Fond, bouton ou bandeau qui passe du bleu au violet ou au rose | Un aplat de la palette ; un dégradé seulement s'il vient de l'identité, dans sa teinte |
+| Halos flous décoratifs | 🟠 | Taches de couleur floues posées derrière le contenu | Une image, une texture ou un aplat tirés de l'identité |
+| Pastille au-dessus du titre d'ouverture | 🟠 | Petit badge arrondi (« Nouveau », « Propulsé par l'IA ») posé juste au-dessus du titre | Le titre seul ; une nouveauté se dit dans le texte d'appui |
+| Sections bâties sur le même modèle | 🟠 | Titre centré, sous-titre, grille de blocs, section après section | Une composition par section, choisie dans `composition.md` |
+| Tout est centré | 🟠 | Titres et textes centrés dans chaque section | Aligner sur la grille, à gauche ; centrer seulement l'affiche ou l'appel final |
+| Échelle typographique timide | 🟠 | Titre d'ouverture à peine plus grand que le texte, tailles voisines partout | Les écarts de taille et de graisse de `regles-ui.md` § 2, un titre d'affiche en vitrine |
+| Icônes dans des carrés arrondis colorés, en série | 🟠 | Trois blocs ou plus, chacun ouvert par une icône dans un carré teinté | Une image, un chiffre ou le texte seul ; une icône quand elle aide à reconnaître |
+| Titres de section génériques | 🟠 | « Nos services », « Pourquoi nous choisir », « Comment ça marche », « Ils nous font confiance », « Prêt à commencer » | Un titre qui dit ce que la section apprend, dans les mots du projet |
+| Vitrine immobile | 🟠 | Ni entrée, ni révélation au défilement, ni réponse au survol | Le système de mouvement de `regles-ui.md` § 6 |
 | Police réflexe en titre (voir `regles-ui.md`) | 🟠 | Titres dans l'une des polices choisies par défaut par les IA | Une police choisie d'après les 3 mots de personnalité, ou une raison écrite |
 | Palette devinable depuis la catégorie | 🟠 | Les couleurs se devinent en lisant seulement le type d'activité | Partir de la personnalité de l'identité plutôt que du lieu commun de la catégorie |
 | Petite étiquette en majuscules au-dessus de chaque section | 🟠 | Une mention minuscule, en capitales espacées, avant chaque titre | Une pour trois sections au plus, là où elle aide ; supprimer les autres |
@@ -34,6 +43,10 @@ Un anti-pattern est un défaut fréquent, reconnaissable à l'œil. Gravités : 
 | Champs en pleine largeur sur grand écran | 🟢 | Un champ « code postal » aussi large que la page | Une largeur selon la saisie attendue |
 | Icônes génériques (fusée, ampoule, étoile, engrenage) | 🟢 | Les pictogrammes les plus attendus pour « lancement », « idée », « qualité », « réglages » | Une icône précise de ce que fait l'élément, ou le texte seul |
 | Introduction qui répète le titre | 🟢 | La première phrase redit le titre avec d'autres mots | Commencer par l'information suivante |
+| Même apparition partout | 🟢 | Chaque bloc monte en fondu de la même façon | Une chorégraphie : ordre de lecture, décalage, effets réservés aux moments forts |
+| Transition sur toutes les propriétés | 🟢 | `transition: all` : couleurs et mise en page bougent aussi | Nommer les propriétés animées (`transform`, `opacity`) |
+| Étoiles de notation décoratives | 🟢 | ★★★★★ au-dessus de citations sans nom | Une citation réelle, nommée, mise en page comme une citation |
+| Aucun état pressé | 🟢 | Le bouton reste identique quand on appuie | Un état `:active` (`regles-ui.md` § 4 et § 6) |
 | Liens bleus par défaut | 🟢 | Liens bleu vif soulignés, hors palette | La couleur d'accent et un soulignement décalé |
 
 **Palette devinable : clichés par secteur et autres pistes.** Une autre piste part de la personnalité de l'identité ; c'est une piste à essayer.
