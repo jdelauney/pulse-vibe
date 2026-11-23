@@ -40,7 +40,7 @@ La première version est la plus petite **réellement utilisable** par de vrais 
 ## 6. Contraintes
 
 - **Données personnelles** : {{lesquelles, ou « aucune »}}
-- **Budget mensuel acceptable pour les services** : {{montant et devise, ou 0}}
+- **Budget mensuel pour les services** : {{montant donné par la personne, ou « non précisé : le coût de chaque option se montre au choix des outils »}}
 - **Délai** : {{date ou durée visée pour la première version}}
 - **Appareils** : {{ordinateur, téléphone…}}
 - **Être trouvé** : {{sur Google et par les assistants IA : par qui, avec quels mots (ceux des clients), quelles pages publiques ; ou « non : outil interne, rien dans Google »}}

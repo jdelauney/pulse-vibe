@@ -815,8 +815,9 @@ test("brainstorm et « Penser avant d'écrire » citent les règles communes 4, 
   assert.match(brainstorm, /`pulse:explorer`/);
   assert.match(brainstorm, /seulement si les 3 conditions des règles de la mémoire sont réunies/);
   assert.doesNotMatch(brainstorm, /difficile à défaire, surprenante sans contexte/);
-  // Le test de compréhension porte le principe « la personne raisonne » : gardé mot pour mot.
-  assert.ok(brainstorm.includes("2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief."));
+  // La phrase de synthèse se déduit de l'entretien : la redemander fait poser deux fois la même question.
+  assert.match(brainstorm, /2\. \*\*Phrase de synthèse\*\* : l'écrire soi-même à partir de l'histoire validée/);
+  assert.doesNotMatch(brainstorm, /Présentez votre outil en une phrase/);
   const raisonnement = lire(RACINE, "references", "raisonnement.md");
   assert.match(raisonnement, /^# Penser avant d'écrire \(\/pulse:brainstorm, \/pulse:prd, \/pulse:us, \/pulse:nouveau\)$/m);
   assert.match(raisonnement, /\| AskUserQuestion selon la règle commune 5 \|/);

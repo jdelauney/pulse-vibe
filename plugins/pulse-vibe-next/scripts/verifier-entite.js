@@ -142,6 +142,8 @@ function genererEntite(dossier, descriptions, { description, us }, attendu = 0) 
 /** Prépare le bout en bout dans le dossier temporaire : base PGlite, PGlite hors du paquet du serveur, migrations appliquées. */
 function preparerBoutEnBout(dossier, pglite) {
   fs.writeFileSync(path.join(dossier, "src", "db", "db-client.ts"), DB_CLIENT_PGLITE);
+  // Le test du choix du pilote vise le vrai db-client.ts (déjà passé par npm test) : il part avec lui.
+  fs.rmSync(path.join(dossier, "src", "db", "__tests__", "db-client.test.ts"), { force: true });
   fs.writeFileSync(path.join(dossier, "migrer-pglite.mjs"), MIGRER_PGLITE);
   const config = path.join(dossier, "next.config.ts");
   const texte = fs.readFileSync(config, "utf8");

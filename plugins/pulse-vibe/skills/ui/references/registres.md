@@ -12,7 +12,8 @@ Un « registre » est la famille à laquelle appartient un écran. Chaque famill
 | Exemples d'écrans | Espace de travail, tableau de bord, formulaire, réglages | Page d'accueil publique, présentation d'une offre, portfolio |
 | Test de réussite | Une personne habituée aux meilleurs outils du domaine lui ferait-elle confiance ? La familiarité est une qualité. | Peut-on dire sans hésiter « une IA a fait ça » ? Si oui, c'est raté. |
 | Couleur | Sobre, accent rare | Stratégie plus affirmée possible |
-| Typographie | Lisibilité d'abord ; une seule famille suffit souvent | Titres avec du caractère |
+| Typographie | Lisibilité d'abord ; une seule famille suffit souvent | Titres avec du caractère, un titre d'affiche |
+| Composition | Prévisible : maître-détail, listes, tableaux (`composition.md`) | Une composition par section, avec au moins une rupture d'échelle (`composition.md`) |
 | Densité | Élevée : beaucoup d'information utile visible d'un coup | Aérée : une idée par écran défilé |
 | Mouvement | Court ; le mouvement signale un changement d'état | Une séquence d'ouverture soignée (apparitions décalées, révélation au défilement une fois) |
 | Images | Rares et utiles | Au moins une image forte, obligatoire |

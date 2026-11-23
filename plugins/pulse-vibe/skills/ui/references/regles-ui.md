@@ -29,11 +29,13 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 ## 2. Typographie
 
 - **Échelle** de tailles, avec un rapport fixe entre deux niveaux voisins, choisi selon l'usage : 1,2 à 1,25 pour un outil dense, 1,333 pour un équilibre, 1,5 pour une vitrine.
-- **Interligne** (l'espace entre deux lignes) : 1,5 à 1,6 pour le texte courant, 1,1 à 1,25 pour les titres.
+- **Écarts de taille francs** : le titre de page fait au moins 2 fois le texte courant. En vitrine, un **titre d'affiche** (niveau `affiche` du brandkit, classe `.affiche`) fait au moins 4,5 fois le texte courant sur ordinateur (72 px et plus) et 2,5 fois sur téléphone, avec `clamp()`.
+- **Contraste de graisse** (l'épaisseur du trait) : 300 d'écart au moins entre le titre d'affiche et le texte (800 contre 400 ; ou une affiche fine, 300, à très grande taille), pour que la hiérarchie se lise sans la couleur.
+- **Interligne** (l'espace entre deux lignes) : 1,5 à 1,6 pour le texte courant, 1,1 à 1,25 pour les titres, 0,9 à 1,05 pour le titre d'affiche ; `text-wrap: balance` sur les titres.
 - **Longueur de ligne** : 65 à 75 caractères pour le texte courant.
 - **Corps de texte** ≥ 16 px.
 - **Deux familles de polices au plus.** Quand l'identité le demande, la police des titres se distingue de celle du texte (par exemple, une police à empattements, avec de petits traits au bout des lettres, pour les titres ; une police sans empattements pour le texte).
-- **Grands titres** légèrement resserrés : espacement des lettres de −0,01 à −0,02 em (em : la taille du texte lui-même).
+- **Grands titres** resserrés selon leur taille : espacement des lettres de −0,01 à −0,02 em pour les titres (em : la taille du texte lui-même), de −0,03 à −0,05 em pour le titre d'affiche.
 - **Majuscules** ponctuellement, sur un libellé court de 4 mots au plus ; un paragraphe s'écrit en minuscules.
 - **Tailles en `rem`** (une unité qui suit la taille de texte choisie par la personne dans son système) plutôt qu'en pixels fixes.
 - **Polices « réflexes »** : pour les titres, choisissez une autre police que celles que les IA prennent par défaut : Inter, Roboto, Arial, Open Sans, Poppins, Montserrat, Space Grotesk, DM Sans, Playfair Display, Fraunces. Exception possible avec une raison explicite, écrite dans `docs/design.md`.
@@ -68,6 +70,7 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 ## 5. Mise en page
 
 - **Hiérarchie claire** : une action principale par écran, visuellement la plus forte.
+- **Composition** choisie section par section dans le catalogue de `composition.md`, sans répéter la même deux fois de suite.
 - Réservez les **cartes** (blocs encadrés) aux éléments vraiment indépendants.
 - **Un seul niveau de cartes** (jamais de cartes dans des cartes) : à l'intérieur, séparez par l'espace et des filets.
 - **L'action en place d'abord** ; la **fenêtre modale** (qui s'ouvre par-dessus la page) en second choix.
@@ -77,7 +80,9 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 
 ## 6. Mouvement
 
-- Animer **la position, l'échelle et l'opacité** ; la couleur, seulement pour le survol et le focus.
+Le mouvement est un **système**, défini une fois dans le brandkit (`mouvement` : durées, courbes et décalage, rendus par `pulse-aidd brandkit css` en `--duree-rapide`, `--duree-moyenne`, `--duree-lente`, `--courbe-entree`, `--courbe-sortie` et `--decalage`) ; maquettes et code emploient ces variables.
+
+- Animer **la position, l'échelle et l'opacité** ; la couleur, seulement pour le survol et le focus. Chaque transition nomme ses propriétés (`transition: transform …, opacity …`).
 - **Durées** :
 
 | Interaction | Durée |
@@ -89,9 +94,11 @@ Choisir la **stratégie** avant les couleurs. Une stratégie dit quelle part de 
 | Notification | 300 ms à l'entrée, 200 ms à la sortie |
 | Chargement vers contenu | 250 ms |
 | Changement de page (vitrine) | 300 à 400 ms |
+| Apparition à l'ouverture ou au défilement (vitrine) | 500 à 800 ms par élément |
 
 - **Courbe** : à l'entrée, le mouvement ralentit en arrivant (*ease-out*, par exemple `cubic-bezier(0.25, 1, 0.5, 1)`) ; à la sortie, il accélère en partant (*ease-in*). Le mouvement s'arrête net sur sa position finale. Une vitesse constante sert aux barres de progression et aux indicateurs de chargement qui tournent.
-- **En vitrine**, les apparitions décalées (50 à 60 ms entre deux éléments, 6 éléments au plus) et la révélation au défilement (une seule fois par élément) font partie de la séquence d'ouverture. En outil, le mouvement signale seulement un changement d'état.
+- **Micro-interactions**, dans les deux registres : chaque élément interactif répond au survol, au focus et à la pression. Bouton : fond qui change et légère élévation au survol, échelle 0,97 à 0,98 à la pression (`:active`) ; lien : soulignement qui se trace ; ligne ou bloc cliquable : décalage ou filet révélé ; champ : contour et étiquette marqués au focus ; flèche d'action : petit déplacement dans le sens de l'action.
+- **En vitrine**, les apparitions décalées (50 à 60 ms entre deux éléments, 6 éléments au plus) et la révélation au défilement (une seule fois par élément) font partie de la séquence d'ouverture. La séquence suit l'ordre de lecture : titre d'affiche, texte d'appui, action, image. Un ou deux effets liés au défilement par page au plus (image fixe d'un défilement narratif, léger décalage d'une image, 10 % de sa hauteur au plus). Le titre d'ouverture et l'image principale arrivent par la position seulement et restent visibles dès le premier affichage (vitesse d'affichage). En outil, le mouvement signale seulement un changement d'état.
 - **« Réduire les animations »** (préférence du système, `prefers-reduced-motion`) : un fondu court remplace les déplacements ; vidéos et animations attendent un geste de la personne.
 - **Vidéo** : contrôles visibles, son coupé au départ.
 

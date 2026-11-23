@@ -85,6 +85,42 @@ test("planche : modèle commun rempli, hexadécimal et OKLCH affichés, sans ant
   assert.deepStrictEqual(verifier(html), []);
 });
 
+test("échelle de caractère : vitrine sans affiche, affiche timide, graisses voisines et titre serré relevés", () => {
+  const oranges = (bk) => analyser(bk).constats.filter((c) => c.gravite === "🟠").map((c) => c.message).join("\n");
+  const bk = exemple();
+  bk.registre = "vitrine";
+  assert.match(oranges(bk), /vitrine : ajouter le niveau « affiche »/);
+  bk.typographie.niveaux.unshift({ id: "affiche", police: "titre", taille: 3, graisse: 600, interligne: 1, approche: -0.04, exemple: "Les prêts du quartier" });
+  const m = oranges(bk);
+  assert.match(m, /niveau affiche : 3 fois le texte ; 4,5 fois au moins/);
+  assert.match(m, /niveau affiche : graisse 600 pour 400 au texte/);
+  bk.typographie.niveaux[0] = { ...bk.typographie.niveaux[0], taille: 6, graisse: 700 };
+  bk.typographie.niveaux.find((n) => n.id === "titre-1").taille = 1.5;
+  const m2 = oranges(bk);
+  assert.doesNotMatch(m2, /niveau affiche/);
+  assert.match(m2, /niveau titre-1 : 1,5 fois le texte ; 2 fois au moins/);
+  const c = css(bk, analyser(bk));
+  assert.match(c, /--typo-affiche-taille: 6rem;/);
+  assert.match(c, /\.affiche \{ margin: 0; text-wrap: balance; font: var\(--typo-affiche-graisse\) clamp\(/);
+  assert.match(resume(bk, analyser(bk)), /\| Titre d'affiche \(`--typo-affiche-\*`\) \|/);
+});
+
+test("mouvement : variables écrites, valeurs par défaut sans bloc, rebond et bornes relevés", () => {
+  const bk = exemple();
+  const c = css(bk, analyser(bk));
+  assert.match(c, /--duree-rapide: 140ms; --duree-moyenne: 240ms; --duree-lente: 500ms; --courbe-entree: cubic-bezier\(0\.25, 1, 0\.5, 1\); --courbe-sortie: cubic-bezier\(0\.5, 0, 0\.75, 0\); --decalage: 50ms;/);
+  assert.match(resume(bk, analyser(bk)), /- \*\*Mouvement\*\* : `--duree-rapide` 140 ms/);
+  delete bk.mouvement;
+  assert.ok(analyser(bk).constats.some((x) => x.gravite === "🟠" && x.message.startsWith("« mouvement » manque")));
+  assert.match(css(bk, analyser(bk)), /--duree-moyenne: 300ms;/, "valeurs par défaut");
+  assert.match(resume(bk, analyser(bk)), /valeurs par défaut de Pulse/);
+  bk.mouvement = { durees: { rapide: 150, moyenne: 900, lente: 600 }, courbes: { entree: "cubic-bezier(0.34, 1.56, 0.64, 1)", sortie: "ease" }, decalage: 60 };
+  const { constats } = analyser(bk);
+  assert.ok(constats.some((x) => x.gravite === "🟠" && x.message.includes("mouvement.durees.moyenne : 900 ms")));
+  assert.ok(constats.some((x) => x.gravite === "🟠" && x.message.includes("mouvement.courbes.entree : la courbe dépasse sa cible")));
+  assert.ok(constats.some((x) => x.gravite === "🔴" && x.message.includes("mouvement.courbes.sortie")));
+});
+
 test("css et resume : variables en OKLCH, rôles qui citent les nuances, sections 6 à 8", () => {
   const bk = exemple();
   const a = analyser(bk);

@@ -251,3 +251,84 @@ test("migrations du squelette : construction Vercel précédée de scripts/migre
   for (const attendu of ["expires_at", "NEON_API_KEY", "NEON_PROJECT_ID", 'environnement === "production"', "--en-ligne", "DATABASE_URL_DIRECT", "drizzle.__drizzle_migrations", "NEON_ENDPOINT_PRODUCTION", '"ignore-production"']) assert.ok(migrer.includes(attendu), attendu);
   assert.ok(fs.existsSync(path.join(S, "tests", "migrer.test.ts")));
 });
+
+test("--base neon (par défaut) : Neon pour tout, ni Docker ni scripts de base locale", () => {
+  const d = dossierVide();
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  assert.ok(!fs.existsSync(path.join(d, "docker-compose.yml")));
+  assert.match(lire(d, ".env.example"), /^DATABASE_URL=$/m);
+  assert.match(lire(d, ".env.example"), /branche « dev »/);
+  const { scripts } = JSON.parse(lire(d, "package.json"));
+  assert.ok(!scripts["db:up"] && !scripts["db:down"]);
+  const e = dossierVide();
+  assert.strictEqual(lancer("--nom", "Essai", "--base", "neon", "--dossier", e).status, 0);
+  assert.strictEqual(lire(e, ".env.example"), lire(d, ".env.example"));
+});
+
+test("--base postgres : base PostgreSQL dans Docker en local, adresses locales et scripts db:up / db:down", () => {
+  const d = dossierVide();
+  const r = lancer("--nom", "Essai", "--base", "postgres", "--dossier", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /npm run db:up/);
+  const compose = lire(d, "docker-compose.yml");
+  assert.match(compose, /image: postgres:\d+-alpine/);
+  assert.match(compose, /"127\.0\.0\.1:5432:5432"/, "la base répond seulement sur ce poste");
+  assert.match(compose, /- donnees:\/var\/lib\/postgresql\n/, "volume nommé, chemin des images 18 et plus");
+  assert.match(compose, /pg_isready/, "état de santé, attendu par --wait");
+  const env = lire(d, ".env.example");
+  assert.match(env, /^DATABASE_URL=postgresql:\/\/postgres:postgres@localhost:5432\/app$/m);
+  assert.match(env, /^DATABASE_URL_DIRECT=postgresql:\/\/postgres:postgres@localhost:5432\/app$/m);
+  assert.match(env, /^SITE_URL=$/m);
+  assert.match(env, /^PULSE_ENV=$/m);
+  const paquet = JSON.parse(lire(d, "package.json"));
+  assert.strictEqual(paquet.name, "essai");
+  assert.strictEqual(paquet.scripts["db:up"], "docker compose up -d --wait");
+  assert.strictEqual(paquet.scripts["db:down"], "docker compose down");
+  assert.strictEqual(paquet.scripts["db:migrate"], "drizzle-kit migrate", "scripts du squelette gardés");
+  assert.ok(paquet.dependencies.pg, "pilote node-postgres");
+  assert.ok(!fs.existsSync(path.join(d, "package.json.template")));
+  // Deuxième passage : rien ne change.
+  const avant = lire(d, "package.json");
+  assert.strictEqual(lancer("--nom", "Essai", "--base", "postgres", "--dossier", d).status, 0);
+  assert.strictEqual(lire(d, "package.json"), avant);
+});
+
+test("--base postgres sur un package.json existant : les scripts manquants s'ajoutent, les autres restent", () => {
+  const d = dossierVide();
+  fs.writeFileSync(path.join(d, "package.json"), JSON.stringify({ name: "existant", scripts: { "db:up": "mon-script" } }));
+  const r = lancer("--nom", "Essai", "--base", "postgres", "--dossier", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /Complétés : .*package\.json \(1 script\)/);
+  const paquet = JSON.parse(lire(d, "package.json"));
+  assert.deepStrictEqual(paquet.scripts, { "db:up": "mon-script", "db:down": "docker compose down" });
+});
+
+test("--base inconnue : message et code 1, rien n'est écrit", () => {
+  const d = dossierVide();
+  const r = lancer("--nom", "Essai", "--base", "mariadb", "--dossier", d);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /Base inconnue : mariadb\. Valeurs possibles : neon, postgres/);
+  assert.deepStrictEqual(fs.readdirSync(d), []);
+});
+
+test("client de la base : pilote choisi selon l'adresse, par une fabrique, même type Db", () => {
+  const S = path.join(__dirname, "..", "templates", "squelette");
+  const client = fs.readFileSync(path.join(S, "src", "db", "db-client.ts"), "utf8");
+  for (const attendu of [
+    'from "drizzle-orm/neon-serverless"',
+    'from "drizzle-orm/node-postgres"',
+    'import { Pool as PoolPostgres } from "pg";',
+    "export type Db = PgDatabase<PgQueryResultHKT>;",
+    "export class FabriqueDeBase",
+    "constructor(private readonly adresse: string)",
+    "const HOTE_NEON = /\\.neon\\.tech$/i;",
+    "new FabriqueDeBase(env.DATABASE_URL).creer()",
+  ])
+    assert.ok(client.includes(attendu), `db-client.ts : ${attendu}`);
+  assert.ok(fs.existsSync(path.join(S, "src", "db", "__tests__", "db-client.test.ts")), "test du choix du pilote");
+  const paquet = JSON.parse(fs.readFileSync(path.join(S, "package.json"), "utf8"));
+  assert.ok(paquet.dependencies.pg && paquet.devDependencies["@types/pg"], "pg et ses types");
+  // migrer.mjs reconnaît Neon à la même règle et ne sauvegarde par une branche Neon qu'une base Neon.
+  const migrer = fs.readFileSync(path.join(S, "scripts", "migrer.mjs"), "utf8");
+  for (const attendu of ["export function estNeon(adresse)", "/\\.neon\\.tech$/i", "!estNeon(adresse)", 'await import("pg")']) assert.ok(migrer.includes(attendu), `migrer.mjs : ${attendu}`);
+});

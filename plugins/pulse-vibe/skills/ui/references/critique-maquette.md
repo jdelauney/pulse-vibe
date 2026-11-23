@@ -29,3 +29,4 @@ Dans `retenue/critique.md` (ou `critique-<k>.md`), d'après la réponse d'ui-cri
 - **Verdict** : la note sur 50 calculée, avec les nombres de constats d'ui-critic.
 - **Constats** : ajouter les écarts des juges, rubrique `Hiérarchie` ou `Usage` selon ce qu'ils décrivent, la capture en colonne « Fichier » (`captures/<fichier>.png`). Un écart déjà relevé par ui-critic ne s'ajoute pas une seconde fois.
 - **Fait par une IA** : si un juge répond « oui », ajouter un constat 🟠, rubrique `Anti-pattern`, avec les signes qu'il cite.
+- **Compositions** : une section qu'un juge relève comme « gabarit » devient un constat 🟠, rubrique `Hiérarchie`, avec la composition du catalogue (`composition.md`) qui lui conviendrait.

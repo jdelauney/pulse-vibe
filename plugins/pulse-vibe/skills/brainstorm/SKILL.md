@@ -40,7 +40,7 @@ Branches de départ habituelles (à adapter aux réponses) :
 | Ronde typique | Branches |
 |---|---|
 | 1 | **clé** l'idée en une phrase (si l'argument est vide) · **clé** les acteurs · **clé** comment ça se passe aujourd'hui et ce qui coince · **clé** ce qui ferait dire « ça m'aide vraiment » dans un mois |
-| 2 | **la validation de l'histoire** (premier jet, voir § 3) · les contraintes connues (données personnelles, budget mensuel, délai) |
+| 2 | **la validation de l'histoire** (premier jet, voir § 3) · les contraintes connues (données personnelles, délai) |
 | 3 et + | les zones d'ombre révélées par l'histoire : **clé** la règle métier centrale, puis règles secondaires, cas limites, mots ambigus |
 
 **Travail en cours** : après chaque ronde ou question clé, mettre à jour `aidd_docs/tasks/in-progress.md` (règle commune 16) avec les décisions prises, les mots tranchés et la prochaine question. L'effacer (`pulse-aidd travail-fini`) après l'écriture du brief.
@@ -96,7 +96,7 @@ La conversation principale mène l'entretien et écrit le brief, le glossaire et
 L'entretien est terminé quand **la frontière est vide** : toutes les branches visitées, tout dit explicitement (ou quand la personne choisit de s'arrêter).
 
 1. Présenter un **récapitulatif** court : la phrase de synthèse, l'histoire, les décisions prises (« ✔ … »), les mots ajoutés au glossaire, les questions restées ouvertes.
-2. **Test de compréhension** : demander, dans la conversation : « Présentez votre outil en une phrase, comme vous le feriez à un client. » Cette phrase devient la phrase de synthèse du brief. Si elle s'écarte de l'histoire validée (un acteur ou un besoin absent, un autre centre de gravité), le dire et en parler avant de rédiger. Puis demander (AskUserQuestion) : « Rédiger le brief (Recommandé) » / « Je veux corriger quelque chose ».
+2. **Phrase de synthèse** : l'écrire soi-même à partir de l'histoire validée (pour qui, quel problème, ce que l'outil change), avec les mots de la personne, et la montrer dans le récapitulatif ; une phrase déjà donnée par l'argument se reprend telle quelle. Puis demander (AskUserQuestion) : « Rédiger le brief (Recommandé) » / « Je veux corriger quelque chose ».
 
 ### Rédiger
 

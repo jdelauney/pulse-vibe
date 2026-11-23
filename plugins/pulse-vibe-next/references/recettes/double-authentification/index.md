@@ -4,14 +4,14 @@
 
 ## Prérequis
 
-- Recettes `connexion` et `email` appliquées : `creerAuth` avec son `envoyeur`, `EmailsCompte`, `utilisateurConnecte()` (avec `email`), « Mon compte » de la recette `email` (sections `aria-labelledby`), Mailpit et les aides Playwright `e2e/aides/connexion.ts` et `e2e/aides/mailpit.ts`.
+- Recettes `connexion`, `envoi-email` et `email` appliquées : `creerAuth` avec son `envoyeur` (un `EnvoyeurEmail` de `envoi-email`), `EmailsCompte`, `utilisateurConnecte()` (avec `email`), « Mon compte » de la recette `email` (sections `aria-labelledby`), Mailpit et les aides Playwright `e2e/aides/connexion.ts` (recette `email`) et `e2e/aides/mailpit.ts` (recette `envoi-email`).
 - Aucun paquet nouveau : le plugin `twoFactor` est inclus dans `better-auth` (`better-auth/plugins/two-factor` ; recette vérifiée avec better-auth 1.7.25).
 - Recette `limite` conseillée : elle borne les essais de code et les renvois (étape 7 de `limite`).
-- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,email,double-authentification` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration, construction. Le test de bout en bout (`e2e/double-authentification.spec.ts`, avec Mailpit) se lance à la main.
+- Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `connexion,envoi-email,email,double-authentification` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration, construction. Le test de bout en bout (`e2e/double-authentification.spec.ts`, avec Mailpit) se lance à la main.
 
 ## Variables d'environnement
 
-Aucune nouvelle variable : le code part par le serveur d'e-mail de la recette `email`.
+Aucune nouvelle variable : le code part par le serveur d'e-mail de la recette `envoi-email`.
 
 ## Fichiers créés ou modifiés
 
@@ -140,7 +140,7 @@ Le code des tests : `pulse-aidd pile recette double-authentification tests`
 
 - better-auth 1.7.25, code du paquet (lu le 2026-11-16) : `dist/plugins/two-factor/index.mjs` (`enableTwoFactor` avec `method: "otp"`, `disableTwoFactor`, crochet après `/sign-in/email` qui supprime la session et pose le cookie `two_factor`, `twoFactorCookieMaxAge`) ; `dist/plugins/two-factor/otp/index.mjs` (`otpOptions` : `period` en minutes, `digits`, `allowedAttempts`, `storeOTP`, `sendOTP` envoyé par `runInBackgroundOrAwait`) ; `dist/plugins/two-factor/verify-two-factor.mjs` ; `dist/plugins/two-factor/error-code.mjs` (codes d'erreur) ; tables : `npx auth@1.7.25 generate` avec le plugin
 - https://www.better-auth.com/docs/plugins/2fa
-- Rejoué le 2026-11-16 par `verifier-recettes.js` (chaîne `connexion,email,double-authentification`) : contrôles, types, tests, construction.
+- Rejoué le 2026-11-23 (better-auth 1.7.27) par `verifier-recettes.js` (chaîne `connexion,envoi-email,email,double-authentification`) : contrôles, types, tests, construction.
 
 ## Points à vérifier
 

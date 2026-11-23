@@ -18,12 +18,13 @@ const STYLE_PROPRE = [
   "body { background: var(--fond); color: var(--texte); }",
   "h1 { font-family: var(--police-titre); }",
   "a:focus-visible, button:focus-visible { outline: 2px solid var(--texte); outline-offset: 2px; }",
+  "button:active { transform: scale(0.98); }",
   ".b { transition: opacity 150ms cubic-bezier(0.25, 1, 0.5, 1); }",
   "@media (prefers-reduced-motion: reduce) { .b { transition: none; } }",
   ".x::before { content: \"—\"; }",
 ].join("\n");
 const CORPS_PROPRE = "<h1>Factures de mars</h1>\n<button aria-label=\"Fermer\"><svg aria-hidden=\"true\"></svg></button>\n<p>3 factures à régler © Pulse</p>";
-const page = ({ style = STYLE_PROPRE, corps = CORPS_PROPRE, html = "<html lang=\"fr\">" } = {}) =>
+const page = ({ style = STYLE_PROPRE, corps = CORPS_PROPRE, html = "<html lang=\"fr\" data-registre=\"outil\">" } = {}) =>
   `<!doctype html>\n${html}\n<head>\n<style>\n${style}\n</style>\n</head>\n<body>\n${corps}\n</body>\n</html>\n`;
 const ids = (h) => verifier(h).map((c) => c.id);
 
@@ -37,7 +38,7 @@ test("chaque anti-pattern détectable est relevé, avec sa gravité", () => {
     verre: page({ style: STYLE_PROPRE + "\n.panneau { backdrop-filter: blur(12px); }" }),
     lisere: page({ style: STYLE_PROPRE + "\n.carte { border-left: 4px solid var(--texte); }" }),
     focus: page({ style: STYLE_PROPRE.replace(/^a:focus-visible.*$/m, "") }),
-    langue: page({ html: "<html>" }),
+    langue: page({ html: "<html data-registre=\"outil\">" }),
     police: page({ style: STYLE_PROPRE + "\nh2 { font-family: \"Fraunces\", serif; }" }),
     couleur: page({ style: STYLE_PROPRE + "\n.alerte { color: #d33; }" }),
     oklch: page({ style: STYLE_PROPRE.replace("--texte: oklch(0.2 0.01 80)", "--texte: #2b2620") }),
@@ -47,13 +48,35 @@ test("chaque anti-pattern détectable est relevé, avec sa gravité", () => {
     tiret: page({ corps: CORPS_PROPRE + "\n<p>Simple — et rapide</p>" }),
     emoji: page({ corps: CORPS_PROPRE + "\n<button>🚀 Lancer</button>" }),
     icone: page({ corps: CORPS_PROPRE + "\n<button><svg viewBox=\"0 0 24 24\"></svg></button>" }),
+    registre: page({ html: "<html lang=\"fr\">" }),
+    violet: page({ style: STYLE_PROPRE + "\n:root { --marque: oklch(0.55 0.22 295); }\n.ouverture { background: linear-gradient(135deg, var(--texte), var(--marque)); }" }),
+    halo: page({ style: STYLE_PROPRE + "\n.tache { filter: blur(80px); }" }),
+    generique: page({ corps: CORPS_PROPRE + "\n<h2>Pourquoi nous choisir ?</h2>" }),
+    immobile: page({ html: "<html lang=\"fr\" data-registre=\"vitrine\">" }),
+    tout: page({ style: STYLE_PROPRE + "\n.carte { transition: all 200ms ease-out; }" }),
+    etoiles: page({ corps: CORPS_PROPRE + "\n<p>★★★★★ Très bien</p>" }),
+    presse: page({ style: STYLE_PROPRE.replace(/^button:active.*$/m, "") }),
   };
   assert.deepStrictEqual(Object.keys(cas).sort(), CONSTATS.map((c) => c.id).sort(), "un cas par constat");
   for (const [id, h] of Object.entries(cas)) assert.deepStrictEqual(ids(h), [id], id);
   const gravite = (id) => CONSTATS.find((c) => c.id === id).gravite;
   for (const id of ["degrade", "verre", "lisere", "focus", "langue"]) assert.strictEqual(gravite(id), "🔴", id);
-  for (const id of ["police", "couleur", "oklch", "remplissage", "rebond", "animations"]) assert.strictEqual(gravite(id), "🟠", id);
-  for (const id of ["tiret", "emoji", "icone"]) assert.strictEqual(gravite(id), "🟢", id);
+  for (const id of ["police", "couleur", "oklch", "remplissage", "rebond", "animations", "registre", "violet", "halo", "generique", "immobile"]) assert.strictEqual(gravite(id), "🟠", id);
+  for (const id of ["tiret", "emoji", "icone", "tout", "etoiles", "presse"]) assert.strictEqual(gravite(id), "🟢", id);
+});
+
+test("dégradés : violet relevé, en hexadécimal comme en OKLCH ; dégradé de la marque dans une autre teinte sans constat", () => {
+  assert.deepStrictEqual(ids(page({ style: STYLE_PROPRE + "\n.b2 { background: linear-gradient(90deg, #6366f1, #a855f7); }" })), ["couleur", "violet"]);
+  assert.deepStrictEqual(ids(page({ style: STYLE_PROPRE + "\n:root { --ocre: oklch(0.6 0.12 60); }\n.b2 { background: linear-gradient(var(--fond), var(--ocre)); }" })), []);
+  assert.deepStrictEqual(ids(page({ style: STYLE_PROPRE + "\n:root { --ciel: oklch(0.62 0.15 240); }\n.b2 { background: linear-gradient(var(--fond), var(--ciel)); }" })), [], "bleu seul : hors de la plage violette");
+});
+
+test("vitrine qui bouge, titre propre au projet, petit flou : sans constat", () => {
+  const vitrine = page({ html: "<html lang=\"fr\" data-registre=\"vitrine\">", style: STYLE_PROPRE + "\n@keyframes arrivee { from { transform: translateY(1.5rem); } }\n.ombre-douce { filter: blur(4px); }" });
+  assert.deepStrictEqual(ids(vitrine), []);
+  assert.deepStrictEqual(ids(page({ corps: CORPS_PROPRE + "\n<h2>Nos services de prêt, du lundi au samedi</h2>\n<h2>Comment rendre un livre en retard</h2>" })), ["generique"], "« Nos services » en tête de titre");
+  const titres = require(SCRIPT).titresGeneriques();
+  assert.ok(titres.includes("pourquoi nous choisir") && titres.includes("nos services"), titres.join(", "));
 });
 
 test("numéro de ligne exact ; variable de police de titre réflexe relevée", () => {

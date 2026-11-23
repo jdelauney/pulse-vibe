@@ -79,7 +79,7 @@ Une fiche par variable du squelette et des recettes, lue par `pulse-aidd pile se
 
 ### `SMTP_PASSWORD`
 
-- **Rôle** : mot de passe d'envoi des e-mails (recette `email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages, pas des secrets).
+- **Rôle** : mot de passe d'envoi des e-mails (recette `envoi-email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages, pas des secrets).
 - **Où renouveler** : chez le fournisseur d'e-mail du projet. Principe commun : créer le nouvel identifiant d'envoi **avant** de supprimer l'ancien.
   - **Gmail** (mot de passe d'application) : https://myaccount.google.com/apppasswords → créer (nom = le projet) → copier → plus tard, supprimer l'ancien dans la même liste. Exige la validation en deux étapes ; indisponible pour certains comptes professionnels. Changer le mot de passe du compte Google révoque **tous** ses mots de passe d'application.
   - **Infomaniak** : Manager → Service Mail → l'adresse → onglet **Appareils** : ajouter un appareil (nouveau mot de passe), puis **Déconnecter l'appareil** ancien.

@@ -28,7 +28,7 @@ Chercher d'abord les réponses dans `docs/brief.md` et `docs/prd.md` ; poser à 
 6. **Plateformes** : ordinateur, téléphone, les deux ? Navigateur ou application installée ?
 7. **Référencement** : l'outil doit-il être trouvé par les moteurs de recherche ?
 8. **Hors-ligne** : doit-il fonctionner sans connexion internet ?
-9. **Budget** : combien la personne accepte-t-elle de payer par mois, aujourd'hui et dans 6 mois ?
+9. **Budget** : se lit dans le brief ou le PRD s'il y figure ; sinon, chaque option montre son coût mensuel (aujourd'hui et dans 6 mois), et la personne tranche en choisissant.
 10. **Expérience** : la personne ou son équipe connaît-elle déjà une technologie ? Est-elle accompagnée d'un développeur ?
 11. **Contraintes et exclusions** : une technologie imposée par le client, l'employeur ou un outil existant ? Une technologie que la personne refuse ?
 

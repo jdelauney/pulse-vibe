@@ -11,7 +11,9 @@
 // Contrôles du rendu : page plus large que l'écran (aussi à 320 px), cibles tactiles sous 44 × 44 px sur téléphone,
 // image non chargée, cartes dans des cartes, grille de cartes identiques, champ sans étiquette visible, petites étiquettes
 // en capitales au-dessus des titres (une pour trois sections au plus), nombres de tableau mal alignés ; police web non
-// chargée signalée (les captures montrent alors la police de secours).
+// chargée signalée (les captures montrent alors la police de secours) ; échelle typographique (plus grand titre rapporté au
+// texte courant, seuils selon data-registre et la largeur), sections bâties sur le même modèle, tout centré, composition
+// sans rupture (vitrine), pastille au-dessus du titre d'ouverture, icônes en série dans des carrés arrondis colorés.
 // Codes de sortie : 0 aucun 🔴 ; 1 au moins un 🔴 ; 2 usage ou chemin introuvable ; 3 aucun navigateur, ou lancement impossible.
 "use strict";
 
@@ -142,6 +144,76 @@ function releverPage(L) {
     } else sortie.sansEtiquette.push(decrire(el) + (el.placeholder ? " (texte d'exemple seul : « " + el.placeholder.slice(0, 30) + " »)" : ""));
   }
 
+  // Échelle typographique : le plus grand titre (h1, h2, .affiche) rapporté au texte courant (médiane des paragraphes).
+  sortie.registre = (document.documentElement.getAttribute("data-registre") || "").toLowerCase();
+  const titres = [...document.querySelectorAll("h1, h2, .affiche")].filter(visible);
+  if (titres.some((t) => t.matches("h1, .affiche"))) {
+    const tailles = [...document.querySelectorAll("p, li, dd")].filter((e) => visible(e) && e.textContent.trim().length >= 40).map((e) => parseFloat(getComputedStyle(e).fontSize)).sort((a, b) => a - b);
+    const corps = tailles.length ? tailles[Math.floor(tailles.length / 2)] : parseFloat(getComputedStyle(document.body).fontSize);
+    sortie.typo = { corps, titre: Math.max(...titres.map((t) => parseFloat(getComputedStyle(t).fontSize))) };
+  }
+
+  // Composition des sections : colonnes de la première rangée, inégales ou non, titre centré, média plein cadre.
+  const transparent = (c) => !c || c === "transparent" || /rgba\(.*,\s*0\)$/.test(c);
+  const hauts = [...document.querySelectorAll("section")].filter((s) => visible(s) && !s.parentElement.closest("section"));
+  const racine = document.querySelector("main") || document.body;
+  const blocs = (hauts.length >= 3 ? hauts : [...racine.children].filter((e) => visible(e) && !/^(HEADER|FOOTER|NAV|SCRIPT|STYLE)$/.test(e.tagName))).filter((s) => s.getBoundingClientRect().height >= 160);
+  sortie.compositions = blocs.map((s) => {
+    const rs = s.getBoundingClientRect();
+    let colonnes = 1;
+    let inegales = false;
+    const parcourir = (el, profondeur) => {
+      const enfants = [...el.children].filter((e) => visible(e) && e.getBoundingClientRect().width >= 60);
+      if (enfants.length >= 2) {
+        const haut = Math.min(...enfants.map((e) => e.getBoundingClientRect().top));
+        const rangee = enfants.filter((e) => Math.abs(e.getBoundingClientRect().top - haut) <= 12);
+        if (rangee.length > colonnes) {
+          colonnes = rangee.length;
+          const l = rangee.map((e) => e.getBoundingClientRect().width);
+          inegales = rangee.length <= 3 && Math.max(...l) / Math.min(...l) >= 1.4;
+        }
+      }
+      if (profondeur < 4) for (const e of enfants) parcourir(e, profondeur + 1);
+    };
+    parcourir(s, 0);
+    const titre = s.querySelector("h1, h2, h3, .affiche");
+    let centre = false;
+    if (titre && visible(titre)) {
+      const rt = titre.getBoundingClientRect();
+      centre = getComputedStyle(titre).textAlign === "center" || (rt.width < rs.width * 0.8 && Math.abs(rt.left + rt.width / 2 - (rs.left + rs.width / 2)) < 4);
+    }
+    const medias = [...s.querySelectorAll("img, video, picture, svg, canvas, *")].filter((e) => {
+      if (!visible(e)) return false;
+      const r = e.getBoundingClientRect();
+      if (r.width < L * 0.95 || r.height < 240) return false;
+      return /^(IMG|VIDEO|PICTURE|SVG|CANVAS)$/i.test(e.tagName) || getComputedStyle(e).backgroundImage !== "none";
+    });
+    const image = [...s.querySelectorAll("img, video, picture")].some((e) => {
+      const r = e.getBoundingClientRect();
+      return visible(e) && r.width * r.height > rs.width * rs.height * 0.1;
+    });
+    return { signature: `${colonnes} colonne(s)${centre ? ", titre centré" : ""}${image ? ", image" : ""}`, colonnes, inegales, centre, titre: Boolean(titre), plein: medias.length > 0 };
+  });
+
+  // Pastille posée juste au-dessus du premier titre.
+  const h1 = [...document.querySelectorAll("h1")].find(visible);
+  const avant = h1 && h1.previousElementSibling;
+  if (avant && visible(avant)) {
+    const r = avant.getBoundingClientRect();
+    const s = getComputedStyle(avant);
+    const mots = avant.textContent.trim().split(/\s+/).filter(Boolean).length;
+    const habillee = !transparent(s.backgroundColor) || parseFloat(s.borderTopWidth) > 0;
+    if (r.height <= 44 && mots && mots <= 6 && habillee && parseFloat(s.borderTopLeftRadius) >= r.height / 2 - 1) sortie.pastille = decrire(avant);
+  }
+
+  // Icônes posées dans un carré arrondi coloré.
+  sortie.iconesCarrees = tous.filter((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width < 28 || r.width > 80 || Math.abs(r.width - r.height) > 2 || el.textContent.trim()) return false;
+    const s = getComputedStyle(el);
+    return el.querySelectorAll("svg").length === 1 && !transparent(s.backgroundColor) && parseFloat(s.borderTopLeftRadius) > 0;
+  }).length;
+
   // Nombres des tableaux : alignés à droite, chiffres de même largeur.
   for (const td of document.querySelectorAll("tbody td")) {
     if (!visible(td)) continue;
@@ -195,6 +267,40 @@ async function capturerEcrans(page, largeur, max, prefixe) {
   return { fichiers, coupee: n > max ? n : 0 };
 }
 
+/** Seuils de regles-ui.md § 2 : le plus grand titre rapporté au texte courant. */
+const SEUIL_TITRE = (registre, largeur) => (registre !== "vitrine" ? 2 : largeur >= 1024 ? 4.5 : 2.5);
+
+/** Échelle typographique, composition et tics d'IA visibles dans le rendu (regles-ui.md § 2, composition.md, anti-patterns.md). */
+function constatsDeComposition(releve, largeur) {
+  const constats = [];
+  const vitrine = releve.registre === "vitrine";
+  const virgule = (n) => String(Math.round(n * 10) / 10).replace(".", ",");
+  if (releve.typo) {
+    const fois = releve.typo.titre / releve.typo.corps;
+    const seuil = SEUIL_TITRE(releve.registre, largeur);
+    if (fois < seuil)
+      constats.push({ gravite: "🟠", nom: `Échelle typographique timide : le plus grand titre fait ${virgule(fois)} fois le texte (${Math.round(releve.typo.titre)} px pour ${Math.round(releve.typo.corps)} px), ${virgule(seuil)} fois au moins${vitrine ? " en vitrine à cette largeur" : ""}`, source: "regles-ui.md" });
+  }
+  const sections = releve.compositions || [];
+  if (largeur >= 1024 && sections.length >= 3) {
+    if (vitrine)
+      for (let k = 0; k + 2 < sections.length; k++)
+        if (sections[k].signature === sections[k + 1].signature && sections[k].signature === sections[k + 2].signature) {
+          constats.push({ gravite: "🟠", nom: `Sections bâties sur le même modèle : sections ${k + 1} à ${k + 3} (${sections[k].signature})`, source: "anti-patterns.md" });
+          break;
+        }
+    const avecTitre = sections.filter((s) => s.titre);
+    if (avecTitre.length >= 3 && avecTitre.filter((s) => s.centre).length / avecTitre.length >= 0.75)
+      constats.push({ gravite: "🟠", nom: `Tout est centré : ${avecTitre.filter((s) => s.centre).length} titres de section sur ${avecTitre.length}`, source: "anti-patterns.md" });
+    const affiche = releve.typo && releve.typo.titre / releve.typo.corps >= 6;
+    if (vitrine && !sections.some((s) => s.inegales || s.plein) && !affiche)
+      constats.push({ gravite: "🟠", nom: "Composition sans rupture : ni colonnes inégales, ni plein cadre, ni titre d'affiche", source: "composition.md" });
+  }
+  if (releve.pastille) constats.push({ gravite: "🟠", nom: `Pastille au-dessus du titre d'ouverture : ${releve.pastille}`, source: "anti-patterns.md" });
+  if (releve.iconesCarrees >= 3) constats.push({ gravite: "🟠", nom: `Icônes dans des carrés arrondis colorés, en série : ${releve.iconesCarrees}`, source: "anti-patterns.md" });
+  return constats;
+}
+
 function constatsDuRendu(releve, largeur) {
   const constats = [];
   if (releve.depassent.length || releve.largeur > largeur + 1)
@@ -208,6 +314,7 @@ function constatsDuRendu(releve, largeur) {
   if (releve.etiquetteCachee.length) constats.push({ gravite: "🟠", nom: `Champ sans étiquette visible (nom lu seulement par les lecteurs d'écran) : ${releve.etiquetteCachee.length} (${exemples(releve.etiquetteCachee)})`, source: SOURCE });
   const permises = Math.ceil(releve.sections / 3);
   if (releve.etiquettes > permises) constats.push({ gravite: "🟠", nom: `Petites étiquettes en capitales au-dessus des titres : ${releve.etiquettes} pour ${releve.sections} section(s), ${permises} au plus`, source: "anti-patterns.md" });
+  constats.push(...constatsDeComposition(releve, largeur));
   if (releve.nombresGauche) constats.push({ gravite: "🟢", nom: `Nombres de tableau non alignés à droite : ${releve.nombresGauche} cellule(s)`, source: "motifs.md" });
   if (releve.nombresVariables) constats.push({ gravite: "🟢", nom: `Nombres de tableau sans chiffres de même largeur (font-variant-numeric: tabular-nums) : ${releve.nombresVariables} cellule(s)`, source: "motifs.md" });
   return constats;
@@ -306,4 +413,4 @@ async function principal(args) {
 
 if (require.main === module) principal(process.argv.slice(2)).then((code) => (process.exitCode = code));
 
-module.exports = { principal, largeurs, pages };
+module.exports = { principal, largeurs, pages, constatsDeComposition };

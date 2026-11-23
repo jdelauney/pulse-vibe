@@ -4,7 +4,7 @@ Ces références décrivent **comment écrire** le code, quelle que soit **la te
 
 1. **Vérifier dans le projet avant d'utiliser** : un fichier, un module, une table ou une bibliothèque est tenu pour existant une fois vu dans le projet. Les noms des exemples sont des exemples.
 2. **Technologie, organisation et commandes** : « Pile retenue », « Organisation des fichiers » et « Commandes du projet » de `docs/technical.md`, sinon le code existant. Syntaxe et API de la technologie retenue : documentation officielle, consultée à chaque fois.
-3. **Priorité** en cas de conflit : code et conventions existants → `CLAUDE.md` et mémoire du projet → règles communes et checklist sécurité → ces références. Exception : la conception en classes (`clean-code` §5 bis) s'applique au nouveau code même si le code existant est écrit autrement, sauf choix contraire écrit dans `docs/technical.md` ou la mémoire.
+3. **Priorité** en cas de conflit : code et conventions existants → `CLAUDE.md` et mémoire du projet → règles communes et checklist sécurité → ces références. Exception : la conception en classes (`clean-code` §5 bis) et les niveaux de composants (`composants` §2) valent pour le nouveau code, même si l'existant diffère, sauf choix contraire écrit dans `docs/technical.md` ou la mémoire.
 
 | Fichier | Contenu | Chargement |
 |---|---|---|

@@ -45,6 +45,9 @@ test("--dernieres --majeures : toutes les versions montent", () => {
   assert.deepStrictEqual(paquet, { dependencies: { next: "17.0.0" }, devDependencies: { vitest: "5.1.0" } });
   assert.strictEqual(lireArguments(["--dernieres", "--majeures"]).majeures, true);
   assert.throws(() => lireArguments(["--inconnue"]), /Option inconnue/);
+  assert.strictEqual(lireArguments([]).base, "neon");
+  assert.strictEqual(lireArguments(["--base", "postgres"]).base, "postgres");
+  assert.throws(() => lireArguments(["--base", "mariadb"]), /Base inconnue/);
 });
 
 test("CI hebdomadaire : mineures et majeures en demandes de fusion séparées, recettes vérifiées", () => {

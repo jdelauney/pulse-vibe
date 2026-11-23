@@ -64,7 +64,7 @@ drizzle/                          migrations
 | `src/features/` | `core/`, `db/`, `adapters/`, `components/`, `lib/`, `config/`, `hooks/`, `stores/` | `app/` |
 | `app/` | tout : c'est l'assemblage | — |
 
-- Exception : `src/adapters/auth/` importe aussi `src/db/` (tables de Better Auth), déclarée dans `biome.json`. `auth.adapter.ts` assemble aussi son détecteur de mots de passe compromis depuis `src/adapters/hibp/` (recette `connexion`) et son expéditeur d'e-mails depuis `src/adapters/email/` (recette `email`).
+- Exception : `src/adapters/auth/` importe aussi `src/db/` (tables de Better Auth), déclarée dans `biome.json`. `auth.adapter.ts` assemble aussi son détecteur de mots de passe compromis depuis `src/adapters/hibp/` (recette `connexion`) et son expéditeur d'e-mails par `getEnvoyeurEmail()` de `src/adapters/email/` (recettes `envoi-email` et `email`).
 - Un adapter qui sert de garde côté serveur (ex. `src/adapters/turnstile/`, recette `formulaire-public`) peut lire les en-têtes de la requête (`next/headers`) et renvoyer l'erreur d'action (`returnServerError`).
 - La limite de requêtes s'assemble dans `src/lib/limite.ts` (recette `limite`) : ce fichier choisit le limiteur (`src/db/limite/`, `src/adapters/limite/` ou la mémoire), lit les en-têtes de la requête et renvoie l'erreur d'action. C'est le seul fichier de `src/lib/` qui importe `src/db/`.
 
