@@ -111,3 +111,18 @@ test("adaptateur d'un serveur : usages refusés (code 1)", () => {
   assert.strictEqual(repondre(["netlify", "ls"]).code, 1);
   assert.strictEqual(repondre(["docker", "inconnue"]).code, 1);
 });
+
+test("recette fichiers : les blocs du stockage noté dans docs/technical.md ; s3 sur Vercel, dossier par défaut sur un serveur", () => {
+  const avecStockage = (hebergement, stockage) => {
+    const d = projet(hebergement);
+    fs.appendFileSync(path.join(d, "docs", "technical.md"), `**Stockage des fichiers** : ${stockage}\n`);
+    return d;
+  };
+  const adapter = (d) => lancer(d, ["recette", "fichiers", "etape", "6"]).stdout.includes("export class StockageS3Adapter");
+  const disque = (d) => lancer(d, ["recette", "fichiers", "etape", "dossier-du-serveur"]).stdout.includes("export class StockageDisqueAdapter");
+  assert.ok(adapter(projet(null)) && !disque(projet(null)), "Vercel : s3");
+  assert.ok(adapter(avecStockage("vercel", "dossier")), "Vercel : s3 même si dossier est noté");
+  assert.ok(!adapter(projet("serveur")) && disque(projet("serveur")), "serveur : dossier sans la ligne");
+  assert.ok(adapter(avecStockage("docker", "s3")) && !disque(avecStockage("docker", "s3")), "docker avec s3");
+  assert.ok(!adapter(avecStockage("serveur", "dossier")) && disque(avecStockage("serveur", "dossier")), "serveur avec dossier");
+});

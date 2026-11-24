@@ -49,7 +49,7 @@ import { returnServerError } from "next-safe-action";
 import { MESSAGES_FICHIER } from "../constants/erreur-messages";
 import { idFichierSchema } from "../schemas/fichier.schema";
 
-// 2. Après l'envoi par le navigateur : le serveur vérifie ce que R2 a vraiment reçu.
+// 2. Après l'envoi par le navigateur : le serveur vérifie ce que le stockage a vraiment reçu.
 export const confirmerEnvoiAction = actionConnectee
   .metadata({ nom: "confirmerEnvoi" })
   .inputSchema(idFichierSchema)
@@ -125,10 +125,7 @@ import { DrizzleFichierRepository } from "@src/db/fichiers/fichier.repository";
 
 /** Le fichier envoyé de cette personne, ou null (inconnu, en attente, ou à quelqu'un d'autre). */
 export async function trouverFichier(id: string, utilisateurId: string) {
-  return new DrizzleFichierRepository(getDb()).trouverEnvoye(
-    id,
-    utilisateurId,
-  );
+  return new DrizzleFichierRepository(getDb()).trouverEnvoye(id, utilisateurId);
 }
 ```
 

@@ -102,16 +102,15 @@ Une fiche par variable du squelette et des recettes, lue par `pulse-aidd pile se
 - **Traces** : journal des envois du fournisseur (volumes, rebonds, plaintes).
 - Sources : https://support.google.com/accounts/answer/185833 ; https://www.infomaniak.com/fr/support/faq/1736.
 
-### `R2_ACCESS_KEY_ID` et `R2_SECRET_ACCESS_KEY`
+### `S3_ACCESS_KEY_ID` et `S3_SECRET_ACCESS_KEY`
 
-- **Rôle** : le jeton d'accès au stockage Cloudflare R2 (recette `fichiers`), avec `R2_ACCOUNT_ID` et `R2_BUCKET` (réglages). Les deux valeurs du jeton changent ensemble.
-- **Où renouveler** : tableau de bord Cloudflare → **R2 object storage** → **Manage API tokens** → créer un nouveau jeton, droits limités au bucket du projet (lecture et écriture d'objets) → copier l'Access Key ID et le Secret Access Key (le secret est montré **une seule fois**). Après vérification : supprimer l'ancien jeton dans la même liste.
-- **Effet** : la suppression d'un jeton est immédiate.
-- **Délai de grâce** : oui, avec deux jetons actifs pendant la bascule.
-- **Test** : `pulse-aidd secrets verifier R2_SECRET_ACCESS_KEY` (ouverture du bucket avec le client du projet), puis un dépôt de fichier réel sur le site.
-- **Traces** : R2 → le bucket → **Metrics** (opérations de lecture et d'écriture).
-- **Format** : les jetons d'API Cloudflare récents commencent par `cfut_` (utilisateur) ou `cfat_` (compte) ; les identifiants R2 dérivés n'ont pas de préfixe.
-- Sources : https://developers.cloudflare.com/r2/api/tokens/ (màj 2026-10-01) ; https://developers.cloudflare.com/fundamentals/api/get-started/token-formats/.
+- **Rôle** : la clé d'accès au bucket des fichiers, chez le service compatible S3 choisi par la personne (recette `fichiers`, stockage `s3`), avec `S3_ENDPOINT` (adresse du service, préfixe `https://`), `S3_REGION`, `S3_BUCKET` et `S3_FORCE_PATH_STYLE` (réglages, pas des secrets). Les deux valeurs de la clé changent ensemble.
+- **Où renouveler** : dans l'espace du service S3, à la page des clés d'accès : créer une nouvelle clé, limitée au bucket du projet (lire, écrire, supprimer et lister ses objets), puis copier son identifiant et son secret (souvent montré **une seule fois**). Après vérification sur le site : supprimer l'ancienne clé. Le chemin exact est dans la documentation du service.
+- **Effet** : la suppression d'une clé est en général immédiate.
+- **Délai de grâce** : oui, avec deux clés actives pendant la bascule.
+- **Test** : `pulse-aidd secrets verifier S3_SECRET_ACCESS_KEY` (ouverture du bucket par une lecture, `HeadBucket`, avec le client du projet : rien n'est écrit), puis un dépôt de fichier réel sur le site.
+- **Traces** : le journal ou les statistiques d'accès du bucket, si le service en propose (requêtes de lecture et d'écriture).
+- **Format** : sans préfixe commun d'un service à l'autre.
 
 ### `UPSTASH_REDIS_REST_TOKEN`
 

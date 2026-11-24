@@ -100,26 +100,47 @@ function texteRecette(nom, dossier = DOSSIER) {
   return recomposer(lireDossier(path.join(dossier, nom)));
 }
 
-// Fin d'une balise réservée à des hébergements : « … hebergement: docker,serveur ».
-const CONDITION = /\s+hebergement:\s+([a-z]+(?:,[a-z]+)*)$/;
+// Fin d'une balise réservée à certains projets : « … hebergement: docker,serveur », « … stockage: s3 », ou les deux.
+const CONDITION = /\s+(hebergement|stockage):\s+([a-z0-9]+(?:,[a-z0-9]+)*)$/;
+// Stockage des fichiers envoyés (recette fichiers) : un service compatible S3, ou un dossier du serveur (docker, serveur).
+const STOCKAGES = ["s3", "dossier"];
 
-/** Valeur d'une balise sans sa condition d'hébergement : { valeur, hebergements } (hebergements : null sans condition). */
-function conditionHebergement(valeur) {
-  const m = CONDITION.exec(valeur);
-  return m ? { valeur: valeur.slice(0, m.index), hebergements: m[1].split(",") } : { valeur, hebergements: null };
+/** Stockage d'un projet sans choix noté : S3 sur Vercel (pas de disque durable), le dossier du serveur ailleurs. */
+function stockageParDefaut(hebergement) {
+  return hebergement === "vercel" ? "s3" : "dossier";
 }
 
 /**
- * Le texte d'une recette pour un hébergement : chaque balise réservée à d'autres hébergements disparaît, avec le bloc de
- * code qui la suit. Le reste est rendu tel quel (pulse-pile-next recette, d'après docs/technical.md).
+ * Valeur d'une balise sans ses conditions : { valeur, hebergements, stockages } (null : sans condition sur cet axe).
+ * Un axe écrit deux fois lève une erreur.
  */
-function filtrerSelonHebergement(texte, hebergement) {
+function conditions(valeur) {
+  const lues = { hebergements: null, stockages: null };
+  let reste = valeur;
+  for (let m = CONDITION.exec(reste); m; m = CONDITION.exec(reste)) {
+    const axe = `${m[1]}s`;
+    if (lues[axe]) throw new Error(`condition « ${m[1]}: » en double`);
+    lues[axe] = m[2].split(",");
+    reste = reste.slice(0, m.index);
+  }
+  return { valeur: reste, ...lues };
+}
+
+/** Une balise vaut-elle pour ce projet ? Un axe sans condition vaut pour tous. */
+function valablePour({ hebergements, stockages }, hebergement, stockage) {
+  return (!hebergements || hebergements.includes(hebergement)) && (!stockages || stockages.includes(stockage));
+}
+
+/**
+ * Le texte d'une recette pour un projet (hébergement, stockage) : chaque balise réservée à d'autres projets disparaît,
+ * avec le bloc de code qui la suit. Le reste est rendu tel quel (pulse-pile-next recette, d'après docs/technical.md).
+ */
+function filtrerSelonHebergement(texte, hebergement, stockage = stockageParDefaut(hebergement)) {
   const lignes = texte.split("\n");
   const sortie = [];
   for (let i = 0; i < lignes.length; i++) {
     const balise = /^<!--\s*[a-z-]+:\s*(.+?)\s*-->\s*$/.exec(lignes[i]);
-    const { hebergements } = balise ? conditionHebergement(balise[1]) : { hebergements: null };
-    if (!hebergements || hebergements.includes(hebergement)) {
+    if (!balise || valablePour(conditions(balise[1]), hebergement, stockage)) {
       sortie.push(lignes[i]);
       continue;
     }
@@ -135,10 +156,19 @@ function filtrerSelonHebergement(texte, hebergement) {
   return sortie.join("\n");
 }
 
+/** Lit « --hebergement <valeur> [--stockage <valeur>] » (filtre de lecture) ; stockage inconnu ou absent : celui par défaut. */
+function lireFiltre(argv) {
+  const valeur = (nom) => (argv.includes(nom) ? argv[argv.indexOf(nom) + 1] : undefined);
+  const hebergement = valeur("--hebergement") || "vercel";
+  const stockage = hebergement !== "vercel" && STOCKAGES.includes(valeur("--stockage")) ? valeur("--stockage") : stockageParDefaut(hebergement);
+  return { hebergement, stockage };
+}
+
 if (require.main === module && process.argv[2] === "--hebergement") {
-  // Filtre de lecture : pulse-pile-next recette … | node decouper-recette.js --hebergement <valeur>
+  // Filtre de lecture : pulse-pile-next recette … | node decouper-recette.js --hebergement <valeur> [--stockage <valeur>]
   const texte = fs.readFileSync(0, "utf8");
-  process.stdout.write(filtrerSelonHebergement(texte, process.argv[3] || "vercel"));
+  const { hebergement, stockage } = lireFiltre(process.argv.slice(2));
+  process.stdout.write(filtrerSelonHebergement(texte, hebergement, stockage));
 } else if (require.main === module) {
   const nom = process.argv[2];
   if (!nom || !/^[a-z0-9-]+$/.test(nom)) {
@@ -162,4 +192,4 @@ if (require.main === module && process.argv[2] === "--hebergement") {
   console.log(`${nom} : ${Object.keys(fichiers).length} fichiers dans references/recettes/${nom}/ ; retirer ${nom}.md avec git rm.`);
 }
 
-module.exports = { decouper, recomposer, lireDossier, texteRecette, identifiant, conditionHebergement, filtrerSelonHebergement };
+module.exports = { decouper, recomposer, lireDossier, texteRecette, identifiant, conditions, valablePour, filtrerSelonHebergement, lireFiltre, stockageParDefaut, STOCKAGES };

@@ -29,7 +29,7 @@ export async function GET(
   }
   try {
     const adresse = await stockageFichiers(env).adresseLecture(ligne);
-    // Adresse complète (R2) ou route du site (serveur) : l'en-tête Location accepte les deux.
+    // Adresse complète (service S3) ou route du site (dossier) : l'en-tête Location accepte les deux.
     return new Response(null, { status: 303, headers: { Location: adresse } });
   } catch (erreur) {
     return reponseErreur(erreur, "Téléchargement d'un fichier");

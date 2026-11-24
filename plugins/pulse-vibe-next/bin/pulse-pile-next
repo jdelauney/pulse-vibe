@@ -10,7 +10,9 @@
 #                                         (« **Hébergement** : vercel|docker|serveur » ; vercel sans cette ligne)
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
-#   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
+#   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests ;
+#                                         seulement les blocs de l'hébergement du projet et de son stockage des fichiers
+#                                         (« **Stockage des fichiers** : dossier|s3 » de docs/technical.md ; toujours s3 sur Vercel)
 #   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
 #   pulse-pile-next seo-code [--pages] [--json] [--dossier <projet>]   contrôles du code pour le référencement
 #   pulse-pile-next entite <description.json> [--essai] [--us <US-XXX>] [--dossier <projet>]   écrit tout le code d'un type d'information (liste, création, modification, suppression, tests) d'après sa description (format : reference entite.md) ; --essai : la liste des fichiers, sans rien écrire
@@ -69,8 +71,17 @@ variables_hebergeur() {
 
 version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin/plugin.json" | head -n 1; }
 
-# Une partie de recette, sans les blocs réservés à un autre hébergement (balises « … hebergement: <valeurs> »).
-lire_recette() { node "$RACINE/scripts/decouper-recette.js" --hebergement "$(hebergement)" <"$1"; }
+# Stockage des fichiers envoyés (recette fichiers) : s3 sur Vercel ; docker ou serveur, la ligne
+# « **Stockage des fichiers** : dossier|s3 » de docs/technical.md (dossier sans elle).
+stockage() {
+  local s=""
+  if [ "$(hebergement)" = vercel ]; then printf 's3'; return; fi
+  if [ -f docs/technical.md ]; then s="$(sed -n 's/^\*\*Stockage des fichiers\*\* *: *\([a-z0-9]*\).*$/\1/p' docs/technical.md | head -n 1)"; fi
+  case "$s" in s3) printf 's3' ;; *) printf 'dossier' ;; esac
+}
+
+# Une partie de recette, sans les blocs réservés à un autre projet (balises « … hebergement: <valeurs> », « … stockage: <valeurs> »).
+lire_recette() { node "$RACINE/scripts/decouper-recette.js" --hebergement "$(hebergement)" --stockage "$(stockage)" <"$1"; }
 
 recettes() {
   local f nom titre

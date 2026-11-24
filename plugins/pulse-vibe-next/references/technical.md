@@ -19,7 +19,7 @@
 **Pack de pile Pulse** : next
 **Hébergement** : vercel
 
-Hébergement : `vercel` (ces valeurs), `docker` ou `serveur` (lignes et sections Vercel remplacées par celles de `pulse-aidd pile reference hebergement-<valeur>.md`).
+Hébergement : `vercel` (ces valeurs), `docker` ou `serveur` (lignes et sections Vercel remplacées par celles de `pulse-aidd pile reference hebergement-<valeur>.md`). Docker ou serveur avec la recette `fichiers` : elle ajoute la ligne `**Stockage des fichiers** : dossier|s3`.
 
 ## Organisation des fichiers
 

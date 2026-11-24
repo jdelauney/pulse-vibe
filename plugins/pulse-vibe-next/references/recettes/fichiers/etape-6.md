@@ -1,10 +1,10 @@
-### 6. L'adapter de stockage
+### 6. L'adapter S3
 
-Vercel (R2). Hébergements docker et serveur : l'étape « Disque du serveur ».
+Stockage `s3` (toujours sur Vercel). Stockage `dossier` (docker, serveur) : l'étape « Dossier du serveur », à la place de celle-ci.
 
-Le client R2 et les adresses signées vivent dans `src/adapters/storage/`, dans la classe `StockageR2Adapter` : elle implémente le port `StockageFichiers` (patron Adapter) et reçoit sa configuration par le constructeur (les actions et le Route Handler lui passent l'objet `env`). Toute panne du SDK devient une `ErreurService("stockage", …)` : son message est sans secret ni clé d'objet (la clé commence par l'identifiant d'une personne), et sa `cause` garde seulement trois champs techniques (`name`, `Code`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine (architecture.md §8). `safe-action` journalise et affiche un message générique ; le Route Handler de l'étape 9 utilise `reponseErreur()`.
+Le client S3 et les adresses signées vivent dans `src/adapters/storage/`, dans la classe `StockageS3Adapter` : elle implémente le port `StockageFichiers` (patron Adapter) et reçoit sa configuration par le constructeur (les actions et le Route Handler lui passent l'objet `env`). Elle parle à tout service compatible S3 : l'adresse du service (`S3_ENDPOINT`), la région et le style d'adresse viennent des variables. Toute panne du SDK devient une `ErreurService("stockage", …)` : son message est sans secret ni clé d'objet (la clé commence par l'identifiant d'une personne), et sa `cause` garde seulement trois champs techniques (`name`, `Code`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine (architecture.md §8). `safe-action` journalise et affiche un message générique ; le Route Handler de l'étape 9 utilise `reponseErreur()`.
 
-<!-- fichier: src/adapters/storage/storage.adapter.ts hebergement: vercel -->
+<!-- fichier: src/adapters/storage/storage.adapter.ts stockage: s3 -->
 ```ts
 // src/adapters/storage/storage.adapter.ts
 import "server-only";
@@ -23,11 +23,13 @@ import { ErreurService } from "@src/lib/errors/erreur-service";
 const DUREE_ADRESSE_SECONDES = 5 * 60;
 
 /** Ce que l'adapter lit de la configuration : l'objet `env` du squelette convient tel quel. */
-export type ConfigurationR2 = {
-  R2_ACCOUNT_ID: string;
-  R2_ACCESS_KEY_ID: string;
-  R2_SECRET_ACCESS_KEY: string;
-  R2_BUCKET: string;
+export type ConfigurationS3 = {
+  S3_ENDPOINT: string;
+  S3_REGION: string;
+  S3_BUCKET: string;
+  S3_ACCESS_KEY_ID: string;
+  S3_SECRET_ACCESS_KEY: string;
+  S3_FORCE_PATH_STYLE: boolean;
 };
 
 /**
@@ -53,23 +55,24 @@ function panneDeStockage(erreur: unknown): ErreurService {
 }
 
 /**
- * La seule porte de sortie vers R2 (stockage privé), patron Adapter : elle traduit le SDK en
- * mots du projet (le port StockageFichiers). Toute panne devient une
+ * La seule porte de sortie vers le service S3 (bucket privé), patron Adapter : elle traduit le SDK
+ * en mots du projet (le port StockageFichiers). Toute panne devient une
  * ErreurService("stockage", …) sans secret ni donnée personnelle.
  */
-export class StockageR2Adapter implements StockageFichiers {
+export class StockageS3Adapter implements StockageFichiers {
   private readonly client: S3Client;
 
-  constructor(private readonly config: ConfigurationR2) {
+  constructor(private readonly config: ConfigurationS3) {
     this.client = new S3Client({
-      region: "auto",
-      // Bucket créé avec la juridiction UE : adresse en ".eu.". Sans juridiction : retirer ".eu".
-      endpoint: `https://${config.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
+      endpoint: config.S3_ENDPOINT,
+      region: config.S3_REGION,
+      // Adresse « <bucket>.<hôte du service> » par défaut ; « <hôte>/<bucket> » si le service le demande.
+      forcePathStyle: config.S3_FORCE_PATH_STYLE,
       credentials: {
-        accessKeyId: config.R2_ACCESS_KEY_ID,
-        secretAccessKey: config.R2_SECRET_ACCESS_KEY,
+        accessKeyId: config.S3_ACCESS_KEY_ID,
+        secretAccessKey: config.S3_SECRET_ACCESS_KEY,
       },
-      // R2 et les adresses signées : pas de somme de contrôle ajoutée d'office.
+      // Adresses signées : pas de somme de contrôle ajoutée d'office (tous les services ne la lisent pas).
       requestChecksumCalculation: "WHEN_REQUIRED",
       responseChecksumValidation: "WHEN_REQUIRED",
     });
@@ -85,7 +88,7 @@ export class StockageR2Adapter implements StockageFichiers {
       return await getSignedUrl(
         this.client,
         new PutObjectCommand({
-          Bucket: this.config.R2_BUCKET,
+          Bucket: this.config.S3_BUCKET,
           Key: params.cle,
           ContentType: params.typeMime,
           ContentLength: params.taille,
@@ -107,7 +110,7 @@ export class StockageR2Adapter implements StockageFichiers {
       return await getSignedUrl(
         this.client,
         new GetObjectCommand({
-          Bucket: this.config.R2_BUCKET,
+          Bucket: this.config.S3_BUCKET,
           Key: params.cle,
           ResponseContentDisposition: `attachment; filename="${nomSur}"`,
         }),
@@ -118,11 +121,11 @@ export class StockageR2Adapter implements StockageFichiers {
     }
   }
 
-  // Ce que R2 a réellement reçu (null si rien).
+  // Ce que le service a réellement reçu (null si rien).
   async lireObjet(cle: string): Promise<ObjetRecu | null> {
     try {
       const reponse = await this.client.send(
-        new HeadObjectCommand({ Bucket: this.config.R2_BUCKET, Key: cle }),
+        new HeadObjectCommand({ Bucket: this.config.S3_BUCKET, Key: cle }),
       );
       return {
         taille: reponse.ContentLength ?? 0,
@@ -137,7 +140,7 @@ export class StockageR2Adapter implements StockageFichiers {
   async supprimerObjet(cle: string): Promise<void> {
     try {
       await this.client.send(
-        new DeleteObjectCommand({ Bucket: this.config.R2_BUCKET, Key: cle }),
+        new DeleteObjectCommand({ Bucket: this.config.S3_BUCKET, Key: cle }),
       );
     } catch (erreur) {
       throw panneDeStockage(erreur);
@@ -146,9 +149,9 @@ export class StockageR2Adapter implements StockageFichiers {
 }
 
 /** Le stockage du projet (patron Factory) : les actions et le Route Handler l'obtiennent ici, avec `env`. */
-export function stockageFichiers(config: ConfigurationR2): StockageFichiers {
-  return new StockageR2Adapter(config);
+export function stockageFichiers(config: ConfigurationS3): StockageFichiers {
+  return new StockageS3Adapter(config);
 }
 ```
 
-Vérifié avec `@aws-sdk/client-s3` 3.1147.0 : sans `requestChecksumCalculation: "WHEN_REQUIRED"`, l'adresse PUT contient une somme de contrôle de fichier vide (`x-amz-checksum-crc32=AAAAAA==`) ; avec `signableHeaders`, `content-type` et `content-length` font partie de la signature (`X-Amz-SignedHeaders=content-length;content-type;host`).
+Vérifié avec `@aws-sdk/client-s3` 3.1176.0 : sans `requestChecksumCalculation: "WHEN_REQUIRED"`, l'adresse PUT contient une somme de contrôle de fichier vide (`x-amz-checksum-crc32=AAAAAA==`) ; avec `signableHeaders`, `content-type` et `content-length` font partie de la signature (`X-Amz-SignedHeaders=content-length;content-type;host`). L'adresse signée vise `https://<bucket>.<hôte de S3_ENDPOINT>/<clé>`, ou `https://<hôte>/<bucket>/<clé>` avec `S3_FORCE_PATH_STYLE=true` : la CSP de l'étape 12 autorise les deux.

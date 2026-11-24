@@ -341,15 +341,17 @@ test("contexte plan et refine : plan garde l'architecture ; refine la lit à la 
   assert.match(plan.stdout, /Découpage mixte. Une tâche tirée d'une recette[^\n]*garde le découpage vérifié de cette recette. Toute autre tâche suit les règles de découpage du cœur/);
 });
 
-test("recette fichiers : la CSP autorise l'envoi direct vers R2, valeur connue à la construction", () => {
+test("recette fichiers : la CSP autorise l'envoi direct vers le service S3, valeur connue à la construction", () => {
   const texte = texteRecette("fichiers");
   assert.match(texte, /\| `next\.config\.ts` \(modifié\) \|/);
   assert.ok(texte.includes('"connect-src": ['), "bloc connect-src");
-  // Sans forcePathStyle, le SDK signe une adresse <bucket>.<compte>.eu.r2… : la CSP vise cet hôte exact.
-  assert.ok(texte.includes("`https://${process.env.R2_BUCKET}.${process.env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`"), "hôte R2 avec le bucket dans la CSP");
+  // Le SDK signe « <bucket>.<hôte> », ou « <hôte>/<bucket> » avec S3_FORCE_PATH_STYLE : la CSP vise ces deux hôtes.
+  assert.ok(texte.includes("new URL(process.env.S3_ENDPOINT).origin"), "hôte du service dans la CSP");
+  assert.ok(texte.includes("`https://${process.env.S3_BUCKET}.${new URL(process.env.S3_ENDPOINT).host}`"), "hôte du bucket dans la CSP");
   assert.match(texte, /pulse-next 0.9.0/, "version du squelette qui porte l'objet sources");
-  assert.match(texte, /### \d+\. La CSP autorise R2/);
+  assert.match(texte, /### \d+\. La CSP autorise le service S3/);
   assert.match(texte, /Refused to connect/);
+  assert.doesNotMatch(texte, /\bR2\b|[Cc]loudflare/, "aucun fournisseur nommé");
 });
 
 test("contexte security : en-têtes dans next.config.ts, sans nonce, preload décidé par la personne", () => {

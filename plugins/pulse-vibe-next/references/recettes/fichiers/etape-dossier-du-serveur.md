@@ -1,8 +1,8 @@
-### Disque du serveur (docker, serveur)
+### Dossier du serveur (stockage dossier)
 
-Hébergements docker et serveur, à la place de l'étape 6 : la classe `StockageDisqueAdapter` implémente le même port. Les fichiers vont dans `FICHIERS_DOSSIER`, hors de `public/` : rien ne les sert sans passer par le site. Les adresses d'envoi et de lecture sont des routes du site, avec un jeton signé (HMAC-SHA256, clé `FICHIERS_SECRET`) qui fige la clé, le type, la taille ou le nom, et expire au bout de 5 minutes. La clé d'objet est contrôlée avant tout accès au disque : jamais de chemin qui sorte du dossier. Le type reçu est gardé à côté du fichier (`<clé>.type`).
+Stockage `dossier` (docker, serveur), à la place de l'étape 6 : la classe `StockageDisqueAdapter` implémente le même port. Les fichiers vont dans `FICHIERS_DOSSIER`, hors de `public/` : rien ne les sert sans passer par le site. Les adresses d'envoi et de lecture sont des routes du site, avec un jeton signé (HMAC-SHA256, clé `FICHIERS_SECRET`) qui fige la clé, le type, la taille ou le nom, et expire au bout de 5 minutes. La clé d'objet est contrôlée avant tout accès au disque : jamais de chemin qui sorte du dossier. Le type reçu est gardé à côté du fichier (`<clé>.type`).
 
-<!-- fichier: src/adapters/storage/storage.adapter.ts hebergement: docker,serveur -->
+<!-- fichier: src/adapters/storage/storage.adapter.ts stockage: dossier -->
 ```ts
 // src/adapters/storage/storage.adapter.ts
 import "server-only";
@@ -203,7 +203,7 @@ export function stockageFichiers(
 
 Les deux routes ne font que présenter le jeton à l'adapter. La taille annoncée par le navigateur est contrôlée avant de lire le corps (5 Mo au plus) ; le téléchargement part toujours en pièce jointe, jamais affiché sur le domaine du site.
 
-<!-- fichier: app/api/fichiers/envoi/route.ts hebergement: docker,serveur -->
+<!-- fichier: app/api/fichiers/envoi/route.ts stockage: dossier -->
 ```ts
 // app/api/fichiers/envoi/route.ts
 import { StockageDisqueAdapter } from "@src/adapters/storage/storage.adapter";
@@ -233,7 +233,7 @@ export async function PUT(requete: Request) {
 }
 ```
 
-<!-- fichier: app/api/fichiers/lecture/route.ts hebergement: docker,serveur -->
+<!-- fichier: app/api/fichiers/lecture/route.ts stockage: dossier -->
 ```ts
 // app/api/fichiers/lecture/route.ts
 import { StockageDisqueAdapter } from "@src/adapters/storage/storage.adapter";

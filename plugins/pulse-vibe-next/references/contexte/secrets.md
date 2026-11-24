@@ -15,7 +15,7 @@ L'index des variables du squelette et des recettes, une ligne chacune : de quoi 
 | `STRIPE_SECRET_KEY` | clé de l'API de paiement (recette `paiement`) ; une valeur par environnement | Stripe | https://dashboard.stripe.com/apikeys → Roll key |
 | `STRIPE_WEBHOOK_SECRET` | vérifie les événements envoyés par Stripe ; une valeur par environnement | Stripe | https://dashboard.stripe.com/webhooks → Roll secret |
 | `SMTP_PASSWORD` | envoi des e-mails (recette `envoi-email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages) | fournisseur d'e-mail | chez le fournisseur : un nouvel identifiant d'envoi |
-| `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | accès au stockage des fichiers (recette `fichiers`), avec `R2_ACCOUNT_ID` et `R2_BUCKET` (réglages) | Cloudflare R2 | Cloudflare → R2 object storage → Manage API tokens |
+| `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | accès au bucket des fichiers (recette `fichiers`, stockage `s3`), avec `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET` et `S3_FORCE_PATH_STYLE` (réglages) | service de stockage S3 choisi par la personne | chez le service : une nouvelle clé limitée au bucket |
 | `UPSTASH_REDIS_REST_TOKEN` | limite d'envois partagée (recette `limite`, option Redis), avec `UPSTASH_REDIS_REST_URL` (adresse) | Upstash | console Upstash → la base → Reset Credentials |
 | `FORMULAIRE_SECRET` | signe le délai des formulaires publics (recette `formulaire-public`) | projet (valeur générée) | aucune : `pulse-aidd secrets generer` |
 | `TURNSTILE_SECRET_KEY` | contrôle anti-robot des formulaires (recette `formulaire-public`, option Turnstile), avec `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (publique) | Cloudflare Turnstile | Cloudflare → Turnstile → le widget → Settings → Rotate Secret Key |

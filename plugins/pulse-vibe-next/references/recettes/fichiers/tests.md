@@ -33,11 +33,7 @@ Les trois use-cases partagent les mêmes classes en mémoire, rangées dans un p
 <!-- fichier: src/core/fichiers/use-cases/__tests__/sut-fichiers.ts -->
 ```ts
 // src/core/fichiers/use-cases/__tests__/sut-fichiers.ts
-import {
-  Fichier,
-  type FichierVue,
-  type ObjetRecu,
-} from "../../fichier.entity";
+import { Fichier, type FichierVue, type ObjetRecu } from "../../fichier.entity";
 import type { FichierRepository } from "../../fichier-repository.port";
 import type { StockageFichiers } from "../../stockage-fichiers.port";
 import { ConfirmerEnvoi } from "../confirmer-envoi.use-case";
@@ -292,14 +288,14 @@ describe("Fichiers", () => {
 });
 ```
 
-Vercel : l'adapter se teste avec le client du SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
+Stockage `s3` : l'adapter se teste avec le client du SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
 
-<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts hebergement: vercel -->
+<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts stockage: s3 -->
 ```ts
 // src/adapters/storage/__tests__/storage.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { StockageR2Adapter } from "../storage.adapter";
+import { StockageS3Adapter } from "../storage.adapter";
 
 const etat = vi.hoisted(() => ({ envoi: vi.fn() }));
 
@@ -313,12 +309,15 @@ vi.mock("@aws-sdk/client-s3", async (importOriginal) => {
 });
 
 // L'adapter reçoit sa configuration par le constructeur : aucun module de configuration à doubler.
-const stockageFichiers = new StockageR2Adapter({
-  R2_ACCOUNT_ID: "compte",
-  R2_ACCESS_KEY_ID: "cle-acces",
-  R2_SECRET_ACCESS_KEY: "secret-de-test",
-  R2_BUCKET: "bucket-de-test",
-});
+const CONFIGURATION = {
+  S3_ENDPOINT: "https://s3.exemple.test",
+  S3_REGION: "region-de-test",
+  S3_BUCKET: "bucket-de-test",
+  S3_ACCESS_KEY_ID: "cle-acces",
+  S3_SECRET_ACCESS_KEY: "secret-de-test",
+  S3_FORCE_PATH_STYLE: false,
+};
+const stockageFichiers = new StockageS3Adapter(CONFIGURATION);
 
 describe("Stockage des fichiers", () => {
   beforeEach(() => {
@@ -326,7 +325,7 @@ describe("Stockage des fichiers", () => {
   });
 
   describe("Une panne du stockage est signalée comme une panne de service", () => {
-    it("US-XXX-7 – Un refus de R2 lève une erreur de service « stockage » sans la clé de l'objet", async () => {
+    it("US-XXX-7 – Un refus du stockage lève une erreur de service « stockage » sans la clé de l'objet", async () => {
       etat.envoi.mockRejectedValue(
         Object.assign(
           new Error("Access Denied pour camille-id/f1.pdf (secret-de-test)"),
@@ -382,6 +381,27 @@ describe("Stockage des fichiers", () => {
         "content-length;content-type;host",
       );
       expect(adresse.searchParams.has("x-amz-checksum-crc32")).toBe(false);
+      // L'hôte autorisé par la CSP (étape 12) : « <bucket>.<hôte du service> ».
+      expect(`${adresse.origin}${adresse.pathname}`).toBe(
+        "https://bucket-de-test.s3.exemple.test/camille-id/f1.png",
+      );
+    });
+
+    it("US-XXX-8 – Avec S3_FORCE_PATH_STYLE, le bucket passe dans le chemin de l'adresse", async () => {
+      const adresse = new URL(
+        await new StockageS3Adapter({
+          ...CONFIGURATION,
+          S3_FORCE_PATH_STYLE: true,
+        }).adresseEnvoi({
+          cle: "camille-id/f1.png",
+          typeMime: "image/png",
+          taille: 1000,
+        }),
+      );
+
+      expect(`${adresse.origin}${adresse.pathname}`).toBe(
+        "https://s3.exemple.test/bucket-de-test/camille-id/f1.png",
+      );
     });
 
     it("US-XXX-8 – L'adresse de lecture force le téléchargement sous un nom nettoyé", async () => {
@@ -401,9 +421,9 @@ describe("Stockage des fichiers", () => {
 });
 ```
 
-Serveur : l'adapter du disque se teste sur un dossier temporaire du système, avec une horloge choisie par le test.
+Stockage `dossier` : l'adapter du disque se teste sur un dossier temporaire du système, avec une horloge choisie par le test.
 
-<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts hebergement: docker,serveur -->
+<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts stockage: dossier -->
 ```ts
 // src/adapters/storage/__tests__/storage.adapter.test.ts
 import { mkdtempSync, rmSync } from "node:fs";
@@ -588,7 +608,9 @@ describe("Fichiers", () => {
     it("US-XXX-4 – La liste de Léo ne contient pas la facture de Camille", async () => {
       await camilleEnvoie();
 
-      const liste = await new DrizzleFichierRepository(db).listerEnvoyes("leo-id");
+      const liste = await new DrizzleFichierRepository(db).listerEnvoyes(
+        "leo-id",
+      );
 
       expect(liste).toEqual([]);
     });
@@ -620,7 +642,7 @@ describe("Fichiers", () => {
 
 ### Bout en bout (Playwright)
 
-Le premier test envoie un vrai fichier vers R2 : en local et en CI, utilisez un bucket de test, distinct de celui de production. Le second coupe l'envoi du fichier (`page.route`, toute requête PUT : R2 ou la route du site) : il tourne sans compte R2.
+Le premier test envoie un vrai fichier : stockage `s3`, vers un bucket de test, distinct de celui de production (en local et en CI) ; stockage `dossier`, dans le dossier local. Le second coupe l'envoi du fichier (`page.route`, toute requête PUT : service S3 ou route du site) : il tourne sans compte chez un service S3.
 
 <!-- fichier: e2e/fichiers.spec.ts -->
 ```ts
@@ -658,7 +680,7 @@ test.describe("Fichiers", () => {
   }) => {
     await connecterNouvelUtilisateur(page);
     await page.goto("/fichiers");
-    // Le stockage ne répond pas : l'envoi du fichier (PUT, vers R2 ou vers le site) est coupé.
+    // Le stockage ne répond pas : l'envoi du fichier (PUT, vers le service S3 ou vers le site) est coupé.
     await page.route("**/*", (route) =>
       route.request().method() === "PUT" ? route.abort() : route.fallback(),
     );

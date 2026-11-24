@@ -14,7 +14,7 @@ const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes qui créent une table : leur chaîne génère la migration.
 const AVEC_MIGRATION = ["connexion", "liste", "double-authentification", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";
-const { texteRecette, filtrerSelonHebergement } = require("../scripts/decouper-recette.js");
+const { texteRecette, filtrerSelonHebergement, lireFiltre } = require("../scripts/decouper-recette.js");
 
 test("extraction : fichiers, ajouts, remplacements et commandes, dans l'ordre du document", () => {
   const texte = [
@@ -221,7 +221,7 @@ test("recettes des chaînes : chaque bloc « // chemin » porte sa balise ou dit
     lignes.forEach((ligne, i) => {
       if (/^###? /.test(ligne)) section = ligne;
       const chemin = /^```tsx?$/.test(ligne) && /^\/\/ ((?:app|src|e2e|tests)\/\S+|proxy\.ts)$/.exec(lignes[i + 1] || "");
-      const balise = (chemin && [`<!-- fichier: ${chemin[1]} -->`].includes((lignes[i - 1] || "").replace(/ hebergement: [a-z,]+ -->$/, " -->"))) || /^<!-- sans-verification: .+ -->$/.test(lignes[i - 1] || "");
+      const balise = (chemin && [`<!-- fichier: ${chemin[1]} -->`].includes((lignes[i - 1] || "").replace(/(?: (?:hebergement|stockage): [a-z0-9,]+)+ -->$/, " -->"))) || /^<!-- sans-verification: .+ -->$/.test(lignes[i - 1] || "");
       if (chemin && section !== sansBalise[nom] && !balise) oublis.push(`${nom}.md:${i + 1} ${chemin[1]}`);
     });
     assert.deepStrictEqual(oublis, [], "bloc « // chemin » sans <!-- fichier: … --> ni <!-- sans-verification: … -->");
@@ -316,15 +316,26 @@ test("balises par hébergement : seuls les blocs de l'hébergement choisi sont p
     "export const serveur = true;",
     `${F}`,
     "<!-- commande: npm install @aws-sdk/client-s3 hebergement: vercel -->",
+    "<!-- fichier: src/s3.ts stockage: s3 -->",
+    `${F}ts`,
+    'export const s3 = "s3";',
+    `${F}`,
+    "<!-- ajout: src/commun.ts hebergement: docker stockage: dossier -->",
+    `${F}ts`,
+    "export const volume = true;",
+    `${F}`,
   ].join("\n");
-  const resume = (h) => extraireEtapes(texte, { hebergement: h }).map((e) => `${e.type} ${e.chemin || e.commande} ${(e.contenu || "").trim()}`.trim());
-  assert.deepStrictEqual(resume("vercel"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "r2";', "commande npm install @aws-sdk/client-s3"]);
-  assert.deepStrictEqual(resume(undefined), resume("vercel"), "vercel par défaut");
-  assert.deepStrictEqual(resume("docker"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "disque";']);
+  const resume = (h, stockage) => extraireEtapes(texte, { hebergement: h, stockage }).map((e) => `${e.type} ${e.chemin || e.commande} ${(e.contenu || "").trim()}`.trim());
+  assert.deepStrictEqual(resume("vercel"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "r2";', "commande npm install @aws-sdk/client-s3", 'fichier src/s3.ts export const s3 = "s3";']);
+  assert.deepStrictEqual(resume(undefined), resume("vercel"), "vercel par défaut, stockage s3");
+  assert.deepStrictEqual(resume("docker"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "disque";', "ajout src/commun.ts export const volume = true;"], "docker : stockage dossier par défaut");
+  assert.deepStrictEqual(resume("docker", "s3"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "disque";', 'fichier src/s3.ts export const s3 = "s3";'], "les deux conditions comptent");
   assert.deepStrictEqual(resume("serveur"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "disque";', "ajout src/commun.ts export const serveur = true;"]);
   const ancre = extraireEtapes(texte, { hebergement: "serveur" })[2];
   assert.strictEqual(ancre.ancre, "export const commun = 1;", "la condition ne fait pas partie de l'ancre");
   assert.throws(() => extraireEtapes("<!-- fichier: src/a.ts hebergement: netlify -->\n```ts\nx\n```\n"), /hébergement inconnu : netlify/);
+  assert.throws(() => extraireEtapes("<!-- fichier: src/a.ts stockage: nuage -->\n```ts\nx\n```\n"), /stockage inconnu : nuage/);
+  assert.throws(() => extraireEtapes("<!-- fichier: src/a.ts stockage: s3 stockage: dossier -->\n```ts\nx\n```\n"), /ligne 1 : condition « stockage: » en double/);
 });
 
 test("lecture d'une recette par hébergement : les blocs d'un autre hébergement disparaissent avec leur balise", () => {
@@ -334,35 +345,68 @@ test("lecture d'une recette par hébergement : les blocs d'un autre hébergement
   const serveur = filtrerSelonHebergement(texte, "serveur");
   assert.ok(serveur.includes("serveur();") && !serveur.includes("vercel();") && !serveur.includes("hebergement: vercel"));
   assert.strictEqual(filtrerSelonHebergement("sans balise\n", "docker"), "sans balise\n");
+  const parStockage = ["<!-- fichier: src/b.ts stockage: s3 -->", `${F}ts`, "s3();", `${F}`, "<!-- fichier: src/b.ts stockage: dossier -->", `${F}ts`, "dossier();", `${F}`].join("\n");
+  assert.ok(filtrerSelonHebergement(parStockage, "vercel").includes("s3();") && !filtrerSelonHebergement(parStockage, "vercel").includes("dossier();"), "Vercel : s3");
+  assert.ok(filtrerSelonHebergement(parStockage, "serveur").includes("dossier();") && !filtrerSelonHebergement(parStockage, "serveur").includes("s3();"), "serveur : dossier par défaut");
+  assert.ok(filtrerSelonHebergement(parStockage, "docker", "s3").includes("s3();"), "docker avec s3");
 });
 
-test("--hebergement : option contrôlée ; --toutes ajoute les chaînes vérifiées sur un serveur", () => {
+test("filtre de lecture : --stockage lu seulement hors de Vercel ; valeur inconnue : stockage par défaut", () => {
+  assert.deepStrictEqual(lireFiltre(["--hebergement", "serveur", "--stockage", "s3"]), { hebergement: "serveur", stockage: "s3" });
+  assert.deepStrictEqual(lireFiltre(["--hebergement", "docker"]), { hebergement: "docker", stockage: "dossier" });
+  assert.deepStrictEqual(lireFiltre(["--hebergement", "vercel", "--stockage", "dossier"]), { hebergement: "vercel", stockage: "s3" });
+  assert.deepStrictEqual(lireFiltre(["--hebergement", "serveur", "--stockage", "nuage"]), { hebergement: "serveur", stockage: "dossier" });
+});
+
+test("--hebergement et --stockage : options contrôlées ; --toutes ajoute les chaînes vérifiées sur un serveur, avec chaque stockage", () => {
   assert.strictEqual(lireArguments([]).hebergement, "vercel");
+  assert.strictEqual(lireArguments([]).stockage, "s3", "Vercel : s3");
   assert.strictEqual(lireArguments(["--recettes", "connexion,fichiers", "--hebergement", "serveur"]).hebergement, "serveur");
+  assert.strictEqual(lireArguments(["--hebergement", "serveur"]).stockage, "dossier", "serveur : dossier par défaut");
   assert.throws(() => lireArguments(["--hebergement", "netlify"]), /Hébergement inconnu/);
   assert.throws(() => lireArguments(["--hebergement"]), /--hebergement demande/);
-  assert.deepStrictEqual(chainesAVerifier(lireArguments(["--recettes", "connexion,fichiers", "--hebergement", "serveur"])), [{ recettes: ["connexion", "fichiers"], hebergement: "serveur" }]);
+  assert.throws(() => lireArguments(["--stockage", "nuage"]), /Stockage inconnu/);
+  assert.throws(() => lireArguments(["--stockage", "dossier"]), /demande un serveur/);
+  assert.deepStrictEqual(chainesAVerifier(lireArguments(["--recettes", "connexion,fichiers", "--hebergement", "serveur", "--stockage", "s3"])), [{ recettes: ["connexion", "fichiers"], hebergement: "serveur", stockage: "s3" }]);
   const toutes = chainesAVerifier(lireArguments(["--toutes"]));
-  assert.strictEqual(toutes.length, CHAINES.length + CHAINES_SERVEUR.length);
-  assert.deepStrictEqual(toutes.filter((c) => c.hebergement === "serveur").map((c) => c.recettes), CHAINES_SERVEUR);
+  const surServeur = toutes.filter((c) => c.hebergement === "serveur");
+  assert.strictEqual(toutes.length, CHAINES.length + surServeur.length);
+  assert.deepStrictEqual([...new Set(surServeur.map((c) => c.recettes.join()))], CHAINES_SERVEUR.map((c) => c.join()));
+  assert.deepStrictEqual(surServeur.filter((c) => c.recettes.includes("fichiers")).map((c) => c.stockage), ["s3", "dossier"], "fichiers : chaque stockage sur le serveur");
+  assert.ok(surServeur.filter((c) => !c.recettes.includes("fichiers")).every((c) => c.stockage === "dossier"));
+  assert.ok(toutes.filter((c) => c.hebergement === "vercel").every((c) => c.stockage === "s3"));
   for (const chaine of CHAINES_SERVEUR) assert.ok(CHAINES.some((c) => c.join() === chaine.join()), `${chaine} : aussi vérifiée sur Vercel`);
 });
 
-test("recettes à blocs par hébergement : chaque fichier propre à un hébergement existe pour tous (vercel, et docker ou serveur)", () => {
+test("recettes à blocs par projet : chaque fichier propre à un hébergement ou à un stockage existe pour l'autre", () => {
+  const projets = [["vercel", "s3"], ["docker", "s3"], ["docker", "dossier"], ["serveur", "s3"], ["serveur", "dossier"]];
   for (const nom of [...new Set(CHAINES_SERVEUR.flat())]) {
-    const parHebergement = Object.fromEntries(["vercel", "docker", "serveur"].map((h) => [h, extraireEtapes(texteRecette(nom), { hebergement: h })]));
-    const conditionnes = (h) => new Set(parHebergement[h].filter((e) => e.hebergements && e.type === "fichier").map((e) => e.chemin));
-    // Un fichier entier réservé à Vercel (ex. l'adapter de stockage) a son équivalent sur un serveur, au même chemin, et inversement.
-    for (const chemin of conditionnes("vercel")) if (["src/adapters/"].some((d) => chemin.startsWith(d))) assert.ok(conditionnes("serveur").has(chemin), `${nom} : ${chemin} manque sur un serveur`);
-    const code = (h) => [...conditionnes(h)].filter((c) => /^(src|app|e2e|tests)\//.test(c)).sort();
-    assert.deepStrictEqual(code("docker"), code("serveur"), `${nom} : docker et serveur partagent leur code`);
+    const par = Object.fromEntries(projets.map(([h, s]) => [`${h}/${s}`, extraireEtapes(texteRecette(nom), { hebergement: h, stockage: s })]));
+    const conditionnes = (projet) => new Set(par[projet].filter((e) => (e.hebergements || e.stockages) && e.type === "fichier").map((e) => e.chemin));
+    // Un fichier entier réservé à un cas (ex. l'adapter de stockage) a son équivalent dans l'autre, au même chemin, et inversement.
+    const adapters = (projet) => [...conditionnes(projet)].filter((c) => c.startsWith("src/adapters/")).sort();
+    assert.deepStrictEqual(adapters("serveur/dossier"), adapters("vercel/s3"), `${nom} : mêmes adapters pour chaque cas`);
+    assert.deepStrictEqual(adapters("serveur/s3"), adapters("vercel/s3"), `${nom} : mêmes adapters pour chaque cas`);
+    const code = (projet) => [...conditionnes(projet)].filter((c) => /^(src|app|e2e|tests)\//.test(c)).sort();
+    for (const s of ["s3", "dossier"]) assert.deepStrictEqual(code(`docker/${s}`), code(`serveur/${s}`), `${nom} : docker et serveur partagent leur code (stockage ${s})`);
   }
+  // Le stockage s3 donne le même code sur Vercel et sur un serveur (seule la mise en ligne diffère).
+  const fichiers = (h, s) => extraireEtapes(texteRecette("fichiers"), { hebergement: h, stockage: s }).filter((e) => /^(src|app|e2e|tests)\//.test(e.chemin || "")).map((e) => `${e.type} ${e.chemin} ${e.contenu}`);
+  assert.deepStrictEqual(fichiers("serveur", "s3"), fichiers("vercel", "s3"));
 });
 
 test("fichiers, hébergement docker : les ajouts au Dockerfile et à compose.production.yml trouvent leur place dans la variante", () => {
   const variante = path.join(__dirname, "..", "templates", "squelette-variantes", "hebergement", "docker");
-  const textes = { Dockerfile: fs.readFileSync(path.join(variante, "Dockerfile"), "utf8"), "compose.production.yml": fs.readFileSync(path.join(variante, "compose.production.yml"), "utf8") };
-  const etapes = extraireEtapes(texteRecette("fichiers"), { hebergement: "docker" }).filter((e) => e.chemin in textes);
+  const lire = () => ({ Dockerfile: fs.readFileSync(path.join(variante, "Dockerfile"), "utf8"), "compose.production.yml": fs.readFileSync(path.join(variante, "compose.production.yml"), "utf8") });
+  // Stockage s3 : l'adresse du service et le bucket arrivent à la construction, pour la CSP.
+  const avecS3 = lire();
+  const etapesS3 = extraireEtapes(texteRecette("fichiers"), { hebergement: "docker", stockage: "s3" }).filter((e) => e.chemin in avecS3);
+  assert.strictEqual(etapesS3.length, 2);
+  for (const e of etapesS3) avecS3[e.chemin] = appliquerAuTexte(avecS3[e.chemin], e);
+  assert.match(avecS3.Dockerfile, /\nARG SITE_URL\n# Recette fichiers[^\n]*\nARG S3_ENDPOINT\nARG S3_BUCKET\nENV /);
+  assert.match(avecS3["compose.production.yml"], /\n {8}SITE_URL: \$\{SITE_URL:-\}\n {8}S3_ENDPOINT: \$\{S3_ENDPOINT:-\}\n {8}S3_BUCKET: \$\{S3_BUCKET:-\}\n {4}image:/);
+  const textes = lire();
+  const etapes = extraireEtapes(texteRecette("fichiers"), { hebergement: "docker", stockage: "dossier" }).filter((e) => e.chemin in textes);
   assert.strictEqual(etapes.length, 3);
   for (const e of etapes) textes[e.chemin] = appliquerAuTexte(textes[e.chemin], e);
   assert.match(textes.Dockerfile, /RUN mkdir -p \.next\/cache && chown node:node \.next\/cache\nRUN mkdir -p fichiers && chown node:node fichiers\nUSER node/);

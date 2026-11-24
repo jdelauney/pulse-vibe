@@ -119,7 +119,7 @@ export interface FichierRepository {
 // src/core/fichiers/stockage-fichiers.port.ts
 import type { ObjetRecu } from "./fichier.entity";
 
-/** Le stockage des objets (Cloudflare R2). L'adapter `storage` l'implémente ; un test passe une doublure. */
+/** Le stockage des objets (service S3 ou dossier du serveur). L'adapter `storage` l'implémente ; un test passe une doublure. */
 export interface StockageFichiers {
   /** Adresse d'envoi courte, pour ce type exact et cette taille exacte. */
   adresseEnvoi(params: {
