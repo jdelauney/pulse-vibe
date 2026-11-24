@@ -134,7 +134,7 @@ test("contexte secrets : l'index des variables (une ligne chacune) et les variab
 test("variables chez Vercel : un seul fichier, affiché pour /pulse:secrets et pour la mise en ligne", () => {
   const vercel = lire(REF, "contexte", "variables-vercel.md");
   for (const libelle of ["secrets", "deploy-variables"]) assert.ok(lancer("contexte", libelle).stdout.includes(vercel.trim()), `${libelle} : variables-vercel.md en entier`);
-  const autres = fs.readdirSync(path.join(REF, "contexte")).filter((f) => f !== "variables-vercel.md");
+  const autres = fs.readdirSync(path.join(REF, "contexte"), { recursive: true }).filter((f) => f.endsWith(".md") && f !== "variables-vercel.md");
   for (const fait of ["vercel env add", "type Config se supprime", "Deployment Protection", "Deux envois pour ce qui agit sur le monde réel", "Une variable modifiée sert au déploiement suivant"]) {
     assert.ok(vercel.includes(fait), `variables-vercel.md : ${fait}`);
     for (const f of autres) assert.ok(!lire(REF, "contexte", f).includes(fait), `un fait, un seul endroit : « ${fait} » aussi dans contexte/${f}`);
@@ -201,7 +201,7 @@ test("chaque recette suit le format commun", () => {
 });
 
 test("chaque recette, étape ou référence citée existe", () => {
-  const textes = [...fs.readdirSync(path.join(REF, "contexte")).map((f) => path.join(REF, "contexte", f)), path.join(REF, "fiche.md"), path.join(REF, "technical.md"), path.join(REF, "theme.md")];
+  const textes = [...fs.readdirSync(path.join(REF, "contexte"), { recursive: true }).filter((f) => f.endsWith(".md")).map((f) => path.join(REF, "contexte", f)), ...["fiche.md", "technical.md", "theme.md", "hebergement-docker.md", "hebergement-serveur.md"].map((f) => path.join(REF, f))];
   (function parcourir(d) {
     for (const e of fs.readdirSync(d, { withFileTypes: true })) {
       const chemin = path.join(d, e.name);

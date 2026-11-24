@@ -1,0 +1,1 @@
+**Sortie autonome** (hébergement serveur), après les autres étapes : `npm run build` avec `PULSE_SORTIE=standalone` et `SKIP_ENV_VALIDATION=1` (la construction du serveur), puis `bash -n scripts/deployer.sh` (le script de mise en ligne se lit sans erreur).

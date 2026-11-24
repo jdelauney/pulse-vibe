@@ -5,7 +5,9 @@
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
 #   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
-#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`, `perf-code`), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien
+#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`, `fix-en-ligne`, `perf-code`), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien ;
+#                                         la mise en ligne (deploy*, fix-en-ligne, cicd, secrets) suit l'hébergement déclaré dans docs/technical.md
+#                                         (« **Hébergement** : vercel|docker|serveur » ; vercel sans cette ligne)
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
 #   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
@@ -43,6 +45,25 @@ afficher() { # afficher <titre> <chemin>
     cat "$2"
     printf '\n'
   fi
+}
+
+# Hébergement du projet, lu dans docs/technical.md du dossier courant : vercel (par défaut), docker ou serveur.
+hebergement() {
+  local h=""
+  if [ -f docs/technical.md ]; then h="$(sed -n 's/^\*\*Hébergement\*\* *: *\([a-z]*\).*$/\1/p' docs/technical.md | head -n 1)"; fi
+  case "$h" in docker|serveur) printf '%s' "$h" ;; *) printf 'vercel' ;; esac
+}
+
+# Consignes de mise en ligne selon l'hébergement : la première pour Vercel, la seconde pour un serveur (docker ou
+# serveur : contexte/hors-vercel/, commun aux deux, puisque scripts/deployer.sh leur donne les mêmes commandes).
+selon_hebergement() { # selon_hebergement <chemin Vercel> <chemin serveur>
+  if [ "$(hebergement)" = vercel ]; then printf '%s' "$1"; else printf '%s' "$2"; fi
+}
+
+# Variables d'environnement chez l'hébergeur : Vercel, ou le fichier .env du serveur.
+variables_hebergeur() {
+  if [ "$(hebergement)" = vercel ]; then afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md"
+  else afficher "Variables d'environnement sur le serveur" "$REF/contexte/hors-vercel/variables.md"; fi
 }
 
 version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin/plugin.json" | head -n 1; }
@@ -103,20 +124,24 @@ contexte() {
     test)
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
     deploy)
-      afficher "Pour mettre en ligne" "$REF/contexte/deploy.md" ;;
+      afficher "Pour mettre en ligne" "$(selon_hebergement "$REF/contexte/deploy.md" "$REF/contexte/hors-vercel/deploy.md")" ;;
     deploy-premiere)
-      afficher "Pour la première mise en ligne" "$REF/contexte/deploy-premiere.md" ;;
+      afficher "Pour la première mise en ligne" "$(selon_hebergement "$REF/contexte/deploy-premiere.md" "$REF/contexte/hors-vercel/deploy-premiere.md")" ;;
     deploy-production)
-      afficher "Pour le mode production" "$REF/contexte/deploy-production.md" ;;
+      afficher "Pour le mode production" "$(selon_hebergement "$REF/contexte/deploy-production.md" "$REF/contexte/hors-vercel/deploy-production.md")" ;;
     fix-en-ligne)
-      afficher "Pour corriger un problème du site en ligne" "$REF/contexte/fix-en-ligne.md" ;;
+      afficher "Pour corriger un problème du site en ligne" "$(selon_hebergement "$REF/contexte/fix-en-ligne.md" "$REF/contexte/hors-vercel/fix-en-ligne.md")" ;;
     deploy-variables)
-      afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
+      variables_hebergeur ;;
     cicd)
-      afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md" ;;
+      afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md"
+      case "$(hebergement)" in
+        docker) afficher "Contrôle propre à l'hébergement docker" "$REF/contexte/docker/cicd.md" ;;
+        serveur) afficher "Contrôle propre à l'hébergement serveur" "$REF/contexte/serveur/cicd.md" ;;
+      esac ;;
     secrets)
       afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md"
-      afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
+      variables_hebergeur ;;
     seo)
       afficher "Pour /pulse:seo" "$REF/contexte/seo.md"
       afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
