@@ -16,6 +16,7 @@
 |---|---|
 | `LIMITE_STOCKAGE` | Facultative. Où ranger les compteurs : `base` (par défaut, la base Neon), `redis` (option Upstash) ou `memoire` (tests et développement local seulement) |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Seulement avec `LIMITE_STOCKAGE=redis` (voir l'option Redis) |
+| `PROXYS_DE_CONFIANCE` | Facultative. Nombre de proxys devant le site, qui ajoutent chacun une adresse à `x-forwarded-for` : `1` par défaut (Vercel, Caddy, proxy du fournisseur) ; `2` pour deux proxys en chaîne |
 
 `LIMITE_STOCKAGE` reste absente de `.env.example` et de Vercel quand la base suffit : sa valeur par défaut est `base`.
 
@@ -79,8 +80,8 @@ Fonctionnalité: Limite de requêtes
   Règle: La limite s'applique par adresse IP du visiteur
 
     @US-XXX-2 @unitaire
-    Exemple: L'adresse retenue est la première de x-forwarded-for
-      Étant donné une requête qui porte « 203.0.113.7, 10.0.0.1 » dans x-forwarded-for
+    Exemple: L'adresse retenue est celle qu'ajoute le proxy de confiance
+      Étant donné une requête qui porte « 198.51.100.9, 203.0.113.7 » dans x-forwarded-for, derrière un proxy
       Quand l'adresse du visiteur est lue
       Alors l'adresse retenue est « 203.0.113.7 »
 
@@ -122,7 +123,7 @@ Fonctionnalité: Limite de requêtes
   - Dépend de : —
   - Fichiers : à créer : `src/core/shared/limiteur.port.ts`, `src/lib/helpers/limite/ip-et-message.ts`, `src/lib/helpers/limite/limiteur-memoire.ts`, `src/db/limite/limite.table.ts`, migration dans `drizzle/`, `src/db/limite/limite.repository.ts`, `src/lib/limite.ts`, `tests/helpers/contrat-limiteur.ts` et les tests de la section « Tests » · à modifier : `src/config/env.ts`
   - Vérification : US-XXX critères 1 à 4 – `npm test` passe (base PGlite et mémoire)
-  - Tests : « Sixième tentative de connexion en une minute… », « Attente de 9 minutes et demie… », « L'adresse retenue est la première de x-forwarded-for » (unitaires) ; « L'incident est journalisé sans l'adresse IP », « des envois simultanés ne dépassent jamais la limite » (intégration)
+  - Tests : « Sixième tentative de connexion en une minute… », « Attente de 9 minutes et demie… », « L'adresse retenue est celle qu'ajoute le proxy de confiance » (unitaires) ; « L'incident est journalisé sans l'adresse IP », « des envois simultanés ne dépassent jamais la limite » (intégration)
 - [ ] **Tn+1 – Freiner les essais en rafale** · US-XXX
   - Objectif : la connexion, l'inscription, le changement de mot de passe (et les actions des recettes `email` et `double-authentification`) refusent les essais en rafale
   - Dépend de : Tn
@@ -149,7 +150,8 @@ Le code des tests : `pulse-aidd pile recette limite tests`
 ## Pièges connus
 
 - **Toutes les requêtes locales comptent pour une seule IP** : en local, `x-forwarded-for` est absent et l'identifiant vaut `inconnue`. C'est normal. Un parcours Playwright qui se connecte plus de 5 fois par minute atteint la limite : espacer les connexions ou relever `REGLES` le temps des essais.
-- **IP falsifiable hors de Vercel** : Vercel réécrit `x-forwarded-for`. Chez un autre hébergeur, vérifier qui écrit cet en-tête avant de s'y fier.
+- **IP falsifiable** : le navigateur peut écrire lui-même `x-forwarded-for` ; seule l'adresse ajoutée par le proxy de confiance compte. Vercel, Caddy et le proxy d'un fournisseur en sont un chacun : `PROXYS_DE_CONFIANCE=1`, par défaut. Deux proxys en chaîne (ex. un réseau de diffusion devant Caddy) : `PROXYS_DE_CONFIANCE=2`. Un site joignable sans son proxy (port ouvert à tous) permet de choisir son adresse : le port du site reste fermé au public.
+- **Serveur unique (docker, serveur)** : une seule instance compte toutes les tentatives : `LIMITE_STOCKAGE=memoire` y suffit (rien n'est écrit en base ; les compteurs repartent de zéro au redémarrage). La base reste le choix par défaut.
 - **Plusieurs personnes derrière la même IP** (entreprise, école, événement, réseau Wi-Fi partagé) : elles partagent la limite. Si un groupe utilise le site en même temps depuis un même lieu, relever les nombres de `REGLES` le temps nécessaire.
 - **`exigerLimite` placé après un `try`** : le placer en première ligne de l'action, hors de tout `try … catch` ; il arrête l'action avec `returnServerError`.
 - **Limiteur appelé ailleurs que dans une action ou un Route Handler** : les containers et les sections restent sans appel au limiteur ; la limite s'applique côté serveur, en première ligne de l'action.

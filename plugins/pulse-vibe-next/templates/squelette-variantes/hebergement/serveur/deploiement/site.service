@@ -1,0 +1,20 @@
+# Service systemd du site (hébergement serveur), en mode utilisateur : il tourne sous le compte qui possède le
+# site, sans droits d'administration. Installé par ./scripts/deployer.sh installer, qui remplace @DOSSIER@ et
+# @NODE@ ; à ne pas copier à la main. https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html
+[Unit]
+Description=Site {{NOM_PAQUET}} (Next.js)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=@DOSSIER@/courante
+# Par défaut : écoute sur cette machine seulement (Caddy devant). Proxy du fournisseur : PORT et HOSTNAME
+# se règlent dans .env (ex. PORT=4000 et HOSTNAME=0.0.0.0), qui l'emporte sur ces valeurs.
+Environment=NODE_ENV=production PORT=3000 HOSTNAME=127.0.0.1
+EnvironmentFile=@DOSSIER@/.env
+ExecStart=@NODE@ server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

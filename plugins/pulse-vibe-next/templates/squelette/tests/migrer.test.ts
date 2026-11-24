@@ -300,6 +300,26 @@ describe("Migrations chez un autre hébergeur (--en-ligne)", () => {
     expect(journalDe(d)).toMatch(/Base hors Neon : pas de sauvegarde/);
   });
 
+  it("production sur une base hors Neon, copiée par la mise en ligne (pg_dump) : le journal le dit", async () => {
+    const adresse = "postgresql://app@db:5432/app";
+    const d = {
+      ...dependances(
+        {
+          ...AILLEURS,
+          DATABASE_URL_DIRECT: adresse,
+          PULSE_SAUVEGARDE: "pg_dump",
+        },
+        "1000",
+      ),
+      enLigne: true,
+    };
+    expect(await migrer(d)).toBe("applique");
+    expect(d.sauvegarder).not.toHaveBeenCalled();
+    expect(journalDe(d)).toMatch(
+      /copie faite juste avant la mise en ligne \(pg_dump/,
+    );
+  });
+
   it("base Neon reconnue à son hôte ….neon.tech", () => {
     expect(estNeon(ADRESSE_DIRECTE)).toBe(true);
     expect(estNeon("postgresql://postgres:postgres@localhost:5432/app")).toBe(

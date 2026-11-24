@@ -1,0 +1,8 @@
+# Caddy devant le site (profil « caddy » de compose.production.yml) : HTTPS automatique pour DOMAINE
+# (fichier .env du serveur, ex. www.mon-site.fr), certificat renouvelé tout seul. Les ports 80 et 443 du
+# serveur doivent être ouverts, et le nom de domaine pointer vers le serveur.
+# https://caddyserver.com/docs/quick-starts/reverse-proxy
+{$DOMAINE} {
+	encode
+	reverse_proxy app:3000
+}

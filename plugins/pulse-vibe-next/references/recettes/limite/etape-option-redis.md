@@ -245,7 +245,7 @@ export async function exigerLimite(
 ): Promise<void> {
   const verdict = await verifierLimite(
     nom,
-    identifiant ?? ipDepuis(await headers()),
+    identifiant ?? ipDepuis(await headers(), env.PROXYS_DE_CONFIANCE),
   );
   if (!verdict.autorise) {
     returnServerError(verdict.message);

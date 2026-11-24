@@ -1,6 +1,6 @@
 ### 10. L'écran : sections, containers et page
 
-La section reçoit tout par props. Le container (client) appelle `useAction` pour les deux actions et envoie le fichier à R2.
+La section reçoit tout par props. Le container (client) appelle `useAction` pour les deux actions et envoie le fichier au stockage (service S3, ou route du site pour le stockage `dossier`).
 
 <!-- fichier: src/features/fichiers/components/sections/champ-envoi-fichier.tsx -->
 ```tsx
@@ -92,7 +92,7 @@ export function EnvoiFichierContainer() {
         );
         return;
       }
-      // 2. Le navigateur envoie le fichier directement à R2.
+      // 2. Le navigateur envoie le fichier à l'adresse signée (service S3 ou route du site).
       // Une coupure réseau fait échouer fetch par une exception : l'attraper ici,
       // sinon toute la page bascule sur l'écran d'erreur.
       let envoye = false;
@@ -110,7 +110,7 @@ export function EnvoiFichierContainer() {
         setErreur(MESSAGE_ENVOI_ECHOUE);
         return;
       }
-      // 3. Le serveur vérifie ce que R2 a reçu.
+      // 3. Le serveur vérifie ce que le stockage a reçu.
       const confirmation = await confirmer.executeAsync({
         id: preparation.data.id,
       });

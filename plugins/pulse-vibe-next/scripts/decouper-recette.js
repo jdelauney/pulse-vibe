@@ -100,7 +100,76 @@ function texteRecette(nom, dossier = DOSSIER) {
   return recomposer(lireDossier(path.join(dossier, nom)));
 }
 
-if (require.main === module) {
+// Fin d'une balise réservée à certains projets : « … hebergement: docker,serveur », « … stockage: s3 », ou les deux.
+const CONDITION = /\s+(hebergement|stockage):\s+([a-z0-9]+(?:,[a-z0-9]+)*)$/;
+// Stockage des fichiers envoyés (recette fichiers) : un service compatible S3, ou un dossier du serveur (docker, serveur).
+const STOCKAGES = ["s3", "dossier"];
+
+/** Stockage d'un projet sans choix noté : S3 sur Vercel (pas de disque durable), le dossier du serveur ailleurs. */
+function stockageParDefaut(hebergement) {
+  return hebergement === "vercel" ? "s3" : "dossier";
+}
+
+/**
+ * Valeur d'une balise sans ses conditions : { valeur, hebergements, stockages } (null : sans condition sur cet axe).
+ * Un axe écrit deux fois lève une erreur.
+ */
+function conditions(valeur) {
+  const lues = { hebergements: null, stockages: null };
+  let reste = valeur;
+  for (let m = CONDITION.exec(reste); m; m = CONDITION.exec(reste)) {
+    const axe = `${m[1]}s`;
+    if (lues[axe]) throw new Error(`condition « ${m[1]}: » en double`);
+    lues[axe] = m[2].split(",");
+    reste = reste.slice(0, m.index);
+  }
+  return { valeur: reste, ...lues };
+}
+
+/** Une balise vaut-elle pour ce projet ? Un axe sans condition vaut pour tous. */
+function valablePour({ hebergements, stockages }, hebergement, stockage) {
+  return (!hebergements || hebergements.includes(hebergement)) && (!stockages || stockages.includes(stockage));
+}
+
+/**
+ * Le texte d'une recette pour un projet (hébergement, stockage) : chaque balise réservée à d'autres projets disparaît,
+ * avec le bloc de code qui la suit. Le reste est rendu tel quel (pulse-pile-next recette, d'après docs/technical.md).
+ */
+function filtrerSelonHebergement(texte, hebergement, stockage = stockageParDefaut(hebergement)) {
+  const lignes = texte.split("\n");
+  const sortie = [];
+  for (let i = 0; i < lignes.length; i++) {
+    const balise = /^<!--\s*[a-z-]+:\s*(.+?)\s*-->\s*$/.exec(lignes[i]);
+    if (!balise || valablePour(conditions(balise[1]), hebergement, stockage)) {
+      sortie.push(lignes[i]);
+      continue;
+    }
+    // Le bloc qui suit la balise (après d'éventuelles lignes vides) part avec elle.
+    let k = i + 1;
+    while (k < lignes.length && lignes[k].trim() === "") k++;
+    const ouverture = k < lignes.length ? /^(`{3,})/.exec(lignes[k]) : null;
+    if (!ouverture) continue;
+    const fin = lignes.findIndex((l, j) => j > k && l.trim() === ouverture[1]);
+    i = fin < 0 ? lignes.length : fin;
+    if (lignes[i + 1] !== undefined && lignes[i + 1].trim() === "" && sortie.length && sortie[sortie.length - 1].trim() === "") i++;
+  }
+  return sortie.join("\n");
+}
+
+/** Lit « --hebergement <valeur> [--stockage <valeur>] » (filtre de lecture) ; stockage inconnu ou absent : celui par défaut. */
+function lireFiltre(argv) {
+  const valeur = (nom) => (argv.includes(nom) ? argv[argv.indexOf(nom) + 1] : undefined);
+  const hebergement = valeur("--hebergement") || "vercel";
+  const stockage = hebergement !== "vercel" && STOCKAGES.includes(valeur("--stockage")) ? valeur("--stockage") : stockageParDefaut(hebergement);
+  return { hebergement, stockage };
+}
+
+if (require.main === module && process.argv[2] === "--hebergement") {
+  // Filtre de lecture : pulse-pile-next recette … | node decouper-recette.js --hebergement <valeur> [--stockage <valeur>]
+  const texte = fs.readFileSync(0, "utf8");
+  const { hebergement, stockage } = lireFiltre(process.argv.slice(2));
+  process.stdout.write(filtrerSelonHebergement(texte, hebergement, stockage));
+} else if (require.main === module) {
   const nom = process.argv[2];
   if (!nom || !/^[a-z0-9-]+$/.test(nom)) {
     console.error("Usage : node scripts/decouper-recette.js <nom>");
@@ -123,4 +192,4 @@ if (require.main === module) {
   console.log(`${nom} : ${Object.keys(fichiers).length} fichiers dans references/recettes/${nom}/ ; retirer ${nom}.md avec git rm.`);
 }
 
-module.exports = { decouper, recomposer, lireDossier, texteRecette, identifiant };
+module.exports = { decouper, recomposer, lireDossier, texteRecette, identifiant, conditions, valablePour, filtrerSelonHebergement, lireFiltre, stockageParDefaut, STOCKAGES };

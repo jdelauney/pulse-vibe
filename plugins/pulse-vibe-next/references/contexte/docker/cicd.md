@@ -1,0 +1,1 @@
+**Image du site** (hébergement docker), après `npm run build` : `docker build --target production --build-arg SITE_URL=https://www.exemple.org .` (Docker est présent sur les machines Ubuntu de GitHub Actions) ; une image qui ne se construit plus échouerait sinon sur le serveur, à la mise en ligne.

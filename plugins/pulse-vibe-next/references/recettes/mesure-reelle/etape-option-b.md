@@ -253,11 +253,12 @@ export const mesureVitesseSchema = z.object({
 });
 ```
 
-Le fichier `.webhook.ts` reçoit la requête, comme pour un service externe. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (règle `purgeNecessaire` de `ReglesMesure`, testable sans horloge réelle). Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
+Le fichier `.webhook.ts` reçoit la requête. Il accepte seulement les envois venant des pages du site (en-tête `Origin`), de petite taille, au format attendu ; le use-case efface au passage les mesures de plus de 90 jours, au plus une fois par heure et par instance du serveur : le webhook garde en mémoire la date du dernier effacement et la passe au use-case, qui décide (règle `purgeNecessaire` de `ReglesMesure`, testable sans horloge réelle). Une panne de la base répond avec `reponseErreur()` : message générique, détail dans le journal du serveur seulement.
 
 <!-- fichier: src/features/vitesse/webhooks/recevoir-mesure.webhook.ts -->
 ```ts
 // src/features/vitesse/webhooks/recevoir-mesure.webhook.ts
+import { adresseDuSite } from "@src/config/site";
 import { EnregistrerMesure } from "@src/core/vitesse/use-cases/enregistrer-mesure.use-case";
 import { getDb } from "@src/db/db-client";
 import { DrizzleMesureVitesseRepository } from "@src/db/vitesse/mesure-vitesse.repository";
@@ -275,7 +276,8 @@ let dernierePurge: Date | null = null;
 export async function recevoirMesure(request: NextRequest): Promise<Response> {
   // Seulement depuis les pages du site lui-même.
   const origine = request.headers.get("origin");
-  if (origine && origine !== request.nextUrl.origin) {
+  const permises = [request.nextUrl.origin, new URL(adresseDuSite()).origin];
+  if (origine && !permises.includes(origine)) {
     return new Response(null, { status: 403 });
   }
   const texte = await request.text();
@@ -382,7 +384,7 @@ import { Toaster } from "@src/components/ui/sonner";
 
 #### 6. Mettre en ligne, puis lire les chiffres
 
-`npm run build`, `/pulse:commit`, `/pulse:deploy` (la migration s'applique sur la base de production avant, avec l'accord de la personne : `npm run db:migrate`). Après quelques jours de visites, dans la console Neon → **SQL Editor**, la personne colle cette requête (75e centile des 28 derniers jours, par page) :
+`npm run build`, `/pulse:commit`, `/pulse:deploy` (la migration s'applique à la mise en ligne). Après quelques jours de visites, dans la console Neon → **SQL Editor** (serveur : `psql`), la personne colle cette requête (75e centile des 28 derniers jours, par page) :
 
 ```sql
 select page, mesure,

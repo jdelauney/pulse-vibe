@@ -17,6 +17,9 @@
 | Tests automatiques | Vitest (unitaires et intégration, base PGlite en mémoire) ; Playwright (bout en bout) |
 
 **Pack de pile Pulse** : next
+**Hébergement** : vercel
+
+Hébergement : `vercel` (ces valeurs), `docker` ou `serveur` (lignes et sections Vercel remplacées par celles de `pulse-aidd pile reference hebergement-<valeur>.md`). Docker ou serveur avec la recette `fichiers` : elle ajoute la ligne `**Stockage des fichiers** : dossier|s3`.
 
 ## Organisation des fichiers
 
@@ -82,7 +85,7 @@ drizzle/                  migrations
 1. Créer un compte **Neon** (https://console.neon.tech) et un projet en région **AWS Europe Central 1 (Frankfurt)**. Sa branche principale sert la **production**. Créer la branche de développement : **Branches** → **New branch** → nom `dev`, parent la branche principale, case « Automatically delete branch after » **décochée** (cochée par défaut : la branche disparaîtrait au bout d'un jour) → **Create**. Sur la branche `dev`, bouton **Connect** : copier l'adresse « pooled » dans `DATABASE_URL` et l'adresse directe (sans `-pooler`) dans `DATABASE_URL_DIRECT` de `.env`, que la personne crée elle-même à partir de `.env.example`. Les essais et `npm run db:migrate` touchent ainsi `dev`, jamais les données réelles.
    PostgreSQL dans Docker en local : projet Neon pour la production seulement, sans branche `dev` ; installer Docker Desktop une fois (`pulse-aidd pile reference docker.md`).
 2. Créer un compte **Vercel** (https://vercel.com), relié au compte GitHub. Le projet Vercel se crée à la première mise en ligne.
-3. Poser le squelette : `pulse-aidd pile squelette --nom "<nom du projet>" --description "<la phrase du brief>"` (Docker : `--base postgres`).
+3. Poser le squelette : `pulse-aidd pile squelette --nom "<nom du projet>" --description "<la phrase du brief>"` (Docker en local : `--base postgres` ; serveur : `--hebergement docker|serveur`).
 4. `npm install` (il écrit `package-lock.json`, enregistré avec le code : les versions exactes de toutes les dépendances), puis `npx playwright install chromium`. Docker : copier `.env.example` en `.env` (adresses prêtes), puis `npm run db:up`.
 5. Vérifier : `npm run dev` (la page d'accueil affiche le nom du projet), `npm run check`, `npm run typecheck`, `npm test`.
 6. Si `docs/design.md` existe : appliquer le thème (`pulse-aidd pile reference theme.md`).

@@ -108,7 +108,7 @@ test("regles : lit les noms des blocs server et client d'un env.ts t3", async ()
 test("la fiche décrit chaque variable des règles, avec ses préfixes attendus", () => {
   const texte = fs.readFileSync(FICHE, "utf8");
   for (const [nom, regle] of Object.entries(VARIABLES)) {
-    if (/^(SMTP_HOST|SMTP_PORT|SMTP_USER|MAIL_FROM|R2_ACCOUNT_ID|R2_BUCKET|UPSTASH_REDIS_REST_URL|NEON_PROJECT_ID|NEON_ENDPOINT_PRODUCTION)$/.test(nom)) {
+    if (/^(SMTP_HOST|SMTP_PORT|SMTP_USER|MAIL_FROM|S3_ENDPOINT|S3_REGION|S3_BUCKET|S3_FORCE_PATH_STYLE|UPSTASH_REDIS_REST_URL|NEON_PROJECT_ID|NEON_ENDPOINT_PRODUCTION)$/.test(nom)) {
       assert.ok(texte.includes(`\`${nom}\``), `${nom} cité dans la fiche`);
       continue;
     }
@@ -390,27 +390,34 @@ test("Neon : select 1 par le pilote du projet ; mots de passe différents entre 
   sansValeur(ok.sortie + ecart.sortie + inverse.sortie + local.sortie, mdp);
 });
 
-test("R2 : HeadBucket par le client S3 du projet ; dépendance absente : code 3", async () => {
+test("S3 : HeadBucket par le client S3 du projet, sur S3_ENDPOINT ; dépendance absente : code 3", async () => {
   const d = projet({
     "@aws-sdk/client-s3": `class HeadBucketCommand { constructor(i) { this.input = i; } }
       class S3Client { constructor(o) { this.o = o; } async send(c) {
         if (this.o.credentials.secretAccessKey !== process.env.ATTENDU) throw Object.assign(new Error("Forbidden"), { name: "Forbidden", $metadata: { httpStatusCode: 403 } });
-        if (!this.o.endpoint.endsWith(".eu.r2.cloudflarestorage.com")) throw new Error("mauvaise adresse");
+        if (this.o.endpoint !== "https://s3.exemple.test" || this.o.region !== "region-1" || this.o.forcePathStyle !== (process.env.CHEMIN === "1")) throw new Error("mauvais réglages");
+        if (c.input.Bucket !== "fichiers") throw new Error("mauvais bucket");
         return {}; } }
       module.exports = { S3Client, HeadBucketCommand };`,
   });
   const secret = hasard(32);
-  const valeurs = { R2_ACCOUNT_ID: hasard(16), R2_BUCKET: "fichiers", R2_ACCESS_KEY_ID: hasard(16), R2_SECRET_ACCESS_KEY: secret };
-  const ok = await lancer(d, ["tester", "R2_SECRET_ACCESS_KEY"], JSON.stringify(valeurs), { ATTENDU: secret });
+  const valeurs = { S3_ENDPOINT: "https://s3.exemple.test", S3_REGION: "region-1", S3_BUCKET: "fichiers", S3_ACCESS_KEY_ID: hasard(16), S3_SECRET_ACCESS_KEY: secret };
+  const ok = await lancer(d, ["tester", "S3_SECRET_ACCESS_KEY"], JSON.stringify(valeurs), { ATTENDU: secret });
   assert.strictEqual(ok.code, 0, ok.sortie);
-  assert.match(ok.sortie, /ouvre le bucket fichiers/);
-  const ko = await lancer(d, ["tester", "R2_ACCESS_KEY_ID"], JSON.stringify(valeurs), { ATTENDU: "autre" });
+  assert.match(ok.sortie, /ouvre le bucket fichiers chez s3\.exemple\.test/);
+  const chemin = await lancer(d, ["tester", "S3_ACCESS_KEY_ID"], JSON.stringify({ ...valeurs, S3_FORCE_PATH_STYLE: "true" }), { ATTENDU: secret, CHEMIN: "1" });
+  assert.strictEqual(chemin.code, 0, chemin.sortie);
+  const ko = await lancer(d, ["tester", "S3_ACCESS_KEY_ID"], JSON.stringify(valeurs), { ATTENDU: "autre" });
   assert.strictEqual(ko.code, 1);
   assert.match(ko.sortie, /code 403/);
-  sansValeur(ok.sortie + ko.sortie, secret);
-  const sansModule = await lancer(projet(), ["tester", "R2_SECRET_ACCESS_KEY"], JSON.stringify(valeurs));
+  assert.match(ko.sortie, /droit de lister/);
+  sansValeur(ok.sortie + ko.sortie + chemin.sortie, secret);
+  const sansModule = await lancer(projet(), ["tester", "S3_SECRET_ACCESS_KEY"], JSON.stringify(valeurs));
   assert.strictEqual(sansModule.code, 3);
   assert.match(sansModule.sortie, /npm install/);
+  const manque = await lancer(d, ["tester", "S3_SECRET_ACCESS_KEY"], JSON.stringify({ ...valeurs, S3_REGION: "" }));
+  assert.strictEqual(manque.code, 1);
+  assert.match(manque.sortie, /S3_REGION manque/);
 });
 
 test("SMTP : serveur inconnu, le mot de passe ne part pas (code 3, serveur nommé)", async () => {
@@ -434,14 +441,16 @@ test("Upstash : adresse hors upstash.io, le jeton ne part pas", async () => {
   sansValeur(r.sortie, jeton);
 });
 
-test("R2 : identifiant de compte invalide, la clé ne part pas", async () => {
-  const d = projet({ "@aws-sdk/client-s3": `class HeadBucketCommand {} class S3Client { async send() { throw new Error("CLIENT_R2_APPELE"); } } module.exports = { S3Client, HeadBucketCommand };` });
+test("S3 : adresse du service sans https, la clé ne sert pas", async () => {
+  const d = projet({ "@aws-sdk/client-s3": `class HeadBucketCommand {} class S3Client { async send() { throw new Error("CLIENT_S3_APPELE"); } } module.exports = { S3Client, HeadBucketCommand };` });
   const secret = hasard(32);
-  const r = await lancer(d, ["tester", "R2_SECRET_ACCESS_KEY"], JSON.stringify({ R2_ACCOUNT_ID: "attaquant.example/#", R2_BUCKET: "fichiers", R2_ACCESS_KEY_ID: hasard(16), R2_SECRET_ACCESS_KEY: secret }));
-  assert.strictEqual(r.code, 1, r.sortie);
-  assert.match(r.sortie, /R2_ACCOUNT_ID/);
-  assert.doesNotMatch(r.sortie, /CLIENT_R2_APPELE/);
-  sansValeur(r.sortie, secret);
+  for (const S3_ENDPOINT of ["http://s3.exemple.test", "pas une adresse"]) {
+    const r = await lancer(d, ["tester", "S3_SECRET_ACCESS_KEY"], JSON.stringify({ S3_ENDPOINT, S3_REGION: "region-1", S3_BUCKET: "fichiers", S3_ACCESS_KEY_ID: hasard(16), S3_SECRET_ACCESS_KEY: secret }));
+    assert.strictEqual(r.code, 1, r.sortie);
+    assert.match(r.sortie, /S3_ENDPOINT/);
+    assert.doesNotMatch(r.sortie, /CLIENT_S3_APPELE/);
+    sansValeur(r.sortie, secret);
+  }
 });
 
 test("SMTP : nom qui ressemble à un serveur connu (smtp-relay-brevo.com), le mot de passe ne part pas", async () => {

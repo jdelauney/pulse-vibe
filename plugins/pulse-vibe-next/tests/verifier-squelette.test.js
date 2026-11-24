@@ -48,6 +48,9 @@ test("--dernieres --majeures : toutes les versions montent", () => {
   assert.strictEqual(lireArguments([]).base, "neon");
   assert.strictEqual(lireArguments(["--base", "postgres"]).base, "postgres");
   assert.throws(() => lireArguments(["--base", "mariadb"]), /Base inconnue/);
+  assert.strictEqual(lireArguments([]).hebergement, "vercel");
+  for (const h of ["docker", "serveur"]) assert.strictEqual(lireArguments(["--hebergement", h]).hebergement, h);
+  assert.throws(() => lireArguments(["--hebergement", "netlify"]), /Hébergement inconnu/);
 });
 
 test("CI hebdomadaire : mineures et majeures en demandes de fusion séparées, recettes vérifiées", () => {

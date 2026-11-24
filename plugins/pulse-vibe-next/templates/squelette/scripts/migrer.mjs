@@ -16,7 +16,8 @@
 // - Production : si au moins une migration reste à appliquer, crée d'abord une branche Neon de
 //   sauvegarde (expire au bout de 7 jours ; NEON_API_KEY et NEON_PROJECT_ID), puis applique.
 //   Base jamais migrée (première mise en ligne) : rien à sauvegarder, la sauvegarde est ignorée.
-//   Base hors Neon (hôte autre que ….neon.tech) : lue par node-postgres, migrée sans sauvegarde, avec un message.
+//   Base hors Neon (hôte autre que ….neon.tech) : lue par node-postgres, migrée sans sauvegarde Neon, avec un message
+//   (PULSE_SAUVEGARDE=pg_dump : la mise en ligne docker ou serveur vient de la copier).
 //   Les sauvegardes Pulse (sauvegarde-AAAAMMJJ-HHMM) au-delà des 2 dernières sont supprimées avant (Neon limite le nombre
 //   de branches : 10 sur les offres Free et Launch).
 // Un échec arrête la construction : la version en ligne reste celle d'avant.
@@ -373,8 +374,11 @@ export async function migrer({
   if (environnement === "production" && derniere === null) {
     dire("Base jamais migrée : rien à sauvegarder, sauvegarde ignorée.");
   } else if (environnement === "production" && !estNeon(adresse)) {
+    // Hébergements docker et serveur : la mise en ligne copie la base par pg_dump juste avant (PULSE_SAUVEGARDE).
     dire(
-      "Base hors Neon : pas de sauvegarde automatique avant la migration (elle passe par une branche Neon). Gardez une copie de la base avant chaque mise en ligne qui la migre (docs/technical.md, « Retour arrière »).",
+      env.PULSE_SAUVEGARDE === "pg_dump"
+        ? "Base hors Neon : copie faite juste avant la mise en ligne (pg_dump, dossier sauvegardes/ du serveur)."
+        : "Base hors Neon : pas de sauvegarde automatique avant la migration (elle passe par une branche Neon). Gardez une copie de la base avant chaque mise en ligne qui la migre (docs/technical.md, « Retour arrière »).",
     );
   } else if (environnement === "production") {
     if (!env.NEON_API_KEY || !env.NEON_PROJECT_ID) {

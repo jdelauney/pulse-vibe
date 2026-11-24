@@ -238,7 +238,7 @@ test("actions du squelette : nom obligatoire (defineMetadataSchema), journalisé
 
 test("migrations du squelette : construction Vercel précédée de scripts/migrer.mjs, adresse directe de l'intégration", () => {
   const S = path.join(__dirname, "..", "templates", "squelette");
-  const vercel = JSON.parse(fs.readFileSync(path.join(S, "vercel.json"), "utf8"));
+  const vercel = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "templates", "squelette-variantes", "hebergement", "vercel", "vercel.json"), "utf8"));
   // Les tests passent avant les migrations : une version refusée ne migre jamais la base de production.
   assert.deepStrictEqual(vercel, { $schema: "https://openapi.vercel.sh/vercel.json", regions: ["fra1"], buildCommand: "npm test && node scripts/migrer.mjs --vercel && npm run build" });
   const etapes = vercel.buildCommand.split(" && ");
@@ -301,6 +301,81 @@ test("--base postgres sur un package.json existant : les scripts manquants s'ajo
   assert.match(r.stdout, /Complétés : .*package\.json \(1 script\)/);
   const paquet = JSON.parse(lire(d, "package.json"));
   assert.deepStrictEqual(paquet.scripts, { "db:up": "mon-script", "db:down": "docker compose down" });
+});
+
+test("--hebergement vercel (par défaut) : vercel.json, ni image Docker ni service", () => {
+  const d = dossierVide();
+  assert.strictEqual(lancer("--nom", "Essai", "--dossier", d).status, 0);
+  assert.ok(fs.existsSync(path.join(d, "vercel.json")));
+  for (const f of ["Dockerfile", ".dockerignore", "compose.production.yml", "scripts/deployer.sh", "deploiement", ".nvmrc"]) assert.ok(!fs.existsSync(path.join(d, f)), f);
+  const e = dossierVide();
+  assert.strictEqual(lancer("--nom", "Essai", "--hebergement", "vercel", "--dossier", e).status, 0);
+  assert.deepStrictEqual(fs.readdirSync(e).sort(), fs.readdirSync(d).sort());
+});
+
+test("--hebergement docker : image de production standalone, compose de production, déploiement par script", () => {
+  const d = dossierVide();
+  const r = lancer("--nom", "Mon Site", "--hebergement", "docker", "--dossier", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.match(r.stdout, /hebergement-docker\.md/);
+  assert.ok(!fs.existsSync(path.join(d, "vercel.json")), "vercel.json seulement pour Vercel");
+  const image = lire(d, "Dockerfile");
+  assert.match(image, /^ARG NODE_VERSION=\d+-slim$/m, "Node.js LTS, version écrite une fois");
+  for (const etape of ["AS dependances", "AS construction", "AS migrations", "AS production"]) assert.ok(image.includes(etape), etape);
+  assert.ok(image.indexOf("RUN npm test") < image.indexOf("RUN npm run build"), "tests avant la construction");
+  assert.match(image, /PULSE_SORTIE=standalone/);
+  assert.match(image, /^USER node$/m, "le site tourne sans droits d'administration");
+  assert.match(image, /^CMD \["node", "server\.js"\]$/m);
+  assert.ok(!/ARG [A-Z_]*(SECRET|PASSWORD|DATABASE)/.test(image), "aucun secret à la construction");
+  assert.match(lire(d, ".dockerignore"), /^\.env\*$/m, "les secrets restent hors de l'image");
+  const compose = lire(d, "compose.production.yml");
+  assert.match(compose, /image: "mon-site:courante"/, "nom de l'image rempli");
+  assert.match(compose, /condition: service_completed_successfully/, "migrations avant le site");
+  assert.match(compose, /profiles: \[base\]/, "PostgreSQL sur le serveur, au choix");
+  assert.match(compose, /profiles: \[caddy\]/, "Caddy, au choix");
+  assert.match(compose, /pg_dump --format=custom/, "copie de la base avant la mise en ligne");
+  assert.match(compose, /PULSE_SAUVEGARDE: pg_dump/);
+  assert.match(compose, /\$\{APP_ECOUTE:-127\.0\.0\.1\}/, "par défaut, le site écoute sur le serveur seul");
+  assert.match(lire(d, "deploiement/Caddyfile"), /reverse_proxy app:3000/);
+  const script = lire(d, "scripts/deployer.sh");
+  assert.match(script, /^IMAGE="mon-site"$/m);
+  for (const attendu of ["git pull --ff-only", "up -d --build --wait", "retour)", "journal)"]) assert.ok(script.includes(attendu), attendu);
+  if (process.platform !== "win32") assert.ok(fs.statSync(path.join(d, "scripts", "deployer.sh")).mode & 0o100, "exécutable");
+});
+
+test("--hebergement serveur : service systemd, Caddy au choix, Node.js par .nvmrc, construction sur le serveur", () => {
+  const d = dossierVide();
+  const r = lancer("--nom", "Mon Site", "--hebergement", "serveur", "--base", "postgres", "--dossier", d);
+  assert.strictEqual(r.status, 0, r.stderr);
+  assert.ok(!fs.existsSync(path.join(d, "vercel.json")) && !fs.existsSync(path.join(d, "Dockerfile")));
+  assert.ok(fs.existsSync(path.join(d, "docker-compose.yml")), "la base de développement de --base postgres reste");
+  assert.match(lire(d, ".nvmrc"), /^\d+\n$/);
+  const service = lire(d, "deploiement/site.service");
+  for (const attendu of ["WorkingDirectory=@DOSSIER@/courante", "EnvironmentFile=@DOSSIER@/.env", "ExecStart=@NODE@ server.js", "HOSTNAME=127.0.0.1", "Restart=always", "WantedBy=default.target"]) assert.ok(service.includes(attendu), attendu);
+  assert.ok(!/^User=/m.test(service), "service en mode utilisateur : le compte du site, jamais root");
+  assert.match(lire(d, "deploiement/Caddyfile"), /reverse_proxy 127\.0\.0\.1:3000/);
+  const script = lire(d, "scripts/deployer.sh");
+  assert.match(script, /^NOM="mon-site"$/m);
+  for (const attendu of ["npm ci", "pg_dump --format=custom", "node --env-file=.env scripts/migrer.mjs --en-ligne", "PULSE_SORTIE=standalone npm run build", "systemctl --user restart", 'rm -f "$version"/.env', "/api/sante", "journalctl --user"]) assert.ok(script.includes(attendu), attendu);
+  const ordre = ["    npm test\n", "    sauvegarder\n", "    node --env-file=.env scripts/migrer.mjs", "    PULSE_SORTIE=standalone npm run build"].map((x) => script.indexOf(x));
+  assert.deepStrictEqual([...ordre].sort((a, b) => a - b), ordre, "tests, copie de la base, migrations, puis construction");
+  assert.ok(!ordre.includes(-1));
+  for (const ligne of ["/sauvegardes/", "/versions/", "/courante"]) assert.ok(lire(d, ".gitignore").split("\n").includes(ligne), ligne);
+});
+
+test("--hebergement inconnu : message et code 1, rien n'est écrit", () => {
+  const d = dossierVide();
+  const r = lancer("--nom", "Essai", "--hebergement", "netlify", "--dossier", d);
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stderr, /Hébergement inconnu : netlify\. Valeurs possibles : vercel, docker, serveur/);
+  assert.deepStrictEqual(fs.readdirSync(d), []);
+});
+
+test("next.config.ts : sortie standalone seulement quand la construction la demande (docker, serveur)", () => {
+  const config = fs.readFileSync(path.join(__dirname, "..", "templates", "squelette", "next.config.ts"), "utf8");
+  assert.match(config, /const autonome = process\.env\.PULSE_SORTIE === "standalone";/);
+  assert.match(config, /outputFileTracingRoot: process\.cwd\(\)/, "racine fixée : un autre package-lock.json plus haut ne déplace pas server.js");
+  assert.match(config, /output: "standalone" as const/);
 });
 
 test("--base inconnue : message et code 1, rien n'est écrit", () => {

@@ -1,0 +1,127 @@
+# Le site en production, sur le serveur (hébergement docker). Lancé par scripts/deployer.sh :
+#   docker compose -f compose.production.yml up -d --build --wait
+# Réglages lus dans le fichier .env du serveur, saisi par la personne (jamais enregistré dans Git) :
+#   - toujours : SITE_URL, PULSE_ENV=production, et les variables des recettes ;
+#   - base Neon : DATABASE_URL et DATABASE_URL_DIRECT (adresses de la branche principale), NEON_API_KEY et
+#     NEON_PROJECT_ID (sauvegarde avant migration) ;
+#   - base PostgreSQL sur le serveur : COMPOSE_PROFILES=base et POSTGRES_PASSWORD (les adresses s'en déduisent) ;
+#   - Caddy pour le HTTPS (rien d'autre devant le site) : ajouter caddy à COMPOSE_PROFILES (base,caddy) et DOMAINE ;
+#   - proxy du fournisseur devant le site : APP_ECOUTE=0.0.0.0 et APP_PORT (le port réglé chez lui).
+# Ordre au déploiement : construction (tests compris), base, sauvegarde, migrations, puis le site. Une étape qui
+# échoue arrête la suite : le site d'avant reste en ligne.
+services:
+  app:
+    build:
+      context: .
+      target: production
+      args:
+        SITE_URL: ${SITE_URL:-}
+    image: "{{NOM_PAQUET}}:courante"
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://app:${POSTGRES_PASSWORD:-}@db:5432/app}
+    ports:
+      - "${APP_ECOUTE:-127.0.0.1}:${APP_PORT:-3000}:3000"
+    restart: unless-stopped
+    # Journal du site (./scripts/deployer.sh journal) : 5 fichiers de 10 Mo au plus, puis les plus anciens partent.
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+    # Répond quand la base répond (/api/sante) : --wait attend cet état avant de rendre la main.
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/sante').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  migrations:
+    build:
+      context: .
+      target: migrations
+    env_file: .env
+    environment:
+      DATABASE_URL_DIRECT: ${DATABASE_URL_DIRECT:-postgresql://app:${POSTGRES_PASSWORD:-}@db:5432/app}
+      # Base sur le serveur : le service sauvegarde vient de faire la copie (scripts/migrer.mjs le dit).
+      PULSE_SAUVEGARDE: pg_dump
+    restart: "no"
+    depends_on:
+      sauvegarde:
+        condition: service_completed_successfully
+        required: false
+
+  # Profil « base » : PostgreSQL sur le serveur. Ses données restent dans le volume « donnees ».
+  db:
+    profiles: [base]
+    image: postgres:19-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      POSTGRES_DB: app
+    # Depuis PostgreSQL 18, l'image range ses données sous /var/lib/postgresql/<version>/docker.
+    volumes:
+      - donnees:/var/lib/postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  # Copie de la base avant chaque mise en ligne (donc avant toute migration), dans sauvegardes/ du serveur ;
+  # les 7 plus récentes sont gardées. Même image que la base : pg_dump a toujours sa version.
+  sauvegarde:
+    profiles: [base]
+    image: postgres:19-alpine
+    environment:
+      PGHOST: db
+      PGUSER: app
+      PGPASSWORD: ${POSTGRES_PASSWORD:-}
+      PGDATABASE: app
+    volumes:
+      - ./sauvegardes:/sauvegardes
+    command:
+      - sh
+      - -c
+      - >-
+        set -e;
+        fichier=/sauvegardes/avant-mise-en-ligne-$$(date -u +%Y%m%d-%H%M%S).dump;
+        pg_dump --format=custom --file="$$fichier";
+        echo "Sauvegarde créée : $$fichier";
+        ls -1t /sauvegardes/*.dump | tail -n +8 | xargs -r rm --
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Profil « caddy » : HTTPS automatique (certificat Let's Encrypt) quand rien d'autre n'est devant le site.
+  caddy:
+    profiles: [caddy]
+    image: caddy:2.11
+    environment:
+      DOMAINE: ${DOMAINE:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploiement/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_donnees:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on:
+      - app
+
+volumes:
+  donnees:
+  caddy_donnees:
+  caddy_config:

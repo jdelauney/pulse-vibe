@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 // Pulse Next.js – création du projet de départ (`pulse-aidd pile squelette`, depuis /pulse:tech).
 //
-//   pulse-aidd pile squelette --nom "<nom du projet>" [--description "<une phrase>"] [--base neon|postgres] [--dossier <chemin>]
+//   pulse-aidd pile squelette --nom "<nom du projet>" [--description "<une phrase>"] [--base neon|postgres] [--hebergement vercel|docker|serveur] [--dossier <chemin>]
 //
 // Copie templates/squelette/ dans le dossier du projet (le dossier courant par défaut), puis, par-dessus,
-// les fichiers de la variante choisie (templates/squelette-variantes/base/<valeur>/ ; --base neon par défaut :
-// Neon pour tout ; postgres : PostgreSQL dans Docker en local, Neon en ligne). Le package.json d'une variante
-// ne porte que ce qu'elle ajoute (scripts), fusionné dans celui du squelette.
+// les fichiers des variantes choisies, une par axe (templates/squelette-variantes/<axe>/<valeur>/) :
+//   --base         neon (par défaut) : Neon pour tout ; postgres : PostgreSQL dans Docker en local, Neon en ligne
+//   --hebergement  vercel (par défaut) : vercel.json ; docker : image de production (Dockerfile, .dockerignore),
+//                  compose.production.yml (site, migrations ; au choix PostgreSQL et sa sauvegarde, Caddy) et
+//                  scripts/deployer.sh ; serveur : Node.js lancé par un service systemd (deploiement/site.service),
+//                  Caddy au choix (deploiement/Caddyfile), .nvmrc et scripts/deployer.sh
+// Le package.json d'une variante ne porte que ce qu'elle ajoute (scripts), fusionné dans celui du squelette.
 // Principe : ne rien remplacer. Un fichier déjà présent est gardé tel quel et signalé ;
 // .gitignore, .env.example, .gitattributes et .npmrc reçoivent seulement les lignes qui leur manquent.
 // N'installe rien : la commande suivante est « npm install ».
@@ -23,20 +27,27 @@ const MODELES_A_FUSIONNER = {
   "env.example.template": ".env.example",
   "gitattributes.template": ".gitattributes",
   "npmrc.template": ".npmrc",
+  "dockerignore.template": ".dockerignore",
+  "nvmrc.template": ".nvmrc",
 };
-const EXTENSIONS_TEXTE = new Set([".ts", ".tsx", ".js", ".mjs", ".json", ".css", ".md", ".template", ".yml"]);
+const EXTENSIONS_TEXTE = new Set([".ts", ".tsx", ".js", ".mjs", ".json", ".css", ".md", ".template", ".yml", ".sh", ".service", ""]);
 // Variantes du squelette, par axe : fichiers posés par-dessus le squelette commun.
 const VARIANTES = path.join(__dirname, "..", "templates", "squelette-variantes");
 const BASES = ["neon", "postgres"];
 const BASE_PAR_DEFAUT = "neon";
+const HEBERGEMENTS = ["vercel", "docker", "serveur"];
+const HEBERGEMENT_PAR_DEFAUT = "vercel";
+// Fichiers lancés tels quels sur le serveur : exécutables.
+const EXECUTABLES = new Set(["scripts/deployer.sh"]);
 
 function lireArguments(argv) {
-  const opts = { nom: null, description: "", base: BASE_PAR_DEFAUT, dossier: process.cwd(), aide: false };
+  const opts = { nom: null, description: "", base: BASE_PAR_DEFAUT, hebergement: HEBERGEMENT_PAR_DEFAUT, dossier: process.cwd(), aide: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--nom") opts.nom = argv[++i];
     else if (a === "--description") opts.description = argv[++i] || "";
     else if (a === "--base") opts.base = argv[++i];
+    else if (a === "--hebergement") opts.hebergement = argv[++i];
     else if (a === "--dossier") opts.dossier = path.resolve(argv[++i] || ".");
     else if (a === "--aide" || a === "-h" || a === "--help") opts.aide = true;
     else throw new Error(`Option inconnue : ${a}`);
@@ -104,7 +115,7 @@ function creerSquelette(opts) {
     DESCRIPTION_JSON: JSON.stringify((opts.description || "").trim()),
   };
   if (fs.existsSync(path.join(opts.dossier, "src", "app"))) throw new Error("Ce projet suit l'organisation précédente (app/ dans src/). L'aligner sur la nouvelle structure est une tâche du plan (« refactoring ou alignement sur les règles du pack ») ; rien n'a été écrit.");
-  const { sources, fragmentPaquet } = sourcesDuSquelette(opts.base || BASE_PAR_DEFAUT);
+  const { sources, fragmentsPaquet } = sourcesDuSquelette(opts.base || BASE_PAR_DEFAUT, opts.hebergement || HEBERGEMENT_PAR_DEFAUT);
   fs.mkdirSync(opts.dossier, { recursive: true });
   const bilan = { crees: [], gardes: [], fusionnes: [] };
   for (const [rel, source] of sources) {
@@ -122,31 +133,40 @@ function creerSquelette(opts) {
     fs.mkdirSync(path.dirname(cible), { recursive: true });
     if (EXTENSIONS_TEXTE.has(path.extname(rel))) fs.writeFileSync(cible, remplacer(fs.readFileSync(source, "utf8"), valeurs));
     else fs.copyFileSync(source, cible);
+    if (EXECUTABLES.has(rel.split(path.sep).join("/"))) fs.chmodSync(cible, 0o755);
     bilan.crees.push(rel);
   }
-  if (fragmentPaquet) {
-    const n = completerScripts(path.join(opts.dossier, "package.json"), JSON.parse(fs.readFileSync(fragmentPaquet, "utf8")).scripts || {});
-    if (n && bilan.gardes.includes("package.json")) bilan.fusionnes.push(`package.json (${n} script${n > 1 ? "s" : ""})`);
-  }
+  let ajoutes = 0;
+  for (const fragment of fragmentsPaquet) ajoutes += completerScripts(path.join(opts.dossier, "package.json"), JSON.parse(fs.readFileSync(fragment, "utf8")).scripts || {});
+  if (ajoutes && bilan.gardes.includes("package.json")) bilan.fusionnes.push(`package.json (${ajoutes} script${ajoutes > 1 ? "s" : ""})`);
   return bilan;
 }
 
 /**
- * Fichiers à poser : le squelette commun, puis ceux de la variante choisie, qui remplacent un fichier commun
- * de même chemin. Rend { sources: [[chemin relatif, source]], fragmentPaquet : package.json de la variante ou null }.
+ * Fichiers à poser : le squelette commun, puis ceux de chaque variante choisie (base, puis hébergement), qui
+ * remplacent un fichier commun de même chemin ; deux variantes ne posent jamais le même fichier.
+ * Rend { sources: [[chemin relatif, source]], fragmentsPaquet : les package.json des variantes }.
  */
-function sourcesDuSquelette(base) {
+function sourcesDuSquelette(base, hebergement = HEBERGEMENT_PAR_DEFAUT) {
   if (!BASES.includes(base)) throw new Error(`Base inconnue : ${base}. Valeurs possibles : ${BASES.join(", ")}.`);
+  if (!HEBERGEMENTS.includes(hebergement)) throw new Error(`Hébergement inconnu : ${hebergement}. Valeurs possibles : ${HEBERGEMENTS.join(", ")}.`);
   const sources = new Map(listerFichiers(SOURCE).map((rel) => [rel, path.join(SOURCE, rel)]));
-  const dossierVariante = path.join(VARIANTES, "base", base);
-  let fragmentPaquet = null;
-  if (fs.existsSync(dossierVariante)) {
+  const fragmentsPaquet = [];
+  const parVariante = new Map();
+  for (const [axe, valeur] of [["base", base], ["hebergement", hebergement]]) {
+    const dossierVariante = path.join(VARIANTES, axe, valeur);
+    if (!fs.existsSync(dossierVariante)) continue;
     for (const rel of listerFichiers(dossierVariante)) {
-      if (rel === "package.json") fragmentPaquet = path.join(dossierVariante, rel);
-      else sources.set(rel, path.join(dossierVariante, rel));
+      if (rel === "package.json") {
+        fragmentsPaquet.push(path.join(dossierVariante, rel));
+        continue;
+      }
+      if (parVariante.has(rel)) throw new Error(`${rel} est posé par deux variantes (${parVariante.get(rel)} et ${axe}/${valeur}).`);
+      parVariante.set(rel, `${axe}/${valeur}`);
+      sources.set(rel, path.join(dossierVariante, rel));
     }
   }
-  return { sources: [...sources].sort(([a], [b]) => a.localeCompare(b)), fragmentPaquet };
+  return { sources: [...sources].sort(([a], [b]) => a.localeCompare(b)), fragmentsPaquet };
 }
 
 /** Ajoute au package.json du projet les scripts qui lui manquent ; un script déjà présent reste tel quel. Rend le nombre ajouté. */
@@ -186,8 +206,9 @@ function principal() {
   if (bilan.gardes.length) console.log(`   Gardés tels quels (déjà présents) : ${bilan.gardes.join(", ")}.`);
   const base = opts.base === "postgres" ? ", copie de .env.example en .env, npm run db:up (Docker Desktop lancé), npm run db:migrate" : "";
   console.log(`\nÉtapes suivantes : npm install${base}, puis npm run dev (adresse : http://localhost:3000).`);
+  if (opts.hebergement !== HEBERGEMENT_PAR_DEFAUT) console.log(`Mise en ligne (${opts.hebergement}) : pulse-aidd pile reference hebergement-${opts.hebergement}.md, le moment venu.`);
 }
 
 if (require.main === module) principal();
 
-module.exports = { creerSquelette, nomDePaquet, BASES };
+module.exports = { creerSquelette, nomDePaquet, sourcesDuSquelette, BASES, HEBERGEMENTS };

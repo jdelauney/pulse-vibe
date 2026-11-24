@@ -19,6 +19,17 @@ Une fiche par variable du squelette et des recettes, lue par `pulse-aidd pile se
 - **Traces** : console Neon → **Monitoring** (connexions, requêtes) sur la période d'exposition.
 - Sources : https://neon.com/docs/manage/roles ; https://neon.com/faqs/rotate-database-password-after-leak ; https://neon.com/docs/manage/computes ; https://neon.com/docs/connect/connection-pooling.
 
+### `POSTGRES_PASSWORD`
+
+- **Rôle** : mot de passe du compte `app` de la base PostgreSQL du serveur (hébergement docker, `COMPOSE_PROFILES=base`). `compose.production.yml` en déduit `DATABASE_URL` et `DATABASE_URL_DIRECT`. Hébergement serveur : le même mot de passe est écrit dans les deux adresses du `.env` du serveur. Il vit seulement sur le serveur.
+- **Longueur** : 32 caractères au moins, tirés au hasard sur le serveur : `openssl rand -hex 32`.
+- **Où renouveler** : dans la base, puis dans le `.env` du serveur. Docker : `docker compose -f compose.production.yml exec db psql -U app -d app`, puis `\password app` (le nouveau mot de passe, deux fois, sans l'afficher), `\q` ; changer `POSTGRES_PASSWORD` dans `.env` (la variable ne sert qu'à la création de la base : la changer seule ne change pas le mot de passe). Serveur : `sudo -u postgres psql -c '\password app'`, puis les deux adresses de `.env`.
+- **Effet** : immédiat pour les nouvelles connexions ; le site garde ses connexions ouvertes jusqu'au redémarrage.
+- **Délai de grâce** : aucun. Enchaîner : `\password` → `.env` → redémarrage (docker : `./scripts/deployer.sh` ; serveur : `systemctl --user restart <nom du paquet>`), puis vérifier `/api/sante`.
+- **Après une fuite** : la base n'écoute que sur le serveur (réseau interne de Docker, ou `localhost`) : une fuite seule ne l'ouvre pas, mais le mot de passe se renouvelle tout de suite.
+- **Test** : sur le serveur, `/api/sante` répond 200 après le redémarrage.
+- Sources : https://www.postgresql.org/docs/current/app-psql.html (`\password`) ; https://hub.docker.com/_/postgres (`POSTGRES_PASSWORD`, lue à la création de la base seulement).
+
 ### `NEON_API_KEY`
 
 - **Rôle** : crée la branche de sauvegarde avant chaque migration de production (`scripts/migrer.mjs`), avec `NEON_PROJECT_ID` (identifiant du projet, pas un secret). En Production seulement. À chaque envoi en production, l'outil en déduit aussi `NEON_ENDPOINT_PRODUCTION` (point d'accès de la branche principale, pas un secret), envoyé pour Preview : la garde des prévisualisations de `scripts/migrer.mjs`. Une rotation de la clé le remet à jour.
@@ -80,27 +91,21 @@ Une fiche par variable du squelette et des recettes, lue par `pulse-aidd pile se
 ### `SMTP_PASSWORD`
 
 - **Rôle** : mot de passe d'envoi des e-mails (recette `envoi-email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages, pas des secrets).
-- **Où renouveler** : chez le fournisseur d'e-mail du projet. Principe commun : créer le nouvel identifiant d'envoi **avant** de supprimer l'ancien.
-  - **Gmail** (mot de passe d'application) : https://myaccount.google.com/apppasswords → créer (nom = le projet) → copier → plus tard, supprimer l'ancien dans la même liste. Exige la validation en deux étapes ; indisponible pour certains comptes professionnels. Changer le mot de passe du compte Google révoque **tous** ses mots de passe d'application.
-  - **Infomaniak** : Manager → Service Mail → l'adresse → onglet **Appareils** : ajouter un appareil (nouveau mot de passe), puis **Déconnecter l'appareil** ancien.
-  - **Brevo** (clé SMTP) : Paramètres → **SMTP & API** → onglet **SMTP** → **Generate a new SMTP key** ; supprimer l'ancienne ensuite. Clé montrée une seule fois. Chemin relevé par des sources secondaires : à confirmer à l'écran.
-  - Autre fournisseur : sa documentation officielle.
+- **Où renouveler** : chez le fournisseur d'e-mail du projet, dans les réglages de sécurité du compte d'envoi : la page des **mots de passe d'application** (ou des clés SMTP, ou des appareils connectés), d'après sa documentation officielle. Principe commun : créer le nouveau mot de passe d'application, nommé d'après le projet, **avant** de supprimer l'ancien. Beaucoup de fournisseurs demandent la validation en deux étapes pour en créer un ; changer le mot de passe du compte peut révoquer **tous** ses mots de passe d'application ; une clé est souvent montrée une seule fois.
 - **Effet** : la suppression de l'ancien identifiant est immédiate.
 - **Délai de grâce** : oui, tant que les deux identifiants coexistent.
 - **Test** : `pulse-aidd secrets verifier SMTP_PASSWORD` (authentification auprès du serveur, sans envoi), puis un envoi réel vers une adresse de test après le redéploiement.
 - **Traces** : journal des envois du fournisseur (volumes, rebonds, plaintes).
-- Sources : https://support.google.com/accounts/answer/185833 ; https://www.infomaniak.com/fr/support/faq/1736.
 
-### `R2_ACCESS_KEY_ID` et `R2_SECRET_ACCESS_KEY`
+### `S3_ACCESS_KEY_ID` et `S3_SECRET_ACCESS_KEY`
 
-- **Rôle** : le jeton d'accès au stockage Cloudflare R2 (recette `fichiers`), avec `R2_ACCOUNT_ID` et `R2_BUCKET` (réglages). Les deux valeurs du jeton changent ensemble.
-- **Où renouveler** : tableau de bord Cloudflare → **R2 object storage** → **Manage API tokens** → créer un nouveau jeton, droits limités au bucket du projet (lecture et écriture d'objets) → copier l'Access Key ID et le Secret Access Key (le secret est montré **une seule fois**). Après vérification : supprimer l'ancien jeton dans la même liste.
-- **Effet** : la suppression d'un jeton est immédiate.
-- **Délai de grâce** : oui, avec deux jetons actifs pendant la bascule.
-- **Test** : `pulse-aidd secrets verifier R2_SECRET_ACCESS_KEY` (ouverture du bucket avec le client du projet), puis un dépôt de fichier réel sur le site.
-- **Traces** : R2 → le bucket → **Metrics** (opérations de lecture et d'écriture).
-- **Format** : les jetons d'API Cloudflare récents commencent par `cfut_` (utilisateur) ou `cfat_` (compte) ; les identifiants R2 dérivés n'ont pas de préfixe.
-- Sources : https://developers.cloudflare.com/r2/api/tokens/ (màj 2026-10-01) ; https://developers.cloudflare.com/fundamentals/api/get-started/token-formats/.
+- **Rôle** : la clé d'accès au bucket des fichiers, chez le service compatible S3 choisi par la personne (recette `fichiers`, stockage `s3`), avec `S3_ENDPOINT` (adresse du service, préfixe `https://`), `S3_REGION`, `S3_BUCKET` et `S3_FORCE_PATH_STYLE` (réglages, pas des secrets). Les deux valeurs de la clé changent ensemble.
+- **Où renouveler** : dans l'espace du service S3, à la page des clés d'accès : créer une nouvelle clé, limitée au bucket du projet (lire, écrire, supprimer et lister ses objets), puis copier son identifiant et son secret (souvent montré **une seule fois**). Après vérification sur le site : supprimer l'ancienne clé. Le chemin exact est dans la documentation du service.
+- **Effet** : la suppression d'une clé est en général immédiate.
+- **Délai de grâce** : oui, avec deux clés actives pendant la bascule.
+- **Test** : `pulse-aidd secrets verifier S3_SECRET_ACCESS_KEY` (ouverture du bucket par une lecture, `HeadBucket`, avec le client du projet : rien n'est écrit), puis un dépôt de fichier réel sur le site.
+- **Traces** : le journal ou les statistiques d'accès du bucket, si le service en propose (requêtes de lecture et d'écriture).
+- **Format** : sans préfixe commun d'un service à l'autre.
 
 ### `UPSTASH_REDIS_REST_TOKEN`
 

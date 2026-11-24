@@ -12,7 +12,7 @@ export const fichiers = pgTable("fichiers", {
   utilisateurId: text("utilisateur_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  // Clé de l'objet dans R2 : "<id utilisateur>/<id fichier>.<extension>".
+  // Clé de l'objet dans le stockage : "<id utilisateur>/<id fichier>.<extension>".
   cle: text().notNull().unique(),
   nom: text().notNull(),
   typeMime: text("type_mime").notNull(),

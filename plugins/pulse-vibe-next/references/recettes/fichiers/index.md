@@ -1,6 +1,6 @@
 # Recette : fichiers
 
-> Quand l'utiliser : les personnes connectées envoient des fichiers (photos, PDF) et les retrouvent ensuite ; les fichiers sont rangés dans Cloudflare R2.
+> Quand l'utiliser : les personnes connectées envoient des fichiers (photos, PDF) et les retrouvent ensuite ; les fichiers vont chez un service S3 ou sur le serveur.
 
 ## Prérequis
 
@@ -12,94 +12,52 @@
   - la table `user` dans `src/db/compte/auth.table.ts` ;
   - le groupe de routes `app/(connecte)/` et le renvoi rapide `proxy.ts` (racine du projet) ;
   - l'aide de test `e2e/aides/connexion.ts` (`connecterNouvelUtilisateur(page)`).
-- Paquets à installer : `npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner` (dernières versions ; recette vérifiée avec 3.1147.0 pour les deux). Le reste vient du squelette (`next`, `next-safe-action`, `zod`, `drizzle-orm`, `sonner`) ; pour les tests : `vitest`, `@electric-sql/pglite`, `@playwright/test`.
-- Un compte Cloudflare avec R2. Offre gratuite (stockage Standard) : 10 Go-mois de stockage, 1 million d'opérations d'écriture (classe A) et 10 millions de lectures (classe B) par mois ; la sortie de données est gratuite.
-- Dans le tableau de bord Cloudflare :
-  1. **R2 object storage** → **Create bucket** → nom du bucket (ex. `mon-projet-fichiers`) → **Location** : **Specify jurisdiction** → **EU**. La juridiction UE garantit que les fichiers restent dans l'Union européenne. Elle se choisit à la création, sans retour possible.
-  2. **R2 object storage** → **Manage** (API Tokens) → créer un jeton avec la permission **Object Read & Write**, limité à ce bucket. Copier **Access Key ID** et **Secret Access Key** dans `.env` : la clé secrète s'affiche une seule fois.
-  3. Relever l'**Account ID** du compte.
-  4. Bucket → **Settings** → **CORS Policy** → **Add CORS policy**, coller (remplacer l'adresse Vercel par celle du projet) :
-
-```json
-[
-  {
-    "AllowedOrigins": ["http://localhost:3000", "https://mon-projet.vercel.app"],
-    "AllowedMethods": ["PUT"],
-    "AllowedHeaders": ["Content-Type"],
-    "ExposeHeaders": ["ETag"],
-    "MaxAgeSeconds": 3600
-  }
-]
-```
-
-Le bucket reste **privé** : pas d'accès public, pas de domaine public.
+- **Le stockage, choisi avant tout code.** Vercel : un service compatible S3 (stockage `s3`), car ses fonctions n'ont pas de disque durable. Docker ou serveur : demandez à la personne où ranger les fichiers envoyés : « dans un dossier de votre serveur (rien d'autre à ouvrir ; pensez à le sauvegarder) ou chez un service de stockage en ligne compatible S3 (un compte de plus, payant selon l'usage ; la place et la conservation sont gérées par lui) ? ». Notez la réponse sous la ligne « **Hébergement** » de `docs/technical.md` : `**Stockage des fichiers** : dossier` ou `s3` (sans elle : `dossier`), puis relisez la recette : `pulse-aidd pile recette` montre seulement les blocs balisés `stockage:` du choix noté.
+- Stockage `dossier` : ni compte ni paquet ; les fichiers vont dans `FICHIERS_DOSSIER`, hors de `public/`, par deux routes signées du site.
+- Stockage `s3` : paquets `npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner` (dernières versions ; recette vérifiée avec 3.1176.0 pour les deux). Un service compatible S3, choisi par la personne ; son prix (place, requêtes, téléchargements) se relève chez lui. Le bucket privé, la clé limitée à ce bucket et la règle CORS se créent chez lui (étape 1).
 
 ## Variables d'environnement
 
 | Nom | Rôle |
 |---|---|
-| `R2_ACCOUNT_ID` | Identifiant du compte Cloudflare |
-| `R2_ACCESS_KEY_ID` | Identifiant du jeton R2 |
-| `R2_SECRET_ACCESS_KEY` | Secret du jeton R2 (`VOTRE_CLE_ICI`) |
-| `R2_BUCKET` | Nom du bucket |
+| `S3_ENDPOINT` | Adresse du service S3, en `https://` (pas un secret) |
+| `S3_REGION` | Code de la région du bucket, donné par le service |
+| `S3_BUCKET` | Nom du bucket |
+| `S3_ACCESS_KEY_ID` | Identifiant de la clé d'accès au bucket |
+| `S3_SECRET_ACCESS_KEY` | Secret de cette clé (`VOTRE_CLE_ICI`) |
+| `S3_FORCE_PATH_STYLE` | `true` si le service demande le nom du bucket dans le chemin (`false` par défaut) |
+| `FICHIERS_DOSSIER` | Dossier des fichiers, hors de `public/` (pas un secret) |
+| `FICHIERS_SECRET` | Signe les adresses d'envoi et de lecture (32 caractères au moins, tirés au hasard) |
 
-Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts` :
-
-<!-- ajout: src/config/env.ts après: server: { -->
-```ts
-    R2_ACCOUNT_ID: z.string().min(1),
-    R2_ACCESS_KEY_ID: z.string().min(1),
-    R2_SECRET_ACCESS_KEY: z.string().min(1),
-    R2_BUCKET: z.string().min(1),
-```
-
-Pour les tests qui vérifient la validation, ajouter des valeurs de test dans `VARIABLES_VALIDES` de `tests/helpers/env-de-test.ts` (aide du squelette) :
-
-<!-- ajout: tests/helpers/env-de-test.ts après: export const VARIABLES_VALIDES: Record<string, string> = { -->
-```ts
-  R2_ACCOUNT_ID: "compte",
-  R2_ACCESS_KEY_ID: "cle-acces",
-  R2_SECRET_ACCESS_KEY: "secret-de-test",
-  R2_BUCKET: "bucket-de-test",
-```
-
-Ajoutez les quatre noms, **sans valeur**, à `.env.example` :
-
-<!-- ajout: .env.example -->
-```
-R2_ACCOUNT_ID=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET=
-```
-
-Dans Vercel, saisissez-les pour Production et Preview.
+Variables `S3_…` : stockage `s3` ; `FICHIERS_…` : stockage `dossier`. Les lignes de `src/config/env.ts`, des valeurs de test et de `.env.example` : étape 1.
 
 ## Fichiers créés ou modifiés
 
 | Fichier | Rôle |
 |---|---|
-| `src/config/env.ts`, `.env.example` (modifiés) | Les quatre variables R2 |
-| `next.config.ts` (modifié) | L'adresse R2 dans `connect-src` de la CSP |
+| `src/config/env.ts`, `.env.example` (modifiés) | Les variables `S3_…` (stockage `s3`), ou les deux du dossier (stockage `dossier`) |
+| `next.config.ts` (modifié) | Stockage `s3` : l'adresse du service dans `connect-src` de la CSP |
+| `.gitignore` (modifié, dossier) ; `Dockerfile`, `compose.production.yml` (modifiés, docker) | Dossier : hors de Git ; un volume pour docker. Docker et `s3` : l'adresse du service donnée à la construction |
 | `src/core/fichiers/fichier.entity.ts` | Types autorisés, taille maximale, statuts, `FichierVue` (données simples) et classe `Fichier` (règle de l'envoi conforme) |
 | `src/core/fichiers/fichier.errors.ts` | Codes des erreurs attendues |
 | `src/core/fichiers/fichier.rules.ts` | Classe `ReglesFichier` : clé d'objet, propriété de la clé |
 | `src/core/fichiers/fichier-repository.port.ts` | Interface `FichierRepository` : ce que les use-cases attendent de la base |
 | `src/core/fichiers/stockage-fichiers.port.ts` | Interface `StockageFichiers` : ce que les use-cases attendent du stockage |
 | `src/core/fichiers/use-cases/preparer-envoi.use-case.ts` | Classe `PreparerEnvoi` : réserve une ligne, signe l'adresse d'envoi |
-| `src/core/fichiers/use-cases/confirmer-envoi.use-case.ts` | Classe `ConfirmerEnvoi` : compare ce que R2 a reçu, valide ou efface |
+| `src/core/fichiers/use-cases/confirmer-envoi.use-case.ts` | Classe `ConfirmerEnvoi` : compare ce que le stockage a reçu, valide ou efface |
 | `src/core/fichiers/use-cases/supprimer-fichier.use-case.ts` | Classe `SupprimerFichier` : supprime la ligne, puis l'objet |
 | `src/db/fichiers/fichier.table.ts` | Table `fichiers` |
 | `drizzle/<numéro>_<nom>.sql` | Migration générée |
 | `src/db/fichiers/fichier.repository.ts` | Classe `DrizzleFichierRepository` : écritures et lectures, condition de propriété |
-| `src/adapters/storage/storage.adapter.ts` | Classe `StockageR2Adapter` : client R2, adresses signées, pannes en `ErreurService` |
+| `src/adapters/storage/storage.adapter.ts` | Classe `StockageS3Adapter` (stockage `s3` : client S3) ou `StockageDisqueAdapter` (stockage `dossier` : disque, jetons signés), adresses signées, pannes en `ErreurService` ; `stockageFichiers(env)` choisit la classe |
+| `app/api/fichiers/envoi/route.ts`, `app/api/fichiers/lecture/route.ts` (dossier) | Reçoivent et rendent un fichier, sur présentation d'un jeton signé de 5 minutes |
 | `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts` | Message d'échec, message de chaque code d'erreur |
 | `src/features/fichiers/schemas/fichier.schema.ts` | Types et taille autorisés (Zod) |
 | `src/features/fichiers/actions/preparer-envoi.action.ts`, `confirmer-envoi.action.ts`, `supprimer-fichier.action.ts` | Les trois actions |
 | `src/features/fichiers/queries/lister-fichiers.query.ts`, `trouver-fichier.query.ts` | Les deux lectures (`server-only`) |
 | `src/features/fichiers/components/sections/champ-envoi-fichier.tsx` | Champ d'envoi (props) |
 | `src/features/fichiers/components/sections/liste-fichiers.tsx` | Liste des fichiers (props) |
-| `src/features/fichiers/components/containers/envoi-fichier.container.tsx` | Branche les actions et l'envoi vers R2 |
+| `src/features/fichiers/components/containers/envoi-fichier.container.tsx` | Branche les actions et l'envoi du fichier |
 | `src/features/fichiers/components/containers/liste-fichiers.container.tsx` | Lit la session et la liste |
 | `app/api/fichiers/[id]/route.ts` | Téléchargement par adresse signée |
 | `app/(connecte)/fichiers/page.tsx` | Page « Mes fichiers » |
@@ -108,36 +66,37 @@ Dans Vercel, saisissez-les pour Production et Preview.
 | `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts` | Classes en mémoire qui implémentent les deux ports, partagées par les tests des use-cases |
 | `src/core/fichiers/use-cases/__tests__/preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts` | Tests unitaires des trois use-cases, un fichier chacun |
 | `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` | Tests unitaires du schéma |
-| `src/adapters/storage/__tests__/storage.adapter.test.ts` | Tests de l'adapter (client du SDK doublé) |
+| `src/adapters/storage/__tests__/storage.adapter.test.ts` | Tests de l'adapter (client du SDK doublé, ou dossier temporaire) |
 | `src/db/fichiers/__tests__/fichier.repository.test.ts` | Tests d'intégration avec PGlite |
 | `e2e/fichiers.spec.ts` | Tests de bout en bout Playwright |
 
 ## Étapes
 
-<!-- commande: npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner -->
+<!-- commande: npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner stockage: s3 -->
 
 Le parcours d'un envoi :
 
 1. Le navigateur demande une adresse d'envoi à l'action `preparerEnvoiAction`, avec le nom, le type et la taille du fichier.
 2. Le serveur vérifie la session, le type et la taille. Il réserve une ligne en base (statut `en_attente`), puis signe une adresse **PUT** valable 5 minutes, pour ce type et cette taille exacts.
-3. Le navigateur envoie le fichier **directement à R2** : le fichier ne passe pas par Vercel (le corps d'une Server Action est limité à 1 Mo).
-4. Le navigateur appelle `confirmerEnvoiAction` : le serveur demande à R2 ce qu'il a reçu, compare, puis passe la ligne en `envoye`.
+3. Stockage `s3` : le navigateur envoie le fichier **directement au service S3** ; le fichier ne passe pas par le site (sur Vercel, le corps d'une Server Action est limité à 1 Mo). Stockage `dossier` : à la route `/api/fichiers/envoi` du site, qui contrôle le jeton, le type et la taille avant d'écrire sur le disque.
+4. Le navigateur appelle `confirmerEnvoiAction` : le serveur demande au stockage ce qu'il a reçu, compare, puis passe la ligne en `envoye`.
 5. Pour lire, le lien `/api/fichiers/<id>` vérifie la session et la propriétaire, puis redirige vers une adresse **GET** signée de 5 minutes.
 
-Le domaine s'appelle `fichiers` : `src/core/fichiers/` (le métier : l'entité `Fichier`, les règles, les ports, les use-cases), `src/db/fichiers/` (le stockage en base), `src/features/fichiers/` (l'écran, les actions, les lectures). Le service R2 vit dans `src/adapters/storage/`. Le métier, le stockage et le service sont des classes ; chaque action assemble les objets dont elle a besoin.
+Le domaine s'appelle `fichiers` : `src/core/fichiers/` (le métier : l'entité `Fichier`, les règles, les ports, les use-cases), `src/db/fichiers/` (le stockage en base), `src/features/fichiers/` (l'écran, les actions, les lectures). L'adapter du stockage vit dans `src/adapters/storage/`. Le métier, la base et le stockage sont des classes ; chaque action assemble les objets dont elle a besoin.
 
-- Étape 1 – Cloudflare et les variables : `pulse-aidd pile recette fichiers etape 1`
+- Étape 1 – Le stockage et les variables : `pulse-aidd pile recette fichiers etape 1`
 - Étape 2 – Le métier : entité, erreurs, règles et ports : `pulse-aidd pile recette fichiers etape 2`
 - Étape 3 – Les use-cases (classes) : `pulse-aidd pile recette fichiers etape 3`
 - Étape 4 – La table et sa migration : `pulse-aidd pile recette fichiers etape 4`
 - Étape 5 – Le repository (classe) : `pulse-aidd pile recette fichiers etape 5`
-- Étape 6 – L'adapter de stockage (classe) : `pulse-aidd pile recette fichiers etape 6`
+- Étape 6 – L'adapter S3 : `pulse-aidd pile recette fichiers etape 6`
+- Étape dossier-du-serveur – Dossier du serveur (stockage dossier) : `pulse-aidd pile recette fichiers etape dossier-du-serveur`
 - Étape 7 – Les constantes et le schéma : `pulse-aidd pile recette fichiers etape 7`
 - Étape 8 – Les actions et les lectures : `pulse-aidd pile recette fichiers etape 8`
 - Étape 9 – Le téléchargement : `pulse-aidd pile recette fichiers etape 9`
 - Étape 10 – L'écran : sections, containers et page : `pulse-aidd pile recette fichiers etape 10`
 - Étape 11 – Le renvoi vers la connexion : `pulse-aidd pile recette fichiers etape 11`
-- Étape 12 – La CSP autorise R2 : `pulse-aidd pile recette fichiers etape 12`
+- Étape 12 – La CSP autorise le service S3 : `pulse-aidd pile recette fichiers etape 12`
 - Étape 13 – Essayer : `pulse-aidd pile recette fichiers etape 13`
 - Étape 14 – Mettre en ligne : `pulse-aidd pile recette fichiers etape 14`
 ## Scénarios Gherkin à ajouter à la spec
@@ -235,14 +194,14 @@ Fonctionnalité: Fichiers
     Exemple: Un lien de téléchargement copié ne sert plus après 5 minutes
       Étant donné Camille a copié l'adresse de téléchargement de sa facture
       Quand quelqu'un ouvre cette adresse 6 minutes plus tard, en navigation privée
-      Alors R2 refuse l'accès
+      Alors l'accès est refusé
 
   Règle: Un envoi n'est confirmé que s'il correspond à ce qui était annoncé
 
     @US-XXX-6 @unitaire
     Exemple: L'envoi conforme passe la ligne à « envoye »
       Étant donné Camille a préparé l'envoi d'une image PNG de 1000 octets
-      Et R2 a reçu une image PNG de 1000 octets
+      Et le stockage a reçu une image PNG de 1000 octets
       Quand le serveur confirme l'envoi
       Alors la ligne est « envoye »
 
@@ -255,10 +214,10 @@ Fonctionnalité: Fichiers
       Et la ligne et l'objet sont supprimés
 
       Exemples:
-        | réception                                 |
-        | R2 n'a rien reçu                          |
-        | R2 a reçu un objet de 999 octets          |
-        | R2 a reçu un PDF de 1000 octets           |
+        | réception                                      |
+        | le stockage n'a rien reçu                      |
+        | le stockage a reçu un objet de 999 octets      |
+        | le stockage a reçu un PDF de 1000 octets       |
 
   Règle: Un envoi non confirmé reste invisible
 
@@ -272,15 +231,15 @@ Fonctionnalité: Fichiers
   Règle: Une panne du stockage est signalée comme une panne de service
 
     @US-XXX-7 @unitaire @securite
-    Exemple: Un refus de R2 lève une erreur de service « stockage » sans la clé de l'objet
-      Étant donné R2 refuse l'accès à un objet de Camille
+    Exemple: Un refus du stockage lève une erreur de service « stockage » sans la clé de l'objet
+      Étant donné le stockage refuse l'accès à un objet de Camille
       Quand le serveur lit cet objet
       Alors une erreur de service « stockage » est levée
       Et son message et sa cause ne contiennent ni la clé de l'objet ni le texte d'origine
 
     @US-XXX-7 @unitaire
     Exemple: Un objet absent n'est pas une panne : le stockage répond « rien reçu »
-      Étant donné R2 répond « NotFound »
+      Étant donné le stockage répond « objet absent »
       Quand le serveur lit cet objet
       Alors le serveur obtient « rien reçu »
 
@@ -291,6 +250,11 @@ Fonctionnalité: Fichiers
       Quand le serveur signe l'adresse d'envoi d'une image PNG de 1000 octets
       Alors l'adresse expire au bout de 300 secondes
       Et le type et la taille font partie de la signature
+
+    @US-XXX-8 @unitaire
+    Exemple: Avec S3_FORCE_PATH_STYLE, le bucket passe dans le chemin de l'adresse
+      Quand le serveur signe l'adresse d'envoi pour un service qui demande le nom du bucket dans le chemin
+      Alors l'adresse commence par l'hôte du service, suivi du nom du bucket
 
     @US-XXX-8 @unitaire @securite
     Exemple: L'adresse de lecture force le téléchargement sous un nom nettoyé
@@ -319,65 +283,65 @@ Fonctionnalité: Fichiers
 
 > US terminée quand : une personne connectée envoie une image ou un PDF autorisé, le retrouve dans sa liste et le télécharge par un lien temporaire ; personne d'autre n'y accède.
 
-- [ ] **Tn – Relier le projet à R2** · US-XXX
-  - Objectif : le projet a un bucket R2 privé, en Europe, une table pour ses fichiers et un adapter de stockage
+- [ ] **Tn – Relier le projet au stockage des fichiers** · US-XXX
+  - Objectif : le projet a son stockage privé (bucket S3 en Europe si possible, ou dossier du serveur), une table pour ses fichiers et un adapter de stockage
   - Dépend de : —
-  - Fichiers : à créer : `src/core/fichiers/fichier.entity.ts` (classe `Fichier`), `fichier.errors.ts`, `fichier.rules.ts` (classe `ReglesFichier`), `fichier-repository.port.ts` et `stockage-fichiers.port.ts` (interfaces), `src/db/fichiers/fichier.table.ts`, `src/db/fichiers/fichier.repository.ts` (classe `DrizzleFichierRepository`), `src/adapters/storage/storage.adapter.ts` (classe `StockageR2Adapter`), `src/adapters/storage/__tests__/storage.adapter.test.ts`, `src/db/fichiers/__tests__/fichier.repository.test.ts`, migration dans `drizzle/` · à modifier : `src/config/env.ts`, `.env.example`
+  - Fichiers : à créer : `src/core/fichiers/fichier.entity.ts` (classe `Fichier`), `fichier.errors.ts`, `fichier.rules.ts` (classe `ReglesFichier`), `fichier-repository.port.ts` et `stockage-fichiers.port.ts` (interfaces), `src/db/fichiers/fichier.table.ts`, `src/db/fichiers/fichier.repository.ts` (classe `DrizzleFichierRepository`), `src/adapters/storage/storage.adapter.ts` (classe `StockageS3Adapter` ou `StockageDisqueAdapter` ; dossier : `app/api/fichiers/envoi/route.ts`, `app/api/fichiers/lecture/route.ts`), `src/adapters/storage/__tests__/storage.adapter.test.ts`, `src/db/fichiers/__tests__/fichier.repository.test.ts`, migration dans `drizzle/` · à modifier : `src/config/env.ts`, `.env.example`
   - Vérification : US-XXX critères 4 et 6 – `npm test` passe ; `npm run db:migrate` crée la table `fichiers`
-  - Tests : « Camille ouvre sa facture », « Léo ne peut pas ouvrir la facture de Camille », « La liste de Léo ne contient pas la facture de Camille », « La base refuse à Léo de confirmer ou d'effacer la ligne de Camille », « Un fichier « en_attente » n'apparaît ni dans la liste ni au téléchargement » (intégration) ; « Un refus de R2 lève une erreur de service « stockage » sans la clé de l'objet », « Un objet absent n'est pas une panne : le stockage répond « rien reçu » », « L'adresse d'envoi signe le type et la taille exacts », « L'adresse de lecture force le téléchargement sous un nom nettoyé » (unitaires)
-  - Action manuelle : créer le bucket (juridiction UE), le jeton R2 et la règle CORS dans Cloudflare ; remplir `.env`
+  - Tests : « Camille ouvre sa facture », « Léo ne peut pas ouvrir la facture de Camille », « La liste de Léo ne contient pas la facture de Camille », « La base refuse à Léo de confirmer ou d'effacer la ligne de Camille », « Un fichier « en_attente » n'apparaît ni dans la liste ni au téléchargement » (intégration) ; « Un refus du stockage lève une erreur de service « stockage » sans la clé de l'objet », « Un objet absent n'est pas une panne : le stockage répond « rien reçu » », « L'adresse d'envoi signe le type et la taille exacts », « L'adresse de lecture force le téléchargement sous un nom nettoyé » (unitaires)
+  - Action manuelle : stockage `s3`, créer chez le service le bucket privé, la clé limitée au bucket et la règle CORS, puis remplir `.env` ; stockage `dossier`, tirer `FICHIERS_SECRET`
 - [ ] **Tn+1 – Envoyer un fichier** · US-XXX
-  - Objectif : une personne connectée envoie une image ou un PDF, contrôlé par le serveur, puis confirmé après vérification dans R2
+  - Objectif : une personne connectée envoie une image ou un PDF, contrôlé par le serveur, puis confirmé après vérification dans le stockage
   - Dépend de : Tn
-  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts` (classes `PreparerEnvoi`, `ConfirmerEnvoi`, `SupprimerFichier`), `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` · à modifier : `next.config.ts` (CSP, étape 12)
+  - Fichiers : à créer : `src/core/fichiers/use-cases/preparer-envoi.use-case.ts`, `confirmer-envoi.use-case.ts`, `supprimer-fichier.use-case.ts` (classes `PreparerEnvoi`, `ConfirmerEnvoi`, `SupprimerFichier`), `src/features/fichiers/constants/fichiers.ts`, `constants/erreur-messages.ts`, `schemas/fichier.schema.ts`, `actions/preparer-envoi.action.ts`, `actions/confirmer-envoi.action.ts`, `actions/supprimer-fichier.action.ts`, `components/sections/champ-envoi-fichier.tsx`, `components/containers/envoi-fichier.container.tsx`, `src/core/fichiers/__tests__/fichier.rules.test.ts`, `src/core/fichiers/use-cases/__tests__/sut-fichiers.ts`, `preparer-envoi.use-case.test.ts`, `confirmer-envoi.use-case.test.ts`, `supprimer-fichier.use-case.test.ts`, `src/features/fichiers/schemas/__tests__/fichier.schema.test.ts` · à modifier : `next.config.ts` (CSP, étape 12, stockage `s3`)
   - Vérification : US-XXX critères 1 à 3 – une image PNG passe ; un `.exe` et un PDF de 6 Mo sont refusés avec le message prévu
   - Tests : « Une photo PNG de 2 Mo est acceptée », « Un fichier interdit ou trop lourd est refusé avec un message clair », « La clé du fichier de Camille commence par l'identifiant de Camille », « Camille reçoit une adresse d'envoi et une ligne en attente est réservée », « L'envoi conforme passe la ligne à « envoye » », « Un envoi différent de l'annonce est effacé avec sa ligne », « Léo ne peut pas confirmer l'envoi de Camille », « Camille supprime son fichier : la ligne et l'objet disparaissent », « Léo ne peut pas supprimer le fichier de Camille » (unitaires)
-  - Attention : le serveur contrôle le type et la taille, même si le champ `accept` filtre déjà ; un fichier d'`actions/` commence par `"use server"` et n'exporte que son action ; l'action crée les objets du use-case (`new PreparerEnvoi(new DrizzleFichierRepository(getDb()), new StockageR2Adapter(env))`)
+  - Attention : le serveur contrôle le type et la taille, même si le champ `accept` filtre déjà ; un fichier d'`actions/` commence par `"use server"` et n'exporte que son action ; l'action crée les objets du use-case (`new PreparerEnvoi(new DrizzleFichierRepository(getDb()), stockageFichiers(env))`)
 - [ ] **Tn+2 – Retrouver et télécharger ses fichiers** · US-XXX
   - Objectif : une personne voit ses fichiers et les télécharge par un lien temporaire
   - Dépend de : Tn+1
   - Fichiers : à créer : `src/features/fichiers/queries/lister-fichiers.query.ts`, `queries/trouver-fichier.query.ts`, `components/sections/liste-fichiers.tsx`, `components/containers/liste-fichiers.container.tsx`, `app/api/fichiers/[id]/route.ts`, `app/(connecte)/fichiers/page.tsx`, `e2e/fichiers.spec.ts` · à modifier : `proxy.ts`
   - Vérification : US-XXX critères 4 et 5 – envoyer un fichier, le voir dans la liste, le télécharger ; connecté avec un autre compte, `/api/fichiers/<id>` répond « Fichier introuvable. »
   - Tests : « Camille envoie une photo et la voit dans sa liste », « L'envoi échoue en route : un message clair, la page reste en place » (bout en bout) ; « Un lien de téléchargement copié ne sert plus après 5 minutes » (manuel : ouvrir le lien copié en navigation privée après 6 minutes)
-  - Action manuelle : saisir les variables R2 dans Vercel ; ajouter l'adresse du site en ligne à la règle CORS
+  - Action manuelle : stockage `s3`, saisir les variables `S3_…` chez l'hébergeur et ajouter l'adresse du site en ligne à la règle CORS ; stockage `dossier`, les deux variables dans le `.env` du serveur
 
 ## Tests
 Le code des tests : `pulse-aidd pile recette fichiers tests`
 ## Points de sécurité
 
-- **S1, S2 – Secrets** : les quatre variables R2 restent côté serveur (`server-only`, sans `NEXT_PUBLIC_`). Le navigateur reçoit seulement des adresses signées de 5 minutes. Les pannes du stockage sortent sans secret ni clé d'objet (`ErreurService` à `cause` technique).
+- **S1, S2 – Secrets** : `S3_SECRET_ACCESS_KEY` et `FICHIERS_SECRET` restent côté serveur (`server-only`, sans `NEXT_PUBLIC_`). Le navigateur reçoit seulement des adresses signées de 5 minutes. Les pannes du stockage sortent sans secret ni clé d'objet (`ErreurService` à `cause` technique).
 - **S3 – Contrôle d'accès** : chaque requête du repository et chaque action filtrent par `utilisateurId` (venu de la session) ; la clé d'objet commence par l'identifiant de la propriétaire.
-- **S5, S7 – Fichiers** : type (liste blanche) et taille (5 Mo) contrôlés par le schéma Zod de l'action ; la signature PUT fige le type et la taille ; `ConfirmerEnvoi` compare ce que R2 a reçu et efface tout écart.
+- **S5, S7 – Fichiers** : type (liste blanche) et taille (5 Mo) contrôlés par le schéma Zod de l'action ; la signature PUT fige le type et la taille ; `ConfirmerEnvoi` compare ce que le stockage a reçu et efface tout écart.
 - **S6 – Affichage** : le nom du fichier s'affiche comme du texte ; il n'entre jamais dans la clé d'objet ; il est nettoyé avant l'en-tête de téléchargement.
-- **S7 – Stockage privé** : bucket privé ; le Route Handler vérifie la session et la propriétaire avant de signer une adresse GET de 5 minutes. Le fichier est téléchargé (`attachment`), jamais affiché sur le domaine du site.
-- **S9 – Données personnelles** : la suppression d'un compte efface ses lignes (`onDelete: "cascade"`) ; prévoyez aussi la suppression des objets R2 du préfixe `<id utilisateur>/`.
+- **S7 – Stockage privé** : bucket privé, clé limitée à ce bucket ; le Route Handler vérifie la session et la propriétaire avant de signer une adresse GET de 5 minutes. Le fichier est téléchargé (`attachment`), jamais affiché sur le domaine du site. Stockage `dossier` : dossier hors de `public/`, lu et écrit seulement par les deux routes à jeton signé (5 minutes, un seul usage) ; clé contrôlée avant tout accès au disque.
+- **S9 – Données personnelles** : la suppression d'un compte efface ses lignes (`onDelete: "cascade"`) ; prévoyez aussi la suppression de ses fichiers (préfixe `<id utilisateur>/` du bucket, ou sous-dossier du même nom).
 
 ## Pièges connus
 
 - **Erreur CORS à l'envoi** : l'adresse de la page (protocole et port compris) doit figurer dans `AllowedOrigins`. Une règle met jusqu'à 30 secondes à s'appliquer. Chaque prévisualisation Vercel a sa propre adresse : ajoutez celles qui servent.
 - **403 `SignatureDoesNotMatch`** : le navigateur doit envoyer exactement le `Content-Type` signé (`choisi.type`) et le fichier annoncé (même taille).
-- **Bucket UE** : il répond seulement à `https://<ACCOUNT_ID>.eu.r2.cloudflarestorage.com`. Sans juridiction, retirez `.eu` dans `src/adapters/storage/storage.adapter.ts` et dans `connect-src` de `next.config.ts`.
-- **Envoi bloqué, console « Refused to connect … violates the following Content Security Policy directive: connect-src »** : l'adresse R2 manque à `connect-src`. Vérifiez l'étape « La CSP autorise R2 », la présence de `R2_BUCKET` et `R2_ACCOUNT_ID` au moment de la construction (Vercel : Production et Preview), puis reconstruisez. L'hôte bloqué, affiché dans le message, doit être identique à celui écrit dans `connect-src`.
-- **Clé secrète perdue** : Cloudflare l'affiche une seule fois. Créez un nouveau jeton, puis supprimez l'ancien.
-- **Objet orphelin à la suppression** : `SupprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue après celui de la ligne, l'objet reste dans R2 sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas), puis prévoyez une tâche de ménage qui compare les objets du bucket aux lignes de `fichiers` et efface les objets sans ligne. Inverser l'ordre (objet d'abord) laisserait à la place une ligne qui pointe vers un objet disparu.
+- **Bucket introuvable, ou erreur de nom d'hôte à l'envoi** : le service attend peut-être le nom du bucket dans le chemin de l'adresse : `S3_FORCE_PATH_STYLE=true`. Vérifiez aussi `S3_ENDPOINT` (adresse du service, sans le nom du bucket) et `S3_REGION` (celle du bucket).
+- **Envoi bloqué, console « Refused to connect … violates the following Content Security Policy directive: connect-src »** : l'adresse du service manque à `connect-src`. Vérifiez l'étape « La CSP autorise le service S3 », la présence de `S3_ENDPOINT` et `S3_BUCKET` au moment de la construction (Vercel : Production et Preview ; docker : étape 14), puis reconstruisez. L'hôte bloqué, affiché dans le message, doit être identique à celui écrit dans `connect-src`.
+- **Secret de la clé perdu** : le service l'affiche souvent une seule fois. Créez une nouvelle clé, remplacez-la partout, puis supprimez l'ancienne.
+- **Objet orphelin à la suppression** : `SupprimerFichier` efface la ligne, puis l'objet (la personne ne voit plus jamais un fichier cassé). Si l'effacement de l'objet échoue ensuite, l'objet reste sans ligne : il occupe de la place et rien ne le retrouve. Journalisez l'échec avec la clé (l'erreur de service ne la contient pas) ; une tâche de ménage effacera les objets sans ligne. L'ordre inverse laisserait une ligne vers un objet disparu.
 - **Lignes « en_attente »** : un envoi abandonné laisse une ligne sans fichier. Elle reste invisible ; une tâche de ménage pourra les effacer plus tard.
 - **Type déclaré par le navigateur** : `File.type` vient de l'extension ; le contenu n'est pas inspecté. Le téléchargement forcé (`attachment`) évite qu'un fichier piégé s'exécute dans le site.
-- **Les quatre variables R2 deviennent obligatoires** : `env` les valide au chargement ; la construction, le site et les tests de bout en bout les exigent. Renseignez-les dans `.env` (une valeur factice suffit tant qu'aucun envoi réel n'a lieu). Construction de vérification sans elles (CI) : `SKIP_ENV_VALIDATION=1 npm run build`.
+- **Les variables du stockage deviennent obligatoires** : `env` les valide au chargement ; la construction, le site et les tests de bout en bout les exigent. Renseignez-les dans `.env` (une valeur factice suffit tant qu'aucun envoi réel n'a lieu). Construction de vérification sans elles (CI) : `SKIP_ENV_VALIDATION=1 npm run build`.
+- **Stockage `dossier`, `FICHIERS_DOSSIER` relatif** : il se lit depuis le dossier où tourne le site (hébergement serveur : `versions/<date>`, remplacé à chaque mise en ligne) ; en production, un chemin complet, hors des versions. Les fichiers ne sont pas dans la copie de la base : sauvegardez le dossier (ou le volume `fichiers`) à part.
 - **Langues** : avec la recette `langues`, la page va sous `app/[locale]/(connecte)/fichiers/` ; `app/api/fichiers/` reste à sa place.
 
 ## Sources
 
-- Cloudflare R2 : https://developers.cloudflare.com/r2/api/s3/presigned-urls/ ; https://developers.cloudflare.com/r2/examples/aws/aws-sdk-js-v3/ ; https://developers.cloudflare.com/r2/buckets/cors/ ; https://developers.cloudflare.com/r2/api/tokens/ ; https://developers.cloudflare.com/r2/reference/data-location/ ; https://developers.cloudflare.com/r2/pricing/
-- AWS SDK 3.1147.0 : adresses signées générées localement et inspectées ; option `signableHeaders` (`@smithy/types`)
+- AWS SDK pour JavaScript v3 (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`) 3.1176.0 : adresses signées générées localement et inspectées (hôte selon `forcePathStyle`, `X-Amz-SignedHeaders`, `X-Amz-Expires`) ; option `signableHeaders` (`@smithy/types`)
 - Next.js 16.4, documentation embarquée : `01-app/01-getting-started/15-route-handlers.md` ; `01-app/02-guides/server-actions.md` (corps limité à 1 Mo) ; `01-app/03-api-reference/04-functions/refresh.md`
 - next-safe-action 8.7.3 : `dist/index.d.mts` (`returnServerError`), `dist/hooks.d.mts` (`useAction`, `executeAsync`)
-- Vérifications locales du 2026-10-08 (squelette du pack + recettes `connexion`, `liste`, `email` + cette recette, dans l'architecture hexagonale) : `npm run check`, `npm run typecheck`, `npm test` et `npm run build` (sans les variables R2, puis avec des valeurs factices) passent ; `next start` : `/fichiers` et `/api/fichiers/<id>` sans session répondent 307 vers `/connexion`, et `/api/fichiers/pas-un-uuid` répond 404.
+- `verifier-recettes.js` (connexion → fichiers), le 2026-11-24 : Vercel avec `s3`, serveur avec `dossier` et avec `s3`.
+- Vérifications locales du 2026-10-08 (squelette du pack + recettes `connexion`, `liste`, `email` + cette recette, dans l'architecture hexagonale) : `npm run check`, `npm run typecheck`, `npm test` et `npm run build` (sans les variables du stockage, puis avec des valeurs factices) passent ; `next start` : `/fichiers` et `/api/fichiers/<id>` sans session répondent 307 vers `/connexion`, et `/api/fichiers/pas-un-uuid` répond 404.
 
 ## Points à vérifier
 
-- Un envoi réel vers R2 (test de bout en bout et parcours manuel) : non exécuté lors de la rédaction (pas de compte R2).
-- Le refus par R2 d'un PUT dont la taille diffère de `content-length` signé : attendu d'après la signature SigV4, à constater une fois.
-- Le nom d'erreur `NotFound` renvoyé par `HeadObjectCommand` avec R2 : le test de l'adapter le double, un essai réel reste à faire.
+- Un envoi réel vers un service S3 (test de bout en bout et parcours manuel) : non exécuté lors de la rédaction (pas de compte).
+- Le refus d'un PUT dont la taille diffère du `content-length` signé : attendu d'après la signature SigV4, à constater une fois chez le service.
+- Le nom d'erreur `NotFound` d'un objet absent (`HeadObjectCommand`) : le test de l'adapter le double. Une clé sans le droit de lister le bucket reçoit souvent un refus (403) à la place : d'où ce droit dans les prérequis.
 - `refresh()` dans une action appelée depuis `startTransition` (hors `<form action>`) : la liste doit se mettre à jour ; sinon, appelez `router.refresh()` après `confirmerEnvoiAction`.
-- L'obligation d'enregistrer un moyen de paiement pour activer R2, même avec l'offre gratuite : non précisée par les pages consultées.
-- Essai réel du 2026-10-06 (ancienne organisation, base PGlite, R2 factice) : le test « L'envoi échoue en route » passait 3 fois sur 3, sur ordinateur et sur téléphone ; il a révélé qu'une coupure réseau faisait basculer la page sur l'écran d'erreur (corrigé : `try/catch` autour du `fetch`). Parcours Playwright à rejouer dans la nouvelle organisation.
+- Essai réel du 2026-10-06 (ancienne organisation, base PGlite, stockage factice) : le test « L'envoi échoue en route » passait 3 fois sur 3, sur ordinateur et sur téléphone ; il a révélé qu'une coupure réseau faisait basculer la page sur l'écran d'erreur (corrigé : `try/catch` autour du `fetch`). Parcours Playwright à rejouer dans la nouvelle organisation.

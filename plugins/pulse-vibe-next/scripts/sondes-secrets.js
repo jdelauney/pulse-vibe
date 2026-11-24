@@ -20,11 +20,15 @@ const FICHE = path.join(__dirname, "..", "references", "contexte", "secrets-fich
 // Règles par variable : la fiche (references/contexte/secrets-fiches.md) en donne l'explication ; un test vérifie qu'elles restent alignées.
 // parEnvironnement : la valeur de .env (développement) diffère de celle de la production ; le cœur refuse de l'y envoyer telle quelle.
 const NEON = ["DATABASE_URL", "DATABASE_URL_DIRECT"];
-const R2 = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
+const S3 = ["S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"];
+// Variables lues par le test d'une clé S3 (S3_FORCE_PATH_STYLE, facultative, en plus).
+const S3_BESOINS = ["S3_ENDPOINT", "S3_REGION", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"];
 const VARIABLES = {
   DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"], parEnvironnement: true },
   DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"], parEnvironnement: true },
   // suites : après l'envoi de la clé en production, le cœur demande « secrets suites » et envoie ce qui est rendu (type Config).
+  // Base PostgreSQL sur le serveur (hébergement docker) : vit seulement dans le .env du serveur.
+  POSTGRES_PASSWORD: { secret: true, fournisseur: "serveur (valeur générée)", longueurMin: 32 },
   NEON_API_KEY: { secret: true, fournisseur: "Neon", besoins: ["NEON_PROJECT_ID"], suites: ["NEON_ENDPOINT_PRODUCTION"] },
   NEON_PROJECT_ID: { secret: false, fournisseur: "Neon" },
   NEON_ENDPOINT_PRODUCTION: { secret: false, fournisseur: "Neon (déduit par Pulse)" },
@@ -38,10 +42,12 @@ const VARIABLES = {
   SMTP_USER: { secret: false, fournisseur: "fournisseur d'e-mail" },
   SMTP_PASSWORD: { secret: true, fournisseur: "fournisseur d'e-mail", besoins: ["SMTP_HOST", "SMTP_PORT", "SMTP_USER"] },
   MAIL_FROM: { secret: false, fournisseur: "fournisseur d'e-mail" },
-  R2_ACCOUNT_ID: { secret: false, fournisseur: "Cloudflare R2" },
-  R2_BUCKET: { secret: false, fournisseur: "Cloudflare R2" },
-  R2_ACCESS_KEY_ID: { secret: true, fournisseur: "Cloudflare R2", groupe: R2, besoins: ["R2_SECRET_ACCESS_KEY", "R2_ACCOUNT_ID", "R2_BUCKET"] },
-  R2_SECRET_ACCESS_KEY: { secret: true, fournisseur: "Cloudflare R2", groupe: R2, besoins: ["R2_ACCESS_KEY_ID", "R2_ACCOUNT_ID", "R2_BUCKET"] },
+  S3_ENDPOINT: { secret: false, fournisseur: "service de stockage S3", prefixes: ["https://"] },
+  S3_REGION: { secret: false, fournisseur: "service de stockage S3" },
+  S3_BUCKET: { secret: false, fournisseur: "service de stockage S3" },
+  S3_FORCE_PATH_STYLE: { secret: false, fournisseur: "service de stockage S3" },
+  S3_ACCESS_KEY_ID: { secret: true, fournisseur: "service de stockage S3", groupe: S3, besoins: [...S3_BESOINS.filter((b) => b !== "S3_ACCESS_KEY_ID"), "S3_FORCE_PATH_STYLE"] },
+  S3_SECRET_ACCESS_KEY: { secret: true, fournisseur: "service de stockage S3", groupe: S3, besoins: [...S3_BESOINS.filter((b) => b !== "S3_SECRET_ACCESS_KEY"), "S3_FORCE_PATH_STYLE"] },
   UPSTASH_REDIS_REST_URL: { secret: false, fournisseur: "Upstash", prefixes: ["https://"], groupe: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"] },
   UPSTASH_REDIS_REST_TOKEN: { secret: true, fournisseur: "Upstash", groupe: ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"], besoins: ["UPSTASH_REDIS_REST_URL"] },
   FORMULAIRE_SECRET: { secret: true, fournisseur: "projet (valeur générée)", longueurMin: 32, genere: { octets: 32 } },
@@ -228,22 +234,31 @@ async function testerSmtp(nom, v) {
   }
 }
 
-async function testerR2(nom, v) {
-  for (const b of ["R2_ACCOUNT_ID", "R2_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"]) if (!v[b]) mauvais(`${b} manque : le test a besoin des quatre variables R2.`);
-  if (!/^[0-9a-f]{32}$/i.test(v.R2_ACCOUNT_ID))
-    mauvais("R2_ACCOUNT_ID doit être l'identifiant de compte Cloudflare (32 caractères, chiffres et lettres a à f) : la clé n'est envoyée qu'à l'adresse R2 de ce compte.");
+// Service compatible S3 : HeadBucket, une lecture qui n'écrit rien. La requête est signée (SigV4) : le secret ne
+// part jamais, et la signature, liée à l'hôte de S3_ENDPOINT, ne sert pas ailleurs ; seule l'adresse https est exigée.
+async function testerS3(nom, v) {
+  for (const b of S3_BESOINS) if (!v[b]) mauvais(`${b} manque : le test a besoin de ${S3_BESOINS.join(", ")}.`);
+  let adresse;
+  try {
+    adresse = new URL(v.S3_ENDPOINT);
+  } catch (e) {
+    mauvais("S3_ENDPOINT n'est pas une adresse web valide (https://…, l'adresse du service sans le nom du bucket).");
+  }
+  if (adresse.protocol !== "https:") mauvais("S3_ENDPOINT doit commencer par https:// : la clé ne sert pas sur une adresse non chiffrée.");
   const { S3Client, HeadBucketCommand } = dependance("@aws-sdk/client-s3");
   const client = new S3Client({
-    region: "auto",
-    endpoint: `https://${v.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
-    credentials: { accessKeyId: v.R2_ACCESS_KEY_ID, secretAccessKey: v.R2_SECRET_ACCESS_KEY },
+    endpoint: v.S3_ENDPOINT,
+    region: v.S3_REGION,
+    forcePathStyle: v.S3_FORCE_PATH_STYLE === "true",
+    credentials: { accessKeyId: v.S3_ACCESS_KEY_ID, secretAccessKey: v.S3_SECRET_ACCESS_KEY },
   });
   try {
-    await dansLesTemps(client.send(new HeadBucketCommand({ Bucket: v.R2_BUCKET })));
-    bon(`le jeton R2 ouvre le bucket ${v.R2_BUCKET}.`);
+    await dansLesTemps(client.send(new HeadBucketCommand({ Bucket: v.S3_BUCKET })));
+    bon(`la clé ouvre le bucket ${v.S3_BUCKET} chez ${adresse.host} (rien n'est écrit).`);
   } catch (e) {
     const statut = e && e.$metadata && e.$metadata.httpStatusCode;
-    mauvais(`le jeton R2 n'ouvre pas le bucket ${v.R2_BUCKET}${statut ? ` (code ${statut})` : ""} : ${raison(e)}`);
+    const piste = statut === 403 ? " (clé refusée, ou sans le droit de lister ce bucket)" : statut === 404 ? " (bucket introuvable : nom, région, ou S3_FORCE_PATH_STYLE=true si le service le demande)" : "";
+    mauvais(`la clé n'ouvre pas le bucket ${v.S3_BUCKET} chez ${adresse.host}${statut ? ` (code ${statut})` : ""}${piste} : ${raison(e)}`);
   }
 }
 
@@ -315,8 +330,8 @@ const TESTS = {
   BETTER_AUTH_SECRETS: testerSecretsAuth,
   STRIPE_SECRET_KEY: testerStripe,
   SMTP_PASSWORD: testerSmtp,
-  R2_ACCESS_KEY_ID: testerR2,
-  R2_SECRET_ACCESS_KEY: testerR2,
+  S3_ACCESS_KEY_ID: testerS3,
+  S3_SECRET_ACCESS_KEY: testerS3,
   UPSTASH_REDIS_REST_TOKEN: testerUpstash,
   FORMULAIRE_SECRET: testerSecretFormulaire,
   TURNSTILE_SECRET_KEY: testerTurnstile,

@@ -5,16 +5,21 @@
 #   - par pulse-aidd pile <sous-commande>, qui relaie les autres sous-commandes.
 #
 #   pulse-pile-next info                  id, nom, resume, version, couvre (familles de qualité du cœur que le pack remplace)
-#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`, `perf-code`), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien
+#   pulse-pile-next contexte <libellé>    consignes du pack : une commande (tech, implement…), une commande et son mode (`deploy-premiere`, `deploy-production`, `deploy-variables`, `fix-en-ligne`, `perf-code`), `piles` (avant le choix de la pile) ou `code` ; un libellé inconnu ne renvoie rien ;
+#                                         la mise en ligne (deploy*, fix-en-ligne, cicd, secrets) suit l'hébergement déclaré dans docs/technical.md
+#                                         (« **Hébergement** : vercel|docker|serveur » ; vercel sans cette ligne)
 #   pulse-pile-next reference <chemin>    affiche une référence du pack (ex. fiche.md)
 #   pulse-pile-next recettes              liste les recettes
-#   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests
+#   pulse-pile-next recette <nom> [etape <id> | tests]   vue d'ensemble d'une recette (ex. connexion), une de ses étapes, ou le code de ses tests ;
+#                                         seulement les blocs de l'hébergement du projet et de son stockage des fichiers
+#                                         (« **Stockage des fichiers** : dossier|s3 » de docs/technical.md ; toujours s3 sur Vercel)
 #   pulse-pile-next squelette [options]   crée le projet de départ (voir pulse-pile-next squelette --aide)
 #   pulse-pile-next seo-code [--pages] [--json] [--dossier <projet>]   contrôles du code pour le référencement
 #   pulse-pile-next entite <description.json> [--essai] [--us <US-XXX>] [--dossier <projet>]   écrit tout le code d'un type d'information (liste, création, modification, suppression, tests) d'après sa description (format : reference entite.md) ; --essai : la liste des fichiers, sans rien écrire
 #   pulse-pile-next police <famille> [--role texte|titres|code] [--graisses 400,600]   pose une police servie par le site (fichiers récupérés sur Bunny Fonts)
 #   pulse-pile-next secrets regles|tester <NOM>|suites <NOM>|fiche <NOM>   règles, test réel et variables déduites (valeurs en JSON sur l'entrée standard), fiche d'une variable (pour pulse-aidd secrets)
-#   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur Vercel de pulse-aidd secrets (valeur sur l'entrée standard)
+#   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur d'hébergeur de pulse-aidd secrets (valeur sur l'entrée standard) :
+#                                         Vercel par son CLI ; docker et serveur : la marche à suivre sur le serveur (code 3)
 #
 # Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
 
@@ -45,7 +50,38 @@ afficher() { # afficher <titre> <chemin>
   fi
 }
 
+# Hébergement du projet, lu dans docs/technical.md du dossier courant : vercel (par défaut), docker ou serveur.
+hebergement() {
+  local h=""
+  if [ -f docs/technical.md ]; then h="$(sed -n 's/^\*\*Hébergement\*\* *: *\([a-z]*\).*$/\1/p' docs/technical.md | head -n 1)"; fi
+  case "$h" in docker|serveur) printf '%s' "$h" ;; *) printf 'vercel' ;; esac
+}
+
+# Consignes de mise en ligne selon l'hébergement : la première pour Vercel, la seconde pour un serveur (docker ou
+# serveur : contexte/hors-vercel/, commun aux deux, puisque scripts/deployer.sh leur donne les mêmes commandes).
+selon_hebergement() { # selon_hebergement <chemin Vercel> <chemin serveur>
+  if [ "$(hebergement)" = vercel ]; then printf '%s' "$1"; else printf '%s' "$2"; fi
+}
+
+# Variables d'environnement chez l'hébergeur : Vercel, ou le fichier .env du serveur.
+variables_hebergeur() {
+  if [ "$(hebergement)" = vercel ]; then afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md"
+  else afficher "Variables d'environnement sur le serveur" "$REF/contexte/hors-vercel/variables.md"; fi
+}
+
 version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin/plugin.json" | head -n 1; }
+
+# Stockage des fichiers envoyés (recette fichiers) : s3 sur Vercel ; docker ou serveur, la ligne
+# « **Stockage des fichiers** : dossier|s3 » de docs/technical.md (dossier sans elle).
+stockage() {
+  local s=""
+  if [ "$(hebergement)" = vercel ]; then printf 's3'; return; fi
+  if [ -f docs/technical.md ]; then s="$(sed -n 's/^\*\*Stockage des fichiers\*\* *: *\([a-z0-9]*\).*$/\1/p' docs/technical.md | head -n 1)"; fi
+  case "$s" in s3) printf 's3' ;; *) printf 'dossier' ;; esac
+}
+
+# Une partie de recette, sans les blocs réservés à un autre projet (balises « … hebergement: <valeurs> », « … stockage: <valeurs> »).
+lire_recette() { node "$RACINE/scripts/decouper-recette.js" --hebergement "$(hebergement)" --stockage "$(stockage)" <"$1"; }
 
 recettes() {
   local f nom titre
@@ -103,20 +139,24 @@ contexte() {
     test)
       afficher "Pour les tests" "$REF/contexte/test.md" ;;
     deploy)
-      afficher "Pour mettre en ligne" "$REF/contexte/deploy.md" ;;
+      afficher "Pour mettre en ligne" "$(selon_hebergement "$REF/contexte/deploy.md" "$REF/contexte/hors-vercel/deploy.md")" ;;
     deploy-premiere)
-      afficher "Pour la première mise en ligne" "$REF/contexte/deploy-premiere.md" ;;
+      afficher "Pour la première mise en ligne" "$(selon_hebergement "$REF/contexte/deploy-premiere.md" "$REF/contexte/hors-vercel/deploy-premiere.md")" ;;
     deploy-production)
-      afficher "Pour le mode production" "$REF/contexte/deploy-production.md" ;;
+      afficher "Pour le mode production" "$(selon_hebergement "$REF/contexte/deploy-production.md" "$REF/contexte/hors-vercel/deploy-production.md")" ;;
     fix-en-ligne)
-      afficher "Pour corriger un problème du site en ligne" "$REF/contexte/fix-en-ligne.md" ;;
+      afficher "Pour corriger un problème du site en ligne" "$(selon_hebergement "$REF/contexte/fix-en-ligne.md" "$REF/contexte/hors-vercel/fix-en-ligne.md")" ;;
     deploy-variables)
-      afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
+      variables_hebergeur ;;
     cicd)
-      afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md" ;;
+      afficher "Pour les contrôles automatiques" "$REF/contexte/cicd.md"
+      case "$(hebergement)" in
+        docker) afficher "Contrôle propre à l'hébergement docker" "$REF/contexte/docker/cicd.md" ;;
+        serveur) afficher "Contrôle propre à l'hébergement serveur" "$REF/contexte/serveur/cicd.md" ;;
+      esac ;;
     secrets)
       afficher "Pour /pulse:secrets" "$REF/contexte/secrets.md"
-      afficher "Variables d'environnement chez Vercel" "$REF/contexte/variables-vercel.md" ;;
+      variables_hebergeur ;;
     seo)
       afficher "Pour /pulse:seo" "$REF/contexte/seo.md"
       afficher "Pour écrire du code" "$REF/contexte/code.md" ;;
@@ -154,14 +194,14 @@ case "$1" in
     dossier="$REF/recettes/$2"
     if [ ! -f "$dossier/index.md" ]; then echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi
     case "$3" in
-      "") cat "$dossier/index.md" ;;
+      "") lire_recette "$dossier/index.md" ;;
       tests)
-        if [ -f "$dossier/tests.md" ]; then cat "$dossier/tests.md"; else echo "La recette $2 n'a pas de tests à copier : ses tests se trouvent dans ses étapes."; exit 1; fi ;;
+        if [ -f "$dossier/tests.md" ]; then lire_recette "$dossier/tests.md"; else echo "La recette $2 n'a pas de tests à copier : ses tests se trouvent dans ses étapes."; exit 1; fi ;;
       etape)
         case "$4" in
           ""|*/*|*..*) echo "Indiquez une étape de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;
         esac
-        if [ -f "$dossier/etape-$4.md" ]; then cat "$dossier/etape-$4.md"; else echo "Étape introuvable : $4. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1; fi ;;
+        if [ -f "$dossier/etape-$4.md" ]; then lire_recette "$dossier/etape-$4.md"; else echo "Étape introuvable : $4. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1; fi ;;
       *) echo "Usage : pulse-pile-next recette <nom> [etape <id> | tests]. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;
     esac
     exit 0 ;;
@@ -176,7 +216,9 @@ case "$1" in
   secrets)
     shift; exec node "$RACINE/scripts/sondes-secrets.js" "$@" ;;
   hebergeur)
-    shift; exec node "$RACINE/scripts/secrets-vercel.js" "$@" ;;
+    shift
+    if [ "$(hebergement)" = vercel ]; then exec node "$RACINE/scripts/secrets-vercel.js" "$@"; fi
+    exec node "$RACINE/scripts/hebergeur-serveur.js" "$(hebergement)" "$@" ;;
   *)
     sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed -n 's/^# \{0,1\}//p' ;;
 esac

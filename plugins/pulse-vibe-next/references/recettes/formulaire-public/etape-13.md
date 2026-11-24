@@ -34,7 +34,12 @@ async function exigerTurnstile(entree: unknown): Promise<void> {
   const reponse = (entree as Record<string, unknown> | null)?.[CHAMP_TURNSTILE];
   // Le service anti-robot se crée ici, au point d'assemblage : le reste du code ne voit que l'interface.
   const verification = new TurnstileAdapter(secret);
-  if (!(await verification.verifier(reponse, ipDepuis(await headers())))) {
+  if (
+    !(await verification.verifier(
+      reponse,
+      ipDepuis(await headers(), env.PROXYS_DE_CONFIANCE),
+    ))
+  ) {
     returnServerError(
       "La vérification anti-robot a échoué. Réessayez dans un instant.",
     );

@@ -62,12 +62,15 @@ case "$1 $2" in
     if [ -n "$FAUX_SUITES_HORS_REGLES" ]; then printf '%s' '{"variables":[{"nom":"CLE_API_TEST","environnements":["preview"],"valeur":"autre"}]}'; exit 0; fi
     printf '%s' '{"variables":[{"nom":"REPERE_PUBLIC","environnements":["preview"],"valeur":"ep-essai-123"}]}' ;;
   "hebergeur ls")
+    if [ -n "$FAUX_MANUEL" ]; then printf '%s' '{"hebergeur":"Serveur test","manuel":"Saisir dans le .env du serveur, puis redémarrer.","variables":[]}'; exit 0; fi
     printf '%s' '{"hebergeur":"Hébergeur test","variables":[{"nom":"STRIPE_SECRET_KEY","environnements":["production"],"type":"config"},{"nom":"DATABASE_URL","environnements":["production","preview"],"type":"secret"}]}' ;;
   "hebergeur envoyer")
+    if [ -n "$FAUX_MANUEL" ]; then echo "Serveur test : écrire $3 dans .env du serveur ($4)"; exit 3; fi
     echo "reçu : $entree"
     if [ "$4" = "$FAUX_ECHEC_ENV" ]; then echo "refusé par l'hébergeur"; exit 1; fi
     echo "$3 envoyée ($4)\${FAUX_BAVARD:+ : $entree}" ;;
   "hebergeur redeployer")
+    if [ -n "$FAUX_MANUEL" ]; then echo "Serveur test : lancer ./redemarrer"; exit 3; fi
     echo "https://exemple-$3.test" ;;
   *) echo "inconnu"; exit 2 ;;
 esac
@@ -247,7 +250,7 @@ test("generer --envoyer : une valeur distincte par environnement, sur l'entrée 
   const r = lancer(p, ["generer", "SESSION_SECRET", "--envoyer", "production,preview"]);
   assert.strictEqual(r.code, 0, r.sortie);
   const locale = valeurDans(lire(p, ".env"), "SESSION_SECRET");
-  const envois = appels(p).filter((a) => a.argv[0] === "hebergeur");
+  const envois = appels(p).filter((a) => a.argv[0] === "hebergeur" && a.argv[1] === "envoyer");
   assert.deepStrictEqual(envois.map((a) => a.argv), [
     ["hebergeur", "envoyer", "SESSION_SECRET", "production", "--type", "secret"],
     ["hebergeur", "envoyer", "SESSION_SECRET", "preview", "--type", "secret"],
@@ -470,6 +473,46 @@ test("redeployer : relaie vers l'adaptateur, environnement par environnement", (
   assert.match(r.sortie, /✅ Production : https:\/\/exemple-production\.test/);
   assert.match(r.sortie, /✅ Preview : https:\/\/exemple-preview\.test/);
   assert.strictEqual(lancer(p, ["redeployer", "--env", "lune"]).code, 1);
+});
+
+// ---------------------------------------------------------------- hébergeur sans envoi (serveur : .env saisi par la personne)
+
+test("hébergeur manuel : envoyer dit quoi faire (code 3 de l'adaptateur), garde la valeur et ne dit pas « échec »", () => {
+  const p = projet();
+  ecrire(p, ".env.envoi", `STRIPE_SECRET_KEY=${CLE_STRIPE}\n`);
+  const r = lancer(p, ["envoyer", "STRIPE_SECRET_KEY", "--env", "production", "--depuis", ".env.envoi", "--vider"], { FAUX_MANUEL: "1" });
+  assert.strictEqual(r.code, 0, r.sortie);
+  sansValeur(r.sortie, CLE_STRIPE);
+  assert.match(r.sortie, /✋ Production : Serveur test : écrire STRIPE_SECRET_KEY dans \.env du serveur \(production\)/);
+  assert.match(r.sortie, /STRIPE_SECRET_KEY reste dans \.env\.envoi : une fois la valeur copiée chez l'hébergeur/);
+  assert.doesNotMatch(r.sortie, /❌|incomplet|🧹/);
+  assert.strictEqual(valeurDans(lire(p, ".env.envoi"), "STRIPE_SECRET_KEY"), CLE_STRIPE, "--vider ne vide rien : la valeur n'est partie nulle part");
+});
+
+test("hébergeur manuel : generer --envoyer s'arrête avant de tirer une valeur, avec la consigne de l'hébergeur", () => {
+  const p = projet();
+  ecrire(p, ".env", "SESSION_SECRET=\n");
+  const r = lancer(p, ["generer", "SESSION_SECRET", "--envoyer", "production"], { FAUX_MANUEL: "1" });
+  assert.strictEqual(r.code, 1, r.sortie);
+  assert.match(r.sortie, /✋ Serveur test : pas d'envoi automatique, rien n'a été généré\. Saisir dans le \.env du serveur/);
+  assert.strictEqual(valeurDans(lire(p, ".env"), "SESSION_SECRET"), "", "rien écrit en local");
+  assert.deepStrictEqual(appels(p).filter((a) => a.argv[1] === "envoyer"), [], "rien envoyé");
+});
+
+test("hébergeur manuel : redeployer donne la commande, inventaire dit où vivent les variables", () => {
+  const p = projet();
+  const r = lancer(p, ["redeployer"], { FAUX_MANUEL: "1" });
+  assert.strictEqual(r.code, 0, r.sortie);
+  assert.match(r.sortie, /✋ Production : Serveur test : lancer \.\/redemarrer/);
+  ecrire(p, ".env.example", "STRIPE_SECRET_KEY=\n");
+  const inv = lancer(p, ["inventaire"], { FAUX_MANUEL: "1" });
+  assert.strictEqual(inv.code, 0, inv.sortie);
+  assert.match(inv.sortie, /\| Variable \| Nature \| \.env\.example \| \.env \| Serveur test Production \| Serveur test Preview \|/);
+  assert.match(inv.sortie, /\| STRIPE_SECRET_KEY \| secret \| ✅ \| — \| \? \| \? \|/);
+  assert.match(inv.sortie, /Serveur test : ses variables ne se lisent pas d'ici \(colonnes « \? »\)\. Saisir dans le \.env du serveur/);
+  assert.doesNotMatch(inv.sortie, /absente de l'hébergeur/);
+  const json = JSON.parse(lancer(p, ["inventaire", "--json"], { FAUX_MANUEL: "1" }).sortie);
+  assert.strictEqual(json.hebergeurManuel, "Saisir dans le .env du serveur, puis redémarrer.");
 });
 
 // ---------------------------------------------------------------- historique

@@ -1,18 +1,20 @@
 ### Option A – Speed Insights de Vercel
 
+Seulement sur Vercel : hébergement docker ou serveur, l'option B.
+
 1. Dans Vercel : le projet → onglet **Speed Insights** → **Enable** (libellés à vérifier à l'écran).
 2. `npm install @vercel/speed-insights`.
 
-<!-- commande: npm install @vercel/speed-insights -->
+<!-- commande: npm install @vercel/speed-insights hebergement: vercel -->
 
 3. Dans `app/layout.tsx`, importer le composant et le placer dans `<body>`, après `<Toaster />` :
 
-<!-- ajout: app/layout.tsx après: import { partageCommun } from "@src/lib/seo/seo"; -->
+<!-- ajout: app/layout.tsx après: import { partageCommun } from "@src/lib/seo/seo"; hebergement: vercel -->
 ```tsx
 import { SpeedInsights } from "@vercel/speed-insights/next";
 ```
 
-<!-- remplacer-ligne: app/layout.tsx début: <Toaster /> -->
+<!-- remplacer-ligne: app/layout.tsx début: <Toaster /> hebergement: vercel -->
 ```tsx
         <Toaster />
         <SpeedInsights />
@@ -20,7 +22,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 
 4. Dans `next.config.ts`, objet `sources` : en développement, le composant charge sa version de diagnostic depuis `https://va.vercel-scripts.com`. Remplacer le bloc `"script-src"` par :
 
-<!-- remplacer: next.config.ts -->
+<!-- remplacer: next.config.ts hebergement: vercel -->
 ```ts
   "script-src": [
     "'self'",
