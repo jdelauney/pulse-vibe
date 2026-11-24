@@ -1,4 +1,4 @@
-// Tests de l'axe Hébergement du pack : consignes choisies selon docs/technical.md.
+// Tests de l'axe Hébergement du pack : consignes choisies selon docs/technical.md, adaptateur d'hébergeur d'un serveur.
 // Lancer : node --test plugins/pulse-vibe-next/tests/hebergement.test.js (nécessite bash dans le PATH)
 "use strict";
 
@@ -13,6 +13,7 @@ const { spawnSync } = require("child_process");
 const RACINE = path.join(__dirname, "..");
 const REF = path.join(RACINE, "references");
 const OUTIL = path.join(RACINE, "bin", "pulse-pile-next");
+const { repondre, A_FAIRE } = require("../scripts/hebergeur-serveur.js");
 
 const crees = [];
 after(() => {
@@ -76,4 +77,36 @@ test("fiches de mise en ligne : chargées à la demande, avec les valeurs de doc
   assert.match(serveur, /Infomaniak/, "proxy du fournisseur : Caddy sauté");
   assert.match(serveur, /## Pourquoi construire sur le serveur/);
   assert.match(lire(REF, "technical.md"), /^\*\*Hébergement\*\* : vercel$/m);
+});
+
+test("hebergeur : Vercel par défaut ; sur un serveur, la marche à suivre (code 3), sans jamais rendre la valeur", () => {
+  // Vercel : l'adaptateur Vercel répond (ici, projet non relié).
+  const vercel = lancer(projet(null), ["hebergeur", "ls"]);
+  assert.strictEqual(vercel.status, 1);
+  assert.match(vercel.stdout, /vercel link/);
+  const valeur = "valeur-secrete-de-test-1234";
+  const docker = projet("docker");
+  const ls = JSON.parse(lancer(docker, ["hebergeur", "ls"]).stdout);
+  assert.deepStrictEqual(Object.keys(ls).sort(), ["hebergeur", "manuel", "variables"]);
+  assert.match(ls.manuel, /fichier \.env du dossier du site, sur le serveur/);
+  assert.match(ls.manuel, /openssl rand -hex 32/);
+  assert.match(ls.manuel, /\.\/scripts\/deployer\.sh/);
+  const envoi = lancer(docker, ["hebergeur", "envoyer", "BETTER_AUTH_SECRET", "production", "--type", "secret"], valeur);
+  assert.strictEqual(envoi.status, A_FAIRE);
+  assert.match(envoi.stdout, /pas d'envoi automatique.*BETTER_AUTH_SECRET=<valeur>.*\.\/scripts\/deployer\.sh/);
+  assert.ok(!envoi.stdout.includes(valeur), "la valeur n'est jamais rendue");
+  const apercu = lancer(docker, ["hebergeur", "envoyer", "BETTER_AUTH_SECRET", "preview"], valeur);
+  assert.strictEqual(apercu.status, A_FAIRE);
+  assert.match(apercu.stdout, /pas de prévisualisation/);
+  const serveur = lancer(projet("serveur"), ["hebergeur", "redeployer", "production"]);
+  assert.strictEqual(serveur.status, A_FAIRE);
+  assert.match(serveur.stdout, /systemctl --user restart mon-site/, "nom du service : le nom du paquet");
+});
+
+test("adaptateur d'un serveur : usages refusés (code 1)", () => {
+  assert.strictEqual(repondre(["docker", "envoyer", "1MAUVAIS", "production"]).code, 1);
+  assert.strictEqual(repondre(["docker", "envoyer", "NOM", "lune"]).code, 1);
+  assert.strictEqual(repondre(["serveur", "redeployer", "development"]).code, 1);
+  assert.strictEqual(repondre(["netlify", "ls"]).code, 1);
+  assert.strictEqual(repondre(["docker", "inconnue"]).code, 1);
 });

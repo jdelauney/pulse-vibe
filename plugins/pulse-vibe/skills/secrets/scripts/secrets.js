@@ -19,9 +19,12 @@
 //   secrets tester <NOM>                 test réel ; reçoit sur l'entrée standard un JSON { NOM: valeur, … } ; code 0 bon, 1 mauvais, 3 sans test
 //   secrets suites <NOM>                 variables non secrètes déduites de NOM (règle « suites » : liste de noms) ; même entrée que tester ;
 //                                        JSON { variables: [{ nom, environnements, valeur }] } ; envoyées en type Config après l'envoi de NOM en production
-//   hebergeur ls                         JSON : { hebergeur, variables: [{ nom, environnements, type }] }, sans valeur
-//   hebergeur envoyer <NOM> <env> [--type secret|config]   valeur sur l'entrée standard
-//   hebergeur redeployer <env>           relance le dernier déploiement de cet environnement
+//   hebergeur ls                         JSON : { hebergeur, variables: [{ nom, environnements, type }] }, sans valeur ;
+//                                        hébergeur sans envoi possible (serveur, fichier .env saisi par la personne) :
+//                                        { hebergeur, manuel: "<où et comment saisir une variable>", variables: [] }
+//   hebergeur envoyer <NOM> <env> [--type secret|config]   valeur sur l'entrée standard ; code 3 : rien envoyé,
+//                                        la sortie dit à la personne quoi faire (la valeur reste là où elle est)
+//   hebergeur redeployer <env>           relance le dernier déploiement de cet environnement ; code 3 : la commande à lancer
 // Codes de sortie : 0 tout va bien, 1 problème signalé (ou usage incorrect).
 "use strict";
 
@@ -238,6 +241,21 @@ function appelerPack(args, entree, valeurs = []) {
   return { ok: r.status === 0, code: r.status, sortie, stdout: masquer(r.stdout || "", valeurs) };
 }
 
+/** Hébergeur sans envoi possible (« manuel » de hebergeur ls) : { nom, consigne } ; null sinon, ou si le pack ne répond pas. */
+function hebergeurManuel() {
+  const rep = appelerPack(["hebergeur", "ls"]);
+  if (!rep || !rep.ok) return null;
+  try {
+    const json = JSON.parse(rep.stdout);
+    return typeof json.manuel === "string" && json.manuel ? { nom: json.hebergeur || "Hébergeur", consigne: json.manuel } : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/** Code 3 d'un adaptateur d'hébergeur : rien n'a été fait, sa sortie dit à la personne quoi faire. */
+const A_FAIRE_PAR_LA_PERSONNE = 3;
+
 function raisonSansPack() {
   const { id, outil } = pack();
   if (!id) return "aucun pack de pile déclaré dans docs/technical.md";
@@ -309,6 +327,7 @@ function inventaire(options) {
 
   let hebergeur = null;
   let hebergeurErreur = null;
+  let manuel = null; // hébergeur sans envoi possible : ses variables ne se lisent pas d'ici
   if (!options["--sans-hebergeur"]) {
     const sans = raisonSansPack();
     if (sans) hebergeurErreur = sans;
@@ -317,7 +336,10 @@ function inventaire(options) {
       if (rep && rep.ok) {
         try {
           hebergeur = JSON.parse(rep.stdout);
-          for (const v of hebergeur.variables || []) noms.add(v.nom);
+          if (typeof hebergeur.manuel === "string" && hebergeur.manuel) {
+            manuel = { nom: hebergeur.hebergeur || "Hébergeur", consigne: hebergeur.manuel };
+            hebergeur = null;
+          } else for (const v of hebergeur.variables || []) noms.add(v.nom);
         } catch (e) {
           hebergeurErreur = "réponse de l'hébergeur illisible";
         }
@@ -365,7 +387,7 @@ function inventaire(options) {
   }
   if (!regleDenyPresente()) alertes.push({ niveau: "⚠️", message: "Claude Code n'a pas de règle qui lui interdit de lire .env : proposez la règle deny (« Read(./.env) », « Read(./.env.local) », « Read(./.env.*.local) », « Read(./.env.envoi) ») dans .claude/settings.json." });
 
-  const resultat = { hebergeur: hebergeur ? hebergeur.hebergeur || "hébergeur" : null, hebergeurErreur, variables, alertes };
+  const resultat = { hebergeur: hebergeur ? hebergeur.hebergeur || "hébergeur" : manuel ? manuel.nom : null, hebergeurErreur, hebergeurManuel: manuel ? manuel.consigne : null, variables, alertes };
   if (options["--json"]) {
     ecrire(JSON.stringify(resultat, null, 2) + "\n");
     process.exit(0);
@@ -384,6 +406,7 @@ function inventaire(options) {
     }
   }
   if (hebergeurErreur && !options["--sans-hebergeur"]) dire(`\nHébergeur non consulté : ${hebergeurErreur}.`);
+  if (manuel) dire(`\n${manuel.nom} : ses variables ne se lisent pas d'ici (colonnes « ? »). ${manuel.consigne}`);
   dire("");
   if (alertes.length) {
     dire("Points d'attention :");
@@ -448,6 +471,9 @@ function generer(nom, options) {
   const sansLocal = options["--sans-local"] === true;
   const fichier = options["--fichier"] || ".env";
   if (sansLocal && !envs.length) echec("❌ --sans-local sert avec --envoyer : sinon la valeur générée n'irait nulle part.");
+  // Hébergeur sans envoi possible : la valeur se tire chez lui, jamais ici (elle n'y arriverait pas). Rien n'est écrit.
+  const manuel = envs.length && !raisonSansPack() ? hebergeurManuel() : null;
+  if (manuel) echec(`✋ ${manuel.nom} : pas d'envoi automatique, rien n'a été généré. ${manuel.consigne}`);
 
   if (!sansLocal) {
     const arret = protegerFichier(fichier);
@@ -625,10 +651,22 @@ function envoyer(nom, options) {
   if (sans) echec(`❌ Envoi automatique impossible : ${sans}. La personne saisit la valeur elle-même dans les réglages de l'hébergeur.`);
   const type = estSecret(nom) ? "secret" : "config";
   let ok = true;
+  let aFaire = 0;
   for (const env of envs) {
     const r = appelerPack(["hebergeur", "envoyer", nom, env, "--type", type], v.valeur, [v.valeur]);
+    const message = r.sortie.split("\n").filter(Boolean).pop();
+    if (r.code === A_FAIRE_PAR_LA_PERSONNE) {
+      aFaire++;
+      dire(`✋ ${LIBELLE_ENV[env]} : ${message || "à faire par la personne chez l'hébergeur"}`);
+      continue;
+    }
     ok = ok && r.ok;
-    dire(`${r.ok ? "✅" : "❌"} ${LIBELLE_ENV[env]} : ${r.sortie.split("\n").filter(Boolean).pop() || (r.ok ? "envoyée" : "échec")}`);
+    dire(`${r.ok ? "✅" : "❌"} ${LIBELLE_ENV[env]} : ${message || (r.ok ? "envoyée" : "échec")}`);
+  }
+  // Rien n'est parti : la valeur reste dans le fichier, d'où la personne la copie chez l'hébergeur.
+  if (aFaire === envs.length) {
+    dire(`ℹ️ ${nom} reste dans ${source} : une fois la valeur copiée chez l'hébergeur, la personne vide sa ligne (rien après le signe =).`);
+    terminer(0);
   }
   const r = regles().variables[nom];
   if (r && r.genere && envs.length > 1) dire(`ℹ️ La même valeur part en ${envs.map((e) => LIBELLE_ENV[e]).join(" et ")}. Pour un secret généré, préférez une valeur par environnement : pulse-aidd secrets generer ${nom} --envoyer ${envs.join(",")}`);
@@ -660,8 +698,13 @@ function redeployer(options) {
   let ok = true;
   for (const env of envs) {
     const r = appelerPack(["hebergeur", "redeployer", env]);
+    const message = r.sortie.split("\n").filter(Boolean).pop();
+    if (r.code === A_FAIRE_PAR_LA_PERSONNE) {
+      dire(`✋ ${LIBELLE_ENV[env]} : ${message || "à relancer par la personne chez l'hébergeur"}`);
+      continue;
+    }
     ok = ok && r.ok;
-    dire(`${r.ok ? "✅" : "❌"} ${LIBELLE_ENV[env]} : ${r.sortie.split("\n").filter(Boolean).pop() || (r.ok ? "redéploiement lancé" : "échec")}`);
+    dire(`${r.ok ? "✅" : "❌"} ${LIBELLE_ENV[env]} : ${message || (r.ok ? "redéploiement lancé" : "échec")}`);
   }
   terminer(ok ? 0 : 1);
 }

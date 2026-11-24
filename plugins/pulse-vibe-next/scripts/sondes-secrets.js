@@ -25,6 +25,8 @@ const VARIABLES = {
   DATABASE_URL: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL_DIRECT"], parEnvironnement: true },
   DATABASE_URL_DIRECT: { secret: true, fournisseur: "Neon", prefixes: ["postgresql://", "postgres://"], groupe: NEON, besoins: ["DATABASE_URL"], parEnvironnement: true },
   // suites : après l'envoi de la clé en production, le cœur demande « secrets suites » et envoie ce qui est rendu (type Config).
+  // Base PostgreSQL sur le serveur (hébergement docker) : vit seulement dans le .env du serveur.
+  POSTGRES_PASSWORD: { secret: true, fournisseur: "serveur (valeur générée)", longueurMin: 32 },
   NEON_API_KEY: { secret: true, fournisseur: "Neon", besoins: ["NEON_PROJECT_ID"], suites: ["NEON_ENDPOINT_PRODUCTION"] },
   NEON_PROJECT_ID: { secret: false, fournisseur: "Neon" },
   NEON_ENDPOINT_PRODUCTION: { secret: false, fournisseur: "Neon (déduit par Pulse)" },

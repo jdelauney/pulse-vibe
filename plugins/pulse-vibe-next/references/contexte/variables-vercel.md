@@ -10,4 +10,7 @@ Affiché pour `/pulse:secrets` et pour la mise en ligne (`pulse-aidd pile contex
 - **Une variable modifiée sert au déploiement suivant** : les déploiements existants gardent l'ancienne valeur. `pulse-aidd secrets redeployer --env production` relance le dernier déploiement prêt (`vercel redeploy`). Les adresses de prévisualisation se reconstruisent au prochain envoi de la branche ; une ancienne adresse de prévisualisation cesse de marcher quand l'ancienne valeur est révoquée : c'est attendu.
 - **Variables propres à une branche Git** : l'adaptateur les laisse de côté ; elles se gèrent dans les réglages Vercel.
 
+- **Traces chez Vercel** : Vercel → Team → Activity (variables modifiées, déploiements) ; les traces de chaque fournisseur sont dans sa fiche.
+- **Jeton d'accès Vercel** (CLI, CI) : Account Settings → Tokens ; créer le nouveau, mettre à jour la CI, supprimer l'ancien. Les jetons récents commencent par `vcp_` (personnel) ou `vck_` (clé d'API). Test : `vercel whoami`. Source : https://vercel.com/changelog/new-token-formats-and-secret-scanning (2026-02-09).
+
 Sources : https://vercel.com/docs/cli/env (màj 2026-08-20), https://vercel.com/docs/environment-variables/rotating-secrets (màj 2026-07-15), https://vercel.com/docs/environment-variables/sensitive-environment-variables (màj 2026-08-28), https://vercel.com/docs/cli/redeploy (màj 2026-03-17).

@@ -7,6 +7,7 @@ L'index des variables du squelette et des recettes, une ligne chacune : de quoi 
 | NOM | rôle | fournisseur | page de renouvellement |
 |---|---|---|---|
 | `DATABASE_URL`, `DATABASE_URL_DIRECT` | adresses de la base : l'application et les migrations ; même mot de passe, renouvelées ensemble ; une valeur par environnement | Neon | console Neon → la branche → Roles → Reset password |
+| `POSTGRES_PASSWORD` | mot de passe de la base PostgreSQL du serveur (hébergement docker, profil `base`) ; les adresses s'en déduisent ; seulement dans le `.env` du serveur | serveur (valeur générée) | `\password app` dans la base, puis `.env` du serveur |
 | `NEON_API_KEY` | sauvegarde de la base avant chaque migration de production, avec `NEON_PROJECT_ID` (pas un secret) ; `NEON_ENDPOINT_PRODUCTION` en est déduit | Neon | console Neon → Settings → API keys |
 | `BETTER_AUTH_SECRET` | signe les sessions de connexion (recette `connexion`) | projet (valeur générée) | aucune : `pulse-aidd secrets generer` |
 | `BETTER_AUTH_SECRETS` | forme versionnée du précédent : l'ancienne valeur reste lisible pendant la transition | projet (valeur générée) | aucune : `pulse-aidd secrets generer --versionne` |
@@ -19,8 +20,8 @@ L'index des variables du squelette et des recettes, une ligne chacune : de quoi 
 | `FORMULAIRE_SECRET` | signe le délai des formulaires publics (recette `formulaire-public`) | projet (valeur générée) | aucune : `pulse-aidd secrets generer` |
 | `TURNSTILE_SECRET_KEY` | contrôle anti-robot des formulaires (recette `formulaire-public`, option Turnstile), avec `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (publique) | Cloudflare Turnstile | Cloudflare → Turnstile → le widget → Settings → Rotate Secret Key |
 
-## Comptes de l'hébergeur et du poste
+## Comptes du poste
 
-- **Traces chez Vercel** : Vercel → Team → Activity (variables modifiées, déploiements) ; les traces de chaque fournisseur sont dans sa fiche.
-- **Jeton d'accès Vercel** (CLI, CI) : Account Settings → Tokens ; créer le nouveau, mettre à jour la CI, supprimer l'ancien. Les jetons récents commencent par `vcp_` (personnel) ou `vck_` (clé d'API). Test : `vercel whoami`. Source : https://vercel.com/changelog/new-token-formats-and-secret-scanning (2026-02-09).
+Les comptes de l'hébergeur sont plus bas, avec ses variables.
+
 - **Jeton GitHub** (`gh`, CI) : https://github.com/settings/tokens → créer le nouveau, mettre à jour la CI, supprimer l'ancien ; `gh auth refresh` pour le jeton de `gh`. Test : `gh auth status`. Un jeton poussé dans un dépôt public est révoqué automatiquement par GitHub.

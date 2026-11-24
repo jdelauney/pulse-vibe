@@ -19,6 +19,17 @@ Une fiche par variable du squelette et des recettes, lue par `pulse-aidd pile se
 - **Traces** : console Neon → **Monitoring** (connexions, requêtes) sur la période d'exposition.
 - Sources : https://neon.com/docs/manage/roles ; https://neon.com/faqs/rotate-database-password-after-leak ; https://neon.com/docs/manage/computes ; https://neon.com/docs/connect/connection-pooling.
 
+### `POSTGRES_PASSWORD`
+
+- **Rôle** : mot de passe du compte `app` de la base PostgreSQL du serveur (hébergement docker, `COMPOSE_PROFILES=base`). `compose.production.yml` en déduit `DATABASE_URL` et `DATABASE_URL_DIRECT`. Hébergement serveur : le même mot de passe est écrit dans les deux adresses du `.env` du serveur. Il vit seulement sur le serveur.
+- **Longueur** : 32 caractères au moins, tirés au hasard sur le serveur : `openssl rand -hex 32`.
+- **Où renouveler** : dans la base, puis dans le `.env` du serveur. Docker : `docker compose -f compose.production.yml exec db psql -U app -d app`, puis `\password app` (le nouveau mot de passe, deux fois, sans l'afficher), `\q` ; changer `POSTGRES_PASSWORD` dans `.env` (la variable ne sert qu'à la création de la base : la changer seule ne change pas le mot de passe). Serveur : `sudo -u postgres psql -c '\password app'`, puis les deux adresses de `.env`.
+- **Effet** : immédiat pour les nouvelles connexions ; le site garde ses connexions ouvertes jusqu'au redémarrage.
+- **Délai de grâce** : aucun. Enchaîner : `\password` → `.env` → redémarrage (docker : `./scripts/deployer.sh` ; serveur : `systemctl --user restart <nom du paquet>`), puis vérifier `/api/sante`.
+- **Après une fuite** : la base n'écoute que sur le serveur (réseau interne de Docker, ou `localhost`) : une fuite seule ne l'ouvre pas, mais le mot de passe se renouvelle tout de suite.
+- **Test** : sur le serveur, `/api/sante` répond 200 après le redémarrage.
+- Sources : https://www.postgresql.org/docs/current/app-psql.html (`\password`) ; https://hub.docker.com/_/postgres (`POSTGRES_PASSWORD`, lue à la création de la base seulement).
+
 ### `NEON_API_KEY`
 
 - **Rôle** : crée la branche de sauvegarde avant chaque migration de production (`scripts/migrer.mjs`), avec `NEON_PROJECT_ID` (identifiant du projet, pas un secret). En Production seulement. À chaque envoi en production, l'outil en déduit aussi `NEON_ENDPOINT_PRODUCTION` (point d'accès de la branche principale, pas un secret), envoyé pour Preview : la garde des prévisualisations de `scripts/migrer.mjs`. Une rotation de la clé le remet à jour.

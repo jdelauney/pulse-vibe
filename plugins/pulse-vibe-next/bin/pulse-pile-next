@@ -16,7 +16,8 @@
 #   pulse-pile-next entite <description.json> [--essai] [--us <US-XXX>] [--dossier <projet>]   écrit tout le code d'un type d'information (liste, création, modification, suppression, tests) d'après sa description (format : reference entite.md) ; --essai : la liste des fichiers, sans rien écrire
 #   pulse-pile-next police <famille> [--role texte|titres|code] [--graisses 400,600]   pose une police servie par le site (fichiers récupérés sur Bunny Fonts)
 #   pulse-pile-next secrets regles|tester <NOM>|suites <NOM>|fiche <NOM>   règles, test réel et variables déduites (valeurs en JSON sur l'entrée standard), fiche d'une variable (pour pulse-aidd secrets)
-#   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur Vercel de pulse-aidd secrets (valeur sur l'entrée standard)
+#   pulse-pile-next hebergeur ls|envoyer <NOM> <env>|redeployer <env>   adaptateur d'hébergeur de pulse-aidd secrets (valeur sur l'entrée standard) :
+#                                         Vercel par son CLI ; docker et serveur : la marche à suivre sur le serveur (code 3)
 #
 # Ne sort jamais en erreur pour "info" et "contexte" : un échec annulerait la commande /pulse.
 
@@ -201,7 +202,9 @@ case "$1" in
   secrets)
     shift; exec node "$RACINE/scripts/sondes-secrets.js" "$@" ;;
   hebergeur)
-    shift; exec node "$RACINE/scripts/secrets-vercel.js" "$@" ;;
+    shift
+    if [ "$(hebergement)" = vercel ]; then exec node "$RACINE/scripts/secrets-vercel.js" "$@"; fi
+    exec node "$RACINE/scripts/hebergeur-serveur.js" "$(hebergement)" "$@" ;;
   *)
     sed -n '2,/^$/p' "${BASH_SOURCE[0]}" | sed -n 's/^# \{0,1\}//p' ;;
 esac
