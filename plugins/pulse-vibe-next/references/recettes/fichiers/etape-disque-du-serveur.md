@@ -1,6 +1,6 @@
 ### Disque du serveur (docker, serveur)
 
-Hébergements docker et serveur, à la place de l'étape 6 : la classe `StockageDisqueAdapter` implémente le même port. Les fichiers vont dans `FICHIERS_DOSSIER`, hors de `public/` : rien ne les sert sans passer par le site. Les adresses d'envoi et de lecture sont des routes du site, avec un jeton signé (HMAC-SHA256, clé `FICHIERS_SECRET`) qui fige la clé, le type, la taille ou le nom, et expire au bout de 5 minutes, comme une adresse signée de R2. La clé d'objet est contrôlée avant tout accès au disque : jamais de chemin qui sorte du dossier. Le type reçu est gardé à côté du fichier (`<clé>.type`).
+Hébergements docker et serveur, à la place de l'étape 6 : la classe `StockageDisqueAdapter` implémente le même port. Les fichiers vont dans `FICHIERS_DOSSIER`, hors de `public/` : rien ne les sert sans passer par le site. Les adresses d'envoi et de lecture sont des routes du site, avec un jeton signé (HMAC-SHA256, clé `FICHIERS_SECRET`) qui fige la clé, le type, la taille ou le nom, et expire au bout de 5 minutes. La clé d'objet est contrôlée avant tout accès au disque : jamais de chemin qui sorte du dossier. Le type reçu est gardé à côté du fichier (`<clé>.type`).
 
 <!-- fichier: src/adapters/storage/storage.adapter.ts hebergement: docker,serveur -->
 ```ts

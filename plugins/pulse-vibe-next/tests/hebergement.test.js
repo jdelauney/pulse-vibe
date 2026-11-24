@@ -74,7 +74,8 @@ test("fiches de mise en ligne : chargées à la demande, avec les valeurs de doc
     for (const libelle of ["tech", "deploy", "deploy-premiere", "secrets"]) assert.ok(!lancer(projet(h), ["contexte", libelle]).stdout.includes("## Préparer le serveur"), `${h} : la fiche n'est pas chargée par ${libelle}`);
   }
   const serveur = lire(REF, "hebergement-serveur.md");
-  assert.match(serveur, /Infomaniak/, "proxy du fournisseur : Caddy sauté");
+  assert.match(serveur, /Le fournisseur a son proxy\*\* : Caddy est inutile/, "proxy du fournisseur : Caddy sauté");
+  assert.doesNotMatch(serveur, /Infomaniak|HAProxy/i, "aucun fournisseur nommé");
   assert.match(serveur, /## Pourquoi construire sur le serveur/);
   assert.match(lire(REF, "technical.md"), /^\*\*Hébergement\*\* : vercel$/m);
 });
