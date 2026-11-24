@@ -11,20 +11,22 @@
   - macOS : `brew install mailpit`, puis `brew services start mailpit` pour le lancer en tâche de fond.
   - Linux (et macOS) : `sudo sh < <(curl -sL https://raw.githubusercontent.com/axllent/mailpit/develop/install.sh)`.
   - Lancement : `mailpit` dans un terminal. Il reçoit les e-mails sur le port SMTP **1025** et les affiche sur **http://localhost:8025**.
-- Pour le site en ligne, un compte SMTP :
-  - **Pour essayer en ligne** : un compte Gmail que la personne crée pour le projet (jamais son compte personnel), avec la validation en deux étapes, puis un **mot de passe d'application** créé sur https://myaccount.google.com/apppasswords. La personne le colle elle-même dans `.env`, puis dans Vercel ; il ne passe jamais par la conversation. Elle le révoque sur la même page quand il ne sert plus.
-  - **Pour un vrai lancement** : le SMTP d'un fournisseur, avec le nom de domaine du projet. Infomaniak (suisse) : `mail.infomaniak.com`, port 587, identifiant = l'adresse e-mail complète. Brevo (français) : `smtp-relay.brevo.com`, port 587, identifiant = l'adresse du compte Brevo, mot de passe = une clé SMTP créée dans « SMTP & API ».
+- Pour le site en ligne, une adresse d'envoi chez le fournisseur d'e-mail choisi par la personne : une adresse créée pour le projet (jamais sa boîte personnelle), de préférence sur le nom de domaine du projet. Lui demander (souvent dans son aide « configurer un logiciel de messagerie » ou « SMTP ») :
+  - l'**adresse du serveur SMTP** (`SMTP_HOST`) ;
+  - le **port 587** (`SMTP_PORT`, chiffrement STARTTLS ; 465 si le fournisseur l'indique) ;
+  - l'**identifiant** (`SMTP_USER`, souvent l'adresse e-mail complète) ;
+  - un **mot de passe d'application** (ou clé SMTP) créé pour le projet, distinct du mot de passe du compte (`SMTP_PASSWORD`). La personne le colle elle-même dans `.env`, puis chez l'hébergeur ; il ne passe jamais par la conversation. Elle le révoque chez le fournisseur quand il ne sert plus.
 - Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaînes `envoi-email` et `connexion,envoi-email,email` de `verifier-recettes.js`) : contrôles, types, tests unitaires, construction. L'envoi par Mailpit et par un vrai serveur SMTP reste un essai à la main.
 
 ## Variables d'environnement
 
-| Nom | Rôle | En local (Mailpit) | Pour essayer en ligne (Gmail) |
+| Nom | Rôle | En local (Mailpit) | En ligne (donné par le fournisseur) |
 |---|---|---|---|
-| `SMTP_HOST` | Serveur SMTP | `localhost` | `smtp.gmail.com` |
+| `SMTP_HOST` | Serveur SMTP | `localhost` | l'adresse du serveur SMTP |
 | `SMTP_PORT` | Port | `1025` | `587` |
-| `SMTP_USER` | Identifiant | vide | l'adresse Gmail du projet |
+| `SMTP_USER` | Identifiant | vide | l'identifiant (souvent l'adresse d'envoi) |
 | `SMTP_PASSWORD` | Mot de passe | vide | le mot de passe d'application (`VOTRE_MOT_DE_PASSE_ICI`) |
-| `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <adresse.du.projet@gmail.com>` |
+| `MAIL_FROM` | Expéditeur affiché | `Mon projet <ne-pas-repondre@exemple.fr>` | `Mon projet <contact@domaine-du-projet.fr>` (l'adresse d'envoi) |
 
 Ajoutez ces lignes dans `server: { … }` de `src/config/env.ts`, après `DATABASE_URL` :
 
@@ -79,7 +81,7 @@ Le chemin d'un e-mail une fois la recette en place :
 
 1. Une fonctionnalité (action, use-case, configuration de better-auth) reçoit un `EnvoyeurEmail` et appelle `envoyer({ a, sujet, texte, html })`.
 2. `ServiceEmail` ajoute l'expéditeur du site et, en développement, l'en-tête `X-Environment: development`, puis passe l'e-mail au transport.
-3. `NodemailerTransport` le confie au serveur SMTP : Mailpit en local, Gmail ou le fournisseur en ligne.
+3. `NodemailerTransport` le confie au serveur SMTP : Mailpit en local, celui du fournisseur d'e-mail en ligne.
 4. Le journal du serveur note l'identifiant du message, son sujet et le nombre de destinataires, sans aucune adresse.
 
 Conception : `TransportEmail` est le contrat d'un fournisseur (patron Adapter : `NodemailerTransport` adapte Nodemailer) ; `ServiceEmail` est la façade que le métier connaît (patron Façade), qui reçoit son transport par le constructeur (inversion de dépendance) ; `getEnvoyeurEmail()` est la racine de composition, comme `getAuth()` pour la connexion. Changer de fournisseur revient à écrire une autre classe qui implémente `TransportEmail`, sans toucher au reste.
@@ -172,7 +174,7 @@ Le code des tests : `pulse-aidd pile recette envoi-email tests`
 - **S2 – Clés côté client** : aucune variable `NEXT_PUBLIC_` ; `src/adapters/email/email.adapter.ts` et `nodemailer.adapter.ts` commencent par `import "server-only"`.
 - **S6 – Affichage sans injection** : le HTML d'un e-mail se compose dans `src/core/<domaine>/`, et chaque valeur saisie par quelqu'un (nom, message) y passe par une fonction d'échappement (`echapperHtml` de la recette `email`, par exemple).
 - **S9 – Données personnelles** : le journal note l'identifiant du message, le sujet et le nombre de destinataires, sans adresse ; un sujet reste sans donnée personnelle (pas de nom ni de lien). L'`ErreurService` ne garde, de l'erreur du serveur SMTP, que `code`, `command` et `responseCode` : ni son texte, ni l'adresse du destinataire.
-- **S10 – Abus et coûts** : un e-mail déclenché par un inconnu (formulaire de contact, réservation sans compte) passe par la recette `limite` avant l'ouverture au public. Gmail limite à 500 destinataires par jour : Mailpit pour tous les essais, Gmail seulement pour le site en ligne.
+- **S10 – Abus et coûts** : un e-mail déclenché par un inconnu (formulaire de contact, réservation sans compte) passe par la recette `limite` avant l'ouverture au public. Chaque fournisseur limite le nombre d'e-mails par jour (chiffre à relever chez lui) : Mailpit pour tous les essais, le fournisseur seulement pour le site en ligne.
 - **Réponse et expéditeur** : l'expéditeur reste `MAIL_FROM` ; une adresse saisie par un visiteur va seulement dans `repondreA`, après validation par le schéma Zod de l'action.
 
 ## Pièges connus
@@ -180,7 +182,7 @@ Le code des tests : `pulse-aidd pile recette envoi-email tests`
 - **Port 25 bloqué par Vercel** : utilisez 587 (STARTTLS) ou 465 (chiffré dès la connexion). `NodemailerTransport` règle `secure` d'après le port.
 - **Mailpit éteint** : l'envoi échoue avec `ECONNREFUSED` (une `ErreurService("email", …)` dans le journal). Lancez `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
 - **Mailpit lancé, rien n'arrive (`ETIMEDOUT`)** : Nodemailer demande `localhost` au DNS, et certaines box répondent une autre adresse. Mettez `SMTP_HOST=127.0.0.1`.
-- **Gmail** : le mot de passe d'application exige la validation en deux étapes. Changer le mot de passe du compte Google révoque d'un coup tous les mots de passe d'application. L'expéditeur reste l'adresse Gmail. Un mot de passe d'application ouvre aussi la lecture de la boîte : réservez ce compte Gmail au projet. Google peut bloquer des connexions venues de nombreux endroits à la fois, et déconseille les mots de passe d'application pour un service en production.
+- **Mot de passe d'application** : beaucoup de fournisseurs demandent d'activer d'abord la validation en deux étapes du compte. Changer le mot de passe du compte peut révoquer d'un coup tous ses mots de passe d'application. Chez certains, ce mot de passe ouvre aussi la lecture de la boîte : réservez cette adresse au projet. L'expéditeur reste en général l'adresse du compte d'envoi : gardez `MAIL_FROM` sur elle.
 - **E-mails rangés dans les indésirables** : avec un domaine à soi, configurez SPF, DKIM et DMARC chez le fournisseur ; gardez `MAIL_FROM` sur ce domaine.
 - **`@types/nodemailer`** : il entre en conflit avec les types fournis par Nodemailer 10 ; désinstallez-le.
 - **`npm run check` signale `noRestrictedImports` dans `src/core/`** : les contenus d'e-mails et les use-cases reçoivent un `EnvoyeurEmail` et importent seulement `@src/core/email/email.port`. `getEnvoyeurEmail()` s'appelle dans une action, une route ou `auth.adapter.ts`.
@@ -192,12 +194,9 @@ Le code des tests : `pulse-aidd pile recette envoi-email tests`
 - Nodemailer 10.6.1 (dernière version sur le registre npm le 2026-11-23) : https://nodemailer.com/ (`sendMail` renvoie une promesse ; `info.messageId`, `info.rejected` : l'e-mail compte comme parti si une adresse est acceptée ; un transport créé une fois et réutilisé ; Node.js 20 au moins) ; https://nodemailer.com/smtp (`host`, `port`, `secure` pour 465, `requireTLS`, `auth` absent = sans identifiant, `connectionTimeout` 2 min, `greetingTimeout` 30 s, `socketTimeout` 10 min par défaut, `pool`) ; https://nodemailer.com/smtp/pooled (connexions réutilisées, fermées après 4 min sans envoi, e-mail remis en file si le serveur coupe une connexion réutilisée) ; https://nodemailer.com/message (`to` : une adresse ou un tableau, `replyTo`, `headers`, `attachments`) ; https://nodemailer.com/message/attachments (`filename`, `content` en texte, `Buffer` ou flux, `contentType`)
 - Mailpit : https://mailpit.axllent.org/docs/install/ (ports 1025 et 8025) ; https://mailpit.axllent.org/docs/usage/search-filters/ ; API : `server/ui/api/v1/swagger.json` du dépôt axllent/mailpit ; paquet winget `axllent.mailpit`
 - Vercel, ports SMTP : https://vercel.com/kb/guide/serverless-functions-and-smtp
-- Google : https://support.google.com/accounts/answer/185833 (mots de passe d'application) ; https://support.google.com/mail/answer/22839 (limite de 500)
-- Infomaniak : https://www.infomaniak.com/fr/support/faq/468/ ; Brevo : https://help.brevo.com/hc/en-us/articles/10905415650322
 - Next.js 16.4, documentation embarquée : `01-app/03-api-reference/04-functions/after.md`
 
 ## Points à vérifier
 
-- L'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer, comme les connexions gardées ouvertes (`pool`) entre deux requêtes sur Vercel.
+- L'envoi par un vrai serveur SMTP reste à essayer, comme les connexions gardées ouvertes (`pool`) entre deux requêtes sur Vercel.
 - L'envoi par `after()` sur Vercel : l'e-mail doit partir après la réponse (réception, et journaux Vercel sans erreur).
-- La limite de 500 destinataires par jour : chiffre de l'aide Google pour un compte Gmail, susceptible de changer.

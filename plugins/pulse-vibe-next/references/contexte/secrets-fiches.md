@@ -91,16 +91,11 @@ Une fiche par variable du squelette et des recettes, lue par `pulse-aidd pile se
 ### `SMTP_PASSWORD`
 
 - **Rôle** : mot de passe d'envoi des e-mails (recette `envoi-email`), avec `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `MAIL_FROM` (réglages, pas des secrets).
-- **Où renouveler** : chez le fournisseur d'e-mail du projet. Principe commun : créer le nouvel identifiant d'envoi **avant** de supprimer l'ancien.
-  - **Gmail** (mot de passe d'application) : https://myaccount.google.com/apppasswords → créer (nom = le projet) → copier → plus tard, supprimer l'ancien dans la même liste. Exige la validation en deux étapes ; indisponible pour certains comptes professionnels. Changer le mot de passe du compte Google révoque **tous** ses mots de passe d'application.
-  - **Infomaniak** : Manager → Service Mail → l'adresse → onglet **Appareils** : ajouter un appareil (nouveau mot de passe), puis **Déconnecter l'appareil** ancien.
-  - **Brevo** (clé SMTP) : Paramètres → **SMTP & API** → onglet **SMTP** → **Generate a new SMTP key** ; supprimer l'ancienne ensuite. Clé montrée une seule fois. Chemin relevé par des sources secondaires : à confirmer à l'écran.
-  - Autre fournisseur : sa documentation officielle.
+- **Où renouveler** : chez le fournisseur d'e-mail du projet, dans les réglages de sécurité du compte d'envoi : la page des **mots de passe d'application** (ou des clés SMTP, ou des appareils connectés), d'après sa documentation officielle. Principe commun : créer le nouveau mot de passe d'application, nommé d'après le projet, **avant** de supprimer l'ancien. Beaucoup de fournisseurs demandent la validation en deux étapes pour en créer un ; changer le mot de passe du compte peut révoquer **tous** ses mots de passe d'application ; une clé est souvent montrée une seule fois.
 - **Effet** : la suppression de l'ancien identifiant est immédiate.
 - **Délai de grâce** : oui, tant que les deux identifiants coexistent.
 - **Test** : `pulse-aidd secrets verifier SMTP_PASSWORD` (authentification auprès du serveur, sans envoi), puis un envoi réel vers une adresse de test après le redéploiement.
 - **Traces** : journal des envois du fournisseur (volumes, rebonds, plaintes).
-- Sources : https://support.google.com/accounts/answer/185833 ; https://www.infomaniak.com/fr/support/faq/1736.
 
 ### `S3_ACCESS_KEY_ID` et `S3_SECRET_ACCESS_KEY`
 

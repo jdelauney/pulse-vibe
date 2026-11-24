@@ -144,5 +144,5 @@ Le code des tests : `pulse-aidd pile recette double-authentification tests`
 
 ## Points à vérifier
 
-- Le parcours de bout en bout avec un vrai serveur d'e-mail (Gmail, Infomaniak, Brevo) : délai de réception du code.
+- Le parcours de bout en bout avec le vrai serveur d'e-mail d'un fournisseur : délai de réception du code.
 - La lecture du cookie `two_factor` par `enTetesDeSession()` dans l'action `connecter`, juste après sa pose : couverte par le test de bout en bout (Mailpit), à rejouer à chaque version majeure de Next.js.

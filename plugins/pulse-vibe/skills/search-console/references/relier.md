@@ -13,7 +13,7 @@ Chaque étape se note dès qu'elle est faite, dans la section « Référencement
 ## 1a. Choisir le type de propriété
 
 - Adresse sur un sous-domaine d'hébergeur (`*.vercel.app`, `*.netlify.app`…), dont le DNS appartient à l'hébergeur → **préfixe d'URL** (`https://<adresse>/`) vérifié par **balise meta** (1b). Il couvre seulement les adresses qui commencent exactement par ce préfixe, protocole et `www` compris : déclarer l'adresse **réellement servie après redirection** (`https://www.` et `https://` font deux propriétés différentes).
-- Domaine personnel → **propriété de domaine** (`sc-domain:exemple.fr`, tous les sous-domaines et protocoles), vérifiée par **enregistrement DNS** TXT seulement (1c). Où est géré le DNS : chez l'hébergeur (consignes du pack de pile, s'il y en a un) ou chez le registraire (OVH, Gandi, IONOS…) ? Demander à la personne si `docs/technical.md` ne le dit pas.
+- Domaine personnel → **propriété de domaine** (`sc-domain:exemple.fr`, tous les sous-domaines et protocoles), vérifiée par **enregistrement DNS** TXT seulement (1c). Où est géré le DNS : chez l'hébergeur (consignes du pack de pile, s'il y en a un) ou chez le registraire (la société où le nom de domaine a été acheté) ? Demander à la personne si `docs/technical.md` ne le dit pas.
 - Personne bloquée sur le DNS → repli sur le préfixe d'URL avec balise meta (1b), en expliquant que la propriété ne couvrira que cette adresse exacte.
 
 La personne ouvre Search Console (search.google.com/search-console) avec son compte Google, choisit « Ajouter une propriété » et le type retenu.

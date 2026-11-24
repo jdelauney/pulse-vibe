@@ -384,7 +384,7 @@ Quelle clé ? (liste tirée de l'inventaire, ou « Je ne sais pas laquelle »)</
 
 <h3 id="s5-smtp">Envoyer de vrais e-mails en ligne</h3>
 <p><strong>Objectif :</strong> brancher un vrai service d'envoi pour le site en ligne. <span class="duree">Environ 20 min</span></p>
-<p>Pour essayer, un compte Gmail créé pour le projet (jamais votre compte personnel) suffit, avec un mot de passe d'application. Pour un vrai lancement, Pulse conseille le service d'envoi d'un fournisseur, avec le nom de domaine du salon. La valeur réelle part en production ; les prévisualisations reçoivent une valeur de test.</p>
+<p>Il vous faut une adresse d'envoi chez un fournisseur d'e-mail, créée pour le salon (jamais votre boîte personnelle), de préférence avec le nom de domaine du salon. Pulse vous dit quoi lui demander : l'adresse de son serveur d'envoi, le port, votre identifiant et un mot de passe d'application, réservé au site. La valeur réelle part en production ; les prévisualisations reçoivent une valeur de test.</p>
 <aside class="encadre encadre-risque"><p><strong>Risque :</strong> chaque prévisualisation travaille sur une copie des vraies données, adresses des clientes comprises. Avec le vrai service d'envoi, une version d'essai pourrait écrire à de vraies clientes. Gardez le service réel pour la production seulement, comme Pulse le propose. Le mot de passe d'envoi, vous le collez vous-même dans <code>.env</code> (ouvert dans VS Code, onglet fermé ensuite) puis chez l'hébergeur ; il ne passe jamais par la conversation.</p></aside>
 
 <h3 id="s5-accepter">Accepter la proposition</h3>

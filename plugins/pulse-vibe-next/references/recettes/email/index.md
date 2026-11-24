@@ -247,7 +247,7 @@ Le code des tests : `pulse-aidd pile recette email tests`
 
 ## Pièges connus
 
-- **Serveur d'e-mail (port, Mailpit, Gmail, indésirables)** : pièges de la recette `envoi-email`.
+- **Serveur d'e-mail (port, Mailpit, mot de passe d'application, indésirables)** : pièges de la recette `envoi-email`.
 - **Mailpit éteint** : l'envoi échoue en silence côté écran (better-auth journalise « Failed to run background task », avec l'`ErreurService` du transport). Lancez `mailpit` avant `npm run dev` et avant `npm run test:e2e`.
 - **Comptes créés avant la recette** : leur adresse n'est pas confirmée ; ils ne peuvent plus se connecter. En développement, supprimez-les. En ligne, la connexion leur envoie un e-mail de confirmation (`sendOnSignIn`).
 - **`authClient.requestPasswordReset`, `changeEmail` ou `deleteUser` répond 404** : ces adresses sont fermées par `disabledPaths`. Passez par les actions de `src/features/compte/actions/`.
@@ -271,4 +271,4 @@ Le code des tests : `pulse-aidd pile recette email tests`
 
 - Les tests de bout en bout avec Mailpit lui-même (rejoués le 2026-11-16 avec une doublure de son API).
 - L'envoi par `after()` sur Vercel : l'e-mail doit partir après la réponse. À constater à la tâche Tn+5 (réception, et journaux Vercel sans « Failed to run background task »).
-- L'envoi par un vrai serveur SMTP (Gmail, Infomaniak, Brevo) reste à essayer (recette `envoi-email`).
+- L'envoi par le vrai serveur SMTP d'un fournisseur reste à essayer (recette `envoi-email`).
