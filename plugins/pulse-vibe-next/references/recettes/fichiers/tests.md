@@ -292,9 +292,9 @@ describe("Fichiers", () => {
 });
 ```
 
-L'adapter se teste avec le client du SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
+Vercel : l'adapter se teste avec le client du SDK doublé : l'erreur du service est choisie par le test, et les adresses signées (calculées en local, sans réseau) sont relues.
 
-<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts -->
+<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts hebergement: vercel -->
 ```ts
 // src/adapters/storage/__tests__/storage.adapter.test.ts
 import { ErreurService } from "@src/lib/errors/erreur-service";
@@ -397,6 +397,122 @@ describe("Stockage des fichiers", () => {
         'attachment; filename="fa_ctu_re_.pdf"',
       );
     });
+  });
+});
+```
+
+Serveur : l'adapter du disque se teste sur un dossier temporaire du système, avec une horloge choisie par le test.
+
+<!-- fichier: src/adapters/storage/__tests__/storage.adapter.test.ts hebergement: docker,serveur -->
+```ts
+// src/adapters/storage/__tests__/storage.adapter.test.ts
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { ErreurService } from "@src/lib/errors/erreur-service";
+import { afterAll, describe, expect, it } from "vitest";
+import { StockageDisqueAdapter } from "../storage.adapter";
+
+const DOSSIER = mkdtempSync(join(tmpdir(), "fichiers-"));
+const SECRET = "secret-de-test-de-trente-deux-caracteres";
+let heure = 1_000_000;
+const stockage = new StockageDisqueAdapter(
+  { FICHIERS_DOSSIER: DOSSIER, FICHIERS_SECRET: SECRET },
+  () => heure,
+);
+const PNG = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+const jetonDe = (adresse: string) =>
+  new URL(adresse, "http://site").searchParams.get("jeton") ?? "";
+
+afterAll(() => rmSync(DOSSIER, { recursive: true, force: true }));
+
+describe("Stockage des fichiers sur le disque", () => {
+  it("US-XXX-6 – Un envoi conforme au jeton est enregistré, puis relu tel quel", async () => {
+    const adresse = await stockage.adresseEnvoi({
+      cle: "camille-id/f1.png",
+      typeMime: "image/png",
+      taille: PNG.byteLength,
+    });
+    expect(adresse).toMatch(/^\/api\/fichiers\/envoi\?jeton=/);
+    expect(
+      await stockage.recevoir({
+        jeton: jetonDe(adresse),
+        typeMime: "image/png",
+        contenu: PNG,
+      }),
+    ).toBe("enregistre");
+    expect(await stockage.lireObjet("camille-id/f1.png")).toEqual({
+      taille: PNG.byteLength,
+      typeMime: "image/png",
+    });
+    const lecture = await stockage.adresseLecture({
+      cle: "camille-id/f1.png",
+      nom: "photo.png",
+    });
+    const fichier = await stockage.ouvrir(jetonDe(lecture));
+    expect(fichier?.nom).toBe("photo.png");
+    expect([...(fichier?.contenu ?? [])]).toEqual([...PNG]);
+  });
+
+  it("US-XXX-8 – Un envoi d'un autre type, d'une autre taille ou avec un jeton modifié est refusé", async () => {
+    const jeton = jetonDe(
+      await stockage.adresseEnvoi({
+        cle: "camille-id/f2.png",
+        typeMime: "image/png",
+        taille: PNG.byteLength,
+      }),
+    );
+    expect(
+      await stockage.recevoir({
+        jeton,
+        typeMime: "application/pdf",
+        contenu: PNG,
+      }),
+    ).toBe("refuse");
+    expect(
+      await stockage.recevoir({
+        jeton,
+        typeMime: "image/png",
+        contenu: PNG.slice(1),
+      }),
+    ).toBe("refuse");
+    const [corps] = jeton.split(".");
+    const fausse = `${corps}.${"A".repeat(43)}`;
+    expect(
+      await stockage.recevoir({
+        jeton: fausse,
+        typeMime: "image/png",
+        contenu: PNG,
+      }),
+    ).toBe("refuse");
+    expect(await stockage.lireObjet("camille-id/f2.png")).toBeNull();
+  });
+
+  it("US-XXX-8 – Les jetons durent 5 minutes et servent à un seul usage", async () => {
+    const lecture = jetonDe(
+      await stockage.adresseLecture({
+        cle: "camille-id/f1.png",
+        nom: "photo.png",
+      }),
+    );
+    expect(stockage.verifier(lecture, "envoi")).toBeNull();
+    heure += 5 * 60 * 1000 + 1;
+    expect(stockage.verifier(lecture, "lecture")).toBeNull();
+    expect(await stockage.ouvrir(lecture)).toBeNull();
+  });
+
+  it("US-XXX-7 – Une clé qui sortirait du dossier est refusée avant tout accès au disque", async () => {
+    const erreur = await stockage.lireObjet("../../etc/passwd").catch((e) => e);
+    expect(erreur).toBeInstanceOf(ErreurService);
+    expect(erreur.message).not.toContain("etc");
+  });
+
+  it("US-XXX-4 – Supprimer efface le fichier ; un fichier absent répond « rien reçu »", async () => {
+    await stockage.supprimerObjet("camille-id/f1.png");
+    expect(await stockage.lireObjet("camille-id/f1.png")).toBeNull();
+    await expect(
+      stockage.supprimerObjet("camille-id/f1.png"),
+    ).resolves.toBeUndefined();
   });
 });
 ```
@@ -504,7 +620,7 @@ describe("Fichiers", () => {
 
 ### Bout en bout (Playwright)
 
-Le premier test envoie un vrai fichier vers R2 : en local et en CI, utilisez un bucket de test, distinct de celui de production. Le second coupe l'envoi vers R2 (`page.route`) : il tourne sans compte R2.
+Le premier test envoie un vrai fichier vers R2 : en local et en CI, utilisez un bucket de test, distinct de celui de production. Le second coupe l'envoi du fichier (`page.route`, toute requête PUT : R2 ou la route du site) : il tourne sans compte R2.
 
 <!-- fichier: e2e/fichiers.spec.ts -->
 ```ts
@@ -542,9 +658,9 @@ test.describe("Fichiers", () => {
   }) => {
     await connecterNouvelUtilisateur(page);
     await page.goto("/fichiers");
-    // Le stockage ne répond pas : l'envoi direct vers R2 est coupé.
-    await page.route("**/*.r2.cloudflarestorage.com/**", (route) =>
-      route.abort(),
+    // Le stockage ne répond pas : l'envoi du fichier (PUT, vers R2 ou vers le site) est coupé.
+    await page.route("**/*", (route) =>
+      route.request().method() === "PUT" ? route.abort() : route.fallback(),
     );
 
     await page.getByLabel(/Ajouter un fichier/).setInputFiles({

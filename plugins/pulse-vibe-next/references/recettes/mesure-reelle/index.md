@@ -4,19 +4,19 @@
 
 ## Prérequis
 
-- Le squelette du pack est en place (`pulse-aidd pile squelette`), mis en ligne sur Vercel (`/pulse:deploy`) : `src/db/db-client.ts` exporte `getDb()` et le type `Db` ; `src/lib/errors/reponse-erreur.ts` fournit `reponseErreur()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`.
-- Deux options ; la personne choisit (AskUserQuestion), après lecture de leurs limites :
+- Le squelette du pack est en place (`pulse-aidd pile squelette`), mis en ligne (`/pulse:deploy`) : `src/db/db-client.ts` exporte `getDb()` et le type `Db` ; `src/lib/errors/reponse-erreur.ts` fournit `reponseErreur()` ; `tests/helpers/base-de-test.ts` fournit `creerBaseDeTest()` ; `vitest.config.ts` tourne en environnement `node`, avec les alias `@src` et `@app`.
+- Deux options sur Vercel ; la personne choisit (AskUserQuestion), après lecture de leurs limites. Sur un serveur (hébergement docker ou serveur), l'option B seule : Speed Insights est un service de Vercel (ses blocs portent `hebergement: vercel`).
 
 | | A. Speed Insights de Vercel | B. Mesure envoyée au site lui-même |
 |---|---|---|
 | Mise en place | un paquet, une ligne dans le layout, un réglage dans Vercel | une table, une route, un composant (code ci-dessous, testé) |
-| Coût | gratuit jusqu'à 10 000 mesures sur 30 jours glissants pour toute l'équipe (une visite en envoie 3 à 6) ; au-delà, collecte arrêtée au moins 14 jours | gratuit (base Neon déjà en place) |
+| Coût | gratuit jusqu'à 10 000 mesures sur 30 jours glissants pour toute l'équipe (une visite en envoie 3 à 6) ; au-delà, collecte arrêtée au moins 14 jours | gratuit (base du projet déjà en place) |
 | Ce que l'on voit | offre gratuite : seulement le « Real Experience Score » dans le tableau de bord ; le détail par mesure et par page demande Speed Insights Plus (offre Pro, payante) | le 75e centile de chaque mesure, par page, lu dans Neon (SQL Editor) |
 | Navigations internes | premier chargement de la visite seulement | aussi les changements de page sans rechargement (Chrome récents) |
 | Données | chez Vercel ; anonymes (ni IP ni identifiant) | dans votre base ; anonymes, effacées après 90 jours |
 | Recommandé pour | voir une tendance générale sans code | lire les chiffres par page, garder les données chez soi |
 
-- Option B : `DATABASE_URL` et `DATABASE_URL_DIRECT` remplies (`.env` et Vercel), comme pour toute table.
+- Option B : `DATABASE_URL` et `DATABASE_URL_DIRECT` remplies (`.env`, et Vercel ou le `.env` du serveur), comme pour toute table ; derrière un proxy, `SITE_URL` sert à reconnaître les envois du site.
 - Paquets : option A, `npm install @vercel/speed-insights` (dernière version ; recette vérifiée avec 2.0.0). Option B : aucun paquet ; `useReportWebVitals` est fourni par Next.js 16.4.
 - Vérifiée automatiquement par la CI du pack, à chaque modification et chaque semaine, aux dernières versions (chaîne `mesure-reelle` de `verifier-recettes.js`) : contrôles, types, tests unitaires et d'intégration (PGlite), construction. Les deux options sont posées ensemble pour cette vérification ; un projet n'en garde qu'une. La réception réelle des mesures (Speed Insights, ou lignes dans Neon) se constate en ligne, après quelques visites.
 
@@ -163,6 +163,6 @@ Le code des tests : `pulse-aidd pile recette mesure-reelle tests`
 
 ## Points à vérifier
 
-- L'en-tête `Origin` derrière Vercel : `request.nextUrl.origin` vaut-il bien l'adresse publique du site (domaine personnalisé compris) ? Vérifier la première mesure enregistrée après la mise en ligne ; une réponse 403 sur `/api/vitesse` dans les journaux de Vercel signale l'écart.
+- L'en-tête `Origin` derrière Vercel (ou derrière le proxy d'un serveur ; l'origine de `SITE_URL` est aussi acceptée) : `request.nextUrl.origin` vaut-il bien l'adresse publique du site (domaine personnalisé compris) ? Vérifier la première mesure enregistrée après la mise en ligne ; une réponse 403 sur `/api/vitesse` dans les journaux de Vercel signale l'écart.
 - Speed Insights sur l'offre Hobby : les mesures par page sont-elles lisibles avec `vercel metrics` sans Speed Insights Plus ?
 - Les libellés exacts de l'onglet Speed Insights dans Vercel.

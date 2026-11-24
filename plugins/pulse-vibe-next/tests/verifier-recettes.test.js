@@ -9,12 +9,12 @@ const path = require("path");
 
 const os = require("os");
 const { spawnSync } = require("child_process");
-const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, chainesTouchees, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
+const { extraireEtapes, appliquerAuTexte, analyserCommande, lireArguments, poserEtape, poserRecette, CHAINES, CHAINES_SERVEUR, chainesTouchees, chainesAVerifier, fichiersModifies } = require(path.join(__dirname, "..", "scripts", "verifier-recettes.js"));
 const DOSSIER_RECETTES = path.join(__dirname, "..", "references", "recettes");
 // Recettes qui créent une table : leur chaîne génère la migration.
 const AVEC_MIGRATION = ["connexion", "liste", "double-authentification", "fichiers", "paiement", "limite", "seo", "mesure-reelle"];
 const F = "```";
-const { texteRecette } = require("../scripts/decouper-recette.js");
+const { texteRecette, filtrerSelonHebergement } = require("../scripts/decouper-recette.js");
 
 test("extraction : fichiers, ajouts, remplacements et commandes, dans l'ordre du document", () => {
   const texte = [
@@ -221,7 +221,7 @@ test("recettes des chaînes : chaque bloc « // chemin » porte sa balise ou dit
     lignes.forEach((ligne, i) => {
       if (/^###? /.test(ligne)) section = ligne;
       const chemin = /^```tsx?$/.test(ligne) && /^\/\/ ((?:app|src|e2e|tests)\/\S+|proxy\.ts)$/.exec(lignes[i + 1] || "");
-      const balise = lignes[i - 1] === `<!-- fichier: ${chemin && chemin[1]} -->` || /^<!-- sans-verification: .+ -->$/.test(lignes[i - 1] || "");
+      const balise = (chemin && [`<!-- fichier: ${chemin[1]} -->`].includes((lignes[i - 1] || "").replace(/ hebergement: [a-z,]+ -->$/, " -->"))) || /^<!-- sans-verification: .+ -->$/.test(lignes[i - 1] || "");
       if (chemin && section !== sansBalise[nom] && !balise) oublis.push(`${nom}.md:${i + 1} ${chemin[1]}`);
     });
     assert.deepStrictEqual(oublis, [], "bloc « // chemin » sans <!-- fichier: … --> ni <!-- sans-verification: … -->");
@@ -295,4 +295,79 @@ test("recette : blocs non vérifiés comptés et listés ; une recette sans aucu
   } finally {
     fs.rmSync(d, { recursive: true, force: true });
   }
+});
+
+test("balises par hébergement : seuls les blocs de l'hébergement choisi sont posés ; valeur inconnue refusée", () => {
+  const texte = [
+    "<!-- fichier: src/commun.ts -->",
+    `${F}ts`,
+    "export const commun = 1;",
+    `${F}`,
+    "<!-- fichier: src/stockage.ts hebergement: vercel -->",
+    `${F}ts`,
+    'export const stockage = "r2";',
+    `${F}`,
+    "<!-- fichier: src/stockage.ts hebergement: docker,serveur -->",
+    `${F}ts`,
+    'export const stockage = "disque";',
+    `${F}`,
+    "<!-- ajout: src/commun.ts après: export const commun = 1; hebergement: serveur -->",
+    `${F}ts`,
+    "export const serveur = true;",
+    `${F}`,
+    "<!-- commande: npm install @aws-sdk/client-s3 hebergement: vercel -->",
+  ].join("\n");
+  const resume = (h) => extraireEtapes(texte, { hebergement: h }).map((e) => `${e.type} ${e.chemin || e.commande} ${(e.contenu || "").trim()}`.trim());
+  assert.deepStrictEqual(resume("vercel"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "r2";', "commande npm install @aws-sdk/client-s3"]);
+  assert.deepStrictEqual(resume(undefined), resume("vercel"), "vercel par défaut");
+  assert.deepStrictEqual(resume("docker"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "disque";']);
+  assert.deepStrictEqual(resume("serveur"), ["fichier src/commun.ts export const commun = 1;", 'fichier src/stockage.ts export const stockage = "disque";', "ajout src/commun.ts export const serveur = true;"]);
+  const ancre = extraireEtapes(texte, { hebergement: "serveur" })[2];
+  assert.strictEqual(ancre.ancre, "export const commun = 1;", "la condition ne fait pas partie de l'ancre");
+  assert.throws(() => extraireEtapes("<!-- fichier: src/a.ts hebergement: netlify -->\n```ts\nx\n```\n"), /hébergement inconnu : netlify/);
+});
+
+test("lecture d'une recette par hébergement : les blocs d'un autre hébergement disparaissent avec leur balise", () => {
+  const texte = ["Texte commun.", "", "<!-- fichier: src/a.ts hebergement: vercel -->", `${F}ts`, "vercel();", `${F}`, "", "<!-- fichier: src/a.ts hebergement: docker,serveur -->", `${F}ts`, "serveur();", `${F}`, "", "Fin."].join("\n");
+  const vercel = filtrerSelonHebergement(texte, "vercel");
+  assert.ok(vercel.includes("vercel();") && !vercel.includes("serveur();") && vercel.includes("Texte commun.") && vercel.includes("Fin."));
+  const serveur = filtrerSelonHebergement(texte, "serveur");
+  assert.ok(serveur.includes("serveur();") && !serveur.includes("vercel();") && !serveur.includes("hebergement: vercel"));
+  assert.strictEqual(filtrerSelonHebergement("sans balise\n", "docker"), "sans balise\n");
+});
+
+test("--hebergement : option contrôlée ; --toutes ajoute les chaînes vérifiées sur un serveur", () => {
+  assert.strictEqual(lireArguments([]).hebergement, "vercel");
+  assert.strictEqual(lireArguments(["--recettes", "connexion,fichiers", "--hebergement", "serveur"]).hebergement, "serveur");
+  assert.throws(() => lireArguments(["--hebergement", "netlify"]), /Hébergement inconnu/);
+  assert.throws(() => lireArguments(["--hebergement"]), /--hebergement demande/);
+  assert.deepStrictEqual(chainesAVerifier(lireArguments(["--recettes", "connexion,fichiers", "--hebergement", "serveur"])), [{ recettes: ["connexion", "fichiers"], hebergement: "serveur" }]);
+  const toutes = chainesAVerifier(lireArguments(["--toutes"]));
+  assert.strictEqual(toutes.length, CHAINES.length + CHAINES_SERVEUR.length);
+  assert.deepStrictEqual(toutes.filter((c) => c.hebergement === "serveur").map((c) => c.recettes), CHAINES_SERVEUR);
+  for (const chaine of CHAINES_SERVEUR) assert.ok(CHAINES.some((c) => c.join() === chaine.join()), `${chaine} : aussi vérifiée sur Vercel`);
+});
+
+test("recettes à blocs par hébergement : chaque fichier propre à un hébergement existe pour tous (vercel, et docker ou serveur)", () => {
+  for (const nom of [...new Set(CHAINES_SERVEUR.flat())]) {
+    const parHebergement = Object.fromEntries(["vercel", "docker", "serveur"].map((h) => [h, extraireEtapes(texteRecette(nom), { hebergement: h })]));
+    const conditionnes = (h) => new Set(parHebergement[h].filter((e) => e.hebergements && e.type === "fichier").map((e) => e.chemin));
+    // Un fichier entier réservé à Vercel (ex. l'adapter de stockage) a son équivalent sur un serveur, au même chemin, et inversement.
+    for (const chemin of conditionnes("vercel")) if (["src/adapters/"].some((d) => chemin.startsWith(d))) assert.ok(conditionnes("serveur").has(chemin), `${nom} : ${chemin} manque sur un serveur`);
+    const code = (h) => [...conditionnes(h)].filter((c) => /^(src|app|e2e|tests)\//.test(c)).sort();
+    assert.deepStrictEqual(code("docker"), code("serveur"), `${nom} : docker et serveur partagent leur code`);
+  }
+});
+
+test("fichiers, hébergement docker : les ajouts au Dockerfile et à compose.production.yml trouvent leur place dans la variante", () => {
+  const variante = path.join(__dirname, "..", "templates", "squelette-variantes", "hebergement", "docker");
+  const textes = { Dockerfile: fs.readFileSync(path.join(variante, "Dockerfile"), "utf8"), "compose.production.yml": fs.readFileSync(path.join(variante, "compose.production.yml"), "utf8") };
+  const etapes = extraireEtapes(texteRecette("fichiers"), { hebergement: "docker" }).filter((e) => e.chemin in textes);
+  assert.strictEqual(etapes.length, 3);
+  for (const e of etapes) textes[e.chemin] = appliquerAuTexte(textes[e.chemin], e);
+  assert.match(textes.Dockerfile, /RUN mkdir -p \.next\/cache && chown node:node \.next\/cache\nRUN mkdir -p fichiers && chown node:node fichiers\nUSER node/);
+  const app = textes["compose.production.yml"].split("\n  migrations:")[0];
+  assert.match(app, /env_file: \.env\n {4}# Fichiers envoyés[^\n]*\n {4}volumes:\n {6}- fichiers:\/app\/fichiers\n/, "volume du service app");
+  assert.match(textes["compose.production.yml"], /\n {2}caddy_config:\n {2}fichiers:\n$/, "volume déclaré");
+  assert.strictEqual(extraireEtapes(texteRecette("fichiers"), { hebergement: "serveur" }).filter((e) => e.chemin in textes).length, 0, "rien pour docker sur l'hébergement serveur");
 });

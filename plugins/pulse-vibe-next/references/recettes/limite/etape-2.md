@@ -8,10 +8,16 @@ Les fonctions pures (lire l'adresse, écrire le message, l'empreinte courte d'un
 // Fonctions pures de la limite de requêtes, testées en unitaire.
 import { createHash } from "node:crypto";
 
-// Sur Vercel, x-forwarded-for est réécrit par la plateforme : la première adresse est celle du visiteur.
-export function ipDepuis(entetes: Headers): string {
-  const premiere = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return premiere || entetes.get("x-real-ip") || "inconnue";
+// L'adresse du visiteur est celle qu'ajoute à x-forwarded-for le premier proxy de confiance, compté depuis la fin :
+// les adresses écrites avant lui viennent du navigateur et peuvent être fausses. Vercel, Caddy et le proxy d'un
+// fournisseur écrivent chacun l'adresse qu'ils voient : un proxy (PROXYS_DE_CONFIANCE=1, par défaut).
+export function ipDepuis(entetes: Headers, proxysDeConfiance = 1): string {
+  const adresses = (entetes.get("x-forwarded-for") ?? "")
+    .split(",")
+    .map((adresse) => adresse.trim())
+    .filter(Boolean);
+  const retenue = adresses[Math.max(0, adresses.length - proxysDeConfiance)];
+  return retenue || entetes.get("x-real-ip") || "inconnue";
 }
 
 export function messageLimite(reset: number, maintenant: number): string {

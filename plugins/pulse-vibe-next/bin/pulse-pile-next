@@ -69,6 +69,9 @@ variables_hebergeur() {
 
 version() { sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$RACINE/.claude-plugin/plugin.json" | head -n 1; }
 
+# Une partie de recette, sans les blocs réservés à un autre hébergement (balises « … hebergement: <valeurs> »).
+lire_recette() { node "$RACINE/scripts/decouper-recette.js" --hebergement "$(hebergement)" <"$1"; }
+
 recettes() {
   local f nom titre
   for f in "$REF"/recettes/*/index.md; do
@@ -180,14 +183,14 @@ case "$1" in
     dossier="$REF/recettes/$2"
     if [ ! -f "$dossier/index.md" ]; then echo "Recette introuvable : $2. Disponibles :"; recettes; exit 1; fi
     case "$3" in
-      "") cat "$dossier/index.md" ;;
+      "") lire_recette "$dossier/index.md" ;;
       tests)
-        if [ -f "$dossier/tests.md" ]; then cat "$dossier/tests.md"; else echo "La recette $2 n'a pas de tests à copier : ses tests se trouvent dans ses étapes."; exit 1; fi ;;
+        if [ -f "$dossier/tests.md" ]; then lire_recette "$dossier/tests.md"; else echo "La recette $2 n'a pas de tests à copier : ses tests se trouvent dans ses étapes."; exit 1; fi ;;
       etape)
         case "$4" in
           ""|*/*|*..*) echo "Indiquez une étape de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;
         esac
-        if [ -f "$dossier/etape-$4.md" ]; then cat "$dossier/etape-$4.md"; else echo "Étape introuvable : $4. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1; fi ;;
+        if [ -f "$dossier/etape-$4.md" ]; then lire_recette "$dossier/etape-$4.md"; else echo "Étape introuvable : $4. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1; fi ;;
       *) echo "Usage : pulse-pile-next recette <nom> [etape <id> | tests]. Étapes de la recette $2 :"; etapes_recette "$dossier"; exit 1 ;;
     esac
     exit 0 ;;

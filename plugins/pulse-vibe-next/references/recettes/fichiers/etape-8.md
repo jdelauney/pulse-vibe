@@ -8,7 +8,7 @@ L'identifiant de la propriétaire vient **de la session** (`ctx.utilisateur.id`)
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
 import { env } from "@src/config/env";
 import { PreparerEnvoi } from "@src/core/fichiers/use-cases/preparer-envoi.use-case";
 import { getDb } from "@src/db/db-client";
@@ -23,7 +23,7 @@ export const preparerEnvoiAction = actionConnectee
   .action(async ({ parsedInput, ctx }) => {
     const preparer = new PreparerEnvoi(
       new DrizzleFichierRepository(getDb()),
-      new StockageR2Adapter(env),
+      stockageFichiers(env),
     );
     return preparer.executer({
       ...parsedInput,
@@ -38,7 +38,7 @@ export const preparerEnvoiAction = actionConnectee
 // src/features/fichiers/actions/confirmer-envoi.action.ts
 "use server";
 
-import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
 import { env } from "@src/config/env";
 import { ConfirmerEnvoi } from "@src/core/fichiers/use-cases/confirmer-envoi.use-case";
 import { getDb } from "@src/db/db-client";
@@ -56,7 +56,7 @@ export const confirmerEnvoiAction = actionConnectee
   .action(async ({ parsedInput, ctx }) => {
     const confirmer = new ConfirmerEnvoi(
       new DrizzleFichierRepository(getDb()),
-      new StockageR2Adapter(env),
+      stockageFichiers(env),
     );
     const resultat = await confirmer.executer({
       id: parsedInput.id,
@@ -73,7 +73,7 @@ export const confirmerEnvoiAction = actionConnectee
 // src/features/fichiers/actions/supprimer-fichier.action.ts
 "use server";
 
-import { StockageR2Adapter } from "@src/adapters/storage/storage.adapter";
+import { stockageFichiers } from "@src/adapters/storage/storage.adapter";
 import { env } from "@src/config/env";
 import { SupprimerFichier } from "@src/core/fichiers/use-cases/supprimer-fichier.use-case";
 import { getDb } from "@src/db/db-client";
@@ -90,7 +90,7 @@ export const supprimerFichierAction = actionConnectee
   .action(async ({ parsedInput, ctx }) => {
     const supprimer = new SupprimerFichier(
       new DrizzleFichierRepository(getDb()),
-      new StockageR2Adapter(env),
+      stockageFichiers(env),
     );
     const resultat = await supprimer.executer({
       id: parsedInput.id,

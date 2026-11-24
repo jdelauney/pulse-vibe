@@ -1,8 +1,10 @@
 ### 12. La CSP autorise R2
 
+Serveur (docker ou serveur) : rien à faire, l'envoi vise le site lui-même (`'self'`). Vercel :
+
 Le navigateur envoie le fichier directement à R2 (`fetch` avec `PUT`). La CSP bloque tout appel vers une adresse absente de `connect-src` : dans l'objet `sources` de `next.config.ts`, remplacez la ligne `"connect-src": ["'self'"],` par :
 
-<!-- remplacer-ligne: next.config.ts début: "connect-src": -->
+<!-- remplacer-ligne: next.config.ts début: "connect-src": hebergement: vercel -->
 ```ts
   // Envoi direct des fichiers vers R2 (recette fichiers) : l'adresse signée commence par le nom
   // du bucket. Sans juridiction UE, retirer « .eu ».

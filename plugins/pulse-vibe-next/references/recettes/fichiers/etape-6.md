@@ -1,8 +1,10 @@
 ### 6. L'adapter de stockage
 
+Vercel (R2). Hébergements docker et serveur : l'étape « Disque du serveur ».
+
 Le client R2 et les adresses signées vivent dans `src/adapters/storage/`, dans la classe `StockageR2Adapter` : elle implémente le port `StockageFichiers` (patron Adapter) et reçoit sa configuration par le constructeur (les actions et le Route Handler lui passent l'objet `env`). Toute panne du SDK devient une `ErreurService("stockage", …)` : son message est sans secret ni clé d'objet (la clé commence par l'identifiant d'une personne), et sa `cause` garde seulement trois champs techniques (`name`, `Code`, code HTTP), lus un par un, jamais le texte de l'erreur d'origine (architecture.md §8). `safe-action` journalise et affiche un message générique ; le Route Handler de l'étape 9 utilise `reponseErreur()`.
 
-<!-- fichier: src/adapters/storage/storage.adapter.ts -->
+<!-- fichier: src/adapters/storage/storage.adapter.ts hebergement: vercel -->
 ```ts
 // src/adapters/storage/storage.adapter.ts
 import "server-only";
@@ -142,7 +144,11 @@ export class StockageR2Adapter implements StockageFichiers {
     }
   }
 }
+
+/** Le stockage du projet (patron Factory) : les actions et le Route Handler l'obtiennent ici, avec `env`. */
+export function stockageFichiers(config: ConfigurationR2): StockageFichiers {
+  return new StockageR2Adapter(config);
+}
 ```
 
 Vérifié avec `@aws-sdk/client-s3` 3.1147.0 : sans `requestChecksumCalculation: "WHEN_REQUIRED"`, l'adresse PUT contient une somme de contrôle de fichier vide (`x-amz-checksum-crc32=AAAAAA==`) ; avec `signableHeaders`, `content-type` et `content-length` font partie de la signature (`X-Amz-SignedHeaders=content-length;content-type;host`).
-

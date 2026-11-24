@@ -100,7 +100,46 @@ function texteRecette(nom, dossier = DOSSIER) {
   return recomposer(lireDossier(path.join(dossier, nom)));
 }
 
-if (require.main === module) {
+// Fin d'une balise réservée à des hébergements : « … hebergement: docker,serveur ».
+const CONDITION = /\s+hebergement:\s+([a-z]+(?:,[a-z]+)*)$/;
+
+/** Valeur d'une balise sans sa condition d'hébergement : { valeur, hebergements } (hebergements : null sans condition). */
+function conditionHebergement(valeur) {
+  const m = CONDITION.exec(valeur);
+  return m ? { valeur: valeur.slice(0, m.index), hebergements: m[1].split(",") } : { valeur, hebergements: null };
+}
+
+/**
+ * Le texte d'une recette pour un hébergement : chaque balise réservée à d'autres hébergements disparaît, avec le bloc de
+ * code qui la suit. Le reste est rendu tel quel (pulse-pile-next recette, d'après docs/technical.md).
+ */
+function filtrerSelonHebergement(texte, hebergement) {
+  const lignes = texte.split("\n");
+  const sortie = [];
+  for (let i = 0; i < lignes.length; i++) {
+    const balise = /^<!--\s*[a-z-]+:\s*(.+?)\s*-->\s*$/.exec(lignes[i]);
+    const { hebergements } = balise ? conditionHebergement(balise[1]) : { hebergements: null };
+    if (!hebergements || hebergements.includes(hebergement)) {
+      sortie.push(lignes[i]);
+      continue;
+    }
+    // Le bloc qui suit la balise (après d'éventuelles lignes vides) part avec elle.
+    let k = i + 1;
+    while (k < lignes.length && lignes[k].trim() === "") k++;
+    const ouverture = k < lignes.length ? /^(`{3,})/.exec(lignes[k]) : null;
+    if (!ouverture) continue;
+    const fin = lignes.findIndex((l, j) => j > k && l.trim() === ouverture[1]);
+    i = fin < 0 ? lignes.length : fin;
+    if (lignes[i + 1] !== undefined && lignes[i + 1].trim() === "" && sortie.length && sortie[sortie.length - 1].trim() === "") i++;
+  }
+  return sortie.join("\n");
+}
+
+if (require.main === module && process.argv[2] === "--hebergement") {
+  // Filtre de lecture : pulse-pile-next recette … | node decouper-recette.js --hebergement <valeur>
+  const texte = fs.readFileSync(0, "utf8");
+  process.stdout.write(filtrerSelonHebergement(texte, process.argv[3] || "vercel"));
+} else if (require.main === module) {
   const nom = process.argv[2];
   if (!nom || !/^[a-z0-9-]+$/.test(nom)) {
     console.error("Usage : node scripts/decouper-recette.js <nom>");
@@ -123,4 +162,4 @@ if (require.main === module) {
   console.log(`${nom} : ${Object.keys(fichiers).length} fichiers dans references/recettes/${nom}/ ; retirer ${nom}.md avec git rm.`);
 }
 
-module.exports = { decouper, recomposer, lireDossier, texteRecette, identifiant };
+module.exports = { decouper, recomposer, lireDossier, texteRecette, identifiant, conditionHebergement, filtrerSelonHebergement };

@@ -142,12 +142,20 @@ describe("Limite de requêtes", () => {
   });
 
   describe("La limite s'applique par adresse IP du visiteur", () => {
-    it("US-XXX-2 – L'adresse retenue est la première de x-forwarded-for", () => {
-      const entetes = new Headers({
-        "x-forwarded-for": "203.0.113.7, 10.0.0.1",
+    it("US-XXX-2 – L'adresse retenue est celle qu'ajoute le proxy de confiance", () => {
+      // Le navigateur a écrit 198.51.100.9 lui-même ; le proxy a ajouté l'adresse qu'il voit.
+      const unProxy = new Headers({
+        "x-forwarded-for": "198.51.100.9, 203.0.113.7",
       });
-
-      expect(ipDepuis(entetes)).toBe("203.0.113.7");
+      expect(ipDepuis(unProxy)).toBe("203.0.113.7");
+      // Deux proxys en chaîne : l'avant-dernière adresse.
+      const deuxProxys = new Headers({
+        "x-forwarded-for": "198.51.100.9, 203.0.113.7, 10.0.0.1",
+      });
+      expect(ipDepuis(deuxProxys, 2)).toBe("203.0.113.7");
+      expect(ipDepuis(new Headers({ "x-real-ip": "203.0.113.8" }))).toBe(
+        "203.0.113.8",
+      );
     });
   });
 });
